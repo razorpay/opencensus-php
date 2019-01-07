@@ -53,6 +53,22 @@ return [
         ]
     ],
 
+    'testIvrAuthenticationPaymentWithHeadlessFeature' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The otp authentication type is not applicable on the given card'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ]
+    ],
+
     'testHeadlessRedirectInvalidAuthType' => [
         'request' => [
             'url' => '',

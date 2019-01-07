@@ -1025,13 +1025,17 @@ trait Authorize
                 // We support OTP flow with native supports from the gateway, headless_otp
                 // flow is something which is a hack and not natively supported by the gateway
                 if (($payment->card->iinRelation === null) or
-                    (($payment->card->iinRelation->supports(IIN\Flow::OTP) === false) and
-                     ($payment->card->iinRelation->supports(IIN\Flow::HEADLESS_OTP) === false) and
-                     ($payment->card->iinRelation->supports(IIN\Flow::IVR) === false)))
+                    ((($payment->merchant->isAxisExpressPayEnabled() === false) or
+                      ($payment->card->iinRelation->supports(IIN\Flow::OTP) === false)) and
+                     (($payment->merchant->isFeatureEnabled(Feature\Constants::HEADLESS) === false) or
+                      ($payment->card->iinRelation->supports(IIN\Flow::HEADLESS_OTP) === false)) and
+                     (($payment->merchant->isFeatureEnabled(Feature\Constants::IVR) === false) or
+                      ($payment->card->iinRelation->supports(IIN\Flow::IVR) === false))))
                 {
                     throw new Exception\BadRequestValidationFailureException(
                         'The otp authentication type is not applicable on the given card');
                 }
+
                 break;
 
             case Payment\AuthType::SKIP:

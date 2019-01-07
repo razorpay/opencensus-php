@@ -72,6 +72,42 @@ class OtpPaymentTest extends TestCase
         self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
     }
 
+    public function testIvrAuthenticationPaymentWithHeadlessFeature()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['headless']);
+        $this->mockTokenEx();
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds' => '1',
+                'ivr' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['auth_type'] = 'otp';
+
+        $this->setOtp('213433');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testIvrAuthenticationPaymentWHeadless()
     {
         $this->fixtures->create('terminal:shared_hitachi_terminal', [
