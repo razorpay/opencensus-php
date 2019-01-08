@@ -503,7 +503,7 @@ class Processor extends Base\Core
                                        ->transaction
                                        ->fetchUnsettledTransactions($this->setlTime, $channel, [], $skipMids, false);
 
-            $activatedMerchants = $activatedMerchants->getIds();
+            $activatedMerchants = array_keys($activatedMerchants->getStringAttributesByKey(Transaction\Entity::MERCHANT_ID));
 
             return $this->pushMerchantsToSettlementQueue($activatedMerchants, $channel);
         }
