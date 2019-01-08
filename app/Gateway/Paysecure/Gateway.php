@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Paysecure;
 
+use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use View;
 
@@ -139,7 +140,19 @@ class Gateway extends Base\Gateway
             );
         }
 
-        assertTrue($input['payment']['id'] === $input['gateway'][Fields::SESSION]);
+        if ($input['payment']['id'] !== $input['gateway'][Fields::SESSION])
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_DATA_MISMATCH,
+                null,
+                null,
+                [
+                    'response'   => $input['gateway'],
+                    'gateway'    => $this->gateway,
+                    'payment_id' => $input['payment']['id'],
+                ]
+            );
+        }
 
         // Check payment status
         if (in_array($input['gateway'][Fields::ACCU_RESPONSE_CODE], [StatusCode::CALLBACK_SUCCESS, StatusCode::IFRAME_CALLBACK_SUCCESS]) === false)
