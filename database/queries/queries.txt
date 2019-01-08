@@ -4619,3 +4619,4 @@ ALTER TABLE merchant_access_map
 ALTER TABLE fund_transfer_attempts
     ADD INDEX fund_transfer_attempts_vpa_id_index (vpa_id),
     ADD INDEX fund_transfer_attempts_bank_account_id_index (bank_account_id);
+
