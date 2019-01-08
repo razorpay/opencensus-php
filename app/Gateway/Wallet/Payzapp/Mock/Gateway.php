@@ -37,7 +37,7 @@ class Gateway extends Payzapp\Gateway
                 'pgStatusCode'  => '50020',
                 'pgTxnId'       => random_integer(8),
                 'cardType'      => 'Visa',
-                'txnAmt'        => 500,
+                'txnAmt'        => 50000,
                 'cardClassificationType' => 'Credit',
                 'cardHash'      => 'cRpzqfJynHah84KRyfGdU4TC5Mg=',
                 'cardMasked'    => '4329XXXXXXXX7413'

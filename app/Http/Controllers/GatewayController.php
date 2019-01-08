@@ -496,6 +496,16 @@ class GatewayController extends Controller
     }
 
     /**
+     * Method to handle webhook from vajra
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function postGatewayDowntimeVajraWebhook(Downtime\Service $service)
+    {
+        return $this->postGatewayDowntimeWebhook($service, Downtime\Source::VAJRA);
+    }
+
+    /**
      * Method to handle webhook from statuscake
      *
      * @return \Symfony\Component\HttpFoundation\Response

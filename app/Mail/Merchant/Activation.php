@@ -33,35 +33,25 @@ class Activation extends Mailable
 
     protected function addHtmlView()
     {
-        if ($this->isWhitelistActivationFlow() === true)
+        if ($this->org[Org\Entity::ID] !== Org\Entity::RAZORPAY_ORG_ID)
         {
-            $this->view('emails.merchant.whitelist_activation_heimdall');
+            if ($this->isWhitelistActivationFlow() === true)
+            {
+                $this->view('emails.merchant.whitelist_activation_heimdall');
+            }
+            else
+            {
+                $this->view('emails.merchant.activation_heimdall');
+            }
+        }
+        else if ($this->data['merchant']['activation_source'] === Product::BANKING)
+        {
+            $this->view('emails.merchant.activation_banking');
         }
         else
         {
-            $this->view('emails.merchant.activation_heimdall');
+            $this->view('emails.merchant.activation');
         }
-
-        // Commenting the below code till X goes live fully.
-        //        if ($this->org[Org\Entity::ID] !== Org\Entity::RAZORPAY_ORG_ID)
-        //        {
-        //            if ($this->isWhitelistActivationFlow() === true)
-        //            {
-        //                $this->view('emails.merchant.whitelist_activation_heimdall');
-        //            }
-        //            else
-        //            {
-        //                $this->view('emails.merchant.activation_heimdall');
-        //            }
-        //        }
-        //        else if ($this->data['merchant']['activation_source'] === Product::BANKING)
-        //        {
-        //            $this->view('emails.merchant.activation_banking');
-        //        }
-        //        else
-        //        {
-        //            $this->view('emails.merchant.activation');
-        //        }
 
         return $this;
     }
@@ -107,31 +97,21 @@ class Activation extends Mailable
     {
         $subject = null;
 
-        if ($this->isWhitelistActivationFlow() === true)
+        if ($this->org[Org\Entity::ID] !== Org\Entity::RAZORPAY_ORG_ID)
         {
-            $subject = "KYC verification for " . $this->data['merchant']['org']['business_name'] . " is complete";
+            if ($this->isWhitelistActivationFlow() === true)
+            {
+                $subject = "KYC verification for " . $this->data['merchant']['org']['business_name'] . " is complete";
+            }
+            else
+            {
+                $subject = $this->data['merchant']['org']['business_name'] . " | Account activated for " . $this->data['merchant']['billing_label'];
+            }
         }
         else
         {
-            $subject = $this->data['merchant']['org']['business_name'] . " | Account activated for " . $this->data['merchant']['billing_label'];
+            $subject = 'Settlements & Payouts enabled for your Razorpay account';
         }
-
-        // Commenting the below code till X goes live fully.
-        //        if ($this->org[Org\Entity::ID] !== Org\Entity::RAZORPAY_ORG_ID)
-        //        {
-        //            if ($this->isWhitelistActivationFlow() === true)
-        //            {
-        //                $subject = "KYC verification for " . $this->data['merchant']['org']['business_name'] . " is complete";
-        //            }
-        //            else
-        //            {
-        //                $subject = $this->data['merchant']['org']['business_name'] . " | Account activated for " . $this->data['merchant']['billing_label'];
-        //            }
-        //        }
-        //        else
-        //        {
-        //            $subject = 'Settlements & Payouts enabled for your Razorpay account';
-        //        }
 
         $this->subject($subject);
 

@@ -24,11 +24,11 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    public function create(array $input)
+    public function create(array $input, array $uniqueRecordIdentifiers = [])
     {
         $this->trace->info(TraceCode::GATEWAY_DOWNTIME_CREATE, $input);
 
-        $downtime = $this->repo->gateway_downtime->fetchUnique($input);
+        $downtime = $this->repo->gateway_downtime->fetchUnique($input, $uniqueRecordIdentifiers);
 
         if ($downtime !== null)
         {
@@ -84,7 +84,7 @@ class Core extends Base\Core
         // been encountered yet. Will need to modify this later when we deal with
         // such downtimes
         $downtimes = $this->repo->gateway_downtime
-                                ->fetchCurrentAndFutureDowntimesWithoutTerminal();
+                                ->fetchCurrentAndFutureDowntimes();
 
         return $downtimes;
     }
@@ -113,9 +113,9 @@ class Core extends Base\Core
         return $downtimes;
     }
 
-    public function fetchMostRecentActive(array $input)
+    public function fetchMostRecentActive(array $input, $fetchByKeys = [])
     {
-        return $this->repo->gateway_downtime->fetchMostRecentActive($input);
+        return $this->repo->gateway_downtime->fetchMostRecentActive($input, $fetchByKeys);
     }
 
     /**

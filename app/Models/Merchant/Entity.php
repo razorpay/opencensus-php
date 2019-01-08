@@ -343,6 +343,7 @@ class Entity extends Base\PublicEntity
         self::WHITELISTED_IPS_LIVE   => [],
         self::WHITELISTED_IPS_TEST   => [],
         self::FEE_CREDITS_THRESHOLD  => null,
+        self::CATEGORY               => 0,
     ];
 
     protected $publicSetters = [
@@ -1669,7 +1670,7 @@ class Entity extends Base\PublicEntity
         // it tries to look for account_id and crashes.
         //
         return $this->belongsToMany(User\Entity::class, Table::MERCHANT_USERS, self::MERCHANT_ID)
-                    ->withPivot(User\Entity::ROLE)
+                    ->withPivot([User\Entity::ROLE, User\Entity::PRODUCT])
                     ->orderBy(self::NAME);
     }
 

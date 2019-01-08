@@ -933,7 +933,7 @@ trait PaymentTrait
 
         $input['id'] = substr($refund['id'], strlen('rfnd_'));
 
-        if ($this->gateway === Payment\Gateway::UPI_MINDGATE)
+        if (($this->gateway === Payment\Gateway::UPI_MINDGATE) or ($this->gateway === Payment\Gateway::UPI_ICICI))
         {
             $input['reference_no'] = random_integer(12);
         }

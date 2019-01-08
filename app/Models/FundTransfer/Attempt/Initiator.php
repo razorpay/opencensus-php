@@ -6,10 +6,12 @@ use Carbon\Carbon;
 
 use Monolog\Logger;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
+use RZP\Constants\Environment;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Base\PublicCollection;
@@ -44,14 +46,14 @@ class Initiator extends Base\Core
      */
     public function initiateFundTransfers(array $input, string $channel): array
     {
-        $isValidTime = $this->isValidTime($channel);
+        list($shouldProcessBankTransfers, $message) = $this->shouldProcessBankTransfers($channel);
 
-        if ($isValidTime === false)
+        if ($shouldProcessBankTransfers === false)
         {
             return [
                 'channel'   => $channel,
                 'count'     => 0,
-                'message'   => 'Invalid time to initiate transfer'
+                'message'   => $message
             ];
         }
 
@@ -268,6 +270,9 @@ class Initiator extends Base\Core
             case Channel::KOTAK:
                 return null;
 
+            case Channel::AXIS2:
+                return 400;
+
             default:
                 return 100;
         }
@@ -384,5 +389,26 @@ class Initiator extends Base\Core
         }
 
         return;
+    }
+
+    /**
+     * Restricts transfer in test mode or after invalid time
+     *
+     * @param string $channel
+     * @return array
+     */
+    protected function shouldProcessBankTransfers(string $channel = null): array
+    {
+        if (($this->env === Environment::PRODUCTION) and ($this->mode === Mode::TEST))
+        {
+            return [false, 'Invalid mode to initiate transfer'];
+        }
+
+        if ($this->isValidTime($channel) === false)
+        {
+            return [false, 'Invalid time to initiate transfer'];
+        }
+
+        return [true, null];
     }
 }

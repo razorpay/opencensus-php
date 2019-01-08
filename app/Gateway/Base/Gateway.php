@@ -36,7 +36,7 @@ class Gateway
      * Default request connect timeout duration in seconds.
      * @var  integer
      */
-    const CONNECT_TIMEOUT = 5;
+    const CONNECT_TIMEOUT = 10;
 
     /**
      * Default payment timeout duration in mins.
@@ -450,6 +450,7 @@ class Gateway
         switch ($input['payment']['method'])
         {
             case Payment\Method::CARD:
+            case Payment\Method::EMI:
                 $acquirer['acquirer'] = [
                     Payment\Entity::REFERENCE2 => $gatewayPayment->getAuthCode(),
                 ];

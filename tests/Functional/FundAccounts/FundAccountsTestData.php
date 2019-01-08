@@ -69,9 +69,9 @@ return [
                 'account_type' => 'bank_account',
                 'contact_id'   => 'cont_1000000contact',
                 'details'      => [
-                    'ifsc_code'        => 'SBIN0007105',
-                    'beneficiary_name' => 'Amit M',
-                    'account_number'   => '111000111',
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111',
                 ],
             ],
             'url'     => '/fund_accounts',
@@ -98,9 +98,9 @@ return [
                 'account_type' => 'bank_account',
                 'contact_id'   => 'cont_1000000contact',
                 'details'      => [
-                    'ifsc_code'        => 'SBIN0007105',
-                    'beneficiary_name' => 'Amit M',
-                    'account_number'   => '111000111',
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111',
                 ],
             ],
             'url'     => '/fund_accounts',
@@ -145,7 +145,7 @@ return [
     ],
 
     'testCreateWithoutContactOrCustomer' => [
-        'request'  => [
+        'request'   => [
             'content' => [
                 'account_type' => 'vpa',
                 'details'      => [
@@ -203,9 +203,9 @@ return [
                 'account_type' => 'bank_account',
                 'contact_id'   => 'cont_1000000contact',
                 'details'      => [
-                    'ifsc_code'        => 'SBIQ0007105',
-                    'beneficiary_name' => 'Amit M',
-                    'account_number'   => '111000111'
+                    'ifsc'           => 'SBIQ0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111'
                 ],
             ],
             'url'     => '/fund_accounts',

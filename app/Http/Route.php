@@ -521,6 +521,8 @@ final class Route
         'sms_callback'                             => ['post',     'sms/{gateway}/callback',                         'CustomerController@updateSmsStatus'                                ],
         'es_debug_get'                             => ['post',     'es/debug/{method}',                              'EsController@debug'                                                ],
         'es_aliases_post'                          => ['post',     'es/aliases',                                     'EsController@postAliases'                                          ],
+        'es_index_create'                          => ['post',     'es/index_create',                                'EsController@postIndexCreate'                                      ],
+        'es_index'                                 => ['post',     'es/index',                                       'EsController@postIndex'                                            ],
         'gateway_add_priorities'                   => ['post',     'gateway/priorities/{method}',                    'GatewayController@createGatewayPriority'                           ],
         'gateway_fetch_priorities'                 => ['get',      'gateway/priorities',                             'GatewayController@getGatewayPriority'                              ],
         'gateway_update_priorities'                => ['patch',    'gateway/priorities/{method}/add',                'GatewayController@addOrUpdateGatewayPriority'                      ],
@@ -528,6 +530,7 @@ final class Route
         'gateway_fetch_downtimes'                  => ['get',      'gateway/downtimes',                              'GatewayController@getGatewayDowntimes'                             ],
         'gateway_create_downtime'                  => ['post',     'gateway/downtimes',                              'GatewayController@postGatewayDowntime'                             ],
         'gateway_update_downtime'                  => ['put',      'gateway/downtimes/{id}',                         'GatewayController@putGatewayDowntime'                              ],
+        'gateway_downtime_vajra_webhook'           => ['post',     'gateway/downtimes/webhook/vajra',                'GatewayController@postGatewayDowntimeVajraWebhook'                 ],
         'gateway_downtime_source_webhook'          => ['post',     'gateway/downtimes/{source}/webhook',             'GatewayController@postGatewayDowntimeWebhook'                      ],
         'gateway_create_rule'                      => ['post',     'gateway/rules',                                  'GatewayController@createGatewayRule'                               ],
         'gateway_update_rule'                      => ['patch',    'gateway/rules/{id}',                             'GatewayController@updateGatewayRule'                               ],
@@ -620,6 +623,7 @@ final class Route
         'group_edit'                               => ['put',      'groups/{id}',                                    'OrganizationController@putGroup'                                   ],
         'group_delete'                             => ['delete',   'groups/{id}',                                    'OrganizationController@deleteGroup'                                ],
         'admin_lock_old_accounts'                  => ['post',     'admins/lock_accounts',                           'OrganizationController@postLockBulkAccounts'                       ],
+        'terminal_bank_bulk'                       => ['put',      'terminals/banks/bulk',                           'TerminalController@updateTerminalsBank'                            ],
 
         // Permission can only be created by certain organizations.
         'permission_create'                        => ['post',     'permissions',                                    'OrganizationController@createPermission'                           ],
@@ -1319,6 +1323,7 @@ final class Route
         'setl_notify_h2h',
         'entity_balance_id_update',
         'merchant_es_sync_cron',
+        'gateway_downtime_vajra_webhook'
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1676,8 +1681,10 @@ final class Route
         'dummy_route',
         'emi_plan_delete',
         'emi_plan_fetch_by_id',
-        'es_aliases_post',
         'es_debug_get',
+        'es_aliases_post',
+        'es_index_create',
+        'es_index',
         'feature_add',
         'feature_bulk_assign',
         'feature_bulk_remove',
@@ -1842,6 +1849,9 @@ final class Route
         'merchant_schedule_bulk',
         'merchant_pricing_bulk',
         'merchant_balance_bulk_backfill_ids',
+
+        //Bulk Add/Remove bank for terminal
+        'terminal_bank_bulk'
     ];
 
     public static $routePermission = [
@@ -2049,8 +2059,10 @@ final class Route
         'dispute_migrate_adjustments'              => '*',
         'dummy_route'                              => '*',
         'emi_plan_fetch_by_id'                     => '*',
-        'es_aliases_post'                          => '*',
         'es_debug_get'                             => '*',
+        'es_aliases_post'                          => Permission::ES_WRITE_OPERATION,
+        'es_index_create'                          => Permission::ES_WRITE_OPERATION,
+        'es_index'                                 => Permission::ES_WRITE_OPERATION,
         'feature_add'                              => '*',
         'feature_bulk_assign'                      => '*',
         'feature_bulk_remove'                      => '*',
@@ -2082,6 +2094,7 @@ final class Route
         'merchant_edit_free_credits'               => '*',
         'merchant_fetch_multiple'                  => '*',
         'merchant_fetch_webhooks'                  => '*',
+        'webhook_edit'                             => '*',
         'merchant_generate_test_bank_acnt'         => '*',
         'merchant_send_activation_mail'            => '*',
         'merchants_update_bank_account'            => '*',
@@ -2211,6 +2224,7 @@ final class Route
         'virtual_account_create'                   => Permission::CREATE_VIRTUAL_ACCOUNTS,
         'entity_balance_id_update'                 => '*',
         'merchant_balance_bulk_backfill_ids'       => '*',
+        'terminal_bank_bulk'                       => Permission::EDIT_TERMINAL,
     ];
 
     public static $direct = [
@@ -2475,6 +2489,10 @@ final class Route
 
         'reporting' => [
             'merchant_associated_accounts_fetch',
+        ],
+
+        'vajra' => [
+            'gateway_downtime_vajra_webhook',
         ],
     ];
 

@@ -758,11 +758,7 @@ class Service extends Base\Service
 
         $iinEntity = $this->repo->iin->find($input['iin']);
 
-        $flows = $merchant->getPaymentFlows($iinEntity);
-
-        $data = $flows;
-
-        $data['flows'] = $data;
+        $data = $merchant->getPaymentFlows($iinEntity);
 
         if (isset($input['order_id']) === true)
         {
