@@ -1503,16 +1503,16 @@ class Gateway extends Base\Gateway
 
     protected function getPurchaseRequestArrayWithCard(array $input)
     {
-        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_STORE_ID] = $this->getStoreId();
+        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE] = [
+            ApiRequestFields::V1_STORE_ID => $this->getStoreId(),
+            ApiRequestFields::V1_TYPE => TxnType::SALE,
+        ];
 
-        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE] = TxnType::SALE;
-
-        $body[ApiRequestFields::V1_CREDIT_CARD_DATA]
-            [ApiRequestFields::V1_CARD_NUMBER] = $input['card']['number'];
-        $body[ApiRequestFields::V1_CREDIT_CARD_DATA]
-            [ApiRequestFields::V1_EXPIRY_MONTH] = $input['card']['expiry_month'];
-        $body[ApiRequestFields::V1_CREDIT_CARD_DATA]
-            [ApiRequestFields::V1_EXPIRY_YEAR]= $input['card']['expiry_year'];
+        $body[ApiRequestFields::V1_CREDIT_CARD_DATA] = [
+            ApiRequestFields::V1_CARD_NUMBER => $input['card']['number'],
+            ApiRequestFields::V1_EXPIRY_MONTH => $input['card']['expiry_month'],
+            ApiRequestFields::V1_EXPIRY_YEAR => $input['card']['expiry_year'],
+        ];
 
         $body[ApiRequestFields::V1_RECURRING_TYPE] = Codes::STANDING_INSTRUCTION;
 
@@ -1520,10 +1520,10 @@ class Gateway extends Base\Gateway
         $currencyCode = Currency::ISO_NUMERIC_CODES[$currency];
         $amountEntity = TxnType::$amountEntity[TxnType::SALE];
 
-        $body[ApiRequestFields::V1_PAYMENT]
-            [ApiRequestFields::V1_CHARGE_TOTAL] = $this->getFormattedAmount($input, $amountEntity);
-
-        $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CURRENCY] = $currencyCode;
+        $body[ApiRequestFields::V1_PAYMENT] = [
+            ApiRequestFields::V1_CHARGE_TOTAL => $this->getFormattedAmount($input, $amountEntity),
+            ApiRequestFields::V1_CURRENCY => $currencyCode,
+        ];
 
         // Sending merchant_txn_id is not strictly necessary. We use the order id
         // for refund and verification of purchase/sale payments, so a separate
