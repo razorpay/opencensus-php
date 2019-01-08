@@ -4612,6 +4612,11 @@ ALTER TABLE hitachi
     MODIFY COLUMN created_at INT(11) NOT NULL,
     MODIFY COLUMN updated_at INT(11) NOT NULL;
 
+ALTER TABLE merchant_access_map
+    ADD COLUMN entity_owner_id CHAR(14) DEFAULT NULL AFTER entity_type,
+    ADD INDEX merchant_access_map_entity_owner_id_index (entity_owner_id);
+
 ALTER TABLE fund_transfer_attempts
     ADD INDEX fund_transfer_attempts_vpa_id_index (vpa_id),
     ADD INDEX fund_transfer_attempts_bank_account_id_index (bank_account_id);
+
