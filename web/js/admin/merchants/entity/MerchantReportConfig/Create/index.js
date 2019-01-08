@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import { observer } from 'mobx-react';
 
-import { adminFetch, adminPost } from 'common/fetch';
+import { adminFetch, adminPost, adminPatch } from 'common/fetch';
 import { closeModal, notifySuccess, notifyError } from 'common/modal';
 import { isBlank } from 'rzp/utils/rzp-utils';
 
@@ -32,7 +32,10 @@ export default class CreateMerchantReportConfig extends Component {
     super();
     this.state = {
       ...this.state,
-      values: props.values || {},
+      values: {
+        ...props.values,
+        emails: (props.values.emails || []).join(','),
+      },
     };
   }
 
@@ -69,6 +72,8 @@ export default class CreateMerchantReportConfig extends Component {
   }
 
   handleSubmitClick = () => {
+    const { configId } = this.props;
+    const submitMethod = !!configId ? adminPatch : adminPost;
     const data = { ...this.state.values };
     const template = this.configDetails ? this.configDetails.getValue() : {};
 
@@ -96,8 +101,9 @@ export default class CreateMerchantReportConfig extends Component {
       return;
     }
 
-    return adminPost({
-      url: `live_${this.props.merchantId}/reporting/configs`,
+    const url = `live_${this.props.merchantId}/reporting/configs`;
+    return submitMethod({
+      url: configId ? `${url}/${configId}` : url,
       headers: {
         'Content-Type': 'application/json',
       },
