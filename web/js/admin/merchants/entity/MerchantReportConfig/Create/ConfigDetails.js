@@ -3,14 +3,25 @@ import { Component } from 'react';
 import { snakeToTitleCase, classList } from 'common/util';
 import { openModal, closeModal, notifyError } from 'common/modal';
 import { ModalContent } from 'component/Modal';
+import { isPresent } from 'rzp/utils/rzp-utils';
 
 import AddCustomNote from './AddCustomNote';
 import AddConstantField from './AddConstantField';
 
 export default class ConfigDetails extends Component {
-  state = {
-    selectedColumns: {},
-  };
+  constructor(props) {
+    super();
+    this.state = {
+      selectedColumns: Object.keys(props.fieldsMap).reduce(
+        (allColumns, column) => ({
+          ...allColumns,
+          [column]: true,
+        }),
+        {}
+      ),
+    };
+    this.fieldsWithNotes = haveNotesField(props.fields);
+  }
 
   handleColumCheckChange = ({ target }) => {
     const { name, checked } = target;
@@ -64,15 +75,18 @@ export default class ConfigDetails extends Component {
               />
             ))}
 
-            <ReportColumns
-              selectedColumns={Object.keys(selectedColumns).filter(
-                column => selectedColumns[column]
-              )}
-              fieldsWithNotes={this.fieldsWithNotes}
-              toggleField={this.toggleField}
-              filters={props.filters}
-              ref={ref => (this.reportColumns = ref)}
-            />
+            {isPresent(props.fields) && (
+              <ReportColumns
+                selectedColumns={Object.keys(selectedColumns).filter(
+                  column => selectedColumns[column]
+                )}
+                fieldsMap={this.props.fieldsMap}
+                fieldsWithNotes={this.fieldsWithNotes}
+                toggleField={this.toggleField}
+                filters={props.filters}
+                ref={ref => (this.reportColumns = ref)}
+              />
+            )}
           </>
         ) : (
           <div class="text-center">
@@ -95,16 +109,16 @@ class ReportColumns extends Component {
   references = {};
 
   constructor(props) {
-    super();
+    super(props);
     this.state = {
       ...this.state,
-      ...this.getInitialState(props.selectedColumns),
+      ...this.getInitialState(props.selectedColumns, 'props'),
     };
   }
 
   componentWillReceiveProps(nextProps) {
     this.setState({
-      ...this.getInitialState(nextProps.selectedColumns),
+      ...this.getInitialState(nextProps.selectedColumns, 'state'),
     });
   }
 
@@ -329,16 +343,22 @@ class ReportColumns extends Component {
     );
   }
 
-  getInitialState = (selectedColumns = []) => {
+  getInitialState = (selectedColumns = [], checkAgainstField) => {
     const fieldsMap = {};
     const outputFields = [];
+
+    const original = this[checkAgainstField];
+
     selectedColumns.forEach(selectedCol => {
       outputFields.push(selectedCol);
-      if (this.state.outputFields.indexOf(selectedCol) < 0) {
+      if (
+        checkAgainstField === 'state' &&
+        this.state.outputFields.indexOf(selectedCol) < 0
+      ) {
         fieldsMap[selectedCol] = selectedCol;
       } else {
         // retaining state for existing items
-        fieldsMap[selectedCol] = this.state.fieldsMap[selectedCol];
+        fieldsMap[selectedCol] = original.fieldsMap[selectedCol];
       }
     });
 
