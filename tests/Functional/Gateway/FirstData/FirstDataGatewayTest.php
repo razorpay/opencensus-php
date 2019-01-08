@@ -101,6 +101,8 @@ class FirstDataGatewayTest extends TestCase
 
         $firstDataEntity = $this->getLastEntity('first_data', true);
         $this->assertEquals($paymentId, $firstDataEntity['payment_id']);
+        $this->assertNull($firstDataEntity['approval_code']);
+        $this->assertNull($firstDataEntity['status']);
 
         // Another payment to test auto-refund
         $response = $this->doS2sRecurringPayment($payment);
