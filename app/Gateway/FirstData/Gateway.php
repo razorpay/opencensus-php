@@ -1511,7 +1511,7 @@ class Gateway extends Base\Gateway
         $body[ApiRequestFields::V1_CREDIT_CARD_DATA] = [
             ApiRequestFields::V1_CARD_NUMBER => $input['card']['number'],
             ApiRequestFields::V1_EXPIRY_MONTH => $input['card']['expiry_month'],
-            ApiRequestFields::V1_EXPIRY_YEAR => $input['card']['expiry_year'],
+            ApiRequestFields::V1_EXPIRY_YEAR => substr($input['card']['expiry_year'],-2),
         ];
 
         $body[ApiRequestFields::V1_RECURRING_TYPE] = Codes::STANDING_INSTRUCTION;
