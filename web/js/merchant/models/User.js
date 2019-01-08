@@ -240,6 +240,10 @@ export default class User {
       : !!this.partner_type;
   }
 
+  getExpStatus(name) {
+    return ((this.experiments || {})[name] || {}).result === 'on';
+  }
+
   get showEarlySettlementAnnouncement() {
     return (
       this.activated &&
