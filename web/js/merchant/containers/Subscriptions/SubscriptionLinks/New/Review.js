@@ -73,7 +73,10 @@ export default function NewSubscriptionLinkReview({ fields, ...props }) {
               />
             </p>
             <div>
-              <EntityDetailRow label="No. of cycles" value={planQuantity} />
+              <EntityDetailRow
+                label="No. of cycles"
+                value={fields.total_count}
+              />
             </div>
           </div>
         </div>
