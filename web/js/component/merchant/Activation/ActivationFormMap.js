@@ -190,6 +190,7 @@ const businessModel = [
     name: 'business_international',
     _cmp: Input.Check,
     required: false,
+    className: 'Input-International-Payments',
     description:
       'Approval for international payments takes extra time to process. We will reach out to you as we may require some additional information.',
     _when: excludeFor_Indiv,
@@ -199,7 +200,7 @@ const businessModel = [
       label: 'Website/App URL',
       _cmp: Input.Radio,
       _name: 'has_url',
-      className: 'Input--vTop',
+      className: 'Input--vTop Input--Website',
       options: [
         'Website/App',
         {
@@ -222,6 +223,7 @@ const businessModel = [
       name: 'business_website',
       placeholder: 'Enter URL',
       type: 'url',
+      className: 'Input--Website-Url',
       validator: value => {
         if (!isUrlLenient(value)) {
           return 'Please enter a valid url';
