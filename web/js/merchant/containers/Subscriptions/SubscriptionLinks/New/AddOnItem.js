@@ -30,7 +30,7 @@ export default class AddOnItem extends Component {
   render() {
     const props = this.props;
     return (
-      <>
+      <div class="Addon--Item">
         <TypeAhead
           name={`${props.name}.item`}
           options={props.items}
@@ -55,7 +55,7 @@ export default class AddOnItem extends Component {
             rate={props.selectedItem.item.amount}
           />
         )}
-      </>
+      </div>
     );
   }
 }

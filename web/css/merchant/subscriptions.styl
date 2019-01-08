@@ -43,6 +43,14 @@
 .Subscription
   &--New
     &-addons
+      .Addon--Item
+        display: inline-block
+        width: 70%
+
+      .remove-btn
+        float: right
+        cursor: pointer
+
       .list
         li
           padding: 20px 0 20px 30px
@@ -83,6 +91,8 @@
             z-index: 2
     &-quant-select
       .Input
+        display: inline-block
+        margin-right: 10px
         .Input-label
           width: auto
           &:after
