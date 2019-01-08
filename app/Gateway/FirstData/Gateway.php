@@ -1517,7 +1517,9 @@ class Gateway extends Base\Gateway
         $body[ApiRequestFields::V1_RECURRING_TYPE] = Codes::STANDING_INSTRUCTION;
 
         $currency = $input['payment'][Payment\Entity::CURRENCY];
+
         $currencyCode = Currency::ISO_NUMERIC_CODES[$currency];
+
         $amountEntity = TxnType::$amountEntity[TxnType::SALE];
 
         $body[ApiRequestFields::V1_PAYMENT] = [
