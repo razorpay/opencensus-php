@@ -278,7 +278,22 @@ const ActionsList = ({ model, merchantId, actions }) => {
       action = 'suspend';
     }
 
-    return merchantAction(action, successMsg);
+    return fetch({
+      url: `/admin/merchant/${merchantId}/action`,
+      method: 'put',
+      data: {
+        action,
+      },
+    })
+      .then(response => {
+        if (response) {
+          notifySuccess(successMsg);
+          model.updateDetails(response);
+        }
+      })
+      .catch(err => {
+        notifyError(JSON.stringify(err.response));
+      });
   }
 
   // Archive / Unarchive merchant
