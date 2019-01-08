@@ -26,7 +26,7 @@ export default function NewSubscriptionLinkReview({ fields, ...props }) {
         <h4>Plan</h4>
         <p>{selectedPlan.item.name}</p>
         <p>
-          {intervalCycle}&nbsp; the customer will be charged&nbsp;
+          {intervalCycle} the customer will be charged{' '}
           <Amount
             value={selectedPlan.item.amount}
             currency={selectedPlan.item.currency}
