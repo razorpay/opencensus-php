@@ -131,6 +131,8 @@ export default class CreateMerchantReportConfig extends Component {
 
   getConfigComponents = field => {
     fetchConfigComponents(field).then(data => {
+      data.availableFilters = data.filters;
+      delete data.filters;
       this.setState({ configComponents: { loading: false, data } });
     });
   };
@@ -195,6 +197,7 @@ export default class CreateMerchantReportConfig extends Component {
                 fieldsMap={getInternalFielsMap(
                   this.props.values.template.fields_map
                 )}
+                filters={this.props.values.template.filters}
               />
               <AsyncButton
                 text="Create"
@@ -255,7 +258,7 @@ function fetchConfigComponents(field) {
   );
 }
 
-function dotToString(path, value, obj) {
+export function dotToString(path, value, obj) {
   const parts = path.split('.');
   const last = parts.pop();
   while ((part = parts.shift())) {
