@@ -57,7 +57,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
             border-right: 1px solid #ccc;
             background: #fafafa;
             padding: 10px 20px;
-            white-space: nowrap;
+            /*white-space: nowrap;*/
         }
 
         .cardtype::before {
@@ -215,7 +215,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         </tr>
         <tr>
             <td colspan="40">Razorpay Key:</td>
-            <td>
+            <td colspan="2">
                 <input type="text" value="<?=$key_id?>" name="key_id">
             </td>
         </tr>
@@ -227,7 +227,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         </tr>
         <tr>
             <td colspan="40">Card No:</td>
-            <td>
+            <td colspan="2">
                 <input id="card_number" type="text" name="card[number]" value="6074819900004939" size="25">
                 <div class="cardtype" id="cardtype" cardtype=""></div>
             </td>
@@ -240,12 +240,13 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
             <td colspan ='40'>Exp Date:</td>
             <td><input type="text" name="card[expiry_month]" value="11"></td>
             <td><input type="text" name="card[expiry_year]" value="2020"></td>
+        </tr>
         <tr>
             <td colspan='40'>Amount:</td>
             <td><input type="text" name="amount" size="25" value="100"></td>
             <td>
                 <select name="currency">
-                    <option value="INR">Indian Rupee</option>
+                    <option value="INR">INR</option>
                     <option value="USD">US Dollar</option>
                     <option value="EUR">Euro</option>
                     <option value="SGD">Singapore Dollar</option>
