@@ -5,6 +5,7 @@ import SubscriptionsListFilter from 'merchant/components/Subscriptions/ListFilte
 import DataTable from 'rzp/ui/Table/DataTable';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import CopyLink from 'merchant/components/Invoices/CopyLink';
+import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchSubscriptions as fetchAll } from 'merchant/modules/subscriptions';
 import {
@@ -54,14 +55,16 @@ export default class SubscriptionsListContainer extends ListContainer {
 
     return (
       <div class="content-wrapper">
-        <HeaderAction>
-          <div class="btn-toolbar pull-right">
-            <NavLink class="btn btn-primary" to="/subscriptions/new">
-              <i class="i i-plus" />
-              <span>Create New Subscription</span>
-            </NavLink>
-          </div>
-        </HeaderAction>
+        <ShowWhen additionalCondition={user => user.isSubLinkEnabled}>
+          <HeaderAction>
+            <div class="btn-toolbar pull-right">
+              <NavLink class="btn btn-primary" to="/subscriptions/new">
+                <i class="i i-plus" />
+                <span>Create New Subscription</span>
+              </NavLink>
+            </div>
+          </HeaderAction>
+        </ShowWhen>
         <SubscriptionsListFilter
           form="subscriptionsListFilter"
           count={this.state.count}
@@ -75,7 +78,11 @@ export default class SubscriptionsListContainer extends ListContainer {
           columns={[
             subscriptionId,
             planId,
-            link,
+            ...(showWhenUtil({
+              additionalCondition: user => user.isSubLinkEnabled,
+            })
+              ? link
+              : []),
             customerId,
             nextDueOn,
             createdAt,

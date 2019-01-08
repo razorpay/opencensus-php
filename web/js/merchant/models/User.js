@@ -267,6 +267,10 @@ export default class User {
   get isDiwaliPromoEnabled() {
     return this.findTag('diwali_promotional_plan');
   }
+
+  get isSubLinkEnabled() {
+    return this.getExpStatus('subscription_link');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {
