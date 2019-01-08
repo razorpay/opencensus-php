@@ -28,7 +28,7 @@ export default function NewSubscriptionLinkPlanDetails({
 
   return (
     <>
-      <div class="Input Input--large Input--required">
+      <div class="Input Input--required">
         <Label text="Select Plan" />
         <div className="Input-content">
           <div className="Input-elWrapper">

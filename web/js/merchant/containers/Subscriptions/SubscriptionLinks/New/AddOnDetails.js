@@ -21,7 +21,7 @@ export default function NewSubscriptionLinkAddOnDetails({
       />
       <ol class="list">
         {addons.map((addon, index) => (
-          <li key={index}>
+          <li key={`${index}-${Math.random()}`}>
             <AddOnItem
               key={index}
               name={`addons.${index}`}
@@ -30,6 +30,9 @@ export default function NewSubscriptionLinkAddOnDetails({
               onSelectItem={props.onSelectItem(index)}
               selectedItem={addon}
             />
+            <span class="remove-btn" onClick={props.removeAddOn(index)}>
+              <i class="i i-close" />
+            </span>
           </li>
         ))}
         {isPresent(addons) &&

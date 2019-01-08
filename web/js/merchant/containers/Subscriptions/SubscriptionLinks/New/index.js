@@ -185,6 +185,24 @@ export default class NewSubscriptionLink extends Component {
       });
   };
 
+  handleRemoveBtn = addonIndex => () => {
+    const addons = this.state.fields.addons.filter(
+      (_, index) => addonIndex !== index
+    );
+
+    const fields = {
+      ...this.state.fields,
+      addons,
+    };
+
+    const internals = {
+      ...this.state.internals,
+      _addOnPresent: isPresent(addons),
+    };
+
+    this.setState({ fields, internals });
+  };
+
   changeTab = step => () => {
     const currentTab = this.state.currentTab + step;
 
@@ -220,6 +238,7 @@ export default class NewSubscriptionLink extends Component {
             onAddAddon={this.handleAddaddon}
             fields={this.state.fields}
             internals={this.state.internals}
+            removeAddOn={this.handleRemoveBtn}
           />
         );
       case 2:
@@ -262,7 +281,6 @@ export default class NewSubscriptionLink extends Component {
             class="PaymentLinks--Create--Form"
             layout="tabular"
             onChange={this.handleChangeIn}
-            onSubmit={() => {}}
           >
             {this.renderForm()}
           </Form>
