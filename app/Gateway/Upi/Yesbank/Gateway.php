@@ -5,6 +5,7 @@ namespace RZP\Gateway\Upi\Yesbank;
 use Request;
 use Carbon\Carbon;
 
+use RZP\Base\JitValidator;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
@@ -102,42 +103,50 @@ class Gateway extends Mindgate\Gateway
 
         try
         {
-            $this->checkPayoutRequest($input);
+            $this->validateRequest($input, $this->action);
 
-            $gatewayEntity = $this->repo->fetchByMerchantReferenceAndReceiveFlag(
-                $this->input[Fields::GATEWAY_INPUT][Fields::REF_ID]);
+            $merchantReference = $this->input[Fields::GATEWAY_INPUT][Fields::REF_ID];
+
+            $gatewayEntity = $this->repo->fetchReceivedByMerchantReference($merchantReference);
 
             if ($gatewayEntity !== null)
             {
                 // a payout with this ref_id already exists
                 $this->trace->error(
                     TraceCode::DUPLICATE_PAYOUT_REQUEST,
-                    $input
-                );
+                    [
+                        'reference_id'  => $merchantReference,
+                        'input'         => $input,
+                    ]);
 
-                return $this->getFailedResponse($gatewayEntity, 'RZP_DUPLICATE_PAYOUT');
+                return $this->generateResponseForRazorpayFailure($gatewayEntity, 'RZP_DUPLICATE_PAYOUT', $input);
             }
-
-            $request = $this->getPayoutRequest($input);
 
             $attributes = $this->getGatewayEntityAttributes($input);
 
             $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
 
-            $decryptedContent = implode('|', $request);
+            $request = $this->getPayoutRequest($input);
 
-            $encrypted = $this->encryptRequest($decryptedContent);
+            $content = implode('|', $request);
 
-            $content = [
+            $encryptedContent = $this->encryptRequest($content);
+
+            $requestContent = [
                 Fields::PGMERCHANTID => $this->getGatewayMerchantId($input),
-                Fields::REQUESTMSG   => $encrypted,
+                Fields::REQUESTMSG   => $encryptedContent,
             ];
 
-            $traceRequest = $request = $this->getStandardRequestArray($content);
+            $request = $this->getStandardRequestArray($requestContent);
 
-            $traceRequest['decryptedContent'] = $decryptedContent;
-
-            $this->traceGatewayPaymentRequest($traceRequest, $input, TraceCode::VPA_PAYOUT_REQUEST);
+            $this->traceGatewayPaymentRequest(
+                [
+                    'request'           => $request,
+                    'decrypted_content' => $content
+                ],
+                $input,
+                TraceCode::VPA_PAYOUT_REQUEST
+            );
 
             $response = $this->sendGatewayRequest($request);
 
@@ -145,40 +154,56 @@ class Gateway extends Mindgate\Gateway
 
             $responseArray[Entity::RECEIVED] = 1;
 
+            $responseArray[Fields::STATUSCODE] = Status::getStatusCodeFromMap($responseArray[Fields::STATUSCODE]);
+
             $this->updateGatewayPaymentEntity($gatewayPayment, $responseArray);
 
-            $gatewayResponse = $this->generateResponse($responseArray, $gatewayPayment);
+            $formattedResponse = $this->generateResponse($responseArray, $gatewayPayment);
         }
         catch (Exception\GatewayTimeoutException $e)
         {
-            $gatewayResponse = $this->getResponse($input, 'RZP_PAYOUT_TIMED_OUT');
-        }
-        catch (\Throwable $e)
-        {
             $this->trace->traceException($e);
 
-            $errorCode = $e->getCode();
+            $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment, 'RZP_PAYOUT_TIMED_OUT', $input);
+        }
+        catch (Exception\GatewayRequestException $ee)
+        {
+            $this->trace->traceException($ee);
+
+            $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment, 'RZP_PAYOUT_REQUEST_FAILURE', $input);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex);
+
+            $errorCode = $ex->getCode();
+
+            $gatewayPayment = $gatewayPayment ?? null;
 
             switch ($errorCode)
             {
-                case ErrorCode::BAD_REQUEST_ERROR:
-                    $gatewayResponse = $this->getResponse($input, 'RZP_FTA_REQUEST_INVALID');
+                case ErrorCode::BAD_REQUEST_VALIDATION_FAILURE:
+                    $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
+                                                                                   'RZP_FTA_REQUEST_INVALID', $input);
                     break;
 
                 case ErrorCode::GATEWAY_ERROR_ENCRYPTION_ERROR:
-                    $gatewayResponse = $this->getResponse($input, 'RZP_REQUEST_ENCRYPTION_FAILURE');
+                    $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
+                                                                                   'RZP_REQUEST_ENCRYPTION_FAILURE', $input);
                     break;
 
                 case ErrorCode::GATEWAY_ERROR_DECRYPTION_FAILED:
-                    $gatewayResponse = $this->getResponse($input, 'RZP_REQUEST_DECRYPTION_FAILED');
+                    $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
+                                                                                   'RZP_REQUEST_DECRYPTION_FAILED', $input);
                     break;
 
                 default:
-                    $gatewayResponse = $this->getResponse($input, 'RZP_PAYOUT_UNKNOWN_ERROR');
+                    $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
+                                                                                   'RZP_PAYOUT_UNKNOWN_ERROR', $input);
             }
         }
 
-        return $gatewayResponse;
+        return $formattedResponse;
     }
 
     public function payoutVerify(array $input)
@@ -187,33 +212,39 @@ class Gateway extends Mindgate\Gateway
 
         try
         {
-            $this->checkPayoutVerifyRequest($input);
+            $this->validateRequest($input, $this->action);
 
-            $gatewayEntity = $this->repo->fetchByMerchantReference($this->input[Fields::GATEWAY_INPUT][Fields::REF_ID]);
+            $gatewayPayment = $this->repo->fetchByMerchantReference($this->input[Fields::GATEWAY_INPUT][Fields::REF_ID]);
 
-            $request = $this->getPayoutVerifyRequest($input, $gatewayEntity);
+            $request = $this->getPayoutVerifyRequest($input, $gatewayPayment);
 
-            $decryptedContent = implode('|', $request);
+            $content = implode('|', $request);
 
-            $encrypted = $this->encryptRequest($decryptedContent);
+            $encryptedContent = $this->encryptRequest($content);
 
-            $content = [
+            $requestContent = [
                 Fields::PGMERCHANTID => $this->getGatewayMerchantId($input),
-                Fields::REQUESTMSG   => $encrypted,
+                Fields::REQUESTMSG   => $encryptedContent,
             ];
 
-            $traceRequest = $request = $this->getStandardRequestArray($content);
+            $request = $this->getStandardRequestArray($requestContent);
 
-            $traceRequest['decryptedContent'] = $decryptedContent;
-
-            $this->traceGatewayPaymentRequest($traceRequest, $input, TraceCode::VPA_PAYOUT_VERIFY_REQUEST);
+            $this->traceGatewayPaymentRequest(
+                [
+                    'request'           => $request,
+                    'decrypted_content' => $content
+                ],
+                $input,
+                TraceCode::VPA_PAYOUT_VERIFY_REQUEST
+            );
 
             $response = $this->sendGatewayRequest($request);
 
-            $responseArray = $this->parseGatewayResponse($response->body, Action::PAYOUT_VERIFY);
+            $responseArray = $this->parseGatewayResponse($response->body,
+                                                         Action::PAYOUT_VERIFY,
+                                                         TraceCode::VPA_PAYOUT_VERIFY_GATEWAY_RESPONSE);
 
-            $expectedAmount = number_format($gatewayEntity[Entity::AMOUNT] / 100, 2,
-                '.', '');
+            $expectedAmount = number_format($gatewayPayment[Entity::AMOUNT] / 100, 2, '.', '');
 
             $actualAmount = number_format($responseArray[Fields::AMOUNT], 2, '.', '');
 
@@ -224,76 +255,83 @@ class Gateway extends Mindgate\Gateway
                     [
                         'input'    => $input,
                         'response' => $responseArray,
-                    ]
-                );
+                    ]);
 
-                return $this->getFailedResponse($gatewayEntity, 'RZP_AMOUNT_MISMATCH');
+                return $this->generateResponseForRazorpayFailure($gatewayPayment, 'RZP_AMOUNT_MISMATCH', $input);
             }
 
-            if ($responseArray[Fields::ORDERNO] !== $gatewayEntity[Entity::MERCHANT_REFERENCE])
+            if ($responseArray[Fields::ORDERNO] !== $gatewayPayment[Entity::MERCHANT_REFERENCE])
             {
                 $this->trace->error(
                     TraceCode::GATEWAY_FATAL_ERROR,
                     [
                         'input'    => $input,
                         'response' => $responseArray,
-                    ]
-                );
+                    ]);
 
-                return $this->getFailedResponse($gatewayEntity, 'RZP_REF_ID_MISMATCH');
+                return $this->generateResponseForRazorpayFailure($gatewayPayment, 'RZP_REF_ID_MISMATCH', $input);
             }
 
-            $this->updateGatewayPaymentEntity($gatewayEntity, $responseArray);
+            $responseArray[Fields::STATUSCODE] = Status::getStatusCodeFromMap($responseArray[Fields::STATUSCODE]);
 
-            $gatewayResponse = $this->generateResponse($responseArray, $gatewayEntity);
+            $this->updateGatewayPaymentEntity($gatewayPayment, $responseArray);
+
+            $formattedResponse = $this->generateResponse($responseArray, $gatewayPayment);
         }
         catch (Exception\GatewayTimeoutException $e)
         {
-            $gatewayResponse = $this->getResponse($input, 'RZP_PAYOUT_VERIFY_TIMED_OUT');
-        }
-        catch (\Throwable $e)
-        {
             $this->trace->traceException($e);
 
-            $code = $e->getCode();
+            $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
+                                                                           'RZP_PAYOUT_VERIFY_TIMED_OUT',
+                                                                           $input,
+                                                                           Status::TIMEOUT);
+        }
+        catch (Exception\GatewayRequestException $ee)
+        {
+            $this->trace->traceException($ee);
+
+            $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
+                                                                           'RZP_PAYOUT_VERIFY_REQUEST_FAILURE',
+                                                                           $input,
+                                                                           Status::TIMEOUT);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex);
+
+            $code = $ex->getCode();
+
+            $gatewayPayment = $gatewayPayment ?? null;
 
             switch ($code)
             {
-                case ErrorCode::BAD_REQUEST_ERROR:
-                    $gatewayResponse = $this->getResponse($input, 'RZP_FTA_REQUEST_INVALID');
+                case ErrorCode::BAD_REQUEST_VALIDATION_FAILURE:
+                    $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
+                                                                                   'RZP_FTA_REQUEST_INVALID',
+                                                                                   $input);
                     break;
 
                 case ErrorCode::GATEWAY_ERROR_ENCRYPTION_ERROR:
-                    $gatewayResponse = $this->getResponse($input,
-                        'RZP_REQUEST_ENCRYPTION_FAILURE');
+                    $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
+                                                                                   'RZP_REQUEST_ENCRYPTION_FAILURE',
+                                                                                   $input);
                     break;
 
                 case ErrorCode::GATEWAY_ERROR_DECRYPTION_FAILED:
-                    $gatewayResponse = $this->getResponse($input,
-                        'RZP_REQUEST_DECRYPTION_FAILED');
+                    $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
+                                                                                   'RZP_REQUEST_DECRYPTION_FAILED',
+                                                                                   $input);
                     break;
 
                 default:
-                    $gatewayResponse = $this->getResponse($input, 'RZP_PAYOUT_UNKNOWN_ERROR');
+                    $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
+                                                                                   'RZP_PAYOUT_UNKNOWN_ERROR',
+                                                                                   $input);
             }
         }
 
-        return $gatewayResponse;
-    }
-
-    protected function getGatewayEntityAttributes(
-        array $input,
-        string $action = Action::AUTHORIZE,
-        string $type = Type::PAY): array
-    {
-        return [
-            Entity::VPA                 => $input[Fields::GATEWAY_INPUT][Entity::VPA],
-            Entity::TYPE                => $type,
-            Entity::ACTION              => $action,
-            Entity::MERCHANT_REFERENCE  => $input[Fields::GATEWAY_INPUT][Fields::REF_ID],
-            Entity::AMOUNT              => $input[Fields::GATEWAY_INPUT][Entity::AMOUNT],
-            Entity::PAYMENT_ID          => $input[Fields::GATEWAY_INPUT][Fields::REF_ID],
-        ];
+        return $formattedResponse;
     }
 
     protected function getPayoutRequest(array $input)
@@ -340,144 +378,6 @@ class Gateway extends Mindgate\Gateway
         return $content;
     }
 
-    protected function getGatewayMerchantId(array $input)
-    {
-        if ($this->mode === Mode::TEST)
-        {
-            return $this->config['test_merchant_id'];
-        }
-
-        return $input['terminal']['gateway_merchant_id'];
-    }
-
-    /**
-     * Returns the MCC code, based on the merchant category
-     * @param  array  $input
-     * @return string 4 digit integer as string.
-     */
-    protected function getMerchantCategoryCode(array $input)
-    {
-        if ($this->mode === Mode::TEST)
-        {
-            return $this->config['test_mcc'];
-        }
-
-        return $input['merchant']['category'];
-    }
-
-    /**
-     * This is the key used to encrypt requests
-     * @return string public key
-     */
-    protected function getEncryptionKey()
-    {
-        if ($this->mode === Mode::TEST)
-        {
-            return $this->config['test_merchant_key'];
-        }
-
-        return $this->config['live_merchant_key'];
-    }
-
-    protected function traceGatewayPaymentRequest(
-        array $request,
-        $input,
-        $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
-    {
-        $this->trace->info(
-            $traceCode,
-            [
-                'payment_id' => $input[Fields::GATEWAY_INPUT][Fields::REF_ID],
-                'request'    => $request,
-                'gateway'    => $this->gateway,
-            ]);
-    }
-
-    protected function parseGatewayResponse($responseBody, $type = Action::PAYOUT)
-    {
-        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
-            'body'              => $responseBody,
-            'encrypted'         => true,
-            'gateway'           => $this->gateway,
-            'type'              => $type
-        ]);
-
-        $response = $this->decryptResponse($responseBody);
-
-        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [$response]);
-
-        $type = strtoupper($type);
-
-        $fields = constant(__NAMESPACE__ . "\Fields::$type");
-
-        $values = explode('|', $response);
-
-        $result = [];
-
-        foreach ($fields as $index => $key)
-        {
-            $result[$key] = $values[$index];
-        }
-
-        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
-            'body'              => $responseBody,
-            'decrypted'         => $response,
-            'parsed'            => $result,
-            'gateway'           => $this->gateway,
-            'type'              => $type
-        ]);
-
-        return $result;
-    }
-
-    /**
-     * @param array $responseArray
-     * @param       $gatewayEntity
-     * @throws Exception\GatewayErrorException
-     */
-    protected function checkResponseForError(array $responseArray, $gatewayEntity)
-    {
-        switch ($responseArray[Fields::STATUSCODE])
-        {
-            case Status::SUCCESS:
-                break;
-
-            case Status::VERIFY_SUCCESS:
-                break;
-
-            case Status::TIMEOUT:
-                // time out status indicate the actual state of payout, whether it was a success
-                // or a return of payout has been initiated, so we are storing the actual
-                // time out code. later action can be taken on these codes appropriately.
-                $attributes[Fields::STATUSCODE] = $responseArray[Fields::TIMED_OUT_TXN_STATUS];
-
-                $this->updateGatewayPaymentEntity($gatewayEntity, $attributes);
-
-            default:
-                $gatewayErrorCode = $responseArray[Fields::RESPCODE];
-
-                $apiErrorCode = ResponseCodeMap::getApiErrorCode($gatewayErrorCode);
-
-                $gatewayErrorCodeDesc = ResponseCodes::getResponseMessage($gatewayErrorCode);
-
-                if ($gatewayErrorCodeDesc === 'Unknown Gateway Response Code')
-                {
-                    // many times gateway will not be throwing a mapped error code, so sending the description
-                    // in such cases to FTA service, since description will be helpful under such cases
-                    $gatewayErrorCodeDesc = $responseArray[Fields::STATUSDESC];
-                }
-
-                throw new Exception\GatewayErrorException(
-                    $apiErrorCode,
-                    $gatewayErrorCode,
-                    $gatewayErrorCodeDesc,
-                    [
-                        'gateway'  => $this->gateway,
-                        'response' => $responseArray,
-                    ]);
-        }
-    }
-
     protected function getPayoutVerifyRequest($input, $gatewayEntity)
     {
         $request = [
@@ -501,47 +401,14 @@ class Gateway extends Mindgate\Gateway
         return $request;
     }
 
-    protected function getGatewayCertDirName()
+    /**
+     * @param $input
+     * @param $action
+     */
+    protected function validateRequest($input, $action)
     {
-        return $this->config[self::CERTIFICATE_DIRECTORY_NAME];
-    }
-
-    protected function generateResponse($responseArray, $gatewayPayment)
-    {
-        $response = [];
-
-        try
-        {
-            $this->checkResponseForError($responseArray, $gatewayPayment);
-
-            $response = [
-                Fields::SUCCESS                     => true,
-                Fields::ERROR_MESSAGE               => null,
-                Fields::BANK_REFERENCE_NUMBER       => $gatewayPayment[Entity::GATEWAY_PAYMENT_ID],
-                Fields::STATUS_CODE                 => $responseArray[Fields::RESPCODE],
-                Fields::SUB_STATUS_TEXT             => $responseArray[Fields::STATUSDESC],
-                Fields::REQUEST_REFERENCE_NUMBER    => $gatewayPayment[Entity::MERCHANT_REFERENCE],
-                Fields::UNIQUE_RESPONSE_NUMBER      => $gatewayPayment[Entity::NPCI_REFERENCE_ID],
-            ];
-        }
-        catch (\Exception $exception)
-        {
-            $this->trace->traceException($exception);
-
-            $error = $exception->getError()->getAttributes();
-
-            $response = [
-                Fields::SUCCESS                     => false,
-                Fields::ERROR_MESSAGE               => $error['internal_error_code'],
-                Fields::BANK_REFERENCE_NUMBER       => $gatewayPayment[Entity::GATEWAY_PAYMENT_ID],
-                Fields::STATUS_CODE                 => $error['gateway_error_code'],
-                Fields::SUB_STATUS_TEXT             => $error['gateway_error_desc'],
-                Fields::REQUEST_REFERENCE_NUMBER    => $gatewayPayment[Entity::MERCHANT_REFERENCE],
-                Fields::UNIQUE_RESPONSE_NUMBER      => $gatewayPayment[Entity::NPCI_REFERENCE_ID],
-            ];
-        }
-
-        return $response;
+        (new Validator)->setStrictFalse()
+                       ->validateInput($action, $input);
     }
 
     /**
@@ -554,7 +421,7 @@ class Gateway extends Mindgate\Gateway
     {
         try
         {
-           return $this->encrypt($request);
+            return $this->encrypt($request);
         }
         catch (\Exception $e)
         {
@@ -567,76 +434,63 @@ class Gateway extends Mindgate\Gateway
         }
     }
 
-    protected function getFailedResponse($gatewayPayment, $errorCode)
+    protected function getGatewayEntityAttributes(
+        array $input,
+        string $action = Action::AUTHORIZE,
+        string $type = Type::PAY): array
     {
-        $apiErrorCode = ResponseCodeMap::getApiErrorCode($errorCode);
-
-        $gatewayErrorCodeDesc = ResponseCodes::getResponseMessage($errorCode);
-
-        $response = [
-            Fields::SUCCESS                     => false,
-            Fields::ERROR_MESSAGE               => $apiErrorCode,
-            Fields::BANK_REFERENCE_NUMBER       => $gatewayPayment[Entity::GATEWAY_PAYMENT_ID],
-            Fields::STATUS_CODE                 => $errorCode,
-            Fields::SUB_STATUS_TEXT             => $gatewayErrorCodeDesc,
-            Fields::REQUEST_REFERENCE_NUMBER    => $gatewayPayment[Entity::MERCHANT_REFERENCE],
-            Fields::UNIQUE_RESPONSE_NUMBER      => $gatewayPayment[Entity::NPCI_REFERENCE_ID],
+        return [
+            Entity::VPA                 => $input[Fields::GATEWAY_INPUT][Entity::VPA],
+            Entity::TYPE                => $type,
+            Entity::ACTION              => $action,
+            Entity::MERCHANT_REFERENCE  => $input[Fields::GATEWAY_INPUT][Fields::REF_ID],
+            Entity::AMOUNT              => $input[Fields::GATEWAY_INPUT][Entity::AMOUNT],
+            Entity::PAYMENT_ID          => $input[Fields::GATEWAY_INPUT][Fields::REF_ID],
         ];
-
-        return $response;
     }
 
-    protected function getResponse($input, $errorCode)
+    protected function getGatewayMerchantId(array $input)
     {
-        $apiErrorCode = ResponseCodeMap::getApiErrorCode($errorCode);
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config['test_merchant_id'];
+        }
 
-        $gatewayErrorCodeDesc = ResponseCodes::getResponseMessage($errorCode);
-
-        $response = [
-            Fields::SUCCESS                     => false,
-            Fields::ERROR_MESSAGE               => $apiErrorCode,
-            Fields::BANK_REFERENCE_NUMBER       => null,
-            Fields::STATUS_CODE                 => $errorCode,
-            Fields::SUB_STATUS_TEXT             => $gatewayErrorCodeDesc,
-            Fields::REQUEST_REFERENCE_NUMBER    => $input[Fields::GATEWAY_INPUT][Fields::REF_ID],
-            Fields::UNIQUE_RESPONSE_NUMBER      => null,
-        ];
-
-        return $response;
+        return $input['terminal']['gateway_merchant_id'];
     }
 
     /**
-     * @param $input
-     * @throws Exception\BadRequestException
+     * Returns the MCC code, based on the merchant category
+     * @param  array  $input
+     * @return string 4 digit integer as string.
      */
-    protected function checkPayoutRequest($input)
+    protected function getMerchantCategoryCode(array $input)
     {
-        if ((isset($input[Fields::TERMINAL][Fields::GATEWAY_MERCHANT_ID]) === false) or
-            (isset($input[Fields::GATEWAY_INPUT][Fields::AMOUNT]) === false) or
-            (isset($input[Fields::GATEWAY_INPUT][Entity::VPA]) === false) or
-            (isset($input[Fields::MERCHANT][Fields::CATEGORY]) === false) or
-            (isset($input[Fields::GATEWAY_INPUT][Entity::VPA]) === false) or
-            (isset($input[Fields::GATEWAY_INPUT][Fields::REF_ID]) === false))
+        if ($this->mode === Mode::TEST)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR
-            );
+            return $this->config['test_mcc'];
         }
+
+        return $input['merchant']['category'] ?: 5411;
     }
 
     /**
-     * @param $input
-     * @throws Exception\BadRequestException
+     * This is the key used to encrypt requests
+     * @return string public key
      */
-    protected function checkPayoutVerifyRequest($input)
+    protected function getEncryptionKey()
     {
-        if ((isset($input[Fields::TERMINAL][Fields::GATEWAY_MERCHANT_ID]) === false) or
-            (isset($input[Fields::GATEWAY_INPUT][Fields::REF_ID]) === false))
+        if ($this->mode === Mode::TEST)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR
-            );
+            return $this->config['test_merchant_key'];
         }
+
+        return $this->config['live_merchant_key'];
+    }
+
+    protected function getGatewayCertDirName()
+    {
+        return $this->config[self::CERTIFICATE_DIRECTORY_NAME];
     }
 
     /**
@@ -660,8 +514,174 @@ class Gateway extends Mindgate\Gateway
                 null,
                 [
                     'response' => $response,
-                ]
-            );
+                ]);
         }
+    }
+
+    protected function parseGatewayResponse(
+        $responseBody,
+        $type = Action::PAYOUT,
+        $traceCode = TraceCode::VPA_PAYOUT_GATEWAY_RESPONSE)
+    {
+        $this->trace->info(
+            $traceCode,
+            [
+                'body'              => $responseBody,
+                'encrypted'         => true,
+                'gateway'           => $this->gateway,
+                'type'              => $type
+            ]);
+
+        $response = $this->decryptResponse($responseBody);
+
+        $this->trace->info($traceCode, [$response]);
+
+        $type = strtoupper($type);
+
+        $fields = constant(__NAMESPACE__ . "\Fields::$type");
+
+        $values = explode('|', $response);
+
+        $result = [];
+
+        foreach ($fields as $index => $key)
+        {
+            $result[$key] = $values[$index];
+        }
+
+        $this->trace->info(
+            $traceCode,
+            [
+                'body'              => $responseBody,
+                'decrypted'         => $response,
+                'parsed'            => $result,
+                'gateway'           => $this->gateway,
+                'type'              => $type
+            ]);
+
+        return $result;
+    }
+
+    protected function generateResponse($responseArray, $gatewayPayment)
+    {
+        $status = $responseArray[Fields::STATUSCODE];
+
+        $formattedResponse = $this->generateSuccessfulResponse($responseArray, $gatewayPayment);
+
+        if (in_array($status, [Status::SUCCESS, Status::VERIFY_SUCCESS], true) === false)
+        {
+            $failResponse = $this->generateFailureResponse($responseArray);
+
+            $formattedResponse = array_merge($formattedResponse, $failResponse);
+        }
+
+        $this->trace->info(
+            TraceCode::GATEWAY_INTERNAL_FORMATTED_RESPONSE,
+            $formattedResponse);
+
+        return $formattedResponse;
+    }
+
+    protected function generateSuccessfulResponse($responseArray, $gatewayPayment)
+    {
+        return [
+            Fields::SUCCESS                     => true,
+            Fields::BANK_REFERENCE_NUMBER       => $gatewayPayment->getGatewayPaymentId(),
+            Fields::REQUEST_REFERENCE_NUMBER    => $gatewayPayment->getMerchantReference(),
+            Fields::UNIQUE_RESPONSE_NUMBER      => $gatewayPayment->getNpciReferenceId(),
+            Fields::STATUS_CODE                 => Status::getStatusCodeFromMap($responseArray[Fields::STATUSCODE]),
+            Fields::API_ERROR_CODE              => null,
+            Fields::RESPONSE_CODE               => $responseArray[Fields::RESPCODE],
+            Fields::ERROR_CODE                  => null,
+            Fields::RESPONSE_ERROR_CODE         => null,
+            Fields::STATUS_DESC                 => null,
+        ];
+    }
+
+    protected function generateFailureResponse($responseArray)
+    {
+        //
+        // We have null as default since in verify we may not get some of these fields.
+        //
+
+        $responseCode = $responseArray[Fields::RESPCODE] ?? null;
+        $errorCode = $responseArray[Fields::ERRORCODE] ?? null;
+        $responseErrorCode = $responseArray[Fields::RESPONSE_ERROR_CODE] ?? null;
+
+        $apiErrorCode = ResponseCodeMap::getApiErrorCode($responseCode,
+                                                         $errorCode,
+                                                         $responseErrorCode);
+
+        $gatewayErrorCodeDesc = ResponseCodes::getResponseMessage($responseCode,
+                                                                  $errorCode,
+                                                                  $responseErrorCode,
+                                                                  $responseArray[Fields::STATUSDESC]);
+
+        return [
+            Fields::SUCCESS                     => false,
+            Fields::STATUS_CODE                 => Status::getStatusCodeFromMap($responseArray[Fields::STATUSCODE]),
+            Fields::API_ERROR_CODE              => $apiErrorCode,
+            Fields::RESPONSE_CODE               => $responseCode,
+            Fields::ERROR_CODE                  => $errorCode,
+            Fields::RESPONSE_ERROR_CODE         => $responseErrorCode,
+            Fields::STATUS_DESC                 => $gatewayErrorCodeDesc,
+        ];
+    }
+
+    protected function generateResponseForRazorpayFailure(
+        $gatewayPayment,
+        $errorCode,
+        $ftaInput = [],
+        $statusCode = Status::FAILURE)
+    {
+        $apiErrorCode = ResponseCodeMap::getApiErrorCode($errorCode);
+
+        $gatewayErrorCodeDesc = ResponseCodes::getResponseMessage($errorCode);
+
+        $response = [
+            Fields::SUCCESS                     => false,
+            Fields::STATUS_CODE                 => $statusCode,
+            Fields::API_ERROR_CODE              => $apiErrorCode,
+            Fields::RESPONSE_CODE               => $errorCode,
+            Fields::ERROR_CODE                  => $errorCode,
+            Fields::RESPONSE_ERROR_CODE         => $errorCode,
+            Fields::STATUS_DESC                 => $gatewayErrorCodeDesc,
+        ];
+
+        if (empty($gatewayPayment) === false)
+        {
+            $gatewayPaymentResponse = [
+                Fields::BANK_REFERENCE_NUMBER       => $gatewayPayment->getGatewayPaymentId(),
+                Fields::REQUEST_REFERENCE_NUMBER    => $gatewayPayment->getMerchantReference(),
+                Fields::UNIQUE_RESPONSE_NUMBER      => $gatewayPayment->getNpciReferenceId(),
+            ];
+
+            $response = array_merge($response, $gatewayPaymentResponse);
+        }
+
+        if (empty($response[Fields::REQUEST_REFERENCE_NUMBER]) === true)
+        {
+            $response[Fields::REQUEST_REFERENCE_NUMBER] = $ftaInput[Fields::GATEWAY_INPUT][Fields::REF_ID] ?? null;
+        }
+
+        $this->trace->info(
+            TraceCode::GATEWAY_INTERNAL_FORMATTED_RESPONSE,
+            $response);
+
+        return $response;
+    }
+
+    protected function traceGatewayPaymentRequest(
+        array $request,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
+    {
+        $this->trace->info(
+            $traceCode,
+            [
+                'payment_id' => $input[Fields::GATEWAY_INPUT][Fields::REF_ID],
+                'request'    => $request,
+                'gateway'    => $this->gateway,
+            ]);
     }
 }

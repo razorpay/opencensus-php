@@ -222,6 +222,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FETCH_TOKEN_REQUEST                           = 'FETCH_TOKEN_REQUEST';
     const FETCH_TOKEN_RESPONSE                          = 'FETCH_TOKEN_RESPONSE';
 
+    const GATEWAY_INTERNAL_FORMATTED_RESPONSE           = 'GATEWAY_INTERNAL_FORMATTED_RESPONSE';
+
     const AUTO_CAPTURE_REFUND_DELAY                     = 'AUTO_CAPTURE_REFUND_DELAY';
 
     const MPESA_GATEWAY_PARAM_ARRAY                     = 'MPESA_GATEWAY_PARAM_ARRAY';
@@ -526,6 +528,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ADJUSTMENT_SPLIT_REQUEST                      = 'ADJUSTMENT_SPLIT_REQUEST';
     const ADJUSTMENT_SPLIT_ERROR                        = 'ADJUSTMENT_SPLIT_ERROR';
 
+    const VPA_PAYOUT_GATEWAY_RESPONSE                   = 'VPA_PAYOUT_GATEWAY_RESPONSE';
+
     const VERIFY_LOCKED_PAYMENTS                        = 'VERIFY_LOCKED_PAYMENTS';
     const VERIFY_ACTION                                 = 'VERIFY_ACTION';
     const VERIFY_GATEWAY_BLOCK                          = 'VERIFY_GATEWAY_BLOCK';
@@ -742,6 +746,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VPA_PAYOUT_VERIFY_REQUEST                 = 'VPA_PAYOUT_VERIFY_REQUEST';
     const DUPLICATE_PAYOUT_REQUEST                  = 'DUPLICATE_PAYOUT_REQUEST';
     const VPA_CREATE_FOR_CUSTOMER_REQUEST           = 'VPA_CREATE_FOR_CUSTOMER_REQUEST';
+
+    const VPA_PAYOUT_VERIFY_GATEWAY_RESPONSE        = 'VPA_PAYOUT_VERIFY_GATEWAY_RESPONSE';
 
     const GATEWAY_VALIDATE_VPA_REQUEST              = 'GATEWAY_VALIDATE_VPA_REQUEST';
     const GATEWAY_VALIDATE_VPA_RESPONSE             = 'GATEWAY_VALIDATE_VPA_RESPONSE';
