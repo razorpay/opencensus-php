@@ -46,6 +46,7 @@ class Repository extends Base\Repository
         Entity::ISSUER,
         Entity::METHOD,
         Entity::BEGIN,
+        Entity::SOURCE,
     ];
 
     public function isMerchantIdRequiredForFetch()
@@ -57,7 +58,7 @@ class Repository extends Base\Repository
     {
         $params = [];
 
-        $uniqueKeys = $uniqueRecordIdentifiers ?? self::UNIQUE_KEYS;
+        $uniqueKeys = empty($uniqueRecordIdentifiers) === true ? self::UNIQUE_KEYS : $uniqueRecordIdentifiers;
 
         foreach ($uniqueKeys as $key)
         {
@@ -80,7 +81,7 @@ class Repository extends Base\Repository
     {
         $params = [];
 
-        $uniqueKeys = $fetchByKeys ?? self::UNIQUE_KEYS;
+        $uniqueKeys = empty($fetchByKeys) === true ? self::UNIQUE_KEYS : $fetchByKeys;
 
         foreach ($uniqueKeys as $key)
         {

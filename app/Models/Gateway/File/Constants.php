@@ -128,7 +128,7 @@ class Constants
             self::CSB         => ['csb.netbanking.refunds@razorpay.com'],
             self::EQUITAS     => ['equitas.netbanking.refunds@razorpay.com'],
             self::IDFC        => ['idfc.netbanking.refunds@razorpay.com'],
-            self::ALLA        => ['settlements@razorpay.com'],
+            self::ALLA        => ['settlements@razorpay.com','imps.recon@allahabadbank.in'],
             self::CORPORATION => ['corporation.netbanking.refunds@razorpay.com'],
             self::VIJAYA      => ['vijaya.netbanking.refunds@razorpay.com']
         ],

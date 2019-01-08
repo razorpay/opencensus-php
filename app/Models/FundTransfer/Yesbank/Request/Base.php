@@ -24,6 +24,7 @@ abstract class Base extends ApiProcessor
     const PAYMENT_REF_NO        = 'payment_ref_no';
     const UTR                   = 'utr';
     const BANK_STATUS_CODE      = 'bank_status_code';
+    const STATUS_CODE           = 'status_code';
     const PAYMENT_DATE          = 'payment_date';
     const BANK_SUB_STATUS_CODE  = 'sub_status_code';
     const REFERENCE_NUMBER      = 'reference_number';

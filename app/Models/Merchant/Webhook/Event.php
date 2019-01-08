@@ -3,7 +3,9 @@
 namespace RZP\Models\Merchant\Webhook;
 
 use RZP\Models\Feature;
+use RZP\Models\Merchant;
 use RZP\Constants\Entity;
+use RZP\Constants\Product;
 
 /**
  * The events whether they are enabled or disabled are store in bit format.
@@ -30,7 +32,6 @@ class Event
     const SUBSCRIPTION_HALTED       = 'subscription.halted';
     const SUBSCRIPTION_CANCELLED    = 'subscription.cancelled';
     const SUBSCRIPTION_COMPLETED    = 'subscription.completed';
-    // const SUBSCRIPTION_EXPIRED      = 'subscription.expired';
     const TOKEN_CONFIRMED           = 'token.confirmed';
     const TOKEN_REJECTED            = 'token.rejected';
     const SETTLEMENT_PROCESSED      = 'settlement.processed';
@@ -63,7 +64,6 @@ class Event
         self::SUBSCRIPTION_HALTED,
         self::SUBSCRIPTION_CANCELLED,
         self::SUBSCRIPTION_COMPLETED,
-        // self::SUBSCRIPTION_EXPIRED,
         self::TOKEN_CONFIRMED,
         self::TOKEN_REJECTED,
         self::SETTLEMENT_PROCESSED,
@@ -102,7 +102,6 @@ class Event
         self::SUBSCRIPTION_CHARGED,
         self::SUBSCRIPTION_CANCELLED,
         self::SUBSCRIPTION_COMPLETED,
-        // self::SUBSCRIPTION_EXPIRED,
         self::TOKEN_CONFIRMED,
         self::TOKEN_REJECTED,
         self::SETTLEMENT_PROCESSED,
@@ -157,29 +156,32 @@ class Event
      * @var array
      */
     protected static $launchedEvents = [
-        self::PAYMENT_AUTHORIZED,
-        self::PAYMENT_FAILED,
-        self::PAYMENT_CAPTURED,
-        self::PAYMENT_DISPUTE_CREATED,
-        self::ORDER_PAID,
-        self::INVOICE_PAID,
-        self::INVOICE_PARTIALLY_PAID,
-        self::INVOICE_EXPIRED,
-        self::SUBSCRIPTION_ACTIVATED,
-        self::SUBSCRIPTION_PENDING,
-        self::SUBSCRIPTION_HALTED,
-        self::SUBSCRIPTION_CHARGED,
-        self::SUBSCRIPTION_CANCELLED,
-        self::SUBSCRIPTION_COMPLETED,
-        // self::SUBSCRIPTION_EXPIRED,
-        self::TOKEN_CONFIRMED,
-        self::TOKEN_REJECTED,
-        self::SETTLEMENT_PROCESSED,
-        self::VIRTUAL_ACCOUNT_CREDITED,
-        self::VIRTUAL_ACCOUNT_CREATED,
-        self::PAYMENT_DISPUTE_WON,
-        self::PAYMENT_DISPUTE_LOST,
-        self::PAYMENT_DISPUTE_CLOSED,
+        self::PAYMENT_AUTHORIZED            => [Product::PRIMARY],
+        self::PAYMENT_FAILED                => [Product::PRIMARY],
+        self::PAYMENT_CAPTURED              => [Product::PRIMARY],
+        self::PAYMENT_DISPUTE_CREATED       => [Product::PRIMARY],
+        self::ORDER_PAID                    => [Product::PRIMARY],
+        self::INVOICE_PAID                  => [Product::PRIMARY],
+        self::INVOICE_PARTIALLY_PAID        => [Product::PRIMARY],
+        self::INVOICE_EXPIRED               => [Product::PRIMARY],
+        self::SUBSCRIPTION_ACTIVATED        => [Product::PRIMARY],
+        self::SUBSCRIPTION_PENDING          => [Product::PRIMARY],
+        self::SUBSCRIPTION_HALTED           => [Product::PRIMARY],
+        self::SUBSCRIPTION_CHARGED          => [Product::PRIMARY],
+        self::SUBSCRIPTION_CANCELLED        => [Product::PRIMARY],
+        self::SUBSCRIPTION_COMPLETED        => [Product::PRIMARY],
+        self::TOKEN_CONFIRMED               => [Product::PRIMARY],
+        self::TOKEN_REJECTED                => [Product::PRIMARY],
+        self::SETTLEMENT_PROCESSED          => [Product::PRIMARY],
+        self::VIRTUAL_ACCOUNT_CREDITED      => [Product::PRIMARY],
+        self::VIRTUAL_ACCOUNT_CREATED       => [Product::PRIMARY],
+        self::PAYMENT_DISPUTE_WON           => [Product::PRIMARY],
+        self::PAYMENT_DISPUTE_LOST          => [Product::PRIMARY],
+        self::PAYMENT_DISPUTE_CLOSED        => [Product::PRIMARY],
+        self::TRANSACTION_CREATED           => [Product::BANKING],
+        self::PAYOUT_CREATED                => [Product::BANKING],
+        self::PAYOUT_PROCESSED              => [Product::BANKING],
+        self::PAYOUT_REVERSED               => [Product::BANKING],
     ];
 
     /**
@@ -205,7 +207,6 @@ class Event
         self::SUBSCRIPTION_CHARGED      => Entity::SUBSCRIPTION,
         self::SUBSCRIPTION_CANCELLED    => Entity::SUBSCRIPTION,
         self::SUBSCRIPTION_COMPLETED    => Entity::SUBSCRIPTION,
-        // self::SUBSCRIPTION_EXPIRED      => Entity::SUBSCRIPTION,
         self::TOKEN_CONFIRMED           => Entity::TOKEN,
         self::TOKEN_REJECTED            => Entity::TOKEN,
         self::SETTLEMENT_PROCESSED      => Entity::SETTLEMENT,
@@ -225,12 +226,14 @@ class Event
         self::SUBSCRIPTION_CHARGED      => Feature\Constants::SUBSCRIPTIONS,
         self::SUBSCRIPTION_CANCELLED    => Feature\Constants::SUBSCRIPTIONS,
         self::SUBSCRIPTION_COMPLETED    => Feature\Constants::SUBSCRIPTIONS,
-        // self::SUBSCRIPTION_EXPIRED      => Feature\Constants::SUBSCRIPTIONS,
         self::TOKEN_CONFIRMED           => Feature\Constants::CHARGE_AT_WILL,
         self::TOKEN_REJECTED            => Feature\Constants::CHARGE_AT_WILL,
         self::VIRTUAL_ACCOUNT_CREDITED  => Feature\Constants::VIRTUAL_ACCOUNTS,
         self::VIRTUAL_ACCOUNT_CREATED   => Feature\Constants::VIRTUAL_ACCOUNTS,
         self::SETTLEMENT_PROCESSED      => Feature\Constants::MARKETPLACE,
+        self::PAYOUT_CREATED            => Feature\Constants::PAYOUT,
+        self::PAYOUT_PROCESSED          => Feature\Constants::PAYOUT,
+        self::PAYOUT_REVERSED           => Feature\Constants::PAYOUT,
     ];
 
     /**
@@ -301,7 +304,42 @@ class Event
         return self::$bitPosition[$event];
     }
 
-    public static function filterByFeatures(array $eventNames, array $merchantAssignedFeatures)
+
+    /**
+     * Filters and returns events to be exposed in public api response.
+     *
+     * @param  Merchant\Entity $merchant
+     * @param  array|null      $events
+     * @return array
+     */
+    public static function filterForPublicApi(Merchant\Entity $merchant, array $events = null)
+    {
+        $originalEvents = ($events !== null) ?
+                          $events :
+                          static::getLaunchedEventNames();
+
+        $productFilteredEvents = static::filterByProductOrigin($originalEvents);
+
+        $featureFilteredEvents = static::filterByFeatures($productFilteredEvents, $merchant->getEnabledFeatures());
+
+        return $featureFilteredEvents;
+    }
+
+    public static function filterByProductOrigin(array $events): array
+    {
+        $product = app('basicauth')->getRequestOriginProduct() ?? Product::PRIMARY;
+
+        $productEvents = group_array_by_value_array($product, self::getLaunchedEventNames())[$product];
+
+        return array_filter(
+            $events,
+            function($event) use ($productEvents)
+            {
+                return (in_array($event, $productEvents, true) === true);
+            }, ARRAY_FILTER_USE_KEY);
+    }
+
+    public static function filterByFeatures(array $eventNames, array $merchantAssignedFeatures): array
     {
         $featureMap = Event::$eventsToFeatureMap;
 
