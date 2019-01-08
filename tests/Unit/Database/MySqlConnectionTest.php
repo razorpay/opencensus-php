@@ -316,9 +316,16 @@ class MySqlConnectionTest extends TestCase
             'sticky'    => true,
             'lag_check' => [
                 'driver' => 'redis',
-                'flag'   => ConfigKey::SKIP_SLAVE,
-                'flag2'  => ConfigKey::MASTER_PERCENT,
+                'flag'  => ConfigKey::MASTER_PERCENT,
             ],
+            'heartbeat_check' => [
+                'driver'                => 'heartbeat',
+                'enabled'               => ConfigKey::HEARTBEAT_ENABLED,
+                'mock'                  => ConfigKey::HEARTBEAT_MOCK,
+                'time_threshold'        => ConfigKey::HEARTBEAT_TIME_THRESHOLD,
+                'routes'                => ConfigKey::HEARTBEAT_ROUTES,
+                'traffic_percentage'    => ConfigKey::HEARTBEAT_TRAFFIC_PERCENTAGE,
+            ]
         ];
 
         $connection = $this->getMockBuilder(MySqlConnection::class)

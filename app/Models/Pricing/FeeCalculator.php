@@ -121,6 +121,7 @@ class FeeCalculator
         // $amount < $totalFees because amount is already inclusive of the fees.
         if (($this->entity->merchant->isFeeBearerCustomer() === false) and
             ($this->isEntityPayoutOnBankingBalance() === false) and
+            ($this->entity->merchant->getFeeModel() !== Merchant\FeeModel::POSTPAID) and
             ($amount !== 0))
         {
             list($amountCredits, $feeCredits) = $this->getAvailableAmountOrFeeCredits();

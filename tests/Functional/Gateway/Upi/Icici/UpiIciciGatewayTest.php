@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Mail;
 
+use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\RuntimeException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -422,6 +423,19 @@ EOT;
 
         $this->capturePayment($payment['id'], 50000);
 
+        $this->mockServerContentFunction(function(& $content, $action)
+        {
+            if ($action === 'verify')
+            {
+                $content['status'] = 'FAILURE';
+            }
+
+            if ($action === 'refund')
+            {
+                $content[Fields::ORIGINAL_BANK_RRN_REQ] = '836416213628';
+            }
+        });
+
         $this->refundPayment($payment['id']);
 
         $refund = $this->getLastEntity('refund', true);
@@ -431,6 +445,47 @@ EOT;
         $upiEntity = $this->getLastEntity('upi', true);
 
         $this->assertTestResponse($upiEntity, 'testRefundUpiEntity');
+    }
+
+    public function testFullRefundVerifyRecordNotFound()
+    {
+        $payment = $this->testPaymentWithS2S();
+
+        $this->capturePayment($payment['id'], 50000);
+
+        $this->mockServerContentFunction(function(& $content, $action)
+        {
+            if ($action === 'verify')
+            {
+                $content['status'] = '';
+                $content['message'] = 'original record not found';
+            }
+
+            if ($action === 'refund')
+            {
+                $content[Fields::ORIGINAL_BANK_RRN_REQ] = '836416213628';
+            }
+        });
+
+        $this->refundPayment($payment['id']);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertTestResponse($upiEntity, 'testRefundUpiEntity');
+    }
+
+    public function testFullRefundVerifySuccess()
+    {
+        $payment = $this->testPaymentWithS2S();
+
+        $this->capturePayment($payment['id'], 50000);
+
+        $this->refundPayment($payment['id']);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('authorize', $upiEntity['action']);
+        $this->assertEquals(null, $upiEntity['refund_id']);
     }
 
     public function testRetryRefund()
@@ -459,7 +514,7 @@ EOT;
             }
         });
 
-        $refund = $this->retryFailedRefund($refund['id']);
+        $refund = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         $this->assertEquals($refund['status'], 'processed');
     }
@@ -497,7 +552,7 @@ EOT;
             }
         });
 
-        $refund = $this->retryFailedRefund($refund['id']);
+        $refund = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         $this->assertEquals($refund['status'], 'processed');
     }
@@ -519,6 +574,14 @@ EOT;
                 $assertion = ($actualRefundAmount === $refundAmount);
 
                 $this->assertTrue($assertion, 'Actual refund amount different than expected amount');
+            }
+        });
+
+        $this->mockServerContentFunction(function(& $content, $action)
+        {
+            if ($action === 'verify')
+            {
+                $content['status'] = 'FAILURE';
             }
         });
 

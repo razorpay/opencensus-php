@@ -66,9 +66,9 @@ class CreateIsgGateway extends Migration
             $table->char(ISG::STATUS_DESC, 30)
                   ->nullable();
 
-            $table->string(ISG::CREATED_AT);
+            $table->integer(ISG::CREATED_AT);
 
-            $table->string(ISG::UPDATED_AT);
+            $table->integer(ISG::UPDATED_AT);
 
             $table->index(ISG::ACTION);
 

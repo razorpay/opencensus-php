@@ -933,7 +933,7 @@ trait PaymentTrait
 
         $input['id'] = substr($refund['id'], strlen('rfnd_'));
 
-        if ($this->gateway === Payment\Gateway::UPI_MINDGATE)
+        if (($this->gateway === Payment\Gateway::UPI_MINDGATE) or ($this->gateway === Payment\Gateway::UPI_ICICI))
         {
             $input['reference_no'] = random_integer(12);
         }
@@ -1907,6 +1907,48 @@ trait PaymentTrait
             });
 
         $this->app->instance('card.tokenex', $tokenex);
+    }
+
+    protected function mockCardVault()
+    {
+        $cardVault = Mockery::mock('RZP\Services\CardVault')->makePartial();
+
+        $this->app->instance('card.tokenex', $cardVault);
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing(function ($route, $method, $input)
+            {
+
+                $response = [
+                    'error' => '',
+                    'success' => true,
+                ];
+
+                switch ($route)
+                {
+                    case 'tokenize':
+                        $response['tokenex_token'] = base64_encode($input['secret']);
+                        break;
+
+                    case 'detokenize':
+                        $response['value'] = base64_decode($input['token']);
+                        break;
+
+                    case 'validate':
+                        if ($input['token'] === 'fail')
+                        {
+                            $response['success'] = false;
+                        }
+                        break;
+
+                    case 'delete':
+                        break;
+                }
+                return $response;
+            });
+
+        $this->app->instance('card.tokenex', $cardVault);
     }
 
     protected function mockShield()

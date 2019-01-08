@@ -140,12 +140,20 @@ class Core extends Base\Core
         Entity $merchantDetails,
         Merchant\Entity $merchant)
     {
-        $category    = $merchantDetails->getBusinessCategory();
-        $subcategory = $merchantDetails->getBusinessSubcategory();
+        $businessCategory    = $merchantDetails->getBusinessCategory();
+        $businessSubcategory = $merchantDetails->getBusinessSubcategory();
 
-        if ($merchantDetails->isDirty([Entity::BUSINESS_CATEGORY, Entity::BUSINESS_SUBCATEGORY]) === true)
+        $category  = $merchant->getCategory();
+        $category2 = $merchant->getCategory2();
+
+        // for older merchants(non instant activation) where category or category 2 is not set , set details
+        $populateCategoryAndCategory2 = ((empty($businessCategory) === false) and
+                                         (!(empty($category) === false AND empty($category2) === false)));
+
+        if (($populateCategoryAndCategory2 === true) or
+            ($merchantDetails->isDirty([Entity::BUSINESS_CATEGORY, Entity::BUSINESS_SUBCATEGORY]) === true))
         {
-            (new Merchant\Core)->autoUpdateCategoryDetails($merchant, $category, $subcategory);
+            (new Merchant\Core)->autoUpdateCategoryDetails($merchant, $businessCategory, $businessSubcategory);
         }
     }
 
@@ -712,10 +720,10 @@ class Core extends Base\Core
      * @param Entity $merchantDetails
      * @param array  $input
      *
-     * @return Entity
-     * @throws \Exception
+     * @return array
+     * @throws \Throwable
      */
-    public function updateWebsiteDetails(Entity $merchantDetails, array $input): Entity
+    public function updateWebsiteDetails(Entity $merchantDetails, array $input): array
     {
         $merchantDetails->getValidator()->validateInput('websiteDetails', $input);
 
@@ -725,7 +733,7 @@ class Core extends Base\Core
 
         $merchantDetails->edit($input);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input)
+        return $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input)
         {
             $this->repo->saveOrFail($merchantDetails);
 
@@ -736,9 +744,13 @@ class Core extends Base\Core
 
             $this->checkAndMarkHasKeyAccess($merchantDetails, $merchant);
 
-        });
+            $response = $merchantDetails->toArrayPublic();
 
-        return $merchantDetails;
+            $response[Merchant\Entity::HAS_KEY_ACCESS] = $merchant->getHasKeyAccess();
+
+            return $response;
+
+        });
     }
 
     /**

@@ -27,6 +27,11 @@
                 </thead>
                 <tbody>
                     <tr style="border: 1px solid grey">
+                        <td style="border: 1px solid grey">IMPS</td>
+                        <td style="border: 1px solid grey">{{{sprintf('%.2f', $summary['IMPS']['amount'])}}}</td>
+                        <td style="border: 1px solid grey">{{{$summary['IMPS']['count']}}}</td>
+                    </tr>
+                    <tr style="border: 1px solid grey">
                         <td style="border: 1px solid grey">NEFT</td>
                         <td style="border: 1px solid grey">{{{sprintf('%.2f', $summary['NEFT']['amount'])}}}</td>
                         <td style="border: 1px solid grey">{{{$summary['NEFT']['count']}}}</td>

@@ -28,6 +28,9 @@ class Entity extends Transaction\Entity
     const CONTACT_TYPE    = 'contact_type';
     const MODE            = 'mode';
     const FUND_ACCOUNT_ID = 'fund_account_id';
+    const UTR             = 'utr';
+
+    const ACTION = 'action';
 
     protected $entity = 'statement';
 
@@ -107,7 +110,12 @@ class Entity extends Transaction\Entity
                 Payout\Entity::ENTITY,
                 Payout\Entity::FUND_ACCOUNT_ID,
                 Payout\Entity::FUND_ACCOUNT,
+                Payout\Entity::REVERSAL,
+                Payout\Entity::STATUS,
                 Payout\Entity::MODE,
+                Payout\Entity::AMOUNT,
+                Payout\Entity::FEES,
+                Payout\Entity::TAX,
                 Payout\Entity::UTR,
                 Payout\Entity::NOTES,
                 Payout\Entity::CREATED_AT,

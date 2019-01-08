@@ -27,7 +27,6 @@ class StatusProcessor extends BaseRowProcessor
      * This will update the status based on the transfer API response
      *
      * @return null
-     * @throws LogicException
      */
     public function updateTransferStatus()
     {
@@ -51,14 +50,48 @@ class StatusProcessor extends BaseRowProcessor
 
         $type = $this->row->getRequestType();
 
-        $response = (new StatusRequest($type))->init()
-                                              ->setEntity($this->row)
-                                              ->makeRequest($gateway);
+        $makeRequest = $this->shouldMakeStatusRequestCall($gateway);
+
+        $statusRequestProcessor = (new StatusRequest($type))->init()
+                                                            ->setEntity($this->row);
+
+        if ($makeRequest === true)
+        {
+            $response = $statusRequestProcessor->makeRequest($gateway);
+        }
+        else
+        {
+            $response = $statusRequestProcessor->getResponseDataFromFta($gateway);
+        }
 
         if (empty($response) === false)
         {
             $this->setParsedData($response);
         }
+    }
+
+    protected function shouldMakeStatusRequestCall(bool $gateway): bool
+    {
+        //
+        // We should not make status call only for VPA payouts since
+        // Yesbank's Status API call does not work correctly.
+        //
+        if ($gateway === false)
+        {
+            return true;
+        }
+
+        $fta = $this->row;
+
+        $bankCode = $fta->getBankStatusCode();
+
+        $successStatuses = GatewayStatus::getSuccessfulStatus();
+        $failureStatuses = GatewayStatus::getFailureStatus();
+
+        // TODO: Fix this later properly. Use status_code
+        // to figure out whether to retry or not.
+
+        return true;
     }
 
     /**

@@ -7,9 +7,9 @@ use RZP\Models\P2p\Device;
 
 trait HasDevice
 {
-    protected static function bootHasDevice()
+    public function hasDevice(): bool
     {
-        self::$doesEntityHasDevice = true;
+        return true;
     }
 
     public function scopeDevice(BuilderEx $query, Device\Entity $device)

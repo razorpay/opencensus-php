@@ -41,6 +41,7 @@ final class Type
         if (self::isInDefaults($type) === true)
         {
             $contact->setType($type);
+
             return;
         }
 
@@ -53,12 +54,13 @@ final class Type
         if (in_array($type, $custom, true) === true)
         {
             $contact->setType($type);
+
             return;
         }
 
         //
-        // If not found anywhere, throw an exception. We expect type to be
-        // defined before being used.
+        // If not found anywhere, throw an exception.
+        // We expect type to be defined before being used.
         //
         throw new BadRequestValidationFailureException(
             'Invalid type: ' . $type,
@@ -89,8 +91,19 @@ final class Type
 
     public function addNewCustom(string $type, Merchant\Entity $merchant)
     {
-        if ((self::isInDefaults($type)) or
-            ($this->getSettingsAccessor($merchant)->exists($type) === true))
+        $allCustomKeys = array_keys($this->getSettingsAccessor($merchant)->all()->toArray());
+
+        $maxTypes = Validator::MAX_TYPES_ALLOWED;
+
+        if (count($allCustomKeys) >= $maxTypes)
+        {
+            throw new BadRequestValidationFailureException(
+                "You have reached the maximum limit ($maxTypes) of custom contact types that can be created.",
+                Entity::TYPE);
+        }
+
+        if ((self::isInDefaults(strtolower($type))) or
+            (array_search_ci($type, $allCustomKeys) !== false))
         {
             throw new BadRequestValidationFailureException(
                 "Type '$type' is already defined and cannot be added.",

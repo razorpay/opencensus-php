@@ -9,4 +9,6 @@ class Url
     const LIVE_DOMAIN       = '';
 
     const VERIFY            = 'merchant/aggregator/checkTransStatus/';
+
+    const REFUND            = 'merchant/aggregator/refund/';
 }

@@ -247,6 +247,22 @@ class Entity extends Base\PublicEntity
     {
         return ($this->getAttribute(self::PURPOSE) === Purpose::SETTLEMENT);
     }
+    
+    public function getDestinationType()
+    {
+        if ($this->hasVpa() === true)
+        {
+            return E::VPA;
+        }
+        else if ($this->hasBankAccount() === true)
+        {
+            return E::BANK_ACCOUNT;
+        }
+        else
+        {
+            return null;
+        }
+    }
 
     public function hasBankAccount()
     {

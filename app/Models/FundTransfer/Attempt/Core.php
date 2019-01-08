@@ -31,6 +31,11 @@ class Core extends Base\Core
         // because it needs the association to figure out destination bank
         $fundTransferAttempt->modifyModeIfRequired();
 
+        // This needs to be done after filling FTA since it uses getters on the entity
+        // Also, this needs to be done after associating vpa or bank_account only
+        // because it needs the association to figure out the destination type.
+        $fundTransferAttempt->getValidator()->validateModeIfSet($values);
+
         $this->repo->saveOrFail($fundTransferAttempt);
 
         return $fundTransferAttempt;
@@ -42,6 +47,11 @@ class Core extends Base\Core
 
         // TODO: Make this polymorphic instead of having bankAccount and vpa separately
         $fundTransferAttempt->vpa()->associate($vpa);
+
+        // This needs to be done after filling FTA since it uses getters on the entity.
+        // Also, this needs to be done after associating vpa or bank_account only
+        // because it needs the association to figure out the destination type.
+        $fundTransferAttempt->getValidator()->validateModeIfSet($values);
 
         $this->repo->saveOrFail($fundTransferAttempt);
 
@@ -135,10 +145,6 @@ class Core extends Base\Core
         $values = array_merge($defaultValues, $values);
 
         $fundTransferAttempt->fillAndGenerateId($values);
-
-        // this needs to be done after filling FTA
-        // since it uses getters on the entity
-        $fundTransferAttempt->getValidator()->validateModeIfSet($values);
 
         return $fundTransferAttempt;
     }

@@ -5,6 +5,17 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
+    'createVirtualAccount' => [
+        'url'     => '/virtual_accounts',
+        'method'  => 'post',
+        'content' => [
+            'receiver_types' => 'qr_code',
+            'notes'          => [
+                'key' => 'value',
+            ],
+        ],
+    ],
+
     'testPayment' => [
         'merchant_id' => '10000000000000',
         'amount' => 50000,

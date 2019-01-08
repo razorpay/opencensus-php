@@ -3,6 +3,7 @@
 namespace RZP\Models\Payout;
 
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Status
 {
@@ -24,7 +25,7 @@ class Status
      */
     const PROCESSING = 'processing';
 
-    public static $internalToExternalStatusMapping = [
+    public static $internalToPublicStatusMapping = [
         self::CREATED   => self::PROCESSING,
         self::INITIATED => self::PROCESSING,
         self::PROCESSED => self::PROCESSED,
@@ -33,6 +34,33 @@ class Status
 
     public static function getPublicStatusFromInternalStatus($internalStatus)
     {
-        return static::$internalToExternalStatusMapping[$internalStatus] ?? $internalStatus;
+        return static::$internalToPublicStatusMapping[$internalStatus] ?? $internalStatus;
+    }
+
+    public static function getInternalStatusFromPublicStatus($publicStatus)
+    {
+        $flippedMap = [];
+
+        foreach (self::$internalToPublicStatusMapping as $internalStatus => $externalStatus)
+        {
+            $flippedMap[$externalStatus][] = $internalStatus;
+        }
+
+        return $flippedMap[$publicStatus] ?? [$publicStatus];
+    }
+
+    public static function isValid(string $status): bool
+    {
+        $key = __CLASS__ . '::' . strtoupper($status);
+
+        return ((defined($key) === true) and (constant($key) === $status));
+    }
+
+    public static function validate(string $status)
+    {
+        if (self::isValid($status) === false)
+        {
+            throw new BadRequestValidationFailureException('Not a valid payout status: ' . $status);
+        }
     }
 }

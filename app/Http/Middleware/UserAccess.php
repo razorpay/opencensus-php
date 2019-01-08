@@ -67,7 +67,11 @@ class UserAccess
      */
     public function handle(Request $request, Closure $next)
     {
-        $this->setRequestOriginProduct($request);
+        // Only if request is from internal application dashboard then we understand/process origin header.
+        if ($this->ba->isDashboardApp() === true)
+        {
+            $this->setRequestOriginProduct($request);
+        }
 
         if (($this->ba->isAdminAuth() === false) and
             ($this->ba->isStrictPrivateAuth() === false) and
@@ -128,8 +132,8 @@ class UserAccess
 
     /**
      * Check if the request origin is banking and set the banking product as banking in BA.
-     * Don't need to add any other stricter checks becaues we have cors enabled for only BB domain and one request
-     * uri on oauth app.
+     * Don't need to add any other stricter checks because we have CORS enabled for only BB
+     * domain and one request uri on oauth app.
      *
      * @param $request
      */

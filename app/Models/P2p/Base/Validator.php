@@ -29,7 +29,7 @@ class Validator extends Base\Validator
      */
     protected function registerRulesForName(string $ruleName)
     {
-        $method = 'get' . ucfirst($ruleName);
+        $method = 'make' . ucfirst($ruleName);
 
         $rules = $this->{$method}();
 

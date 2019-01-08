@@ -175,13 +175,15 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_REFUND_REQUEST);
 
+        $refundEntity = $this->createGatewayRefundEntity($input);
+
         $response = $this->sendGatewayRequest($request);
 
         $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_REFUND_RESPONSE);
 
         $attributes = $this->getAttributesFromRefundReverseResponse($response);
 
-        $this->createGatewayRefundEntity($input, $attributes);
+        $refundEntity = $this->updateGatewayRefundEntity($refundEntity, $attributes, false);
 
         $this->checkErrorsAndThrowException($response);
     }
@@ -950,6 +952,23 @@ class Gateway extends Base\Gateway
         $gatewayPayment->fill($attributes);
 
         $this->repo->saveOrFail($gatewayPayment);
+
+        return $gatewayPayment;
+    }
+
+    protected function updateGatewayRefundEntity(
+        Entity $gatewayPayment,
+        array $attributes,
+        bool $mapped = true)
+    {
+        if ($mapped === true)
+        {
+            $attributes = $this->getMappedAttributes($attributes);
+        }
+
+        $gatewayPayment->fill($attributes);
+
+        $this->getRepository()->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
     }

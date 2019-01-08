@@ -36,16 +36,17 @@ class Header
     //
     // Payment Link Headers
     //
-    const INVOICE_NUMBER      = 'Invoice Number';
-    const CUSTOMER_NAME       = 'Customer Name';
-    const CUSTOMER_EMAIL      = 'Customer Email';
-    const CUSTOMER_CONTACT    = 'Customer Contact';
-    const AMOUNT_IN_PAISE     = 'Amount (In Paise)';
-    const DESCRIPTION         = 'Description';
-    const EXPIRE_BY           = 'Expire By';
-    const PARTIAL_PAYMENT     = 'Partial Payment';
-    const PAYMENT_LINK_ID     = 'Payment Link Id';
-    const SHORT_URL           = 'Payment Link Short URL';
+    const INVOICE_NUMBER           = 'Invoice Number';
+    const CUSTOMER_NAME            = 'Customer Name';
+    const CUSTOMER_EMAIL           = 'Customer Email';
+    const CUSTOMER_CONTACT         = 'Customer Contact';
+    const AMOUNT_IN_PAISE          = 'Amount (In Paise)';
+    const DESCRIPTION              = 'Description';
+    const EXPIRE_BY                = 'Expire By';
+    const PARTIAL_PAYMENT          = 'Partial Payment';
+    const PAYMENT_LINK_ID          = 'Payment Link Id';
+    const SHORT_URL                = 'Payment Link Short URL';
+    const FIRST_PAYMENT_MIN_AMOUNT = 'First Payment Min Amount (In Paise)';
 
     //
     // IRCTC Headers
@@ -1199,6 +1200,16 @@ class Header
             (in_array(self::NOTES, $actualHeaders, true) === false))
         {
             $actualHeaders[] = self::NOTES;
+        }
+
+        //
+        // For PL batch, we want to optionally accept the FIRST_PAYMENT_MIN_AMOUNT
+        // headers. This is temporary until we have support for optional headers.
+        //
+        if (($type === Type::PAYMENT_LINK) and
+            ((in_array(self::FIRST_PAYMENT_MIN_AMOUNT, $actualHeaders, true) === true)))
+        {
+            $expectedHeaders[] = self::FIRST_PAYMENT_MIN_AMOUNT;
         }
 
         $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);

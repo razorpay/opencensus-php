@@ -7,9 +7,9 @@ use RZP\Models\Merchant;
 
 trait HasMerchant
 {
-    protected static function bootHasMerchant()
+    public function hasMerchant(): bool
     {
-        self::$doesEntityHasMerchant = true;
+        return true;
     }
 
     public function setMerchant(Merchant\Entity $merchant)
