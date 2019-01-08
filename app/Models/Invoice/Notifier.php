@@ -398,6 +398,7 @@ class Notifier extends Base\Core
                 $template = 'sms.custom_invoice.rbl_loan';
                 $sender   = 'RBLBNK';
                 $params   = [
+                    'receipt'      => $this->invoice->getReceipt(),
                     'invoice_link' => $this->invoice->getShortUrl(),
                     'amount'       => $this->invoice->getAmount() / 100,
                 ];
