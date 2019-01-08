@@ -26,24 +26,33 @@ export default class CreateMerchantReportConfig extends Component {
       loading: true,
       data: {},
     },
-    values: {},
   };
+
+  constructor(props) {
+    super();
+    this.state = {
+      ...this.state,
+      values: props.values || {},
+    };
+  }
 
   componentWillMount() {
     fetchMerchantDetails(this.props.merchantId).then(data => {
       this.setState({
         merchantDetails: { loading: false, data },
         values: {
-          ...this.state.values,
           template: {
             formats: {
               date: 'd-m-Y',
+              ...this.state.values.template.formats,
             },
             file_meta: {
               extension: 'csv',
               header: true,
+              ...this.state.values.template.file_meta,
             },
           },
+          ...this.state.values,
         },
       });
     });
@@ -53,6 +62,10 @@ export default class CreateMerchantReportConfig extends Component {
         configOptions: { loading: false, data },
       });
     });
+
+    if (!!this.props.values.type) {
+      this.getConfigComponents(this.props.values.type);
+    }
   }
 
   handleSubmitClick = () => {
@@ -116,13 +129,17 @@ export default class CreateMerchantReportConfig extends Component {
     this.setState({ values });
   };
 
+  getConfigComponents = field => {
+    fetchConfigComponents(field).then(data => {
+      this.setState({ configComponents: { loading: false, data } });
+    });
+  };
+
   handleReportTypeChange = event => {
     const value = event.target.value;
     this.setState({ configComponents: { loading: true } });
     if (!!value) {
-      fetchConfigComponents(event.target.value).then(data => {
-        this.setState({ configComponents: { loading: false, data } });
-      });
+      this.getConfigComponents(value);
     } else {
       this.setState({ loading: false, data: undefined });
     }
@@ -166,6 +183,7 @@ export default class CreateMerchantReportConfig extends Component {
                     ((this.state.values.template || {}).file_meta || {})
                       .extension
                   }
+                  values={this.state.values}
                   onReportTypeChange={this.handleReportTypeChange}
                 />
               </Form>
@@ -174,6 +192,9 @@ export default class CreateMerchantReportConfig extends Component {
                 {...this.state.configComponents.data}
                 loadingConfigComponents={this.state.configComponents.loading}
                 ref={ref => (this.configDetails = ref)}
+                fieldsMap={getInternalFielsMap(
+                  this.props.values.template.fields_map
+                )}
               />
               <AsyncButton
                 text="Create"
@@ -189,6 +210,16 @@ export default class CreateMerchantReportConfig extends Component {
       </>
     );
   }
+}
+
+function getInternalFielsMap(fieldsMap) {
+  return Object.keys(fieldsMap).reduce(
+    (map, field) => ({
+      ...map,
+      [fieldsMap[field][0]]: field,
+    }),
+    {}
+  );
 }
 
 const selfServeReportBase = 'live/admin-reporting/';
