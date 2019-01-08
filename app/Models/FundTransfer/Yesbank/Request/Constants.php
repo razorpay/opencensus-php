@@ -144,6 +144,17 @@ final class Constants
 
     const VALUE                         = 'Value';
 
+    // ============= UPI RESPONSE KEYS ===============-
+
+    const UPI_REQUEST_REFERENCE_NUMBER = 'request_reference_number';
+    const UPI_UNIQUE_RESPONSE_NUMBER   = 'unique_response_number';
+    const UPI_BANK_REFERENCE_NUMBER    = 'bank_reference_number';
+    const UPI_STATUS_DESCRIPTION       = 'status_desc';
+    const UPI_STATUS_CODE              = 'status_code';
+    const UPI_RESPONSE_ERROR_CODE      = 'response_error_code';
+    const UPI_ERROR_CODE               = 'error_code';
+    const UPI_RESPONSE_CODE            = 'response_code';
+
     const PURPOSE_CODE_MAP              = [
         'settlement'   => 'NODAL',
         'refund'       => 'REFUND'

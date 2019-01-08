@@ -296,6 +296,6 @@ class Service extends Base\Service
         {
             unset($oldList[$index]);
         }
-        return $oldList;
+        return array_values($oldList);
     }
 }

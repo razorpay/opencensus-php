@@ -78,7 +78,7 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function fetchByMerchantReferenceAndReceiveFlag(string $merchantReference)
+    public function fetchReceivedByMerchantReference(string $merchantReference)
     {
         return $this->newQuery()
                     ->where('merchant_reference', '=', $merchantReference)

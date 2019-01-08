@@ -280,7 +280,8 @@ class BulkRecon extends Base\Core
 
         $remark = $entity->getRemarks();
 
-        if (($this->channel === Channel::ICICI) and ($entity->getMode() === FundTransferMode::RTGS))
+        if (($this->channel === Channel::ICICI) and
+            ($entity->getMode() === FundTransferMode::RTGS))
         {
             $remark = $entity->getBankStatusCode();
         }

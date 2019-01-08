@@ -82,7 +82,7 @@ class UpiYesbankGatewayTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertTrue($response['success']);
-        $this->assertNotNull($response['bankReferenceNo']);
+        $this->assertNotNull($response['bank_reference_number']);
 
         $gatewayEntity = $this->getLastEntity('upi', true);
 
@@ -213,7 +213,7 @@ class UpiYesbankGatewayTest extends TestCase
         $this->assertNotNull($gatewayEntity['received']);
         $this->assertNotNull($gatewayEntity['merchant_reference']);
         $this->assertNotNull($gatewayEntity['gateway_payment_id']);
-        $this->assertEquals('SUCCESS', $gatewayEntity['status_code']);
+        $this->assertEquals('S', $gatewayEntity['status_code']);
         $this->assertNotNull($gatewayEntity['npci_txn_id']);
         $this->assertNotNull($gatewayEntity['npci_reference_id']);
         $this->assertEquals('PAY', $gatewayEntity['type']);
@@ -282,7 +282,7 @@ class UpiYesbankGatewayTest extends TestCase
             {
                 if ($action === 'payout_verify')
                 {
-                    $content['statuscode']  = 'F';
+                    $content['statuscode']  = 'FAILED';
                     $content['respcode'] = 'MT01';
                 }
             });
@@ -293,7 +293,7 @@ class UpiYesbankGatewayTest extends TestCase
 
         $this->assertFalse($response['success']);
 
-        $this->assertNotNull($response['error_message']);
+        $this->assertNotNull($response['api_error_code']);
 
         $this->assertEquals('F', $gatewayEntity['status_code']);
     }
@@ -330,9 +330,9 @@ class UpiYesbankGatewayTest extends TestCase
 
         $this->assertFalse($response['success']);
 
-        $this->assertEquals('SERVER_ERROR_AMOUNT_TAMPERED', $response['error_message']);
+        $this->assertEquals('SERVER_ERROR_AMOUNT_TAMPERED', $response['api_error_code']);
 
-        $this->assertEquals('RZP_AMOUNT_MISMATCH', $response['statusCode']);
+        $this->assertEquals('RZP_AMOUNT_MISMATCH', $response['response_code']);
     }
 
     public function testDuplicatePayoutRequest()
@@ -360,7 +360,7 @@ class UpiYesbankGatewayTest extends TestCase
 
         $this->assertFalse($response['success']);
 
-        $this->assertEquals('RZP_DUPLICATE_PAYOUT', $response['statusCode']);
+        $this->assertEquals('RZP_DUPLICATE_PAYOUT', $response['response_code']);
     }
 
     protected function getPayoutRequest(array $attributes, string $type)

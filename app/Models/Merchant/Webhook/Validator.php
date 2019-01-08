@@ -201,6 +201,18 @@ class Validator extends Base\Validator
                     Entity::EVENTS);
             }
         }
+
+        // Additionally, validates that events sent in request are allowed feature, product origin wise.
+        $filteredEvents = Event::filterForPublicApi($this->entity->merchant, $events);
+
+        $extraEvents = array_diff(array_keys($events), array_keys($filteredEvents));
+
+        if (count($extraEvents) > 0)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid event name/names: ' . implode(', ', $extraEvents),
+                Entity::EVENTS);
+        }
     }
 
     protected function validateDisableOnFailure($attribute, $value)

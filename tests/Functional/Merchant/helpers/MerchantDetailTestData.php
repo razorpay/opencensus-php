@@ -443,7 +443,7 @@ return [
     ],
 
     'testMerchantUpdateWebsiteDetails' => [
-        'request' => [
+        'request'  => [
             'content' => [
                 'business_website' => 'https://www.example.com',
             ],
@@ -452,7 +452,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'business_website' => 'https://www.example.com'
+                'business_website' => 'https://www.example.com',
+                'has_key_access'   => true,
             ],
         ],
     ],

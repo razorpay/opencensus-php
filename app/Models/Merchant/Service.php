@@ -1657,9 +1657,11 @@ class Service extends Base\Service
     {
         $merchantId = $this->merchant->getId();
 
+        $product = $this->auth->getRequestOriginProduct();
+
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $users = $this->core()->getUsers($merchant);
+        $users = $this->core()->getUsers($merchant, $product);
 
         return $users;
     }

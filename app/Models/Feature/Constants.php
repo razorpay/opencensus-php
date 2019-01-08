@@ -271,6 +271,7 @@ class Constants
         self::IIN_LISTING                     => true,
         self::CALLBACK_URL_VALIDATION         => true,
         self::PL_FIRST_MIN_AMOUNT             => true,
+        self::REPORTING_GENRERIC_NOTES        => true,
     ];
 
     // Entity type constants

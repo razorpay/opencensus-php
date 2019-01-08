@@ -542,6 +542,24 @@ if (! function_exists('get_key_from_subarray_match'))
     }
 }
 
+if (! function_exists('group_array_by_sub_array_value'))
+{
+    function group_array_by_value_array($groupKey, array $haystack)
+    {
+        $newArray[$groupKey] = [];
+
+        foreach ($haystack as $key => $subArray)
+        {
+            if (in_array($groupKey, $subArray, true) === true)
+            {
+                $newArray[$groupKey][] = $key;
+            }
+        }
+
+        return $newArray;
+    }
+}
+
 if (! function_exists('epoch_format'))
 {
     /**

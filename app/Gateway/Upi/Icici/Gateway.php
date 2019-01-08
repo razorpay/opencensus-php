@@ -790,27 +790,14 @@ class Gateway extends Base\Gateway
         }
 
         if (($content[Fields::STATUS] === Status::FAILURE) or
-                 ($content[Fields::STATUS] === Status::FAIL))
+            ($content[Fields::STATUS] === Status::FAIL))
         {
             return $scroogeResponse->setSuccess(false)
                                    ->setStatusCode(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR)
                                    ->toArray();
         }
 
-        if ($content[Fields::STATUS] === Status::DEEMED)
-        {
-            throw new Exception\LogicException(
-                PublicErrorDescription::GATEWAY_ERROR_REFUND_DEEMED,
-                ErrorCode::GATEWAY_ERROR_REFUND_DEEMED,
-                [
-                    Payment\Gateway::GATEWAY_RESPONSE  => json_encode($content),
-                    Payment\Gateway::GATEWAY_KEYS      =>
-                        [
-                            'gateway_status' => $content[Fields::STATUS],
-                            'refund_id'      => $input['refund']['id'],
-                        ],
-                ]);
-        }
+        $this->checkVerifyRefundStatus($input, $content);
 
         $msg = strtolower($content['message']);
 
@@ -830,8 +817,41 @@ class Gateway extends Base\Gateway
                         [
                             'gateway_status' => $content[Fields::STATUS],
                             'refund_id'      => $input['refund']['id'],
-                    ],
+                        ],
                 ]);
+    }
+
+    protected function checkVerifyRefundStatus(array $input, array $content)
+    {
+        if (($content[Fields::STATUS] === Status::DEEMED))
+        {
+            throw new Exception\LogicException(
+                PublicErrorDescription::GATEWAY_ERROR_REFUND_DEEMED,
+                ErrorCode::GATEWAY_ERROR_REFUND_DEEMED,
+                [
+                    Payment\Gateway::GATEWAY_RESPONSE  => json_encode($content),
+                    Payment\Gateway::GATEWAY_KEYS      =>
+                        [
+                            'gateway_status' => $content[Fields::STATUS],
+                            'refund_id'      => $input['refund']['id'],
+                        ],
+                ]);
+        }
+
+        if (($content[Fields::STATUS] === Status::PENDING))
+        {
+            throw new Exception\LogicException(
+                PublicErrorDescription::GATEWAY_ERROR_TRANSACTION_PENDING,
+                ErrorCode::GATEWAY_ERROR_TRANSACTION_PENDING,
+                [
+                    Payment\Gateway::GATEWAY_RESPONSE  => json_encode($content),
+                    Payment\Gateway::GATEWAY_KEYS      =>
+                        [
+                            'gateway_status' => $content[Fields::STATUS],
+                            'refund_id'      => $input['refund']['id'],
+                        ],
+                ]);
+        }
     }
 
     /**
@@ -1060,6 +1080,7 @@ class Gateway extends Base\Gateway
                 Fields::RESPONSE              => $refundFields[Fields::RESPONSE] ?? null,
                 Fields::SUCCESS               => $refundFields[Fields::SUCCESS] ?? null,
                 Fields::MESSAGE               => $refundFields[Fields::MESSAGE] ?? null,
+                Fields::ORIGINAL_BANK_RRN     => $refundFields[Fields::ORIGINAL_BANK_RRN] ?? null,
             ];
         }
         return [];
