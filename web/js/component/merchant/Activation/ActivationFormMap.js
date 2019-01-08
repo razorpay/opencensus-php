@@ -306,7 +306,7 @@ const registrationDetails = [
     info:
       'Mandatory for Companies. PAN details should be of the mentioned business only.',
     validator: validatePANCard,
-    _when: excludeFor_Indiv,
+    _when: excludeFor_CompanyPan,
   },
   [
     {
@@ -644,6 +644,14 @@ function excludeFor_Indiv(activation) {
     activation.state.dirty.business_type || activation.props.data.business_type;
 
   return [INDIVIDUAL].indexOf(Number(currentBusinessType)) === -1;
+}
+
+function excludeFor_CompanyPan(activation) {
+  const currentBusinessType =
+    activation.state.dirty.business_type || activation.props.data.business_type;
+  return (
+    [INDIVIDUAL, PROPRIETORSHIP].indexOf(Number(currentBusinessType)) === -1
+  );
 }
 
 function requiredForNGO(activation) {
