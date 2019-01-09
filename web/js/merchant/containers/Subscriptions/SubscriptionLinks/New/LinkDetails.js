@@ -16,21 +16,21 @@ export default function NewSubscriptionLinkLinkDetails({
       <Input.Group class="InputGroup--inline" label="Customer Contact">
         <div class="Input-content">
           <Input
-            placeholder="Mobile"
-            name="notify_info.notify_phone"
-            type="tel"
-            size="half"
-            validator={val => !isPhone(val) && 'Invalid Phone'}
-            defaultValue={(fields.notify_info || {}).notify_phone}
-          />
-
-          <Input
             placeholder="Email"
             name="notify_info.notify_email"
             type="email"
             size="half"
             validator={val => !isEmail(val) && 'Invalid Email'}
             defaultValue={(fields.notify_info || {}).notify_email}
+          />
+
+          <Input
+            placeholder="Mobile"
+            name="notify_info.notify_phone"
+            type="tel"
+            size="half"
+            validator={val => !isPhone(val) && 'Invalid Phone'}
+            defaultValue={(fields.notify_info || {}).notify_phone}
           />
         </div>
       </Input.Group>
