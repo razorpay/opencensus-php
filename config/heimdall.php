@@ -553,10 +553,10 @@ return [
 
         PermissionCategory::GATEWAY_DOWNTIME  => [
             Permission::CREATE_GATEWAY_DOWNTIME => [
-                'description' => 'Create VAs for a merchant',
+                'description' => 'Create Gateway Downtime',
             ],
             Permission::UPDATE_GATEWAY_DOWNTIME => [
-                'description' => 'Create VAs for a merchant',
+                'description' => 'Update Gateway Downtime',
             ],
         ],
 
