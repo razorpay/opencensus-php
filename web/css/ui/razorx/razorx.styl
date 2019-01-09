@@ -8,13 +8,20 @@ $background-lighter = #3d415f
     margin-left: 96px
     padding: 0 48px 0
     background: inherit
-    width: 90%
+    opacity: 0
+    animation: appear-in 0.45s 0.8s cubic-bezier(0.32, 1.13, 1, 1) forwards
 
-    .title
+    .header
       font-size: 22px
+      height: 62px
       line-height: 62px
       font-weight: 500
       color: #c1c1c3
+      display: flex
+
+      .btn-group
+        margin: 0 0 0 auto
+        display: inline-block
 
   > aside
     background: $background
@@ -68,10 +75,22 @@ $background-lighter = #3d415f
         display: none
         position: absolute
         background: #fff
-        box-shadow: 0 1px 2px rgba(0,0,0,0.1)
+        box-shadow: 0 3px 13px rgba(0,0,0,0.09), 0 1px 5px 0 rgba(0,0,0,0.14)
         bottom: 0
         left: 100%
-        min-width: 120px
+        min-width: 160px
+        color: #000
+
+        > div, > a
+          display: block
+          position: relative
+
+        .btn-default + .btn-default
+          margin-top: -1px
+
+        .spin-btn
+          position: absolute
+          top: 12px
 
       &:hover .menu
         display: block
@@ -98,3 +117,7 @@ $background-lighter = #3d415f
 @keyframes slide-in
   100%
     transform: translateX(-1px)
+
+@keyframes appear-in
+  100%
+    opacity: 1

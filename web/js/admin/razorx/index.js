@@ -84,7 +84,9 @@ export const Sidebar = ({ user, handleLogout }) => (
       <i class="i-user-circle" />
       <div class="ellipsis-wrap">{user.name}</div>
       <div class="menu">
-        <Link to="/profile">Profile</Link>
+        <Link to="/profile" class="btn-default">
+          Profile
+        </Link>
         <AsyncButton
           onClick={handleLogout}
           class="logout-btn btn-default"
