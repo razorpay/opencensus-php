@@ -3,8 +3,8 @@
 namespace RZP\Tests\Functional\Coupon;
 
 use Carbon\Carbon;
-use RZP\Models\Merchant;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Schedule\Period;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class CouponsTest extends TestCase
@@ -29,6 +29,8 @@ class CouponsTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content']['entity_type'] = 'promotion';
 
         $this->startTest();
+
+        return $promotion;
     }
 
     public function testMissingParams()
@@ -65,6 +67,66 @@ class CouponsTest extends TestCase
     public function testCreateCoupon()
     {
         $this->createCoupon();
+    }
+
+    public function testCreateMultipleCouponsPerPromotion()
+    {
+        $response = $this->createCoupon();
+
+        $this->testData[__FUNCTION__]['request']['content']['entity_id'] = $response->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function helperToCreatePromotionCoupon(int $startDays, int $endDays)
+    {
+        $promotion = $this->fixtures->create('promotion:onetime');
+
+        $this->testData['testCreateCoupon']['request']['content']['entity_id'] = $promotion->getPublicId();
+
+        $this->testData['testCreateCoupon']['request']['content']['entity_type'] = 'promotion';
+
+        $response = $this->makeRequestAndGetContent($this->testData['testCreateCoupon']['request']);
+
+        $start_at = Carbon::now()->addDays($startDays)->timestamp;
+
+        $end_at = Carbon::now()->addDays($endDays)->timestamp;
+
+        return [$response,$start_at,$end_at];
+    }
+
+    public function testUpdateCoupon()
+    {
+        list($response,$start_at,$end_at) = $this->helperToCreatePromotionCoupon(1,3);
+
+        $this->testData[__FUNCTION__]['request']['content']['start_at'] = $start_at;
+
+        $this->testData[__FUNCTION__]['request']['content']['end_at'] = $end_at;
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/coupons/'.$response['id'];
+
+        $this->testData[__FUNCTION__]['request']['method'] = 'PATCH';
+
+        $this->testData[__FUNCTION__]['response']['content']['start_at'] = $start_at;
+
+        $this->testData[__FUNCTION__]['response']['content']['end_at'] = $end_at;
+
+        $this->startTest();
+    }
+
+    public function testUpdateCouponWithInvalidTime()
+    {
+        list($response,$start_at,$end_at) = $this->helperToCreatePromotionCoupon(3,1);
+
+        $this->testData[__FUNCTION__]['request']['content']['start_at'] = $start_at;
+
+        $this->testData[__FUNCTION__]['request']['content']['end_at'] = $end_at;
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/coupons/'.$response['id'];
+
+        $this->testData[__FUNCTION__]['request']['method'] = 'PATCH';
+
+        $this->startTest();
     }
 
     public function testCreateCouponWithInvalidTime()
@@ -281,6 +343,20 @@ class CouponsTest extends TestCase
         $this->checkValidResponse($response);
     }
 
+    public function testCreateCouponAndCheckOnMerchant()
+    {
+        $this->createCoupon();
+
+        $content = [
+            'merchant_id' => '10000000000000',
+            'code'        => 'RANDOM-123',
+        ];
+
+        $response = $this->checkCouponOnMerchant($content);
+
+        $this->assertEquals($response['message'], 'Coupon is valid');
+    }
+
     public function testMultiCouponApply()
     {
         $this->createCoupon();
@@ -332,6 +408,19 @@ class CouponsTest extends TestCase
     {
         $request = [
             'url'     => '/coupons/apply',
+            'method'  => 'post',
+            'content' => $content
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
+    public function checkCouponOnMerchant(array $content)
+    {
+        $request = [
+            'url'     => '/coupons/validate',
             'method'  => 'post',
             'content' => $content
         ];
