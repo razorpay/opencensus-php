@@ -670,8 +670,23 @@ class ReconciliationFileTest extends TestCase
 
     public function testHdfcFssReconRefundFile()
     {
+        $this->gateway = 'hdfc';
+
         $this->fixtures->create('terminal:shared_hdfc_recurring_terminals');
         $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
 
         // Recurring authorised payment
         $refund1 = $this->getNewRefundEntity(true);
@@ -1326,8 +1341,23 @@ class ReconciliationFileTest extends TestCase
 
     public function testHdfcFssOnusTransactionRecon()
     {
+        $this->gateway = 'hdfc';
+
         $this->fixtures->create('terminal:shared_hdfc_recurring_terminals');
         $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
 
         $refund = $this->getNewRefundEntity(true);
         $gatewayRefund = $this->getDbLastEntityToArray('hdfc');

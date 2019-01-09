@@ -13,6 +13,7 @@ return [
                 'credit_type'       => 'amount',
                 'iterations'        => 1,
                 'credits_expire'    => false,
+                'purpose'           => 'Promotion Testing',
             ],
             'url'    => '/promotions',
             'method' => 'POST'
@@ -36,6 +37,7 @@ return [
                 'credits_expire'          => true,
                 'credits_expiry_period'   => 'monthly',
                 'credits_expiry_interval' => 1,
+                'purpose'                 => 'Testing Promotion',
             ],
             'url'    => '/promotions',
             'method' => 'POST'
