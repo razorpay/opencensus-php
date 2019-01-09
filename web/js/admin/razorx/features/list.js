@@ -1,5 +1,9 @@
 export default class FeaturesList extends React.Component {
   render() {
-    return <div>Features List</div>;
+    return (
+      <div>
+        <div class="title">Features</div>
+      </div>
+    );
   }
 }

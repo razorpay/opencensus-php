@@ -89,31 +89,33 @@ export default class App extends Component {
             )}
           </ErrorBoundary>
         </main>
-        <header>
-          <div id="profile-icon">
-            {user.name}
-            <i class="i-arrow-down" />
-            <div class="menu">
-              <Link to="/profile">
-                <i class="i-user" />
-                Profile
-              </Link>
-              <AsyncButton
-                onClick={this.handleLogout}
-                class="logout-btn btn-default"
-                pendingClass="logout-btn btn-default btn-pending"
-              >
-                <i class="i-logout" />
-                Logout
-                <span class="spin-btn" />
-              </AsyncButton>
+        {!FPView && (
+          <header>
+            <div id="profile-icon">
+              {user.name}
+              <i class="i-arrow-down" />
+              <div class="menu">
+                <Link to="/profile">
+                  <i class="i-user" />
+                  Profile
+                </Link>
+                <AsyncButton
+                  onClick={this.handleLogout}
+                  class="logout-btn btn-default"
+                  pendingClass="logout-btn btn-default btn-pending"
+                >
+                  <i class="i-logout" />
+                  Logout
+                  <span class="spin-btn" />
+                </AsyncButton>
+              </div>
             </div>
-          </div>
-        </header>
+          </header>
+        )}
         {do {
           if (FPView) {
             if (FPView.sidebar) {
-              <FPView.sidebar />;
+              <FPView.sidebar user={user} handleLogout={this.handleLogout} />;
             }
           } else {
             <MainSidebar />;

@@ -2,29 +2,27 @@ $background = #171b30
 $background-lighter = #3d415f
 
 .RazorX-container.RazorX-container
+  background: #f3f3f3
+
   > main
     margin-left: 96px
-    padding-top: 62px
-    background: #fff
+    padding: 0 48px 0
+    background: inherit
+    width: 90%
 
-  > header
-    height: 62px
-    left: 96px
-    background: $background
-
-    > div
-      color: rgba(255,255,255,.6)
-      height: 100%
+    .title
+      font-size: 22px
       line-height: 62px
-
-
-    #profile-icon:hover
-      background: $background-lighter
+      font-weight: 500
+      color: #c1c1c3
 
   > aside
     background: $background
     width: 96px
-    padding: 0 0 20px 0
+    padding: 0 0 80px 0
+    overflow: visible
+    transform: translateX(-100%)
+    animation: slide-in 0.45s 0.8s cubic-bezier(0.32, 1.13, 1, 1) forwards
 
     > div
       border: none
@@ -36,7 +34,7 @@ $background-lighter = #3d415f
       font-size: 10px
       text-transform: uppercase
       color: #fff
-      opacity: 0.7
+      opacity: 0.5
 
       i
         margin: 0
@@ -44,10 +42,39 @@ $background-lighter = #3d415f
         line-height: 20px
         display: block
         color: inherit
+        opacity: 1
+
+      &:hover
+        opacity: 0.75
 
       &.active
         opacity: 1
         color: #58d4ff
+
+    #profile-nav
+      cursor: pointer
+      position: absolute
+      bottom: 8px
+      width: 100%
+
+    .ellipsis-wrap
+      width: 80%
+      margin: 0 auto
+      overflow: hidden
+      white-space: nowrap
+      text-overflow: ellipsis
+
+     .menu
+        display: none
+        position: absolute
+        background: #fff
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1)
+        bottom: 0
+        left: 100%
+        min-width: 120px
+
+      &:hover .menu
+        display: block
 
     #razorx-logo
       background: url('/img/logo.png') no-repeat center
@@ -67,3 +94,7 @@ $background-lighter = #3d415f
         left: 20px
         right: 20px
         margin-top: 16px
+
+@keyframes slide-in
+  100%
+    transform: translateX(-1px)

@@ -70,7 +70,7 @@ const links = [
   ['Audit Logs', '/razorx/audit-logs', '', 'notes'],
 ];
 
-export const Sidebar = () => (
+export const Sidebar = ({ user, handleLogout }) => (
   <aside className={`org-${org.custom_code}`}>
     <a id="razorx-logo" href="/razorx" />
     {links.map((l, i) => (
@@ -80,5 +80,20 @@ export const Sidebar = () => (
         </MainNavLink>
       </div>
     ))}
+    <div id="profile-nav" class="main-nav">
+      <i class="i-user-circle" />
+      <div class="ellipsis-wrap">{user.name}</div>
+      <div class="menu">
+        <Link to="/profile">Profile</Link>
+        <AsyncButton
+          onClick={handleLogout}
+          class="logout-btn btn-default"
+          pendingClass="logout-btn btn-default btn-pending"
+        >
+          Logout
+          <span class="spin-btn" />
+        </AsyncButton>
+      </div>
+    </div>
   </aside>
 );
