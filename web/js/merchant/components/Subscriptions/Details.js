@@ -6,8 +6,11 @@ import Alert from 'rzp/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import EntityDetailList from 'merchant/components/EntityDetailList/List';
-import { getFixedINRAmount, getIntervalCycle } from 'rzp/utils/rzp-utils';
+import ShowWhen from 'merchant/components/ShowWhen';
+
 import { SubscriptionStatusLabel } from 'merchant/components/StatusLabel';
+import CopyLink from 'merchant/components/Invoices/CopyLink';
+
 import Definition from 'rzp/ui/Definition';
 
 // Customer component
@@ -121,6 +124,12 @@ export default ({
                   </div>
                 )}
               />
+
+              <ShowWhen additionalCondition={user => user.isSubLinkEnabled}>
+                <EntityDetailRow label="Link">
+                  <CopyLink url={subscription.short_url} />
+                </EntityDetailRow>
+              </ShowWhen>
 
               <EntityDetailRow
                 label="Recurring Billing"

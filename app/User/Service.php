@@ -414,6 +414,8 @@ class Service extends Base\Service
 
                     $data['experiments']['new_chat'] = $merchantService->getTreatment('new_chat');
 
+                    $data['experiments']['subscription_link'] = $merchantService->getTreatment('subscription_link');
+
                     $data['current'] = $currentMerchantId;
 
                     $data['tags'] = $merchantService->getMerchantTags($currentMerchantId);

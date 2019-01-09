@@ -240,6 +240,10 @@ export default class User {
       : !!this.partner_type;
   }
 
+  getExpStatus(name) {
+    return ((this.experiments || {})[name] || {}).result === 'on';
+  }
+
   get showEarlySettlementAnnouncement() {
     return (
       this.activated &&
@@ -262,6 +266,10 @@ export default class User {
 
   get isDiwaliPromoEnabled() {
     return this.findTag('diwali_promotional_plan');
+  }
+
+  get isSubLinkEnabled() {
+    return this.getExpStatus('subscription_link');
   }
 }
 
