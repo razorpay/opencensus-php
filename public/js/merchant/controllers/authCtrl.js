@@ -646,6 +646,7 @@ app
             notify: false,
           }
         );
+        return $scope.onShowSignin && $scope.onShowSignin();
       };
 
       $scope.goToSignupLayout = function() {
@@ -663,6 +664,7 @@ app
             notify: false,
           }
         );
+        return $scope.onShowSignup && $scope.onShowSignup();
       };
 
       // login state container
@@ -1041,6 +1043,8 @@ app
           signin: 'signin',
           signup: 'signup',
           signinSuccess: 'signinSuccess',
+          onShowSignin: 'onShowSignin',
+          onShowSignup: 'onShowSignup',
         };
 
         window.RZP.rpcServer &&
@@ -1066,6 +1070,22 @@ app
                   authCallbacks.setSigninCallback(function(userData) {
                     reply({ user: userData });
                   });
+                },
+              },
+              {
+                name: supportedEvents.onShowSignin,
+                hasReply: true,
+                callback: function(reply) {
+                  $scope.onShowSignin = reply;
+                  return $scope.rightLayout && reply();
+                },
+              },
+              {
+                name: supportedEvents.onShowSignup,
+                hasReply: true,
+                callback: function(reply) {
+                  $scope.onShowSignup = reply;
+                  return !$scope.rightLayout && reply();
                 },
               },
             ],

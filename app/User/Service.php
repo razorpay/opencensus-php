@@ -108,6 +108,12 @@ class Service extends Base\Service
             $res = [
                 'id' => $genericUser->id,
             ];
+            $merchantIds = [];
+            foreach ($genericUser->merchants as $merchant)
+            {
+                $merchantIds[] = $merchant->id;
+            }
+            $res['merchantIds'] = $merchantIds;
         }
 
         $user = Auth::user();

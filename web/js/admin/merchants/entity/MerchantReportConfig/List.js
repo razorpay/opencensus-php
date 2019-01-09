@@ -1,17 +1,18 @@
 import { Component } from 'react';
 
-import { openModal } from 'common/modal';
-import { adminFetch } from 'common/fetch';
+import { notifySuccess, openModal, closeModal } from 'common/modal';
+import { adminFetch, adminDelete } from 'common/fetch';
 
 import { ModalContent } from 'component/Modal';
 import { PageTable } from 'ui/Table';
+import AsyncButton from 'ui/AsyncButton';
 
 import Collection from 'model/collection';
 
 import CreateEntity from './Create';
 import Entity from './Entity';
 
-const getFields = ({ handleViewClick }) => [
+const getFields = ({ handleViewClick, remove }) => [
   ['ID', item => item.id],
   ['Name', item => item.name],
   ['Description', item => item.description],
@@ -19,11 +20,17 @@ const getFields = ({ handleViewClick }) => [
   [
     'Actions',
     item => (
-      <>
-        <button class="btn" onClick={handleViewClick(item)}>
-          View
-        </button>
-      </>
+      <button class="btn" onClick={handleViewClick(item)}>
+        View
+      </button>
+    ),
+  ],
+  [
+    '',
+    item => (
+      <span class="link danger" onClick={remove(item)}>
+        Delete
+      </span>
     ),
   ],
 ];
@@ -55,6 +62,42 @@ export default class MerchantReportConfigList extends Component {
     );
   };
 
+  remove = config => () => {
+    openModal(
+      <ModalContent header="Delete Report Config">
+        <div>
+          Are you sure you want to delete report config:{' '}
+          <strong>{config.name}</strong>
+        </div>
+        <div>
+          <div class="pull-right">
+            <button class="btn-reject" onClick={closeModal}>
+              Cancel
+            </button>
+            <AsyncButton
+              text="Yes"
+              class="btn"
+              pendingClass="small spinner"
+              onClick={() =>
+                adminDelete(
+                  `live_${this.props.match.params.id}/reporting/configs/${
+                    config.id
+                  }`
+                ).then(response => {
+                  if (response) {
+                    this.collection.remove(config);
+                    closeModal();
+                    notifySuccess('Report config delted successfully');
+                  }
+                })
+              }
+            />
+          </div>
+        </div>
+      </ModalContent>
+    );
+  };
+
   render() {
     return (
       <div class="list-container">
@@ -69,7 +112,10 @@ export default class MerchantReportConfigList extends Component {
         <PageTable
           model={this.collection}
           animateRow={false}
-          fields={getFields({ handleViewClick: this.handleViewClick })}
+          fields={getFields({
+            handleViewClick: this.handleViewClick,
+            remove: this.remove,
+          })}
         />
       </div>
     );

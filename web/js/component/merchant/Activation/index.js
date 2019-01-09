@@ -105,7 +105,7 @@ export default class ActivationWizard extends React.Component {
         : '0', // '1' => checkbox ticked
     has_url:
       this.props.data && this.props.data.business_website === '' ? '1' : '0', // '0' => 0th radio button, value exists
-    has_gstin: this.props.data && this.props.data.has_gstin === '' ? '1' : '0', // '0' => 0th radio button, value exists
+    has_gstin: this.props.data && this.props.data.gstin === '' ? '1' : '0', // '0' => 0th radio button, value exists
     account_no: this.props.data && this.props.data.bank_account_number,
     activeTab: 0, // Fallback for all cases.
   };
