@@ -551,6 +551,15 @@ return [
             ],
         ],
 
+        PermissionCategory::GATEWAY_DOWNTIME  => [
+            Permission::CREATE_GATEWAY_DOWNTIME => [
+                'description' => 'Create VAs for a merchant',
+            ],
+            Permission::UPDATE_GATEWAY_DOWNTIME => [
+                'description' => 'Create VAs for a merchant',
+            ],
+        ],
+
         // RZP White label wallet config
         PermissionCategory::WALLET_CONFIG => [
             Permission::CREATE_WALLET_CONFIG => [
