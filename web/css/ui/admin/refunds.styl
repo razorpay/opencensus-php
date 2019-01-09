@@ -55,3 +55,22 @@
 
     .next
       float: right
+
+.list-container.refunds
+  .refunds-list
+    .tr
+      //checkbox in table 1st row
+      div:first-of-type
+        min-width: 0;
+        .field
+          vertical-align: middle;
+          label
+            width: 0;
+
+  .bulk-actions
+    margin-bottom: 0;
+
+    .download-selected
+      position: relative;
+      top: 17px;
+      font-size: 13px;

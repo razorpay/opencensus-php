@@ -2,9 +2,10 @@
 
 namespace App\Http\Middleware;
 
-use Session;
 use Auth;
+use Session;
 use Closure;
+use App\Http\AppResponse;
 use Illuminate\Contracts\Auth\Guard;
 
 
@@ -54,6 +55,8 @@ class SessionInActivity
 
         $currentTime = time();
 
+        $routeName = $request->route()->getName();
+
         if ((empty($user->user()) === false) and (empty($lastUsed) === false) and (
             ($currentTime - $lastUsed) > $inActivityTime))
         {
@@ -61,22 +64,14 @@ class SessionInActivity
 
             $user->logout();
 
-            if ($request->ajax() === true)
-            {
-                return response('Unauthorized.', 401);
-            }
-            else
-            {
-                $path = '/#/access/signin';
+            $path = '/#/access/signin';
 
-                if (empty($userEmail) === false)
-                {
-                    $path .= '?email=' . $userEmail;
-                }
-
-                // Need to redirect to home page with email as a param.
-                return redirect()->guest($path);
+            if (empty($userEmail) === false)
+            {
+                $path .= '?email=' . $userEmail;
             }
+
+            return AppResponse::unauthorizedResponse('Unauthorized.', $routeName, $path);
         }
 
         return $next($request);
