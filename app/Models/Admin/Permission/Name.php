@@ -198,6 +198,7 @@ class Name
     const DOWNLOAD_NON_MERCHANT_REPORT        = 'download_non_merchant_report';
     const CREATE_VIRTUAL_ACCOUNTS             = 'create_virtual_accounts';
     const CREATE_SELF_SERVE_REPORT            = 'create_self_serve_report';
+    const CREATE_PROMOTION_COUPON             = 'create_promotion_coupon';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,

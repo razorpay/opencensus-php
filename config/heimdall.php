@@ -190,6 +190,7 @@ return [
             Permission::EDIT_TERMINAL                       => '',
             Permission::CREATE_SETTLEMENTS_RECONCILE        => '',
             Permission::CREATE_RECONCILIATE                 => '',
+            Permission::CREATE_PROMOTION_COUPON             => '',
             Permission::VIEW_ACTIVATION_FORM                => [
                 'assignable' => true,
             ],
