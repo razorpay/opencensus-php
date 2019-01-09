@@ -97,3 +97,26 @@ export const Sidebar = ({ user, handleLogout }) => (
     </div>
   </aside>
 );
+
+export default class RazorX extends React.Component {
+  componentWillMount() {
+    document.title = 'RazorX Dashboard';
+  }
+
+  componentWillUnmount() {
+    document.title = 'Razorpay - Admin Panel';
+  }
+
+  render() {
+    return (
+      <Switch>
+        <Route path="/razorx/experiments" component={ExperimentsList} />
+        <ShowWhenRoute path="/razorx/features" component={FeaturesList} />
+        <Route path="/razorx/audit-logs" component={AuditLogsList} />
+        <Redirect to="/razorx/experiments" />
+      </Switch>
+    );
+  }
+}
+
+RazorX.display_name = 'RazorX';
