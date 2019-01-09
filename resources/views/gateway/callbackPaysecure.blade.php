@@ -46,7 +46,7 @@
                 <tr>
                     <td>Transaction Status</td>
                     <td>
-                        @if ($data['status'] === 'failed')
+                        @if ($data['status'] === 'failed' or $data['status'] === 'created')
                             Failed
                         @else
                             Success
