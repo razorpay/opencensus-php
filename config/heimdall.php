@@ -552,6 +552,15 @@ return [
             ],
         ],
 
+        PermissionCategory::GATEWAY_DOWNTIME  => [
+            Permission::CREATE_GATEWAY_DOWNTIME => [
+                'description' => 'Create Gateway Downtime',
+            ],
+            Permission::UPDATE_GATEWAY_DOWNTIME => [
+                'description' => 'Update Gateway Downtime',
+            ],
+        ],
+
         // RZP White label wallet config
         PermissionCategory::WALLET_CONFIG => [
             Permission::CREATE_WALLET_CONFIG => [
