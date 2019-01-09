@@ -24,22 +24,21 @@
 
 namespace RZP\Gateway\Hdfc;
 
-use Carbon\Carbon;
-use RZP\Base\JitValidator;
-use RZP\Constants\Mode;
-use RZP\Constants\Timezone;
+use App;
 use RZP\Error;
 use RZP\Exception;
+use RZP\Models\Card;
 use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc;
-use RZP\Gateway\Hdfc\Payment;
-use RZP\Models\Card;
-use RZP\Models\Payment\Entity as PaymentEntity;
-use RZP\Models\Payment\RecurringType;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
-use RZP\Gateway\Base\Action as BaseAction;
-use App;
+use RZP\Base\JitValidator;
+use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Payment\AuthType;
+use RZP\Models\Payment\RecurringType;
+use RZP\Models\Payment as PaymentModel;
+use RZP\Gateway\Base\Action as BaseAction;
+use RZP\Models\Payment\Entity as PaymentEntity;
 
 class Gateway extends Base\Gateway
 {
@@ -372,7 +371,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $this->supportPayment($input, 'refund');
+        return $this->supportPayment($input, 'refund');
     }
 
     public function capture(array $input)
@@ -988,6 +987,14 @@ class Gateway extends Base\Gateway
             $exception->markSafeRetryTrue();
         }
 
+        if ($this->supportPaymentResponse['type'] === 'refund')
+        {
+            $exception->setData([
+                PaymentModel\Gateway::GATEWAY_RESPONSE => json_encode($this->supportPaymentResponse['xml']),
+                PaymentModel\Gateway::GATEWAY_KEYS     => $this->getGatewayData($this->supportPaymentResponse['data'])
+            ]);
+        }
+
         throw $exception;
     }
 
@@ -1092,5 +1099,23 @@ class Gateway extends Base\Gateway
                 null,
                 Base\Action::AUTHENTICATE);
         }
+    }
+
+    protected function getGatewayData(array $refundFields = [])
+    {
+        if (empty($refundFields) === false)
+        {
+            return [
+                Fields::REF            => $refundFields[Fields::REF] ?? null,
+                Fields::AVR            => $refundFields[Fields::AVR] ?? null,
+                Fields::AUTH           => $refundFields[Fields::AUTH] ?? null,
+                Fields::PAYID          => $refundFields[Fields::PAYID] ?? null,
+                Fields::RESULT         => $refundFields[Fields::RESULT] ?? null,
+                Fields::TRANID         => $refundFields[Fields::TRANID] ?? null,
+                Fields::POSTDATE       => $refundFields[Fields::POSTDATE] ?? null,
+                Fields::AUTH_RESP_CODE => $refundFields[Fields::AUTH_RESP_CODE] ?? null,
+            ];
+        }
+        return [];
     }
 }

@@ -72,6 +72,14 @@ trait Support
             $this->supportPaymentResponse);
 
         $this->verifyAndSaveSupportResponse($type, $input);
+
+        if ($type === 'refund')
+        {
+            return [
+                PaymentModel\Gateway::GATEWAY_RESPONSE => json_encode($this->supportPaymentResponse['xml']),
+                PaymentModel\Gateway::GATEWAY_KEYS     => $this->getGatewayData($this->supportPaymentResponse['data'])
+            ];
+        }
     }
 
     protected function retrievePreviousGatewayTransaction($input, $type)

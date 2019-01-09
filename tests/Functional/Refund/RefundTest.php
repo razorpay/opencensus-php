@@ -52,7 +52,22 @@ class RefundTest extends TestCase
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
-        $refund = $this->startTest($payment['id'], (string) $payment['amount']);
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
+
+        $refund = $this->refundPayment($payment['id']);
 
         $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
 
@@ -67,6 +82,8 @@ class RefundTest extends TestCase
 
     public function testRefundEditStatus()
     {
+        $this->markTestSkipped('HDFC on scrooge - only created to processed edit status supported');
+
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
@@ -117,6 +134,8 @@ class RefundTest extends TestCase
 
     public function testRefundEditStatusToFailedFromInitiated()
     {
+        $this->markTestSkipped('HDFC on scrooge - only created to processed edit status supported');
+
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
@@ -144,6 +163,8 @@ class RefundTest extends TestCase
 
     public function testRefundEditStatustoInitiatedFromFailed()
     {
+        $this->markTestSkipped('HDFC on scrooge - only created to processed edit status supported');
+
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
@@ -171,6 +192,8 @@ class RefundTest extends TestCase
 
     public function testRefundEditStatusToProcessedFromFailed()
     {
+        $this->markTestSkipped('HDFC on scrooge - only created to processed edit status supported');
+
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
@@ -201,6 +224,8 @@ class RefundTest extends TestCase
 
     public function testRefundEditStatusWithoutReference()
     {
+        $this->markTestSkipped('HDFC on scrooge - only created to processed edit status supported');
+
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
@@ -231,6 +256,21 @@ class RefundTest extends TestCase
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
+
         $refund = $this->refund(
             [
                 'payment_id' => $payment['id'],
@@ -247,18 +287,33 @@ class RefundTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('processed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
     }
 
     public function testRefundFetchDetailsForCustomerFromRefundIdAndPaymentId()
     {
         $this->fixtures->merchant->addFeatures(['expose_arn_refund']);
 
+        $this->gateway = 'hdfc';
+
         $payment = $this->fixtures->create(
                                     'payment:captured',
                                     [
                                         'amount'   => 50000,
                                     ]);
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
 
         $refund1 = $this->refundPayment('pay_' . $payment['id'], $payment['amount']/2);
         $refund2 = $this->refundPayment('pay_' . $payment['id'], $payment['amount']/2);
@@ -305,6 +360,8 @@ class RefundTest extends TestCase
 
     public function testRefundFetchDetailsForCustomerFromReservationId()
     {
+        $this->gateway = 'hdfc';
+
         $this->fixtures->merchant->addFeatures(['expose_arn_refund', 'irctc_report']);
 
         $order = $this->fixtures->order->create(['receipt' => 'check123', 'authorized' => true]);
@@ -315,6 +372,19 @@ class RefundTest extends TestCase
                                         'order_id' => $order->getId(),
                                         'amount'   => 50000,
                                     ]);
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
 
         $refund1 = $this->refundPayment('pay_' . $payment['id'], $payment['amount']/2);
         $refund2 = $this->refundPayment('pay_' . $payment['id'], $payment['amount']/2);
@@ -401,10 +471,25 @@ class RefundTest extends TestCase
     {
         Mail::fake();
 
+        $this->gateway = 'hdfc';
+
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
-        $refund = $this->startTest($payment['id'], (string) $payment['amount']);
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
+
+        $refund = $this->refundPayment($payment['id']);
 
         $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
 
@@ -855,20 +940,35 @@ class RefundTest extends TestCase
     {
         $createdAt = Carbon::today(Timezone::IST)->subDays(6)->timestamp;
 
-        $payments = $this->fixtures->times(2)->create(
+        $payments = $this->fixtures->times(1)->create(
             'payment:purchased',
             ['created_at' => $createdAt]);
 
-        $payments = $this->fixtures->times(2)->create('payment:purchased');
+        $payments = $this->fixtures->times(1)->create('payment:purchased');
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
 
         $content = $this->refundOldAuthorizedPayments();
 
         $this->assertArrayHasKey('refunded', $content);
-        $this->assertEquals(2, $content['refunded']);
+        $this->assertEquals(1, $content['refunded']);
         $this->assertArrayHasKey('authorized', $content);
-        $this->assertEquals(2, $content['authorized']);
+        $this->assertEquals(1, $content['authorized']);
 
-        $refundedEntities = $this->getEntities('hdfc', ['count' => 2], true);
+        $refundedEntities = $this->getEntities('hdfc', ['count' => 1], true);
 
         foreach ($refundedEntities['items'] as $entity)
         {
@@ -891,6 +991,21 @@ class RefundTest extends TestCase
 
         $this->fixtures->payment->edit($payment->getId(), ['status' => 'authorized']);
 
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
+
         $content = $this->refundOldAuthorizedPayments();
 
         $this->assertArrayHasKey('refunded', $content);
@@ -910,6 +1025,9 @@ class RefundTest extends TestCase
 
     public function testVerifyRefund()
     {
+        $this->markTestSkipped('HDFC on scrooge - verify Refund is called before first refund call - 
+        so verify refund related transaction is already created');
+
         // Case 1
         $payment = $this->defaultAuthPayment();
 
