@@ -384,7 +384,9 @@ abstract class NodalAccount extends Base\Core
     {
         try
         {
-            (new Settlement\SlackNotification)->send('low_balance_alert', $data);
+            // sending 3rd and 4th param just represent this as an failure alert
+            // because immediate action is required for this
+            (new Settlement\SlackNotification)->send('low_balance_alert', $data, null, 1);
         }
         catch (\Throwable $e)
         {
@@ -393,6 +395,28 @@ abstract class NodalAccount extends Base\Core
                 Logger::ERROR,
                 TraceCode::SLACK_NOTIFICATION_SEND_FAILED,
                 $data);
+        }
+    }
+
+    /**
+     * Gives request type for the given attempt.
+     * Based on these attempts nodal config will be picked while making any request to bank
+     *
+     * @param Attempt\Entity $attempt
+     * @return string
+     */
+    protected function getRequestType(Attempt\Entity $attempt): string
+    {
+        switch (true)
+        {
+            case $attempt->isOfBanking():
+                return Attempt\Type::BANKIING;
+
+            case $attempt->isPennyTesting():
+                return Attempt\Type::SYNC;
+
+            default:
+                return Attempt\Type::PRIMARY;
         }
     }
 }

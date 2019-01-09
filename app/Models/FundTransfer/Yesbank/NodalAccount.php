@@ -47,8 +47,6 @@ class NodalAccount extends NodalBase\NodalAccount
 
         foreach ($attempts as $attempt)
         {
-            $lowBalanceAlert = false;
-
             //
             // This is required only for Yesbank since the schedule sets
             // time during non-working days and non-working hours also
@@ -71,7 +69,7 @@ class NodalAccount extends NodalBase\NodalAccount
 
             $this->doRequiredChecks($gateway);
 
-            $type = $attempt->getRequestType();
+            $type = $this->getRequestType($attempt);
 
             $transfer = new Transfer($this->purpose, $type);
 

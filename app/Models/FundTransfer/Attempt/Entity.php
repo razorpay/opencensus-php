@@ -247,7 +247,7 @@ class Entity extends Base\PublicEntity
     {
         return ($this->getAttribute(self::PURPOSE) === Purpose::SETTLEMENT);
     }
-    
+
     public function getDestinationType()
     {
         if ($this->hasVpa() === true)
@@ -447,27 +447,5 @@ class Entity extends Base\PublicEntity
         }
 
         return true;
-    }
-
-    /**
-     * Gives request type for the given attempt.
-     * Based on these attempts nodal config will be picked while making any request to bank
-     *
-     * @param Entity $attempt
-     * @return string
-     */
-    public function getRequestType(): string
-    {
-        switch (true)
-        {
-            case $this->isOfBanking():
-                return Type::BANKIING;
-
-            case $this->isPennyTesting():
-                return Type::SYNC;
-
-            default:
-                return Type::PRIMARY;
-        }
     }
 }
