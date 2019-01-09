@@ -19,6 +19,7 @@ import user, { org } from 'admin/user';
 
 import AsyncButton from 'ui/AsyncButton';
 
+import { classList } from 'common/util';
 import fetch, { adminFetch } from 'common/fetch';
 
 @withRouter
@@ -73,7 +74,12 @@ export default class App extends Component {
     const FPView = this.getFPView();
 
     return (
-      <div id="app-container">
+      <div
+        class={classList(
+          'app-container',
+          FPView && `${FPView.component.display_name}-container`
+        )}
+      >
         <main>
           <ErrorBoundary resetOnProps location={this.props.location}>
             {FPView ? (

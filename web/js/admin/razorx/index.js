@@ -28,9 +28,10 @@ export default class RazorXApp extends React.Component {
         <main>
           <ErrorBoundary resetOnProps location={this.props.location}>
             <Switch>
-              <Route path="/experiments" component={Experiments} />
-              <ShowWhenRoute path="/features" component={Features} />
-              <Redirect to="/experiments" />
+              <Route path="/razorx/experiments" component={ExperimentsList} />
+              <ShowWhenRoute path="/razorx/features" component={FeaturesList} />
+              <Route path="/razorx/audit-log" component={AuditLogList} />
+              <Redirect to="/razorx/experiments" />
             </Switch>
           </ErrorBoundary>
         </main>
@@ -64,17 +65,14 @@ export default class RazorXApp extends React.Component {
 
 const links = [
   // title, url, permission, icon
-  ['Experiments', '/experiments', '', 'date'],
-  ['Features', '/features', '', 'layers'],
+  ['Experiments', '/razorx/experiments', '', 'flask'],
+  ['Features', '/razorx/features', '', 'layers'],
+  ['Audit Logs', '/razorx/audit-logs', '', 'notes'],
 ];
 
 export const Sidebar = () => (
   <aside className={`org-${org.custom_code}`}>
-    <a
-      id="org-logo"
-      href="/razorx"
-      style={{ backgroundImage: `url("${org.main_logo_url}")` }}
-    />
+    <a id="razorx-logo" href="/razorx" />
     {links.map((l, i) => (
       <div key={i}>
         <MainNavLink to={l[1]} permission={l[2]} icon={l[3]}>

@@ -2,11 +2,11 @@ import { matchPath } from 'react-router-dom';
 import { showWhenUtil, ShowWhenRoute } from 'admin/components/ShowWhen';
 import { isOrgRazorpay } from 'admin/user';
 
-import RazorXTabs, { Sidebar as RazorXSidebar } from 'admin/razorx';
+import RazorX, { Sidebar as RazorXSidebar } from 'admin/razorx';
 
 const fullPageRoutes = {
   '/razorx': {
-    component: RazorXTabs,
+    component: RazorX,
     sidebar: RazorXSidebar,
     permission: 'view-razorx',
     additionalCondition: _ => isOrgRazorpay(),
