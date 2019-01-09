@@ -9,6 +9,7 @@ import MainNavLink from 'admin/components/MainNavLink';
 import Features from './Features';
 import Experiments from './Experiments';
 import user, { org } from 'admin/user';
+import AuditLogsList from './auditlog/List';
 
 import ModalContainer, { openSlider, closeSlider } from 'common/modal';
 
@@ -28,8 +29,8 @@ export default class RazorXApp extends React.Component {
         <main>
           <ErrorBoundary resetOnProps location={this.props.location}>
             <Switch>
-              <Route path="/razorx/experiments" component={ExperimentsList} />
-              <ShowWhenRoute path="/razorx/features" component={FeaturesList} />
+              <Route path="/razorx/experiments" component={Experiments} />
+              <ShowWhenRoute path="/razorx/features" component={Features} />
               <Route path="/razorx/audit-log" component={AuditLogList} />
               <Redirect to="/razorx/experiments" />
             </Switch>
@@ -72,7 +73,7 @@ const links = [
 
 export const Sidebar = ({ user, handleLogout }) => (
   <aside className={`org-${org.custom_code}`}>
-    <a id="razorx-logo" href="/razorx" />
+    <a id="razorx-logo" href="/admin/razorx" />
     {links.map((l, i) => (
       <div key={i}>
         <MainNavLink to={l[1]} permission={l[2]} icon={l[3]}>

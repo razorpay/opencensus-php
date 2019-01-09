@@ -1,5 +1,10 @@
+import { openModal, closeModal, confirm } from 'common/modal';
+import ExperimentsModal from './ExperimentsModal';
+
 export default class Experiments extends React.Component {
-  showExperimentModal = _ => {};
+  showExperimentModal = _ => {
+    openModal(<ExperimentsModal />);
+  };
 
   render() {
     return (

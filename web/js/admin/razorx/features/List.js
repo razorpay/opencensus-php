@@ -1,5 +1,10 @@
+import { openModal, closeModal, confirm } from 'common/modal';
+import FeaturesModal from './FeaturesModal';
+
 export default class FeaturesList extends React.Component {
-  showFeaturesModal = _ => {};
+  showExperimentModal = _ => {
+    openModal(<FeaturesModal />);
+  };
 
   render() {
     return (
@@ -9,7 +14,7 @@ export default class FeaturesList extends React.Component {
           <div class="btn-group">
             <button
               class="btn btn--primary btn--round"
-              onClick={this.showFeaturesModal}
+              onClick={this.showExperimentModal}
             >
               + Add New
             </button>
