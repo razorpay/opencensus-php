@@ -135,24 +135,24 @@ class Core extends Base\Core
             $skip  += $count;
 
             foreach ($mappings as $row)
-            {
-                $applicationId = $row->{Entity::ENTITY_ID};
-                if(array_key_exists($applicationId, $applications) === false)
-                {
-                    $applications[$applicationId] = $oauthRepo->findOrFail($applicationId);
-                }
-                
-                $partnerId     = $applications[$applicationId]->getMerchantId();
-                $merchantId    = $row->{Entity::MERCHANT_ID};
-
-                $traceData = [
-                    Entity::APPLICATION_ID => $applicationId,
-                    Entity::MERCHANT_ID    => $merchantId,
-                    Entity::ENTITY_OWNER_ID     => $partnerId
-                ];
-                
+            {   
                 try
                 {
+                    $applicationId = $row->{Entity::ENTITY_ID};
+                    if(array_key_exists($applicationId, $applications) === false)
+                    {
+                        $applications[$applicationId] = $oauthRepo->findOrFail($applicationId);
+                    }
+                    
+                    $partnerId     = $applications[$applicationId]->getMerchantId();
+                    $merchantId    = $row->{Entity::MERCHANT_ID};
+
+                    $traceData = [
+                        Entity::APPLICATION_ID => $applicationId,
+                        Entity::MERCHANT_ID    => $merchantId,
+                        Entity::ENTITY_OWNER_ID     => $partnerId
+                    ];
+                    
                     $row->{Entity::ENTITY_OWNER_ID} = $partnerId;
                     $this->repo->merchant_access_map->saveOrFail($row);
 
