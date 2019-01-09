@@ -58,6 +58,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
         Entity::IFSC_CODE                   => 'sometimes|string|size:11',
         Entity::CARDLESS_EMI                => 'sometimes|boolean',
+        Entity::ENABLED                     => 'sometimes|in:0,1',
     ];
 
     protected static $editTerminalGateways = [
