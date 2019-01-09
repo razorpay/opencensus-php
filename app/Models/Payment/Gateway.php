@@ -481,6 +481,9 @@ class Gateway
         Payment\Gateway::SHARP => [
             self::GO_LIVE_TIMESTAMP => 1535712088
         ],
+        Payment\Gateway::HDFC => [
+            self::GO_LIVE_TIMESTAMP => 1546592646
+        ],
         Payment\Gateway::AXIS_MIGS      => [
             self::GO_LIVE_TIMESTAMP => 1542272247
         ],
