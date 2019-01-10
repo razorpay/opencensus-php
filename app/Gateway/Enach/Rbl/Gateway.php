@@ -127,7 +127,7 @@ class Gateway extends Base\Gateway
     {
         $this->setCrypto();
 
-        $this->createGatewayPaymentEntity([], 'authorize');
+        $this->createGatewayPaymentEntity([], null, 'authorize');
 
         $request = $this->getAuthRequest($input);
 
