@@ -89,6 +89,17 @@ trait PaymentHitachiTrait
         );
     }
 
+    protected function mockDefiniteVerifyFailed()
+    {
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                $content[Hitachi\ResponseFields::STATUS] = 'Decline';
+                $content[Hitachi\ResponseFields::RESPONSE_CODE] = 'N7';
+            }
+        );
+    }
+
     protected function mockAuthFormatError()
     {
         $this->mockServerContentFunction(
