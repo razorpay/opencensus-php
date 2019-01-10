@@ -91,6 +91,11 @@ class Entity extends Base\PublicEntity
     const OFFERS            = 'offers';
 
     /**
+    * Used for expand order payments
+    */
+    const PAYMENTS          = 'payments';
+
+    /**
      * Used in creation request to create and link bank account
      */
     const BANK_ACCOUNT      = 'bank_account';
@@ -148,6 +153,7 @@ class Entity extends Base\PublicEntity
         // but still needs to be discussed.
         // See setPublicDiscountAttribute
         // self::DISCOUNT,
+        self::PAYMENTS,
         self::OFFER_ID,
         self::OFFERS,
         self::STATUS,
