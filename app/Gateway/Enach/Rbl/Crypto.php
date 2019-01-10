@@ -53,7 +53,7 @@ class Crypto
 
     public function setPrivateKey($key)
     {
-        $key = trim(str_replace('\n', "\n", $key));
+        $key = trim(str_replace('\n', '', $key));
 
         $this->privateKey = $key;
     }
