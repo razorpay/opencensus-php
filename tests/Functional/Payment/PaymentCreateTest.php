@@ -409,9 +409,16 @@ class PaymentCreateTest extends TestCase
         //
         // Second auth payment for the recurring product
         //
-        $response = $this->doS2SRecurringPayment($payment);
+        $paymentId = $this->doS2SRecurringPayment($payment)['razorpay_payment_id'];
 
-        $this->assertArrayHasKey('razorpay_payment_id', $response);
+        $this->fixtures->stripSign($paymentId);
+
+        // Setting created at to 8 am. Payments for debit are picked from 9 to 9 cycle
+        $this->fixtures->edit(
+            'payment',
+            $paymentId,
+            ['created_at' => Carbon::today(Timezone::IST)->addHours(8)->getTimestamp()]
+        );
 
         $this->ba->adminAuth();
 
