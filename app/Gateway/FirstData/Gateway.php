@@ -1503,15 +1503,18 @@ class Gateway extends Base\Gateway
 
     protected function getPurchaseRequestArrayWithCard(array $input)
     {
+        $cardMonth = str_pad($input[Constants\Entity::CARD][Card\Entity::EXPIRY_MONTH],
+            2, '0', STR_PAD_LEFT);
+
         $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE] = [
-            ApiRequestFields::V1_STORE_ID => $this->getStoreId(),
-            ApiRequestFields::V1_TYPE => TxnType::SALE,
+            ApiRequestFields::V1_STORE_ID   => $this->getStoreId(),
+            ApiRequestFields::V1_TYPE       => TxnType::SALE,
         ];
 
         $body[ApiRequestFields::V1_CREDIT_CARD_DATA] = [
-            ApiRequestFields::V1_CARD_NUMBER => $input['card']['number'],
-            ApiRequestFields::V1_EXPIRY_MONTH => $input['card']['expiry_month'],
-            ApiRequestFields::V1_EXPIRY_YEAR => substr($input['card']['expiry_year'],-2),
+            ApiRequestFields::V1_CARD_NUMBER    => $input['card']['number'],
+            ApiRequestFields::V1_EXPIRY_MONTH   => $cardMonth,
+            ApiRequestFields::V1_EXPIRY_YEAR    => substr($input['card']['expiry_year'],-2),
         ];
 
         $body[ApiRequestFields::V1_RECURRING_TYPE] = Codes::STANDING_INSTRUCTION;
@@ -1524,7 +1527,7 @@ class Gateway extends Base\Gateway
 
         $body[ApiRequestFields::V1_PAYMENT] = [
             ApiRequestFields::V1_CHARGE_TOTAL => $this->getFormattedAmount($input, $amountEntity),
-            ApiRequestFields::V1_CURRENCY => $currencyCode,
+            ApiRequestFields::V1_CURRENCY     => $currencyCode,
         ];
 
         // Sending merchant_txn_id is not strictly necessary. We use the order id
