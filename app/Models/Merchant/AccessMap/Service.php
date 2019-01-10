@@ -25,10 +25,10 @@ class Service extends Base\Service
         (new Validator)->validateInput(self::ADD_APP, $input);
 
         // remove if condition later since partnerId will always be sent
+        $aggregateMerchant = null;
         if(empty($input['partner_id']) === true)
         {
             $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-            $aggregateMerchant = null;
         }
         else
         {
