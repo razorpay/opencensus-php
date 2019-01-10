@@ -53,14 +53,14 @@ class Crypto
 
     public function setPrivateKey($key)
     {
-        $key = trim(str_replace('\\n', "\n", $key));
+        $key = trim(str_replace('\n', "\n", $key));
 
         $this->privateKey = $key;
     }
 
     public function setEncryptionCertificate($cert)
     {
-        $cert = trim(str_replace('\\n', "\n", $cert));
+        $cert = trim(str_replace('\n', "\n", $cert));
         $this->encryptionCertificate = $cert;
     }
 
