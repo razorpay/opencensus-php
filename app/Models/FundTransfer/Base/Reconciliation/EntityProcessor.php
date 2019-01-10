@@ -6,6 +6,7 @@ use Mail;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payout;
@@ -106,7 +107,7 @@ abstract class EntityProcessor extends Base\Core
 
         try
         {
-            $sourceCoreClass = substr(get_class($this->fta->source), 0, -6) . 'Core';
+            $sourceCoreClass = Constants\Entity::getEntityNamespace($this->fta->source) . '\\' . 'Core';
 
             $sourceCore = new $sourceCoreClass();
 
@@ -139,7 +140,7 @@ abstract class EntityProcessor extends Base\Core
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::SOURCE_PROCESSING_FAILED,
+                TraceCode::FTA_SOURCE_PROCESSING_FAILED,
                 $response
             );
         }

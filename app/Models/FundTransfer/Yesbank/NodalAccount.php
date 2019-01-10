@@ -164,7 +164,7 @@ class NodalAccount extends NodalBase\NodalAccount
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::SOURCE_PROCESSING_FAILED,
+                TraceCode::FTA_SOURCE_PROCESSING_FAILED,
                 $response
             );
         }
