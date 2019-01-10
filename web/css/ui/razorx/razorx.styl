@@ -34,10 +34,14 @@ $background-lighter = #3d415f
     > div
       border: none
 
+    .scroll-nav
+      height: calc(100% - 88px)
+      overflow-y: auto
+
     .main-nav
       text-align: center
-      padding: 8px 0
-      line-height: 32px
+      padding: 16px 0
+      line-height: 16px
       font-size: 10px
       text-transform: uppercase
       color: #fff
@@ -50,6 +54,7 @@ $background-lighter = #3d415f
         display: block
         color: inherit
         opacity: 1
+        margin-bottom: 8px
 
       &:hover
         opacity: 0.75
@@ -71,6 +76,17 @@ $background-lighter = #3d415f
         white-space: nowrap
         text-overflow: ellipsis
 
+      &:before
+        content: ''
+        display: block
+        border-top: 2px solid rgba(255,255,255,0.24)
+        position: absolute
+        top: 0
+        left: 20px
+        right: 20px
+        margin-bottom: 16px
+        //box-shadow: 0px -16px 40px rgba(255,255,255,1)
+
       .menu
         display: none
         position: absolute
@@ -84,6 +100,7 @@ $background-lighter = #3d415f
         > div, > a
           display: block
           position: relative
+          padding: 8px 0
 
         .btn-default + .btn-default
           margin-top: -1px

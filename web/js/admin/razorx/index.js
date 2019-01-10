@@ -6,9 +6,12 @@ import { ShowWhenRoute } from 'admin/components/ShowWhen';
 import AsyncButton from 'ui/AsyncButton';
 
 import MainNavLink from 'admin/components/MainNavLink';
+
 import Features from './Features';
 import Experiments from './Experiments';
 import user, { org } from 'admin/user';
+import WorkflowsList from './workflows/List';
+import MerchantEvaluation from './merchant_evaluation/Search';
 import AuditLogsList from './auditlog/List';
 
 import ModalContainer, { openSlider, closeSlider } from 'common/modal';
@@ -68,19 +71,23 @@ const links = [
   // title, url, permission, icon
   ['Experiments', '/razorx/experiments', '', 'flask'],
   ['Features', '/razorx/features', '', 'layers'],
+  ['Workflows', '/razorx/workflows', '', 'yes'],
+  ['Merchant Evaluation', '/razorx/merchant-evaluation', '', 'user-search'],
   ['Audit Logs', '/razorx/audit-logs', '', 'notes'],
 ];
 
 export const Sidebar = ({ user, handleLogout }) => (
   <aside className={`org-${org.custom_code}`}>
     <a id="razorx-logo" href="/admin/razorx" />
-    {links.map((l, i) => (
-      <div key={i}>
-        <MainNavLink to={l[1]} permission={l[2]} icon={l[3]}>
-          {l[0]}
-        </MainNavLink>
-      </div>
-    ))}
+    <div class="scroll-nav">
+      {links.map((l, i) => (
+        <div key={i}>
+          <MainNavLink to={l[1]} permission={l[2]} icon={l[3]}>
+            {l[0]}
+          </MainNavLink>
+        </div>
+      ))}
+    </div>
     <div id="profile-nav" class="main-nav">
       <i class="i-user-circle" />
       <div class="ellipsis-wrap">{user.name}</div>
@@ -113,8 +120,13 @@ export default class RazorX extends React.Component {
   render() {
     return (
       <Switch>
-        <Route path="/razorx/experiments" component={ExperimentsList} />
-        <ShowWhenRoute path="/razorx/features" component={FeaturesList} />
+        <Route path="/razorx/experiments" component={Experiments} />
+        <ShowWhenRoute path="/razorx/features" component={Features} />
+        <Route path="/razorx/workflows" component={WorkflowsList} />
+        <Route
+          path="/razorx/merchant-evaluation"
+          component={MerchantEvaluation}
+        />
         <Route path="/razorx/audit-logs" component={AuditLogsList} />
         <Redirect to="/razorx/experiments" />
       </Switch>
