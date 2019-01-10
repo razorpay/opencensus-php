@@ -78,23 +78,24 @@ class Server extends Base\Mock\Server
         ];
 
         $this->content($content);
+
         $content[ResponseFields::HASH] = $this->generateHash($content);
 
         $uuid = 'dummyuuid';
         $encryptedXTtenantKey = $this->encryptXTenantKey($uuid.':'.time());
-        $output = [
-            ResponseFields::X_TENANT => 'Ola',
-            ResponseFields::X_TENANT_KEY => $encryptedXTtenantKey,
-            ResponseFields::X_AUTH_KEY =>$this->signTenantKey($encryptedXTtenantKey),
-            ResponseFields::BODY => $this->encryptBody($content, $uuid)
-        ];
-
 
         if ($content[ResponseFields::TRANSACTION_ID] == 'invalid_body')
         {
-            $output[ResponseFields::BODY] = "Invalid Body";
+            $output[ResponseFields::BODY] = 'Invalid Body';
         }
-        
+
+        $output = [
+            ResponseFields::X_TENANT     => 'Ola',
+            ResponseFields::X_TENANT_KEY => $encryptedXTtenantKey,
+            ResponseFields::X_AUTH_KEY   => $this->signTenantKey($encryptedXTtenantKey),
+            ResponseFields::BODY         => $this->encryptBody($content, $uuid)
+        ];
+
         $paymentId = $input['paymentId'];
 
         $publicId = $this->getSignedPaymentId($paymentId);

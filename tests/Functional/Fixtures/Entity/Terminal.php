@@ -567,6 +567,8 @@ class Terminal extends Base
             'gateway_secure_secret'     => 'secret',
         ];
 
+        $attributes = array_merge($default, $attributes);
+
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 

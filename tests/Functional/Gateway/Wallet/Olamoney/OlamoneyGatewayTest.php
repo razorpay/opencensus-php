@@ -92,6 +92,8 @@ class OlamoneyGatewayTest extends TestCase
 
     public function testAmountTamperingV2()
     {
+        $this->fixtures->terminal->disableTerminal($this->sharedTerminal->getId());
+
         $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
 
         $this->mockServerContentFunction(function (& $content)
@@ -99,14 +101,13 @@ class OlamoneyGatewayTest extends TestCase
             $content['amount'] = '100.00';
         });
 
-        $data = $this->testData[__FUNCTION__];
+        $data = $this->testData['testAmountTampering'];
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
             $this->doAuthPayment($payment);
         });
     }
-
 
     public function testErrorPayment()
     {
@@ -124,6 +125,8 @@ class OlamoneyGatewayTest extends TestCase
 
     public function testErrorPaymentV2()
     {
+        $this->fixtures->terminal->disableTerminal($this->sharedTerminal->getId());
+
         $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
 
         $this->mockServerContentFunction(function (& $content)
@@ -131,25 +134,7 @@ class OlamoneyGatewayTest extends TestCase
             $content['status'] = 'failed';
         });
 
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            $this->doAuthPayment($payment);
-        });
-    }
-
-    public function testInvalidBodyV2()
-    {
-        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
-
-        $this->mockServerContentFunction(function (& $content)
-        {
-            $content['transactionId'] = 'invalid_body';
-        });
-
-
-        $data = $this->testData[__FUNCTION__];
+        $data = $this->testData['testErrorPayment'];
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
