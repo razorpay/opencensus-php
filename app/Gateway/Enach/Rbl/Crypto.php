@@ -60,7 +60,7 @@ class Crypto
 
     public function setEncryptionCertificate($cert)
     {
-        $cert = trim(str_replace('\n', "\n", $cert));
+        $cert = trim(str_replace('\n', '', $cert));
         $this->encryptionCertificate = $cert;
     }
 
