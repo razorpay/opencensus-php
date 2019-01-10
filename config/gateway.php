@@ -489,7 +489,7 @@ return [
         'test_emandate_npci_creditor_account'       => env('NPCI_EMANDATE_TEST_CREDITOR_ACCOUNT'),
         'test_emandate_npci_sponser_ifsc'           => env('NPCI_EMANDATE_TEST_SPONSER_IFSC'),
         //TODO : Add these creds
-        'live_emandate_private_key'                 => env('NPCI_EMANDATE_LIVE_PRIVATE_KEY'),
+        'live_npci_emandate_private_key'            => env('NPCI_EMANDATE_LIVE_PRIVATE_KEY'),
         'live_npci_emandate_encryption_certificate' => env('NPCI_EMANDATE_LIVE_ENCRYPTION_CERTIFICATE'),
         'live_npci_emandate_signing_certificate'    => env('NPCI_EMANDATE_LIVE_SIGNING_CERTIFICATE'),
         'live_emandate_npci_creditor_account'       => env('NPCI_EMANDATE_LIVE_CREDITOR_ACCOUNT'),
