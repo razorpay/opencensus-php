@@ -196,7 +196,7 @@ class Sbi extends Base
                     $this->numpad($mid, 16) .
                     $this->strpad($merchantDetail[Detail\Entity::BUSINESS_NAME], 40) .
                     $this->strpad($tid, 8) .
-                    str_pad(str_pad($rate, 2, '0', STR_PAD_LEFT), 7, '0', STR_PAD_RIGHT) .
+                    str_pad($emiPlan->getRate(), 7, '0', STR_PAD_RIGHT) .
                     $this->strpad('', 40) .
                     $this->numpad($principalAmount, 17) .
                     'F' .
