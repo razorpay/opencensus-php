@@ -367,7 +367,13 @@ class GatewayController extends Controller
     {
         $input = Request::all();
 
-        //TODO add new trace code for emandate callback and trace here
+        $this->app['trace']->info(
+            TraceCode::NETBANKING_PAYMENT_CALLBACK,
+            [
+                'input'   => $input ,
+                'gateway' => 'enach_rbl',
+            ]
+        );
 
         $responseXml = (array) simplexml_load_string(trim($input['MandateRespDoc']));
 
