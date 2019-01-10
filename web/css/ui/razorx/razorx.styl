@@ -1,12 +1,13 @@
 $background = #171b30
-$background-lighter = #3d415f
+$background-anti = #f3f3f3
 
 .RazorX-container.RazorX-container
-  background: #f3f3f3
+  background: $background-anti
 
   > main
+    height: 100%
     margin-left: 96px
-    padding: 0 48px 0
+    padding: 0
     background: inherit
     opacity: 0
     animation: appear-in 0.45s 0.8s cubic-bezier(0.32, 1.13, 1, 1) forwards
@@ -14,10 +15,11 @@ $background-lighter = #3d415f
     .header
       font-size: 22px
       height: 62px
-      line-height: 62px
+      padding: 0 36px
       font-weight: 500
-      color: #c1c1c3
+      color: rgba(0,0,0,0.24)
       display: flex
+      align-items: center
 
       .btn-group
         margin: 0 0 0 auto
@@ -62,6 +64,9 @@ $background-lighter = #3d415f
       &.active
         opacity: 1
         color: #58d4ff
+
+        i
+          animation: text-movement 2s infinite
 
     #profile-nav
       cursor: pointer
@@ -138,3 +143,13 @@ $background-lighter = #3d415f
 @keyframes appear-in
   100%
     opacity: 1
+
+@keyframes text-movement
+  0%
+    text-shadow: 0 0 4px rgba(255,255,255,0.1);
+
+  50%
+    text-shadow: 0 0 10px rgba(255,255,255,0.8);
+
+  100%
+    text-shadow: 0 0 4px rgba(255,255,255,0.1);

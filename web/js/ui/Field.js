@@ -136,7 +136,7 @@ export function SwitchField({
 }) {
   return (
     <div class="field">
-      <label class={props.required ? 'required' : ''}>{label}</label>
+      {label && <label class={props.required ? 'required' : ''}>{label}</label>}
 
       {disabledLabel && (
         <span class={`${nocaption ? '' : 'caption'} m-r`}>{disabledLabel}</span>

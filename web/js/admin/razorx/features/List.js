@@ -12,10 +12,7 @@ export default class FeaturesList extends React.Component {
         <div class="header">
           Features
           <div class="btn-group">
-            <button
-              class="btn btn--primary btn--round"
-              onClick={this.showExperimentModal}
-            >
+            <button class="btn btn--primary" onClick={this.showExperimentModal}>
               + Add New
             </button>
           </div>

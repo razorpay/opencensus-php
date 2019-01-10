@@ -3,17 +3,59 @@ $color-primary-hover = #58d4ff
 
 .RazorX-container.RazorX-container
   .btn
+    border-radius: 2px
+
     &--primary
       background: $color-primary
 
       &:hover
         background: $color-primary-hover
 
-    &--round
-      border-radius: 20px
-
   .Modal-mask
     background-color: rgba(17,30,60,0.8);
 
     .Modal-container
       border-radius: 2px
+
+  .knob
+    background: none
+    box-shadow: none
+    padding: 0
+    border: none
+    position: relative
+    margin: 0
+    display: inline-block
+    vertical-align: middle
+    width: 28px
+    height: 14px
+
+    &::before
+      content: ''
+      display: block
+      border-radius: 2px
+      height: 100%
+      width: 100%
+      background-color: #f2f5f6
+      box-shadow: inset 0 1px 3px 0 rgba(0,0,0,0.24)
+
+    &::after
+      content: '='
+      left: 2px
+      top: 2px
+      position: absolute
+      height: auto
+      width: auto
+      box-shadow: 0 1px 3px 0 rgba(0,0,0,0.2), 0 1px 1px 0 rgba(0,0,0,0.18)
+      color: #d9dfe0
+      background: #fff
+      border-radius: 1px
+      padding: 4px 2px
+      line-height: 2px
+      font-size: 12px
+      transition: 0.2s
+
+    &.checked::before
+      background: #528ff0
+
+    &.checked::after
+      transform: translateX(12px)

@@ -121,6 +121,9 @@ export default class RazorX extends React.Component {
     return (
       <Switch>
         <Route path="/razorx/experiments" component={Experiments} />
+        <Route path="/razorx/experiments/:id(exp_.+)" component={Experiments} />
+        <Route path="/razorx/experiments/new" component={Experiments} />
+
         <ShowWhenRoute path="/razorx/features" component={Features} />
         <Route path="/razorx/workflows" component={WorkflowsList} />
         <Route
