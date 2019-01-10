@@ -66,6 +66,7 @@ class Crypto
 
     public function setSigningCertificate($cert)
     {
+        $cert = trim(str_replace('\n', "\n", $cert));
         $this->signingCertificate = $cert;
     }
 
