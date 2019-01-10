@@ -15,7 +15,7 @@ use Razorpay\OAuth\Application as OAuthApp;
 class Core extends Base\Core
 {
     public function create(
-        $partnerMerchant,
+        $entityOwner,
         Merchant\Entity $merchant,
         array $input = null,
         Base\PublicEntity $entity = null)
@@ -25,9 +25,10 @@ class Core extends Base\Core
         $merchantMapping->generateId();
 
         $merchantMapping->merchant()->associate($merchant);
-        if(empty($partnerMerchant) === false)
+        
+        if (empty($entityOwner) === false)
         {
-            $merchantMapping->entityOwner()->associate($partnerMerchant);
+            $merchantMapping->entityOwner()->associate($entityOwner);
         }
 
         if (empty($entity) === false)
@@ -46,13 +47,13 @@ class Core extends Base\Core
      * on this relation. This can be otherwise fetched from auth-service but
      * since it is read-heavy, we maintain it in the access_map table too.
      *
-     * @param Merchant/Entity $aggregateMerchant can be null
+     * @param Merchant\Entity $entityOwner can be null
      * @param Merchant\Entity $merchant
      * @param array           $input
      *
      * @return Entity
      */
-    public function addMappingForOAuthApp($aggregateMerchant, Merchant\Entity $merchant, array $input): Entity
+    public function addMappingForOAuthApp($entityOwner, Merchant\Entity $merchant, array $input): Entity
     {
         $merchantId = $merchant->getId();
 
@@ -74,7 +75,7 @@ class Core extends Base\Core
             Entity::ENTITY_ID   => $input[Entity::APPLICATION_ID],
         ];
 
-        return $this->create($aggregateMerchant, $merchant, $data);
+        return $this->create($entityOwner, $merchant, $data);
     }
 
     /**
@@ -288,13 +289,13 @@ class Core extends Base\Core
 
             DB::table(Table::MERCHANT_ACCESS_MAP)->insert(
                 [
-                    Entity::ID          => $id,
-                    Entity::ENTITY_TYPE => Entity::APPLICATION,
-                    Entity::ENTITY_ID   => $appId,
-                    Entity::MERCHANT_ID => $merchantId,
-                    Entity::ENTITY_OWNER_ID  => $partnerId,
-                    Entity::CREATED_AT  => $createdAt,
-                    Entity::UPDATED_AT  => $createdAt
+                    Entity::ID              => $id,
+                    Entity::ENTITY_TYPE     => Entity::APPLICATION,
+                    Entity::ENTITY_ID       => $appId,
+                    Entity::MERCHANT_ID     => $merchantId,
+                    Entity::ENTITY_OWNER_ID => $partnerId,
+                    Entity::CREATED_AT      => $createdAt,
+                    Entity::UPDATED_AT      => $createdAt
                 ]
             );
         }

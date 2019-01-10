@@ -20,6 +20,7 @@ class Entity extends Base\PublicEntity
 
     const APPLICATION_ID = 'application_id';
 
+    // to store owner of the entity mapped to the merchant
     const ENTITY_OWNER_ID = 'entity_owner_id';
 
     protected $entity = Constants\Entity::MERCHANT_ACCESS_MAP;

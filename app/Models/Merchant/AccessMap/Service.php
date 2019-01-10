@@ -24,29 +24,18 @@ class Service extends Base\Service
 
         (new Validator)->validateInput(self::ADD_APP, $input);
 
-        // remove if condition later since partnerId will always be sent
-        $aggregateMerchant = null;
-        if(empty($input['partner_id']) === true)
-        {
-            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-        }
-        else
-        {
-            $merchants = $this->repo->merchant->findOrFailPublic([$merchantId, $input['partner_id']]);
-            foreach ($merchants as $row)
-            {
-                if($row->getId() === $merchantId)
-                {
-                    $merchant = $row;
-                }
-                else
-                {
-                    $aggregateMerchant = $row;
-                }
-            }
-        }
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $mapping = (new Core)->addMappingForOAuthApp($aggregateMerchant, $merchant, $input);
+        $entityOwner = null;
+
+        // remove if condition later since partnerId will always be sent
+        if(empty($input['partner_id']) === false)
+        {
+            $entityOwner = $this->repo->merchant->findOrFailPublic($input['partner_id']);
+        }
+        
+
+        $mapping = (new Core)->addMappingForOAuthApp($entityOwner, $merchant, $input);
 
         return $mapping->toArrayPublic();
     }
