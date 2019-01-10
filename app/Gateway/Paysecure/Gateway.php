@@ -321,9 +321,24 @@ class Gateway extends Base\Gateway
     /**
      * @param Entity $gatewayPayment
      * @throws Exception\RuntimeException
+     * @throws Exception\GatewayErrorException
      */
     protected function validateRequestId(Entity $gatewayPayment)
     {
+        if (isset($this->input['gateway'][Fields::ACCU_REQUEST_ID]) === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_HASH_GENERATION_ERROR,
+                null,
+                null,
+                [
+                    'request'    => $this->input['gateway'],
+                    'payment_id' => $this->input['payment']['id'],
+                    'gateway'    => $this->gateway,
+                ]
+            );
+        }
+
         $dataToHash = [
             $gatewayPayment[Entity::GATEWAY_TRANSACTION_ID],
             $this->input['gateway'][Fields::ACCU_GUID],
