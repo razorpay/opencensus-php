@@ -411,7 +411,7 @@ class Gateway extends Base\Gateway
             return [];
         }
 
-        $request = $this->getVerifyRequestArray($input);
+        $request = $this->getVerifyRequestArray($input, 'payment');
 
         $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST);
 
@@ -424,6 +424,8 @@ class Gateway extends Base\Gateway
 
     public function verifyRefund(array $input)
     {
+        parent::verify($input);
+
         if ($this->isUnprocessedRefund($input) === true)
         {
             return false;
@@ -434,7 +436,53 @@ class Gateway extends Base\Gateway
             return true;
         }
 
-        parent::verifyRefund($input);
+        $verifyRefundRequest = $this->getVerifyRequestArray($input, 'refund');
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
+            [
+                'request'     => $verifyRefundRequest,
+                'gateway'     => $this->gateway,
+                'refund_id'   => $input['refund']['id'],
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
+            ]);
+
+        $verifyRefundResponse = $this->sendGatewayRequest($verifyRefundRequest);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
+            [
+                'response'    => $verifyRefundResponse,
+                'gateway'     => $this->gateway,
+                'refund_id'   => $input['refund']['id'],
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
+            ]);
+
+        if ((isset($verifyRefundResponse[ResponseFields::STATUS]) === true) and
+            ($verifyRefundResponse[ResponseFields::STATUS] === Status::SUCCESS) and
+            ($verifyRefundResponse[ResponseFields::RESPONSE_CODE] === Status::SUCCESS_CODE))
+        {
+            $gatewayEntity = $this->repo->findByRefundId($input['refund']['id']);
+
+            $attributes = $this->getAttributesFromVerifyRefundResponse($verifyRefundResponse);
+
+            if ($gatewayEntity !== null)
+            {
+                $gatewayEntity->fill($attributes);
+
+                $this->repo->saveOrFail($gatewayEntity);
+            }
+            else
+            {
+                $this->createGatewayRefundEntity($input, $attributes, 'refund');
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     protected function verifyPayment(Verify $verify)
@@ -798,15 +846,15 @@ class Gateway extends Base\Gateway
         return $this->getStandardRequestArray($content);
     }
 
-    protected function getVerifyRequestArray(array $input)
+    protected function getVerifyRequestArray(array $input, $entity)
     {
         $content = [
             RequestFields::TRANSACTION_TYPE    => TransactionType::VERIFY,
             RequestFields::REQUEST_ID          => UniqueIdEntity::generateUniqueId(),
-            RequestFields::TRANSACTION_AMOUNT  => $this->getFormattedAmount($input['payment']['amount']),
+            RequestFields::TRANSACTION_AMOUNT  => $this->getFormattedAmount($input[$entity]['amount']),
             RequestFields::MERCHANT_ID         => $this->getMerchantId(),
             RequestFields::TERMINAL_ID         => $this->getTerminalId(),
-            RequestFields::MERCHANT_REF_NUMBER => $input['payment']['id']
+            RequestFields::MERCHANT_REF_NUMBER => $input[$entity]['id']
         ];
 
         return $this->getStandardRequestArray($content);
@@ -901,6 +949,18 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
+    public function getAttributesFromVerifyRefundResponse($verifyRefundResponse)
+    {
+        $attributes = [
+            Entity::RRN           => $verifyRefundResponse[ResponseFields::RETRIEVAL_REF_NUM],
+            Entity::STATUS        => $verifyRefundResponse[ResponseFields::STATUS],
+            Entity::RESPONSE_CODE => $verifyRefundResponse[ResponseFields::RESPONSE_CODE],
+            Entity::RECEIVED      => true,
+        ];
+
+        return $attributes;
+    }
+
     // ----------------------------------------- Gateway Payment -------------------------------------------------------
 
     protected function createGatewayPaymentEntity(array $input, array $attributes = [], $action = null)
@@ -928,7 +988,7 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function createGatewayRefundEntity(array $input, array $attributes = [])
+    protected function createGatewayRefundEntity(array $input, array $attributes = [], $action = null)
     {
         $gatewayPayment = $this->getNewGatewayPaymentEntity();
 
@@ -939,7 +999,9 @@ class Gateway extends Base\Gateway
             $gatewayPayment->setAcquirer($acquirer);
         }
 
-        $gatewayPayment->setAction($this->action);
+        $action = $action ?: $this->action;
+
+        $gatewayPayment->setAction($action);
 
         $gatewayPayment->setPaymentId($input['payment']['id']);
 

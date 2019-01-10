@@ -1071,7 +1071,7 @@ trait PaymentTrait
         //TODO: remove merchant id check
         if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway, '10000000000000'))
         {
-            $this->scroogeRefund($data);
+            $this->scroogeRefund($this->getLastEntity('refund'));
         }
 
         return $data;

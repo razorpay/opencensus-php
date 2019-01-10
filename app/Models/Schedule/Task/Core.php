@@ -277,9 +277,12 @@ class Core extends Base\Core
 
             $scheduleTask = $this->repo
                                  ->schedule_task
-                                 ->findByMerchantAndMethod($parentMerchant, null);
+                                 ->findByMerchantAndMethod($parentMerchant, null, $international);
 
-            $schedule = $scheduleTask->schedule;
+            if ($scheduleTask !== null)
+            {
+                $schedule = $scheduleTask->schedule;
+            }
         }
 
         if ($schedule === null)

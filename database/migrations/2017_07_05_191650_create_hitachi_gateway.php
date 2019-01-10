@@ -70,9 +70,9 @@ class CreateHitachiGateway extends Migration
             $table->char(Hitachi::AUTH_ID, 6)
                   ->nullable();
 
-            $table->string(Hitachi::CREATED_AT);
+            $table->integer(Hitachi::CREATED_AT);
 
-            $table->string(Hitachi::UPDATED_AT);
+            $table->integer(Hitachi::UPDATED_AT);
 
             $table->string(Hitachi::AUTHENTICATION_GATEWAY)
                   ->nullable();

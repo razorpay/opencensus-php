@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Device\DeviceToken;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;
+use RZP\Models\P2p\Base\Upi\ClientLibrary;
 
 class Validator extends Base\Validator
 {
@@ -18,10 +19,36 @@ class Validator extends Base\Validator
             Entity::HANDLE           => 'string',
             Entity::GATEWAY_DATA     => 'array',
             Entity::STATUS           => 'string',
-            Entity::CL_CAPABILITY    => 'string',
-            Entity::CL_TOKEN         => 'string',
-            Entity::CL_PAYLOAD       => 'string',
+            Entity::CL               => 'array',
         ];
+
+        return $rules;
+    }
+
+    public function makeClRules()
+    {
+        $rules = $this->makeRules();
+
+        $arrayRules = ClientLibrary::rules()->with([
+            ClientLibrary::CAPABILITY   => 'required',
+            ClientLibrary::CHALLENGE    => 'required',
+        ]);
+
+        $rules->arrayRules(ClientLibrary::CL, $arrayRules->toArray());
+
+        return $rules;
+    }
+
+    public function makeClSuccessRules()
+    {
+        $rules = $this->makeRules();
+
+        $arrayRules = ClientLibrary::rules()->with([
+            ClientLibrary::TOKEN        => 'required',
+            ClientLibrary::PAYLOAD      => 'required',
+        ]);
+
+        $rules->arrayRules(ClientLibrary::CL, $arrayRules->toArray());
 
         return $rules;
     }
@@ -29,35 +56,10 @@ class Validator extends Base\Validator
     public function makeCreateRules()
     {
         $rules = $this->makeRules([
-            Entity::DEVICE_ID        => 'sometimes',
-            Entity::HANDLE           => 'sometimes',
             Entity::GATEWAY_DATA     => 'sometimes',
-            Entity::STATUS           => 'sometimes',
-            Entity::CL_CAPABILITY    => 'sometimes',
-            Entity::CL_TOKEN         => 'sometimes',
-            Entity::CL_PAYLOAD       => 'sometimes',
         ]);
 
-        return $rules;
-    }
-
-    public function makeAddRules()
-    {
-        $rules = $this->makeRules([]);
-
-        return $rules;
-    }
-
-    public function makeRefreshClTokenRules()
-    {
-        $rules = $this->makeRules([]);
-
-        return $rules;
-    }
-
-    public function makeDeregisterRules()
-    {
-        $rules = $this->makeRules([]);
+        $rules->merge($this->makeClRules());
 
         return $rules;
     }

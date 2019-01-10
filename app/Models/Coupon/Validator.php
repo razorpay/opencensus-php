@@ -6,11 +6,13 @@ use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Promotion;
 use RZP\Constants\Entity as PublicEntity;
 
 class Validator extends Base\Validator
 {
     const COUPON_EXPIRY = 'coupon_expiry';
+    const MULTIPLE_COUPON_PER_PROMOTION = 'multiple_coupon_per_promotion';
 
     protected static $createRules = [
         Entity::ENTITY_ID   => 'required|string',
@@ -23,6 +25,11 @@ class Validator extends Base\Validator
 
     protected static $createValidators = [
         self::COUPON_EXPIRY,
+        self::MULTIPLE_COUPON_PER_PROMOTION,
+    ];
+
+    protected static $editValidators = [
+        self::COUPON_EXPIRY,
     ];
 
     protected static $applyRules = [
@@ -30,6 +37,25 @@ class Validator extends Base\Validator
         Entity::MERCHANT_ID   => 'required|alpha_num|max:14',
     ];
 
+    protected static $editRules = [
+        Entity::START_AT => 'required|epoch',
+        Entity::END_AT  =>  'required|epoch'
+    ];
+
+    public function validateMultipleCouponPerPromotion(array $input)
+    {
+        $entityIdPromotion =  Promotion\Entity::verifyIdAndStripSign($input['entity_id']);
+
+        $promotion = (new Repository())->findByEntityIdAndEntityType($entityIdPromotion, $input['entity_type']);
+
+        if($promotion !== null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MULTIPLE_COUPON_PER_PROMOTION_NOT_ALLOWED);
+        }
+
+        return true;
+    }
 
     public function validateCouponExpiry(array $input)
     {

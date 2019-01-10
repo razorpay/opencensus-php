@@ -19,14 +19,9 @@ class Entity extends Base\Entity
 
     /************** Entity Properties ************/
 
-    public $incrementing          = true;
     protected $entity             = 'p2p_register_token';
     protected $primaryKey         = 'token';
-    protected $generateIdOnCreate = false;
-
-    protected static $generators  = [
-        self::TOKEN,
-    ];
+    protected $generateIdOnCreate = true;
 
     protected $dates = [
         Entity::CREATED_AT,
@@ -58,7 +53,7 @@ class Entity extends Base\Entity
     ];
 
     protected $defaults = [
-        Entity::STATUS       => 'pending',
+        Entity::STATUS       => 'created',
         Entity::DEVICE_DATA  => [],
     ];
 
@@ -75,9 +70,14 @@ class Entity extends Base\Entity
 
     /***************** GENERATORS **************/
 
-    protected function generateToken()
+    public static function generateUniqueId()
     {
-        $this->setToken(gen_uuid());
+        return gen_uuid();
+    }
+
+    public static function verifyUniqueId($id, $throw = true)
+    {
+        return false;
     }
 
     /***************** SETTERS *****************/

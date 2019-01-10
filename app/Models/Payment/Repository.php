@@ -1638,10 +1638,11 @@ class Repository extends Base\Repository
             ->first();
     }
 
-    public function fetchPaymentsCreatedBetween(string $gateway, int $from, int $to)
+    public function fetchCreatedPaymentsBetween(string $gateway, int $from, int $to)
     {
         return $this->newQuery()
                     ->betweenTime($from, $to)
+                    ->where(Entity::STATUS, '=', Status::CREATED)
                     ->where(Payment\Entity::GATEWAY, '=', $gateway)
                     ->get();
     }

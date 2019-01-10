@@ -13,7 +13,16 @@ class CouponController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->apply($input);
+        $data = $this->service()->apply($input, false);
+
+        return ApiResponse::json($data);
+    }
+
+    public function validateCoupon()
+    {
+        $input = Request::all();
+
+        $data  = $this->service()->apply($input,true);
 
         return ApiResponse::json($data);
     }

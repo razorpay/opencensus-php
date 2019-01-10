@@ -827,11 +827,21 @@ class MerchantCreateTest extends TestCase
         $this->ba->appAuthTest();
 
         // Check schedule entries for new linked account
-        $scheduleTask = $this->getLastEntity('schedule_task', true);
-        $schedule = $this->getEntityById('schedule', $scheduleTask['schedule_id'], true);
+        $scheduleTasks = $this->getEntities('schedule_task', [
+            'merchant_id' => $linkedAcc['id']
+        ], true);
 
-        $this->assertEquals($linkedAcc['id'], $scheduleTask['merchant_id']);
-        $this->assertEquals($schedule['delay'], 2);
+        foreach ($scheduleTasks['items'] as $scheduleTask)
+        {
+            $schedule = $this->getEntityById('schedule', $scheduleTask['schedule_id'], true);
+
+            $this->assertEquals($linkedAcc['id'], $scheduleTask['merchant_id']);
+
+            // 7 is default delay for international schedule
+            $delay =  $scheduleTask['international'] === 1? 7 : 2;
+
+            $this->assertEquals($schedule['delay'], $delay);
+        }
     }
 
     public function testCreateLinkedAccountBatch()

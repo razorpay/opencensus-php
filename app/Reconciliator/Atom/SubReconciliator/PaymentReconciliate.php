@@ -100,8 +100,9 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 [
                     'trace_code'      => TraceCode::RECON_INFO_ALERT,
                     'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
-                    'message'         => 'Payment amount mismatch',
+                    'payment_id'      => $this->payment->getId(),
                     'expected_amount' => $this->payment->getBaseAmount(),
+                    'recon_amount'    => $this->getReconPaymentAmount($row),
                     'currency'        => $this->payment->getCurrency(),
                     'row'             => $row,
                     'gateway'         => $this->gateway,
@@ -168,6 +169,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     'info_code'                 => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
                     'message'                   => 'Reference number in db is not same as in recon',
                     'payment_id'                => $this->payment->getId(),
+                    'amount'                    => $this->payment->getBaseAmount(),
                     'db_reference_number'       => $dbGatewayTransactionId,
                     'recon_reference_number'    => $gatewayTransactionId,
                     'gateway'                   => $this->gateway

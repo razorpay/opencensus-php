@@ -18,6 +18,24 @@ class Service extends Base\Service
         return $coupon->toArrayAdmin();
     }
 
+
+    /**
+     * @param string $id
+     * @param array $input
+     * @return mixed
+     */
+    public function update(string $id, array $input)
+    {
+        $this->trace->info(TraceCode::COUPON_UPDATE_REQUEST, $input);
+
+        $coupon = $this->repo->coupon->findOrFailPublic($id);
+
+        $coupon = $this->core()->update($coupon, $input);
+
+        return $coupon->toArrayAdmin();
+    }
+
+
     public function delete(string $id): array
     {
         $this->trace->info(TraceCode::COUPON_DELETE_REQUEST, ['coupon_id' => $id]);
@@ -35,7 +53,12 @@ class Service extends Base\Service
         return $coupon->toArrayDeleted();
     }
 
-    public function apply(array $input): array
+
+
+    /*
+      isCheck is the flag which will validate and check whether coupon can be applied by merchant or not. Coupon will not be applied.
+    */
+    public function apply(array $input,bool $isCheck = false): array
     {
         $this->trace->info(TraceCode::COUPON_APPLY_REQUEST, $input);
 
@@ -53,7 +76,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $result = $this->core()->apply($merchant, $coupon);
+        $result = $this->core()->apply($merchant, $coupon, $isCheck);
 
         return $result;
     }

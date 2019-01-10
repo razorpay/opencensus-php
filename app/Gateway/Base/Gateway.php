@@ -10,6 +10,7 @@ use Symfony\Component\DomCrawler\Crawler;
 
 use RZP\Exception;
 use RZP\Http\Route;
+use Requests_Hooks;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
@@ -617,6 +618,14 @@ class Gateway
             $request['options']['connect_timeout'] = static::CONNECT_TIMEOUT;
         }
 
+        if ((isset($request['options']['hooks']) === false) or
+            ($request['options']['hooks'] instanceof Requests_Hooks === false))
+        {
+            $request['options']['hooks'] = new Requests_Hooks();
+        }
+
+        $request['options']['hooks']->register('curl.after_request', [$this, 'traceCurlInfo']);
+
         try
         {
             $method = strtoupper($method);
@@ -764,6 +773,19 @@ class Gateway
                     'gateway' => $this->gateway
                 ]);
         }
+    }
+
+    public function traceCurlInfo($headers, $info)
+    {
+        $this->trace->info(TraceCode::GATEWAY_REQUEST_CURL_INFO,
+            [
+                'total_time'         => $info['total_time'],
+                'connect_time'       => $info['connect_time'],
+                'redirect_time'      => $info['redirect_time'],
+                'namelookup_time'    => $info['namelookup_time'],
+                'pretransfer_time'   => $info['pretransfer_time'],
+                'starttransfer_time' => $info['starttransfer_time'],
+            ]);
     }
 
     protected function runPaymentVerifyFlow($verify)

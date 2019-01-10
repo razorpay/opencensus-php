@@ -223,7 +223,7 @@ class Entity extends Base\PublicEntity
 
         $enabledEvents = Event::getEnabledEvents($events);
 
-        $names = Event::getLaunchedEventNames();
+        $names = array_keys(Event::getLaunchedEventNames());
 
         $eventsArray = [];
 
@@ -237,9 +237,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicEventsAttribute(array & $array)
     {
-        $array[self::EVENTS] = Event::filterByFeatures(
-                                        $array[self::EVENTS],
-                                        $this->merchant->getEnabledFeatures());
+        $array[self::EVENTS] = Event::filterForPublicApi($this->merchant, $array[self::EVENTS]);
     }
 
     public function setPublicApplicationIdAttribute(array & $array)
