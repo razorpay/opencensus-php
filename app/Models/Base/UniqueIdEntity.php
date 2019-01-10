@@ -30,7 +30,7 @@ class UniqueIdEntity extends Entity
 
     const BASE = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
-    public static $baseValues = array(
+    public static $baseValues = [
         '0' => 0,
         '1' => 1,
         '2' => 2,
@@ -93,7 +93,7 @@ class UniqueIdEntity extends Entity
         'x' => 59,
         'y' => 60,
         'z' => 61,
-    );
+    ];
 
     //const UNIQUE_ID_CHECK_REGEX = '/^[0-9a-f]{'.self::ID_LENGTH.'}$/i';
 

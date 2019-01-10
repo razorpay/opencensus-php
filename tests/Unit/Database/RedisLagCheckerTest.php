@@ -16,12 +16,12 @@ class RedisLagCheckerTest extends TestCase
     public function testReturnsPdoConnectionOnSuccess()
     {
         $lagChecker = new RedisLagChecker([
-            'flag' => ConfigKey::SKIP_SLAVE,
+                                              'flag'  => ConfigKey::MASTER_PERCENT,
         ]);
 
         Cache::shouldReceive('get')
                 ->once()
-                ->with(ConfigKey::SKIP_SLAVE)
+                ->with(ConfigKey::MASTER_PERCENT)
                 ->andReturn(false);
 
         $result = $lagChecker->useReadPdoIfApplicable(function ()
@@ -35,13 +35,13 @@ class RedisLagCheckerTest extends TestCase
     public function testReturnsPdoConnectionWhenInitializedConnectionPassed()
     {
         $lagChecker = new RedisLagChecker([
-            'flag' => ConfigKey::SKIP_SLAVE,
+                                              'flag' => ConfigKey::MASTER_PERCENT,
         ]);
 
         Cache::shouldReceive('get')
                 ->once()
-                ->with(ConfigKey::SKIP_SLAVE)
-                ->andReturn(false);
+                ->with(ConfigKey::MASTER_PERCENT)
+                ->andReturn(0);
 
         $result = $lagChecker->useReadPdoIfApplicable(new MockPDO());
 
@@ -51,13 +51,13 @@ class RedisLagCheckerTest extends TestCase
     public function testReturnsNullWhenFlagSet()
     {
         $lagChecker = new RedisLagChecker([
-            'flag' => ConfigKey::SKIP_SLAVE,
+                                              'flag' => ConfigKey::MASTER_PERCENT,
         ]);
 
         Cache::shouldReceive('get')
                 ->once()
-                ->with(ConfigKey::SKIP_SLAVE)
-                ->andReturn(true);
+                ->with(ConfigKey::MASTER_PERCENT)
+                ->andReturn(100);
 
         $result = $lagChecker->useReadPdoIfApplicable(function ()
         {
@@ -70,12 +70,12 @@ class RedisLagCheckerTest extends TestCase
     public function testReturnsNullOnCacheException()
     {
         $lagChecker = new RedisLagChecker([
-            'flag' => ConfigKey::SKIP_SLAVE,
+                                              'flag' => ConfigKey::MASTER_PERCENT,
         ]);
 
         Cache::shouldReceive('get')
                 ->once()
-                ->with(ConfigKey::SKIP_SLAVE)
+                ->with(ConfigKey::MASTER_PERCENT)
                 ->andReturnUsing(function ()
                 {
                     throw new \Exception('cache failure');

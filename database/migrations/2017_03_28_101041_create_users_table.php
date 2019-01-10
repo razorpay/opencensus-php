@@ -38,6 +38,9 @@ class CreateUsersTable extends Migration
 
             $table->integer(User::PASSWORD_RESET_EXPIRY)->nullable();
 
+            $table->tinyInteger(User::CONTACT_MOBILE_VERIFIED)
+                  ->default(0);
+
             $table->integer(User::CREATED_AT);
 
             $table->integer(User::UPDATED_AT);

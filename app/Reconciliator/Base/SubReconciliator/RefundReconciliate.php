@@ -7,6 +7,7 @@ use App;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
+use RZP\Models\Batch\Entity;
 use RZP\Models\Payment\Refund;
 use RZP\Reconciliator\Messenger;
 use RZP\Models\Base\PublicEntity;
@@ -28,7 +29,8 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
     // List of gateways whose refund status must be set to processed without ARN
     const GATEWAYS_PROCESSED_WO_ARN = [
-        RequestProcessor\Base::UPI_ICICI
+        RequestProcessor\Base::UPI_ICICI,
+        RequestProcessor\Base::UPI_AXIS
     ];
 
     protected $messenger;
@@ -43,11 +45,13 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
      */
     protected $refund;
 
-    public function __construct(string $gateway = null)
+    public function __construct(string $gateway = null, Entity $batch = null)
     {
-        parent::__construct($gateway);
+        parent::__construct($gateway, $batch);
 
         $this->messenger = new Messenger();
+
+        $this->messenger->batch = $batch;
     }
 
     public function runReconciliate($row)
@@ -163,11 +167,14 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
     {
         $validPaymentStatus = $this->validatePaymentStatus();
 
+        $validRefundReconStatus = $this->validateRefundReconStatus($row);
+
         $validRefundAmount = $this->validateRefundAmountEqualsReconAmount($row);
 
         $validCurrencyCode = $this->validateRefundCurrencyEqualsReconCurrency($row);
 
         $validRefundDetails = (($validPaymentStatus === true) and
+                               ($validRefundReconStatus === true) and
                                ($validRefundAmount === true) and
                                ($validCurrencyCode === true));
 
@@ -185,8 +192,29 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                     'trace_code' => TraceCode::RECON_MISMATCH,
                     'message'    => 'Payment status is failed.',
                     'payment_id' => $this->payment->getId(),
+                    'amount'     => $this->payment->getAmount(),
                     'gateway'    => $this->gateway
                 ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function validateRefundReconStatus(array $row)
+    {
+        $refundReconStatus = $this->getReconRefundStatus($row);
+
+        if ($refundReconStatus === Payment\Refund\Status::FAILED)
+        {
+            $this->trace->info(TraceCode::RECON_INFO, [
+                'message'           => 'Refund status not successful',
+                'info_code'         => Base\InfoCode::MIS_FILE_REFUND_FAILED,
+                'refund_id'         => $this->refund->getId(),
+                'refund_status'     => $this->refund->getStatus(),
+                'gateway'           => $this->gateway
+            ]);
 
             return false;
         }
@@ -209,6 +237,7 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                         'trace_code'    => TraceCode::RECON_MISMATCH,
                         'message'       => 'Refund transaction not found in DB',
                         'refund_id'     => $this->refund->getId(),
+                        'amount'        => $this->refund->getAmount(),
                         'gateway'       => $this->gateway
                     ]);
 
@@ -351,6 +380,7 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                     'message'    => 'Corresponding payment for the refund not found in DB.',
                     'row'        => $row,
                     'refund_id'  => $refundId,
+                    'amount'     => $refund->getAmount(),
                     'gateway'    => $this->gateway
                 ]);
 
@@ -516,6 +546,19 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         return true;
     }
 
+    /**
+     * Checks the refund recon status being sent in the file
+     * Override in child class
+     * @param array $row
+     * @return bool
+     */
+    protected function getReconRefundStatus(array $row)
+    {
+        //
+        // The return value of this method must be mapped to one of the statuses in Payment\Refund\Status
+        //
+        return null;
+    }
 
     /**
      * Checks if currency in recon file matches the actual currency in
@@ -634,6 +677,7 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                             'message'       => 'Arn number for the refund entity does not match',
                             'row'           => $rowDetails,
                             'refund_id'     => $refund->getId(),
+                            'amount'        => $refund->getAmount(),
                             'gateway'       => $this->gateway,
                             'refund_arn'    => $currentArn,
                         ]);
@@ -778,7 +822,9 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                     'info_code'                 => 'DATA_MISMATCH',
                     'message'                   => 'Reference number in db is not same as in recon',
                     'refund_id'                 => $this->refund->getId(),
+                    'amount'                    => $this->refund->getAmount(),
                     'payment_id'                => $this->payment->getId(),
+                    'payment_amount'            => $this->payment->getAmount(),
                     'db_reference_number'       => $dbGatewayTransactionId,
                     'recon_reference_number'    => $gatewayTransactionId,
                     'gateway'                   => $this->gateway
@@ -810,10 +856,12 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'                => TraceCode::RECON_MISMATCH,
-                    'info_code'                 => 'DATA_MISMATCH',
+                    'info_code'                 => Base\InfoCode::DATA_MISMATCH,
                     'message'                   => 'Reference number in db is not same as in recon',
                     'refund_id'                 => $this->refund->getId(),
+                    'amount'                    => $this->refund->getAmount(),
                     'payment_id'                => $this->payment->getId(),
+                    'payment_amount'            => $this->payment->getAmount(),
                     'db_reference_number'       => $dbReferenceNumber,
                     'recon_reference_number'    => $referenceNumber,
                     'gateway'                   => $this->gateway

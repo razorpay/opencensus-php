@@ -35,6 +35,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postSwitchProductMerchant()
+    {
+        $this->service()->switchProductMerchant();
+
+        return ApiResponse::json([]);
+    }
+
     public function putMerchant($id)
     {
         $input = Request::all();
@@ -249,7 +256,7 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postBankAccount($id)
+    public function postBankAccount($id = null)
     {
         $input = Request::all();
 
@@ -342,6 +349,15 @@ class MerchantController extends Controller
     public function getAccountBalance()
     {
         $data = $this->service()->fetchBalance();
+
+        return ApiResponse::json($data);
+    }
+
+    public function getAccountBalances()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchAccountBalances($input);
 
         return ApiResponse::json($data);
     }
@@ -590,6 +606,20 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    /**
+     * Input JSON sample:
+     * {
+     *   "methods": {
+     *     "credit_card": 1,
+     *     "debit_card": 0,
+     *     "upi": 1,
+     *     "emi":0
+     *   },
+     *   "merchants": ["10000000000000", "ACIg0vIkvgCALm"]
+     * }
+     *
+     * @return mixed
+     */
     public function updateMethodsForMultipleMerchants()
     {
         $input = Request::all();
@@ -1106,7 +1136,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->registerBeneficiaryThroughApi($input, $channel);
+        $data = $this->service()->registerBeneficiariesThroughApi($input, $channel);
 
         return ApiResponse::json($data);
     }
@@ -1139,6 +1169,24 @@ class MerchantController extends Controller
     /**
      * Input JSON sample:
      * {
+     *   "pricing_plan_id": "1AXludj60w4pSp",
+     *   "merchant_ids": ["10000000000000", "100000Razorpay"]
+     * }
+     *
+     * @return mixed
+     */
+    public function bulkAssignPricing()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->bulkAssignPricing($input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * Input JSON sample:
+     * {
      *   "schedule": {
      *     "schedule_id": "40000000000000",
      *     "type": "settlement"
@@ -1160,6 +1208,31 @@ class MerchantController extends Controller
     public function submitSupportCallRequest()
     {
         $response = $this->service()->submitSupportCallRequest($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * Syncs merchant entity between mysql and elastic search
+     *
+     * This api sync only frequently changing attributes.
+     *
+     * @return mixed
+     */
+    public function syncMerchantsToEs()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->syncMerchantsToEs($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function bulkRegenerateBalanceIds()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->bulkRegenerateBalanceIds($input);
 
         return ApiResponse::json($response);
     }

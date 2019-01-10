@@ -24,11 +24,11 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    public function create(array $input)
+    public function create(array $input, array $uniqueRecordIdentifiers = [])
     {
         $this->trace->info(TraceCode::GATEWAY_DOWNTIME_CREATE, $input);
 
-        $downtime = $this->repo->gateway_downtime->fetchUnique($input);
+        $downtime = $this->repo->gateway_downtime->fetchUnique($input, $uniqueRecordIdentifiers);
 
         if ($downtime !== null)
         {
@@ -72,6 +72,24 @@ class Core extends Base\Core
     }
 
     /**
+     * Fetches downtime information at the current time and Future for displaying at Dashboard
+     *
+     *
+     * @return Collection      Collection of downtimes
+     */
+    public function getCurrentAndFutureGatewayDowntimeData(): Base\PublicCollection
+    {
+        // Currently we are fetching only downtimes with null terminal id
+        // as only a particular gateway terminal having a systemic downtime hasn't
+        // been encountered yet. Will need to modify this later when we deal with
+        // such downtimes
+        $downtimes = $this->repo->gateway_downtime
+                                ->fetchCurrentAndFutureDowntimes();
+
+        return $downtimes;
+    }
+
+    /**
      * Fetches downtime information at the current time
      * @param  array  $methods Array of methods for which to fetch downtime
      *                         If empty, then downtime for all methods are returned
@@ -95,9 +113,9 @@ class Core extends Base\Core
         return $downtimes;
     }
 
-    public function fetchMostRecentActive(array $input)
+    public function fetchMostRecentActive(array $input, $fetchByKeys = [])
     {
-        return $this->repo->gateway_downtime->fetchMostRecentActive($input);
+        return $this->repo->gateway_downtime->fetchMostRecentActive($input, $fetchByKeys);
     }
 
     /**

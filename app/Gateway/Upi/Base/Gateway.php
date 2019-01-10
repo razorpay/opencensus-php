@@ -22,8 +22,6 @@ class Gateway extends Base\Gateway
 
         $action = $action ?? $this->action;
 
-        $entity->setPaymentId($this->input['payment']['id']);
-
         switch ($action)
         {
             case Base\Action::REFUND:
@@ -32,10 +30,22 @@ class Gateway extends Base\Gateway
 
                 $entity->setAmount($this->input['refund']['amount']);
 
+                $entity->setPaymentId($this->input['payment']['id']);
+
+                break;
+
+            case Base\Action::PAYOUT:
+
+                $entity->setPaymentId($this->input['gateway_input']['ref_id']);
+
+                $entity->setAmount($this->input['gateway_input']['amount']);
+
                 break;
 
             default:
                 $entity->setAmount($this->input['payment']['amount']);
+
+                $entity->setPaymentId($this->input['payment']['id']);
         }
 
         $entity->setAction($action);

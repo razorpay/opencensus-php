@@ -4,6 +4,7 @@ namespace RZP\Mail\User;
 
 use RZP\Mail\Base;
 use RZP\Models\User;
+use RZP\Constants\Product;
 
 class PasswordReset extends Base\Mailable
 {
@@ -16,7 +17,9 @@ class PasswordReset extends Base\Mailable
 
     protected $token;
 
-    public function __construct(User\Entity $user, $org)
+    protected $product;
+
+    public function __construct(User\Entity $user, $org, $product = Product::PRIMARY)
     {
         parent::__construct();
 
@@ -28,6 +31,8 @@ class PasswordReset extends Base\Mailable
                         );
 
         $this->org = $org;
+
+        $this->product = $product;
     }
 
     protected function addRecipients()
@@ -65,6 +70,7 @@ class PasswordReset extends Base\Mailable
             'token'      => $this->token,
             'org'        => $this->org,
             'email'      => urlencode($this->user['email']),
+            'product'    => $this->product,
         ];
 
         $this->with($data);

@@ -445,6 +445,9 @@ class Gateway extends Base\Gateway
 
         $content = $this->sendVerifyRequest($input, 'refund');
 
+        $scroogeResponse->setGatewayVerifyResponse($content)
+                        ->setGatewayKeys($this->getGatewayData($content));
+
         // vpc_DRExists can be 'N' in two cases:
         // 1. If refund is older than 5 days (MiGS doesn't allow txn query on txns older than 5 days)
         //    We throw exception in this case as it has to be manually reviewed
@@ -457,8 +460,6 @@ class Gateway extends Base\Gateway
             {
                 return $scroogeResponse->setSuccess(false)
                                        ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
-                                       ->setGatewayResponse($content)
-                                       ->setGatewayKeys($this->getGatewayData($content))
                                        ->toArray();
             }
 
@@ -476,8 +477,6 @@ class Gateway extends Base\Gateway
             (((int) $content['vpc_RefundedAmount']) === $input['refund']['base_amount']))
         {
             return $scroogeResponse->setSuccess(true)
-                                   ->setGatewayResponse($content)
-                                   ->setGatewayKeys($this->getGatewayData($content))
                                    ->toArray();
         }
         else if ($content['vpc_FoundMultipleDRs'] === 'Y')
@@ -493,8 +492,6 @@ class Gateway extends Base\Gateway
 
         return $scroogeResponse->setSuccess(false)
                                ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
-                               ->setGatewayResponse($content)
-                               ->setGatewayKeys($this->getGatewayData($content))
                                ->toArray();
     }
 
@@ -915,16 +912,7 @@ class Gateway extends Base\Gateway
 
         $this->paymentId = $input['payment']['id'];
 
-        $shouldRetry = function ($e)
-        {
-            return (in_array(get_class($e), [Exception\GatewayRequestException::class], true));
-        };
-
-        $response = $this->retryHandler(
-            [$this, 'postRequest'],
-            [$request],
-            $shouldRetry,
-            2);
+        $response = $this->postRequest($request);
 
         return $response;
     }
@@ -933,44 +921,9 @@ class Gateway extends Base\Gateway
     {
         $options['timeout'] = 60;
 
-        $hooks = new Requests_Hooks();
-
-        $hooks->register('curl.before_send', function ($curl)
-        {
-            $this->curlLogPath = storage_path('logs/curl_' . $this->paymentId . '.log');
-
-            $this->curlLog = fopen($this->curlLogPath, 'w'); // opening a log file for curl logs
-
-            curl_setopt($curl, CURLOPT_VERBOSE, true);
-            curl_setopt($curl, CURLOPT_STDERR, $this->curlLog);
-        });
-
-        $options['hooks'] = $hooks;
-
         $request['options'] = $options;
 
-        try
-        {
-            $this->response = $this->sendGatewayRequest($request);
-        }
-        catch (Exception\GatewayRequestException $e)
-        {
-            $this->traceCurlErrorIfApplicable();
-
-            throw $e;
-        }
-        finally
-        {
-            if (isset($this->curlLog) === true)
-            {
-                fclose($this->curlLog);
-
-                if (file_exists($this->curlLogPath) === true)
-                {
-                    unlink($this->curlLogPath);
-                }
-            }
-        }
+        $this->response = $this->sendGatewayRequest($request);
 
         return $this->response;
     }

@@ -1,6 +1,8 @@
 <?php
 
+use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 return [
     'testHeadlessOtpAuthenticationPaymentWithout3ds' => [
@@ -49,5 +51,17 @@ return [
             'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
         ]
-    ]
+    ],
+
+    'testHeadlessRedirectInvalidAuthType' => [
+        'request' => [
+            'url' => '',
+            'method' => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+
+            ],
+        ],
+    ],
 ];

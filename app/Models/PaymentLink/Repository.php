@@ -6,7 +6,9 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use RZP\Exception\BadRequestException;
 
 class Repository extends Base\Repository
 {
@@ -29,13 +31,13 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Returns counts of payment which are succeeding (i.e. either created, authorized) for given payment link.
+     * Returns count of units purchased of which payments are still succeeding (i.e. created or authorized).
      * This method gets used in determining if enough slots are available to initiate a payment.
      *
      * @param  Entity $paymentLink
      * @return int
      */
-    public function getSucceedingPaymentsCount(Entity $paymentLink): int
+    public function getSucceedingPaymentUnits(Entity $paymentLink): int
     {
         return $paymentLink->payments()
                            ->whereIn(
@@ -44,6 +46,30 @@ class Repository extends Base\Repository
                                    Payment\Status::CREATED,
                                    Payment\Status::AUTHORIZED,
                                ])
-                           ->count();
+                           ->get()
+                           ->sum(function (Payment\Entity $p)
+                              {
+                                  return (int) ($p->getNotes()[Entity::UNITS] ?? 1);
+                              });
+    }
+
+    /**
+     * Finds payment link entity by public id constrained to not being marked
+     * inactive with reason deactivated(manually).
+     *
+     * @param  string $id
+     * @return Entity
+     */
+    public function findActiveByPublicId(string $id): Entity
+    {
+        $entity = $this->findByPublicId($id);
+
+        // No direct query with filter because index is as (status, status_reason).
+        if ($entity->isDeactivated() === true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
+
+        return $entity;
     }
 }

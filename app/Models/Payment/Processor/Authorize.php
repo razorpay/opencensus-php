@@ -85,6 +85,8 @@ trait Authorize
 
         $ret = $this->hitGatewayIfRequired($payment, $input, $gatewayInput);
 
+        $this->validateAndSaveInputDetailsIfRequired($payment, $input);
+
         if ($ret !== null)
         {
             return $ret;
@@ -380,6 +382,12 @@ trait Authorize
         if ($payment->isMethodCardOrEmi() === true)
         {
             $card = $payment->card;
+            $redirectUrl = null;
+
+            if ($this->isRupayNetwork($payment) === false)
+            {
+                $redirectUrl = $this->getPaymentRedirectTo3dsUrl();
+            }
 
             $metaData = [
                 'issuer'     => $card->getIssuer(),
@@ -408,6 +416,15 @@ trait Authorize
                 unset($request['content']['next']);
             }
 
+            $otpResend = 'otp_resend';
+
+            $resendUrl = null;
+
+            if (in_array($otpResend, $next, true) === true)
+            {
+                $resendUrl  = $this->getOtpResendUrl();
+            }
+
             $response = [
                 'type'       => 'otp',
                 'request'    => [
@@ -418,6 +435,10 @@ trait Authorize
                 'payment_id' => $payment->getPublicId(),
                 'next'       => $next,
                 'gateway'    => $response['gateway'],
+                'redirect'   => $redirectUrl,
+                'submit_url' => $request['url'],
+                'resend_url' => $resendUrl,
+                'metadata'   => $metaData,
             ];
         }
 
@@ -597,6 +618,56 @@ trait Authorize
         $this->verifyFeesLessThanAmount($payment);
 
         $this->validateOfferIfApplicable($payment, $input);
+
+        $this->validateCardlessEmiIfApplicable($payment, $input);
+    }
+
+    protected function validateCardlessEmiIfApplicable(Payment\Entity $payment, $input)
+    {
+        if ($payment->isCardlessEmi() === false)
+        {
+            return;
+        }
+
+        $key = Payment\Entity::getCardlessEmiOnetimeTokenCacheKey($input['ott']);
+
+        $cardlessEmiData = $this->app['cache']->get($key);
+
+        if ($cardlessEmiData === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Token provided is invalid for cardless emi',
+                null,
+                $cardlessEmiData);
+        }
+
+        $cardlessEmiData = Customer\Validator::validateAndParseContactInInput($cardlessEmiData);
+
+        if ((empty($cardlessEmiData['contact']) === true) or
+            ($cardlessEmiData['contact'] !== $input['contact']))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARDLESS_EMI_CONTACT_MISMATCH,
+                null,
+                [
+                    'payment_id'        => $payment->getId(),
+                    'input_contact'     => $input['contact'],
+                    'contact'           => $cardlessEmiData['contact'] ?? null,
+                ]);
+        }
+
+        if ((empty($cardlessEmiData['provider']) === true) or
+            ($cardlessEmiData['provider'] !== $input['provider']))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARDLESS_EMI_INVALID_PROVIDER,
+                null,
+                [
+                    'payment_id'        => $payment->getId(),
+                    'input_provider'    => $input['provider'],
+                    'provider'          => $cardlessEmiData['provider'] ?? null,
+                ]);
+        }
     }
 
     protected function validateSubscriptionInputIfPresent(Payment\Entity $payment, $input)
@@ -883,6 +954,21 @@ trait Authorize
         if ($merchant->isFeatureEnabled(Feature\Constants::S2S) === true)
         {
             return;
+        }
+
+        $oAuthApplicationId = $this->app['basicauth']->getOAuthApplicationId();
+
+        //refer testAppBlacklistedFeatureEnabledOnApp
+        if ($oAuthApplicationId !== null)
+        {
+            $feature = $this->repo
+                            ->feature
+                            ->findByEntityTypeEntityIdAndName(Feature\Constants::APPLICATION, $oAuthApplicationId, Feature\Constants::S2S);
+
+            if ($feature !== null)
+            {
+                return;
+            }
         }
 
         if ($payment->isOpenWalletPayment() === true)
@@ -1326,6 +1412,7 @@ trait Authorize
         $gatewayInput['payment'] = $payment->toArrayGateway();
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
         $gatewayInput['otpSubmitUrl'] = $this->getOtpSubmitUrl();
+        $gatewayInput['payment_analytics'] = $payment->getMetadata('payment_analytics');
 
         if ($payment->hasOrder())
         {
@@ -1420,7 +1507,9 @@ trait Authorize
                                 $authGateway = Payment\Gateway::MPI_ENSTAGE;
                             }
 
-                            $gatewayInput['authenticate']['gateway'] = $authGateway;
+                            $gatewayInput['authenticate'] = [
+                                'gateway' => $authGateway,
+                            ];
                         }
                     }
 
@@ -1893,6 +1982,35 @@ trait Authorize
             $emiDuration = $input['emi_duration'];
 
             $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
+        }
+
+        if ($payment->isCardlessEmi() === true)
+        {
+            $gatewayInput['gateway'] = [
+                'emi_duration' => $input['emi_duration']
+            ];
+
+            $merchantId = $payment->getMerchantId();
+
+            $input = Customer\Validator::validateAndParseContactInInput($input);
+
+            $contact = $input['contact'];
+
+            $cacheKey = strtoupper($input['provider']) . '_' . $contact . '_' . $merchantId;
+
+            $cacheKey = sprintf('emi_plans_%s', $cacheKey);
+
+            $emiPlans = (array) $this->app['cache']->get($cacheKey, null);
+
+            $key = array_search($input['emi_duration'], array_column($emiPlans, 'duration'));
+
+            if ($key === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_EMI_DURATION_NOT_VALID,
+                    null,
+                    $input['emi_duration']);
+            }
         }
 
         if ($payment->isUpi() === true)
@@ -2644,6 +2762,10 @@ trait Authorize
                 $this->verifyEmandateEnabled();
                 break;
 
+            case Payment\Method::CARDLESS_EMI:
+                $this->verifyCardlessEmiEnabled();
+                break;
+
             default:
                 throw new Exception\LogicException(
                     'Should not reach here.',
@@ -3179,6 +3301,16 @@ trait Authorize
                     'payment_link_id' => $payment->paymentLink->getId(),
                 ]);
 
+            return;
+        }
+
+        //
+        // If the merchant has the feature enabled, do not capture the payment. We expect the payment to
+        // remain in authorized state and then get auto refunded subsequently. This is a niche case, to be used
+        // primarily for demo payment pages created internally by Razorpay.
+        //
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::PAYMENT_PAGES_NO_CAPTURE) === true)
+        {
             return;
         }
 
@@ -4177,6 +4309,14 @@ trait Authorize
 
         $merchantMethods = (new Methods\Core)->getMethods($merchant);
 
+        if (($merchantMethods === null) or
+            ($merchantMethods->isNetbankingEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_NETBANKING_NOT_ENABLED_FOR_MERCHANT
+            );
+        }
+
         $merchantBanks = ($merchantMethods === null) ? [] : $merchantMethods->getSupportedBanks();
 
         $paymentBank = $payment->getBank();
@@ -4270,8 +4410,19 @@ trait Authorize
             ($merchantMethods->isEmandateEnabled() === false))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_EMANDATE_NOT_ENABLED_FOR_MERCHANT
-            );
+                ErrorCode::BAD_REQUEST_PAYMENT_EMANDATE_NOT_ENABLED_FOR_MERCHANT);
+        }
+    }
+
+    protected function verifyCardlessEmiEnabled()
+    {
+        $merchantMethods = $this->methods;
+
+        if (($merchantMethods === null) or
+            ($merchantMethods->isCardlessEmiEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARDLESS_EMI_NOT_ENABLED_FOR_MERCHANT);
         }
     }
 
@@ -4612,6 +4763,28 @@ trait Authorize
         return $otpSubmitUrl;
     }
 
+    protected function getPaymentRedirectTo3dsUrl(): string
+    {
+        $params = [
+            'id' => $this->payment->getPublicId()
+        ];
+
+        $otpFallbackUrl = $this->route->getUrlWithPublicAuth('payment_redirect_3ds', $params);
+
+        return $otpFallbackUrl;
+    }
+
+    protected function getOtpResendUrl(): string
+    {
+        $params = [
+            'id' => $this->payment->getPublicId()
+        ];
+
+        $otpResendUrl = $this->route->getUrlWithPublicAuth('payment_otp_resend', $params);
+
+        return $otpResendUrl;
+    }
+
     protected function getPaymentIdAndHashParams(): array
     {
         $publicId = $this->payment->getPublicId();
@@ -4689,5 +4862,32 @@ trait Authorize
     {
         return ((empty($input[Payment\Entity::RECURRING]) === false) and
                 ($input[Payment\Entity::RECURRING] === 'preferred'));
+    }
+
+    protected function validateAndSaveInputDetailsIfRequired($payment, $input)
+    {
+        $authType = $payment->getAuthType();
+
+        if (($authType === null) or
+            (Payment\AuthType::isRedirectTo3dsAuth($authType) === false))
+        {
+            return;
+        }
+
+        $input['payment']['id'] = $payment->getId();
+
+        $cache = Cache::getFacadeRoot();
+
+        $key = $payment->getCacheInputKey();
+
+        if (empty($input[Payment\Entity::TOKEN]) === true)
+        {
+            // storing card details for fallback purpose
+            $this->persistCardDetailsTemporarily($input);
+            unset($input['card']['number']);
+            unset($input['card']['cvv']);
+        }
+
+        $this->cache->put($key, $input, static::CACHE_TTL);
     }
 }

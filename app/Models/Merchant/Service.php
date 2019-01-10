@@ -8,6 +8,7 @@ use Cache;
 use Config;
 use Request;
 use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
 use Razorpay\OAuth\Token as OAuthToken;
 use Razorpay\OAuth\Client as OAuthClient;
 use Razorpay\OAuth\Application as OAuthApplication;
@@ -19,6 +20,7 @@ use RZP\Models\Offer;
 use RZP\Models\Coupon;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
+use RZP\Models\Payment;
 use RZP\Models\Schedule;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -29,6 +31,8 @@ use RZP\Models\Admin\Group;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Base\RuntimeManager;
+use RZP\Models\Pricing\Plan;
+use RZP\Models\Admin\Org\Hostname;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
@@ -76,6 +80,8 @@ class Service extends Base\Service
 
         /** @var Entity $merchant */
         $merchant = $this->core()->create($input);
+
+        $this->enableBusinessBankingIfApplicable($merchant);
 
         $merchantData = $this->saveMerchantAndApplyCoupon($merchant, $input);
 
@@ -311,9 +317,14 @@ class Service extends Base\Service
 
         $orgId = $subMerchant['org']['id'];
 
-        $org = $this->repo->org->find($orgId)->toArrayPublic();
+        /** @var Org\Entity $org */
+        $org = $this->repo->org->find($orgId);
 
-        $org[Org\Hostname\Entity::HOSTNAME] = $this->auth->getOrgHostName();
+        $hostname = $org->getPrimaryHostName();
+
+        $org = $org->toArrayPublic();
+
+        $org[Hostname\Entity::HOSTNAME] = $hostname;
 
         $mailUserData = $createdNewUser ? $user : null;
 
@@ -335,7 +346,9 @@ class Service extends Base\Service
 
         $newEmail = $merchant->getEmail();
 
-        $this->core()->changeMerchantUsersEmail($merchant, $orignalEmail, $newEmail);
+        $product = $this->auth->getRequestOriginProduct();
+
+        $this->core()->changeMerchantUsersEmail($merchant, $orignalEmail, $newEmail, $product);
 
         return $merchant->toArrayPublic();
     }
@@ -422,6 +435,7 @@ class Service extends Base\Service
             ($merchant->isActivated() === false) and
             (Account::isNodalAccount($merchantId) === false))
         {
+            // TODO need to discuss this
             $balance[Balance\Entity::ID]      = $merchantId;
             $balance[Balance\Entity::BALANCE] = 0;
 
@@ -431,6 +445,34 @@ class Service extends Base\Service
         $balance = $this->repo->balance->getMerchantBalance($merchant);
 
         return $balance->toArray();
+    }
+
+    public function fetchAccountBalances(array $input)
+    {
+        $merchantId = $this->merchant->getId();
+
+        //
+        // For non-activated merchants in live mode, simply return 0.
+        // For these merchants, balance entity is not yet created so
+        // we need to create the exception here.
+        //
+        if (($this->mode === Mode::LIVE) and
+            ($this->merchant->isActivated() === false) and
+            (Account::isNodalAccount($merchantId) === false))
+        {
+            $balanceCollection = new Base\PublicCollection();
+
+            $balance[Balance\Entity::ID]      = $merchantId;
+            $balance[Balance\Entity::BALANCE] = 0;
+
+            $balanceCollection->add($balance);
+
+            return $balanceCollection->toArrayPublic();
+        }
+
+        $balance = $this->repo->balance->fetch($input, $merchantId);
+
+        return $balance->toArrayWithItems();
     }
 
     public function editAmountCredits($merchantId, $input)
@@ -455,6 +497,7 @@ class Service extends Base\Service
                 'input'       => $input
             ]);
 
+        /** @var Entity $merchant */
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         if (isset($input['pricing_plan_id']) === false)
@@ -466,6 +509,7 @@ class Service extends Base\Service
 
         $orgId = $merchant->org->getId();
 
+        /** @var Plan $plan */
         $plan = $this->repo->pricing->getPricingPlanByIdAndOrgId($input['pricing_plan_id'], $orgId);
 
         // validate if this plan can be set for this merchant.
@@ -492,6 +536,17 @@ class Service extends Base\Service
         $this->app['workflow']
              ->setEntity($merchant->getEntity())
              ->handle($original, $dirty);
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::DIWALI_PROMOTIONAL_PLAN) === true)
+        {
+            // removing diwali_promotional_plan
+            (new Feature\Service)->deleteEntityFeature(
+                'accounts',
+                $merchant->getId(),
+                Feature\Constants::DIWALI_PROMOTIONAL_PLAN,
+                [Feature\Entity::SHOULD_SYNC => true]
+            );
+        }
 
         $merchant->setPricingPlan($input['pricing_plan_id']);
 
@@ -562,6 +617,53 @@ class Service extends Base\Service
         ];
     }
 
+    public function bulkAssignPricing(array $input): array
+    {
+        $this->trace->info(TraceCode::MERCHANT_PRICING_BULK_REQUEST, $input);
+
+        (new Validator)->validateInput('bulk_assign_pricing', $input);
+
+        $merchantIds   = $input['merchant_ids'];
+        unset($input['merchant_ids']);
+
+        $failedIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $this->app['workflow']->skipWorkflows(function() use ($merchantId, $input)
+                {
+                    $this->assignPricingPlan($merchantId, $input);
+                });
+            }
+            catch (\Throwable $t)
+            {
+                $this->trace->traceException(
+                    $t,
+                    Trace::ERROR,
+                    TraceCode::MERCHANT_PRICING_BULK_EXCEPTION,
+                    [
+                        'merchant_id' => $merchantId,
+                        'input'       => $input,
+                    ]);
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        // Tracing all ids together for ease of re-running in case of errors. The dashboard error
+        // display is not that convenient and can be lost. Collecting from the previous logs of
+        // individual failures is more time consuming.
+        $this->trace->error(TraceCode::MERCHANT_PRICING_BULK_ALL_FAILED_IDS, [ 'failed_ids' => $failedIds]);
+
+        return [
+            'total_count'  => count($merchantIds),
+            'failed_count' => count($failedIds),
+            'failed_ids'   => $failedIds
+        ];
+    }
+
     public function migrateMerchantToSettlementSchedules($input)
     {
         $this->trace->info(TraceCode::SCHEDULE_MIGRATION_INITIATED);
@@ -584,7 +686,7 @@ class Service extends Base\Service
         {
             try
             {
-                $defaultDelay = Entity::SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
+                $defaultDelay = Entity::DOMESTIC_SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
 
                 $schedule = (new Schedule\Core)->getOrCreateDefaultSchedule($defaultDelay);
 
@@ -761,9 +863,15 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
+    /**
+     * Todo : $id is Not used to fetch merchant. Kept to support Backward Compatible.
+     * @param $id
+     * @param $input
+     * @return array
+     */
     public function addBankAccount($id, $input)
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
+        $merchant = app('basicauth')->getMerchant();
 
         $ba = (new BankAccount\Core)->createOrChangeBankAccount($input, $merchant);
 
@@ -1094,6 +1202,8 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::MERCHANT_METHODS_BULK_UPDATE);
 
+        (new Methods\Validator)->validateInput('bulk_assign_methods', $input);
+
         $merchantIds = $input['merchants'];
 
         $successCount = $failedCount = 0;
@@ -1104,12 +1214,24 @@ class Service extends Base\Service
         {
             try
             {
-                $paymentMethod = $this->setPaymentMethods($merchantId, $input['methods']);
+                $this->app['workflow']->skipWorkflows(function() use ($merchantId, $input)
+                {
+                    $this->setPaymentMethods($merchantId, $input['methods']);
+                });
 
                 $successCount++;
             }
-            catch (\Exception $ex)
+            catch (\Throwable $t)
             {
+                $this->trace->traceException(
+                    $t,
+                    Trace::ERROR,
+                    TraceCode::MERCHANT_METHODS_BULK_EXCEPTION,
+                    [
+                        'merchant_id' => $merchantId,
+                        'input'       => $input['methods'],
+                    ]);
+
                 $failedCount++;
 
                 $failedIds[] = $merchantId;
@@ -1258,11 +1380,15 @@ class Service extends Base\Service
 
         $failedIds = [];
 
+        $bankAccountCore = new BankAccount\Core;
+
         foreach ($merchantIds as $merchantId)
         {
             try
             {
-                $this->addBankAccount($merchantId, $bankAccount);
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                $bankAccountCore->createOrChangeBankAccount($bankAccount, $merchant);
 
                 $successCount++;
             }
@@ -1531,9 +1657,11 @@ class Service extends Base\Service
     {
         $merchantId = $this->merchant->getId();
 
+        $product = $this->auth->getRequestOriginProduct();
+
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $users = $this->core()->getUsers($merchant);
+        $users = $this->core()->getUsers($merchant, $product);
 
         return $users;
     }
@@ -2417,14 +2545,16 @@ class Service extends Base\Service
 
         $merchant = $this->core()->editEmail($merchant, $input);
 
-        $this->core()->handleLinkedAccountMerchantsUsers($merchant);
+        $product = $this->auth->getRequestOriginProduct();
+
+        $this->core()->handleLinkedAccountMerchantsUsers($merchant, $product);
 
         return $merchant->toArrayPublic();
     }
 
-    public function registerBeneficiaryThroughApi(array $input, string $channel): array
+    public function registerBeneficiariesThroughApi(array $input, string $channel): array
     {
-        $response = (new BankAccount\Beneficiary)->registerBeneficiaryThroughApi($input, $channel);
+        $response = (new BankAccount\Beneficiary)->registerBeneficiariesThroughApi($input, $channel);
 
         return $response;
     }
@@ -2544,5 +2674,117 @@ class Service extends Base\Service
         }
 
         return $this->app->myoperator->submitSupportCallRequest($input);
+    }
+
+    public function syncMerchantsToEs(array $input)
+    {
+        return $this->core()->syncMerchantsToEs($input);
+    }
+
+    public function bulkRegenerateBalanceIds(array $input)
+    {
+        $limit = (int) ($input['limit'] ?? 1000);
+
+        $balances = $this->repo->balance->getBalances($limit);
+
+        $failed = 0;
+        $failedIds = [];
+        $success = 0;
+        $total = count($balances);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_BALANCE_BACKFILL_REQUEST,
+            [
+                'merchant_ids' => $balances->pluck(Entity::MERCHANT_ID)->toArray(),
+                'total'        => $total,
+            ]);
+
+        foreach ($balances as $balance)
+        {
+            try
+            {
+                $id = $balance->generateUniqueIdFromTimestamp($balance->getCreatedAt());
+
+                $balance->setAttribute(Entity::ID, $id);
+
+                $balance->saveOrFail();
+
+                $success++;
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    TraceCode::MERCHANT_BALANCE_BACKFILL_ERROR,
+                    [
+                        'id' => $balance->getMerchantId(),
+                    ]);
+
+                $failed++;
+
+                $failedIds[] = $balance->getMerchantId();
+            }
+        }
+
+        return [
+            'total' => $total,
+            'success' => $success,
+            'failed' => $failed,
+            'failed_ids' => $failedIds,
+        ];
+    }
+
+    /**
+     * Checks if sbi emi is enabled on checkout for a merchant.
+     *
+     * Fetches the terminal for a merchant with gateway:`emi_sbi`
+     * If null is returned
+     *      There is no SBI MID stored for this merchant.
+     *      This merchant has not been onboarded yet. return false
+     *
+     * Else if there's a emi_sbi terminal which is enabled. return true.
+     *
+     * @return bool
+     */
+    public function isSbiEmiEnabled()
+    {
+        $merchantId = $this->merchant->getId();
+
+        $terminal = $this->repo->terminal->getByMerchantIdAndGateway($merchantId, Payment\Gateway::EMI_SBI);
+
+        if ((empty($terminal) === false) and
+            ($terminal->isEnabled() === true))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public function switchProductMerchant($product = null)
+    {
+        // Add Banking Role for the current merchant User.
+        (new User\Service())->addProductSwitchRole($product);
+
+        $merchant = $this->auth->getMerchant();
+
+        $this->enableBusinessBankingIfApplicable($merchant);
+
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        {
+            $this->repo->saveOrFail($merchant);
+
+            (new Activate)->activateBusinessBankingIfApplicable($merchant);
+        });
+    }
+
+    protected function enableBusinessBankingIfApplicable(Entity $merchant)
+    {
+        $isBanking = $this->auth->isProductBanking();
+
+        if (($isBanking === true) and ($merchant->isBusinessBankingEnabled() === false))
+        {
+            $merchant->setBusinessBanking(true);
+        }
     }
 }

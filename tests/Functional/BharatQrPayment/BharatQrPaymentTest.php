@@ -78,6 +78,11 @@ class BharatQrPaymentTest extends TestCase
         $this->assertEquals('hitachi', $payment['gateway']);
         $this->assertEquals('qr_code', $payment['receiver_type']);
 
+        // Notes from the VA are copied over to the payment
+        $this->assertArrayHasKey('notes', $payment);
+        $this->assertArrayHasKey('key', $payment['notes']);
+        $this->assertEquals('value', $payment['notes']['key']);
+
         $this->assertEquals($bharatQr['payment_id'], $payment['id']);
         $this->assertEquals($bharatQr['expected'], true);
 
@@ -98,10 +103,8 @@ class BharatQrPaymentTest extends TestCase
 
         $this->ba->proxyAuth();
 
-        $qrCodeId = substr($this->qrCode['id'], 3);
-
         $content = [
-            'reference' => $qrCodeId,
+            'reference' => $this->qrCode['id'],
             'method'    => 'card',
             'amount'    => '100',
         ];
@@ -134,6 +137,41 @@ class BharatQrPaymentTest extends TestCase
         $this->assertEquals('Razorpay', $card['name']);
     }
 
+    public function testMakeTestPaymentSuccess()
+    {
+        $this->fixtures->terminal->disableTerminal($this->t1['id']);
+
+        $this->fixtures->terminal->disableTerminal($this->t2['id']);
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->testData[__FUNCTION__]['request']['content']['reference'] = $this->qrCode['id'];
+
+        $this->startTest();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('sharp', $payment['gateway']);
+        $this->assertEquals($payment['receiver_id'], $this->qrCode['reference']);
+    }
+
+    public function testMakeTestPaymentFailure()
+    {
+        $this->fixtures->terminal->disableTerminal($this->t1['id']);
+
+        $this->fixtures->terminal->disableTerminal($this->t2['id']);
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->testData[__FUNCTION__]['request']['content']['reference'] = $this->qrCode['id'].'invalidlength';
+
+        $this->startTest();
+    }
+
     public function testMakeUnexpectedTestPayments()
     {
         $this->fixtures->terminal->disableTerminal($this->t1['id']);
@@ -144,12 +182,11 @@ class BharatQrPaymentTest extends TestCase
 
         $this->fixtures->edit('terminal', $t['id'], ['expected' => true]);
 
-
         $request = [
             'url'     => '/bharatqr/pay/test',
             'method'  => 'post',
             'content' => [
-                'reference' => 'randomref',
+                'reference' => 'randomrefrandomre',
                 'method'    => 'card',
                 'amount'    => '100',
             ]
@@ -379,7 +416,6 @@ class BharatQrPaymentTest extends TestCase
         $this->assertEquals('active', $virtualAccount['status']);
 
         $qrCode = $this->getDbLastEntity('qr_code','live');
-
 
         $vid = $virtualAccount['id'];
 

@@ -7,8 +7,9 @@ class Url
     // Todo : add Live domain url
 
     const LIVE_DOMAIN = '';
-    const TEST_DOMAIN = 'https://125.18.17.50:2020/RazorPayTest/';
+    const TEST_DOMAIN = 'https://oibapi.northakross.in';
 
-    const AUTHORIZE   = 'Request.aspx';
-    const VERIFY      = 'verification.aspx';
+    const AUTHORIZE   = '/v2/paymentseamlessrequest';
+    const VERIFY      = '/v2/paymentstatus';
+    const REFUND      = '/v2/refundrequest';
 }

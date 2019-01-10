@@ -4,13 +4,17 @@ namespace RZP\Tests\Functional\VirtualAccount;
 
 use Mockery;
 use Closure;
+use RZP\Models\BankTransfer;
 use RZP\Models\Terminal\Type;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Webhook;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\VirtualAccount\Core;
 use RZP\Models\VirtualAccount\Status;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
@@ -24,6 +28,8 @@ class VirtualAccountTest extends TestCase
     use PaymentTrait;
     use MocksDnsTrait;
     use VirtualAccountTrait;
+    use DbEntityFetchTrait;
+    use TestsBusinessBanking;
 
     public function setUp()
     {
@@ -189,7 +195,9 @@ class VirtualAccountTest extends TestCase
 
     public function testCreateVirtualAccountWithReference()
     {
-        $this->ba->proxyAuthLive();
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], 'owner', 'live');
+
+        $this->ba->proxyAuth('rzp_live_10000000000000', $user->getId());
 
         $this->fixtures->merchant->activate();
 
@@ -1083,6 +1091,73 @@ class VirtualAccountTest extends TestCase
 
         // Because Bank Account is deleted too when VA is closed
         $this->assertNotEquals($lastBankAccount['id'], $updatedLastBankAccount['id']);
+    }
+
+    public function testPayVirutalAccountOnBankingBalance()
+    {
+        $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true);
+
+        // Does /ecollect/validate (i.e. payment) api call.
+        $this->ba->appAuth();
+        $this->startTest();
+
+        // Various assertions follows on updated entities following a payment above.
+        // Banking balance and only that should have been credited.
+        $primaryBalance = $this->getDbEntityById('merchant', '10000000000000')->primaryBalance;
+        $this->bankingBalance->reload();
+        $this->assertEquals(2500, $this->bankingBalance->getBalance());
+        $this->assertEquals($primaryBalance->getBalance(), $primaryBalance->reload()->getBalance());
+        // A credit transaction with source of type bank_transfer and on banking balance, should have been created.
+        $txns = $this->getDbEntities('transaction');
+        $this->assertCount(1, $txns);
+        $txn = $txns->first();
+        $this->assertInstanceOf(BankTransfer\Entity::class, $txn->source);
+        $this->assertEquals(2500, $txn->getAmount());
+        $this->assertEquals(2500, $txn->getCredit());
+        $this->assertEquals(0, $txn->getDebit());
+        $this->assertEquals('yesbank', $txn->getChannel());
+        $this->assertEquals($this->bankingBalance->getId(), $txn->getBalanceId());
+        // No payment should have been created.
+        $payments = $this->getDbEntities('payment');
+        $this->assertCount(0, $payments);
+        // Asserts balance association of newly created bank transfer.
+        $bankTransfer = $this->getDbLastEntity('bank_transfer');
+        $this->assertEquals($this->bankingBalance->getId(), $bankTransfer->getBalanceId());
+    }
+
+    /**
+     * Note: This test is more like a unit test, being done here because unit test base does not have fixtures.
+     */
+    public function testCreateForBankingBalance()
+    {
+        // Sets up test merchant for business banking
+        $this->fixtures->merchant->createBalanceOfBankingType();
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        // Case 1: Failure - Attempting to create virtual account when merchant is not setup for business banking.
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->expectException(\Rzp\Exception\BadRequestException::class);
+
+        $this->expectExceptionMessage('Access to requested resource not available');
+
+        $virtualAccount = (new Core)->createForBankingBalance($merchant);
+
+        // Case 2: Success
+
+        $this->fixtures->edit('merchant', '10000000000000', ['activated' => true, 'business_banking' => true]);
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $virtualAccount = (new Core)->createForBankingBalance($merchant);
+        $this->assertEquals($merchant->bankingBalance->getId(), $virtualAccount->getBalanceId());
+        $this->assertNotEmpty($virtualAccount->bankAccount);
+        $this->assertStringStartsWith('222444', $virtualAccount->bankAccount->getAccountNumber());
+        // Assert that creation of first bank account updates balance's account number attribute.
+        $this->assertEquals(
+            $virtualAccount->bankAccount->getAccountNumber(),
+            $merchant->bankingBalance->getAccountNumber());
     }
 
     protected function mockInfernoFire(Closure $closure)

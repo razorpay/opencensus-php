@@ -126,6 +126,8 @@ class Gateway extends Base\Gateway
 
         $responseFields = $this->getResponseFields($response);
 
+        $content = $response->body;
+
         $attributes = $this->getRefundFields($responseFields, $input);
 
         $this->parseResponseStatus($attributes);
@@ -136,10 +138,16 @@ class Gateway extends Base\Gateway
         if ((in_array($responseFields[Fields::RESULT], Status::$successStates) === false) and
             ($this->isErrorMessage($responseFields[Fields::RESULT]) === true))
         {
-            $this->checkErrorMessage($gatewayEntity, $responseFields);
+            $this->checkErrorMessage($gatewayEntity, $responseFields, $content);
         }
 
-        $this->checkCapturedStatus($gatewayEntity, ErrorCode::BAD_REQUEST_REFUND_FAILED);
+        $this->checkCapturedStatus($gatewayEntity, ErrorCode::GATEWAY_ERROR_PAYMENT_CAPTURE_FAILED, $content);
+
+        // $content is a string hence not using json_encode() for GATEWAY_RESPONSE
+        return [
+            Payment\Gateway::GATEWAY_RESPONSE  => $content,
+            Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($responseFields)
+        ];
     }
 
     /**
@@ -265,7 +273,9 @@ class Gateway extends Base\Gateway
     {
         $name = $input[E::CARD][Card\Entity::NAME];
 
-        return preg_replace('/[^a-zA-Z ]/', '', $name);
+        $name = preg_replace('/[^a-zA-Z ]/', '', $name);
+
+        return trim(preg_replace('/\s+/', ' ',$name));
     }
 
     /**
@@ -576,19 +586,27 @@ class Gateway extends Base\Gateway
      * parsing the verify refund Request Response a
      * @param Base\Verify $verify
      *
-     * @return bool
+     * @return array
      */
     protected function verifyRefundResponse(Base\Verify $verify)
     {
         $verifyResponse = $verify->verifyResponseContent;
 
-        if (empty($verifyResponse[Fields::RESULT]) === false and
-            $verifyResponse[Fields::RESULT] === Status::SUCCESS)
+        $scroogeResponse = new Base\ScroogeResponse();
+
+        $scroogeResponse->setGatewayVerifyResponse($verifyResponse)
+                        ->setGatewayKeys($this->getGatewayData($verifyResponse));
+
+        if ((empty($verifyResponse[Fields::RESULT]) === false) and
+            ($verifyResponse[Fields::RESULT] === Status::SUCCESS))
         {
-            return true;
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
         }
 
-        return false;
+        return $scroogeResponse->setSuccess(false)
+                               ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
+                               ->toArray();
     }
 
     /**
@@ -908,7 +926,7 @@ class Gateway extends Base\Gateway
      *
      * @throws Exception\GatewayErrorException
      */
-    protected function checkErrorMessage($gatewayPayment, $gatewayContent)
+    protected function checkErrorMessage($gatewayPayment, $gatewayContent, $content = '')
     {
         // FSS sends just cancelled in the error instead of error code + desc.
         if ((empty($gatewayPayment->getErrorMessage()) === false) and
@@ -920,7 +938,15 @@ class Gateway extends Base\Gateway
 
             $errorDesc = ErrorCodes\ErrorCodeDescriptions::getGatewayErrorDescription(['code' => $gatewayCode]);
 
-            throw new Exception\GatewayErrorException($errorCode, $gatewayCode, $errorDesc, $gatewayContent);
+            // $content is a string hence not using json_encode() for GATEWAY_RESPONSE
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $gatewayCode,
+                $errorDesc,
+                [
+                    Payment\Gateway::GATEWAY_RESPONSE  => $content,
+                    Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($gatewayContent)
+                ]);
         }
     }
 
@@ -978,13 +1004,24 @@ class Gateway extends Base\Gateway
      *
      * @throws Exception\GatewayErrorException
      */
-    protected function checkCapturedStatus(Entity $gateway, $errorCode)
+    protected function checkCapturedStatus(Entity $gateway, $errorCode, $content = '')
     {
         $status = $gateway->getStatus();
 
         if (in_array($status, Status::$successStates) === false)
         {
-            throw new Exception\GatewayErrorException($errorCode);
+            $refundFields = Utility::createResponseArray($content);
+
+            // $content is a string hence not using json_encode() for GATEWAY_RESPONSE
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $status,
+                'Transaction not successful',
+                [
+                    Payment\Gateway::GATEWAY_RESPONSE  => $content,
+                    Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($refundFields)
+                ]
+            );
         }
     }
 
@@ -1069,6 +1106,22 @@ class Gateway extends Base\Gateway
         {
             $gatewayPayment->setErrorMessage($gatewayResponse[Fields::GATEWAY_ERROR_TEXT]);
         }
+    }
+
+    protected function getGatewayData(array $refundFields = [])
+    {
+        if (empty($refundFields) === false)
+        {
+            return [
+                Fields::RESULT          => $refundFields[Fields::RESULT] ?? null,
+                Fields::TRAN_ID         => $refundFields[Fields::TRAN_ID] ?? null,
+                Fields::TRACK_ID        => $refundFields[Fields::TRACK_ID] ?? null,
+                Fields::PAY_ID          => $refundFields[Fields::PAY_ID] ?? null,
+                Fields::AUTH_RES_CODE   => $refundFields[Fields::AUTH_RES_CODE] ?? null,
+                Fields::REF             => $refundFields[Fields::REF] ?? null,
+            ];
+        }
+        return [];
     }
 
     /**

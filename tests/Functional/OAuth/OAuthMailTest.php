@@ -7,6 +7,7 @@ use Mail;
 use Razorpay\OAuth\Application;
 
 use RZP\Models\Feature;
+use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Mail\OAuth\AppAuthorized as OAuthAppAuthorizedMail;
@@ -102,6 +103,15 @@ class OAuthMailTest extends OAuthTestCase
 
         Mail::assertQueued(OAuthCompetitorAuthorizedMail::class, function ($mail) use ($merchant, $application)
         {
+            $emails = array_column($mail->cc, 'address');
+
+            $expectedEmails = [
+                MailConstants::MAIL_ADDRESSES[MailConstants::PARTNERSHIPS],
+                MailConstants::MAIL_ADDRESSES[MailConstants::APPROVALS_OAUTH],
+            ];
+
+            $this->assertEquals($emails, $expectedEmails);
+
             $this->assertEquals($merchant->getId(), $mail->viewData['merchant']['id']);
 
             $this->assertEquals($application->name, $mail->viewData['application']['name']);

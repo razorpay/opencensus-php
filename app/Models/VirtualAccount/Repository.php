@@ -44,6 +44,14 @@ class Repository extends Base\Repository
         }
     }
 
+    public function getActiveVirtualAccountFromBalanceId(string $balanceId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::STATUS, '=', Status::ACTIVE)
+                    ->where(Entity::BALANCE_ID, '=', $balanceId)
+                    ->first();
+    }
+
     public function getActiveVirtualAccountFromBankAccountId(string $bankAccountId)
     {
         return $this->newQuery()
@@ -51,6 +59,7 @@ class Repository extends Base\Repository
                     ->where(Entity::BANK_ACCOUNT_ID, '=', $bankAccountId)
                     ->first();
     }
+
 
     public function findActiveVirtualAccountByOrder(Order\Entity $order)
     {
@@ -107,5 +116,12 @@ class Repository extends Base\Repository
                       ->whereRaw($excessCondition);
 
         return $query->get();
+    }
+
+    public function existsByBalanceId(string $balanceId): bool
+    {
+        return $this->newQuery()
+                    ->where(Entity::BALANCE_ID, $balanceId)
+                    ->exists();
     }
 }

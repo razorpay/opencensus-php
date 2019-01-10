@@ -17,7 +17,9 @@
         <img src="{{$data['cdn']}}/logo.svg" id="logo" height="35px" style="margin:30px auto 10px; display:block">
     </div>
   <script type="text/javascript">
+    // input data //
     var data = {!!utf8_json_encode($data['data'])!!};
+    // input data //
     try { CheckoutBridge.setPaymentID(data.payment_id) } catch(e){}
   </script>
   <div id="app"></div>

@@ -4,6 +4,7 @@ namespace RZP\Models\BankAccount;
 
 use Mail;
 
+use Razorpay\Trace\Logger;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
@@ -13,7 +14,6 @@ use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
-
 
 class Core extends Base\Core
 {
@@ -68,7 +68,30 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($newBankAccount);
 
+        (new Beneficiary)->enqueueForBeneficiaryRegistration($newBankAccount);
+
         return $newBankAccount;
+    }
+
+    /**
+     * `source` entity can be customer|contact
+     *
+     * @param array             $input
+     * @param Base\PublicEntity $source
+     *
+     * @return Entity
+     */
+    public function createBankAccountForBankingSource(array $input, Base\PublicEntity $source): Entity
+    {
+        (new Validator)->validateIfscCode($input, $this->mode);
+
+        $ba = $this->createBankAccountForSource(
+                        $input,
+                        $source->merchant,
+                        $source,
+                        'add_fund_account_bank_account');
+
+        return $ba;
     }
 
     public function editBankAccount(Entity $bankAccount, array $input)
@@ -239,7 +262,11 @@ class Core extends Base\Core
     }
 
 
-    public function createBankAccountForSource($input, $merchant, $source, $sourceType, $addRule)
+    public function createBankAccountForSource(
+        array $input,
+        Merchant\Entity $merchant,
+        Base\PublicEntity $source,
+        string $addRule): Entity
     {
         $ba = new BankAccount\Entity;
 
@@ -247,9 +274,11 @@ class Core extends Base\Core
 
         $ba->merchant()->associate($merchant);
 
-        $ba->associateSource($source, $sourceType);
+        $ba->source()->associate($source);
 
         $this->repo->saveOrFail($ba);
+
+        (new Beneficiary)->enqueueForBeneficiaryRegistration($ba);
 
         return $ba;
     }
@@ -258,7 +287,9 @@ class Core extends Base\Core
      * All bank account creation happens via this function
      *
      * @param  array  $input
+     * @param         $merchant
      * @param  string $mode
+     *
      * @return BankAccount\Entity
      */
     protected function createBankAccount($input, $merchant, $mode)
@@ -271,6 +302,8 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($ba);
 
+        (new Beneficiary)->enqueueForBeneficiaryRegistration($ba);
+
         return $ba;
     }
 
@@ -282,7 +315,7 @@ class Core extends Base\Core
 
         $ba = $ba->build($input);
 
-        $ba->getValidator()->validateIfscCode($mode);
+        $ba->getValidator()->validateIfscCode($input, $mode);
 
         $ba->merchant()->associate($merchant);
 

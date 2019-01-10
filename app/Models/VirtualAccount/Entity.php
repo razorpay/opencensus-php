@@ -3,13 +3,13 @@
 namespace RZP\Models\VirtualAccount;
 
 use RZP\Models\Base;
-use RZP\Models\Order;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\BankTransfer;
 use RZP\Constants\Entity as Constants;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Base\Traits\HasBalance;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -21,9 +21,8 @@ class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
     use NotesTrait;
+    use HasBalance;
 
-    const ID                   = 'id';
-    const MERCHANT_ID          = 'merchant_id';
     const STATUS               = 'status';
     const NAME                 = 'name';
     const DESCRIPTOR           = 'descriptor';
@@ -38,6 +37,7 @@ class Entity extends Base\PublicEntity
     const CUSTOMER_ID          = 'customer_id';
     const ENTITY_ID            = 'entity_id';
     const ENTITY_TYPE          = 'entity_type';
+    const BALANCE_ID           = 'balance_id';
     const NOTES                = 'notes';
 
     const RECEIVER_TYPE        = 'receiver_type';
@@ -267,11 +267,25 @@ class Entity extends Base\PublicEntity
      * Post-processing, VA amount fields are to be updated.
      * Status change is done inside incrementAmountPaid.
      *
-     * @param Entity $bankTransfer
+     * @param BankTransfer\Entity $bankTransfer
      */
     public function updateWithBankTransfer(BankTransfer\Entity $bankTransfer)
     {
         $paidAmount = $bankTransfer->payment->getAdjustedAmountWrtCustFeeBearer();
+
+        $this->incrementAmountPaid($paidAmount);
+        $this->incrementAmountReceived($paidAmount);
+    }
+
+    /**
+     * Updates aggregate stats and status changes of
+     * virtual account wrt new bank transfer done.
+     *
+     * @param  BankTransfer\Entity $bankTransfer
+     */
+    public function updateWithBankTransferForBanking(BankTransfer\Entity $bankTransfer)
+    {
+        $paidAmount = $bankTransfer->getAmount();
 
         $this->incrementAmountPaid($paidAmount);
         $this->incrementAmountReceived($paidAmount);

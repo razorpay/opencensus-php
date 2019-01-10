@@ -59,6 +59,7 @@ class EsRepository extends Base\EsRepository
 
     protected $balanceIndexedFields = [
         BalanceEntity::ID,
+        BalanceEntity::MERCHANT_ID,
         BalanceEntity::BALANCE,
     ];
 
@@ -445,5 +446,16 @@ class EsRepository extends Base\EsRepository
         $this->addMustNot($query, $clause2);
 
         return $query;
+    }
+
+    /**
+     *
+     * {@inheritDoc}
+     *
+     * @return string
+     */
+    public function getFromAndToQueryAttribute(): string
+    {
+        return E::MERCHANT_DETAIL . '.' . DetailEntity::SUBMITTED_AT;
     }
 }

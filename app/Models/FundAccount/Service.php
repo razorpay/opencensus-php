@@ -1,0 +1,75 @@
+<?php
+
+namespace RZP\Models\FundAccount;
+
+use RZP\Models\Base;
+use RZP\Models\Contact;
+use RZP\Models\Customer;
+use RZP\Trace\TraceCode;
+use RZP\Exception\BadRequestValidationFailureException;
+
+/**
+ * Class Service
+ *
+ * @package RZP\Models\FundAccount
+ */
+class Service extends Base\Service
+{
+    use Base\Traits\ServiceHasCrudMethods;
+
+    /**
+     * @var Core
+     */
+    protected $core;
+
+    /**
+     * @var Repository
+     */
+    protected $entityRepo;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->core = new Core;
+
+        $this->entityRepo = $this->repo->fund_account;
+    }
+
+    public function create(array $input): array
+    {
+        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, ['input' => $input]);
+
+        (new Validator)->setStrictFalse()->validateInput(Validator::BEFORE_CREATE, $input);
+
+        $source = null;
+
+        if (isset($input[Entity::CONTACT_ID]) === true)
+        {
+            /** @var Contact\Entity $source */
+            $source = $this->repo->contact->findByPublicIdAndMerchant($input[Entity::CONTACT_ID], $this->merchant);
+        }
+        else if (isset($input[Entity::CUSTOMER_ID]) === true)
+        {
+            /** @var Customer\Entity $source */
+            $source = $this->repo->customer->findByPublicIdAndMerchant($input[Entity::CUSTOMER_ID], $this->merchant);
+        }
+
+        if (optional($source)->isActive() === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Fund accounts cannot be created on an inactive ' . $source->getEntity());
+        }
+
+        $entity = $this->core->create($input, $this->merchant, $source);
+
+        return $entity->toArrayPublic();
+    }
+
+    public function fetch(string $id, array $input): array
+    {
+        $entity = $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant, $input);
+
+        return $entity->toArrayPublic();
+    }
+}

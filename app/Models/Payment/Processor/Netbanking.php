@@ -26,6 +26,12 @@ class Netbanking
     const PUNB_R = 'PUNB_R';
     const LAVB_R = 'LAVB_R';
 
+    public static $defaultInconsistentBankCodesMapping = [
+        IFSC::BARB => 'BARB_R',
+        IFSC::PUNB => 'PUNB_R',
+        IFSC::LAVB => 'LAVB_R',
+    ];
+
     public static $inconsistentIfsc = [
         self::BARB_R,
         self::PUNB_R,
@@ -68,7 +74,10 @@ class Netbanking
         IFSC::INDB,
         IFSC::ORBC,
         IFSC::CSBK,
+        IFSC::ALLA,
+        IFSC::CNRB,
         IFSC::ESFB,
+        IFSC::VIJB,
         self::PUNB_R,
         self::BARB_R,
     ];
@@ -76,7 +85,8 @@ class Netbanking
     protected static $selfCorp = [
         self::ICIC_C,
         self::UTIB_C,
-        self::BARB_C
+        self::BARB_C,
+        self::PUNB_C,
     ];
 
     protected static $selfTPV = [
@@ -88,6 +98,7 @@ class Netbanking
         IFSC::RATN,
         IFSC::INDB,
         IFSC::CSBK,
+        IFSC::ALLA,
     ];
 
     protected static $gatewaySupportedBanks = [
@@ -328,6 +339,11 @@ class Netbanking
                 IFSC::IDFB
             ]
         ],
+        Gateway::NETBANKING_VIJAYA => [
+            'retail' => [
+                IFSC::VIJB
+            ]
+        ],
         Gateway::NETBANKING_HDFC => [
             'retail' => [
                 IFSC::HDFC
@@ -339,6 +355,11 @@ class Netbanking
         Gateway::NETBANKING_CORPORATION => [
             'retail' => [
                 IFSC::CORP,
+            ]
+        ],
+        Gateway::NETBANKING_CANARA => [
+            'retail' => [
+                IFSC::CNRB,
             ]
         ],
         Gateway::NETBANKING_EQUITAS => [
@@ -399,12 +420,23 @@ class Netbanking
         Gateway::NETBANKING_PNB => [
             'retail' => [
                 self::PUNB_R,
+            ],
+            'corp' => [
+                self::PUNB_C
             ]
         ],
         Gateway::NETBANKING_EQUITAS => [
             'retail' => [
                 IFSC::ESFB,
             ]
+        ],
+        Gateway::NETBANKING_ALLAHABAD => [
+            'retail' => [
+                IFSC::ALLA,
+            ],
+            'tpv' => [
+                IFSC::ALLA,
+            ],
         ],
     ];
 

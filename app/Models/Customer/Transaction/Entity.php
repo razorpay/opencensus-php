@@ -174,6 +174,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RECONCILED_AT, $timestamp);
     }
 
+    /**
+     * Adding dummy function to set reconciled type as db doesn't have this column currently.
+     * Payout recon internally calls this function.
+     *
+     * @param $reconciledType
+     */
+    public function setReconciledType($reconciledType)
+    {
+
+    }
 
     public function setPublicSourceAttribute(array & $attributes)
     {

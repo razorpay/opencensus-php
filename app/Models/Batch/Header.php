@@ -36,16 +36,17 @@ class Header
     //
     // Payment Link Headers
     //
-    const INVOICE_NUMBER      = 'Invoice Number';
-    const CUSTOMER_NAME       = 'Customer Name';
-    const CUSTOMER_EMAIL      = 'Customer Email';
-    const CUSTOMER_CONTACT    = 'Customer Contact';
-    const AMOUNT_IN_PAISE     = 'Amount (In Paise)';
-    const DESCRIPTION         = 'Description';
-    const EXPIRE_BY           = 'Expire By';
-    const PARTIAL_PAYMENT     = 'Partial Payment';
-    const PAYMENT_LINK_ID     = 'Payment Link Id';
-    const SHORT_URL           = 'Payment Link Short URL';
+    const INVOICE_NUMBER           = 'Invoice Number';
+    const CUSTOMER_NAME            = 'Customer Name';
+    const CUSTOMER_EMAIL           = 'Customer Email';
+    const CUSTOMER_CONTACT         = 'Customer Contact';
+    const AMOUNT_IN_PAISE          = 'Amount (In Paise)';
+    const DESCRIPTION              = 'Description';
+    const EXPIRE_BY                = 'Expire By';
+    const PARTIAL_PAYMENT          = 'Partial Payment';
+    const PAYMENT_LINK_ID          = 'Payment Link Id';
+    const SHORT_URL                = 'Payment Link Short URL';
+    const FIRST_PAYMENT_MIN_AMOUNT = 'First Payment Min Amount (In Paise)';
 
     //
     // IRCTC Headers
@@ -361,6 +362,30 @@ class Header
     const AUTH_LINK_SMS_SENT            = 'sent_sms';
     const AUTH_LINK_CREATED_AT          = 'created_at';
 
+    //
+    // Hitachi Bulk Terminal Creation Headers
+    //
+    const HITACHI_RID          = 'RID';
+    const HITACHI_MERCHANT_ID  = 'Merchant ID';
+    const HITACHI_SUB_IDS      = 'Sub IDs';
+    const HITACHI_MID          = 'MID';
+    const HITACHI_TID          = 'TID';
+    const HITACHI_PART_NAME    = 'Part Name';
+    const HITACHI_ME_NAME      = 'ME Name';
+    const HITACHI_LOCATION     = 'Location';
+    const HITACHI_CITY         = 'City';
+    const HITACHI_STATE        = 'State';
+    const HITACHI_COUNTRY      = 'Country';
+    const HITACHI_MCC          = 'MCC';
+    const HITACHI_TERM_STATUS  = 'Term Status';
+    const HITACHI_ME_STATUS    = 'ME Status';
+    const HITACHI_ZIPCODE      = 'ZIPCode';
+    const HITACHI_SWIPER_ID    = 'Swiper ID';
+    const HITACHI_SPONSOR_BANK = 'Sponsor Bank';
+    const HITACHI_CURRENCY     = 'Currency';
+    const FAILURE_REASON       = 'Failure Reason';
+
+
     /**
      * Input and output file headers
      * The keys need to be like <type>_<sub-type>_<gateway>.
@@ -401,6 +426,7 @@ class Header
                 self::DESCRIPTION,
                 self::EXPIRE_BY,
                 self::PARTIAL_PAYMENT,
+                self::NOTES,
             ],
 
             self::OUTPUT => [
@@ -412,6 +438,7 @@ class Header
                 self::DESCRIPTION,
                 self::EXPIRE_BY,
                 self::PARTIAL_PAYMENT,
+                self::NOTES,
                 self::STATUS,
                 self::PAYMENT_LINK_ID,
                 self::SHORT_URL,
@@ -1084,6 +1111,64 @@ class Header
                 self::ERROR_DESCRIPTION,
             ],
         ],
+
+        Type::INSTANT_ACTIVATION => [
+            self::INPUT => [
+                self::MERCHANT_ID,
+            ],
+
+            self::OUTPUT => [
+                self::MERCHANT_ID,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        'terminal_hitachi' => [
+            self::INPUT => [
+                self::HITACHI_RID,
+                self::HITACHI_MERCHANT_ID,
+                self::HITACHI_SUB_IDS,
+                self::HITACHI_MID,
+                self::HITACHI_TID,
+                self::HITACHI_PART_NAME,
+                self::HITACHI_ME_NAME,
+                self::HITACHI_LOCATION,
+                self::HITACHI_CITY,
+                self::HITACHI_STATE,
+                self::HITACHI_COUNTRY,
+                self::HITACHI_MCC,
+                self::HITACHI_TERM_STATUS,
+                self::HITACHI_ME_STATUS,
+                self::HITACHI_ZIPCODE,
+                self::HITACHI_SWIPER_ID,
+                self::HITACHI_SPONSOR_BANK,
+                self::HITACHI_CURRENCY,
+            ],
+            self::OUTPUT => [
+                self::HITACHI_RID,
+                self::HITACHI_MERCHANT_ID,
+                self::HITACHI_SUB_IDS,
+                self::HITACHI_MID,
+                self::HITACHI_TID,
+                self::HITACHI_PART_NAME,
+                self::HITACHI_ME_NAME,
+                self::HITACHI_LOCATION,
+                self::HITACHI_CITY,
+                self::HITACHI_STATE,
+                self::HITACHI_COUNTRY,
+                self::HITACHI_MCC,
+                self::HITACHI_TERM_STATUS,
+                self::HITACHI_ME_STATUS,
+                self::HITACHI_ZIPCODE,
+                self::HITACHI_SWIPER_ID,
+                self::HITACHI_SPONSOR_BANK,
+                self::HITACHI_CURRENCY,
+                self::STATUS,
+                self::FAILURE_REASON
+            ]
+        ]
     ];
 
     /**
@@ -1115,6 +1200,16 @@ class Header
             (in_array(self::NOTES, $actualHeaders, true) === false))
         {
             $actualHeaders[] = self::NOTES;
+        }
+
+        //
+        // For PL batch, we want to optionally accept the FIRST_PAYMENT_MIN_AMOUNT
+        // headers. This is temporary until we have support for optional headers.
+        //
+        if (($type === Type::PAYMENT_LINK) and
+            ((in_array(self::FIRST_PAYMENT_MIN_AMOUNT, $actualHeaders, true) === true)))
+        {
+            $expectedHeaders[] = self::FIRST_PAYMENT_MIN_AMOUNT;
         }
 
         $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);

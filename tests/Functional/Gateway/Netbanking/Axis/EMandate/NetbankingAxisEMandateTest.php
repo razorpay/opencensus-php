@@ -438,6 +438,11 @@ class NetbankingAxisEMandateTest extends TestCase
 
         $debitPayment = $this->getLastEntity('payment', true);
 
+        // setting created at to 8am. Payments are picked from 9 to 9 cycle.
+        $createdAt = Carbon::today(Timezone::IST)->addHours(8)->getTimestamp();
+
+        $this->fixtures->edit('payment', $debitPayment['id'], ['created_at' => $createdAt]);
+
         $this->ba->adminAuth();
 
         Mail::fake();

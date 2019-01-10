@@ -236,7 +236,7 @@ class Repository extends Base\Repository
             $query->skip($offset);
         }
 
-        return $query->inRandomOrder()->get();
+        return $query->get();
     }
 
     public function getAttemptsWithIds(
@@ -272,5 +272,18 @@ class Repository extends Base\Repository
                     ->take($limit)
                     ->skip($offset)
                     ->get();
+    }
+
+    public function findByIdWithStatus(string $id, string $status = null)
+    {
+        $query =  $this->newQuery()
+                       ->where(Entity::ID, $id);
+
+        if (empty($status) === false)
+        {
+            $query = $query->where(Entity::STATUS, $status);
+        }
+
+        return $query->first();
     }
 }

@@ -4,6 +4,7 @@ namespace RZP\Models\Order;
 
 use RZP\Base;
 use RZP\Models\Payment;
+use RZP\Models\BankAccount;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Exception;
 use RZP\Models\Feature;
@@ -12,23 +13,29 @@ use RZP\Models\Currency\Currency;
 
 class Validator extends Base\Validator
 {
-    protected static $createRules = array(
-        Entity::AMOUNT          => 'required|integer|min:0',
-        Entity::CURRENCY        => 'required|string|size:3',
-        Entity::RECEIPT         => 'sometimes|nullable|string|max:40',
-        Entity::PAYMENT_CAPTURE => 'filled|boolean',
-        Entity::CUSTOMER_ID     => 'filled|public_id|size:19',
-        Entity::NOTES           => 'sometimes|notes',
-        Entity::METHOD          => 'sometimes|in:netbanking,emandate,upi',
-        Entity::BANK            => 'filled',
-        Entity::ACCOUNT_NUMBER  => 'filled|string|max:50|min:5',
-        Entity::DISCOUNT        => 'sometimes|boolean',
-        Entity::OFFERS          => 'sometimes|array',
-        Entity::OFFERS . '*'    => 'filled|public_id|size:20',
-        Entity::FORCE_OFFER     => 'filled|boolean',
-        Entity::PARTIAL_PAYMENT => 'sometimes|boolean',
-        Entity::PAYER_NAME      => 'sometimes|string|max:100'
-    );
+    protected static $createRules = [
+        Entity::AMOUNT                             => 'required|integer|min:0',
+        Entity::FIRST_PAYMENT_MIN_AMOUNT           => 'sometimes|nullable|integer|min:100',
+        Entity::CURRENCY                           => 'required|string|size:3',
+        Entity::RECEIPT                            => 'sometimes|nullable|string|max:40',
+        Entity::PAYMENT_CAPTURE                    => 'filled|boolean',
+        Entity::CUSTOMER_ID                        => 'filled|public_id|size:19',
+        Entity::NOTES                              => 'sometimes|notes',
+        Entity::METHOD                             => 'sometimes|in:netbanking,emandate,upi',
+        Entity::BANK                               => 'filled',
+        Entity::DISCOUNT                           => 'sometimes|boolean',
+        Entity::OFFERS                             => 'sometimes|array',
+        Entity::BANK_ACCOUNT                       => 'sometimes|array',
+        Entity::BANK_ACCOUNT
+        . '.' . BankAccount\Entity::NAME           => 'sometimes|max:40|string',
+        Entity::BANK_ACCOUNT
+        . '.' . BankAccount\Entity::IFSC           => 'required_with:bank_account|alpha_num|size:11',
+        Entity::BANK_ACCOUNT
+        . '.' . BankAccount\Entity::ACCOUNT_NUMBER => 'required_with:bank_account|alpha_num|between:5,20',
+        Entity::OFFERS . '*'                       => 'filled|public_id|size:20',
+        Entity::FORCE_OFFER                        => 'filled|boolean',
+        Entity::PARTIAL_PAYMENT                    => 'sometimes|boolean',
+    ];
 
     protected static $createValidators = [
         Entity::ACCOUNT_NUMBER,
@@ -205,6 +212,7 @@ class Validator extends Base\Validator
      */
     protected function validateOrderAmount(int $paymentAmount)
     {
+        /** @var Entity $order */
         $order = $this->entity;
 
         // In case of partial payment, $paymentAmount <= $orderAmountDue,
@@ -226,8 +234,32 @@ class Validator extends Base\Validator
                 ]);
         }
 
-        if (($partialPaymentAllowed === true) and
-            ($paymentAmount > $orderAmountDue) and
+        if ($partialPaymentAllowed === true)
+        {
+            $this->validatePartialPaymentOrderAmount($paymentAmount);
+        }
+    }
+
+    protected function validatePartialPaymentOrderAmount(int $paymentAmount)
+    {
+        /** @var Entity $order */
+        $order = $this->entity;
+
+        $amountDue             = $order->getAmountDue();
+        $amountPaid            = $order->getAmountPaid();
+        $isFirstPayment        = ($amountPaid === 0);
+        $firstPaymentMinAmount = $order->getFirstPaymentMinAmount();
+
+        if (($isFirstPayment === true) and
+            ($firstPaymentMinAmount !== null) and
+            ($paymentAmount < $firstPaymentMinAmount))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MINIMUM_ALLOWED_AMOUNT,
+                Entity::AMOUNT);
+        }
+
+        if (($paymentAmount > $amountDue) and
             ($order->merchant->isFeatureEnabled(Feature\Constants::EXCESS_ORDER_AMOUNT) === false))
         {
             throw new Exception\BadRequestException(
@@ -329,14 +361,17 @@ class Validator extends Base\Validator
                 'Order bank does not match the payment bank');
         }
 
-        if (empty($order->getAccountNumber()))
+        // TODO: Change this after creating bank account entities for all the previous TPV orders
+        $accountNumber = empty($order->bankAccount) === true ? $order->getAccountNumber() : $order->bankAccount->getAccountNumber();
+
+        if (empty($accountNumber) === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ORDER_ACCOUNT_NUMBER_REQUIRED_FOR_MERCHANT);
         }
     }
 
-    protected function validateBank($input)
+    public function validateBank($input)
     {
         if (isset($input[Entity::BANK]) === false)
         {
@@ -383,7 +418,8 @@ class Validator extends Base\Validator
     {
         $accountNumberLengths = Netbanking::getAccountNumberLengths();
 
-        if (isset($input[Entity::ACCOUNT_NUMBER]) === false)
+        if ((isset($input[Entity::BANK_ACCOUNT]) === false) or
+            (isset($input[Entity::BANK_ACCOUNT][Entity::ACCOUNT_NUMBER]) === false))
         {
             return;
         }
@@ -397,25 +433,6 @@ class Validator extends Base\Validator
                     $input
                 ]);
         }
-
-        $bank = $input[Entity::BANK];
-
-        $accountNumber = $input[Entity::ACCOUNT_NUMBER];
-
-        if (isset($accountNumberLengths[$bank]) === false)
-        {
-            return;
-        }
-
-        if ($accountNumberLengths[$bank] !== strlen($accountNumber))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ORDER_ACCOUNT_NUMBER_INCORRECT_LENGTH,
-                Entity::ACCOUNT_NUMBER,
-                [
-                    $input
-                ]);
-        };
     }
 
     protected function validateOrderMethod(string $method = null)

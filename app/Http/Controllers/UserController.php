@@ -34,6 +34,17 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    /**
+     * Edit user action for logged in user (via Dashboard headers).
+     * @return \Illuminate\Http\Response
+     */
+    public function editSelf()
+    {
+        $response = $this->service()->editSelf($this->input);
+
+        return ApiResponse::json($response);
+    }
+
     public function confirmUser(string $id)
     {
         $data = $this->service()->confirm($id);
@@ -118,5 +129,19 @@ class UserController extends Controller
         $data = $this->service()->changePasswordByToken($input);
 
         return ApiResponse::json($data);
+    }
+
+    public function sendOtp()
+    {
+        $response = $this->service()->sendOtp($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function verifyContactWithOtp()
+    {
+        $response = $this->service()->verifyContactWithOtp($this->input);
+
+        return ApiResponse::json($response);
     }
 }

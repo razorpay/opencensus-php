@@ -395,6 +395,7 @@ class Entity extends Base\PublicEntity
         'recurring',
         self::METADATA,
         self::VERIFY_AT,
+        self::WALLET,
     ];
 
     protected $dates = [
@@ -722,6 +723,14 @@ class Entity extends Base\PublicEntity
         // so that for payments with status = created
         // we can pick them after 2 min for verify.
         $this->setVerifyAt(time() + 120);
+    }
+
+    protected function generateWallet($input)
+    {
+        if ($input[Entity::METHOD] === Method::CARDLESS_EMI)
+        {
+            $this->setAttribute(self::WALLET, $input['provider']);
+        }
     }
 
     // --------------------- Generators Ends ---------------------------------------
@@ -1472,6 +1481,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::METHOD) === Payment\Method::EMI);
     }
 
+    public function isCardlessEmi()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::CARDLESS_EMI);
+    }
+
     public function isPinAuth()
     {
         return (($this->getAttribute(self::METHOD) === Payment\Method::CARD) and
@@ -1539,7 +1553,7 @@ class Entity extends Base\PublicEntity
 
     public function isInternational()
     {
-        return $this->getAttribute(self::INTERNATIONAL);
+        return (bool) $this->getAttribute(self::INTERNATIONAL);
     }
 
     public function isOpenWalletPayment()
@@ -2687,7 +2701,7 @@ class Entity extends Base\PublicEntity
 
     public function toArrayTraceRelevant()
     {
-        $fields = array(
+        $fields = [
             self::ID,
             self::MERCHANT_ID,
             self::CARD_ID,
@@ -2700,7 +2714,8 @@ class Entity extends Base\PublicEntity
             self::RECEIVER_ID,
             self::RECEIVER_TYPE,
             self::VERIFY_AT,
-            self::VERIFY_BUCKET);
+            self::VERIFY_BUCKET,
+        ];
 
         $relevantData = array_intersect_key($this->attributes, array_flip($fields));
 
@@ -2912,6 +2927,16 @@ class Entity extends Base\PublicEntity
         parent::verifyIdAndStripSign($id);
 
         return 'upi.polling.' . $id . '.status';
+    }
+
+    public static function getCardlessEmiOnetimeTokenCacheKey(string $token): string
+    {
+        return 'payment:cardlessemi.' . $token . '.token';
+    }
+
+    public function getCacheInputKey(): string
+    {
+        return 'payment:fallback.' . $this->getId() . '.card_number';
     }
 
     public function getTransactionType()

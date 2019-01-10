@@ -7,15 +7,16 @@ use DB;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Constants\Table;
+use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
-use RZP\Models\Merchant;
+use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Gateway\Billdesk;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Merchant\Balance;
 use RZP\Constants\Entity as ConstantEntity;
 
 class Repository extends Base\Repository
@@ -61,12 +62,106 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    /**
+     * We DO NOT want to eager load any relationship for any of the entities
+     * because every transaction will store a separate copy for each of its
+     * relation. So 2 transactions of the same merchant will have a copy each
+     * of merchant, bank_account, and balance – effectively 2 * 3 storage.
+     * Now, compare it against the case where we keep only 1 copy of each of
+     * these relations – in a case where lacs of transactions of a merchant
+     * are going to be settled. The difference is memory used will be huge.
+     * Hence instead will query it separately.
+     *
+     * @param $timestamp
+     * @param string $channel
+     * @param array $inMerchantIds
+     * @param array $notInMerchantIds
+     * @param boolean $fetchAll
+     * @return mixed
+     */
+    public function fetchUnsettledTransactions(
+        $timestamp, string $channel, array $inMerchantIds = [], array $notInMerchantIds = [], bool $fetchAll = true)
+    {
+        // SELECT `transactions`.`id`.`merchant_id`
+        // FROM transactions
+        // INNER JOIN
+        //     (SELECT `id`
+        //      FROM merchants
+        //      WHERE hold_funds = 0
+        //          AND merchants.activated_at IS NOT NULL
+        //          AND merchants.id NOT IN ('8ytYezIThlseJd',
+        //                                   '7BfRNg10LH7N6T')
+        //     ) AS settle_merchants ON settle_merchants.id = transactions.merchant_id
+        // WHERE settled_at < now()
+        //     AND on_hold = 0
+        //     AND settled = 0
+        //     AND transactions.channel = 'axis'
+        //     AND type != 'settlement'
+
+        $txnFetchStartTime      = microtime(true);
+
+        $activatedMerchants = $this->repo->merchant->fetchMerchantsForSettlement($inMerchantIds, $notInMerchantIds);
+
+        $transactionType        = $this->dbColumn(Entity::TYPE);
+        $transactionOnHold      = $this->dbColumn(Entity::ON_HOLD);
+        $transactionChannel     = $this->dbColumn(Entity::CHANNEL);
+        $transactionSettled     = $this->dbColumn(Entity::SETTLED);
+        $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
+        $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
+
+        $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
+
+
+        $selectedColumns = $this->fetchRequiredColumnsForSettlement($fetchAll);
+
+        $query = $this->newQuery()
+                      ->select($selectedColumns)
+                      ->joinSub($activatedMerchants->toSql(), 'settle_merchants', function($join)
+                                {
+                                    $join->on('settle_merchants.id', '=', 'transactions.merchant_id');
+                                })
+                      ->mergeBindings($activatedMerchants->getQuery())
+                      ->leftJoin(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
+                      ->where(function ($query) use ($transactionBalanceId, $balanceTypeColumn)
+                              {
+                                  $query->whereNull($transactionBalanceId)
+                                        ->orWhere($balanceTypeColumn, Balance\Type::PRIMARY);
+                              })
+                      ->where($transactionSettledAt, '<', $timestamp)
+                      ->where($transactionOnHold, 0)
+                      ->where($transactionSettled, 0)
+                      ->where($transactionChannel, $channel)
+                      ->where($transactionType, '!=', Type::SETTLEMENT);
+
+        $results = $query->get();
+
+        $txnFetchTimeTaken = microtime(true) - $txnFetchStartTime;
+
+        $this->trace->info(TraceCode::SETTLEMENT_TXN_FETCH_TIME_TAKEN, ['time_taken' => $txnFetchTimeTaken]);
+
+        return $results;
+    }
+
     public function fetchUnsettledTransactionsForMerchantUpdate($merchantId)
     {
+        $transactionIdColumn        = $this->dbColumn(Entity::ID);
+        $transactionTypeColumn      = $this->dbColumn(Entity::TYPE);
+        $transactionBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
+
+        $balanceIdColumn   = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceTypeColumn = $this->repo->balance->dbColumn(Entity::TYPE);
+
         $query = $this->newQuery()
-                      ->select(['id'])
+                      ->select([$transactionIdColumn])
+                      ->leftJoin(Table::BALANCE, $balanceIdColumn, '=', $transactionBalanceIdColumn)
+                      ->where(function($query) use ($transactionBalanceIdColumn, $balanceTypeColumn)
+                              {
+                                  $query->whereNull($transactionBalanceIdColumn)
+                                        ->orWhere($balanceTypeColumn, Balance\Type::PRIMARY);
+                              })
                       ->where(Transaction\Entity::SETTLED, '=', 0)
-                      ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
+                      ->where($transactionTypeColumn, '!=', Type::SETTLEMENT)
                       ->merchantId($merchantId);
 
         return $query->get();
@@ -463,13 +558,17 @@ class Repository extends Base\Repository
      * Updated reconciled_at to current time for given entities
      *
      * @param $entityIds
+     * @param $reconciledType
      * @return mixed
      */
-    public function bulkReconciliationUpdate($entityIds)
+    public function bulkReconciliationUpdate($entityIds, $reconciledType = ReconciledType::NA)
     {
         $time = time();
 
-        $attributes = [Entity::RECONCILED_AT => $time];
+        $attributes = [
+                        Entity::RECONCILED_AT   => $time,
+                        Entity::RECONCILED_TYPE => $reconciledType
+                      ];
 
         return $this->newQuery()
                     ->whereIn(Entity::ENTITY_ID, $entityIds)
@@ -1091,122 +1190,38 @@ class Repository extends Base\Repository
     }
 
     /**
-     * We DO NOT want to eager load any relationship for any of the entities
-     * because every transaction will store a separate copy for each of its
-     * relation. So 2 transactions of the same merchant will have a copy each
-     * of merchant, bank_account, and balance – effectively 2 * 3 storage.
-     * Now, compare it against the case where we keep only 1 copy of each of
-     * these relations – in a case where lacs of transactions of a merchant
-     * are going to be settled. The difference is memory used will be huge.
-     * Hence instead will query it separately.
-     *
-     * @param $timestamp
+     * @param string $mid
      * @param string $channel
-     * @param array $inMerchantIds
-     * @param array $notInMerchantIds
-     * @return mixed
+     * @return Base\PublicCollection
      */
-    public function fetchTransactionsForSettlement(
-        int $timestamp,
-        string $channel,
-        array $inMerchantIds = [],
-        array $notInMerchantIds = [])
+    public function fetchUnsettledTransactionsForProcessing(string $mid, string $channel): Base\PublicCollection
     {
-        // SELECT `transactions`.`id`,
-        // `transactions`.`merchant_id`,
-        // `transactions`.`balance`,
-        // `transactions`.`type`,
-        // `transactions`.`entity_id`,
-        // `transactions`.`settled_at`,
-        // `transactions`.`settled`,
-        // `transactions`.`amount`,
-        // `transactions`.`credit`,
-        // `transactions`.`debit`,
-        // `transactions`.`tax`,
-        // `transactions`.`fee`,
-        // `transactions`.`fee_credits`,
-        // `transactions`.`credit_type`,
-        // `transactions`.`created_at`,
-        // `transactions`.`channel`
-        // FROM transactions
-        // INNER JOIN
-        //     (SELECT `id`
-        //      FROM merchants
-        //      WHERE hold_funds = 0
-        //          AND merchants.activated_at IS NOT NULL
-        //          AND merchants.id NOT IN ('8ytYezIThlseJd',
-        //                                   '7BfRNg10LH7N6T')
-        //     ) AS settle_merchants ON settle_merchants.id = transactions.merchant_id
-        // WHERE settled_at < now()
-        //     AND on_hold = 0
-        //     AND settled = 0
-        //     AND transactions.channel = 'axis'
-        //     AND type != 'settlement'
-
-
-        $transactionMerchantId  = $this->dbColumn(Entity::MERCHANT_ID);
-        $transactionId          = $this->dbColumn(Entity::ID);
-        $transactionChannel     = $this->dbColumn(Entity::CHANNEL);
-        $transactionBalance     = $this->dbColumn(Entity::BALANCE);
-        $transactionType        = $this->dbColumn(Entity::TYPE);
-        $transactionSourceId    = $this->dbColumn(Entity::ENTITY_ID);
-        $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
-        $transactionSettled     = $this->dbColumn(Entity::SETTLED);
-        $transactionAmount      = $this->dbColumn(Entity::AMOUNT);
-        $transactionCredit      = $this->dbColumn(Entity::CREDIT);
-        $transactionDebit       = $this->dbColumn(Entity::DEBIT);
-        $transactionTax         = $this->dbColumn(Entity::TAX);
-        $transactionFee         = $this->dbColumn(Entity::FEE);
-        $transactionFeeCredits  = $this->dbColumn(Entity::CREDITS);
-        $transactionCreditsType = $this->dbColumn(Entity::CREDIT_TYPE);
-        $transactionCreatedAt   = $this->dbColumn(Entity::CREATED_AT);
-        $transactionOnHold      = $this->dbColumn(Entity::ON_HOLD);
-
-        $merchantId     = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
-        $colHoldFunds   = $this->repo->merchant->dbColumn(Merchant\Entity::HOLD_FUNDS);
-        $colActivatedAt = $this->repo->merchant->dbColumn(Merchant\Entity::ACTIVATED_AT);
-
         $txnFetchStartTime = microtime(true);
 
-        $activatedMerchants = $this->repo->merchant
-                                   ->newQuery()
-                                   ->select($merchantId)
-                                   ->where($colHoldFunds, 0)
-                                   ->whereNotNull($colActivatedAt);
+        $selectedColumns = $this->fetchRequiredColumnsForSettlement(true);
 
-        if (empty($inMerchantIds) === false)
-        {
-            $activatedMerchants->whereIn(Merchant\Entity::ID, $inMerchantIds);
-        }
+        $transactionMerchantId  = $this->dbColumn(Entity::MERCHANT_ID);
+        $transactionType        = $this->dbColumn(Entity::TYPE);
+        $transactionOnHold      = $this->dbColumn(Entity::ON_HOLD);
+        $transactionChannel     = $this->dbColumn(Entity::CHANNEL);
+        $transactionSettled     = $this->dbColumn(Entity::SETTLED);
+        $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
+        $transactionBalanceId   = $this->dbColumn(Entity::BALANCE_ID);
 
-        if (empty($notInMerchantIds) === false)
-        {
-            $activatedMerchants->whereNotIn(Merchant\Entity::ID, $notInMerchantIds);
-        }
+        $balanceId              = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceTypeColumn      = $this->repo->balance->dbColumn(Entity::TYPE);
+
+        $timestamp = Carbon::now()->getTimestamp();
 
         $query = $this->newQuery()
-                      ->select(
-                          $transactionId,
-                          $transactionMerchantId,
-                          $transactionBalance,
-                          $transactionType,
-                          $transactionSourceId,
-                          $transactionSettledAt,
-                          $transactionSettled,
-                          $transactionAmount,
-                          $transactionCredit,
-                          $transactionDebit,
-                          $transactionTax,
-                          $transactionFee,
-                          $transactionFeeCredits,
-                          $transactionCreditsType,
-                          $transactionCreatedAt,
-                          $transactionChannel
-                      )->joinSub($activatedMerchants->toSql(), 'settle_merchants', function($join)
-                                 {
-                                     $join->on('settle_merchants.id', '=', 'transactions.merchant_id');
-                                 })
-                      ->mergeBindings($activatedMerchants->getQuery())
+                      ->select($selectedColumns)
+                      ->leftJoin(Table::BALANCE, $balanceId, '=', $transactionBalanceId)
+                      ->where(function ($query) use ($transactionBalanceId, $balanceTypeColumn)
+                              {
+                                  $query->whereNull($transactionBalanceId)
+                                        ->orWhere($balanceTypeColumn, Balance\Type::PRIMARY);
+                              })
+                      ->where($transactionMerchantId, $mid)
                       ->where($transactionSettledAt, '<', $timestamp)
                       ->where($transactionOnHold, 0)
                       ->where($transactionSettled, 0)
@@ -1222,11 +1237,98 @@ class Repository extends Base\Repository
         return $results;
     }
 
+    public function fetchRequiredColumnsForSettlement(bool $fetchAll = true): array
+    {
+        $selectedColumns = [];
+
+        $columns = [ Transaction\Entity::MERCHANT_ID ];
+
+        if ($fetchAll === true)
+        {
+            $columns = array_merge([
+                Transaction\Entity::ID,
+                Transaction\Entity::TAX,
+                Transaction\Entity::FEE,
+                Transaction\Entity::TYPE,
+                Transaction\Entity::DEBIT,
+                Transaction\Entity::CREDIT,
+                Transaction\Entity::AMOUNT,
+                Transaction\Entity::SETTLED,
+                Transaction\Entity::CHANNEL,
+                Transaction\Entity::BALANCE,
+                Transaction\Entity::ENTITY_ID,
+                Transaction\Entity::CREATED_AT,
+                Transaction\Entity::SETTLED_AT,
+                Transaction\Entity::CREDITS,
+                Transaction\Entity::CREDIT_TYPE
+            ],$columns);
+
+        }
+
+        foreach ($columns as $col)
+        {
+            $selectedColumns[] = $this->dbColumn($col);
+        }
+
+        return $selectedColumns;
+    }
+
     public function fetchTransactionCountForSettlementId(string $setlId): int
     {
         return $this->newQuery()
                     ->select(Entity::ID)
                     ->where(Transaction\Entity::SETTLEMENT_ID, $setlId)
                     ->count();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function modifyQueryForIndexing(BuilderEx $query)
+    {
+        // Optimization
+    }
+
+    /**
+     * @param Base\PublicEntity $entity
+     *
+     * @return array
+     */
+    protected function serializeForIndexing(Base\PublicEntity $entity): array
+    {
+        if ($entity->isBalanceTypeBanking() === false)
+        {
+            return [];
+        }
+
+        $serialized = parent::serializeForIndexing($entity);
+
+        $enitityType = $entity->getType();
+
+        if ($enitityType === ConstantEntity::PAYOUT)
+        {
+            $serialized[Statement\Entity::UTR] = $entity->source->getUtr();
+
+            $fa = $entity->source->fundAccount;
+
+            if ($fa->getSourceType() === ConstantEntity::CONTACT)
+            {
+                $contact = $fa->source;
+                $serialized[Statement\Entity::CONTACT_NAME] = $contact->getName();
+                $serialized[Statement\Entity::CONTACT_EMAIL] = $contact->getEmail();
+            }
+        }
+
+        return $serialized;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isEsSyncNeeded(string $action, array $dirty = null, Base\PublicEntity $entity = null): bool
+    {
+        // Additionally, checks if transaction is on banking balance. Others are not required as of now.
+        return ((($entity === null) or ($entity->isBalanceTypeBanking() === true)) and
+                (parent::isEsSyncNeeded($action, $dirty, $entity) === true));
     }
 }

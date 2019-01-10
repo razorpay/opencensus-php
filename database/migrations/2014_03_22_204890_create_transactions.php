@@ -123,7 +123,7 @@ class CreateTransactions extends Migration
             $table->string(Transaction::RECONCILED_TYPE)
                   ->nullable();
 
-            $table->char(Transaction::REFERENCE2, Transaction::ID_LENGTH)
+            $table->char(Transaction::BALANCE_ID, Transaction::ID_LENGTH)
                   ->nullable();
 
             $table->char(Transaction::REFERENCE3, Transaction::ID_LENGTH)

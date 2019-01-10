@@ -43,8 +43,9 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 [
                     'trace_code'      => TraceCode::RECON_INFO_ALERT,
                     'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
-                    'message'         => 'Payment amount mismatch',
+                    'payment_id'      => $this->payment->getId(),
                     'expected_amount' => $this->payment->getBaseAmount(),
+                    'recon_amount'    => $this->getReconPaymentAmount($row),
                     'currency'        => $this->payment->getCurrency(),
                     'row'             => $row,
                     'gateway'         => $this->gateway
@@ -76,5 +77,18 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     protected function setReferenceNumberInGateway(string $referenceNumber, PublicEntity $gatewayPayment)
     {
         $gatewayPayment->setNpciReferenceId($referenceNumber);
+    }
+
+    /**
+     * This returns the array of attributes to be saved while force authorizing the payment.
+     *
+     * @param $row
+     * @return array
+     */
+    protected function getInputForForceAuthorize($row)
+    {
+        return [
+           Base\Reconciliate::REFERENCE_NUMBER => $this->getReferenceNumber($row),
+        ];
     }
 }

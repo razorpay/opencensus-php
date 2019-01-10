@@ -49,6 +49,28 @@ class Payment extends Base
         return $this->fixtures->create('payment', $attributes);
     }
 
+    public function createEmandateRegistrationCaptured(array $attributes = array())
+    {
+        $defaultValues = [
+            'amount'           => 0,
+            'method'           => 'emandate',
+            'status'           => 'captured',
+            'customer_id'      => '100000customer',
+            'email'            => 'a@b.com',
+            'contact'          => '+919918899029',
+            'auto_captured'    => true,
+            'reference1'       => '9999999999',
+            'gateway_captured' => true,
+            'recurring'        => true,
+            'recurring_type'   => 'initial',
+            'auth_type'        => 'netbanking'
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->fixtures->create('payment', $attributes);
+    }
+
     public function create(array $attributes = array())
     {
         $defaultValues = array(

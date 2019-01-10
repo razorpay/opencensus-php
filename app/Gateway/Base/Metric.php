@@ -8,7 +8,6 @@ use RZP\Gateway\Upi;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Gateway\Wallet;
-use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use Razorpay\Trace\Logger as Trace;
@@ -53,6 +52,8 @@ class Metric
         Payment\Action::CALLBACK,
         Payment\Action::CAPTURE,
         Payment\Action::REFUND,
+        Payment\Action::CHECK_ACCOUNT,
+        Payment\Action::FETCH_TOKEN,
         // Payment\Action::OTP_GENERATE,
         // Payment\Action::REVERSE,
         // Payment\Action::AUTHORIZE_PUSH,
@@ -70,14 +71,12 @@ class Metric
         $this->trace = $this->app['trace'];
     }
 
-    public function getDimensions($action, $input, $gateway)
+    public function getDimensions($action, $input, $gateway = 'none')
     {
         if ($action === Payment\Action::VALIDATE_VPA)
         {
             return $this->getValidateVpaDimensions($action, $input, $gateway);
         }
-
-        $gateway = $this->getGateway($input);
 
         $method = $this->getMethod($input);
 
@@ -103,8 +102,6 @@ class Metric
 
         $isBharatQr = $this->isBharatQrPayment($input);
 
-        $terminalId = $this->getTerminalId($input);
-
         $merchantCategory = 'none';
 
         return [
@@ -122,7 +119,7 @@ class Metric
             Metric::DIMENSION_CARD_INTERNATIONAL   => $isInternationalPayment,
             Metric::DIMENSION_BHARAT_QR            => $isBharatQr,
             Metric::DIMENSION_AUTH_TYPE            => $authType,
-            Metric::DIMENSION_TERMINAL_ID          => $terminalId,
+            Metric::DIMENSION_TERMINAL_ID          => 'none',
             Metric::DIMENSION_MERCHANT_CATEGORY    => $merchantCategory
         ];
     }
@@ -184,8 +181,7 @@ class Metric
         if (($method === Payment\Method::NETBANKING) or
             ($method === Payment\Method::UPI))
         {
-            if ((isset($input[Entity::ORDER][Payment\Entity::ACCOUNT_NUMBER]) === true) and
-                ($input[Entity::MERCHANT]->isTPVRequired() === true))
+            if ($input[Entity::MERCHANT]->isTPVRequired() === true)
             {
                 $tpv = '1';
             }
@@ -260,11 +256,6 @@ class Metric
         return $authType ?: 'none';
     }
 
-    protected function getGateway($input)
-    {
-        return $input[Entity::PAYMENT][Payment\Entity::GATEWAY];
-    }
-
     protected function getMethod($input)
     {
         return $input[Entity::PAYMENT][Payment\Entity::METHOD];
@@ -293,11 +284,6 @@ class Metric
     protected function getMerchant($input)
     {
         return $input[Entity::PAYMENT][Payment\Entity::MERCHANT_ID];
-    }
-
-    protected function getTerminalid($input)
-    {
-        return $input[Entity::TERMINAL][Terminal\Entity::ID];
     }
 
     public function pushGatewayDimensions($action, $input, $status, $gateway = null)

@@ -25,10 +25,11 @@ class Constants
     const NOREPLY           = 'noreply';
     const RECON             = 'recon';
     const SETTLEMENT_ALERTS = 'settlement_alert';
-    const PRODUCT_OAUTH     = 'product_oauth';
     const BEAM_FAILURE      = 'beam_failure';
     const CREDITS_ALERTS    = 'credit_alerts';
     const FRESHDESK         = 'freshdesk';
+    const PARTNERSHIPS      = 'partnerships';
+    const APPROVALS_OAUTH   = 'approvals_oauth';
 
     const MAIL_ADDRESSES = [
         self::SUPPORT           => 'support@razorpay.com',
@@ -52,28 +53,30 @@ class Constants
         self::NOREPLY           => 'no-reply@razorpay.com',
         self::RECON             => 'pgrecon@razorpay.com',
         self::SETTLEMENT_ALERTS => 'settlement.alerts@razorpay.com',
-        self::PRODUCT_OAUTH     => 'product.oauth@razorpay.com',
         self::CREDITS_ALERTS    => 'credit.alerts@razorpay.com',
         self::FRESHDESK         => 'rzr05py08emsp@razorpay.com',
+        self::PARTNERSHIPS      => 'partnerships@razorpay.com',
+        self::APPROVALS_OAUTH   => 'approvals.oauth@razorpay.com',
     ];
 
     const HEADERS = [
-        self::SUPPORT       => 'Team Razorpay',
-        self::SCORECARD     => 'Razorpay Scorecard',
-        self::REFUNDS       => 'Refunds File',
-        self::SETTLEMENTS   => 'Settlements File',
-        self::INVOICES      => 'Razorpay Invoices',
-        self::REPORTS       => 'Team Razorpay',
-        self::CARE          => 'Team Razorpay',
-        self::NOREPLY       => 'Team Razorpay',
-        self::ALERTS        => 'Razorpay Webhook Support',
-        self::ACTIVATION    => 'Razorpay Activations Team',
-        self::IRCTC         => 'Razorpay IRCTC Files',
-        self::EMANDATE      => 'Razorpay EMandate',
-        self::DISPUTES      => 'Razorpay Risk Team',
-        self::RECON         => 'Reconciliation Summary',
-        self::PRODUCT_OAUTH => 'Product OAuth',
-        self::BEAM_FAILURE  => 'Beam Request Failure',
-        self::FRESHDESK     => 'Team Razorpay',
+        self::SUPPORT           => 'Team Razorpay',
+        self::SCORECARD         => 'Razorpay Scorecard',
+        self::REFUNDS           => 'Refunds File',
+        self::SETTLEMENTS       => 'Settlements File',
+        self::INVOICES          => 'Razorpay Invoices',
+        self::REPORTS           => 'Team Razorpay',
+        self::CARE              => 'Team Razorpay',
+        self::NOREPLY           => 'Team Razorpay',
+        self::ALERTS            => 'Razorpay Webhook Support',
+        self::ACTIVATION        => 'Razorpay Activations Team',
+        self::IRCTC             => 'Razorpay IRCTC Files',
+        self::EMANDATE          => 'Razorpay EMandate',
+        self::DISPUTES          => 'Razorpay Risk Team',
+        self::RECON             => 'Reconciliation Summary',
+        self::BEAM_FAILURE      => 'Beam Request Failure',
+        self::FRESHDESK         => 'Team Razorpay',
+        self::PARTNERSHIPS      => 'Partnerships',
+        self::APPROVALS_OAUTH   => 'Approvals OAuth',
     ];
 }

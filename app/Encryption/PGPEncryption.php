@@ -9,10 +9,12 @@ class PGPEncryption extends Encryption
     const PUBLIC_KEY  = 'public_key';
     const PRIVATE_KEY = 'private_key';
     const PASSPHRASE  = 'passphrase';
+    const USE_ARMOR   = 'use_armor';
 
     protected $publicKey;
     protected $privateKey;
     protected $passphrase = '';
+    protected $useArmor   = 0;
 
     public function __construct(array $params)
     {
@@ -23,6 +25,8 @@ class PGPEncryption extends Encryption
         $this->privateKey = $params[self::PRIVATE_KEY] ?? null;
 
         $this->passphrase = $params[self::PASSPHRASE] ?? null;
+
+        $this->useArmor   = isset($params[self::USE_ARMOR]) ?? 0;
 
         $this->setupEnvironment();
     }
@@ -60,6 +64,11 @@ class PGPEncryption extends Encryption
     public function encrypt(string $data) : string
     {
         $res = gnupg_init();
+
+        if ($this->useArmor === 1)
+        {
+            gnupg_setarmor($res, 1);
+        }
 
         $imp = gnupg_import($res, $this->publicKey);
 

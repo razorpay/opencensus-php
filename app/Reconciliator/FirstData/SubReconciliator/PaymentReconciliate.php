@@ -136,8 +136,9 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 [
                     'trace_code'      => TraceCode::RECON_INFO_ALERT,
                     'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
-                    'message'         => 'Payment amount mismatch',
+                    'payment_id'      => $this->payment->getId(),
                     'expected_amount' => $this->payment->getBaseAmount(),
+                    'recon_amount'    => $this->getReconPaymentAmount($row),
                     'currency'        => $this->payment->getCurrency(),
                     'row'             => $row,
                     'gateway'         => $this->gateway
@@ -292,5 +293,18 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
 
         return $row[self::COLUMN_ARN];
+    }
+
+    /**
+     * This returns the array of attributes to be saved while force authorizing the payment.
+     *
+     * @param $row
+     * @return array
+     */
+    protected function getInputForForceAuthorize($row)
+    {
+        return [
+            BaseReconciliate::AUTH_CODE => $this->getAuthCode($row)
+        ];
     }
 }

@@ -48,6 +48,15 @@ trait PaymentHdfcTrait
 
         $mock = $this->isGatewayMocked();
 
+        if ($this->isOtpCallbackUrl($url) === true)
+        {
+            $this->callbackUrl = $url;
+
+            $this->otpFlow = true;
+
+            return $this->makeOtpCallback($url);
+        }
+
         //
         // Card has 3d-secure enabled
         // In which case, run card 3dsecure flow

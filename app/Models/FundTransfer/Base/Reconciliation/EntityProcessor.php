@@ -8,12 +8,17 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Payout;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
+use RZP\Models\Payment\Refund;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\Transaction\ReconciledType;
+use RZP\Models\FundTransfer\Yesbank\Reconciliation\GatewayStatus;
 use RZP\Mail\Merchant\SettlementFailure as SettlementFailureMail;
 
 abstract class EntityProcessor extends Base\Core
@@ -79,6 +84,8 @@ abstract class EntityProcessor extends Base\Core
 
     protected function updateEntities()
     {
+        // All of these are in a single DB transaction.
+
         $this->updateAttemptEntity();
 
         if ($this->source->getBatchFundTransferId() !== $this->fta->getBatchFundTransferId())
@@ -164,18 +171,37 @@ abstract class EntityProcessor extends Base\Core
 
     protected function updateSourceEntity()
     {
-        $sourceStatus = $this->getSourceStatusFromReconEntityStatus();
+        $attemptStatus = $this->fta->getStatus();
+        $attemptFailureReason = $this->fta->getFailureReason();
+
+        if ($this->source->getEntity() === Entity::PAYOUT)
+        {
+            (new Payout\Core)->updateStatusAfterFtaRecon($this->source, $attemptStatus, $attemptFailureReason);
+
+            return;
+        }
+
+        if ($this->source->getEntity() === Entity::REFUND)
+        {
+            (new Refund\Service)->updateStatusAfterFtaRecon($this->source, $attemptStatus, $attemptFailureReason);
+
+            return;
+        }
+
+        $sourceStatus = $this->getSourceStatusFromReconEntityStatus($attemptStatus);
 
         $this->source->setStatus($sourceStatus);
 
-        $this->source->setFailureReason($this->fta->getFailureReason());
+        $this->source->setFailureReason($attemptFailureReason);
 
         $this->repo->saveOrFail($this->source);
     }
 
-    protected function updateTransactionEntity()
+    protected function updateTransactionEntity($reconciledType = ReconciledType::MIS)
     {
         $this->source->transaction->setReconciledAt($this->reconciledAt);
+
+        $this->source->transaction->setReconciledType($reconciledType);
 
         $this->source->transaction->saveOrFail();
     }
@@ -200,9 +226,25 @@ abstract class EntityProcessor extends Base\Core
 
         $failureReason  = null;
 
-        $channel = $this->fta->getChannel();
+        //
+        // For Yesbank VPA, we want to reconcile only if the status_code
+        // is either success or failure. Many times, we get `pending` or `timeout`.
+        // In these cases, since we anyway don't know the status, it does not make
+        // sense for us to reconcile these, or check the error codes and stuff.
+        //
+        if (($this->fta->getChannel() === Channel::YESBANK) and
+            ($this->fta->hasVpa() === true))
+        {
+            $statusCode = $this->fta->getBankResponseCode();
 
-        $statusNamespace = '\\RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\Status';
+            if (($statusCode !== GatewayStatus::STATUS_CODE_SUCCESS) and
+                ($statusCode !== GatewayStatus::STATUS_CODE_FAILURE))
+            {
+                return [$status, $failureReason];
+            }
+        }
+
+        $statusNamespace = $this->getStatusClass($this->fta);
 
         $statusClass = new $statusNamespace;
 
@@ -223,7 +265,8 @@ abstract class EntityProcessor extends Base\Core
 
             $tenTenPm = $recordDate->hour(22)->minute(10)->getTimestamp();
 
-            if (($now < $tenTenPm) and ($this->env !== 'testing'))
+            if (($this->fta->getSourceType() !== Attempt\Type::PAYOUT) and
+                ($now < $tenTenPm) and ($this->env !== 'testing'))
             {
                 $status = $this->fta->getStatus();
             }
@@ -238,27 +281,24 @@ abstract class EntityProcessor extends Base\Core
         return [$status, $failureReason];
     }
 
-    protected function getSourceStatusFromReconEntityStatus(): string
+    protected function getSourceStatusFromReconEntityStatus(string $attemptStatus): string
     {
         $sourceEntityName = $this->source->getEntity();
 
         switch ($sourceEntityName)
         {
             case Entity::SETTLEMENT:
-            case Entity::PAYOUT:
             case Entity::REFUND:
-                return $this->getStatusForEntity($sourceEntityName);
+                return $this->getStatusForEntity($sourceEntityName, $attemptStatus);
 
             default:
                 throw new Exception\LogicException('Unrecognized source entity: ' . $sourceEntityName);
         }
     }
 
-    protected function getStatusForEntity(string $sourceEntityName): string
+    protected function getStatusForEntity(string $sourceEntityName, string $attemptStatus): string
     {
         $entityStatusClass = $this->getEntityStatusNamespace($sourceEntityName);
-
-        $attemptStatus = $this->fta->getStatus();
 
         switch ($attemptStatus)
         {
@@ -343,8 +383,15 @@ abstract class EntityProcessor extends Base\Core
         return true;
     }
 
-    protected function getStatusClass(string $channel)
+    protected function getStatusClass(Attempt\Entity $fta)
     {
+        $channel = $fta->getChannel();
+
+        if ($fta->hasVpa() === true)
+        {
+             return '\\RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\GatewayStatus';
+        }
+
         return 'RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\Status';
     }
 

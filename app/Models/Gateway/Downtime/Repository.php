@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Gateway\Downtime;
 
+use Carbon\Carbon;
+
 use RZP\Models\Base;
 use RZP\Models\Base\PublicCollection;
 
@@ -31,11 +33,12 @@ class Repository extends Base\Repository
     );
 
     const KEY_OPERATOR_MAP = [
-        Entity::GATEWAY => '=',
-        Entity::ISSUER  => '=',
-        Entity::METHOD  => '=',
-        Entity::SOURCE  => '=',
-        Entity::BEGIN   => '<='
+        Entity::GATEWAY     => '=',
+        Entity::ISSUER      => '=',
+        Entity::METHOD      => '=',
+        Entity::SOURCE      => '=',
+        Entity::BEGIN       => '<=',
+        Entity::TERMINAL_ID => '=',
     ];
 
     const UNIQUE_KEYS = [
@@ -43,6 +46,7 @@ class Repository extends Base\Repository
         Entity::ISSUER,
         Entity::METHOD,
         Entity::BEGIN,
+        Entity::SOURCE,
     ];
 
     public function isMerchantIdRequiredForFetch()
@@ -50,11 +54,13 @@ class Repository extends Base\Repository
         return false;
     }
 
-    public function fetchUnique($input)
+    public function fetchUnique($input, array $uniqueRecordIdentifiers = [])
     {
         $params = [];
 
-        foreach (self::UNIQUE_KEYS as $key)
+        $uniqueKeys = empty($uniqueRecordIdentifiers) === true ? self::UNIQUE_KEYS : $uniqueRecordIdentifiers;
+
+        foreach ($uniqueKeys as $key)
         {
             if (isset($input[$key]) === true)
             {
@@ -71,11 +77,13 @@ class Repository extends Base\Repository
                      ->first();
     }
 
-    public function fetchMostRecentActive(array $input)
+    public function fetchMostRecentActive(array $input, array $fetchByKeys = [])
     {
         $params = [];
 
-        foreach (self::UNIQUE_KEYS as $key)
+        $uniqueKeys = empty($fetchByKeys) === true ? self::UNIQUE_KEYS : $fetchByKeys;
+
+        foreach ($uniqueKeys as $key)
         {
             if (isset($input[$key]) === true)
             {
@@ -85,12 +93,38 @@ class Repository extends Base\Repository
 
         $query = $this->newQuery();
 
-        $this->buildQuery(self::KEY_OPERATOR_MAP, $input, $query);
+        $this->buildQuery(self::KEY_OPERATOR_MAP, $params, $query);
 
         return $query->whereNull(Entity::END)
                      ->where(Entity::SCHEDULED, '=', false)
                      ->latest()
                      ->first();
+    }
+
+    /**
+     * Fetch all current and future down times. This means any down time which has a future end time or null end time
+     * qualify for this case
+     *
+     * @return PublicCollection
+     *
+     */
+
+    public function fetchCurrentAndFutureDowntimes(bool $withoutTerminal = false): PublicCollection
+    {
+        $query = $this->newQuery();
+
+        $query->where(function ($query)
+        {
+            $query->whereNull(Entity::END)
+                ->orWhere(Entity::END, '>=', Carbon::now()->getTimestamp());
+        });
+
+        if ($withoutTerminal === true)
+        {
+            $query->whereNull(Entity::TERMINAL_ID);
+        }
+
+        return $query->get();
     }
 
     public function fetchDowntimesWithoutTerminal(array $input, array $methods): PublicCollection

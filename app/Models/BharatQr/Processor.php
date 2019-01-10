@@ -227,6 +227,7 @@ class Processor extends VirtualAccount\Processor
             Payment\Entity::METHOD      => $bharatQr->getMethod(),
             Payment\Entity::AMOUNT      => $bharatQr->getAmount(),
             Payment\Entity::DESCRIPTION => 'Bharat Qr Payment',
+            Payment\Entity::NOTES       => $this->virtualAccount->getNotes()->toArray(),
         ];
 
         $paymentArray = array_merge($paymentArray, $parentPaymentArray);
@@ -236,7 +237,7 @@ class Processor extends VirtualAccount\Processor
         {
             $paymentArray['card'] = $this->getDummyCardDetails();
         }
-        else
+        else if ($this->gatewayInput[Entity::METHOD] === Method::UPI)
         {
             $paymentArray['vpa'] = $this->gatewayInput[GatewayResponseParams::VPA];
         }

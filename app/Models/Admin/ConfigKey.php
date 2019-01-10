@@ -14,6 +14,12 @@ class ConfigKey
     const BLOCK_BANK_TRANSFERS_FOR_CRYPTO       = 'block_bank_transfers_for_crypto';
     const MERCHANT_ENACH_CONFIGS                = 'merchant_enach_configs';
     const SKIP_SLAVE                            = 'skip_slave';
+    const MASTER_PERCENT                        = 'master_percent';
+    const HEARTBEAT_ROUTES                      = 'heartbeat_routes';
+    const HEARTBEAT_TRAFFIC_PERCENTAGE          = 'heartbeat_traffic_percentage';
+    const HEARTBEAT_ENABLED                     = 'heartbeat_enabled';
+    const HEARTBEAT_MOCK                        = 'heartbeat_mock';
+    const HEARTBEAT_TIME_THRESHOLD              = 'heartbeat_time_threshold';
     const DISABLE_MAGIC                         = 'disable_magic';
     const NPCI_UPI_DEMO                         = 'npci_upi_demo';
     const BLOCK_SMART_COLLECT                   = 'block_smart_collect';
@@ -27,6 +33,12 @@ class ConfigKey
         self::GATEWAY_UNPROCESSED_REFUNDS,
         self::BLOCK_BANK_TRANSFERS_FOR_CRYPTO,
         self::SKIP_SLAVE,
+        self::MASTER_PERCENT,
+        self::HEARTBEAT_ROUTES,
+        self::HEARTBEAT_TRAFFIC_PERCENTAGE,
+        self::HEARTBEAT_ENABLED,
+        self::HEARTBEAT_MOCK,
+        self::HEARTBEAT_TIME_THRESHOLD,
         self::DISABLE_MAGIC,
         self::NPCI_UPI_DEMO,
         self::BLOCK_SMART_COLLECT,

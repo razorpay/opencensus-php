@@ -35,18 +35,22 @@ class Validator extends Base\Validator
     ];
 
     protected static $setConfigKeysRules = [
-        ConfigKey::TERMINAL_SELECTION_LOG_VERBOSE       => 'filled|boolean',
-        ConfigKey::PRICING_RULE_SELECTION_LOG_VERBOSE   => 'filled|boolean',
-        ConfigKey::GATEWAY_PROCESSED_REFUNDS            => 'filled|array',
-        ConfigKey::GATEWAY_UNPROCESSED_REFUNDS          => 'filled|array',
-        ConfigKey::SKIP_SLAVE                           => 'filled|boolean',
-        ConfigKey::BLOCK_BANK_TRANSFERS_FOR_CRYPTO      => 'filled|boolean',
-        ConfigKey::DISABLE_MAGIC                        => 'filled|boolean',
-        ConfigKey::BLOCK_SMART_COLLECT                  => 'filled|boolean',
-        ConfigKey::BLOCK_YESBANK                        => 'filled|boolean',
-        ConfigKey::BLOCK_AADHAAR_REG                    => 'filled|boolean',
-        ConfigKey::NPCI_UPI_DEMO                        => 'filled|array',
-        ConfigKey::MERCHANT_ENACH_CONFIGS               => 'filled|array',
+        ConfigKey::TERMINAL_SELECTION_LOG_VERBOSE     => 'filled|boolean',
+        ConfigKey::PRICING_RULE_SELECTION_LOG_VERBOSE => 'filled|boolean',
+        ConfigKey::GATEWAY_PROCESSED_REFUNDS          => 'filled|array',
+        ConfigKey::GATEWAY_UNPROCESSED_REFUNDS        => 'filled|array',
+        ConfigKey::MASTER_PERCENT                     => 'filled|integer',
+        ConfigKey::BLOCK_BANK_TRANSFERS_FOR_CRYPTO    => 'filled|boolean',
+        ConfigKey::DISABLE_MAGIC                      => 'filled|boolean',
+        ConfigKey::BLOCK_SMART_COLLECT                => 'filled|boolean',
+        ConfigKey::BLOCK_YESBANK                      => 'filled|boolean',
+        ConfigKey::BLOCK_AADHAAR_REG                  => 'filled|boolean',
+        ConfigKey::NPCI_UPI_DEMO                      => 'filled|array',
+        ConfigKey::MERCHANT_ENACH_CONFIGS             => 'filled|array',
+        ConfigKey::HEARTBEAT_ENABLED                  => 'filled|boolean',
+        ConfigKey::HEARTBEAT_MOCK                     => 'filled|boolean',
+        ConfigKey::HEARTBEAT_TIME_THRESHOLD           => 'filled|integer',
+        ConfigKey::HEARTBEAT_TRAFFIC_PERCENTAGE       => 'filled|integer',
     ];
 
     protected static $scorecardRules = [
@@ -60,7 +64,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $getConfigKeyRules = [
-        'key'   => 'required|in:merchant_enach_configs'
+        'key'   => 'required|in:merchant_enach_configs,GATEWAY_UNPROCESSED_REFUNDS'
     ];
 
     protected static $deleteConfigKeyRules = [

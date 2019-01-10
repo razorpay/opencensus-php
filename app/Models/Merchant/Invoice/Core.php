@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Constants\Timezone;
+use RZP\Base\RuntimeManager;
 use RZP\Jobs\MerchantInvoice as MerchantInvoiceJob;
 use RZP\Jobs\MerchantInvoiceCorrection as MerchantInvoiceCorrectionJob;
 
@@ -113,6 +114,8 @@ class Core extends Base\Core
 
     public function queueCreateInvoiceEntities(array $input)
     {
+        RuntimeManager::setMaxExecTime(900);
+
         (new Validator)->validateInput('create_queue', $input);
 
         // Get invoice date

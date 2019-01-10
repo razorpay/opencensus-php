@@ -21,6 +21,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Payment\Processor\Wallet;
+use RZP\Models\Payment\Processor\CardlessEmi;
 
 class Validator extends Base\Validator
 {
@@ -85,6 +86,8 @@ class Validator extends Base\Validator
         'recurring_token.max_amount'    => 'sometimes_if:method,emandate|filled|integer|min:500',
         'recurring_token.expire_by'     => 'sometimes_if:method,emandate|filled|epoch:946684800,9223372036854775807',
         'offer_id'                      => 'filled|public_id|size:20',
+        'provider'                      => 'required_if:method,cardless_emi|string|custom',
+        'ott'                           => 'sometimes_if:method,cardless_emi|string',
     ];
 
     protected static $editRules = [
@@ -164,7 +167,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $callbackUrlValidationRules = [
-        'callback_url' => 'sometimes|url',
+        'callback_url' => 'sometimes|url|custom',
+    ];
+
+    protected static $acknowledgeRules = [
+        Entity::NOTES => 'sometimes|notes',
     ];
 
     protected static $createValidators = [
@@ -379,9 +386,66 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateCallbackUrl($attribute, $callbackUrl)
+    {
+        if (empty($callbackUrl) === true)
+        {
+            return;
+        }
+
+        $app = App::getFacadeRoot();
+
+        $merchant = $app['basicauth']->getMerchant();
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::CALLBACK_URL_VALIDATION) === true)
+
+        {
+            $merchantUrlArray = explode(".", parse_url($merchant->getWebsite(), PHP_URL_HOST));
+            $callbackUrlArray = explode(".", parse_url($callbackUrl, PHP_URL_HOST));
+
+            // case where https://example.com
+            if (count($merchantUrlArray) === 2)
+            {
+                array_unshift($merchantUrlArray, "");
+            }
+
+            // case where https://example.com
+            if (count($callbackUrlArray) === 2)
+            {
+                array_unshift($callbackUrlArray, "");
+            }
+
+            if ((empty($callbackUrlArray) === true) or
+                ($merchantUrlArray[1] !== $callbackUrlArray[1]) or
+                ($merchantUrlArray[2] !== $callbackUrlArray[2]))
+            {
+                $traceData = [
+                    'merchant_website' => $merchant->getWebsite(),
+                    'callback_url'     => $callbackUrl,
+                ];
+
+                throw new Exception\BadRequestValidationFailureException(
+                    'Invalid callback url',
+                    'callback_url',
+                    $traceData
+                );
+            }
+        }
+    }
+
     protected function validateWallet($attribute, $value)
     {
         Wallet::validateExists($value);
+    }
+
+    protected function validateProvider($attribute, $provider)
+    {
+        if (CardlessEmi::exists($provider) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Provider is not supported for cardless emi',
+                Payment\Entity::PROVIDER);
+        }
     }
 
     protected function validateCardKey(array $input)
@@ -549,7 +613,7 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
         }
 
-        if (($mode === MODE::LIVE) and
+        if (($mode === Mode::LIVE) and
             ($this->entity->transaction->isSettled() === false))
         {
             throw new Exception\BadRequestException(
@@ -626,7 +690,8 @@ class Validator extends Base\Validator
                 'The contact field is required.', Entity::CONTACT);
         }
 
-        if ($input['method'] === Payment\Method::WALLET)
+        if (($input['method'] === Payment\Method::WALLET) or
+            ($input['method'] === Payment\Method::CARDLESS_EMI))
         {
             $number = new PhoneBook($input['contact'], true);
 
@@ -753,8 +818,7 @@ class Validator extends Base\Validator
 
         $this->failIfNotAuthorized($payment);
 
-        // Removing this temporarily
-        // $this->captureAmountValidate($payment, $amount);
+        $this->captureAmountValidate($payment, $amount);
 
         $this->captureCurrencyValidate($payment, $currency);
     }

@@ -6,10 +6,12 @@ use RZP\Exception;
 
 class Type
 {
+    const ORDER           = 'order';
+    const REFUND          = 'refund';
     const MERCHANT        = 'merchant';
     const CUSTOMER        = 'customer';
     const VIRTUAL_ACCOUNT = 'virtual_account';
-    const REFUND          = 'refund';
+    const CONTACT         = 'contact';
 
     public static function validateType($type)
     {
@@ -25,5 +27,18 @@ class Type
         $entity = 'RZP\Models\\' . studly_case($type) . '\Entity';
 
         return $entity;
+    }
+
+    public static function getBeneficiaryRegistrationTypes()
+    {
+        return [
+            self::MERCHANT,
+            self::CONTACT,
+        ];
+    }
+
+    public static function isValidBeneficiaryRegistrationType(string $type): bool
+    {
+        return (in_array($type, self::getBeneficiaryRegistrationTypes(), true) === true);
     }
 }

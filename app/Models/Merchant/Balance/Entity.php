@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Balance;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Base\BuilderEx;
 use RZP\Models\Currency\Currency;
 
 class Entity extends Base\PublicEntity
@@ -19,8 +20,26 @@ class Entity extends Base\PublicEntity
     const FEE_CREDITS    = 'fee_credits';
     const REFUND_CREDITS = 'refund_credits';
 
+    //
+    // This is bank_accounts.account_number for bank_account's virtual_account
+    // related to this balance. At present this is the use case. It must be
+    // empty for balance of type != banking for now.
+    //
+    const ACCOUNT_NUMBER = 'account_number';
+
+    // Additional input keys
+    const BALANCE_ID     = 'balance_id';
+
     protected $fillable = [
-        self::ID
+        self::ID,
+        self::TYPE,
+        self::CURRENCY,
+    ];
+
+    protected $defaults = [
+        self::TYPE     => Type::PRIMARY,
+        self::CURRENCY => null,
+        self::BALANCE  => 0,
     ];
 
     protected $visible = [
@@ -32,12 +51,13 @@ class Entity extends Base\PublicEntity
         self::BALANCE,
         self::AMOUNT_CREDITS,
         self::FEE_CREDITS,
-        self::REFUND_CREDITS
+        self::REFUND_CREDITS,
+        self::ACCOUNT_NUMBER,
     ];
 
     protected $entity = 'balance';
 
-    protected $generateIdOnCreate = false;
+    protected $generateIdOnCreate = true;
 
     protected $revisionEnabled = true;
 
@@ -107,6 +127,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function isTypePrimary(): bool
+    {
+        return $this->getType() === Type::PRIMARY;
+    }
+
+    public function isTypeBanking(): bool
+    {
+        return $this->getType() === Type::BANKING;
+    }
+
     public function getName()
     {
         return $this->getAttribute(self::NAME);
@@ -117,9 +147,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CURRENCY);
     }
 
+    public function getAccountNumber()
+    {
+        return $this->getAttribute(self::ACCOUNT_NUMBER);
+    }
+
     public function merchant()
     {
-        return $this->belongsTo('RZP\Models\Merchant\Entity', 'id');
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
     public static function buildFromMerchant($merchant)
@@ -129,7 +164,6 @@ class Entity extends Base\PublicEntity
 
         $balance->merchant()->associate($merchant);
         $balance->setAttribute(self::BALANCE, 0);
-        $balance->setAttribute(self::MERCHANT_ID, $merchant->getId());
         $balance->setAttribute(self::CURRENCY, Currency::INR);
         $balance->setAttribute(self::TYPE, Type::PRIMARY);
 
@@ -226,6 +260,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::REFUND_CREDITS, $credits);
     }
 
+    public function setAccountNumber(string $accountNumber)
+    {
+        $this->setAttribute(self::ACCOUNT_NUMBER, $accountNumber);
+    }
+
     public function save(array $options = array())
     {
         $this->validateBalance();
@@ -242,5 +281,16 @@ class Entity extends Base\PublicEntity
                 null,
                 $this->toArray());
         }
+    }
+
+    /**
+     * Applies where clause on MERCHANT_ID and TYPE. For TYPE defaults to PRIMARY.
+     * @param  BuilderEx $query
+     * @param  string    $merchantId
+     */
+    public function scopeMerchantIdAndType(BuilderEx $query, string $merchantId, string $type = Type::PRIMARY)
+    {
+        $query->where($this->dbColumn(Entity::MERCHANT_ID), $merchantId)
+              ->where($this->dbColumn(Entity::TYPE), $type);
     }
 }

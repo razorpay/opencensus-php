@@ -4,12 +4,13 @@ namespace RZP\Models\Pricing;
 
 use App;
 
-use RZP\Models\Base;
-use RZP\Models\Payment;
-use RZP\Models\Pricing;
-use RZP\Models\Admin\Org;
 use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Models\Pricing;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org;
+use RZP\Constants\Product;
 use RZP\Models\Admin\Action;
 
 class Repository extends Base\Repository
@@ -36,7 +37,9 @@ class Repository extends Base\Repository
     {
         $app = App::getFacadeRoot();
 
-        $orgId = $app['basicauth']->getOrgId();
+        $rzpOrgId = Org\Entity::getSignedId(Org\Entity::RAZORPAY_ORG_ID);
+
+        $orgId = (empty($app['basicauth']->getOrgId()) === true) ? $rzpOrgId : $app['basicauth']->getOrgId();
 
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
 
@@ -54,8 +57,7 @@ class Repository extends Base\Repository
                         ->orderBy(Pricing\Entity::ID, 'desc')
                         ->get();
 
-        if (($pricing->count() === 0) and
-            ($fail))
+        if (($pricing->count() === 0) and ($fail))
         {
             if ($public)
             {
@@ -114,16 +116,30 @@ class Repository extends Base\Repository
         return $this->getPricingPlanById($id, true, true);
     }
 
-    public function getZeroPricingPlanRuleForMethod($feature, $method, $merchant)
+    public function getZeroPricingPlanRuleForMethod($feature, $method, $merchant, $product = Product::PRIMARY)
     {
         $orgId = $merchant->org->getId();
 
         return $this->newQuery()
+                    ->product($product)
                     ->planId(Pricing\Entity::ZERO_PRICING)
                     ->where(Pricing\Entity::FEATURE, '=', $feature)
                     ->where(Pricing\Entity::ORG_ID, '=', $orgId)
                     ->where(Pricing\Entity::PAYMENT_METHOD, '=', $method)
                     ->firstOrFail();
+    }
+
+    public function getBankingPricingRulesForMethod(string $feature, string $method, Merchant\Entity $merchant)
+    {
+        $orgId = $merchant->org->getId();
+
+        return $this->newQuery()
+                    ->product(Product::BANKING)
+                    ->planId(Fee::DEFAULT_BANKING_PLAN_ID)
+                    ->where(Pricing\Entity::FEATURE, '=', $feature)
+                    ->where(Pricing\Entity::ORG_ID, '=', $orgId)
+                    ->where(Pricing\Entity::PAYMENT_METHOD, '=', $method)
+                    ->get();
     }
 
     public function getPricingPlansOrderedByPlanId()

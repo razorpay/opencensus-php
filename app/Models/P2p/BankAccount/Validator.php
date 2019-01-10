@@ -16,7 +16,7 @@ class Validator extends Base\Validator
     protected static $initiateFetchBalanceRules;
     protected static $fetchBalanceRules;
 
-    protected function rules()
+    public function rules()
     {
         $rules = [
             Entity::DEVICE_ID                => 'string',
@@ -33,7 +33,7 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    protected function getCreateRules()
+    public function makeCreateRules()
     {
         $rules = $this->makeRules([
             Entity::DEVICE_ID                => 'sometimes',
@@ -50,56 +50,56 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    protected function getFetchBanksRules()
+    public function makeFetchBanksRules()
     {
         $rules = $this->makeRules([]);
 
         return $rules;
     }
 
-    protected function getRetrieveRules()
+    public function makeRetrieveRules()
     {
         $rules = $this->makeRules([]);
 
         return $rules;
     }
 
-    protected function getFetchAllRules()
+    public function makeFetchAllRules()
     {
         $rules = $this->makeRules([]);
 
         return $rules;
     }
 
-    protected function getFetchRules()
+    public function makeFetchRules()
     {
         $rules = $this->makeRules([]);
 
         return $rules;
     }
 
-    protected function getInitiateSetUpiPinRules()
+    public function makeInitiateSetUpiPinRules()
     {
         $rules = $this->makeRules([]);
 
         return $rules;
     }
 
-    protected function getSetUpiPinRules()
+    public function makeSetUpiPinRules()
     {
         $rules = $this->makeRules([]);
 
         return $rules;
     }
 
-    protected function getInitiateFetchBalanceRules()
+    public function makeInitiateFetchBalanceRules()
     {
         $rules = $this->makeRules([]);
 
         return $rules;
     }
 
-    protected function getFetchBalanceRules()
+    public function makeFetchBalanceRules()
     {
         $rules = $this->makeRules([]);
 

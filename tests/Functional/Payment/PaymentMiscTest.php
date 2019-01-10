@@ -99,10 +99,6 @@ class PaymentMiscTest extends TestCase
                 'content' => [
                     'pin' => true,
                     'otp' => true,
-                    'flows' => [
-                        'pin' => true,
-                        'otp' => true,
-                    ],
                 ],
                 'status_code' => 200,
             ]

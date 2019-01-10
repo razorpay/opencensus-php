@@ -7,7 +7,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
-use RZP\Models\Payout\Core as PayoutCore;
+use RZP\Models\Payout as PayoutModel;
 use RZP\Models\Payout\Validator as PayoutValidator;
 
 trait Payout
@@ -34,7 +34,9 @@ trait Payout
 
             return $this->repo->transaction(function () use ($input, $payment)
             {
-                $payout = (new PayoutCore)->paymentPayout($input, $payment, $this->merchant);
+                $payout = (new PayoutModel\Core)->createPayoutFromPayment($payment,
+                                                                          $input,
+                                                                          $this->merchant);
 
                 $this->updatePaymentAmountPaidout($payment, $payout->getAmount());
 

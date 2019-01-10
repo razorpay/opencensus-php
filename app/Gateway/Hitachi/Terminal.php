@@ -80,9 +80,9 @@ class Terminal extends Base\Terminal
             //Merchant detail based input
             TerminalFields::CITY                 => substr($merchantDetail['business_operation_city'], 0 ,13),
             TerminalFields::MERCHANT_GROUP       => substr($merchantDetail['business_name'], 0, 8),
-            TerminalFields::MERCHANT_NAME        => substr($merchantDetail['business_name'], 0, 25),
+            TerminalFields::MERCHANT_NAME        => substr($merchantDetail['business_name'], 0, 23),
             TerminalFields::ZIPCODE              => $merchantDetail['business_operation_pin'],
-            TerminalFields::MERCHANT_DB_NAME     => substr($merchantDetail['business_dba'], 0, 25),
+            TerminalFields::MERCHANT_DB_NAME     => substr($merchantDetail['business_dba'], 0, 23),
             TerminalFields::LOCATION             => substr($merchantDetail['business_operation_address'], 0, 23),
             TerminalFields::STATE                => $state,
         ];
@@ -101,7 +101,7 @@ class Terminal extends Base\Terminal
         $request['options'] = [
             'timeout'         => 30,
             'connect_timeout' => 30,
-            'verify'          => $this->getCaInfo(),
+            'verify'          => false,
         ];
 
         return $request;

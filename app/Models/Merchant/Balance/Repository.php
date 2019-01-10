@@ -4,23 +4,44 @@ namespace RZP\Models\Merchant\Balance;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Models\Settlement;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'balance';
 
-    // protected $appFetchParamRules = array(
-    //     Entity::MERCHANT_ID     => 'sometimes|alpha_num',
-    // );
+    // These are proxy allowed params to search on.
+    protected $proxyFetchParamRules = [
+        Entity::ACCOUNT_NUMBER  => 'sometimes|alpha_num',
+    ];
+
+    protected $appFetchParamRules = [
+        Entity::MERCHANT_ID     => 'sometimes|unsigned_id|size:14',
+    ];
+
+    public function findOrFail($id, $columns = array('*'))
+    {
+        return $this->newQuery()
+                    ->merchantIdAndType($id)
+                    ->firstOrFail();
+    }
+
+    public function findOrFailPublic($id, $columns = array('*'))
+    {
+        return $this->newQuery()
+                    ->merchantIdAndType($id)
+                    ->firstOrFailPublic();
+    }
 
     public function getBalanceLockForUpdate($id)
     {
         assert ($this->isTransactionActive());
 
-        return Entity::lockForUpdate()->findOrFail($id);
+        return Entity::lockForUpdate()->newQuery()
+                                      ->merchantIdAndType($id)
+                                      ->firstOrFail();
     }
 
+    // not in use
     public function getMerchantBalanceLockForUpdate($merchant)
     {
         assert ($this->isTransactionActive());
@@ -141,8 +162,7 @@ class Repository extends Base\Repository
     {
         assert ($this->isTransactionActive());
 
-        return $this->newQuery()
-                    ->findOrFail(Merchant\Account::NODAL_ACCOUNT);
+        return $this->findOrFail(Merchant\Account::NODAL_ACCOUNT);
     }
 
     public function getNodalBalanceLockForUpdate($channel)
@@ -164,5 +184,63 @@ class Repository extends Base\Repository
         assert ($this->isTransactionActive());
 
         return $this->getBalanceLockForUpdate(Merchant\Account::ATOM_ACCOUNT);
+    }
+
+    /**
+     * Returns merchant ids where updated at > $minUpdatedAtTimeStamp
+     *
+     * @param int $minUpdatedAtTimeStamp
+     *
+     * @return array
+     */
+    public function getMerchantsIdsForEsSync(int $minUpdatedAtTimeStamp): array
+    {
+        $merchantIds = $this->newQuery()
+                            ->where(Entity::UPDATED_AT, '>=', $minUpdatedAtTimeStamp)
+                            ->where(Entity::TYPE, '=', Type::PRIMARY)
+                            ->groupBy(Entity::MERCHANT_ID)
+                            ->select(Entity::MERCHANT_ID)
+                            ->get();
+
+        $merchantIds = isset($merchantIds) ? $merchantIds->toArray() : [];
+
+        $merchantIds = array_pluck($merchantIds, Entity::MERCHANT_ID);
+
+        return $merchantIds;
+    }
+
+    public function getBalances($limit)
+    {
+        return $this->newQuery()
+                    ->whereRaw(Entity::ID. '=' . Entity::MERCHANT_ID)
+                    ->limit($limit)
+                    ->get();
+    }
+
+    /**
+     * @param string      $merchantId
+     * @param string      $balanceType
+     * @param string|null $connection
+     * @return mixed
+     */
+    public function getMerchantBalanceByType(string $merchantId, string $balanceType, string $connection = null)
+    {
+        $query = $connection !== null ? $this->newQueryWithConnection($connection) : $this->newQuery();
+
+        return $query->merchantIdAndType($merchantId, $balanceType)
+                     ->first();
+    }
+
+    public function getBalanceIdByAccountNumberOrFail(string $accountNumber): string
+    {
+        return $this->getBalanceByAccountNumberOrFail($accountNumber)->getId();
+    }
+
+    public function getBalanceByAccountNumberOrFail(string $accountNumber): Entity
+    {
+        return $this->newQuery()
+                    ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+                    ->merchantIdAndType($this->merchant->getId(), Type::BANKING)
+                    ->firstOrFailPublic();
     }
 }

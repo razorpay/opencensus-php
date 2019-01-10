@@ -4,7 +4,7 @@ namespace RZP\Models\P2p;
 
 use Carbon\Carbon;
 use RZP\Models\Base;
-use RZP\Models\Upi\Vpa;
+use RZP\Models\Vpa;
 use RZP\Models\BankAccount;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base\Traits\NotesTrait;

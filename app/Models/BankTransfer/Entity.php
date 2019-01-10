@@ -10,9 +10,11 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
+use RZP\Models\Transaction;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Bank\BankCodes;
 use Razorpay\Trace\Facades\Trace;
+use RZP\Models\Base\Traits\HasBalance;
 
 /**
  * @property Payment\Entity        $payment
@@ -22,6 +24,8 @@ use Razorpay\Trace\Facades\Trace;
  */
 class Entity extends Base\PublicEntity
 {
+    use HasBalance;
+
     const ID                 = 'id';
     const PAYMENT_ID         = 'payment_id';
     const MERCHANT_ID        = 'merchant_id';
@@ -42,6 +46,7 @@ class Entity extends Base\PublicEntity
     const PAYEE_IFSC         = 'payee_ifsc';
 
     const VIRTUAL_ACCOUNT_ID = 'virtual_account_id';
+    const BALANCE_ID         = 'balance_id';
     const VIRTUAL_ACCOUNT    = 'virtual_account';
 
     const AMOUNT             = 'amount';
@@ -196,6 +201,16 @@ class Entity extends Base\PublicEntity
     public function payerBankAccount()
     {
         return $this->belongsTo('RZP\Models\BankAccount\Entity');
+    }
+
+    /**
+     * For business banking there would be a transaction created per transfer.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphOne
+     */
+    public function transaction()
+    {
+        return $this->morphOne(Transaction\Entity::class, 'source', 'type', 'entity_id');
     }
 
     // ----------------------- Generators --------------------------------------
@@ -464,5 +479,15 @@ class Entity extends Base\PublicEntity
         }
 
         return $label . '-' . $utr;
+    }
+
+    public function shouldNotifyTxnViaSms(): bool
+    {
+        return false;
+    }
+
+    public function shouldNotifyTxnViaEmail(): bool
+    {
+        return ($this->isBalanceTypeBanking() === true);
     }
 }

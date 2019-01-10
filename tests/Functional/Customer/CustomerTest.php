@@ -368,7 +368,7 @@ class CustomerTest extends TestCase
         $content = [
             'contact' => $contact,
             'email' => $email,
-            'otp' => $otp
+            'otp' => '0007',
         ];
 
         if ($deviceToken !== null)
@@ -396,6 +396,14 @@ class CustomerTest extends TestCase
 
     public function testCustomerWalletPayoutInsufficientWalletBalance()
     {
+        $this->fixtures->create(
+            'fund_account',
+            [
+                'id'           => '100000000000fa',
+                'account_type' => 'bank_account',
+                'account_id'   => '1000000lcustba'
+            ]);
+
         $this->ba->privateAuth();
 
         $this->fixtures->create('customer_balance', ['customer_id' => '100000customer', 'balance' => 200]);
@@ -408,6 +416,14 @@ class CustomerTest extends TestCase
      */
     public function testCustomerWalletPayoutInsufficientMerchantBalance()
     {
+        $this->fixtures->create(
+            'fund_account',
+            [
+                'id'           => '100000000000fa',
+                'account_type' => 'bank_account',
+                'account_id'   => '1000000lcustba'
+            ]);
+
         $this->ba->privateAuth();
 
         $this->fixtures->create('customer_balance', ['customer_id' => '100000customer', 'balance' => 1000]);
@@ -422,6 +438,14 @@ class CustomerTest extends TestCase
 
         $this->fixtures->create('customer_balance', ['customer_id' => '100000customer', 'balance' => 1000]);
         $this->fixtures->edit('balance', '10000000000000', ['balance' => 1000]);
+
+        $this->fixtures->create(
+            'fund_account',
+            [
+                'id'           => '100000000000fa',
+                'account_type' => 'bank_account',
+                'account_id'   => '1000000lcustba'
+            ]);
 
         $payout = $this->startTest();
 

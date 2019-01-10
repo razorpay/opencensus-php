@@ -51,6 +51,7 @@ class Entity extends Base\PublicEntity
     const BANK_TRANSFER                 = 'bank_transfer';
     const AEPS                          = 'aeps';
     const EMANDATE                      = 'emandate';
+    const CARDLESS_EMI                  = 'cardless_emi';
     const EMI_DURATION                  = 'emi_duration';
     const EMI_SUBVENTION                = 'emi_subvention';
     const RECURRING                     = 'recurring';
@@ -69,6 +70,7 @@ class Entity extends Base\PublicEntity
     const ENABLED_BANKS                 = 'enabled_banks';
     // used for direct settlements.
     const ACCOUNT_NUMBER                = 'account_number';
+    const IFSC_CODE                     = 'ifsc_code';
 
     //
     // Currenly being used to handle 'unexpected' BharatQR payments.
@@ -98,6 +100,13 @@ class Entity extends Base\PublicEntity
     const SUB_MERCHANTS                 = 'sub_merchants';
 
     //const PRIORITY                      = 'priority';
+
+    // additional attributes
+    const ACTION                        = 'action';
+
+    const TERMINAL_IDS                  = 'terminal_ids';
+
+    const BANK                          = 'bank';
 
     protected $fillable = [
         self::GATEWAY,
@@ -137,6 +146,8 @@ class Entity extends Base\PublicEntity
         self::ENABLED,
         self::ENABLED_BANKS,
         self::ACCOUNT_NUMBER,
+        self::IFSC_CODE,
+        self::CARDLESS_EMI,
     ];
 
     protected $public = [
@@ -178,6 +189,8 @@ class Entity extends Base\PublicEntity
         self::SUB_MERCHANTS,
         self::ENABLED_BANKS,
         self::ACCOUNT_NUMBER,
+        self::IFSC_CODE,
+        self::CARDLESS_EMI,
     ];
 
     protected $hidden = [
@@ -231,6 +244,7 @@ class Entity extends Base\PublicEntity
         self::ENABLED                   => true,
         self::USED                      => false,
         self::EMI_SUBVENTION            => null,
+        self::CARDLESS_EMI              => 0,
     ];
 
     protected $casts = [
@@ -251,6 +265,7 @@ class Entity extends Base\PublicEntity
         self::EXPECTED                  => 'boolean',
         self::USED                      => 'boolean',
         self::ENABLED_BANKS             => 'array',
+        self::CARDLESS_EMI              => 'boolean',
     ];
 
     protected $appends = [
@@ -422,6 +437,11 @@ class Entity extends Base\PublicEntity
     public function isEmandateEnabled()
     {
         return $this->getAttribute(self::EMANDATE);
+    }
+
+    public function isCardlessEmiEnabled()
+    {
+        return $this->getAttribute(self::CARDLESS_EMI);
     }
 
     public function isShared(): bool
@@ -723,6 +743,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RUPAY_MPAN);
     }
 
+    public function getAccountNumber()
+    {
+        return $this->getAttribute(self::ACCOUNT_NUMBER);
+    }
+
+    public function getIfscCode()
+    {
+        return $this->getAttribute(self::IFSC_CODE);
+    }
+
     public function getVpa()
     {
         return $this->getAttribute(self::VPA);
@@ -811,7 +841,7 @@ class Entity extends Base\PublicEntity
 
         $typeColumn = $this->dbColumn(Entity::TYPE);
 
-        return $query->whereRaw($typeColumn . " & " . $bitComparator . " = " . $bitComparator);
+        return $query->whereRaw($typeColumn . ' & ' . $bitComparator . ' = ' . $bitComparator);
     }
 
     // ---------------------- END SCOPES ----------------------
@@ -992,7 +1022,7 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
-    public function isTypeApplicable($type)
+    public function isTypeApplicable(string $type): bool
     {
         $enabledTypes = $this->getType();
 

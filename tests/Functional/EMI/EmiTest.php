@@ -50,6 +50,46 @@ class EmiTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchAllEmiPlansWithSbiOnPublicAuth()
+    {
+        $this->fixtures->emiPlan->createDefaultEmiPlans();
+
+        $request = [
+            'content' => [
+                ],
+            'url'    => '/emi',
+            'method' => 'get',
+        ];
+
+        $this->ba->publicAuth();
+
+        $emiPlans = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotContains('SBIN', array_keys($emiPlans));
+
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'merchant_id'           => '10000000000000',
+                'gateway'               => 'emi_sbi',
+                'gateway_merchant_id'   => '250000002',
+                'enabled'               => 0,
+            ]);
+
+        $terminalId = $terminal->getId();
+
+        $emiPlans = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotContains('SBIN', array_keys($emiPlans));
+
+        // After a few days, when the merchant has been onboarded.
+        $this->fixtures->edit('terminal', $terminalId, ['enabled' => 1]);
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
     public function testFetchEmiPlanUsingPlanId()
     {
         $this->fixtures->create('emi_plan');

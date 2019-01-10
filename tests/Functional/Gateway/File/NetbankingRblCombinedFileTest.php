@@ -104,6 +104,8 @@ class NetbankingRblCombinedFileTest extends TestCase
 
             $this->assertNotNull($refundTransaction['reconciled_at']);
 
+            $this->assertNotNull($refundTransaction['reconciled_type']);
+
             return true;
         });
     }

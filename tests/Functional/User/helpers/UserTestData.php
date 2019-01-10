@@ -23,9 +23,11 @@ return [
         ],
         'response' => [
             'content' => [
-                'name'      => 'hello123',
-                'email'     => 'hello123@c.com',
-                'confirmed' => false
+                'name'                    => 'hello123',
+                'email'                   => 'hello123@c.com',
+                'contact_mobile'          => '123456789',
+                'contact_mobile_verified' => false,
+                'confirmed'               => false
             ],
         ],
     ],
@@ -40,16 +42,21 @@ return [
         ],
         'response' => [
             'content' => [
-                'contact_mobile' => null,
-                'confirmed'      => true,
-                'merchants'      => [
+                'contact_mobile'          => null,
+                'contact_mobile_verified' => false,
+                'confirmed'               => true,
+                'merchants'               => [
                     [
                         'activated'    => false,
                         'archived_at'  => null,
                         'suspended_at' => null,
                         'role'         => 'owner',
                     ],
-                ]
+                ],
+                'invitations'             => [
+                ],
+                'settings'                => [
+                ],
             ],
         ],
     ],
@@ -62,9 +69,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'contact_mobile' => null,
-                'confirmed'      => true,
-                'merchants'      => [
+                'contact_mobile'          => null,
+                'contact_mobile_verified' => false,
+                'confirmed'               => true,
+                'merchants'               => [
                     [
                         'activated'    => false,
                         'archived_at'  => null,
@@ -148,15 +156,17 @@ return [
 
     'testEdit' => [
         'request' => [
-            'url'     => '/users/id',
-            'method'  => 'PUT',
-            'content' => []
+            'url'     => '/users',
+            'method'  => 'PATCH',
+            'content' => [
+                'name'           => 'Updated Name',
+                'contact_mobile' => '123456789',
+            ],
         ],
         'response' => [
             'content' => [
-                'name'           => 'hello',
-                'contact_mobile' => null,
-                'confirmed'      => true
+                'name'           => 'Updated Name',
+                'contact_mobile' => '123456789',
             ],
         ],
     ],
@@ -324,6 +334,202 @@ return [
         'exception' => [
             'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID,
+        ],
+    ],
+
+    'testSendOtp' => [
+        'request' => [
+            'url'     => '/users/otp/send',
+            'method'  => 'POST',
+            'content' => [
+                'medium' => 'sms',
+                'action' => 'verify_contact',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                // 'token' => 'BUIj3m2Nx2VvVj'
+            ],
+        ],
+    ],
+
+    'testSendOtpViaMail' => [
+        'request' => [
+            'url'     => '/users/otp/send',
+            'method'  => 'POST',
+            'content' => [
+                'medium'         => 'email',
+                'action'         => 'create_payout',
+                'amount'         => 10000,
+                'account_number' => '1234567890',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                // 'token' => 'BUIj3m2Nx2VvVj'
+            ],
+        ],
+    ],
+
+    'testSendOtpWithInvalidAction' => [
+        'request' => [
+            'url'     => '/users/otp/send',
+            'method'  => 'POST',
+            'content' => [
+                'medium' => 'sms',
+                'action' => 'invalid_action',
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected action is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testSendOtpViaMailToVerifyContact' => [
+        'request' => [
+            'url'     => '/users/otp/send',
+            'method'  => 'POST',
+            'content' => [
+                'medium' => 'mail',
+                'action' => 'verify_contact',
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected medium is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testSendOtpToVerifyContactWhenAlreadyVerified' => [
+        'request' => [
+            'url'     => '/users/otp/send',
+            'method'  => 'POST',
+            'content' => [
+                'medium' => 'sms',
+                'action' => 'verify_contact',
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Contact mobile is already verified',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testSendOtpViaSmsWhenContactDoesNotExist' => [
+        'request' => [
+            'url'     => '/users/otp/send',
+            'method'  => 'POST',
+            'content' => [
+                'medium' => 'sms',
+                'action' => 'verify_contact',
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Contact mobile does not exist',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testSendOtpViaSmsWhenContactIsNotVerified' => [
+        'request' => [
+            'url'     => '/users/otp/send',
+            'method'  => 'POST',
+            'content' => [
+                'medium' => 'sms',
+                'action' => 'create_payout',
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Contact mobile is not verified',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testVerifyContactWithOtp' => [
+        'request' => [
+            'url'     => '/users/verify_contact',
+            'method'  => 'POST',
+            'content' => [
+                'otp'   => '0007',
+                'token' => 'BUIj3m2Nx2VvVj',
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'id'                      => 'MerchantUser01',
+                'contact_mobile'          => '123456789',
+                'contact_mobile_verified' => true,
+            ],
+        ],
+    ],
+
+    'testVerifyContactWithInvalidOtp' => [
+        'request' => [
+            'url'     => '/users/verify_contact',
+            'method'  => 'POST',
+            'content' => [
+                'otp'   => '1234',
+                'token' => 'BUIj3m2Nx2VvVj',
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INCORRECT_OTP,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP,
         ],
     ],
 ];

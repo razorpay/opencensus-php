@@ -3,6 +3,7 @@
 namespace RZP\Models\Pricing;
 
 use RZP\Base;
+use RZP\Constants\Product;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -12,19 +13,21 @@ use RZP\Models\Payment;
 use RZP\Models\Payout;
 use RZP\Models\Transfer;
 use RZP\Models\Payment\Processor\Wallet;
+use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Pricing;
 use RZP\Models\Bank\IFSC;
 
 class Validator extends Base\Validator
 {
     protected static $addPlanRuleRules = [
+        Entity::PRODUCT             => 'sometimes|string|custom',
         Entity::FEATURE             => 'sometimes|alpha',
         Entity::GATEWAY             => 'sometimes',
         Entity::PLAN_NAME           => 'sometimes',
         Entity::PAYMENT_METHOD      => 'required|string',
         Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card,emandate|nullable',
-        Entity::PAYMENT_NETWORK     => 'sometimes|nullable|alpha',
-        Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card,emi,emandate|nullable|alpha|max:10',
+        Entity::PAYMENT_NETWORK     => 'sometimes|nullable|string',
+        Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card,emi,emandate,cardless_emi|nullable|alpha|max:10',
         Entity::EMI_DURATION        => 'sometimes|nullable|integer|in:3,6,9,12,18,24',
         Entity::AUTH_TYPE           => 'sometimes_if:payment_method_type,debit|nullable|in:pin',
         Entity::INTERNATIONAL       => 'sometimes|in:0,1',
@@ -195,6 +198,15 @@ class Validator extends Base\Validator
             }
         }
 
+        if ($input[Entity::PAYMENT_METHOD] === Payment\Method::CARDLESS_EMI)
+        {
+            if (CardlessEmi::exists($input[Entity::PAYMENT_ISSUER]) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Provider selected for cardless emi should be valid');
+            }
+        }
+
         if ($input[Entity::PAYMENT_METHOD] === Payment\Method::CARD)
         {
             $network = $input[Entity::PAYMENT_NETWORK];
@@ -346,6 +358,10 @@ class Validator extends Base\Validator
 
     /**
      * Check whether this new rule already exists
+     *
+     * @param Plan $plan
+     *
+     * @throws Exception\BadRequestException
      */
     public function validateRuleDoesNotMatch(Plan $plan)
     {
@@ -355,7 +371,8 @@ class Validator extends Base\Validator
 
         foreach ($rules as $rule)
         {
-            if (($rule[Entity::PAYMENT_METHOD] === $newRule[Entity::PAYMENT_METHOD]) and
+            if (($rule[Entity::PRODUCT] === $newRule[Entity::PRODUCT]) and
+                ($rule[Entity::PAYMENT_METHOD] === $newRule[Entity::PAYMENT_METHOD]) and
                 ($rule[Entity::PAYMENT_METHOD_TYPE] === $newRule[Entity::PAYMENT_METHOD_TYPE]) and
                 ($rule[Entity::PAYMENT_NETWORK] === $newRule[Entity::PAYMENT_NETWORK]) and
                 ($rule[Entity::PAYMENT_ISSUER] === $newRule[Entity::PAYMENT_ISSUER]) and
@@ -371,7 +388,8 @@ class Validator extends Base\Validator
                     ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
             }
 
-            if (($rule[Entity::PAYMENT_METHOD] === $newRule[Entity::PAYMENT_METHOD]) and
+            if (($rule[Entity::PRODUCT] === $newRule[Entity::PRODUCT]) and
+                ($rule[Entity::PAYMENT_METHOD] === $newRule[Entity::PAYMENT_METHOD]) and
                 ($rule[Entity::PAYMENT_METHOD_TYPE] === $newRule[Entity::PAYMENT_METHOD_TYPE]) and
                 ($rule[Entity::PAYMENT_NETWORK] === $newRule[Entity::PAYMENT_NETWORK]) and
                 ($rule[Entity::PAYMENT_ISSUER] === $newRule[Entity::PAYMENT_ISSUER]) and
@@ -438,6 +456,11 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PRICING_PLAN_WITH_SAME_NAME_EXISTS);
         }
+    }
+
+    public function validateProduct($attribute, $value)
+    {
+        Product::validate($value);
     }
 
     protected function between($n, $min, $max)

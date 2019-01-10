@@ -368,4 +368,29 @@ return [
             ],
         ],
     ],
+
+    'testPayVirutalAccountOnBankingBalance' => [
+        'request' => [
+            'url'     => '/ecollect/validate',
+            'method'  => 'post',
+            'content' => [
+                'payer_account'  => '7654321234567',
+                'payer_ifsc'     => 'HDFC0000001',
+                'mode'           => 'neft',
+                'transaction_id' => 'AYDIC1W48ZXUVGLE0H6FQC',
+                'time'           => 1543052014,
+                'amount'         => 25,
+                'description'    => 'Test bank transfer',
+                'payee_account'  => '2224440041626905',
+                'payee_ifsc'     => 'RZPB0000000',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'valid'          => true,
+                'message'        => null,
+                'transaction_id' => 'AYDIC1W48ZXUVGLE0H6FQC',
+            ],
+        ],
+    ],
 ];

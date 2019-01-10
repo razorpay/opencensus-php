@@ -57,7 +57,7 @@ class Reconciliator extends Base\RefundFile
             $data[] = [
                 'ITC'       => $row['payment']['id'],
                 'PRN'       => $row['payment']['id'],
-                'BID'       => $row['payment']['reference1'],
+                'BID'       => 99999, // this is the value used in createNetbanking function used in recon test
                 'amount'    => $this->getFormattedAmount($row['payment']['amount']),
                 'Date'      => $date,
             ];

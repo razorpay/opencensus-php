@@ -4,8 +4,11 @@ namespace RZP\Gateway\Netbanking\Pnb;
 
 class Status
 {
-    // transaction status codes
-    const SUCCESS = 'S';
-    const FAIL    = 'F';
-    const PENDING = 'P';
+    // Transaction status codes. This is defined by us. Bank sends code, 0 -> success
+    const SUCCESS = '0';
+
+    public static function isSuccess($status)
+    {
+        return (string) $status === self::SUCCESS;
+    }
 }

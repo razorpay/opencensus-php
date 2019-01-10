@@ -4,8 +4,10 @@ namespace RZP\Tests\Functional\Fixtures\Factory;
 
 use Config;
 use Eloquent;
-use RZP\Models;
 use Carbon\Carbon;
+
+use RZP\Models;
+use RZP\Models\Contact;
 use RZP\Constants\Timezone;
 use RZP\Models\Settlement\Channel;
 
@@ -73,11 +75,15 @@ final class FactoryData
             'title'       => 'Sample title',
             'description' => 'Sample description',
             'notes'       => null,
+            'terms'       => null,
         ]);
 
         $factory(\RZP\Models\Merchant\Balance\Entity::class, [
             'id'                        => $faker->uniqueid,
+            'merchant_id'               => '10000000000000',
+            'type'                      => 'primary',
             'balance'                   => 0,
+            'currency'                  => 'INR',
         ]);
 
         $factory(\RZP\Models\BankAccount\Entity::class, [
@@ -665,13 +671,11 @@ final class FactoryData
             'registered_at'      => $faker->timestamp,
         ]);
 
-        $factory(\RZP\Models\Upi\Vpa\Entity::class, [
+        $factory(\RZP\Models\Vpa\Entity::class, [
             'id'                 => $faker->uniqueid,
             'username'           => $faker->word,
             'handle'             => 'razorpay',
-            'bank_account_id'    => 'factory:RZP\Models\BankAccount\Entity',
-            'customer_id'        => '100000customer',
-            'frequency'          => 'multiple',
+            'merchant_id'        => '10000000000000',
             'created_at'         => $faker->timestamp,
             'updated_at'         => $faker->timestamp,
         ]);
@@ -905,6 +909,14 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\VirtualAccount\Entity::class, [
+            'id'         => $faker->uniqueid,
+            'merchant_id'=> '10000000000000',
+            'status'     => 'active',
+            'name'       => 'Test Merchant',
+            'balance_id' => '10000000000000',
+            'notes'      => null,
+            'created_at' => $faker->timestamp,
+            'updated_at' => $faker->timestamp,
         ]);
 
         $factory(\RZP\Models\QrCode\Entity::class, [
@@ -934,6 +946,25 @@ final class FactoryData
             'id'          => $faker->uniqueid,
             'merchant_id' => '10000000000000',
             'customer_id' => '100000customer',
+        ]);
+
+        $factory(\RZP\Models\Contact\Entity::class, [
+            'id'           => $faker->uniqueid,
+            'name'         => $faker->word,
+            'email'        => $faker->email,
+            'contact'      => '9123456789',
+            'type'         => $faker->randomElement(Contact\Type::$defaults),
+            'reference_id' => $faker->uniqueid,
+            'notes'        => null,
+            'merchant_id'  => '10000000000000',
+            'created_at'   => $faker->timestamp,
+            'updated_at'   => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\FundAccount\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'active'      => 1,
+            'merchant_id' => '10000000000000',
         ]);
     }
 }

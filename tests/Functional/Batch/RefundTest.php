@@ -64,7 +64,9 @@ class RefundTest extends TestCase
 
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
-        $this->ba->proxyAuth('rzp_test_100000Razorpay');
+        $merchantUser = $this->fixtures->user->createUserForMerchant('100000Razorpay');
+
+        $this->ba->proxyAuth('rzp_test_100000Razorpay', $merchantUser->getId());
 
         $this->startTest();
     }
@@ -170,13 +172,6 @@ class RefundTest extends TestCase
         $this->assertArraySelectiveEquals($expectedRefundsWithNotes, $refunds['items']);
 
         Mail::assertSent(BatchRefundFileMail::class);
-    }
-
-    public function testProcessRefundFileUsingTransactionV2Feature()
-    {
-        $this->fixtures->merchant->addFeatures('transaction_v2');
-
-        $this->testProcessRefundFile();
     }
 
     public function testProcessRefundFileWithInvalidFile()

@@ -10,15 +10,6 @@ use RZP\Gateway\Netbanking\Rbl\ClaimFields;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
-    protected $netbankingRepo;
-
-    public function __construct(string $gateway = null)
-    {
-        parent::__construct($gateway);
-
-        $this->netbankingRepo = $this->repo->netbanking;
-    }
-
     protected function getPaymentId(array $row)
     {
         if (empty($row[ClaimFields::BANK_REFERENCE]) === false)
@@ -43,7 +34,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         $status = [Status::SUCCESS];
 
-        return $this->netbankingRepo->findByPaymentIdActionAndStatus($paymentId,
+        return $this->repo->netbanking->findByPaymentIdActionAndStatus($paymentId,
                                                                      Action::AUTHORIZE,
                                                                      $status);
     }

@@ -5,6 +5,12 @@ namespace RZP\Models\P2p\Device;
 use RZP\Exception;
 use RZP\Models\P2p\Base;
 
+/**
+ * @property Core $core
+ * @property Validator $validator
+ *
+ * Class Processor
+ */
 class Processor extends Base\Processor
 {
     protected $entity = 'p2p_device';

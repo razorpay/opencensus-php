@@ -21,6 +21,7 @@ use RZP\Http\RequestHeader;
 use RZP\Base\RepositoryManager;
 use RZP\Exception\LogicException;
 use RZP\Models\User\Entity as User;
+use RZP\Models\User\Service as UserService;
 use RZP\Models\Merchant\Account\Entity as Account;
 
 /**
@@ -62,11 +63,11 @@ class BasicAuth
 
     /**
      * Callback key in the partner token flow looks like this:
-     * rzp_test_1DP5mmOlF5G5ag~rzp_partner_ACIg2tb8NySnuh
+     * rzp_test_1DP5mmOlF5G5ag-rzp_partner_ACIg2tb8NySnuh
      *
      * Delimiter used is defined in this const.
      */
-    const PARTNER_CALLBACK_KEY_DELIMITER = '~';
+    const PARTNER_CALLBACK_KEY_DELIMITER = '-';
 
     const KEY                     = 'key';
     const KEY_ID                  = 'key_id';
@@ -248,6 +249,13 @@ class BasicAuth
     protected $cloud;
 
     /**
+     * Request Origin Product gives the Product information (payment gateway or business banking).
+     *
+     * @var string
+     */
+    protected $requestOriginProduct = Merchant\Balance\Type::PRIMARY;
+
+    /**
      * Array of dashboard headers
      * @var array
      */
@@ -267,6 +275,11 @@ class BasicAuth
      * @var \RZP\Models\User\Entity | null
      */
     protected $user        = null;
+
+    /**
+     * User Role is a role associated to the merchant for the user.
+     */
+    protected $userRole    = null;
 
     /**
      * @var boolean
@@ -449,8 +462,9 @@ class BasicAuth
 
         $matches = [];
 
-        // Sample token: rzp_test_partner_1DP5mmOlF5G5ag~acc_ACIg2tb8NySnuh
-        $keyRegex = '/^(rzp_(test|live)_partner_[a-zA-Z0-9]{14})~(acc_[a-zA-Z0-9]{14})$/';
+        // Sample token: rzp_test_partner_1DP5mmOlF5G5ag-acc_ACIg2tb8NySnuh
+        // Todo: For bc we have [-~] in below regex, to be removed soon after this deploy.
+        $keyRegex = '/^(rzp_(test|live)_partner_[a-zA-Z0-9]{14})[-~](acc_[a-zA-Z0-9]{14})$/';
 
         $validCallbackKey = (preg_match($keyRegex, $key, $matches) === 1);
 
@@ -594,9 +608,9 @@ class BasicAuth
         }
     }
 
-    public function oauthPublicTokenAuth(string $token = null)
+    public function oauthPublicTokenAuth(string $token = null, string $auth = Type::PUBLIC_AUTH)
     {
-        $this->setType(Type::PUBLIC_AUTH);
+        $this->setType($auth);
 
         $this->authCreds = new KeyAuthCreds($this->app, $token);
 
@@ -1403,6 +1417,10 @@ class BasicAuth
         if ($merchant !== null)
         {
             $this->setOrgId($merchant->org->getPublicId());
+
+            // basic auth is scattered across the code in core and services  for avoiding duplicate code setting merchant here
+
+            $this->merchant = $merchant;
         }
 
         $authCreds = $this->authCreds;
@@ -1410,8 +1428,6 @@ class BasicAuth
         if ((empty($authCreds) === false))
         {
             $this->authCreds->setMerchant($merchant);
-
-            $this->merchant = $this->authCreds->getMerchant();
         }
     }
 
@@ -1897,6 +1913,32 @@ class BasicAuth
     }
 
     /**
+     * @param string $requestOriginProduct
+     *
+     * @return $this
+     */
+    public function setRequestOriginProduct(string $requestOriginProduct)
+    {
+        $this->requestOriginProduct = $requestOriginProduct;
+
+        return $this;
+    }
+
+    public function getRequestOriginProduct(): string
+    {
+        return $this->requestOriginProduct;
+    }
+
+    /**
+     * Denotes if a request came from banking source or primary dashbaord
+     * @return bool
+     */
+    public function isProductBanking(): bool
+    {
+        return ($this->getRequestOriginProduct() === Merchant\Balance\Type::BANKING);
+    }
+
+    /**
      * Sets User Entity
      *
      * @param \RZP\Models\User\Entity $user
@@ -1920,6 +1962,11 @@ class BasicAuth
         return $this->user;
     }
 
+    public function getUserRole()
+    {
+        return $this->userRole;
+    }
+
     /**
      * Verifies and sets user from the headers.
      */
@@ -1934,6 +1981,33 @@ class BasicAuth
             $user = $this->repo->user->findOrFailPublic($userId);
 
             $this->setUser($user);
+
+            $this->setUserRole($userId);
+        }
+    }
+
+    public function setUserRole(string $userId)
+    {
+        // Fetching MID from authcreds because X-Razorpay-Account will be set as ba merchant
+        // When a marketplace account requests on behalf of linked account. so fetching the user
+        // mapping via keyId and userId.
+        if ($this->isProxyAuth() === true)
+        {
+            $merchantId = $this->authCreds->creds[self::KEY_ID];
+        }
+
+        if (empty($merchantId) === false)
+        {
+            $userMapping = $this->repo->merchant->getMerchantUserMapping($merchantId, $userId);
+
+            if (empty($userMapping) === false)
+            {
+                $this->userRole = $userMapping->pivot->role;
+            }
+            else
+            {
+                $this->userRole = (new UserService)->syncMerchantUserOnProducts($merchantId);
+            }
         }
     }
 

@@ -6,9 +6,11 @@ use RZP\Models;
 
 class Pricing extends Base
 {
+    const DEFAULT_PRICING_PLAN_ID = '1hDYlICobzOCYt';
+
     public function createDefaultPlan()
     {
-        $pricingPlanId = '1hDYlICobzOCYt';
+        $pricingPlanId = self::DEFAULT_PRICING_PLAN_ID;
 
         $rows = [
             [
@@ -302,10 +304,29 @@ class Pricing extends Base
                 'max_fee'             => 5000,
                 'receiver_type'       => 'qr_code',
                 'org_id'              => '100000razorpay',
+            ],
+            [
+                'id'                  => '1zE31zbybacab3',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'cardless_emi',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1000,
+                'max_fee'             => 5000,
+                'org_id'              => '100000razorpay',
             ]
         ];
 
         $this->addPricingRulesToDb($rows);
+    }
+
+    public function createDefaultBankingPlan()
+    {
+        $this->addPricingRulesToDb(Models\Pricing\DefaultPlan::getBankingPlanData());
     }
 
     public function createStandardPlan()

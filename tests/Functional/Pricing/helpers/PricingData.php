@@ -391,7 +391,7 @@ return [
             'content' => [
                 'payment_method' => 'netbanking',
                 'percent_rate' => 1000,
-                'payment_network' => 'SIBL',
+                'payment_network' => 'BARB_R',
                 'amount_range_active' => true,
                 'amount_range_min' => 0,
                 'amount_range_max' => 100000
@@ -403,7 +403,7 @@ return [
                 'plan_name' => 'TestPlan1',
                 'payment_method' => 'netbanking',
                 'payment_method_type' => null,
-                'payment_network' => 'SIBL',
+                'payment_network' => 'BARB_R',
                 'payment_issuer' => null,
                 'percent_rate' => 1000,
                 'amount_range_active' => true,
@@ -732,9 +732,12 @@ return [
         ],
         'response' => [
             'content' => [
-                'count' => 6,
+                'count' => 7,
                 'entity' => 'collection',
                 'items' => [
+                    [
+                        'name' => "Banking default plan",
+                    ],
                     [
                         'name' => 'testDefaultEmiPlan',
                         'entity' => 'pricing',
@@ -821,7 +824,7 @@ return [
                     [
                         'name' => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count' => 18,
+                        'count' => 19,
                         'rules' => [
                             [],
                         ],
@@ -838,6 +841,10 @@ return [
         ],
         'response' => [
             'content' => [
+                [
+                    'plan_name'   => "Banking default plan",
+                    'rules_count' => 6,
+                ],
                 [
                     'plan_name'   => 'testDefaultEmiPlan',
                     'rules_count' => 1,
@@ -856,7 +863,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'testDefaultPlan',
-                    'rules_count' => 18,
+                    'rules_count' => 19,
                 ],
             ],
         ],

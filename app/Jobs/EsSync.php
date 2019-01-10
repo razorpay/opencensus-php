@@ -15,9 +15,11 @@ class EsSync extends Job
 {
     const MAX_JOB_ATTEMPTS = 3;
     const JOB_RELEASE_WAIT = 30;
+    const MAX_BATCH_SIZE = 1000;
 
     private $action;
     private $entity;
+    private $ids;
     private $id;
 
     private $repo;
@@ -27,17 +29,19 @@ class EsSync extends Job
         string $mode,
         string $action,
         string $entity,
-        string $id)
+        $id)
     {
         parent::__construct($mode);
 
         $this->action = $action;
         $this->entity = $entity;
-        $this->id     = $id;
+        $this->ids    = array_wrap($id);
     }
 
     public function handle()
     {
+        $this->handleBackwardCompatibility();
+
         parent::handle();
 
         // Trace payload should include all necessary info for debugging.
@@ -47,7 +51,7 @@ class EsSync extends Job
             'mode'         => $this->mode,
             'action'       => $this->action,
             'entity'       => $this->entity,
-            'id'           => $this->id,
+            'ids'          => $this->ids,
         ];
 
         try
@@ -109,21 +113,43 @@ class EsSync extends Job
             case Base\EsRepository::CREATE:
             case Base\EsRepository::UPDATE:
 
-                $document = $this->repo->findForIndexing($this->id);
+                $batches = array_chunk($this->ids, self::MAX_BATCH_SIZE, true);
 
-                $this->esRepo->bulkUpdate([$document]);
+                foreach ($batches as $batch)
+                {
+                    $documents = $this->repo->findManyForIndexingByIds($batch);
+
+                    $this->esRepo->bulkUpdate($documents);
+                }
 
                 break;
 
             case Base\EsRepository::DELETE:
 
-                $this->esRepo->deleteDocument($this->id);
+                foreach ($this->ids as $id)
+                {
+                    $this->esRepo->deleteDocument($id);
+                }
 
                 break;
 
             default:
 
                 throw new LogicException('EsSync: Invalid action.');
+        }
+    }
+
+    /**
+     * Handles backward compatibility , remove this function after deployment
+     *
+     * If this->id is set => request came from deserialization
+     *
+     */
+    private function handleBackwardCompatibility()
+    {
+        if (isset($this->id) === true)
+        {
+            $this->ids = array_wrap($this->id);
         }
     }
 }

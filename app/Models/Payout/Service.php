@@ -2,8 +2,14 @@
 
 namespace RZP\Models\Payout;
 
+use RZP\Exception;
+use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Models\User;
 use RZP\Models\Payout;
+use RZP\Models\Reversal;
+use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 
 class Service extends Base\Service
 {
@@ -14,43 +20,59 @@ class Service extends Base\Service
         $this->core = new Payout\Core;
     }
 
-    public function fetch(string $id) : array
+    public function fundAccountPayout(array $input): array
     {
-        $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant);
+        // Only allow access over strictly private auth, for proxy auth: OTP auth flow is mandated.
+        if ($this->auth->isStrictPrivateAuth() === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
+        }
+
+        $this->processAccountNumber($input);
+
+        $payout = $this->core->createPayoutToFundAccount($input, $this->merchant);
 
         return $payout->toArrayPublic();
     }
 
-    public function fetchMultiple(array $input) : array
+    /**
+     * Business banking: Forwards request to `fundAccountPayout()` after verifying user's otp for the action.
+     *
+     * @param  array $input
+     *
+     * @return array
+     */
+    public function fundAccountPayoutWithOtp(array $input): array
     {
-        $payouts = $this->repo->payout->fetch($input, $this->merchant->getId());
+        $this->user->validateInput('verifyOtp', array_only($input, ['otp', 'token']));
 
-        return $payouts->toArrayPublic();
-    }
+        (new User\Core)->verifyOtp($input + ['action' => 'create_payout'], $this->merchant, $this->user);
 
-    public function create(array $input) : array
-    {
-        $payout = $this->core->directPayout($input, $this->merchant);
+        $payoutInput = array_except($input, ['otp', 'token']);
+
+        $this->processAccountNumber($payoutInput);
+
+        $payout = $this->core->createPayoutToFundAccount($payoutInput, $this->merchant);
 
         return $payout->toArrayPublic();
     }
 
-    public function merchantPayout(array $input)
+    public function internalMerchantPayout(array $input): array
     {
+        $merchantId = $input[Entity::MERCHANT_ID] ?? null;
+
+        if (is_string($merchantId) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('merchant_id is mandatory for the payout');
+        }
+
         (new Validator)->validateInput('merchant', $input);
 
-        $merchant = $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $payout = (new Payout\Core)->merchantPayout($input, $merchant);
+        $payout = $this->core->createPayoutToMerchant($input, $merchant);
 
-        return $payout;
-    }
-
-    public function processFailedPayouts(array $input)
-    {
-        $data = (new Core)->retryFailedPayouts($input);
-
-        return $data;
+        return $payout->toArrayPublic();
     }
 
     public function merchantPayoutOnDemand(array $input)
@@ -60,8 +82,80 @@ class Service extends Base\Service
         //Here value true specifies payout on demand mode enabled
         $input[Entity::TYPE] = Entity::ON_DEMAND;
 
-        $payout = (new Payout\Core)->merchantPayout($input, $this->merchant);
+        $payout = (new Payout\Core)->createPayoutToMerchant($input, $this->merchant);
 
-        return $payout;
+        return $payout->toArrayPublic();
+    }
+
+    public function fetch(string $id, array $input): array
+    {
+        $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant, $input);
+
+        return $payout->toArrayPublic();
+    }
+
+    public function fetchMultiple(array $input): array
+    {
+        $this->processAccountNumber($input);
+
+        $payouts = $this->repo->payout->fetch($input, $this->merchant->getId());
+
+        return $payouts->toArrayPublic();
+    }
+
+    public function processReversedPayouts(array $input)
+    {
+        $data = (new Core)->retryReversedPayouts($input);
+
+        return $data;
+    }
+
+    public function getPurposes(): array
+    {
+        return (new Purpose)->getAll($this->merchant);
+    }
+
+    public function postPurpose(array $input): array
+    {
+        (new Validator)->validateInput('create_purpose', $input);
+
+        $purposeObj = new Purpose;
+
+        $purposeObj->addNewCustom($input[Entity::PURPOSE], $input[Entity::PURPOSE_TYPE], $this->merchant);
+
+        return $purposeObj->getAll($this->merchant);
+    }
+
+    public function fetchReversalOfPayout(string $id): array
+    {
+        $merchantId = $this->merchant->getId();
+
+        $input = [
+            Reversal\Entity::ENTITY_ID      => Entity::verifyIdAndStripSign($id),
+            Reversal\Entity::ENTITY_TYPE    => Constants\Entity::PAYOUT
+        ];
+
+        $reversals = $this->repo->reversal->fetch($input, $merchantId);
+
+        if ($reversals->count() > 0)
+        {
+            return $reversals->first()->toArrayPublic();
+        }
+
+        return $reversals->toArrayPublic();
+    }
+
+    /**
+     * We are allowing Fund Account payouts only on RX.
+     * In RX, we always mandate account number.
+     *
+     * @param array $input
+     */
+    protected function processAccountNumber(array & $input)
+    {
+        /** @var Merchant\Validator $merchantValidator */
+        $merchantValidator = $this->merchant->getValidator();
+
+        $merchantValidator->validateAndTranslateAccountNumberForBanking($input);
     }
 }

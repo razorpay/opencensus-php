@@ -39,6 +39,12 @@ trait SettlementTrait
                             ->pluck(Feature\Entity::ENTITY_ID)
                             ->toArray();
 
+        $esMerchantsThreePm = $this->repo->feature
+                                  ->findMerchantsHavingFeatures([Feature\Constants::ES_AUTOMATIC_THREE_PM])
+                                  ->pluck(Feature\Entity::ENTITY_ID)
+                                  ->toArray();
+
+
         $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENTS_TXNS_GROUP_BY_MERCHANT_START);
 
          // Here we are fetch each transaction using a reference.
@@ -63,7 +69,7 @@ trait SettlementTrait
                 continue;
             }
 
-            $skipForEarlySettlement = $this->skipForEarlySettlement($txn, $esMerchants);
+            $skipForEarlySettlement = $this->skipForEarlySettlement($txn, $esMerchants, $esMerchantsThreePm);
 
             if ($skipForEarlySettlement === true)
             {
@@ -174,7 +180,7 @@ trait SettlementTrait
      * @param $esMerchants
      * @return bool
      */
-    protected function skipForEarlySettlement($txn, $esMerchants): bool
+    protected function skipForEarlySettlement($txn, $esMerchants, $esMerchantsThreePm): bool
     {
         $mid = $txn->getMerchantId();
 
@@ -219,6 +225,27 @@ trait SettlementTrait
             (($txn->getSettledAt() <= $nineAm) and ($now > $nineAm)))
         {
             return false;
+        }
+
+        if (in_array($mid, $esMerchantsThreePm, true) === true)
+        {
+            $threePm = Carbon::today(Timezone::IST)->hour(15)->getTimestamp();
+
+            if (($txn->getSettledAt() <= $threePm) and ($now > $threePm))
+            {
+                return false;
+            }
+
+            $this->trace->info(
+                TraceCode::SETTLEMENT_SKIPPED,
+                [
+                    'merchant_id'       => $txn->getMerchantId(),
+                    'transaction_id'    => $txn->getId(),
+                    'source_id'         => $txn->getEntityId(),
+                    'reason'            => Metric::BLOCK_OUTSIDE_ES_THREE_PM_WINDOW
+                ]);
+
+            return true;
         }
 
         $this->trace->count(
@@ -443,7 +470,7 @@ trait SettlementTrait
 
         list($setlAmount, $setlFee, $setlApiFee, $tax) = $this->getSettlementAmountsForMerchant($txns);
 
-        $balance = $merchant->balance->getBalance();
+        $balance = $merchant->primaryBalance->getBalance();
 
         if (($setlAmount < 100) or ($setlAmount > $balance))
         {
@@ -641,7 +668,7 @@ trait SettlementTrait
                 {
                     return [$settlement, $bankTransferAtpt];
                 }
-                },PayoutCore::ES_MUTEX_LOCK_TIMEOUT,
+                },PayoutCore::PAYOUT_MUTEX_LOCK_TIMEOUT,
                 ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
     }
 

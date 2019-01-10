@@ -23,6 +23,9 @@ class CreateMerchantUsersTable extends Migration
 
             $table->char(User::USER_ID, User::ID_LENGTH);
 
+            $table->string(Merchant::PRODUCT, 255)
+                  ->default('primary');
+
             $table->string(User::ROLE);
 
             $table->integer(User::CREATED_AT);
@@ -38,7 +41,7 @@ class CreateMerchantUsersTable extends Migration
                   ->on(Table::USER)
                   ->on_delete('restrict');
 
-            $table->unique([Merchant::MERCHANT_ID, User::USER_ID, 'role']);
+            $table->unique([Merchant::MERCHANT_ID, Merchant::PRODUCT, User::USER_ID, User::ROLE]);
         });
     }
 
@@ -55,7 +58,7 @@ class CreateMerchantUsersTable extends Migration
 
             $table->dropForeign(Table::MERCHANT_USERS .'_' .User::USER_ID .'_foreign');
 
-            $table->dropUnique('merchant_users_merchant_id_user_id_role_unique');
+            $table->dropUnique('merchant_users_merchant_id_product_user_id_role_unique');
         });
 
         Schema::drop(Table::MERCHANT_USERS);

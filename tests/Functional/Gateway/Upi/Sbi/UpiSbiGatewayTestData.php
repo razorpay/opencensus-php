@@ -128,8 +128,9 @@ return [
         ],
         'response'  => [
             'content' => [
-                'vpa'       => 'success@sbi',
-                'success'   => true,
+                'vpa'           => 'success@sbi',
+                'success'       => true,
+                'customer_name' => 'Test User',
             ],
         ]
     ],
@@ -144,8 +145,9 @@ return [
         ],
         'response'  => [
             'content' => [
-                'vpa'       => 'failedvalidate@sbi',
-                'success'   => false,
+                'vpa'           => 'failedvalidate@sbi',
+                'success'       => false,
+                'customer_name' => null,
             ],
         ]
     ],

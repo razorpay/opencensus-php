@@ -12,19 +12,19 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
 <!doctype html>
 <html>
 <head>
-    <title>{{$data['merchant']['name']}} - {{$payment_page_data['title']}}</title>
+    <title>{{{ $data['merchant']['name'] }}} - {{{ $payment_page_data['title'] }}}</title>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
     <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
-    <meta name="description" content='"{{$payment_page_data['title']}}" by {{$data['merchant']['name']}}. Proceed to pay Rs. {{amount_format_IN($payment_page_data['amount'])}} via Razorpay Payment Pages.'>
+    <meta name="description" content='"{{{ $payment_page_data['title'] }}}" by {{{ $data['merchant']['name'] }}}. Proceed to pay Rs. {{amount_format_IN($payment_page_data['amount'])}} via Razorpay Payment Pages.'>
     @include('hostedpage.partials.robot')
 
     @if (isset($payment_page_data))
-        <meta property="og:title" content="Payment of Rs. {{amount_format_IN($payment_page_data['amount'])}} requested by {{$data['merchant']['name']}} for {{$payment_page_data['title']}}">
+        <meta property="og:title" content="Payment of Rs. {{{ amount_format_IN($payment_page_data['amount']) }}} requested by {{{ $data['merchant']['name'] }}} for {{{ $payment_page_data['title'] }}}">
         <meta property="og:image" content="{{isset($data['merchant']['image']) ?  $data['merchant']['image'] : 'https://razorpay.com/favicon.png'}}">
         <meta property="og:image:width" content="276px">
         <meta property="og:image:height" content="276px">
-        <meta property="og:description" content="Click on this link to pay to {{$data['merchant']['name']}}">
+        <meta property="og:description" content="Click on this link to pay to {{{ $data['merchant']['name'] }}}">
     @endif
 
     <link href="https://fonts.googleapis.com/css?family=Lato:300,400,600" rel="stylesheet" type="text/css"></link>
@@ -246,10 +246,10 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
         <div id="failure" class="card">
             {!! $error_icon !!}
             <h2>Error</h2>
-            <p>{{$data['error']['description']}}. Please contact the merchant for assistance.</p>
+            <p>{{{ $data['error']['description'] }}}. Please contact the merchant for assistance.</p>
         </div>
     @else
-        <div id="invoice-status-container" class={{$payment_page_status}}>
+        <div id="invoice-status-container" class={{{ $payment_page_status }}}>
             <!-- Desktop Container -->
             <div id="desktop-container">
                 <div>
@@ -269,7 +269,7 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
                                 <div class="inv-details">
                                     <div id="inv-details-main">
                                         <div class="inv-for" style="overflow-wrap: break-word;">
-                                            {{$payment_page_data['title']}}
+                                            {{{ $payment_page_data['title'] }}}
                                         </div>
                                         @if(isset($payment_page_data['description']))
                                             <div class="info" style="margin-top: 4px;">
@@ -309,14 +309,14 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
                                 <div id="chkout-header">
                                     <div id="header-logo" class={{isset($data['merchant']['image']) ? 'visible' : ''}}>
                                         @if (isset($data['merchant']['image']))
-                                            <img src="{{$data['merchant']['image']}}" width="100%" />
+                                            <img src="{{{ $data['merchant']['image'] }}}" width="100%" />
                                         @endif
                                     </div>
 
                                     <div id="header-details">
                                         @if (isset($data['merchant']))
                                             <div id="merchant">
-                                                <div id="merchant-name">{{$data['merchant']['name']}}</div>
+                                                <div id="merchant-name">{{{ $data['merchant']['name'] }}}</div>
                                             </div>
                                         @endif
                                     </div>
@@ -331,7 +331,7 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
                                     <div id="cancelled-invoice">
                                         <div class="title" style='color:#f54443; font-size: 18px;'>Inactive Page</div>
                                         <div class="desc">
-                                            Oops! This payment page is currently Inactive. Please contact {{$data['merchant']['name']}} support in case you have any queries.
+                                            Oops! This payment page is currently Inactive. Please contact {{{ $data['merchant']['name'] }}} support in case you have any queries.
                                         </div>
                                     </div>
                                 @endif
@@ -363,7 +363,7 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
                         <div id="header-details">
                             @if (isset($data['merchant']))
                                 <div id="merchant">
-                                    <div id="merchant-name">{{$data['merchant']['name']}}</div>
+                                    <div id="merchant-name">{{{ $data['merchant']['name'] }}}</div>
                                 </div>
                             @endif
                         </div>
@@ -377,7 +377,7 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
                         <div class="inv-details">
                             <div id="inv-details-main">
                                 <div class="inv-for" style="overflow-wrap: break-word;">
-                                    {{$payment_page_data['title']}}
+                                    {{{ $payment_page_data['title'] }}}
                                 </div>
                                 @if(isset($payment_page_data['description']))
                                     <div class="info" style="margin-top: 4px;">
@@ -409,7 +409,7 @@ $is_test_mode                    = $data['is_test_mode'] ?? false;
                             <div id="cancelled-invoice">
                                 <div class="title" style='color:#f54443; font-size: 18px;'>Inactive Page</div>
                                 <div class="desc">
-                                    Oops! This payment page is currently Inactive. Please contact {{$data['merchant']['name']}} support in case you have any queries.
+                                    Oops! This payment page is currently Inactive. Please contact {{{ $data['merchant']['name'] }}} support in case you have any queries.
                                 </div>
                             </div>
                         @endif

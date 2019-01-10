@@ -23,6 +23,11 @@ class Type
 
     const CORPORATION_NETBANKING_REFUND     = 'corporation_netbanking_refund';
 
+
+    const ALLAHABAD_NETBANKING_REFUND       = 'allahabad_netbanking_refund';
+    const CANARA_NETBANKING_REFUND          = 'canara_netbanking_refund';
+    const CANARA_NETBANKING_CLAIMS          = 'canara_netbanking_claims';
+
     const BOB_NETBANKING_REFUND             = 'bob_netbanking_refund';
     const BOB_NETBANKING_CLAIMS             = 'bob_netbanking_claims';
 
@@ -56,6 +61,10 @@ class Type
     const INDUSIND_NETBANKING_REFUND        = 'indusind_netbanking_refund';
 
     const INDUSIND_NETBANKING_CLAIM         = 'indusind_netbanking_claim';
+
+    const VIJAYA_NETBANKING_REFUND          = 'vijaya_netbanking_refund';
+
+    const VIJAYA_NETBANKING_CLAIM           = 'vijaya_netbanking_claim';
 
     const AIRTELMONEY_WALLET_REFUND         = 'airtelmoney_wallet_refund';
 
@@ -116,6 +125,7 @@ class Type
     const YES_EMI_FILE_MAIL                 = 'yes_emi_file_mail';
     const ICICI_EMI_FILE_SFTP               = 'icici_emi_file_sftp';
     const ICICI_EMI_FILE_MAIL               = 'icici_emi_file_mail';
+    const SBI_EMI_FILE                      = 'sbi_emi_file';
 
     const MERCHANT_BUSINESS_PROOF_URL           = 'business_proof_url';
     const MERCHANT_BUSINESS_OPERATION_PROOF_URL = 'business_operation_proof_url';
@@ -158,12 +168,16 @@ class Type
             self::AXIS_EMANDATE_DEBIT,
             self::FEDERAL_NETBANKING_REFUND,
             self::CORPORATION_NETBANKING_REFUND,
+            self::ALLAHABAD_NETBANKING_REFUND,
+            self::CANARA_NETBANKING_REFUND,
             self::BOB_NETBANKING_REFUND,
             self::BOB_NETBANKING_CLAIMS,
             self::RBL_NETBANKING_REFUND,
             self::EQUITAS_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_CLAIM,
+            self::VIJAYA_NETBANKING_REFUND,
+            self::VIJAYA_NETBANKING_CLAIM,
             self::IDFC_NETBANKING_REFUND,
             self::IDFC_NETBANKING_CLAIMS,
             self::IDFC_NETBANKING_SUMMARY,
@@ -182,6 +196,7 @@ class Type
             self::INDUSIND_EMI_FILE,
             self::KOTAK_EMI_FILE,
             self::RBL_EMI_FILE,
+            self::SBI_EMI_FILE,
             self::SCBL_EMI_FILE,
             self::YES_EMI_FILE_MAIL,
             self::YES_EMI_FILE_SFTP,
@@ -251,6 +266,7 @@ class Type
         self::INDUSIND_EMI_FILE,
         self::KOTAK_EMI_FILE,
         self::RBL_EMI_FILE,
+        self::SBI_EMI_FILE,
         self::SCBL_EMI_FILE,
         self::YES_EMI_FILE_MAIL,
         self::YES_EMI_FILE_SFTP,
@@ -267,10 +283,12 @@ class Type
         self::RBL_ENACH_REGISTER,
         self::BOB_NETBANKING_REFUND,
         self::BOB_NETBANKING_CLAIMS,
+        self::CANARA_NETBANKING_REFUND,
         self::IDFC_NETBANKING_REFUND,
         self::IDFC_NETBANKING_CLAIMS,
         self::IDFC_NETBANKING_SUMMARY,
         self::CORPORATION_NETBANKING_REFUND,
+        self::ALLAHABAD_NETBANKING_REFUND,
         self::ICICI_NETBANKING_REFUND,
         self::AXIS_NETBANKING_REFUND,
         self::AXIS_EMANDATE_DEBIT,
@@ -278,6 +296,8 @@ class Type
         self::RBL_NETBANKING_REFUND,
         self::INDUSIND_NETBANKING_REFUND,
         self::INDUSIND_NETBANKING_CLAIM,
+        self::VIJAYA_NETBANKING_REFUND,
+        self::VIJAYA_NETBANKING_CLAIM,
         self::AXIS_NETBANKING_CLAIMS,
         self::RBL_NETBANKING_CLAIM,
         self::AIRTELMONEY_WALLET_REFUND,
@@ -332,6 +352,7 @@ class Type
             self::INDUSIND_EMI_FILE,
             self::KOTAK_EMI_FILE,
             self::RBL_EMI_FILE,
+            self::SBI_EMI_FILE,
             self::SCBL_EMI_FILE,
             self::YES_EMI_FILE_MAIL,
             self::ICICI_EMI_FILE_MAIL,
@@ -373,6 +394,7 @@ class Type
         self::H2H_BUCKET_CONFIG => [
             self::FUND_TRANSFER_H2H,
             self::ICICI_EMI_FILE_SFTP,
+            self::SBI_EMI_FILE,
             self::YES_EMI_FILE_SFTP,
             self::RBL_ENACH_DEBIT,
             self::RBL_ENACH_REGISTER,

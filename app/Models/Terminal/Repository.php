@@ -32,7 +32,7 @@ class Repository extends Base\Repository
         Entity::MC_MPAN                 => 'sometimes|string|size:16',
         Entity::VISA_MPAN               => 'sometimes|string|size:16',
         Entity::RUPAY_MPAN              => 'sometimes|string|size:16',
-        Entity::VPA                     => 'sometimes|string|max:20',
+        Entity::VPA                     => 'sometimes|string|max:255',
     );
 
     public function fetchForPayment(Payment\Entity $payment)
@@ -85,6 +85,7 @@ class Repository extends Base\Repository
                     ->findOrFailPublic($id);
     }
 
+
     public function getByMerchantId($mid)
     {
         $query = $this->newQuery()
@@ -95,10 +96,11 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function findByGatewayAndTerminalData(array $terminalData, string $gateway, bool $withTrashed = false)
+    public function findByGatewayAndTerminalData(string $gateway, array $terminalData = [], bool $withTrashed = false)
     {
         $query =  $this->newQuery()
                        ->where(Entity::GATEWAY, '=', $gateway);
+
         foreach ($terminalData as $key => $value)
         {
             $query->where($key, $value);
@@ -214,6 +216,18 @@ class Repository extends Base\Repository
 
         return $query->first();
     }
+
+    public function getIdsByMerchantIdsAndGateway($mids, $gateway)
+    {
+        $query = $this->newQuery()
+                    ->where(Entity::GATEWAY, $gateway)
+                    ->enabled();
+
+        $this->addMerchantWhereCondition($query, $mids);
+
+        return $query->pluck(Entity::ID)->all();
+    }
+
 
     public function getSharedTerminalForGateway($gateway)
     {
@@ -353,5 +367,23 @@ class Repository extends Base\Repository
     public function removeMerchantFromTerminal(Entity $terminal, Merchant\Entity $merchant)
     {
         $terminal->merchants()->detach($merchant);
+    }
+
+    public function getTerminalForProviderAndMerchant(string $provider, string $merchantId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::GATEWAY_ACQUIRER, '=', $provider)
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->enabled()
+                    ->firstOrFail();
+    }
+
+    public function findByMerchantIdAndCardlessEmi(string $merchantId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::CARDLESS_EMI, '=', 1)
+                    ->whereIn(Entity::MERCHANT_ID, [$merchantId, Account::SHARED_ACCOUNT])
+                    ->enabled()
+                    ->get();
     }
 }

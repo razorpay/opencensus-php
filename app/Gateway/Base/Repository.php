@@ -110,4 +110,13 @@ class Repository extends Base\Repository
                     ->where(Entity::PAYMENT_ID, '=', $paymentId)
                     ->firstOrFail();
     }
+
+    public function findByPaymentIdAndActionGetLastOrFail($paymentId, $action)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                    ->where('action', '=', $action)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->firstOrFail();
+    }
 }

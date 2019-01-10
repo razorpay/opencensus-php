@@ -123,6 +123,22 @@ class EmiPlan extends Base
             'merchant_payback'  => '600',
             'bank'              => null,
         ],
+        [
+            'id'                => '30101010101011',
+            'duration'          => '9',
+            'rate'              => '1400',
+            'methods'           => 'creditcard',
+            'bank'              => 'SBIN',
+            'min_amount'        => '300000',
+        ],
+        [
+            'id'                => '40101010101011',
+            'duration'          => '12',
+            'rate'              => '1400',
+            'methods'           => 'creditcard',
+            'bank'              => 'SBIN',
+            'min_amount'        => '300000',
+        ],
     ];
 
     public function createDefaultEmiPlans()

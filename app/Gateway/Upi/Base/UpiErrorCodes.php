@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Upi\Base;
 
 use RZP\Error\ErrorCode;
+use RZP\Gateway\Base\Action;
 
 class UpiErrorCodes
 {
@@ -39,6 +40,37 @@ class UpiErrorCodes
         'K1'    => 'SUSPECTED FRAUD, DECLINE / TRANSACTIONS DECLINED BASED ON RISK SCORE BY REMITTER',
         'NA'    => 'TRANSACTION FAILED',
         'RNF'   => 'TRANSACTION FAILED',
+        '51'    => 'NOT SUFFICIENT FUNDS',
+        '96'    => 'Reversal Failure',
+        'AM'    => 'MPIN not set by customer',
+        'B1'    => 'Registered Mobile number linked to the account has been changed/removed',
+        'UT'    => 'REMITTER/ISSUER UNAVAILABLE (TIMEOUT)',
+        'UX'    => 'EXPIRED VIRTUAL ADDRESS',
+        'XH'    => 'ACCOUNT DOES NOT EXIST (REMITTER)',
+        'XV'    => 'TRANSACTION CANNOT BE COMPLETED. COMPLIANCE VIOLATION (REMITTER)',
+        'Z6'    => 'No of PIN tries exceeded',
+        'Z7'    => 'TRANSACTION FREQUENCY LIMIT EXCEEDED AS SET BY REMITTING MEMBER',
+        'Z8'    => 'PER TRANSACTION LIMIT EXCEEDED AS SET BY REMITTING MEMBER',
+        'ZA'    => 'TRANSACTION DECLINED BY CUSTOMER',
+        'ZE'    => 'TRANSACTION NOT PERMITTED TO VPA by the PSP',
+        'ZG'    => 'VPA RESTRICTED BY CUSTOMER',
+        'ZH'    => 'INVALID VIRTUAL ADDRESS',
+        'ZM'    => 'Invalid / Incorrect MPIN',
+        'ZX'    => 'INACTIVE OR DORMANT ACCOUNT (REMITTER)',
+        'U03'   => 'Net debit CAP is exceeded',
+        'U09'   => 'ReqAuth Time out for PAY',
+        'U14'   => 'Encryption error',
+        'U16'   => 'Risk threshold exceeded',
+        'U17'   => 'PSP is not registered',
+        'U18'   => 'Request authorisation acknowledgement is not received',
+        'U19'   => 'Request authorisation is declined',
+        'U29'   => 'Address resolution is failed',
+        'U30'   => 'Debit has been failed',
+        'U53'   => 'PSP Request Pay Debit Acknowledgement not received',
+        'U54'   => 'Transaction Id or Amount in credential block does not match with that in ReqPay',
+        'U66'   => 'Device Fingerprint mismatch',
+        'U67'   => 'Debit TimeOut',
+        'U69'   => 'Collect Expired',
     ];
 
     protected static $errorCodeMap = [
@@ -74,10 +106,54 @@ class UpiErrorCodes
         'K1'    => ErrorCode::GATEWAY_ERROR_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK_REMITTER,
         'NA'    => ErrorCode::BAD_REQUEST_REFUND_FAILED,
         'RNF'   => ErrorCode::BAD_REQUEST_REFUND_FAILED,
+        '51'    => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,
+        '96'    => ErrorCode::GATEWAY_ERROR_REVERSAL_FAILURE,
+        'AM'    => ErrorCode::BAD_REQUEST_UPI_MPIN_NOT_SET,
+        'B1'    => ErrorCode::BAD_REQUEST_REGISTERED_MOBILE_NUMBER_NOT_FOUND,
+        'UT'    => ErrorCode::GATEWAY_ERROR_PSP_NOT_AVAILABLE,
+        'UX'    => ErrorCode::BAD_REQUEST_EXPIRED_VPA,
+        'XH'    => ErrorCode::BAD_REQUEST_UPI_INVALID_BANK_ACCOUNT,
+        'XV'    => ErrorCode::GATEWAY_ERROR_REMITTER_COMPLIANCE_VIOLATION,
+        'Z6'    => ErrorCode::BAD_REQUEST_PAYMENT_PIN_ATTEMPTS_EXCEEDED,
+        'Z7'    => ErrorCode::BAD_REQUEST_TRANSACTION_FREQUENCY_LIMIT_EXCEEDED,
+        'Z8'    => ErrorCode::BAD_REQUEST_TRANSACTION_AMOUNT_LIMIT_EXCEEDED,
+        'ZA'    => ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED,
+        'ZE'    => ErrorCode::BAD_REQUEST_FORBIDDEN_TRANSACTION_ON_VPA,
+        'ZG'    => ErrorCode::BAD_REQUEST_PAYMENT_UPI_RESTRICTED_VPA,
+        'ZH'    => ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
+        'ZM'    => ErrorCode::BAD_REQUEST_PAYMENT_PIN_INCORRECT,
+        'ZX'    => ErrorCode::BAD_REQUEST_UPI_INVALID_BANK_ACCOUNT,
+        'U03'   => ErrorCode::BAD_REQUEST_TRANSACTION_AMOUNT_LIMIT_EXCEEDED,
+        'U09'   => ErrorCode::GATEWAY_ERROR_UPI_REQAUTH_TIMEOUT,
+        'U14'   => ErrorCode::GATEWAY_ERROR_ENCRYPTION_ERROR,
+        'U16'   => ErrorCode::GATEWAY_ERROR_DENIED_BY_RISK,
+        'U17'   => ErrorCode::BAD_REQUEST_PSP_DOESNT_EXIST,
+        'U18'   => ErrorCode::GATEWAY_ERROR_UPI_REQAUTH_TIMEOUT,
+        'U19'   => ErrorCode::GATEWAY_ERROR_REQAUTH_DECLINED,
+        'U29'   => ErrorCode::GATEWAY_ERROR_VPA_RESOLUTION_FAILED,
+        'U30'   => ErrorCode::GATEWAY_ERROR_DEBIT_FAILED,
+        'U53'   => ErrorCode::GATEWAY_ERROR_DEBIT_FAILED_AT_BANK,
+        'U54'   => ErrorCode::GATEWAY_ERROR_TRANSACTION_DETAILS_MISMATCH,
+        'U66'   => ErrorCode::BAD_REQUEST_UPI_INVALID_DEVICE_FINGERPRINT,
+        'U67'   => ErrorCode::GATEWAY_ERROR_DEBIT_TIMEOUT,
+        'U69'   => ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED,
     ];
 
-    public static function getApiErrorCode($code = null)
+    public static function getApiErrorCode($code = null, $action = Action::REFUND)
     {
+        if ($action === Action::CALLBACK)
+        {
+            if ($code === 'NA')
+            {
+                return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+            }
+
+            if ($code === 'RNF')
+            {
+                return ErrorCode::GATEWAY_ERROR_PAYMENT_NOT_FOUND;
+            }
+        }
+
         if (isset(self::$errorCodeMap[$code]))
         {
             return self::$errorCodeMap[$code];

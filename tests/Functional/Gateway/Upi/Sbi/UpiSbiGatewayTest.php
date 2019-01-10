@@ -93,6 +93,44 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertNotNull($upiEntity[Upi::EXPIRY_TIME]);
     }
 
+    public function testPaymentWithRetryOnGatewayRequestExceptions()
+    {
+        $this->getGatewayRequestException();
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $paymentId = $response[Constants::PAYMENT_ID];
+
+        // Coproto must be working
+        $this->assertEquals(Constants::ASYNC, $response[Constants::TYPE]);
+
+        $this->checkPaymentStatus($paymentId, Payment\Status::CREATED);
+
+        $upiEntity = $this->getLastEntity(Entity::UPI, true);
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity);
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        // We should have gotten a successful response
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('SUCCESS', $response['status']);
+
+        // The payment should now be authorized
+        $payment = $this->getEntityById(Entity::PAYMENT, $paymentId, true);
+        $upiEntity = $this->getLastEntity(Entity::UPI, true);
+
+        $this->assertEquals(Payment\Status::AUTHORIZED, $payment[Payment\Entity::STATUS]);
+
+        $content = $this->getDecryptedContent($content[ResponseFields::MESSAGE], ResponseFields::RESPONSE);
+
+        $this->assertEquals($content[ResponseFields::UPI_TRANS_REFERENCE_NO], $upiEntity[Upi::NPCI_REFERENCE_ID]);
+        $this->assertEquals($content[ResponseFields::CUSTOMER_REFERENCE_NO], $upiEntity[Upi::GATEWAY_PAYMENT_ID]);
+        $this->assertEquals($content[ResponseFields::STATUS], $upiEntity[Upi::STATUS_CODE]);
+        $this->assertEquals($payment[Payment\Entity::VPA], $upiEntity[Upi::VPA]);
+        $this->assertNotNull($upiEntity[Upi::EXPIRY_TIME]);
+    }
+
     public function testPaymentWithExpiryPrivateAuth()
     {
         $this->fixtures->merchant->addFeatures(['s2supi']);

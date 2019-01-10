@@ -10,6 +10,7 @@ use RZP\Models\FundTransfer\Kotak\Reconciliation\Status as KotakStatus;
 use RZP\Models\FundTransfer\Hdfc\Reconciliation\Status as HdfcStatus;
 use RZP\Models\FundTransfer\Axis\Reconciliation\Status as AxisStatus;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\Status as YesbankStatus;
+use RZP\Models\FundTransfer\Yesbank\Reconciliation\GatewayStatus as YesbankGatewayStatus;
 
 return [
     'testFileCreationSettlement' => [
@@ -23,16 +24,28 @@ return [
         'type'              => 'settlement',
     ],
 
+    'testFileCreationPayoutVpa' => [
+        'amount'            => 1000,
+        'fees'              => 602,
+        'tax'               => 92,
+        'processed_amount'  => 1000,
+        'processed_count'   => 1,
+        'total_count'       => 1,
+        'transaction_count' => 1,
+        'type'              => 'payout',
+    ],
+
     'testFileCreationPayout' => [
-        'amount'            => 10000000,
-        'fees'              => 118590,
-        'tax'               => 18090,
+        'amount'            => 1000,
+        'fees'              => 602,
+        'tax'               => 92,
         'processed_amount'  => 0,
         'processed_count'   => 0,
         'total_count'       => 1,
         'transaction_count' => 1,
         'type'              => 'payout',
     ],
+
 
     'matchAttemptForReconSuccessKotak' => [
         'version'           => 'V3',
@@ -63,13 +76,19 @@ return [
         'failure_reason'    => null,
     ],
 
-    'matchAttemptForReconSuccessRbl' => [
+    'matchAttemptForReconSuccessAxis2' => [
         'version'           => 'V3',
         'bank_status_code'  => 'SUCCESS',
         'status'            => AttemptStatus::INITIATED,
         'failure_reason'    => null,
     ],
 
+    'matchAttemptForReconSuccessRbl' => [
+        'version'           => 'V3',
+        'bank_status_code'  => 'SUCCESS',
+        'status'            => AttemptStatus::INITIATED,
+        'failure_reason'    => null,
+    ],
     'matchAttemptForReconFailureRbl' => [
         'version'           => 'V3',
         'bank_status_code'  => 'Failure',
@@ -88,6 +107,20 @@ return [
         'version'           => 'V3',
         'bank_status_code'  => 'FAILED',
         'status'            => AttemptStatus::INITIATED,
+        'failure_reason'    => null,
+    ],
+
+    'matchAttemptForReconSuccessYesbankVpa' => [
+        'version'           => 'V3',
+        'bank_status_code'  => YesbankGatewayStatus::COMPLETED,
+        'status'            => AttemptStatus::PROCESSED,
+        'failure_reason'    => null,
+    ],
+
+    'matchAttemptForReconFailureYesbankVpa' => [
+        'version'           => 'V3',
+        'bank_status_code'  => 'FAILED',
+        'status'            => AttemptStatus::FAILED,
         'failure_reason'    => null,
     ],
 
@@ -207,7 +240,6 @@ return [
         'status'           => AttemptStatus::FAILED,
         'failure_reason'   => 'Reconciliation',
     ],
-
 
     'testRetrySettlement' => [
         'attempts'                  => 2,

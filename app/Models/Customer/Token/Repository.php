@@ -7,6 +7,7 @@ use DB;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Customer;
+use RZP\Models\Merchant;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Method;
 
@@ -246,5 +247,14 @@ class Repository extends Base\Repository
             ->where($tokenRecurringColumn, '=', 1)
             ->with(['merchant', 'terminal'])
             ->get();
+    }
+
+    public function getByPublicIdAndMerchant(string $id, Merchant\Entity $merchant)
+    {
+        Entity::verifyIdAndStripSign($id);
+
+        return $this->newQuery()
+                    ->merchantId($merchant->getId())
+                    ->find($id);
     }
 }

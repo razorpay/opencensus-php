@@ -144,5 +144,26 @@ return [
                 ]
             ]
         ]
-    ]
+    ],
+
+    'testWorkflowSearchByMakerId' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/w-actions?duty=checker&type=requested&maker_id=12345678',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'state'      => 'open',
+                        'maker_id'   => 'admin_12345678',
+                        'maker_type' => 'admin',
+                    ],
+                ],
+            ]
+        ]
+    ],
 ];

@@ -76,5 +76,5 @@ class Constants
     const DURATION = 5;
 
     // Default key on which result set is sorted
-    const RESULT_SORT_KEY = self::TOTAL_AMOUNT;
+    const RESULT_SORT_KEY = self::UNRECON_COUNT;
 }

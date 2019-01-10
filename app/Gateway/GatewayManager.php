@@ -252,7 +252,7 @@ class GatewayManager extends \Illuminate\Support\Manager
     public function getReconClass($driver, array $input = [])
     {
         $reconClassName = (empty($input['type']) === false)
-                          ? (ucfirst($input['type']) . 'Reconciliator')
+                          ? (studly_case($input['type']) . 'Reconciliator')
                           : 'Reconciliator';
 
         $reconFQCN = $this->getGatewayNamespace($driver, true) . '\\' . $reconClassName;

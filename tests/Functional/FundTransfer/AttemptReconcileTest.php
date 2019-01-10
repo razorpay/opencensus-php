@@ -7,6 +7,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
+use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
@@ -81,6 +82,18 @@ class AttemptReconcileTest extends TestCase
         $this->assertReconFileProcessSuccessForChannel($setlFile, $channel, Attempt\Type::SETTLEMENT);
     }
 
+    protected function verifySettlementReconFileProcessForAxis2()
+    {
+        $channel = Channel::AXIS2;
+
+        $content = $this->createDataAndAssertInitiateTransferSuccess(
+            $channel, 1, Attempt\Type::SETTLEMENT);
+
+        $setlFile = $content[$channel]['file']['local_file_path'];
+
+        $this->assertReconFileProcessSuccessForChannel($setlFile, $channel, Attempt\Type::SETTLEMENT);
+    }
+
     protected function verifySettlementReconProcessForRbl($failureTest = false)
     {
         $channel = Channel::RBL;
@@ -99,6 +112,15 @@ class AttemptReconcileTest extends TestCase
             $channel, 1, Attempt\Type::SETTLEMENT, $failureTest);
 
         $this->assertReconProcessSuccessForChannel($channel, Attempt\Type::SETTLEMENT, $failureTest);
+    }
+
+    protected function verifyPayoutReconProcessForYesbankVpa($failureTest = false)
+    {
+        $channel = Channel::YESBANK;
+
+        $this->createDataAndAssertInitiateOnlineTransferSuccessForVpa($channel, 1, Attempt\Type::PAYOUT, $failureTest);
+
+        $this->assertReconProcessSuccessForChannelVpa($channel, Attempt\Type::PAYOUT, $failureTest);
     }
 
     protected function verifySettlementReconFileProcessFailureKotak()
@@ -236,6 +258,13 @@ class AttemptReconcileTest extends TestCase
         $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
     }
 
+    public function testSettlementReconcileEntitiesSuccessForAxis2()
+    {
+        $this->verifySettlementReconFileProcessForAxis2();
+
+        $this->reconcileEntitiesForChannel(Channel::AXIS2);
+    }
+
     public function testSettlementReconcileEntitiesSuccessForRbl()
     {
         $now = Carbon::create(2018, 8, 14, 15, 0, 0, Timezone::IST);
@@ -256,6 +285,21 @@ class AttemptReconcileTest extends TestCase
         $this->reconcileEntitiesForChannel(Channel::YESBANK);
 
         $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
+    }
+
+    public function testPayoutReconcileEntitiesSuccessForYesbankVpa()
+    {
+        $this->fixtures->create(
+            'terminal',
+            [
+                'gateway' => Gateway::UPI_YESBANK,
+            ]);
+
+        $this->verifyPayoutReconProcessForYesbankVpa();
+
+//        $this->reconcileEntitiesForChannel(Channel::YESBANK);
+
+        $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::PAYOUT);
     }
 
     public function testSettlementReconcileEntitiesFailureForRbl()
@@ -351,6 +395,7 @@ class AttemptReconcileTest extends TestCase
 
         $this->assertEquals('settlement', $setlTxn['type']);
         $this->assertNotNull($setlTxn['reconciled_at']);
+        $this->assertNotNull($setlTxn['reconciled_type']);
     }
 
     protected function assertOnlineReconcileEntitiesFailure(array $content, string $channel)
@@ -384,6 +429,7 @@ class AttemptReconcileTest extends TestCase
 
         $this->assertEquals('settlement', $setlTxn['type']);
         $this->assertNotNull($setlTxn['reconciled_at']);
+        $this->assertNotNull($setlTxn['reconciled_type']);
     }
 
     protected function assertReconcileEntitiesSuccessForSource(string $sourceType)
@@ -398,6 +444,7 @@ class AttemptReconcileTest extends TestCase
 
         $sources = $this->getEntities($sourceType, [], true);
         $sourceTestData = 'fetchAndMatchReconSuccessFor' . ucfirst($sourceType);
+
         foreach ($sources['items'] as $source)
         {
             $this->assertTestResponse($source, $sourceTestData);
@@ -411,11 +458,14 @@ class AttemptReconcileTest extends TestCase
 
         $batch = $this->getLastEntity('batch_fund_transfer', true);
         $batchTestData = 'matchBatchReconcileDataFor' . ucfirst($sourceType);
+
         $this->assertTestResponse($batch, $batchTestData);
 
         $txn = $this->getLastEntity('transaction', true);
+
         $this->assertEquals($sourceType, $txn['type']);
         $this->assertNotNull($txn['reconciled_at']);
+        $this->assertNotNull($txn['reconciled_type']);
     }
 
     public function testRetrySettlementKotak()
@@ -456,9 +506,11 @@ class AttemptReconcileTest extends TestCase
 
         $settlementId = $attempt['source'];
 
+//        $this->fixtures->edit('merchant', $attempt['merchant_id'], ['hold_funds' => 1]);
+
         $content = $this->retryIntiateSettlements([$settlementId]);
 
-        // No settlements retried as merhcants funds on hold
+        // No settlements retried as merchants funds on hold
         $this->assertEquals(1, $content['retry_skipped_count']);
 
         $settlement = $this->getLastEntity('settlement', true);
@@ -651,5 +703,4 @@ class AttemptReconcileTest extends TestCase
 
         $this->assertEquals('FAILED', $fta['bank_status_code']);
     }
-
 }

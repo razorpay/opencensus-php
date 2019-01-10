@@ -116,6 +116,13 @@ class CustomerController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetchTokenCard($id)
+    {
+        $data = $this->service(E::TOKEN)->fetchCard($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function fetchTokensForGlobalCustomer()
     {
         $tokens = $this->service(E::TOKEN)->fetchTokensForGlobalCustomer();
@@ -162,15 +169,6 @@ class CustomerController extends Controller
         $input = Request::all();
 
         $data = $this->service()->addBankAccount($id, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function createVpa()
-    {
-        $input = Request::all();
-
-        $data = $this->service(E::VPA)->create($input);
 
         return ApiResponse::json($data);
     }

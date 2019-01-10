@@ -146,24 +146,6 @@ return [
         'type'            => 'refund',
         'amount'          => 50000,
         'currency'        => 'INR',
-        'debit'           => 50000,
-        'credit'          => 0,
-        'fee'             => 0,
-        'tax'             => 0,
-        'gateway_fee'     => 0,
-        'api_fee'         => 0,
-        'gratis'          => false,
-        'balance'         => 0,
-        'merchant_id'     => '10000000000000',
-        'pricing_rule_id' => null,
-        'channel'         => 'axis',
-    ],
-
-    'txnDataAfterRefundingAuthOnlyPaymentUsingTransactionV2' => [
-        'entity'          => 'transaction',
-        'type'            => 'refund',
-        'amount'          => 50000,
-        'currency'        => 'INR',
         'debit'           => 0,
         'credit'          => 0,
         'fee'             => 0,
@@ -171,7 +153,7 @@ return [
         'gateway_fee'     => 0,
         'api_fee'         => 0,
         'gratis'          => false,
-        'balance'         => 1000000,
+        'balance'         => 0,
         'merchant_id'     => '10000000000000',
         'pricing_rule_id' => null,
         'channel'         => 'axis',
@@ -244,5 +226,19 @@ return [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED,
         ],
+    ],
+
+    'testTransactionsBulkUpdateBalanceId' => [
+        'request' => [
+            'url'    => '/admin/transaction/balance_id_update',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testTransactionsBulkUpdateBalanceIdLimitTest' => [
     ],
 ];

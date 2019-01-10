@@ -41,6 +41,12 @@ class AuthType
         self::SKIP => [Feature\Constants::DIRECT_DEBIT],
     ];
 
+    //auth which can fallback to 3ds
+    public static $redirectTo3dsAuth = [
+        self::OTP,
+        self::HEADLESS_OTP,
+    ];
+
     public static function isAuthTypeValid($type, $method): bool
     {
         if (isset(self::$types[$method]) === false)
@@ -108,5 +114,15 @@ class AuthType
         }
 
         return true;
+    }
+
+    public static function isRedirectTo3dsAuth(string $auth)
+    {
+        if (in_array($auth, self::$redirectTo3dsAuth, true) === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

@@ -15,7 +15,8 @@ class Validator extends Base\Validator
         ScheduleTask::TYPE              => 'required|string|max:20',
         ScheduleTask::METHOD            => 'sometimes|nullable|string|max:20|custom',
         ScheduleTask::SCHEDULE_ID       => 'required|alpha_dash|max:20',
-        ScheduleTask::NEXT_RUN_AT       => 'sometimes|integer'
+        ScheduleTask::NEXT_RUN_AT       => 'sometimes|integer',
+        ScheduleTask::INTERNATIONAL     => 'sometimes|integer',
     ];
 
     protected static $updateNextRunAtRules = [

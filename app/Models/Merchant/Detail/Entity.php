@@ -437,6 +437,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GSTIN);
     }
 
+    // @codingStandardsIgnoreLine
     public function getPGstin()
     {
         return $this->getAttribute(self::P_GSTIN);
@@ -675,6 +676,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BUSINESS_MODEL);
     }
 
+    // @codingStandardsIgnoreLine
     public function toArrayGST()
     {
         return array_only($this->toArrayPublic(), self::GST_FIELDS);

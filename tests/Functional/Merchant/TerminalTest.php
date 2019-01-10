@@ -5,6 +5,8 @@ namespace RZP\Tests\Functional\Merchant;
 use RZP\Models\Terminal;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use \RZP\Models\Terminal\Shared;
+use RZP\Exception;
 
 class TerminalTest extends TestCase
 {
@@ -207,6 +209,16 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddUpiMindgateBharatQrTerminal()
+    {
+        $this->startTest();
+    }
+
+    public function testAssignHitachiBharatQrTerminal()
+    {
+        $this->startTest();
+    }
+
     public function testAddBharatQrTerminalWithExpected()
     {
         $request = $this->testData['testAddBharatQrTerminal'];
@@ -311,6 +323,15 @@ class TerminalTest extends TestCase
     public function testCreateDirectSettlemtTerminalFailure()
     {
         $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateCardlessEmiTerminal()
+    {
+        $url = '/merchants/10000000000000/terminals';
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -822,6 +843,122 @@ class TerminalTest extends TestCase
         $url = '/terminals/' . $terminal['id'] . '/banks';
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateAllahabadTpvTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testAssignUpiYesbankTerminal()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $url = '/merchants/'.$merchant->getKey().'/terminals';
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testBulkTerminalUpdateForBankUnsupportedMethod()
+    {
+        $url = '/terminals/banks/bulk';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->expectException(Exception\BadRequestValidationFailureException::class);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testBulkTerminalUpdateForBankWithTerminalNotExist()
+    {
+        $url = '/terminals/banks/bulk';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testBulkTerminalUpdateForBankRemoveMethod()
+    {
+        $url = '/terminals/banks/bulk';
+
+        $this->fixtures->create('terminal:multiple_netbanking_terminals');
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $response = $this->startTest();
+
+        $atomTermId = Shared::ATOM_RAZORPAY_TERMINAL;
+        $ebsTermId = Shared::EBS_RAZORPAY_TERMINAL;
+
+        $this->assertArrayNotHasKey('ANDB', $response[$atomTermId]);
+
+        $this->assertArrayNotHasKey('ANDB', $response[$ebsTermId]);
+    }
+
+    public function testBulkTerminalUpdateForBankAddMethod()
+    {
+        $url = '/terminals/banks/bulk';
+
+        $atomTermId = Shared::ATOM_RAZORPAY_TERMINAL;
+
+        $ebsTermId = Shared::EBS_RAZORPAY_TERMINAL;
+
+        $this->fixtures->create('terminal:multiple_netbanking_terminals');
+        $this->fixtures->terminal->setEnabledBanks($atomTermId);
+        $this->fixtures->terminal->setEnabledBanks($ebsTermId);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+    }
+
+    public function testBulkTerminalUpdateForUnsupportedBankAddMethod()
+    {
+        $url = '/terminals/banks/bulk';
+
+        $atomTermId = Shared::ATOM_RAZORPAY_TERMINAL;
+
+        $ebsTermId = Shared::EBS_RAZORPAY_TERMINAL;
+
+        $this->fixtures->create('terminal:multiple_netbanking_terminals');
+        $this->fixtures->terminal->setEnabledBanks($atomTermId);
+        $this->fixtures->terminal->setEnabledBanks($ebsTermId);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+    }
+
+    public function testBulkTerminalUpdateForInvalidBankCode()
+    {
+        $url = '/terminals/banks/bulk';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->expectException(Exception\BadRequestValidationFailureException::class);
 
         $this->ba->adminAuth();
 

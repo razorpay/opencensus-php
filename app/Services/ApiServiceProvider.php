@@ -11,9 +11,11 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\MySqlConnection as IlluminateMySqlConnection;
 
+use RZP\Models\Vpa;
 use RZP\Models\Batch;
 use RZP\Models\Order;
 use RZP\Models\Payout;
+use RZP\Models\Contact;
 use RZP\Models\Dispute;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
@@ -26,6 +28,7 @@ use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
+use RZP\Models\BankTransfer;
 use RZP\Constants\Environment;
 use RZP\Constants\Entity as E;
 use RZP\Models\Admin as Admin;
@@ -112,6 +115,11 @@ class ApiServiceProvider extends BaseServiceProvider
             return new \RZP\Exception\Handler($app);
         });
 
+        $this->app->singleton('razorx', function($app)
+        {
+            return new RazorXClient($app);
+        });
+
         $this->app->singleton('card.tokenex', function($app)
         {
             $tokenexMock = $app['config']->get('applications.card_tokenex.mock');
@@ -121,7 +129,20 @@ class ApiServiceProvider extends BaseServiceProvider
                 return new Mock\TokenEx($app);
             }
 
-            return new TokenEx($app);
+            $requestId = $app['request']->getId();
+
+            $mode = $app['rzp.mode'] ?? 'test';
+
+            $cardVault = $app->razorx->getTreatment($requestId, 'api_card_vault', $mode);
+
+            if (($this->app->environment('testing') === true) or
+                ($cardVault === 'off') or
+                ($cardVault === 'control'))
+            {
+                return new TokenEx($app);
+            }
+
+            return new CardVault($app);
         });
 
         $this->app->singleton('card.otpelf', function($app)
@@ -187,11 +208,6 @@ class ApiServiceProvider extends BaseServiceProvider
             return new GatewayFileManager($app);
         });
 
-        $this->app->singleton('razorx', function($app)
-        {
-            return new RazorXClient($app);
-        });
-
         $this->registerShieldClient();
 
         $this->app->singleton('beam', function($app)
@@ -243,6 +259,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerMyOperator();
 
         $this->registerKubernetesClient();
+
+        $this->registerCustomSessionProvider();
     }
 
     /**
@@ -255,6 +273,7 @@ class ApiServiceProvider extends BaseServiceProvider
         return [
             'api.mutex',
             'bitly',
+            'razorx',
             'card.tokenex',
             'es',
             'exception.handler',
@@ -276,7 +295,6 @@ class ApiServiceProvider extends BaseServiceProvider
             'authservice',
             'sns',
             'pincodesearch',
-            'razorx',
             'shield.service',
             'beam',
         ];
@@ -443,7 +461,9 @@ class ApiServiceProvider extends BaseServiceProvider
             'customer_transaction'      => Customer\Transaction\Entity::class,
 
             'bank_account'              => BankAccount\Entity::class,
+            'vpa'                       => Vpa\Entity::class,
             'virtual_account'           => VirtualAccount\Entity::class,
+            'bank_transfer'             => BankTransfer\Entity::class,
 
             'subscription'              => Subscription\Entity::class,
             'promotion'                 => Promotion\Entity::class,
@@ -455,6 +475,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'merchant_request'          => MerchantRequest\Entity::class,
 
             'subscription_registration' => SubscriptionRegistration\Entity::class,
+
+            'contact'                   => Contact\Entity::class,
         ]);
     }
 
@@ -611,6 +633,15 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('k8s_client', function($app)
         {
             return new KubernetesClient($app);
+        });
+    }
+
+    protected function registerCustomSessionProvider()
+    {
+        $manager = $this->app['session'];
+
+        $manager->extend('custom', function($app) {
+            return new CustomSessionHandler($app);
         });
     }
 }

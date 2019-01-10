@@ -93,6 +93,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
                     'payment_id'      => $this->payment->getId(),
                     'expected_amount' => $this->payment->getBaseAmount(),
+                    'recon_amount'    => $this->getReconPaymentAmount($row),
                     'currency'        => $this->payment->getCurrency(),
                     'row'             => $row,
                     'gateway'         => $this->gateway

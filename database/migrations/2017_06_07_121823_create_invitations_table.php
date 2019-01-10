@@ -2,11 +2,12 @@
 
 use RZP\Constants\Table;
 use Illuminate\Database\Schema\Blueprint;
+use RZP\Models\Merchant\Entity as Merchant;
 use Illuminate\Database\Migrations\Migration;
 use RZP\Models\Invitation\Entity as Invitation;
 
-class CreateInvitationsTable extends Migration {
-
+class CreateInvitationsTable extends Migration
+{
     /**
      * Run the migrations.
      *
@@ -29,6 +30,9 @@ class CreateInvitationsTable extends Migration {
 
             $table->string(Invitation::TOKEN, Invitation::TOKEN_LENGTH)
                   ->unique();
+
+            $table->string(Merchant::PRODUCT, 255)
+                  ->default('primary');
 
             $table->string(Invitation::ROLE);
 

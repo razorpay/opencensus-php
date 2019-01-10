@@ -18,6 +18,8 @@ class Service extends Base\Service
 {
     public function initiateSettlements($input, $channel = null)
     {
+        (new Validator)->validateInput('settlement_initiate', $input);
+
         $data = (new Settlement\Processor)->process($input, $channel);
 
         return $data;
@@ -174,9 +176,11 @@ class Service extends Base\Service
                 ]);
         }
 
-        $reconNamepsace = 'RZP\\Models\\FundTransfer\\' . ucwords($channel) . '\\Reconciliation\\Processor';
+        (new Validator)->validateInput('status_reconcile_for_api', $input);
 
-        return (new $reconNamepsace)->process($input);
+        $reconNamespace = 'RZP\\Models\\FundTransfer\\' . ucwords($channel) . '\\Reconciliation\\Processor';
+
+        return (new $reconNamespace)->process($input);
     }
 
     public function reconcileH2HSettlements($input, string $channel)
@@ -333,5 +337,12 @@ class Service extends Base\Service
         $reconNamepsace = 'RZP\\Models\\FundTransfer\\' . ucwords($channel) . '\\Reconciliation\\Processor';
 
         return (new $reconNamepsace)->verify($input);
+    }
+
+    public function notifyH2HErrors($input, string $channel)
+    {
+        $reconNamepsace = 'RZP\\Models\\FundTransfer\\' . ucwords($channel). '\\Reconciliation\\Processor';
+
+        return (new $reconNamepsace)->notifyH2HErrors($input);
     }
 }

@@ -3,6 +3,7 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 
 return [
     'testCreateKey' => [
@@ -328,6 +329,43 @@ return [
                 'fee_credits_threshold'    => 1000
             ]
         ]
+    ],
+
+    'testEditMerchantWithHighRiskThreshold' => [
+        'request' => [
+            'raw' => json_encode([
+                'international' => '1',
+                'linked_account_kyc' => '1',
+                'website' => 'http://abc.com',
+                'category' => '1111',
+                'transaction_report_email'  => [
+                    'test@razorpay.com'
+                ],
+                'fee_credits_threshold'     => 1000,
+                'risk_threshold' => 101
+            ]),
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+            'server' => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'CONTENT_TYPE'  => 'application/json',
+                'HTTP_X-Dashboard' => 'true',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The risk threshold may not be greater than 100.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
     ],
 
     'testEditMerchantWithNullFeeCreditsThreshold' => [
@@ -1095,7 +1133,46 @@ return [
                 'beneficiary_country'   => 'IN',
                 'beneficiary_pin'       => '123456',
             ],
-            'url' => '/merchants/10000000000000/bank_account',
+            'url' => '/merchants/bank_account',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'ifsc_code' => 'ICIC0001206',
+                'account_number' => '0002020000304030434',
+                'beneficiary_name' => 'Test R4zorpay:',
+                'beneficiary_address1' => 'address 1',
+                'beneficiary_address2' => 'address 2',
+                'beneficiary_address3' => 'address 3',
+                'beneficiary_city' => 'Kolkata',
+                'beneficiary_state' => 'WB',
+                'beneficiary_country' => 'IN',
+                'beneficiary_pin' => '123456',
+                'beneficiary_email' => 'random@email.com',
+                'beneficiary_mobile' => '9988776655',
+            ]
+        ]
+    ],
+
+    'testAddBankAccountWithMerchantIdInURL' => [
+        'request' => [
+            'content' => [
+                'ifsc_code'             => 'ICIC0001206',
+                'account_number'        => '0002020000304030434',
+                'beneficiary_name'      => 'Test R4zorpay:',
+                'beneficiary_address1'  => 'address 1',
+                'beneficiary_address2'  => 'address 2',
+                'beneficiary_address3'  => 'address 3',
+                'beneficiary_address4'  => 'address 4',
+                'beneficiary_email'     => 'random@email.com',
+                'beneficiary_mobile'    => '9988776655',
+                'beneficiary_city'      => 'Kolkata',
+                'beneficiary_state'     => 'WB',
+                'beneficiary_country'   => 'IN',
+                'beneficiary_pin'       => '123456',
+            ],
+            'url' => '/merchants/1000InvalidMID/bank_account',
             'method' => 'POST'
         ],
         'response' => [
@@ -1176,7 +1253,7 @@ return [
                 'beneficiary_country'   => 'IN',
                 'beneficiary_pin'       => '123456',
             ],
-            'url' => '/merchants/10000000000000/bank_account',
+            'url' => '/merchants/bank_account',
             'method' => 'POST'
         ],
         'response' => [
@@ -1212,7 +1289,7 @@ return [
                 'beneficiary_country'   => 'IN',
                 'beneficiary_pin'       => '123456',
             ],
-            'url' => '/merchants/10000000000000/bank_account',
+            'url' => '/merchants/bank_account',
             'method' => 'POST'
         ],
         'response' => [
@@ -1290,7 +1367,7 @@ return [
                 'beneficiary_country'   => 'IN',
                 'beneficiary_pin'       => '123456',
             ],
-            'url' => '/merchants/10000000000000/bank_account',
+            'url' => '/merchants/bank_account',
             'method' => 'POST'
         ],
         'response' => [
@@ -1315,13 +1392,13 @@ return [
         'response' => [
             'content' => [
                 'merchant_id' => '10000000000000',
-                'ifsc_code' => 'RZPB0000000',
-                'account_number' => '10010101011',
-                'beneficiary_name' => 'random_name',
-                'beneficiary_address1' => 'address1',
-                'beneficiary_address2' => 'address2',
-                'beneficiary_address3' => 'address3',
-                'beneficiary_address4' => 'address4',
+                'ifsc_code' => 'ICIC0001206',
+                'account_number' => '0002020000304030434',
+                'beneficiary_name' => 'Test R4zorpay:',
+                'beneficiary_address1' => 'address 1',
+                'beneficiary_address2' => 'address 2',
+                'beneficiary_address3' => 'address 3',
+                'beneficiary_address4' => 'address 4',
                 'beneficiary_email' => 'random@email.com',
                 'beneficiary_mobile' => '9988776655',
             ]
@@ -2058,15 +2135,8 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 13,
+                'count' => 12,
                 'items' => [
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'ALLA',
-                        ],
-                    ],
                     [
                         'method' => 'netbanking',
                         'severity' => 'low',
@@ -2164,20 +2234,13 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 14,
+                'count' => 13,
                 'items' => [
                     [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
                             'issuer'    => 'HDFC'
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'ALLA',
                         ],
                     ],
                     [
@@ -2291,15 +2354,9 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 1,
+                'count' => 0,
                 'items' => [
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer'    => 'ALLA'
-                        ],
-                    ],
+
                 ],
             ],
         ],
@@ -2350,15 +2407,8 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 2,
+                'count' => 1,
                 'items' => [
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'medium',
-                        'instrument' => [
-                            'issuer' => 'ALLA'
-                        ],
-                    ],
                     [
                         'method' => 'netbanking',
                         'severity' => 'high',
@@ -2457,7 +2507,6 @@ return [
                     'netbanking' => [
                         [
                             'issuer'      => [
-                                'ALLA',
                                 'BBKM',
                                 'BKDN',
                                 'COSB',
@@ -2487,16 +2536,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'downtime' => [
-                    'netbanking' => [
-                        [
-                            'issuer'    => ['ALLA'],
-                            'scheduled' => true,
-                            'severity'  => 'low',
-                        ],
-                    ],
                 ],
-            ],
         ],
     ],
 
@@ -3579,6 +3619,247 @@ return [
         ],
         'exception' => [
             'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testSearchWithDateFilter' => [
+        'request'  => [
+            'url'     => '/admins/merchants',
+            'method'  => 'get',
+            'content' => [
+                'count' => 20,
+                'skip'  => 0,
+                'from'  => 1514745000,
+                'to'    => 1543861800,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'items' => [
+                    [
+                        'id'     => '10000000000016',
+                        'org_id' => '100000razorpay',
+                        'name'   => 'laboriosam',
+                        'email'  => 'emely97@kling.info',
+                    ]
+                ],
+            ]
+        ],
+    ],
+
+    'testQueueEntriesAfterBalanceSync' => [
+        'request'  => [
+            'url'    => '/merchant/sync_es/bulk',
+            'method' => 'post',
+        ],
+        'response' => [
+            'content'     => [
+                'records_processed' => 2,
+                'interval'          => 15,
+
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testESQueryAfterSync' => [
+        'request'  => [
+            'url'    => '/merchant/sync_es/bulk',
+            'method' => 'post',
+        ],
+        'response' => [
+            'content'     => [
+                'records_processed' => 2,
+                'interval'          => 15,
+
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    // ----------------------------------------------------------------------
+    // Expectations for ES
+
+    'testSearchWithDateFilterExpectedSearchParams' => [
+        'index' => env('ES_ENTITY_TYPE_PREFIX') . 'merchant_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX') . 'merchant_test',
+        'body'  => [
+            '_source' => true,
+            'from'    => '0',
+            'size'    => '20',
+            'query'   => [
+                'bool' => [
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'range' => [
+                                        'merchant_detail.submitted_at' => [
+                                            'gte' => 1514745000,
+                                            'lte' => 1543861800,
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'term' => [
+                                        'org_id' => [
+                                            'value' => '100000razorpay',
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'bool' => [
+                                        'should' => [
+                                            [
+                                                'terms' => [
+                                                    'admins' => [
+                                                        'RzrpySprAdmnId',
+                                                    ],
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ]
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'sort'    => [
+                '_score'     => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
+                ],
+            ],
+        ],
+    ],
+
+    'testSearchWithDateFilterExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [
+                [
+                    '_id'     => '10000000000016',
+                    '_source' => [
+                        'id'              => '10000000000016',
+                        'org_id'          => '100000razorpay',
+                        'name'            => 'laboriosam',
+                        'email'           => 'emely97@kling.info',
+                        'parent_id'       => null,
+                        'activated'       => false,
+                        'activated_at'    => 1543922927,
+                        'archived_at'     => null,
+                        'suspended_at'    => null,
+                        'website'         => 'http://www.green.com/quisquam-velit-ipsum-quae.html',
+                        'billing_label'   => 'rerum',
+                        'created_at'      => 1543922934,
+                        'updated_at'      => 1543922934,
+                        'merchant_detail' => [
+                            'merchant_id'         => '10000000000016',
+                            'steps_finished'      => '[]',
+                            'activation_progress' => 0,
+                            'activation_status'   => null,
+                            'archived_at'         => null,
+                            'submitted_at'        => null,
+                            'updated_at'          => 1543922934,
+                            'reviewer_id'         => null,
+                            'activation_flow'     => null,
+                        ],
+                        'is_marketplace'  => false,
+                        'referrer'        => null,
+                        'balance'         => 0,
+                    ],
+                ],
+            ]
+        ]
+    ],
+
+    'testMerchantSwitchProduct' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+  
+    'testGetCheckoutPreferencesForCardlessEmi' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testBulkAssignPricing' => [
+        'request'  => [
+            'url'     => '/merchants/pricing/bulk',
+            'method'  => 'post',
+            'content' => [
+                'pricing_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'merchant_ids'    => [
+                    '10000000000000',
+                    '10000000000018',
+                    '10000000000017',
+                    '10000000000016',
+                    '10000000000015',
+                    '10000000000014',
+                    '10000000000013',
+                    '10000000000012',
+                    '10000000000011'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total_count'  => 9,
+                'failed_count' => 4,
+                'failed_ids'   => [
+                    '10000000000018',
+                    '10000000000017',
+                    '10000000000016',
+                    '10000000000015'
+                ],
+            ],
+        ],
+    ],
+
+    'testBulkAssignPricingMissingInput' => [
+        'request'  => [
+            'url'     => '/merchants/pricing/bulk',
+            'method'  => 'post',
+            'content' => [
+                'merchant_ids'    => [
+                    '10000000000000',
+                    '10000000000018',
+                    '10000000000017',
+                    '10000000000016',
+                    '10000000000015',
+                    '10000000000014',
+                    '10000000000013',
+                    '10000000000012',
+                    '10000000000011'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The pricing plan id field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],

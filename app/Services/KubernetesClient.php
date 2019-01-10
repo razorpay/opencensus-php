@@ -20,6 +20,7 @@ class KubernetesClient
     protected $namespace;
     protected $iamRole;
     protected $nodeSelector;
+    protected $logPath;
     protected $mock;
     protected $gitCommitHash;
     protected $appMode;
@@ -48,6 +49,7 @@ class KubernetesClient
         $this->namespace        = $this->config['namespace'];
         $this->iamRole          = $this->config['iam_role'];
         $this->nodeSelector     = $this->config['node_selector'];
+        $this->logPath          = $this->config['log_path'];
         $this->mock             = $this->config['mock'];
         $this->gitCommitHash    = $this->config['git_commit_hash'];
         $this->appMode          = $this->config['app_mode'];
@@ -221,7 +223,7 @@ class KubernetesClient
                             [
                                 'name' => 'trace',
                                 'hostPath' => [
-                                    'path' => '/var/log/fluentd/'.$this->appEnv.'/api/trace',
+                                    'path' => $this->logPath,
                                     'type' => '',
                                 ]
                             ]

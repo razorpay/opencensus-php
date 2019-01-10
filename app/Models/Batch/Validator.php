@@ -107,6 +107,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY     => 'required|string',
     ];
 
+    protected static $terminalCreateRules = [
+        Entity::TYPE                 => 'required|custom',
+        Entity::SUB_TYPE             => 'required|string|in:hitachi,icici',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+    ];
+
     protected static $virtualBankAccountCreateRules = [
         Entity::TYPE                 => 'required|in:virtual_bank_account',
         Entity::FILE                 => 'required|file' . self::DEFAULT_MIME_RULE,
@@ -148,6 +155,16 @@ class Validator extends Base\Validator
         HdfcEMRegisterHeadings::MANDATE_ID                  => 'Mandate ID must be present',
         HdfcEMRegisterHeadings::CUSTOMER_ACCOUNT_NUMBER     => 'Customer Account Number must be present',
         HdfcEMRegisterHeadings::STATUS                      => 'Status must be present',
+    ];
+
+    /**
+     * Defines the required keys to be present in instant activation batch file
+     * and the corresponding error message to be thrown when they are absent or empty
+     *
+     * @var array
+     */
+    protected static $instantActivationRequiredEntries = [
+        ME::MERCHANT_ID                  => 'merchant id must be present',
     ];
 
     /**
@@ -632,6 +649,23 @@ class Validator extends Base\Validator
                 [
                     Entity::MERCHANT_ID => $merchant->getId(),
                 ]);
+        }
+    }
+
+    protected function validateInstantActivationEntries(array & $entries, array $params, ME $merchant)
+    {
+        foreach ($entries as $entry)
+        {
+            $entry = array_map('trim', $entry);
+
+            foreach (self::$instantActivationRequiredEntries as $attr => $errorMessage)
+            {
+                if (empty($attr) === true)
+                {
+                    throw new BadRequestValidationFailureException(
+                        $errorMessage, $attr, $entry);
+                }
+            }
         }
     }
 }

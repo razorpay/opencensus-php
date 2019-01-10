@@ -35,6 +35,7 @@ class Fetch
     const TYPE_OBJECT          = 'object';
 
     const FIELD_MERCHANT_ID         = 'merchant_id';
+    const FIELD_BALANCE_ID          = 'balance_id';
     const FIELD_GATEWAY             = 'gateway';
     const FIELD_PAYMENT_ID          = 'payment_id';
     const FIELD_PAYMENT_STATUS      = 'payment_status';
@@ -347,8 +348,6 @@ class Fetch
 
     /**
      * Build cascaded rules and accesses
-     *
-     * @return array
      */
     protected function setCascadedRulesForCurrentAuth()
     {
@@ -528,6 +527,10 @@ class Fetch
             self::FIELD_MERCHANT_ID => [
                 self::LABEL     => 'Merchant Id',
                 self::TYPE      => self::TYPE_STRING
+            ],
+            self::FIELD_BALANCE_ID => [
+                self::LABEL     => 'Balance Id',
+                self::TYPE      => self::TYPE_STRING,
             ],
             self::FIELD_GATEWAY => [
                 self::LABEL     => 'Gateway',

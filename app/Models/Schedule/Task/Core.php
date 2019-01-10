@@ -17,18 +17,27 @@ class Core extends Base\Core
      * Create a default settlement schedule for merchant
      *
      * @param Merchant\Entity $merchant
+     * @throws \Throwable
      */
     public function createDefaultSettlementSchedule(Merchant\Entity $merchant)
     {
-        $schedule = $this->getDefaultMerchantSchedule($merchant);
+        $domesticSchedule = $this->getDefaultMerchantSchedule($merchant);
 
-        $input = [
-            Entity::METHOD      => null,
-            Entity::TYPE        => Type::SETTLEMENT,
-            Entity::SCHEDULE_ID => $schedule->getId(),
-        ];
+        $this->createOrUpdate($merchant, $merchant, [
+            Entity::METHOD        => null,
+            Entity::TYPE          => Type::SETTLEMENT,
+            Entity::SCHEDULE_ID   => $domesticSchedule->getId(),
+            Entity::INTERNATIONAL => 0,
+        ]);
 
-        $this->createOrUpdate($merchant, $merchant, $input);
+        $internationalSchedule = $this->getDefaultMerchantSchedule($merchant, true);
+
+        $this->createOrUpdate($merchant, $merchant, [
+            Entity::METHOD        => null,
+            Entity::TYPE          => Type::SETTLEMENT,
+            Entity::SCHEDULE_ID   => $internationalSchedule->getId(),
+            Entity::INTERNATIONAL => 1,
+        ]);
     }
 
     /**
@@ -140,18 +149,22 @@ class Core extends Base\Core
      *
      * @param Merchant\Entity $merchant
      * @param                 $method
+     * @param $international
      *
      * @return null|Entity
      */
-    public function getMerchantSettlementSchedule(Merchant\Entity $merchant, $method)
+    public function getMerchantSettlementSchedule(Merchant\Entity $merchant, $method, bool $international = false)
     {
         $scheduleTasks = $this->repo
                               ->schedule_task
-                              ->fetchByMerchant($merchant, Type::SETTLEMENT);
+                              ->fetchByMerchant(
+                                  $merchant,
+                                  Type::SETTLEMENT);
 
         $scheduleTask = $this->filterAndGetScheduleByMethodOrDefault(
                                     $scheduleTasks,
-                                    $method);
+                                    $method,
+                                    $international);
 
         return $scheduleTask;
     }
@@ -217,20 +230,22 @@ class Core extends Base\Core
             $entity->updateNextRunAt($currentScheduleTask->getNextRunAt());
 
             $originalData = [
-                'type'        => $currentScheduleTask->getType(),
-                'schedule'    => $currentScheduleTask->schedule->getName(),
-                'next_run_at' => $currentScheduleTask->getNextRunAt(),
-                'method'      => $currentScheduleTask->getMethod(),
+                Entity::TYPE          => $currentScheduleTask->getType(),
+                'schedule'            => $currentScheduleTask->schedule->getName(),
+                Entity::NEXT_RUN_AT   => $currentScheduleTask->getNextRunAt(),
+                Entity::METHOD        => $currentScheduleTask->getMethod(),
+                Entity::INTERNATIONAL => $currentScheduleTask->isInternational(),
             ];
 
             $this->repo->deleteOrFail($currentScheduleTask);
         }
 
         $dirtyData = [
-            'type'        => $entity->getType(),
-            'schedule'    => $entity->schedule->getName(),
-            'next_run_at' => $entity->getNextRunAt(),
-            'method'      => $entity->getMethod(),
+            Entity::TYPE                => $entity->getType(),
+            'schedule'                  => $entity->schedule->getName(),
+            Entity::NEXT_RUN_AT         => $entity->getNextRunAt(),
+            Entity::METHOD              => $entity->getMethod(),
+            Entity::INTERNATIONAL       => $entity->isInternational(),
         ];
 
         $this->app['workflow']
@@ -244,9 +259,11 @@ class Core extends Base\Core
      * Fetch schedule to assign for a new merchant
      *
      * @param Merchant\Entity $merchant
+     * @param bool            $international
+     *
      * @return Schedule\Entity
      */
-    protected function getDefaultMerchantSchedule(Merchant\Entity $merchant)
+    protected function getDefaultMerchantSchedule(Merchant\Entity $merchant, bool $international = false)
     {
         $schedule = null;
 
@@ -267,7 +284,9 @@ class Core extends Base\Core
 
         if ($schedule === null)
         {
-            $defaultDelay = Merchant\Entity::SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
+            $defaultDelay = ($international === false)?
+                Merchant\Entity::DOMESTIC_SETTLEMENT_SCHEDULE_DEFAULT_DELAY :
+                Merchant\Entity::INTERNATIONAL_SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
 
             $schedule = (new Schedule\Core)->getOrCreateDefaultSchedule($defaultDelay);
         }
@@ -280,18 +299,25 @@ class Core extends Base\Core
      *
      * @param $scheduleTasks
      * @param $method
+     * @param $international
      *
      * @return null|Entity
      */
     protected function filterAndGetScheduleByMethodOrDefault(
         $scheduleTasks,
-        $method)
+        $method,
+        $international = false)
     {
         $defaultScheduleTask = null;
 
         foreach ($scheduleTasks as $scheduleTask)
         {
             $scheduleMethod = $scheduleTask->getMethod();
+
+            if ($scheduleTask->isInternational() !== $international)
+            {
+                continue;
+            }
 
             if ($scheduleMethod === $method)
             {

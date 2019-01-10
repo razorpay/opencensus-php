@@ -1,0 +1,35 @@
+<?php
+
+namespace RZP\Gateway\Upi\Yesbank;
+
+class Status
+{
+    const SUCCESS                    = 'S';
+    const FAILURE                    = 'F';
+    const TIMEOUT                    = 'T';
+    const PENDING                    = 'P';
+    const TXN_CREDIT_CONFIRM         = 'TCC';
+    const REMITTER_RETURN_INITIATED  = 'RET';
+    const REMITTER_RETURN_POSTED     =' RRC';
+    const VERIFY_SUCCESS             = 'SUCCESS';
+    const VERIFY_FAILURE             = 'FAILED';
+    const VERIFY_PENDING             = 'PENDING';
+    const VERIFY_TIMEOUT             = 'TIMED-OUT';
+
+    const STATUS_CODES = [
+        self::VERIFY_SUCCESS    => self::SUCCESS,
+        self::VERIFY_FAILURE    => self::FAILURE,
+        self::VERIFY_TIMEOUT    => self::TIMEOUT,
+        self::VERIFY_PENDING    => self::PENDING,
+
+        self::SUCCESS           => self::SUCCESS,
+        self::FAILURE           => self::FAILURE,
+        self::TIMEOUT           => self::TIMEOUT,
+        self::PENDING           => self::PENDING,
+    ];
+
+    public static function getStatusCodeFromMap($code)
+    {
+        return self::STATUS_CODES[$code];
+    }
+}

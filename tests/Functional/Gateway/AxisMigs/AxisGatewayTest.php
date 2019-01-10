@@ -445,24 +445,6 @@ class AxisGatewayTest extends TestCase
         });
     }
 
-    public function testCaptureGatewayRequestExceptionRetry()
-    {
-        $payment = $this->getDefaultPaymentArray();
-        $payment = $this->doAuthPayment($payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->getGatewayRequestExceptionInCapture();
-
-        $this->capturePayment($payment['id'], $payment['amount']);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals(false, $this->i);
-
-        $this->assertEquals('captured', $payment['status']);
-    }
-
     public function testFailedPaymentWithProperError()
     {
         $this->mockServerContentFunction(function (& $content, $action = null)

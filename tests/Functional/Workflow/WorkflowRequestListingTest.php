@@ -111,4 +111,25 @@ class WorkflowRequestListingTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testWorkflowSearchByMakerId()
+    {
+        $this->ba->adminAuth('test', Org::CHECKER_ADMIN_TOKEN, 'org_' . Org::RZP_ORG);
+
+        $action = $this->fixtures->create('workflow_action', [
+            'maker_id'   => '12345678',
+            'maker_type' => 'admin',
+            'state'      => \RZP\Models\State\Name::OPEN,
+        ]);
+
+        $this->fixtures->create('workflow_action', [
+            'maker_id'   => '12345679',
+            'maker_type' => 'admin',
+            'state'      => \RZP\Models\State\Name::OPEN,
+        ]);
+
+        $this->testData[__FUNCTION__]['response']['content']['items'][0]['id'] = $action->getPublicId();
+
+        $this->startTest();
+    }
 }

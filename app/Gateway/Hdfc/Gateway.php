@@ -24,22 +24,21 @@
 
 namespace RZP\Gateway\Hdfc;
 
-use Carbon\Carbon;
-use RZP\Base\JitValidator;
-use RZP\Constants\Mode;
-use RZP\Constants\Timezone;
+use App;
 use RZP\Error;
 use RZP\Exception;
+use RZP\Models\Card;
 use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc;
-use RZP\Gateway\Hdfc\Payment;
-use RZP\Models\Card;
-use RZP\Models\Payment\Entity as PaymentEntity;
-use RZP\Models\Payment\RecurringType;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
-use RZP\Gateway\Base\Action as BaseAction;
-use App;
+use RZP\Base\JitValidator;
+use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Payment\AuthType;
+use RZP\Models\Payment\RecurringType;
+use RZP\Models\Payment as PaymentModel;
+use RZP\Gateway\Base\Action as BaseAction;
+use RZP\Models\Payment\Entity as PaymentEntity;
 
 class Gateway extends Base\Gateway
 {
@@ -372,38 +371,47 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $this->supportPayment($input, 'refund');
+        return $this->supportPayment($input, 'refund');
     }
 
     public function capture(array $input)
     {
         parent::capture($input);
 
-        $shouldRetry = function ($e)
-        {
-            $errorCodes =[
-                Hdfc\ErrorCodes\ErrorCodes::CM00030,
-                Hdfc\ErrorCodes\ErrorCodes::CM90000,
-                Hdfc\ErrorCodes\ErrorCodes::CM90001,
-                Hdfc\ErrorCodes\ErrorCodes::CM90002,
-                Hdfc\ErrorCodes\ErrorCodes::CM90003,
-                Hdfc\ErrorCodes\ErrorCodes::CM90004,
-                Hdfc\ErrorCodes\ErrorCodes::CM90005,
-                Hdfc\ErrorCodes\ErrorCodes::CM900000,
-            ];
-
-            if ($e instanceof Exception\BaseException)
-            {
-                return in_array($e->getError()->getGatewayErrorCode(), $errorCodes, true);
-            }
-
-        };
-
         $this->retryHandler(
             [$this, 'supportPayment'],
-            [$input,'capture'],
-            $shouldRetry,
-            2);
+            [$input, 'capture'],
+            [$this, 'shouldRetry'],
+            [$this, 'getMaxRetryCount']);
+    }
+
+    protected function shouldRetry($e)
+    {
+        $baseCheck = parent::shouldRetry($e);
+
+        // These are HDFC internal database/cache errors. We usually receive these when hdfc is unable
+        // to process next request (capture/refund) immediately after authorizing the payment. Adding
+        // them here ensures that there's some delay and second request succeeds. If we keep getting
+        // these errors after retrying, we may have to add some time delay here
+        $errorCodes =[
+            ErrorCode::CM00030,
+            ErrorCode::CM90000,
+            ErrorCode::CM90001,
+            ErrorCode::CM90002,
+            ErrorCode::CM90003,
+            ErrorCode::CM90004,
+            ErrorCode::CM90005,
+            ErrorCode::CM900000,
+        ];
+
+        if ($e instanceof Exception\BaseException)
+        {
+            $hdfcSpecficCheck = in_array($e->getError()->getGatewayErrorCode(), $errorCodes, true);
+
+            return $baseCheck or $hdfcSpecficCheck;
+        }
+
+        return $baseCheck;
     }
 
     /**
@@ -727,6 +735,8 @@ class Gateway extends Base\Gateway
         }
         catch (Exception\GatewayRequestException $e)
         {
+            $this->trace->traceException($e);
+
             // For verify we should throw exception as is.
             if ($this->action === BaseAction::VERIFY)
             {
@@ -977,6 +987,14 @@ class Gateway extends Base\Gateway
             $exception->markSafeRetryTrue();
         }
 
+        if ($this->supportPaymentResponse['type'] === 'refund')
+        {
+            $exception->setData([
+                PaymentModel\Gateway::GATEWAY_RESPONSE => json_encode($this->supportPaymentResponse['xml']),
+                PaymentModel\Gateway::GATEWAY_KEYS     => $this->getGatewayData($this->supportPaymentResponse['data'])
+            ]);
+        }
+
         throw $exception;
     }
 
@@ -1081,5 +1099,23 @@ class Gateway extends Base\Gateway
                 null,
                 Base\Action::AUTHENTICATE);
         }
+    }
+
+    protected function getGatewayData(array $refundFields = [])
+    {
+        if (empty($refundFields) === false)
+        {
+            return [
+                Fields::REF            => $refundFields[Fields::REF] ?? null,
+                Fields::AVR            => $refundFields[Fields::AVR] ?? null,
+                Fields::AUTH           => $refundFields[Fields::AUTH] ?? null,
+                Fields::PAYID          => $refundFields[Fields::PAYID] ?? null,
+                Fields::RESULT         => $refundFields[Fields::RESULT] ?? null,
+                Fields::TRANID         => $refundFields[Fields::TRANID] ?? null,
+                Fields::POSTDATE       => $refundFields[Fields::POSTDATE] ?? null,
+                Fields::AUTH_RESP_CODE => $refundFields[Fields::AUTH_RESP_CODE] ?? null,
+            ];
+        }
+        return [];
     }
 }

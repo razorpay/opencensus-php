@@ -9,6 +9,13 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 
+/**
+ * Class Entity
+ *
+ * @package RZP\Models\Customer\Balance
+ *
+ * @property \RZP\Models\Customer\Entity $customer
+ */
 class Entity extends Base\PublicEntity
 {
     const CUSTOMER_ID       = 'customer_id';

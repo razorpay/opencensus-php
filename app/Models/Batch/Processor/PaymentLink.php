@@ -21,11 +21,6 @@ class PaymentLink extends Base
      */
     protected $usesNewPlHeader = false;
 
-    /**
-     * {@inheritDoc}
-     */
-    protected $useSpreadSheetLibrary = true;
-
     public function __construct(Entity $batch)
     {
         parent::__construct($batch);

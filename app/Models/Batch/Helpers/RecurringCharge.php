@@ -33,10 +33,14 @@ class RecurringCharge
 
     public static function getOrderInput(array $entry): array
     {
+        $receipt = $entry[Header::RECURRING_CHARGE_RECEIPT];
+
+        $receipt = empty($receipt) === true ? null : (string) $receipt;
+
         $request = [
             Order\Entity::AMOUNT          => $entry[Header::RECURRING_CHARGE_AMOUNT],
             Order\Entity::CURRENCY        => $entry[Header::RECURRING_CHARGE_CURRENCY],
-            Order\Entity::RECEIPT         => $entry[Header::RECURRING_CHARGE_RECEIPT],
+            Order\Entity::RECEIPT         => $receipt,
             Order\Entity::PAYMENT_CAPTURE => true,
             Order\Entity::NOTES           => $entry[HEADER::NOTES] ?? [],
         ];

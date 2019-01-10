@@ -297,6 +297,14 @@ class AdminFetch
                 ],
             ],
 
+            Entity::BALANCE => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'account_number' => [
+                    Fetch::LABEL => 'Account Number',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+            ],
+
             Entity::BANK_ACCOUNT => [
                 'deleted' => [
                     Fetch::LABEL  => 'Deleted',
@@ -307,6 +315,10 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'beneficiary_code' => [
+                    Fetch::LABEL => 'Beneficiary Code',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
                 'type' => [
                     Fetch::LABEL  => 'Type',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
@@ -319,6 +331,7 @@ class AdminFetch
 
             Entity::BANK_TRANSFER => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'balance_id' => Fetch::FIELD_BALANCE_ID,
                 'payment_id' => Fetch::FIELD_PAYMENT_ID,
                 'utr' => [
                     Fetch::LABEL  => 'UTR',
@@ -1389,6 +1402,7 @@ class AdminFetch
 
             Entity::PAYOUT => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'balance_id' => Fetch::FIELD_BALANCE_ID,
                 'customer_id' => [
                     Fetch::LABEL  => 'Customer Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
@@ -1654,6 +1668,7 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'balance_id' => Fetch::FIELD_BALANCE_ID,
                 'reconciled' => [
                     Fetch::LABEL  => 'Reconciled',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
@@ -1755,6 +1770,7 @@ class AdminFetch
 
             Entity::VIRTUAL_ACCOUNT => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'balance_id' => Fetch::FIELD_BALANCE_ID,
                 'status' => [
                     Fetch::LABEL  => 'Status',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,

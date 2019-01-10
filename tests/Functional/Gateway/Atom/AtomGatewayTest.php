@@ -1,6 +1,7 @@
 <?php
 
 use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\Atom\RefundResponseFields;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class AtomGatewayTest extends TestCase
@@ -424,6 +425,30 @@ class AtomGatewayTest extends TestCase
         $this->assertEquals($refund['id'], $response['refund_id']);
         $this->assertEquals('processed', $response['status']);
         $this->assertEquals(2, $refund['attempts']);
+    }
+
+    public function testRefundDateTimeIssueAfterMidNight()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $attributes = [
+            'created_at' => '1541269830',
+        ];
+
+        $this->fixtures->edit('payment', $payment['id'], $attributes);
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('processed', $refund['status']);
+
+        $gatewayEntity = $this->getLastEntity('atom', true);
+
+        $this->assertEquals('Full Refund initiated successfully',
+            $gatewayEntity['gateway_result_description']);
     }
 
     protected function assertPaymentAfterAuthAndCapture($paymentInput = null)

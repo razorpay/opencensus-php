@@ -25,7 +25,12 @@ class Service extends Base\Service
 
         $webhook = $this->repo->webhook->findByMerchant($merchant);
 
-        $enabledForMerchant = $this->core()->isWebhookActiveAndEnabled($webhook,$event);
+        if ($webhook === null)
+        {
+            return;
+        }
+
+        $enabledForMerchant = $this->core()->isWebhookActiveAndEnabled($webhook, $event);
 
         if ($enabledForMerchant === false)
         {

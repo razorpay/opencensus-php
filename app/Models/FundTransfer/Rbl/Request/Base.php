@@ -24,13 +24,14 @@ abstract class Base extends ApiProcessor
     const ACCOUNT_NAME      = 'RAZORPAY SOFTWARE PRIVATE LIMITED';
 
     // Identifiers used store the response data
-    const PAYMENT_REF_NO    = 'payment_ref_no';
-    const UTR               = 'utr';
-    const BANK_STATUS_CODE  = 'bank_status_code';
-    const PAYMENT_DATE      = 'payment_date';
-    const RRN               = 'rrn';
-    const REFERENCE_NUMBER  = 'reference_number';
-    const REMARK            = 'remark';
+    const PAYMENT_REF_NO        = 'payment_ref_no';
+    const UTR                   = 'utr';
+    const BANK_STATUS_CODE      = 'bank_status_code';
+    const PAYMENT_DATE          = 'payment_date';
+    const RRN                   = 'rrn';
+    const REFERENCE_NUMBER      = 'reference_number';
+    const REMARK                = 'remark';
+    const PUBLIC_FAILURE_REASON = 'public_failure_reason';
 
     protected $baseUrl;
 
@@ -177,7 +178,7 @@ abstract class Base extends ApiProcessor
             throw new LogicException('Invalid response from api', null, $response);
         }
 
-        $isSuccessResponse = $this->isValidSuccessResponse();
+        $isSuccessResponse = $this->isValidSuccessResponse($response);
 
         //
         // For failed response there wont be body defined.
@@ -194,14 +195,31 @@ abstract class Base extends ApiProcessor
         }
     }
 
+    public function processGatewayResponse(array $response): array
+    {
+        throw new LogicException("haven't implemented this yet. shouldn't have been called");
+    }
+
+    public function getRequestInputForGateway(): array
+    {
+        throw new LogicException("haven't implemented this yet. shouldn't have been called");
+    }
+
+    public function getActionForGateway(): string
+    {
+        throw new LogicException("haven't implemented this yet. shouldn't have been called");
+    }
+
     /**
      * Validates if the current request was executed successfully or not
      *
+     * @param \Requests_Response $response
+     *
      * @return bool
      */
-    public function isValidSuccessResponse(): bool
+    public function isValidSuccessResponse(\Requests_Response $response): bool
     {
-        $response = json_decode($this->response->body, true);
+        $response = json_decode($response->body, true);
 
         $responseBody = $response[$this->responseIdentifier];
 
@@ -245,6 +263,11 @@ abstract class Base extends ApiProcessor
         }
 
         return $content;
+    }
+
+    protected function mockGenerateSuccessResponseForGateway(): array
+    {
+        throw new LogicException("haven't implemented this yet. shouldn't have been called");
     }
 
     /**
@@ -310,4 +333,14 @@ abstract class Base extends ApiProcessor
      * @return string
      */
     protected abstract function mockGenerateSuccessResponse(): string;
+
+    protected function mockGenerateFailedResponseForGateway(): array
+    {
+        throw new LogicException("haven't implemented this yet. shouldn't have been called");
+    }
+
+    protected function mockResponseGeneratorForGateway(array $input): array
+    {
+        throw new LogicException("haven't implemented this yet. shouldn't have been called");
+    }
 }

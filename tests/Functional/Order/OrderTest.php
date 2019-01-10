@@ -8,11 +8,13 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class OrderTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -140,9 +142,56 @@ class OrderTest extends TestCase
 
     public function testCreateTPVOrder()
     {
-        $order = $this->startTest();
+        $testData = $this->testData[__FUNCTION__];
 
-        return $order;
+        $orderResponse = $this->startTest();
+
+        $order =  $this->getDbLastEntity('order');
+
+        $bankAccount =  $this->getDbLastEntity('bank_account');
+
+        $orderRequest = $testData['request']['content'];
+
+        // Account number and payer name will be updated in both the places
+        // until on gateways we start using account number from bank accounts.
+        $this->assertEquals($bankAccount->getAccountNumber(),$orderRequest['account_number']);
+        $this->assertContains($orderRequest['bank'], $bankAccount->getIfscCode());
+
+        $this->assertEquals($order->getAccountNumber(),$orderRequest['account_number']);
+        $this->assertEquals($order->getBank(), $orderRequest['bank']);
+
+        return $orderResponse;
+    }
+
+    public function testCreateTPVOrderWithoutAccountNumber()
+    {
+        $this->fixtures->merchant->enableTPV();
+
+        $this->startTest();
+    }
+
+    public function testCreateTPVOrderWithNewFlow()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->startTest();
+
+        $order =  $this->getDbLastEntity('order');
+
+        $bankAccount =  $this->getDbLastEntity('bank_account');
+
+        $bankAccountRequest = $testData['request']['content']['bank_account'];
+
+        // Account number and payer name will be updated in both the places
+        // until on gateways we start using account number from bank accounts.
+        $this->assertEquals($bankAccount->getAccountNumber(),$bankAccountRequest['account_number']);
+        $this->assertEquals($bankAccount->getIfscCode(), $bankAccountRequest['ifsc']);
+        $this->assertEquals($bankAccount->getBeneficiaryName(), $bankAccountRequest['name']);
+
+        $this->assertEquals($order->getAccountNumber(),$bankAccountRequest['account_number']);
+        $bankCodeFromIfsc = strtoupper(substr($bankAccountRequest['ifsc'], 0, 4));
+        $this->assertEquals($order->getBank(), $bankCodeFromIfsc);
+        $this->assertEquals($order->getPayerName(), $bankAccountRequest['name']);
     }
 
     public function testCreateTPVOrderEmptyMethod()
@@ -203,11 +252,6 @@ class OrderTest extends TestCase
         return $order;
     }
 
-    public function testCreateTPVOrderWithInvalidAccountNumber()
-    {
-        $this->startTest();
-    }
-
     public function testGetOrder()
     {
         $order = $this->testCreateOrder();
@@ -227,6 +271,29 @@ class OrderTest extends TestCase
         $this->testData[__FUNCTION__]['response']['content'] = $array;
 
         $this->startTest();
+    }
+
+    public function testGetMultiplePaymentsForOrder()
+    {
+        $order = $this->testCreateOrder();
+        $order = $this->getLastEntity('order');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $rzpPayment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment');
+        $this->assertEquals($order['id'], $rzpPayment['razorpay_order_id']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/orders/'. $order['id'] . '/payments';
+
+        $this->ba->privateAuth();
+
+        $payments = $this->startTest();
+
+        $this-> assertEquals($payments['count'], 0);
     }
 
     public function testRetrieveOrderWithReceipt()

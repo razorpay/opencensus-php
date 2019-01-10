@@ -82,7 +82,7 @@ class External extends Base
         $headers = [
             self::MERCHANT_HEADER_KEY => $merchant->getId(),
             self::MODE_HEADER_KEY     => $this->mode,
-            'X-Razorpay-Auth'         => 'privilege',
+            'X-Razorpay-Auth'         => $this->app['basicauth']->getAuthType(),
         ];
 
         $subscriptionId = $input[Payment\Entity::SUBSCRIPTION_ID];

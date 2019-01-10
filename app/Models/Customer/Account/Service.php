@@ -4,13 +4,12 @@ namespace RZP\Models\Customer;
 
 use Request;
 use RZP\Models\Base;
+use RZP\Models\Payout;
 use RZP\Models\Address;
 use RZP\Models\Payment;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
-use RZP\Models\Payout\Entity as PayoutEntity;
-use RZP\Models\Payout\Processor as PayoutProcessor;
 
 class Service extends Base\Service
 {
@@ -144,7 +143,7 @@ class Service extends Base\Service
     }
 
     /**
-     * Send Oto to customer
+     * Send Otp to customer
      *
      * @param  details of customer for otp send
      * @return success/failure
@@ -218,6 +217,21 @@ class Service extends Base\Service
 
         if ($sendOtp === true)
         {
+            if (isset($input['provider']) === true)
+            {
+                $contact = Customer\Validator::validateAndParseContact($contact);
+
+                $input['contact'] = $contact;
+
+                $terminal = $this->repo->terminal->getTerminalForProviderAndMerchant($input['provider'], $this->merchant['id']);
+
+                $this->app['gateway']->call(Payment\Gateway::CARDLESS_EMI, 'check_account', $input, $this->mode, $terminal);
+
+                $this->sendOtp(['contact' => $contact]);
+
+                return ['saved' => true];
+            }
+
             $sessionData = $this->app['request']->session()->all();
 
             $this->trace->info(TraceCode::CUSTOMER_CHECKCOOKIE_STATUS,
@@ -610,15 +624,14 @@ class Service extends Base\Service
 
     public function processCustomerWalletPayout(string $customerId, array $input = []): array
     {
-        $input[PayoutEntity::CUSTOMER_ID] = $customerId;
-
         Entity::verifyIdAndStripSign($customerId);
 
-        // Will eventually merge the direct payout also into this and create a factory.
-        // https://razorpay.atlassian.net/browse/ME-732
-        $payoutProcessor = new PayoutProcessor\CustomerWalletPayout();
+        /** @var Customer\Balance\Entity $customerBalance */
+        $customerBalance = $this->repo->customer_balance->findByIdAndMerchant($customerId, $this->merchant);
 
-        $payout = $payoutProcessor->createPayout($input);
+        $customer = $customerBalance->customer;
+
+        $payout = (new Payout\Core)->createPayoutFromCustomerWallet($input, $customer, $this->merchant);
 
         return $payout->toArrayPublic();
     }

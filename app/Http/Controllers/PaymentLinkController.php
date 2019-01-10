@@ -21,11 +21,16 @@ class PaymentLinkController extends Controller
      */
     public function get(string $id)
     {
-        $input = Request::all();
+        $response = $this->service()->fetch($id, $this->input);
 
-        $entity = $this->service()->fetch($id, $input);
+        return ApiResponse::json($response);
+    }
 
-        return ApiResponse::json($entity);
+    public function getWithDetailsForDashboard(string $id)
+    {
+        $response = $this->service()->fetchWithDetailsForDashboard($id, $this->input);
+
+        return ApiResponse::json($response);
     }
 
     public function sendNotification(string $id)
@@ -88,7 +93,7 @@ class PaymentLinkController extends Controller
         }
 
         // Additionally, appends all request parameters too for view to consume
-        $payload[Entity::REQUEST_PARAMS] = Request::all();
+        $payload[Entity::REQUEST_PARAMS] = $this->input;
 
         return View::make($view, $payload);
     }

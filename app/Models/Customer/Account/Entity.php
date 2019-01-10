@@ -3,9 +3,11 @@
 namespace RZP\Models\Customer;
 
 use App;
+use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Address;
 use RZP\Models\Invoice;
+use RZP\Models\Merchant;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\Traits\HardDeletes;
@@ -222,17 +224,17 @@ class Entity extends Base\PublicEntity
 
     public function merchant()
     {
-        return $this->belongsTo('RZP\Models\Merchant\Entity');
+        return $this->belongsTo(Merchant\Entity::class);
     }
 
     public function tokens()
     {
-        return $this->hasMany('RZP\Models\Customer\Token\Entity');
+        return $this->hasMany(Token\Entity::class);
     }
 
     public function vpas()
     {
-        return $this->hasMany('RZP\Models\Upi\Vpa\Entity');
+        return $this->hasMany(Vpa\Entity::class);
     }
 
     public function bank_accounts()

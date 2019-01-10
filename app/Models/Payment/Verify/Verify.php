@@ -362,6 +362,17 @@ class Verify extends Base\Core
                 continue;
             }
 
+            // there could be case where payment is already verified by some other thread,
+            // hence check the verify_at after reload
+            if ($verifyStart < $payment->getVerifyAt())
+            {
+                $notApplicable++;
+
+                $this->releasePaymentAfterVerify($payment);
+
+                continue;
+            }
+
             $filter = ($payment->isCreated() === true) ? Filter::PAYMENTS_CREATED : Filter::PAYMENTS_FAILED;
 
             $verifyResult = $this->verifyPayment($payment, $filter);

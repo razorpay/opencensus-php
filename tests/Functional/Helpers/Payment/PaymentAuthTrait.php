@@ -62,4 +62,48 @@ trait PaymentAuthTrait
 
         $this->app->instance('card.otpelf', $otpelf);
     }
+
+    protected function mockOtpElfForRupay()
+    {
+        $otpelf = Mockery::mock('RZP\Services\Mock\OtpElf')->makePartial();
+
+        $this->app->instance('card.otpelf', $otpelf);
+
+        $otpelf->shouldReceive('otpSubmit')
+            ->with(\Mockery::type('array'))
+            ->andReturnUsing(function (array $input)
+            {
+                $gatewayEntity = $this->getLastEntity('hdfc', true);
+
+                $payment = $this->getEntityById('payment', $input['payment_id'], true);
+
+                $data = [];
+
+                $data['paymentid'] = $gatewayEntity['gateway_payment_id'];
+                $data['trackid'] = $input['payment_id'];
+                $data['tranid'] = '201833401251688';
+                $data['auth'] = '235823';
+                $data['ref'] = '833423964074';
+                $data['amt'] = $payment['amount']/100;
+                $data['result'] = 'CAPTURED';
+                $data['udf1'] = 'test';
+                $data['udf2'] = 'test@razorpay.com';
+                $data['udf3'] = ' 917226086092';
+                $data['udf4'] = 'test';
+                $data['udf5'] = 'test';
+                $data['postdate'] = '1130';
+                $data['avr'] = 'N';
+                $data['authRespCode'] = '00';
+
+                return [
+                    'success' => true,
+                    'data' => [
+                        'action' => 'submit_otp',
+                        'data'   => $data
+                    ]
+                ];
+            });
+
+        $this->app->instance('card.otpelf', $otpelf);
+    }
 }

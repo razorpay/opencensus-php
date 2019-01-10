@@ -6,6 +6,7 @@ use App;
 use Request;
 use Requests;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Gateway;
 use Razorpay\Trace\Logger as Trace;
 
 abstract class ApiProcessor extends NodalAccount
@@ -119,38 +120,24 @@ abstract class ApiProcessor extends NodalAccount
         return $this;
     }
 
-    public function getResponse()
+    public function makeRequest(bool $gateway = false): array
     {
-        return $this->response;
-    }
+        // We are using API processor only for gateway
+        // call also because currently only one type of
+        // processor can be used for a given gateway.
 
-    public function makeRequest(): array
-    {
         $parsedResponse = [];
 
         try
         {
-            $this->collectRequestData();
-
-            $this->traceRequest();
-
-            if ($this->config['mock'] === true)
+            if ($gateway === true)
             {
-                $this->response = $this->sendMockRequest();
+                $parsedResponse = $this->makeRequestOnGateway();
             }
             else
             {
-                $this->response = Requests::request(
-                    $this->url,
-                    $this->headers,
-                    $this->body,
-                    $this->method,
-                    $this->options);
+                $parsedResponse = $this->makeRequestOnNodal();
             }
-
-            $this->traceResponse($this->response);
-
-            $parsedResponse = $this->processResponse($this->response);
         }
         catch (\Throwable $e)
         {
@@ -159,13 +146,104 @@ abstract class ApiProcessor extends NodalAccount
                 Trace::ERROR,
                 TraceCode::NODAL_REQUEST_FAILED,
                 [
-                    'request'  => $this->requestBody(),
-                    'response' => $this->response
-                ]
-            );
+                    'request'  => ($gateway === false) ? $this->requestBody() : $this->getRequestInputForGateway(),
+                ]);
         }
 
         return $parsedResponse;
+    }
+
+    /**
+     * @return array
+     */
+    protected function makeRequestOnNodal(): array
+    {
+        $response = null;
+
+        $this->collectRequestData();
+
+        $this->traceRequest();
+
+        if ($this->config['mock'] === true)
+        {
+            $response = $this->sendMockRequest();
+        }
+        else
+        {
+            // Putting this in try-catch so that we can run
+            // processResponse properly and return back an
+            // actual processed response but with null values.
+            // This will ensure that that the request failures
+            // are handled more gracefully.
+
+            try
+            {
+                $response = Requests::request(
+                    $this->url,
+                    $this->headers,
+                    $this->body,
+                    $this->method,
+                    $this->options);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::NODAL_REQUEST_FAILED,
+                    [
+                        'request' => $this->body,
+                    ]);
+            }
+        }
+
+        $this->traceResponse($response);
+
+        return $this->processResponse($response);
+    }
+
+    protected function makeRequestOnGateway(): array
+    {
+        $response = [];
+
+        if ($this->config['mock'] === true)
+        {
+            $response = $this->sendMockRequestForGateway();
+        }
+        else
+        {
+            $requestInput = $this->getRequestInputForGateway();
+            $action = $this->getActionForGateway();
+
+            try
+            {
+                // Putting this in try-catch so that we can run
+                // processResponse properly and return back an
+                // actual processed response but with null values.
+                // This will ensure that that the request failures
+                // are handled more gracefully.
+
+                $response = $this->app['gateway']->call(
+                    Gateway::UPI_YESBANK,
+                    $action,
+                    $requestInput,
+                    $this->mode);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::NODAL_REQUEST_FAILED,
+                    [
+                        'request' => $requestInput,
+                    ]);
+            }
+        }
+
+        $this->traceGatewayResponse($response);
+
+        return $this->processGatewayResponse($response);
     }
 
     /**
@@ -196,6 +274,16 @@ abstract class ApiProcessor extends NodalAccount
             ]);
     }
 
+    private function traceGatewayResponse(array $response)
+    {
+        $this->trace->info(
+            $this->responseTraceCode,
+            [
+                'channel'   => $this->channel,
+                'response'  => $response,
+            ]);
+    }
+
     /**
      * Trace request if `requestTraceCode` is set
      * Request will be traced against the `requestTraceCode` set
@@ -220,7 +308,7 @@ abstract class ApiProcessor extends NodalAccount
     {
         $input = Request::all();
 
-        $content = $this->mockresponseGenerator($input);
+        $content = $this->mockResponseGenerator($input);
 
         $response = new \Requests_Response();
 
@@ -231,6 +319,13 @@ abstract class ApiProcessor extends NodalAccount
         $response->url = $this->url;
 
         return $response;
+    }
+
+    private function sendMockRequestForGateway(): array
+    {
+        $input = Request::all();
+
+        return $this->mockResponseGeneratorForGateway($input);
     }
 
     /**
@@ -334,6 +429,10 @@ abstract class ApiProcessor extends NodalAccount
      */
     public abstract function requestBody(): string;
 
+    public abstract function getRequestInputForGateway(): array;
+
+    public abstract function getActionForGateway(): string;
+
     /**
      * Should give the request method for current request
      *
@@ -364,6 +463,8 @@ abstract class ApiProcessor extends NodalAccount
      */
     protected abstract function mockResponseGenerator(array $input): string;
 
+    protected abstract function mockResponseGeneratorForGateway(array $input): array;
+
     /**
      * Should be implemented in the clild class to process the response of current request
      * Processing should have the status check and other required validations
@@ -373,4 +474,6 @@ abstract class ApiProcessor extends NodalAccount
      * @return array
      */
     public abstract function processResponse(\Requests_Response $response): array;
+
+    public abstract function processGatewayResponse(array $response): array;
 }

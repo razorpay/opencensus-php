@@ -29,11 +29,13 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
      */
     protected $subReconciliatorObjects = [];
 
-    public function __construct(string $gateway = null)
+    public function __construct(string $gateway = null, Batch\Entity $batch = null)
     {
         parent::__construct($gateway);
 
         $this->messenger = new Messenger();
+
+        $this->messenger->batch = $batch;
     }
 
     /**
@@ -172,7 +174,7 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
                             ]);
                     }
 
-                    $subReconciliatorObject = $this->getSubReconciliatorObject($entityType);
+                    $subReconciliatorObject = $this->getSubReconciliatorObject($entityType, $batch);
 
                     // As we are creating subRecon object again here, need to set the source for it
                     $subReconciliatorObject->setSource($this->source);
@@ -205,9 +207,10 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
      * objects to get the success and failure count at the end of processing.
      *
      * @param  string $entityType Recon entity type
-     * @return Foundation\SubReconciliate
+     * @param Batch\Entity|null $batch
+     * @return Base\Foundation\SubReconciliate
      */
-    protected function getSubReconciliatorObject(string $entityType)
+    protected function getSubReconciliatorObject(string $entityType, Batch\Entity $batch = null)
     {
         if (isset($this->subReconciliatorObjects[$entityType]) === true)
         {
@@ -216,7 +219,7 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
 
         $subReconciliatorClassName = $this->getSubReconciliatorClassName($entityType);
 
-        $subReconciliatorObject = new $subReconciliatorClassName($this->gateway);
+        $subReconciliatorObject = new $subReconciliatorClassName($this->gateway, $batch);
 
         $this->subReconciliatorObjects[$entityType] = $subReconciliatorObject;
 

@@ -329,7 +329,7 @@ class Gateway extends Base\Gateway
             (isset($input['payment']['recurring_type']) === true) and
             ($input['payment']['recurring_type'] === 'auto'))
         {
-           return ;
+           return;
         }
 
         $verify = new Verify($this->gateway, $input);
@@ -1021,6 +1021,7 @@ class Gateway extends Base\Gateway
         switch ($this->getLiveMerchantId2())
         {
             case $this->config['live_merchant_id2']:
+            case $this->config['live_merchant_id2_aditiya_birla_direct']:
                 return $this->config['live_hash_secret'];
 
             case $this->config['live_merchant_id2_tpv']:

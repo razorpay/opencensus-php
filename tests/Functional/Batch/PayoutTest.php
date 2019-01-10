@@ -40,6 +40,8 @@ class PayoutTest extends TestCase
 
     public function testCreateBatchOfPayoutTypeStatus()
     {
+        $this->markTestSkipped('Batch payouts to be added later');
+
         $entries = $this->getDefaultPayoutFileEntries();
 
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);

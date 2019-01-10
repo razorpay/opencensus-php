@@ -40,10 +40,18 @@ class Validator extends Base\Validator
         Entity::EMANDATE       => 'sometimes|boolean',
         Entity::MPESA          => 'sometimes|boolean',
         Entity::BANK_TRANSFER  => 'sometimes|boolean',
+        Entity::CARDLESS_EMI   => 'sometimes|boolean',
     ];
 
     protected static $setMethodsValidators = [
         'methodBanks'
+    ];
+
+    protected static $bulkAssignMethodsRules = [
+        'methods'     => 'required|array',
+        'methods.*'   => 'required|boolean',
+        'merchants'   => 'required|array',
+        'merchants.*' => 'required|string|filled|size:14',
     ];
 
     protected function validateMethodBanks(array $input)

@@ -4,10 +4,11 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\FundTransfer\Attempt\Entity as FundTransferAttempt;
+use RZP\Models\Vpa\Entity as Vpa;
+use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Models\FundTransfer\Batch\Entity as BatchFundTransfer;
-use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\FundTransfer\Attempt\Entity as FundTransferAttempt;
 
 class CreateFundTransferAttemptsTable extends Migration
 {
@@ -36,11 +37,17 @@ class CreateFundTransferAttemptsTable extends Migration
             $table->char(FundTransferAttempt::BANK_ACCOUNT_ID, BankAccount::ID_LENGTH)
                   ->nullable();
 
+            $table->char(FundTransferAttempt::VPA_ID, Vpa::ID_LENGTH)
+                  ->nullable();
+
             $table->string(FundTransferAttempt::CHANNEL, 8);
 
             $table->string(FundTransferAttempt::VERSION, 3);
 
             $table->string(FundTransferAttempt::BANK_STATUS_CODE, 30)
+                  ->nullable();
+
+            $table->string(FundTransferAttempt::BANK_RESPONSE_CODE, 30)
                   ->nullable();
 
             $table->char(FundTransferAttempt::MODE, 30)

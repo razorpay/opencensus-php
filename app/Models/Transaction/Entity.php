@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Transaction;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Payment;
@@ -10,8 +12,8 @@ use RZP\Models\Merchant;
 use RZP\Models\Transfer;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
-use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Base\Traits\HasBalance;
 
 /**
  * Class Entity
@@ -22,10 +24,8 @@ use RZP\Models\Payment\Refund;
  */
 class Entity extends Base\PublicEntity
 {
-    const ID                  = 'id';
     const ENTITY_ID           = 'entity_id';
     const TYPE                = 'type';
-    const MERCHANT_ID         = 'merchant_id';
     const AMOUNT              = 'amount';
     const DEBIT               = 'debit';
     const CREDIT              = 'credit';
@@ -53,9 +53,9 @@ class Entity extends Base\PublicEntity
     const SETTLED_AT          = 'settled_at';
     const SETTLEMENT_ID       = 'settlement_id';
     const RECONCILED_TYPE     = 'reconciled_type';
+    const BALANCE_ID          = 'balance_id';
 
     // dummy columns usable later
-    const REFERENCE2          = 'reference2';
     const REFERENCE3          = 'reference3';
     const REFERENCE4          = 'reference4';
     const REFERENCE5          = 'reference5';
@@ -68,6 +68,10 @@ class Entity extends Base\PublicEntity
     const PAYMENT_ID        = 'payment_id';
 
     const RECONCILED        = 'reconciled';
+
+    // Relation names/attributes
+    const SOURCE            = 'source';
+    const ACCOUNT_BALANCE   = 'account_balance';
 
     protected static $sign = 'txn';
 
@@ -95,7 +99,7 @@ class Entity extends Base\PublicEntity
         self::FEE_BEARER,
         self::CREDIT_TYPE,
         self::ON_HOLD,
-        self::SETTLED_AT
+        self::SETTLED_AT,
     ];
 
     protected $public = [
@@ -176,7 +180,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $ignoredRelations = [
-        'source',
+        self::SOURCE,
     ];
 
     public function merchant()
@@ -199,17 +203,27 @@ class Entity extends Base\PublicEntity
 
         $this->validateEntityIdUnique();
 
-        $entity->transaction()->associate($this);
+        //
+        // Besides transactions having source_id and source_type, most such
+        // source contain transaction_id (belongsTo) or transaction (morphTo)
+        // relation and hence below association is being done. But now newer
+        // source entities e.g. BankTransfer do not contain later kind of columns
+        // in them, is unnecessary.
+        //
+        if ($entity->transaction() instanceof BelongsTo)
+        {
+            $entity->transaction()->associate($this);
+        }
     }
 
     public function settlement()
     {
-        return $this->belongsTo('RZP\Models\Settlement\Entity');
+        return $this->belongsTo(Settlement\Entity::class);
     }
 
     public function feesBreakup()
     {
-        return $this->hasMany('RZP\Models\Transaction\FeeBreakup\Entity', 'transaction_id');
+        return $this->hasMany(FeeBreakup\Entity::class, 'transaction_id');
     }
 
     public function getCredit()
@@ -464,6 +478,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SETTLED_AT, $settledAt);
     }
 
+    public function setSettled(bool $settled)
+    {
+        $this->setAttribute(self::SETTLED, $settled);
+    }
+
     public function setOnHold(bool $onHold)
     {
         $this->setAttribute(self::ON_HOLD, $onHold);
@@ -497,6 +516,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FEE, $fee);
     }
 
+    public function setApiFee($apiFee)
+    {
+        $this->setAttribute(self::API_FEE, $apiFee);
+    }
+
     public function setMdr(int $mdr)
     {
         $this->setAttribute(self::MDR, $mdr);
@@ -519,6 +543,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CREDITS, $credits);
     }
 
+    public function setChannel(string $channel)
+    {
+        $this->setAttribute(self::CHANNEL, $channel);
+    }
+
     public function setDebit($amount)
     {
         assert ($amount >= 0);
@@ -533,7 +562,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicEntityIdAttribute(array & $array)
     {
-        $entity = Transaction\Type::getEntityClass($array[self::TYPE]);
+        $entity = Type::getEntityClass($array[self::TYPE]);
 
         $sign = $entity::getIdPrefix();
 
@@ -607,6 +636,11 @@ class Entity extends Base\PublicEntity
     public function isTypeDispute()
     {
         return ($this->getType() === Type::DISPUTE);
+    }
+
+    public function isTypePayout(): bool
+    {
+        return ($this->getType() === Type::PAYOUT);
     }
 
     public function isGratis()
@@ -825,5 +859,58 @@ class Entity extends Base\PublicEntity
         public function getReconTimeFromTransactionCreationInMinutes(): int
     {
         return intval(($this->getReconciledAt() - $this->getCreatedAt()) / 60);
+    }
+
+    /**
+     *
+     * Transaction entity has balance (integer) attribute. Having a relation with same name in Eloquent model has
+     * multiple issues(examples below). These issues had not surfaced before this change because of very limited
+     * usage around the same. Now we have exposed web-hooks, APIs etc around transaction and hence more usage.
+     *
+     * Few examples of issues:
+     * 1. Having a $transaction object outside this class you cannot access balance relation as normal.
+      *    Doing $transaction->balance will always get the integer attribute. Workarounds exist but are not
+     *    expressive. I.e. $transaction->getRelation('balance') etcetera.
+      * 2. For lists API, if having balance relation lazy loaded and existing balance integer attribute in $public,
+     *    it'll always get overridden with balance relation because how the base serialization happens. Again,
+     *    workaround for this also exists but not worth repeating.
+     *
+     * Also refer http://php.net/manual/en/language.oop5.traits.php and the trait HasBalance on why can't use:
+     * use HasBalance { balance as accountBalance; }
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function accountBalance()
+    {
+        return $this->belongsTo(Merchant\Balance\Entity::class, Entity::BALANCE_ID);
+    }
+
+    public function getBalanceId()
+    {
+        return $this->getAttribute(self::BALANCE_ID);
+    }
+
+    public function isBalanceTypeBanking(): bool
+    {
+        return (optional($this->accountBalance)->getType() === Merchant\Balance\Type::BANKING);
+    }
+
+    /**
+     * Constructs & returns corresponding Statement\Entity.
+     * Statement entity is the publicly exposed entity on /transactions/* apis. :(
+     *
+     * @return Statement\Entity
+     */
+    public function toStatement(): Statement\Entity
+    {
+        $statement = new Statement\Entity;
+
+        $statement->exists     = $this->exists;
+        $statement->connection = $this->connection;
+        $statement->attributes = $this->attributes;
+        $statement->relations  = $this->relations;
+        $statement->original   = $this->original;
+
+        return $statement;
     }
 }

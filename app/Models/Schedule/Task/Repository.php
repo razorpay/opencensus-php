@@ -29,7 +29,8 @@ class Repository extends Base\Repository
         $query = $this->newQuery()
                       ->merchantId($scheduleTask->getMerchantId())
                       ->where(Entity::ENTITY_ID, '=', $scheduleTask->getEntityId())
-                      ->where(Entity::TYPE, '=', $scheduleTask->getType());
+                      ->where(Entity::TYPE, '=', $scheduleTask->getType())
+                      ->where(Entity::INTERNATIONAL, '=', $scheduleTask->isInternational());
 
         $method = $scheduleTask->getMethod();
 

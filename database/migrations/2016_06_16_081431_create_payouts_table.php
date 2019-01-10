@@ -3,13 +3,15 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+use RZP\Models\User;
+use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
-use RZP\Models\Payment;
+use RZP\Models\FundAccount;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Payout\Entity as Payout;
 use RZP\Models\FundTransfer\Batch as BatchFundTransfer;
-use RZP\Models\Transaction;
 
 class CreatePayoutsTable extends Migration
 {
@@ -32,13 +34,27 @@ class CreatePayoutsTable extends Migration
             $table->char(Payout::CUSTOMER_ID, Customer\Entity::ID_LENGTH)
                   ->nullable();
 
+            $table->char(Payout::FUND_ACCOUNT_ID, FundAccount\Entity::ID_LENGTH)
+                  ->nullable();
+
             $table->string(Payout::METHOD);
 
-            $table->char(Payout::DESTINATION_ID, Payout::ID_LENGTH);
+            $table->char(Payout::BALANCE_ID, Balance\Entity::ID_LENGTH)
+                  ->nullable();
 
-            $table->char(Payout::DESTINATION_TYPE, 20);
+            $table->char(Payout::DESTINATION_ID, Payout::ID_LENGTH)
+                  ->nullable();
+
+            $table->char(Payout::DESTINATION_TYPE, 20)
+                  ->nullable();
+
+            $table->char(Payout::USER_ID, User\Entity::ID_LENGTH)
+                  ->nullable();
 
             $table->char(Payout::PURPOSE, 30);
+
+            $table->string(Payout::PURPOSE_TYPE, 255)
+                  ->nullable();
 
             $table->integer(Payout::AMOUNT)
                   ->unsigned();
@@ -100,6 +116,9 @@ class CreatePayoutsTable extends Migration
             $table->string(Payout::TYPE, 30)
                   ->default('default');
 
+            $table->string(Payout::MODE, 30)
+                  ->nullable();
+
             $table->integer(Payout::CREATED_AT);
 
             $table->integer(Payout::UPDATED_AT);
@@ -110,7 +129,20 @@ class CreatePayoutsTable extends Migration
 
             $table->index(Payout::STATUS);
 
+            $table->index(Payout::MODE);
+
+            $table->index(Payout::BALANCE_ID, Payout::MERCHANT_ID);
+
+            $table->index(Payout::FUND_ACCOUNT_ID);
+
             $table->index([Payout::MERCHANT_ID, Payout::CREATED_AT]);
+
+            $table->index(Payout::USER_ID);
+
+            $table->foreign(Payout::BALANCE_ID)
+                  ->references(Balance\Entity::ID)
+                  ->on(Table::BALANCE)
+                  ->on_delete('restrict');
 
             $table->foreign(Payout::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
@@ -147,12 +179,13 @@ class CreatePayoutsTable extends Migration
 
             $table->dropForeign(Table::PAYOUT . '_' . Payout::MERCHANT_ID . '_foreign');
 
+            $table->dropForeign(Table::PAYOUT . '_' . Payout::BALANCE_ID . '_foreign');
+
             $table->dropForeign(Table::PAYOUT . '_' . Payout::PAYMENT_ID . '_foreign');
 
             $table->dropForeign(Table::PAYOUT . '_' . Payout::BATCH_FUND_TRANSFER_ID . '_foreign');
         });
 
         Schema::drop(Table::PAYOUT);
-
     }
 }

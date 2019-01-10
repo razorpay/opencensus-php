@@ -118,7 +118,7 @@ class BobGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
 
         $fss = $this->getLastEntity('card_fss', true);
@@ -134,7 +134,7 @@ class BobGatewayTest extends TestCase
 
         $this->setVerifyRefundNotCapturedResult();
 
-        $response = $this->retryFailedRefunds();
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         Carbon::setTestNow();
 
@@ -142,7 +142,7 @@ class BobGatewayTest extends TestCase
 
         $this->assertEquals($refund['amount'], $actualRefund['amount']);
         $this->assertEquals('processed', $actualRefund['status']);
-        $this->assertEquals(2, $actualRefund['attempts']);
+        $this->assertEquals(1, $actualRefund['attempts']);
         $this->assertEquals(true, $actualRefund['gateway_refunded']);
 
         $fss = $this->getLastEntity('card_fss', true);

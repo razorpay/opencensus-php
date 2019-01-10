@@ -13,6 +13,7 @@ use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Merchant\Detail\BusinessSubcategory;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Fixtures\Entity\MerchantDetail;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 
@@ -39,7 +40,9 @@ class MerchantDetailTest extends TestCase
     {
         $merchant = $this->fixtures->create('merchant:with_keys');
 
-        $this->ba->proxyAuth('rzp_test_' .$merchant['id']);
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id']);
+
+        $this->ba->proxyAuth('rzp_test_' .$merchant['id'], $user->getId());
 
         $this->startTest();
     }
@@ -57,7 +60,7 @@ class MerchantDetailTest extends TestCase
     {
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
 
-        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id']);
 
         $this->startTest();
     }
@@ -380,6 +383,10 @@ class MerchantDetailTest extends TestCase
         $this->ba->proxyAuth('rzp_test_'.$merchantId);
 
         $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+        $this->assertEquals($merchant->getWebsite(), 'https://www.example.com');
+        $this->assertEquals($merchant->getHasKeyAccess() , true);
     }
 
     public function testCommentMerchant()
@@ -734,5 +741,28 @@ class MerchantDetailTest extends TestCase
         $liveMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'live');
         $this->assertSame(6211, $liveMerchant->getCategory());
         $this->assertSame('mutual_funds', $liveMerchant->getCategory2());
+    }
+
+
+    /**
+     * Asserts that website and name detail should be in sync between merchant and merchant detail entity
+     */
+    public function testWebsiteDetailsShouldBeInSync()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+        $this->assertEquals($merchant->getWebsite(), 'https://example.com');
+        $this->assertEquals($merchant->getName(), 'facebook');
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+        $this->assertEquals($merchantDetails->getWebsite(), 'https://example.com');
+        $this->assertEquals($merchantDetails->getBusinessName(), 'facebook');
     }
 }

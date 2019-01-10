@@ -14,6 +14,8 @@ class InvitationTest extends TestCase
 
     const DEFAULT_MERCHANT_ID = '1000InviteMerc';
 
+    protected $merchantUser;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/helpers/InvitationTestData.php';
@@ -22,7 +24,9 @@ class InvitationTest extends TestCase
 
         $this->fixtures->create('merchant',[ 'id' => self::DEFAULT_MERCHANT_ID ]);
 
-        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_MERCHANT_ID);
+        $this->merchantUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_MERCHANT_ID, $this->merchantUser->getId());
     }
 
     public function testPostSendInvitationToNewUser()
@@ -408,6 +412,8 @@ class InvitationTest extends TestCase
         $this->ba->appAuth();
 
         $testData['request']['url'] = '/users/' . $user['id'];
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
 
         $response = $this->runRequestResponseFlow($testData);
 

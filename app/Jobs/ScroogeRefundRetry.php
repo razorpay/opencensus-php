@@ -49,7 +49,7 @@ class ScroogeRefundRetry extends Job
 
             $this->delete();
         }
-        catch (\Exception $ex)
+        catch (\Throwable $ex)
         {
             $this->data['job_attempts'] = $this->attempts();
 

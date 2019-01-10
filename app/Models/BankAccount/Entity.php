@@ -6,9 +6,9 @@ use App;
 use Razorpay\IFSC\IFSC;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Models\VirtualAccount;
 
 /**
  * @property Merchant\Entity     $merchant
@@ -68,8 +68,10 @@ class Entity extends Base\PublicEntity
     protected $entity = 'bank_account';
 
     protected $fillable = [
+        self::IFSC,
         self::IFSC_CODE,
         self::MOBILE_BANKING_ENABLED,
+        self::NAME,
         self::BENEFICIARY_NAME,
         self::ACCOUNT_NUMBER,
         self::ACCOUNT_TYPE,
@@ -190,7 +192,7 @@ class Entity extends Base\PublicEntity
 
     public function vpa()
     {
-        return $this->hasOne('RZP\Models\Upi\Vpa\Entity');
+        return $this->hasOne(Vpa\Entity::class);
     }
 
     public function source()
@@ -342,6 +344,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BENEFICIARY_NAME, $name);
     }
 
+    protected function setNameAttribute($name)
+    {
+        $this->setAttribute(self::BENEFICIARY_NAME, $name);
+    }
+
+    protected function setIfscAttribute($code)
+    {
+        $this->setIfscCodeAttribute($code);
+    }
+
     protected function setIfscCodeAttribute($code)
     {
         if ($code !== null)
@@ -438,15 +450,6 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::ENTITY_ID] = $merchant->getId();
 
         $this->attributes[self::TYPE] = Type::MERCHANT;
-    }
-
-    public function associateSource(Base\Entity $entity, string $type)
-    {
-        Type::validateType($type);
-
-        $this->attributes[self::TYPE] = $type;
-
-        $this->source()->associate($entity);
     }
 
     public function getRedactedAccountNumber()

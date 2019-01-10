@@ -204,7 +204,6 @@ class Core extends Base\Core
      */
     protected function dispatchOnQueueForProcessingIfApplicable(Entity $batch, array $input)
     {
-
         if (Type::isKubernetesJobGroup($batch->getType()) === true)
         {
             // Get razorx treatment

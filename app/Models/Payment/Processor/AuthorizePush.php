@@ -23,7 +23,7 @@ trait AuthorizePush
 
             $terminalData = $data['terminal'];
 
-            $terminal = $this->repo->terminal->findByGatewayAndTerminalData($terminalData, $gateway);
+            $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $terminalData);
 
             $mutexResource = 'unexpected_' . $gateway . '_' . $referenceId;
 

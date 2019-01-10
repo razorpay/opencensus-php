@@ -19,4 +19,10 @@ class Field
     const NOTIFICATION_REF_NO             = 'NOTIFICATION_REF_NO';
     const TERMINAL_ID                     = 'TERMINAL_ID';
     const TRANSACTION_DATE                = 'TXN_DATE';
+    const RFD_TXN_ID                      = 'RFD_TXN_ID';
+    const TXN_ID                          = 'TXN_ID';
+    const RFD_TXN_DATE_TIME               = 'RFD_TXN_DATE_TIME';
+    const RFD_TXN_AMOUNT                  = 'RFD_TXN_AMOUNT';
+    const TXN_DATE                        = 'TXN_DATE';
+    const TXN_AMOUNT                      = 'TXN_AMOUNT';
 }

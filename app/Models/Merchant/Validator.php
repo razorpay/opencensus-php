@@ -13,15 +13,22 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Settlement;
 use RZP\Error\PublicErrorDescription;
 
+/**
+ * Class Validator
+ *
+ * @package RZP\Models\Merchant
+ *
+ * @property Entity $entity
+ */
 class Validator extends Base\Validator
 {
     // Maximum image size - 1M.
     const MAXIMAGESIZE = 1024 * 1024;
 
     const EXTENSIONMIMEMAP = [
-        "jpeg"  => "image/jpeg",
-        "jpg"   => "image/jpeg",
-        "png"   => "image/png",
+        'jpeg'  => 'image/jpeg',
+        'jpg'   => 'image/jpeg',
+        'png'   => 'image/png',
     ];
 
     protected static $createRules = [
@@ -47,7 +54,7 @@ class Validator extends Base\Validator
         Entity::LINKED_ACCOUNT_KYC          => 'sometimes|boolean',
         Entity::CHANNEL                     => 'sometimes|string|max:32|custom',
         Entity::RISK_RATING                 => 'sometimes|min:0|max:5',
-        Entity::RISK_THRESHOLD              => 'sometimes|integer|min:0|max:20',
+        Entity::RISK_THRESHOLD              => 'sometimes|integer|min:0|max:100',
         Entity::FEE_BEARER                  => 'sometimes|in:customer,platform',
         Entity::FEE_MODEL                   => 'sometimes|in:prepaid,postpaid',
         Entity::REFUND_SOURCE               => 'sometimes|string|max:32|in:balance,credits',
@@ -106,13 +113,19 @@ class Validator extends Base\Validator
         'action'         => 'required|string|filled|max:10|in:insert,delete',
         'name'           => 'required|string|filled',
         'merchant_ids'   => 'required|array',
-        'merchant_ids.*' => 'required|string|filled|max:14'
+        'merchant_ids.*' => 'required|string|filled|size:14'
     ];
 
     protected static $bulkAssignScheduleRules = [
         'schedule'       => 'required|array',
         'merchant_ids'   => 'required|array',
-        'merchant_ids.*' => 'required|string|filled|max:14',
+        'merchant_ids.*' => 'required|string|filled|size:14',
+    ];
+
+    protected static $bulkAssignPricingRules = [
+        'pricing_plan_id' => 'required|string|size:14',
+        'merchant_ids'    => 'required|array',
+        'merchant_ids.*'  => 'required|string|filled|size:14',
     ];
 
     protected static $oauthMailRules = [
@@ -209,6 +222,10 @@ class Validator extends Base\Validator
         Constants::TO                    => 'integer',
         Constants::COUNT                 => 'integer|min:1|max:50',
         Constants::SKIP                  => 'integer',
+    ];
+
+    protected static $bulkSyncBalanceRules = [
+        Constants::INTERVAL => 'sometimes|integer|min:15|max:120'
     ];
 
     protected static $submitSupportCallRequestRules = [
@@ -998,5 +1015,50 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Now is not a working hour. Please try this request on Mon-Fri between 9 AM - 6 PM.');
         }
+    }
+
+    public function validateBusinessBankingActivated()
+    {
+        $merchant = $this->entity;
+
+        if ($merchant->isBusinessBankingEnabled() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_FORBIDDEN_BUSINESS_BANKING_NOT_ENABLED,
+                null,
+                [
+                    'merchant_id'      => $merchant->getId(),
+                    'merchant_name'    => $merchant->getName(),
+                    'business_banking' => $merchant->isBusinessBankingEnabled()
+                ]);
+        }
+    }
+
+    /**
+     * There are service methods (list & fetch) for few models which expect
+     * mandatory ACCOUNT_NUMBER in query parameter. Such models include
+     * transactions, bank_transfers & payouts. This method is called from those
+     * service methods to translate ACCOUNT_NUMBER to BALANCE_ID because beyond
+     * service layer repository's fetch etc only understands BALANCE_ID.
+     *
+     * @param array $input
+     */
+    public function validateAndTranslateAccountNumberForBanking(array & $input)
+    {
+        $this->validateBusinessBankingActivated();
+
+        // Validates input has valid ACCOUNT_NUMBER.
+        (new Base\JitValidator)
+            ->rules([Balance\Entity::ACCOUNT_NUMBER => 'required|alpha_num|between:5,22'])
+            ->strict(false)
+            ->input($input)
+            ->validate();
+
+        // Replaces ACCOUNT_NUMBER with corresponding BALANCE_ID.
+        $accountNumber = array_pull($input, Balance\Entity::ACCOUNT_NUMBER);
+
+        $balanceId = app('repo')->balance->getBalanceIdByAccountNumberOrFail($accountNumber);
+
+        $input[Balance\Entity::BALANCE_ID] = $balanceId;
     }
 }

@@ -19,6 +19,8 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Base\VerifyResult;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Gateway\Base as GatewayBase;
+use RZP\Error\PublicErrorDescription;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Models\BharatQr;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
@@ -64,6 +66,7 @@ class Gateway extends Base\Gateway
         Fields::BANK_RRN                  => Entity::GATEWAY_PAYMENT_ID,
         Fields::ORIGINAL_BANK_RRN         => Entity::GATEWAY_PAYMENT_ID,
         Fields::MERCHANT_ID               => Entity::GATEWAY_MERCHANT_ID,
+        Fields::ORIGINAL_BANK_RRN_REQ     => Entity::NPCI_REFERENCE_ID,
     ];
 
     protected $forceFillable = [
@@ -756,48 +759,99 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
+        $scroogeResponse = new GatewayBase\ScroogeResponse();
+
         $unprocessedRefunds = $this->getUnprocessedRefunds();
 
         $processedRefunds = $this->getProcessedRefunds();
 
         if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
         {
-            return false;
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
+                                   ->toArray();
         }
 
         if (in_array($input['refund']['id'], $processedRefunds) === true)
         {
-            return true;
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
         }
 
         $content = $this->sendRefundVerifyRequest($input);
 
-        if (($content[Fields::STATUS] === Status::SUCCESS) or
-            ($content[Fields::STATUS] === Status::DEEMED))
+        $scroogeResponse->setGatewayVerifyResponse($content)
+                        ->setGatewayKeys($this->getGatewayData($content));
+
+        if (($content[Fields::STATUS] === Status::SUCCESS))
         {
-            return true;
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
         }
 
         if (($content[Fields::STATUS] === Status::FAILURE) or
             ($content[Fields::STATUS] === Status::FAIL))
         {
-            return false;
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR)
+                                   ->toArray();
         }
+
+        $this->checkVerifyRefundStatus($input, $content);
 
         $msg = strtolower($content['message']);
 
         if (in_array($msg, [Status::NO_RECORDS, Status::NO_RECORDS2], true) === true)
         {
-            return false;
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
+                                   ->toArray();
         }
 
         throw new Exception\LogicException(
                 'Shouldn\'t reach here',
-                null,
+                ErrorCode::GATEWAY_ERROR_UNEXPECTED_STATUS,
                 [
-                    'gateway_status' => $content['status'],
-                    'refund_id'      => $input['refund']['id'],
+                    Payment\Gateway::GATEWAY_RESPONSE  => json_encode($content),
+                    Payment\Gateway::GATEWAY_KEYS      =>
+                        [
+                            'gateway_status' => $content[Fields::STATUS],
+                            'refund_id'      => $input['refund']['id'],
+                        ],
                 ]);
+    }
+
+    protected function checkVerifyRefundStatus(array $input, array $content)
+    {
+        if (($content[Fields::STATUS] === Status::DEEMED))
+        {
+            throw new Exception\LogicException(
+                PublicErrorDescription::GATEWAY_ERROR_REFUND_DEEMED,
+                ErrorCode::GATEWAY_ERROR_REFUND_DEEMED,
+                [
+                    Payment\Gateway::GATEWAY_RESPONSE  => json_encode($content),
+                    Payment\Gateway::GATEWAY_KEYS      =>
+                        [
+                            'gateway_status' => $content[Fields::STATUS],
+                            'refund_id'      => $input['refund']['id'],
+                        ],
+                ]);
+        }
+
+        if (($content[Fields::STATUS] === Status::PENDING))
+        {
+            throw new Exception\LogicException(
+                PublicErrorDescription::GATEWAY_ERROR_TRANSACTION_PENDING,
+                ErrorCode::GATEWAY_ERROR_TRANSACTION_PENDING,
+                [
+                    Payment\Gateway::GATEWAY_RESPONSE  => json_encode($content),
+                    Payment\Gateway::GATEWAY_KEYS      =>
+                        [
+                            'gateway_status' => $content[Fields::STATUS],
+                            'refund_id'      => $input['refund']['id'],
+                        ],
+                ]);
+        }
     }
 
     /**
@@ -965,8 +1019,18 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 $errorCode,
                 $content[Fields::STATUS],
-                ResponseCode::getResponseMessage($code));
+                ResponseCode::getResponseMessage($code),
+                [
+                    Payment\Gateway::GATEWAY_RESPONSE  => json_encode($content),
+                    Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($content)
+                ]
+            );
         }
+
+        return [
+            Payment\Gateway::GATEWAY_RESPONSE  => json_encode($content),
+            Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($content)
+        ];
     }
 
     protected function getRefundRequest(array $input)
@@ -1004,6 +1068,22 @@ class Gateway extends Base\Gateway
             ]);
 
         return $request;
+    }
+
+    protected function getGatewayData(array $refundFields = [])
+    {
+        if (empty($refundFields) === false)
+        {
+            return[
+                Fields::ORIGINAL_BANK_RRN_REQ => $refundFields[Fields::ORIGINAL_BANK_RRN_REQ] ?? null,
+                Fields::STATUS                => $refundFields[Fields::STATUS] ?? null,
+                Fields::RESPONSE              => $refundFields[Fields::RESPONSE] ?? null,
+                Fields::SUCCESS               => $refundFields[Fields::SUCCESS] ?? null,
+                Fields::MESSAGE               => $refundFields[Fields::MESSAGE] ?? null,
+                Fields::ORIGINAL_BANK_RRN     => $refundFields[Fields::ORIGINAL_BANK_RRN] ?? null,
+            ];
+        }
+        return [];
     }
 
     /**

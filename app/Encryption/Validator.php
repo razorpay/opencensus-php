@@ -11,6 +11,7 @@ class Validator extends Base\Validator
         PGPEncryption::PUBLIC_KEY  => 'sometimes|string',
         PGPEncryption::PRIVATE_KEY => 'sometimes|string',
         PGPEncryption::PASSPHRASE  => 'sometimes|string',
+        PGPEncryption::USE_ARMOR   => 'sometimes|int|in:0,1',
     ];
 
     protected static $aesEncryptionRules = [

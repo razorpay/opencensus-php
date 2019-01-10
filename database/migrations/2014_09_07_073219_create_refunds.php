@@ -4,6 +4,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
+use RZP\Models\Vpa\Entity as Vpa;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Reversal\Entity as Reversal;
@@ -96,6 +97,9 @@ class CreateRefunds extends Migration
                   ->nullable();
 
             $table->string(Refund::BANK_ACCOUNT_ID)
+                  ->nullable();
+
+            $table->char(Refund::VPA_ID, Vpa::ID_LENGTH)
                   ->nullable();
 
             $table->bigInteger(Refund::REFERENCE9)

@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use App;
 use Config;
 use Carbon\Carbon;
+use Razorpay\Trace\Logger;
 use Conner\Tagging\Taggable;
 
 use RZP\Models\Emi;
@@ -12,25 +13,33 @@ use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\State;
 use RZP\Models\Feature;
+use RZP\Models\Pricing;
 use RZP\Models\Card\IIN;
 use RZP\Constants\Table;
-use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
+use RZP\Models\Admin\Org;
 use RZP\Models\Bank\IFSC;
+use RZP\Constants\Product;
 use RZP\Models\Invitation;
 use RZP\Models\Settlement;
+use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Balance;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\QueryCache\Cacheable;
 
 /**
- * @property Detail\Entity $merchantDetail
- * @property Methods\Entity $methods
+ * @property Org\Entity         $org
+ * @property Detail\Entity      $merchantDetail
+ * @property Methods\Entity     $methods
+ * @property BankAccount\Entity $bankAccount
+ * @property Balance\Entity     $bankingBalance
+ * @property Balance\Entity     $primaryBalance
  */
 class Entity extends Base\PublicEntity
 {
@@ -82,6 +91,12 @@ class Entity extends Base\PublicEntity
     const SUSPENDED_AT             = 'suspended_at';
     const NOTES                    = 'notes';
     const FEE_CREDITS_THRESHOLD    = 'fee_credits_threshold';
+    const PRODUCT                  = 'product';
+
+    // Source denotes if a merchant activation request came from PG or business banking.
+    const ACTIVATION_SOURCE        = 'activation_source';
+
+    const BUSINESS_BANKING         = 'business_banking';
 
     // Coupon Related Data for display only
     const COUPON_CODE              = 'coupon_code';
@@ -111,7 +126,8 @@ class Entity extends Base\PublicEntity
 
     const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
     const AUTO_REFUND_DELAY_FOR_EMANDATE = 1728000; // 20 days
-    const SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 3;
+    const DOMESTIC_SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 3;
+    const INTERNATIONAL_SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 7;
     // 30 minutes in seconds
     const MIN_AUTO_REFUND_DELAY = 1800;
     // 10 days in seconds
@@ -145,8 +161,10 @@ class Entity extends Base\PublicEntity
     const ADMINS                    = 'admins';
     const FEATURES                  = 'features';
     const BALANCE                   = 'balance';
+    const BANKING_BALANCE           = 'banking_balance';
 
     const ROLE                      = 'role';
+    const BANKING_ROLE              = 'banking_role';
     const PIVOT                     = 'pivot';
 
     // Partner array keys
@@ -160,6 +178,7 @@ class Entity extends Base\PublicEntity
     const AUTOFILL_DETAILS          = 'autofill_details';
     const AUTO_ACTIVATE             = 'auto_activate';
     const USE_EMAIL_AS_DUMMY        = 'use_email_as_dummy';
+    const BANKING_ACCOUNT           = 'banking_account';
 
     protected $entity = 'merchant';
 
@@ -289,6 +308,8 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_DETAIL,
         self::FEE_CREDITS_THRESHOLD,
         self::DISPLAY_NAME,
+        self::ACTIVATION_SOURCE,
+        self::BUSINESS_BANKING,
      ];
 
     protected $defaults = [
@@ -314,7 +335,7 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH => false,
         self::FEE_MODEL              => FeeModel::PREPAID,
         self::REFUND_SOURCE          => RefundSource::BALANCE,
-        self::CHANNEL                => Settlement\Channel::AXIS,
+        self::CHANNEL                => Settlement\Channel::AXIS2,
         self::CONVERT_CURRENCY       => null,
         self::ARCHIVED_AT            => null,
         self::SUSPENDED_AT           => null,
@@ -322,6 +343,7 @@ class Entity extends Base\PublicEntity
         self::WHITELISTED_IPS_LIVE   => [],
         self::WHITELISTED_IPS_TEST   => [],
         self::FEE_CREDITS_THRESHOLD  => null,
+        self::CATEGORY               => 0,
     ];
 
     protected $publicSetters = [
@@ -344,7 +366,8 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH => 'bool',
         self::WHITELISTED_IPS_LIVE   => 'array',
         self::WHITELISTED_IPS_TEST   => 'array',
-        self::FEE_CREDITS_THRESHOLD  => 'int'
+        self::FEE_CREDITS_THRESHOLD  => 'int',
+        self::BUSINESS_BANKING       => 'bool',
     ];
 
     protected $eventFields = [
@@ -462,9 +485,19 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::HAS_KEY_ACCESS) === true);
     }
 
+    public function setBusinessBanking(bool $businessBanking)
+    {
+        $this->setAttribute(self::BUSINESS_BANKING, $businessBanking);
+    }
+
     public function setHasKeyAccess(bool $hasKeyAccess)
     {
         $this->setAttribute(self::HAS_KEY_ACCESS, $hasKeyAccess);
+    }
+
+    public function setActivationSource(string $activationSource)
+    {
+        $this->setAttribute(self::ACTIVATION_SOURCE, $activationSource);
     }
 
     public function getReferrer()
@@ -562,6 +595,11 @@ class Entity extends Base\PublicEntity
         return $subvention;
     }
 
+    public function getActivationSource()
+    {
+        return $this->getAttribute(self::ACTIVATION_SOURCE);
+    }
+
     public function activate()
     {
         $this->setDiwaliPromotionalFeatureIfApplicable();
@@ -656,10 +694,65 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity', self::PARENT_ID, self::ID);
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function balances()
+    {
+        return $this->hasMany(Balance\Entity::class);
+    }
+
+    /**
+     * @deprecated
+     * This method won't work correctly for merchant having multiple balances.
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
     public function balance()
     {
-        return $this->hasOne(
-            'RZP\Models\Merchant\Balance\Entity', self::MERCHANT_ID, 'id');
+        // Constructing new Exception instance and tracing gives stack trace helpful for debugging.
+        app('trace')->traceException(
+            new LogicException('Deprecated method balance() of Merchant referenced!'),
+            Logger::WARNING);
+
+        return $this->hasOne(Balance\Entity::class);
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function primaryBalance()
+    {
+        return $this->hasOne(Balance\Entity::class)
+                    ->where(Balance\Entity::TYPE, Balance\Type::PRIMARY);
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function bankingBalance()
+    {
+        return $this->hasOne(Balance\Entity::class)
+                    ->where(Balance\Entity::TYPE, Balance\Type::BANKING);
+    }
+
+    public function getBalanceByProductType(string $product): Balance\Entity
+    {
+        switch ($product)
+        {
+            case Product::PRIMARY:
+                return $this->primaryBalance;
+
+            case Product::BANKING:
+                return $this->bankingBalance;
+
+            default:
+                throw new LogicException(
+                    "Invalid product type - {$product}",
+                    null,
+                    [
+                        Entity::MERCHANT_ID => $this->getId(),
+                    ]);
+        }
     }
 
     public function bankAccount()
@@ -1274,6 +1367,16 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    /**
+     * Signifies weather a Merchant has business banking knowledge or not.
+     *
+     * @return bool
+     */
+    public function isBusinessBankingEnabled()
+    {
+        return $this->getAttribute(self::BUSINESS_BANKING) == true;
+    }
+
     public function getHoldFunds()
     {
         return $this->getAttribute(self::HOLD_FUNDS);
@@ -1515,10 +1618,13 @@ class Entity extends Base\PublicEntity
 
     /**
      * Get the owners of the merchant.
+     * This function is used in partners and primary product so filtering it by primary
+     *
+     * @param Balance/Type $product
      */
-    public function owners()
+    public function owners($product = Product::PRIMARY)
     {
-        return $this->users()->where('role','owner');
+        return $this->users()->where('role','owner')->where(self::PRODUCT, $product);
     }
 
     /**
@@ -1526,15 +1632,18 @@ class Entity extends Base\PublicEntity
      */
     public function primaryLinkedAccountOwner()
     {
-        return $this->users()->where('role', User\Role::LINKED_ACCOUNT_OWNER)->first();
+        return $this->users()
+                    ->where('role', User\Role::LINKED_ACCOUNT_OWNER)
+                    ->where(self::PRODUCT, Product::PRIMARY)
+                    ->first();
     }
 
     /**
      * Get the primary owner of the merchant.
      */
-    public function primaryOwner()
+    public function primaryOwner($product = Product::PRIMARY)
     {
-        return $this->owners()->first();
+        return $this->owners($product)->first();
     }
 
     /**
@@ -1561,7 +1670,7 @@ class Entity extends Base\PublicEntity
         // it tries to look for account_id and crashes.
         //
         return $this->belongsToMany(User\Entity::class, Table::MERCHANT_USERS, self::MERCHANT_ID)
-                    ->withPivot(User\Entity::ROLE)
+                    ->withPivot([User\Entity::ROLE, User\Entity::PRODUCT])
                     ->orderBy(self::NAME);
     }
 
@@ -1579,9 +1688,11 @@ class Entity extends Base\PublicEntity
     {
         $liveConnection = app('basicauth')->getLiveConnection();
 
-        return $this->getConnectionName() === $liveConnection ?
+        $tags = $this->getConnectionName() === $liveConnection ?
                 $this->tagNames() :
                 (clone $this)->setConnection($liveConnection)->tagNames();
+
+        return array_map('strtolower', $tags);
     }
 
     public function isEmailOptional()
@@ -1667,7 +1778,7 @@ class Entity extends Base\PublicEntity
     {
         $tagNames = $this->liveTagNames();
 
-        return in_array($tagName, $tagNames, true) === true;
+        return in_array(strtolower($tagName), $tagNames, true) === true;
     }
 
     public function toArrayUser()
@@ -1689,6 +1800,7 @@ class Entity extends Base\PublicEntity
         ];
 
         $attributes[self::ROLE] = $this->getAttribute(self::PIVOT)->role;
+        $attributes[self::PRODUCT] = $this->getAttribute(self::PIVOT)->product;
 
         return $attributes;
     }

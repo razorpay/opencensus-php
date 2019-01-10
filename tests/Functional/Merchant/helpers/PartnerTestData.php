@@ -227,6 +227,21 @@ return [
         ],
     ],
 
+    'testApprovingMarkAsPartnerWebsiteMissingMerchantRequest' => [
+        'request'   => [
+            'url'     => '/merchant/requests/100000RandomId',
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'activated',
+            ],
+        ],
+        'response'   => [
+            'content' => [
+                'status' => 'activated',
+            ],
+        ],
+    ],
+
     'testMarkPartnerAsPartner' => [
         'request'   => [
             'url'     => '/merchant/requests/100000RandomId',
@@ -841,7 +856,7 @@ return [
                         'entity'           => 'merchant',
                         'user'             => [],
                         'details'          => [
-                            'activation_status' => null,
+                            'activation_status' => 'activated',
                         ],
                         'dashboard_access' => false,
                     ],
@@ -964,7 +979,7 @@ return [
                         'entity'           => 'merchant',
                         'user'             => [],
                         'details'          => [
-                            'activation_status' => null,
+                            'activation_status' => 'activated',
                         ],
                         'dashboard_access' => false,
                     ],

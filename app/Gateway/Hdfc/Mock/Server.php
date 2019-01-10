@@ -581,9 +581,9 @@ class Server extends Base\Mock\Server
             'avr'       => $txn['avr'],
             'postdate'  => $txn['postdate'],
             'tranid'    => $txn['gateway_transaction_id'],
-            'trackid'   => $txn['payment_id'],
+            'trackid'   => $this->data['transid'],
             'payid'     => '-1',
-            'amt'       => $txn['amount'] );
+            'amt'       => $this->data['amt'] );
 
         if ($network === Card\Network::RUPAY)
         {

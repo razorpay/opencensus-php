@@ -28,11 +28,11 @@
         @include('hostedpage.partials.robot')
 
         @if (isset($payment_page_data))
-            <meta property="og:title" content="Payment request by {{$data['merchant']['name']}} for {{$payment_page_data['title']}}">
+            <meta property="og:title" content="Payment request by {{{ $data['merchant']['name'] }}} for {{{ $payment_page_data['title'] }}}">
             <meta property="og:image" content="{{isset($data['merchant']['image']) ?  $data['merchant']['image'] : 'https://razorpay.com/favicon.png'}}">
             <meta property="og:image:width" content="276px">
             <meta property="og:image:height" content="276px">
-            <meta property="og:description" content="Click on this link to pay to {{$data['merchant']['name']}}">
+            <meta property="og:description" content="Click on this link to pay to {{{ $data['merchant']['name'] }}}">
         @endif
 
         <link rel="icon" href="https://razorpay.com/favicon.png" type="image/x-icon" />

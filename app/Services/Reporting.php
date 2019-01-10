@@ -606,6 +606,7 @@ class Reporting implements ExternalService
         $hasOfferTag                   = in_array(Feature::OFFERS, $features, true);
         $hasChargeAtWillTag            = in_array(Feature::CHARGE_AT_WILL, $features, true);
         $hasSubscriptionsTag           = in_array(Feature::SUBSCRIPTIONS, $features, true);
+        $hasGenericNotesTag            = in_array(Feature::REPORTING_GENRERIC_NOTES, $features, true);
 
         $items = $items->filter(function ($value, $key) use (
             $hasPlTag,
@@ -640,11 +641,22 @@ class Reporting implements ExternalService
             }
         });
 
-        $items = $items->filter(function ($value) use ($hasOfferTag)
+        $items = $items->filter(function ($value) use ($hasOfferTag, $hasGenericNotesTag)
         {
-            return (($value['name'] === 'Offer Payments') and
+            if (($value['name'] === 'Offer Payments') and
                 ($value['type'] === Table::PAYMENT) and
-                ($value['consumer'] === Account::SHARED_ACCOUNT)) ? $hasOfferTag : true;
+                ($value['consumer'] === Account::SHARED_ACCOUNT))
+            {
+                return $hasOfferTag;
+            }
+            else if (($value['name'] === 'Custom Settlement Recon With Notes') and
+                     ($value['type'] === Table::SETTLEMENT) and
+                     ($value['consumer'] === Account::SHARED_ACCOUNT))
+            {
+                return $hasGenericNotesTag;
+            }
+
+            return true;
         });
 
         $configs['items'] = $items->values()->all();

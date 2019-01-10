@@ -77,6 +77,11 @@ class TransactionFilter extends Terminal\Filter
             case Method::BANK_TRANSFER:
                 return $terminal->isBankTransferEnabled();
 
+            case Method::CARDLESS_EMI:
+                // @todo: fix the getWallet() for cardless emi and move it to a separate function
+                return (($terminal->isCardlessEmiEnabled() === true) and
+                        ($this->input['payment']->getWallet() === $terminal->getGatewayAcquirer()));
+
             default:
                 throw new Exception\LogicException(
                     'Unknown payment method passed.',
@@ -771,9 +776,23 @@ class TransactionFilter extends Terminal\Filter
             return true;
         }
 
-        $input = $payment->getMetadata();
+        $metadata = $payment->getMetadata();
 
-        if ($input[Generator::NUMERIC] === true)
+        $bankingTypeApplicable = $terminal->isTypeApplicable(Terminal\Type::BUSINESS_BANKING);
+
+        // If a bank account is requested specifically for banking, only terminals with that type set can be selected.
+        if (($metadata[Generator::BANKING] === true) and ($bankingTypeApplicable === false))
+        {
+            return false;
+        }
+
+        // If metadata.banking is not set, we must not select the terminal with business_banking type.
+        if (($metadata[Generator::BANKING] === false) and ($bankingTypeApplicable === true))
+        {
+            return false;
+        }
+
+        if ($metadata[Generator::NUMERIC] === true)
         {
             return $terminal->isTypeApplicable(Terminal\Type::NUMERIC_ACCOUNT);
         }

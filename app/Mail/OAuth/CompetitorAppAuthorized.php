@@ -21,7 +21,9 @@ class CompetitorAppAuthorized extends Mailable
     {
         $this->to(Constants::MAIL_ADDRESSES[Constants::FRESHDESK], Constants::HEADERS[Constants::FRESHDESK]);
 
-        $this->cc(Constants::MAIL_ADDRESSES[Constants::PRODUCT_OAUTH], Constants::HEADERS[Constants::PRODUCT_OAUTH]);
+        $this->cc(Constants::MAIL_ADDRESSES[Constants::PARTNERSHIPS], Constants::HEADERS[Constants::PARTNERSHIPS]);
+
+        $this->cc(Constants::MAIL_ADDRESSES[Constants::APPROVALS_OAUTH], Constants::HEADERS[Constants::APPROVALS_OAUTH]);
 
         return $this;
     }

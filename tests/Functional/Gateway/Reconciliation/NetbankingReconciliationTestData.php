@@ -26,4 +26,15 @@ return [
         'attempts'      => 1,
         'entity'        => 'batch',
     ],
+
+    'testCanaraReconBatchPartiallyProcessed' => [
+        'sub_type'      => 'payment',
+        'gateway'       => 'NetbankingCanara',
+        'status'        => 'partially_processed',
+        'total_count'   => 1,
+        'success_count' => 0,
+        'failure_count' => 1,
+        'attempts'      => 1,
+        'entity'        => 'batch',
+    ]
 ];

@@ -15,12 +15,6 @@ class EnachRbl extends Base
 {
     const GATEWAY = Gateway::ENACH_RBL;
 
-    /**
-     * {@inheritDoc}
-     * @var boolean
-     */
-    protected $useSpreadSheetLibrary = true;
-
     protected $gatewayPaymentMapping = [
         self::GATEWAY_REGISTRATION_STATUS => Entity::REGISTRATION_STATUS,
         self::GATEWAY_ERROR_CODE          => Entity::ERROR_CODE,

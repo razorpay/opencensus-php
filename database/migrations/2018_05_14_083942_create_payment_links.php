@@ -72,6 +72,15 @@ class CreatePaymentLinks extends Migration
             $table->string(Entity::UDF_JSONSCHEMA_ID, 255)
                   ->nullable();
 
+            $table->string(Entity::SUPPORT_CONTACT, 20)
+                  ->nullable();
+
+            $table->string(Entity::SUPPORT_EMAIL, 255)
+                  ->nullable();
+
+            $table->text(Entity::TERMS, 255)
+                  ->nullable();
+
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
             $table->integer(Entity::DELETED_AT)

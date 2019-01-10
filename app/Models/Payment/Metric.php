@@ -3,9 +3,10 @@
 namespace RZP\Models\Payment;
 
 use App;
-use RZP\Constants\Metric as MetricName;
+
+use RZP\Exception;
+use RZP\Error\Error;
 use RZP\Models\Base;
-use RZP\Models\Payment;
 
 class Metric extends Base\Core
 {
@@ -21,11 +22,13 @@ class Metric extends Base\Core
     const LABEL_CARD_NETWORK                    = 'card_network';
     const LABEL_PAYMENT_LATE_AUTHORIZED         = 'late_authorized';
     const LABEL_PAYMENT_AUTO_CAPTURED           = 'auto_captured';
+    const LABEL_PAYMENT_GATEWAY_CAPTURED        = 'gateway_captured';
     const LABEL_PAYMENT_ERROR_CODE              = 'error_code';
     const LABEL_PAYMENT_IS_CREATED              = 'is_created';
     const LABEL_TRACE_CODE                      = 'code';
     const LABEL_TRACE_FIELD                     = 'field';
     const LABEL_TRACE_SOURCE                    = 'source';
+    const LABEL_TRACE_EXCEPTION_CLASS           = 'exception_class';
 
     // Metric Names
     const PAYMENT_CREATED                       = 'payment_created';
@@ -33,6 +36,7 @@ class Metric extends Base\Core
     const PAYMENT_CAPTURED                      = 'payment_captured_v1';
     const PAYMENT_FAILED                        = 'payment_failed';
     const PAYMENT_PROCESS_FAILED                = 'payment_process_failed';
+    const PAYMENT_CAPTURE_FAILED                = 'payment_capture_failed';
 
     public function pushCreateMetrics(Entity $payment)
     {
@@ -54,6 +58,15 @@ class Metric extends Base\Core
         $dimensions = array_merge($dimensions, $extraDimensions);
 
         $this->trace->count(self::PAYMENT_FAILED, $dimensions);
+    }
+
+    public function pushExceptionMetrics(\Throwable $e, string $metricName, array $extraDimensions = [])
+    {
+        $dimensions = $this->getDefaultExceptionDimensions($e);
+
+        $dimensions = array_merge($dimensions, $extraDimensions);
+
+        $this->trace->count($metricName, $dimensions);
     }
 
     public function pushAuthMetrics(Entity $payment)
@@ -112,6 +125,34 @@ class Metric extends Base\Core
         return $dimensions;
     }
 
+    protected function getDefaultExceptionDimensions(\Throwable $e): array
+    {
+        $errorAttributes = [];
+
+        if ($e instanceof Exception\BaseException)
+        {
+            if (($e->getError() !== null) and ($e->getError() instanceof Error))
+            {
+                $errorAttributes = $e->getError()->getAttributes();
+            }
+        }
+        else
+        {
+            $errorAttributes = [
+                Metric::LABEL_TRACE_CODE         => $e->getCode(),
+            ];
+        }
+
+        $dimensions = [
+            Metric::LABEL_TRACE_CODE                => array_get($errorAttributes, Error::INTERNAL_ERROR_CODE),
+            Metric::LABEL_TRACE_FIELD               => array_get($errorAttributes, Error::FIELD),
+            Metric::LABEL_TRACE_SOURCE              => array_get($errorAttributes, Error::ERROR_CLASS),
+            Metric::LABEL_TRACE_EXCEPTION_CLASS     => get_class($e),
+        ];
+
+        return $dimensions;
+    }
+
     protected function getPaymentCreatedDimensions(Entity $payment)
     {
         $dimensions = [
@@ -142,7 +183,8 @@ class Metric extends Base\Core
     protected function getPaymentCapturedDimensions(Entity $payment)
     {
         $dimensions = [
-            self::LABEL_PAYMENT_AUTO_CAPTURED => $payment->getAutoCaptured(),
+            self::LABEL_PAYMENT_AUTO_CAPTURED       => $payment->getAutoCaptured(),
+            self::LABEL_PAYMENT_GATEWAY_CAPTURED    => $payment->getGatewayCaptured(),
         ];
 
         return $dimensions;

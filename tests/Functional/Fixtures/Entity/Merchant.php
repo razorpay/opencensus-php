@@ -2,10 +2,12 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
+use Hash;
 use Config;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 
+use RZP\Models\Feature;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Credits;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
@@ -421,6 +423,27 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['emandate' => false]);
     }
 
+    public function enableCardlessEmi($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['cardless_emi' => true]);
+    }
+
+    public function disableCardlessEmi($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['cardless_emi' => false]);
+    }
+
+    public function createBalanceOfBankingType(int $balance = 0, string $merchantId = '10000000000000')
+    {
+        return $this->fixtures->create(
+            'balance',
+            [
+                'type' => 'banking',
+                'merchant_id' => $merchantId,
+                'balance' => $balance
+            ]);
+    }
+
     public function editBalance(int $amount, string $id = '10000000000000')
     {
         return $this->fixtures->edit('balance', $id, ['balance' => $amount]);
@@ -508,9 +531,12 @@ class Merchant extends Base
         return $features;
     }
 
-    public function editFeatures($features, $id = '10000000000000')
+    public function removeFeatures(array $featureNames, string $id = '10000000000000')
     {
-        return $this->edit($id, ['features' => $features]);
+        Feature\Entity::where(Feature\Entity::ENTITY_ID, $id)
+                      ->where(Feature\Entity::ENTITY_TYPE, 'merchant')
+                      ->where(Feature\Entity::NAME, $featureNames)
+                      ->delete();
     }
 
     public function editAutoRefundDelay($delay, $id = '10000000000000')
@@ -587,6 +613,11 @@ class Merchant extends Base
     public function setFeeBearer($feebearer, $id = '10000000000000')
     {
         return $this->edit($id, ['fee_bearer' => $feebearer]);
+    }
+
+    public function setFeeModel($feeModel, $id = '10000000000000')
+    {
+        return $this->edit($id, ['fee_model' => $feeModel]);
     }
 
     /**
@@ -690,7 +721,7 @@ class Merchant extends Base
 
             $attributes = [
                 'admin_id'   => "100000000000{$i}",
-                'token'      => "100000000000{$i}",
+                'token'      => Hash::make("100000000000{$i}"),
                 'created_at' => $createdAt,
                 'expires_at' => $expiresAt,
             ];
@@ -743,6 +774,9 @@ class Merchant extends Base
                                         'email'         => 'email.ojha@test.com',
                                         'website'       => 'www.ojha.test',
                                         'billing_label' => 'Ojha Label',
+                                    ],
+                                    [
+                                        'activation_status' => 'activated',
                                     ]);
 
         $merchants[11]->groups()->sync(['10000000000027']);
@@ -758,6 +792,9 @@ class Merchant extends Base
                                         'email'         => 'email.selva@test.com',
                                         'website'       => 'www.selva.test',
                                         'billing_label' => 'Selva Label',
+                                    ],
+                                    [
+                                        'activation_status' => 'activated',
                                     ]);
 
         $merchants[12]->groups()->sync(['10000000000021']);
@@ -768,6 +805,9 @@ class Merchant extends Base
                                     '10000000000013',
                                     [
                                         'name'        => 'jitendra amit',
+                                        'archived_at' => $now,
+                                    ],
+                                    [
                                         'archived_at' => $now,
                                     ]);
 

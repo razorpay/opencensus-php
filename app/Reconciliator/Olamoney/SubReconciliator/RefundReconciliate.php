@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\Olamoney\SubReconciliator;
 
 use Carbon\Carbon;
+use Razorpay\Trace\Logger;
 use RZP\Constants\Timezone;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
@@ -61,15 +62,16 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         }
         catch (\Exception $ex)
         {
-            $this->messenger->raiseReconAlert(
+            $this->trace->traceException(
+                $ex,
+                Logger::INFO,
+                TraceCode::RECON_INFO_ALERT,
                 [
-                    'trace_code'    => TraceCode::RECON_INFO_ALERT,
-                    'message'       => 'Unable to parse settlement date -> ' . $ex->getMessage(),
-                    'row'           => $row,
-                    'gateway'       => get_called_class()
+                    'info_code' => Base\InfoCode::INCORRECT_DATE_FORMAT,
+                    'message'   => 'Unable to parse settlement date -> ' . $ex->getMessage(),
+                    'gateway'   => $this->gateway,
+                    'row'       => $row,
                 ]);
-
-            $this->app['trace']->traceException($ex);
         }
 
         return $gatewaySettledAt;

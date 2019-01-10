@@ -13,6 +13,23 @@ trait PaymentHitachiTrait
 
         $this->otpFlow = false;
 
+        // need to fix this once frontend adds the redirect url in the form
+        if (($this->redirectTo3ds === true) and
+            ($this->isOtpCallbackUrl($url)))
+        {
+            $paymentId = explode('/', $url)[5];
+
+            $url = $this->getPaymentRedirectTo3dsUrl($paymentId);
+
+            $response = $this->makeRedirectTo3ds($url);
+
+            list ($url, $method, $values) = $this->getDataForGatewayRequest($response, $callback);
+
+            $request = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
+
+            return $this->submitPaymentCallbackRequest($request);
+        }
+
         if ($this->isOtpCallbackUrl($url) === true)
         {
             $this->callbackUrl = $url;

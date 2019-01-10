@@ -680,7 +680,7 @@ class SubscriptionCreateTest extends TestCase
     {
         $this->testCreateSubscriptionWithNoStartAt();
 
-        $this->ba->privateAuth();
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }
@@ -689,7 +689,7 @@ class SubscriptionCreateTest extends TestCase
     {
         $this->testCreateSubscriptionWithNoStartAt();
 
-        $this->ba->privateAuth();
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }
@@ -725,6 +725,15 @@ class SubscriptionCreateTest extends TestCase
         $subscription = $this->getEntityById('subscription', $subscription['id']);
 
         $this->assertArrayHasKey('type', $subscription);
+    }
+
+    public function testCreateSubscriptionForViewTest()
+    {
+        $this->testCreateSubscriptionWithoutCustomerId();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->callViewUrlAndMakeAssertions($subscription['id']);
     }
 
     protected function getCreateSubscriptionRequestContent($function, $planId = null)

@@ -75,6 +75,29 @@ class Service extends Base\Service
     }
 
     /**
+     * Fetch card details associated with a token
+     * - Used by subcriptions service to populate mail data.
+     * - Checks for local tokens, then global ones.
+     * - Card entity includes expiry info, see isPublicExpiryAllowed
+     *
+     * @param  string $id public token id
+     * @return array public card entity
+     */
+    public function fetchCard($id)
+    {
+        $token = $this->repo->token->getByPublicIdAndMerchant($id, $this->merchant);
+
+        if ($token === null)
+        {
+            $sharedMerchant = $this->repo->merchant->getSharedAccount();
+
+            $token = $this->repo->token->findByPublicIdAndMerchant($id, $sharedMerchant);
+        }
+
+        return $token->card->toArrayPublic();
+    }
+
+    /**
      * fetch tokens for local customer
      *
      * @param string $id customer ID
@@ -187,7 +210,7 @@ class Service extends Base\Service
 
                 $this->trace->info(TraceCode::GATEWAY_TOKEN_MIGRATED, $gatewayToken->toArray());
 
-                $successCount += 1;
+                $successCount++;
             }
             catch(\Exception $ex)
             {
@@ -199,7 +222,7 @@ class Service extends Base\Service
                         'token' => $token->toArrayPublic(),
                     ]);
 
-                $failureCount += 1;
+                $failureCount++;
                 $failures[] = $token->getId();
 
                 continue;

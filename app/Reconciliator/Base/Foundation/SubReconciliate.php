@@ -3,14 +3,15 @@
 namespace RZP\Reconciliator\Base\Foundation;
 
 use App;
-use RZP\Constants\Entity;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Entity;
 use RZP\Exception\LogicException;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\Metrics\Metric;
 use RZP\Reconciliator\RequestProcessor;
+use RZP\Models\Transaction\ReconciledType;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
@@ -165,6 +166,7 @@ class SubReconciliate extends Base\Core
         $transaction = $entity->transaction;
         $time = time();
         $transaction->setReconciledAt($time);
+        $transaction->setReconciledType(ReconciledType::MIS);
         $transaction->saveOrFail();
 
         // Increment the success count for the summary.

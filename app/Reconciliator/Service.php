@@ -18,7 +18,6 @@ class Service extends Base\Service
      * List of gateways where we are doing recon processing via non-batch.
      */
     const NON_BATCH_RECON_GATEWAYS = [
-        RequestProcessor\Base::ADMIN,
         RequestProcessor\Base::PAYTM,
         RequestProcessor\Base::PAYUMONEY,
     ];
@@ -28,7 +27,6 @@ class Service extends Base\Service
      */
     const BATCH_SUMMARY_SKIP_GATEWAYS = [
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
-        RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
     ];
 
     public function initiateReconciliationProcess(array $input)

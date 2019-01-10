@@ -57,8 +57,16 @@ class Entity extends Base\PublicEntity
     const ACQUIRER_DATA          = 'acquirer_data';
     const ARN                    = 'arn';
     const REVERSAL               = 'reversal';
+    const RRN                    = 'rrn';
+    const UTR                    = 'utr';
+
+    /**
+     * Holds the value of Reference number sent by bank for eg for upi, it contains npci_upi_txn_id
+     */
+    const BANK_REFERENCE_NO = 'reference_no';
 
     const BANK_ACCOUNT_ID        = 'bank_account_id';
+    const VPA_ID                 = 'vpa_id';
     const SETTLED_BY             = 'settled_by';
 
     // indicates refund is processed via scrooge service or not.
@@ -105,13 +113,13 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID,
         self::BATCH_FUND_TRANSFER_ID,
         self::BATCH_ID,
-        self::ARN,
         self::ACQUIRER_DATA,
         self::ATTEMPTS,
         self::LAST_ATTEMPTED_AT,
         self::PROCESSED_AT,
         self::REFERENCE1,
         self::BANK_ACCOUNT_ID,
+        self::VPA_ID,
         self::SETTLED_BY,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -160,7 +168,6 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::PAYMENT_ID,
-        self::ARN,
         self::ACQUIRER_DATA
     ];
 
@@ -215,6 +222,11 @@ class Entity extends Base\PublicEntity
     public function bankAccount()
     {
         return $this->belongsTo('RZP\Models\BankAccount\Entity');
+    }
+
+    public function vpa()
+    {
+        return $this->belongsTo('RZP\Models\Vpa\Entity');
     }
 
     public function billdesk()
@@ -286,6 +298,11 @@ class Entity extends Base\PublicEntity
     public function hasBankAccount()
     {
         return ($this->isAttributeNotNull(self::BANK_ACCOUNT_ID));
+    }
+
+    public function hasVpa()
+    {
+        return ($this->isAttributeNotNull(self::VPA_ID));
     }
 
     public function isGatewayRefunded()
@@ -404,6 +421,18 @@ class Entity extends Base\PublicEntity
                     self::ARN   => $this->getAttribute(self::REFERENCE1)
                 ];
                 break;
+
+            case Payment\Method::UPI:
+                $acquirerData = [
+                    self::RRN   => $this->getAttribute(self::REFERENCE1)
+                ];
+                break;
+
+            case Payment\Method::EMANDATE:
+                $acquirerData = [
+                    self::UTR   => $this->getAttribute(self::REFERENCE1)
+                ];
+                break;
         }
 
         return (new Dictionary($acquirerData));
@@ -412,7 +441,7 @@ class Entity extends Base\PublicEntity
     /**
      * Used by FTA reconciliation
      */
-    public function setFailureReason()
+    public function setFailureReason($failureReason)
     {
         return;
     }
@@ -540,21 +569,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicAcquirerDataAttribute(array & $array)
     {
-        $app = \App::getFacadeRoot();
-
-        $auth = $app['basicauth'];
-
-        if (($auth->isAdminAuth() === true) or
-            (($auth->getMerchant() !== null) and
-             ($auth->getMerchant()->isExposeARNRefundEnabled() === true)))
-        {
-            $array[self::ACQUIRER_DATA] = $this->getAttribute(self::ACQUIRER_DATA);
-        }
-    }
-
-    public function setPublicArnAttribute(array & $array)
-    {
-        $array[self::ARN] = $this->getAttribute(self::REFERENCE1);
+        $array[self::ACQUIRER_DATA] = $this->getAttribute(self::ACQUIRER_DATA);
     }
 
     public function setReference1(string $value)
@@ -587,6 +602,13 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BATCH_FUND_TRANSFER_ID, $value);
     }
 
+    /**
+     * This is required for the FTA module.
+     * FTA requires the sources to implement `isStatusFailed`
+     * function, to send out summary emails and stuff in bulkRecon.
+     *
+     * @return bool
+     */
     public function isStatusFailed()
     {
         return ($this->getStatus() === Status::FAILED);

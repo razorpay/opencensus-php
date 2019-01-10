@@ -26,7 +26,7 @@ class Helpers
 
         if ($entry['total_count'] > 0)
         {
-            $entry['recon_count_percentage'] = number_format(($entry['recon_count'] / $entry['total_count']) * 100, 2);
+            $entry['recon_count_percentage'] = floatval(number_format(($entry['recon_count'] / $entry['total_count']) * 100, 2));
         }
 
         //
@@ -36,7 +36,7 @@ class Helpers
 
         if ($entry['total_amount'] > 0)
         {
-            $entry['recon_amount_percentage'] = number_format(($entry['recon_amount'] / $entry['total_amount']) * 100, 2);
+            $entry['recon_amount_percentage'] = floatval(number_format(($entry['recon_amount'] / $entry['total_amount']) * 100, 2));
         }
     }
 
@@ -80,22 +80,27 @@ class Helpers
             $formattedSummary[$entry['date']][] =  $entry;
         }
 
-        self::setDateWiseStats($formattedSummary);
+        sortMultiDimensionalArray($formattedSummary, Constants::RESULT_SORT_KEY, SORT_DESC);
 
-        sortMultiDimensionalArray($formattedSummary, Constants::RESULT_SORT_KEY);
+        $metadataEntryDateWise = self::setDateWiseStats($formattedSummary);
+
+        // as we want the metaData entry to be on the top in the final result,
+        // we add it after sorting is done
+        foreach ($formattedSummary as $date => &$dateWiseEntries)
+        {
+            array_unshift($dateWiseEntries, $metadataEntryDateWise[$date]);
+        }
 
         return $formattedSummary;
     }
 
-    public static function setDateWiseStats(& $formattedSummary)
+    public static function setDateWiseStats(& $formattedSummary):array
     {
+        $metadataEntryDateWise = [];
         foreach ($formattedSummary as $date => $dateWiseEntries)
         {
             //
-            // For each date, calculate
-            // metadata across all gateways
-            //
-
+            // For each date, calculate metadata across all gateways
             //
             // initialize each of the params to 0, and
             // iterate over the params and add them up.
@@ -132,6 +137,7 @@ class Helpers
             // set the percentage column for the date
             self::addExtraColumns($metadataEntry);
 
+            $metadataEntry['date'] = $date;
             $metadataEntry[Constants::GATEWAY] = "All";
             $metadataEntry[Constants::METHOD]  = "All";
 
@@ -141,8 +147,10 @@ class Helpers
             //
             self::addGatewaysContributionColumn($formattedSummary[$date], $metadataEntry);
 
-            $formattedSummary[$date][] =  $metadataEntry;
+            $metadataEntryDateWise[$date] =  $metadataEntry;
         }
+
+        return $metadataEntryDateWise;
     }
 
     /**
@@ -163,13 +171,13 @@ class Helpers
         // iterate over each gateway, and calculate values
         foreach ($dateWiseFormattedSummary as $index => &$entry)
         {
-            $entry[Constants::TXN_COUNT_CONTRIBUTION_PERCENTAGE] = number_format(
+            $entry[Constants::TXN_COUNT_CONTRIBUTION_PERCENTAGE] = floatval(number_format(
                              ($entry[Constants::TOTAL_COUNT] / $metadataEntry[Constants::TOTAL_COUNT]) * 100,
-                            2);
+                            2));
 
-            $entry[Constants::TXN_AMOUNT_CONTRIBUTION_PERCENTAGE] = number_format(
+            $entry[Constants::TXN_AMOUNT_CONTRIBUTION_PERCENTAGE] = floatval(number_format(
                 ($entry[Constants::TOTAL_AMOUNT] / $metadataEntry[Constants::TOTAL_AMOUNT]) * 100,
-                2);
+                2));
         }
     }
 }

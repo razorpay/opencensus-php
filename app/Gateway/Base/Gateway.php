@@ -10,6 +10,7 @@ use Symfony\Component\DomCrawler\Crawler;
 
 use RZP\Exception;
 use RZP\Http\Route;
+use Requests_Hooks;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
@@ -19,6 +20,7 @@ use RZP\Gateway\Utility;
 use RZP\Gateway\Netbanking;
 use RZP\Gateway\Base\Metric;
 use RZP\Models\Payment\Status;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Constants\Entity as ConstantsEntity;
 use Illuminate\Support\Facades\Redis;
@@ -26,10 +28,16 @@ use Illuminate\Support\Facades\Redis;
 class Gateway
 {
     /**
-     * Default request timeout duration in seconds.
+     * Default request read timeout duration in seconds.
      * @var  integer
      */
     const TIMEOUT = 60;
+
+    /**
+     * Default request connect timeout duration in seconds.
+     * @var  integer
+     */
+    const CONNECT_TIMEOUT = 10;
 
     /**
      * Default payment timeout duration in mins.
@@ -57,6 +65,19 @@ class Gateway
     const CHECKSUM_ATTRIBUTE = '';
 
     const CACHE_KEY = 'base_%s_card_details';
+
+    /**
+     *  Max number of retry in case first request to gateway fails
+     */
+    const MAX_RETRY_COUNT = 2;
+
+    /**
+     *  strings to check for LibreSSL errors. Gateway requests are retried in case
+     *  this string is received.
+     */
+    const LIBRESSL_CONNECT_ERROR_STRING = 'cURL error 35: LibreSSL SSL_connect: SSL_ERROR_SYSCALL';
+
+    const LIBRESSL_READ_ERROR_STRING = 'cURL error 56: LibreSSL SSL_read: SSL_ERROR_SYSCALL';
 
     /**
      * The application instance.
@@ -174,10 +195,6 @@ class Gateway
     protected $externalMockDomain;
 
     protected $paymentId;
-
-    protected $curlLogPath;
-
-    protected $curlLog;
 
     public function __construct()
     {
@@ -434,6 +451,7 @@ class Gateway
         switch ($input['payment']['method'])
         {
             case Payment\Method::CARD:
+            case Payment\Method::EMI:
                 $acquirer['acquirer'] = [
                     Payment\Entity::REFERENCE2 => $gatewayPayment->getAuthCode(),
                 ];
@@ -551,6 +569,15 @@ class Gateway
 
     protected function sendGatewayRequest($request)
     {
+        return $this->retryHandler(
+            [$this, 'sendExternalRequest'],
+            [$request],
+            [$this, 'shouldRetry'],
+            [$this, 'getMaxRetryCount']);
+    }
+
+    protected function sendExternalRequest($request)
+    {
         if (isset($request['options']) === false)
         {
             $request['options'] = [];
@@ -585,6 +612,19 @@ class Gateway
         {
             $request['options']['timeout'] = static::TIMEOUT;
         }
+
+        if (isset($request['options']['connect_timeout']) === false)
+        {
+            $request['options']['connect_timeout'] = static::CONNECT_TIMEOUT;
+        }
+
+        if ((isset($request['options']['hooks']) === false) or
+            ($request['options']['hooks'] instanceof Requests_Hooks === false))
+        {
+            $request['options']['hooks'] = new Requests_Hooks();
+        }
+
+        $request['options']['hooks']->register('curl.after_request', [$this, 'traceCurlInfo']);
 
         try
         {
@@ -628,15 +668,16 @@ class Gateway
      * @param callable $callable -- this contains the class object and the function name as indexed array
      * @param array $arguments -- this contains the function params to be passed to the function name passed
      * in $objFunc
-     * @param callable $checkRetryNeeded -- closure to check if retry is needed
-     * @param int $retryCount -- max number of retries we want and then throw exception after $maxRetryCount attempts
+     * @param callable $checks -- closure to check if retry is needed
+     * @param callable $retryCount -- closure which returns max number of retries we want, after which
+     * exception is thrown
      * @return $response -- return the response of the closure $callable
      * @throws \Exception
      */
     protected function retryHandler(callable $callable,
                                     array $arguments,
                                     callable $checks,
-                                    int $retryCount = 1)
+                                    callable $retryCount)
     {
         $currentRetryCount = 1;
 
@@ -651,11 +692,16 @@ class Gateway
             catch (\Exception $exc)
             {
                 if ((call_user_func($checks, $exc) === true) and
-                    ($currentRetryCount < $retryCount))
+                    ($currentRetryCount < call_user_func($retryCount)))
                 {
                     $currentRetryCount++;
 
-                    $this->trace->traceException($exc);
+                    $this->trace->traceException($exc,
+                        Trace::WARNING,
+                        TraceCode::GATEWAY_REQUEST_RETRIED_DUE_TO_CURL_ISSUES,
+                        [
+                            'current_count' => $currentRetryCount,
+                        ]);
 
                     continue;
                 }
@@ -663,6 +709,38 @@ class Gateway
                 throw $exc;
             }
         }
+    }
+
+    protected function shouldRetry($e)
+    {
+        // only authorize, validateVpa actions are retried for libressl errors.
+        // this check will be removed if everything goes fine.
+        if ((empty($this->action) === true) or
+            (in_array($this->action, $this->getActionsToRetry(), true) === false))
+        {
+            return false;
+        }
+
+        $exceptionData = $e->getDataAsString();
+
+        if ((get_class($e) === Exception\GatewayRequestException::class) and
+            ((stripos($exceptionData, self::LIBRESSL_CONNECT_ERROR_STRING) !== false) or
+             (stripos($exceptionData, self::LIBRESSL_READ_ERROR_STRING) !== false)))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function getActionsToRetry()
+    {
+        return [Action::AUTHORIZE, Action::VALIDATE_VPA];
+    }
+
+    protected function getMaxRetryCount()
+    {
+        return self::MAX_RETRY_COUNT;
     }
 
     protected function validateResponse(\Requests_Response $response)
@@ -695,6 +773,19 @@ class Gateway
                     'gateway' => $this->gateway
                 ]);
         }
+    }
+
+    public function traceCurlInfo($headers, $info)
+    {
+        $this->trace->info(TraceCode::GATEWAY_REQUEST_CURL_INFO,
+            [
+                'total_time'         => $info['total_time'],
+                'connect_time'       => $info['connect_time'],
+                'redirect_time'      => $info['redirect_time'],
+                'namelookup_time'    => $info['namelookup_time'],
+                'pretransfer_time'   => $info['pretransfer_time'],
+                'starttransfer_time' => $info['starttransfer_time'],
+            ]);
     }
 
     protected function runPaymentVerifyFlow($verify)
@@ -865,6 +956,28 @@ class Gateway
     protected function getLiveSecret()
     {
         return $this->input['terminal']['gateway_secure_secret'];
+    }
+
+    public function getTerminalPassword()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->getTestTerminalPassword();
+        }
+
+        return $this->getLiveTerminalPassword();
+    }
+
+    protected function getTestTerminalPassword()
+    {
+        assert($this->mode === Mode::TEST);
+
+        return $this->config['test_terminal_password'];
+    }
+
+    protected function getLiveTerminalPassword()
+    {
+        return $this->input['terminal']['gateway_terminal_password'];
     }
 
     protected function isTestMode() : bool
@@ -1049,7 +1162,7 @@ class Gateway
 
         if (empty($label) === true)
         {
-            $label = "Razorpay Payments";
+            $label = 'Razorpay Payments';
         }
 
         return str_limit($label, $limit);
@@ -1278,35 +1391,6 @@ class Gateway
     //
     // This is a temporary function for debugging the curl issue
     //
-    protected function traceCurlErrorIfApplicable()
-    {
-        try
-        {
-            if ((isset($this->exception) === true) and
-                ($this->exception instanceof \Requests_Exception) and
-                ($this->exception->getType() === 'curlerror'))
-            {
-                $curlData = file_get_contents($this->curlLogPath);
-
-                $dataToTrace = [
-                    'gateway'   => $this->gateway,
-                    'curl_data' => $curlData,
-                ];
-
-                $this->trace->info(TraceCode::GATEWAY_UNKNOWN_CURL_ERROR, $dataToTrace);
-
-                $message = 'Curl error @vv @vivek @viv @kranti';
-
-                // #tech_curl_error
-                $this->app['slack']->queue(
-                    $message, $dataToTrace, ['color' => 'bad', 'channel' => 'GCRJYQEP6']);
-            }
-        }
-        catch (\Throwable $ex)
-        {
-            $this->trace->traceException($ex);
-        }
-    }
 
     protected function isDuplicateUnexpectedPayment($callbackData)
     {

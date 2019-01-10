@@ -1595,4 +1595,21 @@ return [
             ],
         ],
     ],
+
+    'testSubscriptionServiceTokenCardFetch' => [
+        'request' => [
+            'url'       => '/tokens/<tokenId>/card',
+            'method'    => 'get',
+            'content'   => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'card',
+                'last4'        => '3335',
+                'network'      => 'Visa',
+                'expiry_month' => 12,
+                'expiry_year'  => 2024,
+            ],
+        ],
+    ],
 ];

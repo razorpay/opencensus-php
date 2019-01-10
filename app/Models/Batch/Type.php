@@ -38,6 +38,11 @@ class Type
 
     const AUTH_LINK             = 'auth_link';
 
+    const INSTANT_ACTIVATION    = 'instant_activation';
+
+    // Batch Terminal Creation
+    const TERMINAL              = 'terminal';
+
     /**
      * This is for one time migration of OAuth merchants to Pure-Platform
      * type partners. This bypasses oauth authentication by end merchant.
@@ -64,6 +69,7 @@ class Type
         self::EMANDATE,
         self::BANK_TRANSFER,
         self::ENTITY_MAPPING,
+        self::TERMINAL
     ];
 
     /**
@@ -98,6 +104,8 @@ class Type
         self::PARTNER_SUBMERCHANTS,
         self::ENTITY_MAPPING,
         self::AUTH_LINK,
+        self::INSTANT_ACTIVATION,
+        self::TERMINAL
     ];
 
     /**

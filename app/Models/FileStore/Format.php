@@ -23,6 +23,7 @@ class Format
     const DAT   = 'dat';
     const XML   = 'xml';
     const CLT   = 'clt';
+    const IN    = 'in';
     const NONE  = null;
 
     const EXCEL_COLUMN_TEXT = '@';
@@ -44,6 +45,7 @@ class Format
         self::RPT,
         self::DAT,
         self::XML,
+        self::IN,
     ];
 
     const VALID_EXTENSION_MIME_MAP = [
@@ -55,6 +57,7 @@ class Format
         self::PDF   => ['application/pdf', 'application/x-pdf', 'application/pgp'],
         self::PNG   => ['image/png', 'application/pgp'],
         self::TXT   => ['text/plain', 'application/pgp'],
+        self::IN    => ['text/plain', 'application/pgp'],
         // Adding all possible type of mime type as current library we are using to create xlsx file will not take care of mime
         self::XLSX  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/pgp',
                         'application/octet-stream', 'text/plain', 'application/zlib', 'image/x-portable-pixmap'],

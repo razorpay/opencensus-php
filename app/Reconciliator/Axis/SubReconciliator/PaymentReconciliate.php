@@ -50,15 +50,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      */
     const MIN_ROW_FILLED_DATA_RATIO = 0.27;
 
-    protected $axisMigsRepo;
-
-    public function __construct(string $gateway = null)
-    {
-        parent::__construct($gateway);
-
-        $this->axisMigsRepo = $this->repo->axis_migs;
-    }
-
     protected function getPaymentId(array $row)
     {
         if ($this->isCybersource($row) === true)

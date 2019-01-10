@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Payout;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Merchant;
@@ -41,6 +42,13 @@ class FeeCalculator
      */
     protected $entity;
 
+    /**
+     * Product line for Fee calculation (primary - pg / banking)
+     *
+     * @var string
+     */
+    protected $product;
+
     protected $defaultPricingPlan = '1hDYlICobzOCYt';
 
     protected $feesSplit = null;
@@ -56,9 +64,11 @@ class FeeCalculator
 
     protected $taxComponents = null;
 
-    public function __construct($entity)
+    public function __construct($entity, string $product)
     {
         $this->entity = $entity;
+
+        $this->product = $product;
 
         $this->feesSplit = new Base\PublicCollection;
 
@@ -110,6 +120,8 @@ class FeeCalculator
         // In case the merchant is customer fee bearer, we shouldn't check
         // $amount < $totalFees because amount is already inclusive of the fees.
         if (($this->entity->merchant->isFeeBearerCustomer() === false) and
+            ($this->isEntityPayoutOnBankingBalance() === false) and
+            ($this->entity->merchant->getFeeModel() !== Merchant\FeeModel::POSTPAID) and
             ($amount !== 0))
         {
             list($amountCredits, $feeCredits) = $this->getAvailableAmountOrFeeCredits();
@@ -133,7 +145,7 @@ class FeeCalculator
 
     protected function getAvailableAmountOrFeeCredits()
     {
-        $merchantBalance = $this->entity->merchant->balance;
+        $merchantBalance = $this->entity->merchant->getBalanceByProductType($this->product);
 
         $amountCredits = $merchantBalance->getAmountCredits();
 
@@ -170,19 +182,21 @@ class FeeCalculator
 
     protected function getAddOnPricingRule(Pricing\Plan $pricing, array $features, $entityName)
     {
-        $method = $this->entity->getMethod();
+        $method  = $this->entity->getMethod();
+        $product = $this->product;
 
         foreach ($features as $feature)
         {
-            $filters = array(
-                [Pricing\Entity::FEATURE, $feature, false, null  ],
-                [Pricing\Entity::PAYMENT_METHOD,  $method,  false, null  ],
-            );
+            $filters = [
+                [Pricing\Entity::PRODUCT,        $product, false, null],
+                [Pricing\Entity::FEATURE,        $feature, false, null],
+                [Pricing\Entity::PAYMENT_METHOD, $method,  false, null],
+            ];
 
             $rules = $this->applyFiltersOnRules($pricing, $filters);
 
             if ((count($rules) > 0) and
-                $entityName === Pricing\Feature::PAYMENT)
+                ($entityName === Pricing\Feature::PAYMENT))
             {
                 $rule = $this->getRelevantPaymentPricingRule($rules, $method);
 
@@ -193,13 +207,15 @@ class FeeCalculator
 
     protected function getBasicPricingRule(Pricing\Plan $pricing, $feature)
     {
-        $method = $this->entity->getMethod();
-        $orgId = $this->entity->merchant->org->getId();
+        $method  = $this->entity->getMethod();
+        $orgId   = $this->entity->merchant->org->getId();
+        $product = $this->product;
 
-        $filters = array(
+        $filters = [
+            [Pricing\Entity::PRODUCT,         $product, false, null  ],
             [Pricing\Entity::FEATURE,         $feature, false, null  ],
             [Pricing\Entity::PAYMENT_METHOD,  $method,  false, null  ],
-        );
+        ];
 
         $rules = $this->applyFiltersOnRules($pricing, $filters);
 
@@ -279,6 +295,10 @@ class FeeCalculator
         {
             $rule = $this->getRelevantPricingRuleForBankTransfer($rules);
         }
+        else if ($method === Payment\Method::CARDLESS_EMI)
+        {
+            $rule = $this->getRelevantPricingRuleForCardlessEmi($rules);
+        }
         // else if ($method === Payment\Method::TRANSFER)
         // {
         //     $rule = $this->getRelevantPricingRuleForTransfer($rules);
@@ -293,7 +313,7 @@ class FeeCalculator
 
     protected function getRelevantPayoutPricingRule($rules, $method)
     {
-        $rule = $this->getRelevantPricingRuleForMethod($rules);
+        $rule = $this->applyAmountRangeFilterAndReturnOneRule($rules);
 
         return $rule;
     }
@@ -479,6 +499,22 @@ class FeeCalculator
         );
 
         $rules = $this->applyFiltersOnRules($rules, $filters1);
+
+        return $this->validateAndGetOnePricingRule($rules);
+    }
+
+    protected function getRelevantPricingRuleForCardlessEmi($rules)
+    {
+        $payment = $this->entity;
+
+        $provider = $payment->getWallet();
+
+        // @todo: Pricing structure to do discussed with product
+        $filters = [
+            [Pricing\Entity::PAYMENT_ISSUER, $provider, true, null],
+        ];
+
+        $rules = $this->applyFiltersOnRules($rules, $filters);
 
         return $this->validateAndGetOnePricingRule($rules);
     }
@@ -928,5 +964,11 @@ class FeeCalculator
         }
 
         return $fee;
+    }
+
+    protected function isEntityPayoutOnBankingBalance(): bool
+    {
+        return (($this->entity instanceof Payout\Entity === true) and
+            ($this->entity->isBalanceTypeBanking() === true));
     }
 }

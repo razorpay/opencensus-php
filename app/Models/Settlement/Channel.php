@@ -14,6 +14,7 @@ class Channel
     const YESBANK   = 'yesbank';
     const HDFC      = 'hdfc';
     const RBL       = 'rbl';
+    const AXIS2     = 'axis2';
 
     public static $gateways = [
         self::KOTAK => [
@@ -56,7 +57,8 @@ class Channel
             self::AXIS,
             self::ICICI,
             self::HDFC,
-            self::RBL
+            self::RBL,
+            self::AXIS2
         ];
     }
 
@@ -89,6 +91,18 @@ class Channel
     }
 
     /**
+     * Gives list of channels which support API based beneficiary registration
+     *
+     * @return array
+     */
+    public static function getChannelsWithOnlineBeneficiaryRegistration()
+    {
+        return [
+            self::YESBANK
+        ];
+    }
+
+    /**
      * Gives list of channels which support file based settlement and recon
      *
      * @return array
@@ -100,6 +114,7 @@ class Channel
             self::AXIS,
             self::ICICI,
             self::HDFC,
+            self::AXIS2,
         ];
     }
 
@@ -124,6 +139,18 @@ class Channel
     {
         return [
             self::KOTAK,
+        ];
+    }
+
+    /**
+     * Gives list of channels which support instant payouts
+     *
+     * @return array
+     */
+    public static function getInstantPayoutChannels()
+    {
+        return [
+            self::YESBANK,
         ];
     }
 

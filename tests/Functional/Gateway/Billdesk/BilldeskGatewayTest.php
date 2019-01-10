@@ -483,6 +483,7 @@ class BilldeskGatewayTest extends TestCase
         $paymentTransaction = $this->getEntityById('transaction', $paymentTransaction['id'], true);
 
         $this->assertNotNull($paymentTransaction['reconciled_at']);
+        $this->assertNotNull($paymentTransaction['reconciled_type']);
         $this->assertEquals(0, $paymentTransaction['gateway_service_tax']);
         $this->assertEquals(0, $paymentTransaction['gateway_fee']);
     }

@@ -9,6 +9,7 @@ use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Mail\Merchant\FeeCreditsAlert;
 use RZP\Models\Base;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Dispute;
 use RZP\Models\Reversal;
 use RZP\Models\Currency;
@@ -52,12 +53,20 @@ class Core extends Base\Core
         $this->merchant = $this->app['basicauth']->getMerchant();
     }
 
-    /*
-     * Refactoring entity by entity, will introduce factory method in the future
-    */
+    public function getFactory(Base\Entity $source): TransactionProcessor\Base
+    {
+        $type = $source->getEntityName();
+
+        $processor = __NAMESPACE__ ;
+
+        $processor .= '\\Processor\\' .studly_case($type);
+
+        return new $processor($source);
+    }
+
     public function createTransactionForSource(Base\Entity $source)
     {
-        $txnProcessor = (new TransactionProcessor\Payment($source));
+        $txnProcessor = $this->getFactory($source);
 
         return $txnProcessor->createTransaction();
     }
@@ -174,6 +183,8 @@ class Core extends Base\Core
 
         $txn->setReconciledAt(time());
 
+        $txn->setReconciledType(ReconciledType::NA);
+
         $txn->setAttribute(Entity::SETTLED_AT, $settledAt);
 
         $txn->setAttribute(Entity::ON_HOLD, $onHold);
@@ -226,7 +237,7 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($txn);
 
-            (new PaymentProcessor($merchant))->saveFeeDetails($txn, $feesSplit);
+            $this->saveFeeDetails($txn, $feesSplit);
         });
     }
 
@@ -245,6 +256,7 @@ class Core extends Base\Core
         }
 
         $transaction->setReconciledAt(time());
+        $transaction->setReconciledType(ReconciledType::NA);
         $transaction->setGatewayFee(0);
         $transaction->setGatewayServiceTax(0);
 
@@ -282,7 +294,8 @@ class Core extends Base\Core
 
         if ($payment->getGateway() === Payment\Gateway::WALLET_OPENWALLET)
         {
-            $txnData[Entity::RECONCILED_AT] = time();
+            $txnData[Entity::RECONCILED_AT]     = time();
+            $txnData[Entity::RECONCILED_TYPE]   = ReconciledType::NA;
         }
 
         $txn->fill($txnData);
@@ -346,7 +359,7 @@ class Core extends Base\Core
 
             $txn->setPricingRule($pricingRuleId);
         }
-        else if ($merchant->isPrepaid())
+        else if ($merchant->isPrepaid() === true)
         {
             list($credit, $fee, $tax, $feesSplit) = $this->calculatePrepaidFee($txn);
         }
@@ -575,73 +588,7 @@ class Core extends Base\Core
 
         assert ($payment->hasTransaction() === true);
 
-        $merchant = $refund->merchant;
-
-        if ($merchant->isFeatureEnabled(Feature\Constants::TRANSACTION_V2) === true)
-        {
-            $this->trace->info(
-                TraceCode::TRANSACTION_CREATED_USING_V2,
-                [
-                    'refund_id' => $refund->getId()
-                ]);
-
-            $txnProcessor = (new TransactionProcessor\Refund($refund));
-
-            list($txn, $feesSplit) = $txnProcessor->createTransaction();
-
-            return $txn;
-        }
-
-        // create Transaction
-        $txn = new Transaction\Entity;
-
-        $txn->generateId();
-
-        $txn->sourceAssociate($refund);
-
-        $txn->merchant()->associate($merchant);
-
-        $settledAt = $this->getSettledAtTimestampForRefund($refund);
-
-        $txnData = [
-            Transaction\Entity::AMOUNT          => $refund->getBaseAmount(),
-            Transaction\Entity::TYPE            => Transaction\Type::REFUND,
-            Transaction\Entity::FEE             => 0,
-            Transaction\Entity::TAX             => 0,
-            Transaction\Entity::DEBIT           => $refund->getBaseAmount(),
-            Transaction\Entity::CREDIT          => 0,
-            Transaction\Entity::CURRENCY        => Currency\Currency::INR,
-            Transaction\Entity::CHANNEL         => $merchant->getChannel(),
-            Transaction\Entity::SETTLED_AT      => $settledAt
-        ];
-
-        if ($merchant->getRefundSource() === RefundSource::CREDITS)
-        {
-            $txnData[Transaction\Entity::DEBIT] = 0;
-
-            $txnData[Transaction\Entity::CREDITS] = $refund->getBaseAmount();
-
-            $txnData[Transaction\Entity::CREDIT_TYPE] = CreditType::REFUND;
-        }
-
-        $txn->fill($txnData);
-
-        if ($payment->getStatus() === Payment\Status::CAPTURED)
-        {
-            // TODO : merge all balance and credits update in updateBalances
-            if ($merchant->getRefundSource() === RefundSource::CREDITS)
-            {
-                // transaction has to be saved as we create associated credit log
-                // transaction inside the updateCredits method.
-                $this->repo->saveOrFail($txn);
-
-                $this->updateCredits($txn, $refund);
-            }
-
-            $this->updateBalances($txn);
-        }
-
-        return $txn;
+        return $this->createTransactionForSource($refund);
     }
 
     public function createFromAdjustment(Adjustment\Entity $adj, $updateEscrow = true)
@@ -667,6 +614,7 @@ class Core extends Base\Core
             Transaction\Entity::GATEWAY_FEE     => 0,
             Transaction\Entity::API_FEE         => 0,
             Transaction\Entity::RECONCILED_AT   => time(),
+            Transaction\Entity::RECONCILED_TYPE => ReconciledType::NA,
             Transaction\Entity::SETTLED         => 0,
             Transaction\Entity::SETTLED_AT      => $settledAt,
             Transaction\Entity::FEE             => 0,
@@ -692,8 +640,9 @@ class Core extends Base\Core
     /**
      * Record and associate a transaction for a payment transfer.
      *
-     * @param  Transfer\Entity      $transfer Transfer entity
-     * @return Transaction\Entity
+     * @param  Transfer\Entity $transfer Transfer entity
+     *
+     * @return array
      */
     public function createFromTransfer(Transfer\Entity $transfer)
     {
@@ -749,14 +698,15 @@ class Core extends Base\Core
         }
 
         $values = [
-            Transaction\Entity::CURRENCY      => $transfer->getCurrency(),
-            Transaction\Entity::GATEWAY_FEE   => 0,
-            Transaction\Entity::API_FEE       => $fee,
-            Transaction\Entity::RECONCILED_AT => time(),
-            Transaction\Entity::SETTLED       => 0,
-            Transaction\Entity::SETTLED_AT    => $settledAt,
-            Transaction\Entity::TYPE          => Transaction\Type::TRANSFER,
-            Transaction\Entity::CHANNEL       => $transfer->merchant->getChannel(),
+            Transaction\Entity::CURRENCY        => $transfer->getCurrency(),
+            Transaction\Entity::GATEWAY_FEE     => 0,
+            Transaction\Entity::API_FEE         => $fee,
+            Transaction\Entity::RECONCILED_AT   => time(),
+            Transaction\Entity::RECONCILED_TYPE => ReconciledType::NA,
+            Transaction\Entity::SETTLED         => 0,
+            Transaction\Entity::SETTLED_AT      => $settledAt,
+            Transaction\Entity::TYPE            => Transaction\Type::TRANSFER,
+            Transaction\Entity::CHANNEL         => $transfer->merchant->getChannel(),
         ];
 
         $txn->fill($values);
@@ -779,7 +729,7 @@ class Core extends Base\Core
 
         $this->updateBalances($txn, false);
 
-        return $txn;
+        return [$txn, $feesSplit];
     }
 
     /**
@@ -799,19 +749,20 @@ class Core extends Base\Core
         $settleTimestamp = $this->getTransferReversalSettledAtTimestamp($reversal);
 
         $data = [
-            Transaction\Entity::DEBIT         => 0,
-            Transaction\Entity::CREDIT        => $amount,
-            Transaction\Entity::CURRENCY      => Currency\Currency::INR,
-            Transaction\Entity::GATEWAY_FEE   => 0,
-            Transaction\Entity::API_FEE       => 0,
-            Transaction\Entity::RECONCILED_AT => $settleTimestamp,
-            Transaction\Entity::SETTLED       => 0,
-            Transaction\Entity::SETTLED_AT    => $settleTimestamp,
-            Transaction\Entity::FEE           => 0,
-            Transaction\Entity::TAX           => 0,
-            Transaction\Entity::AMOUNT        => $amount,
-            Transaction\Entity::TYPE          => Transaction\Type::REVERSAL,
-            Transaction\Entity::CHANNEL       => $reversal->merchant->getChannel(),
+            Transaction\Entity::DEBIT           => 0,
+            Transaction\Entity::CREDIT          => $amount,
+            Transaction\Entity::CURRENCY        => Currency\Currency::INR,
+            Transaction\Entity::GATEWAY_FEE     => 0,
+            Transaction\Entity::API_FEE         => 0,
+            Transaction\Entity::RECONCILED_AT   => $settleTimestamp,
+            Transaction\Entity::RECONCILED_TYPE => ReconciledType::NA,
+            Transaction\Entity::SETTLED         => 0,
+            Transaction\Entity::SETTLED_AT      => $settleTimestamp,
+            Transaction\Entity::FEE             => 0,
+            Transaction\Entity::TAX             => 0,
+            Transaction\Entity::AMOUNT          => $amount,
+            Transaction\Entity::TYPE            => Transaction\Type::REVERSAL,
+            Transaction\Entity::CHANNEL         => $reversal->merchant->getChannel(),
         ];
 
         $txn->fillAndGenerateId($data);
@@ -821,6 +772,15 @@ class Core extends Base\Core
         $txn->sourceAssociate($reversal);
 
         $this->updateBalances($txn, false);
+
+        return $txn;
+    }
+
+    public function createFromPayoutReversal(Reversal\Entity $reversal): Entity
+    {
+        $txnProcessor = (new TransactionProcessor\Reversal($reversal));
+
+        list($txn, $feesSplit) = $txnProcessor->createTransaction();
 
         return $txn;
     }
@@ -921,10 +881,10 @@ class Core extends Base\Core
             $debitAmount = $amount;
 
             // Here, payout amount is the amount requested by merchant for payout and fees is
-            // levied over it.Also, this fees is deducted from merchant balance.This happens for
-            // merchants which do not have 'es_on_demand' feature enabled.In case of 'es_on_demand'
+            // levied over it. Also, this fees is deducted from merchant balance. This happens for
+            // merchants who do not have 'es_on_demand' feature enabled. In case of 'es_on_demand'
             // merchants, payout fees will be deducted from payout amount requested by the merchant.
-            // This is done allow a merchant to do a payout on requested amount , rather then
+            // This is done to allow a merchant to do a payout on requested amount, rather than
             // calculating fees over it and failing a transaction if merchant does not have enough balance.
             $payout->setAmount($payoutAmount);
         }
@@ -943,13 +903,14 @@ class Core extends Base\Core
             Transaction\Entity::GATEWAY_SERVICE_TAX => 0,
             Transaction\Entity::API_FEE             => $fee,
             Transaction\Entity::RECONCILED_AT       => time(),
+            Transaction\Entity::RECONCILED_TYPE     => ReconciledType::NA,
             Transaction\Entity::SETTLED             => 0,
             Transaction\Entity::SETTLED_AT          => $settledAt,
             Transaction\Entity::FEE                 => $fee,
             Transaction\Entity::TAX                 => $tax,
             Transaction\Entity::AMOUNT              => $payoutAmount,
             Transaction\Entity::TYPE                => Transaction\Type::PAYOUT,
-            Transaction\Entity::CHANNEL             => $payout->merchant->getChannel(),
+            Transaction\Entity::CHANNEL             => $payout->getChannel(),
         ];
 
         $txn->fill($values);
@@ -985,6 +946,8 @@ class Core extends Base\Core
     public function updateMerchantBalance(Transaction\Entity $txn)
     {
         $merchantBalance = $this->getBalanceLockForUpdate($txn->getMerchantId());
+
+        $txn->accountBalance()->associate($merchantBalance);
 
         $merchantBalance->updateBalance($txn);
         $this->repo->balance->updateBalance($merchantBalance);
@@ -1231,7 +1194,10 @@ class Core extends Base\Core
 
         $returnTime = null;
 
-        $scheduleTask = (new ScheduleTask\Core)->getMerchantSettlementSchedule($merchant, $payment->getMethod());
+        $scheduleTask = (new ScheduleTask\Core)->getMerchantSettlementSchedule(
+            $merchant,
+            $payment->getMethod(),
+            $payment->isInternational());
 
         // use schedule from pivot schedule_task if defined and use next run from there
         if ($scheduleTask !== null)
@@ -1249,8 +1215,10 @@ class Core extends Base\Core
         else
         {
             // Unused as there wont be any merchant without schedule.
-            // TODO: fix test cases as this condition will run while runnig test. remove condition once tests fixed
-            $addDays = Merchant\Entity::SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
+            // TODO: fix test cases as this condition will run while running test. remove condition once tests fixed
+            $addDays = $payment->isInternational() === true ?
+                       Merchant\Entity::INTERNATIONAL_SETTLEMENT_SCHEDULE_DEFAULT_DELAY :
+                       Merchant\Entity::DOMESTIC_SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
 
             //
             // Not handling 24x7 settlements for daily schedules.
@@ -1271,15 +1239,17 @@ class Core extends Base\Core
         {
             $paymentTxn = $payment->transaction;
 
-            return ($paymentTxn->isSettled() ? 1 : $paymentTxn->getSettledAt());
+            $nowTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+            return ($paymentTxn->isSettled() ? $nowTimestamp : $paymentTxn->getSettledAt());
         }
 
         return null;
     }
 
-    public function calculateSettledAtTimestamp($timestamp, $addDays, $ignoreBankHolidays = false)
+    public function calculateSettledAtTimestamp($capturedAtTimestamp, $addDays, $ignoreBankHolidays = false)
     {
-        $capturedAt = Carbon::createFromTimestamp($timestamp, Timezone::IST);
+        $capturedAt = Carbon::createFromTimestamp($capturedAtTimestamp, Timezone::IST);
 
         $returnDay = Holidays::getNthWorkingDayFrom($capturedAt, $addDays, $ignoreBankHolidays);
 
@@ -1478,6 +1448,70 @@ class Core extends Base\Core
                 // Invalid case
                 throw new Exception\LogicException('Invalid transfer type', null, ['transfer' => $transfer]);
             }
+        }
+    }
+
+    /**
+     * Dispatches webhook, sms and/or email for newly created transaction.
+     * This is a safe method i.e. it is not expected to throw any exceptions.
+     * Notifier and webhook dispatcher used here suppress and log exceptions if any.
+     *
+     * @param Entity $txn
+     */
+    public function dispatchEventForTransactionCreated(Entity $txn)
+    {
+        (new Notifier($txn))->notify();
+
+        $this->app->events->fire('api.transaction.created', $txn);
+    }
+
+    public function saveFeeDetails(Transaction\Entity $txn, PublicCollection $feesSplit)
+    {
+        $this->trace->info(
+            TraceCode::CREATING_FEES_BREAKUP,
+            [
+                'transaction_id'    => $txn->getId(),
+                'source_id'         => $txn->getEntityId(),
+                'fee_split'         => $feesSplit->toArrayPublic(),
+            ]);
+
+        try
+        {
+            $this->repo->transaction(function() use ($txn, $feesSplit)
+            {
+                foreach ($feesSplit as $feeSplit)
+                {
+                    $feeSplit->transaction()->associate($txn);
+
+                    $this->repo->saveOrFail($feeSplit);
+                }
+
+                $this->trace->info(
+                    TraceCode::FEES_BREAKUP_CREATED,
+                    [
+                        'transaction_id' => $txn->getId(),
+                        'source_id'      => $txn->getEntityId()
+                    ]);
+            });
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex, Trace::CRITICAL,
+                TraceCode::FEES_BREAKUP_CREATION_FAILED,
+                [
+                    'transaction_id' => $txn->getId(),
+                    'source_id'      => $txn->getEntityId()
+                ]);
+
+            throw new Exception\LogicException(
+                'Error while recording fee breakup',
+                ErrorCode::SERVER_ERROR_FEE_BREAKUP_CREATION_FAILED,
+                [
+                    'transaction_id'    => $txn->getId(),
+                    'payment_id'        => $txn->getEntityId(),
+                    'fee_split'         => $feesSplit->toArrayPublic(),
+                ]);
         }
     }
 }

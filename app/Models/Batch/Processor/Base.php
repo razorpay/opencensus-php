@@ -8,6 +8,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Batch;
 use RZP\Models\Invoice;
+use RZP\Models\Feature;
 use RZP\Encryption\Type;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -97,10 +98,10 @@ class Base extends BaseModel\Core
     protected $outputFileType;
 
     /**
-     * Override from child processor to use new spreadsheet library.
+     * Override from child processor to use legacy library.
      * @var boolean
      */
-    protected $useSpreadSheetLibrary = false;
+    protected $useSpreadSheetLibrary = true;
 
     public function __construct(Batch\Entity $batch)
     {
@@ -619,6 +620,13 @@ class Base extends BaseModel\Core
         $formatted = [];
         $headers   = $this->getOutputFileHeadings();
 
+        // Todo: temp
+        if (($this->batch->getType() === Batch\Type::PAYMENT_LINK) and
+            ($this->merchant->isFeatureEnabled(Feature\Constants::PL_FIRST_MIN_AMOUNT) === true))
+        {
+            $headers[] = Batch\Header::FIRST_PAYMENT_MIN_AMOUNT;
+        }
+
         foreach ($entries as $entry)
         {
             // Prepares each entry rows
@@ -628,7 +636,10 @@ class Base extends BaseModel\Core
                 if (array_key_exists($header, $entry) === false)
                 {
                     // Optional fields if not sent, shouldn't be in output file as well
-                    if ($header !== Batch\Header::NOTES)
+                    if (in_array(
+                            $header,
+                            [Batch\Header::NOTES, Batch\Header::FIRST_PAYMENT_MIN_AMOUNT],
+                            true) === false)
                     {
                         $dict[$header] = null;
                     }

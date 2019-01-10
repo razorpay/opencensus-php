@@ -231,4 +231,22 @@ class Base extends BaseProcessor
         return Carbon::createFromTimestamp($timestamp, Timezone::IST)
                     ->format(static::DATE_FORMAT);
     }
+
+    protected function getEmiAmount($amount, $annualRate, $tenureInMonths)
+    {
+        // $annualRate is a
+        // $monthlyRate is a/12 i.e should be treated as 13/1200
+        // E = P x r x (1+r)^n/((1+r)^n – 1)
+        // tenure in months
+
+        $monthlyRate = $annualRate / 1200;
+
+        $expression = pow((1 + $monthlyRate), $tenureInMonths);
+
+        $num = $amount * $monthlyRate * $expression;
+
+        $den = $expression - 1;
+
+        return floor($num / $den);
+    }
 }

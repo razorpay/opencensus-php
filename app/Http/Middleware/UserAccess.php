@@ -7,8 +7,11 @@ use ApiResponse;
 
 use RZP\Http\Route;
 use RZP\Error\ErrorCode;
+use RZP\Http\RequestHeader;
 use RZP\Http\UserRolesScope;
+use Illuminate\Http\Request;
 use Illuminate\Foundation\Application;
+use RZP\Models\Merchant\Balance\Type as ProductType;
 
 class UserAccess
 {
@@ -62,8 +65,14 @@ class UserAccess
      *
      * @return mixed
      */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next)
     {
+        // Only if request is from internal application dashboard then we understand/process origin header.
+        if ($this->ba->isDashboardApp() === true)
+        {
+            $this->setRequestOriginProduct($request);
+        }
+
         if (($this->ba->isAdminAuth() === false) and
             ($this->ba->isStrictPrivateAuth() === false) and
             ($this->ba->isDashboardApp() === true))
@@ -121,6 +130,31 @@ class UserAccess
         }
     }
 
+    /**
+     * Check if the request origin is banking and set the banking product as banking in BA.
+     * Don't need to add any other stricter checks because we have CORS enabled for only BB
+     * domain and one request uri on oauth app.
+     *
+     * @param $request
+     */
+    private function setRequestOriginProduct(Request $request)
+    {
+        $originDomain = $request->headers->get(RequestHeader::X_REQUEST_ORIGIN);
+
+        $bankingOriginHost = parse_url(config('applications.banking_service_url'), PHP_URL_HOST);
+
+        $requestOriginHost = parse_url($originDomain, PHP_URL_HOST);
+
+        $product = ProductType::PRIMARY;
+
+        if ($bankingOriginHost === $requestOriginHost)
+        {
+            $product = ProductType::BANKING;
+        }
+
+        $this->ba->setRequestOriginProduct($product);
+    }
+
     private function validateRouteUserRolesPolicy($route)
     {
         $routeRoles = $this->userRoleScope->getRouteUserRoles($route);
@@ -135,7 +169,7 @@ class UserAccess
             return;
         }
 
-        $userRole = $this->getUserRole();
+        $userRole = $this->ba->getUserRole();
 
         // If no role was sent in the headers
         if (empty($userRole) === true)
@@ -151,17 +185,5 @@ class UserAccess
             return ApiResponse::unauthorized(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED);
         }
-    }
-
-    private function getUserRole()
-    {
-        // @todo validate the user actually has the role sent
-        // in headers since we don't want to trust dashboard
-
-        $dashboardHeaders = $this->ba->getDashboardHeaders();
-
-        $userRole = $dashboardHeaders['user_role'] ?? null;
-
-        return $userRole;
     }
 }

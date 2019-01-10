@@ -16,6 +16,7 @@ use RZP\Models\LineItem;
 use RZP\Models\Settings;
 use RZP\Models\FileStore;
 use RZP\Models\Plan\Subscription;
+use RZP\Base\RuntimeManager;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
@@ -389,6 +390,10 @@ class Core extends Base\Core
      */
     public function expireInvoices(): array
     {
+        RuntimeManager::setMaxExecTime(600);
+
+        RuntimeManager::setMemoryLimit('1024M');
+
         $time = time();
 
         $invoices = $this->repo->invoice->getIssuedAndPastExpiredByInvoices();
@@ -815,15 +820,14 @@ class Core extends Base\Core
 
     // -------------------- Protected methods --------------------
 
-    protected function updateDraftInvoice(
-        Merchant\Entity $merchant,
-        Entity $invoice,
-        array $input)
+    protected function updateDraftInvoice(Merchant\Entity $merchant, Entity $invoice, array $input)
     {
         $this->repo->transaction(
             function() use ($merchant, $invoice, $input)
             {
                 $this->generateAttributesOnUpdate($invoice, $input);
+
+                $this->unsetFirstPaymentMinAmountFieldIfApplicable($invoice);
 
                 (new Generator($merchant, $invoice))->updateDraftInvoice($input);
 
@@ -831,14 +835,13 @@ class Core extends Base\Core
             });
     }
 
-    protected function updateIssuedInvoice(
-        Merchant\Entity $merchant,
-        Entity $invoice,
-        array $input)
+    protected function updateIssuedInvoice(Merchant\Entity $merchant, Entity $invoice, array $input)
     {
         $this->repo->transaction(
             function () use ($invoice)
             {
+                $this->unsetFirstPaymentMinAmountFieldIfApplicable($invoice);
+
                 $this->updateOrderOfIssuedInvoice($invoice);
 
                 $this->repo->saveOrFail($invoice);
@@ -858,13 +861,24 @@ class Core extends Base\Core
      */
     protected function updateOrderOfIssuedInvoice(Entity $invoice)
     {
+        $order = $invoice->order;
+
         if ($invoice->isDirty(Entity::PARTIAL_PAYMENT) === true)
         {
-            $order = $invoice->order;
-
             $order->togglePartialPayment();
+        }
 
-            $this->repo->saveOrFail($order);
+        $order->setFirstPaymentMinAmount($invoice->getFirstPaymentMinAmount());
+
+        $this->repo->saveOrFail($order);
+    }
+
+    protected function unsetFirstPaymentMinAmountFieldIfApplicable(Entity $invoice)
+    {
+        if (($invoice->isDirty(Entity::PARTIAL_PAYMENT) === true) and
+            ($invoice->isPartialPaymentAllowed() === false))
+        {
+            $invoice->setFirstPaymentMinAmount(null);
         }
     }
 

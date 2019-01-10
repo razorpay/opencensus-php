@@ -5,7 +5,6 @@ namespace RZP\Models\Admin;
 use Cache;
 use Carbon\Carbon;
 
-use RZP\Error\ErrorCode;
 use RZP\Jobs;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -14,6 +13,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Constants\AdminFetch;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\GeoIP\Service as GeoIP;
 use RZP\Models\Base\QueryCache\Constants as QueryCacheConstants;
 use RZP\Reconciliator\ReconSummary\DailyReconStatusSummary;
@@ -420,5 +420,73 @@ class Service extends Base\Service
         $batch = $batchCore->create($input, $sharedMerchant);
 
         return $batch->toArrayPublic();
+    }
+
+    public function updateEntityBalanceIdInBulk(string $entity, array $input): array
+    {
+        assertTrue(
+            in_array(strtolower($entity), Entity::ENTITIES_WITH_BALANCE_ID_COLUMN),
+            "Entity not whitelisted for this bulk operation - $entity");
+
+        $limit            = (int) ($input['limit'] ?? 10000);
+        $merchantIds      = $input['merchant_ids'] ?? [];
+        $merchantIdsLimit = (int) ($input['merchant_limit'] ?? 5);
+
+        // If no merchant ids provided in input, query in limit set of unique mids where balance_id is null.
+        if (empty($merchantIds) === true)
+        {
+            $merchantIds = $this->repo->$entity->getUniqueMerchantIdsWhereBalanceIdIsNull($merchantIdsLimit);
+        }
+
+        // If still no merchant ids, this means no rows pending updatation.
+        if (empty($merchantIds) === true)
+        {
+            return [];
+        }
+
+        $merchants = $this->repo->merchant->findMany($merchantIds);
+
+        if ($merchants->count() === 0)
+        {
+            return [];
+        }
+
+        $this->trace->info(
+            TraceCode::ENTITY_BULK_UPDATE_BALANCE_ID_REQUEST,
+            compact('entity', 'limit', 'merchantIds', 'merchantIdsLimit'));
+
+        $failedMerchantIds           = [];
+        $totalUpdatedRowCounts       = 0;
+        $perMerchantUpdatedRowCounts = [];
+
+        foreach ($merchants as $merchant)
+        {
+            $merchantId = $merchant->getId();
+            $balanceId  = $merchant->primaryBalance->getId();
+
+            try
+            {
+                $updatedRowCounts = $this->repo->$entity->bulkUpdateBalanceId($merchantId, $balanceId, $limit);
+
+                $totalUpdatedRowCounts += $updatedRowCounts;
+                $perMerchantUpdatedRowCounts[$merchantId] = $updatedRowCounts;
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    TraceCode::ENTITY_BULK_UPDATE_BALANCE_ID_ERROR,
+                    compact('entity', 'merchantId', 'balanceId'));
+
+                $failedMerchantIds[] = $merchantId;
+            }
+        }
+
+        return compact(
+            'merchantIds',
+            'failedMerchantIds',
+            'totalUpdatedRowCounts',
+            'perMerchantUpdatedRowCounts');
     }
 }

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundTransfer\Yesbank\Request;
 
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Yesbank\RequestConstants;
@@ -18,9 +19,9 @@ class Beneficiary extends Base
 
     protected $responseIdentifier = Constants::BENE_RESPONSE_IDENTIFIER;
 
-    public function __construct()
+    public function __construct(bool $banking = false)
     {
-        parent::__construct();
+        parent::__construct($banking);
 
         $this->urlIdentifier = $this->config['ben_add_url_suffix'];
     }
@@ -120,7 +121,7 @@ class Beneficiary extends Base
 
             if($data[Constants::ERROR] !== self::RECORD_EXIST)
             {
-                throw new LogicException($data[Constants::ERROR], TraceCode::BENEFICIARY_REGISTRATION_FAILED_RESPONSE, $data);
+                throw new LogicException($data[Constants::ERROR], ErrorCode::BENEFICIARY_REGISTRATION_FAILED_RESPONSE, $data);
             }
             else
             {
@@ -165,6 +166,21 @@ class Beneficiary extends Base
     protected function extractSuccessfulData(array $response): array
     {
         return $response;
+    }
+
+    protected function extractGatewayData(array $response): array
+    {
+        throw new LogicException("should not be implemented for this");
+    }
+
+    public function getRequestInputForGateway(): array
+    {
+        throw new LogicException("should not be implemented for this");
+    }
+
+    public function getActionForGateway(): string
+    {
+        throw new LogicException("should not be implemented for this");
     }
 
     /**
@@ -300,5 +316,15 @@ class Beneficiary extends Base
                 . '</NS1:maintainBeneResponse>'
                 . '</soapenv:Body>'
                 . '</soapenv:Envelope>';
+    }
+
+    protected function mockGenerateFailedResponseForGateway(): array
+    {
+        throw new LogicException("should not be implemented for this");
+    }
+
+    protected function mockGenerateSuccessResponseForGateway(): array
+    {
+        throw new LogicException("should not be implemented for this");
     }
 }

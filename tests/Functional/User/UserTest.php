@@ -7,15 +7,20 @@ use Mail;
 use Hash;
 use Carbon\Carbon;
 
+use RZP\Mail\User\Otp;
 use RZP\Models\User\Constants;
 use RZP\Mail\User\PasswordReset;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\User\AccountVerification;
+use RZP\Models\User\Entity as UserEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Fixtures\Entity\User as UserFixture;
 
 class UserTest extends TestCase
 {
     use RequestResponseFlowTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -133,26 +138,20 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * Asserts usual edit operation. Additionally asserts that editing mobile causes verified flag to be marked false.
+     */
     public function testEdit()
     {
-        // will enable it when we use user edit functionality.
-        $this->markTestSkipped();
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID, [UserEntity::CONTACT_MOBILE_VERIFIED => 1]);
 
-        $user = $this->fixtures->create('user');
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $content = [
-            'name' => 'hello'
-        ];
-
-        $testData['request']['content'] = $content;
-
-        $testData['request']['url'] = '/users/' . $user['id'];
-
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $this->startTest();
+
+        $user = $this->getDbEntityById('user', UserFixture::MERCHANT_USER_ID);
+
+        $this->assertFalse($user->isContactMobileVerified());
     }
 
     public function testChangePassword()
@@ -234,7 +233,7 @@ class UserTest extends TestCase
 
         $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $ownerUser['id'];
 
-        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $ownerUser['id']);
 
         $this->startTest();
 
@@ -278,7 +277,7 @@ class UserTest extends TestCase
 
         $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $ownerUser['id'];
 
-        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $ownerUser['id']);
 
         $this->startTest();
 
@@ -320,7 +319,7 @@ class UserTest extends TestCase
 
         $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $ownerUser['id'];
 
-        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $ownerUser['id']);
 
         $this->startTest();
 
@@ -453,5 +452,108 @@ class UserTest extends TestCase
         $this->makeRequestAndGetContent($testData['request']);
 
         $this->startTest();
+    }
+
+    public function testSendOtp()
+    {
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID, [UserEntity::CONTACT_MOBILE => '123456789']);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+    }
+
+    public function testSendOtpViaMail()
+    {
+        Mail::fake();
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+
+        Mail::assertQueued(Otp::class, function ($mail)
+        {
+            $this->assertEquals('create payout', $mail->action);
+            $this->assertNotEmpty($mail->user);
+            $this->assertNotEmpty($mail->otp);
+            $this->assertEquals('emails.user.otp', $mail->view);
+            return true;
+        });
+    }
+
+    public function testSendOtpWithInvalidAction()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testSendOtpViaMailToVerifyContact()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testSendOtpToVerifyContactWhenAlreadyVerified()
+    {
+        $this->fixtures->edit(
+            'user',
+            UserFixture::MERCHANT_USER_ID,
+            [
+                UserEntity::CONTACT_MOBILE          => '123456789',
+                UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testSendOtpViaSmsWhenContactDoesNotExist()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testSendOtpViaSmsWhenContactIsNotVerified()
+    {
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID, [UserEntity::CONTACT_MOBILE => '123456789']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testVerifyContactWithOtp()
+    {
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID, [UserEntity::CONTACT_MOBILE => '123456789']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', UserFixture::MERCHANT_USER_ID);
+
+        $this->assertTrue($user->isContactMobileVerified());
+    }
+
+    public function testVerifyContactWithInvalidOtp()
+    {
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID, [UserEntity::CONTACT_MOBILE => '123456789']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testVerifyContactWithInvalidToken()
+    {
+        $this->markTestSkipped('Todo: Not possible with current implementation!');
     }
 }

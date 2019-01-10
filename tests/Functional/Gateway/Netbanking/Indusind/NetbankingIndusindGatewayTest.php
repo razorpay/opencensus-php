@@ -4,17 +4,17 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Indusind;
 
 use Mail;
 use Excel;
-use Mockery;
-use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\Terminal\Options;
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class NetbankingIndusindGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -78,6 +78,16 @@ class NetbankingIndusindGatewayTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $order = $this->startTest();
+
+        $bank_account = $this->getLastEntity('bank_account', true);
+
+        // removing the order bank account association
+        // payment should work without association too
+        $this->fixtures->edit('bank_account',
+            $bank_account['id'],
+            [
+                'entity_id' => 'ba_randomorder',
+            ]);
 
         $this->payment['order_id'] = $order['id'];
 

@@ -3,50 +3,40 @@
 namespace RZP\Models\Payout;
 
 use RZP\Exception;
-use RZP\Constants;
+use RZP\Constants\Entity as E;
 
 class Method
 {
-    const FUND_TRANSFER  = 'fund_transfer';
+    const FUND_TRANSFER     = 'fund_transfer';
+    const UPI               = 'upi';
 
-    protected static $methods = [
-        self::FUND_TRANSFER     => 'Fund Transfer',
+    public static $methods = [
+        self::FUND_TRANSFER,
+        self::UPI,
     ];
 
-    protected static $methodToEntityMap = [
-        self::FUND_TRANSFER     => Constants\Entity::BANK_ACCOUNT
+    public static $destinationMethodMap = [
+        E::BANK_ACCOUNT => self::FUND_TRANSFER,
+        E::VPA          => self::UPI,
     ];
 
-    public static function formatted($method)
+    public static function isValid(string $method): bool
     {
-        return self::$methods[$method];
+        $key = __CLASS__ . '::' . strtoupper($method);
+
+        return ((defined($key) === true) and (constant($key) === $method));
     }
 
-    public static function getAllPayoutMethods()
+    public static function validateMethod(string $method)
     {
-        return array_keys(self::$methods);
-    }
-
-    public static function validateMethod($method)
-    {
-        if (defined(__CLASS__ . '::' . strtoupper($method)) === false)
+        if (self::isValid($method) === false)
         {
-            throw new Exception\InvalidArgumentException(
-                'Not a valid Payout method: ' . $method);
+            throw new Exception\BadRequestValidationFailureException('Not a valid Payout method: ' . $method);
         }
     }
 
-    public static function getEntityClass($method)
+    public static function getAll(): array
     {
-        $name = self::getEntityName($method);
-
-        $class = Constants\Entity::getEntityClass($name);
-
-        return $class;
-    }
-
-    public static function getEntityName(string $method): string
-    {
-        return self::$methodToEntityMap[$method];
+        return self::$methods;
     }
 }
