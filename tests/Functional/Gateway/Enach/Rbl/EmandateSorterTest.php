@@ -28,6 +28,7 @@ class EmandateSorterTest extends TestCase
 
     public function testEmandateSorter()
     {
+        $this->markTestSkipped();
         $this->fixtures->create('terminal:shared_enach_rbl_terminal');
 
         $this->fixtures->create('terminal:emandate_icici_terminal');
@@ -53,6 +54,7 @@ class EmandateSorterTest extends TestCase
 
     public function testEmandateSorterShared()
     {
+        $this->markTestSkipped();
         $this->fixtures->create('terminal:shared_enach_rbl_terminal');
 
         $this->fixtures->create('terminal:shared_emandate_icici_terminal');
@@ -76,6 +78,7 @@ class EmandateSorterTest extends TestCase
 
     public function testEmandateSorterDirectAndShared()
     {
+        $this->markTestSkipped();
         $this->fixtures->create('terminal:emandate_icici_terminal');
 
         $this->fixtures->create('terminal:shared_emandate_icici_terminal');

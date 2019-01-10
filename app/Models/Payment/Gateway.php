@@ -964,6 +964,7 @@ class Gateway
             IFSC::UTIB,
             IFSC::HDFC,
             //TODO add banks supported by NPCI for emandate
+            IFSC::CBIN,
         ],
         // Please keep this list sorted
         // You can find the latest PDF version
@@ -1077,6 +1078,7 @@ class Gateway
             Gateway::ENACH_RBL          => [
                 IFSC::HDFC,
                 IFSC::ICIC,
+                IFSC::CBIN,
             ]
         ],
         AuthType::AADHAAR => [
