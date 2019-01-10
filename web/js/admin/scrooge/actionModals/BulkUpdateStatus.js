@@ -17,6 +17,7 @@ import { bulkUpdateRefundsStatus } from 'admin/scrooge/util';
 import { updateStatusEvents } from 'admin/scrooge/constants';
 
 BulkUpdateStatus.title = 'Bulk Update Status';
+BulkUpdateStatus.permission = 'edit_refund';
 
 export default function BulkUpdateStatus() {
   return (
