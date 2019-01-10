@@ -33,18 +33,20 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    public function makeAddRules()
+    public function makeVerificationSuccessRules()
     {
-        $rules = $this->makeRules([]);
-
-        return $rules;
+        return $this->makeRules([
+            Entity::TOKEN         => 'required',
+            Entity::RESPONSE      => 'required',
+            Entity::DEVICE_DATA   => 'sometimes',
+        ]);
     }
 
-    public function makeVerifyRules()
+    public function makeVerificationStatusRules()
     {
-        $rules = $this->makeRules([]);
-
-        return $rules;
+        return $this->makeRules([
+            Entity::TOKEN  => 'required',
+        ]);
     }
 
     public function validateDeviceData()
