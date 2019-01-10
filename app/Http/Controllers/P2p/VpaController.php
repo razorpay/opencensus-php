@@ -3,6 +3,7 @@
 namespace RZP\Http\Controllers\P2p;
 
 use RZP\Models\P2p;
+use RZP\Models\P2p\Vpa\Entity;
 
 /**
  * @property  P2p\Vpa\Service $service
@@ -38,7 +39,7 @@ class VpaController extends Controller
 
     public function fetch()
     {
-        $input = $this->request()->all();
+        $input[Entity::ID] = $this->request()->route('vpa_id');
 
         $response = $this->service->fetch($input);
 
@@ -47,7 +48,8 @@ class VpaController extends Controller
 
     public function assignBankAccount()
     {
-        $input = $this->request()->all();
+        $input[Entity::ID] = $this->request()->route('vpa_id');
+        $input[Entity::BANK_ACCOUNT_ID] = $this->request()->route('ba_id');
 
         $response = $this->service->assignBankAccount($input);
 
@@ -65,7 +67,7 @@ class VpaController extends Controller
 
     public function delete()
     {
-        $input = $this->request()->all();
+        $input[Entity::ID] = $this->request()->route('vpa_id');
 
         $response = $this->service->delete($input);
 

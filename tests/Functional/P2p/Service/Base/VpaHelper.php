@@ -25,7 +25,7 @@ class VpaHelper extends P2pHelper
         $request = $this->request('vpa');
 
         $default = [
-            'address'         => 'random@razorhdfc',
+            'username'        => 'random',
             'bank_account_id' => $this->fixtures->bank_account->getPublicId(),
         ];
 
@@ -56,7 +56,7 @@ class VpaHelper extends P2pHelper
         $request = $this->request('vpa/available');
 
         $default = [
-            'address'   => 'random@razorhdfc',
+            'username'   => 'random',
         ];
 
         $this->content($request, $default);
