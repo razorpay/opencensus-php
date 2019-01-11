@@ -2576,6 +2576,11 @@ class Entity extends Base\PublicEntity
         return $this->hasOne('RZP\Models\Discount\Entity');
     }
 
+    public function origin()
+    {
+        return $this->morphOne('RZP\Models\Origin\Entity', 'origin');
+    }
+
     public function offers()
     {
         return $this->morphToMany(
