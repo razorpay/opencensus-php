@@ -1,13 +1,18 @@
+import { Link } from 'react-router-dom';
+import { formatDate, titleCase } from 'common/util';
 import { razorxFetch } from 'admin/razorx/fetch';
 
-const data = {
+const dummy_data = {
   id: 182,
   name: 'Reports-V3-migration',
-  description: 'Move reports to ES',
+  description:
+    'Move reports to ES Move reports to ES Move reports to ES Move reports to ES',
   created_by: 'tom',
   active_experiments: 4,
+  total_experiments: 10,
   created_at: 1546434027,
   updated_at: 1546434027,
+  updated_by: 'dom',
   deleted_at: 0,
   variants: ['on', 'off'],
 };
@@ -74,5 +79,65 @@ export default class extends React.PureComponent {
 }
 
 const Details = ({ data }) => {
-  return <div>Create</div>;
+  return (
+    <React.Fragment>
+      <div class="title">{data.name}</div>
+      <div class="description">
+        {data.description}
+        <div class="sub-description">
+          Created by {titleCase(data.created_by)} on{' '}
+          {formatDate(data.created_at)}
+          {data.updated_at !== data.created_at && (
+            <div>
+              Last Updated by {titleCase(data.updated_by)} on{' '}
+              {formatDate(data.updated_at)}
+            </div>
+          )}
+        </div>
+      </div>
+      <br />
+      <div>
+        <div class="label">Variants</div>
+        {data.variants.map((v, i) => (
+          <div key={i}>
+            <span class="square-pills label-semi-muted">{v}</span>
+          </div>
+        ))}
+      </div>
+
+      <br />
+
+      <div>
+        <div class="label">Total Active Experiments</div>
+        {
+          <div>
+            {data.active_experiments}
+            <Link
+              class="link m-l"
+              to={`/razorx/experiments?feature_id=${data.id}&status=activated`}
+            >
+              View all
+            </Link>
+          </div>
+        }
+      </div>
+
+      <br />
+
+      <div>
+        <div class="label">Total Experiments</div>
+        {
+          <div>
+            {data.total_experiments}
+            <Link
+              class="link m-l"
+              to={`/razorx/experiments?feature_id=${data.id}`}
+            >
+              View all
+            </Link>
+          </div>
+        }
+      </div>
+    </React.Fragment>
+  );
 };
