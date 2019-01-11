@@ -72,7 +72,7 @@ const links = [
   // title, url, permission, icon
   ['Experiments', '/razorx/experiments', '', 'flask'],
   ['Features', '/razorx/features', '', 'layers'],
-  ['Workflows', '/razorx/workflows', '', 'yes'],
+  ['Workflow Requests', '/razorx/requests', '', 'yes'],
   ['Merchant Evaluation', '/razorx/merchant-evaluation', '', 'user-search'],
   ['Audit Logs', '/razorx/audit-logs', '', 'notes'],
 ];
@@ -118,7 +118,7 @@ export default class RazorX extends React.Component {
         <Route path="/razorx/experiments/new" component={Experiments} />
 
         <ShowWhenRoute path="/razorx/features" component={Features} />
-        <Route path="/razorx/workflows" component={WorkflowsList} />
+        <Route path="/razorx/requests" component={WorkflowsList} />
         <Route
           path="/razorx/merchant-evaluation"
           component={MerchantEvaluation}

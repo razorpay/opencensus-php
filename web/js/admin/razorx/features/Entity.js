@@ -74,22 +74,24 @@ export default class extends React.PureComponent {
       content = <Details data={data} />;
     }
 
+    content = <Details data={dummy_data} />;
+
     return <div class="entity-container">{content}</div>;
   }
 }
 
 const Details = ({ data }) => {
   return (
-    <React.Fragment>
+    <div>
       <div class="title">{data.name}</div>
       <div class="description">
         {data.description}
         <div class="sub-description">
-          Created by {titleCase(data.created_by)} on{' '}
+          <b>Created by</b> {titleCase(data.created_by)} on{' '}
           {formatDate(data.created_at)}
           {data.updated_at !== data.created_at && (
             <div>
-              Last Updated by {titleCase(data.updated_by)} on{' '}
+              <b>Last Updated by</b> {titleCase(data.updated_by)} on{' '}
               {formatDate(data.updated_at)}
             </div>
           )}
@@ -138,6 +140,6 @@ const Details = ({ data }) => {
           </div>
         }
       </div>
-    </React.Fragment>
+    </div>
   );
 };
