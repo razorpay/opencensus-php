@@ -67,19 +67,22 @@ export default class extends React.PureComponent {
 
   render() {
     const { isFetching, data } = this.state;
+    const { id } = this.props;
+
     let content;
 
-    if (!this.props.id) {
+    if (!id) {
       content = null;
     } else if (isFetching) {
       content = <div class="spinner center" />;
     } else if (!isFetching && !data) {
       content = (
-        <div>
+        <div class="page-center empty-entity">
           <i class="i-flask" />
-          {this.props.id}
-          <br />
-          No Experiment found!
+          <div class="description">
+            <div>ID: {id}</div>
+            No Experiment found!
+          </div>
         </div>
       );
     } else {
