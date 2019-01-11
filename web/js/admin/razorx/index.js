@@ -7,9 +7,10 @@ import AsyncButton from 'ui/AsyncButton';
 
 import MainNavLink from 'admin/components/MainNavLink';
 
-import Features from './Features';
-import Experiments from './Experiments';
 import user, { org } from 'admin/user';
+
+import Features from './eeatures';
+import Experiments from './fxperiments';
 import WorkflowsList from './workflows/List';
 import MerchantEvaluation from './merchant_evaluation/Search';
 import AuditLogsList from './auditlog/List';
@@ -109,14 +110,6 @@ export const Sidebar = ({ user, handleLogout }) => (
 );
 
 export default class RazorX extends React.Component {
-  componentWillMount() {
-    document.title = 'RazorX Dashboard';
-  }
-
-  componentWillUnmount() {
-    document.title = 'Razorpay - Admin Panel';
-  }
-
   render() {
     return (
       <Switch>

@@ -1,19 +1,19 @@
 import { openModal, closeModal, confirm } from 'common/modal';
-import ExperimentsModal from './ExperimentsModal';
+import FeaturesModal from './FeaturesModal';
 import { SwitchField } from 'ui/Field';
 import List from './List';
 import Entity from './Entity';
 
-export default class Experiments extends React.PureComponent {
-  showExperimentModal = _ => {
-    openModal(<ExperimentsModal />);
+export default class Features extends React.PureComponent {
+  showFeatureModal = _ => {
+    openModal(<FeaturesModal />);
   };
 
   render() {
     return (
-      <div class="parent-container experiments-container">
+      <div class="parent-container features-container">
         <div class="header">
-          Experiments
+          Features
           <SwitchField
             name="mode"
             defaultValue="live"
@@ -24,7 +24,7 @@ export default class Experiments extends React.PureComponent {
             onChange={this.props.updateModeInStore}
           />
           <div class="btn-group">
-            <button class="btn btn--primary" onClick={this.showExperimentModal}>
+            <button class="btn btn--primary" onClick={this.showFeatureModal}>
               + Add New
             </button>
           </div>
