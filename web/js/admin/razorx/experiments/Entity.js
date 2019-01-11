@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { formatDate, titleCase } from 'common/util';
+import { formatDate, titleCase, classList } from 'common/util';
 import { razorxFetch } from 'admin/razorx/fetch';
 
 const dummy_data = {
@@ -25,7 +25,7 @@ const dummy_data = {
     {
       variant: 'off',
       type: 'ramp',
-      ids: null,
+      ids: ['random'],
       weight: 8,
     },
   ],
@@ -98,16 +98,12 @@ export default class extends React.PureComponent {
       content = <Details data={data} />;
     }
 
-    content = <Details data={dummy_data} />;
-
     return <div class="entity-container">{content}</div>;
   }
 }
 
 const Details = ({ data }) => {
   const segments = getSegmentsGroupedByVariant(data.segments);
-
-  console.log('SEGMENTS...', segments);
 
   return (
     <div>
@@ -174,7 +170,22 @@ const Details = ({ data }) => {
               <div>
                 <span class="square-pills label-semi-muted">{k}</span>
               </div>
-              {segment.map((s, j) => JSON.stringify(s))}
+              {segment.map((s, j) => (
+                <div class="sub-segment">
+                  {Object.keys(s).map((g, ix) => {
+                    const isArray = s[g] instanceof Array;
+
+                    return (
+                      <div>
+                        <span class="label">{titleCase(g)}: </span>
+                        <span class={classList(isArray && 'sub-segment-group')}>
+                          {isArray ? s[g].join(', ') : s[g]}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
             </div>
           );
         })}
@@ -184,15 +195,17 @@ const Details = ({ data }) => {
 };
 
 function getSegmentsGroupedByVariant(data) {
-  var bucket = {};
+  const bucket = {};
 
   data.forEach(s => {
-    if (bucket.hasOwnProperty(s.variant)) {
-      bucket[s.variant].push(s);
-      delete s.variant;
+    const seg = { ...s };
+
+    if (bucket.hasOwnProperty(seg.variant)) {
+      bucket[seg.variant].push(seg);
+      delete seg.variant;
     } else {
-      bucket[s.variant] = [s];
-      delete s.variant;
+      bucket[seg.variant] = [seg];
+      delete seg.variant;
     }
   });
 
