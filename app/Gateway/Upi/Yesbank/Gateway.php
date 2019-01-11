@@ -3,20 +3,15 @@
 namespace RZP\Gateway\Upi\Yesbank;
 
 use Request;
-use Carbon\Carbon;
 
-use RZP\Base\JitValidator;
 use RZP\Exception;
 use RZP\Constants\Mode;
-use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Upi\Mindgate;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Models\Currency\Currency;
-use RZP\Models\Base\UniqueIdEntity;
-use Razorpay\Trace\Logger as Trace;
 
 class Gateway extends Mindgate\Gateway
 {
@@ -339,7 +334,7 @@ class Gateway extends Mindgate\Gateway
         $content = [
             Fields::PGMERCHANT_ID       => $this->getGatewayMerchantId($input),
             Fields::ORDERNO             => $input[Fields::GATEWAY_INPUT][Fields::REF_ID],
-            Fields::TXN_NOTE            => 'Payout to Razorpay customer VPA',
+            Fields::TXN_NOTE            => $this->getNarration($input),
             Fields::AMOUNT              => $this->formatAmount($input[Fields::GATEWAY_INPUT][Fields::AMOUNT]),
             Fields::CURRENCY            => Currency::INR,
             Fields::PAYMENT_TYPE        => Type::P2P,
@@ -472,6 +467,26 @@ class Gateway extends Mindgate\Gateway
         }
 
         return $input['merchant']['category'] ?: 5411;
+    }
+
+    protected function getNarration(array $input)
+    {
+        if (empty($input[Fields::GATEWAY_INPUT][Fields::NARRATION]) === false)
+        {
+            return $input[Fields::GATEWAY_INPUT][Fields::NARRATION];
+        }
+
+        $merchant = $input['merchant'];
+
+        $merchantBillingLabel = $merchant['billing_label'] ?? 'Razorpay';
+
+        $formattedLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $merchantBillingLabel);
+
+        $formattedLabel = ($formattedLabel ? str_limit($formattedLabel, 30) : 'Razorpay');
+
+        $narration = $formattedLabel . ' Fund Transfer';
+
+        return $narration;
     }
 
     /**
