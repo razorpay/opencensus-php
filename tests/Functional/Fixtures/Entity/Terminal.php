@@ -530,7 +530,7 @@ class Terminal extends Base
     {
         $termId = \RZP\Models\Terminal\Shared::PAYUMONEY_RAZORPAY_TERMINAL;
 
-        $attributes = [
+        $default = [
             'id'                        => $termId,
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'wallet_payumoney',
