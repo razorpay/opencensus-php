@@ -1525,6 +1525,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_DISPATCH_FOR_PAYOUT_COMPLETE    = 'FTA_DISPATCH_FOR_PAYOUT_COMPLETE';
     const FTA_RECONCILIATION_JOB_RELEASED     = 'FTA_RECONCILIATION_JOB_RELEASED';
 
+    // Origin trace codes
+    const ORIGIN_SET_FAILED                   = 'ORIGIN_SET_FAILED';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',

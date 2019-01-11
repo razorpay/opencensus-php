@@ -18,6 +18,7 @@ use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Offer;
+use RZP\Models\Origin;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Metric;
 use RZP\Models\PaymentLink;
@@ -248,7 +249,11 @@ class Processor
             // This flow is being used for only hosted (Shopify).
             $this->checkSignature($input, $payment);
 
-            return $this->authorize($payment, $input, $gatewayInput);
+            $paymentArray = $this->authorize($payment, $input, $gatewayInput);
+
+            $this->setOriginDetails($payment);
+
+            return $paymentArray;
         }
         catch (\Throwable $e)
         {
@@ -262,6 +267,45 @@ class Processor
             (new Payment\Metric)->pushExceptionMetrics($e, Metric::PAYMENT_PROCESS_FAILED, $dimensions);
 
             throw $e;
+        }
+    }
+
+    /**
+     * Creates an origin entity for the payment based on the auth used to initiate the payment.
+     *
+     * @param Payment\Entity $payment
+     */
+    public function setOriginDetails(Payment\Entity $payment)
+    {
+        try
+        {
+            list($originType, $originId) = app('basicauth')->getOriginDetailsFromAuth();
+
+            //
+            // Non null origin details are returned only for public auth, partner auth and bearer auth.
+            // Return if null values are returned.
+            //
+            if ((empty($originType) === true) or (empty($originId) === true))
+            {
+                return;
+            }
+
+            $input = [
+                Origin\Entity::ORIGIN_ID   => $originId,
+                Origin\Entity::ORIGIN_TYPE => $originType,
+            ];
+
+            (new Origin\Core)->create($input, $payment);
+        }
+        catch (\Throwable $e)
+        {
+            // The payment should not be blocked even if the origin cannot be created. Log an error and proceed.
+            $this->trace->error(TraceCode::ORIGIN_SET_FAILED, [
+                'message'    => $e->getMessage(),
+                'payment_id' => $payment->getId(),
+            ]);
+
+            return;
         }
     }
 
