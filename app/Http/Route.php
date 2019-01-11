@@ -788,7 +788,8 @@ final class Route
         'scrooge_refunds_get_multiple'             => ['post',     'scrooge/refunds',                                'ScroogeController@listRefunds'                                     ],
         'scrooge_refunds_get'                      => ['get',      'scrooge/refunds/{id}',                           'ScroogeController@get'                                             ],
         'scrooge_refunds_update'                   => ['post',     'scrooge/refunds/{id}/status-update',             'ScroogeController@statusUpdate'                                    ],
-        'scrooge_refunds_download'                 => ['post',      'scrooge/refunds/download',                      'ScroogeController@downloadRefunds'                                 ],
+        'scrooge_refunds_download'                 => ['post',     'scrooge/refunds/download',                       'ScroogeController@downloadRefunds'                                 ],
+        'scrooge_refunds_enqueue'                  => ['post',     'scrooge/refunds/enqueue',                        'ScroogeController@enqueue'                                         ],
 
         // Dispute routes
         'payment_dispute_create'                   => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
@@ -1825,6 +1826,7 @@ final class Route
         // Scrooge - ODS Dashboard
         'scrooge_reports_get_multiple',
         'scrooge_refunds_update_multiple',
+        'scrooge_refunds_enqueue',
         'scrooge_refunds_get_multiple',
         'scrooge_refunds_download',
         'scrooge_refunds_get',
@@ -2130,6 +2132,7 @@ final class Route
         'risk_update'                              => '*',
         'scrooge_reports_get_multiple'             => '*',
         'scrooge_refunds_update_multiple'          => Permission::EDIT_REFUND,
+        'scrooge_refunds_enqueue'                  => Permission::EDIT_REFUND,
         'scrooge_refunds_get_multiple'             => '*',
         'scrooge_refunds_download'                 => '*',
         'scrooge_refunds_get'                      => '*',
