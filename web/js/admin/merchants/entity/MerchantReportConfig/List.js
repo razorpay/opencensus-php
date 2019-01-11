@@ -1,10 +1,11 @@
 import { Component } from 'react';
 
-import { openModal } from 'common/modal';
-import { adminFetch } from 'common/fetch';
+import { notifySuccess, openModal, closeModal } from 'common/modal';
+import { adminFetch, adminDelete } from 'common/fetch';
 
 import { ModalContent } from 'component/Modal';
 import { PageTable } from 'ui/Table';
+import AsyncButton from 'ui/AsyncButton';
 
 import Collection from 'model/collection';
 
@@ -13,7 +14,7 @@ import { pickProps } from 'rzp/utils/rzp-utils';
 import CreateEntity from './Create';
 import Entity from './Entity';
 
-const getFields = ({ view, edit, clone }) => [
+const getFields = ({ view, edit, clone, remove }) => [
   [
     'ID',
     item => (
@@ -38,6 +39,14 @@ const getFields = ({ view, edit, clone }) => [
     item => (
       <span class="link" onClick={clone(item)}>
         Clone
+      </span>
+    ),
+  ],
+  [
+    '',
+    item => (
+      <span class="link danger" onClick={remove(item)}>
+        Delete
       </span>
     ),
   ],
@@ -109,6 +118,42 @@ export default class MerchantReportConfigList extends Component {
         this.collection.push(config);
       },
     });
+  };
+
+  remove = config => () => {
+    openModal(
+      <ModalContent header="Delete Report Config">
+        <div>
+          Are you sure you want to delete report config:{' '}
+          <strong>{config.name}</strong>
+        </div>
+        <div>
+          <div class="pull-right">
+            <button class="btn-reject" onClick={closeModal}>
+              Cancel
+            </button>
+            <AsyncButton
+              text="Yes"
+              class="btn"
+              pendingClass="small spinner"
+              onClick={() =>
+                adminDelete(
+                  `live_${this.props.match.params.id}/reporting/configs/${
+                    config.id
+                  }`
+                ).then(response => {
+                  if (response) {
+                    this.collection.remove(config);
+                    closeModal();
+                    notifySuccess('Report config delted successfully');
+                  }
+                })
+              }
+            />
+          </div>
+        </div>
+      </ModalContent>
+    );
   };
 
   render() {

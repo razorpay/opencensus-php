@@ -2,7 +2,7 @@ import React from 'react';
 import Form from 'ui/Form';
 import { TextAreaField } from 'ui/Field';
 
-import { adminPost } from 'common/fetch';
+import { adminPut } from 'common/fetch';
 import { splitAndFilter } from 'common/util';
 import {
   closeModal,
@@ -12,20 +12,20 @@ import {
 } from 'common/modal';
 import { ModalContent } from 'component/Modal';
 
-export default function ScroogeRefundCreateBulk() {
+export default function EditGatewayUnprocessedRefundsConfig() {
   function onSubmit(body) {
     if (body.refund_ids) {
       let payload = {
-        url: `live/refunds/scrooge_create/bulk`,
+        url: `live/config/keys`,
         data: {
-          refund_ids: splitAndFilter(body.refund_ids, ','),
+          GATEWAY_UNPROCESSED_REFUNDS: splitAndFilter(body.refund_ids, ','),
         },
       };
 
-      adminPost(payload).then(response => {
+      adminPut(payload).then(response => {
         if (response) {
           notifySuccess(
-            'Scrooge refund create has been successfully initiated.'
+            'Refunds have been added in unprocessed list successfully.'
           );
           closeModal();
           openModal(
@@ -44,7 +44,7 @@ export default function ScroogeRefundCreateBulk() {
 
   return (
     <Form
-      class="full-span scrooge-create-bulk-refunds-action"
+      class="full-span edit-gateway-unprocessed-refunds-config-action"
       onSubmit={onSubmit}
     >
       <TextAreaField
@@ -63,5 +63,6 @@ export default function ScroogeRefundCreateBulk() {
   );
 }
 
-ScroogeRefundCreateBulk.title = 'Create Scrooge Refunds in Bulk';
-ScroogeRefundCreateBulk.permission = 'retry_refund';
+EditGatewayUnprocessedRefundsConfig.title =
+  'Edit Gateway Unprocessed Refunds Config';
+EditGatewayUnprocessedRefundsConfig.permission = 'retry_refund';

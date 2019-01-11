@@ -31,7 +31,7 @@ import SubscriptionBatchDetails from 'merchant/containers/Subscriptions/Batch/En
 import PlanNew from 'merchant/containers/Plans/New';
 import ActivationContainer from 'merchant/containers/Activation';
 import NewAuthLink from 'merchant/containers/Subscriptions/AuthLinks/New';
-
+import NewSubscriptionLink from 'merchant/containers/Subscriptions/SubscriptionLinks/New';
 /*
  * NOTE: entityDetailsMap and entityModalsMap must be mutually exclusive sets
  * */
@@ -133,6 +133,9 @@ const entityModalsMap = {
   '/authlinks/new': {
     component: NewAuthLink,
     additionalCondition: user => user.isChargeAtWillEnabled,
+  },
+  '/subscriptions/new': {
+    component: NewSubscriptionLink,
   },
 };
 

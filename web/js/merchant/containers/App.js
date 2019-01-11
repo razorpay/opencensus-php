@@ -411,6 +411,7 @@ export default class App extends Component {
 
         {this.state.isDashboardLocked && (
           <PasswordReLogin
+            merchantId={user.current}
             userEmail={user.user.email}
             removeLockScreen={this.removeLockScreen}
             showNotification={this.props.showNotification}

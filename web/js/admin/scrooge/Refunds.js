@@ -3,7 +3,13 @@ import { Link } from 'react-router-dom';
 import { PageTable } from 'ui/Table';
 import Form, { serialize } from 'ui/Form';
 import AsyncButton from 'ui/AsyncButton';
-import Field, { FromField, ToField, SelectField, SelectMode } from 'ui/Field';
+import Field, {
+  FromField,
+  ToField,
+  SelectField,
+  SelectMode,
+  CheckField,
+} from 'ui/Field';
 import MultiSelectField from 'ui/MultiSelectField';
 import Collection from 'model/collection';
 import { adminPost, adminFetch } from 'common/fetch';
@@ -13,7 +19,13 @@ import {
   getSearchParams,
   intersect,
 } from 'common/util';
-import { notifyError } from 'common/modal';
+import { ModalContent } from 'component/Modal';
+import { openModal, notifySuccess, notifyError } from 'common/modal';
+
+import ShowWhen from 'admin/components/ShowWhen';
+import NavBar from 'admin/scrooge/NavBar';
+import { bulkUpdateRefundStatus } from 'admin/scrooge/util';
+import { updateStatusEvents } from 'admin/scrooge/constants';
 
 export default class Refunds extends Component {
   constructor(props) {
@@ -21,22 +33,10 @@ export default class Refunds extends Component {
 
     this.mode = this.props.match.params.mode || 'live';
 
-    this.fields = [
-      ['Refund ID', item => refundLink(item, this.mode)],
-      ['Payment ID', item => paymentLink(item, this.mode)],
-      ['Merchant ID', item => item.merchant_id],
-      ['Status', item => item.status],
-      ['Gateway', item => item.gateway],
-      ['Method', item => item.method],
-      ['Attempts', item => item.attempts],
-      ['Refund Amount', item => showAmount(item.currency, item.amount)],
-      [
-        'Payment Amount',
-        item => showAmount(item.currency, item.payment_amount),
-      ],
-      ['Refund Created At', item => formatDate(item.created_at)],
-      ['Payment Created At', item => formatDate(item.payment_created_at)],
-    ];
+    this.state = {
+      isLoading: true,
+      selectedRefunds: [],
+    };
 
     this.params = this.getQueryParams();
 
@@ -45,10 +45,6 @@ export default class Refunds extends Component {
     };
 
     this.defaultValues = {};
-
-    this.state = {
-      isLoading: true,
-    };
 
     adminFetch(`${this.mode}/admin/entities/all`)
       .then(data => {
@@ -123,7 +119,65 @@ export default class Refunds extends Component {
     this.onRefundModeChange = this.onRefundModeChange.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
     this.resetForm = this.resetForm.bind(this);
+    this.handleSelectAll = this.handleSelectAll.bind(this);
+    this.handleSelection = this.handleSelection.bind(this);
+    this._getFields = this._getFields.bind(this);
   }
+
+  _getFields = () => {
+    const { selectedRefunds } = this.state;
+
+    return [
+      [
+        <CheckField defaultChecked={false} onChange={this.handleSelectAll} />,
+        item => (
+          <CheckField
+            data-refundid={item.id}
+            checked={selectedRefunds.indexOf(item.id) > -1}
+            onChange={this.handleSelection}
+          />
+        ),
+      ],
+      ['Refund ID', item => refundLink(item, this.mode)],
+      ['Payment ID', item => paymentLink(item, this.mode)],
+      ['Merchant ID', item => item.merchant_id],
+      ['Status', item => item.status],
+      ['Gateway', item => item.gateway],
+      ['Method', item => item.method],
+      ['Attempts', item => item.attempts],
+      ['Refund Amount', item => showAmount(item.currency, item.amount)],
+      [
+        'Payment Amount',
+        item => showAmount(item.currency, item.payment_amount),
+      ],
+      ['Refund Created At', item => formatDate(item.created_at)],
+      ['Payment Created At', item => formatDate(item.payment_created_at)],
+    ];
+  };
+
+  handleSelectAll = event => {
+    let selectedRefunds = [];
+
+    if (event.target.checked) {
+      this.collection.items.map(item => selectedRefunds.push(item.id));
+    }
+
+    this.setState({ selectedRefunds });
+  };
+
+  handleSelection = event => {
+    const selectedRefunds = [...this.state.selectedRefunds];
+    const refundId = event.target.dataset.refundid;
+    const index = selectedRefunds.indexOf(refundId);
+
+    if (index > -1) {
+      selectedRefunds.splice(index, 1);
+    } else {
+      selectedRefunds.push(refundId);
+    }
+
+    this.setState({ selectedRefunds });
+  };
 
   getQueryParams = () => {
     let rawParams = getSearchParams();
@@ -153,6 +207,8 @@ export default class Refunds extends Component {
   onSubmit = filters => {
     this.setCollectionData(filters);
 
+    this.setState({ selectedRefunds: [] });
+
     return this.collection.fetch();
   };
 
@@ -178,19 +234,48 @@ export default class Refunds extends Component {
     });
   };
 
+  onDownloadSelectedClick = () => {
+    const selectedRefunds = [...this.state.selectedRefunds];
+
+    return adminPost({
+      url: `${this.mode}/scrooge/refunds/download`,
+      data: {
+        query: {
+          id: selectedRefunds,
+        },
+      },
+    }).then(d => {
+      if (d.link !== '') {
+        window.open(d.link);
+      } else {
+        notifyError('Unable to download data');
+      }
+    });
+  };
+
+  statusModal = () => {
+    if (!updateStatusEvents || !updateStatusEvents.length) {
+      return notifyError('No status updates available');
+    }
+
+    const selectedRefunds = [...this.state.selectedRefunds];
+
+    openModal(
+      <UpdateStatusModal
+        mode={this.mode}
+        selectedRefunds={selectedRefunds}
+        availableEvents={updateStatusEvents}
+      />
+    );
+  };
+
   render() {
+    let selectedDisabledClass =
+      this.state.selectedRefunds.length <= 0 ? ' disabled' : '';
+
     return (
-      <div class="list-container entity-container">
-        <div class="box refunds-tabs-box">
-          <ul className="tabs-nav">
-            <li className={'selected'}>
-              <Link to={`/scrooge/refunds`}>Refunds</Link>
-            </li>
-            <li>
-              <Link to={`/scrooge/reports`}>Failed Reports</Link>
-            </li>
-          </ul>
-        </div>
+      <div class="list-container refunds entity-container">
+        <NavBar active="refunds" />
         {this.state.isLoading ? (
           <div class="spinner center" />
         ) : (
@@ -338,16 +423,92 @@ export default class Refunds extends Component {
                   <AsyncButton
                     text="Download All"
                     class="link"
-                    pendingClass="small spinner"
+                    pendingClass="link disabled"
                     onSubmit={this.onDownloadAllClick}
                   />
                 </div>
               </Form>
             </div>
-            <PageTable model={this.collection} fields={this.fields} />
+
+            <div className="box bulk-actions clearfix">
+              <ShowWhen permission="edit_refund">
+                <AsyncButton
+                  text="Update Selected"
+                  className={
+                    'btn btn-bulk-update-status pull-right' +
+                    selectedDisabledClass
+                  }
+                  pendingClass="btn btn-bulk-update-status pull-right"
+                  onClick={
+                    this.state.selectedRefunds.length <= 0
+                      ? () => {}
+                      : this.statusModal
+                  }
+                />
+              </ShowWhen>
+
+              <AsyncButton
+                text="Download Selected"
+                className={
+                  'download-selected pull-right link' + selectedDisabledClass
+                }
+                pendingClass="download-selected pull-right link"
+                onSubmit={
+                  this.state.selectedRefunds.length <= 0
+                    ? () => {}
+                    : this.onDownloadSelectedClick
+                }
+              />
+            </div>
+
+            <PageTable
+              customClass="refunds-list"
+              model={this.collection}
+              fields={this._getFields()}
+            />
           </div>
         )}
       </div>
+    );
+  }
+}
+
+class UpdateStatusModal extends Component {
+  constructor(props) {
+    super(props);
+
+    this.availableEvents = this.props.availableEvents || [];
+
+    this.updateStatus = this.updateStatus.bind(this);
+  }
+
+  updateStatus = data => {
+    if (!data.event) {
+      return;
+    }
+
+    const selectedRefunds = [...this.props.selectedRefunds];
+
+    bulkUpdateRefundStatus(selectedRefunds, data.event, this.props.mode);
+  };
+
+  render() {
+    return (
+      <ModalContent header="Update Status">
+        <Form onSubmit={this.updateStatus}>
+          <SelectField name="event" label="Event">
+            <option key="0" value="">
+              Select status to update
+            </option>
+            {this.availableEvents.map((e, i) => (
+              <option key={i + 1} value={e}>
+                {e}
+              </option>
+            ))}
+          </SelectField>
+          <button>Update</button>
+        </Form>
+      </ModalContent>
     );
   }
 }

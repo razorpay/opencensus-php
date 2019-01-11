@@ -55,6 +55,7 @@ import InstantActivationList from 'admin/instantactivations/List';
 import OperationsDashboard from 'admin/operations/List';
 import ScroogeReports from 'admin/scrooge/Reports';
 import ScroogeRefunds from 'admin/scrooge/Refunds';
+import ScroogeActions from 'admin/scrooge/Actions';
 import ScroogeRefund from 'admin/scrooge/Refund';
 
 import AsyncButton from 'ui/AsyncButton';
@@ -163,6 +164,7 @@ export default class App extends Component {
                   <Route path="/operations" component={OperationsDashboard} />
                   <Route path="/scrooge/reports" component={ScroogeReports} />
                   <Route path="/scrooge/refunds" component={ScroogeRefunds} />
+                  <Route path="/scrooge/actions" component={ScroogeActions} />
                   <Route
                     path="/scrooge/refund/:mode(live|test)/:id"
                     component={ScroogeRefund}

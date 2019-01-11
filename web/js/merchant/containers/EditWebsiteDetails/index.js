@@ -34,6 +34,7 @@ class EditWebsiteDetails extends Component {
         const newUser = new User({
           ...user,
           business_website: response.data.business_website,
+          has_key_access: response.data.has_key_access,
         });
 
         this.props.updateSession({

@@ -3,6 +3,7 @@
 use Auth;
 use Gate;
 use Closure;
+use App\Http\AppResponse;
 use Illuminate\Contracts\Auth\Guard;
 use Razorpay\Api\Request as ApiRequest;
 
@@ -35,16 +36,11 @@ class Authenticate {
 	 */
 	public function handle($request, Closure $next)
 	{
+        $routeName = $request->route()->getName();
+
 		if ($this->auth->guest() === true)
 		{
-			if ($request->ajax() === true)
-			{
-				return response('Unauthorized.', 401);
-			}
-			else
-			{
-				return redirect()->guest('/?next='.$request->path());
-			}
+		    return AppResponse::unauthorizedResponse('Unauthorized.', $routeName, '/?next='.$request->path());
 		}
 		else
 		{
@@ -61,8 +57,6 @@ class Authenticate {
 				{
 					ApiRequest::addHeader('X-Dashboard-User-Role', $currentMerchant->role);
 				}
-
-				$routeName = $request->route()->getName();
 
 				if (!Gate::has($routeName))
 				{

@@ -460,7 +460,10 @@ class Rule extends CollectionItem {
   }
 
   receiverTypeField() {
-    if (this.product === 'primary' && (this.payment_method === 'card' || this.payment_method === 'upi')) {
+    if (
+      this.product === 'primary' &&
+      (this.payment_method === 'card' || this.payment_method === 'upi')
+    ) {
       var field = this.selectField('receiver_type');
       if (field) {
         return <div>Receiver Type: {field}</div>;

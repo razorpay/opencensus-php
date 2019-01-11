@@ -142,10 +142,10 @@ export default [
     },
   ],
   {
-    label: 'Proprietor PAN',
+    label: 'Owner/Director/Propreitor PAN',
     name: 'promoter_pan',
     placeholder: 'PAN Number',
-    className: 'Input--capitalize',
+    className: 'Input--capitalize Input--vTop',
     validator: validatePANCard,
     _when: excludeFor_Indiv,
   },
@@ -154,7 +154,7 @@ export default [
       label: 'Website/App URL',
       _cmp: Input.Radio,
       _name: 'has_url',
-      className: 'Input--vTop Input---Website',
+      className: 'Input--vTop Input--Website',
       options: [
         'Website/App',
         {
