@@ -25,7 +25,7 @@ class Core extends Base\Core
         $merchantMapping->generateId();
 
         $merchantMapping->merchant()->associate($merchant);
-        
+
         if (empty($entityOwner) === false)
         {
             $merchantMapping->entityOwner()->associate($entityOwner);
@@ -103,88 +103,6 @@ class Core extends Base\Core
         {
             return $this->repo->merchant_access_map->deleteOrFail($mapping);
         }
-    }
-
-    /**
-    * Gets all rows from merchant_access_map where partner_id is null
-    * and updates by querying auth.applications table
-    **/
-    public function updateMerchantAccessMapHavingEmptyPartner()
-    {
-        $batch = 500;
-        $skip = 0;
-        $count = 500;
-
-        $failed = 0;
-        $failedIds = [];
-        $succeeded = 0;
-        $processed = 0;
-
-        $oauthRepo = new OAuthApp\Repository;
-
-        $applications = [];
-
-        while($batch === $count)
-        {
-            $mappings = $this->repo->merchant_access_map->fetchApplicationRowsWithEmptyPartnerId($batch, $skip);
-            if(empty($mappings) === true)
-            {
-                break;
-            }
-
-            $count = $mappings->count();
-            $skip  += $count;
-
-            foreach ($mappings as $row)
-            {
-                $merchantId    = $row->{Entity::MERCHANT_ID};
-                $applicationId = $row->{Entity::ENTITY_ID};
-
-                $traceData = [
-                    Entity::ID             => $row->id,
-                    Entity::MERCHANT_ID    => $merchantId,
-                    Entity::APPLICATION_ID => $applicationId
-                ];
-
-                try
-                {
-
-                    if(array_key_exists($applicationId, $applications) === false)
-                    {
-                        $applications[$applicationId] = $oauthRepo->findOrFail($applicationId);
-                    }
-                    
-                    $partnerId     = $applications[$applicationId]->getMerchantId();
-
-                    $traceData[Entity::ENTITY_OWNER_ID] = $partnerId;
-
-                    $row->{Entity::ENTITY_OWNER_ID}     = $partnerId;
-                    $this->repo->merchant_access_map->saveOrFail($row);
-
-                    $succeeded++;
-                }
-                catch(\Exception $e)
-                {
-                    $this->trace->traceException(
-                        $e,
-                        Trace::ERROR,
-                        TraceCode::ACCESS_MAP_UPDATE_ERROR,
-                        $traceData
-                    );
-
-                    $failed++;
-
-                    $failedIds[] = $merchantId . '.' . $applicationId;
-                }
-                $processed++;
-            }
-        }
-        return [
-            'success' => $succeeded,
-            'failure' => $failed,
-            'total'   => $processed,
-            'failed'  => $failedIds
-        ];
     }
 
     /**

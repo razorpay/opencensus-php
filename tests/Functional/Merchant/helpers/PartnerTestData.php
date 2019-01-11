@@ -1027,21 +1027,4 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER,
         ],
     ],
-
-    'testAccessMapEmptyPartnerMigration' => [
-        'request' => [
-            'url' => '/oauth/update_partner_map',
-            'method' => 'POST',
-            'content' => [],
-        ],
-        'response' => [
-            'content' => [
-                'success' => 1,
-                'failure' => 0,
-                'total'   => 1,
-                'failed'  => [],
-            ]
-        ]
-    ],
-
 ];

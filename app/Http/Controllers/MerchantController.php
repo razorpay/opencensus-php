@@ -1091,17 +1091,6 @@ class MerchantController extends Controller
     }
 
     /**
-    * To populate the partner_id column in merchant_access_map table from auth server 
-    * Updates at only places where partner_id is null
-    **/
-    public function updateMerchantAccessMapHavingEmptyPartner()
-    {
-        $data = (new AccessMap\Service)->updateMerchantAccessMapHavingEmptyPartner();
-
-        return ApiResponse::json($data);
-    }
-
-    /**
      * @param string $merchantId
      *
      * @return \Illuminate\Http\Response

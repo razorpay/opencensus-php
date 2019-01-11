@@ -64,9 +64,4 @@ class Service extends Base\Service
     {
         return (new Core)->updateMapFromTokens();
     }
-
-    public function updateMerchantAccessMapHavingEmptyPartner()
-    {
-        return (new Core)->updateMerchantAccessMapHavingEmptyPartner();
-    }
 }

@@ -24,7 +24,6 @@ class PartnerTest extends OAuthTestCase
     const DUMMY_APP_ID_3         = '11111RandomApp';
     const DEFAULT_MERCHANT_ID    = '10000000000000';
     const DEFAULT_SUBMERCHANT_ID = '10000000000009';
-    const DUMMY_ACCESS_MAP_ID    = '10000000000044';
 
     public function setUp()
     {
@@ -1064,7 +1063,7 @@ class PartnerTest extends OAuthTestCase
         // Map the submerchant to the partner app
         $accessMap = $this->getAccessMapArray('application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID);
         $this->fixtures->create('merchant_access_map', $accessMap);
-        
+
         // Add the partner user to access a linked account. Verifies later the mapping should not be deleted
         $linkedAccount = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
         $mappingData   = [
@@ -1145,34 +1144,6 @@ class PartnerTest extends OAuthTestCase
         $this->ba->adminAuth();
 
         $this->startTest();
-    }
-
-    public function testAccessMapEmptyPartnerMigration()
-    {
-        $this->allowAdminToAccessPartnerMerchant();
-        $this->allowAdminToAccessSubMerchant();
-
-        $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
-        $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
-
-        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
-        $app = $this->fixtures->merchant->createDummyPartnerApp();
-
-        $this->fixtures->create(
-            'merchant_access_map',
-            [
-                'id'          => self::DUMMY_ACCESS_MAP_ID,
-                'entity_type' => 'application',
-                'entity_id'   => $app->getId(),
-                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
-            ]);
-
-        $this->ba->adminAuth();
-
-        $response = $this->startTest();
-        $accessMap = $this->getDbLastEntity('merchant_access_map');
-        $this->assertEquals($accessMap->getAttribute('entity_owner_id'), self::DEFAULT_MERCHANT_ID);
-        
     }
 
     protected function createMerchantRequest(
