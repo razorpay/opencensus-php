@@ -93,7 +93,7 @@ export default class extends React.Component {
 
   render() {
     return (
-      <div class="list-container">
+      <div class="list-container experiments-list">
         <PageTable
           model={this.collection}
           fields={experimentFields}
