@@ -14,6 +14,10 @@ import DataDetails from './DataDetails';
 
 @observer
 export default class CreateMerchantReportConfig extends Component {
+  static defaultProps = {
+    onSave: () => {},
+  };
+
   state = {
     configOptions: {
       loading: true,
@@ -47,12 +51,12 @@ export default class CreateMerchantReportConfig extends Component {
           template: {
             formats: {
               date: 'd-m-Y',
-              ...this.state.values.template.formats,
+              ...(this.state.values.template || {}).formats,
             },
             file_meta: {
               extension: 'csv',
               header: true,
-              ...this.state.values.template.file_meta,
+              ...(this.state.values.template || {}).file_meta,
             },
           },
           ...this.state.values,
@@ -110,7 +114,8 @@ export default class CreateMerchantReportConfig extends Component {
       data,
     }).then(response => {
       if (response) {
-        notifySuccess('Report Config Added Successfully');
+        this.props.onSave(response);
+        notifySuccess('Report config submitted successfully');
         closeModal();
       }
     });
@@ -201,12 +206,12 @@ export default class CreateMerchantReportConfig extends Component {
                 loadingConfigComponents={this.state.configComponents.loading}
                 ref={ref => (this.configDetails = ref)}
                 fieldsMap={getInternalFielsMap(
-                  this.props.values.template.fields_map
+                  (this.props.values.template || {}).fields_map
                 )}
-                filters={this.props.values.template.filters}
+                filters={(this.props.values.template || {}).filters}
               />
               <AsyncButton
-                text="Create"
+                text={!!this.props.configId ? 'Update' : 'Create'}
                 class="btn"
                 pendingClass="small spinner"
                 onClick={this.handleSubmitClick}
@@ -221,7 +226,7 @@ export default class CreateMerchantReportConfig extends Component {
   }
 }
 
-function getInternalFielsMap(fieldsMap) {
+function getInternalFielsMap(fieldsMap = {}) {
   return Object.keys(fieldsMap).reduce(
     (map, field) => ({
       ...map,

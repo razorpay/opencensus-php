@@ -73,6 +73,7 @@ export default class ConfigDetails extends Component {
                 fieldName={fieldName}
                 columns={props.fields[fieldName]}
                 onColumnCheckChange={this.handleColumCheckChange}
+                selectedColumns={selectedColumns}
               />
             ))}
 
@@ -190,20 +191,22 @@ class ReportColumns extends Component {
     const filters = Object.keys(this.state.filters).reduce(
       (otherFields, field) => ({
         ...otherFields,
-        ...(Object.keys(this.state.filters[field]).reduce(
+        [field]: Object.keys(this.state.filters[field]).reduce(
           (otherColumns, column) => {
-            if (!this.state.fieldsMap[filterField]) {
+            if (!this.state.fieldsMap[`${field}.${column}`]) {
               return { ...otherColumns };
             }
 
             return {
               ...otherColumns,
-              op: this.state.filters[field][column].op,
-              values: this.references[`${field}.${column}`].getValue(),
+              [column]: {
+                op: this.state.filters[field][column].op,
+                values: this.references[`${field}.${column}`].getValue(),
+              },
             };
-          }
+          },
+          {}
         ),
-        {}),
       }),
       {}
     );
@@ -386,6 +389,7 @@ function ReportField(props) {
       <div className="ReportConfig--inline-fields">
         {props.columns.map(column => {
           const name = `${props.fieldName}.${column}`;
+          const defaultChecked = props.selectedColumns[name];
           return (
             <div key={column}>
               <input
@@ -393,6 +397,7 @@ function ReportField(props) {
                 type="checkbox"
                 name={name}
                 onChange={props.onColumnCheckChange}
+                defaultChecked={defaultChecked}
               />
               <label htmlFor={name}>{column}</label>
             </div>
@@ -425,7 +430,7 @@ class FilterValue extends Component {
   }
 
   render() {
-    const { column, values } = this.props;
+    const { column, values = [] } = this.props;
     let name;
     switch (this.props.filterOp) {
       case 'IN':
