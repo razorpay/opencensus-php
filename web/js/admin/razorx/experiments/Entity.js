@@ -142,9 +142,15 @@ const Details = ({ data }) => {
 
       <div>
         <div class="label">Feature</div>
-        {data.feature_name}{' '}
-        <Link class="link m-l" to={`/razorx/features/${data.feature_id}`}>
-          View
+        {data.feature_name} <br />
+        <Link class="link" to={`/razorx/features/${data.feature_id}`}>
+          View Feature
+        </Link>
+        <Link
+          class="link m-l"
+          to={`/razorx/experiments?feature_id=${data.feature_id}`}
+        >
+          View All Experiments
         </Link>
       </div>
 

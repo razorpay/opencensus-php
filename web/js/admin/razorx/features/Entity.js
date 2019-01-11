@@ -121,7 +121,7 @@ const Details = ({ data }) => {
               class="link m-l"
               to={`/razorx/experiments?feature_id=${data.id}&status=activated`}
             >
-              View all
+              View Active Experiments
             </Link>
           </div>
         }
@@ -138,7 +138,7 @@ const Details = ({ data }) => {
               class="link m-l"
               to={`/razorx/experiments?feature_id=${data.id}`}
             >
-              View all
+              View All Experiments
             </Link>
           </div>
         }
