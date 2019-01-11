@@ -7,6 +7,7 @@ import { openModal } from 'common/modal';
 import { ModalContent } from 'component/Modal';
 import { snakeToTitleCase } from 'common/util';
 import { pluralize } from 'rzp/utils/rzp-utils';
+import NavBar from 'admin/scrooge/NavBar';
 
 function refundLink(item, when) {
   let count = 0;
@@ -106,16 +107,7 @@ export default class RefundsList extends Component {
     const collection = this.collection;
     return (
       <div class="list-container refund-reports">
-        <div className="box refunds-tabs-box">
-          <ul className="tabs-nav">
-            <li>
-              <Link to={`/scrooge/refunds`}>Refunds</Link>
-            </li>
-            <li className={'selected'}>
-              <Link to={`/scrooge/reports`}>Failed Reports</Link>
-            </li>
-          </ul>
-        </div>
+        <NavBar active="reports" />
         <div class="box">
           <header>Failed Refunds</header>
         </div>
