@@ -98,6 +98,8 @@ export default class extends React.PureComponent {
       content = <Details data={data} />;
     }
 
+    content = <Details data={dummy_data} />;
+
     return <div class="entity-container">{content}</div>;
   }
 }
@@ -107,6 +109,9 @@ const Details = ({ data }) => {
 
   return (
     <div>
+      <div class="sub-description">
+        <b>ID:</b> {data.id}
+      </div>
       <div class="description">
         {data.description}
         <div class="sub-description">
@@ -171,12 +176,12 @@ const Details = ({ data }) => {
                 <span class="square-pills label-semi-muted">{k}</span>
               </div>
               {segment.map((s, j) => (
-                <div class="sub-segment">
+                <div class="sub-segment" key={j}>
                   {Object.keys(s).map((g, ix) => {
                     const isArray = s[g] instanceof Array;
 
                     return (
-                      <div>
+                      <div key={ix}>
                         <span class="label">{titleCase(g)}: </span>
                         <span class={classList(isArray && 'sub-segment-group')}>
                           {isArray ? s[g].join(', ') : s[g]}

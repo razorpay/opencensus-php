@@ -83,6 +83,9 @@ export default class extends React.PureComponent {
 const Details = ({ data }) => {
   return (
     <div>
+      <div class="sub-description">
+        <b>ID:</b> {data.id}
+      </div>
       <div class="title">{data.name}</div>
       <div class="description">
         {data.description}
