@@ -27,6 +27,12 @@ export default class Experiments extends React.PureComponent {
             <button class="btn btn--primary" onClick={this.showExperimentModal}>
               + Add New
             </button>
+            <button
+              class="btn btn--transparent json-btn"
+              onClick={this.showExperimentModal}
+            >
+              JSON
+            </button>
           </div>
         </div>
         <div class="container-group">

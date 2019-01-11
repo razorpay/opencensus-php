@@ -28,6 +28,12 @@ export default class Features extends React.PureComponent {
               + Add New
             </button>
           </div>
+          <button
+            class="btn btn--transparent json-btn"
+            onClick={this.showFeatureModal}
+          >
+            JSON
+          </button>
         </div>
         <div class="container-group">
           <List />
