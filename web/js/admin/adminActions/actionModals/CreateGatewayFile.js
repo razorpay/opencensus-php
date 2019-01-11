@@ -16,7 +16,7 @@ import { adminPost } from 'common/fetch';
 const typeToTargetMap = {
   '': ' ',
   refund: ['hdfc', 'icici', 'csb'],
-  emi: ['indusind', 'kotak', 'axis', 'rbl', 'scbl'],
+  emi: ['indusind', 'kotak', 'axis', 'rbl', 'scbl', 'sbi'],
   combined: [
     'kotak',
     'axis',
