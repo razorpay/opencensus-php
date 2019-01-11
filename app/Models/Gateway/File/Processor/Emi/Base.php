@@ -247,6 +247,6 @@ class Base extends BaseProcessor
 
         $den = $expression - 1;
 
-        return floor($num / $den);
+        return (round($num / $den) / 100);
     }
 }
