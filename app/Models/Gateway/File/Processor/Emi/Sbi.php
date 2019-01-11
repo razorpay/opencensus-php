@@ -286,6 +286,24 @@ class Sbi extends Base
         return static::FILE_NAME . Carbon::now()->setTimezone(Timezone::IST)->format('YmdHis');
     }
 
+    protected function getEmiAmount($amount, $annualRate, $tenureInMonths)
+    {
+        // $annualRate is rate/100, say .14
+        // $monthlyRate is a/12 i.e should be treated as .14/12
+        // E = P x r x (1+r)^n/((1+r)^n – 1)
+        // tenure in months
+
+        $monthlyRate = $annualRate / 12;
+
+        $expression = pow((1 + $monthlyRate), $tenureInMonths);
+
+        $num = $amount * $monthlyRate * $expression;
+
+        $den = $expression - 1;
+
+        return (round($num / $den) / 100);
+    }
+
     //-------------------------- Helpers ------------------------------------//
 
     private function numpad($num, $count)
