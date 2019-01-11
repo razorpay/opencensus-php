@@ -23,6 +23,7 @@ class Table
     const COUPON                = 'coupons';
     const BATCH                 = 'batches';
     const DEVICE                = 'devices';
+    const ORIGIN                = 'origins';
     const PAYOUT                = 'payouts';
     const REFUND                = 'refunds';
     const REPORT                = 'reports';
