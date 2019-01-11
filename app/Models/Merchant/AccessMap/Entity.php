@@ -20,6 +20,7 @@ class Entity extends Base\PublicEntity
 
     const APPLICATION_ID = 'application_id';
 
+    // to store owner of the entity mapped to the merchant
     const ENTITY_OWNER_ID = 'entity_owner_id';
 
     protected $entity = Constants\Entity::MERCHANT_ACCESS_MAP;
@@ -43,12 +44,14 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
+        self::ENTITY_OWNER_ID,
     ];
 
     protected $public = [
         self::MERCHANT_ID,
         self::ENTITY_ID,
         self::ENTITY_TYPE,
+        self::ENTITY_OWNER_ID,
         self::CREATED_AT,
     ];
 
@@ -67,5 +70,10 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function entityOwner()
+    {
+        return $this->belongsTo(Merchant\Entity::class, self::ENTITY_OWNER_ID);
     }
 }
