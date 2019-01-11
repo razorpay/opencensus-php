@@ -213,6 +213,8 @@ trait Refund
         {
             $refundValidator->validateScroogeGatewayRefund($payment);
 
+            $refund->setAttempts($input['attempts'] ?? 0);
+
             $verifyResponse = $scroogeResponse = $this->verifyRefund($refund);
 
             //

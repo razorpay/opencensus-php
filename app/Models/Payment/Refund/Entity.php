@@ -631,6 +631,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BATCH_ID);
     }
 
+    public function setAttempts($value)
+    {
+        $this->setAttribute(self::ATTEMPTS, $value);
+    }
+
     // ----------------------- Mutator ---------------------------------------------
 
     protected function setReference1Attribute($reference1)
