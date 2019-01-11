@@ -13,6 +13,7 @@ use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Models\Key;
 use RZP\Models\Device;
+use RZP\Models\Origin;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -2031,5 +2032,46 @@ class BasicAuth
     {
         $this->request->query->remove($key);
         $this->request->request->remove($key);
+    }
+
+    /**
+     * Returns the origin type and origin id based on the auth used.
+     *
+     * If the merchant's credentials are used, the origin details are set to - ['merchant', $merchantId].
+     * If the partner's credentials are used, the origin details are set to - ['partner', $partnerMerchantId].
+     * If the OAuth credentials are used, the origin details are set to - ['application', $oauthApplicationId].
+     *
+     * @return array
+     */
+    public function getOriginDetailsFromAuth(): array
+    {
+        $originId = $originType = null;
+
+        switch (true)
+        {
+            case ($this->isPartnerAuth() === true):
+
+                $originType = Origin\Constants::PARTNER;
+                $originId = $this->getPartnerMerchantId();
+                break;
+
+            case (empty($this->getOAuthApplicationId()) === false):
+
+                $originType = Origin\Constants::APPLICATION;
+                $originId = $this->getOAuthApplicationId();
+                break;
+
+            //
+            // isPublicAuth() returns true even for partner auth when the partner key is used.
+            // Hence keep this case at the end.
+            //
+            case ($this->isPublicAuth() === true):
+
+                $originType = Origin\Constants::MERCHANT;
+                $originId = $this->getMerchantId();
+                break;
+        }
+
+        return [$originType, $originId];
     }
 }
