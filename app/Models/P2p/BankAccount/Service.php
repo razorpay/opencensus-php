@@ -12,13 +12,6 @@ use RZP\Models\P2p\Base;
  */
 class Service extends Base\Service
 {
-    public function fetchBanks(array $input): array
-    {
-        $response = $this->processor->fetchBanks($input);
-
-        return $response;
-    }
-
     public function retrieve(array $input): array
     {
         $response = $this->processor->retrieve($input);

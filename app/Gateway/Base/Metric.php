@@ -246,7 +246,9 @@ class Metric
 
     protected function isRecurringPayment($input)
     {
-        return $input[Entity::PAYMENT][Payment\Entity::RECURRING] ?? '0';
+        $recurringType = $input[Entity::PAYMENT][Payment\Entity::RECURRING_TYPE] ?? 'none';
+
+        return $recurringType;
     }
 
     protected function getAuthType($input)

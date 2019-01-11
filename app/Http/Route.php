@@ -974,6 +974,7 @@ final class Route
         // Banking statement routes
         'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
         'transaction_statement_fetch_multiple'     => ['get',      'transactions',                                   'StatementController@list'                                          ],
+        'vault_migration_detokenize'               => ['post',     'card/migration/detokenize',                      'CardController@postCardDetokenize'                                 ],
     ];
 
     public static $public = [
@@ -1855,7 +1856,8 @@ final class Route
         'merchant_balance_bulk_backfill_ids',
 
         //Bulk Add/Remove bank for terminal
-        'terminal_bank_bulk'
+        'terminal_bank_bulk',
+        'vault_migration_detokenize',
     ];
 
     public static $routePermission = [
@@ -2075,12 +2077,12 @@ final class Route
         'fund_transfer_attempt_bulk_update'        => Permission::SETTLEMENT_BULK_UPDATE,
         'gateway_add_priorities'                   => '*',
         'gateway_fetch_downtimes'                  => '*',
-        'gateway_create_downtime'                  => '*',
+        'gateway_create_downtime'                  => Permission::CREATE_GATEWAY_DOWNTIME,
         'gateway_fetch_priorities'                 => '*',
         'gateway_file_acknowledge'                 => '*',
         'gateway_file_retry'                       => '*',
         'gateway_remove_priorities'                => '*',
-        'gateway_update_downtime'                  => '*',
+        'gateway_update_downtime'                  => Permission::UPDATE_GATEWAY_DOWNTIME,
         'gateway_update_priorities'                => '*',
         'get_cache_counts'                         => '*',
         'get_config_keys'                          => '*',
@@ -2231,6 +2233,7 @@ final class Route
         'entity_balance_id_update'                 => '*',
         'merchant_balance_bulk_backfill_ids'       => '*',
         'terminal_bank_bulk'                       => Permission::EDIT_TERMINAL,
+        'vault_migration_detokenize'               => '*',
     ];
 
     public static $direct = [

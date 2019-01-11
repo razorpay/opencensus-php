@@ -93,21 +93,21 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('bin_issuer_validation', $input);
 
-        $issuer     = $input[Entity::ISSUER];
         $cardNumber = $input[Entity::NUMBER];
-        $cardType   = $input[Entity::TYPE];
 
         $response = ['result' => false];
 
-        $issuer = strtoupper($issuer);
-
         $iinNumber = intval(substr($cardNumber, 0, 6));
 
-        $iin = $this->repo->iin->findByIinWithIssuerAndType($iinNumber, $issuer, $cardType);
+        $iin = $this->repo->iin->find($iinNumber);
 
         if (empty($iin) === false)
         {
             $response['result'] = true;
+
+            $response['issuer'] = ($iin->getIssuer() === 'HDFC') ? 'HDFC' : 'Others';
+
+            $response['type'] = $iin->getType();
         }
         else
         {
@@ -116,7 +116,6 @@ class Service extends Base\Service
             $this->trace->info(
                 TraceCode::BIN_ISSUER_VALIDATION_FAILED,
                 [
-                    'issuer' => $issuer,
                     'iin'    => $iinNumber
                 ]);
         }

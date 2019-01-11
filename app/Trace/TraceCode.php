@@ -1526,6 +1526,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_DISPATCH_FOR_PAYOUT_COMPLETE    = 'FTA_DISPATCH_FOR_PAYOUT_COMPLETE';
     const FTA_RECONCILIATION_JOB_RELEASED     = 'FTA_RECONCILIATION_JOB_RELEASED';
 
+    const CARD_DETOKENIZE_MIGRATION_REQUEST     = 'CARD_DETOKENIZE_MIGRATION_REQUEST';
+    const CARD_DETOKENIZE_MIGRATION_RESPONSE    = 'CARD_DETOKENIZE_MIGRATION_RESPONSE';
+    const CARD_DETOKENIZE_MIGRATION_FAILED      = 'CARD_DETOKENIZE_MIGRATION_FAILED';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
