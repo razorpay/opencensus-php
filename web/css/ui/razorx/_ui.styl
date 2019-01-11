@@ -1,10 +1,13 @@
-$color-primary = #58d4ff
-$color-primary-hover = #58d4ff
+$color-primary = #424875
+$color-primary-hover = #424875
+
+$color-secondary= #2b91ff
 
 .RazorX-container.RazorX-container
   -webkit-font-smoothing: antialiased
   -moz-osx-font-smoothing: grayscale
 
+  /* Btn */
   .btn
     border-radius: 2px
     font-weight: 600
@@ -15,12 +18,43 @@ $color-primary-hover = #58d4ff
       &:hover
         background: $color-primary-hover
 
+  /* Modal */
   .Modal-mask
-    background-color: rgba(17,30,60,0.8);
+    background-color: rgba(17,30,60,0.8)
 
     .Modal-container
       border-radius: 2px
+      background: transparent
+      box-shadow: none
+      overflow: hidden
 
+      .Modal-close
+        color: rgba(255, 255, 255, 0.4)
+        top: 10px
+        padding: 9px 12px 11px
+        right: -12px
+
+      .Modal-content
+        header
+          color: rgba(255,255,255,0.9)
+          padding: 12px 48px 12px 12px
+          border-bottom: 0
+
+          &::after
+            content: ''
+            display: block
+            position: absolute
+            top: 18px
+            left: 0
+            height: 24px
+            width: 5px
+            background: #f3dd61
+
+        .Modal-body
+          background: #fff
+          min-width: 400px
+
+  /* Knob */
   .knob
     background: none
     box-shadow: none
@@ -59,12 +93,13 @@ $color-primary-hover = #58d4ff
       transition: 0.2s
 
     &.checked::before
-      background: $color-primary
+      background: $color-secondary
 
     &.checked::after
       transform: translateX(12px)
 
 
+  /* Table */
   .table-striped .td
     min-width: auto
 
@@ -94,26 +129,29 @@ $color-primary-hover = #58d4ff
       .th
         vertical-align: bottom
 
+  /* Spinner */
   .spinner
     &::after, &::before
       background-color: #dad9d9
 
+  /* Pills */
   .pill
     color: #e3e3e6
     border: 1px solid currentColor
     background: transparent
 
     &.label-success
-      color: #8bd75f
+      color: #84e64c
 
     &.label-danger
-      color: #e04c4c
+      color: #ff4646
 
+  /* Square Pills */
   .square-pills
     background: #e4e9ea
 
     &.label-success
-      color: #8bd75f
+      color: #84e64c
 
     &.label-danger
-      color: #e04c4c
+      color: #ff4646
