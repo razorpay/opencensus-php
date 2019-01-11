@@ -1716,6 +1716,11 @@ trait Refund
     {
         $input = $this->getBankAccountInput($payment, $data);
 
+        if ((isset($data['transfer_mode']) === true) and (trim($data['transfer_mode']) !== ''))
+        {
+            $fundTransferAttemptInput[FundTransferAttempt\Entity::MODE] = $data['transfer_mode'];
+        }
+
         return $this->repo->transaction(function () use ($input, $fundTransferAttemptInput)
         {
             if (($this->refund->hasBankAccount() === false) or
