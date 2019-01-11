@@ -22,6 +22,11 @@ import {
 import { ModalContent } from 'component/Modal';
 import { openModal, notifySuccess, notifyError } from 'common/modal';
 
+import ShowWhen from 'admin/components/ShowWhen';
+import NavBar from 'admin/scrooge/NavBar';
+import { bulkUpdateRefundStatus } from 'admin/scrooge/util';
+import { updateStatusEvents } from 'admin/scrooge/constants';
+
 export default class Refunds extends Component {
   constructor(props) {
     super(props);
@@ -270,16 +275,7 @@ export default class Refunds extends Component {
 
     return (
       <div class="list-container refunds entity-container">
-        <div class="box refunds-tabs-box">
-          <ul className="tabs-nav">
-            <li className={'selected'}>
-              <Link to={`/scrooge/refunds`}>Refunds</Link>
-            </li>
-            <li>
-              <Link to={`/scrooge/reports`}>Failed Reports</Link>
-            </li>
-          </ul>
-        </div>
+        <NavBar active="refunds" />
         {this.state.isLoading ? (
           <div class="spinner center" />
         ) : (
@@ -435,15 +431,21 @@ export default class Refunds extends Component {
             </div>
 
             <div className="box bulk-actions clearfix">
-              <AsyncButton
-                text="Update Selected"
-                className={
-                  'btn btn-bulk-update-status pull-right' +
-                  selectedDisabledClass
-                }
-                pendingClass="btn btn-bulk-update-status pull-right"
-                onClick={this.statusModal}
-              />
+              <ShowWhen permission="edit_refund">
+                <AsyncButton
+                  text="Update Selected"
+                  className={
+                    'btn btn-bulk-update-status pull-right' +
+                    selectedDisabledClass
+                  }
+                  pendingClass="btn btn-bulk-update-status pull-right"
+                  onClick={
+                    this.state.selectedRefunds.length <= 0
+                      ? () => {}
+                      : this.statusModal
+                  }
+                />
+              </ShowWhen>
 
               <AsyncButton
                 text="Download Selected"
@@ -451,7 +453,11 @@ export default class Refunds extends Component {
                   'download-selected pull-right link' + selectedDisabledClass
                 }
                 pendingClass="download-selected pull-right link"
-                onSubmit={this.onDownloadSelectedClick}
+                onSubmit={
+                  this.state.selectedRefunds.length <= 0
+                    ? () => {}
+                    : this.onDownloadSelectedClick
+                }
               />
             </div>
 
@@ -483,25 +489,7 @@ class UpdateStatusModal extends Component {
 
     const selectedRefunds = [...this.props.selectedRefunds];
 
-    let postData = {
-      refunds: [],
-    };
-
-    selectedRefunds.forEach(refundId => {
-      postData.refunds.push({
-        refund_id: refundId,
-        event: data.event,
-      });
-    });
-
-    return adminPost({
-      url: `${this.props.mode}/scrooge/refunds/bulk-status-update`,
-      data: postData,
-    }).then(data => {
-      if (data) {
-        notifySuccess('Update status request is successful');
-      }
-    });
+    bulkUpdateRefundStatus(selectedRefunds, data.event, this.props.mode);
   };
 
   render() {
@@ -587,14 +575,6 @@ const statuses = [
   { name: 'Attempt Failed', value: 'attempt_failed' },
   { name: 'Processed', value: 'processed' },
   { name: 'On Hold', value: 'on_hold' },
-];
-
-const updateStatusEvents = [
-  'file_init_event',
-  // 'file_sent_event',
-  'processed_event',
-  'refund_redo_event',
-  'onhold_event',
 ];
 
 // multi-entity, multi-select, select, entity, numeric-range, date-range
