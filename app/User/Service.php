@@ -108,6 +108,12 @@ class Service extends Base\Service
             $res = [
                 'id' => $genericUser->id,
             ];
+            $merchantIds = [];
+            foreach ($genericUser->merchants as $merchant)
+            {
+                $merchantIds[] = $merchant->id;
+            }
+            $res['merchantIds'] = $merchantIds;
         }
 
         $user = Auth::user();
@@ -407,6 +413,8 @@ class Service extends Base\Service
                     }
 
                     $data['experiments']['new_chat'] = $merchantService->getTreatment('new_chat');
+
+                    $data['experiments']['subscription_link'] = $merchantService->getTreatment('subscription_link');
 
                     $data['current'] = $currentMerchantId;
 

@@ -3,8 +3,6 @@ import GenericEntity from './GenericEntity';
 export default class Subscription extends GenericEntity {
   resourceUrl = 'subscriptions';
 
-  resourceFields = ['plan_id', 'customer_id'];
-
   getRouteName() {
     return this.isNew ? 'subscription_create' : 'subscription_update';
   }

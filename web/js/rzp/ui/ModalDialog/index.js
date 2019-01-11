@@ -3,6 +3,7 @@ import Modal from 'react-modal';
 import { connect } from 'react-redux';
 import * as ModalActions from 'rzp/modules/modals';
 import ErrorBoundary from 'common/ErrorBoundary';
+import { classList } from 'common/util';
 
 Object.assign(Modal.defaultStyles.overlay, {
   backgroundColor: 'rgba(58, 63, 81, 0.8)',
@@ -24,6 +25,10 @@ Modal.defaultStyles.content = {
 export default class ModalDialog extends Component {
   render() {
     let props = this.props;
+
+    // to apply the styles passed as props
+    Object.assign(Modal.defaultStyles.overlay, props.overlayStyles);
+
     return (
       <div>
         <Modal
@@ -47,4 +52,5 @@ export default class ModalDialog extends Component {
 ModalDialog.defaultProps = {
   size: 'regular',
   disableClose: false,
+  overlayStyles: {},
 };

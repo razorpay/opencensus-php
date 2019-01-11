@@ -51,6 +51,7 @@ const gateWayOptions = [
   'Netbanking Obc',
   'Netbanking Csb',
   'Netbanking Hdfc',
+  'Netbanking Allahabad',
   'Atom',
   'CardFssBob',
   'CardFssHdfc',

@@ -11,6 +11,7 @@ import { openModal, notifySuccess, notifyError } from 'common/modal';
 import { ModalContent } from 'component/Modal';
 import Field, { SelectField } from 'ui/Field';
 import Form from 'ui/Form';
+import ShowWhen from 'admin/components/ShowWhen';
 
 export default class RefundsList extends Component {
   mode = this.props.match.params.mode || 'live';
@@ -76,11 +77,13 @@ export default class RefundsList extends Component {
                     Retry Refund
                   </AsyncButton>
                 )}
-                {this.data.status !== 'processed' && (
-                  <button class="btn btn-default" onClick={this.statusModal}>
-                    Update Status
-                  </button>
-                )}
+                <ShowWhen permission="edit_refund">
+                  {this.data.status !== 'processed' && (
+                    <button class="btn btn-default" onClick={this.statusModal}>
+                      Update Status
+                    </button>
+                  )}
+                </ShowWhen>
               </div>
             )}
         </aside>
