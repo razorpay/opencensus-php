@@ -35,6 +35,7 @@ class Entity
     const GEO_IP                    = 'geo_ip';
     const COUPON                    = 'coupon';
     const DEVICE                    = 'device';
+    const ORIGIN                    = 'origin';
     const PAYOUT                    = 'payout';
     const REFUND                    = 'refund';
     const REPORT                    = 'report';
