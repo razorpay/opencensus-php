@@ -6,40 +6,6 @@
     transform: translate(-50%, -50%)
     text-align: center
 
-  #page-logo
-    color: rgba(255,255,255,0.06)
-
-    svg
-      fill: currentColor
-      width: 80px
-
-    > div
-      font-size: 32px
-      line-height: 32px
-      color: rgba(255,255,255,0.08)
-
-      strong
-        font-style: italic
-        font-size: 40px
-        opacity: 0
-        position: relative
-        display: inline-block
-        transform: translateX(10px)
-        animation: move-left 0.2s forwards
-
-        &::before, &::after
-          content: 'X'
-          position: absolute
-          left: 0
-          top: 0
-          animation: move-left 0.2s forwards
-        &::before
-          transform: translateX(6px)
-          animation-delay: 0.12s
-        &::after
-          transform: translateX(14px)
-          animation-delay: 0.18s
-
   .empty-entity
     color: #dad9d9
     i
