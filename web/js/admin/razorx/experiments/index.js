@@ -1,9 +1,11 @@
+import { withRouter } from 'react-router-dom';
 import { openModal, closeModal, confirm } from 'common/modal';
 import ExperimentsModal from './ExperimentsModal';
 import { SwitchField } from 'ui/Field';
 import List from './List';
 import Entity from './Entity';
 
+@withRouter
 export default class Experiments extends React.PureComponent {
   showExperimentModal = _ => {
     openModal(<ExperimentsModal />);

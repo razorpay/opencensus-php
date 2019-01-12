@@ -21,10 +21,49 @@
         font-weight: 400
 
 
+  #main-routes
+    height: 100%
+    position: relative
+
+    &::before, &::after
+      content: ''
+      position: absolute
+      border-right: 1px solid $slime-glow
+      border-top: 1px solid $slime-glow
+      animation: glitch-up 6s infinite cubic-bezier(0, 0.99, 0.38, 1.32)
+
+    &::before
+      height: 48px
+      width: 48px
+      right: -8px
+      top: -8px
+      opacity: 0.8
+
+    &::after
+      height: 36px
+      width: 68px
+      right: -12px
+      top: -12px
+      opacity: 0.8
+      animation-name: glitch-down
+
   .parent-container
     height: 100%
+    position: absolute
+    top: 0
+    left: 0
+    width: 100%
     background: $background-anti
     box-shadow: -4px 0 72px rgba(0,0,0,0.4)
+    z-index: 1
+
+    &.slide-enter
+      transform: translateY(100vh)
+      z-index: 2
+
+    &.slide-enter-active
+      transition: 0.4s cubic-bezier(0.43, 0.86, 1, 1)
+      transform: translateY(0)
 
     .container-group
       height 100%
@@ -40,7 +79,7 @@
         width: 400px
         background: $background-anti-overlay
         border-left: 1px solid rgba(0,0,0,0.02)
-        padding: 24px 0
+        padding: 24px 0 0 0
 
         > div
           overflow-y: auto
@@ -125,3 +164,44 @@
     100%
       opacity: 1
       transform: translateX(0)
+
+  @keyframes glitch-up
+    0%
+      transform: translate(0)
+
+    3%
+      transform: translate(2px, -2px)
+      opacity: 1
+
+    12%
+      transform: translate(2px, -2px)
+      opacity: 1
+
+    15%
+      transform: translate(0)
+      box-shadow: none
+
+    100%
+      transform: translate(0)
+
+
+  @keyframes glitch-down
+    0%
+      transform: translate(0)
+
+    3%
+      transform: translate(-2px, 2px)
+      opacity: 1
+      box-shadow: 4px -4px 4px rgba(240, 255, 184, 0.4)
+
+    12%
+      transform: translate(-2px, 2px)
+      opacity: 1
+      box-shadow: 4px -4px 4px rgba(240, 255, 184, 0.4)
+
+    15%
+      transform: translate(0)
+      box-shadow: none
+
+    100%
+      transform: translate(0)

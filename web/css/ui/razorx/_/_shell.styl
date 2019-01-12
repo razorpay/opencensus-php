@@ -83,10 +83,10 @@ $background-anti = #fcfcfc
 
       &.active
         opacity: 1
-        color: #fdfdfd
+        color: $slime-glow
 
         i
-          animation: text-movement 2s infinite
+          animation: text-glow 2s infinite
 
     #profile-nav
       cursor: pointer
@@ -186,13 +186,11 @@ $background-anti = #fcfcfc
           left: 0
           top: 0
         &::before
-          transform: translateX(10px)
-          animation: move-left 0.22s forwards
-          animation-delay: 0.08s
+          transform: translateX(14px)
+          animation: move-left 0.22s 0.08s forwards
         &::after
-          transform: translateX(20px)
-          animation: move-left 0.22s forwards, text-movement 1.8s 0.25s forwards
-          animation-delay: 0.16s
+          transform: translateX(22px)
+          animation: move-left 0.22s 0.16s forwards, text-glow 1.8s 0.16s forwards, make-slime 1.8s 0.25s
 
 @keyframes slide-in
   100%
@@ -202,7 +200,7 @@ $background-anti = #fcfcfc
   100%
     opacity: 1
 
-@keyframes text-movement
+@keyframes text-glow
   0%
     text-shadow: 0 0 4px rgba(255,255,255,0.1);
 
@@ -211,3 +209,12 @@ $background-anti = #fcfcfc
 
   100%
     text-shadow: 0 0 8px rgba(255,255,255,0.1);
+
+@keyframes make-slime
+  0%
+    color: rgba(255,255,255,0.06)
+  50%
+    color: $slime-glow
+
+  100%
+    color: rgba(255,255,255,0.06)
