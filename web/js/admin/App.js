@@ -62,11 +62,7 @@ export default class App extends Component {
     const matchView = matchFullPageView(this.props.location.pathname);
 
     if (matchView && matchView.match) {
-      return {
-        component: matchView.component,
-        props: matchView.match.params,
-        sidebar: matchView.sidebar,
-      };
+      return matchView;
     }
   }
 
@@ -80,10 +76,12 @@ export default class App extends Component {
           FPView && `${FPView.component.display_name}-container`
         )}
       >
+        {FPView && !!FPView.logo && <FPView.logo />}
+
         <main>
           <ErrorBoundary resetOnProps location={this.props.location}>
             {FPView ? (
-              <FPView.component {...FPView.props} />
+              <FPView.component {...FPView.params} />
             ) : (
               <MainContent {...this.props} />
             )}

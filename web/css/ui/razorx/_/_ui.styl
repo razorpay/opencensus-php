@@ -1,8 +1,3 @@
-$color-primary = #424875
-$color-primary-hover = #424875
-
-$color-secondary= #2b91ff
-
 .RazorX-container.RazorX-container
   -webkit-font-smoothing: antialiased
   -moz-osx-font-smoothing: grayscale
@@ -93,7 +88,7 @@ $color-secondary= #2b91ff
       transition: 0.2s
 
     &.checked::before
-      background: $color-secondary
+      background: $color-primary
 
     &.checked::after
       transform: translateX(12px)
@@ -136,15 +131,14 @@ $color-secondary= #2b91ff
 
   /* Pills */
   .pill
-    color: #e3e3e6
-    border: 1px solid currentColor
-    background: transparent
+    color: #fff
+    background-color: #e3e3e6
 
     &.label-success
-      color: #84e64c
+      background-color: #84e64c
 
     &.label-danger
-      color: #ff4646
+      background-color: #e05555
 
   /* Square Pills */
   .square-pills
@@ -154,4 +148,4 @@ $color-secondary= #2b91ff
       color: #84e64c
 
     &.label-danger
-      color: #ff4646
+      color: #e05555

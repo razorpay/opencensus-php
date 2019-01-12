@@ -86,18 +86,20 @@ const Details = ({ data }) => {
       <div class="sub-description">
         <b>ID:</b> {data.id}
       </div>
-      <div class="title">{data.name}</div>
-      <div class="description">
-        {data.description}
-        <div class="sub-description">
-          <b>Created by</b> {titleCase(data.created_by)} on{' '}
-          {formatDate(data.created_at)}
-          {data.updated_at !== data.created_at && (
-            <div>
-              <b>Last Updated by</b> {titleCase(data.updated_by)} on{' '}
-              {formatDate(data.updated_at)}
-            </div>
-          )}
+      <div class="pad-highlight">
+        <div class="title">{data.name}</div>
+        <div class="description">
+          {data.description}
+          <div class="sub-description">
+            <b>Created by</b> {titleCase(data.created_by)} on{' '}
+            {formatDate(data.created_at)}
+            {data.updated_at !== data.created_at && (
+              <div>
+                <b>Last Updated by</b> {titleCase(data.updated_by)} on{' '}
+                {formatDate(data.updated_at)}
+              </div>
+            )}
+          </div>
         </div>
       </div>
       <br />

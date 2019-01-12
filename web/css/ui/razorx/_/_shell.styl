@@ -1,23 +1,28 @@
-$background = #171b30
-$background-anti = #f3f3f3
+$background = #2c3a71
+$background = #463b3d
+$background-anti = #fcfcfc
 
 .RazorX-container.RazorX-container
-  background: $background-anti
+  background: $background;
+
+  #fixed-container
+    z-index: 10
 
   > main
     height: 100%
     margin-left: 96px
-    padding: 0
-    background: inherit
     opacity: 0
     animation: appear-in 0.45s 0.8s cubic-bezier(0.32, 1.13, 1, 1) forwards
+    background: transparent;
+    padding: 16px 16px 0 0;
+    z-index: 2;
 
     .header
       font-size: 22px
       height: 62px
       padding: 0 36px
       font-weight: 500
-      color: rgba(0,0,0,0.24)
+      color: $color-primary-light
       display: flex
       align-items: center
       position: relative
@@ -43,6 +48,10 @@ $background-anti = #f3f3f3
     overflow: visible
     transform: translateX(-100%)
     animation: slide-in 0.45s 0.8s cubic-bezier(0.32, 1.13, 1, 1) forwards
+    border-right: 1px solid rgba(0,0,0,0.1)
+
+    &:hover
+      z-index: 2
 
     > div
       border: none
@@ -74,7 +83,7 @@ $background-anti = #f3f3f3
 
       &.active
         opacity: 1
-        color: #58d4ff
+        color: #fdfdfd
 
         i
           animation: text-movement 2s infinite
@@ -111,12 +120,14 @@ $background-anti = #f3f3f3
         bottom: 0
         left: 100%
         min-width: 160px
-        color: #000
+        font-size: 12px
+        font-weight: 500
 
         > div, > a
           display: block
           position: relative
           padding: 8px 0
+          color: $color-primary
 
         .btn-default + .btn-default
           margin-top: -1px

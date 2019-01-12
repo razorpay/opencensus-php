@@ -112,29 +112,31 @@ const Details = ({ data }) => {
       <div class="sub-description">
         <b>ID:</b> {data.id}
       </div>
-      <div class="description">
-        {data.description}
-        <div class="sub-description">
-          <b>Created by</b> {titleCase(data.created_by)} on{' '}
-          {formatDate(data.created_at)}
-          {data.activated_at && (
-            <div>
-              <b>Activated by</b> {titleCase(data.activated_by)} on{' '}
-              {formatDate(data.activated_at)}
-            </div>
-          )}
-          {data.updated_at !== data.created_at && (
-            <div>
-              <b>Last Updated by</b> {titleCase(data.updated_by)} on{' '}
-              {formatDate(data.updated_at)}
-            </div>
-          )}
-          {data.terminated_at && (
-            <div>
-              <b>Terminated by</b> {titleCase(data.terminated_by)} on{' '}
-              {formatDate(data.terminated_at)}
-            </div>
-          )}
+      <div class="pad-highlight">
+        <div class="description">
+          {data.description}
+          <div class="sub-description">
+            <b>Created by</b> {titleCase(data.created_by)} on{' '}
+            {formatDate(data.created_at)}
+            {data.activated_at && (
+              <div>
+                <b>Activated by</b> {titleCase(data.activated_by)} on{' '}
+                {formatDate(data.activated_at)}
+              </div>
+            )}
+            {data.updated_at !== data.created_at && (
+              <div>
+                <b>Last Updated by</b> {titleCase(data.updated_by)} on{' '}
+                {formatDate(data.updated_at)}
+              </div>
+            )}
+            {data.terminated_at && (
+              <div>
+                <b>Terminated by</b> {titleCase(data.terminated_by)} on{' '}
+                {formatDate(data.terminated_at)}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
