@@ -11,6 +11,10 @@ export default class Experiments extends React.PureComponent {
     openModal(<ExperimentsModal />);
   };
 
+  showJSONModal = _ => {
+    openModal(<ExperimentsModal JSONView />);
+  };
+
   render() {
     return (
       <div class="parent-container experiments-container">
@@ -31,7 +35,7 @@ export default class Experiments extends React.PureComponent {
             </button>
             <button
               class="btn btn--transparent json-btn"
-              onClick={this.showExperimentModal}
+              onClick={this.showJSONModal}
             >
               JSON
             </button>

@@ -1,45 +1,21 @@
-$background = #2c3a71
-$background = #463b3d
-$background-anti = #fcfcfc
-
 .RazorX-container.RazorX-container
-  background: $background;
+  -webkit-font-smoothing: antialiased
+  -moz-osx-font-smoothing: grayscale
+  color: $color-text-main
+  background: $background
 
   #fixed-container
     z-index: 10
+    width: 100%
 
   > main
     height: 100%
     margin-left: 96px
     opacity: 0
     animation: appear-in 0.45s 0.8s cubic-bezier(0.32, 1.13, 1, 1) forwards
-    background: transparent;
-    padding: 16px 16px 0 0;
-    z-index: 2;
-
-    .header
-      font-size: 22px
-      height: 62px
-      padding: 0 36px
-      font-weight: 500
-      color: $color-primary-light
-      display: flex
-      align-items: center
-      position: relative
-      z-index: 2
-
-      .field
-        margin: 0
-        margin-left: 16px
-
-      .btn-group
-        margin: 0 0 0 auto
-        display: flex
-        align-items: center
-
-        > button
-          margin: 0
-          margin-left: 16px
+    background: transparent
+    padding: 16px 16px 0 0
+    z-index: 2
 
   > aside
     background: $background
@@ -178,7 +154,7 @@ $background-anti = #fcfcfc
         position: relative
         display: inline-block
         transform: translateX(10px)
-        animation: move-left 0.2s forwards
+        animation: glitch-left 0.2s forwards
 
         &::before, &::after
           content: 'X'
@@ -187,10 +163,15 @@ $background-anti = #fcfcfc
           top: 0
         &::before
           transform: translateX(14px)
-          animation: move-left 0.22s 0.08s forwards
+          animation: glitch-left 0.22s 0.08s forwards
         &::after
           transform: translateX(22px)
-          animation: move-left 0.22s 0.16s forwards, text-glow 1.8s 0.16s forwards, make-slime 1.8s 0.25s
+          animation: glitch-left 0.22s 0.16s forwards, text-glow 1.8s 0.16s forwards, make-slime 1.8s 0.25s
+
+@keyframes glitch-left
+  100%
+    opacity: 1
+    transform: translateX(0)
 
 @keyframes slide-in
   100%
@@ -202,13 +183,13 @@ $background-anti = #fcfcfc
 
 @keyframes text-glow
   0%
-    text-shadow: 0 0 4px rgba(255,255,255,0.1);
+    text-shadow: 0 0 4px rgba(255,255,255,0.1)
 
   50%
-    text-shadow: 0 0 12px rgba(255,255,255,0.8);
+    text-shadow: 0 0 12px rgba(255,255,255,0.8)
 
   100%
-    text-shadow: 0 0 8px rgba(255,255,255,0.1);
+    text-shadow: 0 0 8px rgba(255,255,255,0.1)
 
 @keyframes make-slime
   0%

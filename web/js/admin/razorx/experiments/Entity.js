@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { formatDate, titleCase, classList } from 'common/util';
 import { razorxFetch } from 'admin/razorx/fetch';
+import { notify, notifySuccess, notifyError } from 'common/modal';
 
 const dummy_data = {
   id: 201,
@@ -120,20 +121,26 @@ const Details = ({ data }) => {
             {formatDate(data.created_at)}
             {data.activated_at && (
               <div>
-                <b>Activated by</b> {titleCase(data.activated_by)} on{' '}
-                {formatDate(data.activated_at)}
+                <b>Activated by</b> {titleCase(data.activated_by)}{' '}
+                <span class="inline-block">
+                  on {formatDate(data.activated_at)}
+                </span>
               </div>
             )}
             {data.updated_at !== data.created_at && (
               <div>
-                <b>Last Updated by</b> {titleCase(data.updated_by)} on{' '}
-                {formatDate(data.updated_at)}
+                <b>Last Updated by</b> {titleCase(data.updated_by)}{' '}
+                <span class="inline-block">
+                  on {formatDate(data.updated_at)}
+                </span>
               </div>
             )}
             {data.terminated_at && (
               <div>
-                <b>Terminated by</b> {titleCase(data.terminated_by)} on{' '}
-                {formatDate(data.terminated_at)}
+                <b>Terminated by</b> {titleCase(data.terminated_by)}
+                <span class="inline-block">
+                  on {formatDate(data.terminated_at)}
+                </span>
               </div>
             )}
           </div>

@@ -91,12 +91,14 @@ const Details = ({ data }) => {
         <div class="description">
           {data.description}
           <div class="sub-description">
-            <b>Created by</b> {titleCase(data.created_by)} on{' '}
-            {formatDate(data.created_at)}
+            <b>Created by</b> {titleCase(data.created_by)}{' '}
+            <span class="inline-block">on {formatDate(data.created_at)}</span>
             {data.updated_at !== data.created_at && (
               <div>
-                <b>Last Updated by</b> {titleCase(data.updated_by)} on{' '}
-                {formatDate(data.updated_at)}
+                <b>Last Updated by</b> {titleCase(data.updated_by)}{' '}
+                <span class="inline-block">
+                  on {formatDate(data.updated_at)}
+                </span>
               </div>
             )}
           </div>

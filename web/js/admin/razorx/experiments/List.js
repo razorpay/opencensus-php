@@ -112,9 +112,11 @@ const experimentFields = [
   [
     'Feature',
     item => (
-      <Link to={`/razorx/features/${item.feature_id}`}>
-        <span class="link">{item.feature_id}</span>
-      </Link>
+      <object>
+        <Link to={`/razorx/features/${item.feature_id}`}>
+          <span class="link">{item.feature_id}</span>
+        </Link>
+      </object>
     ),
   ],
   ['Status', item => statusPill(item.status)],

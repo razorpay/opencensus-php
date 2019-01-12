@@ -2,10 +2,10 @@ import ErrorBoundary from 'common/ErrorBoundary';
 
 import { Route, Switch, Redirect, Link, withRouter } from 'react-router-dom';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
-
 import { ShowWhenRoute } from 'admin/components/ShowWhen';
 import AsyncButton from 'ui/AsyncButton';
 
+import { notifyError } from 'common/modal';
 import MainNavLink from 'admin/components/MainNavLink';
 
 import user, { org } from 'admin/user';
@@ -114,34 +114,38 @@ export const Sidebar = ({ user, handleLogout }) => (
 export default class RazorX extends React.Component {
   render() {
     return (
-      <TransitionGroup id="main-routes">
-        <CSSTransition
-          key={this.props.location.pathname}
-          classNames="slide"
-          timeout={420}
-        >
-          <Switch location={this.props.location}>
-            <Route path="/razorx/experiments" component={Experiments} />
-            <Route
-              path="/razorx/experiments/:id(exp_.+)"
-              component={Experiments}
-            />
-            <Route path="/razorx/experiments/new" component={Experiments} />
+      <ErrorBoundary resetOnProps location={this.props.location}>
+        <TransitionGroup id="main-routes">
+          <CSSTransition
+            key={this.props.location.pathname}
+            classNames="slide"
+            timeout={420}
+          >
+            <Switch location={this.props.location}>
+              <Route path="/razorx/experiments" component={Experiments} />
+              <Route
+                path="/razorx/experiments/:id(exp_.+)"
+                component={Experiments}
+              />
+              <Route path="/razorx/experiments/new" component={Experiments} />
 
-            <ShowWhenRoute path="/razorx/features" component={Features} />
-            <Route path="/razorx/requests" component={WorkflowsList} />
-            <Route
-              path="/razorx/merchant-evaluation"
-              component={MerchantEvaluation}
-            />
-            <Route path="/razorx/audit-logs" component={AuditLogsList} />
-            <Redirect to="/razorx/experiments" />
-          </Switch>
-        </CSSTransition>
-      </TransitionGroup>
+              <ShowWhenRoute path="/razorx/features" component={Features} />
+              <Route path="/razorx/requests" component={WorkflowsList} />
+              <Route
+                path="/razorx/merchant-evaluation"
+                component={MerchantEvaluation}
+              />
+              <Route path="/razorx/audit-logs" component={AuditLogsList} />
+              <Redirect to="/razorx/experiments" />
+            </Switch>
+          </CSSTransition>
+        </TransitionGroup>
+      </ErrorBoundary>
     );
   }
 }
+
+RazorX.display_name = 'RazorX';
 
 export function Logo() {
   return (
@@ -156,4 +160,14 @@ export function Logo() {
   );
 }
 
-RazorX.display_name = 'RazorX';
+function loadCodeEditor() {
+  const script = document.createElement('script');
+
+  script.onerror = () => {
+    notifyError('JSON Editor failed to load. Reload the page to Retry.');
+  };
+
+  script.src = 'https://unpkg.com/codeflask/build/codeflask.min.js';
+
+  document.head.appendChild(script);
+}

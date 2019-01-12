@@ -1,0 +1,133 @@
+.Modal-body .JSONEdit-container
+  margin: -24px -24px 0
+
+.JSONEdit-container
+  position: relative
+  overflow: hidden
+
+  .error
+    position: absolute
+    bottom: 0
+    left: 0
+    right: 0
+    z-index: 2
+    padding: 4px 8px
+    background: $toast-error-bg
+    color: $toast-error-text
+    transition: 0.15s cubic-bezier(0.27, 0.96, 1, 1)
+
+    &.hidden
+      transform: translateY(100%)
+
+    i
+      margin-right: 4px
+
+#json-edit-view
+  position: relative
+  min-height: 150px
+
+code[class*="language-"], pre[class*="language-"]
+  color: #f8f8f2
+  background: none
+  text-shadow: 0 1px rgba(0,0,0,.3)
+  border: none
+  border-radius: 0
+  margin: 0
+
+pre[class*="language-"]
+  overflow: auto
+
+:not(pre)>code[class*="language-"]
+  padding: .1em
+  border-radius: .3em
+  white-space: normal
+
+.token.comment,.token.prolog,.token.doctype,.token.cdata
+  color: slategray
+
+.codeflask .token.punctuation
+  color: #f8f8f2
+
+.namespace
+  opacity: .7
+
+.token.property,.token.tag,.token.constant,.token.symbol,.token.deleted
+  color: #f92672
+
+.token.boolean,.token.number
+  color: #66d9ef
+
+.token.selector,.token.attr-name,.token.string,.token.char,.token.builtin,.token.inserted
+  color: #a6e22e
+
+.token.operator,.token.entity,.token.url,.language-css .token.string,.style .token.string,.token.variable
+  color: #f8f8f2
+
+.token.atrule,.token.attr-value,.token.function
+  color: #e6db74
+
+.token.keyword
+  color: #ae81ff
+
+.token.regex,.token.important
+  color: #fd971f
+
+.token.important,.token.bold
+  font-weight: 700
+
+.token.italic
+  font-style: italic
+
+.token.entity
+  cursor: help
+
+.codeflask
+  background: #423839
+
+.codeflask__pre,.codeflask__textarea
+  text-align: left
+  white-space: pre-wrap
+  word-spacing: normal
+  word-break: normal
+  word-wrap: normal
+  line-height: 1.5
+  tab-size: 4
+  hyphens: none
+  box-sizing: border-box
+  position: absolute
+  top: 0
+  left: 0
+  width: 100%
+  padding: 16px 16px 40px
+  border: none
+  margin: 0
+  font-family: Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace
+  font-size: 13px
+  background: 0 0
+
+.codeflask__textarea
+  border: none
+  outline: 0
+  resize: none
+  color: transparent
+  caret-color: rgba(255,255,255,0.7)
+  z-index: 1
+  height: 100%
+  -webkit-overflow-scrolling: touch
+
+.codeflask__pre
+  z-index: 2
+  pointer-events: none
+  overflow-y: auto
+  margin: 0
+  min-height: 100%
+
+.codeflask__code
+  font-size: inherit
+  font-family: inherit
+  color: inherit
+  display: block
+  padding: 0
+
+.codeflask__is-code
+  white-space: pre
