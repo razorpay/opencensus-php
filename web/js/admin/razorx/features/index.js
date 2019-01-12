@@ -9,6 +9,10 @@ export default class Features extends React.PureComponent {
     openModal(<FeaturesModal />);
   };
 
+  showJSONModal = _ => {
+    openModal(<FeaturesModal JSONView />);
+  };
+
   render() {
     return (
       <div class="parent-container features-container">
@@ -30,7 +34,7 @@ export default class Features extends React.PureComponent {
           </div>
           <button
             class="btn btn--transparent json-btn"
-            onClick={this.showFeatureModal}
+            onClick={this.showJSONModal}
           >
             JSON
           </button>

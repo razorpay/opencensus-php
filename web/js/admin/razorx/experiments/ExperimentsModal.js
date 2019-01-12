@@ -4,12 +4,11 @@ import Field, { CheckField } from 'ui/Field';
 import { ModalContent } from 'component/Modal';
 import JSONEdit from 'admin/razorx/JSONEdit';
 
-const initJSON = {
+const initJSONObj = {
   description: '',
   environment: 'beta',
   mode: 'test',
-  created_by: '',
-  feature_id: 12,
+  feature_id: 0,
   segments: [
     {
       variant: '',
@@ -42,7 +41,7 @@ export default class extends React.Component {
         header={id ? `Edit Experiment – ${name}` : 'Create Experiment'}
       >
         <Form onSubmit={this.onSubmit}>
-          {JSONView && <JSONEdit initialJSON={initJSON} />}
+          {JSONView && <JSONEdit initialJSON={initJSONObj} />}
           <div class="footer">
             <button class="btn btn--primary" disabled={!this.isValid()}>
               Create
