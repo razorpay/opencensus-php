@@ -50,8 +50,15 @@ export default class extends React.PureComponent {
       const JSON2Obj = JSON.parse(this.flask.getCode());
 
       for (let i = 0; i < Object.keys(validator).length; i++) {
-        const k = Object.keys(validator)[i];
-        const errorMsg = validator[k](JSON2Obj[k]);
+        const k = Object.keys(validator)[i],
+          valInJSON = JSON2Obj[k];
+        let errorMsg;
+
+        if (typeof valInJSON === 'undefined' && !!validator[k]) {
+          errorMsg = k + ' is missing'; // => If validator is present but valueInJSON is undefined
+        } else {
+          errorMsg = validator[k] && validator[k](valInJSON);
+        }
 
         if (errorMsg) {
           isInValid = errorMsg;
@@ -97,7 +104,19 @@ export default class extends React.PureComponent {
 
   render() {
     return (
-      <div class="JSONEdit-container">
+      <div
+        class={classList(
+          'JSONEdit-container',
+          this.state.isInValid && 'is-invalid'
+        )}
+      >
+        <input
+          name="json-value"
+          value={
+            !this.state.isInValid && this.flask ? this.flask.getCode() : ''
+          }
+          class="hide"
+        />
         <div id="json-edit-view" />
         <div class={classList('error', !this.state.isInValid && 'hidden')}>
           <i class="i-info-circle" />
