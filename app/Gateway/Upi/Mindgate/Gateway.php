@@ -887,7 +887,7 @@ class Gateway extends Base\Gateway
     {
         $attempts = $input['refund']['attempts'] - 1;
 
-        if ((int) $input['refund']['attempts'] === 0)
+        if (((int) $attempts === 0) or ((int) $input['refund']['attempts'] === 0))
         {
             $attempts = '';
         }
