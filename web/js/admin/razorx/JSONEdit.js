@@ -10,8 +10,10 @@ function isJSONString(str) {
   }
 }
 
+const syntaxErrorMsg = 'JSON Syntax is invalid';
+
 export default class extends React.PureComponent {
-  state = { isValid: true };
+  state = { isInValid: null };
 
   componentDidMount() {
     this.flask = new window.CodeFlask('#json-edit-view', {
@@ -21,23 +23,60 @@ export default class extends React.PureComponent {
 
     const ta = document.getElementsByClassName('codeflask__textarea')[0];
 
+    ta.addEventListener('blur', e => {
+      if (this.isValidJSON(this.flask.getCode())) {
+        const errorMsg = this.deepValidator();
+
+        errorMsg && this.setState({ isInValid: errorMsg });
+      }
+    });
+
     ta.focus();
 
     this.flask.onUpdate(code => {
       this.onUpdate(code);
     });
 
-    //this.flask.getCode();
-
     const initialJSON = this.props.initialJSON;
     initialJSON && this.flask.updateCode(JSON.stringify(initialJSON, null, 2));
   }
 
+  deepValidator() {
+    const validator = this.props.validatorJSON;
+    let isInValid;
+
+    // Do deep check only when blurred
+    if (validator) {
+      const JSON2Obj = JSON.parse(this.flask.getCode());
+
+      for (let i = 0; i < Object.keys(validator).length; i++) {
+        const k = Object.keys(validator)[i];
+        const errorMsg = validator[k](JSON2Obj[k]);
+
+        if (errorMsg) {
+          isInValid = errorMsg;
+          break;
+        }
+      }
+
+      return isInValid;
+    }
+  }
+
   onUpdate(code) {
-    console.log('code....', code);
-    const isValid = this.isValidJSON(code);
-    if (isValid !== this.state.isValid) {
-      this.setState({ isValid });
+    let isInValid = !this.isValidJSON(code) ? syntaxErrorMsg : null;
+
+    if (!isInValid && this.state.isInValid) {
+      const errorMsg = this.deepValidator();
+
+      if (errorMsg === this.state.isInValid) {
+        // Ignoring other errors until blur
+        isInValid = errorMsg;
+      }
+    }
+
+    if (isInValid !== this.state.isInValid) {
+      this.setState({ isInValid });
     }
   }
 
@@ -60,8 +99,9 @@ export default class extends React.PureComponent {
     return (
       <div class="JSONEdit-container">
         <div id="json-edit-view" />
-        <div class={classList('error', this.state.isValid && 'hidden')}>
-          <i class="i-info-circle" />JSON is invalid!
+        <div class={classList('error', !this.state.isInValid && 'hidden')}>
+          <i class="i-info-circle" />
+          {this.state.isInValid}
         </div>
       </div>
     );
