@@ -408,7 +408,7 @@ class Gateway extends Base\Gateway
 
         $scroogeResponse = new ScroogeResponse();
 
-        if ($input['refund']['reverse'] === true)
+        if ((isset($input['refund']['reverse']) === true) and ($input['refund']['reverse'] === true))
         {
             parent::action($input, Action::VERIFY_REVERSE);
 
