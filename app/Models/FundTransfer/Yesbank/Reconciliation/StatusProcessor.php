@@ -15,6 +15,7 @@ class StatusProcessor extends BaseRowProcessor
 {
     const UTR                   = 'utr';
     const BANK_STATUS_CODE      = 'bank_status_code';
+    const STATUS_CODE           = 'status_code';
     const PAYMENT_DATE          = 'payment_date';
     const REMARK                = 'remark';
     const PAYMENT_REF_NO        = 'payment_ref_no';
@@ -61,7 +62,10 @@ class StatusProcessor extends BaseRowProcessor
         }
         else
         {
-            $response = $statusRequestProcessor->getResponseDataFromFta($gateway);
+            // We are doing this only so that we keep the flow consistent
+            // with when we actually make the status request.
+            // Otherwise, ideally, doing this should not be required at all.
+            $response = $statusRequestProcessor->getResponseDataFromFta($this->row);
         }
 
         if (empty($response) === false)
@@ -83,15 +87,26 @@ class StatusProcessor extends BaseRowProcessor
 
         $fta = $this->row;
 
-        $bankCode = $fta->getBankStatusCode();
+        $statusCode = $fta->getBankResponseCode();
 
-        $successStatuses = GatewayStatus::getSuccessfulStatus();
-        $failureStatuses = GatewayStatus::getFailureStatus();
+        //
+        // Yesbank status call for VPA does not work properly.
+        // Gives the wrong error codes and stuff, which are not documented.
+        // Hence, if we already got a status saying it's success or failed
+        // we don't want to make the status request and mess up the data
+        // that we got from `initiate` call.
+        //
+        // We make the status call only if current state of the FTA is
+        // either pending, timeout or we don't know (empty status_code)
+        //
+        if (($statusCode === GatewayStatus::STATUS_CODE_PENDING) or
+            ($statusCode === GatewayStatus::STATUS_CODE_TIMEOUT) or
+            (empty($statusCode) === true))
+        {
+            return true;
+        }
 
-        // TODO: Fix this later properly. Use status_code
-        // to figure out whether to retry or not.
-
-        return true;
+        return false;
     }
 
     /**
@@ -116,6 +131,8 @@ class StatusProcessor extends BaseRowProcessor
 
         $this->parsedData = [
             self::UTR                   => $response[self::UTR],
+            // `status_code` will be present only for vpa ones. not the normal ones.
+            self::STATUS_CODE           => $response[self::STATUS_CODE] ?? null,
             self::BANK_STATUS_CODE      => $response[self::BANK_STATUS_CODE],
             self::REMARK                => $response[self::REMARK],
             self::PAYMENT_DATE          => $response[self::PAYMENT_DATE],
@@ -142,6 +159,8 @@ class StatusProcessor extends BaseRowProcessor
         $currentStatus = $this->reconEntity->getBankStatusCode();
 
         $this->reconEntity->setBankStatusCode($this->parsedData[self::BANK_STATUS_CODE]);
+
+        $this->reconEntity->setBankResponseCode($this->parsedData[self::STATUS_CODE]);
 
         $this->reconEntity->setDateTime($this->parsedData[self::PAYMENT_DATE]);
 

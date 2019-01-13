@@ -45,6 +45,8 @@ class Tokenex extends Base\Core
     {
         try
         {
+            $cardNumber = preg_replace('/[^0-9]/', '', $cardNumber);
+
             $token = $this->tokenex->tokenize($cardNumber);
 
             return $token;

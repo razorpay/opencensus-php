@@ -213,6 +213,8 @@ trait Refund
         {
             $refundValidator->validateScroogeGatewayRefund($payment);
 
+            $refund->setAttempts($input['attempts'] ?? 0);
+
             $verifyResponse = $scroogeResponse = $this->verifyRefund($refund);
 
             //
@@ -1715,6 +1717,11 @@ trait Refund
                                                           array $fundTransferAttemptInput): FundTransferAttempt\Entity
     {
         $input = $this->getBankAccountInput($payment, $data);
+
+        if ((isset($data['transfer_mode']) === true) and (trim($data['transfer_mode']) !== ''))
+        {
+            $fundTransferAttemptInput[FundTransferAttempt\Entity::MODE] = $data['transfer_mode'];
+        }
 
         return $this->repo->transaction(function () use ($input, $fundTransferAttemptInput)
         {

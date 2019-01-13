@@ -304,6 +304,8 @@ class Entity
         self::MERCHANT                  => \RZP\Models\Merchant::class,
         self::ACCOUNT                   => \RZP\Models\Merchant\Account::class,
         self::SCHEDULE                  => \RZP\Models\Schedule::class,
+        self::COUPON                    => \RZP\Models\Coupon::class,
+        self::PROMOTION                 => \RZP\Models\Promotion::class,
         self::APP_TOKEN                 => \RZP\Models\Customer\AppToken::class,
         self::STATEMENT                 => \RZP\Models\Transaction\Statement::class,
         self::INVITATION                => \RZP\Models\Invitation::class,

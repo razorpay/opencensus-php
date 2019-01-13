@@ -77,7 +77,8 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
                     'info_code'         => Base\InfoCode::AMOUNT_MISMATCH,
                     'refund_id'         => $this->refund->getId(),
                     'expected_amount'   => $this->refund->getBaseAmount(),
-                    'actual_amount'     => $this->getReconRefundAmount($row),
+                    'recon_amount'      => $this->getReconRefundAmount($row),
+                    'currency'          => $this->refund->getCurrency(),
                     'row'               => $row,
                     'gateway'           => $this->refund->getGateway(),
                 ]);

@@ -751,6 +751,8 @@ final class Route
         'coupon_create'                            => ['post',     'coupons',                                        'CouponController@create'                                           ],
         'coupon_apply'                             => ['post',     'coupons/apply',                                  'CouponController@apply'                                            ],
         'coupon_delete'                            => ['delete',   'coupons/{id}',                                   'CouponController@delete'                                           ],
+        'coupon_update'                            => ['patch',    'coupons/{id}',                                   'CouponController@update'                                           ],
+        'coupon_validate'                          => ['post',     'coupons/validate',                               'CouponController@validateCoupon'                                   ],
 
         // Merchant invitation routes
         'invitation_create'                        => ['post',     'invitations',                                    'InvitationController@create'                                       ],
@@ -786,7 +788,8 @@ final class Route
         'scrooge_refunds_get_multiple'             => ['post',     'scrooge/refunds',                                'ScroogeController@listRefunds'                                     ],
         'scrooge_refunds_get'                      => ['get',      'scrooge/refunds/{id}',                           'ScroogeController@get'                                             ],
         'scrooge_refunds_update'                   => ['post',     'scrooge/refunds/{id}/status-update',             'ScroogeController@statusUpdate'                                    ],
-        'scrooge_refunds_download'                 => ['post',      'scrooge/refunds/download',                      'ScroogeController@downloadRefunds'                                 ],
+        'scrooge_refunds_download'                 => ['post',     'scrooge/refunds/download',                       'ScroogeController@downloadRefunds'                                 ],
+        'scrooge_refunds_enqueue'                  => ['post',     'scrooge/refunds/enqueue',                        'ScroogeController@enqueue'                                         ],
 
         // Dispute routes
         'payment_dispute_create'                   => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
@@ -972,6 +975,7 @@ final class Route
         // Banking statement routes
         'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
         'transaction_statement_fetch_multiple'     => ['get',      'transactions',                                   'StatementController@list'                                          ],
+        'vault_migration_detokenize'               => ['post',     'card/migration/detokenize',                      'CardController@postCardDetokenize'                                 ],
     ];
 
     public static $public = [
@@ -1673,6 +1677,8 @@ final class Route
         'coupon_apply',
         'coupon_create',
         'coupon_delete',
+        'coupon_update',
+        'coupon_validate',
         'credits_create',
         'credits_create_bulk',
         'credits_edit',
@@ -1820,6 +1826,7 @@ final class Route
         // Scrooge - ODS Dashboard
         'scrooge_reports_get_multiple',
         'scrooge_refunds_update_multiple',
+        'scrooge_refunds_enqueue',
         'scrooge_refunds_get_multiple',
         'scrooge_refunds_download',
         'scrooge_refunds_get',
@@ -1851,7 +1858,8 @@ final class Route
         'merchant_balance_bulk_backfill_ids',
 
         //Bulk Add/Remove bank for terminal
-        'terminal_bank_bulk'
+        'terminal_bank_bulk',
+        'vault_migration_detokenize',
     ];
 
     public static $routePermission = [
@@ -2051,8 +2059,10 @@ final class Route
         'batch_retry_output_file'                  => '*',
         'billdesk_reconcile_cancelled'             => '*',
         'coupon_apply'                             => '*',
-        'coupon_create'                            => '*',
-        'coupon_delete'                            => '*',
+        'coupon_create'                            => Permission::CREATE_PROMOTION_COUPON,
+        'coupon_delete'                            => Permission::CREATE_PROMOTION_COUPON,
+        'coupon_update'                            => Permission::CREATE_PROMOTION_COUPON,
+        'coupon_validate'                          => '*',
         'credits_edit'                             => '*',
         'credits_create_bulk'                      => '*',
         'currency_fetch_rates'                     => '*',
@@ -2069,12 +2079,12 @@ final class Route
         'fund_transfer_attempt_bulk_update'        => Permission::SETTLEMENT_BULK_UPDATE,
         'gateway_add_priorities'                   => '*',
         'gateway_fetch_downtimes'                  => '*',
-        'gateway_create_downtime'                  => '*',
+        'gateway_create_downtime'                  => Permission::CREATE_GATEWAY_DOWNTIME,
         'gateway_fetch_priorities'                 => '*',
         'gateway_file_acknowledge'                 => '*',
         'gateway_file_retry'                       => '*',
         'gateway_remove_priorities'                => '*',
-        'gateway_update_downtime'                  => '*',
+        'gateway_update_downtime'                  => Permission::UPDATE_GATEWAY_DOWNTIME,
         'gateway_update_priorities'                => '*',
         'get_cache_counts'                         => '*',
         'get_config_keys'                          => '*',
@@ -2112,8 +2122,8 @@ final class Route
         'payment_fix_authorize_at'                 => '*',
         'payment_force_authorize'                  => '*',
         'payments_multiple_authorize_refund'       => '*',
-        'promotion_create'                         => '*',
-        'promotion_update'                         => '*',
+        'promotion_create'                         => Permission::CREATE_PROMOTION_COUPON,
+        'promotion_update'                         => Permission::CREATE_PROMOTION_COUPON,
         'refund_create_missing_txn'                => '*',
         'refund_gateway_manual'                    => '*',
         'risk_create'                              => '*',
@@ -2122,6 +2132,7 @@ final class Route
         'risk_update'                              => '*',
         'scrooge_reports_get_multiple'             => '*',
         'scrooge_refunds_update_multiple'          => Permission::EDIT_REFUND,
+        'scrooge_refunds_enqueue'                  => Permission::EDIT_REFUND,
         'scrooge_refunds_get_multiple'             => '*',
         'scrooge_refunds_download'                 => '*',
         'scrooge_refunds_get'                      => '*',
@@ -2225,6 +2236,7 @@ final class Route
         'entity_balance_id_update'                 => '*',
         'merchant_balance_bulk_backfill_ids'       => '*',
         'terminal_bank_bulk'                       => Permission::EDIT_TERMINAL,
+        'vault_migration_detokenize'               => '*',
     ];
 
     public static $direct = [

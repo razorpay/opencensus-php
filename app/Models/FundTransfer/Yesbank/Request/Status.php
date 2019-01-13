@@ -9,6 +9,8 @@ use RZP\Constants\Timezone;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\FundTransfer\Mode;
+use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\GatewayStatus;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\Status as ValidStatus;
 
@@ -150,32 +152,64 @@ class Status extends Base
         //     self::REMARK,
         //     self::PAYMENT_DATE,
         //     self::REFERENCE_NUMBER,
-        //     self::MODE
+        //     self::MODE,
+        //     self::PUBLIC_FAILURE_REASON
 
         //
         // We have null checks everywhere since it's possible that the
         // third-party is down and we don't get any data at all.
         //
 
-        // FTA ID
-        $rzpReferenceNo = $response[Constants::REQUEST_REFERENCE_NO] ?? null;
-        $utr = $response[Constants::UNIQUE_RESPONSE_NO] ?? null;
-        $bankReferenceNo = $response[Constants::BANK_REFERENCE_NO] ?? null;
+        $ftaId = $response[Constants::UPI_REQUEST_REFERENCE_NUMBER] ?? null;
+        $utr = $response[Constants::UPI_UNIQUE_RESPONSE_NUMBER] ?? null;
+        $bankReferenceNumber = $response[Constants::UPI_BANK_REFERENCE_NUMBER] ?? null;
 
-        $statusCode = $response[Constants::STATUS_CODE] ?? null;
-        $bankSubStatus = $response[Constants::SUB_STATUS_CODE] ?? null;
-        $remark = $response[Constants::SUB_STATUS_TEXT] ?? null;
+        $statusCode = $response[Constants::UPI_STATUS_CODE] ?? null;
+
+        $responseCode = $response[Constants::UPI_RESPONSE_CODE] ?? null;
+        $errorCode = $response[Constants::UPI_ERROR_CODE] ?? null;
+        $responseErrorCode = $response[Constants::UPI_RESPONSE_ERROR_CODE] ?? null;
+
+        $finalResponseCode = GatewayStatus::getUsableCode($responseCode, $errorCode, $responseErrorCode);
+
+        $remark = $response[Constants::UPI_STATUS_DESCRIPTION] ?? null;
+
+        $publicFailureReason = GatewayStatus::getPublicFailureReason($finalResponseCode);
+
 
         return [
-            self::PAYMENT_REF_NO        => $this->getNullOnEmpty($rzpReferenceNo),
+            self::PAYMENT_REF_NO        => $this->getNullOnEmpty($ftaId),
             self::UTR                   => $this->getNullOnEmpty($utr),
-            self::BANK_STATUS_CODE      => $this->getNullOnEmpty($statusCode),
+            self::STATUS_CODE           => $this->getNullOnEmpty($statusCode),
+            self::BANK_STATUS_CODE      => $this->getNullOnEmpty($finalResponseCode),
             self::REMARK                => $this->getNullOnEmpty($remark),
-            self::BANK_SUB_STATUS_CODE  => $this->getNullOnEmpty($bankSubStatus),
+            self::BANK_SUB_STATUS_CODE  => null,
             self::PAYMENT_DATE          => null,
             self::TRANSFER_TYPE         => null,
-            self::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNo),
-            self::MODE                  => null,
+            self::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNumber),
+            self::MODE                  => Mode::UPI,
+            self::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason),
+        ];
+    }
+
+    public function getResponseDataFromFta(Attempt\Entity $fta)
+    {
+        $bankStatusCode = $fta->getBankStatusCode();
+
+        $publicFailureReason = GatewayStatus::getPublicFailureReason($bankStatusCode);
+
+        return [
+            self::PAYMENT_REF_NO        => $fta->getId(),
+            self::UTR                   => $fta->getUtr(),
+            self::STATUS_CODE           => $fta->getBankResponseCode(),
+            self::BANK_STATUS_CODE      => $bankStatusCode,
+            self::REMARK                => $fta->getRemarks(),
+            self::BANK_SUB_STATUS_CODE  => null,
+            self::PAYMENT_DATE          => null,
+            self::TRANSFER_TYPE         => null,
+            self::REFERENCE_NUMBER      => $fta->getCmsRefNo(),
+            self::MODE                  => $fta->getMode(),
+            self::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason),
         ];
     }
 
@@ -229,9 +263,10 @@ class Status extends Base
     protected function mockGenerateSuccessResponseForGateway(): array
     {
         return [
-            Constants::REQUEST_REFERENCE_NO => $this->entity->getId(),
-            Constants::UNIQUE_RESPONSE_NO   => PublicEntity::generateUniqueId(),
-            Constants::STATUS_CODE          => GatewayStatus::COMPLETED,
+            Constants::UPI_REQUEST_REFERENCE_NUMBER => $this->entity->getId(),
+            Constants::UPI_UNIQUE_RESPONSE_NUMBER   => PublicEntity::generateUniqueId(),
+            Constants::UPI_RESPONSE_CODE            => GatewayStatus::COMPLETED,
+            Constants::UPI_STATUS_CODE              => GatewayStatus::STATUS_CODE_SUCCESS,
         ];
     }
 

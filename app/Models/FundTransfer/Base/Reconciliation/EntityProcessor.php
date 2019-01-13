@@ -16,8 +16,10 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Transaction\ReconciledType;
+use RZP\Models\FundTransfer\Yesbank\Reconciliation\GatewayStatus;
 use RZP\Mail\Merchant\SettlementFailure as SettlementFailureMail;
 
 abstract class EntityProcessor extends Base\Core
@@ -273,13 +275,32 @@ abstract class EntityProcessor extends Base\Core
 
         $failureReason  = null;
 
+        //
+        // For Yesbank VPA, we want to reconcile only if the status_code
+        // is either success or failure. Many times, we get `pending` or `timeout`.
+        // In these cases, since we anyway don't know the status, it does not make
+        // sense for us to reconcile these, or check the error codes and stuff.
+        //
+        if (($this->fta->getChannel() === Channel::YESBANK) and
+            ($this->fta->hasVpa() === true))
+        {
+            $statusCode = $this->fta->getBankResponseCode();
+
+            if (($statusCode !== GatewayStatus::STATUS_CODE_SUCCESS) and
+                ($statusCode !== GatewayStatus::STATUS_CODE_FAILURE))
+            {
+                return [$status, $failureReason];
+            }
+        }
+
         $statusNamespace = $this->getStatusClass($this->fta);
 
         $statusClass = new $statusNamespace;
 
         $successStatuses = $statusClass::getSuccessfulStatus();
 
-        $failureStatuses = $statusClass::getFailureStatus($bankStatusCode);
+        $failureStatuses = $statusClass::getFailureStatus();
+
         if ((in_array($bankStatusCode, $successStatuses, true) === true) and
             (empty($utr) === false))
         {
@@ -411,11 +432,11 @@ abstract class EntityProcessor extends Base\Core
         return true;
     }
 
-    protected function getStatusClass(Attempt\Entity $entity)
+    protected function getStatusClass(Attempt\Entity $fta)
     {
-        $channel = $entity->getChannel();
+        $channel = $fta->getChannel();
 
-        if ($entity->hasVpa() === true)
+        if ($fta->hasVpa() === true)
         {
              return '\\RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\GatewayStatus';
         }

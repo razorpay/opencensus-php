@@ -669,7 +669,7 @@ class HdfcGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
 
         $this->clearMockFunction();
@@ -691,11 +691,11 @@ class HdfcGatewayTest extends TestCase
             return $content;
         });
 
-        $response = $this->retryFailedRefund($refund['id']);
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         $refund = $this->getEntityById('refund', $refund['id'], true);
 
-        $this->assertEquals(2, $refund['attempts']);
+        $this->assertEquals(1, $refund['attempts']);
         $this->assertEquals('processed', $refund['status']);
     }
 
@@ -709,7 +709,7 @@ class HdfcGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
 
         $this->clearMockFunction();
@@ -728,11 +728,11 @@ class HdfcGatewayTest extends TestCase
             return $content;
         });
 
-        $response = $this->retryFailedRefund($refund['id']);
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         $refund = $this->getEntityById('refund', $refund['id'], true);
 
-        $this->assertEquals(2, $refund['attempts']);
+        $this->assertEquals(1, $refund['attempts']);
         $this->assertEquals('processed', $refund['status']);
     }
 
@@ -749,7 +749,7 @@ class HdfcGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
 
         $this->clearMockFunction();
@@ -770,12 +770,13 @@ class HdfcGatewayTest extends TestCase
                 $content['payid']    = '8152480571771510';
                 $content['udf2']     = '';
                 $content['udf5']     = 'TrackID';
+                $content['authRespCode'] = 'J';
             }
 
             return $content;
         });
 
-        $response = $this->retryFailedRefund($refund['id']);
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         $refund = $this->getEntityById('refund', $refund['id'], true);
 
@@ -832,7 +833,28 @@ class HdfcGatewayTest extends TestCase
     {
         $payment = $this->doAuthAndCapturePayment();
 
-        $this->hdfcPaymentFailedDueToDeniedByRisk();
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']   = 'FAILURE(SUSPECT)';
+                $content['auth']     = '123456';
+                $content['ref']      = '725070182254';
+                $content['postdate'] = '0000';
+                $content['tranid']   = '6996066201872501';
+                $content['payid']    = '8152480571771510';
+                $content['udf2']     = '';
+                $content['udf5']     = 'TrackID';
+                $content['authRespCode'] = 'J';
+            }
+
+            if($action === 'refund')
+            {
+                $content['result'] = 'DENIED BY RISK';
+            }
+
+            return $content;
+        });
 
         $this->refundPayment($payment['id']);
 

@@ -576,7 +576,7 @@ class Service extends Base\Service
 
         $userMapping = $this->repo->merchant->getMerchantUserMapping($merchantId,
                                                                      $user->getId(),
-                                                                null,
+                                                                     null,
                                                                      $switchProduct);
         if (empty($userMapping) === false)
         {
@@ -592,11 +592,14 @@ class Service extends Base\Service
 
         return $userRole;
     }
+
     /**
      * This will assign applicable role to the product by checking it's origin.
      * PG Owner/Admin role on BB will be Owner/Admin. rest all other roles will be rejected and viceversa.
+     *
+     * @param $product
+     *
      * @return null|\RZP\Models\User\Entity
-     * @throws \RZP\Exception\BadRequestException
      */
     public function addProductSwitchRole($product)
     {

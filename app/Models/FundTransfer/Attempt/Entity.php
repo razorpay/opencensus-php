@@ -22,6 +22,7 @@ class Entity extends Base\PublicEntity
     const CHANNEL                = 'channel';
     const VERSION                = 'version';
     const BANK_STATUS_CODE       = 'bank_status_code';
+    const BANK_RESPONSE_CODE     = 'bank_response_code';
     const MODE                   = 'mode';
     const STATUS                 = 'status';
     const UTR                    = 'utr';
@@ -55,6 +56,7 @@ class Entity extends Base\PublicEntity
         self::MODE,
         self::NARRATION,
         self::BANK_STATUS_CODE,
+        self::BANK_RESPONSE_CODE,
         self::STATUS,
         self::REMARKS,
         self::FAILURE_REASON,
@@ -72,6 +74,7 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::VERSION,
         self::BANK_STATUS_CODE,
+        self::BANK_RESPONSE_CODE,
         self::MODE,
         self::STATUS,
         self::UTR,
@@ -193,6 +196,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BANK_STATUS_CODE);
     }
 
+    public function getBankResponseCode()
+    {
+        return $this->getAttribute(self::BANK_RESPONSE_CODE);
+    }
+
     public function getSourceId()
     {
         return $this->getAttribute(self::SOURCE_ID);
@@ -304,6 +312,11 @@ class Entity extends Base\PublicEntity
     public function setBankStatusCode($code)
     {
         $this->setAttribute(self::BANK_STATUS_CODE, $code);
+    }
+
+    public function setBankResponseCode($code)
+    {
+        $this->setAttribute(self::BANK_RESPONSE_CODE, $code);
     }
 
     public function setFailureReason($reason)

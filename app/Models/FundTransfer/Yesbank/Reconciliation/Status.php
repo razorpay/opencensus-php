@@ -237,7 +237,7 @@ class Status extends BaseStatus
     /**
      * {{@inheritdoc}}
      */
-    public static function getFailureStatus($bankStatusCode = null): array
+    public static function getFailureStatus(): array
     {
         return [
             self::NA,

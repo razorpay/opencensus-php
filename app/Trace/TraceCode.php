@@ -222,6 +222,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FETCH_TOKEN_REQUEST                           = 'FETCH_TOKEN_REQUEST';
     const FETCH_TOKEN_RESPONSE                          = 'FETCH_TOKEN_RESPONSE';
 
+    const GATEWAY_INTERNAL_FORMATTED_RESPONSE           = 'GATEWAY_INTERNAL_FORMATTED_RESPONSE';
+
     const AUTO_CAPTURE_REFUND_DELAY                     = 'AUTO_CAPTURE_REFUND_DELAY';
 
     const MPESA_GATEWAY_PARAM_ARRAY                     = 'MPESA_GATEWAY_PARAM_ARRAY';
@@ -447,6 +449,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const COUPON_APPLY_REQUEST                          = 'COUPON_APPLY_REQUEST';
     const COUPON_DELETE_REQUEST                         = 'COUPON_DELETE_REQUEST';
     const COUPON_DELETED                                = 'COUPON_DELETED';
+    const COUPON_UPDATE_REQUEST                         = 'COUPON_UPDATE_REQUEST';
 
     const ITEM_CREATE_REQUEST                           = 'ITEM_CREATE_REQUEST';
     const ITEM_UPDATE_REQUEST                           = 'ITEM_UPDATE_REQUEST';
@@ -526,6 +529,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ADJUSTMENT_CREATE_SUCCESS                     = 'ADJUSTMENT_CREATE_SUCCESS';
     const ADJUSTMENT_SPLIT_REQUEST                      = 'ADJUSTMENT_SPLIT_REQUEST';
     const ADJUSTMENT_SPLIT_ERROR                        = 'ADJUSTMENT_SPLIT_ERROR';
+
+    const VPA_PAYOUT_GATEWAY_RESPONSE                   = 'VPA_PAYOUT_GATEWAY_RESPONSE';
 
     const VERIFY_LOCKED_PAYMENTS                        = 'VERIFY_LOCKED_PAYMENTS';
     const VERIFY_ACTION                                 = 'VERIFY_ACTION';
@@ -743,6 +748,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VPA_PAYOUT_VERIFY_REQUEST                 = 'VPA_PAYOUT_VERIFY_REQUEST';
     const DUPLICATE_PAYOUT_REQUEST                  = 'DUPLICATE_PAYOUT_REQUEST';
     const VPA_CREATE_FOR_CUSTOMER_REQUEST           = 'VPA_CREATE_FOR_CUSTOMER_REQUEST';
+
+    const VPA_PAYOUT_VERIFY_GATEWAY_RESPONSE        = 'VPA_PAYOUT_VERIFY_GATEWAY_RESPONSE';
 
     const GATEWAY_VALIDATE_VPA_REQUEST              = 'GATEWAY_VALIDATE_VPA_REQUEST';
     const GATEWAY_VALIDATE_VPA_RESPONSE             = 'GATEWAY_VALIDATE_VPA_RESPONSE';
@@ -1519,6 +1526,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_DISPATCH_FOR_PAYOUT_INIT        = 'FTA_DISPATCH_FOR_PAYOUT_INIT';
     const FTA_DISPATCH_FOR_PAYOUT_COMPLETE    = 'FTA_DISPATCH_FOR_PAYOUT_COMPLETE';
     const FTA_RECONCILIATION_JOB_RELEASED     = 'FTA_RECONCILIATION_JOB_RELEASED';
+
+    const CARD_DETOKENIZE_MIGRATION_REQUEST     = 'CARD_DETOKENIZE_MIGRATION_REQUEST';
+    const CARD_DETOKENIZE_MIGRATION_RESPONSE    = 'CARD_DETOKENIZE_MIGRATION_RESPONSE';
+    const CARD_DETOKENIZE_MIGRATION_FAILED      = 'CARD_DETOKENIZE_MIGRATION_FAILED';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

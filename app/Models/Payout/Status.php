@@ -32,6 +32,16 @@ class Status
         self::REVERSED  => self::REVERSED,
     ];
 
+    /**
+     * These statuses have corresponding timestamps column in payout
+     *
+     * @var array
+     */
+    public static $timestampedStatuses = [
+        self::PROCESSED,
+        self::REVERSED,
+    ];
+
     public static function getPublicStatusFromInternalStatus($internalStatus)
     {
         return static::$internalToPublicStatusMapping[$internalStatus] ?? $internalStatus;
