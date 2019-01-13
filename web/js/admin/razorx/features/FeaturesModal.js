@@ -19,6 +19,42 @@ const initJSONObj = {
   ],
 };
 
+const validatorJSON = {
+  name: function(val) {
+    if (!val || typeof val !== 'string') {
+      return 'name must be non-empty string';
+    }
+  },
+  description: function(val) {
+    if (!val || typeof val !== 'string') {
+      return 'description must be non-empty string';
+    }
+  },
+  variants: function(val) {
+    if (!val || !(val instanceof Array || !val.length)) {
+      return 'variants must be a non-empty array';
+    }
+
+    let errorMsg;
+
+    val.forEach(v => {
+      const isNameInvalid = !v.name || typeof v.name !== 'string';
+      if (isNameInvalid) {
+        errorMsg = 'variant name must be a non-empty string';
+        return false;
+      }
+
+      const isDescInvalid = !v.description || typeof v.description !== 'string';
+      if (isDescInvalid) {
+        errorMsg = 'variant description must be a non-empty string';
+        return false;
+      }
+    });
+
+    return errorMsg;
+  },
+};
+
 export default class extends React.Component {
   onSubmit = data => {};
 
@@ -41,7 +77,9 @@ export default class extends React.Component {
         header={id ? `Edit Feature – ${name}` : 'Create Feature'}
       >
         <Form onSubmit={this.onSubmit}>
-          {JSONView && <JSONEdit initialJSON={initJSONObj} />}
+          {JSONView && (
+            <JSONEdit initialJSON={initJSONObj} validatorJSON={validatorJSON} />
+          )}
           <div class="footer">
             <button class="btn btn--primary" disabled={!this.isValid()}>
               Create
