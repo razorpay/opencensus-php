@@ -61,6 +61,11 @@ class Entity extends Base\PublicEntity
     const RECIPIENT_EMAILS  = 'recipient_emails';
     const DURATION          = 'duration';
 
+    //
+    // Used for accepting mode in the input for Bank Account FTA
+    //
+    const TRANSFER_MODE = 'transfer_mode';
+
     protected static $sign      = 'ba';
 
     protected $primaryKey = self::ID;
