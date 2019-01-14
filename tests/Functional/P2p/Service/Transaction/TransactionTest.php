@@ -3,6 +3,7 @@
 namespace RZP\Tests\P2p\Service\Transaction;
 
 use RZP\Tests\P2p\Service\TestCase;
+use RZP\Tests\P2p\Service\Base\Fixtures\Fixtures;
 
 class TransactionTest extends TestCase
 {
@@ -12,7 +13,12 @@ class TransactionTest extends TestCase
 
         $helper->withSchemaValidated();
 
-        $helper->initiatePay();
+        $coproto = $helper->initiatePay();
+
+        $transaction = $this->fixtures->getDbLastTransaction();
+
+        $this->assertSame(Fixtures::CUSTOMER_1_VPA_1, $transaction->payer->getId());
+        $this->assertSame(Fixtures::CUSTOMER_2_VPA_1, $transaction->payee->getId());
     }
 
     public function testInitiateCollect()
@@ -21,45 +27,60 @@ class TransactionTest extends TestCase
 
         $helper->withSchemaValidated();
 
-        $helper->initiateCollect();
+        $response = $helper->initiateCollect();
+
+        $transaction = $this->fixtures->getDbLastTransaction();
+
+        $this->assertSame(Fixtures::CUSTOMER_2_VPA_1, $transaction->payer->getId());
+        $this->assertSame(Fixtures::CUSTOMER_1_VPA_1, $transaction->payee->getId());
     }
 
     public function testInitiateAuthorize()
     {
-        $cTxnId = 'ctxn_12345abcde6789';
-
         $helper = $this->getTransactionHelper();
+
+        $helper->initiatePay();
+
+        $transaction = $this->fixtures->getDbLastTransaction();
 
         $helper->withSchemaValidated();
 
-        $helper->initiateAuthorize($cTxnId);
+        $coproto = $helper->initiateAuthorize($transaction->getPublicId());
     }
 
     public function testAuthorizeTransaction()
     {
-        $cTxnId = 'ctxn_12345abcde6789';
-
         $helper = $this->getTransactionHelper();
+
+        $helper->initiatePay();
+
+        $transaction = $this->fixtures->getDbLastTransaction();
 
         $helper->withSchemaValidated();
 
-        $helper->authorizeTransaction($cTxnId);
+        $response = $helper->authorizeTransaction($transaction->getPublicId());
     }
 
     public function testRejectTransaction()
     {
-        $cTxnId = 'ctxn_12345abcde6789';
-
         $helper = $this->getTransactionHelper();
 
         $helper->withSchemaValidated();
 
-        $helper->rejectTransaction($cTxnId);
+        $response = $helper->initiateCollect();
+
+        $transaction = $this->fixtures->getDbLastTransaction();
+
+        $this->fixtures->switchDevice(Fixtures::DEVICE_2);
+
+        $response = $helper->rejectTransaction($transaction->getPublicId());
     }
 
     public function testFetchAll()
     {
         $helper = $this->getTransactionHelper();
+
+        $helper->initiatePay();
 
         $helper->withSchemaValidated();
 
@@ -68,12 +89,14 @@ class TransactionTest extends TestCase
 
     public function testFetch()
     {
-        $cTxnId = 'ctxn_12345abcde6789';
-
         $helper = $this->getTransactionHelper();
+
+        $helper->initiatePay();
+
+        $transaction = $this->fixtures->getDbLastTransaction();
 
         $helper->withSchemaValidated();
 
-        $helper->fetch($cTxnId);
+        $helper->fetch($transaction->getPublicId());
     }
 }
