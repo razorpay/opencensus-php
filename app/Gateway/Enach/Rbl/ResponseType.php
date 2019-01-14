@@ -4,6 +4,6 @@ namespace RZP\Gateway\Enach\Rbl;
 
 class ResponseType
 {
-    const SUCCESS = 'RespXml';
+    const SUCCESS = 'RespXML';
     const FAILURE = 'ErrorXML';
 }

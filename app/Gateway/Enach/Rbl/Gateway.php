@@ -587,11 +587,11 @@ class Gateway extends Base\Gateway
                                                                                 [ResponseXmlTags::REJECT_REASON]
                                                                                 [ResponseXmlTags::REJECTION_BY]),
 
-            ResponseXmlTags::DEBTOR_IFSC        => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+            /*ResponseXmlTags::DEBTOR_IFSC        => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
                                                                  [ResponseXmlTags::ACCEPT_DETAILS]
                                                                  [ResponseXmlTags::ACCEPT_RESULT]
                                                                  [ResponseXmlTags::DEBTOR]
-                                                                 [ResponseXmlTags::DEBTOR_IFSC],
+                                                                 [ResponseXmlTags::DEBTOR_IFSC],*/
         ];
 
         foreach ($data as $key => $value)

@@ -29,7 +29,7 @@ class Server extends Base\Mock\Server
 
         $requestArray = json_decode($json,true);
 
-        $respType = 'RespXml';
+        $respType = 'RespXML';
 
         $this->content($respType, 'authorize');
 
@@ -37,7 +37,7 @@ class Server extends Base\Mock\Server
 
         $secureData = [];
 
-        if($respType === 'RespXml')
+        if($respType === 'RespXML')
         {
             $secureData = $this->getSecureData();
 
@@ -71,7 +71,7 @@ class Server extends Base\Mock\Server
 
     private function getResponseData($requestArray, $respType, $secureData)
     {
-        if($respType === 'RespXml')
+        if($respType === 'RespXML')
         {
             $data = [
                 'GrpHdr'      => [
@@ -122,7 +122,7 @@ class Server extends Base\Mock\Server
 
     private function getResponseOrErrorXml($data, $respType)
     {
-        if ($respType === 'RespXml')
+        if ($respType === 'RespXML')
         {
             return $this->getResponseXml($data);
         }

@@ -381,7 +381,7 @@ class GatewayController extends Controller
 
         $responseArray = json_decode($json,true);
 
-        if($input['RespType'] === 'RespXml')
+        if($input['RespType'] === 'RespXML')
         {
             $paymentId = $responseArray['MndtAccptResp']['UndrlygAccptncDtls']['OrgnlMsgInf']['MndtReqId'];
         }
