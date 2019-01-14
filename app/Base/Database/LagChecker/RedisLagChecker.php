@@ -97,14 +97,6 @@ class RedisLagChecker implements LagChecker
         else
         {
             $useMaster = ($this->weight <= $masterRoutePercentage);
-
-            $connection = ($useMaster === true) ? self::MASTER : self::SLAVE;
-
-            $this->trace->info(
-                TraceCode::WEIGHTED_DATABASE_ROUTING,
-                [
-                    'connection' => $connection,
-                ]);
         }
 
         return $useMaster;
