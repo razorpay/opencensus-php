@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Hitachi;
 
+use RZP\Exception\PaymentVerificationException;
 use RZP\Models\Card;
 use RZP\Gateway\Hitachi;
 use RZP\Models\Payment\Gateway;
@@ -1137,5 +1138,31 @@ class HitachiGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testHitachiCaptureEntity'], $gatewayPayment);
+    }
+
+    public function testDefinitePaymentVerifyFailed()
+    {
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $data = $this->testData['testVerifyMismatch'];
+
+        $this->mockDefiniteVerifyFailed();
+
+        $e = null;
+
+        try
+        {
+            $this->verifyPayment($payment['id']);
+        }
+        catch (PaymentVerificationException $e)
+        {
+            $this->assertEquals($e->getAction(), 'finish');
+        }
+        finally
+        {
+            self::assertNotNull($e);
+        }
     }
 }

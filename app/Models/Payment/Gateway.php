@@ -478,6 +478,9 @@ class Gateway
      * @var array
      */
     public static $scroogeGateways = [
+        Payment\Gateway::AMEX => [
+            self::GO_LIVE_TIMESTAMP => 1547115346
+        ],
         Payment\Gateway::SHARP => [
             self::GO_LIVE_TIMESTAMP => 1535712088
         ],

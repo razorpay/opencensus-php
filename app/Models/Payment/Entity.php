@@ -443,7 +443,7 @@ class Entity extends Base\PublicEntity
         self::RECURRING_TYPE       => null,
         self::AUTH_TYPE            => null,
         self::ACKNOWLEDGED_AT      => null,
-        self::REFUND_AT            => null
+        self::REFUND_AT            => null,
     ];
 
     protected $amounts = [

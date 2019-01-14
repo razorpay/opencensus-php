@@ -57,4 +57,51 @@ class Service extends Base\Service
 
         return [$responseKey => $recurring];
     }
+
+    public function cardDetokenize(array $input)
+    {
+        $this->trace->info(TraceCode::CARD_DETOKENIZE_MIGRATION_REQUEST, $input);
+
+        if (empty($input['tokens']) === true)
+        {
+            return;
+        }
+
+        $cardTokenex = (new Card\Tokenex);
+
+        $tokens = $input['tokens'];
+
+        $failedTokens = [];
+
+        foreach ($tokens as $token)
+        {
+            try
+            {
+                $cardTokenex->getCardNumber($token);
+            }
+            catch(\Exception $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    TraceCode::CARD_DETOKENIZE_MIGRATION_FAILED,
+                    ['token' => $token]
+                );
+
+                $failedTokens[] = $token;
+            }
+        }
+
+        $response = [
+            'failed_tokens' => $failedTokens,
+            'count'         => count($failedTokens),
+            'total_count'   => count($tokens),
+        ];
+
+        $this->trace->info(
+            TraceCode::CARD_DETOKENIZE_MIGRATION_RESPONSE,
+            $response);
+
+        return $response;
+    }
 }

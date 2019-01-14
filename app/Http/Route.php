@@ -790,7 +790,8 @@ final class Route
         'scrooge_refunds_get_multiple'             => ['post',     'scrooge/refunds',                                'ScroogeController@listRefunds'                                     ],
         'scrooge_refunds_get'                      => ['get',      'scrooge/refunds/{id}',                           'ScroogeController@get'                                             ],
         'scrooge_refunds_update'                   => ['post',     'scrooge/refunds/{id}/status-update',             'ScroogeController@statusUpdate'                                    ],
-        'scrooge_refunds_download'                 => ['post',      'scrooge/refunds/download',                      'ScroogeController@downloadRefunds'                                 ],
+        'scrooge_refunds_download'                 => ['post',     'scrooge/refunds/download',                       'ScroogeController@downloadRefunds'                                 ],
+        'scrooge_refunds_enqueue'                  => ['post',     'scrooge/refunds/enqueue',                        'ScroogeController@enqueue'                                         ],
 
         // Dispute routes
         'payment_dispute_create'                   => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
@@ -976,6 +977,7 @@ final class Route
         // Banking statement routes
         'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
         'transaction_statement_fetch_multiple'     => ['get',      'transactions',                                   'StatementController@list'                                          ],
+        'vault_migration_detokenize'               => ['post',     'card/migration/detokenize',                      'CardController@postCardDetokenize'                                 ],
     ];
 
     public static $public = [
@@ -1827,6 +1829,7 @@ final class Route
         // Scrooge - ODS Dashboard
         'scrooge_reports_get_multiple',
         'scrooge_refunds_update_multiple',
+        'scrooge_refunds_enqueue',
         'scrooge_refunds_get_multiple',
         'scrooge_refunds_download',
         'scrooge_refunds_get',
@@ -1858,7 +1861,8 @@ final class Route
         'merchant_balance_bulk_backfill_ids',
 
         //Bulk Add/Remove bank for terminal
-        'terminal_bank_bulk'
+        'terminal_bank_bulk',
+        'vault_migration_detokenize',
     ];
 
     public static $routePermission = [
@@ -2131,6 +2135,7 @@ final class Route
         'risk_update'                              => '*',
         'scrooge_reports_get_multiple'             => '*',
         'scrooge_refunds_update_multiple'          => Permission::EDIT_REFUND,
+        'scrooge_refunds_enqueue'                  => Permission::EDIT_REFUND,
         'scrooge_refunds_get_multiple'             => '*',
         'scrooge_refunds_download'                 => '*',
         'scrooge_refunds_get'                      => '*',
@@ -2234,6 +2239,7 @@ final class Route
         'entity_balance_id_update'                 => '*',
         'merchant_balance_bulk_backfill_ids'       => '*',
         'terminal_bank_bulk'                       => Permission::EDIT_TERMINAL,
+        'vault_migration_detokenize'               => '*',
     ];
 
     public static $direct = [

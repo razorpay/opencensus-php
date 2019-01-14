@@ -52,7 +52,7 @@ class Core extends Base\Core
             throw new BadRequestValidationFailureException('Token creation failed');
         }
 
-        (new Merchant\AccessMap\Core)->addMappingForOAuthApp($subMerchant, $mapInput);
+        (new Merchant\AccessMap\Core)->addMappingForOAuthApp($merchant, $subMerchant, $mapInput);
 
         return $token['partner_token'];
     }

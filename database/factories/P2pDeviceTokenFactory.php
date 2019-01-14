@@ -3,8 +3,8 @@
 
 use Faker\Generator as Faker;
 use RZP\Models\Merchant\Account;
+use RZP\Models\P2p\Base\Upi\ClientLibrary;
 use RZP\Models\P2p\Device\DeviceToken\Entity;
-use RZP\Models\P2p\Device\DeviceToken\ClientLibrary;
 
 $factory->define(Entity::class, function (Faker $faker) {
     return [

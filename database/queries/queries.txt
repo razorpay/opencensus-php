@@ -4625,3 +4625,8 @@ ALTER TABLE promotions
     ADD COLUMN creator_name VARCHAR(255) DEFAULT NULL AFTER credits_expire,
     ADD COLUMN purpose VARCHAR(255) DEFAULT NULL AFTER credits_expire,
     ADD INDEX promotions_pricing_plan_id_index (pricing_plan_id);
+
+ALTER TABLE payouts
+    ADD COLUMN reversed_at int(11) DEFAULT NULL AFTER `processed_at`,
+    ADD INDEX payouts_reversed_at_index (reversed_at),
+    ADD INDEX payouts_processed_at_index (processed_at);

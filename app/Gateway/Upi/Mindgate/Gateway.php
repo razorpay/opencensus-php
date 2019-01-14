@@ -839,10 +839,12 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * This is done in order to fix duplicate
-     * merchant transaction id issue in case
-     * refund is retried multiple times
+     * This is done in order to fix duplicate merchant transaction id issue in case refund is retried multiple times.
      *
+     * UPI gateways do not process refund which has been failed, they process new refund everytime. And hence,
+     * we send the refund id appended with attempts to generate new refund id.
+     *
+     * @param array $refund
      * @return string
      */
     protected function getRefundId(array $refund)
@@ -885,9 +887,19 @@ class Gateway extends Base\Gateway
 
     protected function getRefundVerifyRequestArray($input)
     {
+        //
+        // Appending (attempt count - 1)  to refund id for verifying previous refund if that was successful.
+        // For scrooge refunds, attempts are sent from scrooge which signifies the attempts which have been done on this.
+        // As attempts in scrooge starts with 0, For eg. if attempts = 5,
+        // that means we will be requesting refund R5 and we need to verify for R4.
+        //
         $attempts = $input['refund']['attempts'] - 1;
 
-        if ($input['refund']['attempts'] === 1)
+        //
+        // If this is 0th or 1st attempt, verify refund should be called for first refund (exact Refund Id)
+        // Appending empty string to refund if we want to verify refund with 14 digit refund id.
+        //
+        if (((int) $attempts === 0) or ((int) $input['refund']['attempts'] === 0))
         {
             $attempts = '';
         }

@@ -20,6 +20,7 @@ use RZP\Gateway\Mpi\Base\Eci;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Payment\Verify\Action;
 
 class Gateway extends Base\Gateway
 {
@@ -487,9 +488,32 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment(Verify $verify)
     {
+        $this->checkResponseAndThrowExceptionIfRequired($verify);
+
         $this->setVerifyStatus($verify);
 
         $verify->payment = $this->saveVerifyResponseIfNeeded($verify);
+    }
+
+    protected function checkResponseAndThrowExceptionIfRequired($verify)
+    {
+        $content = $verify->verifyResponseContent;
+
+        /**
+         * For response codes 05, 51, N7 , we are confirmed that the payment has failed. So there is no point calling
+         * verify for such payments repeatedly.
+         */
+
+        $definiteErrorCodes = ['05', '51', 'N7'];
+
+        if ((empty($content[ResponseFields::RESPONSE_CODE]) === false) and
+            (in_array($content[ResponseFields::RESPONSE_CODE], $definiteErrorCodes)) === true)
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify,
+                Action::FINISH);
+        }
     }
 
     protected function setVerifyStatus(Verify $verify)
