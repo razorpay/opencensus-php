@@ -1,8 +1,7 @@
 import { Route, Switch, Redirect } from 'react-router-dom';
 import MainNavLink from 'admin/components/MainNavLink';
-import { org } from 'admin/user';
-import { isOrgRazorpay } from 'admin/user';
-import { RZPRoute } from './helper';
+import { org, isOrgRazorpay } from 'admin/user';
+import { ShowWhenRoute } from 'admin/components/ShowWhen';
 
 import Profile from 'admin/profile';
 
@@ -190,3 +189,9 @@ export const Sidebar = ({ props }) => (
     ))}
   </aside>
 );
+
+function RZPRoute(props) {
+  return (
+    <ShowWhenRoute {...props} additionalCondition={_ => isOrgRazorpay()} />
+  );
+}

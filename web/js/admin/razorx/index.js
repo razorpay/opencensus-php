@@ -10,8 +10,8 @@ import MainNavLink from 'admin/components/MainNavLink';
 
 import user, { org } from 'admin/user';
 
-import Features from './eeatures';
-import Experiments from './fxperiments';
+import Experiments from './experiments';
+import Features from './features';
 import WorkflowsList from './workflows/List';
 import MerchantEvaluation from './merchant_evaluation/Search';
 import AuditLogsList from './auditlog/List';
@@ -20,6 +20,10 @@ import ModalContainer, { openSlider, closeSlider } from 'common/modal';
 
 @withRouter
 export default class RazorXApp extends React.Component {
+  componentWillMount() {
+    loadCodeEditor();
+  }
+
   handleLogout = () => {
     return fetch({
       url: '/admin/user/logout',
@@ -30,39 +34,38 @@ export default class RazorXApp extends React.Component {
 
   render() {
     return (
-      <div id="app-container">
+      <div class="app-container RazorX-container">
+        <Logo />
         <main>
           <ErrorBoundary resetOnProps location={this.props.location}>
-            <Switch>
-              <Route path="/razorx/experiments" component={Experiments} />
-              <ShowWhenRoute path="/razorx/features" component={Features} />
-              <Route path="/razorx/audit-log" component={AuditLogList} />
-              <Redirect to="/razorx/experiments" />
-            </Switch>
+            <TransitionGroup id="main-routes">
+              <CSSTransition
+                key={this.props.location.pathname}
+                classNames="slide"
+                timeout={420}
+              >
+                <Switch location={this.props.location}>
+                  <Route path="/experiments" component={Experiments} />
+                  <Route
+                    path="/experiments/:id(exp_.+)"
+                    component={Experiments}
+                  />
+                  <Route path="/experiments/new" component={Experiments} />
+
+                  <ShowWhenRoute path="/features" component={Features} />
+                  <Route path="/requests" component={WorkflowsList} />
+                  <Route
+                    path="/razorx/merchant-evaluation"
+                    component={MerchantEvaluation}
+                  />
+                  <Route path="/audit-logs" component={AuditLogsList} />
+                  <Redirect to="/experiments" />
+                </Switch>
+              </CSSTransition>
+            </TransitionGroup>
           </ErrorBoundary>
         </main>
-        <header>
-          <div id="profile-icon">
-            {user.name}
-            <i class="i-arrow-down" />
-            <div class="menu">
-              <Link to="/profile">
-                <i class="i-user" />
-                Profile
-              </Link>
-              <AsyncButton
-                onClick={this.handleLogout}
-                class="logout-btn btn-default"
-                pendingClass="logout-btn btn-default btn-pending"
-              >
-                <i class="i-logout" />
-                Logout
-                <span class="spin-btn" />
-              </AsyncButton>
-            </div>
-          </div>
-        </header>
-        <Sidebar />
+        <Sidebar user={user} handleLogout={this.handleLogout} />
         <ModalContainer />
       </div>
     );
@@ -71,11 +74,11 @@ export default class RazorXApp extends React.Component {
 
 const links = [
   // title, url, permission, icon
-  ['Experiments', '/razorx/experiments', '', 'flask'],
-  ['Features', '/razorx/features', '', 'layers'],
-  ['Workflow Requests', '/razorx/requests', '', 'yes'],
-  ['Merchant Evaluation', '/razorx/merchant-evaluation', '', 'user-search'],
-  ['Audit Logs', '/razorx/audit-logs', '', 'notes'],
+  ['Experiments', '/experiments', '', 'flask'],
+  ['Features', '/features', '', 'layers'],
+  ['Workflow Requests', '/requests', '', 'yes'],
+  ['Merchant Evaluation', '//merchant-evaluation', '', 'user-search'],
+  ['Audit Logs', '/audit-logs', '', 'notes'],
 ];
 
 export const Sidebar = ({ user, handleLogout }) => (
@@ -109,43 +112,6 @@ export const Sidebar = ({ user, handleLogout }) => (
     </div>
   </aside>
 );
-
-@withRouter
-export default class RazorX extends React.Component {
-  render() {
-    return (
-      <ErrorBoundary resetOnProps location={this.props.location}>
-        <TransitionGroup id="main-routes">
-          <CSSTransition
-            key={this.props.location.pathname}
-            classNames="slide"
-            timeout={420}
-          >
-            <Switch location={this.props.location}>
-              <Route path="/razorx/experiments" component={Experiments} />
-              <Route
-                path="/razorx/experiments/:id(exp_.+)"
-                component={Experiments}
-              />
-              <Route path="/razorx/experiments/new" component={Experiments} />
-
-              <ShowWhenRoute path="/razorx/features" component={Features} />
-              <Route path="/razorx/requests" component={WorkflowsList} />
-              <Route
-                path="/razorx/merchant-evaluation"
-                component={MerchantEvaluation}
-              />
-              <Route path="/razorx/audit-logs" component={AuditLogsList} />
-              <Redirect to="/razorx/experiments" />
-            </Switch>
-          </CSSTransition>
-        </TransitionGroup>
-      </ErrorBoundary>
-    );
-  }
-}
-
-RazorX.display_name = 'RazorX';
 
 export function Logo() {
   return (

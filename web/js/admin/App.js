@@ -8,9 +8,7 @@ import {
   Link,
   withRouter,
 } from 'react-router-dom';
-import { matchFullPageView } from './routes/helper';
-
-import MainContent, { Sidebar as MainSidebar } from './routes';
+import Content, { Sidebar } from 'admin/Content';
 
 import ModalContainer, { openSlider, closeSlider } from 'common/modal';
 import ErrorBoundary from 'common/ErrorBoundary';
@@ -58,67 +56,36 @@ export default class App extends Component {
     });
   };
 
-  getFPView() {
-    const matchView = matchFullPageView(this.props.location.pathname);
-
-    if (matchView && matchView.match) {
-      return matchView;
-    }
-  }
-
   render() {
-    const FPView = this.getFPView();
-
     return (
-      <div
-        class={classList(
-          'app-container',
-          FPView && `${FPView.component.display_name}-container`
-        )}
-      >
-        {FPView && !!FPView.logo && <FPView.logo />}
-
+      <div class="app-container">
         <main>
           <ErrorBoundary resetOnProps location={this.props.location}>
-            {FPView ? (
-              <FPView.component {...FPView.params} />
-            ) : (
-              <MainContent {...this.props} />
-            )}
+            <Content {...this.props} />
           </ErrorBoundary>
         </main>
-        {!FPView && (
-          <header>
-            <div id="profile-icon">
-              {user.name}
-              <i class="i-arrow-down" />
-              <div class="menu">
-                <Link to="/profile">
-                  <i class="i-user" />
-                  Profile
-                </Link>
-                <AsyncButton
-                  onClick={this.handleLogout}
-                  class="logout-btn btn-default"
-                  pendingClass="logout-btn btn-default btn-pending"
-                >
-                  <i class="i-logout" />
-                  Logout
-                  <span class="spin-btn" />
-                </AsyncButton>
-              </div>
+        <header>
+          <div id="profile-icon">
+            {user.name}
+            <i class="i-arrow-down" />
+            <div class="menu">
+              <Link to="/profile">
+                <i class="i-user" />
+                Profile
+              </Link>
+              <AsyncButton
+                onClick={this.handleLogout}
+                class="logout-btn btn-default"
+                pendingClass="logout-btn btn-default btn-pending"
+              >
+                <i class="i-logout" />
+                Logout
+                <span class="spin-btn" />
+              </AsyncButton>
             </div>
-          </header>
-        )}
-        {do {
-          if (FPView) {
-            if (FPView.sidebar) {
-              <FPView.sidebar user={user} handleLogout={this.handleLogout} />;
-            }
-          } else {
-            <MainSidebar />;
-          }
-        }}
+          </div>
+        </header>
+        <Sidebar />;
         <ModalContainer />
       </div>
     );
