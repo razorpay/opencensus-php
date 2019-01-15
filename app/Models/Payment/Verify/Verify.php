@@ -35,9 +35,9 @@ class Verify extends Base\Core
      * We verify it and move it to bucket 2. And this cycle keeps repeating
      */
     protected static $failureStartBoundary = [
-        0 => 900,       // 15 Minutes
+        0 => 720,       // 12 Minutes
         1 => 1800,      // 30 Minutes
-        2 => 3600,      // 60 Minutes
+        2 => 7200,      // 2 hours
         3 => 21600,     // 6 hours
         4 => 86400,     // 1 Day
         5 => 172800,    // 2 Day
@@ -70,10 +70,10 @@ class Verify extends Base\Core
     protected static $updateWaitBoundaries = [
         0 => 600,       // 10 Minutes
         1 => 600,       // 10 Minutes
-        2 => 900,       // 15 Minutes
-        3 => 2700,      // 45 Minutes
-        4 => 7200,      // 2 Hours
-        5 => 57600,     // 16 Hours
+        2 => 1080,      // 18 Minutes
+        3 => 5400,      // 90 Minutes
+        4 => 14400,     // 4 Hours
+        5 => 64800,     // 18 Hours
         6 => 86400,     // 24 Hours
         7 => 86400,     // 24 Hours
         8 => 86400,     // 24 Hours
