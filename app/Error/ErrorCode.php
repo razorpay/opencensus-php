@@ -540,6 +540,7 @@ class ErrorCode
     const BAD_REQUEST_CANNOT_UPDATE_CLOSED_DISPUTE                                  = 'BAD_REQUEST_CANNOT_UPDATE_CLOSED_DISPUTE';
     const BAD_REQUEST_PAYMENT_UPI_REQUEST_TIMED_OUT                                 = 'BAD_REQUEST_PAYMENT_UPI_REQUEST_TIMED_OUT';
     const BAD_REQUEST_PAYMENT_UPI_MULTIPLE_ACCOUNTS_LINKED                          = 'BAD_REQUEST_PAYMENT_UPI_MULTIPLE_ACCOUNTS_LINKED';
+    const BAD_REQUEST_PAYMENT_REVERSAL_NOT_SUPPORTED                                = 'BAD_REQUEST_PAYMENT_REVERSAL_NOT_SUPPORTED';
     const BAD_REQUEST_GATEWAY_REFUND_ABSENT                                         = 'BAD_REQUEST_GATEWAY_REFUND_ABSENT';
     const BAD_REQUEST_INVALID_GATEWAY                                               = 'BAD_REQUEST_INVALID_GATEWAY';
     const BAD_REQUEST_APP_TOKEN_ABSENT                                              = 'BAD_REQUEST_APP_TOKEN_ABSENT';

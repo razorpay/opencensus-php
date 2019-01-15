@@ -1525,7 +1525,15 @@ trait Refund
                 ErrorCode::BAD_REQUEST_PAYMENT_FULLY_REFUNDED);
         }
 
-        if ($payment->isCaptured() === false)
+        if ($this->merchant->isFeatureEnabled(Feature::VOID_REFUNDS) === true)
+        {
+            if ($this->gatewaySupportsReversal($payment) === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_REVERSAL_NOT_SUPPORTED);
+            }
+        }
+        else if ($payment->isCaptured() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
