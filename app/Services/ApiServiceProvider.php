@@ -29,7 +29,6 @@ use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Models\BankTransfer;
-use RZP\Constants\Environment;
 use RZP\Constants\Entity as E;
 use RZP\Models\Admin as Admin;
 use RZP\Models\VirtualAccount;
