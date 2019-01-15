@@ -390,21 +390,21 @@ class Notify
                 'phone'         => $this->merchant->getAt
             ],
             'payment'   => [
-                'id'              => $this->payment->getId(),
-                'public_id'       => $this->payment->getPublicId(),
-                'amount'          => $this->payment->getAmount(),
-                'raw_amount'      => $this->payment['base_amount'],
-                'adjusted_amount' => $this->payment->getAdjustedAmountWrtCustFeeBearer(),
-                'timestamp'       => $this->payment->getUpdatedAt(),
-                'captured_at'     => $this->payment->getAttribute('captured_at'),
-                'amount_spread'   => $this->payment->getAmountSpreadInArray(),
-                'phone'           => $this->payment->getContact(),
+                'id'                   => $this->payment->getId(),
+                'public_id'            => $this->payment->getPublicId(),
+                'amount'               => $this->payment->getAmount(),
+                'raw_amount'           => $this->payment['base_amount'],
+                'adjusted_amount'      => $this->payment->getAdjustedAmountWrtCustFeeBearer(),
+                'timestamp'            => $this->payment->getUpdatedAt(),
+                'captured_at'          => $this->payment->getAttribute('captured_at'),
+                'amount_spread'        => $this->payment->getAmountComponents(),
+                'phone'                => $this->payment->getContact(),
                 'created_at_formatted' => $this->payment->getCreatedAtFormatted(),
 
                 // note that payment method is unavailable to the merchant
-                'method'    => $this->payment->getMethodWithDetail(),
-                'orderId'   => $this->payment->getOrderId(),
-                'risk'      => $this->merchant->getRiskRating()
+                'method'               => $this->payment->getMethodWithDetail(),
+                'orderId'              => $this->payment->getOrderId(),
+                'risk'                 => $this->merchant->getRiskRating()
             ],
         ];
 

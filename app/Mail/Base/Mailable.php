@@ -249,20 +249,13 @@ class Mailable extends BaseMailable
 
     protected function getView($newView, $oldView)
     {
-        $app = App::getFacadeRoot();
-        $razorx = $app['razorx'];
-        $variant = $razorx->getTreatment(
-            $this->data['merchant']['id'],
-            Merchant\RazorxTreatment::NEW_DESIGN_MAILERS,
-            $this->mode
-        );
+        $app        =   App::getFacadeRoot();
+        $razorx     =   $app['razorx'];
+        $variant    =   $razorx->getTreatment(
+                            $this->data['merchant']['id'],
+                            Merchant\RazorxTreatment::NEW_DESIGN_MAILERS,
+                            $this->mode);
 
-        if(strtolower($variant) === 'on')
-        {
-            return $newView;
-        } else
-        {
-            return $oldView;
-        }
+        return strtolower($variant) === 'on' ? $newView : $oldView;
     }
 }
