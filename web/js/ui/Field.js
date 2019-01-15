@@ -58,6 +58,16 @@ export const FileField = _ => <Field {..._} type="file" />;
 export const TimeField = _ => <Field {..._} type="time" />;
 export const DataListField = _ => <Field {..._} tag="datalist" />;
 
+/* Fields to be shown visually closer than other fields in form*/
+Field.Group = ({ label, className, children, required, ...otherProps }) => {
+  return (
+    <div class={classList('InputGroup', className)}>
+      {label && <label class={required ? 'required' : ''}>{label}</label>}
+      {children}
+    </div>
+  );
+};
+
 export const DateField = ({
   label = '',
   fieldClass = '',
@@ -239,6 +249,10 @@ class SearchableSelect extends Component {
     this.setState({ selectedOption: option });
   };
 
+  handleInput = e => {
+    this.props.onInput && this.props.onInput(e.target.value);
+  };
+
   componentWillReceiveProps(nextProps) {
     if (nextProps.defaultValue !== this.state.selectedOption.value) {
       this.setState({
@@ -277,6 +291,7 @@ class SearchableSelect extends Component {
             optionLabelPath="name"
             selected={this.state.selectedOption}
             onChange={this.handleChange}
+            onInput={this.handleInput}
             {...props}
           />
         ) : (

@@ -1,0 +1,155 @@
+.RazorX-container.RazorX-container
+  /* Btn */
+  .btn
+    border-radius: 2px
+    font-weight: 600
+
+    &--primary
+      background: $color-primary
+
+      &:hover
+        background: $color-primary-hover
+
+    &--pill
+      background: #fff
+      border-radius: 20px
+      box-shadow: 0 0 7px rgba(0,0,0,0.08)
+      color: inherit
+      margin: 0
+      transition: 0.12s cubic-bezier(0.2, 1.08, 1, 1)
+      transform-origin: center
+
+      &:hover
+        background: #fff
+        box-shadow: 0 0 14px rgba(0,0,0,0.08)
+        transform: scale(1.01)
+
+      &:active
+        background: #fff
+        box-shadow: 0 0 7px rgba(0,0,0,0.08)
+        transform: scale(1)
+
+
+  /* Knob */
+  .knob
+    background: none
+    box-shadow: none
+    padding: 0
+    border: none
+    position: relative
+    margin: 0
+    display: inline-block
+    vertical-align: middle
+    width: 28px
+    height: 14px
+
+    &::before
+      content: ''
+      display: block
+      border-radius: 2px
+      height: 100%
+      width: 100%
+      background-color: #f2f5f6
+      box-shadow: inset 0 1px 3px 0 rgba(0,0,0,0.24)
+
+    &::after
+      content: '='
+      left: 2px
+      top: 2px
+      position: absolute
+      height: auto
+      width: auto
+      box-shadow: 0 1px 3px 0 rgba(0,0,0,0.2), 0 1px 1px 0 rgba(0,0,0,0.18)
+      color: #d9dfe0
+      background: #fff
+      border-radius: 1px
+      padding: 4px 2px
+      line-height: 2px
+      font-size: 12px
+      transition: 0.2s
+
+    &.checked::before
+      background: $color-primary
+
+    &.checked::after
+      transform: translateX(12px)
+
+  form
+    .btn .spin-btn
+      display: none
+
+    &.pending
+      .btn
+        pointer-events: none
+        opacity: 0.7
+        cursor: not-allowed
+
+        .spin-btn
+          display: inline-block
+          opacity: 1
+          border: 2px solid #fff
+          border-top-color: transparent
+
+    .sub-heading
+      font-size: 16px
+      padding: 20px 0 8px
+      margin-top: 20px
+      font-weight: 600
+      border-top: 1px solid rgba(0, 0, 0, 0.04)
+
+    textarea, input, select
+      color: inherit
+
+      &::placeholder
+        color: inherit
+        opacity: 0.4
+        font-size: 14px
+
+    textarea, input:not([type="checkbox"]), .searchable-select, select
+      box-shadow: inset 0 1px 4px rgba(10,10,10,0.05)
+      border-radius: 2px
+      border: 1px solid rgba(0,0,0,0.08)
+
+    .searchable-select
+      .PowerSelect
+        border: none
+        border-radius: 0
+        background: transparent
+        box-shadow: none
+
+      .PowerSelect__Trigger
+        min-height: 32px
+
+      .PowerSelect__TriggerInput
+        height: 100%
+        width: 100%
+        border: none
+        background: transparent
+
+    .InputGroup.collapse-space
+      .field
+        margin: 0
+
+        .required:after
+          content: none
+
+      div.field:first-of-type
+        input, textarea
+          border-bottom: 0
+          border-bottom-left-radius: 0
+          border-bottom-right-radius: 0
+
+      div.field:last-of-type
+        input, textarea
+          border-top: 0
+          border-top-left-radius: 0
+          border-top-right-radius: 0
+
+    textarea
+      min-height: unset
+      height: 70px
+      line-height: 20px
+      font-size: 12px
+
+    .field > label
+      font-weight: 600
