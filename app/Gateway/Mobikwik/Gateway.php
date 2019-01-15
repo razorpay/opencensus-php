@@ -644,7 +644,6 @@ class Gateway extends Base\Gateway
             'amount',
             'statusmessage',
             'mid',
-            'refid'
         );
 
         $actual = $content['checksum'];

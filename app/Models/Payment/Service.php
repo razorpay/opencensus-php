@@ -758,11 +758,7 @@ class Service extends Base\Service
 
         $iinEntity = $this->repo->iin->find($input['iin']);
 
-        $flows = $merchant->getPaymentFlows($iinEntity);
-
-        $data = $flows;
-
-        $data['flows'] = $data;
+        $data = $merchant->getPaymentFlows($iinEntity);
 
         if (isset($input['order_id']) === true)
         {
@@ -1209,7 +1205,7 @@ class Service extends Base\Service
 
         $count = $input['count'] ?? 200;
 
-        $timestamp = Carbon::now(Timezone::IST)->subMinutes($delay)->getTimestamp();
+        $timestamp = Carbon::now(Timezone::IST)->subSeconds($delay)->getTimestamp();
 
         return (new Verify)->verifyAllPayments($timestamp, $gateway, $count);
     }
@@ -1378,16 +1374,20 @@ class Service extends Base\Service
 
     /**
      * Marks the payment as acknowledged, if not already acknowledged.
+     * Also, updates payments.notes field with acknowledged data if any.
      *
      * @param string $paymentId
+     * @param array  $input
      *
      * @throws Exception\BadRequestException
      */
-    public function acknowledge(string $paymentId)
+    public function acknowledge(string $paymentId, array $input)
     {
+        (new Payment\Validator)->validateInput('acknowledge', $input);
+
         $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
 
-        $this->getNewProcessor()->acknowledge($payment);
+        $this->getNewProcessor()->acknowledge($payment, $input);
     }
 
     public function updateReceiverData()
@@ -1553,12 +1553,5 @@ class Service extends Base\Service
         $this->app['cache']->put($key, $data, $cacheTtl);
 
         return $token;
-    }
-
-    public function payoutVpa($input, $type)
-    {
-        $data = $this->getNewProcessor()->payoutVpa($input, $type);
-
-        return $data;
     }
 }

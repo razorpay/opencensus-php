@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\Contact\Entity as Contact;
+use RZP\Models\Payout\Entity as Payout;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\FundAccount\Entity as FundAccount;
 
@@ -27,7 +27,10 @@ class CreateFundAccounts extends Migration
 
             $table->char(FundAccount::MERCHANT_ID, Merchant::ID_LENGTH);
 
-            $table->char(FundAccount::CONTACT_ID, Contact::ID_LENGTH)
+            $table->string(FundAccount::SOURCE_TYPE)
+                  ->nullable();
+
+            $table->char(FundAccount::SOURCE_ID, FundAccount::ID_LENGTH)
                   ->nullable();
 
             $table->char(FundAccount::ACCOUNT_TYPE, 255);
@@ -44,7 +47,7 @@ class CreateFundAccounts extends Migration
             $table->integer(FundAccount::DELETED_AT)
                   ->nullable();
 
-            $table->index(FundAccount::CONTACT_ID);
+            $table->index(FundAccount::SOURCE_ID);
 
             $table->index(FundAccount::ACCOUNT_ID);
 
@@ -58,14 +61,17 @@ class CreateFundAccounts extends Migration
 
             $table->index(FundAccount::DELETED_AT);
 
-            $table->foreign(FundAccount::CONTACT_ID)
-                  ->references(Contact::ID)
-                  ->on(Table::CONTACT)
-                  ->on_delete('restrict');
-
             $table->foreign(FundAccount::MERCHANT_ID)
                   ->references(Merchant::ID)
                   ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
+        });
+
+        Schema::table(Table::PAYOUT, function($table)
+        {
+            $table->foreign(Payout::FUND_ACCOUNT_ID)
+                  ->references(FundAccount::ID)
+                  ->on(Table::FUND_ACCOUNT)
                   ->on_delete('restrict');
         });
     }
@@ -77,10 +83,13 @@ class CreateFundAccounts extends Migration
      */
     public function down()
     {
+        Schema::table(Table::PAYOUT, function($table)
+        {
+            $table->dropForeign(Table::PAYOUT . '_' . Payout::FUND_ACCOUNT_ID . '_foreign');
+        });
+
         Schema::table(Table::FUND_ACCOUNT, function($table)
         {
-            $table->dropForeign(Table::FUND_ACCOUNT . '_' . FundAccount::CONTACT_ID . '_foreign');
-
             $table->dropForeign(Table::FUND_ACCOUNT . '_' . FundAccount::MERCHANT_ID . '_foreign');
         });
 

@@ -152,6 +152,9 @@ class MailTags
     // Daily Recon summary tags
     const DAILY_RECON_SUMMARY              = 'daily_recon_summary';
 
+    // Transactions
+    const TRANSACTION_CREATED              = 'transaction_created';
+
     /**
      * Email tags that should respond to the mailgun failure webhook
      * @var array Email tags

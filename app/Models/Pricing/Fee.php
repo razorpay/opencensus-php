@@ -2,14 +2,17 @@
 
 namespace RZP\Models\Pricing;
 
-use RZP\Models\Base;
-use RZP\Models\Merchant;
-use RZP\Models\Admin\Org;
-use RZP\Constants\Mode;
 use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Models\Payout;
+use RZP\Models\Merchant;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
+use RZP\Models\Admin\Org;
+use RZP\Constants\Product;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Feature\Constants as Feature;
 
 use Carbon\Carbon;
@@ -22,20 +25,17 @@ class Fee extends Base\Core
 
     protected $repo;
 
-    const DEFAULT_PRICING_PLAN_ID = '1hDYlICobzOCYt';
-
-    const EMI_SUB_PRICING_PLAN_ID = '1EmiSubPricing';
-
-    const DEFAULT_QR_CODE_PLAN_ID = 'A8UwvIbaL8n4Q8';
-
-    const DEFAULT_EMI_PLAN_ID     = 'ArGUUem5z3UADv';
-
+    const DEFAULT_PRICING_PLAN_ID       = '1hDYlICobzOCYt';
+    const EMI_SUB_PRICING_PLAN_ID       = '1EmiSubPricing';
+    const DEFAULT_QR_CODE_PLAN_ID       = 'A8UwvIbaL8n4Q8';
+    const DEFAULT_EMI_PLAN_ID           = 'ArGUUem5z3UADv';
     const DEFAULT_BANK_TRANSFER_PLAN_ID = '8gP5505KgDVWIh';
+    const DEFAULT_BANKING_PLAN_ID       = 'BTo98voDY05ueB';
 
-    // delete this after 31st jan
+    // Delete this after 31st Jan
     const DIWALI_END_TIMESTAMP = 1548916199;
 
-    // delete this after 31st jan
+    // Delete this after 31st Jan
     protected static $promotionalMethods = [
         'card',
         'emi',
@@ -73,11 +73,13 @@ class Fee extends Base\Core
 
     public function calculateMerchantFees($entity)
     {
-        $calculator = new FeeCalculator($entity);
+        $product = $this->getProductForEntity($entity);
+
+        $calculator = new FeeCalculator($entity, $product);
 
         $pricingPlanId = $this->getPricingPlanId($entity->merchant);
 
-        // delete this after 31st jan
+        // Delete this after 31st Jan
         $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
 
         $merchant = $entity->merchant;
@@ -148,6 +150,28 @@ class Fee extends Base\Core
             $pricingPlan = $pricingPlan->merge($emiPricing);
         }
 
+        $pricingPlan = $this->addBankingFallbackRulesIfApplicable($pricingPlan, $merchant);
+
+        return $pricingPlan;
+    }
+
+    protected function addBankingFallbackRulesIfApplicable(Plan $pricingPlan, Merchant\Entity $merchant)
+    {
+        if ($merchant->isBusinessBankingEnabled() === false)
+        {
+            return $pricingPlan;
+        }
+
+        // Add default pricing rules for each available payout method, only when rule is not already defined.
+        foreach (Payout\Method::getAll() as $method)
+        {
+            if ($pricingPlan->hasBankingPayoutRuleForMethod($method) === false)
+            {
+                $rules       = $this->repo->getBankingPricingRulesForMethod(Feature::PAYOUT, $method, $merchant);
+                $pricingPlan = $pricingPlan->merge($rules);
+            }
+        }
+
         return $pricingPlan;
     }
 
@@ -176,5 +200,19 @@ class Fee extends Base\Core
 
         // In test, we can return a default pricing plan if it's not set for merchant.
         return self::DEFAULT_PRICING_PLAN_ID;
+    }
+
+    protected function getProductForEntity(Base\PublicEntity $entity): string
+    {
+        // Source entities which creates transaction on multiple balance have balance itself.
+
+        if (method_exists($entity, 'hasBalance') === true)
+        {
+            $balanceType = $entity->getBalanceType();
+
+            return ($balanceType === Balance\Type::BANKING) ? Product::BANKING : Product::PRIMARY;
+        }
+
+        return Product::PRIMARY;
     }
 }

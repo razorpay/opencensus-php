@@ -406,6 +406,7 @@ return [
             'content' => [
                 'merchant_id' => '10000000000009',
                 'entity_type' => 'application',
+                'entity_owner_id' => '10000000000000',
             ],
         ],
     ],
@@ -1026,5 +1027,4 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER,
         ],
     ],
-
 ];

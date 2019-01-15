@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Payment;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Fixtures;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class PaymentCreateTest extends TestCase
@@ -81,6 +82,33 @@ class PaymentCreateTest extends TestCase
         {
             $this->doAuthPayment($payment);
         });
+    }
+
+    // Test to check if payment fails on disabled methods
+    public function testCreatePaymentWithDisabledMethod()
+    {
+        $this->fixtures->merchant->disableNetbanking();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'netbanking';
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    // Test to check if payment is success on enabled methods
+    public function testCreatePaymentWithEnabledMethod()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['method'] = 'netbanking';
+
+        $content = $this->doAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
     }
 
     public function testCreatePaymentWithoutMethod()
@@ -172,6 +200,59 @@ class PaymentCreateTest extends TestCase
         $payment = $this->doAuthPayment($content, ['CONTENT_TYPE' => 'application/x-www-form-urlencoded']);
 
         $this->assertArrayHasKey('razorpay_payment_id', $payment);
+    }
+
+    public function testWalletPostFormWithDummyEmailForAmazonPay()
+    {
+        $this->fixtures->merchant->enableWallet('10000000000000', 'amazonpay');
+        $this->fixtures->merchant->addFeatures(['email_optional', 'contact_optional']);
+
+        $payment = $this->getDefaultWalletPaymentArray('amazonpay');
+
+        $payment['contact'] = '+919999999998';
+        unset($payment['email']);
+
+        $payment = $this->doAuthPayment($payment, ['CONTENT_TYPE' => 'application/x-www-form-urlencoded']);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $payment);
+        $this->getLastEntity('payment', true);
+    }
+
+    public function testWalletPostFormWithDummyEmailAndPhoneForAmazonPay()
+    {
+        $this->fixtures->merchant->enableWallet('10000000000000', 'amazonpay');
+        $this->fixtures->merchant->addFeatures(['email_optional', 'contact_optional']);
+
+        $payment = $this->getDefaultWalletPaymentArray('amazonpay');
+
+        unset($payment['contact'], $payment['email'], $payment['notes']);
+
+        $response = $this->getFormViaCreateRoute($payment);
+        $content = $response['content'];
+        $content['contact'] = '+919999999998';
+
+        $payment = $this->doAuthPayment($content, ['CONTENT_TYPE' => 'application/x-www-form-urlencoded']);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $payment);
+    }
+
+    public function testWalletPostFormEmailNotOptionalForAmazonPay()
+    {
+        $this->fixtures->merchant->enableWallet('10000000000000', 'amazonpay');
+        $this->fixtures->merchant->addFeatures(['contact_optional']);
+
+        $payment = $this->getDefaultWalletPaymentArray('amazonpay');
+
+        $payment['contact'] = '+919999999998';
+
+        unset($payment['email'], $payment['notes']);
+
+        $data = $this->testData['testWalletPostFormEmailNotOptionalForAmazonPay'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment, ['CONTENT_TYPE' => 'application/x-www-form-urlencoded']);
+        });
     }
 
     public function testCoprotoForMissingBankAccountDetailsForFirstRecurring()
@@ -328,9 +409,16 @@ class PaymentCreateTest extends TestCase
         //
         // Second auth payment for the recurring product
         //
-        $response = $this->doS2SRecurringPayment($payment);
+        $paymentId = $this->doS2SRecurringPayment($payment)['razorpay_payment_id'];
 
-        $this->assertArrayHasKey('razorpay_payment_id', $response);
+        $this->fixtures->stripSign($paymentId);
+
+        // Setting created at to 8 am. Payments for debit are picked from 9 to 9 cycle
+        $this->fixtures->edit(
+            'payment',
+            $paymentId,
+            ['created_at' => Carbon::today(Timezone::IST)->addHours(8)->getTimestamp()]
+        );
 
         $this->ba->adminAuth();
 
@@ -514,7 +602,7 @@ class PaymentCreateTest extends TestCase
         // Get raw response
         $response = $this->sendRequest($request)->getContent();
 
-        $this->assertRegexp('/' . preg_quote('"acquirer_data":{"auth_code":null}') . '/', $response);
+        $this->assertRegexp('/' . preg_quote('"acquirer_data":{"auth_code":"') . '[0-9]{6}' . preg_quote('"}') . '/' , $response);
     }
 
     public function testPaymentWithAcquirerData()

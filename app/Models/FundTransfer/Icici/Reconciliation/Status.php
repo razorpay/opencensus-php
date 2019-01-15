@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundTransfer\Icici\Reconciliation;
 
+use RZP\Models\FundTransfer\Attempt\Entity;
 use RZP\Models\FundTransfer\Base\Reconciliation\Status as BaseStatus;
 
 class Status extends BaseStatus
@@ -12,6 +13,10 @@ class Status extends BaseStatus
     const AWAITING_MESSAGING    = 'Awaiting Messaging';
     const AWAITING_LIQUIDATION  = 'Awaiting Liquidation';
     const HOLD                  = 'Hold';
+
+    //Critical failure messages
+    const RE_INITIATION                 = 'Re-Initiation';
+    const FUTUREDATED_PENDINGPROCESSING = 'FutureDated/PendingProcessing';
 
     /**
      * These are the statuses which, if received after an attempt is marked as processed,

@@ -59,6 +59,7 @@ class EsRepository extends Base\EsRepository
 
     protected $balanceIndexedFields = [
         BalanceEntity::ID,
+        BalanceEntity::MERCHANT_ID,
         BalanceEntity::BALANCE,
     ];
 

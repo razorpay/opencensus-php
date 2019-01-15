@@ -138,6 +138,8 @@ class Gateway extends Base\Gateway
         $responseContent = $this->parseGatewayResponse($response->body, TraceCode::GATEWAY_VALIDATE_VPA_RESPONSE);
 
         $this->checkResponseStatus($responseContent[ResponseFields::STATUS]);
+
+        return $this->returnValidateVpaResponse($responseContent);
     }
 
     private function assertPaymentIdAndAmount(array $input, array $response)
@@ -557,5 +559,13 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($gatewayPayment);
 
         return true;
+    }
+
+    protected function returnValidateVpaResponse($response)
+    {
+        if (isset($response[ResponseFields::PAYEE_TYPE][ResponseFields::NAME]) === true)
+        {
+            return $response[ResponseFields::PAYEE_TYPE][ResponseFields::NAME];
+        }
     }
 }

@@ -29,6 +29,15 @@ class Core extends Base\Core
         return $balance;
     }
 
+    public function updateBalanceAccountNumber(Entity $balance, string $accountNumber)
+    {
+        assertTrue($balance->getAccountNumber() === null, 'Attempting to re-update balance\'s account_number!');
+
+        $balance->setAccountNumber($accountNumber);
+
+        $this->repo->saveOrFail($balance);
+    }
+
     /**
      * @param Merchant\Entity $merchant
      * @param string          $balanceType
@@ -38,14 +47,13 @@ class Core extends Base\Core
      */
     public function createOrFetchBalance(Merchant\Entity $merchant, string $balanceType, $mode = null): Entity
     {
-        $balance = $this->repo->balance->getMerchantBalanceByType($merchant, $balanceType, $mode);
+        $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), $balanceType, $mode);
 
         if ($balance === null)
         {
             // Evey balance we create will start with 0 balance. if needed we can extend this.
             $input = [
                 Entity::TYPE     => $balanceType,
-                Entity::BALANCE  => 0,
                 Entity::CURRENCY => Currency::INR,
             ];
 

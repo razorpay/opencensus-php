@@ -91,6 +91,8 @@ class Processor extends VirtualAccount\Processor
 
             $bankTransfer->virtualAccount()->associate($this->virtualAccount);
 
+            $bankTransfer->balance()->associate($this->virtualAccount->balance);
+
             $this->repo->saveOrFail($bankTransfer);
 
             $balanceType = $this->virtualAccount->getBalanceType();
@@ -112,6 +114,12 @@ class Processor extends VirtualAccount\Processor
                         compact('balanceType'));
             }
         });
+
+        // Currently dispatches transaction.created only for bank transfer on banking balance.
+        if ($bankTransfer->isBalanceTypeBanking() === true)
+        {
+            (new Transaction\Core)->dispatchEventForTransactionCreated($bankTransfer->transaction);
+        }
 
         $this->refundOrCapturePayment($bankTransfer);
 
@@ -160,6 +168,8 @@ class Processor extends VirtualAccount\Processor
 
         // Creates a transaction with bank transfer entity as source, merchant's banking balance gets credited.
         list ($txn, $feeSplit) = (new Transaction\Processor\BankTransfer($bankTransfer))->createTransaction();
+
+        $this->repo->saveOrFail($txn);
 
         // Updates virtual account's stats.
         $this->virtualAccount->updateWithBankTransferForBanking($bankTransfer);
@@ -296,23 +306,45 @@ class Processor extends VirtualAccount\Processor
 
     protected function checkPaymentExpectedAndSetVirtualAccount(Base\PublicEntity $bankTransfer): bool
     {
-        //
-        // This needs to be done first because isPaymentExpected sets
-        // $this->virtualAccount which is required in the below block
-        //
-        $isExpected = parent::checkPaymentExpectedAndSetVirtualAccount($bankTransfer);
+        $this->setVirtualAccount($bankTransfer);
 
-        // VA payments for crypto merchants are blocked based on cache key
-        if (($isExpected === true) and
-            ($this->virtualAccount->merchant->isCategory2Cryptocurrency() === true) and
-            ($this->areBankTransfersBlockedForCrypto() === true))
+        if ($this->useSharedVirtualAccount($bankTransfer) === true)
         {
-            $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
+                $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
 
-            return false;
+                return false;
         }
 
-        return $isExpected;
+        return true;
+    }
+
+    protected function useSharedVirtualAccount(Base\PublicEntity $bankTransfer): bool
+    {
+        if ($this->virtualAccount === null)
+        {
+            $this->trace->info(
+                TraceCode::VIRTUAL_ACCOUNT_UNEXPECTED_PAYMENT,
+                [
+                    'entity' => $bankTransfer->toArray(),
+                ]);
+
+            return true;
+        }
+
+        if (($this->virtualAccount->merchant->isLive() === false) and
+            ($this->isLiveMode() === true))
+        {
+           return true;
+        }
+
+        // VA payments for crypto merchants are blocked based on cache key
+        if (($this->virtualAccount->merchant->isCategory2Cryptocurrency() === true) and
+            ($this->areBankTransfersBlockedForCrypto() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function areBankTransfersBlockedForCrypto(): bool

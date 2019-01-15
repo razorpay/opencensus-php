@@ -76,13 +76,13 @@ class Merchant
         return [$this->setl, $this->bankTransferAtpt];
     }
 
-    public function retryFailedPayout(Payout\Entity $payout): Payout\Entity
+    public function retryReversedPayout(Payout\Entity $payout): Payout\Entity
     {
         $this->payout = $payout;
 
         $this->payout->reload();
 
-        if ($this->payout->getStatus() !== Payout\Status::FAILED)
+        if ($this->payout->getStatus() !== Payout\Status::REVERSED)
         {
             throw new Exception\RuntimeException(
                 'Invalid Payout.',
@@ -98,6 +98,7 @@ class Merchant
 
         $this->repo->saveOrFail($this->payout);
 
+        // TODO: This should be the same as how we create during the first time
         $this->createPayoutAttemptEntity();
 
         return $this->payout;
@@ -381,7 +382,7 @@ class Merchant
 
     protected function createPayoutAttemptEntity(int $initiateAt = null)
     {
-        $bankAccount = $this->payout->destination;
+        $bankAccount = $this->payout->destination ?? $this->payout->fundAccount->account;
 
         $this->createFundTransferAttempt($this->payout, $bankAccount, $initiateAt);
     }
@@ -391,6 +392,8 @@ class Merchant
         BankAccount\Entity $bankAccount,
         int $initiateAt = null)
     {
+        // TODO: this should be in fta core and should be using `create` function to do all this
+
         $fundTransferAttempt = new FundTransferAttempt\Entity;
 
         $fundTransferAttempt->merchant()->associate($this->merchant);
@@ -406,6 +409,7 @@ class Merchant
             FundTransferAttempt\Entity::CHANNEL         => $this->channel,
             FundTransferAttempt\Entity::VERSION         => FundTransferAttempt\Version::V3,
             FundTransferAttempt\Entity::STATUS          => FundTransferAttempt\Status::CREATED,
+            // TODO: In case of retry also, the purpose should be the same as the original payout purpose.
             FundTransferAttempt\Entity::PURPOSE         => FundTransferAttempt\Purpose::SETTLEMENT,
         ];
 

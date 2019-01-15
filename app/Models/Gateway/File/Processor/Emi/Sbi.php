@@ -196,7 +196,7 @@ class Sbi extends Base
                     $this->numpad($mid, 16) .
                     $this->strpad($merchantDetail[Detail\Entity::BUSINESS_NAME], 40) .
                     $this->strpad($tid, 8) .
-                    str_pad(str_pad($rate, 2, '0', STR_PAD_LEFT), 7, '0', STR_PAD_RIGHT) .
+                    str_pad($emiPlan->getRate(), 7, '0', STR_PAD_RIGHT) .
                     $this->strpad('', 40) .
                     $this->numpad($principalAmount, 17) .
                     'F' .
@@ -270,7 +270,7 @@ class Sbi extends Base
 
         $mailInfo = [
             'fileInfo'  => $fileInfo,
-            'channel'   => '',
+            'channel'   => 'settlements',
             'filetype'  => self::BEAM_FILE_TYPE,
             'subject'   => 'File Send failure',
             'recipient' => Constants::MAIL_ADDRESSES[Constants::EMI]
@@ -282,6 +282,24 @@ class Sbi extends Base
     protected function getFileToWriteName()
     {
         return static::FILE_NAME . Carbon::now()->setTimezone(Timezone::IST)->format('YmdHis');
+    }
+
+    protected function getEmiAmount($amount, $annualRate, $tenureInMonths)
+    {
+        // $annualRate is rate/100, say .14
+        // $monthlyRate is a/12 i.e should be treated as .14/12
+        // E = P x r x (1+r)^n/((1+r)^n – 1)
+        // tenure in months
+
+        $monthlyRate = $annualRate / 12;
+
+        $expression = pow((1 + $monthlyRate), $tenureInMonths);
+
+        $num = $amount * $monthlyRate * $expression;
+
+        $den = $expression - 1;
+
+        return (round($num / $den) / 100);
     }
 
     //-------------------------- Helpers ------------------------------------//

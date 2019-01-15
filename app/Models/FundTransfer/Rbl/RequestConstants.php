@@ -15,4 +15,6 @@ class RequestConstants
     const KYC_DOC_NAME    = 'kyc_doc_name';
     const KYC_DOC_CONTENT = 'kyc_doc_content';
 
+    const DD   = 'DD';
+    const FT   = 'FT';
 }

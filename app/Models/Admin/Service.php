@@ -5,7 +5,6 @@ namespace RZP\Models\Admin;
 use Cache;
 use Carbon\Carbon;
 
-use RZP\Error\ErrorCode;
 use RZP\Jobs;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -14,6 +13,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Constants\AdminFetch;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\GeoIP\Service as GeoIP;
 use RZP\Models\Base\QueryCache\Constants as QueryCacheConstants;
 use RZP\Reconciliator\ReconSummary\DailyReconStatusSummary;

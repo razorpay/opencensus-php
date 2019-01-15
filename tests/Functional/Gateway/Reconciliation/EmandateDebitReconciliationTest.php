@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Constants\Entity;
 use Illuminate\Http\UploadedFile;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -199,7 +200,7 @@ class EmandateDebitReconciliationTest extends TestCase
                 'gateway'        => 'netbanking_axis',
                 'terminal_id'    => 'NAxRecurringTl',
                 'recurring_type' => 'auto',
-                'created_at'     => Carbon::now()->subDays(1)->timestamp
+                'created_at'     => Carbon::today(Timezone::IST)->addHours(8)->getTimestamp()
             ]
         )->toArray();
 
@@ -247,7 +248,12 @@ class EmandateDebitReconciliationTest extends TestCase
 
         $this->fixtures->stripSign($paymentId);
 
-        $this->fixtures->edit('payment', $paymentId, ['created_at' => Carbon::now()->subDays(1)->timestamp]);
+        // Setting created at to 8 am. Payments for debit are picked from 9 to 9 cycle
+        $this->fixtures->edit(
+                               'payment',
+                               $paymentId,
+                               ['created_at' => Carbon::today(Timezone::IST)->addHours(8)->getTimestamp()]
+                             );
 
         return $paymentId;
     }

@@ -201,4 +201,101 @@ class Service extends Base\Service
 
         return $banks;
     }
+
+
+    /**
+     * update enabled_banks for multiple terminal
+     *
+     * @param  array $input
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public function updateTerminalsBank($input)
+    {
+        (new Terminal\Validator())->validateInput('update_terminals_bank', $input);
+
+        $returnData = [];
+
+        $action = $input['action'];
+
+        try
+        {
+            $ids = $input['terminal_ids'];
+
+            $terminals = $this->repo->terminal->findMany($ids);
+
+            $bank = $input['bank'];
+
+            foreach ($terminals as $terminal)
+            {
+                $terminalId = $terminal->getId();
+
+                $enabledBanks = $this->core()->getBanksForTerminal($terminal)["enabled"];
+
+                $oldBanksList = array_keys($enabledBanks);
+
+                $newBanksList = $this->getNewBankList($oldBanksList, $bank, $action);
+
+                //update database only if required
+                if (count($oldBanksList) != count($newBanksList))
+                {
+                    try
+                    {
+                        $updatedEnabledBanks = $this->core()->setBanksForTerminal($terminal, $newBanksList);
+
+                        $returnData[$terminalId] = $updatedEnabledBanks["enabled"];
+                    }
+                    catch ( Exception\BadRequestValidationFailureException $e)
+                    {
+                        $returnData[$terminalId] = $e->getMessage();
+                    }
+                }
+                else
+                {
+                    $returnData[$terminalId] = $enabledBanks;
+                }
+            }
+            foreach ($ids as $id)
+            {
+                if (array_key_exists($id, $returnData) === false)
+                {
+                    $returnData[$id] = "Terminal doesn't exist";
+                }
+            }
+
+            $returnData["success"] = true;
+
+            return $returnData;
+        }
+        catch (\Exception $e)
+        {
+            throw $e;
+        }
+    }
+
+
+    /**
+     * Add/Remove bank from the oldEnabledBankList adn return the newList.
+     *
+     * @param  array    $oldList
+     * @param  string    $bank
+     * @param  string    $action
+     *
+     * @return array
+     */
+    protected function getNewBankList(array $oldList, string $bank, string $action): array
+    {
+        $index = array_search($bank, $oldList);
+
+        if ($index === false and $action === 'add')
+        {
+            array_push($oldList, $bank);
+        }
+        else if ($index !== false and $action === 'remove')
+        {
+            unset($oldList[$index]);
+        }
+        return array_values($oldList);
+    }
 }

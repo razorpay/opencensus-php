@@ -4,14 +4,18 @@ namespace RZP\Models\FundTransfer\Base\Reconciliation;
 
 use Carbon\Carbon;
 
+use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\FundTransfer\Attempt\Lock;
 use RZP\Models\FundTransfer\Attempt\Metric;
-use RZP\Models\FundTransfer\Attempt\Entity as AttemptEntity;
 
 abstract class RowProcessor extends Base\Core
 {
+    use DispatchesEvents;
+
     protected $row;
 
     protected $version;
@@ -38,11 +42,22 @@ abstract class RowProcessor extends Base\Core
         $this->row = $row;
     }
 
+    /**
+     * This is called for both file based and api based..
+     *
+     * @return null
+     */
     public function process()
     {
+        //
+        // We can take a lock only after processRow runs
+        // since only then we get the fta ID.
+        // This applies for both file based and API based.
+        //
+
         $this->processRow();
 
-        if(empty($this->reconEntityId) === false)
+        if (empty($this->reconEntityId) === false)
         {
             $this->fetchEntities();
         }
@@ -58,7 +73,14 @@ abstract class RowProcessor extends Base\Core
             return null;
         }
 
-        $this->updateEntities();
+        // We are accepting a dummy collection because
+        // that's how the function was written.
+        (new Lock)->acquireLockAndProcessAttempt(
+            $this->reconEntity,
+            function(Base\PublicCollection $collection)
+            {
+                $this->updateEntities();
+            });
 
         return $this->reconEntity;
     }
@@ -85,8 +107,8 @@ abstract class RowProcessor extends Base\Core
                 [
                     'source_batch_id'       => $sourceBatchId,
                     'recon_entity_batch_id' => $reconEntityBatchId
-                ]
-            );
+                ]);
+
             return;
         }
 
@@ -131,19 +153,33 @@ abstract class RowProcessor extends Base\Core
 
     protected function updateSourceEntity()
     {
+        $source = $this->reconEntity->source;
+
+        if ($source->getEntity() === Constants\Entity::PAYOUT)
+        {
+            (new Payout\Core)->updateWithDetailsBeforeFtaRecon($source, $this->reconEntity, $this->parsedData);
+
+            return;
+        }
+
         $utr = $this->reconEntity->getUtr();
 
         $remarks = $this->reconEntity->getRemarks();
 
-        $this->reconEntity->source->setUtr($utr);
+        $source->setUtr($utr);
 
-        $this->reconEntity->source->setRemarks($remarks);
-
-        $this->repo->saveOrFail($this->reconEntity->source);
+        $source->setRemarks($remarks);
 
         $this->trace->info(
             TraceCode::FTA_RECON_SOURCE_UPDATED,
-            ['source_id' => $this->reconEntity->source->getId()]);
+            [
+                'source_id'         => $source->getId(),
+                'fta_id'            => $this->reconEntityId,
+                'source_original'   => $source->getOriginalAttributesAgainstDirty(),
+                'source_dirty'      => $source->getDirty(),
+            ]);
+
+        $this->repo->saveOrFail($source);
     }
 
     /**

@@ -102,6 +102,9 @@ class Constants
     const BLOCK_SETTLEMENTS               = 'block_settlements';
     const SKIP_INTERNATIONAL_AUTH         = 'skip_international_auth';
     const ES_AUTOMATIC_THREE_PM           = 'es_automatic_three_pm';
+    const IIN_LISTING                     = 'iin_listing';
+    const CALLBACK_URL_VALIDATION         = 'callback_url_validation';
+    const REPORTING_GENRERIC_NOTES        = 'report_notes_to_column';
 
     /**
      * Skips uniqueness checks on the `receipt` attribute on invoice and payment links
@@ -114,12 +117,20 @@ class Constants
      */
     const PAYMENT_PAGES_NO_CAPTURE        = 'payment_pages_no_capture';
 
+    /**
+     * For Payment links:
+     * With partial payment enabled, allows the merchant to define a min amount
+     * to be paid for the first payment.
+     */
+    const PL_FIRST_MIN_AMOUNT             = 'pl_first_min_amount';
+
     // Orders
     const ORDER_ID_MANDATORY              = 'order_id_mandatory';
     const ORDER_RECEIPT_UNIQUE            = 'order_receipt_unique';
 
     // Payment authentication
     const ATM_PIN_AUTH                    = 'atm_pin_auth';
+    const IVR                             = 'ivr';
 
     // Pre-Auth Shield Integration
     const PRE_AUTH_SHIELD_INTG          = 'pre_auth_shield_intg';
@@ -258,6 +269,11 @@ class Constants
         self::INVOICE_NO_RECEIPT_UNIQUE       => true,
         self::PAYMENT_PAGES_NO_CAPTURE        => true,
         self::ES_AUTOMATIC_THREE_PM           => true,
+        self::IIN_LISTING                     => true,
+        self::CALLBACK_URL_VALIDATION         => true,
+        self::PL_FIRST_MIN_AMOUNT             => true,
+        self::REPORTING_GENRERIC_NOTES        => true,
+        self::IVR                             => true,
     ];
 
     // Entity type constants
@@ -310,27 +326,32 @@ class Constants
         self::MARKETPLACE      => [
             'feature'       => self::MARKETPLACE,
             'display_name'  => 'Route',
-            'documentation' => 'route'
+            'documentation' => 'route',
         ],
         self::SUBSCRIPTIONS    => [
             'feature'       => self::SUBSCRIPTIONS,
             'display_name'  => 'Subscriptions',
-            'documentation' => 'subscriptions'
+            'documentation' => 'subscriptions',
         ],
         self::VIRTUAL_ACCOUNTS => [
             'feature'       => self::VIRTUAL_ACCOUNTS,
             'display_name'  => 'Smart Collect',
-            'documentation' => 'smart-collect'
+            'documentation' => 'smart-collect',
         ],
         self::REPORT_V2 => [
             'feature'       => self::REPORT_V2,
             'display_name'  => 'Report V2',
-            'documentation' => ''
+            'documentation' => '',
         ],
         self::ES_ON_DEMAND => [
             'feature'       => self::ES_ON_DEMAND,
             'display_name'  => 'On demand Payout',
-            'documentation' => ''
+            'documentation' => '',
+        ],
+        self::PL_FIRST_MIN_AMOUNT => [
+            'feature'       => self::PL_FIRST_MIN_AMOUNT,
+            'display_name'  => 'Partial payments: minimum first amount',
+            'documentation' => '',
         ],
     ];
 

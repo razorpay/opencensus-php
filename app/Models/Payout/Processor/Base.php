@@ -2,19 +2,22 @@
 
 namespace RZP\Models\Payout\Processor;
 
-use RZP\Constants;
 use RZP\Exception;
+use RZP\Models\Vpa;
 use RZP\Models\Payout;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
+use RZP\Models\BankAccount;
+use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
-use RZP\Models\Base\PublicEntity;
+use RZP\Models\Payout\Metric;
+use RZP\Constants\Entity as E;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
-use RZP\Models\Payout\Metric;
-use RZP\Trace\TraceCode;
 
 /**
  * Payouts base where we will have a generic flow for the customer/merchants payouts.
@@ -34,63 +37,50 @@ abstract class Base extends BaseCore
     protected $customer;
 
     /**
-     * method by which the payout will be made for destination.
+     * Method by which the payout will be made.
      * @var string
      */
     protected $method;
 
-    protected $tax;
+    /**
+     * @var int
+     */
+    protected $tax = 0;
 
     /**
      * @var int
      */
-    protected $fees;
+    protected $fees = 0;
 
     /**
-     * Destination can be bank accounts/wallets/any other destination where the money should be deposited.
+     * @var string|null
      */
-    protected $destination;
-
     protected $channel;
 
-    public function __construct(Merchant\Entity $merchant, string $customerId = null)
+    /**
+     * @var Balance\Entity
+     */
+    protected $balance;
+
+    /**
+     * @var BankAccount\Entity|Vpa\Entity
+     */
+    protected $fundTransferDestination;
+
+    public function createPayout(array $input): Payout\Entity
     {
-        parent::__construct();
+        $this->preValidations();
 
-        $this->tax = 0;
+        $this->setPayoutBalance($input);
 
-        $this->fees = 0;
+        $this->setChannel($input);
 
-        $this->merchant = $merchant;
-
-        $this->setCustomerFromId($customerId);
-    }
-
-    protected function setCustomerFromId(string $customerId = null)
-    {
-        if ($customerId !== null)
+        $payout = $this->repo->transaction(function () use ($input)
         {
-            $this->customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
-        }
-    }
-
-    public function createPayout(array $input)
-    {
-        return $this->repo->transaction(function () use ($input)
-        {
-            $this->preValidations();
-
-            // TODO: Figure out something better for `typeEntity` concept
-            $typeEntity = $this->customer ?? $this->merchant;
-
-            $this->setPayoutDestination($input, $typeEntity);
-
-            $this->setChannel();
-
             // Create a payout entity
             $payout = $this->createPayoutEntity($input);
 
-            // Need to create a fund transfer entity where the fund transfers will be processed.
+            // Create a fund transfer entity where the fund transfers will be processed.
             $this->createFundTransferAttemptEntity($payout);
 
             // Create merchant/customer transactions and link it to payout.
@@ -101,15 +91,76 @@ abstract class Base extends BaseCore
             $this->trace->info(
                 TraceCode::PAYOUT_CREATED,
                 [
-                    'input' => $input,
-                    'payout' => $payout->toArray(),
-                    'type_entity' => $typeEntity->getId(),
+                    'input'       => $input,
+                    'payout'      => $payout->toArray(),
                 ]);
 
             $this->trace->count(Metric::PAYOUT_CREATED, [], 1);
 
             return $payout;
         });
+
+        $this->app->events->fire('api.payout.created', [$payout]);
+
+        return $payout;
+    }
+
+    /**
+     * Set the merchant context, always required.
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @return Base
+     */
+    public function setMerchant(Merchant\Entity $merchant): self
+    {
+        $this->merchant = $merchant;
+
+        return $this;
+    }
+
+    /**
+     * Set the customer relation for the Payout.
+     * To be used only for the customer wallet use case: customer_id is treated
+     * as a Payout source
+     *
+     * @param Customer\Entity $customer
+     *
+     * @return self
+     */
+    public function setSourceCustomer(Customer\Entity $customer): self
+    {
+        $this->customer = $customer;
+
+        return $this;
+    }
+
+    public function fetchAndAssociatePayoutAccount(Payout\Entity $payout, array $input)
+    {
+        $fundAccountId = $input[Payout\Entity::FUND_ACCOUNT_ID];
+
+        /** @var FundAccount\Entity $fundAccount */
+        $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
+
+        if ($fundAccount->isActive() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Payouts cannot be created on an inactive fund account',
+                Payout\Entity::FUND_ACCOUNT_ID);
+        }
+
+        if (optional($fundAccount->source)->isActive() === false)
+        {
+            $sourceEntity = $fundAccount->source->getEntity();
+
+            throw new Exception\BadRequestValidationFailureException(
+                'Payouts cannot be created on an inactive ' . $sourceEntity . ' fund account',
+                Payout\Entity::FUND_ACCOUNT_ID);
+        }
+
+        $payout->fundAccount()->associate($fundAccount);
+
+        $this->fundTransferDestination = $fundAccount->account;
     }
 
     /**
@@ -121,9 +172,7 @@ abstract class Base extends BaseCore
      */
     protected function createPayoutEntity(array $input)
     {
-        $payout = (new Payout\Entity)->build($input);
-
-        $this->runInputValidations($payout, $input);
+        $payout = (new Payout\Entity);
 
         $payout->merchant()->associate($this->merchant);
 
@@ -131,39 +180,98 @@ abstract class Base extends BaseCore
 
         $payout->setChannel($this->channel);
 
-        $payout->destination()->associate($this->destination);
+        $this->fetchAndAssociatePayoutAccount($payout, $input);
+
+        $this->setMethod($payout);
+
+        $payout->balance()->associate($this->balance);
+
+        //
+        // Doing this after all the associations since
+        // the modifiers require payout account to be associated.
+        //
+        $payout = $payout->build($input);
+
+        //
+        // Doing only THIS association after build because
+        // since it is present in $defaults, the association
+        // gets overridden with the default value (null)
+        // in the build function.
+        // NOTE: Not sure why it does not happen with FundAccount. (todo: check)
+        //
+        $this->associateUserIfApplicable($payout);
+
+        //
+        // Doing this after all the associations since
+        // some validations run on the relations' data
+        //
+        $this->runInputValidations($payout, $input);
+
+        (new Payout\Purpose)->setPurposeAndTypeForPayout($payout, $payout->getPurpose());
 
         return $payout;
     }
 
-    protected function createFundTransferAttemptEntity(Payout\Entity $payout): FundTransferAttempt\Entity
+    protected function createFundTransferAttemptEntity(Payout\Entity $payout)
     {
-        $fundTransferAttemptInput = [
-            FundTransferAttempt\Entity::PURPOSE         => $payout->getPurpose(),
-            FundTransferAttempt\Entity::CHANNEL         => $payout->getChannel(),
-            FundTransferAttempt\Entity::NARRATION       => 'RAZORPAY SETTLEMENT',
+        $ftaInput = [
+            FundTransferAttempt\Entity::PURPOSE   => $payout->getPurposeType(),
+            FundTransferAttempt\Entity::CHANNEL   => $payout->getChannel(),
+            FundTransferAttempt\Entity::MODE      => $payout->getMode(),
+            FundTransferAttempt\Entity::NARRATION => $this->getNarration($payout),
         ];
 
-        if ($payout->getDestinationType() === Constants\Entity::BANK_ACCOUNT)
-        {
-            $fundTransferAttempt = (new FundTransferAttempt\Core)->createWithBankAccount($payout,
-                                                                                         $payout->destination,
-                                                                                         $fundTransferAttemptInput);
-        }
-        else
-        {
-            $fundTransferAttempt = (new FundTransferAttempt\Core)->createWithVpa($payout,
-                                                                                 $payout->destination,
-                                                                                 $fundTransferAttemptInput);
-        }
+        $ftaAccount = $this->fundTransferDestination;
+        $ftaCore    = new FundTransferAttempt\Core;
 
-        return $fundTransferAttempt;
+        switch ($ftaAccount->getEntity())
+        {
+            case E::BANK_ACCOUNT:
+                $ftaCore->createWithBankAccount($payout, $ftaAccount, $ftaInput);
+
+                return;
+
+            case E::VPA:
+                $ftaCore->createWithVpa($payout, $ftaAccount, $ftaInput);
+
+                return;
+
+            default:
+                // Throw exception
+        }
+    }
+
+    /**
+     * Rules:
+     * - Min: 2 characters
+     * - Max: 120 characters
+     * - Regex: [\w\s]
+     *
+     * @param Payout\Entity $payout
+     *
+     * @return string
+     */
+    protected function getNarration(Payout\Entity $payout)
+    {
+        $merchant = $payout->merchant;
+
+        $merchantBillingLabel = $merchant->getBillingLabel();
+
+        $formattedLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $merchantBillingLabel);
+
+        $formattedLabel = ($formattedLabel ? str_limit($formattedLabel, 30) : 'Razorpay');
+
+        $narration = $formattedLabel . ' Fund Transfer';
+
+        return $narration;
     }
 
     protected function preValidations()
     {
+        //
         // If SKIP_HOLD_FUNDS_ON_PAYOUT feature is enabled for merchant,
         // then we don't check the merchant funds_on_hold and proceed with payout creation
+        //
         if (($this->merchant->isFeatureEnabled(Features::SKIP_HOLD_FUNDS_ON_PAYOUT) === false) and
             ($this->merchant->getHoldFunds() === true))
         {
@@ -181,90 +289,89 @@ abstract class Base extends BaseCore
         $validator->validateInput(camel_case($validatorOperation), $input);
     }
 
-    /**
-     * @param array        $input
-     * @param PublicEntity $typeEntity This can either be a merchant or a customer.
-     *                                 The destination must belong to either the customer or the merchant
-     *                                 based on the type of payout this is.
-     *
-     * @throws Exception\BadRequestValidationFailureException
-     */
-    protected function setPayoutDestination(array $input, PublicEntity $typeEntity)
+    protected function setPayoutBalance(array $input)
     {
-        $destinationId = $this->getDestinationId($input);
+        $balanceId = $input[Payout\Entity::BALANCE_ID] ?? null;
 
-        if (is_string($destinationId) === false)
+        if (empty($balanceId) === true)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                "the destination field is required",
-                Payout\Entity::DESTINATION,
-                [
-                    'input' => $input,
-                    'type_entity' => $typeEntity->getEntityName(),
-                    'entity_id' => $typeEntity->getId(),
-                ]);
-        }
-
-        $destination = null;
-
-        if ($input[Payout\Entity::METHOD] === Payout\Method::FUND_TRANSFER)
-        {
-            $destination = $this->repo->bank_account->findByPublicIdAndMerchant($destinationId, $this->merchant);
+            $this->balance = $this->merchant->primaryBalance;
         }
         else
         {
-            $destination = $this->repo->vpa->findByPublicIdAndMerchant($destinationId, $this->merchant);
+            $this->balance = $this->repo->balance->findByPublicIdAndMerchant($balanceId, $this->merchant);
         }
-
-        if (empty($destination) === true)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Destination not valid for the method ' . $input[Payout\Entity::METHOD]);
-        }
-
-        // Check if the bank account / vpa destination is linked to the customer/merchant
-        if ($destination->getEntityId() !== $typeEntity->getId())
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Invalid destination_id: ' . $destination->getPublicId());
-        }
-
-        $this->destination = $destination;
-    }
-
-    protected function getDestinationId(array $input)
-    {
-        return $input[Payout\Entity::DESTINATION] ?? null;
     }
 
     protected function createTxns(Payout\Entity $payout)
     {
-        $txnCore = new Transaction\Core;
+        list ($txn, $feeSplit) = (new Transaction\Processor\Payout($payout))->createTransaction();
 
-        $txn = $txnCore->createFromPayout($payout);
+        //
+        // In an on-demand payout, whatever payout amount the merchant asks for, we DO NOT create
+        // a payout for that amount. Instead, we deduct some fees from that amount and create the
+        // payout with the REMAINING amount. For example: If a merchant wants a payout of 100rs,
+        // we create a payout of 98rs only and keep the remaining 2rs as fees.
+        //
+        // In case of a normal payout, we add extra fees to the actual payout amount and deduct
+        // that much amount of money from the merchant's balance. For example, if a merchant wants
+        // to do a payout of 100rs, we create a payout of 100rs and then deduct 102rs from his balance.
+        // The 2rs extra is our fees. The reason we don't deduct from the actual payout amount here is
+        // because in most cases normal payout is used to payout some money to a customer (of the merchant).
+        // The customer would always expect a certain amount. (we can have customer fee bearer concept later).
+        //
+        // In case of on-demand, it's basically a customer fee bearer kind of concept, where in the customer
+        // is the actual merchant himself. He bears the fees for the payout to his account. Hence, the payout
+        // happens after deducting the razorpay fees from the actual payout amount. For this reason, we also
+        // reset the payout amount here.
+        //
+        // In both the above cases, we need to ensure that the merchant has enough balance in his account.
+        // The validation for the balance would always be payout's amount + our fees.
+        //
+
+        if ($payout->getPayoutType() === Payout\Entity::ON_DEMAND)
+        {
+            // Here, payout amount is the amount requested by merchant for payout and fees is
+            // levied over it. Also, this fees is deducted from merchant balance. This happens for
+            // merchants who do not have 'es_on_demand' feature enabled. In case of 'es_on_demand'
+            // merchants, payout fees will be deducted from payout amount requested by the merchant.
+            // This is done to allow a merchant to do a payout on requested amount, rather than
+            // calculating fees over it and failing a transaction if merchant does not have enough balance.
+            $payout->setAmount($txn->getAmount());
+        }
 
         $payout->setFees($txn->getFee());
         $payout->setTax($txn->getTax());
 
-        $this->validateMerchantBalance($payout);
+        $this->repo->saveOrFail($txn);
 
-        $txnCore->updateBalances($txn, true);
+        (new Transaction\Core)->saveFeeDetails($txn, $feeSplit);
 
         $this->repo->saveOrFail($txn);
     }
 
-    protected function validateMerchantBalance(Payout\Entity $payout)
+    /**
+     * Naive audit logging.
+     * Sets the user for requests from dashboard (proxy_auth)
+     * On private auth, user_id is unset.
+     *
+     * @param Payout\Entity $payout
+     */
+    protected function associateUserIfApplicable(Payout\Entity $payout)
     {
-        $debitAmount = $payout->getAmount() + $payout->getFees();
+        $user = app('basicauth')->getUser();
 
-        $hasBalance = (new Merchant\Balance\Core)->checkMerchantBalance($payout->merchant, $debitAmount);
-
-        if ($hasBalance === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE);
-        }
+        $payout->user()->associate($user);
     }
 
-    abstract protected function setChannel();
+    protected function setMethod(Payout\Entity $payout)
+    {
+        $destinationType = $this->fundTransferDestination->getEntity();
+
+        $method = Payout\Method::$destinationMethodMap[$destinationType];
+
+        $payout->setMethod($method);
+    }
+
+    abstract protected function setChannel($input = []);
 }

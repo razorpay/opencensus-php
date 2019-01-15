@@ -8,11 +8,13 @@ use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Jobs\WebHook;
 use RZP\Models\Event;
+use RZP\Models\Payout;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transaction;
 use RZP\Models\Customer\Token;
 use RZP\Models\VirtualAccount;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
@@ -390,6 +392,35 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onTransactionCreated(Transaction\Entity $txn)
+    {
+        $payload = $this->getTransactionPayload($txn);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onPayoutCreated(Payout\Entity $payout)
+    {
+        $payload = $this->getPayoutPayload($payout);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onPayoutProcessed(Payout\Entity $payout)
+    {
+        $payload = $this->getPayoutPayload($payout);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onPayoutReversed(Payout\Entity $payout)
+    {
+        $payload = $this->getPayoutPayload($payout);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+
     protected function getP2pPayload($p2p)
     {
         $source = $p2p->source;
@@ -555,6 +586,28 @@ class ApiEventSubscriber extends Base\Core
         $payload = [
             Constants\Entity::SETTLEMENT => [
                 'entity' => $settlement->toArrayPublic(),
+            ],
+        ];
+
+        return $payload;
+    }
+
+    protected function getTransactionPayload(Transaction\Entity $txn): array
+    {
+        $payload = [
+            Constants\Entity::TRANSACTION => [
+                'entity' => $txn->toStatement()->toArrayPublic(),
+            ],
+        ];
+
+        return $payload;
+    }
+
+    protected function getPayoutPayload(Payout\Entity $payout): array
+    {
+        $payload = [
+            Constants\Entity::PAYOUT => [
+                'entity' => $payout->toArrayPublic(),
             ],
         ];
 

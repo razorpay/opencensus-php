@@ -85,6 +85,7 @@ class Repository extends Base\Repository
                     ->findOrFailPublic($id);
     }
 
+
     public function getByMerchantId($mid)
     {
         $query = $this->newQuery()
@@ -95,10 +96,11 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function findByGatewayAndTerminalData(array $terminalData, string $gateway, bool $withTrashed = false)
+    public function findByGatewayAndTerminalData(string $gateway, array $terminalData = [], bool $withTrashed = false)
     {
         $query =  $this->newQuery()
                        ->where(Entity::GATEWAY, '=', $gateway);
+
         foreach ($terminalData as $key => $value)
         {
             $query->where($key, $value);
@@ -118,6 +120,20 @@ class Repository extends Base\Repository
                     ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId)
                     ->where(Entity::GATEWAY, '=', $gateway)
                     ->first();
+    }
+
+    public function getByParams(array $params)
+    {
+        $params = $this->unsetEmptyParams($params);
+
+        $query = $this->newQuery();
+
+        foreach ($params as $key => $value)
+        {
+            $query = $query->where($key, '=', $value);
+        }
+
+        return $query->get();
     }
 
     public function getTerminalsForMerchantAndSharedMerchant(Merchant\Entity $merchant)
@@ -215,20 +231,23 @@ class Repository extends Base\Repository
         return $query->first();
     }
 
+    public function getIdsByMerchantIdsAndGateway($mids, $gateway)
+    {
+        $query = $this->newQuery()
+                    ->where(Entity::GATEWAY, $gateway)
+                    ->enabled();
+
+        $this->addMerchantWhereCondition($query, $mids);
+
+        return $query->pluck(Entity::ID)->all();
+    }
+
+
     public function getSharedTerminalForGateway($gateway)
     {
         return $this->newQuery()
                     ->where(Entity::GATEWAY, '=', $gateway)
                     ->shared()
-                    ->enabled()
-                    ->get();
-    }
-
-    // TODO: needs to be removed. temporarily added for payout route
-    public function getAllTerminalsForGateway($gateway)
-    {
-        return $this->newQuery()
-                    ->where(Entity::GATEWAY, '=', $gateway)
                     ->enabled()
                     ->get();
     }

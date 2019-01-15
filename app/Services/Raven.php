@@ -2,6 +2,7 @@
 
 namespace RZP\Services;
 
+use App;
 use Requests;
 use Carbon\Carbon;
 
@@ -9,6 +10,7 @@ use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Environment;
 
 
 class Raven
@@ -69,9 +71,11 @@ class Raven
 
     public function sendOtp(array $input): array
     {
+        $app = App::getFacadeRoot();
+
         $response = null;
 
-        if ($this->mode === Mode::TEST)
+        if ($app->environment(Environment::PRODUCTION) === false)
         {
             $response[self::SMS_ID] = self::TEST_SMS_ID;
         }
@@ -122,9 +126,11 @@ class Raven
 
     public function verifyOtp(array $input): array
     {
+        $app = App::getFacadeRoot();
+
         $response = null;
 
-        if ($this->mode === Mode::TEST)
+        if ($app->environment(Environment::PRODUCTION) === false)
         {
             if ($input['otp'] !== self::MOCK_VALID_OTP)
             {

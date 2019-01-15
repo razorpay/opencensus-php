@@ -13,6 +13,9 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\TpvType;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal\BankingType;
+use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Bank;
+
 
 class Validator extends Base\Validator
 {
@@ -53,7 +56,9 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY            => 'required_if:netbanking,1|string|max:30',
         Entity::CURRENCY                    => 'sometimes|alpha|size:3',
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
+        Entity::IFSC_CODE                   => 'sometimes|string|size:11',
         Entity::CARDLESS_EMI                => 'sometimes|boolean',
+        Entity::ENABLED                     => 'sometimes|in:0,1',
     ];
 
     protected static $editTerminalGateways = [
@@ -137,6 +142,8 @@ class Validator extends Base\Validator
         Entity::VISA_MPAN                  => 'required_if:type.bharat_qr,1|string|size:16',
         Entity::RUPAY_MPAN                 => 'required_if:type.bharat_qr,1|string|size:16',
         Entity::EXPECTED                   => 'sometimes_if:type.bharat_qr,1|boolean',
+        Entity::ACCOUNT_NUMBER             => 'sometimes_if:type.bharat_qr,1|string|max:50',
+        Entity::IFSC_CODE                  => 'sometimes_if:type.bharat_qr,1|string|size:11'
     ];
 
     protected static $isgTerminalRules = [
@@ -150,6 +157,8 @@ class Validator extends Base\Validator
         Entity::VISA_MPAN                  => 'required|string|size:16',
         Entity::RUPAY_MPAN                 => 'required|string|size:16',
         Entity::EXPECTED                   => 'sometimes|boolean',
+        Entity::ACCOUNT_NUMBER             => 'sometimes_if:type.bharat_qr,1|string|max:50',
+        Entity::IFSC_CODE                  => 'sometimes_if:type.bharat_qr,1|string|size:11'
     ];
 
     protected static $aepsIciciTerminalRules = [
@@ -289,6 +298,7 @@ class Validator extends Base\Validator
         Entity::VISA_MPAN                  => 'sometimes|string|size:16',
         Entity::RUPAY_MPAN                 => 'sometimes|string|size:16',
         Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
+        Entity::IFSC_CODE                  => 'sometimes|string|size:11'
     ];
 
     protected static $firstDataEditTerminalRules = [
@@ -452,6 +462,8 @@ class Validator extends Base\Validator
         Entity::TPV                        => 'sometimes|in:0,2',
         Entity::GATEWAY_TERMINAL_PASSWORD2 => 'sometimes|string',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
+        Entity::VPA                        => 'required_only_if:type.bharat_qr,1|string',
+        Entity::EXPECTED                   => 'sometimes_if:type.bharat_qr,1|boolean',
     ];
 
     protected static $upiAxisTerminalRules = [
@@ -571,9 +583,9 @@ class Validator extends Base\Validator
     protected static $netbankingAllahabadTerminalRules = [
         Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_ALLAHABAD,
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
-        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
-        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string',
     ];
 
     protected static $netbankingAllahabadEditTerminalRules = [
@@ -677,6 +689,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::CARDLESS_EMI                => 'required|boolean|in:1',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
+    ];
+
+    protected static $updateTerminalsBankRules = [
+        Entity::TERMINAL_IDS                => 'required|array',
+        Entity::ACTION                      => 'required|string|in:add,remove',
+        Entity::BANK                        => 'required|string|custom',
     ];
 
     public function validateType()
@@ -855,7 +873,7 @@ class Validator extends Base\Validator
     protected function validateCurrency($input)
     {
         if ((isset($input['currency']) === true) and
-            in_array($input['currency'], Currency::SUPPORTED_CURRENCIES, true) === false)
+            (in_array($input['currency'], Currency::SUPPORTED_CURRENCIES, true) === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
@@ -1015,5 +1033,14 @@ class Validator extends Base\Validator
         }
 
         return null;
+    }
+
+    protected static function validateBank($attribute, $value)
+    {
+        if (Bank\IFSC::exists($value) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid bank name in input: '. $value);
+        }
     }
 }

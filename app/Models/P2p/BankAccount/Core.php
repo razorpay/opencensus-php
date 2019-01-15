@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\BankAccount;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
 
 /**
@@ -12,5 +13,57 @@ use RZP\Models\P2p\Base\Libraries\ArrayBag;
  */
 class Core extends Base\Core
 {
+    public function createManyForBank(array $bankAccounts, Bank\Entity $bank): PublicCollection
+    {
+        $existingBankAccounts = $this->repo->fetchAllForBank($bank->getIfsc());
 
+        foreach ($bankAccounts as $bankAccount)
+        {
+            $existing = $this->fetchExistingBankAccount($bankAccount, $existingBankAccounts);
+
+            if (is_null($existing) === false)
+            {
+                $existing->mergeGatewayData();
+            }
+            else
+            {
+                $this->createForBank($bankAccount, $bank);
+            }
+        }
+
+        return $this->repo->fetchAllForBank($bank->getIfsc());
+    }
+
+    public function createForBank(array $input, Bank\Entity $bank)
+    {
+        $bankAccount = $this->repo->newP2pEntity();
+
+        $bankAccount->build($input);
+
+        $bankAccount->parentBank()->associate($bank);
+
+        $this->repo->saveOrFail($bankAccount);
+
+        return $bankAccount;
+    }
+
+    /**
+     * @param array $bankAccount
+     * @param PublicCollection $existing
+     * @return Entity
+     */
+    protected function fetchExistingBankAccount(array $bankAccount, PublicCollection $existing)
+    {
+        $gatewayId = array_get($bankAccount, 'gateway_data.id');
+
+        foreach ($existing as $item)
+        {
+            $existingGatewayId = array_get($item, 'gateway_data.id');
+
+            if ($gatewayId === $existingGatewayId)
+            {
+                return $item;
+            }
+        }
+    }
 }

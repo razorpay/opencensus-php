@@ -27,9 +27,12 @@ class Vijaya extends Base
     {
         $formattedData = [];
 
+        $index = 0;
+
         foreach ($data as $row)
         {
             $formattedData[] = [
+                ++$index,
                 $row['payment']['id'],
                 self::REFUND,
                 self::PAYMENT_BANK,

@@ -149,8 +149,31 @@ class Terminal extends Base
         ];
 
         return $this->create($attributes);
-
     }
+
+    public function createBharatQrUpiMindgateTerminal()
+    {
+        $termId = Shared::UPI_MINDGATE_BQR_TERMINAL;
+
+        $attributes = [
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'upi_mindgate',
+            'gateway_merchant_id'       => 'abcd_bharat_qr',
+            'gateway_terminal_id'       => 'abcde',
+            'gateway_acquirer'          => 'ratn',
+            'gateway_terminal_password' => '93158d5892188161a259db660ddb1d0b',
+            'upi'                       => true,
+            'gateway_acquirer'          => 'hdfc',
+            'vpa'                       => 'rndm.razorpay@hdfcbank',
+            'type'                      => [
+                Type::NON_RECURRING => '1',
+                Type::BHARAT_QR => '1'
+            ],
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
 
     public function createMultipleNetbankingTerminals()
     {
@@ -215,6 +238,11 @@ class Terminal extends Base
     public function enableTerminal($id = '1RecurringTerm')
     {
         return $this->fixtures->edit('terminal', $id, ['enabled' => true]);
+    }
+
+    public function setEnabledBanks($id = '1RecurringTerm', array $enabledBanks = [])
+    {
+        return $this->fixtures->edit('terminal', $id, ['enabled_banks' => $enabledBanks]);
     }
 
     public function createEbsTerminal(array $attributes = [])
@@ -2197,6 +2225,16 @@ class Terminal extends Base
         ];
 
         return $this->createSharedUpiMindgateTerminal($attributes);
+    }
+
+    public function createSharedUpiMindgateIntentTpvTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'               => Shared::UPI_MINDGATE_INTENT_TPV_TERMINAL,
+            'tpv'              => 1,
+        ];
+
+        return $this->createSharedUpiMindgateIntentTerminal($attributes);
     }
 
     public function createSharedUpiMindgateSbiTerminal(array $attributes)

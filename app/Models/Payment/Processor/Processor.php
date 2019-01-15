@@ -505,6 +505,11 @@ class Processor
     {
         $coproto = null;
 
+        if ($payment->isWallet() === false)
+        {
+            return $coproto;
+        }
+
         //
         // TODO: This needs to be fixed since we use dummy phone and email
         // in subscriptions subsequent charges too. We could be using
@@ -514,37 +519,42 @@ class Processor
         // Actually, this won't even work for S2S since we remove
         // `content` and `missing` attributes completely before returning
         //
-        if (($payment->isWallet() === true) and
-            ((($payment->merchant->isPhoneOptional() === true) and
-              ($payment->getContact() === Payment\Entity::DUMMY_PHONE)) or
-             (($payment->merchant->isEmailOptional() === true) and
-              ($payment->getEmail() === Payment\Entity::DUMMY_EMAIL))))
+        if (($payment->merchant->isPhoneOptional() === true) and
+            ($payment->getContact() === Payment\Entity::DUMMY_PHONE))
         {
-            $coproto = [
-                'type'    => 'respawn',
-                'request' => [
-                    'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
-                    'method'  => 'POST',
-                    'content' => array_assoc_flatten($input, '%s[%s]'),
-                ],
-                'method' => 'wallet',
-                'version' => '1',
-            ];
+            $coproto = $coproto ?: $this->getCoprotoDefaultArrayForWallet($input);
 
-            if ($payment->getContact() === Payment\Entity::DUMMY_PHONE)
-            {
-                $coproto['missing'][] = 'contact';
-                unset($coproto['request']['content']['contact']);
-            }
+            $coproto['missing'][] = 'contact';
 
-            if ($payment->getEmail() === Payment\Entity::DUMMY_EMAIL)
-            {
-                $coproto['missing'][] = 'email';
-                unset($coproto['request']['content']['email']);
-            }
+            unset($coproto['request']['content']['contact']);
+        }
+
+        if (($payment->merchant->isEmailOptional() === true) and
+            (Wallet::isEmailRequired($payment->getWallet()) === true) and
+            ($payment->getEmail() === Payment\Entity::DUMMY_EMAIL))
+        {
+            $coproto = $coproto ?: $this->getCoprotoDefaultArrayForWallet($input);
+
+            $coproto['missing'][] = 'email';
+
+            unset($coproto['request']['content']['email']);
         }
 
         return $coproto;
+    }
+
+    protected function getCoprotoDefaultArrayForWallet(array $input)
+    {
+        return [
+            'type'    => 'respawn',
+            'request' => [
+                'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
+                'method'  => 'POST',
+                'content' => array_assoc_flatten($input, '%s[%s]'),
+            ],
+            'method' => 'wallet',
+            'version' => '1',
+        ];
     }
 
     protected function preProcessPaymentInputsForUpi(array $input, Payment\Entity $payment)
@@ -2251,59 +2261,6 @@ class Processor
         return substr($contact, -10);
     }
 
-    public function saveFeeDetails(Transaction\Entity $txn, PublicCollection $feesSplit)
-    {
-        $this->trace->info(
-            TraceCode::CREATING_FEES_BREAKUP,
-            [
-                'transaction_id'    => $txn->getId(),
-                'payment_id'        => $txn->getEntityId(),
-                'fee_split'         => $feesSplit->toArrayPublic(),
-            ]);
-
-        try
-        {
-            $this->repo->transaction(function() use ($txn, $feesSplit)
-            {
-                foreach ($feesSplit as $feeSplit)
-                {
-                    $feeSplit->transaction()->associate($txn);
-
-                    $this->repo->saveOrFail($feeSplit);
-                }
-
-                $this->trace->info(
-                    TraceCode::FEES_BREAKUP_CREATED,
-                    [
-                        'transaction_id'    => $txn->getId(),
-                        'payment_id'        => $txn->getEntityId(),
-                        'fee_split'         => $feesSplit->toArrayPublic(),
-                    ]);
-            });
-        }
-        catch (Exception\BaseException $ex)
-        {
-            $this->trace->info(
-                TraceCode::FEES_BREAKUP_CREATION_FAILED,
-                [
-                    'transaction_id'    => $txn->getId(),
-                    'payment_id'        => $txn->getEntityId(),
-                    'fee_split'         => $feesSplit->toArrayPublic(),
-                    'message'           => $ex->getMessage(),
-                ]);
-
-            throw new Exception\LogicException(
-                'Error while recording fee breakup',
-                ErrorCode::BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED,
-                [
-                    'transaction_id'    => $txn->getId(),
-                    'payment_id'        => $txn->getEntityId(),
-                    'fee_split'         => $feesSplit->toArrayPublic(),
-                ]);
-        }
-
-    }
-
     protected function shouldHitGatewayForPayment(Payment\Entity $payment, array $gatewayInput = []): bool
     {
         if ((isset($gatewayInput["skip_gateway_call"]) === true) and
@@ -2343,17 +2300,21 @@ class Processor
      * Marks the payment as acknowledged.
      *
      * @param Payment\Entity $payment
+     * @param array          $input
      */
-    public function acknowledge(Payment\Entity $payment)
+    public function acknowledge(Payment\Entity $payment, array $input)
     {
+        $notes = $input[Payment\Entity::NOTES] ?? [];
+
         $this->trace->info(
             TraceCode::PAYMENT_ACKNOWLEDGE_REQUEST,
             [
+                'input'            => $input,
                 Payment\Entity::ID => $payment->getId(),
             ]);
 
         $this->mutex->acquireAndRelease($payment->getId(),
-            function() use ($payment)
+            function() use ($payment, $notes)
             {
                 $this->repo->reload($payment);
 
@@ -2362,6 +2323,8 @@ class Processor
                 $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
 
                 $payment->setAcknowledgedAt($currentTime);
+
+                $payment->appendNotes($notes);
 
                 $this->repo->saveOrFail($payment);
             },

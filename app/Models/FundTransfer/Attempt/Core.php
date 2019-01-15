@@ -27,6 +27,15 @@ class Core extends Base\Core
         // TODO: Make this polymorphic instead of having bankAccount and vpa separately
         $fundTransferAttempt->bankAccount()->associate($bankAccount);
 
+        // This needs to be done after associating bank account only
+        // because it needs the association to figure out destination bank
+        $fundTransferAttempt->modifyModeIfRequired();
+
+        // This needs to be done after filling FTA since it uses getters on the entity
+        // Also, this needs to be done after associating vpa or bank_account only
+        // because it needs the association to figure out the destination type.
+        $fundTransferAttempt->getValidator()->validateModeIfSet($values);
+
         $this->repo->saveOrFail($fundTransferAttempt);
 
         return $fundTransferAttempt;
@@ -38,6 +47,11 @@ class Core extends Base\Core
 
         // TODO: Make this polymorphic instead of having bankAccount and vpa separately
         $fundTransferAttempt->vpa()->associate($vpa);
+
+        // This needs to be done after filling FTA since it uses getters on the entity.
+        // Also, this needs to be done after associating vpa or bank_account only
+        // because it needs the association to figure out the destination type.
+        $fundTransferAttempt->getValidator()->validateModeIfSet($values);
 
         $this->repo->saveOrFail($fundTransferAttempt);
 
@@ -63,7 +77,7 @@ class Core extends Base\Core
 
         $fileType = $input[Entity::FILE_TYPE];
 
-        $jobName  =  $this->getJobNameForBeamPush($channel, $fileType);
+        $jobName  = $this->getJobNameForBeamPush($channel, $fileType);
 
         $this->sendFile($filePath, $jobName, $fileType, $channel);
 

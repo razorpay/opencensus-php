@@ -1512,7 +1512,7 @@ class InvoiceTest extends TestCase
 
         $payment = $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
 
-        $this->ba->privateAuth();
+        $this->ba->adminAuth();
 
         //
         // Test data usage, query params with sign, and combination for which there

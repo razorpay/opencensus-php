@@ -4,14 +4,17 @@ namespace RZP\Models\Payout;
 
 use RZP\Base;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Models\Payment;
 use RZP\Models\Card;
-use RZP\Constants\Entity as E;
-use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
+use RZP\Models\FundAccount;
+use RZP\Models\FundTransfer\Mode;
+use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
 
 class Validator extends Base\Validator
 {
+    const MAX_PURPOSES_ALLOWED = 100;
+
     //
     // This is required for build. Currently, build does not
     // accept ruleName as a parameter. Hence, this list needs
@@ -21,41 +24,44 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::DESTINATION     => 'required|public_id',
         Entity::PURPOSE         => 'sometimes|string',
-        Entity::METHOD          => 'sometimes|string',
         Entity::AMOUNT          => 'sometimes|integer',
         Entity::CURRENCY        => 'sometimes|size:3',
         Entity::NOTES           => 'sometimes|notes',
         Entity::CUSTOMER_ID     => 'sometimes|public_id',
         Entity::DESTINATION     => 'sometimes|public_id',
-        Entity::TYPE            => 'sometimes|string'
+        Entity::TYPE            => 'sometimes|string',
+        Entity::BALANCE_ID      => 'sometimes|string|size:14',
+        Entity::FUND_ACCOUNT_ID => 'sometimes|public_id',
+        Entity::MODE            => 'sometimes|nullable|string',
     ];
 
-    protected static $customerPayoutRules = [
-        Entity::PURPOSE         => 'sometimes|filled|string|max:30|in:refund',
-        Entity::METHOD          => 'required|string',
+    protected static $fundAccountPayoutRules = [
+        Entity::PURPOSE         => 'required|filled|string|max:30|alpha_dash',
         Entity::AMOUNT          => 'required|integer|min:100|max:500000000',
         Entity::CURRENCY        => 'required|size:3|in:INR',
         Entity::NOTES           => 'sometimes|notes',
-        Entity::CUSTOMER_ID     => 'required|public_id',
-        Entity::DESTINATION     => 'required|public_id',
+        Entity::BALANCE_ID      => 'sometimes|filled|size:14',
+        Entity::FUND_ACCOUNT_ID => 'required|public_id',
+        Entity::MODE            => 'sometimes|nullable|string|custom',
     ];
 
     protected static $customerWalletPayoutRules = [
         Entity::PURPOSE         => 'sometimes|filled|string|max:30|in:refund',
-        Entity::METHOD          => 'required|string',
         Entity::AMOUNT          => 'required|integer|min:100|max:500000000',
         Entity::CURRENCY        => 'required|size:3|in:INR',
         Entity::NOTES           => 'sometimes|notes',
-        Entity::CUSTOMER_ID     => 'required|public_id',
-        Entity::DESTINATION     => 'required|public_id',
+        Entity::BALANCE_ID      => 'sometimes|filled|size:14',
+        Entity::FUND_ACCOUNT_ID => 'required|public_id',
+        Entity::FUND_ACCOUNT_ID => 'required|public_id',
     ];
 
     protected static $merchantPayoutRules = [
-        Entity::PURPOSE         => 'required|string|max:30|in:settlement',
-        Entity::METHOD          => 'required|string',
+        Entity::PURPOSE         => 'required|string|max:30|in:payout',
+        Entity::METHOD          => 'sometimes|string',
         Entity::AMOUNT          => 'required|integer|max:800000000',
         Entity::CURRENCY        => 'required|size:3',
-        Entity::TYPE            => 'required|string|max:30|in:default,on_demand'
+        Entity::TYPE            => 'required|string|max:30|in:default,on_demand',
+        Entity::BALANCE_ID      => 'sometimes|filled|size:14',
     ];
 
     protected static $merchantRules = [
@@ -64,6 +70,11 @@ class Validator extends Base\Validator
         Entity::MIN_AMOUNT     => 'sometimes|integer|min:100',
         Entity::MODULO         => 'sometimes|integer|min:100',
         Entity::BUFFER_AMOUNT  => 'sometimes|integer|min:10000000'
+    ];
+
+    protected static $createPurposeRules = [
+        Entity::PURPOSE      => 'required|filled|string|max:30|alpha_dash_space',
+        Entity::PURPOSE_TYPE => 'required|filled|string|in:refund,settlement',
     ];
 
     protected static $merchantPayoutOnDemandRules = [
@@ -76,13 +87,54 @@ class Validator extends Base\Validator
         'ids.*'  => 'required|public_id|size:19'
     ];
 
-    protected static $createValidators = [
-        Entity::METHOD
+    protected static $fundAccountPayoutValidators = [
+        Entity::MODE,
     ];
 
-    protected function validateMethod($input)
+    protected function validateMethod($attribute, $method)
     {
-        Method::validateMethod($input[Entity::METHOD]);
+        Method::validateMethod($method);
+    }
+
+    protected function validateMode($input)
+    {
+        if (empty($input[Entity::MODE]) === true)
+        {
+            return;
+        }
+
+        $payout = $this->entity;
+
+        $mode = $input[Entity::MODE];
+
+        $accountType = $payout->fundAccount->getAccountType();
+
+        Mode::validateModeOfAccountType($mode, $accountType);
+
+        $amount = $input[Entity::AMOUNT];
+
+        $minRtgsAmount = NodalAccount::MIN_RTGS_AMOUNT * 100;
+        $maxImpsAmount = NodalAccount::MAX_IMPS_AMOUNT * 100;
+        $maxUpiAmount = FundAccount\Validator::MAX_VPA_AMOUNT;
+
+        if ((($mode === Mode::RTGS) and ($amount < $minRtgsAmount)) or
+            (($mode === Mode::IMPS) and ($amount > $maxImpsAmount)) or
+            (($mode === Mode::UPI) and ($amount > $maxUpiAmount)))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH,
+                null,
+                [
+                    'amount'          => $amount,
+                    'mode'            => $mode,
+                    'min_rtgs_amount' => $minRtgsAmount,
+                    'max_imps_amount' => $maxImpsAmount,
+                    'fund_account_id' => $payout->fundAccount->getId(),
+                    'account_type'    => $accountType,
+                ]);
+        }
+
+        // TODO: Need to do similar stuff for refund also
     }
 
     public function validatePayoutAmount($input, $payment)

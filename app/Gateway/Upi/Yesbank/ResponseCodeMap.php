@@ -72,7 +72,7 @@ class ResponseCodeMap
         'UT'  => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         'BT'  => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         'RB'  => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
-        'RP ' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        'RP'  => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         'U01' => ErrorCode::GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,
         'U07' => ErrorCode::GATEWAY_ERROR_VALIDATION_ERROR,
         'U08' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
@@ -83,16 +83,27 @@ class ResponseCodeMap
         'U67' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         'U68' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         'U69' => ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED,
+        'DT'  => ErrorCode::BAD_REQUEST_DUPLICATE_PAYOUT,
+
+        // Razorpay custom error codes
+        'RZP_DUPLICATE_PAYOUT'              => ErrorCode::BAD_REQUEST_DUPLICATE_PAYOUT,
+        'RZP_REF_ID_MISMATCH'               => ErrorCode::GATEWAY_ERROR_VALIDATION_ERROR,
+        'RZP_AMOUNT_MISMATCH'               => ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED,
+        'RZP_FTA_REQUEST_INVALID'           => ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY,
+        'RZP_REQUEST_ENCRYPTION_FAILURE'    => ErrorCode::GATEWAY_ERROR_ENCRYPTION_ERROR,
+        'RZP_PAYOUT_TIMED_OUT'              => ErrorCode::GATEWAY_ERROR_TIMED_OUT,
+        'RZP_PAYOUT_REQUEST_FAILURE'        => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+        'RZP_REQUEST_DECRYPTION_FAILED'     => ErrorCode::GATEWAY_ERROR_DECRYPTION_FAILED,
+        'RZP_PAYOUT_UNKNOWN_ERROR'          => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+        'RZP_PAYOUT_VERIFY_TIMED_OUT'       => ErrorCode::GATEWAY_ERROR_TIMED_OUT,
+        'RZP_PAYOUT_VERIFY_REQUEST_FAILURE' => ErrorCode::GATEWAY_ERROR_TIMED_OUT,
     ];
 
-    public static function getApiErrorCode($code)
+    public static function getApiErrorCode($responseCode, $errorCode = null, $responseErrorCode = null)
     {
-        if ((empty($code) === true) or
-            (isset(self::CODESMAP[$code]) === false))
-        {
-            return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
-        }
-
-        return self::CODESMAP[$code];
+        return self::CODESMAP[$responseCode] ??
+               self::CODESMAP[$errorCode] ??
+               self::CODESMAP[$responseErrorCode] ??
+               ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
     }
 }

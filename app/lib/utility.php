@@ -2,6 +2,7 @@
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Exception\AssertionException;
 
 /**
  * getallheaders() polyfill for nginx servers
@@ -209,23 +210,28 @@ if (! function_exists('random_string_special_chars'))
 }
 
 /**
+ * Does a case insensitive search in an array (sequential/associative)
+ *
+ * @param       $needle
+ * @param array $haystack
+ *
+ * @return false|int|string
+ */
+function array_search_ci($needle, array $haystack)
+{
+    return array_search(strtolower($needle), array_map('strtolower', $haystack));
+}
+
+/**
  * We do not check for whether this function is defined already
  * If it is defined already by some other library (like phpunit)
  * then we want this definition to be the correct one.
  */
 function assertTrue($assertion, $message = null)
 {
-    if (version_compare(phpversion(), '7.0.0', '<'))
+    if (boolval($assertion) !== true)
     {
-        $message = $message ?: '';
-
-        assert($assertion, $message);
-    }
-    else
-    {
-        $e = new RZP\Exception\AssertionException($message);
-
-        assert($assertion, $e);
+        throw new AssertionException($message);
     }
 }
 
@@ -536,6 +542,24 @@ if (! function_exists('get_key_from_subarray_match'))
     }
 }
 
+if (! function_exists('group_array_by_sub_array_value'))
+{
+    function group_array_by_value_array($groupKey, array $haystack)
+    {
+        $newArray[$groupKey] = [];
+
+        foreach ($haystack as $key => $subArray)
+        {
+            if (in_array($groupKey, $subArray, true) === true)
+            {
+                $newArray[$groupKey][] = $key;
+            }
+        }
+
+        return $newArray;
+    }
+}
+
 if (! function_exists('epoch_format'))
 {
     /**
@@ -686,5 +710,13 @@ if (! function_exists('is_rzp_business_hour'))
                 // Between 9 AM - 6 PM (Both inclusive)
                 ($dateTime->hour >= 9) and
                 ($dateTime->hour < 18));
+    }
+}
+
+if (! function_exists('mask_except_last4'))
+{
+    function mask_except_last4(string $value, string $masker = 'X'): string
+    {
+        return str_repeat($masker, max(strlen($value) - 4, 0)) . substr($value, -4);
     }
 }

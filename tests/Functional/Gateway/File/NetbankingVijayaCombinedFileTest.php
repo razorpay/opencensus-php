@@ -115,13 +115,13 @@ class NetbankingVijayaCombinedFileTest extends TestCase
 
         $refundsFileLine1 = explode('||', $refundsFileContents[0]);
 
-        $this->assertCount(5, $refundsFileLine1);
+        $this->assertCount(6, $refundsFileLine1);
 
-        $this->assertEquals($refundsFileLine1[1], 'RFND');
+        $this->assertEquals($refundsFileLine1[2], 'RFND');
 
-        $this->assertEquals($refundsFileLine1[2], 'VijayaBank');
+        $this->assertEquals($refundsFileLine1[3], 'VijayaBank');
 
-        $this->assertEquals($refundsFileLine1[3], '500.00');
+        $this->assertEquals($refundsFileLine1[4], '500.00');
     }
 
     protected function checkClaimsFile(array $claimsFileData)

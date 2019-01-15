@@ -305,7 +305,35 @@ class CardTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['bin_issuer_validator']);
 
-        parent::startTest();
+        $this->fixtures->iin->edit('401200', ['issuer' => 'HDFC', 'type' => 'debit']);
+        $response = parent::startTest();
+        $this->assertEquals('HDFC', $response['issuer']);
+        $this->assertEquals('debit', $response['type']);
+
+        $this->fixtures->iin->edit('401200', ['issuer' => 'HDFC', 'type' => 'credit']);
+        $response = parent::startTest();
+        $this->assertEquals('HDFC', $response['issuer']);
+        $this->assertEquals('credit', $response['type']);
+
+        $this->fixtures->iin->edit('401200', ['issuer' => 'KKBK', 'type' => 'debit']);
+        $response = parent::startTest();
+        $this->assertEquals('Others', $response['issuer']);
+        $this->assertEquals('debit', $response['type']);
+
+        $this->fixtures->iin->edit('401200', ['issuer' => 'KKBK', 'type' => 'credit']);
+        $response = parent::startTest();
+        $this->assertEquals('Others', $response['issuer']);
+        $this->assertEquals('credit', $response['type']);
+
+        $this->fixtures->iin->edit('401200', ['issuer' => 'HDFC', 'type' => '']);
+        $response = parent::startTest();
+        $this->assertEquals('HDFC', $response['issuer']);
+        $this->assertEquals('', $response['type']);
+
+        $this->fixtures->iin->edit('401200', ['issuer' => 'KKBK', 'type' => '']);
+        $response = parent::startTest();
+        $this->assertEquals('Others', $response['issuer']);
+        $this->assertEquals('', $response['type']);
     }
 
     public function testBinValidationWithOutFeature()
@@ -316,15 +344,6 @@ class CardTest extends TestCase
     }
 
     public function testBinValidation()
-    {
-        $this->ba->publicAuth();
-
-        $this->fixtures->merchant->addFeatures(['bin_issuer_validator']);
-
-        parent::startTest();
-    }
-
-    public function testBinValidationInvalidType()
     {
         $this->ba->publicAuth();
 

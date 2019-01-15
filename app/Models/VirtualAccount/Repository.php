@@ -117,4 +117,11 @@ class Repository extends Base\Repository
 
         return $query->get();
     }
+
+    public function existsByBalanceId(string $balanceId): bool
+    {
+        return $this->newQuery()
+                    ->where(Entity::BALANCE_ID, $balanceId)
+                    ->exists();
+    }
 }

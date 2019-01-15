@@ -13,6 +13,7 @@ use RZP\Constants\Mode;
 use RZP\Models\BharatQr;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\AESCrypto;
 use RZP\Gateway\Base\VerifyResult;
@@ -66,6 +67,102 @@ class Gateway extends Base\Gateway
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    public function refund(array $input)
+    {
+        parent::refund($input);
+
+        $gatewayEntity = $this->repo->findByPaymentIdAndAction($input['payment']['id'], Base\Action::AUTHORIZE);
+
+        $refundDataToSave = [
+            Entity::MERCHANT_PAN => $gatewayEntity[Entity::MERCHANT_PAN]
+        ];
+
+        $attributes = $this->getRefundRequestData($gatewayEntity);
+
+        $gatewayPayment = $this->createGatewayPaymentEntity($input, $refundDataToSave);
+
+        $request = $this->getStandardRequestArray($attributes);
+
+        $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_REFUND_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_REFUND_RESPONSE);
+
+        $responseContent = $this->jsonToArray($response->body);
+
+        $refundAttributesToSave = $this->getRefundAttributes($responseContent, $gatewayEntity);
+
+        $this->updateGatewayPaymentEntity($gatewayPayment, $refundAttributesToSave, false);
+
+        $this->assertRefundId($input['refund']['id'], $responseContent[Field::RFD_TXN_ID]);
+
+        $this->checkRefundResponse($responseContent);
+    }
+
+    protected function getRefundRequestData($gatewayEntity)
+    {
+        $transactionDate = Carbon::createFromTimestamp($this->input['payment']['created_at'])
+                                                        ->timezone(Timezone::IST)->format('Ymd');
+
+        $refundTimeStamp = Carbon::now(Timezone::IST)->format('YmdHis');
+
+        $content = [
+            Field::RFD_TXN_ID         => $this->input['refund']['id'],
+            Field::TXN_ID             => $gatewayEntity[Entity::BANK_REFERENCE_NUMBER],
+            Field::MERCHANT_PAN       => $gatewayEntity[Entity::MERCHANT_PAN],
+            Field::TXN_DATE           => $transactionDate,
+            Field::TXN_AMOUNT         => $this->getFormattedAmount($gatewayEntity['amount']),
+            Field::RFD_TXN_DATE_TIME  => $refundTimeStamp,
+            Field::RFD_TXN_AMOUNT     => $this->getFormattedAmount($this->input['refund']['amount']),
+            Field::AUTH_CODE          => $gatewayEntity[Entity::AUTH_CODE],
+            Field::RRN                => $gatewayEntity[Entity::RRN],
+        ];
+
+        return $content;
+    }
+
+    protected function getRefundAttributes($response, $gatewayEntity)
+    {
+        $attributes = [
+            Entity::RECEIVED                    => true,
+            Entity::AMOUNT                      => $this->input['refund']['amount'],
+            Entity::REFUND_ID                   => $this->input['refund']['id'],
+            Entity::MERCHANT_PAN                => $gatewayEntity[Entity::MERCHANT_PAN],
+            Entity::BANK_REFERENCE_NUMBER       => $response[Field::RFD_TXN_ID],
+            Entity::AUTH_CODE                   => $gatewayEntity[Entity::AUTH_CODE],
+            Entity::STATUS_CODE                 => $response[Field::STATUS_CODE],
+        ];
+
+        return $attributes;
+    }
+
+    protected function assertRefundId($actualRefundId, $expectedRefundId)
+    {
+        if ($actualRefundId !== $expectedRefundId)
+        {
+            throw new Exception\LogicException(
+                'Data tampering found.', null, [
+                'expected' => $expectedRefundId,
+                'actual'   => $actualRefundId
+            ]);
+        }
+    }
+
+    protected function checkRefundResponse($response)
+    {
+        // need to confirm with the bank once, what will the error codes. Till then throwing exception using the
+        // exception returned by gateway
+        if ($response[Field::STATUS_CODE] !== Status::APPROVED)
+        {
+            throw new Exception\GatewayErrorException(
+              ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+              null,
+              $response[Field::STATUS_DESC]
+            );
+        }
     }
 
     protected function getVerifyCallbackRequestArray($input)
@@ -391,6 +488,8 @@ class Gateway extends Base\Gateway
     {
         $attributes = $this->getAttributesFromQrResponse($input);
 
+        $attributes[Entity::RECEIVED] = true;
+
         $payment = $this->createGatewayPaymentEntity($input, $attributes);
 
         return $payment;
@@ -422,6 +521,8 @@ class Gateway extends Base\Gateway
 
         $attributes[Entity::STATUS_DESC] = $statusDescription;
 
+        $attributes[Entity::RECEIVED] = true;
+
         return $attributes;
     }
 
@@ -432,6 +533,11 @@ class Gateway extends Base\Gateway
         $action = $action ?: $this->action;
 
         $gatewayPayment->setAction($action);
+
+        if ($action === Base\Action::REFUND)
+        {
+            $gatewayPayment->setRefundId($input['refund']['id']);
+        }
 
         $gatewayPayment->setPaymentId($input['payment']['id']);
 
@@ -498,12 +604,16 @@ class Gateway extends Base\Gateway
     public function getBharatQrResponse(bool $valid, $input = null, $ex = null)
     {
         $attributes = [
-            Field::TRANSACTION_ID      => $input[Field::TRANSACTION_ID],
-            Field::NOTIFICATION_REF_NO => $input[Field::TRANSACTION_ID],
+            Field::TRANSACTION_ID                   => $input[Field::TRANSACTION_ID],
+            Field::NOTIFICATION_REF_NO              => null,
         ];
 
         if ($valid === true)
         {
+            $gatewayEntity = $this->repo->fetchByBankReferenceNumber(strval($input[Field::TRANSACTION_ID]));
+
+            $attributes[Field::NOTIFICATION_REF_NO] = $gatewayEntity[Entity::PAYMENT_ID];
+
             $attributes[Field::STATUS_CODE] = Status::APPROVED;
 
             $attributes[Field::STATUS_DESC] = Status::SUCCESS;

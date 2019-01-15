@@ -52,6 +52,8 @@ class Table
     const TERMINAL                  = 'terminals';
     const CUSTOMER                  = 'customers';
     const TRANSFER                  = 'transfers';
+    // Statement is public exposed version of transaction, ref /Models/Transaction/Statement.
+    const STATEMENT                 = 'transactions';
     const REVERSAL                  = 'reversals';
     const BHARAT_QR                 = 'bharat_qr';
     const PROMOTION                 = 'promotions';
@@ -90,6 +92,7 @@ class Table
     const BATCH_FUND_TRANSFER       = 'daily_settlements';
     const CUSTOMER_TRANSACTION      = 'customer_transactions';
     const FUND_TRANSFER_ATTEMPT     = 'fund_transfer_attempts';
+    const FUND_ACCOUNT_VALIDATION   = 'fund_account_validations';
     const SUBSCRIPTION_REGISTRATION = 'subscription_registrations';
 
     // This table does not belong to api service but is stored in api db.

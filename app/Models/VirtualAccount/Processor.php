@@ -185,25 +185,7 @@ abstract class Processor extends Base\Core
      *
      * @return bool
      */
-    protected function checkPaymentExpectedAndSetVirtualAccount(Base\PublicEntity $entity): bool
-    {
-        $this->setVirtualAccount($entity);
-
-        if ($this->virtualAccount === null)
-        {
-            $this->trace->info(
-                TraceCode::VIRTUAL_ACCOUNT_UNEXPECTED_PAYMENT,
-                [
-                    'entity' => $entity->toArray(),
-                ]);
-
-            $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
-
-            return false;
-        }
-
-        return true;
-    }
+    abstract protected function checkPaymentExpectedAndSetVirtualAccount(Base\PublicEntity $entity);
 
     protected function getDefaultPaymentArray(): array
     {

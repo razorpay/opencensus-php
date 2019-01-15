@@ -625,26 +625,27 @@ class TransactionFilter extends Terminal\Filter
                         if ($payment->card->iinRelation !== null)
                         {
                             if (($terminal->isIvr() === true) and
-                                ($payment->card->iinRelation->supports(Flow::OTP) === true))
+                                (($payment->card->iinRelation->supports(Flow::IVR) === true) or
+                                 ($payment->card->iinRelation->supports(Flow::OTP) === true)))
                             {
                                 return true;
                             }
 
                             $gateway = $terminal->getGateway();
 
-                            if ((Gateway::supportsHeadlessBrowser($gateway) === true) and
-                                ($payment->card->iinRelation->supports(Flow::HEADLESS_OTP) === true))
+                            //
+                            // IVR is supported only on on Hitachi.
+                            // Hence, it should be enabled only for all the IVR enabled iins.
+                            //
+                            if (($gateway === Payment\Gateway::HITACHI) and
+                                (($payment->card->iinRelation->supports(Flow::IVR) === true) or
+                                 ($payment->card->iinRelation->supports(Flow::OTP) === true)))
                             {
                                 return true;
                             }
 
-                            //
-                            // Expresspay is supported on Hitachi.
-                            // Hence, it should be enabled only for axis MC/Visa cards.
-                            //
-                            if (($gateway === Payment\Gateway::HITACHI) and
-                                ($payment->card->iinRelation->supports(Flow::OTP) === true) and
-                                ($payment->card->getIssuer() === IFSC::UTIB))
+                            if ((Gateway::supportsHeadlessBrowser($gateway) === true) and
+                                ($payment->card->iinRelation->supports(Flow::HEADLESS_OTP) === true))
                             {
                                 return true;
                             }
@@ -763,9 +764,16 @@ class TransactionFilter extends Terminal\Filter
 
         $metadata = $payment->getMetadata();
 
+        $bankingTypeApplicable = $terminal->isTypeApplicable(Terminal\Type::BUSINESS_BANKING);
+
         // If a bank account is requested specifically for banking, only terminals with that type set can be selected.
-        if (($metadata[Generator::BANKING] === true) and
-            ($terminal->isTypeApplicable(Terminal\Type::BUSINESS_BANKING) === false))
+        if (($metadata[Generator::BANKING] === true) and ($bankingTypeApplicable === false))
+        {
+            return false;
+        }
+
+        // If metadata.banking is not set, we must not select the terminal with business_banking type.
+        if (($metadata[Generator::BANKING] === false) and ($bankingTypeApplicable === true))
         {
             return false;
         }

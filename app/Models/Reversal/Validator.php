@@ -11,6 +11,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::AMOUNT               => 'required|integer|min:100',
+        Entity::CHANNEL              => 'sometimes|string|max:30',
         Entity::CURRENCY             => 'required|string|size:3|in:INR',
         Entity::NOTES                => 'sometimes|notes',
         Entity::LINKED_ACCOUNT_NOTES => 'sometimes|array',

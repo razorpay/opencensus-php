@@ -31,6 +31,8 @@ trait Vpa
 
         $success = false;
 
+        $gatewayResponse = null;
+
         foreach ($terminals as $terminal)
         {
             try
@@ -38,7 +40,7 @@ trait Vpa
                 $gateway = $terminal->getGateway();
 
                 // Invalid vpa on MindGate and SBI thrown back with GatewayError
-                $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
+                $gatewayResponse = $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
 
                 $success = true;
                 break;
@@ -50,25 +52,7 @@ trait Vpa
         }
 
         $response['success'] = $success;
-
-        return $response;
-    }
-
-    // TODO: needs to be removed
-    public function payoutVpa(array $input, $type)
-    {
-        $action = ($type === 'pay') ? Payment\Action::PAYOUT : Payment\Action::PAYOUT_VERIFY;
-
-        // This will throw bad request validation error
-        (new Payment\Validator)->validateInput($action, $input);
-
-        $terminals = $this->repo->terminal->getAllTerminalsForGateway('upi_yesbank');
-
-        $terminal = $terminals[0];
-
-        $gateway = $terminal->getGateway();
-
-        $response = $this->app['gateway']->call($gateway, $action, $input, $this->mode, $terminal);
+        $response['customer_name'] = $gatewayResponse;
 
         return $response;
     }

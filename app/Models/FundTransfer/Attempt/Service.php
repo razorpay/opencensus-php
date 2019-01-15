@@ -111,7 +111,7 @@ class Service extends Base\Service
     }
 
     /**
-     * Updated fund transafer source with the request param
+     * Updated fund transfer source with the request param
      *
      * @param Base\Entity $source
      * @param array $params
@@ -125,7 +125,7 @@ class Service extends Base\Service
         {
             if ($key === Entity::STATUS)
             {
-                $value  = $this->getSourceStatus($source, $value);
+                $value = $this->getSourceStatus($source, $value);
             }
 
             $status |= $this->setSourceAttribute($source, $key, $value);

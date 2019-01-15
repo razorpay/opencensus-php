@@ -320,7 +320,7 @@ class P2pHelper
             $prefix .= 'customer/';
         }
 
-        return $prefix . $uri;
+        return $prefix . sprintf($uri, ...$parameters);
     }
 
     protected function makeServer()
@@ -332,7 +332,7 @@ class P2pHelper
             $servers['PHP_AUTH_PW'] = $this->fixtures->device->getAuthToken();
         }
 
-        $servers['HTTP_X_RAZORPAY_VPA_HANDLE'] = $this->fixtures->handle->getHandle();
+        $servers['HTTP_X_RAZORPAY_VPA_HANDLE'] = $this->fixtures->handle->getCode();
 
         return $servers;
     }

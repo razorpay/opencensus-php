@@ -10,7 +10,7 @@ class Validator extends Base\Validator
     protected static $addRules;
     protected static $verifyRules;
 
-    protected function rules()
+    public function rules()
     {
         $rules = [
             Entity::TOKEN        => 'string',
@@ -24,7 +24,7 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    protected function getCreateRules()
+    public function makeCreateRules()
     {
         $rules = $this->makeRules([
             Entity::DEVICE_DATA  => 'sometimes',
@@ -33,21 +33,23 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    protected function getAddRules()
+    public function makeVerificationSuccessRules()
     {
-        $rules = $this->makeRules([]);
-
-        return $rules;
+        return $this->makeRules([
+            Entity::TOKEN         => 'required',
+            Entity::RESPONSE      => 'required',
+            Entity::DEVICE_DATA   => 'sometimes',
+        ]);
     }
 
-    protected function getVerifyRules()
+    public function makeVerificationStatusRules()
     {
-        $rules = $this->makeRules([]);
-
-        return $rules;
+        return $this->makeRules([
+            Entity::TOKEN  => 'required',
+        ]);
     }
 
-    protected function validateDeviceData()
+    public function validateDeviceData()
     {
         // TODO:: implement device
     }

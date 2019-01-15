@@ -2860,7 +2860,7 @@ return [
 
     'testGetInvoiceByOrderAndPayment' => [
         'request' => [
-            'url' => '/invoices',
+            'url'     => '/admin/invoice',
             'method'  => 'get',
             'content' => [
                 'order_id'   => 'order_100000000order',

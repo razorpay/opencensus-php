@@ -263,6 +263,8 @@ class FirstDataS2sGatewayTest extends TestCase
 
     public function testPaymentReverse()
     {
+        $this->markTestSkipped('reverse has been disabled due to issue on first data');
+
         $features = $this->fixtures->merchant->addFeatures(['reverse']);
 
         $payment = $this->doAuthPayment($this->payment);
@@ -300,6 +302,82 @@ class FirstDataS2sGatewayTest extends TestCase
         $this->mockTokenex();
 
         $payment = $this->getDefaultRecurringPaymentArray();
+
+        $response = $this->doAuthPayment($payment);
+
+        $paymentId = $response['razorpay_payment_id'];
+
+        $gatewayEntity = $this->getLastEntity('first_data', true);
+
+        $this->assertEquals(Status::AUTHORIZED, $gatewayEntity['status']);
+
+        $this->capturePayment($paymentId, $payment['amount']);
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $gatewayEntity = $this->getLastEntity('first_data', true);
+
+        $this->assertNotNull($paymentEntity['token_id']);
+        $this->assertEquals(true, $paymentEntity['recurring']);
+        $this->assertEquals('FDRcrgTrmnl3DS', $paymentEntity['terminal_id']);
+
+        $token = $this->getLastEntity('token', true);
+        $this->assertEquals($paymentEntity['token_id'], $token['id']);
+        $this->assertEquals(true, $token['recurring']);
+        $this->assertEquals('FDRcrgTrmnl3DS', $token['terminal_id']);
+
+        $this->assertEquals(Status::CAPTURED, $gatewayEntity['status']);
+        $this->assertEquals($paymentEntity['amount'], $gatewayEntity['amount']);
+
+        unset($payment['card']);
+        $payment['token'] = $paymentEntity['token_id'];
+
+        // Switch to private auth for second recurring payment
+        $this->ba->privateAuth();
+
+        $response = $this->doS2sRecurringPayment($payment);
+        $paymentId = $response['razorpay_payment_id'];
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $gatewayEntity = $this->getLastEntity('first_data', true);
+
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertNotNull($paymentEntity['token_id']);
+        $this->assertEquals(true, $paymentEntity['recurring']);
+        $this->assertEquals('FDRcrgTrmlN3DS', $paymentEntity['terminal_id']);
+        $this->assertNotNull($paymentEntity['transaction_id']);
+
+        $this->assertEquals($paymentEntity['token_id'], $token['id']);
+        $this->assertEquals(true, $token['recurring']);
+        $this->assertEquals('FDRcrgTrmlN3DS', $token['terminal_id']);
+
+        $this->assertEquals('APPROVED', $gatewayEntity['transaction_result']);
+        $this->assertEquals('CAPTURED', $gatewayEntity['status']);
+
+        $this->mockServerContentFunction(function(& $content, $action) use ($payment)
+        {
+            $content = SoapWrapper::s2sSecondRecurringVerifyResponseWrapper();
+        });
+
+        $this->verifyPayment($paymentId);
+
+        $this->capturePayment($paymentId, $payment['amount']);
+    }
+
+    public function testFirstAndSecondRecurringPaymentWithSingleDigitMonth()
+    {
+        list($terminal1, $terminal2) = $this->fixtures->
+        create('terminal:shared_first_data_recurring_terminals');
+
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $this->mockTokenex();
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $payment['card']['expiry_month'] = '4';
 
         $response = $this->doAuthPayment($payment);
 

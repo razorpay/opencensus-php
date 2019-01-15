@@ -3,8 +3,7 @@
 namespace RZP\Models\FundAccount;
 
 use RZP\Models\Base;
-use RZP\Models\Merchant;
-use RZP\Models\Contact;
+use RZP\Constants\Entity as E;
 
 /**
  * Class Repository
@@ -18,4 +17,16 @@ class Repository extends Base\Repository
     protected $expands = [
         Entity::ACCOUNT,
     ];
+
+    protected function addQueryParamCustomerId($query, $params)
+    {
+        $query->where(Entity::SOURCE_ID, $params[Entity::CUSTOMER_ID])
+              ->where(Entity::SOURCE_TYPE, E::CUSTOMER);
+    }
+
+    protected function addQueryParamContactId($query, $params)
+    {
+        $query->where(Entity::SOURCE_ID, $params[Entity::CONTACT_ID])
+              ->where(Entity::SOURCE_TYPE, E::CONTACT);
+    }
 }

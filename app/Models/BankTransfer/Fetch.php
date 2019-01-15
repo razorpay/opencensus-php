@@ -19,7 +19,7 @@ class Fetch extends BaseFetch
             Entity::AMOUNT             => 'sometimes|integer',
             Entity::MODE               => 'sometimes|string|max:4',
             Entity::UTR                => 'sometimes|alpha_num|max:22',
-            Entity::REFUND_ID      => 'sometimes|string|min:14|max:19',
+            Entity::REFUND_ID          => 'sometimes|string|min:14|max:19',
         ],
     ];
 

@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
         $this->call('WorkflowSeeder');
         $this->call('TaxGroupAndTaxSeeder');
         $this->call('DisputeReasonSeeder');
+        $this->call('BusinessBankingSeeder');
     }
 
     private function seed()
@@ -39,13 +40,13 @@ class DatabaseSeeder extends Seeder
 
         DB::transaction(function() use ($name)
         {
-            $pricingSeedData = Pricing\DefaultPlan::getPricingSeedData();
-
-            $todayTime = strtotime('today');
+            $todayTime   = strtotime('today');
             $currentTime = time();
 
-            DB::table(Table::PRICING)->insert(
-                $pricingSeedData);
+            foreach (Pricing\DefaultPlan::getPricingSeedData() as $pricing)
+            {
+                DB::table(Table::PRICING)->insert($pricing);
+            }
 
             DB::table(Table::ORG)->insert(
                 [

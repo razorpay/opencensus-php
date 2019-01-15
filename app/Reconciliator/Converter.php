@@ -376,6 +376,14 @@ class Converter extends Base\Core
         {
             $sheetContent['all_sheets_content'][$sheetName] = [];
 
+            //
+            // for each sheet, we will set the header when we encounter it.
+            // so resetting it here, else the previous sheet's header will
+            // get applied in the current sheet's rows instead of finding its
+            // own header based on key columns
+            //
+            $sheetContent['column_headers'] = [];
+
             $timeStarted = microtime(true);
 
             $this->trace->debug(

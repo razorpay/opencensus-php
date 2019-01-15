@@ -2,8 +2,8 @@
 
 namespace RZP\Models\FundAccount;
 
+use RZP\Models\Vpa;
 use RZP\Models\Base;
-use RZP\Models\Contact;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
@@ -16,16 +16,16 @@ use RZP\Exception\LogicException;
  */
 class Core extends Base\Core
 {
-    public function create(array $input, Merchant\Entity $merchant, Contact\Entity $contact = null): Entity
+    public function create(array $input, Merchant\Entity $merchant, Base\PublicEntity $source = null): Entity
     {
         $fundAccount = (new Entity)->build($input);
 
-        $this->repo->transaction(function() use ($input, $merchant, $contact, $fundAccount) {
-            $account = $this->createAccount($input, $contact);
+        $this->repo->transaction(function() use ($input, $merchant, $source, $fundAccount) {
+            $account = $this->createAccount($input, $source);
 
             $fundAccount->merchant()->associate($merchant);
 
-            $fundAccount->contact()->associate($contact);
+            $fundAccount->source()->associate($source);
 
             $fundAccount->account()->associate($account);
 
@@ -35,7 +35,7 @@ class Core extends Base\Core
         return $fundAccount;
     }
 
-    protected function createAccount(array $input, Contact\Entity $contact): Base\PublicEntity
+    protected function createAccount(array $input, Base\PublicEntity $source): Base\PublicEntity
     {
         $accountType = $input[Entity::ACCOUNT_TYPE];
 
@@ -46,11 +46,12 @@ class Core extends Base\Core
         switch ($accountType)
         {
             case Type::BANK_ACCOUNT:
-                $account = (new BankAccount\Core)->createBankAccountForBankingContact($accountInput, $contact);
+                $account = (new BankAccount\Core)->createBankAccountForBankingSource($accountInput, $source);
                 break;
 
             case Type::VPA:
-                // TODO
+                $account = (new Vpa\Core)->createForBankingSource($accountInput, $source);
+                break;
 
             default:
                 throw new LogicException('Creation logic not defined for fund account type: ' . $accountType);

@@ -28,4 +28,17 @@ class Type
 
         return $entity;
     }
+
+    public static function getBeneficiaryRegistrationTypes()
+    {
+        return [
+            self::MERCHANT,
+            self::CONTACT,
+        ];
+    }
+
+    public static function isValidBeneficiaryRegistrationType(string $type): bool
+    {
+        return (in_array($type, self::getBeneficiaryRegistrationTypes(), true) === true);
+    }
 }

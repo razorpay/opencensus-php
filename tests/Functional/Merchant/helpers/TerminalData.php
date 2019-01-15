@@ -86,6 +86,39 @@ return [
         ]
     ],
 
+    'testAssignHitachiBharatQrTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'hitachi',
+                'gateway_acquirer'          => 'ratn',
+                'gateway_merchant_id'       => '12345',
+                'gateway_terminal_id'       => '12345678',
+                'mc_mpan'                   => '1234567880123456',
+                'visa_mpan'                 => '1234567890123456',
+                'rupay_mpan'                => '1234567890123456',
+                'category'                  => '4567',
+                'type'                      => [
+                    'non_recurring' => 1,
+                    'bharat_qr'     => 1,
+                ],
+                'account_number'            => '1234567891011121314',
+                'ifsc_code'                 => 'HDFC0009080'
+            ],
+
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'gateway_acquirer'    => 'ratn',
+                'gateway_merchant_id' => '12345',
+                'gateway_terminal_id' => '12345678',
+                'category'            => 4567,
+                'enabled'             => true
+            ]
+        ]
+    ],
+
     'testAssignBankAccountTerminal' => [
         'request' => [
             'content' => [
@@ -403,6 +436,32 @@ return [
                 'visa_mpan'           => '1234567890123456',
                 'rupay_mpan'          => '1234567890123456',
                 'category'            => 4567,
+                'enabled'             => true
+            ]
+        ]
+    ],
+
+    'testAddUpiMindgateBharatQrTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'upi_mindgate',
+                'gateway_acquirer'          => 'hdfc',
+                'gateway_merchant_id'       => '12345',
+                'gateway_merchant_id2'      => '12345678',
+                'vpa'                       => 'random@hdfc',
+                'gateway_terminal_password' => 'password',
+                'type'                      => [
+                    'non_recurring' => '1',
+                    'bharat_qr'     => '1',
+                ],
+            ],
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'gateway_acquirer'    => 'hdfc',
+                'gateway_merchant_id' => '12345',
                 'enabled'             => true
             ]
         ]
@@ -1510,7 +1569,7 @@ return [
                 'netbanking'                => '1',
                 'tpv'                       => '1',
                 'network_category'          => 'ecommerce',
-                'gateway_secure_secret'     => 'random_secret',
+                'gateway_terminal_password' => 'random_password',
             ],
             'method' => 'POST'
         ],
@@ -1539,6 +1598,176 @@ return [
                 'gateway_merchant_id' => '1245',
                 'enabled'             => true
             ]
+        ]
+    ],
+
+    'testBulkTerminalUpdateForBankUnsupportedMethod' => [
+        'request' => [
+            'content' => [
+                'bank'                     => 'ICIC',
+                'action'                   => 'testMethod',
+                'terminal_ids'             => ['1000AepsShared', '100NbIciciTmnl'],
+            ],
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'error'                    => ['description' => 'The selected action is invalid.']
+            ],
+            'status_code'   => 400,
+
+        ]
+    ],
+
+    'testBulkTerminalUpdateForBankWithTerminalNotExist' => [
+        'request' => [
+            'content' => [
+                'bank'                     => 'ICIC',
+                'action'                   => 'add',
+                'terminal_ids'             => ['testTerminal'],
+            ],
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'testTerminal'      => 'Terminal doesn\'t exist',
+                'success'             => true
+            ]
+        ]
+    ],
+
+    'testBulkTerminalUpdateForBankRemoveMethod' => [
+        'request' => [
+            'content' => [
+                'bank'                     => 'ANDB',
+                'action'                   => 'remove',
+                'terminal_ids'             => ['100000EbsTrmnl', '1000AtomShared'],
+            ],
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                '100000EbsTrmnl' =>  [
+                    'UTIB'   => 'Axis Bank',
+                    'BKID'   => 'Bank of India',
+                    'MAHB'   => 'Bank of Maharashtra',
+                    'CNRB'   => 'Canara Bank',
+                    'CBIN'   => 'Central Bank of India',
+                    'CIUB'   => 'City Union Bank',
+                    'CORP'   => 'Corporation Bank',
+                    'DLXB'   => 'Dhanlaxmi Bank',
+                    'IDIB'   => 'Indian Bank',
+                    'IOBA'   => 'Indian Overseas Bank',
+                    'JAKA'   => 'Jammu and Kashmir Bank',
+                    'KARB'   => 'Karnataka Bank',
+                    'KKBK'   => 'Kotak Mahindra Bank',
+                    'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
+                    'PSIB'   => 'Punjab & Sind Bank',
+                    'PUNB_R' => 'Punjab National Bank - Retail Banking',
+                    'SRCB'   => 'Saraswat Co-operative Bank',
+                    'UCBA'   => 'UCO Bank',
+                    'UBIN'   => 'Union Bank of India',
+                    'UTBI'   => 'United Bank of India',
+                    'VIJB'   => 'Vijaya Bank',
+                    'YESB'   => 'Yes Bank'
+                ],
+                '1000AtomShared' =>  [
+                    'BKID'   => 'Bank of India',
+                    'MAHB'   => 'Bank of Maharashtra',
+                    'CNRB'   => 'Canara Bank',
+                    'CBIN'   => 'Central Bank of India',
+                    'CIUB'   => 'City Union Bank',
+                    'CORP'   => 'Corporation Bank',
+                    'DCBL'   => 'DCB Bank',
+                    'DEUT'   => "Deutsche Bank",
+                    'DLXB'   => 'Dhanlaxmi Bank',
+                    'ESFB'   => 'Equitas Small Finance Bank',
+                    'IBKL'   => 'IDBI',
+                    'IDIB'   => 'Indian Bank',
+                    'IOBA'   => 'Indian Overseas Bank',
+                    'JAKA'   => 'Jammu and Kashmir Bank',
+                    'KARB'   => 'Karnataka Bank',
+                    'KVBL'   => "Karur Vysya Bank",
+                    'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
+                    'PMCB'   => "Punjab & Maharashtra Co-operative Bank",
+                    'PSIB'   => 'Punjab & Sind Bank',
+                    'PUNB_R' => 'Punjab National Bank - Retail Banking',
+                    'SRCB'   => 'Saraswat Co-operative Bank',
+                    'SIBL'   => "South Indian Bank",
+                    'SBIN'   => 'State Bank of India',
+                    'SBBJ'   => 'State Bank of Bikaner and Jaipur',
+                    'SBHY'   => 'State Bank of Hyderabad',
+                    'SBMY'   => 'State Bank of Mysore',
+                    'STBP'   => 'State Bank of Patiala',
+                    'SBTR'   => 'State Bank of Travancore',
+                    'SCBL'   => 'Standard Chartered Bank',
+                    'TMBL'   => 'Tamilnadu Mercantile Bank',
+                    'UCBA'   => 'UCO Bank',
+                    'UBIN'   => 'Union Bank of India',
+                    'UTBI'   => 'United Bank of India',
+                    'VIJB'   => 'Vijaya Bank',
+                ],
+                'success'             =>    true
+            ]
+        ]
+    ],
+
+    'testBulkTerminalUpdateForBankAddMethod' => [
+        'request' => [
+            'content' => [
+                'bank'                     => 'BKID',
+                'action'                   => 'add',
+                'terminal_ids'             => ['100000EbsTrmnl', '1000AtomShared'],
+            ],
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                '1000AtomShared' =>  [
+                    'BKID'   => 'Bank of India',
+                ],
+                '100000EbsTrmnl' =>  [
+                    'BKID'   => 'Bank of India',
+                ],
+                'success'             =>    true
+            ]
+        ]
+    ],
+
+    'testBulkTerminalUpdateForUnsupportedBankAddMethod' => [
+        'request' => [
+            'content' => [
+                'bank'                     => 'SBIN',
+                'action'                   => 'add',
+                'terminal_ids'             => ['1000AtomShared', '100000EbsTrmnl'],
+            ],
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                '100000EbsTrmnl' =>  'banks not supported by gateway',
+                '1000AtomShared' =>  [
+                    'SBIN'   => 'State Bank of India',
+                ],
+                'success'             =>    true
+            ]
+        ]
+    ],
+
+    'testBulkTerminalUpdateForInvalidBankCode' => [
+        'request' => [
+            'content' => [
+                'bank'                     => 'INVALID',
+                'action'                   => 'add',
+                'terminal_ids'             => ['1000AtomShared', '100000EbsTrmnl'],
+            ],
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'error'                    => ['description' => 'Invalid Bank Code.']
+            ],
+            'status_code'   => 400,
         ]
     ],
 ];

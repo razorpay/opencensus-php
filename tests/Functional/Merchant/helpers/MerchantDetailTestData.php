@@ -443,7 +443,7 @@ return [
     ],
 
     'testMerchantUpdateWebsiteDetails' => [
-        'request' => [
+        'request'  => [
             'content' => [
                 'business_website' => 'https://www.example.com',
             ],
@@ -452,7 +452,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'business_website' => 'https://www.example.com'
+                'business_website' => 'https://www.example.com',
+                'has_key_access'   => true,
             ],
         ],
     ],
@@ -788,7 +789,7 @@ return [
     ],
 
     'testCategoryDetailsSetForOthersCategory' => [
-        'request' => [
+        'request'  => [
             'content' => [
                 'business_category'    => 'others',
                 'business_subcategory' => null,
@@ -864,6 +865,23 @@ return [
             'content' => [
                 "business_category"    => "financial_services",
                 "business_subcategory" => "mutual_fund",
+            ],
+        ],
+    ],
+
+    'testWebsiteDetailsShouldBeInSync' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'business_name'    => 'facebook',
+                'business_website' => 'https://example.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'business_name'    => 'facebook',
+                'business_website' => 'https://example.com',
             ],
         ],
     ],

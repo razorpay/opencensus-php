@@ -4,9 +4,12 @@ namespace RZP\Models\FundAccount;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Contact;
+use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Models\FundAccount\Validation\Entity as FundAccountValidation;
 
 /**
  * Class Entity
@@ -18,13 +21,23 @@ class Entity extends Base\PublicEntity
     use SoftDeletes;
 
     // Attributes
-    const CONTACT_ID   = 'contact_id';
-    const ACCOUNT_TYPE = 'account_type';
-    const ACCOUNT_ID   = 'account_id';
-    const ACTIVE       = 'active';
+    const ACCOUNT_TYPE  = 'account_type';
+    const ACCOUNT_ID    = 'account_id';
+    const SOURCE_TYPE   = 'source_type';
+    const SOURCE_ID     = 'source_id';
+    const ACTIVE        = 'active';
 
-    const ACCOUNT = 'account';
-    const DETAILS = 'details';
+    // Relations
+    const SOURCE        = 'source';
+    const ACCOUNT       = 'account';
+
+    // Additional input/output attributes
+    const CONTACT_ID    = 'contact_id';
+    const CUSTOMER_ID   = 'customer_id';
+    const CONTACT       = 'contact';
+    const CUSTOMER      = 'customer';
+    // Details is basically publicly exposed underlying account
+    const DETAILS       = 'details';
 
     protected $generateIdOnCreate = true;
 
@@ -36,6 +49,9 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::CONTACT_ID,
+        self::CUSTOMER_ID,
+        self::CONTACT,
+        self::CUSTOMER,
         self::ACCOUNT_TYPE,
         self::DETAILS,
         self::ACTIVE,
@@ -45,13 +61,11 @@ class Entity extends Base\PublicEntity
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
-        self::CONTACT_ID,
+        self::SOURCE_ID,
+        self::SOURCE,
         self::DETAILS,
     ];
 
-    protected $embeddedRelations = [
-        self::ACCOUNT,
-    ];
     protected $defaults = [
         self::ACTIVE => true,
     ];
@@ -72,9 +86,14 @@ class Entity extends Base\PublicEntity
 
     // --------------- Getters ---------------
 
-    public function getContactId()
+    public function getSourceId()
     {
-        return $this->getAttribute(self::CONTACT_ID);
+        return $this->getAttribute(self::SOURCE_ID);
+    }
+
+    public function getSourceType()
+    {
+        return $this->getAttribute(self::SOURCE_TYPE);
     }
 
     public function getAccountType()
@@ -96,16 +115,56 @@ class Entity extends Base\PublicEntity
 
     // --------------- Setters ---------------
 
-    public function setPublicContactIdAttribute(array & $array)
+    /**
+     * The 'source' relation is polymorphic internally. Externally, we want to
+     * show it separately as 'contact_id' and 'customer_id'.
+     *
+     * @param array $attributes
+     */
+    public function setPublicSourceIdAttribute(array & $attributes)
     {
-        $contactId = $this->getAttribute(self::CONTACT_ID);
+        $sourceId   = $attributes[self::SOURCE_ID];
+        $sourceType = $attributes[self::SOURCE_TYPE];
 
-        $array[self::CONTACT_ID] = Contact\Entity::getSignedIdOrNull($contactId);
+        if ($sourceType === Constants\Entity::CONTACT)
+        {
+            $attributes[self::CONTACT_ID] = Contact\Entity::getSignedIdOrNull($sourceId);
+        }
+        else if ($sourceType === Constants\Entity::CUSTOMER)
+        {
+            $attributes[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($sourceId);
+        }
+    }
+
+    /**
+     * Refer comments at setPublicSourceIdAttribute() & contact() for details.
+     *
+     * @param array $attributes
+     */
+    public function setPublicSourceAttribute(array & $attributes)
+    {
+        if (app('basicauth')->isStrictPrivateAuth() === true)
+        {
+            array_forget($attributes, [self::SOURCE, self::CONTACT, self::CUSTOMER]);
+
+            return;
+        }
+
+        $sourceType = $attributes[self::SOURCE_TYPE];
+
+        $source = array_pull($attributes, self::SOURCE) ?:
+            array_pull($attributes, self::CONTACT) ?:
+            array_pull($attributes, self::CUSTOMER);
+
+        if (empty($source) === false)
+        {
+            $attributes[$sourceType] = $source;
+        }
     }
 
     public function setPublicDetailsAttribute(array & $array)
     {
-        // Expose the account relation in the `details` attribute.
+        // Expose the account relation in the 'details' attribute.
         $publicAttributes = $this->account->toArrayPublic();
 
         // For now, don't expose the public id and entity attributes from any of the related entities
@@ -132,14 +191,44 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Merchant\Entity::class);
     }
 
-    public function contact()
+    public function validations()
     {
-        return $this->belongsTo(Contact\Entity::class);
+        return $this->hasMany(FundAccountValidation::class);
     }
 
     public function account()
     {
         return $this->morphTo();
+    }
+
+    public function source()
+    {
+        return $this->morphTo();
+    }
+
+    /**
+     * We have these extra relation methods contact() and customer() just to allow
+     * these literals in expand of public api requests, because we have exposed contact_id, contact
+     * & customer_id, customer pairs, not source_id, source pair.
+     *
+     * Knonw issue: If someone sends expand[]=contact, but if the related source is of type customer
+     * the api response will return custome_id & customer.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphTo
+     */
+    public function contact()
+    {
+        return $this->morphTo(Entity::CONTACT, Entity::SOURCE_TYPE, Entity::SOURCE_ID);
+    }
+
+    /**
+     * Refer comment at contact().
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphTo
+     */
+    public function customer()
+    {
+        return $this->morphTo(Entity::CUSTOMER, Entity::SOURCE_TYPE, Entity::SOURCE_ID);
     }
 
     // ------------ End Relations ------------

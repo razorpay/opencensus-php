@@ -5,6 +5,17 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
+    'createVirtualAccount' => [
+        'url'     => '/virtual_accounts',
+        'method'  => 'post',
+        'content' => [
+            'receiver_types' => 'qr_code',
+            'notes'          => [
+                'key' => 'value',
+            ],
+        ],
+    ],
+
     'testPayment' => [
         'merchant_id' => '10000000000000',
         'amount' => 50000,
@@ -189,8 +200,9 @@ return [
         ],
         'response'  => [
             'content' => [
-                'vpa'       => 'success@hdfcbank',
-                'success'   => true,
+                'vpa'           => 'success@hdfcbank',
+                'success'       => true,
+                'customer_name' => 'User Name',
             ],
         ]
     ],
@@ -205,8 +217,9 @@ return [
         ],
         'response'  => [
             'content' => [
-                'vpa'       => 'invalidvpa@hdfcbank',
-                'success'   => false,
+                'vpa'           => 'invalidvpa@hdfcbank',
+                'success'       => false,
+                'customer_name' => null,
             ],
         ]
     ],
@@ -220,4 +233,21 @@ return [
         'pgMerchantId' => 'razorpay upi mindgate',
         'meRes' => '1861365267|payfail123|378.00|2018:09:18 03:02:15|FAILURE|FAILURE|00|NA|7013562166@yesbank|826115528405|NA|null|null|null|null|null|State Bank Of India!00000020261329233!SBIN0014823!917013562166|PAY!http://www.npci.co.in!NA!YESB762207F7C3CC5D93E05400144FF8FAF!NA!|bookmyshow.rzp@hdfcbank!NA!NA|NA|NA'
     ],
+
+    'testInitiateIntentTpvFailedPayment' => [
+        'response'  => [
+            'content'   => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED
+                ]
+            ],
+            'status_code'           => 400
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED
+        ]
+    ],
+
 ];

@@ -162,12 +162,22 @@ class TestCase extends ParentTestCase
 
     protected function setEsMockSearchExpectations($callee, $esMock, $method = 'search')
     {
-        $expectedSearchParams = $this->testData["{$callee}ExpectedSearchParams"];
-        $expectedSearchRes    = $this->testData["{$callee}ExpectedSearchResponse"];
+        $esParams   = "{$callee}ExpectedSearchParams";
+        $esResponse = "{$callee}ExpectedSearchResponse";
 
-        $esMock->expects($this->once())
-               ->method($method)
-               ->with($expectedSearchParams)
-               ->willReturn($expectedSearchRes);
+        $mockObj = $esMock->expects($this->once())
+                          ->method($method);
+
+        if (isset($this->testData[$esParams]) === true)
+        {
+            $expectedSearchParams = $this->testData[$esParams];
+            $mockObj->with($expectedSearchParams);
+        }
+
+        if (isset($this->testData[$esResponse]) === true)
+        {
+            $expectedSearchRes = $this->testData[$esResponse];
+            $mockObj->willReturn($expectedSearchRes);
+        }
     }
 }

@@ -31,6 +31,10 @@ final class Constants
     // Used in partners flows
     const APPLICATION_ID                          = 'application_id';
 
+    // used in merchant es sync
+    const INTERVAL                                 = 'interval';
+    const RECORDS_PROCESSED                        = 'records_processed';
+
     public static $partnerTypes = [
         self::BANK,
         self::RESELLER,

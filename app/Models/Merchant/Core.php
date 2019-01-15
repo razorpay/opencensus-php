@@ -11,6 +11,7 @@ use Razorpay\OAuth\Application as OAuthApp;
 use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\User;
+use RZP\Jobs\EsSync;
 use RZP\Models\Batch;
 use RZP\Models\Pricing;
 use RZP\Constants\Mode;
@@ -18,11 +19,13 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\User\Role;
+use RZP\Constants\Product;
 use RZP\Jobs\MerchantSync;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\Admin\Action;
+use RZP\Constants\Entity as E;
 use RZP\Models\Admin\AdminLead;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Permission;
@@ -35,6 +38,7 @@ use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use Razorpay\OAuth\Exception\DBQueryException;
 use RZP\Models\Merchant\Request as MerchantRequest;
+use RZP\Models\Merchant\Balance\Core as BalanceCore;
 use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData;
 
 class Core extends Base\Core
@@ -47,6 +51,11 @@ class Core extends Base\Core
     const MASTER_ID_MAPPING = [
         '8YPFnW5UOM91H7' => 'WMRAZOR00000',
     ];
+
+    // in minutes
+    const DEFAULT_MERCHANT_ES_SYNC_INTERVAL = 15;
+
+    const MAX_ES_MERCHANT_SYNC_LIMIT = 1000;
 
     public function create($input)
     {
@@ -348,9 +357,12 @@ class Core extends Base\Core
         return $merchantBalance;
     }
 
-    public function getUsers(Entity $merchant)
+    public function getUsers(Entity $merchant, string $product = Product::PRIMARY)
     {
-        $users = $merchant->users->callOnEveryItem('toArrayMerchant');
+        $users = $merchant->users()
+                          ->wherePivot(User\Entity::PRODUCT, $product)
+                          ->get()
+                          ->callOnEveryItem('toArrayMerchant');
 
         return $users;
     }
@@ -757,7 +769,7 @@ class Core extends Base\Core
                 'email' => $newEmail,
             ];
 
-            (new User\Core)->edit($selfUser, $userData);
+            (new User\Core)->edit($selfUser, $userData, 'edit_email_for_merchant');
         }
     }
 
@@ -982,6 +994,7 @@ class Core extends Base\Core
 
             // If the mapping already exists, the existing entity is returned
             $accessMap = (new AccessMap\Core)->addMappingForOAuthApp(
+                            $partner,
                             $submerchant,
                             [
                                 AccessMap\Entity::APPLICATION_ID => $partnerApp->getId(),
@@ -1677,6 +1690,80 @@ class Core extends Base\Core
             $this->repo->saveOrFail($merchant);
 
             return $merchant;
+        });
+
+        return $merchant;
+    }
+
+    /**
+     * Pushes merchant ids to Es sync queue
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function syncMerchantsToEs(array $input): array
+    {
+        (new Validator)->validateInput('bulk_sync_balance', $input);
+
+        $interval = $input[Constants::INTERVAL] ?? self::DEFAULT_MERCHANT_ES_SYNC_INTERVAL;
+
+        $minUpdatedAtTimeStamp = Carbon::now(Timezone::IST)->subMinutes($interval)->getTimestamp();
+
+        $merchantIds = $this->repo->balance->getMerchantsIdsForEsSync($minUpdatedAtTimeStamp);
+
+        $batches = array_chunk($merchantIds, self::MAX_ES_MERCHANT_SYNC_LIMIT, true);
+
+        foreach ($batches as $batch)
+        {
+            EsSync::dispatch($this->mode, EsRepository::UPDATE, E::MERCHANT, $batch);
+        }
+
+        $resultSummary = [
+            Constants::RECORDS_PROCESSED => count($merchantIds),
+            Constants::INTERVAL          => $interval,
+        ];
+
+        $this->trace->info(TraceCode::MERCHANT_ES_SYNC_RESPONSE, $resultSummary);
+
+        return $resultSummary;
+    }
+
+    /**
+     * Syncs merchant and merchant details website and business name
+     *
+     * @param Entity $merchant
+     * @param array  $input
+     *
+     * @return Entity
+     * @throws \Throwable
+     */
+    public function syncMerchantEntityFields(Merchant\Entity $merchant, array $input): Entity
+    {
+        $merchantInput = [];
+
+        if (isset($input[Detail\Entity::BUSINESS_WEBSITE]) === true)
+        {
+            $merchantInput[Entity::WEBSITE] = $input[Detail\Entity::BUSINESS_WEBSITE];
+        }
+
+        if (isset($input[Detail\Entity::BUSINESS_NAME]) === true)
+        {
+            $merchantInput[Entity::NAME] = $input[Detail\Entity::BUSINESS_NAME];
+        }
+
+        if (empty($merchantInput) === true)
+        {
+            return $merchant;
+        }
+
+        $merchant->setAuditAction(Action::EDIT_MERCHANT);
+
+        $merchant->edit($merchantInput);
+
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        {
+            $this->saveAndNotify($merchant);
         });
 
         return $merchant;

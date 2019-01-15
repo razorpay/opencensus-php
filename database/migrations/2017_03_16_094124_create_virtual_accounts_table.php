@@ -73,7 +73,7 @@ class CreateVirtualAccountsTable extends Migration
 
             $table->string(VirtualAccount::MERCHANT_ID, VirtualAccount::ID_LENGTH);
 
-            // Todo: Remove null-able after code deploy and backfilling
+            // Todo: Remove null-able after code deploy and back-filling
             $table->string(VirtualAccount::BALANCE_ID, VirtualAccount::ID_LENGTH)
                   ->nullable();
 

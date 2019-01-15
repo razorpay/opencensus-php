@@ -60,6 +60,7 @@ class Shared
     const HITACHI_TERMINAL                   = '100HitachiTmnl';
     const FIRST_DATA_RAZORPAY_TERMINAL       = '1000FrstDataTl';
     const UPI_MINDGATE_RAZORPAY_TERMINAL     = '100UPIMindgate';
+    const UPI_MINDGATE_BQR_TERMINAL          = '100UPIMndgBqrT';
     const UPI_MINDGATE_INTENT_TERMINAL       = '1UpiIntMndgate';
     const UPI_AXIS_INTENT_TERMINAL           = 'UPIAXISIntTmnl';
     const UPI_MINDGATE_TPV_TERMINAL          = '100UPIMndgtTpv';
@@ -86,6 +87,7 @@ class Shared
     const CARDLESS_EMI_RAZORPAY_TERMINAL     = '1CrdlesEmiTrml';
     const CARDLESS_EMI_RAZORPAY_TERMINAL2    = '10CrdlesEmiTml';
     const ALLA_TPV_TERMINAL                  = '1000alltpvTrml';
+    const UPI_MINDGATE_INTENT_TPV_TERMINAL   = 'UPIMGTEIntTpvl';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
