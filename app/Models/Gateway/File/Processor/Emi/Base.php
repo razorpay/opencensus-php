@@ -8,12 +8,11 @@ use Carbon\Carbon;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
+use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Mail\Emi as EmiMail;
 use RZP\Models\Gateway\File\Status;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Models\Gateway\File\Processor\Base as BaseProcessor;
@@ -24,6 +23,10 @@ class Base extends BaseProcessor
     const COMPRESSION_REQUIRED     = true;
     const EMI_FILE_PASSWORD_LENGTH = 7;
     const EXTENSION                = FileStore\Format::XLSX;
+
+    protected $excludeFileStorePush = [
+        IFSC::SBIN,
+    ];
 
     public function fetchEntities(): PublicCollection
     {
@@ -60,7 +63,8 @@ class Base extends BaseProcessor
 
     public function createFile($data)
     {
-        if ($this->isFileGenerated() === true)
+        if (($this->isFileGenerated() === true) or
+            (in_array(static::BANK_CODE, $this->excludeFileStorePush) === true))
         {
             return;
         }

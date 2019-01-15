@@ -256,6 +256,7 @@ class Sbi extends Base
 
     protected function sendEmiFile($data)
     {
+        /*
         $fullFileName = $this->file->getName() . '.' . $this->file->getExtension();
 
         $fileInfo = [$fullFileName];
@@ -277,6 +278,7 @@ class Sbi extends Base
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+        */
     }
 
     protected function getFileToWriteName()
