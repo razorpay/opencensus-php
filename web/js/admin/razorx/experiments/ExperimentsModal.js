@@ -1,6 +1,11 @@
+import debounce from 'rzp/utils/debounce';
 import { openModal, closeModal, notifySuccess } from 'common/modal';
 import Form from 'ui/Form';
-import Field, { CheckField } from 'ui/Field';
+import Field, {
+  TextAreaField,
+  SwitchField,
+  SearchableSelectField,
+} from 'ui/Field';
 import { ModalContent } from 'component/Modal';
 import JSONEdit from 'admin/razorx/JSONEdit';
 
@@ -86,6 +91,8 @@ const validatorJSON = {
 };
 
 export default class extends React.Component {
+  state = { featuresList: [] };
+
   onSubmit = data => {};
 
   isValid() {
@@ -98,6 +105,32 @@ export default class extends React.Component {
     return true;
   }
 
+  searchInFeatureList(val) {
+    this.setState({ featuresList: [] });
+  }
+
+  debounce_searchInFeatureList = debounce(
+    this.searchInFeatureList.bind(this),
+    50
+  );
+
+  onInput = e => {
+    const target = e.target;
+
+    setTimeout(() => {
+      const val = target.value;
+
+      console.log('....VAL...', val);
+
+      if (val.length < 2) {
+        this.setState({ featuresList: null });
+        return;
+      }
+
+      this.debounce_searchInFeatureList(val);
+    }, 5);
+  };
+
   render() {
     const { id, name, JSONView } = this.props;
 
@@ -106,9 +139,49 @@ export default class extends React.Component {
         class="modal-experiments modal-json-edit"
         header={id ? `Edit Experiment – ${name}` : 'Create Experiment'}
       >
-        <Form onSubmit={this.onSubmit}>
-          {JSONView && (
+        <Form onSubmit={this.onSubmit} class="full-span full-elements">
+          {JSONView ? (
             <JSONEdit initialJSON={initJSONObj} validatorJSON={validatorJSON} />
+          ) : (
+            <React.Fragment>
+              <SwitchField
+                name="mode"
+                label="Mode"
+                defaultValue="live"
+                disabledLabel="Test"
+                enabledLabel="Live"
+                enabledValue="live"
+                disabledValue="test"
+              />
+              <Field
+                label="Environment"
+                type="text"
+                name="environment"
+                defaultValue="production"
+                required
+              />
+
+              <TextAreaField
+                label="Description"
+                name="description"
+                defaultValue=""
+                required
+              />
+
+              <SearchableSelectField
+                label="Feature"
+                trackBy="value"
+                name="feature_id"
+                defaultValue=""
+                onInput={this.onInput}
+                options={Object.keys(this.state.featuresList).map(key => ({
+                  name: this.state.featuresList[key],
+                  value: key,
+                }))}
+              />
+
+              <div style={{ marginTop: 24 }} />
+            </React.Fragment>
           )}
           <div class="footer">
             <button class="btn btn--primary" disabled={!this.isValid()}>

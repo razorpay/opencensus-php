@@ -1,5 +1,5 @@
 import { withRouter } from 'react-router-dom';
-import { openModal, closeModal, confirm } from 'common/modal';
+import { openModal, closeModal, notifyError } from 'common/modal';
 import ExperimentsModal from './ExperimentsModal';
 import { SwitchField } from 'ui/Field';
 import List from './List';
@@ -12,6 +12,11 @@ export default class Experiments extends React.PureComponent {
   };
 
   showJSONModal = _ => {
+    if (!window.CodeFlask) {
+      notifyError('JSON Editor is missing. Reload page / check your Network!');
+      return;
+    }
+
     openModal(<ExperimentsModal JSONView />);
   };
 

@@ -18,6 +18,8 @@ import AuditLogsList from './auditlog/List';
 
 import ModalContainer, { openSlider, closeSlider } from 'common/modal';
 
+import fetch from 'admin/razorx/fetch';
+
 @withRouter
 export default class RazorXApp extends React.Component {
   componentWillMount() {
@@ -97,9 +99,13 @@ export const Sidebar = ({ user, handleLogout }) => (
       <i class="i-user-circle" />
       <div class="ellipsis-wrap">{user.name}</div>
       <div class="menu">
-        <Link to="/profile" class="btn-default">
+        <a
+          href="https://dashboard.razorpay.com/admin/profile"
+          class="btn-default"
+          target="_blank"
+        >
           Profile
-        </Link>
+        </a>
         <AsyncButton
           onClick={handleLogout}
           class="logout-btn btn-default"
