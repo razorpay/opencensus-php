@@ -61,45 +61,7 @@ class Sbi extends Base
      */
     public function createFile($data)
     {
-        if ($this->isFileGenerated() === true)
-        {
-            return;
-        }
-
-        try
-        {
-            $fileData = $this->formatDataForFile($data);
-
-            $fileName = $this->getFileToWriteName();
-
-            $metadata = $this->getH2HMetadata();
-
-            $creator = new FileStore\Creator;
-
-            $creator->extension(static::EXTENSION)
-                    ->content($fileData)
-                    ->name($fileName)
-                    ->store(FileStore\Store::S3)
-                    ->type(static::FILE_TYPE)
-                    ->entity($this->gatewayFile)
-                    ->metadata($metadata);
-
-            $creator->save();
-
-            $this->file = $creator->getFileInstance();
-
-            $this->gatewayFile->setFileGeneratedAt($this->file->getCreatedAt());
-
-            $this->gatewayFile->setStatus(Status::FILE_GENERATED);
-        }
-        catch (\Throwable $e)
-        {
-            throw new GatewayFileException(
-                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE, [
-                    'id'        => $this->gatewayFile->getId(),
-                ],
-                $e);
-        }
+        return;
     }
 
     protected function formatDataForFile($data)

@@ -63,8 +63,7 @@ class Base extends BaseProcessor
 
     public function createFile($data)
     {
-        if (($this->isFileGenerated() === true) or
-            (in_array(static::BANK_CODE, $this->excludeFileStorePush) === true))
+        if ($this->isFileGenerated() === true)
         {
             return;
         }
