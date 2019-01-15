@@ -120,7 +120,7 @@ class FeeCalculator
         // In case the merchant is customer fee bearer, we shouldn't check
         // $amount < $totalFees because amount is already inclusive of the fees.
         if (($this->entity->merchant->isFeeBearerCustomer() === false) and
-            ($this->isEntityPayoutOnBankingBalance() === false) and
+            ($this->entity->getEntity() !== Constants\Entity::PAYOUT) and
             ($this->entity->merchant->getFeeModel() !== Merchant\FeeModel::POSTPAID) and
             ($amount !== 0))
         {
@@ -964,11 +964,5 @@ class FeeCalculator
         }
 
         return $fee;
-    }
-
-    protected function isEntityPayoutOnBankingBalance(): bool
-    {
-        return (($this->entity instanceof Payout\Entity === true) and
-            ($this->entity->isBalanceTypeBanking() === true));
     }
 }
