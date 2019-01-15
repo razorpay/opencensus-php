@@ -1,4 +1,4 @@
-import { openModal, closeModal, confirm } from 'common/modal';
+import { openModal, closeModal, notifyError } from 'common/modal';
 import FeaturesModal from './FeaturesModal';
 import { SwitchField } from 'ui/Field';
 import List from './List';
@@ -10,6 +10,11 @@ export default class Features extends React.PureComponent {
   };
 
   showJSONModal = _ => {
+    if (!window.CodeFlask) {
+      notifyError('JSON Editor is missing. Reload page / check your Network!');
+      return;
+    }
+
     openModal(<FeaturesModal JSONView />);
   };
 

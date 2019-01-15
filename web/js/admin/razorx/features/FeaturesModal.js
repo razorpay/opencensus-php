@@ -1,6 +1,6 @@
 import { openModal, closeModal, notifySuccess } from 'common/modal';
 import Form from 'ui/Form';
-import Field, { CheckField } from 'ui/Field';
+import Field, { TextAreaField } from 'ui/Field';
 import { ModalContent } from 'component/Modal';
 import JSONEdit from 'admin/razorx/JSONEdit';
 
@@ -40,13 +40,13 @@ const validatorJSON = {
     val.forEach(v => {
       const isNameInvalid = !v.name || typeof v.name !== 'string';
       if (isNameInvalid) {
-        errorMsg = 'variant name must be a non-empty string';
+        errorMsg = 'Name must be a non-empty string';
         return false;
       }
 
       const isDescInvalid = !v.description || typeof v.description !== 'string';
       if (isDescInvalid) {
-        errorMsg = 'variant description must be a non-empty string';
+        errorMsg = 'Description must be a non-empty string';
         return false;
       }
     });
@@ -76,9 +76,59 @@ export default class extends React.Component {
         class="modal-features modal-json-edit"
         header={id ? `Edit Feature – ${name}` : 'Create Feature'}
       >
-        <Form onSubmit={this.onSubmit}>
-          {JSONView && (
+        <Form onSubmit={this.onSubmit} class="full-span full-elements">
+          {JSONView ? (
             <JSONEdit initialJSON={initJSONObj} validatorJSON={validatorJSON} />
+          ) : (
+            <React.Fragment>
+              <Field
+                label="Name"
+                placeholder="Feature Name"
+                type="text"
+                name="name"
+                required
+              />
+              <Field
+                label="Description"
+                type="text"
+                name="description"
+                placeholder="Feature Description"
+                required
+              />
+              <div class="sub-heading">Variants</div>
+              <Field.Group label="Variant 1" class="collapse-space" required>
+                <Field
+                  type="text"
+                  name="variant[0][name]"
+                  placeholder="Name"
+                  required
+                />
+                <TextAreaField
+                  name="variant[0][description]"
+                  placeholder="Description"
+                  defaultValue=""
+                  required
+                />
+              </Field.Group>
+              <Field.Group label="Variant 1" class="collapse-space" required>
+                <Field
+                  type="text"
+                  name="variant[0][name]"
+                  placeholder="Name"
+                  required
+                />
+                <TextAreaField
+                  name="variant[0][description]"
+                  placeholder="Description"
+                  defaultValue=""
+                  required
+                />
+              </Field.Group>
+              <button type="button" class="btn btn--pill">
+                <i class="i i-plus" /> Variant
+              </button>
+              <div style={{ marginTop: 24 }} />
+            </React.Fragment>
           )}
           <div class="footer">
             <button class="btn btn--primary" disabled={!this.isValid()}>
