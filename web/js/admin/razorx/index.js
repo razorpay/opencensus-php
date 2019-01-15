@@ -13,7 +13,7 @@ import user, { org } from 'admin/user';
 import Experiments from './experiments';
 import Features from './features';
 import WorkflowsList from './workflows/List';
-import MerchantEvaluation from './merchant_evaluation/Search';
+import MerchantEvaluation from './merchant_evaluation';
 import AuditLogsList from './auditlog/List';
 
 import ModalContainer, { openSlider, closeSlider } from 'common/modal';
@@ -57,7 +57,7 @@ export default class RazorXApp extends React.Component {
                   <ShowWhenRoute path="/features" component={Features} />
                   <Route path="/requests" component={WorkflowsList} />
                   <Route
-                    path="/razorx/merchant-evaluation"
+                    path="/merchant-evaluation"
                     component={MerchantEvaluation}
                   />
                   <Route path="/audit-logs" component={AuditLogsList} />
@@ -79,7 +79,7 @@ const links = [
   ['Experiments', '/experiments', '', 'flask'],
   ['Features', '/features', '', 'layers'],
   ['Workflow Requests', '/requests', '', 'yes'],
-  ['Merchant Evaluation', '//merchant-evaluation', '', 'user-search'],
+  ['Merchant Evaluation', '/merchant-evaluation', '', 'user-search'],
   ['Audit Logs', '/audit-logs', '', 'notes'],
 ];
 
