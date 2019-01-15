@@ -12,7 +12,8 @@ import user, { org } from 'admin/user';
 
 import Experiments from './experiments';
 import Features from './features';
-import WorkflowsList from './workflows/List';
+import WorkflowRequestsList from './workflow_requests/List';
+import WorkflowRequestsEntity from '../requests/Entity';
 import MerchantEvaluation from './merchant_evaluation';
 import AuditLogsList from './auditlog/List';
 
@@ -55,7 +56,12 @@ export default class RazorXApp extends React.Component {
                   <Route path="/experiments/new" component={Experiments} />
 
                   <ShowWhenRoute path="/features" component={Features} />
-                  <Route path="/requests" component={WorkflowsList} />
+                  <Route path="/requests" component={WorkflowRequestsList} />
+                  <Route
+                    path="/requests/:id(w_action_.+)"
+                    component={WorkflowRequestsEntity}
+                  />
+
                   <Route
                     path="/merchant-evaluation"
                     component={MerchantEvaluation}

@@ -22,7 +22,7 @@ export default class Features extends React.PureComponent {
     return (
       <div class="parent-container features-container">
         <div class="header">
-          Features
+          <span class="title">Features</span>
           <SwitchField
             name="mode"
             defaultValue="live"

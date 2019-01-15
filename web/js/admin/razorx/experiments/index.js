@@ -24,7 +24,7 @@ export default class Experiments extends React.PureComponent {
     return (
       <div class="parent-container experiments-container">
         <div class="header">
-          Experiments
+          <span class="title">Experiments</span>
           <SwitchField
             name="mode"
             defaultValue="live"

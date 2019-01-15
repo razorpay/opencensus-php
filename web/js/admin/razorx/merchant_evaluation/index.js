@@ -10,7 +10,7 @@ export default class MerchantEvaluation extends React.PureComponent {
     return (
       <div class="parent-container features-container">
         <div class="header">
-          Merchant Evaluation
+          <span class="title">Merchant Evaluation</span>
           <SwitchField
             name="mode"
             defaultValue="live"

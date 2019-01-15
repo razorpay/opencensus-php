@@ -70,10 +70,19 @@
       padding-top: 62px
       margin-top: -62px
       display: flex
+      flex-wrap: wrap
+      align-content: flex-start
+
+      .filters + .list-container
+        margin-top: 32px
 
       .list-container
         flex: 1
-        overflow-y: auto
+        align-self: stretch
+
+        & > div
+          height: 100%
+          overflow-y: auto
 
       .entity-container
         width: 400px
@@ -161,20 +170,33 @@
     background: #fff
     color: $color-primary
 
-  main .header
-    font-size: 22px
-    height: 62px
-    padding: 0 36px
-    font-weight: 500
-    color: $color-primary-light
-    display: flex
-    align-items: center
-    position: relative
-    z-index: 2
+  main
+    .parent-container > .header
+      padding: 0 36px
+      height: 62px
+      color: $color-primary-light
 
-    .field
-      margin: 0
-      margin-left: 16px
+      .title
+        font-weight: 500
+        font-size: 22px
+
+    .filters
+      align-items: flex-end
+      width: 100%
+      padding: 20px 0
+      border-bottom: 1px solid rgba(0,0,0,0.04)
+      box-shadow: 0 4px 10px -3px rgba(0,0,0,0.03)
+
+    .header, filters
+      display: flex
+      align-items: center
+      position: relative
+      z-index: 2
+
+      .field
+        margin: 0
+        margin-left: 16px
+
 
 @keyframes glitch-up
   0%

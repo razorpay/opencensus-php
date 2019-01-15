@@ -65,12 +65,14 @@ export default class extends React.Component {
   render() {
     return (
       <div class="list-container">
-        <PageTable
-          model={this.collection}
-          fields={experimentFields}
-          href={href}
-          info={false}
-        />
+        <div>
+          <PageTable
+            model={this.collection}
+            fields={experimentFields}
+            href={href}
+            info={false}
+          />
+        </div>
       </div>
     );
   }
