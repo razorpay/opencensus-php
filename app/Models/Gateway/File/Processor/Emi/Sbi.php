@@ -270,7 +270,7 @@ class Sbi extends Base
 
         $mailInfo = [
             'fileInfo'  => $fileInfo,
-            'channel'   => '',
+            'channel'   => 'settlements',
             'filetype'  => self::BEAM_FILE_TYPE,
             'subject'   => 'File Send failure',
             'recipient' => Constants::MAIL_ADDRESSES[Constants::EMI]
