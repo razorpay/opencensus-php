@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use DB;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Models\Base\PublicEntity;
@@ -80,6 +81,39 @@ class OriginTest extends TestCase
         $expectedOrigin = $this->testData[__FUNCTION__]['response']['content'];
 
         $expectedOrigin['entity_id'] = PublicEntity::stripDefaultSign($response['razorpay_payment_id']);
+
+        $this->assertArraySelectiveEquals($expectedOrigin, $origin);
+    }
+
+    /**
+     * Asserts that the origin entity is created for a payment initiated using the OAuth public token.
+     */
+    public function testCreatePaymentOriginOauthPublicToken()
+    {
+        $this->generateOAuthAccessToken(['public_token' => 'TheTestAuthKey', 'scopes' => ['read_write']]);
+
+        $this->ba->oauthPublicTokenAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthPaymentOAuth($payment);
+
+        $app = DB::Connection('auth')
+                 ->table('applications')
+                 ->orderBy('created_at', 'desc')
+                 ->first();
+
+        $origin = $this->getDbLastEntity('origin');
+
+        $this->assertNotNull($origin);
+
+        $origin = $origin->toArray();
+
+        $expectedOrigin = $this->testData[__FUNCTION__]['response']['content'];
+
+        $expectedOrigin['entity_id'] = PublicEntity::stripDefaultSign($response['razorpay_payment_id']);
+
+        $expectedOrigin['origin_id'] = $app->id;
 
         $this->assertArraySelectiveEquals($expectedOrigin, $origin);
     }

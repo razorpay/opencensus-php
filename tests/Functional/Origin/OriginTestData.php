@@ -11,6 +11,7 @@ return [
             ],
         ]
     ],
+
     'testCreatePaymentOriginPartnerKey' => [
         'response' => [
             'content' => [
@@ -18,6 +19,16 @@ return [
                 'entity_id'   => 'randomPaymentId',
                 'origin_type' => 'partner',
                 'origin_id'   => '100000Razorpay',
+            ],
+        ]
+    ],
+
+    'testCreatePaymentOriginOauthPublicToken' => [
+        'response' => [
+            'content' => [
+                'entity_type' => 'payment',
+                'entity_id'   => 'randomPaymentId',
+                'origin_type' => 'application',
             ],
         ]
     ],
