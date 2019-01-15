@@ -1,15 +1,71 @@
-import { Route, Redirect, Switch } from 'react-router-dom';
+import ErrorBoundary from 'common/ErrorBoundary';
+
+import { Route, Switch, Redirect, Link, withRouter } from 'react-router-dom';
+
 import { ShowWhenRoute } from 'admin/components/ShowWhen';
-import { org } from 'admin/user';
+import AsyncButton from 'ui/AsyncButton';
 
 import MainNavLink from 'admin/components/MainNavLink';
 import Features from './Features';
 import Experiments from './Experiments';
+import user, { org } from 'admin/user';
+
+import ModalContainer, { openSlider, closeSlider } from 'common/modal';
+
+@withRouter
+export default class RazorXApp extends React.Component {
+  handleLogout = () => {
+    return fetch({
+      url: '/admin/user/logout',
+    }).then(r => {
+      window.location.reload();
+    });
+  };
+
+  render() {
+    return (
+      <div id="app-container">
+        <main>
+          <ErrorBoundary resetOnProps location={this.props.location}>
+            <Switch>
+              <Route path="/experiments" component={Experiments} />
+              <ShowWhenRoute path="/features" component={Features} />
+              <Redirect to="/experiments" />
+            </Switch>
+          </ErrorBoundary>
+        </main>
+        <header>
+          <div id="profile-icon">
+            {user.name}
+            <i class="i-arrow-down" />
+            <div class="menu">
+              <Link to="/profile">
+                <i class="i-user" />
+                Profile
+              </Link>
+              <AsyncButton
+                onClick={this.handleLogout}
+                class="logout-btn btn-default"
+                pendingClass="logout-btn btn-default btn-pending"
+              >
+                <i class="i-logout" />
+                Logout
+                <span class="spin-btn" />
+              </AsyncButton>
+            </div>
+          </div>
+        </header>
+        <Sidebar />
+        <ModalContainer />
+      </div>
+    );
+  }
+}
 
 const links = [
   // title, url, permission, icon
-  ['Experiments', '/razorx/experiments', '', 'date'],
-  ['Features', '/razorx/features', '', 'layers'],
+  ['Experiments', '/experiments', '', 'date'],
+  ['Features', '/features', '', 'layers'],
 ];
 
 export const Sidebar = () => (
@@ -28,15 +84,3 @@ export const Sidebar = () => (
     ))}
   </aside>
 );
-
-export default class RazorX extends React.Component {
-  render() {
-    return (
-      <Switch>
-        <Route path="/razorx/experiments" component={Experiments} />
-        <ShowWhenRoute path="/razorx/features" component={Features} />
-        <Redirect to="/razorx/experiments" />
-      </Switch>
-    );
-  }
-}

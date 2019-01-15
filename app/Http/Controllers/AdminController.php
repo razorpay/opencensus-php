@@ -64,7 +64,13 @@ class AdminController extends Controller
 
             if (empty($admin['data']) === false)
             {
-                return view('admin.index', [
+                $view = 'admin.index';
+
+                if (\Route::currentRouteName() === 'admin_razorx') {
+                    $view = 'admin.razorx';
+                }
+
+                return view($view, [
                     'cdn' => \Config::get('app.cdn_dashboard_url'),
                     'org'   => $org,
                     'user'  => $admin['data'],
@@ -115,7 +121,7 @@ class AdminController extends Controller
     public function putAction($merchantId)
     {
         list($error, $data) = (new Admin\Service)->action($merchantId);
-        
+
         return AppResponse::jsonResponse($error, $data);
     }
 

@@ -159,6 +159,7 @@ Route::group(['middleware' => ['web']], function () {
             ->name('admin');
     });
 
+    Route::get('admin/razorx/{all?}', 'AdminController@getIndex')->name('admin_razorx')->where(['all' => '.*']);
     Route::get('admin/{all}', 'AdminController@getIndex')->name('admin_catchall')->where(['all' => '.*']);
 });
 
