@@ -3,6 +3,7 @@ export EditMethods from './EditMethods';
 export AssignPricingPlan from './AssignPricingPlan';
 export AssignSchedule from './AssignSchedule';
 export AssignTerminal from './AssignTerminal';
+export AssignSomething from './AssignSomething';
 export AssignBanks from './AssignBanks';
 export AssignMerchantHandle from './AssignMerchantHandle';
 export AddAdjustment from './AddAdjustment';
