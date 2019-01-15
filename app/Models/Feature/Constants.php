@@ -130,6 +130,7 @@ class Constants
 
     // Payment authentication
     const ATM_PIN_AUTH                    = 'atm_pin_auth';
+    const IVR                             = 'ivr';
 
     // Pre-Auth Shield Integration
     const PRE_AUTH_SHIELD_INTG          = 'pre_auth_shield_intg';
@@ -272,6 +273,7 @@ class Constants
         self::CALLBACK_URL_VALIDATION         => true,
         self::PL_FIRST_MIN_AMOUNT             => true,
         self::REPORTING_GENRERIC_NOTES        => true,
+        self::IVR                             => true,
     ];
 
     // Entity type constants
