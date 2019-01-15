@@ -7,7 +7,7 @@
   <meta name="author" content="Razorpay">
   <link rel="shortcut icon" href="/img/favicon.png">
   <title>Razorpay - RazorX Dashboard</title>
-  <meta name="description" content="RazorX Dashboard for Ramp-up release for features" />
+  <meta name="description" content="RazorX Dashboard for Ramp-up release of features and products" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <script>
     var org = {!! json_encode($org) !!};
