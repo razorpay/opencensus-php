@@ -1205,7 +1205,7 @@ class Service extends Base\Service
 
         $count = $input['count'] ?? 200;
 
-        $timestamp = Carbon::now(Timezone::IST)->subMinutes($delay)->getTimestamp();
+        $timestamp = Carbon::now(Timezone::IST)->subSeconds($delay)->getTimestamp();
 
         return (new Verify)->verifyAllPayments($timestamp, $gateway, $count);
     }
