@@ -93,7 +93,7 @@ export default class TerminalForm extends Component {
     console.log(this.props);
     const { merchantId } = this.props;
     return (
-      <ModalContent header={'Assign Terminal'}>
+      <ModalContent header={'Create Terminal'}>
         <Form class="entity-container" style={{ width: '600px' }}>
           <Field label="Terminal id" defaultValue={merchantId} disabled />
           <Field label="Terminal Category" name="category" />

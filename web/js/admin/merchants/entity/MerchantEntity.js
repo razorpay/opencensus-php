@@ -703,8 +703,8 @@ const ActionsList = ({ model, merchantId, actions }) => {
           <i class="pull-right i i-terminal" />
         </div>
 
-        <div onClick={actions.AssignSomething}>
-          Assign Something..
+        <div onClick={actions.CreateTerminal}>
+          Create Terminal
           <i class="pull-right i i-terminal" />
         </div>
 
