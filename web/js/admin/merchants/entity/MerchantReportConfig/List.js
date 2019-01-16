@@ -28,19 +28,18 @@ const getFields = ({ view, edit, clone, remove, merchantId }) => [
   ['No. Of Columns', item => item.template.output_fields.length],
   [
     '',
-    item =>
-      item.consumer === merchantId && (
-        <span class="link" onClick={edit(item)}>
-          Edit
-        </span>
-      ),
+    item => (
+      <span class="link" onClick={clone(item)}>
+        Clone
+      </span>
+    ),
   ],
   [
     '',
     item =>
       item.consumer === merchantId && (
-        <span class="link" onClick={clone(item)}>
-          Clone
+        <span class="link" onClick={edit(item)}>
+          Edit
         </span>
       ),
   ],
