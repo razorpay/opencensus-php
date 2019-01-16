@@ -20,25 +20,12 @@ export default class TerminalForm extends Component {
     const detailsMap = getDetailsViewMap(this.props.props);
     console.log(detailsMap);
     let mcc = detailsMap.find(o => o.label === 'MCC');
-    // let methods = detailsMap.find(o=>o.label==="Methods");
-    // console.log(methods.children());
     console.log(mcc);
     return mcc.value;
   };
   // Creates terminal
   handleCreate = body => {
-    // var data, gateway_input,terminal;
-    console.log(body);
-    const {
-      pg_merchant_id,
-      gateway,
-      mid,
-      tid,
-      mcc,
-      currency_code,
-      trans_mode,
-      mode,
-    } = body;
+    const { pg_merchant_id, gateway, mid, tid, currency_code, mode } = body;
     var data = {
       gateway: gateway,
       gateway_input: {
@@ -46,10 +33,7 @@ export default class TerminalForm extends Component {
         tid: tid,
         mcc: this.getMcc(),
         currency_code: currency_code,
-        trans_mode: trans_mode,
-      },
-      terminal: {
-        pg_merchant_id: pg_merchant_id,
+        trans_mode: gateway ? 'hitachi' : 'CARDS',
       },
     };
     return adminPost({
@@ -57,7 +41,6 @@ export default class TerminalForm extends Component {
       data: data,
     })
       .then(response => {
-        console.log('response', response);
         if (response.data.success) {
           notifySuccess('Terminal created successfully.');
           closeModal();
@@ -69,15 +52,6 @@ export default class TerminalForm extends Component {
   };
 
   render() {
-    console.log('here');
-    console.log(this.props);
-    console.log(this.props.props);
-    console.log(this.props.props.Model);
-    console.log(this.props.props.model);
-    // const detailsMap = getDetailsViewMap(this.props.props);
-    // console.log(detailsMap);
-    // let mcc = detailsMap.find(o=>o.label==="MCC");
-    // console.log(mcc);
     const { merchantId } = this.props;
     return (
       <ModalContent header={'Create Terminal'}>
@@ -92,15 +66,6 @@ export default class TerminalForm extends Component {
             <option value="test">Test</option>
             <option value="live">Live</option>
           </SelectField>
-          <SelectField
-            name="trans_mode"
-            label="Transaction mode"
-            defaultValue="CARDS"
-          >
-            <option value="CARDS">CARDS</option>
-            <option value="UPI">UPI</option>
-            <option value="BharatQR">BharatQR</option>
-          </SelectField>
           <SelectField name="gateway" label="Gateway" defaultValue="hitachi">
             <option value="hitachi">Hitachi</option>
           </SelectField>
@@ -108,7 +73,6 @@ export default class TerminalForm extends Component {
             label="Terminal Category"
             name="category"
             defaultValue={this.getMcc()}
-            disabled
           />
           <Field label="Gateway Merchant Id" name="mid" />
           <Field label="Gateway Terminal Id" name="tid" />
