@@ -194,6 +194,17 @@ export const without = (source, keys) => {
   }, {});
 };
 
+export const pickProps = (source, keys) => {
+  keys = makeArray(keys);
+  return Object.keys(source).reduce(
+    (collector, key) => ({
+      ...collector,
+      ...(keys.indexOf(key) > -1 && { [key]: source[key] }),
+    }),
+    {}
+  );
+};
+
 export const rupeesToPaise = amount => {
   amount = (Number(amount) * 100).toFixed(0);
 
