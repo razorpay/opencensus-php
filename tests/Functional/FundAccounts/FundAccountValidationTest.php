@@ -3,6 +3,9 @@
 namespace RZP\Tests\Functional\FundAccount;
 
 use RZP\Models\FundAccount;
+use RZP\Models\Pricing\Fee;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -12,6 +15,8 @@ use RZP\Models\FundAccount\Validation\Entity as FundAccountValidation;
 class FundAccountValidationTest extends TestCase
 {
     use FundAccountTrait;
+    use EntityActionTrait;
+    use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
     public function setUp()
@@ -21,6 +26,8 @@ class FundAccountValidationTest extends TestCase
         parent::setUp();
 
         $this->fixtures->merchant->addFeatures(['fund_account_validations']);
+
+        $this->addFeeCredits(['value' => 10000, 'campaign' => 'silent-ads']);
     }
 
     public function testCreateValidationWithFundAccountId()
@@ -72,6 +79,25 @@ class FundAccountValidationTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testCreateValidationForCustomerFeeBearer()
+    {
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_bearer' => 'customer']);
+
+        $this->testCreateValidationWithFundAccountEntity();
+    }
+
+    public function testFeeForFundAccountValidation()
+    {
+        $this->testCreateValidationWithFundAccountEntity();
+
+        $fundAccountValidation = $this->getDbLastEntity('fund_account_validation');
+
+        list($fees, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($fundAccountValidation);
+
+        //assert fee and tax here.
+    }
+
 
     /*public function testGetValidation()
     {

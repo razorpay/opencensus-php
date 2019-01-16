@@ -88,7 +88,6 @@ class Entity extends Base\PublicEntity
         self::REGISTERED_NAME => null,
     ];
 
-
     protected $casts = [
         self::AMOUNT => 'int',
         self::FEE    => 'int',
@@ -142,8 +141,8 @@ class Entity extends Base\PublicEntity
     public function setPublicResultsAttribute(array & $array)
     {
         $array[self::RESULTS] = [
-            self::ACCOUNT_STATUS    => $this->getAccountStatus(),
-            self::REGISTERED_NAME   => $this->getRegisteredName(),
+            self::ACCOUNT_STATUS  => $this->getAccountStatus(),
+            self::REGISTERED_NAME => $this->getRegisteredName(),
         ];
     }
 

@@ -318,7 +318,18 @@ class Pricing extends Base
                 'fixed_rate'          => 1000,
                 'max_fee'             => 5000,
                 'org_id'              => '100000razorpay',
-            ]
+            ],
+            [
+                'id'                  => '1zE31zbybacab4',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'fund_account_validation',
+                'payment_method'      => 'bank_account',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 300,
+                'max_fee'             => 300,
+                'org_id'              => '100000razorpay',
+            ],
         ];
 
         $this->addPricingRulesToDb($rows);
@@ -480,6 +491,16 @@ class Pricing extends Base
                 'plan_name'      => 'ZeroPricingPlan',
                 'feature'        => 'payment',
                 'payment_method' => 'emandate',
+                'percent_rate'   => 0,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+            ],
+            [
+                'id'             => '1ZeroPricingR8',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'ZeroPricingPlan',
+                'feature'        => 'fund_account_validation',
+                'payment_method' => 'bank_account',
                 'percent_rate'   => 0,
                 'fixed_rate'     => 0,
                 'org_id'         => '100000razorpay',

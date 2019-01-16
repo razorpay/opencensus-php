@@ -12,6 +12,7 @@ use RZP\Models\Card\Type as CardType;
 use RZP\Models\Payment;
 use RZP\Models\Payout;
 use RZP\Models\Transfer;
+use RZP\Models\FundAccount;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Pricing;
@@ -21,7 +22,7 @@ class Validator extends Base\Validator
 {
     protected static $addPlanRuleRules = [
         Entity::PRODUCT             => 'sometimes|string|custom',
-        Entity::FEATURE             => 'sometimes|alpha',
+        Entity::FEATURE             => 'sometimes|string',
         Entity::GATEWAY             => 'sometimes',
         Entity::PLAN_NAME           => 'sometimes',
         Entity::PAYMENT_METHOD      => 'required|string',
@@ -52,6 +53,7 @@ class Validator extends Base\Validator
         'addPlanRuleRate',
         'addPlanRuleCard',
         'addPlanRuleNB',
+        'addPlanRuleFundAccountValidation',
         'addPlanRuleEmandate',
         'addPlanRulePaymentNetwork',
         'addPlanRuleInternational',
@@ -112,12 +114,33 @@ class Validator extends Base\Validator
                 Transfer\ToType::validateDestination($method);
 
                 break;
+
+            case Pricing\Feature::FUND_ACCOUNT_VALIDATION:
+                FundAccount\Validation\Processor\FundAccountType::validate($method);
+
+                break;
+        }
+    }
+
+    protected function validateAddPlanRuleFundAccountValidation($input)
+    {
+        if ((isset($input[Entity::FEATURE]) === true) and
+            $input[Entity::FEATURE] === Pricing\Feature::FUND_ACCOUNT_VALIDATION)
+        {
+            if ((isset($input[Entity::PAYMENT_METHOD]) === true) and
+                ($input[Entity::PAYMENT_METHOD] === FundAccount\Validation\Processor\FundAccountType::BANK_ACCOUNT) and
+                empty($input[Entity::PERCENT_RATE]) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Percentage rate pricing is not allowed for Bank Account Validation');
+            }
         }
     }
 
     protected function validateAddPlanRuleEmandate($input)
     {
-        if ($input[Entity::PAYMENT_METHOD] === Payment\Method::EMANDATE)
+        if ((isset($input[Entity::PAYMENT_METHOD]) === true) and
+            ($input[Entity::PAYMENT_METHOD] === Payment\Method::EMANDATE))
         {
             if (empty($input[Entity::PERCENT_RATE]) === false)
             {
