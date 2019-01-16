@@ -427,8 +427,6 @@ class Gateway extends Base\Gateway
     // converts request array to request string with | delimiter
     protected function getFormattedRequest(array $requestArray)
     {
-        $request = [];
-
         $requestWithoutChecksum = urldecode(http_build_query($requestArray, '', '|'));
 
         $checksum = hash('sha256', $requestWithoutChecksum);
