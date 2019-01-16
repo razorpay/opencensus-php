@@ -383,6 +383,7 @@ class Header
     const HITACHI_SWIPER_ID    = 'Swiper ID';
     const HITACHI_SPONSOR_BANK = 'Sponsor Bank';
     const HITACHI_CURRENCY     = 'Currency';
+    const HITACHI_TERMINAL_ID  = 'Terminal ID';
     const FAILURE_REASON       = 'Failure Reason';
 
 
@@ -1165,6 +1166,7 @@ class Header
                 self::HITACHI_SWIPER_ID,
                 self::HITACHI_SPONSOR_BANK,
                 self::HITACHI_CURRENCY,
+                self::HITACHI_TERMINAL_ID,
                 self::STATUS,
                 self::FAILURE_REASON
             ]
