@@ -8,16 +8,7 @@ import EnumList from 'component/Input/EnumList';
 const initJSONObj = {
   name: '',
   description: '',
-  variants: [
-    {
-      name: '',
-      description: '',
-    },
-    {
-      name: '',
-      description: '',
-    },
-  ],
+  variants: ['// Eg: Array of strings'],
 };
 
 const validatorJSON = {
@@ -39,15 +30,12 @@ const validatorJSON = {
     let errorMsg;
 
     val.forEach(v => {
-      const isNameInvalid = !v.name || typeof v.name !== 'string';
-      if (isNameInvalid) {
-        errorMsg = 'Name must be a non-empty string';
+      const reg = new RegExp(/^[a-z0-9]+$/i);
+      if (typeof v !== 'string') {
+        errorMsg = 'Each variant must be a String';
         return false;
-      }
-
-      const isDescInvalid = !v.description || typeof v.description !== 'string';
-      if (isDescInvalid) {
-        errorMsg = 'Description must be a non-empty string';
+      } else if (!reg.test(v)) {
+        errorMsg = 'variant can only contain Alphanumeric, - and _';
         return false;
       }
     });
