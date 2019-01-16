@@ -387,6 +387,11 @@ class PaymentCreateController extends Controller
         //
         if (isset($data['request']))
         {
+            if (empty($data['request']['method']) === false)
+            {
+                $data['request']['method'] = strtolower($data['request']['method']);
+            }
+
             if ($data['type'] === 'first')
             {
                 if ($data['request']['method'] === 'post')

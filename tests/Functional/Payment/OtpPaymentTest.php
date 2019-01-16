@@ -10,6 +10,7 @@ use RZP\Exception\GatewayRequestException;
 use RZP\Exception\GatewayTimeoutException;
 use RZP\Exception\GatewayErrorException;
 use RZP\Exception\BadRequestException;
+use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Customer\Token\Entity as Token;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -199,6 +200,62 @@ class OtpPaymentTest extends TestCase
         self::assertEquals('headless_otp', $payment['auth_type']);
         self::assertEquals('hitachi', $payment['gateway']);
         self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
+    }
+
+    public function testSubmitOtp()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' =>
+                [
+                    'non_recurring'     => '1',
+                    'recurring_3ds'     => '1',
+                    'recurring_non_3ds' => '1'
+                ]
+            ]);
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'activated'       => 1,
+            'live'            => 1,
+            'pricing_plan_id' => '1hDYlICobzOCYt',
+        ]);
+
+        $this->gateway = 'hitachi';
+
+        $this->fixtures->merchant->addFeatures(['headless']);
+        $this->fixtures->merchant->addFeatures(['otpelf']);
+
+        $this->mockTokenEx();
+        $this->mockSubmitOtpElf();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'UTIB',
+            'network' => 'Maestro',
+            'flows'   => [
+                '3ds'    => '1',
+                'headless_otp' => '1',
+            ],
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
+        $payment['auth_type'] = 'otp';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments',
+            'content' => $payment
+        ];
+
+        $this->ba->publicLiveAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        self::assertArrayHasKey('razorpay_payment_id', $content);
     }
 
     public function testHeadlessOtpAuthenticationPaymentFailed()
