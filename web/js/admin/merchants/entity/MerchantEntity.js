@@ -599,8 +599,8 @@ const ActionsList = ({ model, merchantId, actions }) => {
         <ShowWhen
           permission={
             merchant.details.international
-              ? 'edit_merchant_enable_international'
-              : 'edit_merchant_disable_international'
+              ? 'edit_merchant_disable_international'
+              : 'edit_merchant_enable_international'
           }
         >
           <AsyncButton onClick={toggleInternational} pendingClass="btn-pending">

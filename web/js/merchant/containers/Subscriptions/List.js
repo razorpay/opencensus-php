@@ -1,7 +1,11 @@
-import { Component } from 'react';
 import { connect } from 'react-redux';
+import { NavLink } from 'react-router-dom';
+
 import SubscriptionsListFilter from 'merchant/components/Subscriptions/ListFilter';
 import DataTable from 'rzp/ui/Table/DataTable';
+import HeaderAction from 'rzp/ui/HeaderAction';
+import CopyLink from 'merchant/components/Invoices/CopyLink';
+import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchSubscriptions as fetchAll } from 'merchant/modules/subscriptions';
 import {
@@ -13,6 +17,11 @@ import {
   status,
 } from 'rzp/ui/item/pair';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
+
+const link = {
+  title: 'Subscription Link',
+  value: item => <CopyLink url={item.short_url} />,
+};
 
 @connect(state => state.subscriptions, { fetchAll })
 export default class SubscriptionsListContainer extends ListContainer {
@@ -46,6 +55,16 @@ export default class SubscriptionsListContainer extends ListContainer {
 
     return (
       <div class="content-wrapper">
+        <ShowWhen additionalCondition={user => user.isSubLinkEnabled}>
+          <HeaderAction>
+            <div class="btn-toolbar pull-right">
+              <NavLink class="btn btn-primary" to="/subscriptions/new">
+                <i class="i i-plus" />
+                <span>Create New Subscription</span>
+              </NavLink>
+            </div>
+          </HeaderAction>
+        </ShowWhen>
         <SubscriptionsListFilter
           form="subscriptionsListFilter"
           count={this.state.count}
@@ -59,6 +78,11 @@ export default class SubscriptionsListContainer extends ListContainer {
           columns={[
             subscriptionId,
             planId,
+            ...(showWhenUtil({
+              additionalCondition: user => user.isSubLinkEnabled,
+            })
+              ? link
+              : []),
             customerId,
             nextDueOn,
             createdAt,

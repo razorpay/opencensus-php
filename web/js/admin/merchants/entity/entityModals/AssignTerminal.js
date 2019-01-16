@@ -55,6 +55,7 @@ const gatewayMapping = {
   netbanking_obc: 'Netbanking OBC',
   netbanking_csb: 'Netbanking CSB',
   netbanking_bob: 'Netbanking BOB',
+  netbanking_allahabad: 'Netbanking Allahabad',
   cybersource: 'Cybersource',
   hitachi: 'Hitachi',
   wallet_openwallet: 'RZP Open Wallet',

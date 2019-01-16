@@ -12,6 +12,7 @@ const options = {
   subvention: ['', 'customer', 'merchant'],
   bank: {
     RATN: 'RBL',
+    SBIN: 'SBI',
     HDFC: 'HDFC',
     UTIB: 'Axis',
     KKBK: 'Kotak',

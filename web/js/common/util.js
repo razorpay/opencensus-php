@@ -258,6 +258,39 @@ export function intersect(a, b) {
 }
 
 /**
+ *
+ * @param {String} path - path of data member with dots as string type
+ * @param {String} value - value of variable
+ * @param {Object} obj - object where value needs to be inserted
+ */
+export function dotStringToObj(path, value, obj) {
+  // for supporting sample[0][sampleKey]
+  const squareBracketPattern = /\[|\]/;
+  if (squareBracketPattern.test(path)) {
+    parts = path.split(squareBracketPattern).filter(pathEl => !!pathEl); //splitting with regex gives empty strings
+  } else {
+    parts = path.split('.');
+  }
+
+  let last = parts.pop();
+
+  // converts if numeric for array
+  last = isNaN(last) ? last : Number(last);
+
+  while ((part = parts.shift())) {
+    // converts if numeric for array
+    part = isNaN(part) ? part : Number(part);
+
+    if (typeof obj[part] !== 'object') {
+      // assigning an array if upcoming part is number
+      obj[part] = isNaN(parts[0]) ? {} : [];
+    }
+    obj = obj[part];
+  }
+  obj[last] = value;
+  var parts, part;
+}
+/**
  * @param {String}
  * Find experiment value if it exists
  */
