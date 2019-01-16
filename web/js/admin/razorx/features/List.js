@@ -8,7 +8,7 @@ import { PageTable } from 'ui/Table';
 import { statusPill } from 'admin/razorx/data';
 
 import Form from 'ui/Form';
-import Field from 'ui/Field';
+import Field, { DateField } from 'ui/Field';
 
 const data = {
   items: [
@@ -69,7 +69,16 @@ export default class extends React.Component {
     return (
       <div class="list-container">
         <Form onSubmit={this.onSubmit} class="filters">
+          <Field label="Id" name="id" />
+          <Field label="Name" name="name" />
           <Field label="Created By" name="created_by" />
+
+          <DateField
+            label="Activated On"
+            name="activated_at"
+            placeholder="YYYY-MM-DD"
+            format="YYYY-MM-DD"
+          />
 
           <button class="btn btn--primary field">Search</button>
         </Form>
@@ -86,7 +95,7 @@ export default class extends React.Component {
   }
 }
 
-const href = item => '/razorx/features/' + item.id;
+const href = item => '/features/' + item.id;
 
 const featuresFields = [
   [

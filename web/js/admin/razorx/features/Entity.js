@@ -123,7 +123,7 @@ const Details = ({ data }) => {
             {data.active_experiments}
             <Link
               class="link m-l"
-              to={`/razorx/experiments?feature_id=${data.id}&status=activated`}
+              to={`/experiments?feature_id=${data.id}&status=activated`}
             >
               View Active Experiments
             </Link>
@@ -138,10 +138,7 @@ const Details = ({ data }) => {
         {
           <div>
             {data.total_experiments}
-            <Link
-              class="link m-l"
-              to={`/razorx/experiments?feature_id=${data.id}`}
-            >
+            <Link class="link m-l" to={`/experiments?feature_id=${data.id}`}>
               View All Experiments
             </Link>
           </div>

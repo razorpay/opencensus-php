@@ -6,7 +6,7 @@ import { PageTable } from 'ui/Table';
 import { formatDate } from 'common/util';
 
 import Form from 'ui/Form';
-import Field from 'ui/Field';
+import Field, { DateField, SelectField } from 'ui/Field';
 
 import { statusPill } from 'admin/razorx/data';
 
@@ -87,12 +87,26 @@ function fakeFetch() {
 
 @observer
 export default class extends React.Component {
+  state = { selectedType: 'activated', selectEnvironment: 'production' };
+
   collection = new Collection({
     fetchFn: fakeFetch, // razorxFetch,
     data: {
       url: '/experiments',
     },
   });
+
+  selectType = e => {
+    let value = e.target.value;
+
+    this.setState({ selectedType: value });
+  };
+
+  selectEnvironment = e => {
+    let value = e.target.value;
+
+    this.setState({ selectEnvironment: value });
+  };
 
   onSubmit = filters => {
     let selectedType = this.state.selectedType;
@@ -107,7 +121,34 @@ export default class extends React.Component {
     return (
       <div class="list-container">
         <Form onSubmit={this.onSubmit} class="filters">
+          <Field label="Feature Id" name="feature_id" />
           <Field label="Created By" name="created_by" />
+
+          <SelectField
+            label="Status"
+            value={this.state.selectedType}
+            onChange={this.selectType}
+          >
+            <option value="created">Created</option>
+            <option value="terminated">Terminated</option>
+            <option value="activated">Activated</option>
+          </SelectField>
+
+          <SelectField
+            label="Environment"
+            value={this.state.selectedEnvironment}
+            onChange={this.selectEnvironment}
+          >
+            <option value="production">Production</option>
+            <option value="beta">Beta</option>
+          </SelectField>
+
+          <DateField
+            label="Activated On"
+            name="activated_at"
+            placeholder="YYYY-MM-DD"
+            format="YYYY-MM-DD"
+          />
 
           <button class="btn btn--primary field">Search</button>
         </Form>
@@ -124,7 +165,7 @@ export default class extends React.Component {
   }
 }
 
-const href = item => '/razorx/experiments/' + item.id;
+const href = item => '/experiments/' + item.id;
 
 const experimentFields = [
   ['Description', item => item.description],
@@ -132,7 +173,7 @@ const experimentFields = [
     'Feature',
     item => (
       <object>
-        <Link to={`/razorx/features/${item.feature_id}`}>
+        <Link to={`/features/${item.feature_id}`}>
           <span class="link">{item.feature_id}</span>
         </Link>
       </object>

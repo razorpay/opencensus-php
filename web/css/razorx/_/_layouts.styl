@@ -73,9 +73,6 @@
       flex-wrap: wrap
       align-content: flex-start
 
-      .filters + div
-        margin-top: 32px
-
       .list-container
         flex: 1
         align-self: stretch
@@ -169,6 +166,16 @@
     color: $color-primary
 
   main
+    .header, .filters
+      display: flex
+      position: relative
+      z-index: 2
+      font-weight: 500
+
+      .field
+        margin: 0
+        margin-left: 16px
+
     .parent-container > .header
       padding: 0 36px
       height: 62px
@@ -181,21 +188,19 @@
     .filters
       align-items: flex-end
       width: 100%
-      padding: 12px 24px 20px
+      padding: 12px 24px 8px
       border-bottom: 1px solid rgba(0,0,0,0.04)
       box-shadow: 0 4px 10px -3px rgba(0,0,0,0.03)
       background: transparent
 
-    .header, .filters
-      display: flex
-      position: relative
-      z-index: 2
-      font-weight: 500
-
       .field
-        margin: 0
-        margin-left: 16px
+        margin-bottom: 12px
 
+        label
+          font-size: 12px
+          font-weight: 600
+          opacity: 0.6
+          text-transform: uppercase
 
 @keyframes glitch-up
   0%
