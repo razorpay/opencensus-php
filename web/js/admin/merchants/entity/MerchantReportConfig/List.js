@@ -14,7 +14,7 @@ import { pickProps } from 'rzp/utils/rzp-utils';
 import CreateEntity from './Create';
 import Entity from './Entity';
 
-const getFields = ({ view, edit, clone, remove }) => [
+const getFields = ({ view, edit, clone, remove, merchantId }) => [
   [
     'ID',
     item => (
@@ -28,27 +28,30 @@ const getFields = ({ view, edit, clone, remove }) => [
   ['No. Of Columns', item => item.template.output_fields.length],
   [
     '',
-    item => (
-      <span class="link" onClick={edit(item)}>
-        Edit
-      </span>
-    ),
+    item =>
+      item.consumer === merchantId && (
+        <span class="link" onClick={edit(item)}>
+          Edit
+        </span>
+      ),
   ],
   [
     '',
-    item => (
-      <span class="link" onClick={clone(item)}>
-        Clone
-      </span>
-    ),
+    item =>
+      item.consumer === merchantId && (
+        <span class="link" onClick={clone(item)}>
+          Clone
+        </span>
+      ),
   ],
   [
     '',
-    item => (
-      <span class="link danger" onClick={remove(item)}>
-        Delete
-      </span>
-    ),
+    item =>
+      item.consumer === merchantId && (
+        <span class="link danger" onClick={remove(item)}>
+          Delete
+        </span>
+      ),
   ],
 ];
 
@@ -175,6 +178,7 @@ export default class MerchantReportConfigList extends Component {
             clone: this.clone,
             edit: this.edit,
             remove: this.remove,
+            merchantId: this.props.match.params.id,
           })}
         />
       </div>
