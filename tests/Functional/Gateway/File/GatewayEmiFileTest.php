@@ -310,7 +310,7 @@ class GatewayEmiFileTest extends TestCase
 
         $content = $content['items'][0];
 
-        $this->assertNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
         $this->assertNotNull(File\Entity::SENT_AT);
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
@@ -388,7 +388,7 @@ class GatewayEmiFileTest extends TestCase
 
         $content = $content['items'][0];
 
-        $this->assertNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
         $this->assertNotNull(File\Entity::SENT_AT);
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
@@ -441,7 +441,7 @@ class GatewayEmiFileTest extends TestCase
 
         $content = $content['items'][0];
 
-        $this->assertNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
         $this->assertNotNull(File\Entity::SENT_AT);
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
