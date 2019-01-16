@@ -91,151 +91,31 @@ export default class TerminalForm extends Component {
   render() {
     console.log('here');
     console.log(this.props);
+    console.log(this.props.props);
+    console.log(this.props.props.Model);
+    console.log(this.props.props.model);
     const { merchantId } = this.props;
     return (
       <ModalContent header={'Create Terminal'}>
         <Form class="entity-container" style={{ width: '600px' }}>
           <Field label="Terminal id" defaultValue={merchantId} disabled />
-          <Field label="Terminal Category" name="category" />
-          <Field label="Terminal Network Category" name="network_category" />
+          <SelectField name="mode" label="Mode" defaultValue="live">
+            <option value="test">Test</option>
+            <option value="live">Live</option>
+          </SelectField>
+          <SelectField name="gateway" label="Gateway" defaultValue="hitachi">
+            <option value="hitachi">Hitachi</option>
+          </SelectField>
+          <Field label="Terminal Category" name="category" />{' '}
+          {/* Prefil this */}
           <Field label="Gateway Merchant Id" name="gateway_merchant_id" />
-          <Field label="Gateway Merchant Id 2" name="gateway_merchant_id2" />
           <Field label="Gateway Terminal Id" name="gateway_terminal_id" />
-          <Field
-            label="Gateway Terminal Password 2"
-            name="gateway_terminal_password2"
-            type="password"
-          />
-
-          <Field label="Gateway Access Code" name="gateway_access_code" />
-          <Field label="Gateway Secure Secret" name="gateway_secure_secret" />
-          <Field
-            label="Gateway Secure Secret 2"
-            name="gateway_secure_secret2"
-          />
-
-          <Field label="Gateway Recon Password" name="gateway_recon_password" />
-
-          <SelectField
-            name="card"
-            label="Card Allowed (Always Yes for HDFC)"
-            defaultValue=""
-          >
-            <option value="" />
-            <option value="1">Yes</option>
-            <option value="0">No</option>
-          </SelectField>
-
-          <SelectField name="upi" label="UPI" defaultValue="">
-            <option value="" />
-            <option value="1">Yes</option>
-            <option value="0">No</option>
-          </SelectField>
-
-          <SelectField
-            name="netbanking"
-            label="Netbanking Allowed"
-            defaultValue=""
-          >
-            <option value="" />
-            <option value="1">Yes</option>
-            <option value="0">No</option>
-          </SelectField>
-
-          <SelectField name="emandate" label="Emandate Allowed" defaultValue="">
-            <option value="" />
-            <option value="1">Yes</option>
-            <option value="0">No</option>
-          </SelectField>
-
-          <SelectField
-            name="cardless_emi"
-            label="CardlessEMI Allowed"
-            defaultValue=""
-          >
-            <option value="" />
-            <option value="1">Yes</option>
-            <option value="0">No</option>
-          </SelectField>
-
-          <SelectField name="tpv" label="TPV" defaultValue="">
-            <option value="" />
-            <option value="1">Yes</option>
-            <option value="0">No</option>
-            <option value="2">Both</option>
-          </SelectField>
-
-          <SelectField name="corporate" label="Corporate" defaultValue="">
-            <option value="" />
-            <option value="1">Yes</option>
-            <option value="0">No</option>
-          </SelectField>
-
-          <SelectField name="currency" label="Currency" defaultValue="">
+          <SelectField name="currency" label="Currency" defaultValue="INR">
             <option value="" />
             {CurrencyData.data.map(({ code }) => (
               <option value={code}>{code}</option>
             ))}
           </SelectField>
-
-          <SelectField name="emi" label="Emi" defaultValue="">
-            <option value="">-NA-</option>
-            <option value="1">Yes</option>
-            <option value="0">No</option>
-          </SelectField>
-
-          <SelectField
-            name="emi_duration"
-            label="Emi Duration"
-            defaultValue={''}
-          >
-            <option value="">-NA-</option>
-            <option value="3">3</option>
-            <option value="6">6</option>
-            <option value="9">9</option>
-            <option value="12">12</option>
-            <option value="18">18</option>
-            <option value="24">24</option>
-          </SelectField>
-
-          <SelectField
-            name="emi_subvention"
-            label="Emi Subvention"
-            defaultValue={''}
-          >
-            <option value="">-NA-</option>
-            <option value="merchant">Merchant</option>
-            <option value="customer">Customer</option>
-          </SelectField>
-
-          <SelectField
-            name="international"
-            label="International"
-            defaultValue={''}
-          >
-            <option value="" />
-            <option value="1">Yes</option>
-            <option value="0">No</option>
-          </SelectField>
-
-          <SelectField
-            name="terminal_mode"
-            label="Terminal Mode"
-            defaultValue={''}
-          >
-            <option value="" />
-            <option value="3">Dual</option>
-            <option value="1">Auth-Capture</option>
-            <option value="2">Purchase</option>
-          </SelectField>
-
-          <Field label="Master card mpan" name="mc_mpan" />
-          <Field label="Visa mpan" name="visa_mpan" />
-          <Field label="Rupay mpan" name="rupay_mpan" />
-          <Field label="VPA" name="vpa" />
-
-          <Field label="Account Number" name="account_number" />
-
           <div class="m-t m-b" />
           <AsyncButton
             text="Cancel"
@@ -247,7 +127,7 @@ export default class TerminalForm extends Component {
             onSubmit={this.handleCreate}
             class="btn"
             pendingClass="small spinner"
-            confirm={'Are you sure you want to assign this terminal?'}
+            confirm={'Are you sure you want to create this terminal?'}
           >
             Ok
           </AsyncButton>
