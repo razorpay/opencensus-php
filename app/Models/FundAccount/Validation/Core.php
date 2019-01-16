@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FundAccount;
+use RZP\Models\Pricing\Fee;
 
 class Core extends Base\Core
 {

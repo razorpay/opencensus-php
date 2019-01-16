@@ -162,4 +162,21 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::REGISTERED_NAME);
     }
+
+    // ------------ Mocked Getters ---------
+
+    public function getBaseAmount()
+    {
+        return $this->getAmount();
+    }
+
+    public function getPricingFeatures()
+    {
+        return [];
+    }
+
+    public function getMethod()
+    {
+        return $this->getAttribute(self::FUND_ACCOUNT_TYPE);
+    }
 }

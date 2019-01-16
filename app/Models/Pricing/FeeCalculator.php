@@ -80,7 +80,7 @@ class FeeCalculator
         $this->taxComponents = self::getTaxComponents($this->entity->merchant);
     }
 
-    private function isFeeBearerCustomer()
+    protected function isFeeBearerCustomer()
     {
         $entity = $this->entity;
 
@@ -133,7 +133,7 @@ class FeeCalculator
         return [$totalFees, $totalTaxes];
     }
 
-    private function validateFees($totalFees, $amount)
+    protected function validateFees($totalFees, $amount)
     {
         if ($this->isEntityFundAccountValidation() === true)
         {
@@ -184,7 +184,7 @@ class FeeCalculator
         }
     }
 
-    private function validateFeesForFundAccountValidation($totalFees, $amount)
+    protected function validateFeesForFundAccountValidation($totalFees, $amount)
     {
         // In case the merchant is fee bearer but on postpaid model,
         // we shouldn't check $totalFees > $feeCredits.
@@ -1049,6 +1049,6 @@ class FeeCalculator
 
     protected function isEntityFundAccountValidation(): bool
     {
-        return ($this->entity instanceof FundAccount\Validation\Entity === true);
+        return (($this->entity instanceof FundAccount\Validation\Entity) === true);
     }
 }

@@ -22,7 +22,7 @@ class Validator extends Base\Validator
 {
     protected static $addPlanRuleRules = [
         Entity::PRODUCT             => 'sometimes|string|custom',
-        Entity::FEATURE             => 'sometimes|string',
+        Entity::FEATURE             => 'sometimes|alpha_dash',
         Entity::GATEWAY             => 'sometimes',
         Entity::PLAN_NAME           => 'sometimes',
         Entity::PAYMENT_METHOD      => 'required|string',
@@ -116,7 +116,7 @@ class Validator extends Base\Validator
                 break;
 
             case Pricing\Feature::FUND_ACCOUNT_VALIDATION:
-                FundAccount\Validation\Processor\FundAccountType::validate($method);
+                FundAccount\Validation\FundAccountType::validate($method);
 
                 break;
         }
@@ -128,8 +128,8 @@ class Validator extends Base\Validator
             $input[Entity::FEATURE] === Pricing\Feature::FUND_ACCOUNT_VALIDATION)
         {
             if ((isset($input[Entity::PAYMENT_METHOD]) === true) and
-                ($input[Entity::PAYMENT_METHOD] === FundAccount\Validation\Processor\FundAccountType::BANK_ACCOUNT) and
-                empty($input[Entity::PERCENT_RATE]) === false)
+                ($input[Entity::PAYMENT_METHOD] === FundAccount\Validation\FundAccountType::BANK_ACCOUNT) and
+                (empty($input[Entity::PERCENT_RATE]) === false))
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Percentage rate pricing is not allowed for Bank Account Validation');

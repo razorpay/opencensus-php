@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\FundAccount\Validation\Processor;
+namespace RZP\Models\FundAccount\Validation;
 
 use RZP\Exception;
 
