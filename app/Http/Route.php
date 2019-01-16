@@ -972,6 +972,11 @@ final class Route
         'fund_account_update'                      => ['patch',    'fund_accounts/{id}',                             'FundAccountController@update'                                      ],
         'fund_account_delete'                      => ['delete',   'fund_accounts/{id}',                             'FundAccountController@delete'                                      ],
 
+        // Fund Account Validation
+        'fund_account_validate'                    => ['post',     'fund_accounts/validations',                      'FundAccountValidationController@create'                            ],
+        'fund_account_validate_fetch'              => ['get',      'fund_accounts/validations',                      'FundAccountValidationController@list'                              ],
+        'fund_account_validate_fetch_by_id'        => ['get',      'fund_accounts/validations/{id}',                 'FundAccountValidationController@get'                               ],
+
         // Banking statement routes
         'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
         'transaction_statement_fetch_multiple'     => ['get',      'transactions',                                   'StatementController@list'                                          ],
@@ -1216,6 +1221,9 @@ final class Route
         //'fund_account_delete',
         'transaction_statement_fetch',
         'transaction_statement_fetch_multiple',
+        'fund_account_validate',
+        'fund_account_validate_fetch',
+        'fund_account_validate_fetch_by_id',
     ];
 
     // Only routes defined in internalApps go here
@@ -2573,6 +2581,11 @@ final class Route
         'virtual_account_fetch_payments'       => [Feature::VIRTUAL_ACCOUNTS],
         'reports_refund_irctc'                 => [Feature::IRCTC_REPORT],
         'payment_validate_vpa'                 => [Feature::ENABLE_VPA_VALIDATE],
+
+        // Fund Account Validation APIs
+        'fund_account_validate'               => [Feature::FUND_ACCOUNT_VALIDATIONS],
+        'fund_account_validate_fetch'         => [Feature::FUND_ACCOUNT_VALIDATIONS],
+        'fund_account_validate_fetch_by_id'   => [Feature::FUND_ACCOUNT_VALIDATIONS],
 
         // Account APIs
         'beta_account_create'                  => [Feature::MARKETPLACE],

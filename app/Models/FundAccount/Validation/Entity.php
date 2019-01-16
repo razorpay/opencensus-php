@@ -19,6 +19,8 @@ class Entity extends Base\PublicEntity
     // Fund Account Type is added just for faster filtering
     const FUND_ACCOUNT_TYPE     = 'fund_account_type';
     const STATUS                = 'status';
+    const ACCOUNT_STATUS        = 'account_status';
+    const REGISTERED_NAME       = 'registered_name';
     const FEE                   = 'fee';
     const TAX                   = 'tax';
     const AMOUNT                = 'amount';
@@ -27,11 +29,16 @@ class Entity extends Base\PublicEntity
     const INTERNAL_ERROR_CODE   = 'internal_error_code';
     const ERROR_DESCRIPTION     = 'error_description';
     const NOTES                 = 'notes';
+    const RESULTS               = 'results';
 
     // Key for the response
     const FUND_ACCOUNT          = 'fund_account';
 
-    protected $entity           = Constants\Entity::FUND_ACCOUNT_VALIDATION;
+    protected $entity = Constants\Entity::FUND_ACCOUNT_VALIDATION;
+
+    protected static $sign = 'fav';
+
+    protected $generateIdOnCreate = true;
 
     protected $fillable = [
         self::AMOUNT,
@@ -53,7 +60,7 @@ class Entity extends Base\PublicEntity
         self::ERROR_CODE,
         self::INTERNAL_ERROR_CODE,
         self::ERROR_DESCRIPTION,
-        self:: CREATED_AT,
+        self::CREATED_AT,
     ];
 
     protected $public = [
@@ -66,25 +73,24 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::NOTES,
-        self::ERROR_CODE,
-        self::ERROR_DESCRIPTION,
-        self:: CREATED_AT,
+        self::RESULTS,
+        self::CREATED_AT,
     ];
 
     protected $defaults = [
-        self::STATUS               => Status::CREATED,
-        self::NOTES                => [],
-        self::AMOUNT               => null,
-        self::FEE                  => null,
-        self::TAX                  => null,
-        self::CURRENCY             => null,
+        self::STATUS   => Status::CREATED,
+        self::NOTES    => [],
+        self::AMOUNT   => null,
+        self::FEE      => null,
+        self::TAX      => null,
+        self::CURRENCY => null,
     ];
 
 
     protected $casts = [
-        self::AMOUNT               => 'int',
-        self::FEE                  => 'int',
-        self::TAX                  => 'int',
+        self::AMOUNT => 'int',
+        self::FEE    => 'int',
+        self::TAX    => 'int',
     ];
 
     protected $amounts = [
@@ -104,5 +110,55 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo(Merchant::class);
     }
-    // ------------ End Relations ------------
+
+    // -------------- Setters --------------
+
+    public function setAmount(int $amount)
+    {
+        $this->setAttribute(self::AMOUNT, $amount);
+    }
+
+    protected function setFundAccountType(string $type)
+    {
+        $this->setAttribute(self::FUND_ACCOUNT_TYPE, $type);
+    }
+
+    public function associateFundAccount(FundAccount $fundAccount)
+    {
+        $this->fundAccount()->associate($fundAccount);
+
+        $this->setFundAccountType($fundAccount->getAccountType());
+    }
+
+    // -------------- Public Setters --------------
+
+    public function setPublicEntityAttribute(array & $array)
+    {
+        $array[self::ENTITY] = 'fund_account.validation';
+    }
+
+    // -------------- Getters --------------
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getAccountStatus()
+    {
+        return $this->getAttribute(self::ACCOUNT_STATUS);
+    }
+
+    public function getRegisteredName()
+    {
+        return $this->getAttribute(self::REGISTERED_NAME);
+    }
+
+    public function setPublicResultsAttribute(array & $array)
+    {
+        $array[self::RESULTS] = [
+            self::ACCOUNT_STATUS    => $this->getAccountStatus(),
+            self::REGISTERED_NAME   => $this->getRegisteredName(),
+        ];
+    }
 }

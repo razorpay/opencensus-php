@@ -4642,3 +4642,11 @@ ALTER TABLE pricing
 
 ALTER TABLE fund_transfer_attempts
     MODIFY COLUMN source_type VARCHAR(255) DEFAULT NULL;
+
+ALTER TABLE fund_account_validations
+    ADD COLUMN account_status VARCHAR(255) DEFAULT NULL after status,
+
+ALTER TABLE fund_account_validations
+    ADD COLUMN registered_name VARCHAR(255) DEFAULT NULL after account_status,
+
+ALTER TABLE bank_accounts DROP COLUMN registered_beneficiary_name;

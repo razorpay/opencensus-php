@@ -17,6 +17,11 @@ return [
                             'payment_network'   => 'SIBL',
                         ],
                         [
+                            'feature'           => 'validation',
+                            'payment_method'    => 'fund_account_validation',
+                            'percent_rate'      => 1000,
+                        ],
+                        [
                             'payment_method'        => 'card',
                             'payment_method_type'   => 'credit',
                             'payment_network'       => 'DICL',
@@ -736,7 +741,7 @@ return [
                 'entity' => 'collection',
                 'items' => [
                     [
-                        'name' => "Banking default plan",
+                        'name' => 'Banking default plan',
                     ],
                     [
                         'name' => 'testDefaultEmiPlan',
@@ -842,7 +847,7 @@ return [
         'response' => [
             'content' => [
                 [
-                    'plan_name'   => "Banking default plan",
+                    'plan_name'   => 'Banking default plan',
                     'rules_count' => 6,
                 ],
                 [

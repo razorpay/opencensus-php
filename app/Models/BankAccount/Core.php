@@ -81,13 +81,15 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    public function createBankAccountForBankingSource(array $input, Base\PublicEntity $source): Entity
+    public function createBankAccountForFundAccount(array $input,
+                                                      Merchant\Entity $merchant,
+                                                      Base\PublicEntity $source = null): Entity
     {
         (new Validator)->validateIfscCode($input, $this->mode);
 
         $ba = $this->createBankAccountForSource(
                         $input,
-                        $source->merchant,
+                        $merchant,
                         $source,
                         'add_fund_account_bank_account');
 
@@ -335,11 +337,11 @@ class Core extends Base\Core
 
         $merchant = $merchant->toArray();
 
-        $class = "RZP\Mail\Merchant\AccountChange";
+        $class = 'RZP\Mail\Merchant\AccountChange';
 
         if ($request === true)
         {
-            $class = "RZP\Mail\Merchant\AccountChangeRequest";
+            $class = 'RZP\Mail\Merchant\AccountChangeRequest';
         }
 
         $bankAccountChangeMail = new $class($newBankAccount, $merchant, $recipients);

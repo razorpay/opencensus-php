@@ -7,11 +7,11 @@ use RZP\Exception;
 class Feature
 {
     const PAYMENT                 = 'payment';
-    const FUND_ACCOUNT_VALIDATION = 'fund_account_validation';
     const PAYOUT                  = 'payout';
     const RECURRING               = 'recurring';
     const TRANSFER                = 'transfer';
     const EMI                     = 'emi';
+    const VALIDATION              = 'validation';
     const ESAUTOMATIC             = 'esautomatic';
 
     const FEATURE_LIST = [
@@ -21,7 +21,7 @@ class Feature
         self::TRANSFER,
         self::EMI,
         self::ESAUTOMATIC,
-        self::FUND_ACCOUNT_VALIDATION,
+        self::VALIDATION,
     ];
 
     /**

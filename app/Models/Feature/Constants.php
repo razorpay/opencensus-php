@@ -38,6 +38,7 @@ class Constants
     const EXPOSE_DOWNTIMES                = 'expose_downtimes';
     const PAYMENT_FAILURE_EMAIL           = 'payment_failure_email';
     const VIRTUAL_ACCOUNTS                = 'virtual_accounts';
+    const FUND_ACCOUNT_VALIDATIONS        = 'fund_account_validations';
     const INVOICE_PARTIAL_PAYMENTS        = 'invoice_partial_payments';
     const HIDE_DOWNTIMES                  = 'hide_downtimes';
     const OLD_CREDITS_FLOW                = 'old_credits_flow';
