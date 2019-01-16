@@ -82,8 +82,8 @@ class Core extends Base\Core
      * @return Entity
      */
     public function createBankAccountForFundAccount(array $input,
-                                                      Merchant\Entity $merchant,
-                                                      Base\PublicEntity $source = null): Entity
+                                                    Merchant\Entity $merchant,
+                                                    Base\PublicEntity $source = null): Entity
     {
         (new Validator)->validateIfscCode($input, $this->mode);
 
@@ -267,7 +267,7 @@ class Core extends Base\Core
     public function createBankAccountForSource(
         array $input,
         Merchant\Entity $merchant,
-        Base\PublicEntity $source,
+        Base\PublicEntity $source = null,
         string $addRule): Entity
     {
         $ba = new BankAccount\Entity;
@@ -275,6 +275,9 @@ class Core extends Base\Core
         $ba = $ba->build($input, $addRule);
 
         $ba->merchant()->associate($merchant);
+
+        // Doing this since bank account type/source should not be null
+        $source = $source ?? $merchant;
 
         $ba->source()->associate($source);
 

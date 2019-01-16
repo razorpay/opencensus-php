@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Functional\Instrument;
+namespace RZP\Tests\Functional\FundAccount;
 
 use RZP\Models\FundAccount;
 use RZP\Tests\Functional\TestCase;
@@ -31,7 +31,7 @@ class FundAccountValidationTest extends TestCase
             'request' => [
                 'content' => [
                     FundAccountValidation::FUND_ACCOUNT => [
-                        FundAccount\Entity::ID   => $fundAccountResponse[FundAccountValidation::ID],
+                        FundAccount\Entity::ID => $fundAccountResponse[FundAccountValidation::ID],
                     ],
                 ]
             ]
@@ -48,7 +48,7 @@ class FundAccountValidationTest extends TestCase
             'request' => [
                 'content' => [
                     FundAccountValidation::FUND_ACCOUNT => [
-                        FundAccount\Entity::ID   => (new UniqueIdEntity())->generateId()->getId(),
+                        FundAccount\Entity::ID => (new UniqueIdEntity())->generateId()->getId(),
                     ],
                 ]
             ]

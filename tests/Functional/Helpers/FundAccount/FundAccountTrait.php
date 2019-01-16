@@ -4,33 +4,20 @@ namespace RZP\Tests\Functional\Helpers\FundAccount;
 
 trait FundAccountTrait
 {
-    private function getDefaultFundAccountBankAccountArray()
+    protected function getDefaultFundAccountBankAccountArray()
     {
         return [
             'account_type' => 'bank_account',
             'contact_id'   => 'cont_1000000contact',
             'details'      => [
-                'ifsc_code'        => 'SBIN0007105',
-                'beneficiary_name' => 'Amit M',
-                'account_number'   => '111000111',
+                'ifsc'           => 'SBIN0007105',
+                'name'           => 'Amit M',
+                'account_number' => '111000111',
             ],
         ];
     }
 
-    private function getDefaultFundAccountBankAccountArrayResponse()
-    {
-        return [
-            'account_type' => 'bank_account',
-            'contact_id'   => 'cont_1000000contact',
-            'details'      => [
-                'ifsc'        => 'SBIN0007105',
-                'name' => 'Amit M',
-                'account_number'   => '111000111',
-            ],
-        ];
-    }
-
-    private function buildFundAccountBankAccountRequest()
+    protected function buildFundAccountBankAccountRequest()
     {
         $fundAccount = $this->getDefaultFundAccountBankAccountArray();
 
@@ -43,7 +30,7 @@ trait FundAccountTrait
         return $request;
     }
 
-    private function createFundAccountBankAccount($key = null)
+    protected function createFundAccountBankAccount($key = null)
     {
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -53,7 +40,7 @@ trait FundAccountTrait
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $expectedFundAccount = $this->getDefaultFundAccountBankAccountArrayResponse();
+        $expectedFundAccount = $this->getDefaultFundAccountBankAccountArray();
 
         $this->assertArraySelectiveEquals($expectedFundAccount, $content);
 

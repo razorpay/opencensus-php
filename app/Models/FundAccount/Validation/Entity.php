@@ -78,12 +78,14 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::STATUS   => Status::CREATED,
-        self::NOTES    => [],
-        self::AMOUNT   => null,
-        self::FEE      => null,
-        self::TAX      => null,
-        self::CURRENCY => null,
+        self::STATUS          => Status::CREATED,
+        self::NOTES           => [],
+        self::AMOUNT          => null,
+        self::FEE             => null,
+        self::TAX             => null,
+        self::CURRENCY        => null,
+        self::ACCOUNT_STATUS  => null,
+        self::REGISTERED_NAME => null,
     ];
 
 
@@ -137,6 +139,14 @@ class Entity extends Base\PublicEntity
         $array[self::ENTITY] = 'fund_account.validation';
     }
 
+    public function setPublicResultsAttribute(array & $array)
+    {
+        $array[self::RESULTS] = [
+            self::ACCOUNT_STATUS    => $this->getAccountStatus(),
+            self::REGISTERED_NAME   => $this->getRegisteredName(),
+        ];
+    }
+
     // -------------- Getters --------------
 
     public function getAmount()
@@ -152,13 +162,5 @@ class Entity extends Base\PublicEntity
     public function getRegisteredName()
     {
         return $this->getAttribute(self::REGISTERED_NAME);
-    }
-
-    public function setPublicResultsAttribute(array & $array)
-    {
-        $array[self::RESULTS] = [
-            self::ACCOUNT_STATUS    => $this->getAccountStatus(),
-            self::REGISTERED_NAME   => $this->getRegisteredName(),
-        ];
     }
 }

@@ -4645,8 +4645,6 @@ ALTER TABLE fund_transfer_attempts
 
 ALTER TABLE fund_account_validations
     ADD COLUMN account_status VARCHAR(255) DEFAULT NULL after status,
-
-ALTER TABLE fund_account_validations
-    ADD COLUMN registered_name VARCHAR(255) DEFAULT NULL after account_status,
+    ADD COLUMN registered_name VARCHAR(255) DEFAULT NULL after account_status;
 
 ALTER TABLE bank_accounts DROP COLUMN registered_beneficiary_name;
