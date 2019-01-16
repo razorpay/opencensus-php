@@ -7,8 +7,9 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
-use RZP\Models\FundAccount;
 use RZP\Models\Pricing\Fee;
+use RZP\Models\FundAccount;
+use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
 class Core extends Base\Core
 {
@@ -94,5 +95,25 @@ class Core extends Base\Core
 
             return $validation;
         });
+    }
+
+    /**
+     *  If Transaction cannot be created because of insufficient fees probably.
+     *  Then we will revert everything and postFundTransfer should be tried again after some time.
+     *  Hence, this function should be called inside a transaction.
+     */
+    public function postFundTransfer(array $input)
+    {
+        //TODO: Implementation in Later PR
+        //
+        $this->repo->assertTransactionActive();
+
+        $sourceId = $input[FundTransferAttempt\Entity::SOURCE_ID];
+
+        $fundAccountValidation = $this->repo->fund_account_validation->findByPublicId($sourceId);
+
+        $processor = (new Processor\Factory())->get($fundAccountValidation);
+
+        $processor->postFundTransfer($input);
     }
 }

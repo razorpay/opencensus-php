@@ -2,6 +2,10 @@
 
 namespace RZP\Models\FundAccount\Validation\Processor;
 
+
+use RZP\Models\Pricing\Fee;
+use RZP\Models\FundAccount\Validation\Status;
+use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Models\FundAccount\Validation\Entity as Validation;
 
@@ -12,6 +16,11 @@ class BankAccount extends Base
     public function __construct(Validation $validation)
     {
         parent::__construct($validation);
+    }
+
+    public function getAccount(): BankAccountEntity
+    {
+        return $this->account;
     }
 
     public function preProcessValidation()
@@ -35,11 +44,26 @@ class BankAccount extends Base
         // postFundTransfer will be called when its done execution.
     }
 
-    public function postFundTransfer()
+    public function postFundTransfer(array $input)
     {
-        // inside transaction
+        $this->repo->assertTransactionActive();
 
-        // 1. update bank account
+        $bankAccount = $this->getAccount();
+
+        $beneficiaryName = $input[Entity::REGISTERED_BENEFICIARY_NAME] ?? '';
+
+        $bankAccount->setRegisteredBeneficiaryName($beneficiaryName);
+
+        $this->repo->saveOrFail($bankAccount);
+
+        $fundAccountData = [
+            Validation::STATUS              => Status::VALIDATED,
+            Validation::ERROR_CODE          => 'lala',
+            Validation::ERROR_DESCRIPTION   => 'lala',
+            Validation::INTERNAL_ERROR_CODE => 'lala',
+        ];
+
+        $this->validation->edit($fundAccountData, 'postProcess');
 
         // 2. update instrument status and fees
 

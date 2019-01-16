@@ -8,10 +8,6 @@ use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountTrait;
 
-use RZP\Models\Pricing\Fee;
-use RZP\Models\Transaction\Core;
-use RZP\Models\FundAccount\Validation\Repository;
-
 class FundAccountValidationTest extends TestCase
 {
     use FundAccountTrait;
@@ -38,7 +34,7 @@ class FundAccountValidationTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
 
-        $this->startTest();
+        $response = $this->startTest();
 
         $bankAccount = $this->getLastEntity('bank_account', true);
         $fundAccount = $this->getLastEntity('fund_account', true);
@@ -54,6 +50,8 @@ class FundAccountValidationTest extends TestCase
 
         $msg = \RZP\Models\FundAccount\Validation\Processor\BankAccount::PENNY_TESTING_NARRATION;
         $this->assertEquals($msg, $fta['narration']);
+
+        return $response;
     }
 
     public function testCreateValidationWithWrongFundAccountId()
@@ -123,6 +121,18 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals(354, $txn['fee']);
         $this->assertEquals(354, $txn['mdr']);
         $this->assertEquals(54, $txn['tax']);
+    }
+
+    public function testPostFundTransfer()
+    {
+        $fundTransferAttemptArray = $this->testCreateValidationWithFundAccountId();
+
+        $input = [
+            Entity::SOURCE_ID => $fundTransferAttemptArray['id'],
+            \RZP\Models\BankAccount\Entity::REGISTERED_BENEFICIARY_NAME => 'This is Awesome',
+        ];
+
+        (new FundAccount\Validation\Core())->postFundTransfer($input);
     }
 
     /*public function testGetValidation()

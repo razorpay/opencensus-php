@@ -20,9 +20,11 @@ abstract class Base extends Core
         $this->account = $validation->fundAccount->account;
     }
 
+    protected abstract function getAccount();
+
     public abstract function preProcessValidation();
 
     public abstract function processValidation();
 
-    public abstract function postFundTransfer();
+    public abstract function postFundTransfer(array $input);
 }

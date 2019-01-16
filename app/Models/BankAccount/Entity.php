@@ -249,6 +249,11 @@ class Entity extends Base\PublicEntity
         return $this->attributes[self::BENEFICIARY_NAME];
     }
 
+    protected function getRegisteredBeneficiaryNameAttribute()
+    {
+        return $this->attributes[self::REGISTERED_BENEFICIARY_NAME];
+    }
+
     public function settlements()
     {
         return $this->hasMany('RZP\Models\Settlement\Entity');
@@ -352,6 +357,11 @@ class Entity extends Base\PublicEntity
     protected function setNameAttribute($name)
     {
         $this->setAttribute(self::BENEFICIARY_NAME, $name);
+    }
+
+    public function setRegisteredBeneficiaryName($name)
+    {
+        $this->setAttribute(self::REGISTERED_BENEFICIARY_NAME, $name);
     }
 
     protected function setIfscAttribute($code)
