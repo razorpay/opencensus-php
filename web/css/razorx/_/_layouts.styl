@@ -73,16 +73,14 @@
       flex-wrap: wrap
       align-content: flex-start
 
-      .filters + .list-container
+      .filters + div
         margin-top: 32px
 
       .list-container
         flex: 1
         align-self: stretch
-
-        & > div
-          height: 100%
-          overflow-y: auto
+        overflow-y: auto
+        height: 100%
 
       .entity-container
         width: 400px
@@ -175,23 +173,24 @@
       padding: 0 36px
       height: 62px
       color: $color-primary-light
+      align-items: center
 
       .title
-        font-weight: 500
         font-size: 22px
 
     .filters
       align-items: flex-end
       width: 100%
-      padding: 20px 0
+      padding: 12px 24px 20px
       border-bottom: 1px solid rgba(0,0,0,0.04)
       box-shadow: 0 4px 10px -3px rgba(0,0,0,0.03)
+      background: transparent
 
-    .header, filters
+    .header, .filters
       display: flex
-      align-items: center
       position: relative
       z-index: 2
+      font-weight: 500
 
       .field
         margin: 0

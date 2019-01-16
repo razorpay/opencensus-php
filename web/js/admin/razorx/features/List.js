@@ -7,6 +7,9 @@ import { PageTable } from 'ui/Table';
 
 import { statusPill } from 'admin/razorx/data';
 
+import Form from 'ui/Form';
+import Field from 'ui/Field';
+
 const data = {
   items: [
     {
@@ -65,10 +68,15 @@ export default class extends React.Component {
   render() {
     return (
       <div class="list-container">
+        <Form onSubmit={this.onSubmit} class="filters">
+          <Field label="Created By" name="created_by" />
+
+          <button class="btn btn--primary field">Search</button>
+        </Form>
         <div>
           <PageTable
             model={this.collection}
-            fields={experimentFields}
+            fields={featuresFields}
             href={href}
             info={false}
           />
@@ -80,7 +88,7 @@ export default class extends React.Component {
 
 const href = item => '/razorx/features/' + item.id;
 
-const experimentFields = [
+const featuresFields = [
   [
     'Name',
     item => (

@@ -60,51 +60,55 @@ export default class WorkflowRequestsList extends Component {
           <span class="title">Workflows List</span>
         </div>
         <div class="container-group">
-          <Form onSubmit={this.onSubmit} class="filters">
-            <Field
-              label="Search Entity Id"
-              onChange={this.selectId}
-              name="entity_id"
-            />
-            <SelectField
-              label="Request Type"
-              value={selectedType}
-              onChange={this.selectType}
-            >
-              <option value="maker-created">Made by You</option>
-              <option value="checker-requested">Awaiting your Approval</option>
-              <option value="maker-closed">Closed by You</option>
-              <option value="checker-created">Checked by You</option>
-              {isSuperAdmin() && (
-                <option value="super-open">View all Open Actions</option>
-              )}
-              {isSuperAdmin() && (
-                <option value="super-all">View all Actions</option>
-              )}
-            </SelectField>
-            {admins &&
-              selectedType !== 'maker-created' && (
-                <SearchableSelectField
-                  label="Maker Id"
-                  name="maker_id"
-                  placeholder="Search"
-                  options={admins.map(admin => ({
-                    name: admin.name,
-                    value: admin.id.replace('admin_', ''),
-                  }))}
-                />
-              )}
-
-            <input
-              name="workflow_id"
-              value="Fixed value for RazorX workflow requests"
-              class="hide"
-              readOnly
-            />
-
-            <button class="btn btn--primary">Search</button>
-          </Form>
           <div class="list-container">
+            <Form onSubmit={this.onSubmit} class="filters">
+              <Field
+                label="Search Entity Id"
+                onChange={this.selectId}
+                name="entity_id"
+              />
+              <SelectField
+                label="Request Type"
+                value={selectedType}
+                onChange={this.selectType}
+              >
+                <option value="maker-created">Made by You</option>
+                <option value="checker-requested">
+                  Awaiting your Approval
+                </option>
+                <option value="maker-closed">Closed by You</option>
+                <option value="checker-created">Checked by You</option>
+                {isSuperAdmin() && (
+                  <option value="super-open">View all Open Actions</option>
+                )}
+                {isSuperAdmin() && (
+                  <option value="super-all">View all Actions</option>
+                )}
+              </SelectField>
+
+              {admins &&
+                selectedType !== 'maker-created' && (
+                  <SearchableSelectField
+                    label="Maker Id"
+                    name="maker_id"
+                    placeholder="Search"
+                    options={admins.map(admin => ({
+                      name: admin.name,
+                      value: admin.id.replace('admin_', ''),
+                    }))}
+                  />
+                )}
+
+              <input
+                name="workflow_id"
+                value="Fixed value for RazorX workflow requests"
+                class="hide"
+                readOnly
+              />
+
+              <button class="btn btn--primary field">Search</button>
+            </Form>
+
             <div>
               <PageTable
                 model={this.collection}

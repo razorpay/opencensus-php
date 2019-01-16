@@ -5,6 +5,9 @@ import { observer } from 'mobx-react';
 import { PageTable } from 'ui/Table';
 import { formatDate } from 'common/util';
 
+import Form from 'ui/Form';
+import Field from 'ui/Field';
+
 import { statusPill } from 'admin/razorx/data';
 
 const data = {
@@ -91,9 +94,23 @@ export default class extends React.Component {
     },
   });
 
+  onSubmit = filters => {
+    let selectedType = this.state.selectedType;
+
+    selectedType = selectedType.split('-');
+    filters = { ...filters, duty: selectedType[0], type: selectedType[1] };
+
+    this.collection.applyFilters(filters);
+  };
+
   render() {
     return (
       <div class="list-container">
+        <Form onSubmit={this.onSubmit} class="filters">
+          <Field label="Created By" name="created_by" />
+
+          <button class="btn btn--primary field">Search</button>
+        </Form>
         <div>
           <PageTable
             model={this.collection}
