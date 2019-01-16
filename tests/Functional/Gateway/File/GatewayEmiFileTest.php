@@ -216,6 +216,17 @@ class GatewayEmiFileTest extends TestCase
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
+        $file = $this->getLastEntity('file_store', true);
+
+        $expectedFileContent = [
+            'type'        => 'rbl_emi_file',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'zip',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
         Mail::assertQueued(EmiMail\Password::class);
         Mail::assertQueued(EmiMail\File::class);
     }
@@ -304,9 +315,9 @@ class GatewayEmiFileTest extends TestCase
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-//        Queue::assertPushed(BeamJob::class, 1);
-//
-//        Queue::assertPushedOn('general_test', BeamJob::class);
+        Queue::assertPushed(BeamJob::class, 1);
+
+        Queue::assertPushedOn('general_test', BeamJob::class);
     }
 
     public function testGenerateEmiFileForSbiWithDuplicateSbiEmiTerminal()
@@ -382,9 +393,9 @@ class GatewayEmiFileTest extends TestCase
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-//        Queue::assertPushed(BeamJob::class, 1);
-//
-//        Queue::assertPushedOn('general_test', BeamJob::class);
+        Queue::assertPushed(BeamJob::class, 1);
+
+        Queue::assertPushedOn('general_test', BeamJob::class);
     }
 
     public function testGenerateEmiFileForSbiWithNoSbiEmiTerminal()
@@ -435,9 +446,9 @@ class GatewayEmiFileTest extends TestCase
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-//        Queue::assertPushed(BeamJob::class, 1);
-//
-//        Queue::assertPushedOn('general_test', BeamJob::class);
+        Queue::assertPushed(BeamJob::class, 1);
+
+        Queue::assertPushedOn('general_test', BeamJob::class);
     }
 
     public function testGenerateEmiFileForScbl()

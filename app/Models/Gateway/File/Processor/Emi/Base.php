@@ -24,10 +24,6 @@ class Base extends BaseProcessor
     const EMI_FILE_PASSWORD_LENGTH = 7;
     const EXTENSION                = FileStore\Format::XLSX;
 
-    protected $excludeFileStorePush = [
-        IFSC::SBIN,
-    ];
-
     public function fetchEntities(): PublicCollection
     {
         $begin = $this->gatewayFile->getBegin();
