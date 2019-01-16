@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundAccount\Validation;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -44,14 +45,20 @@ class Core extends Base\Core
 
     protected function createOrGetFundAccount(array $input, Merchant\Entity $merchant): FundAccount\Entity
     {
-        if (isset($input['fund_account']['id']) === true)
+        try
         {
-            //TODO: try catch and throw right error with right field: PR 2.5
-            return $this->repo->fund_account->findByPublicIdAndMerchant($input['fund_account']['id'], $merchant);
-        }
-        else
-        {
+            if (isset($input['fund_account']['id']) === true)
+            {
+                return $this->repo->fund_account->findByPublicIdAndMerchant($input['fund_account']['id'], $merchant);
+            }
+
             return (new FundAccount\Core())->create($input['fund_account'], $merchant);
+        }
+        catch (Exception\BaseException $e)
+        {
+            $e->appendFieldToError('fund_account');
+
+            throw $e;
         }
     }
 
