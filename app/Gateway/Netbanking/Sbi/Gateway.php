@@ -204,6 +204,7 @@ class Gateway extends Base\Gateway
                 'content'       => $contentToEncrypt,
                 'request_array' => $requestArray,
                 'merchant_code' => $gatewayMerchantId,
+                'gateway'       => $this->gateway
             ],
             $input,
             TraceCode::GATEWAY_PAYMENT_REQUEST);
@@ -260,7 +261,8 @@ class Gateway extends Base\Gateway
                 'response_body' => $response->body,
                 'content'       => $verify->verifyResponseContent,
                 'payment_id'    => $verify->input['payment']['id'],
-                'status_code'   => $response->status_code
+                'status_code'   => $response->status_code,
+                'gateway'       => $this->gateway
             ]);
     }
 
