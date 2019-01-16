@@ -51,11 +51,11 @@ class NetbankingAllahabadCombinedFileTest extends TestCase
 
         $file = $this->getLastEntity('file_store', true);
 
-        $date = Carbon::now(Timezone::IST)->format('d-m-Y');
+        $date = Carbon::now(Timezone::IST)->format('dmY');
 
         $expectedFilesContent = [
             'type' => 'allahabad_netbanking_refund',
-            'location' => 'Allahabad_REFUND_' . $date . '.txt',
+            'location' => 'ALB_Refund_RAZOR_' . $date . '.txt',
         ];
 
         $this->assertArraySelectiveEquals($expectedFilesContent, $file);
@@ -99,9 +99,9 @@ class NetbankingAllahabadCombinedFileTest extends TestCase
 
         $this->assertCount(10, $refundsFileRow);
 
-        $this->assertEquals($refundsFileRow[0], 'Razor');
+        $this->assertEquals($refundsFileRow[0], 'RAZOR');
 
-        $this->assertEquals($refundsFileRow[1], '027');
+        $this->assertEquals($refundsFileRow[1], 'ALB');
 
         $this->assertEquals(trim($refundsFileRow[9]), 500);
     }

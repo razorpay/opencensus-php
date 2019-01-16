@@ -58,6 +58,7 @@ class Entity extends Base\PublicEntity
     const ARN                    = 'arn';
     const REVERSAL               = 'reversal';
     const RRN                    = 'rrn';
+    const UTR                    = 'utr';
 
     /**
      * Holds the value of Reference number sent by bank for eg for upi, it contains npci_upi_txn_id
@@ -426,6 +427,12 @@ class Entity extends Base\PublicEntity
                     self::RRN   => $this->getAttribute(self::REFERENCE1)
                 ];
                 break;
+
+            case Payment\Method::EMANDATE:
+                $acquirerData = [
+                    self::UTR   => $this->getAttribute(self::REFERENCE1)
+                ];
+                break;
         }
 
         return (new Dictionary($acquirerData));
@@ -434,7 +441,7 @@ class Entity extends Base\PublicEntity
     /**
      * Used by FTA reconciliation
      */
-    public function setFailureReason()
+    public function setFailureReason($failureReason)
     {
         return;
     }
@@ -622,6 +629,11 @@ class Entity extends Base\PublicEntity
     public function getBatchId()
     {
         return $this->getAttribute(self::BATCH_ID);
+    }
+
+    public function setAttempts($value)
+    {
+        $this->setAttribute(self::ATTEMPTS, $value);
     }
 
     // ----------------------- Mutator ---------------------------------------------

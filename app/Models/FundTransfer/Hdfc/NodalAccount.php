@@ -113,6 +113,10 @@ class NodalAccount extends NodalBase\FileProcessor
 
         list($type, $mode)  = $this->getTransactionType($ba, $amount);
 
+        $entity->setMode($mode);
+
+        $this->repo->save($entity);
+
         $this->updateSummary($mode, $amount);
 
         $record = $this->emptyRow;

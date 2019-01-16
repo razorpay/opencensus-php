@@ -154,8 +154,12 @@ class GatewayDowntimeSorter extends Terminal\Sorter
      */
     protected function isDowntimeApplicableOnTerminal(Terminal\Entity $terminal, Downtime\Entity $downtime): bool
     {
+        if (is_null($downtime->getTerminalId()) === false)
+        {
+            return $terminal->getId() === $downtime->getTerminalId();
+        }
+
         return (($downtime->getGateway() === Downtime\Entity::ALL) or
-                ($terminal->getGateway() === $downtime->getGateway()) or
-                ($terminal->getId() === $downtime->getTerminalId()));
+                ($terminal->getGateway() === $downtime->getGateway()));
     }
 }

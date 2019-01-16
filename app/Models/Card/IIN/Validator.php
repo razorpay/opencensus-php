@@ -37,22 +37,24 @@ class Validator extends Base\Validator
     );
 
     protected static $binIssuerValidationRules = [
-        Entity::ISSUER       => 'required|string|in:HDFC',
         Entity::NUMBER       => 'required|numeric|digits_between:6,19',
-        Entity::TYPE         => 'required|string|in:credit,debit',
     ];
 
-    protected static $createValidators = array(
+    protected static $createValidators = [
         'create_network',
         Entity::TYPE,
         Entity::ISSUER,
-    );
+    ];
 
-    protected static $editValidators = array(
+    protected static $editValidators = [
         'edit_network',
         Entity::TYPE,
         Entity::ISSUER,
-    );
+    ];
+
+    protected static $binListValidationRules = [
+        'flow'             => 'required|string|in:otp',
+    ];
 
     protected function validateCreateNetwork($input)
     {

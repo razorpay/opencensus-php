@@ -26,6 +26,7 @@ class UpiMindgateGatewayTest extends TestCase
      * @var Terminal
      */
     protected $sharedTerminal;
+    protected $bharatQrTerminal;
 
     /**
      * Payment array
@@ -41,13 +42,23 @@ class UpiMindgateGatewayTest extends TestCase
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
 
+        $this->bharatQrTerminal = $this->fixtures->create('terminal:bharat_qr_upi_mindgate_terminal');
+
         $this->gateway = Gateway::UPI_MINDGATE;
 
         $this->fixtures->merchant->enableMethod(Account::TEST_ACCOUNT, Method::UPI);
 
+        $this->fixtures->merchant->activate();
+
         $this->payment = $this->getDefaultUpiPaymentArray();
 
         $this->fixtures->merchant->createAccount(Account::DEMO_ACCOUNT);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal');
     }
 
     /**
@@ -863,6 +874,146 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertEquals(1, $upiEntities['count']);
 
         $this->assertEquals(1, $transactionEntities['count']);
+    }
+
+    public function testUpiQrPaymentProcess()
+    {
+        $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
+
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
+        $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $request = $this->mockServer()->getAsyncCallbackContentForBharatQr($qrCodeId);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        //Created Qr Entity As Expected
+        $bharatQr = $this->getLastEntity('bharat_qr', true);
+
+        // Payment is automatically captured
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(100, $payment['amount']);
+
+        $this->assertEquals($bharatQr['payment_id'], $payment['id']);
+
+        $upi = $this->getLastEntity('upi', true);
+
+        $this->assertNotNull($upi['payment_id']);
+
+        $this->assertEquals($bharatQr['expected'], true);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('captured', $payment['status']);
+    }
+
+    public function testUpiVerifyAndRefundPayment()
+    {
+        $this->testUpiQrPaymentProcess();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->verifyPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('1', $payment['verified']);
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('processed', $refund['status']);
+    }
+
+    public function testUpiQrUnExpectedPaymentProcess()
+    {
+        $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
+
+        $request = $this->mockServer()->getAsyncCallbackContentForBharatQr(str_random(5));
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        $payment = $this->getDbLastEntity('payment', 'live');
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals(100, $payment['amount']);
+
+        $bharatQr = $this->getDbLastEntity('bharat_qr', 'live');
+        $this->assertEquals($bharatQr['payment_id'], $payment['id']);
+        $this->assertEquals($bharatQr['expected'], false);
+
+        $upi = $this->getDbLastEntity('upi', 'live');
+        $this->assertNotNull($upi['payment_id']);
+    }
+
+    public function testUpiQrExpectedOnExpectedTerminalPaymentProcess()
+    {
+        $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
+
+        $this->fixtures->on('live')->edit(
+            'terminal',
+            $this->bharatQrTerminal['id'],
+            [
+                'expected' => true
+            ]);
+
+        $request = $this->mockServer()->getAsyncCallbackContentForBharatQr(str_random(5));
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        $payment = $this->getDbLastEntity('payment', 'live');
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(100, $payment['amount']);
+
+        $bharatQr = $this->getDbLastEntity('bharat_qr', 'live');
+        $this->assertEquals($bharatQr['payment_id'], $payment['id']);
+        $this->assertTrue($bharatQr['expected']);
+
+        $upi = $this->getDbLastEntity('upi', 'live');
+        $this->assertNotNull($upi['payment_id']);
+    }
+
+    protected function createVirtualAccount()
+    {
+        $this->ba->privateAuth();
+
+        $request = $this->testData[__FUNCTION__];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $bankAccount = $response['receivers'][0];
+
+        return $bankAccount;
+    }
+
+    protected function parseResponseXml(string $response): array
+    {
+        return (array) simplexml_load_string(trim($response));
     }
 
     public function testIntentTpvPayment()

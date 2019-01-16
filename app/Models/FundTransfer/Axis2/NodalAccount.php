@@ -116,6 +116,10 @@ class NodalAccount extends NodalBase\FileProcessor
 
             $mode     = $this->getPaymentType($amount, $ba);
 
+            $entity->setMode($mode);
+
+            $this->repo->save($entity);
+
             $this->updateSummary($mode, $amount);
 
             $mode     = Axis2Constants::MODE_MAPPING[$mode];
@@ -240,7 +244,7 @@ class NodalAccount extends NodalBase\FileProcessor
 
         $date      = $timeNow->format('dmY');
 
-        $serialNum = $timeNow->format('hms');
+        $serialNum = $timeNow->format('his');
 
         return Axis2Constants::CORP_CODE . '_H2H_' . $date . '_' . $serialNum;
     }
@@ -285,11 +289,12 @@ class NodalAccount extends NodalBase\FileProcessor
 
         $mode = Mode::NEFT;
 
-        if ($amount < self::MAX_IMPS_AMOUNT)
-        {
-            $mode = Mode::IMPS;
-        }
-
+       // TODO:: IMPS and RTGS issue with Power Access system
+       // if ($amount < self::MAX_IMPS_AMOUNT)
+       // {
+       //     $mode = Mode::IMPS;
+       // }
+  
         if ((($now >= $rtgsMinCutoffTime) and ($now <= $rtgsMaxCutoffTime)) and
             ($amount >= self::MIN_RTGS_AMOUNT))
         {

@@ -15,4 +15,15 @@ class Repository extends Base\Repository
                     ->where(Entity::AUTH_TOKEN, $authToken)
                     ->firstOrFailPublic();
     }
+
+    /**
+     * @param array $properties
+     * @return Entity|null
+     */
+    public function findByDeviceProperties(array $properties)
+    {
+        return $this->newP2pQuery()
+                    ->where($properties)
+                    ->first();
+    }
 }

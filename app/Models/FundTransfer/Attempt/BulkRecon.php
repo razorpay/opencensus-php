@@ -11,8 +11,10 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Settlement\Channel;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Settlement\SlackNotification;
+use RZP\Models\FundTransfer\Mode as FundTransferMode;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Mail\Settlement\Reconciliation as ReconciliationEmail;
 use RZP\Mail\Settlement\CriticalFailure as CriticalFailureEmail;
@@ -277,6 +279,12 @@ class BulkRecon extends Base\Core
         }
 
         $remark = $entity->getRemarks();
+
+        if (($this->channel === Channel::ICICI) and
+            ($entity->getMode() === FundTransferMode::RTGS))
+        {
+            $remark = $entity->getBankStatusCode();
+        }
 
         $this->notificationSummary = (empty($this->notificationSummary) === true) ?
                                         $default : $this->notificationSummary;

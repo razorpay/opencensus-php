@@ -96,6 +96,8 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input): array
     {
+        $this->processAccountNumber($input);
+
         $payouts = $this->repo->payout->fetch($input, $this->merchant->getId());
 
         return $payouts->toArrayPublic();

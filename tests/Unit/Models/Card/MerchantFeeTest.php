@@ -1031,6 +1031,25 @@ class MerchantFeeTest extends TestCase
         $this->fail();
     }
 
+    // in postpaid mode, test should pass even when fee is greater than amount, here the data is such that fee will be grater than amount
+    public function testNetBankingRuleSelectionForPlatformFeeBearerPostPaidModeAndFeeLessThanAmount()
+    {
+        $this->fee->setPricingRepo($this->getMockPricingRepo());
+
+        $this->fixtures->merchant->setFeeBearer('platform');
+
+        $this->fixtures->merchant->setFeeModel(Merchant\FeeModel::POSTPAID);
+
+        $amount = 100;
+
+        $response = $this->runMerchantFeeTestNetB($amount, 'HDFC', ['payment' => '1fq0OXpgrfrt4y']);
+
+        $fee = $response[0];
+
+        $this->assertGreaterThan($amount, $fee);
+
+    }
+
     public function testWalletRuleSelection()
     {
         $this->fee->setPricingRepo($this->getMockPricingRepo());
@@ -1159,7 +1178,6 @@ class MerchantFeeTest extends TestCase
     protected function runMerchantFeeTest($amount, $network, array $expectedRules, $cardType, $isRecurring = false, $isCardInternational = false, $receiver = null, $authType = null)
     {
         $payment = $this->createPaymentEntityForCard($amount, $network, $expectedRules, $cardType, $isRecurring, $isCardInternational, $receiver, $authType);
-
 
         list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 

@@ -22,7 +22,7 @@ class Flow
     ];
 
     public static $featureToFlowMap = [
-        self::HEADLESS_OTP => Feature\Constants::OTPELF,
+        self::HEADLESS_OTP => Feature\Constants::HEADLESS,
     ];
 
     public static function getFlowForMethod($method)

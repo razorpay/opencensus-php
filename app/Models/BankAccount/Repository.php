@@ -2,7 +2,6 @@
 
 namespace RZP\Models\BankAccount;
 
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\BankAccount;

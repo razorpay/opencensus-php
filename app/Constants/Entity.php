@@ -104,6 +104,7 @@ class Entity
     const BATCH_FUND_TRANSFER       = 'batch_fund_transfer';
     const CUSTOMER_TRANSACTION      = 'customer_transaction';
     const FUND_TRANSFER_ATTEMPT     = 'fund_transfer_attempt';
+    const FUND_ACCOUNT_VALIDATION   = 'fund_account_validation';
     const SUBSCRIPTION_REGISTRATION = 'subscription_registration';
 
     // heimdall
@@ -304,6 +305,8 @@ class Entity
         self::MERCHANT                  => \RZP\Models\Merchant::class,
         self::ACCOUNT                   => \RZP\Models\Merchant\Account::class,
         self::SCHEDULE                  => \RZP\Models\Schedule::class,
+        self::COUPON                    => \RZP\Models\Coupon::class,
+        self::PROMOTION                 => \RZP\Models\Promotion::class,
         self::APP_TOKEN                 => \RZP\Models\Customer\AppToken::class,
         self::STATEMENT                 => \RZP\Models\Transaction\Statement::class,
         self::INVITATION                => \RZP\Models\Invitation::class,
@@ -337,6 +340,7 @@ class Entity
         self::CUSTOMER_TRANSACTION      => \RZP\Models\Customer\Transaction::class,
         self::FUND_TRANSFER_ATTEMPT     => \RZP\Models\FundTransfer\Attempt::class,
         self::VIRTUAL_ACCOUNT           => \RZP\Models\VirtualAccount::class,
+        self::FUND_ACCOUNT_VALIDATION   => \RZP\Models\FundAccount\Validation::class,
         self::SUBSCRIPTION_REGISTRATION => \RZP\Models\SubscriptionRegistration::class,
 
         // gateways

@@ -6,6 +6,20 @@ use RZP\Models\FundTransfer\Base\Reconciliation\Status as BaseStatus;
 
 class GatewayStatus extends BaseStatus
 {
+    // ====== Status Codes ======
+
+    const STATUS_CODE_SUCCESS = 'S';
+    const STATUS_CODE_FAILURE = 'F';
+    const STATUS_CODE_TIMEOUT = 'T';
+    const STATUS_CODE_PENDING = 'P';
+
+    const VALID_STATUS_CODES = [
+        self::STATUS_CODE_SUCCESS,
+        self::STATUS_CODE_FAILURE,
+        self::STATUS_CODE_TIMEOUT,
+        self::STATUS_CODE_PENDING,
+    ];
+
     const COMPLETED     = '00';
     const COMPLETED2    = '0';
 
@@ -26,7 +40,7 @@ class GatewayStatus extends BaseStatus
     const YB = 'YB'; const YD = 'YD'; const YF = 'YF'; const X6 = 'X6'; const X7 = 'X7'; const XB = 'XB';
     const XC = 'XC'; const AM = 'AM'; const B1 = 'B1'; const B3 = 'B3'; const ZA = 'ZA'; const ZH = 'ZH';
     const UX = 'UX'; const ZG = 'ZG'; const ZE = 'ZE'; const ZB = 'ZB'; const YG = 'YG'; const X1 = 'X1';
-    const UT = 'UT'; const BT = 'BT'; const RB = 'RB'; const RP = 'RP'; const E32 = '32'; const E21 = '21';
+    const UT = 'UT'; const BT = 'BT'; const RB = 'RB'; const RP = 'RP'; const ERSP32 = '32'; const ERSP21 = '21';
     const U01 = 'U01'; const U02 = 'U02'; const U03 = 'U03'; const U04 = 'U04'; const U05 = 'U05'; const U06 = 'U06';
     const U07 = 'U07'; const U08 = 'U08'; const U09 = 'U09'; const U10 = 'U10'; const U11 = 'U11'; const U12 = 'U12';
     const U13 = 'U13'; const U14 = 'U14'; const U15 = 'U15'; const U16 = 'U16'; const U17 = 'U17'; const U18 = 'U18';
@@ -38,6 +52,27 @@ class GatewayStatus extends BaseStatus
     const U49 = 'U49'; const U50 = 'U50'; const U51 = 'U51'; const U52 = 'U52'; const U53 = 'U53'; const U54 = 'U54';
     const U66 = 'U66'; const U67 = 'U67'; const U68 = 'U68'; const U69 = 'U69'; const U70 = 'U70'; const U77 = 'U77';
     const U78 = 'U78'; const OC = 'OC'; const OD = 'OD'; const NC = 'NC'; const ND = 'ND'; const DT = 'DT';
+    const EXT_RSP9001 = 'EXT_RSP9001'; const EXT_RSP9002 = 'EXT_RSP9002'; const EXT_RSP9003 = 'EXT_RSP9003';
+    const EXT_RSP9004 = 'EXT_RSP9004'; const EXT_RSP9005 = 'EXT_RSP9005'; const EXT_RSP9006 = 'EXT_RSP9006';
+    const EXT_RSP9007 = 'EXT_RSP9007'; const EXT_RSP9010 = 'EXT_RSP9010'; const EXT_RSP9011 = 'EXT_RSP9011';
+    const EXT_RSP9018 = 'EXT_RSP9018'; const EXT_RSP9029 = 'EXT_RSP9029'; const EXT_RSP9031 = 'EXT_RSP9031';
+    const EXT_RSP9035 = 'EXT_RSP9035'; const EXT_RSP9037 = 'EXT_RSP9037'; const EXT_RSP9039 = 'EXT_RSP9039';
+    const EXT_RSP9042 = 'EXT_RSP9042'; const EXT_RSP9045 = 'EXT_RSP9045'; const EXT_RSP9086 = 'EXT_RSP9086';
+    const EXT_RSP9088 = 'EXT_RSP9088'; const ERSP7 = '7'; const ERSP10 = '10'; const ERSP11 = '11'; const ERSP18 = '18';
+    const ERSP92 = '92'; const ERSP1001 = '1001'; const ERSP1206 = '1206'; const ERSP1210 = '1210';
+    const ERSP1282 = '1282'; const ERSP2075 = '2075'; const ERSP2435 = '2435'; const ERSP2988 = '2988';
+    const ERSP3934 = '3934'; const ERSP3403 = '3403'; const ERSP3573 = '3573'; const ERSP2778 = '2778';
+    const ERSP2853 = '2853'; const ERSP3611 = '3611'; const ERSP3769 = '3769'; const ERSP3915 = '3915';
+    const ERSP4388 = '4388'; const ERSP4470 = '4470'; const ERSP5281 = '5281'; const ERSP8024 = '8024';
+    const ERSP8037 = '8037'; const ERSP8080 = '8080'; const ERSP8086 = '8086'; const ERSP8087 = '8087';
+    const ERSP8088 = '8088'; const ERSP9007 = '9007'; const ERSP9008 = '9008'; const ERSP9015 = '9015';
+    const ERSP9030 = '9030'; const ERSP9093 = '9093'; const ERSP80002 = '80002'; const ERSP80004 = '80004';
+    const ERSP80016 = '80016'; const ERSP90152 = '90152'; const ERSP90185 = '90185'; const ERSP90290 = '90290';
+    const ERSP90296 = '90296'; const ERSP90188 = '90188';
+
+    // We get this error code in Verify response. Mostly it should be failed only. Anyway, will be
+    // removing this soon. Not going to rely on Verify later except in timeout or pending cases.
+    const E99 = '99';
 
     // pre processing  error codes for transfer request
     const RZP_FTA_REQUEST_INVALID           = 'RZP_FTA_REQUEST_INVALID';
@@ -46,13 +81,15 @@ class GatewayStatus extends BaseStatus
     // post processing  error codes for transfer request
     const RZP_DUPLICATE_PAYOUT              = 'RZP_DUPLICATE_PAYOUT';
     const RZP_PAYOUT_TIMED_OUT              = 'RZP_PAYOUT_TIMED_OUT';
+    const RZP_PAYOUT_REQUEST_FAILURE        = 'RZP_PAYOUT_REQUEST_FAILURE';
     const RZP_PAYOUT_UNKNOWN_ERROR          = 'RZP_PAYOUT_UNKNOWN_ERROR';
     const RZP_RESPONSE_DECRYPTION_FAILED    = 'RZP_RESPONSE_DECRYPTION_FAILED';
 
     // verify related status codes
-    const RZP_REF_ID_MISMATCH           = 'RZP_REF_ID_MISMATCH';
-    const RZP_AMOUNT_MISMATCH           = 'RZP_AMOUNT_MISMATCH';
-    const RZP_PAYOUT_VERIFY_TIMED_OUT   = 'RZP_PAYOUT_VERIFY_TIMED_OUT';
+    const RZP_REF_ID_MISMATCH               = 'RZP_REF_ID_MISMATCH';
+    const RZP_AMOUNT_MISMATCH               = 'RZP_AMOUNT_MISMATCH';
+    const RZP_PAYOUT_VERIFY_TIMED_OUT       = 'RZP_PAYOUT_VERIFY_TIMED_OUT';
+    const RZP_PAYOUT_VERIFY_REQUEST_FAILURE = 'RZP_PAYOUT_VERIFY_REQUEST_FAILURE';
 
     const FAILURE_CODE_PUBLIC_MAPPING = [
         self::MT01                              => 'Payout failed. Contact support for help.',
@@ -155,8 +192,8 @@ class GatewayStatus extends BaseStatus
         self::BT                                => 'Payout timed out. Try again later',
         self::RB                                => 'Payout failed. Contact support for help.',
         self::RP                                => 'Payout failed. Contact support for help.',
-        self::E32                               => 'Payout failed. Contact support for help.',
-        self::E21                               => 'Payout failed. Contact support for help.',
+        self::ERSP32                            => 'Payout failed. Contact support for help.',
+        self::ERSP21                            => 'Payout failed. Contact support for help.',
         self::U01                               => 'Payout failed. Contact support for help.',
         self::U02                               => 'Payout failed. Contact support for help.',
         self::U03                               => 'Payout failed. Contact support for help.',
@@ -223,15 +260,79 @@ class GatewayStatus extends BaseStatus
         self::NC                                => 'Payout failed. Contact support for help.',
         self::ND                                => 'Payout failed. Contact support for help.',
         self::DT                                => 'Payout failed. Contact support for help.',
+        self::E99                               => 'Payout failed. Contact support for help.',
+        self::EXT_RSP9001                       => 'Payout failed. Contact support for help.',
+        self::EXT_RSP9002                       => 'Payout failed. Contact support for help.',
+        self::EXT_RSP9003                       => 'Payout failed. Contact support for help.',
+        self::EXT_RSP9004                       => 'Payout failed. Contact support for help.',
+        self::EXT_RSP9005                       => 'Payout failed. Contact support for help.',
+        self::EXT_RSP9006                       => 'Payout failed. Contact support for help.',
+        self::EXT_RSP9007                       => 'Payout failed. Contact support for help.',
+        self::EXT_RSP9010                       => 'Payout failed. Contact support for help.',
+        self::EXT_RSP9011                       => 'Payout failed. Contact support for help.',
+        self::EXT_RSP9018                       => 'Payout failed. Contact support for help.',
+        self::EXT_RSP9029                       => 'Payout failed. Contact support for help.',
+        self::EXT_RSP9031                       => 'Payout failed. Contact support for help.',
+        self::EXT_RSP9035                       => 'Payout failed. Contact support for help.',
+        self::EXT_RSP9037                       => 'Payout failed. Contact support for help.',
+        self::EXT_RSP9039                       => 'Payout failed. Contact support for help.',
+        self::EXT_RSP9042                       => 'Payout failed. Contact support for help.',
+        self::EXT_RSP9045                       => 'Payout failed. Contact support for help.',
+        self::EXT_RSP9086                       => 'Payout failed. Contact support for help.',
+        self::EXT_RSP9088                       => 'Payout failed. Contact support for help.',
+        self::ERSP7                             => 'Payout failed. Contact support for help.',
+        self::ERSP10                            => 'Payout failed. Contact support for help.',
+        self::ERSP11                            => 'Payout failed. Contact support for help.',
+        self::ERSP18                            => 'Payout failed. Contact support for help.',
+        self::ERSP92                            => 'Payout failed. Contact support for help.',
+        self::ERSP1001                          => 'Payout failed. Contact support for help.',
+        self::ERSP1206                          => 'Payout failed. Contact support for help.',
+        self::ERSP1210                          => 'Payout failed. Contact support for help.',
+        self::ERSP1282                          => 'Payout failed. Contact support for help.',
+        self::ERSP2075                          => 'Payout failed. Contact support for help.',
+        self::ERSP2435                          => 'Payout failed. Contact support for help.',
+        self::ERSP2988                          => 'Payout failed. Contact support for help.',
+        self::ERSP3934                          => 'Payout failed. Contact support for help.',
+        self::ERSP3403                          => 'Payout failed. Contact support for help.',
+        self::ERSP3573                          => 'Payout failed. Contact support for help.',
+        self::ERSP2778                          => 'Payout failed. Contact support for help.',
+        self::ERSP2853                          => 'Payout failed. Contact support for help.',
+        self::ERSP3611                          => 'Payout failed. Contact support for help.',
+        self::ERSP3769                          => 'Payout failed. Contact support for help.',
+        self::ERSP3915                          => 'Payout failed. Contact support for help.',
+        self::ERSP4388                          => 'Payout failed. Contact support for help.',
+        self::ERSP4470                          => 'Payout failed. Contact support for help.',
+        self::ERSP5281                          => 'Payout failed. Contact support for help.',
+        self::ERSP8024                          => 'Payout failed. Contact support for help.',
+        self::ERSP8037                          => 'Payout failed. Contact support for help.',
+        self::ERSP8080                          => 'Payout failed. Contact support for help.',
+        self::ERSP8086                          => 'Payout failed. Contact support for help.',
+        self::ERSP8087                          => 'Payout failed. Contact support for help.',
+        self::ERSP8088                          => 'Payout failed. Contact support for help.',
+        self::ERSP9007                          => 'Payout failed. Contact support for help.',
+        self::ERSP9008                          => 'Payout failed. Contact support for help.',
+        self::ERSP9015                          => 'Payout failed. Contact support for help.',
+        self::ERSP9030                          => 'Payout failed. Contact support for help.',
+        self::ERSP9093                          => 'Payout failed. Contact support for help.',
+        self::ERSP80002                         => 'Payout failed. Contact support for help.',
+        self::ERSP80004                         => 'Payout failed. Contact support for help.',
+        self::ERSP80016                         => 'Payout failed. Contact support for help.',
+        self::ERSP90152                         => 'Payout failed. Contact support for help.',
+        self::ERSP90185                         => 'Payout failed. Contact support for help.',
+        self::ERSP90290                         => 'Payout failed. Contact support for help.',
+        self::ERSP90296                         => 'Payout failed. Contact support for help.',
+        self::ERSP90188                         => 'Payout failed. Contact support for help.',
         self::RZP_DUPLICATE_PAYOUT              => 'Duplicate reference id passed. Reference id needs to be unique',
-        self::RZP_FTA_REQUEST_INVALID           => 'We should tell what was invalid in the request',
+        self::RZP_FTA_REQUEST_INVALID           => 'Payout failed. Contact support for help.',
         self::RZP_REQUEST_ENCRYPTION_FAILURE    => 'Payout failed. Contact support for help.',
-        self::RZP_PAYOUT_TIMED_OUT              => 'Payout request timed out. Try again later.',
+        self::RZP_PAYOUT_TIMED_OUT              => 'Payout request timed out. Try again later',
+        self::RZP_PAYOUT_REQUEST_FAILURE        => 'Payout request timed out. Try again later',
         self::RZP_RESPONSE_DECRYPTION_FAILED    => 'Payout failed. Contact support for help.',
         self::RZP_PAYOUT_UNKNOWN_ERROR          => 'Payout failed. Contact support for help.',
         self::RZP_REF_ID_MISMATCH               => 'Payout failed. Contact support for help.',
         self::RZP_AMOUNT_MISMATCH               => 'Payout failed. Contact support for help.',
         self::RZP_PAYOUT_VERIFY_TIMED_OUT       => 'Payout failed. Contact support for help.',
+        self::RZP_PAYOUT_VERIFY_REQUEST_FAILURE => 'Payout failed. Contact support for help.',
     ];
 
     const FAILURE_CODE_INTERNAL_MAPPING = [
@@ -335,8 +436,8 @@ class GatewayStatus extends BaseStatus
         self::BT                                => 'ACQUIRER/BENEFICIARY UNAVAILABLE(TIMEOUT)',
         self::RB                                => 'CREDIT REVERSAL TIMEOUT(REVERSAL)',
         self::RP                                => 'PARTIAL DEBIT REVERSAL TIMEOUT',
-        self::E32                               => 'PARTIAL REVERSAL',
-        self::E21                               => 'NO ACTION TAKEN (FULL REVERSAL)',
+        self::ERSP32                            => 'PARTIAL REVERSAL',
+        self::ERSP21                            => 'NO ACTION TAKEN (FULL REVERSAL)',
         self::U01                               => 'The request is duplicate',
         self::U02                               => 'Amount CAP is exceeded',
         self::U03                               => 'Net debit CAP is exceeded',
@@ -402,16 +503,80 @@ class GatewayStatus extends BaseStatus
         self::OD                                => 'Original Debit Not Found',
         self::NC                                => 'Credit Not Done',
         self::ND                                => 'Debit Not Done',
-        self::DT                                => 'Duplicate request se',
+        self::DT                                => 'Duplicate request sent',
+        self::E99                               => 'MPIN is pending. Can be marked as failed. Check first.',
+        self::EXT_RSP9001                       => 'Account does not exist.',
+        self::EXT_RSP9002                       => 'Account Closed.',
+        self::EXT_RSP9003                       => 'Account Blocked.',
+        self::EXT_RSP9004                       => 'No debits allowed on Account.',
+        self::EXT_RSP9005                       => 'No credits allowed on Account.',
+        self::EXT_RSP9006                       => 'Account Closed Today.',
+        self::EXT_RSP9007                       => 'Account is Dormant.',
+        self::EXT_RSP9010                       => 'Account details have been changed since last request. Please reinitiate',
+        self::EXT_RSP9011                       => 'There is a memo present on the Debit account.',
+        self::EXT_RSP9018                       => 'Hold Funds Present - Refer to Drawer ( Account would Overdraw )',
+        self::EXT_RSP9029                       => 'Internal OLTP Error.',
+        self::EXT_RSP9031                       => 'Insufficient funds in the debit account.',
+        self::EXT_RSP9035                       => 'There is a memo present on the Credit account.',
+        self::EXT_RSP9037                       => 'Transaction Amt is exceeding the limit Amt. Account is going to Overline.',
+        self::EXT_RSP9039                       => 'All Installments have been paid for the account/Value date beyond maturity date',
+        self::EXT_RSP9042                       => 'Hold Funds Present - Account is going to Overline.',
+        self::EXT_RSP9045                       => 'Transaction Amt is exceeding the limit Amt. Account is going to Overline.',
+        self::EXT_RSP9086                       => 'Insufficient Balance.',
+        self::EXT_RSP9088                       => 'Account has Credit Override status.',
+        self::ERSP7                             => 'No record in Endpoint Calender',
+        self::ERSP10                            => 'No Status Change Of Customer',
+        self::ERSP11                            => 'Invalid Account No',
+        self::ERSP18                            => 'Invalid destination bank',
+        self::ERSP92                            => 'Invalid LO code',
+        self::ERSP1001                          => 'Error {0} {1} {2}',
+        self::ERSP1206                          => 'Fatal Error has occurred.Please Exit and Contact System Administrator {0} {1} {2}',
+        self::ERSP1210                          => 'Database Error : {0} {1} {2}',
+        self::ERSP1282                          => 'Duplicate {0} {1}',
+        self::ERSP2075                          => 'A database error occurred during the execution of a stored procedure',
+        self::ERSP2435                          => 'Invalid Input {0} {1} {2}.',
+        self::ERSP2988                          => 'Invalid Account Status',
+        self::ERSP3934                          => 'Debit and Credit accounts cannot be same',
+        self::ERSP3403                          => 'Called function has had a Fatal Error {1} {2}',
+        self::ERSP3573                          => 'Invalid input {0} {1} {2}',
+        self::ERSP2778                          => 'Account not found',
+        self::ERSP2853                          => 'Account not found {1} {2}',
+        self::ERSP3611                          => 'Invalid transaction',
+        self::ERSP3769                          => 'Invalid Account Number',
+        self::ERSP3915                          => 'Non-existent reference transaction number',
+        self::ERSP4388                          => 'No Rows Found',
+        self::ERSP4470                          => 'Batch number not found',
+        self::ERSP5281                          => 'Invalid Product Type',
+        self::ERSP8024                          => 'card number in use',
+        self::ERSP8037                          => 'Account is linked to Aadhar no, cannot close the account.',
+        self::ERSP8080                          => 'Mandate has Expired',
+        self::ERSP8086                          => 'Cutoff start time not in range defined',
+        self::ERSP8087                          => 'Could not save payment data',
+        self::ERSP8088                          => 'Float details could not be resolved.',
+        self::ERSP9007                          => 'Disbursement date cannot be less than CASA a/c opening date..',
+        self::ERSP9008                          => 'Limit attached to the account is frozen.Cannot Modify Account Status.',
+        self::ERSP9015                          => 'Value date should be greater than process date',
+        self::ERSP9030                          => 'Maximum limit of Date Fields is over',
+        self::ERSP9093                          => 'FROM and TO account products are marked for IB transfer block.',
+        self::ERSP80002                         => 'Error {0} cannot be null or blank',
+        self::ERSP80004                         => 'Error {0} Invalid field length.',
+        self::ERSP80016                         => 'Transaction found with this  external reference number {0}',
+        self::ERSP90152                         => 'Invalid FromAccountID',
+        self::ERSP90185                         => 'Transaction Amount is invalid.',
+        self::ERSP90290                         => 'Funds Transfer Not Allowed from NRE product.',
+        self::ERSP90296                         => 'To Account Number is Invalid',
+        self::ERSP90188                         => 'Voucher entry not allowed for this GL account.',
         self::RZP_DUPLICATE_PAYOUT              => 'RZP: A payout with given reference Id already exists',
         self::RZP_FTA_REQUEST_INVALID           => 'RZP: payout fta request is invalid',
         self::RZP_REQUEST_ENCRYPTION_FAILURE    => 'RZP: request encryption failure',
         self::RZP_PAYOUT_TIMED_OUT              => 'RZP: payout request timed out',
+        self::RZP_PAYOUT_REQUEST_FAILURE        => 'RZP: payout request failed',
         self::RZP_RESPONSE_DECRYPTION_FAILED    => 'RZP: response decryption failed',
         self::RZP_PAYOUT_UNKNOWN_ERROR          => 'RZP: fatal error, please contact gateway',
         self::RZP_REF_ID_MISMATCH               => 'RZP: Validation error, ref id mismatch',
         self::RZP_AMOUNT_MISMATCH               => 'RZP: amount mismatch',
         self::RZP_PAYOUT_VERIFY_TIMED_OUT       => 'RZP: verify payout timed out',
+        self::RZP_PAYOUT_VERIFY_REQUEST_FAILURE => 'RZP: verify payout request failed',
     ];
 
     public static function getSuccessfulStatus(): array
@@ -422,7 +587,7 @@ class GatewayStatus extends BaseStatus
         ];
     }
 
-    public static function getFailureStatus($bankStatusCode = null): array
+    public static function getFailureStatus(): array
     {
         return array_keys(self::FAILURE_CODE_PUBLIC_MAPPING);
     }
@@ -449,6 +614,7 @@ class GatewayStatus extends BaseStatus
            self::U12,
            self::XK,
            self::DT,
+           self::E99,
        ];
     }
 
@@ -464,17 +630,83 @@ class GatewayStatus extends BaseStatus
         return [];
     }
 
-    public static function getPublicFailureReason($statusCode)
+    public static function isCriticalStatus($bankStatusCode): bool
     {
-        if (in_array($statusCode, self::getSuccessfulStatus(), true) === true)
+        $statusCodes = static::getCriticalErrorStatus();
+
+        $isCritical = (in_array($bankStatusCode, $statusCodes, true) === true);
+
+        if ($isCritical === false)
+        {
+            if (is_int($bankStatusCode) === true)
+            {
+                $bankStatusCode = 'ERSP' . $bankStatusCode;
+            }
+
+            // If the status code is not present in the constant list then consider it as critical
+            $isCritical = (defined('static::' . strtoupper($bankStatusCode)) === false);
+        }
+
+        return $isCritical;
+    }
+
+    public static function getPublicFailureReason($bankStatusCode)
+    {
+        if (in_array($bankStatusCode, self::getSuccessfulStatus(), true) === true)
         {
             return null;
         }
-        else if (in_array($statusCode, array_keys(self::FAILURE_CODE_PUBLIC_MAPPING), true) === true)
+        else if (in_array($bankStatusCode, array_keys(self::FAILURE_CODE_PUBLIC_MAPPING), true) === true)
         {
-            return self::FAILURE_CODE_PUBLIC_MAPPING[$statusCode] ?? 'Payout failed. Contact support for help.';
+            return self::FAILURE_CODE_PUBLIC_MAPPING[$bankStatusCode] ?? 'Payout failed. Contact support for help.';
         }
 
         return "Transfer not completed. Contact support for help.";
+    }
+
+    public static function getUsableCode($responseCode, $errorCode, $responseErrorCode)
+    {
+        if ((strtolower($responseCode) !== 'na') and
+            (array_key_exists($responseCode, self::FAILURE_CODE_PUBLIC_MAPPING) === true))
+        {
+            return $responseCode;
+        }
+
+        if ((strtolower($errorCode) !== 'na') and
+            (array_key_exists($errorCode, self::FAILURE_CODE_PUBLIC_MAPPING) === true))
+        {
+            return $errorCode;
+        }
+
+        if ((strtolower($responseErrorCode) !== 'na') and
+            (array_key_exists($responseErrorCode, self::FAILURE_CODE_PUBLIC_MAPPING) === true))
+        {
+            return $responseErrorCode;
+        }
+
+        return self::getValidCode($responseCode, $errorCode, $responseErrorCode);
+    }
+
+    public static function getValidCode($responseCode, $errorCode, $responseErrorCode)
+    {
+        if ((empty($responseCode) === false) and
+            (strtolower($responseCode) !== 'na'))
+        {
+            return $responseCode;
+        }
+
+        if ((empty($errorCode) === false) and
+            (strtolower($errorCode) !== 'na'))
+        {
+            return $responseCode;
+        }
+
+        if ((empty($responseErrorCode) === false) and
+            (strtolower($responseErrorCode) !== 'na'))
+        {
+            return $responseErrorCode;
+        }
+
+        return $responseCode;
     }
 }

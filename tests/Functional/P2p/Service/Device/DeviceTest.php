@@ -3,6 +3,7 @@
 namespace RZP\Tests\P2p\Service\Device;
 
 use RZP\Tests\P2p\Service\TestCase;
+use RZP\Tests\P2p\Service\Base\Fixtures\Fixtures;
 
 class DeviceTest extends TestCase
 {
@@ -15,15 +16,15 @@ class DeviceTest extends TestCase
         $helper->startVerification();
     }
 
-    public function testCustomerVerificationStatus()
+    public function testVerificationStatus()
     {
-        $token = str_random(16);
-
         $helper = $this->getDeviceHelper();
+
+        $registerResponse = $helper->startVerification();
 
         $helper->withSchemaValidated();
 
-        $helper->fetchVerificationStatus($token);
+        $helper->fetchVerificationStatus($registerResponse['token']);
     }
 
     public function testDeviceRefreshToken()
@@ -42,5 +43,7 @@ class DeviceTest extends TestCase
         $helper->withSchemaValidated();
 
         $helper->deregisterDevice();
+
+        $this->assertTrue($this->fixtures->currentDeviceToken()->isExpired());
     }
 }

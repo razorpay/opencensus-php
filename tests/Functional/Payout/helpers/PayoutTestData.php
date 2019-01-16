@@ -3,8 +3,8 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
-use RZP\Models\FundTransfer\Attempt\Status as FundTransferAttemptStatus;
 use RZP\Models\Payout\Status as PayoutStatus;
+use RZP\Models\FundTransfer\Attempt\Status as FundTransferAttemptStatus;
 
 return [
     'testCreatePayout' => [
@@ -257,14 +257,34 @@ return [
     'testGetPayouts' => [
         'request' => [
             'method'  => 'get',
-            'url'     => '/payouts',
-            'content' => [
-            ],
+            'url'     => '/payouts?account_number=2224440041626905',
+            'content' => [],
         ],
         'response' => [
             'content' => [
             ]
         ]
+    ],
+
+    'testGetPayoutsWithoutAccountNumber' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The account number field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
     ],
 
     'testGetPayout' => [
@@ -397,29 +417,29 @@ return [
     ],
 
     'testPayoutAttemptSuccess' => [
-        'channel' => 'yesbank',
-        'version' => 'V3',
-        'status' => FundTransferAttemptStatus::INITIATED,
-        'utr' => NULL,
-        'remarks' => '',
-        'failure_reason' => NULL,
+        'channel'        => 'yesbank',
+        'version'        => 'V3',
+        'status'         => FundTransferAttemptStatus::INITIATED,
+        'utr'            => null,
+        'remarks'        => '',
+        'failure_reason' => null,
     ],
 
     'testPayoutEntitySuccess' => [
-        'channel' => 'yesbank',
-        'status' => PayoutStatus::PROCESSING,
-        'utr' => NULL,
-        'remarks' => '',
-        'failure_reason' => NULL,
-        'processed_at' => NULL,
-        'settled_on' => NULL,
+        'channel'        => 'yesbank',
+        'status'         => PayoutStatus::PROCESSING,
+        'utr'            => null,
+        'remarks'        => '',
+        'failure_reason' => null,
+        'processed_at'   => null,
+        'settled_on'     => null,
     ],
 
     'testPayoutAttemptReconSuccess' => [
-        'channel' => 'yesbank',
-        'version' => 'V3',
-        'bank_status_code'  => 'P',
-        'status'  => FundTransferAttemptStatus::INITIATED,
+        'channel'          => 'yesbank',
+        'version'          => 'V3',
+        'bank_status_code' => 'P',
+        'status'           => FundTransferAttemptStatus::INITIATED,
     ],
 
     'testCreateMerchantPayoutOnDemand' => [

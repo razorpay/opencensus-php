@@ -110,6 +110,9 @@ class CreatePayoutsTable extends Migration
             $table->integer(Payout::PROCESSED_AT)
                   ->nullable();
 
+            $table->integer(Payout::REVERSED_AT)
+                  ->nullable();
+
             $table->integer(Payout::SETTLED_ON)
                   ->nullable();
 
@@ -122,6 +125,10 @@ class CreatePayoutsTable extends Migration
             $table->integer(Payout::CREATED_AT);
 
             $table->integer(Payout::UPDATED_AT);
+
+            $table->index(Payout::PROCESSED_AT);
+
+            $table->index(Payout::REVERSED_AT);
 
             $table->index(Payout::CREATED_AT);
 

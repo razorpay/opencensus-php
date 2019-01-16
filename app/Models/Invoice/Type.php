@@ -10,11 +10,22 @@ class Type
     const INVOICE = 'invoice';
     const LINK    = 'link';
 
+    protected static $paymentLinkTypes = [
+        self::LINK,
+        self::ECOD,
+    ];
+
     public static function isTypeValid(string $type): bool
     {
         $key = __CLASS__ . '::' . strtoupper($type);
 
         return ((defined($key) === true) and (constant($key) === $type));
+    }
+
+    public static function isPaymentLinkType(string $type): bool
+    {
+        return ((self::isTypeValid($type)) and
+                (in_array($type, self::$paymentLinkTypes, true) === true));
     }
 
     public static function checkType(string $type)

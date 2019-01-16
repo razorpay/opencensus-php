@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Transaction\Processor;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant\RefundSource;
 
@@ -44,7 +46,9 @@ class Refund extends Base
         {
             $paymentTxn = $payment->transaction;
 
-            return ($paymentTxn->isSettled() ? 1 : $paymentTxn->getSettledAt());
+            $nowTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+            return ($paymentTxn->isSettled() ? $nowTimestamp : $paymentTxn->getSettledAt());
         }
 
         return null;

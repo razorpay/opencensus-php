@@ -14,6 +14,8 @@ class Service extends Base\Service
      */
     public function create(array $input): array
     {
+        $input[Entity::PRODUCT] = $this->auth->getRequestOriginProduct();
+
         $invitation = $this->core()->create($input);
 
         return $invitation->toArrayPublic();
@@ -39,7 +41,9 @@ class Service extends Base\Service
      */
     public function list(): array
     {
-        $invitations = $this->core()->list();
+        $product = $this->auth->getRequestOriginProduct();
+
+        $invitations = $this->core()->list($product);
 
         return $invitations;
     }

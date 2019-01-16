@@ -44,7 +44,7 @@ trait ApplicationTrait
     {
         $this->action = $action;
 
-        $this->input = $this->makeArr($input);
+        $this->input = $this->arrayBag($input);
     }
 
     protected function context(): Libraries\Context
@@ -67,7 +67,7 @@ trait ApplicationTrait
         return $this->app['repo'];
     }
 
-    protected function makeArr(array $input = []): Libraries\ArrayBag
+    protected function arrayBag(array $input = []): Libraries\ArrayBag
     {
         return new Libraries\ArrayBag($input);
     }

@@ -111,10 +111,11 @@ class Entity extends Transaction\Entity
                 Payout\Entity::FUND_ACCOUNT_ID,
                 Payout\Entity::FUND_ACCOUNT,
                 Payout\Entity::REVERSAL,
-                // Not exposing status because the payout could still be in processing state
-                // but the transaction would be showing up in the statement. Could get confusing.
-                // Payout\Entity::STATUS,
+                Payout\Entity::STATUS,
                 Payout\Entity::MODE,
+                Payout\Entity::AMOUNT,
+                Payout\Entity::FEES,
+                Payout\Entity::TAX,
                 Payout\Entity::UTR,
                 Payout\Entity::NOTES,
                 Payout\Entity::CREATED_AT,

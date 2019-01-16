@@ -336,6 +336,7 @@ class ScheduleTest extends TestCase
 
         $promotionAttributes = [
             'credit_amount' => '1000',
+            'credit_type'   => 'fee',
         ];
 
         $promotion1 = $this->fixtures->create('promotion:recurring', $promotionAttributes);

@@ -14,7 +14,7 @@ class Core extends Base\Core
 {
     public function create(array $input)
     {
-        $entity = $this->repo->newEntity();
+        $entity = $this->repo->newP2pEntity();
 
         $entity->build($input);
 
@@ -23,8 +23,25 @@ class Core extends Base\Core
         return $entity;
     }
 
-    public function createWithDeviceData(array $input)
+    public function createWithDeviceData(array $input): Entity
     {
         return $this->create([Entity::DEVICE_DATA => $input]);
+    }
+
+    public function retrieveById(string $token): Entity
+    {
+        // We can add verify if pattern is decided
+        return $this->repo->newP2pQuery()->find($token);
+    }
+
+    public function updateTokenCompleted(Entity $registerToken): Entity
+    {
+        $registerToken->setStatus(Status::COMPLETED);
+
+        $registerToken->setDeviceId($this->context()->getDevice()->getId());
+
+        $this->repo->saveOrFail($registerToken);
+
+        return $registerToken;
     }
 }

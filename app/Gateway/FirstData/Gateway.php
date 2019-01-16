@@ -121,7 +121,7 @@ class Gateway extends Base\Gateway
     {
         parent::action($input, Action::PURCHASE);
 
-        $requestContent = $this->getPurchaseRequestArray($input);
+        $requestContent = $this->getPurchaseRequestArrayWithCard($input);
 
         $gatewayPayment = [
             'amount' => $input['payment'][Payment\Entity::AMOUNT],
@@ -408,7 +408,7 @@ class Gateway extends Base\Gateway
 
         $scroogeResponse = new ScroogeResponse();
 
-        if ($input['refund']['reverse'] === true)
+        if ((isset($input['refund']['reverse']) === true) and ($input['refund']['reverse'] === true))
         {
             parent::action($input, Action::VERIFY_REVERSE);
 
@@ -1098,21 +1098,7 @@ class Gateway extends Base\Gateway
         {
             $this->traceAndHandleRequestErrorIfApplicable($e);
 
-            $this->traceCurlErrorIfApplicable();
-
             throw $e;
-        }
-        finally
-        {
-            if (isset($this->curlLog) === true)
-            {
-                fclose($this->curlLog);
-
-                if (file_exists($this->curlLogPath) === true)
-                {
-                    unlink($this->curlLogPath);
-                }
-            }
         }
 
         $this->trace->info(
@@ -1440,22 +1426,7 @@ class Gateway extends Base\Gateway
 
         $hooks = new Requests_Hooks();
 
-        $requestId = Entity::generateUniqueId();
-
-        $this->requestId = $requestId;
-
-        $hooks->register('curl.before_send', function ($curl) use ($requestId)
-        {
-            $this->setCurlSslOpts($curl);
-
-            $this->curlLogPath = storage_path('logs/curl_' . $requestId . '.log');
-
-            $this->curlLog = fopen($this->curlLogPath, 'w'); // opening a log file for curl logs
-
-            curl_setopt($curl, CURLOPT_VERBOSE, true);
-
-            curl_setopt($curl, CURLOPT_STDERR, $this->curlLog);
-        });
+        $hooks->register('curl.before_send', [$this, 'setCurlSslOpts']);
 
         $options['hooks'] = $hooks;
 
@@ -1523,6 +1494,48 @@ class Gateway extends Base\Gateway
             ApiRequestFields::V1_ORDER_ID              => $input['payment']['id'],
             ApiRequestFields::V1_MERCHANT_TXN_ID       => $input['payment']['id'],
             ApiRequestFields::V1_DYNAMIC_MERCHANT_NAME => $this->getDynamicMerchantName($input['merchant']),
+        ];
+
+        $request[ApiRequestFields::V1_TRANSACTION] = $body;
+
+        return $request;
+    }
+
+    protected function getPurchaseRequestArrayWithCard(array $input)
+    {
+        $cardMonth = str_pad($input[Constants\Entity::CARD][Card\Entity::EXPIRY_MONTH],
+            2, '0', STR_PAD_LEFT);
+
+        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE] = [
+            ApiRequestFields::V1_STORE_ID   => $this->getStoreId(),
+            ApiRequestFields::V1_TYPE       => TxnType::SALE,
+        ];
+
+        $body[ApiRequestFields::V1_CREDIT_CARD_DATA] = [
+            ApiRequestFields::V1_CARD_NUMBER    => $input['card']['number'],
+            ApiRequestFields::V1_EXPIRY_MONTH   => $cardMonth,
+            ApiRequestFields::V1_EXPIRY_YEAR    => substr($input['card']['expiry_year'],-2),
+        ];
+
+        $body[ApiRequestFields::V1_RECURRING_TYPE] = Codes::STANDING_INSTRUCTION;
+
+        $currency = $input['payment'][Payment\Entity::CURRENCY];
+
+        $currencyCode = Currency::ISO_NUMERIC_CODES[$currency];
+
+        $amountEntity = TxnType::$amountEntity[TxnType::SALE];
+
+        $body[ApiRequestFields::V1_PAYMENT] = [
+            ApiRequestFields::V1_CHARGE_TOTAL => $this->getFormattedAmount($input, $amountEntity),
+            ApiRequestFields::V1_CURRENCY     => $currencyCode,
+        ];
+
+        // Sending merchant_txn_id is not strictly necessary. We use the order id
+        // for refund and verification of purchase/sale payments, so a separate
+        // reference id here is not required. However, keeping it here for future use.
+        $body[ApiRequestFields::V1_TRANSACTION_DETAILS] = [
+            ApiRequestFields::V1_ORDER_ID              => $input['payment']['id'],
+            ApiRequestFields::V1_TRANSACTION_ORIGIN    => 'ECI',
         ];
 
         $request[ApiRequestFields::V1_TRANSACTION] = $body;

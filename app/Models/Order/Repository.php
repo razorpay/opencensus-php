@@ -14,6 +14,7 @@ class Repository extends Base\Repository
     protected $entityFetchParamRules = [
         Entity::AUTHORIZED      => 'sometimes|in:0,1',
         Entity::RECEIPT         => 'sometimes|string|max:40',
+        self::EXPAND . '.*'     => 'filled|string|in:payments',
     ];
 
     protected $proxyFetchParamRules = [

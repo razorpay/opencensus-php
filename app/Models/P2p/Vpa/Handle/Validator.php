@@ -9,10 +9,10 @@ class Validator extends Base\Validator
 {
     protected static $fetchAllRules;
 
-    protected function rules()
+    public function rules()
     {
         $rules = [
-            Entity::HANDLE       => 'string',
+            Entity::CODE         => 'string',
             Entity::MERCHANT_ID  => 'string',
             Entity::ACQUIRER     => 'string',
             Entity::ACTIVE       => 'string',
@@ -21,10 +21,10 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    protected function getCreateRules()
+    public function makeCreateRules()
     {
         $rules = $this->makeRules([
-            Entity::HANDLE       => 'sometimes',
+            Entity::CODE         => 'sometimes',
             Entity::MERCHANT_ID  => 'sometimes',
             Entity::ACQUIRER     => 'sometimes',
             Entity::ACTIVE       => 'sometimes',
@@ -33,7 +33,7 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    protected function getFetchAllRules()
+    public function makeFetchAllRules()
     {
         $rules = $this->makeRules([]);
 

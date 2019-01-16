@@ -151,7 +151,7 @@ return [
 
     'testGetIin' => [
         'request' => [
-            'url' => '/iins/607500',
+            'url' => '/admin/iin/607500',
             'method' => 'get',
         ],
         'response' => [
@@ -169,7 +169,7 @@ return [
 
     'testGetIins' => [
         'request' => [
-            'url' => '/iins',
+            'url' => '/admin/iin',
             'method' => 'get',
         ],
         'response' => [
@@ -307,4 +307,18 @@ return [
             ],
         ],
     ],
+
+    'testGetBulkFlows' => [
+        'request' => [
+            'url' => '/iins/list',
+            'method' => 'GET',
+            'content' => [
+                'flow' => 'otp',
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ]
 ];

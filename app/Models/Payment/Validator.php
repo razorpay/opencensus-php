@@ -120,7 +120,7 @@ class Validator extends Base\Validator
 
     protected static $verifyAllRules = [
         'gateway'                    => 'sometimes|string|max:50',
-        'delay'                      => 'sometimes|integer|max:43200',
+        'delay'                      => 'sometimes|integer|max:2592000',
         'count'                      => 'sometimes|integer|max:10000'
     ];
 
@@ -164,25 +164,6 @@ class Validator extends Base\Validator
 
     protected static $validateVpaRules = [
         'vpa' => 'required|string|filled|max:100|custom',
-    ];
-
-    // TODO: needs to be removed
-    protected static $payoutRules = [
-        'terminal'              => 'required|array',
-        'merchant'              => 'required|array',
-        'fund_transfer_attempt' => 'sometimes|array',
-        'gateway_input'         => 'required|array',
-        'gateway_input.vpa'     => 'required|string|filled|max:100',
-        'gateway_input.amount'  => 'required|integer',
-        'gateway_input.ref_id'  => 'required|string',
-    ];
-
-    // TODO: needs to be removed
-    protected static $payoutVerifyRules = [
-        'terminal'              => 'required|array',
-        'fund_transfer_attempt' => 'sometimes|array',
-        'gateway_input'         => 'required|array',
-        'gateway_input.ref_id'  => 'required|string',
     ];
 
     protected static $callbackUrlValidationRules = [

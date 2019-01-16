@@ -10,10 +10,12 @@ use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
 use Razorpay\OAuth\Token;
 use Razorpay\Trace\Logger as Trace;
+use Razorpay\OAuth\Application as OAuthApp;
 
 class Core extends Base\Core
 {
     public function create(
+        $entityOwner,
         Merchant\Entity $merchant,
         array $input = null,
         Base\PublicEntity $entity = null)
@@ -23,6 +25,11 @@ class Core extends Base\Core
         $merchantMapping->generateId();
 
         $merchantMapping->merchant()->associate($merchant);
+
+        if (empty($entityOwner) === false)
+        {
+            $merchantMapping->entityOwner()->associate($entityOwner);
+        }
 
         if (empty($entity) === false)
         {
@@ -40,12 +47,13 @@ class Core extends Base\Core
      * on this relation. This can be otherwise fetched from auth-service but
      * since it is read-heavy, we maintain it in the access_map table too.
      *
+     * @param Merchant\Entity $entityOwner can be null
      * @param Merchant\Entity $merchant
      * @param array           $input
      *
      * @return Entity
      */
-    public function addMappingForOAuthApp(Merchant\Entity $merchant, array $input): Entity
+    public function addMappingForOAuthApp($entityOwner, Merchant\Entity $merchant, array $input): Entity
     {
         $merchantId = $merchant->getId();
 
@@ -67,7 +75,7 @@ class Core extends Base\Core
             Entity::ENTITY_ID   => $input[Entity::APPLICATION_ID],
         ];
 
-        return $this->create($merchant, $data);
+        return $this->create($entityOwner, $merchant, $data);
     }
 
     /**
@@ -141,18 +149,20 @@ class Core extends Base\Core
             {
                 $appId      = $mapping->app_id;
                 $merchantId = $mapping->merchant_id;
+                $partnerId  = $mapping->partner_id;
                 $createdAt  = $mapping->created_at;
 
                 $traceData = [
                     Entity::APPLICATION_ID => $appId,
                     Entity::MERCHANT_ID    => $merchantId,
+                    Entity::ENTITY_OWNER_ID     => $partnerId
                 ];
 
                 $this->trace->info(TraceCode::ACCESS_MAP_UPDATE_REQUEST, $traceData);
 
                 try
                 {
-                    $this->processMigration($appId, $merchantId, $createdAt);
+                    $this->processMigration($appId, $merchantId, $partnerId, $createdAt);
 
                     $succeeded++;
                 }
@@ -182,7 +192,7 @@ class Core extends Base\Core
         ];
     }
 
-    protected function processMigration(string $appId, string $merchantId, int $createdAt)
+    protected function processMigration(string $appId, string $merchantId, string $partnerId, int $createdAt)
     {
         $mapping = DB::table(Table::MERCHANT_ACCESS_MAP)
                        ->where(Entity::ENTITY_TYPE, Entity::APPLICATION)
@@ -197,12 +207,13 @@ class Core extends Base\Core
 
             DB::table(Table::MERCHANT_ACCESS_MAP)->insert(
                 [
-                    Entity::ID          => $id,
-                    Entity::ENTITY_TYPE => Entity::APPLICATION,
-                    Entity::ENTITY_ID   => $appId,
-                    Entity::MERCHANT_ID => $merchantId,
-                    Entity::CREATED_AT  => $createdAt,
-                    Entity::UPDATED_AT  => $createdAt
+                    Entity::ID              => $id,
+                    Entity::ENTITY_TYPE     => Entity::APPLICATION,
+                    Entity::ENTITY_ID       => $appId,
+                    Entity::MERCHANT_ID     => $merchantId,
+                    Entity::ENTITY_OWNER_ID => $partnerId,
+                    Entity::CREATED_AT      => $createdAt,
+                    Entity::UPDATED_AT      => $createdAt
                 ]
             );
         }

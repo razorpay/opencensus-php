@@ -18,8 +18,8 @@ use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\NodalBeneficiary\Status;
 use RZP\Jobs\BeneficiaryRegistration;
+use RZP\Models\NodalBeneficiary\Status;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Settlement\SlackNotification;
 
@@ -46,19 +46,15 @@ class Beneficiary extends Base\Core
      */
     public function enqueueForBeneficiaryRegistration(Entity $bankAccount)
     {
-        $isValidType =  (in_array($bankAccount->getType(), Type::getBeneficiaryRegistrationTypes(), true) === false);
+        $isValidType = Type::isValidBeneficiaryRegistrationType($bankAccount->getType());
 
-        //
         // We don't have to register beneficiary for the bank account created in test mode.
-        //
-        if (($this->mode === Mode::TEST) or ($isValidType !== false))
+        if (($this->mode === Mode::TEST) or ($isValidType === false))
         {
             return;
         }
 
-        //
         // We enqueue bank account with all the available channels which provide API based bene registration.
-        //
         $channels = Channel::getChannelsWithOnlineBeneficiaryRegistration();
 
         foreach ($channels as $channel)
