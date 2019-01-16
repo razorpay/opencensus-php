@@ -95,7 +95,7 @@ const Details = ({ data }) => {
             <span class="inline-block">on {formatDate(data.created_at)}</span>
             {data.updated_at !== data.created_at && (
               <div>
-                <b>Last Updated by</b> {titleCase(data.updated_by)}{' '}
+                <b>Last Updated at</b>
                 <span class="inline-block">
                   on {formatDate(data.updated_at)}
                 </span>
