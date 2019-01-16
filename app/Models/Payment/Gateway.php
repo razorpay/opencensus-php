@@ -207,6 +207,9 @@ class Gateway
         self::NETBANKING_PNB,
         self::NETBANKING_OBC,
         self::NETBANKING_ICICI,
+        self::NETBANKING_AXIS,
+        self::NETBANKING_AIRTEL,
+        self::WALLET_AIRTELMONEY,
         self::WALLET_OPENWALLET,
         self::CARDLESS_EMI,
 
@@ -476,8 +479,14 @@ class Gateway
      * @var array
      */
     public static $scroogeGateways = [
+        Payment\Gateway::AMEX => [
+            self::GO_LIVE_TIMESTAMP => 1547115346
+        ],
         Payment\Gateway::SHARP => [
             self::GO_LIVE_TIMESTAMP => 1535712088
+        ],
+        Payment\Gateway::HDFC => [
+            self::GO_LIVE_TIMESTAMP => 1546592646
         ],
         Payment\Gateway::AXIS_MIGS      => [
             self::GO_LIVE_TIMESTAMP => 1542272247
@@ -490,6 +499,9 @@ class Gateway
         ],
         Payment\Gateway::CYBERSOURCE => [
             self::GO_LIVE_TIMESTAMP => 1542649738
+        ],
+        Payment\Gateway::UPI_ICICI   => [
+            self::GO_LIVE_TIMESTAMP => 1546597864
         ],
         Payment\Gateway::UPI_MINDGATE   => [
             self::GO_LIVE_TIMESTAMP => 1540826221
@@ -712,7 +724,6 @@ class Gateway
      */
     public static $reverse = [
         self::CYBERSOURCE,
-        self::FIRST_DATA,
         self::AXIS_MIGS,
         self::AMEX,
         self::WALLET_OPENWALLET,
@@ -970,6 +981,7 @@ class Gateway
         self::HITACHI,
         self::SHARP,
         self::UPI_HULK,
+        self::UPI_MINDGATE,
         self::ISG,
     ];
 

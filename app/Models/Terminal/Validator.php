@@ -13,6 +13,9 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\TpvType;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal\BankingType;
+use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Bank;
+
 
 class Validator extends Base\Validator
 {
@@ -55,6 +58,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
         Entity::IFSC_CODE                   => 'sometimes|string|size:11',
         Entity::CARDLESS_EMI                => 'sometimes|boolean',
+        Entity::ENABLED                     => 'sometimes|in:0,1',
     ];
 
     protected static $editTerminalGateways = [
@@ -584,9 +588,9 @@ class Validator extends Base\Validator
     protected static $netbankingAllahabadTerminalRules = [
         Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_ALLAHABAD,
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
-        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
-        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string',
     ];
 
     protected static $netbankingAllahabadEditTerminalRules = [
@@ -690,6 +694,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::CARDLESS_EMI                => 'required|boolean|in:1',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
+    ];
+
+    protected static $updateTerminalsBankRules = [
+        Entity::TERMINAL_IDS                => 'required|array',
+        Entity::ACTION                      => 'required|string|in:add,remove',
+        Entity::BANK                        => 'required|string|custom',
     ];
 
     public function validateType()
@@ -1028,5 +1038,14 @@ class Validator extends Base\Validator
         }
 
         return null;
+    }
+
+    protected static function validateBank($attribute, $value)
+    {
+        if (Bank\IFSC::exists($value) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid bank name in input: '. $value);
+        }
     }
 }

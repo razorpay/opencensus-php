@@ -5,20 +5,31 @@ namespace RZP\Models\P2p\Base\Traits;
 use RZP\Base\BuilderEx;
 use RZP\Models\Merchant;
 
+/**
+ * @property Merchant\Entity $merchant
+ *
+ * Trait HasMerchant
+ * @package RZP\Models\P2p\Base\Traits
+ */
 trait HasMerchant
 {
-    protected static function bootHasMerchant()
+    public function hasMerchant(): bool
     {
-        self::$doesEntityHasMerchant = true;
+        return true;
     }
 
-    public function setMerchant(Merchant\Entity $merchant)
+    public function associateMerchant(Merchant\Entity $merchant)
     {
-        $this->setMerchantId($merchant->getId());
+        return $this->merchant()->associate($merchant);
     }
 
     public function scopeMerchant(BuilderEx $query, Merchant\Entity $merchant)
     {
-        $query->where(self::MERCHANT_ID, $merchant->getId());
+        return $query->where(self::MERCHANT_ID, $merchant->getId());
+    }
+
+    public function merchant()
+    {
+        return $this->belongsTo(Merchant\Entity::class);
     }
 }

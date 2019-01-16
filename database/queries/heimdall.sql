@@ -190,7 +190,9 @@ VALUES
 	('xqBWjeiqGHYUP2','view_merchant_tags','merchant_detail','',1481813110,1481813110),
 	('yqwEDxO44iIctN','edit_authorized_refund_payment','merchant_detail','',1481813110,1481813110),
 	('zYygr4Y3ED1ccI','edit_merchant_unarchive','merchant_detail','',1481813110,1481813110),
-	('zd4kK241F0P0Gq','view_merchant_credits_log','merchant_detail','',1481813110,1481813110);
+	('zd4kK241F0P0Gq','view_merchant_credits_log','merchant_detail','',1481813110,1481813110),
+	('urjghfTLfrsnAf','create_gateway_downtime','gateway_downtime','',1481813110,1481813110),
+	('arjghfTLgrsnBf','update_gateway_downtime','gateway_downtime','',1481813110,1481813110);
 
 
 # PERMISSION MAP
@@ -516,8 +518,11 @@ VALUES
 	('zYygr4Y3ED1ccI','6dLbNSpv5XbC5F','role'),
 	('zYygr4Y3ED1ccI','6dLbNSpv5XbCOG','org'),
 	('zd4kK241F0P0Gq','100000razorpay','org'),
-	('zd4kK241F0P0Gq','6dLbNSpv5XbC5E','role');
-
+	('zd4kK241F0P0Gq','6dLbNSpv5XbC5E','role'),
+	('urjghfTLfrsnAf','100000razorpay','org'),
+	('urjghfTLfrsnAf','6dLbNSpv5XbC5E','role'),
+  ('arjghfTLgrsnBf','100000razorpay','org');
+	('arjghfTLgrsnBf','6dLbNSpv5XbC5E','role'),
 
 # ALLOW ALL MERCHANTS FLAG
 

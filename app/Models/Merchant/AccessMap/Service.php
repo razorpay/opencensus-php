@@ -26,7 +26,16 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $mapping = (new Core)->addMappingForOAuthApp($merchant, $input);
+        $entityOwner = null;
+
+        // remove if condition later since partnerId will always be sent
+        if(empty($input['partner_id']) === false)
+        {
+            $entityOwner = $this->repo->merchant->findOrFailPublic($input['partner_id']);
+        }
+        
+
+        $mapping = (new Core)->addMappingForOAuthApp($entityOwner, $merchant, $input);
 
         return $mapping->toArrayPublic();
     }

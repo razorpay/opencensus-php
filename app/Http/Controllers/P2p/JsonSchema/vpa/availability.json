@@ -5,15 +5,18 @@
     "type": "object",
     "additionalProperties": false,
     "required": [
-        "address",
-        "available"
+        "username",
+        "handle",
+        "success"
     ],
     "properties": {
-        "address": {
-            "type": "string",
-            "pattern": "^(.*)@(.*)$"
+        "username": {
+            "type": "string"
         },
-        "available": {
+        "handle": {
+            "type": "string"
+        },
+        "success": {
             "type": "boolean"
         }
     }

@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Upi\Base;
 
 use RZP\Gateway\Base;
+use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
@@ -70,9 +71,16 @@ class Gateway extends Base\Gateway
 
     protected function generateIntentString(array $content)
     {
-        $query = str_replace(' ', '', urldecode(http_build_query($content)));
+        $url = 'upi://pay?' . str_replace(' ', '', urldecode(http_build_query($content)));
 
-        return 'upi://pay?' . $query;
+        // Since payment(Id, gateway and terminal) are already in trace, we don't need to add here
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, [
+            'type'          => Type::INTENT,
+            'url'           => $url,
+            'content'       => $content,
+        ]);
+
+        return $url;
     }
 
     /*

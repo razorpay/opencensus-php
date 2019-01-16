@@ -125,7 +125,7 @@ class Service extends Base\Service
         {
             if ($key === Entity::STATUS)
             {
-                $value  = $this->getSourceStatus($source, $value);
+                $value = $this->getSourceStatus($source, $value);
             }
 
             $status |= $this->setSourceAttribute($source, $key, $value);

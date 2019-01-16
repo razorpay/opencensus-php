@@ -209,6 +209,69 @@ return [
         ],
     ],
 
+    'testFetchByContactNameExpectedSearchParams' => [
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'transaction_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'transaction_test',
+        'body'  => [
+            '_source' => false,
+            'from'    => 0,
+            'size'    => 10,
+            'query'   => [
+                'bool' => [
+                    'must' => [
+                        [
+                            'match' => [
+                                'contact_name' => [
+                                    'query'                =>'test user',
+                                    'boost'                => 2,
+                                    'minimum_should_match' => '75%',
+                                ],
+                            ],
+                        ],
+                    ],
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'term' => [
+                                        'balance_id' => [
+                                            'value' => 'BfCGvMZswckZl8',
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'term' => [
+                                        'merchant_id' => [
+                                            'value' => '10000000000000',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchByContactNameExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [
+                [
+                    '_id' => '00000000000001',
+                ],
+            ],
+        ],
+    ],
+
     'testFetchByContactEmail' => [
          'request' => [
             'method'  => 'GET',
@@ -219,6 +282,16 @@ return [
         ],
         'response' => [
             'content' => [],
+        ],
+    ],
+
+    'testFetchByContactEmailExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [
+                [
+                    '_id' => '00000000000001',
+                ],
+            ],
         ],
     ],
 

@@ -3,7 +3,9 @@
 namespace RZP\Models\FundTransfer\Attempt;
 
 use RZP\Base;
+use RZP\Constants;
 use RZP\Error\ErrorCode;
+use RZP\Models\FundAccount;
 use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Settlement\Channel;
@@ -89,26 +91,17 @@ class Validator extends Base\Validator
             return;
         }
 
-        if ($attempt->hasVpa() === true)
-        {
-            throw new LogicException(
-                'Mode should not be sent in input for VPA FTA',
-                ErrorCode::SERVER_ERROR_FTA_MODE_SENT_FOR_VPA,
-                [
-                    'attempt_id'    => $attempt->getId(),
-                    'mode'          => $attempt->getMode(),
-                ]);
-        }
-
         $mode = $attempt->getMode();
+        $destinationType = $attempt->getDestinationType();
 
-        Mode::validateMode($mode);
+        Mode::validateModeOfAccountType($mode, $destinationType);
 
         $channel = $attempt->getChannel();
 
         // If we want to support for other channels, we need to make changes in the channel specific classes
         // for mode related initiations, allowed/not allowed, cron timings, settlement times, etc
-        if ($channel !== Channel::YESBANK)
+        if (($destinationType === Constants\Entity::BANK_ACCOUNT) and
+            ($channel !== Channel::YESBANK))
         {
             throw new LogicException(
                 'Mode should be sent only for Yesbank',
@@ -124,9 +117,11 @@ class Validator extends Base\Validator
 
         $minRtgsAmount = NodalAccount::MIN_RTGS_AMOUNT * 100;
         $maxImpsAmount = NodalAccount::MAX_IMPS_AMOUNT * 100;
+        $maxUpiAmount = FundAccount\Validator::MAX_VPA_AMOUNT;
 
         if ((($mode === Mode::RTGS) and ($amount < $minRtgsAmount)) or
-            (($mode === Mode::IMPS) and ($amount > $maxImpsAmount)))
+            (($mode === Mode::IMPS) and ($amount > $maxImpsAmount)) or
+            (($mode === Mode::UPI) and ($amount > $maxUpiAmount)))
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH,
@@ -136,6 +131,7 @@ class Validator extends Base\Validator
                     'mode'              => $mode,
                     'min_rtgs_amount'   => $minRtgsAmount,
                     'max_imps_amount'   => $maxImpsAmount,
+                    'attempt_id'        => $attempt->getId(),
                 ]);
         }
     }

@@ -5,10 +5,11 @@ namespace RZP\Models\BankAccount;
 use App;
 
 use Razorpay\IFSC\IFSC;
+
 use RZP\Base;
+use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Exception;
 use RZP\Models\Merchant\Detail;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -64,6 +65,12 @@ class Validator extends Base\Validator
         Entity::IFSC_CODE             => 'required|alpha_num|size:11',
         Entity::ACCOUNT_NUMBER        => 'required|alpha_num|between:5,20',
         Entity::BENEFICIARY_NAME      => 'sometimes|max:40|string',
+    ];
+
+    protected static $addFundAccountBankAccountRules = [
+        Entity::IFSC           => 'required|alpha_num|size:11',
+        Entity::ACCOUNT_NUMBER => 'required|alpha_num|between:5,22',
+        Entity::NAME           => 'required|between:4,120|string',
     ];
 
     protected static $addTpvBankAccountRules = [

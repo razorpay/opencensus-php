@@ -32,7 +32,7 @@ class IinTest extends TestCase
         $iin = $this->iin->build($this->input);
 
         $this->assertTrue($iin->supports(IIN\Flow::_3DS));
-        $this->assertFalse($iin->supports(IIN\Flow::_3DS | IIN\Flow::OTP));
+        $this->assertFalse($iin->supports(IIN\Flow::$flows[IIN\Flow::_3DS] | IIN\Flow::$flows[IIN\Flow::OTP]));
     }
 
     public function testAllFlow()
@@ -42,7 +42,7 @@ class IinTest extends TestCase
         $iin = $this->iin->build($this->input);
 
         $this->assertTrue($iin->supports(IIN\Flow::_3DS));
-        $this->assertTrue($iin->supports(IIN\Flow::_3DS | IIN\Flow::OTP));
+        $this->assertTrue($iin->supports(IIN\Flow::$flows[IIN\Flow::_3DS] | IIN\Flow::$flows[IIN\Flow::OTP]));
 
         $iin = $iin->toArrayAdmin();
 

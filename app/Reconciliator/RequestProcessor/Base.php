@@ -85,6 +85,7 @@ class Base extends Core
     const CARD_FSS_HDFC          = 'CardFssHdfc';
     const CARD_FSS_BOB           = 'CardFssBob';
     const ATOM                   = 'Atom';
+    const ISG                    = 'isg';
     const UPI_HDFC               = 'UpiHdfc';
     const UPI_HULK               = 'UpiHulk';
     const UPI_AXIS               = 'UpiAxis';
@@ -118,7 +119,7 @@ class Base extends Core
         self::NETBANKING_INDUSIND    => [],
         self::NETBANKING_OBC         => [],
         self::NETBANKING_PNB         => [],
-        self::NETBANKING_ALLAHABAD   => [],
+        self::NETBANKING_ALLAHABAD   => ['imps.recon@allahabadbank.in', 'cbspo.aeps@allahabadbank.in'],
         self::NETBANKING_IDFC        => [],
         self::NETBANKING_CSB         => ['noreply@csb.co.in'],
         self::NETBANKING_CORPORATION => ['ncbsfeba@corpbank.co.in'],
@@ -141,6 +142,7 @@ class Base extends Core
         self::UPI_HDFC               => ['upi@hdfcbank.net'],
         self::UPI_HULK               => [],
         self::AMEX                   => [],
+        self::ISG                    => [],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.

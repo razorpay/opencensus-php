@@ -136,11 +136,7 @@ class EmiFile extends Base\Core
 
     protected function getAuthCode($payment)
     {
-        $gateway = $payment->getGateway();
-
-        $gatewayPayment = $this->repo->$gateway->findCapturedPaymentByIdOrFail($payment->getId());
-
-        $authCode = $gatewayPayment->getAuthCode();
+        $authCode = $payment->getReference2();
 
         if (empty($authCode) === true)
         {

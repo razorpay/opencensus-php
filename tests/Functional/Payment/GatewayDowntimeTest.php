@@ -753,4 +753,105 @@ class GatewayDowntimeTest extends TestCase
 
         return $content;
     }
+
+    protected function commonAlertUPIWebHookTestHandler()
+    {
+        // create downtime
+
+        $this->testData[__FUNCTION__]['response'] = $this->testData[__FUNCTION__]['downtimeResponse'];
+
+        $responseDataArray = $this->startTest();
+
+        foreach ($responseDataArray as $responseData)
+        {
+            $this->assertNotNull($responseData['begin']);
+
+            $this->assertNull($responseData['end']);
+        }
+
+        $gatewayDowntimeEntityIds = array_pluck($responseDataArray, 'id');
+
+        $gatewayDowntimeBeginTimes = array_pluck($responseDataArray, 'begin');
+
+        // duplicate create downtime
+
+        $this->testData[__FUNCTION__]['response'] = $this->testData[__FUNCTION__]['duplicateRequestResponse'];
+
+        $responseDataArray = $this->startTest();
+
+        $this->assertEmpty($responseDataArray);
+
+        // resolve downtime
+
+        $this->testData[__FUNCTION__]['request']['content']['state'] = 'ok';
+
+        $this->testData[__FUNCTION__]['response'] = $this->testData[__FUNCTION__]['downtimeResponse'];
+
+        $responseDataArray = $this->startTest();
+
+        foreach ($responseDataArray as $responseData)
+        {
+            $this->assertNotNull($responseData['begin']);
+
+            $this->assertNotNull($responseData['end']);
+        }
+
+        $this->assertEquals($gatewayDowntimeEntityIds, array_pluck($responseDataArray, 'id'));
+
+        $this->assertEquals($gatewayDowntimeBeginTimes, array_pluck($responseDataArray, 'begin'));
+
+        // duplicate resolve downtime
+
+        $this->testData[__FUNCTION__]['response'] = $this->testData[__FUNCTION__]['duplicateRequestResponse'];
+
+        $responseDataArray = $this->startTest();
+
+        $this->assertEmpty($responseDataArray);
+    }
+
+    public function testVajraAlertUPIWebHook()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create("terminal:shared_upi_mindgate_terminal");
+
+        // Create another upi mindgate terminal for merchant 100000Razorpay
+        $upiMindgateTerm2Attributes = [
+            'id'                        => '100UPIMindtml2',
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'upi_mindgate',
+            'gateway_merchant_id'       => 'razorpay upi mindgate',
+            'gateway_terminal_id'       => 'nodal account upi hdfc term 2',
+            'gateway_merchant_id2'      => 'razorpay@hdfcbank',
+            'gateway_terminal_password' => '3723476ytfew7823623gdgf87236',
+            'upi'                       => 1,
+            'gateway_acquirer'          => 'hdfc',
+        ];
+
+        $this->fixtures->create("terminal", $upiMindgateTerm2Attributes);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testRunConfigs = ['terminal_ids', 'terminal_id', 'merchant_ids', 'merchant_id'];
+
+        foreach ($testRunConfigs as $testRunConfig)
+        {
+            array_set(
+                $this->testData[__FUNCTION__],
+                'request.content.message',
+                $testData['messageFor'][$testRunConfig]
+            );
+
+            $this->testData['commonAlertUPIWebHookTestHandler'] = $this->testData[__FUNCTION__];
+
+            if ($testRunConfig === 'terminal_id')
+            {
+                array_pop(
+                    $this->testData['commonAlertUPIWebHookTestHandler']['downtimeResponse']['content']
+                );
+            }
+
+            $this->commonAlertUPIWebHookTestHandler();
+        }
+    }
 }

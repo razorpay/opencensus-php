@@ -21,6 +21,8 @@ class Transfer extends Base
 
     protected $entity = null;
 
+    public $transferType = '';
+
     protected $requestTraceCode = TraceCode::NODAL_TRANSFER_REQUEST;
 
     protected $responseTraceCode = TraceCode::NODAL_TRANSFER_RESPONSE;
@@ -83,6 +85,8 @@ class Transfer extends Base
         $this->trace->info(
             TraceCode::YESBANK_TRANSFER_AMOUNT, ['transferAmount' => $amount ]);
 
+        $this->transferType = $this->getPaymentType($this->entity, $amount);
+
         $jsonRequest  = json_encode([
                 Constants::TRANSFER_REQUEST_IDENTIFIER => [
                 Constants::VERSION                      => self::VERSION,
@@ -92,10 +96,10 @@ class Transfer extends Base
                 Constants::CUSTOMER_ID                  => $this->customerId,
                 Constants::DEBIT_ACCOUNT_NUMBER         => $this->accountNumber,
                 Constants::BENEFICIARY                  => $this->getPurposeSpecificData(),
-                Constants::TRANSFER_TYPE                => $this->getPaymentType($this->entity, $amount),
+                Constants::TRANSFER_TYPE                => $this->transferType,
                 Constants::TRANSFER_CURRENCY_CODE       => Constants::DEFAULT_CURRENCY,
                 Constants::TRANSFER_AMOUNT              => $amount,
-                Constants::REMITTER_TO_BENEFICIARY_INFO => $this->getNarration(),
+                Constants::REMITTER_TO_BENEFICIARY_INFO => $this->getNarration($this->entity),
             ],
         ]);
 
@@ -128,6 +132,7 @@ class Transfer extends Base
                 'amount'    => $amount,
                 'vpa'       => $fta->vpa->getAddress(),
                 'ref_id'    => $fta->getId(),
+                'narration' => $this->getNarration($fta),
             ]
         ];
     }
@@ -179,11 +184,13 @@ class Transfer extends Base
      * - Max: 120 characters
      * - Regex: [\w\s]
      *
+     * @param Attempt\Entity $fta
+     *
      * @return string
      */
-    protected function getNarration()
+    protected function getNarration(Attempt\Entity $fta)
     {
-        $ftaNarration = $this->entity->getNarration();
+        $ftaNarration = $fta->getNarration();
 
         if (empty($ftaNarration) === false)
         {
@@ -191,7 +198,7 @@ class Transfer extends Base
         }
         else
         {
-            $narration = $this->entity->merchant->getBillingLabel();
+            $narration = $fta->merchant->getBillingLabel();
         }
 
         $formattedNarration = preg_replace('/[^a-zA-Z0-9 ]+/', '', $narration);
@@ -272,27 +279,33 @@ class Transfer extends Base
         // third-party is down and we don't get any data at all.
         //
 
-        // FTA ID
-        $rzpReferenceNo = $response[Constants::REQUEST_REFERENCE_NO] ?? null;
-        $utr = $response[Constants::UNIQUE_RESPONSE_NO] ?? null;
-        $bankReferenceNo = $response[Constants::BANK_REFERENCE_NO] ?? null;
+        $ftaId = $response[Constants::UPI_REQUEST_REFERENCE_NUMBER] ?? null;
+        $utr = $response[Constants::UPI_UNIQUE_RESPONSE_NUMBER] ?? null;
+        $bankReferenceNumber = $response[Constants::UPI_BANK_REFERENCE_NUMBER] ?? null;
 
-        $statusCode = $response[Constants::STATUS_CODE] ?? null;
-        $bankSubStatus = $response[Constants::SUB_STATUS_CODE] ?? null;
-        $remark = $response[Constants::SUB_STATUS_TEXT] ?? null;
+        $statusCode = $response[Constants::UPI_STATUS_CODE] ?? null;
 
-        $publicFailureReason = GatewayStatus::getPublicFailureReason($statusCode);
+        $responseCode = $response[Constants::UPI_RESPONSE_CODE] ?? null;
+        $errorCode = $response[Constants::UPI_ERROR_CODE] ?? null;
+        $responseErrorCode = $response[Constants::UPI_RESPONSE_ERROR_CODE] ?? null;
+
+        $finalResponseCode = GatewayStatus::getUsableCode($responseCode, $errorCode, $responseErrorCode);
+
+        $remark = $response[Constants::UPI_STATUS_DESCRIPTION] ?? null;
+
+        $publicFailureReason = GatewayStatus::getPublicFailureReason($finalResponseCode);
 
         return [
-            self::PAYMENT_REF_NO        => $this->getNullOnEmpty($rzpReferenceNo),
+            self::PAYMENT_REF_NO        => $this->getNullOnEmpty($ftaId),
             self::UTR                   => $this->getNullOnEmpty($utr),
-            self::BANK_STATUS_CODE      => $this->getNullOnEmpty($statusCode),
+            self::STATUS_CODE           => $this->getNullOnEmpty($statusCode),
+            self::BANK_STATUS_CODE      => $this->getNullOnEmpty($finalResponseCode),
             self::REMARK                => $this->getNullOnEmpty($remark),
-            self::BANK_SUB_STATUS_CODE  => $this->getNullOnEmpty($bankSubStatus),
+            self::BANK_SUB_STATUS_CODE  => null,
             self::PAYMENT_DATE          => null,
             self::TRANSFER_TYPE         => null,
-            self::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNo),
-            self::MODE                  => null,
+            self::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNumber),
+            self::MODE                  => Mode::UPI,
             self::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason),
         ];
     }
@@ -334,9 +347,10 @@ class Transfer extends Base
     protected function mockGenerateSuccessResponseForGateway(): array
     {
         return [
-            Constants::REQUEST_REFERENCE_NO => $this->entity->getId(),
-            Constants::UNIQUE_RESPONSE_NO   => PublicEntity::generateUniqueId(),
-            Constants::STATUS_CODE          => GatewayStatus::COMPLETED,
+            Constants::UPI_REQUEST_REFERENCE_NUMBER => $this->entity->getId(),
+            Constants::UPI_UNIQUE_RESPONSE_NUMBER   => PublicEntity::generateUniqueId(),
+            Constants::UPI_RESPONSE_CODE            => GatewayStatus::COMPLETED,
+            Constants::UPI_STATUS_CODE              => GatewayStatus::STATUS_CODE_SUCCESS,
         ];
     }
 

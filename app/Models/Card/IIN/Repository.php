@@ -61,4 +61,33 @@ class Repository extends Base\Repository
 
         return $iin;
     }
+
+    public function findIinsByFlows(int $val)
+    {
+        $iin = $this->newQuery()
+                    ->whereRaw(Entity::FLOWS .' & ' . $val . ' = ' . $val)
+                    ->select(Entity::IIN)
+                    ->get()
+                    ->pluck(Entity::IIN)
+                    ->toArray();
+
+        return $iin;
+    }
+
+    public function findOtpEnabledIins()
+    {
+        $otpVal = Flow::$flows[Flow::OTP];
+
+        $headlessOtpVal = Flow::$flows[Flow::HEADLESS_OTP];
+
+        $iin = $this->newQuery()
+                    ->whereRaw(Entity::FLOWS .' & ' . $otpVal . ' = ' . $otpVal)
+                    ->orWhereRaw(Entity::FLOWS .' & ' . $headlessOtpVal . ' = ' . $headlessOtpVal)
+                    ->select(Entity::IIN)
+                    ->get()
+                    ->pluck(Entity::IIN)
+                    ->toArray();
+
+        return $iin;
+    }
 }

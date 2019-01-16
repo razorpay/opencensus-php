@@ -1657,9 +1657,11 @@ class Service extends Base\Service
     {
         $merchantId = $this->merchant->getId();
 
+        $product = $this->auth->getRequestOriginProduct();
+
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $users = $this->core()->getUsers($merchant);
+        $users = $this->core()->getUsers($merchant, $product);
 
         return $users;
     }
@@ -2347,7 +2349,9 @@ class Service extends Base\Service
 
         $appId = $app->getId();
 
-        (new AccessMap\Service)->mapOAuthApplication($subMerchant->getId(), ['application_id' => $appId]);
+        (new AccessMap\Service)->mapOAuthApplication(
+                                                $subMerchant->getId(),
+                                                ['application_id' => $appId, 'partner_id' => $merchant->getId()]);
     }
 
     /**
@@ -2762,7 +2766,7 @@ class Service extends Base\Service
     public function switchProductMerchant($product = null)
     {
         // Add Banking Role for the current merchant User.
-        (new User\Service())->addProductSwitchRole($product);
+        (new User\Service)->addProductSwitchRole($product);
 
         $merchant = $this->auth->getMerchant();
 

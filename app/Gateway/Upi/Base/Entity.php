@@ -153,6 +153,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::NPCI_TXN_ID);
     }
 
+    public function getMerchantReference()
+    {
+        return $this->getAttribute(self::MERCHANT_REFERENCE);
+    }
+
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);

@@ -19,6 +19,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\User\Role;
+use RZP\Constants\Product;
 use RZP\Jobs\MerchantSync;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
@@ -356,9 +357,12 @@ class Core extends Base\Core
         return $merchantBalance;
     }
 
-    public function getUsers(Entity $merchant)
+    public function getUsers(Entity $merchant, string $product = Product::PRIMARY)
     {
-        $users = $merchant->users->callOnEveryItem('toArrayMerchant');
+        $users = $merchant->users()
+                          ->wherePivot(User\Entity::PRODUCT, $product)
+                          ->get()
+                          ->callOnEveryItem('toArrayMerchant');
 
         return $users;
     }
@@ -990,6 +994,7 @@ class Core extends Base\Core
 
             // If the mapping already exists, the existing entity is returned
             $accessMap = (new AccessMap\Core)->addMappingForOAuthApp(
+                            $partner,
                             $submerchant,
                             [
                                 AccessMap\Entity::APPLICATION_ID => $partnerApp->getId(),

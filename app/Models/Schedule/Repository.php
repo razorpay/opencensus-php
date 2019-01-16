@@ -51,7 +51,7 @@ class Repository extends Base\Repository
         }
     }
 
-    public function getScheduleByPeriodIntervalAndAnchor(string $period, int $interval, int $anchor)
+    public function getScheduleByPeriodIntervalAndAnchor(string $period, int $interval, $anchor)
     {
          return $this->newQuery()
                      ->where(Entity::PERIOD, '=', $period)

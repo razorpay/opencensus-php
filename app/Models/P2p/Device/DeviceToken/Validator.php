@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Device\DeviceToken;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;
+use RZP\Models\P2p\Base\Upi\ClientLibrary;
 
 class Validator extends Base\Validator
 {
@@ -11,53 +12,54 @@ class Validator extends Base\Validator
     protected static $refreshClTokenRules;
     protected static $deregisterRules;
 
-    protected function rules()
+    public function rules()
     {
         $rules = [
             Entity::DEVICE_ID        => 'string',
             Entity::HANDLE           => 'string',
             Entity::GATEWAY_DATA     => 'array',
             Entity::STATUS           => 'string',
-            Entity::CL_CAPABILITY    => 'string',
-            Entity::CL_TOKEN         => 'string',
-            Entity::CL_PAYLOAD       => 'string',
+            Entity::CL               => 'array',
         ];
 
         return $rules;
     }
 
-    protected function getCreateRules()
+    public function makeClRules()
     {
-        $rules = $this->makeRules([
-            Entity::DEVICE_ID        => 'sometimes',
-            Entity::HANDLE           => 'sometimes',
-            Entity::GATEWAY_DATA     => 'sometimes',
-            Entity::STATUS           => 'sometimes',
-            Entity::CL_CAPABILITY    => 'sometimes',
-            Entity::CL_TOKEN         => 'sometimes',
-            Entity::CL_PAYLOAD       => 'sometimes',
+        $rules = $this->makeRules();
+
+        $arrayRules = ClientLibrary::rules()->with([
+            ClientLibrary::CAPABILITY   => 'required',
+            ClientLibrary::CHALLENGE    => 'required',
         ]);
 
-        return $rules;
-    }
-
-    protected function getAddRules()
-    {
-        $rules = $this->makeRules([]);
+        $rules->arrayRules(ClientLibrary::CL, $arrayRules->toArray());
 
         return $rules;
     }
 
-    protected function getRefreshClTokenRules()
+    public function makeClSuccessRules()
     {
-        $rules = $this->makeRules([]);
+        $rules = $this->makeRules();
+
+        $arrayRules = ClientLibrary::rules()->with([
+            ClientLibrary::TOKEN        => 'required',
+            ClientLibrary::PAYLOAD      => 'required',
+        ]);
+
+        $rules->arrayRules(ClientLibrary::CL, $arrayRules->toArray());
 
         return $rules;
     }
 
-    protected function getDeregisterRules()
+    public function makeCreateRules()
     {
-        $rules = $this->makeRules([]);
+        $rules = $this->makeRules([
+            Entity::GATEWAY_DATA     => 'sometimes',
+        ]);
+
+        $rules->merge($this->makeClRules());
 
         return $rules;
     }

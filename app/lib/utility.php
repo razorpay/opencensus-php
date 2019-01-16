@@ -2,6 +2,7 @@
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Exception\AssertionException;
 
 /**
  * getallheaders() polyfill for nginx servers
@@ -228,17 +229,9 @@ function array_search_ci($needle, array $haystack)
  */
 function assertTrue($assertion, $message = null)
 {
-    if (version_compare(phpversion(), '7.0.0', '<'))
+    if (boolval($assertion) !== true)
     {
-        $message = $message ?: '';
-
-        assert($assertion, $message);
-    }
-    else
-    {
-        $e = new RZP\Exception\AssertionException($message);
-
-        assert($assertion, $e);
+        throw new AssertionException($message);
     }
 }
 
@@ -546,6 +539,24 @@ if (! function_exists('get_key_from_subarray_match'))
         }
 
         return null;
+    }
+}
+
+if (! function_exists('group_array_by_sub_array_value'))
+{
+    function group_array_by_value_array($groupKey, array $haystack)
+    {
+        $newArray[$groupKey] = [];
+
+        foreach ($haystack as $key => $subArray)
+        {
+            if (in_array($groupKey, $subArray, true) === true)
+            {
+                $newArray[$groupKey][] = $key;
+            }
+        }
+
+        return $newArray;
     }
 }
 

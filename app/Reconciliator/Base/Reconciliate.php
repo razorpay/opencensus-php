@@ -4,11 +4,11 @@ namespace RZP\Reconciliator\Base;
 
 use App;
 
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Batch;
-use RZP\Reconciliator\Service;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger;
+use RZP\Reconciliator\Service;
 use RZP\Reconciliator\Messenger;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\FileProcessor;
@@ -169,7 +169,19 @@ class Reconciliate extends Base\Core
 
             $this->subReconciliator->setSource($source);
 
-            $this->subReconciliator->startReconciliationV2($fileContents, $batch);
+            try
+            {
+                $this->subReconciliator->startReconciliationV2($fileContents, $batch);
+            }
+            catch (\Throwable $e)
+            {
+                $tracePayload = [
+                    'gateway'   => $batch->getGateway(),
+                    'batch_id'  => $batch->getId(),
+                ];
+
+                $this->trace->traceException($e, Logger::CRITICAL, TraceCode::BATCH_PROCESSING_ERROR, $tracePayload);
+            }
         }
 
         $this->traceBatchProcessingSummary($batch);

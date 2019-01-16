@@ -493,13 +493,9 @@ class PartnerTest extends OAuthTestCase
 
         $app = $this->fixtures->merchant->createDummyPartnerApp();
 
-        $this->fixtures->create(
-            'merchant_access_map',
-            [
-                'entity_type' => 'application',
-                'entity_id'   => $app->getId(),
-                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
-            ]);
+        $accessMapArray = $this->getAccessMapArray('application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID);
+
+        $this->fixtures->create('merchant_access_map', $accessMapArray);
 
         $this->ba->adminAuth();
 
@@ -527,13 +523,8 @@ class PartnerTest extends OAuthTestCase
 
         $app = $this->fixtures->merchant->createDummyPartnerApp();
 
-        $this->fixtures->create(
-            'merchant_access_map',
-            [
-                'entity_type' => 'application',
-                'entity_id'   => $app->getId(),
-                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
-            ]);
+        $accessMap = $this->getAccessMapArray('application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID);
+        $this->fixtures->create('merchant_access_map', $accessMap);
 
         $submerchant->retag(['Ref-' . self::DEFAULT_MERCHANT_ID]);
 
@@ -713,13 +704,9 @@ class PartnerTest extends OAuthTestCase
 
         $app = $this->fixtures->merchant->createDummyPartnerApp();
 
-        $this->fixtures->create(
-            'merchant_access_map',
-            [
-                'entity_type' => 'application',
-                'entity_id'   => $app->getId(),
-                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
-            ]);
+
+        $accessMap = $this->getAccessMapArray('application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID);
+        $this->fixtures->create('merchant_access_map', $accessMap);
 
         $this->ba->adminProxyAuth();
 
@@ -753,13 +740,8 @@ class PartnerTest extends OAuthTestCase
                    'merchant_id' => self::DEFAULT_MERCHANT_ID,
                ]);
 
-        $this->fixtures->create(
-            'merchant_access_map',
-            [
-                'entity_type' => 'application',
-                'entity_id'   => $app->getId(),
-                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
-            ]);
+        $accessMap = $this->getAccessMapArray('application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID);
+        $this->fixtures->create('merchant_access_map', $accessMap);
 
         $app = $this->fixtures->merchant->createDummyPartnerApp([
                    'id'          => self::DUMMY_APP_ID_2,
@@ -768,13 +750,8 @@ class PartnerTest extends OAuthTestCase
                    'merchant_id' => self::DEFAULT_MERCHANT_ID,
                ]);
 
-        $this->fixtures->create(
-            'merchant_access_map',
-            [
-                'entity_type' => 'application',
-                'entity_id'   => $app->getId(),
-                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
-            ]);
+        $accessMap = $this->getAccessMapArray('application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID);
+        $this->fixtures->create('merchant_access_map', $accessMap);
 
         // Creating 3rd app for the same merchant so that the above-mentioned assertion for connected apps can be made.
         $this->fixtures->merchant->createDummyPartnerApp([
@@ -858,13 +835,8 @@ class PartnerTest extends OAuthTestCase
             'merchant_id' => self::DEFAULT_MERCHANT_ID,
         ]);
 
-        $this->fixtures->create(
-            'merchant_access_map',
-            [
-                'entity_type' => 'application',
-                'entity_id'   => $app->getId(),
-                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
-            ]);
+        $accessMap = $this->getAccessMapArray('application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID);
+        $this->fixtures->create('merchant_access_map', $accessMap);
 
         $this->createPartnerAndAddMultipleSubmerchants();
 
@@ -894,13 +866,8 @@ class PartnerTest extends OAuthTestCase
             'merchant_id' => self::DEFAULT_MERCHANT_ID,
         ]);
 
-        $this->fixtures->create(
-            'merchant_access_map',
-            [
-                'entity_type' => 'application',
-                'entity_id'   => $app->getId(),
-                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
-            ]);
+        $accessMap = $this->getAccessMapArray('application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID);
+        $this->fixtures->create('merchant_access_map', $accessMap);
 
         $app = $this->fixtures->merchant->createDummyPartnerApp([
             'id'          => self::DUMMY_APP_ID_2,
@@ -909,13 +876,8 @@ class PartnerTest extends OAuthTestCase
             'merchant_id' => self::DEFAULT_MERCHANT_ID,
         ]);
 
-        $this->fixtures->create(
-            'merchant_access_map',
-            [
-                'entity_type' => 'application',
-                'entity_id'   => $app->getId(),
-                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
-            ]);
+        $accessMap = $this->getAccessMapArray('application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID);
+        $this->fixtures->create('merchant_access_map', $accessMap);
 
         $this->ba->adminProxyAuth();
 
@@ -945,13 +907,8 @@ class PartnerTest extends OAuthTestCase
             'merchant_id' => self::DEFAULT_MERCHANT_ID,
         ]);
 
-        $this->fixtures->create(
-            'merchant_access_map',
-            [
-                'entity_type' => 'application',
-                'entity_id'   => $app->getId(),
-                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
-            ]);
+        $accessMap = $this->getAccessMapArray('application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID);
+        $this->fixtures->create('merchant_access_map', $accessMap);
 
         $app = $this->fixtures->merchant->createDummyPartnerApp([
             'id'          => self::DUMMY_APP_ID_2,
@@ -960,13 +917,8 @@ class PartnerTest extends OAuthTestCase
             'merchant_id' => self::DEFAULT_MERCHANT_ID,
         ]);
 
-        $this->fixtures->create(
-            'merchant_access_map',
-            [
-                'entity_type' => 'application',
-                'entity_id'   => $app->getId(),
-                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
-            ]);
+        $accessMap = $this->getAccessMapArray('application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID);
+        $this->fixtures->create('merchant_access_map', $accessMap);
 
         $this->ba->adminProxyAuth();
 
@@ -996,10 +948,11 @@ class PartnerTest extends OAuthTestCase
         $this->fixtures->create(
             'merchant_access_map',
             [
-                'entity_type' => 'application',
-                'entity_id'   => $app->getId(),
-                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
-                'deleted_at'  => 1504620540,
+                'entity_type'     => 'application',
+                'entity_id'       => $app->getId(),
+                'merchant_id'     => self::DEFAULT_SUBMERCHANT_ID,
+                'entity_owner_id' => self::DEFAULT_MERCHANT_ID,
+                'deleted_at'      => 1504620540,
             ]);
 
         $this->ba->adminProxyAuth();
@@ -1046,13 +999,8 @@ class PartnerTest extends OAuthTestCase
 
         $app = $this->fixtures->merchant->createDummyPartnerApp();
 
-        $this->fixtures->create(
-            'merchant_access_map',
-            [
-                'entity_type' => 'application',
-                'entity_id'   => $app->getId(),
-                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
-            ]);
+        $accessMap = $this->getAccessMapArray('application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID);
+        $this->fixtures->create('merchant_access_map', $accessMap);
 
         $this->ba->proxyAuth('rzp_test_10000000000000', $partnerUser->getId());
 
@@ -1067,7 +1015,7 @@ class PartnerTest extends OAuthTestCase
     {
         $partnerUser = $this->createPartnerAndUser();
 
-        $this->createSubmerchantAndUser();
+        $subMerchantUser = $this->createSubmerchantAndUser();
 
         $this->ba->proxyAuth('rzp_test_10000000000000', $partnerUser->getId());
 
@@ -1113,13 +1061,8 @@ class PartnerTest extends OAuthTestCase
         $this->addUserToMerchant($partnerUser, $randomMerchantId, 'manager');
 
         // Map the submerchant to the partner app
-        $this->fixtures->create(
-            'merchant_access_map',
-            [
-                'entity_type' => 'application',
-                'entity_id'   => $app->getId(),
-                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
-            ]);
+        $accessMap = $this->getAccessMapArray('application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID);
+        $this->fixtures->create('merchant_access_map', $accessMap);
 
         // Add the partner user to access a linked account. Verifies later the mapping should not be deleted
         $linkedAccount = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
@@ -1308,21 +1251,13 @@ class PartnerTest extends OAuthTestCase
         $app = $this->fixtures->merchant->createDummyPartnerApp();
 
         // Link new submerchants to the partner account
-        $this->fixtures->create(
-            'merchant_access_map',
-            [
-                'entity_type' => 'application',
-                'entity_id'   => $app->getId(),
-                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
-            ]);
+        $accessMap = $this->getAccessMapArray('application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID);
 
-        $this->fixtures->create(
-            'merchant_access_map',
-            [
-                'entity_type' => 'application',
-                'entity_id'   => $app->getId(),
-                'merchant_id' => $submerchantId,
-            ]);
+        $this->fixtures->create('merchant_access_map',$accessMap);
+
+        $accessMap = $this->getAccessMapArray('application', $app->getId(), $submerchantId, self::DEFAULT_MERCHANT_ID);
+
+        $this->fixtures->create('merchant_access_map',$accessMap);
     }
 
     protected function createPartnerAndUser()
@@ -1350,5 +1285,15 @@ class PartnerTest extends OAuthTestCase
         $submerchantUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
 
         return $submerchantUser;
+    }
+
+    protected function getAccessMapArray($entityType, $entityId, $merchantId, $entityOwnerId)
+    {
+        return [
+                'entity_type'     => $entityType,
+                'entity_id'       => $entityId,
+                'merchant_id'     => $merchantId,
+                'entity_owner_id' => $entityOwnerId,
+            ];
     }
 }

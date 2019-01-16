@@ -670,8 +670,23 @@ class ReconciliationFileTest extends TestCase
 
     public function testHdfcFssReconRefundFile()
     {
+        $this->gateway = 'hdfc';
+
         $this->fixtures->create('terminal:shared_hdfc_recurring_terminals');
         $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
 
         // Recurring authorised payment
         $refund1 = $this->getNewRefundEntity(true);
@@ -1326,8 +1341,23 @@ class ReconciliationFileTest extends TestCase
 
     public function testHdfcFssOnusTransactionRecon()
     {
+        $this->gateway = 'hdfc';
+
         $this->fixtures->create('terminal:shared_hdfc_recurring_terminals');
         $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
 
         $refund = $this->getNewRefundEntity(true);
         $gatewayRefund = $this->getDbLastEntityToArray('hdfc');
@@ -1438,6 +1468,76 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testHdfcBharatQrReconPayment()
+    {
+        $this->fixtures->create('terminal:bharat_qr_isg_terminal');
+
+        $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->createVirtualAccount([], true, null, true);
+
+        $qrCode = $this->getDbLastEntity('qr_code');
+
+        $response = $this->payViaBharatQr($qrCode, 'isg');
+
+        $entries[] = $this->testData['facades']['hdfc'];
+
+        $entries[0]['merchant_trackid'] = $qrCode->getId();
+
+        $entries[0]['card_type'] = 'BHARAT QR';
+
+        $entries[0]['tran_id']  = "'" . $response['TXN_ID'];
+
+        $entries[0]['domestic_amt'] = '1.00';
+
+        $file = $this->writeToExcelFile($entries, 'HDFC-MPR');
+
+        $this->runForFiles([$file], 'HDFC');
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testHdfcBharatQrReconForUnexpectedPayment()
+    {
+        $this->fixtures->create('terminal:bharat_qr_isg_terminal');
+
+        $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->createVirtualAccount([], true, null, true);
+
+        $qrCode = $this->getDbLastEntity('qr_code');
+
+        $response = $this->payViaBharatQr($qrCode, 'isg');
+
+        $entries[] = $this->testData['facades']['hdfc'];
+
+        $entries[0]['merchant_trackid'] = 'random';
+
+        $entries[0]['card_type'] = 'BHARAT QR';
+
+        $entries[0]['tran_id']  = "'random";
+
+        $entries[0]['domestic_amt'] = '1.00';
+
+        $file = $this->writeToExcelFile($entries, 'HDFC-MPR');
+
+        $this->runForFiles([$file], 'HDFC');
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNull($transaction['reconciled_at']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     public function testFssBobPaymentReconFile()
     {
         $this->fixtures->create('terminal:shared_fss_terminal');
@@ -1489,6 +1589,45 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals( $gatewayFee + $gst, $transactionEntity->getGatewayFee());
 
         $this->assertEquals($gst, $transactionEntity->getGatewayServiceTax());
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testHdfcIsgBharatQrReconRefund()
+    {
+        $this->fixtures->create('terminal:bharat_qr_isg_terminal');
+
+        $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->createVirtualAccount([], true, null, true);
+
+        $qrCode = $this->getDbLastEntity('qr_code');
+
+        $this->payViaBharatQr($qrCode, 'isg');
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $refund = $this->refundPayment('pay_' . $payment['id']);
+
+        $entries[] = $this->testData['facades']['hdfc'];
+
+        $entries[0]['merchant_trackid'] = substr($refund['id'], 5);
+
+        $entries[0]['rec_fmt'] = 'CVD';
+
+        $entries[0]['domestic_amt'] = '1.00';
+
+        $file = $this->writeToExcelFile($entries, 'HDFC-MPR');
+
+        $this->runForFiles([$file], 'HDFC');
+
+        $refundEntity = $this->getEntityById('refund', $refund['id'], true);
+
+        $transaction = $this->getEntityById('transaction', $refundEntity['transaction_id'], true);
+
+        $this->assertNotNull($transaction['reconciled_at']);
 
         $this->assertBatchStatus(Status::PROCESSED);
     }

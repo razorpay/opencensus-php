@@ -121,6 +121,8 @@ class Activate extends Base\Core
      */
     public function instantlyActivate(Entity $merchant, Detail\Entity $merchantDetails): array
     {
+        $detailCore = new Detail\Core;
+
         $merchant->getValidator()->validateBeforeInstantlyActivate();
 
         $this->validateMethodsAndPricing($merchant);
@@ -140,14 +142,17 @@ class Activate extends Base\Core
 
         (new Core)->createBalance($merchant, 'live');
 
+        $detailCore->addLogForDebugging($merchant, $merchantDetails, TraceCode::MERCHANT_INSTANT_ACTIVATION_DB_SAVE);
+
         $this->repo->transactionOnLiveAndTest(function () use ($merchant)
         {
             $this->repo->saveOrFail($merchant);
         });
 
+        $detailCore->addLogForDebugging($merchant, $merchantDetails, TraceCode::MERCHANT_INSTANT_ACTIVATION_AFTER_DB_SAVE);
+
         $this->trace->info(TraceCode::MERCHANT_ACCOUNT_INSTANTLY_ACTIVATED);
 
-        $detailCore = new Detail\Core;
 
         //
         // If a merchant does not have website or app, we would need to activate them
@@ -169,6 +174,8 @@ class Activate extends Base\Core
         // $this->fireInstantActivationTrigger($merchantDetails, $merchant);
 
         $this->notifyMerchantForInstantActivation($merchant);
+
+        $detailCore->addLogForDebugging($merchant, $merchantDetails, TraceCode::MERCHANT_INSTANT_ACTIVATION_BEFORE_RETURN);
 
         return $merchant->toArrayPublic();
     }
@@ -229,7 +236,7 @@ class Activate extends Base\Core
 
         $methodCore = new Methods\Core;
 
-        $methodCore->checkMccAndEnableEmi($merchant, $methods);
+        $methodCore->checkCategorySubcategoryAndEnableEmi($merchant, $methods);
 
         $methodCore->checkPricing($merchant, $methods, true);
     }

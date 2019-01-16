@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Payment;
 use Mail;
 use Mockery;
 
+use RZP\Exception;
 use RZP\Mail\Payment\CardSaved as CardSavedMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -650,6 +651,24 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->assertEquals($payment1['card_id'], $payment2['card_id']);
     }
 
+    public function testTokenexStripSpacesCheck()
+    {
+        $this->mockTokenexStripSpaces();
+
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $this->payment['save'] = 1;
+
+        $this->payment[Payment::CARD]['number'] = '40004 000 0000 0004';
+
+        $this->payment[Payment::CARD]['expiry_year'] = '20';
+
+        $this->payment[Payment::CUSTOMER_ID] = 'cust_100000customer';
+
+        // create payment 1
+        $content = $this->doAuthAndCapturePayment($this->payment);
+    }
+
     /**
      * test card multiple payments with save card local, only one card should be saved
      */
@@ -813,6 +832,102 @@ class SavedCardsPaymentCreateTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         return $response;
+    }
+
+    public function testCardDetokenizeMigration()
+    {
+        $this->ba->adminAuth();
+
+        $content = [
+            'tokens' => ['abc']
+        ];
+
+        $request = [
+            'url' => '/card/migration/detokenize',
+            'method' => 'post',
+            'content' => $content,
+        ];
+
+        $cardVault = Mockery::mock('RZP\Services\CardVault')->makePartial();
+        $this->app->instance('card.tokenex', $cardVault);
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing(function ($route, $method, $input)
+            {
+                 $response = [
+                    'error' => '',
+                    'success' => true,
+                ];
+
+                $this->assertEquals('abc', $input['token']);
+                $response['value'] = base64_decode(strrev($input['token']));
+
+                return $response;
+            });
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEmpty(0, $response['failed_tokens']);
+        $this->assertEquals(0, $response['count']);
+        $this->assertEquals(1, $response['total_count']);
+
+        $cardVault = Mockery::mock('RZP\Services\CardVault')->makePartial();
+        $this->app->instance('card.tokenex', $cardVault);
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing(function ($route, $method, $input)
+            {
+                 throw new Exception\RuntimeException('card vault request failed');
+            });
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(['abc'], $response['failed_tokens']);
+        $this->assertEquals(1, $response['count']);
+        $this->assertEquals(1, $response['total_count']);
+    }
+
+    protected function mockTokenexStripSpaces()
+    {
+        $tokenex = Mockery::mock('RZP\Services\TokenEx')->makePartial();
+
+        $this->app->instance('card.tokenex', $tokenex);
+
+        $tokenex->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing(function ($route, $method, $input)
+            {
+                $response = [
+                    'Error' => '',
+                    'ReferenceNumber' => '15102913382030662954',
+                    'Success' => true,
+                ];
+
+
+                switch ($route)
+                {
+                    case 'REST/Tokenize':
+
+                        $this->assertEquals('4000400000000004', $input['Data']);
+
+                        $response['Token'] = base64_encode($input['Data']);
+                        break;
+
+                    case 'REST/Detokenize':
+                        $response['Value'] = base64_decode($input['Token']);
+                        break;
+
+                    case 'REST/ValidateToken':
+                        $response['Valid'] = true;
+                        break;
+
+                    case 'REST/DeleteToken':
+                        break;
+                }
+                return $response;
+            });
+
+        $this->app->instance('card.tokenex', $tokenex);
     }
 
     protected function mockRaven()

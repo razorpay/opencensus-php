@@ -7,21 +7,22 @@ use RZP\Models\P2p\Base;
 
 class Validator extends Base\Validator
 {
-    protected static $fetchHandlesRules;
     protected static $addRules;
-    protected static $fetchAllRules;
-    protected static $fetchRules;
+    protected static $addSuccessRules;
     protected static $assignBankAccountRules;
+    protected static $assignBankAccountSuccessRules;
     protected static $checkAvailabilityRules;
+    protected static $checkAvailabilitySuccessRules;
     protected static $deleteRules;
+    protected static $deleteSuccessRules;
 
-    protected function rules()
+    public function rules()
     {
         $rules = [
             Entity::DEVICE_ID            => 'string',
             Entity::HANDLE               => 'string',
             Entity::GATEWAY_DATA         => 'array',
-            Entity::USERNAME             => 'string|regex:^[A-Za-z0-9\.\-]*$',
+            Entity::USERNAME             => 'string|regex:/^[A-Za-z0-9\.\-]{6,}$/',
             Entity::BANK_ACCOUNT_ID      => 'string',
             Entity::BENEFICIARY_NAME     => 'string',
             Entity::PERMISSIONS          => 'string',
@@ -35,7 +36,7 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    protected function getCreateRules()
+    public function makeCreateRules()
     {
         $rules = $this->makeRules([
             Entity::DEVICE_ID            => 'sometimes',
@@ -55,51 +56,91 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    protected function getFetchHandlesRules()
+    public function makeVpaSuccessRules()
     {
-        $rules = $this->makeRules([]);
+        return $this->makeRules([
+            Entity::USERNAME        => 'required',
+            Entity::HANDLE          => 'required',
+            Entity::GATEWAY_DATA    => 'sometimes',
+        ]);
+    }
+
+    public function makeAddRules()
+    {
+        $rules = $this->makeRules([
+            Entity::USERNAME        => 'required',
+            Entity::BANK_ACCOUNT_ID => 'sometimes',
+        ]);
 
         return $rules;
     }
 
-    protected function getAddRules()
+    public function makeAddSuccessRules()
     {
-        $rules = $this->makeRules([]);
+        $rules = $this->makeRules();
+
+        $rules->arrayRules(Entity::VPA, $this->makeVpaSuccessRules()->toArray());
+
+        $rules->arrayRules(Entity::BANK_ACCOUNT, $this->makeEntityIdRules()->toArray());
 
         return $rules;
     }
 
-    protected function getFetchAllRules()
+    public function makeAssignBankAccountRules()
     {
-        $rules = $this->makeRules([]);
+        $rules = $this->makePublicIdRules();
+
+        $rules->merge($this->makeRules([
+            Entity::BANK_ACCOUNT_ID => 'required',
+        ]));
 
         return $rules;
     }
 
-    protected function getFetchRules()
+    public function makeAssignBankAccountSuccessRules()
     {
-        $rules = $this->makeRules([]);
+        $rules = $this->makeRules();
+
+        $rules->arrayRules(Entity::VPA, $this->makeEntityIdRules()->toArray());
+        $rules->arrayRules(Entity::BANK_ACCOUNT, $this->makeEntityIdRules()->toArray());
 
         return $rules;
     }
 
-    protected function getAssignBankAccountRules()
+    public function makeCheckAvailabilityRules()
     {
-        $rules = $this->makeRules([]);
+        $rules = $this->makeRules([
+            Entity::USERNAME    => 'required',
+        ]);
 
         return $rules;
     }
 
-    protected function getCheckAvailabilityRules()
+    public function makeCheckAvailabilitySuccessRules()
     {
-        $rules = $this->makeRules([]);
+        $rules = $this->makeRules([
+            Entity::SUCCESS     => 'required|boolean|in:1'
+        ]);
+
+        $rules->arrayRules(Entity::VPA, $this->makeVpaSuccessRules()->toArray());
 
         return $rules;
     }
 
-    protected function getDeleteRules()
+    public function makeDeleteRules()
     {
-        $rules = $this->makeRules([]);
+        $rules = $this->makePublicIdRules();
+
+        return $rules;
+    }
+
+    public function makeDeleteSuccessRules()
+    {
+        $rules = $this->makeRules([
+            Entity::SUCCESS     => 'required|boolean|in:1'
+        ]);
+
+        $rules->arrayRules(Entity::VPA, $this->makeEntityIdRules()->toArray());
 
         return $rules;
     }

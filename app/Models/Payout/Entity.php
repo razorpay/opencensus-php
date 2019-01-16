@@ -5,6 +5,7 @@ namespace RZP\Models\Payout;
 use Carbon\Carbon;
 
 use RZP\Constants;
+use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Payment;
@@ -62,6 +63,7 @@ class Entity extends Base\PublicEntity
     const RETURN_UTR             = 'return_utr';
     const REMARKS                = 'remarks';
     const PROCESSED_AT           = 'processed_at';
+    const REVERSED_AT            = 'reversed_at';
     const SETTLED_ON             = 'settled_on';
     const TYPE                   = 'type';
     const MODE                   = 'mode';
@@ -123,6 +125,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::NOTES,
         self::PROCESSED_AT,
+        self::REVERSED_AT,
         self::SETTLED_ON,
         self::TYPE,
         self::MODE,
@@ -155,6 +158,7 @@ class Entity extends Base\PublicEntity
         self::FAILURE_REASON,
         self::REMARKS,
         self::PROCESSED_AT,
+        self::REVERSED_AT,
         self::SETTLED_ON,
         self::TYPE,
         self::MODE,
@@ -243,6 +247,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::PROCESSED_AT,
+        self::REVERSED_AT,
         self::SETTLED_ON,
     ];
 
@@ -409,6 +414,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PROCESSED_AT);
     }
 
+    public function getReversedAt()
+    {
+        return $this->getAttribute(self::REVERSED_AT);
+    }
+
     public function isStatusCreated(): bool
     {
         return ($this->getStatus() === Status::CREATED);
@@ -508,7 +518,30 @@ class Entity extends Base\PublicEntity
 
     public function setStatus($status)
     {
+        Status::validate($status);
+
+        $currentStatus = $this->getStatus();
+
+        //
+        // In code, we could call it multiple times for the same status update.
+        // We do not want to update the status timestamp with the new value
+        // and hence return it back from here itself if we are updating with same status.
+        //
+        if ($currentStatus === $status)
+        {
+            return;
+        }
+
         $this->setAttribute(self::STATUS, $status);
+
+        if (in_array($status, Status::$timestampedStatuses, true) === true)
+        {
+            $timestampKey = $status . '_at';
+
+            $currentTime = Carbon::now()->getTimestamp();
+
+            $this->setAttribute($timestampKey, $currentTime);
+        }
     }
 
     /**
@@ -543,6 +576,11 @@ class Entity extends Base\PublicEntity
     public function setProcessedAt($date)
     {
         $this->setAttribute(self::PROCESSED_AT, $date);
+    }
+
+    public function setReversedAt($date)
+    {
+        $this->setAttribute(self::REVERSED_AT, $date);
     }
 
     public function setPurpose(string $purpose)
@@ -755,15 +793,27 @@ class Entity extends Base\PublicEntity
 
     protected function modifyMode(& $input)
     {
-        if (isset($input[self::MODE]) === false)
+        $fundAccount = $this->fundAccount;
+
+        //
+        // In case of merchant payouts, we don't use fund account entity.
+        // We use destination directly. We have to move them to FA soon.
+        //
+        if (empty($fundAccount) === true)
         {
             return;
         }
 
-        if ($this->fundAccount->getSourceType() === FundAccount\Type::BANK_ACCOUNT)
+        $accountType = $fundAccount->getAccountType();
+
+        if ($accountType === FundAccount\Type::VPA)
+        {
+            $input[self::MODE] = Mode::UPI;
+        }
+        else if ($accountType === FundAccount\Type::BANK_ACCOUNT)
         {
             /** @var BankAccount\Entity $ba */
-            $ba = $this->fundAccount->source;
+            $ba = $fundAccount->account;
 
             $ifsc = $ba->getIfscCode();
 
@@ -771,7 +821,7 @@ class Entity extends Base\PublicEntity
 
             if (starts_with($ifscFirstFour, NodalAccount::IFSC_IDENTIFIER) === true)
             {
-                $input[Mode::IFT];
+                $input[self::MODE] = Mode::IFT;
             }
         }
     }

@@ -7,6 +7,7 @@ use Config;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 
+use RZP\Models\Feature;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Credits;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
@@ -530,9 +531,12 @@ class Merchant extends Base
         return $features;
     }
 
-    public function editFeatures($features, $id = '10000000000000')
+    public function removeFeatures(array $featureNames, string $id = '10000000000000')
     {
-        return $this->edit($id, ['features' => $features]);
+        Feature\Entity::where(Feature\Entity::ENTITY_ID, $id)
+                      ->where(Feature\Entity::ENTITY_TYPE, 'merchant')
+                      ->where(Feature\Entity::NAME, $featureNames)
+                      ->delete();
     }
 
     public function editAutoRefundDelay($delay, $id = '10000000000000')
@@ -609,6 +613,11 @@ class Merchant extends Base
     public function setFeeBearer($feebearer, $id = '10000000000000')
     {
         return $this->edit($id, ['fee_bearer' => $feebearer]);
+    }
+
+    public function setFeeModel($feeModel, $id = '10000000000000')
+    {
+        return $this->edit($id, ['fee_model' => $feeModel]);
     }
 
     /**

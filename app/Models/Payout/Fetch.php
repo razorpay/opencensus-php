@@ -10,11 +10,13 @@ class Fetch extends BaseFetch
 {
     const RULES = [
         self::DEFAULTS => [
-            Entity::ID              => 'sometimes|public_id|size:19',
+            Entity::ID                => 'sometimes|public_id|size:19',
             Entity::MERCHANT_ID       => 'sometimes|unsigned_id',
             Entity::CUSTOMER_ID       => 'sometimes|public_id|size:19',
+            Entity::BALANCE_ID        => 'sometimes|unsigned_id',
             Entity::DESTINATION       => 'sometimes|public_id|max:20',
             Entity::METHOD            => 'sometimes|string|custom',
+            Entity::MODE              => 'sometimes|string|custom',
             Entity::TRANSACTION_ID    => 'sometimes|public_id',
             Entity::UTR               => 'sometimes|string|max:255',
             Entity::CONTACT_NAME      => 'sometimes|string|max:50',
@@ -43,6 +45,7 @@ class Fetch extends BaseFetch
             Entity::CONTACT_TYPE,
             Entity::CONTACT_EMAIL,
             Entity::FUND_ACCOUNT_ID,
+            Entity::BALANCE_ID,
             Entity::STATUS,
             EsRepository::QUERY,
             // EsRepository::SEARCH_HITS,
@@ -78,6 +81,7 @@ class Fetch extends BaseFetch
         Entity::MERCHANT_ID,
         Entity::TYPE,
         Entity::METHOD,
+        Entity::BALANCE_ID,
         Entity::STATUS,
     ];
 

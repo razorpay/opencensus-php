@@ -147,8 +147,7 @@ class Response
 
         $route = $this->getCurrentRouteName();
 
-        if ((isset($app[$key])) and
-            ($app[$key] !== null))
+        if (empty($app[$key]) === false)
         {
             if ($this->isMerchantCallbackRoute($route))
             {

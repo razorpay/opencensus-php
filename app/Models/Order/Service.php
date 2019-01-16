@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
 use RZP\Models\Bank\BankCodes;
+use RZP\Models\Payment;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class Service extends Base\Service
@@ -216,11 +217,11 @@ class Service extends Base\Service
         return $orders->toArrayPublic();
     }
 
-    public function fetchPaymentsFor($id)
+    public function fetchPaymentsFor(string $id, array $input): array
     {
-        $options = ['order_id' => $id];
+        $input[Payment\Entity::ORDER_ID] = $id;
 
-        $payments = $this->repo->payment->fetch($options, $this->merchant->getKey());
+        $payments = $this->repo->payment->fetch($input, $this->merchant->getId());
 
         return $payments->toArrayPublic();
     }

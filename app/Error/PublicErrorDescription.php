@@ -182,6 +182,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE                 = 'Payment amount is greater than the amount due for order';
     const BAD_REQUEST_PAYMENT_UPI_MULTIPLE_ACCOUNTS_LINKED                      = 'Payment failed since account linked with multiple names';
     const BAD_REQUEST_UPI_INVALID_ATM_PIN                                       = 'Invalid ATM PIN entered';
+    const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MINIMUM_ALLOWED_AMOUNT           = 'Payment amount is lesser than the minimum amount allowed';
     const BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH                           = 'Payment currency provided does not match with the currency in order';
     const BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID                                = 'Payment already done for this order.';
     const BAD_REQUEST_REFUND_FAILED                                             = 'Refund failed';
@@ -373,6 +374,7 @@ class PublicErrorDescription
     const BAD_REQUEST_EMANDATE_CANCELLED_INACTIVE                               = 'Payment failed because emandate is cancelled or inactive';
 
     const BAD_REQUEST_GATEWAY_REFUND_ABSENT                                     = 'Refund not done on the gateway side.';
+    const BAD_REQUEST_PAYMENT_REVERSAL_NOT_SUPPORTED                            = 'Void is not supported by the gateway';
     const BAD_REQUEST_INVALID_GATEWAY                                           = 'Invalid gateway provided for the request';
     const BAD_REQUEST_PAYMENT_SUBSCRIPTION_NOT_RECURRING                        = 'Recurring is not set for the subscription payment';
     const BAD_REQUEST_SUBSCRIPTION_TOKEN_ALREADY_ASSOCIATED                     = 'The subscription already has a token associated with it';
@@ -699,6 +701,7 @@ class PublicErrorDescription
     const GATEWAY_ERROR_MULTIPLE_REFUNDS_FOUND                                  = 'Multiple refunds found at gateway';
     const GATEWAY_ERROR_UNEXPECTED_STATUS                                       = 'Unexpected status from gateway';
     const GATEWAY_ERROR_REFUND_FAILED_PAYMENT_NOT_IDENTIFIED                    = 'Refund failed';
+    const GATEWAY_ERROR_REFUND_DEEMED                                           = 'Refund is in pending status';
 
     const BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET                                  = 'Merchant context must be set';
 

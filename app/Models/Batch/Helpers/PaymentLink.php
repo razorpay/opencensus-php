@@ -77,6 +77,16 @@ class PaymentLink
             Invoice\Entity::NOTES           => $entry[Batch\Header::NOTES] ?? [],
         ];
 
+        // Optional: First Payment Min Amount
+        if (empty($entry[Batch\Header::FIRST_PAYMENT_MIN_AMOUNT]) === false)
+        {
+            $firstMinAmount = $entry[Batch\Header::FIRST_PAYMENT_MIN_AMOUNT];
+            $firstMinAmount = (is_numeric($amount) === true) ?
+                (int) number_format($firstMinAmount, 0, '', '') : $firstMinAmount;
+
+            $input[Invoice\Entity::FIRST_PAYMENT_MIN_AMOUNT] = $firstMinAmount;
+        }
+
         return $input;
     }
 }

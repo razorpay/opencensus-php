@@ -15,6 +15,7 @@ class StatusProcessor extends BaseRowProcessor
 {
     const UTR                   = 'utr';
     const BANK_STATUS_CODE      = 'bank_status_code';
+    const STATUS_CODE           = 'status_code';
     const PAYMENT_DATE          = 'payment_date';
     const REMARK                = 'remark';
     const PAYMENT_REF_NO        = 'payment_ref_no';
@@ -27,7 +28,6 @@ class StatusProcessor extends BaseRowProcessor
      * This will update the status based on the transfer API response
      *
      * @return null
-     * @throws LogicException
      */
     public function updateTransferStatus()
     {
@@ -51,14 +51,62 @@ class StatusProcessor extends BaseRowProcessor
 
         $banking = $this->row->isOfBanking();
 
-        $response = (new StatusRequest($banking))->init()
-                                                 ->setEntity($this->row)
-                                                 ->makeRequest($gateway);
+        $makeRequest = $this->shouldMakeStatusRequestCall($gateway);
+
+        $statusRequestProcessor = (new StatusRequest($banking))->init()
+                                                               ->setEntity($this->row);
+
+        if ($makeRequest === true)
+        {
+            $response = $statusRequestProcessor->makeRequest($gateway);
+        }
+        else
+        {
+            // We are doing this only so that we keep the flow consistent
+            // with when we actually make the status request.
+            // Otherwise, ideally, doing this should not be required at all.
+            $response = $statusRequestProcessor->getResponseDataFromFta($this->row);
+        }
 
         if (empty($response) === false)
         {
             $this->setParsedData($response);
         }
+    }
+
+    protected function shouldMakeStatusRequestCall(bool $gateway): bool
+    {
+        //
+        // We should not make status call only for VPA payouts since
+        // Yesbank's Status API call does not work correctly.
+        //
+        if ($gateway === false)
+        {
+            return true;
+        }
+
+        $fta = $this->row;
+
+        $statusCode = $fta->getBankResponseCode();
+
+        //
+        // Yesbank status call for VPA does not work properly.
+        // Gives the wrong error codes and stuff, which are not documented.
+        // Hence, if we already got a status saying it's success or failed
+        // we don't want to make the status request and mess up the data
+        // that we got from `initiate` call.
+        //
+        // We make the status call only if current state of the FTA is
+        // either pending, timeout or we don't know (empty status_code)
+        //
+        if (($statusCode === GatewayStatus::STATUS_CODE_PENDING) or
+            ($statusCode === GatewayStatus::STATUS_CODE_TIMEOUT) or
+            (empty($statusCode) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -83,6 +131,8 @@ class StatusProcessor extends BaseRowProcessor
 
         $this->parsedData = [
             self::UTR                   => $response[self::UTR],
+            // `status_code` will be present only for vpa ones. not the normal ones.
+            self::STATUS_CODE           => $response[self::STATUS_CODE] ?? null,
             self::BANK_STATUS_CODE      => $response[self::BANK_STATUS_CODE],
             self::REMARK                => $response[self::REMARK],
             self::PAYMENT_DATE          => $response[self::PAYMENT_DATE],
@@ -109,6 +159,8 @@ class StatusProcessor extends BaseRowProcessor
         $currentStatus = $this->reconEntity->getBankStatusCode();
 
         $this->reconEntity->setBankStatusCode($this->parsedData[self::BANK_STATUS_CODE]);
+
+        $this->reconEntity->setBankResponseCode($this->parsedData[self::STATUS_CODE]);
 
         $this->reconEntity->setDateTime($this->parsedData[self::PAYMENT_DATE]);
 

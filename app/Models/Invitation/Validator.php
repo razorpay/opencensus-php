@@ -6,6 +6,7 @@ use RZP\Base;
 use RZP\Exception;
 use RZP\Models\User;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Product;
 
 class Validator extends Base\Validator
 {
@@ -14,6 +15,7 @@ class Validator extends Base\Validator
         Entity::EMAIL       => 'required|max:255|email|custom',
         Entity::TOKEN       => 'required|string',
         Entity::SENDER_NAME => 'sometimes|string',
+        Entity::PRODUCT     => 'sometimes|string|in:primary,banking',
     ];
 
     protected static $editRules = [
@@ -31,10 +33,13 @@ class Validator extends Base\Validator
 
     public function validateEmail(string $attribute, string $email)
     {
+        $product = app('basicauth')->getRequestOriginProduct();
+
         $merchant = $this->entity->merchant;
 
         if (($merchant->invitations
                       ->where(Entity::EMAIL, $email)
+                      ->where(Entity::PRODUCT, $product)
                       ->isEmpty()) === false)
         {
             throw new Exception\BadRequestException(
@@ -43,6 +48,7 @@ class Validator extends Base\Validator
 
         if (($merchant->users
                       ->where(Entity::EMAIL, $email)
+                      ->where(Entity::PRODUCT, $product)
                       ->isEmpty()) === false)
         {
             throw new Exception\BadRequestException(
@@ -54,9 +60,15 @@ class Validator extends Base\Validator
     {
         $merchant = $this->entity->merchant;
 
+        $product = app('basicauth')->getRequestOriginProduct();
+
         if ($merchant->isLinkedAccount() === true)
         {
             $dashboardRoles = User\Role::LINKED_ACCOUNT_ROLES;
+        }
+        else if ($product === Product::BANKING)
+        {
+            $dashboardRoles = User\Role::BANKING_ROLES;
         }
         else
         {

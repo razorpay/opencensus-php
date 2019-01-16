@@ -60,7 +60,8 @@ class DeviceHelper extends P2pHelper
 
         $default = [
             'cl' => [
-                'challenge'  => 'AikxOldnJmaUbdsmHdsnaudjeGHndshsjSildsmfyneHDBd'
+                'capability'    => '52000002000100040006',
+                'challenge'     => 'AUnhIkGYnGBK=='
             ]
         ];
 

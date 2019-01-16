@@ -145,15 +145,15 @@ class ContactsTest extends TestCase
     protected function createFundAccount($contactId)
     {
         $testdata = [
-            'request' => [
-                'url' => '/fund_accounts',
-                'method' => 'post',
+            'request'  => [
+                'url'     => '/fund_accounts',
+                'method'  => 'post',
                 'content' => [
                     'account_type' => "bank_account",
                     'contact_id'   => $contactId,
-                    'details' => [
-                        'beneficiary_name' => "test",
-                        'ifsc_code' => 'SBIN0007105',
+                    'details'      => [
+                        'name'           => "test",
+                        'ifsc'           => 'SBIN0007105',
                         'account_number' => '111000',
                     ],
                 ],

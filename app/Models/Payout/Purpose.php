@@ -11,32 +11,29 @@ use RZP\Models\FundTransfer\Attempt\Purpose as FTAPurpose;
 
 class Purpose
 {
-    const REFUND        = 'refund';
-    const CASHBACK      = 'cashback';
-    const PAYOUT        = 'payout';
-    const DISBURSEMENT  = 'disbursement';
-    const SALARY        = 'salary';
-    const UTILITY       = 'utility';
-    const INVOICE       = 'invoice';
+    const REFUND       = 'refund';
+    const CASHBACK     = 'cashback';
+    const SALARY       = 'salary';
+    const UTILITY_BILL = 'utility bill';
+    const VENDOR_BILL  = 'vendor bill';
+    const PAYOUT       = 'payout';
 
     protected static $default = [
         self::REFUND,
         self::CASHBACK,
         self::PAYOUT,
-        self::DISBURSEMENT,
         self::SALARY,
-        self::UTILITY,
-        self::INVOICE,
+        self::UTILITY_BILL,
+        self::VENDOR_BILL,
     ];
 
     protected static $defaultPurposeTypeMap = [
-        self::REFUND        => FTAPurpose::REFUND,
-        self::CASHBACK      => FTAPurpose::REFUND,
-        self::PAYOUT        => FTAPurpose::SETTLEMENT,
-        self::DISBURSEMENT  => FTAPurpose::SETTLEMENT,
-        self::SALARY        => FTAPurpose::SETTLEMENT,
-        self::UTILITY       => FTAPurpose::SETTLEMENT,
-        self::INVOICE       => FTAPurpose::SETTLEMENT,
+        self::REFUND       => FTAPurpose::REFUND,
+        self::CASHBACK     => FTAPurpose::REFUND,
+        self::PAYOUT       => FTAPurpose::SETTLEMENT,
+        self::SALARY       => FTAPurpose::SETTLEMENT,
+        self::UTILITY_BILL => FTAPurpose::SETTLEMENT,
+        self::VENDOR_BILL  => FTAPurpose::SETTLEMENT,
     ];
 
     public static function isInDefaults(string $purpose): bool
@@ -109,20 +106,20 @@ class Purpose
     {
         $allCustomKeys = array_keys($this->getSettingsAccessor($merchant)->all()->toArray());
 
+        $maxPurposes = Validator::MAX_PURPOSES_ALLOWED;
+
+        if (count($allCustomKeys) >= $maxPurposes)
+        {
+            throw new BadRequestValidationFailureException(
+                "You have reached the maximum limit ($maxPurposes) of custom payout purposes that can be created.",
+                Entity::PURPOSE_TYPE);
+        }
+
         if ((self::isInDefaults(strtolower($purpose))) or
             (array_search_ci($purpose, $allCustomKeys) !== false))
         {
             throw new BadRequestValidationFailureException(
                 "Purpose '$purpose' is already defined and cannot be added.",
-                Entity::PURPOSE);
-        }
-
-        if (count($allCustomKeys) >= Validator::MAX_PURPOSES_ALLOWED)
-        {
-            throw new BadRequestValidationFailureException(
-                "You have reached the maximum limit (" .
-                (Validator::MAX_PURPOSES_ALLOWED) .
-                ") of custom payout purposes that can be created.",
                 Entity::PURPOSE);
         }
 
