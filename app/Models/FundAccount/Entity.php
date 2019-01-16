@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Models\Contact;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Models\FundAccount\Validation\Entity as FundAccountValidation;
 
 /**
  * Class Entity
@@ -188,6 +189,11 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function validations()
+    {
+        return $this->hasMany(FundAccountValidation::class);
     }
 
     public function account()

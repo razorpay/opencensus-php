@@ -209,9 +209,7 @@ class Core extends Base\Core
 
     public function validateExistingTerminal($terminal)
     {
-        $params = [Entity::MERCHANT_ID => $terminal->getMerchantId()];
-
-        $existingTerminals = $this->repo->terminal->fetch($params);
+        $existingTerminals = $this->repo->terminal->getByMerchantId($terminal->getMerchantId());
 
         //
         // Checks that existing terminals don't
@@ -429,7 +427,7 @@ class Core extends Base\Core
 
     protected function checkIfExists($params, Entity $terminal, string $field = null)
     {
-        $existingTerminals = $this->repo->terminal->fetch($params);
+        $existingTerminals = $this->repo->terminal->getByParams($params);
 
         // This check if this terminal is same as what
         // we are trying to edit

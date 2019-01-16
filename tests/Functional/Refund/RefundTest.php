@@ -12,6 +12,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Mail\Payment\Refunded as RefundedMail;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 /**
@@ -78,6 +79,64 @@ class RefundTest extends TestCase
         $this->assertEquals(true, $refund['gateway_refunded']);
 
         Mail::assertQueued(RefundedMail::class);
+    }
+
+    public function testVoidRefundFeatureDeactivated()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment');
+
+        $refund = $this->startTest($payment['id'], (string) $payment['amount']);
+    }
+
+    public function testFailedVoidRefundGatewayReversalAbsent()
+    {
+        $this->fixtures->merchant->addFeatures('void_refunds');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment');
+
+        $refund = $this->startTest($payment['id'], (string) $payment['amount']);
+    }
+
+    public function testSuccessfulVoidRefund()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' =>
+                [
+                    'non_recurring' => '1',
+                    'recurring_3ds' => '1',
+                    'recurring_non_3ds' => '1'
+                ]
+            ]);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->gateway = 'hitachi';
+
+        $this->mockTokenex();
+
+        $this->fixtures->merchant->addFeatures('void_refunds');
+
+        $payment = $this->defaultAuthPayment([
+            'card' => [
+                'number'       => CardNumber::VALID_ENROLL_NUMBER,
+                'expiry_month' => '02',
+                'expiry_year'  => '21',
+                'cvv'          => 123,
+                'name'         => 'Test Card'
+            ]
+        ]);
+
+        $payment = $this->getLastEntity('payment');
+
+        $refund = $this->startTest($payment['id'], (string) $payment['amount']);
     }
 
     public function testRefundEditStatus()

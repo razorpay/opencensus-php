@@ -1525,7 +1525,15 @@ trait Refund
                 ErrorCode::BAD_REQUEST_PAYMENT_FULLY_REFUNDED);
         }
 
-        if ($payment->isCaptured() === false)
+        if ($this->merchant->isFeatureEnabled(Feature::VOID_REFUNDS) === true)
+        {
+            if ($this->gatewaySupportsReversal($payment) === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_REVERSAL_NOT_SUPPORTED);
+            }
+        }
+        else if ($payment->isCaptured() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
@@ -1716,19 +1724,24 @@ trait Refund
                                                           array $data,
                                                           array $fundTransferAttemptInput): FundTransferAttempt\Entity
     {
-        $input = $this->getBankAccountInput($payment, $data);
+        $bankAccountInput = $this->getBankAccountInput($payment, $data);
 
-        if ((isset($data['transfer_mode']) === true) and (trim($data['transfer_mode']) !== ''))
+        if ((isset($bankAccountInput[BankAccount\Entity::TRANSFER_MODE]) === true) and
+            (trim($bankAccountInput[BankAccount\Entity::TRANSFER_MODE]) !== ''))
         {
-            $fundTransferAttemptInput[FundTransferAttempt\Entity::MODE] = $data['transfer_mode'];
+            $fundTransferAttemptInput[FundTransferAttempt\Entity::MODE] = $bankAccountInput[BankAccount\Entity::TRANSFER_MODE];
         }
 
-        return $this->repo->transaction(function () use ($input, $fundTransferAttemptInput)
+        // We should delete this key regardless of its contents.
+        // because this key is not required for bank account creation
+        unset($bankAccountInput[BankAccount\Entity::TRANSFER_MODE]);
+
+        return $this->repo->transaction(function () use ($bankAccountInput, $fundTransferAttemptInput)
         {
             if (($this->refund->hasBankAccount() === false) or
-                ($this->refund->bankAccount->matches($input) === false))
+                ($this->refund->bankAccount->matches($bankAccountInput) === false))
             {
-                $this->createAndAssociateBankAccount($input);
+                $this->createAndAssociateBankAccount($bankAccountInput);
             }
 
             $fta = (new FundTransferAttempt\Core)->createWithBankAccount($this->refund,

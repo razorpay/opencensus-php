@@ -62,6 +62,8 @@ class Server extends Base\Mock\Server
             $data['F037'] = $ref;
         }
 
+        $this->content($data, 'callback');
+
         $hash = $this->getGatewayInstance()->getStringToHashForBharatQr($data);
 
         $data['CheckSum'] = $this->getGatewayInstance()->getHashOfString($hash);
@@ -119,6 +121,11 @@ class Server extends Base\Mock\Server
         $this->content($response, __FUNCTION__);
 
         return $this->makeResponse($response);
+    }
+
+    public function getBharatQrCallbackForRecon($qrCodeId)
+    {
+        return $this->getBharatQrCallback($qrCodeId, 123456789012);
     }
 
     public function merchantOnboard($input)
