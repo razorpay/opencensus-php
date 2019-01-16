@@ -467,12 +467,6 @@ class Gateway extends Base\Gateway
 
     public function getIv()
     {
-        // TODO: confirm if hex2bin conversion is required for live mode
-        if ($this->isLiveMode() === true)
-        {
-            return $this->config['iv'];
-        }
-
         return $this->config['iv'];
     }
 
