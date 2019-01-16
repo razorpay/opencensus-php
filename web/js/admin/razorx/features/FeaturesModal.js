@@ -3,6 +3,7 @@ import Form from 'ui/Form';
 import Field, { TextAreaField } from 'ui/Field';
 import { ModalContent } from 'component/Modal';
 import JSONEdit from 'admin/razorx/JSONEdit';
+import EnumList from 'component/Input/EnumList';
 
 const initJSONObj = {
   name: '',
@@ -56,6 +57,7 @@ const validatorJSON = {
 };
 
 export default class extends React.Component {
+  state = { enum: [''] };
   onSubmit = data => {};
 
   isValid() {
@@ -67,6 +69,20 @@ export default class extends React.Component {
 
     return true;
   }
+
+  onChangeEnumList = (enumList = []) => {
+    let trimmedEnums = enumList.concat();
+
+    trimmedEnums = trimmedEnums.reduce((r, o) => {
+      if (o) {
+        r.push(o);
+      }
+
+      return r;
+    }, []);
+
+    this.setState({ enum: trimmedEnums });
+  };
 
   render() {
     const { id, name, JSONView } = this.props;
@@ -96,37 +112,17 @@ export default class extends React.Component {
                 required
               />
               <div class="sub-heading">Variants</div>
-              <Field.Group label="Variant 1" class="collapse-space" required>
-                <Field
-                  type="text"
-                  name="variant[0][name]"
-                  placeholder="Name"
-                  required
-                />
-                <TextAreaField
-                  name="variant[0][description]"
-                  placeholder="Description"
-                  defaultValue=""
-                  required
-                />
-              </Field.Group>
-              <Field.Group label="Variant 1" class="collapse-space" required>
-                <Field
-                  type="text"
-                  name="variant[0][name]"
-                  placeholder="Name"
-                  required
-                />
-                <TextAreaField
-                  name="variant[0][description]"
-                  placeholder="Description"
-                  defaultValue=""
-                  required
-                />
-              </Field.Group>
-              <button type="button" class="btn btn--pill">
-                <i class="i i-plus" /> Variant
-              </button>
+              <EnumList
+                class="variants-list"
+                onChange={this.onChangeEnumList}
+                defaultValue={this.state.enum}
+                inputClass="square-pills label-semi-muted"
+                addNewBtn={() => (
+                  <button type="button" class="btn btn--pill">
+                    <i class="i i-return-key" /> Add Variant
+                  </button>
+                )}
+              />
               <div style={{ marginTop: 24 }} />
             </React.Fragment>
           )}

@@ -58,17 +58,27 @@ export default class EnumList extends React.PureComponent {
                 updateOption={this.updateOption}
                 updateLastFocused={this.updateLastFocused}
                 newOptionIndex={this.state.lastFocusedIndex}
+                inputClass={this.props.inputClass}
               />
             );
           })}
         </div>
-        <Button.Transparent
-          class="btn-link"
-          onClick={this.addNewOption}
-          type="button"
-        >
-          <i class="i i-return-key" /> Add Another Option
-        </Button.Transparent>
+        {this.props.addNewBtn ? (
+          <span
+            onClick={this.addNewOption}
+            style={{ display: 'inline-block', marginTop: 12 }}
+          >
+            {this.props.addNewBtn()}
+          </span>
+        ) : (
+          <Button.Transparent
+            class="btn-link"
+            onClick={this.addNewOption}
+            type="button"
+          >
+            <i class="i i-return-key" /> Add Another Option
+          </Button.Transparent>
+        )}
       </div>
     );
   }
@@ -115,7 +125,13 @@ class EnumOption extends React.PureComponent {
   };
 
   render() {
-    const { index, addNewOption, removeOption, newOptionIndex } = this.props;
+    const {
+      index,
+      addNewOption,
+      removeOption,
+      newOptionIndex,
+      inputClass,
+    } = this.props;
 
     return (
       <div
@@ -126,7 +142,7 @@ class EnumOption extends React.PureComponent {
       >
         <input
           ref={el => (this.el = el)}
-          class="Input-el"
+          class={classList('Input-el', inputClass)}
           value={this.state.value}
           onChange={this.handleChange}
           onKeyPress={e => {

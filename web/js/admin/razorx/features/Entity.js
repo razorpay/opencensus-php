@@ -109,7 +109,7 @@ const Details = ({ data }) => {
         <div class="label">Variants</div>
         {data.variants.map((v, i) => (
           <div key={i}>
-            <span class="square-pills label-semi-muted">{v}</span>
+            <span class="square-pills">{v}</span>
           </div>
         ))}
       </div>

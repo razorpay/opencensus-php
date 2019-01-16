@@ -58,16 +58,6 @@ export const FileField = _ => <Field {..._} type="file" />;
 export const TimeField = _ => <Field {..._} type="time" />;
 export const DataListField = _ => <Field {..._} tag="datalist" />;
 
-/* Fields to be shown visually closer than other fields in form*/
-Field.Group = ({ label, className, children, required, ...otherProps }) => {
-  return (
-    <div class={classList('InputGroup', className)}>
-      {label && <label class={required ? 'required' : ''}>{label}</label>}
-      {children}
-    </div>
-  );
-};
-
 export const DateField = ({
   label = '',
   fieldClass = '',
