@@ -37,9 +37,6 @@ class HitachiOnboardTest extends TestCase
                 'currency_code'                 => 'INR',
                 'trans_mode'                    => 'CARDS',
             ],
-            'terminal'                  => [
-                'pg_merchant_id'                => $this->pgMerchantId,
-            ]
         ];
     }
 
@@ -83,22 +80,6 @@ class HitachiOnboardTest extends TestCase
         $response = $this->onboard(null, $data);
 
         $this->assertEquals($response['error']['code'], 'BAD_REQUEST_ERROR');
-    }
-
-    public function testPgMerchantDoesntExist()
-    {
-        $data = $this->getDefaultInput();
-
-        $this->createMerchants();
-
-        $merchant = $this->merchantId;
-
-        $this->makeRequestAndCatchException(
-            function() use ($merchant, $data)
-            {
-                $this->onboard($merchant, $data);
-            },
-            \RZP\Exception\BadRequestValidationFailureException::class);
     }
 
     protected function onboard($id, $input)
