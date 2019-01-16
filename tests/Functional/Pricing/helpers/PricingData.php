@@ -47,7 +47,7 @@ return [
             'content' => [
                 'name'      => 'TestUploadPlan2',
                 'entity'    => 'pricing',
-                'count'     => 3,
+                'count'     => 4,
                 'rules'     => [
                     [
                         'plan_name'             => 'TestUploadPlan2',
@@ -62,6 +62,14 @@ return [
                         'payment_method'        => 'netbanking',
                         'percent_rate'          => 1000,
                         'payment_network'       => 'SIBL',
+                    ],
+                    [
+                        'plan_name'             => 'TestUploadPlan2',
+                        'feature'               => 'validation',
+                        'payment_method'        => 'fund_account_validation',
+                        'percent_rate'          => 1000,
+                        'payment_network'       => null,
+                        'payment_issuer'        => null,
                     ],
                     [
                         'plan_name'             => 'TestUploadPlan2',

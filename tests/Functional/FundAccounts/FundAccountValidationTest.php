@@ -66,6 +66,13 @@ class FundAccountValidationTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateValidationWithWrongFundAccountEntity()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     /*public function testGetValidation()
     {
         $instrument = $this->testCreateValidationWithFundAccountId();
