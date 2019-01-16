@@ -37,13 +37,14 @@ export default class TerminalForm extends Component {
       mcc,
       currency_code,
       trans_mode,
+      mode,
     } = body;
     var data = {
       gateway: gateway,
       gateway_input: {
         mid: mid,
         tid: tid,
-        mcc: mcc,
+        mcc: this.getMcc(),
         currency_code: currency_code,
         trans_mode: trans_mode,
       },
@@ -52,7 +53,7 @@ export default class TerminalForm extends Component {
       },
     };
     return adminPost({
-      url: `merchants/${pg_merchant_id}/terminals/onboard`,
+      url: `${mode}/merchants/${pg_merchant_id}/terminals/onboard`,
       data: data,
     })
       .then(response => {
