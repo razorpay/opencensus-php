@@ -2,17 +2,13 @@ import React, { Component } from 'react';
 import { ModalContent } from 'component/Modal';
 import { getDetailsViewMap } from '../entity-resources';
 
-import { isOrgHDFC } from 'admin/user';
-
 import { closeModal, confirm, notifyError, notifySuccess } from 'common/modal';
 
 import Form from 'ui/Form';
 import Field, { SelectField, FileField, CheckField } from 'ui/Field';
 import { adminFetch, adminPost, adminFormUpload2 } from 'common/fetch';
 import AsyncButton from 'ui/AsyncButton';
-import MultiSelectField from 'ui/MultiSelectField';
 
-// TODO: import currency data in a better way
 import CurrencyData from './currency.json';
 
 export default class TerminalForm extends Component {
