@@ -106,6 +106,7 @@ class Constants
     const IIN_LISTING                     = 'iin_listing';
     const CALLBACK_URL_VALIDATION         = 'callback_url_validation';
     const REPORTING_GENRERIC_NOTES        = 'report_notes_to_column';
+    const S2S_OTP_JSON                    = 's2s_otp_json';
 
     /**
      * Skips uniqueness checks on the `receipt` attribute on invoice and payment links
@@ -276,6 +277,7 @@ class Constants
         self::PL_FIRST_MIN_AMOUNT             => true,
         self::REPORTING_GENRERIC_NOTES        => true,
         self::IVR                             => true,
+        self::S2S_OTP_JSON                    => true,
     ];
 
     // Entity type constants
