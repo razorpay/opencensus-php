@@ -386,11 +386,9 @@ class Gateway extends Base\Gateway
     {
         $gatewayResponse = trim($gatewayResponse);
 
-        try
-        {
-            $decryptedString = trim($this->decrypt($gatewayResponse));
-        }
-        catch (\Exception $e)
+        $decryptedString = trim($this->decrypt($gatewayResponse));
+
+        if ($decryptedString === false)
         {
             throw new Exception\LogicException(
                 'Callback response decryption failed',
