@@ -633,6 +633,11 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::TRANSFER);
     }
 
+    public function isTypeFundAccountValidation()
+    {
+        return ($this->getType() === Type::FUND_ACCOUNT_VALIDATION);
+    }
+
     public function isTypeDispute()
     {
         return ($this->getType() === Type::DISPUTE);
@@ -856,7 +861,7 @@ class Entity extends Base\PublicEntity
         $this->getValidator()->validateInput('unique_entity_id', $entityId);
     }
 
-        public function getReconTimeFromTransactionCreationInMinutes(): int
+    public function getReconTimeFromTransactionCreationInMinutes(): int
     {
         return intval(($this->getReconciledAt() - $this->getCreatedAt()) / 60);
     }

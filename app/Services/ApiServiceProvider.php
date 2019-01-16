@@ -27,6 +27,7 @@ use RZP\Models\Promotion;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
+use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Models\BankTransfer;
 use RZP\Constants\Entity as E;
@@ -456,6 +457,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'settlement'                => Settlement\Entity::class,
             'payout'                    => Payout\Entity::class,
             'transaction'               => Transaction\Entity::class,
+            'fund_account_validation'   => FundAccount\Validation\Entity::class,
             'customer_transaction'      => Customer\Transaction\Entity::class,
 
             'bank_account'              => BankAccount\Entity::class,

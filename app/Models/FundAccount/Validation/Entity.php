@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\FundAccount\Entity as FundAccount;
+use RZP\Models\Transaction\Entity as Transaction;
 
 class Entity extends Base\PublicEntity
 {
@@ -110,6 +111,12 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo(Merchant::class);
+    }
+
+    //TODO: check
+    public function transaction()
+    {
+        return $this->morphOne(Transaction::class, 'source', 'type', 'entity_id');
     }
 
     // -------------- Setters --------------

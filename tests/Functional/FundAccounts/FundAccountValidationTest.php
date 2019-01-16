@@ -4,6 +4,8 @@ namespace RZP\Tests\Functional\FundAccount;
 
 use RZP\Models\FundAccount;
 use RZP\Models\Pricing\Fee;
+use RZP\Models\Transaction\Core;
+use RZP\Models\FundAccount\Validation\Repository;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\TestCase;
@@ -96,6 +98,19 @@ class FundAccountValidationTest extends TestCase
         $fundAccountValidation = $this->getDbLastEntity('fund_account_validation');
 
         list($fees, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($fundAccountValidation);
+
+        //assert fee and tax here.
+    }
+
+    public function testTransactionForFundAccountValidation()
+    {
+        $this->testCreateValidationWithFundAccountEntity();
+
+        $fundAccountValidation = $this->getDbLastEntity('fund_account_validation');
+
+        (new Repository())->transaction(function() use ($fundAccountValidation) {
+            list($txn, $feesSplit) = (new Core())->createTransactionForSource($fundAccountValidation);
+        });
     }
 
     /*public function testGetValidation()

@@ -1256,7 +1256,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_ACCOUNT_CREATE_REQUEST                   = 'FUND_ACCOUNT_CREATE_REQUEST';
     const FUND_ACCOUNT_UPDATE_REQUEST                   = 'FUND_ACCOUNT_UPDATE_REQUEST';
     const FUND_ACCOUNT_DELETE_REQUEST                   = 'FUND_ACCOUNT_DELETE_REQUEST';
-
+    // Trace codes for Fund Account Validation
+    const FUND_ACCOUNT_VALIDATION_CREATE_TRANSACTION    = 'FUND_ACCOUNT_VALIDATION_CREATE_TRANSACTION';
     const FUND_ACCOUNT_VALIDATION_REQUEST               = 'FUND_ACCOUNT_VALIDATION_REQUEST';
 
     // Trace code for Merchant Invoices
