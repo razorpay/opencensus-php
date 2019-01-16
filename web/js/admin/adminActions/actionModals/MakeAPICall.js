@@ -15,13 +15,13 @@ import { adminFormUpload } from 'common/fetch';
 const convertToJson = (headersString = '') => {
   const headers = headersString.split('\n');
   return headers.reduce((accumulator, header) => {
-    const headerArray = header.split(':');
+    const [key, ...value] = header.split(':');
 
     return {
       ...accumulator,
-      // first value in header array is key
-      // second value in header array is value
-      [headerArray[0].trim()]: headerArray[1].trim(),
+      // if value contains ':' ex: https://sample.com
+      // will be combined after join on value
+      [key.trim()]: value.join(':').trim(),
     };
   }, {});
 };
