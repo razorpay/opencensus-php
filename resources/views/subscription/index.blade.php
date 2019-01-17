@@ -42,7 +42,7 @@
     </script>
 </body>
 </html>
-<script src='http://cdn.razorpay.in/static/hosted/subscription.js'></script>
+<script src='https://cdn.razorpay.com/static/hosted/subscription.js'></script>
 <script>
 var $ = document.querySelector.bind(document);
 ansh = {!! json_encode($data) !!};
