@@ -142,13 +142,6 @@ class Creator extends Base\Core
     protected $shouldDeleteLocalFile = false;
 
     /**
-     * Flag to signify if file needs to be uploaded
-     *
-     * @var bool Flag
-     */
-    protected $shouldUploadFile = true;
-
-    /**
      * The sheet name used when creating an excel file.
      * Sheet 1 is the default name used to generate the excel sheet.
      *
@@ -476,13 +469,6 @@ class Creator extends Base\Core
         return $this;
     }
 
-    public function shouldUploadFile(bool $shouldUpload)
-    {
-        $this->shouldUploadFile = $shouldUpload;
-
-        return $this;
-    }
-
     /**
      * Creates a local file instance,
      * upload it to service specified and creates file store entity
@@ -674,10 +660,7 @@ class Creator extends Base\Core
             'metadata'  => $this->file->getMetadata(),
         ];
 
-        if ($this->shouldUploadFile === true)
-        {
-            $this->storageHandler->save($bucketConfig, $fileDetails);
-        }
+        $location = $this->storageHandler->save($bucketConfig, $fileDetails);
 
         $this->file->setLocation($fileDetails['key']);
 

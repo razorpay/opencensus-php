@@ -80,8 +80,7 @@ class Sbi extends Base
             $creator->extension(static::EXTENSION)
                 ->content($fileData)
                 ->name($fileName)
-                ->shouldUploadFile(false)
-                ->store(FileStore\Store::S3)
+                ->store(FileStore\Store::LOCAL)
                 ->type(static::FILE_TYPE)
                 ->entity($this->gatewayFile)
                 ->metadata($metadata);
