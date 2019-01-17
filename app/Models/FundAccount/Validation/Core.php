@@ -9,6 +9,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Models\FundAccount;
 use RZP\Models\Pricing\Fee;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\FundTransfer\Attempt as AttemptStatus;
 
 class Core extends Base\Core
@@ -136,6 +137,15 @@ class Core extends Base\Core
                     ]);
         }
 
-        // TODO: Send a webhook here
+        $this->triggerValidationCompletedWebhook($validation);
+    }
+
+    protected function triggerValidationCompletedWebhook(Entity $validation)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $validation
+        ];
+
+        $this->app['events']->fire('api.fund_account.validation.completed', $eventPayload);
     }
 }
