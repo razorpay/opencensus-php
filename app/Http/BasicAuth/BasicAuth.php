@@ -1649,6 +1649,13 @@ class BasicAuth
         {
             return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER);
         }
+
+        $application = $this->authCreds->getPartnerApplication();
+
+        if ($application !== null)
+        {
+            $this->setOAuthApplicationId($application->getId());
+        }
     }
 
     protected function isPartnerAuthAllowed(): bool
@@ -2049,12 +2056,11 @@ class BasicAuth
 
         switch (true)
         {
-            case ($this->isPartnerAuth() === true):
-
-                $originType = Origin\Constants::PARTNER;
-                $originId = $this->getPartnerMerchantId();
-                break;
-
+            //
+            // This case covers the following cases -
+            //      the bearer auth (pure platform partner flow), and,
+            //      the partner auth (aggregator, fully managed partner flow)
+            //
             case (empty($this->getOAuthApplicationId()) === false):
 
                 $originType = Origin\Constants::APPLICATION;
