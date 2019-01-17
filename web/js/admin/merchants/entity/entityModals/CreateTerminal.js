@@ -67,7 +67,6 @@ export default class TerminalForm extends Component {
             disabled
           />
           <SelectMode />
-
           <SelectField name="gateway" label="Gateway" defaultValue="hitachi">
             <option value="hitachi">Hitachi</option>
           </SelectField>
