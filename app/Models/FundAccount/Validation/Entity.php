@@ -22,7 +22,7 @@ class Entity extends Base\PublicEntity
     const STATUS                = 'status';
     const ACCOUNT_STATUS        = 'account_status';
     const REGISTERED_NAME       = 'registered_name';
-    const FEE                   = 'fee';
+    const FEES                  = 'fees';
     const TAX                   = 'tax';
     const AMOUNT                = 'amount';
     const CURRENCY              = 'currency';
@@ -53,7 +53,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::FUND_ACCOUNT_ID,
         self::STATUS,
-        self::FEE,
+        self::FEES,
         self::TAX,
         self::AMOUNT,
         self::CURRENCY,
@@ -69,7 +69,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::FUND_ACCOUNT,
         self::STATUS,
-        self::FEE,
+        self::FEES,
         self::TAX,
         self::AMOUNT,
         self::CURRENCY,
@@ -88,7 +88,7 @@ class Entity extends Base\PublicEntity
         self::STATUS          => Status::CREATED,
         self::NOTES           => [],
         self::AMOUNT          => null,
-        self::FEE             => null,
+        self::FEES            => null,
         self::TAX             => null,
         self::CURRENCY        => null,
         self::ACCOUNT_STATUS  => null,
@@ -97,13 +97,13 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::AMOUNT => 'int',
-        self::FEE    => 'int',
+        self::FEES   => 'int',
         self::TAX    => 'int',
     ];
 
     protected $amounts = [
         self::AMOUNT,
-        self::FEE,
+        self::FEES,
         self::TAX,
     ];
 
@@ -139,7 +139,7 @@ class Entity extends Base\PublicEntity
 
     public function setFees(int $fees)
     {
-        $this->setAttribute(self::FEE, $fees);
+        $this->setAttribute(self::FEES, $fees);
     }
 
     public function associateFundAccount(FundAccount $fundAccount)

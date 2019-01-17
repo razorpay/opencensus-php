@@ -104,9 +104,10 @@ class FundAccountValidationTest extends TestCase
     {
         $this->testCreateValidationWithFundAccountEntity();
 
-        $fundAccountValidation = $this->getDbLastEntity('fund_account_validation');
-
-        // TODO: assert fee and tax here.
+        $fav = $this->getLastEntity('fund_account_validation', true);
+        // Default pricing has rule 1zE31zbybacab4 with fixed rate 300
+        $this->assertEquals(354, $fav['fees']);
+        $this->assertEquals(54, $fav['tax']);
     }
 
     public function testTransactionForFundAccountValidation()
@@ -119,6 +120,9 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals($fav['id'], $txn['entity_id']);
         $this->assertEquals('fund_account_validation', $txn['type']);
         $this->assertEquals('platform', $txn['fee_bearer']);
+        $this->assertEquals(354, $txn['fee']);
+        $this->assertEquals(354, $txn['mdr']);
+        $this->assertEquals(54, $txn['tax']);
     }
 
     /*public function testGetValidation()
