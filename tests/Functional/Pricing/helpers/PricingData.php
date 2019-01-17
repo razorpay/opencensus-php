@@ -65,14 +65,6 @@ return [
                     ],
                     [
                         'plan_name'             => 'TestUploadPlan2',
-                        'feature'               => 'validation',
-                        'payment_method'        => 'fund_account_validation',
-                        'percent_rate'          => 1000,
-                        'payment_network'       => null,
-                        'payment_issuer'        => null,
-                    ],
-                    [
-                        'plan_name'             => 'TestUploadPlan2',
                         'payment_method'        => 'card',
                         'payment_method_type'   => 'credit',
                         'payment_network'       => 'DICL',
@@ -85,9 +77,10 @@ return [
                         'max_fee'               => 10000,
                     ],
                     [
-                        'feature'           => 'fund_account_validation',
-                        'payment_method'    => 'bank_account',
-                        'fixed_rate'        => 1000,
+                        'plan_name'             => 'TestUploadPlan2',
+                        'feature'               => 'fund_account_validation',
+                        'payment_method'        => 'bank_account',
+                        'fixed_rate'            => 1000,
                     ],
                 ],
             ],
@@ -512,14 +505,14 @@ return [
         ],
         'response' => [
             'content' => [
-                'feature'   => 'fund_account_validation',
-                'plan_name' => 'TestPlan1',
-                'payment_method' => 'bank_account',
+                'feature'             => 'fund_account_validation',
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'bank_account',
                 'payment_method_type' => null,
-                'payment_network' => null,
-                'payment_issuer' => null,
-                'percent_rate' => 0,
-                'fixed_rate'   => 1000
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1000
             ],
         ],
     ],
@@ -865,7 +858,7 @@ return [
                     [
                         'name' => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count' => 19,
+                        'count' => 20,
                         'rules' => [
                             [],
                         ],
@@ -904,7 +897,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'testDefaultPlan',
-                    'rules_count' => 19,
+                    'rules_count' => 20,
                 ],
             ],
         ],

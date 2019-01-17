@@ -89,15 +89,14 @@ class FundAccountValidationTest extends TestCase
 
     public function testFeeForFundAccountValidation()
     {
+        $this->markTestIncomplete('transaction is not being created at the moment');
+
         $this->testCreateValidationWithFundAccountEntity();
 
         $fundAccountValidation = $this->getDbLastEntity('fund_account_validation');
 
         list($fees, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($fundAccountValidation);
-
-        //assert fee and tax here.
     }
-
 
     /*public function testGetValidation()
     {

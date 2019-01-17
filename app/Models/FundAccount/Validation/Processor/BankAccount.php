@@ -46,7 +46,7 @@ class BankAccount extends Base
 
     protected function createFundTransferAttempt(): FundTransferAttempt\Entity
     {
-        // Mode, Narration?
+        // TODO: Mode, Narration?
         $fundTransferAttemptInput = [
             FundTransferAttempt\Entity::PURPOSE => FundTransferAttempt\Purpose::PENNY_TESTING,
         ];

@@ -74,8 +74,9 @@ class Core extends Base\Core
 
             $validation->associateFundAccount($fundAccount);
 
+            // TODO: create txn
             // This will calculate fees and validate if fees > feeCredits when fee model is prepaid.
-            (new Fee())->calculateMerchantFees($validation);
+            // (new Fee())->calculateMerchantFees($validation);
 
             $this->repo->saveOrFail($validation);
 
