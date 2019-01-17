@@ -18,7 +18,7 @@ class CardVaultTest extends TestCase
 
         $this->mockCardVault();
 
-        $this->cardVault = $this->app['card.tokenex'];
+        $this->cardVault = $this->app['card.cardVault'];
     }
 
     public function testCardVaultFunctions()

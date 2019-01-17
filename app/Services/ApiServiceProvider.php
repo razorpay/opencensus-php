@@ -128,17 +128,16 @@ class ApiServiceProvider extends BaseServiceProvider
                 return new Mock\TokenEx($app);
             }
 
-            $requestId = $app['request']->getId();
+            return new CardVault($app);
+        });
 
-            $mode = $app['rzp.mode'] ?? 'test';
+        $this->app->singleton('card.cardVault', function($app)
+        {
+            $cardVaultMock = $app['config']->get('applications.card_vault.mock');
 
-            $cardVault = $app->razorx->getTreatment($requestId, 'api_card_vault', $mode);
-
-            if (($this->app->environment('testing') === true) or
-                ($cardVault === 'off') or
-                ($cardVault === 'control'))
+            if ($cardVaultMock === true)
             {
-                return new TokenEx($app);
+                return new Mock\CardVault($app);
             }
 
             return new CardVault($app);

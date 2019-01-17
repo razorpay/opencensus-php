@@ -4246,7 +4246,7 @@ trait Authorize
 
         if ($vault === true)
         {
-            $cardInput[Card\Entity::VAULT] = Card\Vault::TOKENEX;
+            $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_VAULT;
         }
 
         $cardCore = new Card\Core;
@@ -4283,7 +4283,7 @@ trait Authorize
     {
         $card = $this->repo->card->fetchForToken($token);
 
-        $cardNumber = (new Card\Tokenex)->getCardNumber($card->getVaultToken());
+        $cardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken());
 
         // Recurring terminals accept null cvv.
         $cvv = isset($input['card']['cvv']) ? $input['card']['cvv'] : null;
@@ -4313,7 +4313,7 @@ trait Authorize
     {
         $card = $this->repo->card->fetchForToken($token);
 
-        $cardNumber = (new Card\Tokenex)->getCardNumber($card->getVaultToken());
+        $cardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken());
 
         $cvv = isset($input['card']['cvv']) ? $input['card']['cvv'] : null;
 

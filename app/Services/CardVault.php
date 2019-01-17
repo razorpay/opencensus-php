@@ -51,7 +51,7 @@ class CardVault
 
         $response = $this->sendRequest('tokenize', 'post', $input);
 
-        return $response[self::TOKENEX_TOKEN];
+        return $response[self::TOKEN];
     }
 
     public function validateToken($token)
@@ -74,6 +74,17 @@ class CardVault
         $response = $this->sendRequest('detokenize', 'post', $input);
 
         return $response[self::VALUE];
+    }
+
+    public function getTokenexToken($token)
+    {
+        $input = [
+            self::TOKEN   => $token
+        ];
+
+        $response = $this->sendRequest('tokenex_token', 'post', $input);
+
+        return $response[self::TOKENEX_TOKEN];
     }
 
     public function deleteToken($token)

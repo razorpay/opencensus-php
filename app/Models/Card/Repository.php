@@ -169,6 +169,16 @@ class Repository extends Base\Repository
                     })->pluck(Entity::ID)->toArray();
     }
 
+    public function replaceToknexToken(string $tokenexToken, string $hVaultToken)
+    {
+        $this->newQuery()
+             ->where(Entity::VAULT_TOKEN, $tokenexToken)
+             ->update([
+                Entity::VAULT_TOKEN => $hVaultToken,
+                Entity::VAULT => Card\Vault::RZP_VAULT,
+             ]);
+    }
+
     protected function addQueryParamInternational($query, $params)
     {
         $international = $this->dbColumn(Entity::INTERNATIONAL);
