@@ -129,6 +129,7 @@ class RawApiRequest
         {
             case 'proxy':
                 $this->setApiCredentials($input['mode'], $merchantId);
+                unset($this->params['headers']['X-Admin-Token']);
                 break;
 
             case 'internal':

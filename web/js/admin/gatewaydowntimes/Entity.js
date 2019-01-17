@@ -31,6 +31,10 @@ export default class Entity extends Component {
       paymentMethod: this.model.method || 'card',
       scheduled: this.model.scheduled || false,
     };
+
+    // Adding gateway and modifying gateway label
+    gateways.card.hdfc = 'FSS - HDFC';
+    gateways.card.card_fss = 'FSS - BOB';
   }
 
   preparePayload = body => {
