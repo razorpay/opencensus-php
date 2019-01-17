@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import Collection from 'model/collection';
-import { razorxFetch } from 'admin/razorx/fetch';
+import { adminFetch } from 'common/fetch';
 import { observer } from 'mobx-react';
 import { PageTable } from 'ui/Table';
 import { formatDate } from 'common/util';
@@ -90,9 +90,12 @@ export default class extends React.Component {
   state = { selectedType: 'activated', selectEnvironment: 'production' };
 
   collection = new Collection({
-    fetchFn: fakeFetch, // razorxFetch,
+    fetchFn: fakeFetch, //adminFetch,
     data: {
-      url: '/experiments',
+      url: 'experiments',
+    },
+    extraFields: {
+      mode: this.props.mode || 'live',
     },
   });
 

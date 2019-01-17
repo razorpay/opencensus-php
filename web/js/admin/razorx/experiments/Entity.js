@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { formatDate, titleCase, classList } from 'common/util';
-import { razorxFetch } from 'admin/razorx/fetch';
+import { adminFetch } from 'common/fetch';
 import { notify, notifySuccess, notifyError } from 'common/modal';
 
 const dummy_data = {
@@ -42,7 +42,7 @@ const dummy_data = {
   deleted_at: 0,
 };
 
-export default class extends React.PureComponent {
+export default class extends React.Component {
   state = {};
   componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
@@ -56,7 +56,7 @@ export default class extends React.PureComponent {
       data: null,
     });
 
-    razorxFetch({ url: '/experiments/' + id })
+    adminFetch({ url: '/experiments/' + id })
       .then(resp => {
         this.setState({
           isFetching: false,

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { formatDate, titleCase } from 'common/util';
-import { razorxFetch } from 'admin/razorx/fetch';
+import { adminFetch } from 'common/fetch';
 
 const dummy_data = {
   id: 182,
@@ -17,7 +17,7 @@ const dummy_data = {
   variants: ['on', 'off'],
 };
 
-export default class extends React.PureComponent {
+export default class extends React.Component {
   state = {};
   componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
@@ -31,7 +31,7 @@ export default class extends React.PureComponent {
       data: null,
     });
 
-    razorxFetch({ url: '/featureFlags/' + id })
+    adminFetch({ url: '/featureFlags/' + id })
       .then(resp => {
         this.setState({
           isFetching: false,

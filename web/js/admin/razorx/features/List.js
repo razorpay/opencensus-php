@@ -1,7 +1,7 @@
 import { classList, formatDate } from 'common/util';
 import { Link } from 'react-router-dom';
 import Collection from 'model/collection';
-import { razorxFetch } from 'admin/razorx/fetch';
+import { adminFetch } from 'common/fetch';
 import { observer } from 'mobx-react';
 import { PageTable } from 'ui/Table';
 
@@ -59,7 +59,7 @@ function fakeFetch() {
 @observer
 export default class extends React.Component {
   collection = new Collection({
-    fetchFn: fakeFetch, // razorxFetch,
+    fetchFn: adminFetch, // fakeFetch,
     data: {
       url: '/featureFlags',
     },

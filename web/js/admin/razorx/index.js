@@ -19,7 +19,7 @@ import AuditLogsList from './auditlog/List';
 
 import ModalContainer, { openSlider, closeSlider } from 'common/modal';
 
-import fetch from 'admin/razorx/fetch';
+import fetch from 'common/fetch';
 
 @withRouter
 export default class RazorXApp extends React.Component {
