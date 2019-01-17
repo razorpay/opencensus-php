@@ -7,6 +7,8 @@ use RZP\Models\FundAccount\Validation\Entity as Validation;
 
 class BankAccount extends Base
 {
+    const PENNY_TESTING_NARRATION = 'here take 1 rupee lol';
+
     public function __construct(Validation $validation)
     {
         parent::__construct($validation);
@@ -48,7 +50,8 @@ class BankAccount extends Base
     {
         // TODO: Mode, Narration?
         $fundTransferAttemptInput = [
-            FundTransferAttempt\Entity::PURPOSE => FundTransferAttempt\Purpose::PENNY_TESTING,
+            FundTransferAttempt\Entity::PURPOSE   => FundTransferAttempt\Purpose::PENNY_TESTING,
+            FundTransferAttempt\Entity::NARRATION => self::PENNY_TESTING_NARRATION,
         ];
 
         return (new FundTransferAttempt\Core)->createWithBankAccount(

@@ -78,6 +78,12 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
     ];
 
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::RESULTS,
+    ];
+
     protected $defaults = [
         self::STATUS          => Status::CREATED,
         self::NOTES           => [],

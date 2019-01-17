@@ -2,17 +2,15 @@
 
 namespace RZP\Tests\Functional\FundAccount;
 
-use RZP\Models\FundAccount;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\EntityActionTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\FundAccount\FundAccountTrait;
+
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Transaction\Core;
 use RZP\Models\FundAccount\Validation\Repository;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use RZP\Tests\Functional\Helpers\EntityActionTrait;
-use RZP\Tests\Functional\TestCase;
-use RZP\Models\Base\UniqueIdEntity;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Tests\Functional\Helpers\FundAccount\FundAccountTrait;
-use RZP\Models\FundAccount\Validation\Entity as FundAccountValidation;
 
 class FundAccountValidationTest extends TestCase
 {
@@ -30,6 +28,8 @@ class FundAccountValidationTest extends TestCase
         $this->fixtures->merchant->addFeatures(['fund_account_validations']);
 
         $this->addFeeCredits(['value' => 10000, 'campaign' => 'silent-ads']);
+
+        $this->ba->privateAuth();
     }
 
     public function testCreateValidationWithFundAccountId()
@@ -39,46 +39,58 @@ class FundAccountValidationTest extends TestCase
         $testDataToReplace = [
             'request' => [
                 'content' => [
-                    FundAccountValidation::FUND_ACCOUNT => [
-                        FundAccount\Entity::ID => $fundAccountResponse[FundAccountValidation::ID],
+                    'fund_account' => [
+                        'id' => $fundAccountResponse['id'],
                     ],
                 ]
             ]
         ];
 
-        $this->ba->privateAuth();
-
         $this->startTest($testDataToReplace);
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+        $fundAccount = $this->getLastEntity('fund_account', true);
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+        $this->assertEquals('created', $fav['status']);
+        $this->assertEquals($fundAccount['id'], 'fa_'.$fav['fund_account_id']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals('penny_testing', $fta['purpose']);
+        $this->assertEquals($fav['id'], $fta['source']);
+        $this->assertEquals($bankAccount['id'], 'ba_'.$fta['bank_account_id']);
+
+        $msg = \RZP\Models\FundAccount\Validation\Processor\BankAccount::PENNY_TESTING_NARRATION;
+        $this->assertEquals($msg, $fta['narration']);
     }
 
     public function testCreateValidationWithWrongFundAccountId()
     {
-        $testDataToReplace = [
-            'request' => [
-                'content' => [
-                    FundAccountValidation::FUND_ACCOUNT => [
-                        FundAccount\Entity::ID => (new UniqueIdEntity())->generateId()->getId(),
-                    ],
-                ]
-            ]
-        ];
-
-        $this->ba->privateAuth();
-
         $this->startTest($testDataToReplace);
     }
 
     public function testCreateValidationWithFundAccountEntity()
     {
-        $this->ba->privateAuth();
+        $response = $this->startTest();
 
-        $this->startTest();
+        $bankAccount = $this->getLastEntity('bank_account', true);
+        $fundAccount = $this->getLastEntity('fund_account', true);
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+        $this->assertEquals('created', $fav['status']);
+        $this->assertEquals($fundAccount['id'], 'fa_'.$fav['fund_account_id']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals('penny_testing', $fta['purpose']);
+        $this->assertEquals($fav['id'], $fta['source']);
+        $this->assertEquals($bankAccount['id'], 'ba_'.$fta['bank_account_id']);
+
+        $msg = \RZP\Models\FundAccount\Validation\Processor\BankAccount::PENNY_TESTING_NARRATION;
+        $this->assertEquals($msg, $fta['narration']);
     }
 
     public function testCreateValidationWithWrongFundAccountEntity()
     {
-        $this->ba->privateAuth();
-
         $this->startTest();
     }
 
