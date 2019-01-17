@@ -10,13 +10,11 @@ class Core extends Base\Core
     {
         $origin = new Entity;
 
-        $origin->generateId();
-
         $origin->build($input);
 
         $origin->entity()->associate($entity);
 
-        $origin->saveOrFail();
+        $this->repo->saveOrFail($origin);
 
         return $origin;
     }
