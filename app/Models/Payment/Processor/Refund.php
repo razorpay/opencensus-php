@@ -348,6 +348,68 @@ trait Refund
     }
 
     /**
+     * Using to verify UPI refunds for all previous attempts to check if any of the attempt was successful.
+     *
+     * @param $refund
+     * @param int $attempts
+     * @return array
+     */
+    public function verifyScroogeRefundWithAttempts($refund, int $attempts)
+    {
+        $payment = $refund->payment;
+
+        $this->setPaymentAndRefundInfo($refund, $payment);
+
+        $successCount = $failureCount = $totalCount = 0;
+
+        for ($attempt = 1; $attempt <= $attempts; $attempt++)
+        {
+            try
+            {
+                $refund->setAttempts($attempt);
+
+                $verifyResponse = $this->verifyRefund($refund);
+
+                $success = $verifyResponse[Payment\Gateway::SUCCESS];
+
+                $this->trace->info(
+                    TraceCode::SCROOGE_VERIFY_REFUND_CRON_RESPONSE,
+                    [
+                        'refund_id'         => $refund->getId(),
+                        'attempt_number'    => $attempt,
+                        'success'           => $success,
+                        'payment_id'        => $payment->getId(),
+                        'verify_response'   => $verifyResponse,
+                    ]);
+
+                ($success === true) ? $successCount += 1 : $failureCount += 1;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->info(
+                    TraceCode::SCROOGE_VERIFY_REFUND_CRON_EXCEPTION,
+                    [
+                        'refund_id'         => $refund->getId(),
+                        'attempt_number'    => $attempt,
+                        'payment_id'        => $payment->getId(),
+                        'exception'         => $ex->getMessage(),
+                    ]);
+
+                $failureCount += 1;
+            }
+
+            $totalCount += 1;
+        }
+
+        return [
+            'refund_id'         => $refund->getId(),
+            'success_count'     => $successCount,
+            'failure_count'     => $failureCount,
+            'total_count'       => $totalCount
+        ];
+    }
+
+    /**
      * Traces response sent to scrooge
      *
      * @param string $traceCode
