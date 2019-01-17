@@ -157,41 +157,6 @@ return [
         ],
     ],
 
-    'testCreateValidationWithWrongFundAccountEntity' => [
-        'request' => [
-            'url'     => '/fund_accounts/validations',
-            'method'  => 'post',
-            'content' => [
-                Validation::FUND_ACCOUNT  => [
-                    FundAccount::ACCOUNT_TYPE => 'bank_account',
-                    FundAccount::DETAILS      => [
-                        BankAccount::ACCOUNT_NUMBER => '!!!$$$##',
-                        BankAccount::NAME           => 'Rohit Keshwani',
-                        BankAccount::IFSC           => 'SBIN0010411',
-                    ],
-                ],
-                Validation::AMOUNT        => '100',
-                Validation::CURRENCY      => 'INR',
-                Validation::NOTES         => [],
-                Validation::RECEIPT       => '12345667',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The account number may only contain letters and numbers.',
-                    'field'       => 'fund_account.account_number',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
     /*'testGetMultipleValidations' => [
         'request' => [
             'url' => '/fund_accounts/validations',

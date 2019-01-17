@@ -17,7 +17,7 @@ class FundAccountValidation extends BaseProcessor
         $this->setTransaction($this->createNewTransaction());
     }
 
-    function updateTransaction()
+    public function updateTransaction()
     {
         $this->trace->info(
             TraceCode::FUND_ACCOUNT_VALIDATION_CREATE_TRANSACTION,
@@ -47,7 +47,7 @@ class FundAccountValidation extends BaseProcessor
         $this->txn->setAmount($amount);
     }
 
-    function calculateFees()
+    public function calculateFees()
     {
         switch (true)
         {
