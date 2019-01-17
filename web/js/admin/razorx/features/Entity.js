@@ -21,11 +21,11 @@ export default class extends React.Component {
   state = {};
   componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
-      this.fetchFeature(nextProps.id);
+      this.fetch(nextProps.id);
     }
   }
 
-  fetchFeature(id) {
+  fetch(id) {
     this.setState({
       isFetching: true,
       data: null,

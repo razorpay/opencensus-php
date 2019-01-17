@@ -18,6 +18,7 @@
   /* Modal */
   .Modal-mask
     background-color: rgba(45, 36, 37, 0.92)
+    overflow: auto
 
     .Modal-container
       border-radius: 2px
@@ -32,7 +33,7 @@
         padding: 9px 12px 11px
         right: -12px
 
-      .Modal-content
+      .Modal-content, .confirm-modal
         header
           position: relative
           color: rgba(255,255,255,0.9)
@@ -49,18 +50,44 @@
             width: 5px
             background: $highlight-color
 
-        .Modal-body
-          background: #fff
-          min-width: 400px
+      .Modal-content .Modal-body, .confirm-modal .confirm-body
+        background: #fff
+        min-width: 400px
 
-          .footer
-            margin: 0 -24px -24px
-            padding: 16px
-            border-top: 1px solid rgba(0,0,0,0.04)
+      .Modal-content .Modal-body
+        .footer
+          margin: 0 -24px -24px
+          padding: 16px
+          border-top: 1px solid rgba(0,0,0,0.04)
 
-          .form
-            .field > label
-              font-weight: 600
+        .form
+          .field > label
+            font-weight: 600
+
+      .confirm-modal .confirm-body
+        .message
+          padding: 24px
+
+        .action-buttons
+          display: flex
+          justify-content: flex-end
+          padding: 16px
+          border-top: 1px solid rgba(0,0,0,0.04)
+
+          button
+            margin: 0
+            border-radius: 2px
+            font-weight: 600
+            border: none
+
+            &:nth-of-type(n+1)
+              margin-left: 16px
+
+            &.btn-confirm
+              background-color: $color-primary
+
+            &.btn-reject
+              color: inherit
 
   /* Table */
   .table-striped .td
@@ -115,3 +142,20 @@
   .square-pills
     background: #efeeee
     color: inherit
+
+  /* Misc */
+
+  .text-danger
+    color: #f35d5d !important
+
+  .link
+    &.danger
+      border-color: #f35d5d
+
+      &-faded
+        border-color: transparent
+        color: rgba(243, 93, 93, 0.5)
+
+
+.text-bold
+    font-weight: 600

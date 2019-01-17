@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { formatDate, titleCase, classList } from 'common/util';
-import { adminFetch } from 'common/fetch';
+import { adminFetch, adminPatch } from 'common/fetch';
+import AsyncButton from 'ui/AsyncButton';
 import { notify, notifySuccess, notifyError } from 'common/modal';
 
 const dummy_data = {
@@ -38,7 +39,6 @@ const dummy_data = {
   created_at: 1546434038,
   updated_at: 1546434038,
   activated_at: 1546434062,
-  terminated_at: 1546434079,
   deleted_at: 0,
 };
 
@@ -46,11 +46,11 @@ export default class extends React.Component {
   state = {};
   componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
-      this.fetchExperiment(nextProps.id);
+      this.fetch(nextProps.id);
     }
   }
 
-  fetchExperiment(id) {
+  fetch(id) {
     this.setState({
       isFetching: true,
       data: null,
@@ -74,6 +74,10 @@ export default class extends React.Component {
         });
       });
   }
+
+  terminate = (id, mode) => {
+    return adminPatch(`${mode}/experiments/${id}/terminate`);
+  };
 
   render() {
     const { isFetching, data } = this.state;
@@ -99,13 +103,13 @@ export default class extends React.Component {
       content = <Details data={data} />;
     }
 
-    content = <Details data={dummy_data} />;
+    content = <Details data={dummy_data} terminate={this.terminate} />;
 
     return <div class="entity-container">{content}</div>;
   }
 }
 
-const Details = ({ data }) => {
+const Details = ({ data, terminate }) => {
   const segments = getSegmentsGroupedByVariant(data.segments);
 
   return (
@@ -136,7 +140,7 @@ const Details = ({ data }) => {
               </div>
             )}
             {data.terminated_at && (
-              <div>
+              <div class="text-danger" style={{ opacity: 0.8 }}>
                 <b>Terminated by</b> {titleCase(data.terminated_by)}
                 <span class="inline-block">
                   on {formatDate(data.terminated_at)}
@@ -177,6 +181,22 @@ const Details = ({ data }) => {
         <span class="square-pills label-semi-muted">{data.mode}</span>
       </div>
 
+      {!data.terminated_at && (
+        <React.Fragment>
+          <br />
+          <div>
+            <AsyncButton
+              class="link danger text-danger text-bold"
+              pendingClass="link danger-faded text-danger text-bold btn-pending"
+              confirm={`Do you want to terminate Experiment id "${data.id}"`}
+              onClick={_ => terminate(data.id, data.mode)}
+            >
+              Terminate Experiment
+              <span class="dot-loader">.</span>
+            </AsyncButton>
+          </div>
+        </React.Fragment>
+      )}
       <div class="separator" />
 
       <div>
