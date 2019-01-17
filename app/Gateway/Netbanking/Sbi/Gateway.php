@@ -95,7 +95,8 @@ class Gateway extends Base\Gateway
 
         $this->verifyCallback($gatewayPayment, $input);
 
-        $gatewayInput[ResponseFields::AMOUNT] = $gatewayInput[ResponseFields::AMOUNT] * 100;
+        // unsetting here as we do not want the amount to be updated again
+        unset($gatewayInput[ResponseFields::AMOUNT]);
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $gatewayInput);
 
