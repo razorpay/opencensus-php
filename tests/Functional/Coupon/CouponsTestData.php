@@ -66,8 +66,8 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID
         ],
     ],
 
@@ -131,9 +131,33 @@ return [
         ],
         'exception' => [
                 'class' => RZP\Exception\BadRequestException::class,
-                'internal_error_code' => ErrorCode::BAD_REQUEST_MULTIPLE_COUPON_PER_PROMOTION_NOT_ALLOWED
+                'internal_error_code' => ErrorCode::BAD_REQUEST_PROMOTION_ALREADY_HAS_COUPON
         ],
     ],
+
+    'testValidateCouponProxyAuthWithMerchantId' => [
+        'request' => [
+            'content' => [
+                'code'        => 'RANDOM-123',
+                'merchant_id' => '10000000000000',
+            ],
+            'url'    => '/coupons/validate',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+                'class' => RZP\Exception\BadRequestException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ID_NOT_REQUIRED
+        ],
+    ],
+
 
     'testUpdateCoupon' => [
         'request' => [

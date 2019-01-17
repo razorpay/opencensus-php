@@ -1001,7 +1001,8 @@ class ErrorCode
     const BAD_REQUEST_COUPON_NOT_APPLICABLE                                         = 'BAD_REQUEST_COUPON_NOT_APPLICABLE';
     const BAD_REQUEST_COUPON_EXPIRED                                                = 'BAD_REQUEST_COUPON_EXPIRED';
     const BAD_REQUEST_INVALID_COUPON_CODE                                           = 'BAD_REQUEST_INVALID_COUPON_CODE';
-    const BAD_REQUEST_MULTIPLE_COUPON_PER_PROMOTION_NOT_ALLOWED                     = 'BAD_REQUEST_MULTIPLE_COUPON_PER_PROMOTION_NOT_ALLOWED';
+    const BAD_REQUEST_PROMOTION_ALREADY_HAS_COUPON                                  = 'BAD_REQUEST_PROMOTION_ALREADY_HAS_COUPON';
+    const BAD_REQUEST_MERCHANT_ID_NOT_REQUIRED                                      = 'BAD_REQUEST_MERCHANT_ID_NOT_REQUIRED';
 
     const BAD_REQUEST_SNS_PUBLISH_FAILED                                            = 'BAD_REQUEST_SNS_PUBLISH_FAILED';
 
