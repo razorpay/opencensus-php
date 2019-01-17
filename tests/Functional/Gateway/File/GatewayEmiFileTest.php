@@ -315,6 +315,28 @@ class GatewayEmiFileTest extends TestCase
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
+        $file = $this->getLastEntity('file_store', true);
+
+        $fileContent = file_get_contents('storage/files/filestore/' . $file['location']);
+
+        $fileRows = explode("\r\n", $fileContent);
+
+        $this->assertEquals(3, count($fileRows));
+
+        foreach ($fileRows as $row)
+        {
+            $this->assertEquals(450, strlen($row));
+        }
+
+        $expectedFileContent = [
+            'type'        => 'sbi_emi_file',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'txt',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
         Queue::assertPushed(BeamJob::class, 1);
 
         Queue::assertPushedOn('general_test', BeamJob::class);
@@ -393,6 +415,28 @@ class GatewayEmiFileTest extends TestCase
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
+        $file = $this->getLastEntity('file_store', true);
+
+        $fileContent = file_get_contents('storage/files/filestore/' . $file['location']);
+
+        $fileRows = explode("\n", $fileContent);
+
+        $this->assertEquals(1, count($fileRows));
+
+        foreach ($fileRows as $row)
+        {
+            $this->assertEquals(450, strlen($row));
+        }
+
+        $expectedFileContent = [
+            'type'        => 'sbi_emi_file',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'txt',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
         Queue::assertPushed(BeamJob::class, 1);
 
         Queue::assertPushedOn('general_test', BeamJob::class);
@@ -445,6 +489,28 @@ class GatewayEmiFileTest extends TestCase
         $this->assertNotNull(File\Entity::SENT_AT);
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $fileContent = file_get_contents('storage/files/filestore/' . $file['location']);
+
+        $fileRows = explode("\n", $fileContent);
+
+        $this->assertEquals(1, count($fileRows));
+
+        foreach ($fileRows as $row)
+        {
+            $this->assertEquals(450, strlen($row));
+        }
+
+        $expectedFileContent = [
+            'type'        => 'sbi_emi_file',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'txt',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
         Queue::assertPushed(BeamJob::class, 1);
 

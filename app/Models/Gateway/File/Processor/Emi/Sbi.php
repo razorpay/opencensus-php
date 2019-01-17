@@ -78,12 +78,12 @@ class Sbi extends Base
             $creator = new FileStore\Creator;
 
             $creator->extension(static::EXTENSION)
-                ->content($fileData)
-                ->name($fileName)
-                ->store(FileStore\Store::LOCAL)
-                ->type(static::FILE_TYPE)
-                ->entity($this->gatewayFile)
-                ->metadata($metadata);
+                    ->content($fileData)
+                    ->name($fileName)
+                    ->store(FileStore\Store::LOCAL)
+                    ->type(static::FILE_TYPE)
+                    ->entity($this->gatewayFile)
+                    ->metadata($metadata);
 
             $creator->save();
 
