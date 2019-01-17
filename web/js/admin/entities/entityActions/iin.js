@@ -22,6 +22,7 @@ export default ({ entity, updateEntity, mode }) => {
       type: body.type,
       enabled: body.enabled,
       flows: body.flows,
+      locked: body.locked
     };
 
     // Lets remove all the empty variables
@@ -133,6 +134,12 @@ const EditIINForm = ({ entity, handleSubmit }) => {
             label="Enabled"
             name="enabled"
             defaultChecked={entity.enabled}
+          />
+    
+          <CheckField
+            label="Locked"
+            name="locked"
+            defaultChecked={entity.locked}
           />
 
           <CheckField
