@@ -1,12 +1,16 @@
 import { withRouter } from 'react-router-dom';
+import { observer } from 'mobx-react';
 import { openModal, closeModal, notifyError } from 'common/modal';
 import ExperimentsModal from './ExperimentsModal';
 import { SwitchField } from 'ui/Field';
 import List from './List';
 import Entity from './Entity';
 
+import { AppStore } from 'admin/user';
+
 @withRouter
-export default class Experiments extends React.PureComponent {
+@observer
+export default class Experiments extends React.Component {
   showExperimentModal = _ => {
     openModal(<ExperimentsModal />);
   };
@@ -27,12 +31,12 @@ export default class Experiments extends React.PureComponent {
           <span class="title">Experiments</span>
           <SwitchField
             name="mode"
-            defaultValue="live"
+            defaultValue={AppStore.mode}
             disabledLabel="Test"
             enabledLabel="Live"
             enabledValue="live"
             disabledValue="test"
-            onChange={this.props.updateModeInStore}
+            onChange={AppStore.updateMode}
           />
           <div class="btn-group">
             <button class="btn btn--primary" onClick={this.showExperimentModal}>

@@ -1,4 +1,4 @@
-import { observable } from 'mobx';
+import { observable, action } from 'mobx';
 
 const user = observable.shallowBox(window.user).get();
 
@@ -24,3 +24,17 @@ export function isOrgHDFC() {
 export function isOrgRazorpay() {
   return org.custom_code === 'rzp';
 }
+
+export let AppStore = observable
+  .shallowBox({
+    value: 'live',
+
+    get mode() {
+      return this.value;
+    },
+
+    updateMode: function(e) {
+      AppStore.value = e.target.value;
+    },
+  })
+  .get();

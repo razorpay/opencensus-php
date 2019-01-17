@@ -1,11 +1,14 @@
+import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { openModal, closeModal, notifyError } from 'common/modal';
 import { SwitchField } from 'ui/Field';
 import List from '../experiments/List';
 import Entity from '../experiments/Entity';
+import { AppStore } from 'admin/user';
 
 @withRouter
-export default class MerchantEvaluation extends React.PureComponent {
+@observer
+export default class MerchantEvaluation extends React.Component {
   render() {
     return (
       <div class="parent-container features-container">
@@ -13,12 +16,12 @@ export default class MerchantEvaluation extends React.PureComponent {
           <span class="title">Merchant Evaluation</span>
           <SwitchField
             name="mode"
-            defaultValue="live"
+            defaultValue={AppStore.mode}
             disabledLabel="Test"
             enabledLabel="Live"
             enabledValue="live"
             disabledValue="test"
-            onChange={this.props.updateModeInStore}
+            onChange={AppStore.updateMode}
           />
         </div>
         <div class="container-group">

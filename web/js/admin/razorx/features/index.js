@@ -1,10 +1,13 @@
+import { observer } from 'mobx-react';
 import { openModal, closeModal, notifyError } from 'common/modal';
 import FeaturesModal from './FeaturesModal';
 import { SwitchField } from 'ui/Field';
 import List from './List';
 import Entity from './Entity';
+import { AppStore } from 'admin/user';
 
-export default class Features extends React.PureComponent {
+@observer
+export default class Features extends React.Component {
   showFeatureModal = _ => {
     openModal(<FeaturesModal />);
   };
@@ -25,12 +28,12 @@ export default class Features extends React.PureComponent {
           <span class="title">Features</span>
           <SwitchField
             name="mode"
-            defaultValue="live"
+            defaultValue={AppStore.mode}
             disabledLabel="Test"
             enabledLabel="Live"
             enabledValue="live"
             disabledValue="test"
-            onChange={this.props.updateModeInStore}
+            onChange={AppStore.updateMode}
           />
           <div class="btn-group">
             <button class="btn btn--primary" onClick={this.showFeatureModal}>

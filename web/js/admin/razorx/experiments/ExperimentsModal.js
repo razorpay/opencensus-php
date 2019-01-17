@@ -1,3 +1,4 @@
+import { observer } from 'mobx-react';
 import debounce from 'rzp/utils/debounce';
 import { openModal, closeModal, notifySuccess } from 'common/modal';
 import Form from 'ui/Form';
@@ -8,6 +9,8 @@ import Field, {
 } from 'ui/Field';
 import { ModalContent } from 'component/Modal';
 import JSONEdit from 'admin/razorx/JSONEdit';
+
+import { AppStore } from 'admin/user';
 
 const initJSONObj = {
   description: '',
@@ -90,6 +93,7 @@ const validatorJSON = {
   },
 };
 
+@observer
 export default class extends React.Component {
   state = { featuresList: [] };
 
@@ -133,6 +137,7 @@ export default class extends React.Component {
 
   render() {
     const { id, name, JSONView } = this.props;
+    initJSONObj.mode = AppStore.mode;
 
     return (
       <ModalContent
@@ -147,11 +152,12 @@ export default class extends React.Component {
               <SwitchField
                 name="mode"
                 label="Mode"
-                defaultValue="live"
+                defaultValue={AppStore.mode}
                 disabledLabel="Test"
                 enabledLabel="Live"
                 enabledValue="live"
                 disabledValue="test"
+                onChange={AppStore.updateMode}
               />
               <Field
                 label="Environment"
