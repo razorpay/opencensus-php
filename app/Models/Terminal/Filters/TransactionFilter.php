@@ -789,12 +789,13 @@ class TransactionFilter extends Terminal\Filter
 
     public function capabilityFilter(Terminal\Entity $terminal)
     {
-        if ($terminal->getCapability() === Terminal\Capability::ALL)
+        $payment = $this->input['payment'];
+
+        if ((Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true) or
+            ($terminal->getCapability() === Terminal\Capability::ALL))
         {
             return true;
         }
-
-        $payment = $this->input['payment'];
 
         switch ($payment->getMethod())
         {

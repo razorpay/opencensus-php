@@ -614,13 +614,43 @@ trait Authorize
 
         $this->tracePreAuthResponse($this->preAuthorizeResponse);
 
+        $this->isPreAuthSuccess();
+
         $this->persistAfterPreAuth();
 
         if ($this->error)
         {
             $this->throwException($this->preAuthorizeResponse['error']);
         }
+    }
 
+    protected function isPreAuthSuccess()
+    {
+        if ($this->error)
+        {
+            false;
+        }
+
+        $result = $this->preAuthorizeResponse['data']['result'];
+
+        //
+        // Check enroll result code.
+        //
+        list($result, $success) = Payment\Result::getPreAuthResultCode($result);
+
+        if ($success === false)
+        {
+            $matches = [];
+            preg_match('/!ERROR!-(.*)-[a-zA-Z ]+/', $result, $matches);
+
+            $errorCode = $matches[1];
+
+            $this->preAuthorizeResponse['error'] = Hdfc\ErrorHandler::getErrorDetails($errorCode);
+
+            $this->error = true;
+        }
+
+        return $success;
     }
 
     protected function authorizeRecurring($input)

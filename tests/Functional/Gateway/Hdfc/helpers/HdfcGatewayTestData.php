@@ -58,6 +58,22 @@ return [
         'entity' => 'payment',
     ],
 
+    'testPaymentForAuthorizationTerminalFailure' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => 'Payment processing failed due to error at bank or wallet gateway',
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
+        ],
+    ],
+
     'testTamperedPayment' => [
         'response' => [
             'content' => [

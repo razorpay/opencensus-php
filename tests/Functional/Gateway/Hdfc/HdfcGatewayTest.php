@@ -69,7 +69,7 @@ class HdfcGatewayTest extends TestCase
 
     public function testPaymentForAuthorizationTerminal()
     {
-        $this->fixtures->create('terminal:shared_hdfc_terminal', ['recurring' => 2]);
+        $this->fixtures->create('terminal:shared_hdfc_terminal', ['capability' => 2]);
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
@@ -109,6 +109,54 @@ class HdfcGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertNull($payment['verify_at']);
+
+        $mpi = $this->getLastEntity('mpi', true);
+
+        $this->assertNotNull($mpi);
+        $this->assertEquals('mpi_blade', $mpi['gateway']);
+        $this->assertEquals('Y', $mpi['enrolled']);
+    }
+
+    public function testPaymentForAuthorizationTerminalFailure()
+    {
+        $this->fixtures->create('terminal:shared_hdfc_terminal', ['capability' => 2]);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = [
+            'card' => [
+                'number'       => '5567630000002004',
+                'expiry_month' => '02',
+                'expiry_year'  => '21',
+                'cvv'          => 123,
+                'name'         => 'Test Card'
+            ]
+        ];
+
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'authorize')
+            {
+                unset(
+                    $content['auth'], $content['ref'],
+                    $content['avr'], $content['postdate'],
+                    $content['paymentid'], $content['transid']);
+
+                $content['result'] = '!ERROR!-GV10009-Invalid pre authentication status';
+                $content['udf1'] = 'PA';
+                $content['udf2'] = 'test@razorpay.com';
+                $content['udf3'] = ' 919876543210';
+                $content['udf4'] = 'test';
+                $content['udf5'] = 'test';
+            }
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->defaultAuthPayment($payment);
+        });
 
         $mpi = $this->getLastEntity('mpi', true);
 
