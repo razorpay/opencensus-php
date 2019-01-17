@@ -132,9 +132,14 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT, $amount);
     }
 
-    protected function setFundAccountType(string $type)
+    public function setTax(int $tax)
     {
-        $this->setAttribute(self::FUND_ACCOUNT_TYPE, $type);
+        $this->setAttribute(self::TAX, $tax);
+    }
+
+    public function setFees(int $fees)
+    {
+        $this->setAttribute(self::FEE, $fees);
     }
 
     public function associateFundAccount(FundAccount $fundAccount)
@@ -142,6 +147,11 @@ class Entity extends Base\PublicEntity
         $this->fundAccount()->associate($fundAccount);
 
         $this->setFundAccountType($fundAccount->getAccountType());
+    }
+
+    protected function setFundAccountType(string $type)
+    {
+        $this->setAttribute(self::FUND_ACCOUNT_TYPE, $type);
     }
 
     // -------------- Public Setters --------------

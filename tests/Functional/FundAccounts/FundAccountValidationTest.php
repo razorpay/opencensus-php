@@ -36,17 +36,9 @@ class FundAccountValidationTest extends TestCase
     {
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
-        $testDataToReplace = [
-            'request' => [
-                'content' => [
-                    'fund_account' => [
-                        'id' => $fundAccountResponse['id'],
-                    ],
-                ]
-            ]
-        ];
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
 
-        $this->startTest($testDataToReplace);
+        $this->startTest();
 
         $bankAccount = $this->getLastEntity('bank_account', true);
         $fundAccount = $this->getLastEntity('fund_account', true);
@@ -66,7 +58,7 @@ class FundAccountValidationTest extends TestCase
 
     public function testCreateValidationWithWrongFundAccountId()
     {
-        $this->startTest($testDataToReplace);
+        $this->startTest();
     }
 
     public function testCreateValidationWithFundAccountEntity()
@@ -99,30 +91,34 @@ class FundAccountValidationTest extends TestCase
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_bearer' => 'customer']);
 
         $this->testCreateValidationWithFundAccountEntity();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals($fav['id'], $txn['entity_id']);
+        $this->assertEquals('fund_account_validation', $txn['type']);
+        $this->assertEquals('platform', $txn['fee_bearer']);
     }
 
     public function testFeeForFundAccountValidation()
     {
-        $this->markTestIncomplete('transaction is not being created at the moment');
-
         $this->testCreateValidationWithFundAccountEntity();
 
         $fundAccountValidation = $this->getDbLastEntity('fund_account_validation');
 
-        list($fees, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($fundAccountValidation);
-
-        //assert fee and tax here.
+        // TODO: assert fee and tax here.
     }
 
     public function testTransactionForFundAccountValidation()
     {
         $this->testCreateValidationWithFundAccountEntity();
 
-        $fundAccountValidation = $this->getDbLastEntity('fund_account_validation');
+        $fav = $this->getLastEntity('fund_account_validation', true);
 
-        (new Repository())->transaction(function() use ($fundAccountValidation) {
-            list($txn, $feesSplit) = (new Core())->createTransactionForSource($fundAccountValidation);
-        });
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals($fav['id'], $txn['entity_id']);
+        $this->assertEquals('fund_account_validation', $txn['type']);
+        $this->assertEquals('platform', $txn['fee_bearer']);
     }
 
     /*public function testGetValidation()

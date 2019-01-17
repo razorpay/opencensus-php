@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transaction;
 use RZP\Models\FundAccount;
 use RZP\Models\Pricing\Fee;
 
@@ -41,6 +42,8 @@ class Core extends Base\Core
             $validation->setAmount(100);
         }
 
+        $validation->generateId();
+
         return $validation;
     }
 
@@ -74,9 +77,16 @@ class Core extends Base\Core
 
             $validation->associateFundAccount($fundAccount);
 
-            // TODO: create txn
-            // This will calculate fees and validate if fees > feeCredits when fee model is prepaid.
-            // (new Fee())->calculateMerchantFees($validation);
+            $fundAccValidationTxnProcessor = (new Transaction\Processor\FundAccountValidation($validation));
+
+            list ($txn, $feeSplit) = $fundAccValidationTxnProcessor->createTransaction();
+
+            (new Transaction\Core)->saveFeeDetails($txn, $feeSplit);
+
+            $this->repo->saveOrFail($txn);
+
+            $validation->setFees($txn->getFee());
+            $validation->setTax($txn->getTax());
 
             $this->repo->saveOrFail($validation);
 
