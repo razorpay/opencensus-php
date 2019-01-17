@@ -18,18 +18,11 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
-    protected $fillable = [
-        self::ENTITY_ID,
-        self::ORIGIN_ID,
-        self::ENTITY_TYPE,
-        self::ORIGIN_TYPE,
-    ];
-
     protected $visible = [
         self::ID,
         self::ENTITY_ID,
-        self::ORIGIN_ID,
         self::ENTITY_TYPE,
+        self::ORIGIN_ID,
         self::ORIGIN_TYPE,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -66,6 +59,6 @@ class Entity extends Base\PublicEntity
      */
     public function origin()
     {
-        return $this->morphTo('origin', self::ORIGIN_TYPE, self::ORIGIN_ID);
+        return $this->morphTo('origin');
     }
 }

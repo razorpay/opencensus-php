@@ -2578,7 +2578,7 @@ class Entity extends Base\PublicEntity
 
     public function origin()
     {
-        return $this->morphOne('RZP\Models\Origin\Entity', 'origin');
+        return $this->morphOne(\RZP\Models\Origin\Entity::class, 'origin');
     }
 
     public function offers()
