@@ -177,4 +177,41 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testWebhookFundAccountValidationCompleted' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event'  => 'fund_account.validation.completed',
+            'contains' => [
+                'fund_account.validation',
+            ],
+            'payload' => [
+                'fund_account.validation' => [
+                    'entity' => [
+                        'entity'       => 'fund_account.validation',
+                        'fund_account' => [
+                            'entity'       => 'fund_account',
+                            'account_type' => 'bank_account',
+                            'active'       => true,
+                            'details'      => [
+                                'ifsc'           => 'SBIN0007105',
+                                'bank_name'      => 'State Bank of India',
+                                'name'           => 'Amit M',
+                                'account_number' => '111000111',
+                            ],
+                        ],
+                        'status'       => 'created',
+                        'amount'       => 100,
+                        'currency'     => 'INR',
+                        'notes'        => [],
+                        'results'      => [
+                            'account_status'  => null,
+                            'registered_name' => null,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

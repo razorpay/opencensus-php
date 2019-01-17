@@ -2,6 +2,10 @@
 
 namespace RZP\Tests\Functional\FundAccount;
 
+use Closure;
+use Mockery;
+
+use RZP\Models\Merchant\Webhook;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
@@ -117,6 +121,34 @@ class FundAccountValidationTest extends TestCase
         $this->startTest();
     }
 
+    public function testWebhookFundAccountValidationCompleted()
+    {
+        $this->markTestIncomplete('initiate recon to trigger webhook');
+
+        $this->createValidationWithFundAccountEntity();
+
+        $this->createWebhook([
+            'events' => [
+                'fund_account.validation.completed' => '1',
+            ]
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->mockInfernoFire(function ($data) use ($testData)
+        {
+            $data['event'] = json_decode($data['event'], true);
+
+            $this->assertEquals('fund_account.validation.completed', $data['event']['event']);
+
+            $this->assertArraySelectiveEquals($testData, $data);
+
+            return true;
+        });
+
+        // TODO: Initiate recon to trigger webhook
+    }
+
     protected function createValidationWithFundAccountEntity(): array
     {
         $response = $this->startTest();
@@ -137,5 +169,18 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals($msg, $fta['narration']);
 
         return $response;
+    }
+
+    protected function mockInfernoFire(Closure $closure)
+    {
+        $inferno = Mockery::mock(Webhook\Inferno::class, [])->makePartial();
+
+        $inferno->shouldReceive('fire')
+                ->once()
+                ->with(
+                    Mockery::type('RZP\Jobs\WebHook'),
+                    Mockery::on($closure));
+
+        $this->app->instance('webhook.inferno', $inferno);
     }
 }

@@ -4657,3 +4657,6 @@ ALTER TABLE fund_account_validations
     CHANGE COLUMN fee fees INT UNSIGNED DEFAULT 0;
 
 ALTER TABLE bank_accounts DROP COLUMN registered_beneficiary_name;
+
+ALTER TABLE webhooks
+    MODIFY COLUMN events BIGINT;
