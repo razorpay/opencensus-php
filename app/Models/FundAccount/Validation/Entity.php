@@ -154,6 +154,21 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FUND_ACCOUNT_TYPE, $type);
     }
 
+    public function setStatus(string $status = null)
+    {
+        return $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setAccountStatus(string $status = null)
+    {
+        return $this->setAttribute(self::ACCOUNT_STATUS, $status);
+    }
+
+    public function setRegisteredName(string $name = null)
+    {
+        return $this->setAttribute(self::REGISTERED_NAME, $name);
+    }
+
     // -------------- Public Setters --------------
 
     public function setPublicEntityAttribute(array & $array)
@@ -184,6 +199,18 @@ class Entity extends Base\PublicEntity
     public function getRegisteredName()
     {
         return $this->getAttribute(self::REGISTERED_NAME);
+    }
+
+    // ------------ Mocked Setters ---------
+
+    public function setUtr(string $value = null)
+    {
+        return;
+    }
+
+    public function setRemarks(string $value = null)
+    {
+        return;
     }
 
     // ------------ Mocked Getters ---------

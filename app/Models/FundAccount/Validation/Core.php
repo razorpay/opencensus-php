@@ -9,6 +9,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Models\FundAccount;
 use RZP\Models\Pricing\Fee;
+use RZP\Models\FundTransfer\Attempt as AttemptStatus;
 
 class Core extends Base\Core
 {
@@ -94,5 +95,47 @@ class Core extends Base\Core
 
             return $validation;
         });
+    }
+
+    /**
+     * Updates validation entity status after FTA recon
+     *
+     * @param Entity $validation
+     * @param string $ftaStatus
+     * @param string|null $ftaFailureReason
+     */
+    public function updateStatusAfterFtaRecon(Entity $validation, string $ftaStatus, string $ftaFailureReason = null)
+    {
+        $validation->setStatus(Status::COMPLETED);
+
+        switch ($ftaStatus)
+        {
+            case AttemptStatus::PROCESSED:
+                $validation->setAccountStatus(Status::ACTIVE);
+                $this->repo->saveOrFail($validation);
+                break;
+
+            case AttemptStatus::FAILED:
+                $validation->setAccountStatus(Status::INVALID);
+                $this->repo->saveOrFail($validation);
+                break;
+
+            case AttemptStatus::CREATED:
+                break;
+
+            case AttemptStatus::INITIATED:
+                break;
+
+            default:
+                $this->trace->error(
+                    TraceCode::UNKNOWN_FTA_STATUS_SENT_TO_REFUND,
+                    [
+                        'validation_id'      => $validation->getId(),
+                        'fta_status'         => $ftaStatus,
+                        'fta_failure_reason' => $ftaFailureReason,
+                    ]);
+        }
+
+        // TODO: Send a webhook here
     }
 }
