@@ -85,19 +85,28 @@ function fakeFetch() {
   });
 }
 
+const baseUrl = 'experiments';
+
 @observer
 export default class extends React.Component {
   state = { selectedType: 'activated', selectEnvironment: 'production' };
 
   collection = new Collection({
-    fetchFn: fakeFetch, //adminFetch,
+    fetchFn: adminFetch,
     data: {
-      url: 'experiments',
+      url: `${this.props.mode}/${baseUrl}`,
     },
     extraFields: {
       mode: this.props.mode || 'live',
     },
   });
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.mode !== this.props.mode) {
+      this.collection.data.url = `${this.props.mode}/${baseUrl}`;
+      this.collection.fetch();
+    }
+  }
 
   selectType = e => {
     let value = e.target.value;

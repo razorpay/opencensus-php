@@ -51,7 +51,7 @@ export default class Experiments extends React.Component {
           </div>
         </div>
         <div class="container-group">
-          <List />
+          <List mode={AppStore.mode} />
           <Entity id={this.props.id} />
         </div>
       </div>

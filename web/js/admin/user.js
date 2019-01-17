@@ -25,16 +25,16 @@ export function isOrgRazorpay() {
   return org.custom_code === 'rzp';
 }
 
-export let AppStore = observable
-  .shallowBox({
-    value: 'live',
+export const AppStore = observable
+  .box({
+    appMode: 'live',
 
     get mode() {
-      return this.value;
+      return this.appMode;
     },
 
     updateMode: function(e) {
-      AppStore.value = e.target.value;
+      AppStore.appMode = e.target.value;
     },
   })
   .get();

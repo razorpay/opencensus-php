@@ -25,7 +25,7 @@ export default class MerchantEvaluation extends React.Component {
           />
         </div>
         <div class="container-group">
-          <List />
+          <List mode={AppStore.mode} />
           <Entity id={this.props.id} />
         </div>
       </div>

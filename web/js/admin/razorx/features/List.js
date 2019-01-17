@@ -10,6 +10,8 @@ import { statusPill } from 'admin/razorx/data';
 import Form from 'ui/Form';
 import Field, { DateField } from 'ui/Field';
 
+import { AppStore } from 'admin/user';
+
 const data = {
   items: [
     {
@@ -56,14 +58,26 @@ function fakeFetch() {
   });
 }
 
+const baseUrl = 'featureFlags';
+
 @observer
 export default class extends React.Component {
   collection = new Collection({
     fetchFn: adminFetch, // fakeFetch,
     data: {
-      url: '/featureFlags',
+      url: `${this.props.mode}/${baseUrl}`,
+    },
+    extraFields: {
+      mode: this.props.mode || 'live',
     },
   });
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.mode !== this.props.mode) {
+      this.collection.data.url = `${this.props.mode}/${baseUrl}`;
+      this.collection.fetch();
+    }
+  }
 
   render() {
     return (
