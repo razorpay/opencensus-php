@@ -992,7 +992,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function usedTerminalValidator($terminal, $input)
+    public function editTerminalValidator($terminal, $input)
     {
         if (in_array($terminal->getGateway(), self::$editTerminalGateways))
         {
@@ -1002,7 +1002,7 @@ class Validator extends Base\Validator
         else
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Editing not defined for used terminal of gateway: ' . $terminal->getGateway());
+                'Editing not defined for terminal of gateway: ' . $terminal->getGateway());
         }
     }
 
