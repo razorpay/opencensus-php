@@ -609,13 +609,17 @@ class Gateway extends Base\Gateway
         $udf = [RequestFields::MERCHANT_DISPLAY_NAME => $input['merchant']->getFilteredDba()];
         $udf = json_encode($udf);
 
+        $notificationUrl = $this->route->getUrlWithPublicAuth(
+                                'gateway_payment_callback_post',
+                                ['gateway' => 'wallet_olamoney']);
+
         $content = [
             RequestFields::ACCESS_TOKEN         => $this->getAccessToken($input['terminal']),
             RequestFields::UNIQUE_ID            => $input[ConstantEntity::PAYMENT]['id'],
             RequestFields::COMMENTS             => 'Razorpay_payment',
             RequestFields::UDF                  => $udf,
             RequestFields::RETURN_URL           => $input['callbackUrl'],
-            RequestFields::NOTIFICATION_URL     => '',
+            RequestFields::NOTIFICATION_URL     => $notificationUrl,
             RequestFields::CURRENCY             => $input['payment']['currency'],
             RequestFields::AMOUNT               => $this->getFormattedAmount($input[ConstantEntity::PAYMENT]['amount']),
             RequestFields::COUPON_CODE          => 'NA',
@@ -628,7 +632,7 @@ class Gateway extends Base\Gateway
         $content[RequestFields::USER_ACCESS_TOKEN]        = $input['token']['gateway_token'];
         $content[RequestFields::MOBILE]                   = $this->getFormattedContact($input['payment']['contact']);
         $content[RequestFields::EMAIL]                    = $input['payment']['email'];
-        $content[RequestFields::LINK_NOTIFICATION_URL]    = $input['callbackUrl'];
+        $content[RequestFields::LINK_NOTIFICATION_URL]    = $notificationUrl;
         $content[RequestFields::SIGNATURE]                = $this->getSignature($input[ConstantEntity::PAYMENT]['id']);
 
         return $content;
@@ -1207,13 +1211,12 @@ class Gateway extends Base\Gateway
 
     public function getSignature($id)
     {
-        $private_key = $this->getPrivateKey();
+        $privateKey = $this->getPrivateKey();
 
         $rsa = new RSA();
-        extract($rsa->createKey());
 
         $rsa->setPrivateKeyFormat(RSA::PRIVATE_FORMAT_PKCS8);
-        $rsa->loadKey(base64_decode($private_key), RSA::PRIVATE_FORMAT_PKCS8);
+        $rsa->loadKey(base64_decode($privateKey), RSA::PRIVATE_FORMAT_PKCS8);
 
         $rsa->setSignatureMode(RSA::SIGNATURE_PKCS1);
 
@@ -1223,13 +1226,12 @@ class Gateway extends Base\Gateway
     public function validateSignature($plaintext, $signature)
     {
         //xtenantKey, xauthKey
-        $ola_public_key = $this->getOlaPublicKey();
+        $olaPublicKey = $this->getOlaPublicKey();
 
         $rsa = new RSA();
-        extract($rsa->createKey());
 
         $rsa->setPublicKeyFormat(RSA::PUBLIC_FORMAT_PKCS8);
-        $rsa->loadKey(base64_decode($ola_public_key));
+        $rsa->loadKey(base64_decode($olaPublicKey));
 
         $rsa->setSignatureMode(RSA::SIGNATURE_PKCS1);
 
@@ -1240,7 +1242,7 @@ class Gateway extends Base\Gateway
     {
         $gatewayData = $input['gateway'];
 
-        if (isset($gatewayData['errorCode']))
+        if (isset($gatewayData['errorCode']) === true)
         {
             $code = $gatewayData['errorCode'];
             $errorCode = ResponseCode::getApiErrorCode($code);
@@ -1259,18 +1261,21 @@ class Gateway extends Base\Gateway
         $xauthKey = $gatewayData['xauthKey'];
 
         //Signature Verification
-        if ($this->validateSignature($encryptedTenantKey,$xauthKey) === false)
+        if ($this->validateSignature($encryptedTenantKey, $xauthKey) === false)
         {
-            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED);
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_SIGNATURE_VALIDATION_FAILED);
         }
 
         $tenantKey = $this->decryptTenantKey($encryptedTenantKey);
-        list($uuid, $timestamp) = explode(':',$tenantKey);
+
+        list($uuid, $timestamp) = explode(':', $tenantKey);
 
         //Check for timestamp is less than current timestamp
-        if ((intdiv($timestamp, 1000000)) > time())
+        if (intdiv($timestamp, 1000000) > time())
         {
-            throw new Exception\GatewayErrorException(ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT);
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT);
         }
 
         $response = $this->decryptResponseBody($body, $uuid);
@@ -1317,12 +1322,13 @@ class Gateway extends Base\Gateway
 
     protected function decryptTenantKey($encryptedTenantKey)
     {
-        $private_key = $this->getPrivateKey();
+        $privateKey = $this->getPrivateKey();
+
         $rsa = new RSA();
 
         $rsa->setPrivateKeyFormat(RSA::PRIVATE_FORMAT_PKCS8);
 
-        $rsa->loadKey(base64_decode($private_key), RSA::PRIVATE_FORMAT_PKCS8);
+        $rsa->loadKey(base64_decode($privateKey), RSA::PRIVATE_FORMAT_PKCS8);
 
         $rsa->setEncryptionMode(RSA::ENCRYPTION_PKCS1);
 
@@ -1366,6 +1372,7 @@ class Gateway extends Base\Gateway
 
         return $this->config['live_ola_public_key'];
     }
+
     public function getPublicKey()
     {
         if ($this->mode === Mode::TEST)
