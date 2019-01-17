@@ -8,23 +8,40 @@ import EnumList from 'component/Input/EnumList';
 const initJSONObj = {
   name: '',
   description: '',
+  notify: ['// Eg: Array of Slack identifiers without @'],
   variants: ['// Eg: Array of strings'],
 };
 
 const validatorJSON = {
   name: function(val) {
     if (!val || typeof val !== 'string') {
-      return 'name must be non-empty string';
+      return 'name must be non-empty String';
     }
   },
   description: function(val) {
     if (!val || typeof val !== 'string') {
-      return 'description must be non-empty string';
+      return 'description must be non-empty String';
+    }
+  },
+  notify: function(val) {
+    if (val) {
+      let errorMsg;
+      if (!(val instanceof Array)) {
+        errorMsg = 'notify must be an Array';
+      }
+      val.forEach(v => {
+        if (v.indexOf('@') > -1) {
+          errorMsg = '@ is not required in notify Array';
+          return false;
+        }
+      });
+
+      return errorMsg;
     }
   },
   variants: function(val) {
     if (!val || !(val instanceof Array || !val.length)) {
-      return 'variants must be a non-empty array';
+      return 'variants must be a non-empty Array';
     }
 
     let errorMsg;
@@ -98,6 +115,12 @@ export default class extends React.Component {
                 name="description"
                 placeholder="Feature Description"
                 required
+              />
+              <Field
+                label="Slack Notify"
+                placeholder="Comma separated list without @"
+                type="text"
+                name="notify"
               />
               <div class="sub-heading">Variants</div>
               <EnumList
