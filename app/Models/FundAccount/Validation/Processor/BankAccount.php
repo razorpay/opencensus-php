@@ -2,9 +2,7 @@
 
 namespace RZP\Models\FundAccount\Validation\Processor;
 
-
-use RZP\Models\Pricing\Fee;
-use RZP\Models\FundAccount\Validation\Status;
+use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Models\FundAccount\Validation\Entity as Validation;
@@ -33,6 +31,10 @@ class BankAccount extends Base
         // TODO: Dispatch FTA for processing
     }
 
+    /**
+     * Unused right now, everything is async
+     * @return [type] [description]
+     */
     public function processValidation()
     {
         $this->repo->assertTransactionActive();
@@ -44,43 +46,20 @@ class BankAccount extends Base
         // postFundTransfer will be called when its done execution.
     }
 
-    public function postFundTransfer(array $input)
-    {
-        $this->repo->assertTransactionActive();
-
-        $bankAccount = $this->getAccount();
-
-        $beneficiaryName = $input[Entity::REGISTERED_BENEFICIARY_NAME] ?? '';
-
-        $bankAccount->setRegisteredBeneficiaryName($beneficiaryName);
-
-        $this->repo->saveOrFail($bankAccount);
-
-        $fundAccountData = [
-            Validation::STATUS              => Status::VALIDATED,
-            Validation::ERROR_CODE          => 'lala',
-            Validation::ERROR_DESCRIPTION   => 'lala',
-            Validation::INTERNAL_ERROR_CODE => 'lala',
-        ];
-
-        $this->validation->edit($fundAccountData, 'postProcess');
-
-        // 2. update instrument status and fees
-
-        // 3. create transaction
-    }
-
     protected function createFundTransferAttempt(): FundTransferAttempt\Entity
     {
-        // TODO: Mode, Narration?
         $fundTransferAttemptInput = [
             FundTransferAttempt\Entity::PURPOSE   => FundTransferAttempt\Purpose::PENNY_TESTING,
             FundTransferAttempt\Entity::NARRATION => self::PENNY_TESTING_NARRATION,
         ];
 
-        return (new FundTransferAttempt\Core)->createWithBankAccount(
+        $fta = (new FundTransferAttempt\Core)->createWithBankAccount(
             $this->validation,
             $this->account,
             $fundTransferAttemptInput);
+
+        $this->trace->info(TraceCode::FUND_TRANSFER_ATTEMPT_CREATED, $fta->toArrayPublic());
+
+        return $fta;
     }
 }

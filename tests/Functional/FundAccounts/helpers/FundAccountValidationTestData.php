@@ -7,9 +7,30 @@ use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Models\FundAccount\Validation\Entity as Validation;
 
 return [
+    'testGetValidations' => [
+        'request' => [
+            'url'     => '/fund_accounts_validations',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'  => 'fund_account.validation',
+                        'status'  => 'created',
+                        'results' => [
+                        ],
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testCreateValidationWithFundAccountId' => [
         'request' => [
-            'url'     => '/fund_accounts/validations',
+            'url'     => '/fund_accounts_validations',
             'method'  => 'post',
             'content' => [
                 Validation::FUND_ACCOUNT => [
@@ -49,7 +70,7 @@ return [
 
     'testCreateValidationWithWrongFundAccountId' => [
         'request' => [
-            'url'     => '/fund_accounts/validations',
+            'url'     => '/fund_accounts_validations',
             'method'  => 'post',
             'content' => [
                 Validation::FUND_ACCOUNT => [
@@ -77,9 +98,9 @@ return [
         ],
     ],
 
-    'testCreateValidationWithFundAccountEntity' => [
+    'createValidationWithFundAccountEntity' => [
         'request' => [
-            'url'     => '/fund_accounts/validations',
+            'url'     => '/fund_accounts_validations',
             'method'  => 'post',
             'content' => [
                 Validation::FUND_ACCOUNT  => [
@@ -124,7 +145,7 @@ return [
 
     'testCreateValidationWithWrongFundAccountEntity' => [
         'request' => [
-            'url'     => '/fund_accounts/validations',
+            'url'     => '/fund_accounts_validations',
             'method'  => 'post',
             'content' => [
                 Validation::FUND_ACCOUNT  => [
@@ -156,15 +177,4 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
-
-    /*'testGetMultipleValidations' => [
-        'request' => [
-            'url' => '/fund_accounts/validations',
-            'method' => 'get',
-        ],
-        'response' => [
-            'content' => [
-            ]
-        ]
-    ],*/
 ];

@@ -13,11 +13,4 @@ class Validator extends Base\Validator
         Entity::CURRENCY                  => 'filled|string|in:INR',
         Entity::RECEIPT                   => 'sometimes|string|min:1|max:40',
     ];
-
-    protected static $postProcessRules = [
-        Entity::INTERNAL_ERROR_CODE      => 'required|string',
-        Entity::ERROR_CODE               => 'required|string',
-        Entity::ERROR_DESCRIPTION        => 'required|string',
-        Entity::STATUS                   => 'required|string',
-    ];
 }

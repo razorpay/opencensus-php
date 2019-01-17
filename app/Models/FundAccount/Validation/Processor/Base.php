@@ -26,5 +26,5 @@ abstract class Base extends Core
 
     public abstract function processValidation();
 
-    public abstract function postFundTransfer(array $input);
+    // public abstract function postFundTransfer(array $input);
 }

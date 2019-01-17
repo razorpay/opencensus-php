@@ -135,13 +135,6 @@ class FeeCalculator
 
     protected function validateFees($totalFees, $amount)
     {
-        if ($this->isEntityFundAccountValidation() === true)
-        {
-            $this->validateFeesForFundAccountValidation($totalFees, $amount);
-
-            return;
-        }
-
         // In case the merchant is customer fee bearer, we shouldn't check
         // $amount <= $totalFees because amount is already inclusive of the fees.
         if ($this->isFeeBearerCustomer() === true)
@@ -168,6 +161,12 @@ class FeeCalculator
             return;
         }
 
+        // Can't use fee credits for fund account validation, so only balance matters
+        if ($this->isEntityFundAccountValidation() === true)
+        {
+            return;
+        }
+
         list($amountCredits, $feeCredits) = $this->getAvailableAmountOrFeeCredits();
 
         if (($totalFees > $amount) and
@@ -179,35 +178,6 @@ class FeeCalculator
                 Payment\Entity::AMOUNT,
                 [
                     'amount' => $amount,
-                    'fees'   => $totalFees
-                ]);
-        }
-    }
-
-    protected function validateFeesForFundAccountValidation($totalFees, $amount)
-    {
-        // In case the merchant is fee bearer but on postpaid model,
-        // we shouldn't check $totalFees > $feeCredits.
-        if ($this->entity->merchant->getFeeModel() === Merchant\FeeModel::POSTPAID)
-        {
-            return;
-        }
-
-        //
-        if ($amount === 0)
-        {
-            return;
-        }
-
-        list($amountCredits, $feeCredits) = $this->getAvailableAmountOrFeeCredits();
-
-        if ($totalFees > $feeCredits)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_FEES_GREATER_THAN_FEE_CREDITS,
-                Payment\Entity::AMOUNT,
-                [
-                    'fee_credits' => $feeCredits,
                     'fees'   => $totalFees
                 ]);
         }

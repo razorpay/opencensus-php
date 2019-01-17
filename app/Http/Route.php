@@ -974,9 +974,9 @@ final class Route
         'fund_account_delete'                      => ['delete',   'fund_accounts/{id}',                             'FundAccountController@delete'                                      ],
 
         // Fund Account Validation
-        'fund_account_validate'                    => ['post',     'fund_accounts/validations',                      'FundAccountValidationController@create'                            ],
-        'fund_account_validate_fetch'              => ['get',      'fund_accounts/validations',                      'FundAccountValidationController@list'                              ],
-        'fund_account_validate_fetch_by_id'        => ['get',      'fund_accounts/validations/{id}',                 'FundAccountValidationController@get'                               ],
+        'fund_account_validate'                    => ['post',     'fund_accounts_validations',                      'FundAccountValidationController@create'                            ],
+        'fund_account_validate_fetch'              => ['get',      'fund_accounts_validations',                      'FundAccountValidationController@list'                              ],
+        'fund_account_validate_fetch_by_id'        => ['get',      'fund_accounts_validations/{id}',                 'FundAccountValidationController@get'                               ],
 
         // Banking statement routes
         'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
