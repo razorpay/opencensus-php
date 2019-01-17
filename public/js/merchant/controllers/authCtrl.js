@@ -84,11 +84,17 @@ app
       $scope.websiteRegex = /^((http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*))?$/gi;
 
       // signup state container
+      var email = $location.search().email;
+      try {
+        email = atob(decodeURIComponent(email));
+      } catch (e) {
+        email = '';
+      }
       $scope.signup = {
         currentStep: 0, // 0, 1, 2
         currentSubStep: 0, // 0, 1, 2, 3, 4
         data: {
-          email: $location.search().email || '',
+          email: email,
           password: '',
           captcha: null,
         },
@@ -1002,9 +1008,9 @@ app
       };
 
       /*
-      * stepName: at which step name
-      * sourceLabel: from which CTA, step
-      * */
+       * stepName: at which step name
+       * sourceLabel: from which CTA, step
+       * */
       $scope.trackStepClicksOnMore = function(stepName, sourceLabel) {
         if (!stepName || !sourceLabel) {
           return;
@@ -1021,8 +1027,8 @@ app
       };
 
       /*
-      * toStepName: to which link the back click points
-      * */
+       * toStepName: to which link the back click points
+       * */
       $scope.trackBackClick = function(toStepName) {
         if (!toStepName) {
           return;
