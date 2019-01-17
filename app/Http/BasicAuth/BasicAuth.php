@@ -1649,6 +1649,13 @@ class BasicAuth
         {
             return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER);
         }
+
+        $application = $this->authCreds->getPartnerApplication();
+
+        if ($application !== null)
+        {
+            $this->setOAuthApplicationId($application->getId());
+        }
     }
 
     protected function isPartnerAuthAllowed(): bool
