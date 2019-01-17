@@ -395,20 +395,11 @@ class Gateway extends Base\Gateway
                 ErrorCode::GATEWAY_ERROR_DECRYPTION_FAILED);
         }
 
-        try
-        {
-            $response = [];
+        $response = [];
 
-            parse_str(strtr($decryptedString, '|', '&'), $response);
+        parse_str(strtr($decryptedString, '|', '&'), $response);
 
-            if (array_key_exists(ResponseFields::CHECKSUM, $response) === false)
-            {
-                throw new Exception\RuntimeException('Invalid gateway response');
-            }
-
-            $stringWithoutChecksum = explode('|checkSum', $decryptedString)[0];
-        }
-        catch (\Exception $e)
+        if (array_key_exists(ResponseFields::CHECKSUM, $response) === false)
         {
             $this->trace->info(
                 TraceCode::GATEWAY_PAYMENT_ERROR,
@@ -418,6 +409,8 @@ class Gateway extends Base\Gateway
 
             throw new Exception\RuntimeException('Invalid gateway response');
         }
+
+        $stringWithoutChecksum = explode('|checkSum', $decryptedString)[0];
 
         $this->compareHashes($response[RequestFields::CHECKSUM], hash('sha256', $stringWithoutChecksum));
 
