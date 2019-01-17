@@ -10,6 +10,15 @@
       &:hover
         background: $color-primary-hover
 
+    &--primary
+      background: $color-primary
+
+      &:hover
+        background: $color-primary-hover
+
+    &--link
+      color: $color-primary
+
     &--pill
       background: #fff
       border-radius: 20px
@@ -69,7 +78,7 @@
       transition: 0.2s
 
     &.checked::before
-      background: $color-primary
+      background: $highlight-color
 
     &.checked::after
       transform: translateX(12px)

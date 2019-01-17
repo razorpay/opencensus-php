@@ -157,7 +157,6 @@ export default class extends React.Component {
                 enabledLabel="Live"
                 enabledValue="live"
                 disabledValue="test"
-                onChange={AppStore.updateMode}
               />
               <Field
                 label="Environment"

@@ -89,8 +89,6 @@ const baseUrl = 'experiments';
 
 @observer
 export default class extends React.Component {
-  state = { selectedType: 'activated', selectEnvironment: 'production' };
-
   collection = new Collection({
     fetchFn: adminFetch,
     data: {
@@ -108,49 +106,40 @@ export default class extends React.Component {
     }
   }
 
-  selectType = e => {
-    let value = e.target.value;
+  resetFilters = e => {
+    const hasAppliedFilters = Object.keys(this.collection.filters).length > 2; // count and skip are by default
 
-    this.setState({ selectedType: value });
+    // Clean filters in collection
+    this.collection.resetFilters();
+
+    // Clear filters in UI form
+    const form = e.currentTarget.closest('form');
+    form.reset();
+
+    if (hasAppliedFilters) {
+      this.collection.fetch();
+    }
   };
 
-  selectEnvironment = e => {
-    let value = e.target.value;
-
-    this.setState({ selectEnvironment: value });
-  };
-
-  onSubmit = filters => {
-    let selectedType = this.state.selectedType;
-
-    selectedType = selectedType.split('-');
-    filters = { ...filters, duty: selectedType[0], type: selectedType[1] };
-
+  applyFilters = filters => {
+    filters = { ...filters };
     this.collection.applyFilters(filters);
   };
 
   render() {
     return (
       <div class="list-container">
-        <Form onSubmit={this.onSubmit} class="filters">
+        <Form onSubmit={this.applyFilters} class="filters">
           <Field label="Feature Id" name="feature_id" />
           <Field label="Created By" name="created_by" />
 
-          <SelectField
-            label="Status"
-            value={this.state.selectedType}
-            onChange={this.selectType}
-          >
+          <SelectField name="status" label="Status">
             <option value="created">Created</option>
             <option value="terminated">Terminated</option>
             <option value="activated">Activated</option>
           </SelectField>
 
-          <SelectField
-            label="Environment"
-            value={this.state.selectedEnvironment}
-            onChange={this.selectEnvironment}
-          >
+          <SelectField name="environment" label="Environment">
             <option value="production">Production</option>
             <option value="beta">Beta</option>
           </SelectField>
@@ -163,6 +152,13 @@ export default class extends React.Component {
           />
 
           <button class="btn btn--primary field">Search</button>
+          <button
+            type="button"
+            class="btn btn--link field"
+            onClick={this.resetFilters}
+          >
+            Clear
+          </button>
         </Form>
         <div>
           <PageTable

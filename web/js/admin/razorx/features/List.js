@@ -79,10 +79,30 @@ export default class extends React.Component {
     }
   }
 
+  resetFilters = e => {
+    const hasAppliedFilters = Object.keys(this.collection.filters).length > 2; // count and skip are by default
+
+    // Clean filters in collection
+    this.collection.resetFilters();
+
+    // Clear filters in UI form
+    const form = e.currentTarget.closest('form');
+    form.reset();
+
+    if (hasAppliedFilters) {
+      this.collection.fetch();
+    }
+  };
+
+  applyFilters = filters => {
+    filters = { ...filters };
+    this.collection.applyFilters(filters);
+  };
+
   render() {
     return (
       <div class="list-container">
-        <Form onSubmit={this.onSubmit} class="filters">
+        <Form onSubmit={this.applyFilters} class="filters">
           <Field label="Id" name="id" />
           <Field label="Name" name="name" />
           <Field label="Created By" name="created_by" />
@@ -95,6 +115,13 @@ export default class extends React.Component {
           />
 
           <button class="btn btn--primary field">Search</button>
+          <button
+            type="button"
+            class="btn btn--link field"
+            onClick={this.resetFilters}
+          >
+            Clear
+          </button>
         </Form>
         <div>
           <PageTable
