@@ -279,6 +279,7 @@ class Constants
         self::REPORTING_GENRERIC_NOTES        => true,
         self::IVR                             => true,
         self::S2S_OTP_JSON                    => true,
+        self::FUND_ACCOUNT_VALIDATIONS        => true,
     ];
 
     // Entity type constants
