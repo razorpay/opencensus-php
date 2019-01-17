@@ -1478,7 +1478,12 @@ trait Authorize
      */
     protected function setAuthenticationGateway(Payment\Entity $payment, array & $gatewayInput)
     {
-        if ($payment->terminal->getCapability() === Terminal\Capability::AUTHORIZE)
+        //
+        // Keeping this condition for backward compatibility
+        // @todo: Remove the authorization gateway check once it's live
+        //
+        if ((Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true) or
+            ($payment->terminal->getCapability() === Terminal\Capability::AUTHORIZE))
         {
             $method = $payment->getMethod();
 
