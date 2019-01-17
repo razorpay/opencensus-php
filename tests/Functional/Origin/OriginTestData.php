@@ -17,8 +17,7 @@ return [
             'content' => [
                 'entity_type' => 'payment',
                 'entity_id'   => 'randomPaymentId',
-                'origin_type' => 'partner',
-                'origin_id'   => '100000Razorpay',
+                'origin_type' => 'application',
             ],
         ]
     ],

@@ -72,6 +72,11 @@ class OriginTest extends TestCase
 
         $response = $this->doPartnerAuthPayment($payment, $client->getId(), $submerchantId);
 
+        $app = DB::Connection('auth')
+                 ->table('applications')
+                 ->orderBy('created_at', 'desc')
+                 ->first();
+
         $origin = $this->getDbLastEntity('origin');
 
         $this->assertNotNull($origin);
@@ -81,6 +86,8 @@ class OriginTest extends TestCase
         $expectedOrigin = $this->testData[__FUNCTION__]['response']['content'];
 
         $expectedOrigin['entity_id'] = PublicEntity::stripDefaultSign($response['razorpay_payment_id']);
+
+        $expectedOrigin['origin_id'] = $app->id;
 
         $this->assertArraySelectiveEquals($expectedOrigin, $origin);
     }
