@@ -107,6 +107,7 @@ class Constants
     const IIN_LISTING                     = 'iin_listing';
     const CALLBACK_URL_VALIDATION         = 'callback_url_validation';
     const REPORTING_GENRERIC_NOTES        = 'report_notes_to_column';
+    const REDIRECT_S2S_AUTHORIZE          = 'redirect_s2s_authorize';
     const S2S_OTP_JSON                    = 's2s_otp_json';
 
     /**
@@ -277,6 +278,7 @@ class Constants
         self::CALLBACK_URL_VALIDATION         => true,
         self::PL_FIRST_MIN_AMOUNT             => true,
         self::REPORTING_GENRERIC_NOTES        => true,
+        self::REDIRECT_S2S_AUTHORIZE          => true,
         self::IVR                             => true,
         self::S2S_OTP_JSON                    => true,
         self::FUND_ACCOUNT_VALIDATIONS        => true,
