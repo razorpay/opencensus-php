@@ -73,8 +73,6 @@ class CreateCommissionsTable extends Migration
 
             $table->index(Commission::PARTNER_CONFIG_ID);
 
-            $table->index(Commission::PRICING_RULE_ID);
-
             $table->index(Commission::TRANSACTION_ID);
 
             $table->foreign(Commission::PARTNER_ID)
@@ -85,11 +83,6 @@ class CreateCommissionsTable extends Migration
             $table->foreign(Commission::PARTNER_CONFIG_ID)
                   ->references(PartnerConfig::ID)
                   ->on(Table::PARTNER_CONFIG)
-                  ->on_delete('restrict');
-
-            $table->foreign(Commission::PRICING_RULE_ID)
-                  ->references(Pricing::ID)
-                  ->on(Table::PRICING)
                   ->on_delete('restrict');
 
             $table->foreign(Commission::TRANSACTION_ID)

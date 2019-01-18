@@ -3,7 +3,6 @@
 namespace RZP\Models\Partner\Commission;
 
 use RZP\Models\Base;
-use RZP\Models\Pricing;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -60,7 +59,6 @@ class Entity extends Base\PublicEntity
         self::SOURCE_TYPE,
         self::PARTNER_ID,
         self::TRANSACTION_ID,
-        self::PRICING_RULE_ID,
         self::PARTNER_CONFIG_ID,
     ];
 
@@ -90,7 +88,6 @@ class Entity extends Base\PublicEntity
 
     public function partnerConfig()
     {
-        // @todo - add an inverse relation in partnerconfig entity
         return $this->belongsTo(PartnerConfig\Entity::class);
     }
 

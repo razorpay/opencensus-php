@@ -3,19 +3,17 @@
 namespace RZP\Models\Partner\Commission;
 
 use RZP\Models\Base;
-use RZP\Models\Payment;
-use RZP\Models\Pricing;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Partner\Config as PartnerConfig;
 
 class Core extends Base\Core
 {
-    public function create(
+    public function build(
         Base\PublicEntity $source,
         Merchant\Entity $partner,
         PartnerConfig\Entity $partnerConfig,
-        array $input,
+        array $input = [],
         Transaction\Entity $txn = null): Entity
     {
         $commission = new Entity;
@@ -32,8 +30,6 @@ class Core extends Base\Core
         {
             $commission->transaction()->associate($txn);
         }
-
-        $this->repo->saveOrFail($commission);
 
         return $commission;
     }
