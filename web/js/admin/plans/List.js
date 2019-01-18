@@ -121,18 +121,20 @@ export default class PlanList extends Component {
           </header>
           {isOrgRazorpay() &&
             !isBlank(orgs) && (
-              <SelectField
-                label="Organisation"
-                name="org_id"
-                onChange={this.handleOrgChange}
-              >
-                <option value="">All</option>
-                {Object.keys(orgs).map(orgId => (
-                  <option key={orgId} value={orgId}>
-                    {orgs[orgId]}
-                  </option>
-                ))}
-              </SelectField>
+              <div class="filters">
+                <SelectField
+                  label="Organisation"
+                  name="org_id"
+                  onChange={this.handleOrgChange}
+                >
+                  <option value="">All</option>
+                  {Object.keys(orgs).map(orgId => (
+                    <option key={orgId} value={orgId}>
+                      {orgs[orgId]}
+                    </option>
+                  ))}
+                </SelectField>
+              </div>
             )}
         </div>
         <PageTable

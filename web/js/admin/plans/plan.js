@@ -295,6 +295,14 @@ class Rule extends CollectionItem {
       if (data && !isWorkflow(data)) {
         notifySuccess(data.message);
         this.collection.items.remove(this);
+
+        //- reload page to remove plan from ui when all the rules are deleted, as backend soft deletes when all the rules are removed
+        if (
+          this.collection.props.id &&
+          this.collection.items.peek().length === 1
+        ) {
+          location.reload();
+        }
       }
     });
   }
