@@ -16,7 +16,7 @@ class CreateOriginsTable extends Migration
      */
     public function up()
     {
-        Schema::create(Table::ORIGIN, function (Blueprint $table)
+        Schema::create(Table::ENTITY_ORIGIN, function (Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
@@ -58,6 +58,6 @@ class CreateOriginsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists(Table::ORIGIN);
+        Schema::dropIfExists(Table::ENTITY_ORIGIN);
     }
 }

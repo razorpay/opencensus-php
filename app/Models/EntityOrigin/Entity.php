@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Origin;
+namespace RZP\Models\EntityOrigin;
 
 use RZP\Constants;
 use RZP\Models\Base;
@@ -14,7 +14,7 @@ class Entity extends Base\PublicEntity
     const ENTITY_TYPE = 'entity_type';
     const ORIGIN_TYPE = 'origin_type';
 
-    protected $entity = Constants\Entity::ORIGIN;
+    protected $entity = Constants\Entity::ENTITY_ORIGIN;
 
     protected $generateIdOnCreate = true;
 
