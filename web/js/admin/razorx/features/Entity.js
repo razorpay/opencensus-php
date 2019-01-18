@@ -21,6 +21,10 @@ const dummy_data = {
 
 export default class extends React.Component {
   state = {};
+  componentDidMount() {
+    this.fetch(this.props.id);
+  }
+
   componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
       this.fetch(nextProps.id);
@@ -96,22 +100,13 @@ export default class extends React.Component {
       );
     }
 
-    content = (
-      <Details
-        data={dummy_data}
-        terminate={this.terminate}
-        showFeatureModal={this.showFeatureModal}
-        showJSONModal={this.showJSONModal}
-      />
-    );
-
     return <div class="entity-container">{content}</div>;
   }
 }
 
 const Details = ({ data, showFeatureModal, showJSONModal }) => {
   return (
-    <div>
+    <div class="entity-details">
       <div class="sub-description">
         <span>
           <b>ID:</b> {data.id}

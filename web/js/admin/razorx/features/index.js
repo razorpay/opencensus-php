@@ -51,7 +51,7 @@ export default class Features extends React.Component {
         </div>
         <div class="container-group">
           <List mode={AppStore.mode} />
-          <Entity id={this.props.match.id} />
+          <Entity id={this.props.match.params.id} />
         </div>
       </div>
     );

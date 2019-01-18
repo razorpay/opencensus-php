@@ -45,8 +45,12 @@ const dummy_data = {
 
 export default class extends React.Component {
   state = {};
+  componentDidMount() {
+    this.fetch(this.props.id);
+  }
+
   componentWillReceiveProps(nextProps) {
-    if (this.props.id !== nextProps.id) {
+    if (this.props.id !== nextProps.id && nextProps.id) {
       this.fetch(nextProps.id);
     }
   }
@@ -81,7 +85,7 @@ export default class extends React.Component {
   };
 
   showExperimentModal = _ => {
-    openModal(<ExperimentsModal data={dummy_data} />);
+    openModal(<ExperimentsModal data={this.state.data} />);
   };
 
   showJSONModal = _ => {
@@ -90,7 +94,7 @@ export default class extends React.Component {
       return;
     }
 
-    openModal(<ExperimentsModal data={dummy_data} JSONView />);
+    openModal(<ExperimentsModal data={this.state.data} JSONView />);
   };
 
   render() {
@@ -124,15 +128,6 @@ export default class extends React.Component {
       );
     }
 
-    content = (
-      <Details
-        data={dummy_data}
-        terminate={this.terminate}
-        showExperimentModal={this.showExperimentModal}
-        showJSONModal={this.showJSONModal}
-      />
-    );
-
     return <div class="entity-container">{content}</div>;
   }
 }
@@ -141,7 +136,7 @@ const Details = ({ data, terminate, showExperimentModal, showJSONModal }) => {
   const segments = getSegmentsGroupedByVariant(data.segments);
 
   return (
-    <div>
+    <div class="entity-details">
       <div class="sub-description">
         <span>
           <b>ID:</b> {data.id}
