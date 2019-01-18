@@ -209,7 +209,9 @@ class Core extends Base\Core
 
     public function validateExistingTerminal($terminal)
     {
-        $existingTerminals = $this->repo->terminal->getByMerchantId($terminal->getMerchantId());
+        $params = [Entity::MERCHANT_ID => $terminal->getMerchantId()];
+
+        $existingTerminals = $this->repo->terminal->getByParams($params);
 
         //
         // Checks that existing terminals don't
