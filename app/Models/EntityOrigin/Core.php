@@ -9,6 +9,13 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
+    /**
+     * @param Base\PublicEntity $entity
+     * @param                   $originEntity
+     * @param array             $input
+     *
+     * @return Entity
+     */
     public function create(Base\PublicEntity $entity, $originEntity, array $input = []): Entity
     {
         $entityOrigin = new Entity;
@@ -24,6 +31,11 @@ class Core extends Base\Core
         return $entityOrigin;
     }
 
+    /**
+     * @param Base\PublicEntity $entity
+     *
+     * @return void
+     */
     public function createEntityOrigin(Base\PublicEntity $entity)
     {
         try
@@ -41,9 +53,7 @@ class Core extends Base\Core
                 return;
             }
 
-            $entityOrigin = $this->create($entity, $originEntity);
-
-            return $entityOrigin;
+            $this->create($entity, $originEntity);
         }
         catch (\Throwable $e)
         {
@@ -58,6 +68,12 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     * @param string $originType
+     * @param string $originId
+     *
+     * @return mixed|null
+     */
     protected function fetchOriginEntity(string $originType, string $originId)
     {
         if (empty($originId) === true)
