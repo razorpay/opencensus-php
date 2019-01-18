@@ -11,7 +11,6 @@ use RZP\Models\FundAccount;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Listeners\ApiEventSubscriber;
-use RZP\Models\FundTransfer\Attempt as AttemptStatus;
 
 class Core extends Base\Core
 {
@@ -112,20 +111,20 @@ class Core extends Base\Core
 
         switch ($ftaStatus)
         {
-            case AttemptStatus::PROCESSED:
+            case Attempt\Status::PROCESSED:
                 $validation->setAccountStatus(Status::ACTIVE);
                 $this->repo->saveOrFail($validation);
                 break;
 
-            case AttemptStatus::FAILED:
+            case Attempt\Status::FAILED:
                 $validation->setAccountStatus(Status::INVALID);
                 $this->repo->saveOrFail($validation);
                 break;
 
-            case AttemptStatus::CREATED:
+            case Attempt\Status::CREATED:
                 break;
 
-            case AttemptStatus::INITIATED:
+            case Attempt\Status::INITIATED:
                 break;
 
             default:

@@ -190,23 +190,25 @@ return [
                 'fund_account.validation' => [
                     'entity' => [
                         'entity'       => 'fund_account.validation',
-                        'fund_account' => [
-                            'entity'       => 'fund_account',
-                            'account_type' => 'bank_account',
-                            'active'       => true,
-                            'details'      => [
-                                'ifsc'           => 'SBIN0010411',
-                                'bank_name'      => 'State Bank of India',
-                                'name'           => 'Rohit Keshwani',
-                                'account_number' => '123456789',
-                            ],
-                        ],
-                        'status'       => 'created',
+                        // 'fund_account' => [
+                        //     'entity'       => 'fund_account',
+                        //     'account_type' => 'bank_account',
+                        //     'active'       => true,
+                        //     'details'      => [
+                        //         'ifsc'           => 'SBIN0010411',
+                        //         'bank_name'      => 'State Bank of India',
+                        //         'name'           => 'Rohit Keshwani',
+                        //         'account_number' => '123456789',
+                        //     ],
+                        // ],
+                        'status'       => 'completed',
                         'amount'       => 100,
+                        'fees'         => 354,
+                        'tax'          => 54,
                         'currency'     => 'INR',
                         'notes'        => [],
                         'results'      => [
-                            'account_status'  => null,
+                            'account_status'  => 'active',
                             'registered_name' => null,
                         ],
                     ],

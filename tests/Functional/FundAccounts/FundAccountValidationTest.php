@@ -121,10 +121,19 @@ class FundAccountValidationTest extends TestCase
         $this->startTest();
     }
 
+    public function testFundAccValidationReconUpdate()
+    {
+        $this->createValidationWithFundAccountEntity();
+
+        $this->initiateTransferAndReconcile();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+        $this->assertEquals('completed', $fav['status']);
+        $this->assertEquals('active', $fav['results']['account_status']);
+    }
+
     public function testWebhookFundAccountValidationCompleted()
     {
-        // $this->markTestIncomplete('initiate recon to trigger webhook');
-
         $this->createWebhook([
             'events' => [
                 'fund_account.validation.completed' => '1',
@@ -147,8 +156,6 @@ class FundAccountValidationTest extends TestCase
         });
 
         $this->initiateTransferAndReconcile();
-
-        // TODO: Initiate recon to trigger webhook
     }
 
     protected function initiateTransferAndReconcile()
@@ -156,6 +163,8 @@ class FundAccountValidationTest extends TestCase
         $this->initiateTransferAndAssertSuccess('yesbank', 'penny_testing', 1, 'penny_testing');
 
         $this->reconcileOnlineSettlements('yesbank', false);
+
+        $this->reconcileEntitiesForChannel('yesbank');
     }
 
     protected function createValidationWithFundAccountEntity(): array

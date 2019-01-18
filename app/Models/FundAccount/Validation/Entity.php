@@ -245,8 +245,18 @@ class Entity extends Base\PublicEntity
         $this->getAttribute(self::TAX);
     }
 
+    public function getStatus()
+    {
+        $this->getAttribute(self::STATUS);
+    }
+
     public function getFees()
     {
         $this->getAttribute(self::FEES);
+    }
+
+    public function isStatusFailed()
+    {
+        return ($this->getAccountStatus() === Status::INVALID);
     }
 }
