@@ -229,6 +229,8 @@ class Entity
     const SHIELD_LISTS                 = 'shield.lists';
     const SHIELD_LIST_ITEMS            = 'shield.list_items';
 
+    const COMMISSION = 'commission';
+
     /**
      * Defines a map of entites which are currently
      * being cached and associated cache version prefixes
@@ -439,6 +441,8 @@ class Entity
         self::P2P_TRANSACTION       => \RZP\Models\P2p\Transaction::class,
 
         self::P2P_UPI_SHARP         => \RZP\Gateway\P2p\Upi::class,
+
+        self::COMMISSION            => \RZP\Models\Partner\Commission::class,
     ];
 
     protected static $repository = [
