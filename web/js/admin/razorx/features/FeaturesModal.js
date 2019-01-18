@@ -65,6 +65,20 @@ export default class extends React.Component {
   state = { enum: [''] };
   onSubmit = data => {};
 
+  JSONObj = (() => {
+    let prepareObj = {};
+
+    if (this.props.data) {
+      Object.keys(initJSONObj).forEach(k => {
+        prepareObj[k] = this.props.data[k];
+      });
+    } else {
+      prepareObj = { ...initJSONObj };
+    }
+
+    return prepareObj;
+  })();
+
   isValid() {
     if (this.props.JSONView) {
       // Check if JSON is valid and all required params are there
@@ -90,13 +104,18 @@ export default class extends React.Component {
   };
 
   render() {
-    const { id, name, JSONView } = this.props;
+    const { data, JSONView } = this.props;
+    let header = data ? 'Edit Feature' : 'Create Feature';
+
+    if (JSONView) {
+      header += ' (JSON)';
+    }
+    if (data) {
+      header += ` – ${data.id}`;
+    }
 
     return (
-      <ModalContent
-        class="modal-features modal-json-edit"
-        header={id ? `Edit Feature – ${name}` : 'Create Feature'}
-      >
+      <ModalContent class="modal-features modal-json-edit" header={header}>
         <Form onSubmit={this.onSubmit} class="full-span full-elements">
           {JSONView ? (
             <JSONEdit initialJSON={initJSONObj} validatorJSON={validatorJSON} />

@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
+import { openModal, notifyError } from 'common/modal';
 import { formatDate, titleCase, classList } from 'common/util';
 import { adminFetch, adminPatch } from 'common/fetch';
 import AsyncButton from 'ui/AsyncButton';
-import { notify, notifySuccess, notifyError } from 'common/modal';
+import ExperimentsModal from './ExperimentsModal';
 
 const dummy_data = {
   id: 201,
@@ -79,6 +80,19 @@ export default class extends React.Component {
     return adminPatch(`${mode}/experiments/${id}/terminate`);
   };
 
+  showExperimentModal = _ => {
+    openModal(<ExperimentsModal data={dummy_data} />);
+  };
+
+  showJSONModal = _ => {
+    if (!window.CodeFlask) {
+      notifyError('JSON Editor is missing. Reload page / check your Network!');
+      return;
+    }
+
+    openModal(<ExperimentsModal data={dummy_data} JSONView />);
+  };
+
   render() {
     const { isFetching, data } = this.state;
     const { id } = this.props;
@@ -100,23 +114,50 @@ export default class extends React.Component {
         </div>
       );
     } else {
-      content = <Details data={data} />;
+      content = (
+        <Details
+          data={data}
+          terminate={this.terminate}
+          showExperimentModal={this.showExperimentModal}
+          showJSONModal={this.showJSONModal}
+        />
+      );
     }
 
-    content = <Details data={dummy_data} terminate={this.terminate} />;
+    content = (
+      <Details
+        data={dummy_data}
+        terminate={this.terminate}
+        showExperimentModal={this.showExperimentModal}
+        showJSONModal={this.showJSONModal}
+      />
+    );
 
     return <div class="entity-container">{content}</div>;
   }
 }
 
-const Details = ({ data, terminate }) => {
+const Details = ({ data, terminate, showExperimentModal, showJSONModal }) => {
   const segments = getSegmentsGroupedByVariant(data.segments);
 
   return (
     <div>
       <div class="sub-description">
-        <b>ID:</b> {data.id}
+        <span>
+          <b>ID:</b> {data.id}
+        </span>
+        <span class="to-right">
+          <a class="link text-bold" onClick={showExperimentModal}>
+            Edit Experiment
+          </a>{' '}
+          ({' '}
+          <a class="link text-bold" onClick={showJSONModal}>
+            RAW
+          </a>{' '}
+          )
+        </span>
       </div>
+
       <div class="pad-highlight">
         <div class="description">
           {data.description}
@@ -188,7 +229,7 @@ const Details = ({ data, terminate }) => {
             <AsyncButton
               class="link danger text-danger text-bold"
               pendingClass="link danger-faded text-danger text-bold btn-pending"
-              confirm={`Do you want to terminate Experiment id "${data.id}"`}
+              confirm={`Do you want to terminate Experiment id "${data.id}"?`}
               onClick={_ => terminate(data.id, data.mode)}
             >
               Terminate Experiment

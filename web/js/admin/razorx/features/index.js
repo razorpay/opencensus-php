@@ -41,10 +41,10 @@ export default class Features extends React.Component {
             </button>
           </div>
           <button
-            class="btn btn--transparent json-btn"
+            class="btn btn--transparent raw-btn"
             onClick={this.showJSONModal}
           >
-            JSON
+            RAW
           </button>
         </div>
         <div class="container-group">

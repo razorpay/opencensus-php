@@ -43,10 +43,10 @@ export default class Experiments extends React.Component {
               + Add New
             </button>
             <button
-              class="btn btn--transparent json-btn"
+              class="btn btn--transparent raw-btn"
               onClick={this.showJSONModal}
             >
-              JSON
+              RAW
             </button>
           </div>
         </div>

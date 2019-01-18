@@ -30,7 +30,7 @@ const initJSONObj = {
 const validatorJSON = {
   description: function(val) {
     if (!val || typeof val !== 'string') {
-      return 'description must be non-empty string';
+      return 'description must be non-empty String';
     }
   },
   environment: function(val) {
@@ -45,12 +45,12 @@ const validatorJSON = {
   },
   feature_id: function(val) {
     if (typeof val === 'undefined' || typeof val !== 'number') {
-      return 'feature id must be a valid no.';
+      return 'feature id must be a valid Number';
     }
   },
   segments: function(val) {
     if (!val || !(val instanceof Array || !val.length)) {
-      return 'segments must be a non-empty array';
+      return 'segments must be a non-empty Array';
     }
 
     let errorMsg;
@@ -58,7 +58,7 @@ const validatorJSON = {
     val.forEach(s => {
       const isVariantInvalid = !s.variant || typeof s.variant !== 'string';
       if (isVariantInvalid) {
-        errorMsg = 'variant must be a non-empty string';
+        errorMsg = 'variant must be a non-empty String';
         return false;
       }
 
@@ -74,7 +74,7 @@ const validatorJSON = {
 
       const isIdInvalid = !s.ids || !(s.ids instanceof Array);
       if (isIdInvalid) {
-        errorMsg = 'Invalid array of ids';
+        errorMsg = 'Invalid Array of ids';
         return false;
       }
 
@@ -84,7 +84,7 @@ const validatorJSON = {
         s.weight < 1 ||
         s.weight > 100000;
       if (isWeightInvalid) {
-        errorMsg = 'weight must be a valid no. between [1-100000]';
+        errorMsg = 'weight must be a valid Number between [1-100000]';
         return false;
       }
     });
@@ -96,6 +96,20 @@ const validatorJSON = {
 @observer
 export default class extends React.Component {
   state = { featuresList: [] };
+
+  JSONObj = (() => {
+    let prepareObj = {};
+
+    if (this.props.data) {
+      Object.keys(initJSONObj).forEach(k => {
+        prepareObj[k] = this.props.data[k];
+      });
+    } else {
+      prepareObj = { ...initJSONObj };
+    }
+
+    return prepareObj;
+  })();
 
   onSubmit = data => {};
 
@@ -136,17 +150,25 @@ export default class extends React.Component {
   };
 
   render() {
-    const { id, name, JSONView } = this.props;
-    initJSONObj.mode = AppStore.mode;
+    const { data, JSONView } = this.props;
+    let header = data ? 'Edit Experiment' : 'Create Experiment';
+
+    if (JSONView) {
+      header += ' (JSON)';
+    }
+    if (data) {
+      header += ` – ${data.id}`;
+    }
+    this.JSONObj.mode = AppStore.mode;
 
     return (
-      <ModalContent
-        class="modal-experiments modal-json-edit"
-        header={id ? `Edit Experiment – ${name}` : 'Create Experiment'}
-      >
+      <ModalContent class="modal-experiments modal-json-edit" header={header}>
         <Form onSubmit={this.onSubmit} class="full-span full-elements">
           {JSONView ? (
-            <JSONEdit initialJSON={initJSONObj} validatorJSON={validatorJSON} />
+            <JSONEdit
+              initialJSON={this.JSONObj}
+              validatorJSON={validatorJSON}
+            />
           ) : (
             <React.Fragment>
               <SwitchField

@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
+import { openModal, notifyError } from 'common/modal';
 import { formatDate, titleCase } from 'common/util';
 import { adminFetch } from 'common/fetch';
+import FeaturesModal from './FeaturesModal';
 
 const dummy_data = {
   id: 182,
@@ -50,6 +52,19 @@ export default class extends React.Component {
       });
   }
 
+  showFeatureModal = _ => {
+    openModal(<FeaturesModal data={dummy_data} />);
+  };
+
+  showJSONModal = _ => {
+    if (!window.CodeFlask) {
+      notifyError('JSON Editor is missing. Reload page / check your Network!');
+      return;
+    }
+
+    openModal(<FeaturesModal data={dummy_data} JSONView />);
+  };
+
   render() {
     const { isFetching, data } = this.state;
     const { id } = this.props;
@@ -71,21 +86,48 @@ export default class extends React.Component {
         </div>
       );
     } else {
-      content = <Details data={data} />;
+      content = (
+        <Details
+          data={data}
+          terminate={this.terminate}
+          showFeatureModal={this.showFeatureModal}
+          showJSONModal={this.showJSONModal}
+        />
+      );
     }
 
-    content = <Details data={dummy_data} />;
+    content = (
+      <Details
+        data={dummy_data}
+        terminate={this.terminate}
+        showFeatureModal={this.showFeatureModal}
+        showJSONModal={this.showJSONModal}
+      />
+    );
 
     return <div class="entity-container">{content}</div>;
   }
 }
 
-const Details = ({ data }) => {
+const Details = ({ data, showFeatureModal, showJSONModal }) => {
   return (
     <div>
       <div class="sub-description">
-        <b>ID:</b> {data.id}
+        <span>
+          <b>ID:</b> {data.id}
+        </span>
+        <span class="to-right">
+          <a class="link text-bold" onClick={showFeatureModal}>
+            Edit Feature
+          </a>{' '}
+          ({' '}
+          <a class="link text-bold" onClick={showJSONModal}>
+            RAW
+          </a>{' '}
+          )
+        </span>
       </div>
+
       <div class="pad-highlight">
         <div class="title">{data.name}</div>
         <div class="description">
