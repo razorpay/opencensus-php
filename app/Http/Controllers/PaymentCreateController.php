@@ -528,7 +528,7 @@ class PaymentCreateController extends Controller
 
                 if (is_array($ret) === true)
                 {
-                    $dataToTrace = $ret;
+                    $dataToTrace = json_encode($ret);
                 }
                 else
                 {
