@@ -248,6 +248,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_SCHEDULE                                          = 'Schedule cannot be created, it is invalid.';
     const BAD_REQUEST_SCHEDULE_REQUIRED                                         = 'Mandatory param: Schedule not given.';
     const BAD_REQUEST_SCHEDULE_INVALID_PERIOD                                   = 'Invalid period, must be among hourly, daily, weekly, monthly-date, and monthly-week';
+    const BAD_REQUEST_SCHEDULE_INVALID_TYPE                                     = 'Invalid type, must be among settlement, subscription';
     const BAD_REQUEST_SCHEDULE_ANCHOR_NOT_PERMITTED                             = 'Setting anchor is not permitted for the schedule.';
     const BAD_REQUEST_SCHEDULE_HOURLY_HOUR_NOT_PERMITTED                        = 'Setting hour is not permitted for hourly schedules';
     const BAD_REQUEST_SCHEDULE_HOURLY_WITHOUT_INTERVAL                          = 'Hourly schedules require an interval to be set.';

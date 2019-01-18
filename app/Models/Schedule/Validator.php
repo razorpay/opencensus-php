@@ -5,7 +5,7 @@ namespace RZP\Models\Schedule;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use Carbon\Carbon;
+use RZP\Exception\BadRequestException;
 
 class Validator extends Base\Validator
 {
@@ -17,6 +17,7 @@ class Validator extends Base\Validator
         Entity::ANCHOR   => 'sometimes|nullable|integer|min:-1|max:1231',
         Entity::HOUR     => 'sometimes|integer|min:0|max:23',
         Entity::DELAY    => 'sometimes|integer|min:0|max:90',
+        Entity::TYPE     => 'sometimes|string|custom',
     );
 
     protected static $editRules = array(
@@ -26,6 +27,8 @@ class Validator extends Base\Validator
         Entity::ANCHOR   => 'sometimes|integer|min:-1|max:1231',
         Entity::HOUR     => 'sometimes|integer|min:0|max:23',
         Entity::DELAY    => 'sometimes|integer|min:0|max:90',
+        Entity::TYPE     => 'sometimes|string|custom',
+
     );
 
     protected static $createValidators = array(
@@ -46,6 +49,19 @@ class Validator extends Base\Validator
         $period = $input[Entity::PERIOD];
 
         Period::validatePeriod($period);
+    }
+
+    protected static function validateType($attribute, $value)
+    {
+        if (Type::isTypeValid($value) === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_SCHEDULE_INVALID_TYPE,
+                $attribute,
+                [
+                    $attribute => $value,
+                ]);
+        }
     }
 
     protected function validateHour($input)
