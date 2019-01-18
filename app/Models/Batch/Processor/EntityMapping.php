@@ -23,6 +23,8 @@ class EntityMapping extends Base
 
         $this->repo->sync($fromEntity, $toEntityType, $entry[Header::ENTITY_TO_IDS]);
 
+        $entry[Header::ENTITY_TO_IDS] = implode(',', $entry[Header::ENTITY_TO_IDS]);
+
         $entry[Header::STATUS] = Status::SUCCESS;
     }
 
