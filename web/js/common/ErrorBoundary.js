@@ -7,13 +7,17 @@ export default class ErrorBoundary extends Component {
   };
 
   componentDidCatch(error, info) {
-
-    if (window.Raven) {
-
-      console.log(error, info); 
+    if (window.Sentry) {
+      Sentry.withScope(scope => {
+        Object.keys(info).forEach(key => {
+          scope.setExtra(key, info[key]);
+        });
+        Sentry.captureException(error);
+      });
+    } else if (window.Raven) {
+      console.log(error, info);
       Raven.captureException(error, { extra: info });
     } else {
-    
       console.error(error, info);
     }
 
@@ -27,35 +31,37 @@ export default class ErrorBoundary extends Component {
   }
 
   render() {
-
     const hasRaven = !!window.Raven,
-          lastEventId = hasRaven && Raven.lastEventId();
+      lastEventId = hasRaven && Raven.lastEventId();
 
     if (this.state.error) {
       return (
-        <div ref={node => this.node = node}
-             className={`rzp-error-boundary${hasRaven ? " has-raven": ""}`}>
+        <div
+          ref={node => (this.node = node)}
+          className={`rzp-error-boundary${hasRaven ? ' has-raven' : ''}`}
+        >
           {hasRaven && (
             <div className="js-error-container">
               <div className="js-error-content">
-                <div className="js-error-illustration m-b"></div>
+                <div className="js-error-illustration m-b" />
                 <div className="js-error-text">
+                  <p>We're sorry — something's gone wrong.</p>
                   <p>
-                    We're sorry — something's gone wrong.
-                  </p>
-                  <p>
-                    Our team has been notified, but
-                    {' '}
-                    <a className="error-report-link" 
-                       onClick={() => lastEventId && Raven.showReportDialog()}>
+                    Our team has been notified, but{' '}
+                    <a
+                      className="error-report-link"
+                      onClick={() => lastEventId && Raven.showReportDialog()}
+                    >
                       click here
-                    </a> to fill out a report.
+                    </a>{' '}
+                    to fill out a report.
                   </p>
-                  {
-                    !!lastEventId && (
-                      <p> Error Code: <code>{lastEventId}</code></p>
-                    )
-                  }
+                  {!!lastEventId && (
+                    <p>
+                      {' '}
+                      Error Code: <code>{lastEventId}</code>
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -67,9 +73,7 @@ export default class ErrorBoundary extends Component {
                   <b>An Error Occured</b>
                 </p>
                 <pre>{this.state.error.toString()}</pre>
-                <pre>
-                  {this.state.info.componentStack.replace(/^\n/gm, '')}
-                </pre>
+                <pre>{this.state.info.componentStack.replace(/^\n/gm, '')}</pre>
               </banner>
             </div>
           )}

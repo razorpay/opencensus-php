@@ -1,7 +1,7 @@
 import { adminPost } from 'common/fetch';
 import { closeModal, notifySuccess } from 'common/modal';
 
-export default function bulkUpdateRefundsStatus(refundIds, event, mode) {
+export function bulkUpdateRefundsStatus(refundIds, event, mode) {
   let postData = {
     refunds: [],
   };
@@ -19,6 +19,26 @@ export default function bulkUpdateRefundsStatus(refundIds, event, mode) {
   }).then(response => {
     if (response) {
       notifySuccess('Update status request is successful');
+      closeModal();
+    }
+  });
+}
+
+export function priorityRefunds(refundIds, mode) {
+  let postData = {
+    refund_ids: [],
+  };
+
+  refundIds.forEach(refundId => {
+    postData.refund_ids.push(refundId);
+  });
+
+  adminPost({
+    url: `${mode}/scrooge/refunds/enqueue`,
+    data: postData,
+  }).then(response => {
+    if (response) {
+      notifySuccess('Refunds have been pushed into queue');
       closeModal();
     }
   });
