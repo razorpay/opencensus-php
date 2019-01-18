@@ -39,17 +39,13 @@ class Cors
             $crossOriginPolicy = true;
         }
 
-        $csrfToken = \Request::getSession()->token();
-
         if ($crossOriginPolicy === true)
         {
             $headers = [
                 'Access-Control-Allow-Origin'       => $originDomain,
                 'Access-Control-Allow-Methods'      => 'POST, GET, OPTIONS, PATCH, PUT, DELETE',
                 'Access-Control-Allow-Credentials'  => 'true',
-                'X-Csrf-Token'                        => $csrfToken,
-                'Access-Control-Allow-Headers'      => 'X-Requested-With, X-CSRF-TOKEN, Content-Type',
-                'Access-Control-Expose-Headers'     => 'X-Csrf-Token'
+                'Access-Control-Allow-Headers'      => 'X-Requested-With, X-CSRF-TOKEN, Content-Type'
             ];
 
             //
