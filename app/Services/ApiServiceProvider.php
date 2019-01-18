@@ -15,7 +15,6 @@ use Illuminate\Database\MySqlConnection as IlluminateMySqlConnection;
 use RZP\Models\Vpa;
 use RZP\Models\Batch;
 use RZP\Models\Order;
-use RZP\Models\Origin;
 use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Models\Dispute;
@@ -31,6 +30,7 @@ use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Models\BankTransfer;
+use RZP\Models\EntityOrigin;
 use RZP\Constants\Environment;
 use RZP\Constants\Entity as E;
 use RZP\Models\Admin as Admin;
@@ -479,7 +479,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'subscription_registration' => SubscriptionRegistration\Entity::class,
 
             'contact'                   => Contact\Entity::class,
-            'origin'                    => Origin\Entity::class,
+
+            'entity_origin'             => EntityOrigin\Entity::class,
             'application'               => Application\Entity::class,
         ]);
     }

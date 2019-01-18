@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Origin;
+namespace RZP\Models\EntityOrigin;
 
 use Razorpay\OAuth\Application as OAuthApp;
 
@@ -11,20 +11,20 @@ class Core extends Base\Core
 {
     public function create(Base\PublicEntity $entity, $originEntity, array $input = []): Entity
     {
-        $origin = new Entity;
+        $entityOrigin = new Entity;
 
-        $origin->build($input);
+        $entityOrigin ->build($input);
 
-        $origin->origin()->associate($originEntity);
+        $entityOrigin->origin()->associate($originEntity);
 
-        $origin->entity()->associate($entity);
+        $entityOrigin->entity()->associate($entity);
 
-        $this->repo->saveOrFail($origin);
+        $this->repo->saveOrFail($entityOrigin );
 
-        return $origin;
+        return $entityOrigin;
     }
 
-    public function setOriginDetails(Base\PublicEntity $entity)
+    public function createEntityOrigin(Base\PublicEntity $entity)
     {
         try
         {
@@ -41,9 +41,9 @@ class Core extends Base\Core
                 return;
             }
 
-            $origin = $this->create($entity, $originEntity);
+            $entityOrigin = $this->create($entity, $originEntity);
 
-            return $origin;
+            return $entityOrigin;
         }
         catch (\Throwable $e)
         {

@@ -11,7 +11,7 @@ use Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
-class OriginTest extends TestCase
+class EntityOriginTest extends TestCase
 {
     use PaymentTrait;
     use PartnerTrait;
@@ -19,7 +19,7 @@ class OriginTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/OriginTestData.php';
+        $this->testDataFilePath = __DIR__ . '/EntityOriginTestData.php';
 
         parent::setUp();
 
@@ -37,7 +37,7 @@ class OriginTest extends TestCase
 
         $payment = $this->doAuthAndGetPayment($payment);
 
-        $origin = $this->getDbLastEntity('origin');
+        $origin = $this->getDbLastEntity('entity_origin');
 
         $this->assertNotNull($origin);
 
@@ -77,7 +77,7 @@ class OriginTest extends TestCase
                  ->orderBy('created_at', 'desc')
                  ->first();
 
-        $origin = $this->getDbLastEntity('origin');
+        $origin = $this->getDbLastEntity('entity_origin');
 
         $this->assertNotNull($origin);
 
@@ -110,7 +110,7 @@ class OriginTest extends TestCase
                  ->orderBy('created_at', 'desc')
                  ->first();
 
-        $origin = $this->getDbLastEntity('origin');
+        $origin = $this->getDbLastEntity('entity_origin');
 
         $this->assertNotNull($origin);
 
