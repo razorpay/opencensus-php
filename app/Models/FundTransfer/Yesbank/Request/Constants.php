@@ -158,8 +158,7 @@ final class Constants
     const PURPOSE_CODE_MAP              = [
         'settlement'    => 'NODAL',
         'refund'        => 'REFUND',
-        // TODO: Is this even okay
-        'penny_testing' => 'PENNY_TESTING',
+        'penny_testing' => 'REFUND',
     ];
 
     // Fund transfer type is denoted by this while using yesbank transfer
