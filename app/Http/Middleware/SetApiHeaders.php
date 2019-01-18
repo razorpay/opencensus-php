@@ -1,6 +1,5 @@
 <?php namespace App\Http\Middleware;
 
-use App\Http\Headers;
 use Auth;
 use Gate;
 use Closure;
@@ -47,7 +46,7 @@ class SetApiHeaders {
         $csrfToken = $request->session()->token();
 
         $csrfTokenHeader = [
-            Headers::CSRF_TOKEN => $csrfToken,
+            'X-Csrf-Token' => $csrfToken,
         ];
 
         $response = $next($request);
