@@ -1,4 +1,4 @@
-import { adminFormUpload } from 'common/fetch';
+import fetch from 'common/fetch';
 import { AppStore } from 'admin/user';
 import { stringifyQueryParams } from 'rzp/utils/rzp-utils';
 import { notifyError } from 'common/modal';
@@ -13,17 +13,32 @@ export const rexPut = payload => _makeRequest(payload, 'PUT');
 export const rexDelete = payload => _makeRequest(payload, 'DELETE');
 export const rexPatch = payload => _makeRequest(payload, 'PATCH');
 
+/*
+* Request Footprint
+* {
+*   url: '/admin/api/${mode}/service/razorx?service_path=__&q1=__&q2=__&mode=__&environment=__'
+*   method: 'GET/POST/...',
+*   data: {},
+*   params: {}
+* }
+*
+* */
 function _makeRequest(payload, type) {
-  const BASE_URL = '/makeapicall/service/razorx';
+  let mode = AppStore.mode; // Default
+
+  // Override mode if present in params / data
+  if (typeof payload === 'object') {
+    if (payload.params && payload.params.mode) {
+      mode = payload.params.mode;
+    } else if (payload.data && payload.data.mode) {
+      mode = payload.data.mode;
+    }
+  }
+
+  const BASE_URL = `/admin/api/${mode}/service/razorx`;
   const reqPayload = {
     method: type,
-    mode: payload.mode || AppStore.mode,
-    auth: 'admin',
   };
-
-  if (payload.data) {
-    reqPayload.body = payload.data;
-  }
 
   let url;
   if (typeof payload === 'string') {
@@ -33,17 +48,25 @@ function _makeRequest(payload, type) {
   }
 
   const queryParams = payload.params || {};
-  url = BASE_URL + stringifyQueryParams({ service_path: url, ...queryParams });
+  if (!queryParams.mode && type.toLowerCase() === 'get') {
+    queryParams.mode = mode; // To be attached in query params only when it's GET request, or sent explicitly otherwise
+  }
 
-  return adminFormUpload(reqPayload, url) // Final request is axios.post
+  // Construct url
+  url = BASE_URL + stringifyQueryParams({ service_path: url, ...queryParams });
+  reqPayload.url = url;
+
+  if (payload.data) {
+    reqPayload.data = payload.data;
+  }
+
+  return fetch(reqPayload)
     .then(resp => {
-      if (resp.status === '200') {
+      if (resp && resp.success) {
         return resp.data;
       }
-
-      throw { errors: resp.data.errors || ['Some network error has occurred'] };
     })
-    .catch(({ errors = {} }) => {
+    .catch(({ errors }) => {
       notifyError(errors[0]);
     });
 }

@@ -1,14 +1,31 @@
-import { observer } from 'mobx-react';
-import { withRouter } from 'react-router-dom';
-import { openModal, closeModal, notifyError } from 'common/modal';
+import { notifyError } from 'common/modal';
+import Form from 'ui/Form';
+import Field, { SelectField } from 'ui/Field';
 import { SwitchField } from 'ui/Field';
-import List from '../experiments/List';
-import Entity from '../experiments/Entity';
+
+import { rexFetch } from 'admin/razorx/fetch';
 import { AppStore } from 'admin/user';
 
-@withRouter
-@observer
 export default class MerchantEvaluation extends React.Component {
+  state = { evaluation_result: null };
+
+  evaluateMerchant = filters => {
+    const payload = {
+      url: 'evaluate',
+      params: {
+        id: filters.merchant_id,
+        feature_flag: filters.feature_flag,
+        environment: filters.environment,
+      },
+    };
+
+    return rexFetch(payload).then(data => {
+      if (data) {
+        this.setState({ evaluation_result: data.result });
+      }
+    });
+  };
+
   render() {
     return (
       <div class="parent-container features-container">
@@ -25,8 +42,21 @@ export default class MerchantEvaluation extends React.Component {
           />
         </div>
         <div class="container-group">
-          <List mode={AppStore.mode} />
-          <Entity id={this.props.id} />
+          <div class="list-container">
+            <Form onSubmit={this.evaluateMerchant} class="filters">
+              <Field name="merchant_id" label="Merchant Id" />
+              <Field name="feature_flag" label="Feature Name" />
+
+              <SelectField name="environment" label="Environment">
+                <option value="production">Production</option>
+                <option value="beta">Beta</option>
+              </SelectField>
+              <button class="btn btn--primary field">Search</button>
+            </Form>
+            <div>
+              <b>Result:</b>
+            </div>
+          </div>
         </div>
       </div>
     );
