@@ -1544,6 +1544,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARD_DETOKENIZE_MIGRATION_RESPONSE    = 'CARD_DETOKENIZE_MIGRATION_RESPONSE';
     const CARD_DETOKENIZE_MIGRATION_FAILED      = 'CARD_DETOKENIZE_MIGRATION_FAILED';
 
+    // vault migration
+    const TOKENEX_MIGRATION_REQUEST           = 'TOKENEX_MIGRATION_REQUEST';
+    const TOKENEX_MIGRATION_FAILED            = 'TOKENEX_MIGRATION_FAILED';
+    const TOKENEX_MIGRATION_RESPONSE          = 'TOKENEX_MIGRATION_RESPONSE';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',

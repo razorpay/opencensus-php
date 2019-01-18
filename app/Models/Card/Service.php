@@ -104,4 +104,63 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function cardsTokenMigrate(array $input)
+    {
+        $this->trace->info(
+            TraceCode::TOKENEX_MIGRATION_REQUEST,
+            $input);
+
+        (new Card\Validator)->validateInput('token_migration', $input);
+
+        $tokenexTokens = $this->getTokenexTokens($input);
+
+        if (empty($tokenexTokens) === true)
+        {
+            return [];
+        }
+
+        $successTokens = [];
+
+        $failedTokens = [];
+
+        $cardVault = (new Card\CardVault);
+
+        foreach ($tokenexTokens as $tokenexToken)
+        {
+            try
+            {
+                $vaultToken = $cardVault->getVaultTokenFromTokenexToken($tokenexToken);
+
+                $this->repo->card->replaceToknexToken($tokenexToken, $vaultToken);
+
+                $successTokens[] = $vaultToken;
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    TraceCode::TOKENEX_MIGRATION_FAILED,
+                    ['token' => $tokenexToken]
+                );
+
+                $failedTokens[] = $tokenexToken;
+            }
+        }
+
+        $response =[
+            'successful_tokens' => $successTokens,
+            'failed_tokens'     => $failedTokens,
+        ];
+
+        return $response;
+    }
+
+    public function getTokenexTokens(array $input) : array
+    {
+        $limit = (int) ($input['limit'] ?? 200);
+
+        return $this->repo->card->getTokenexTokens($limit);
+    }
 }

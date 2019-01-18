@@ -982,6 +982,7 @@ final class Route
         'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
         'transaction_statement_fetch_multiple'     => ['get',      'transactions',                                   'StatementController@list'                                          ],
         'vault_migration_detokenize'               => ['post',     'card/migration/detokenize',                      'CardController@postCardDetokenize'                                 ],
+        'tokenex_migrate_cron'                     => ['post',     'card/migrate/tokenex',                           'CardController@postCardsTokenMigrate'                              ],
     ];
 
     public static $public = [
@@ -1337,6 +1338,7 @@ final class Route
         'entity_balance_id_update',
         'merchant_es_sync_cron',
         'gateway_downtime_vajra_webhook',
+        'tokenex_migrate_cron',
         'scrooge_refund_verify_bulk'
     ];
 
@@ -1866,7 +1868,6 @@ final class Route
         'merchant_schedule_bulk',
         'merchant_pricing_bulk',
         'merchant_balance_bulk_backfill_ids',
-
         //Bulk Add/Remove bank for terminal
         'terminal_bank_bulk',
         'vault_migration_detokenize',
@@ -2436,6 +2437,7 @@ final class Route
             'billdesk_reconcile_cancelled',
             'merchant_es_sync_cron',
             'entity_balance_id_update',
+            'tokenex_migrate_cron',
             'scrooge_refund_verify_bulk',
         ],
 
