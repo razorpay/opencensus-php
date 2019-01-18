@@ -13,7 +13,7 @@ import { deepClone } from 'common/util';
 import { cardTypes } from 'common/data';
 import { SwitchField } from 'ui/Field';
 import { isWorkflow } from 'common/util';
-import { isOrgRazorpay } from 'admin/user';
+import { closeModal } from 'common/modal';
 
 export default class Plan extends Collection {
   constructor(props = {}) {
@@ -84,7 +84,9 @@ export default class Plan extends Collection {
         },
       }).then(data => {
         if (data) {
-          this.props.collection.items.push(data);
+          this.props.collection.items.push(
+            new CollectionItem(this.props.collection, data)
+          );
           notifySuccess('Plan added successfully.');
           return data;
         }
@@ -271,11 +273,20 @@ class Rule extends CollectionItem {
         })
       ).then(data => {
         if (data && !isWorkflow(data)) {
+          let plan = null;
+
           notifySuccess(`Rule added for ${data.plan_name}`);
           data.isEditing = false;
           this.amount_range_min = '';
           this.amount_range = '';
           this.collection.items.splice(-1, 0, new Rule(this.collection, data));
+
+          // update rules_count in plans list
+          plan = this.collection.props.collection.items.find(
+            item => item.id === this.collection.props.id
+          );
+          plan.rules_count++;
+
           return data;
         }
       });
@@ -283,25 +294,29 @@ class Rule extends CollectionItem {
   }
 
   delete() {
-    if (!this.collection.props.id) {
+    const planId = this.collection.props.id,
+      planItems = this.collection.props.collection.items;
+
+    if (!planId) {
       return this.collection.items.remove(this);
     }
     return this.request(
       'delete',
-      adminDelete(
-        `live/pricing/${this.collection.props.id}/rule/${this.id}/force`
-      )
+      adminDelete(`live/pricing/${planId}/rule/${this.id}/force`)
     ).then(data => {
       if (data && !isWorkflow(data)) {
         notifySuccess(data.message);
-        this.collection.items.remove(this);
 
-        //- reload page to remove plan from ui when all the rules are deleted, as backend soft deletes when all the rules are removed
+        //- remove pricing plan when all rules are deleted as backend soft deletes it
         if (
-          this.collection.props.id &&
-          this.collection.items.peek().length === 1
+          planId &&
+          this.collection.items.peek().length === 2 //- rule would have a dummy item
         ) {
-          location.reload();
+          let removablePlan = planItems.find(item => item.id === planId);
+          planItems.remove(removablePlan);
+          closeModal();
+        } else {
+          this.collection.items.remove(this);
         }
       }
     });
