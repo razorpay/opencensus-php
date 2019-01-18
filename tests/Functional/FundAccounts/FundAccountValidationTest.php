@@ -7,17 +7,17 @@ use Mockery;
 
 use RZP\Models\Merchant\Webhook;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Tests\Functional\Helpers\EntityActionTrait;
+use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountTrait;
 
 class FundAccountValidationTest extends TestCase
 {
+    use AttemptTrait;
     use FundAccountTrait;
-    use EntityActionTrait;
     use DbEntityFetchTrait;
-    use RequestResponseFlowTrait;
+    use AttemptReconcileTrait;
 
     public function setUp()
     {
@@ -123,9 +123,7 @@ class FundAccountValidationTest extends TestCase
 
     public function testWebhookFundAccountValidationCompleted()
     {
-        $this->markTestIncomplete('initiate recon to trigger webhook');
-
-        $this->createValidationWithFundAccountEntity();
+        // $this->markTestIncomplete('initiate recon to trigger webhook');
 
         $this->createWebhook([
             'events' => [
@@ -134,6 +132,8 @@ class FundAccountValidationTest extends TestCase
         ]);
 
         $testData = $this->testData[__FUNCTION__];
+
+        $this->createValidationWithFundAccountEntity();
 
         $this->mockInfernoFire(function ($data) use ($testData)
         {
@@ -146,7 +146,16 @@ class FundAccountValidationTest extends TestCase
             return true;
         });
 
+        $this->initiateTransferAndReconcile();
+
         // TODO: Initiate recon to trigger webhook
+    }
+
+    protected function initiateTransferAndReconcile()
+    {
+        $this->initiateTransferAndAssertSuccess('yesbank', 'penny_testing', 1, 'penny_testing');
+
+        $this->reconcileOnlineSettlements('yesbank', false);
     }
 
     protected function createValidationWithFundAccountEntity(): array

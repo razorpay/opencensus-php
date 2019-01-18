@@ -195,10 +195,10 @@ return [
                             'account_type' => 'bank_account',
                             'active'       => true,
                             'details'      => [
-                                'ifsc'           => 'SBIN0007105',
+                                'ifsc'           => 'SBIN0010411',
                                 'bank_name'      => 'State Bank of India',
-                                'name'           => 'Amit M',
-                                'account_number' => '111000111',
+                                'name'           => 'Rohit Keshwani',
+                                'account_number' => '123456789',
                             ],
                         ],
                         'status'       => 'created',

@@ -156,8 +156,10 @@ final class Constants
     const UPI_RESPONSE_CODE            = 'response_code';
 
     const PURPOSE_CODE_MAP              = [
-        'settlement'   => 'NODAL',
-        'refund'       => 'REFUND'
+        'settlement'    => 'NODAL',
+        'refund'        => 'REFUND',
+        // TODO: Is this even okay
+        'penny_testing' => 'PENNY_TESTING',
     ];
 
     // Fund transfer type is denoted by this while using yesbank transfer

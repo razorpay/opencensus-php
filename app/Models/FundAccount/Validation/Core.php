@@ -9,6 +9,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Models\FundAccount;
 use RZP\Models\Pricing\Fee;
+use RZP\Models\FundTransfer\Attempt;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\FundTransfer\Attempt as AttemptStatus;
 

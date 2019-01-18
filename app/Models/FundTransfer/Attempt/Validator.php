@@ -24,7 +24,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $initiateFundTransferRules = [
-        Entity::PURPOSE         => 'required|filled|string|max:30|in:refund,settlement',
+        Entity::PURPOSE         => 'required|filled|string|max:30|custom',
         Entity::SOURCE_TYPE     => 'sometimes|filled|string|max:32|in:refund,payout',
         // This will be used while generating response while mock. Only used in api based settlements
         'failed_response'       => 'sometimes|int'
@@ -36,9 +36,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $retryBeamFileUploadRules = [
-        'file_id'           =>  'required|filled|string|alpha_num|size:14',
-        Entity::CHANNEL     =>  'required|filled|string',
-        Entity::FILE_TYPE   =>  'required|filled|string',
+        'file_id'         => 'required|filled|string|alpha_num|size:14',
+        Entity::CHANNEL   => 'required|filled|string',
+        Entity::FILE_TYPE => 'required|filled|string',
     ];
 
     protected function validateStatus($attribute, $value)
@@ -133,6 +133,14 @@ class Validator extends Base\Validator
                     'max_imps_amount'   => $maxImpsAmount,
                     'attempt_id'        => $attempt->getId(),
                 ]);
+        }
+    }
+
+    protected function validatePurpose($attribute, $value)
+    {
+        if (Purpose::isValid($value) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('Invalid purpose', $attribute);
         }
     }
 }

@@ -13,24 +13,25 @@ class Entity extends Base\PublicEntity
 {
     use NotesTrait;
 
-    const ID                    = 'id';
-    const RECEIPT               = 'receipt';
-    const MERCHANT_ID           = 'merchant_id';
-    const FUND_ACCOUNT_ID       = 'fund_account_id';
+    const ID                     = 'id';
+    const RECEIPT                = 'receipt';
+    const MERCHANT_ID            = 'merchant_id';
+    const FUND_ACCOUNT_ID        = 'fund_account_id';
     // Fund Account Type is added just for faster filtering
-    const FUND_ACCOUNT_TYPE     = 'fund_account_type';
-    const STATUS                = 'status';
-    const ACCOUNT_STATUS        = 'account_status';
-    const REGISTERED_NAME       = 'registered_name';
-    const FEES                  = 'fees';
-    const TAX                   = 'tax';
-    const AMOUNT                = 'amount';
-    const CURRENCY              = 'currency';
-    const ERROR_CODE            = 'error_code';
-    const INTERNAL_ERROR_CODE   = 'internal_error_code';
-    const ERROR_DESCRIPTION     = 'error_description';
-    const NOTES                 = 'notes';
-    const RESULTS               = 'results';
+    const FUND_ACCOUNT_TYPE      = 'fund_account_type';
+    const STATUS                 = 'status';
+    const ACCOUNT_STATUS         = 'account_status';
+    const REGISTERED_NAME        = 'registered_name';
+    const FEES                   = 'fees';
+    const TAX                    = 'tax';
+    const AMOUNT                 = 'amount';
+    const CURRENCY               = 'currency';
+    const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
+    const ERROR_CODE             = 'error_code';
+    const INTERNAL_ERROR_CODE    = 'internal_error_code';
+    const ERROR_DESCRIPTION      = 'error_description';
+    const NOTES                  = 'notes';
+    const RESULTS                = 'results';
 
     // Key for the response
     const FUND_ACCOUNT          = 'fund_account';
@@ -119,10 +120,14 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Merchant::class);
     }
 
-    //TODO: check
     public function transaction()
     {
         return $this->morphOne(Transaction::class, 'source', 'type', 'entity_id');
+    }
+
+    public function batchFundTransfer()
+    {
+        return $this->belongsTo('RZP\Models\FundTransfer\Batch\Entity');
     }
 
     // -------------- Setters --------------
@@ -201,6 +206,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REGISTERED_NAME);
     }
 
+    public function getBatchFundTransferId()
+    {
+        return $this->getAttribute(self::BATCH_FUND_TRANSFER_ID);
+    }
+
     // ------------ Mocked Setters ---------
 
     public function setUtr(string $value = null)
@@ -228,5 +238,15 @@ class Entity extends Base\PublicEntity
     public function getMethod()
     {
         return $this->getAttribute(self::FUND_ACCOUNT_TYPE);
+    }
+
+    public function getTax()
+    {
+        $this->getAttribute(self::TAX);
+    }
+
+    public function getFees()
+    {
+        $this->getAttribute(self::FEES);
     }
 }
