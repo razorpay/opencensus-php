@@ -15,7 +15,6 @@ import Features from './features';
 import WorkflowRequestsList from './workflow_requests/List';
 import WorkflowRequestsEntity from '../requests/Entity';
 import MerchantEvaluation from './merchant_evaluation';
-import AuditLogsList from './auditlog/List';
 
 import ModalContainer, { openSlider, closeSlider } from 'common/modal';
 
@@ -66,7 +65,6 @@ export default class RazorXApp extends React.Component {
                     path="/merchant-evaluation"
                     component={MerchantEvaluation}
                   />
-                  <Route path="/audit-logs" component={AuditLogsList} />
                   <Redirect to="/experiments" />
                 </Switch>
               </CSSTransition>
@@ -86,7 +84,6 @@ const links = [
   ['Features', '/features', '', 'layers'],
   ['Workflow Requests', '/requests', '', 'yes'],
   ['Merchant Evaluation', '/merchant-evaluation', '', 'user-search'],
-  ['Audit Logs', '/audit-logs', '', 'notes'],
 ];
 
 export const Sidebar = ({ user, handleLogout }) => (
