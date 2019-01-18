@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Services;
 
 class Core extends Base\Core
 {
@@ -111,6 +112,18 @@ class Core extends Base\Core
                                 ->fetchDowntimesWithoutTerminal($input, $methods);
 
         return $downtimes;
+    }
+
+    public function getExternalApiHealthData(array $input)
+    {
+        $this->trace->info(TraceCode::GATEWAY_HEALTH_CHECK_REQUEST, $input);
+
+        if ($this->app['config']->get('applications.health_check_client.mock') === true)
+        {
+            return (new Services\Mock\HealthCheckClient)->check($input);
+        }
+
+        return (new Services\HealthCheckClient)->check($input);
     }
 
     public function fetchMostRecentActive(array $input, $fetchByKeys = [])

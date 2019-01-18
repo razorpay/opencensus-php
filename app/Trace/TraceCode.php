@@ -9,6 +9,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     /*
      * Payment component error messages
      */
+
+    const GATEWAY_HEALTH_CHECK_REQUEST                  = 'GATEWAY_HEALTH_CHECK_REQUEST';
     const PAYMENT_NEW_REQUEST                           = 'PAYMENT_NEW_REQUEST';
     const PAYMENT_CREATED                               = 'PAYMENT_CREATED';
     const PAYMENT_CREATED_RESPONSE                      = 'PAYMENT_CREATED_RESPONSE';

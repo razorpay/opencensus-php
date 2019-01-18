@@ -940,6 +940,7 @@ final class Route
 
         // Apspdcl integration - bridge for remote endpoint access for hosted via api.
         'apspdcl_bridge'                           => ['any',      'apspdcl/{path?}',                                'ApspdclController@any'                                             ],
+        'third_party_health_check'                 => ['post',     'externalapi/health',                             'GatewayController@getExternalApiHealth'                            ],
 
         // Instant Activations
         'merchant_instant_activation_post'         => ['post',     'merchant/instant_activation',                    'MerchantController@saveInstantActivationDetails'                   ],
@@ -2252,6 +2253,7 @@ final class Route
     ];
 
     public static $direct = [
+        'third_party_health_check',
         'inspector_view_get',
         'batch_upload_form_get',
         'batch_upload_form_validate_file',
