@@ -47,14 +47,16 @@ export default class RazorXApp extends React.Component {
                 timeout={420}
               >
                 <Switch location={this.props.location}>
-                  <Route path="/experiments" component={Experiments} />
+                  <Route path="/experiments" component={Experiments} exact />
                   <Route
-                    path="/experiments/:id(exp_.+)"
+                    path="/experiments/:id"
                     component={Experiments}
+                    exact
                   />
-                  <Route path="/experiments/new" component={Experiments} />
 
-                  <ShowWhenRoute path="/features" component={Features} />
+                  <ShowWhenRoute path="/features" component={Features} exact />
+                  <Route path="/features/:id" component={Features} exact />
+
                   <Route path="/requests" component={WorkflowRequestsList} />
                   <Route
                     path="/requests/:id(w_action_.+)"

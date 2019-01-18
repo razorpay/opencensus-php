@@ -97,6 +97,7 @@ export default class extends React.Component {
     extraFields: {
       mode: this.props.mode || 'live',
     },
+    filters: this.props.queryParams,
   });
 
   componentDidUpdate(prevProps) {
@@ -127,10 +128,16 @@ export default class extends React.Component {
   };
 
   render() {
+    const { queryParams = {} } = this.props;
+
     return (
       <div class="list-container">
         <Form onSubmit={this.applyFilters} class="filters">
-          <Field label="Feature Id" name="feature_id" />
+          <Field
+            label="Feature Id"
+            name="feature_id"
+            defaultValue={queryParams.feature_id}
+          />
           <Field label="Created By" name="created_by" />
 
           <SelectField name="status" label="Status">

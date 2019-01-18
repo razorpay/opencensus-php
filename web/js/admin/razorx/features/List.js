@@ -70,6 +70,7 @@ export default class extends React.Component {
     extraFields: {
       mode: this.props.mode || 'live',
     },
+    filters: this.props.params,
   });
 
   componentDidUpdate(prevProps) {
@@ -100,10 +101,12 @@ export default class extends React.Component {
   };
 
   render() {
+    const { params = {} } = this.props;
+
     return (
       <div class="list-container">
         <Form onSubmit={this.applyFilters} class="filters">
-          <Field label="Id" name="id" />
+          <Field label="Id" name="id" defaultValue={params.id || ''} />
           <Field label="Name" name="name" />
           <Field label="Created By" name="created_by" />
 

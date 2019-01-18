@@ -1,5 +1,6 @@
 import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react';
+import { getURLQueryParams } from 'rzp/utils/rzp-utils';
 import { openModal, closeModal, notifyError } from 'common/modal';
 import ExperimentsModal from './ExperimentsModal';
 import { SwitchField } from 'ui/Field';
@@ -25,6 +26,8 @@ export default class Experiments extends React.Component {
   };
 
   render() {
+    const queryParams = getURLQueryParams(this.props.location.search);
+
     return (
       <div class="parent-container experiments-container">
         <div class="header">
@@ -51,8 +54,11 @@ export default class Experiments extends React.Component {
           </div>
         </div>
         <div class="container-group">
-          <List mode={AppStore.mode} />
-          <Entity id={this.props.id} />
+          <List
+            mode={AppStore.mode}
+            queryParams={{ feature_id: queryParams.feature_id }}
+          />
+          <Entity id={this.props.match.params.id} />
         </div>
       </div>
     );
