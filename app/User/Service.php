@@ -382,8 +382,6 @@ class Service extends Base\Service
             $data['primaryOwner'] = false;
         }
 
-        $data['_token'] = \Request::getSession()->token();
-
         $currentMerchantId = $currentMerchant->id;
 
         // If the user is logged in as someone
