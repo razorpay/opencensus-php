@@ -43,6 +43,16 @@ class SetApiHeaders {
 
         ApiRequest::addHeader('X-Request-Origin', $originDomain);
 
-        return $next($request);
+        $csrfToken = $request->session()->token();
+
+        $csrfTokenHeader = [
+            'X-Csrf-Token' => $csrfToken,
+        ];
+
+        $response = $next($request);
+
+        $response->withHeaders($csrfTokenHeader);
+
+        return $response;
 	}
 }
