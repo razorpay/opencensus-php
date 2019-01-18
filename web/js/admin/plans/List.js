@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { PageTable } from 'ui/Table';
 import Collection from 'model/collection';
+import CollectionItem from 'model/collectionItem';
 import { SelectField } from 'ui/Field';
 
 import { adminFetch } from 'common/fetch';
@@ -85,7 +86,9 @@ export default class PlanList extends Component {
       this.setState({
         selectedOrg: orgId,
       });
-      this.collection.items.replace(response);
+      this.collection.items.replace(
+        response.map(item => new CollectionItem(this.collection, item))
+      );
     });
   };
 
