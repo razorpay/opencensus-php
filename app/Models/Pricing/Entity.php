@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
+use RZP\Models\Partner\Commission;
 
 class Entity extends Base\PublicEntity
 {
@@ -193,6 +194,10 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('RZP\Models\Transaction\FeeBreakup\Entity', 'pricing_rule_id');
     }
 
+    public function commissions()
+    {
+        return $this->hasMany(Commission\Entity::class, Commission\Entity::PRICING_RULE_ID, Entity::ID);
+    }
 
     protected function generatePlanId()
     {

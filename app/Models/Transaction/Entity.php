@@ -13,6 +13,7 @@ use RZP\Models\Transfer;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Partner\Commission;
 use RZP\Models\Base\Traits\HasBalance;
 
 /**
@@ -224,6 +225,11 @@ class Entity extends Base\PublicEntity
     public function feesBreakup()
     {
         return $this->hasMany(FeeBreakup\Entity::class, 'transaction_id');
+    }
+
+    public function commissions()
+    {
+        return $this->hasMany(Commission\Entity::class, Commission\Entity::TRANSACTION_ID, Entity::ID);
     }
 
     public function getCredit()
