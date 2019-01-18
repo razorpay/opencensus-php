@@ -13,12 +13,12 @@ use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Models\Key;
 use RZP\Models\Device;
-use RZP\Models\Origin;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Http\RequestHeader;
+use RZP\Models\EntityOrigin;
 use RZP\Base\RepositoryManager;
 use RZP\Exception\LogicException;
 use RZP\Models\User\Entity as User;
@@ -2044,9 +2044,9 @@ class BasicAuth
     /**
      * Returns the origin type and origin id based on the auth used.
      *
-     * If the merchant's credentials are used, the origin details are set to - ['merchant', $merchantId].
-     * If the partner's credentials are used, the origin details are set to - ['partner', $partnerMerchantId].
-     * If the OAuth credentials are used, the origin details are set to - ['application', $oauthApplicationId].
+     * If the merchant's credentials are used, the entity origin details are set to - ['merchant', $merchantId].
+     * If the partner's credentials are used, the entity origin details are set to - ['partner', $partnerMerchantId].
+     * If the OAuth credentials are used, the entity origin details are set to - ['application', $oauthApplicationId].
      *
      * @return array
      */
@@ -2063,7 +2063,7 @@ class BasicAuth
             //
             case (empty($this->getOAuthApplicationId()) === false):
 
-                $originType = Origin\Constants::APPLICATION;
+                $originType = EntityOrigin\Constants::APPLICATION;
                 $originId = $this->getOAuthApplicationId();
                 break;
 
@@ -2073,7 +2073,7 @@ class BasicAuth
             //
             case ($this->isPublicAuth() === true):
 
-                $originType = Origin\Constants::MERCHANT;
+                $originType = EntityOrigin\Constants::MERCHANT;
                 $originId = $this->getMerchantId();
                 break;
         }
