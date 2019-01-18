@@ -132,6 +132,10 @@ return [
         'analytics_token'   => env('HARVESTER_ANALYTICS_TOKEN'),
     ],
 
+    'health_check_client' => [
+        'mock'              => env('HEALTH_CHECK_CLIENT_MOCK', false),
+    ],
+
     'elfin' => [
         'mock'     => env('ELFIN_MOCK', true),
         'services' => env('ELFIN_SERVICES', 'gimli,bitly'),

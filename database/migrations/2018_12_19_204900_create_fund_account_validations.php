@@ -35,7 +35,13 @@ class CreateFundAccountValidations extends Migration
 
             $table->string(E::STATUS, 255);
 
-            $table->integer(E::FEE)
+            $table->string(E::ACCOUNT_STATUS, 255)
+                  ->nullable();
+
+            $table->string(E::REGISTERED_NAME, 255)
+                  ->nullable();
+
+            $table->integer(E::FEES)
                   ->unsigned()
                   ->nullable();
 

@@ -48,6 +48,7 @@ final class Route
         'payment_create_wallet'                    => ['post',     'payments/create/wallet',                         'PaymentCreateController@postCreateWalletPayment'                   ],
         'payment_create_upi'                       => ['post',     'payments/create/upi',                            'PaymentCreateController@postCreateUpiPayment'                      ],
         'payment_create_openwallet'                => ['post',     'payments/create/openwallet',                     'PaymentCreateController@postCreateS2SPayment'                      ],
+        'payment_redirect_to_authoize'             => ['get',      'payments/{id}/redirect',                         'PaymentCreateController@postRedirectToAuthorize'                   ],
         'payment_callback_ajax_with_key_get'       => ['get',      'payments/{id}/callback/ajax/{hash}/{key}',       'PaymentCreateController@postAJAXCallback'                          ],
         'payment_callback_post'                    => ['post',     'payments/{x_entity_id}/callback/{hash}',         'PaymentCreateController@postCallback'                              ],
         'payment_callback_get'                     => ['get',      'payments/{x_entity_id}/callback/{hash}',         'PaymentCreateController@postCallback'                              ],
@@ -134,6 +135,7 @@ final class Route
         'refund_verify_call'                       => ['get',      'refunds/{id}/gateway_verify',                    'RefundController@postGatewayVerifyRefundCall'                      ],
         'scrooge_refund_create'                    => ['post',     'refunds/{id}/scrooge_create',                    'RefundController@scroogeRefundCreate'                              ],
         'scrooge_refund_create_bulk'               => ['post',     'refunds/scrooge_create/bulk',                    'RefundController@scroogeRefundCreateBulk'                          ],
+        'scrooge_refund_verify_bulk'               => ['post',     'refunds/scrooge_verify/bulk',                    'RefundController@scroogeRefundVerifyBulk'                          ],
         'billdesk_create_cancelled_refunds'        => ['post',     'refunds/billdesk/cancelled',                     'RefundController@postCreateBilldeskCancelledRefunds'               ],
         'refund_create_gateway_record'             => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
         'gateway_validate_unknown_refund'          => ['post',     'refunds/{gateway}/validate',                     'RefundController@postGatewayValidateRefund'                        ],
@@ -940,6 +942,7 @@ final class Route
 
         // Apspdcl integration - bridge for remote endpoint access for hosted via api.
         'apspdcl_bridge'                           => ['any',      'apspdcl/{path?}',                                'ApspdclController@any'                                             ],
+        'third_party_health_check'                 => ['post',     'externalapi/health',                             'GatewayController@getExternalApiHealth'                            ],
 
         // Instant Activations
         'merchant_instant_activation_post'         => ['post',     'merchant/instant_activation',                    'MerchantController@saveInstantActivationDetails'                   ],
@@ -974,10 +977,16 @@ final class Route
         'fund_account_update'                      => ['patch',    'fund_accounts/{id}',                             'FundAccountController@update'                                      ],
         'fund_account_delete'                      => ['delete',   'fund_accounts/{id}',                             'FundAccountController@delete'                                      ],
 
+        // Fund Account Validation
+        'fund_account_validate'                    => ['post',     'fund_accounts_validations',                      'FundAccountValidationController@create'                            ],
+        'fund_account_validate_fetch'              => ['get',      'fund_accounts_validations',                      'FundAccountValidationController@list'                              ],
+        'fund_account_validate_fetch_by_id'        => ['get',      'fund_accounts_validations/{id}',                 'FundAccountValidationController@get'                               ],
+
         // Banking statement routes
         'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
         'transaction_statement_fetch_multiple'     => ['get',      'transactions',                                   'StatementController@list'                                          ],
         'vault_migration_detokenize'               => ['post',     'card/migration/detokenize',                      'CardController@postCardDetokenize'                                 ],
+        'tokenex_migrate_cron'                     => ['post',     'card/migrate/tokenex',                           'CardController@postCardsTokenMigrate'                              ],
     ];
 
     public static $public = [
@@ -1219,6 +1228,9 @@ final class Route
         //'fund_account_delete',
         'transaction_statement_fetch',
         'transaction_statement_fetch_multiple',
+        'fund_account_validate',
+        'fund_account_validate_fetch',
+        'fund_account_validate_fetch_by_id',
     ];
 
     // Only routes defined in internalApps go here
@@ -1330,7 +1342,9 @@ final class Route
         'setl_notify_h2h',
         'entity_balance_id_update',
         'merchant_es_sync_cron',
-        'gateway_downtime_vajra_webhook'
+        'gateway_downtime_vajra_webhook',
+        'tokenex_migrate_cron',
+        'scrooge_refund_verify_bulk'
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1451,6 +1465,7 @@ final class Route
         'feature_onboarding_fetch_responses',
         'merchant_pre_signup_details',
         'merchant_edit_pre_signup_details',
+        'coupon_validate',
         'create_submerchant_user',
         'user_merchant_mapping_action',
         'onboarding_features_fetch_details',
@@ -1681,7 +1696,6 @@ final class Route
         'coupon_create',
         'coupon_delete',
         'coupon_update',
-        'coupon_validate',
         'credits_create',
         'credits_create_bulk',
         'credits_edit',
@@ -1859,7 +1873,6 @@ final class Route
         'merchant_schedule_bulk',
         'merchant_pricing_bulk',
         'merchant_balance_bulk_backfill_ids',
-
         //Bulk Add/Remove bank for terminal
         'terminal_bank_bulk',
         'vault_migration_detokenize',
@@ -2243,6 +2256,7 @@ final class Route
     ];
 
     public static $direct = [
+        'third_party_health_check',
         'inspector_view_get',
         'batch_upload_form_get',
         'batch_upload_form_validate_file',
@@ -2293,6 +2307,7 @@ final class Route
         'gateway_payment_callback_bharatqr',
         'gateway_payment_validate_bharatqr',
         'refund_fetch_for_customer',
+        'payment_redirect_to_authoize',
     ];
 
     /**
@@ -2430,6 +2445,8 @@ final class Route
             'billdesk_reconcile_cancelled',
             'merchant_es_sync_cron',
             'entity_balance_id_update',
+            'tokenex_migrate_cron',
+            'scrooge_refund_verify_bulk',
         ],
 
         'subscriptions' => [
@@ -2577,6 +2594,11 @@ final class Route
         'virtual_account_fetch_payments'       => [Feature::VIRTUAL_ACCOUNTS],
         'reports_refund_irctc'                 => [Feature::IRCTC_REPORT],
         'payment_validate_vpa'                 => [Feature::ENABLE_VPA_VALIDATE],
+
+        // Fund Account Validation APIs
+        'fund_account_validate'               => [Feature::FUND_ACCOUNT_VALIDATIONS],
+        'fund_account_validate_fetch'         => [Feature::FUND_ACCOUNT_VALIDATIONS],
+        'fund_account_validate_fetch_by_id'   => [Feature::FUND_ACCOUNT_VALIDATIONS],
 
         // Account APIs
         'beta_account_create'                  => [Feature::MARKETPLACE],

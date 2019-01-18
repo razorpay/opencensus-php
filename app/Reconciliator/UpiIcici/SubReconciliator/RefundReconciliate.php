@@ -149,16 +149,4 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         // We will only update the RRN if it is empty
         $gatewayRefund->setNpciReferenceId($referenceNumber);
     }
-
-    protected function getReconRefundStatus(array $row)
-    {
-        $rowStatus = $row[self::STATUS] ?? null;
-
-        if ($rowStatus === self::SUCCESS)
-        {
-            return Status::PROCESSED;
-        }
-
-        return Status::FAILED;
-    }
 }

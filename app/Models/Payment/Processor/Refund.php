@@ -348,6 +348,68 @@ trait Refund
     }
 
     /**
+     * Using to verify UPI refunds for all previous attempts to check if any of the attempt was successful.
+     *
+     * @param $refund
+     * @param int $attempts
+     * @return array
+     */
+    public function verifyScroogeRefundWithAttempts($refund, int $attempts)
+    {
+        $payment = $refund->payment;
+
+        $this->setPaymentAndRefundInfo($refund, $payment);
+
+        $successCount = $failureCount = $totalCount = 0;
+
+        for ($attempt = 1; $attempt <= $attempts; $attempt++)
+        {
+            try
+            {
+                $refund->setAttempts($attempt);
+
+                $verifyResponse = $this->verifyRefund($refund);
+
+                $success = $verifyResponse[Payment\Gateway::SUCCESS];
+
+                $this->trace->info(
+                    TraceCode::SCROOGE_VERIFY_REFUND_CRON_RESPONSE,
+                    [
+                        'refund_id'         => $refund->getId(),
+                        'attempt_number'    => $attempt,
+                        'success'           => $success,
+                        'payment_id'        => $payment->getId(),
+                        'verify_response'   => $verifyResponse,
+                    ]);
+
+                ($success === true) ? $successCount += 1 : $failureCount += 1;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->info(
+                    TraceCode::SCROOGE_VERIFY_REFUND_CRON_EXCEPTION,
+                    [
+                        'refund_id'         => $refund->getId(),
+                        'attempt_number'    => $attempt,
+                        'payment_id'        => $payment->getId(),
+                        'exception'         => $ex->getMessage(),
+                    ]);
+
+                $failureCount += 1;
+            }
+
+            $totalCount += 1;
+        }
+
+        return [
+            'refund_id'         => $refund->getId(),
+            'success_count'     => $successCount,
+            'failure_count'     => $failureCount,
+            'total_count'       => $totalCount
+        ];
+    }
+
+    /**
      * Traces response sent to scrooge
      *
      * @param string $traceCode
@@ -374,11 +436,11 @@ trait Refund
         Payment\Refund\Validator::validateManualGatewayRefundAllowed($gateway);
 
         // The refund should have already been successful and everything on the api side.
-        assert ($refund->getTransactionId() !== null);
+        assertTrue ($refund->getTransactionId() !== null);
 
         // Just making sure that the payment also has the transaction id. Refund will not have a transaction
         // if payment does not have a transaction, anyway.
-        assert ($payment->getTransactionId() !== null);
+        assertTrue ($payment->getTransactionId() !== null);
 
         // The payment should have been captured. Otherwise, refund transaction should not have been created.
         // Though, there are some edge cases where refund transaction was created even though the payment has not
@@ -475,11 +537,11 @@ trait Refund
 
         // The refund should have already been successful and everything on the api side.
         // Because on timeout, we would have ignored it and created a refund as it was successful.
-        assert ($refund->getTransactionId() !== null);
+        assertTrue ($refund->getTransactionId() !== null);
 
         // Just making sure that the payment also has the transaction id. Refund will not have a transaction
         // if payment does not have a transaction, anyway.
-        assert ($payment->getTransactionId() !== null);
+        assertTrue ($payment->getTransactionId() !== null);
 
         $data = [
             'payment'   => $payment->toArrayGateway(),
@@ -1484,7 +1546,7 @@ trait Refund
                 ]
             );
 
-            assert($count === 1);
+            assertTrue ($count === 1);
 
             return $refunds[0];
         }
@@ -1637,9 +1699,9 @@ trait Refund
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
-        assert ($refund->getTransactionId() !== null);
+        assertTrue ($refund->getTransactionId() !== null);
 
-        assert ($payment->getTransactionId() !== null);
+        assertTrue ($payment->getTransactionId() !== null);
 
         $data = [
             'payment'   => $payment->toArrayGateway(),

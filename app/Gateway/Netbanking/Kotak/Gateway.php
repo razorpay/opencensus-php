@@ -365,7 +365,7 @@ class Gateway extends Base\Gateway
 
     protected function getLiveSecret()
     {
-        assert ($this->mode === Mode::LIVE);
+        assertTrue ($this->mode === Mode::LIVE);
 
         if ($this->tpv === true)
         {

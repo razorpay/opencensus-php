@@ -118,7 +118,7 @@ class PublicController extends Controller
         }
         else if (isset($postParams['error']))
         {
-            assert (isset($postParams['action']) === false);
+            assertTrue (isset($postParams['action']) === false);
 
             // just pass in error.
             $data['error'] = $postParams['error'];

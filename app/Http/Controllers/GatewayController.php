@@ -23,6 +23,19 @@ use RZP\Gateway\Wallet\Amazonpay\ResponseFields as AmazonResponse;
 
 class GatewayController extends Controller
 {
+
+    /**
+     * This is a health Check API for third party url
+     */
+    public function getExternalApiHealth(Downtime\Service $service)
+    {
+        $input = Request::all();
+
+        $response = $service->getExternalApiHealth($input);
+
+        return ApiResponse::json($response, $response['http_status']);
+    }
+
     public function callbackAxis()
     {
         $this->callbackGateway('axis');

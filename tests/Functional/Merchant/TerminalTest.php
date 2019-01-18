@@ -553,21 +553,6 @@ class TerminalTest extends TestCase
 
     }
 
-    public function testEditWalletAirtelmoneyTerminalWithRequiredFields()
-    {
-        $terminal = $this->fixtures->create('terminal:shared_airtelmoney_terminal');
-
-        $tid = $terminal['id'];
-
-        $data = [
-            'gateway_merchant_id'       => 'test_random_id',
-        ];
-
-        $response = $this->editTerminal($tid, $data);
-
-        $this->assertEquals('test_random_id', $response['gateway_merchant_id']);
-    }
-
     public function testEditWalletAirtelmoneyTerminalWithNotRequiredFields()
     {
         $terminal = $this->fixtures->create('terminal:shared_airtelmoney_terminal');

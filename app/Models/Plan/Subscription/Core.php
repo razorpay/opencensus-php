@@ -703,7 +703,7 @@ class Core extends Base\Core
         string $event,
         array $options = [])
     {
-        assert ($this->repo->isTransactionActive() === false);
+        assertTrue ($this->repo->isTransactionActive() === false);
 
         $notifier = new Notify($subscription, $options);
 

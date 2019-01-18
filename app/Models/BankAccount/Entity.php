@@ -26,7 +26,6 @@ class Entity extends Base\PublicEntity
     const BANK_NAME                     = 'bank_name';
     const ACCOUNT_NUMBER                = 'account_number';
     const BENEFICIARY_NAME              = 'beneficiary_name';
-    const REGISTERED_BENEFICIARY_NAME   = 'registered_beneficiary_name';
     const BENEFICIARY_ADDRESS1          = 'beneficiary_address1';
     const BENEFICIARY_ADDRESS2          = 'beneficiary_address2';
     const BENEFICIARY_ADDRESS3          = 'beneficiary_address3';
@@ -250,6 +249,11 @@ class Entity extends Base\PublicEntity
         return $this->attributes[self::BENEFICIARY_NAME];
     }
 
+    protected function getRegisteredBeneficiaryNameAttribute()
+    {
+        return $this->attributes[self::REGISTERED_BENEFICIARY_NAME];
+    }
+
     public function settlements()
     {
         return $this->hasMany('RZP\Models\Settlement\Entity');
@@ -353,6 +357,11 @@ class Entity extends Base\PublicEntity
     protected function setNameAttribute($name)
     {
         $this->setAttribute(self::BENEFICIARY_NAME, $name);
+    }
+
+    public function setRegisteredBeneficiaryName($name)
+    {
+        $this->setAttribute(self::REGISTERED_BENEFICIARY_NAME, $name);
     }
 
     protected function setIfscAttribute($code)

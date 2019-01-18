@@ -97,7 +97,7 @@ class Server extends Base\Mock\Server
     {
         // verify checksum.
 
-        assert ($input['action'] === 'existingusercheck');
+        assertTrue ($input['action'] === 'existingusercheck');
 
         $content = array(
             'messagecode'       => '500',
