@@ -490,28 +490,28 @@ class Entity extends Base\PublicEntity
 
     public function setEscrowBalance($balance)
     {
-        assert ($balance >= 0);
+        assertTrue ($balance >= 0);
 
         $this->setAttribute(self::ESCROW_BALANCE, $balance);
     }
 
     public function setBalance($balance)
     {
-        assert ($balance >= 0);
+        assertTrue ($balance >= 0);
 
         $this->setAttribute(self::BALANCE, $balance);
     }
 
     public function setAmount($amount)
     {
-        assert ($amount >= 0);
+        assertTrue ($amount >= 0);
 
         $this->setAttribute(self::AMOUNT, $amount);
     }
 
     public function setFee($fee)
     {
-        assert ($fee >= 0);
+        assertTrue ($fee >= 0);
 
         $this->setAttribute(self::FEE, $fee);
     }
@@ -528,7 +528,7 @@ class Entity extends Base\PublicEntity
 
     public function setCredit($credit)
     {
-        assert ($credit >= 0);
+        assertTrue ($credit >= 0);
 
         $this->setAttribute(self::CREDIT, $credit);
     }
@@ -550,7 +550,7 @@ class Entity extends Base\PublicEntity
 
     public function setDebit($amount)
     {
-        assert ($amount >= 0);
+        assertTrue ($amount >= 0);
 
         $this->setAttribute(self::DEBIT, $amount);
     }
@@ -631,6 +631,11 @@ class Entity extends Base\PublicEntity
     public function isTypeTransfer()
     {
         return ($this->getType() === Type::TRANSFER);
+    }
+
+    public function isTypeFundAccountValidation()
+    {
+        return ($this->getType() === Type::FUND_ACCOUNT_VALIDATION);
     }
 
     public function isTypeDispute()
@@ -856,7 +861,7 @@ class Entity extends Base\PublicEntity
         $this->getValidator()->validateInput('unique_entity_id', $entityId);
     }
 
-        public function getReconTimeFromTransactionCreationInMinutes(): int
+    public function getReconTimeFromTransactionCreationInMinutes(): int
     {
         return intval(($this->getReconciledAt() - $this->getCreatedAt()) / 60);
     }

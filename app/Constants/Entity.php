@@ -104,6 +104,7 @@ class Entity
     const BATCH_FUND_TRANSFER       = 'batch_fund_transfer';
     const CUSTOMER_TRANSACTION      = 'customer_transaction';
     const FUND_TRANSFER_ATTEMPT     = 'fund_transfer_attempt';
+    const FUND_ACCOUNT_VALIDATION   = 'fund_account_validation';
     const SUBSCRIPTION_REGISTRATION = 'subscription_registration';
 
     // heimdall
@@ -339,6 +340,7 @@ class Entity
         self::CUSTOMER_TRANSACTION      => \RZP\Models\Customer\Transaction::class,
         self::FUND_TRANSFER_ATTEMPT     => \RZP\Models\FundTransfer\Attempt::class,
         self::VIRTUAL_ACCOUNT           => \RZP\Models\VirtualAccount::class,
+        self::FUND_ACCOUNT_VALIDATION   => \RZP\Models\FundAccount\Validation::class,
         self::SUBSCRIPTION_REGISTRATION => \RZP\Models\SubscriptionRegistration::class,
 
         // gateways

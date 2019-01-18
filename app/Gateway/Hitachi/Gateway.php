@@ -262,18 +262,38 @@ class Gateway extends Base\Gateway
         $this->compareHashes($actualChecksum, $expectedChecksum);
 
         $maskedPan = $input[ResponseFields::MASKED_CARD_NUMBER];
+
         $formattedAmount = $this->getIntegerFormattedAmount($input[ResponseFields::AMOUNT]);
+
+        $cardBin = substr($maskedPan, 0, 6);
+
+        $cardNetwork = Network::detectNetwork($cardBin);
 
         $qrData = [
             BharatQr\GatewayResponseParams::AMOUNT                => $formattedAmount,
-            BharatQr\GatewayResponseParams::CARD_FIRST6           => substr($maskedPan, 0, 6),
+            BharatQr\GatewayResponseParams::CARD_FIRST6           => $cardBin,
             BharatQr\GatewayResponseParams::CARD_LAST4            => substr($maskedPan, -4),
             BharatQr\GatewayResponseParams::SENDER_NAME           => $input[ResponseFields::SENDER_NAME],
             BharatQr\GatewayResponseParams::METHOD                => Payment\Method::CARD,
             BharatQr\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[ResponseFields::MID],
-            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => substr($input[ResponseFields::PURCHASE_ID], 0, 14),
             BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::RRN],
         ];
+
+        // The purchase field can come with any number of zeroes prepended to it based on network and issuer.
+        // We are trimming all left zeroes to ensure our exact qr code id is picked up
+        switch ($cardNetwork)
+        {
+            case Network::VISA :
+                $trimmedQrId = ltrim($input[ResponseFields::PURCHASE_ID], '0');
+                $merchantReference = substr($trimmedQrId, 0, 14);
+                break;
+
+            default :
+                $merchantReference = substr($input[ResponseFields::PURCHASE_ID], 0, 14);
+                break;
+        }
+
+        $qrData[BharatQr\GatewayResponseParams::MERCHANT_REFERENCE] = $merchantReference;
 
         return $qrData;
     }

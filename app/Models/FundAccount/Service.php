@@ -38,7 +38,9 @@ class Service extends Base\Service
 
     public function create(array $input): array
     {
-        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, ['input' => $input]);
+        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, [
+            'input' => $input
+        ]);
 
         (new Validator)->setStrictFalse()->validateInput(Validator::BEFORE_CREATE, $input);
 

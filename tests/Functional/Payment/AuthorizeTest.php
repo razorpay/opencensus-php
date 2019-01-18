@@ -218,6 +218,29 @@ class AuthorizeTest extends TestCase
         $this->assertEquals('authorized', $payment['status']);
     }
 
+    public function testMaestroCardWithoutCvvAndExpiry()
+    {
+        $payment = $this->payment;
+
+        // Converting to a maestro card number
+        $payment['card']['number'] = '5081597022059105';
+
+        unset($payment['card']['cvv']);
+
+        unset($payment['card']['expiry_month']);
+
+        unset($payment['card']['expiry_year']);
+
+        // Payment goes through fine without any exceptions
+        $this->doAuthPayment($payment);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals('12', $card['expiry_month']);
+
+        $this->assertEquals('2049', $card['expiry_year']);
+    }
+
     public function testPaymentCardAsString()
     {
         $this->startTest();

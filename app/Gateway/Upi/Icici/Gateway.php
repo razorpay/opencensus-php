@@ -202,9 +202,7 @@ class Gateway extends Base\Gateway
             Base\IntentParams::MCC           => '5411',
         ];
 
-        $query = str_replace(' ', '', urldecode(http_build_query($content)));
-
-        return ['data' => ['intent_url' => 'upi://pay?' . $query]];
+        return ['data' => ['intent_url' => $this->generateIntentString($content)]];
     }
 
     /**

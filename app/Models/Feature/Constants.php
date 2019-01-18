@@ -38,6 +38,7 @@ class Constants
     const EXPOSE_DOWNTIMES                = 'expose_downtimes';
     const PAYMENT_FAILURE_EMAIL           = 'payment_failure_email';
     const VIRTUAL_ACCOUNTS                = 'virtual_accounts';
+    const FUND_ACCOUNT_VALIDATIONS        = 'fund_account_validations';
     const INVOICE_PARTIAL_PAYMENTS        = 'invoice_partial_payments';
     const HIDE_DOWNTIMES                  = 'hide_downtimes';
     const OLD_CREDITS_FLOW                = 'old_credits_flow';
@@ -69,6 +70,7 @@ class Constants
     const EXPOSE_CARD_EXPIRY              = 'expose_card_expiry';
     const EXPOSE_CARD_IIN                 = 'expose_card_iin';
     const S2S_OPTIONAL_DATA               = 's2s_optional_data';
+    const VOID_REFUNDS                    = 'void_refunds';
     const PARTNER                         = 'partner';
     const OTPELF                          = 'otpelf';
     const PAYMENT_NOBRANDING              = 'payment_nobranding';
@@ -105,6 +107,8 @@ class Constants
     const IIN_LISTING                     = 'iin_listing';
     const CALLBACK_URL_VALIDATION         = 'callback_url_validation';
     const REPORTING_GENRERIC_NOTES        = 'report_notes_to_column';
+    const REDIRECT_S2S_AUTHORIZE          = 'redirect_s2s_authorize';
+    const S2S_OTP_JSON                    = 's2s_otp_json';
 
     /**
      * Skips uniqueness checks on the `receipt` attribute on invoice and payment links
@@ -232,6 +236,7 @@ class Constants
         self::EXPOSE_CARD_EXPIRY              => true,
         self::EXPOSE_CARD_IIN                 => true,
         self::S2S_OPTIONAL_DATA               => true,
+        self::VOID_REFUNDS                    => true,
         self::PARTNER                         => true,
         self::PAYMENT_NOBRANDING              => true,
         self::OTPELF                          => true,
@@ -273,7 +278,10 @@ class Constants
         self::CALLBACK_URL_VALIDATION         => true,
         self::PL_FIRST_MIN_AMOUNT             => true,
         self::REPORTING_GENRERIC_NOTES        => true,
+        self::REDIRECT_S2S_AUTHORIZE          => true,
         self::IVR                             => true,
+        self::S2S_OTP_JSON                    => true,
+        self::FUND_ACCOUNT_VALIDATIONS        => true,
     ];
 
     // Entity type constants

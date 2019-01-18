@@ -6,12 +6,13 @@ use RZP\Exception;
 
 class Feature
 {
-    const PAYMENT           = 'payment';
-    const PAYOUT            = 'payout';
-    const RECURRING         = 'recurring';
-    const TRANSFER          = 'transfer';
-    const EMI               = 'emi';
-    const ESAUTOMATIC       = 'esautomatic';
+    const PAYMENT                 = 'payment';
+    const PAYOUT                  = 'payout';
+    const RECURRING               = 'recurring';
+    const TRANSFER                = 'transfer';
+    const EMI                     = 'emi';
+    const ESAUTOMATIC             = 'esautomatic';
+    const FUND_ACCOUNT_VALIDATION = 'fund_account_validation';
 
     const FEATURE_LIST = [
         self::PAYMENT,
@@ -19,7 +20,8 @@ class Feature
         self::RECURRING,
         self::TRANSFER,
         self::EMI,
-        self::ESAUTOMATIC
+        self::ESAUTOMATIC,
+        self::FUND_ACCOUNT_VALIDATION,
     ];
 
     /**
@@ -35,6 +37,10 @@ class Feature
      */
     const OPTIONAL_PRICING = [
         self::TRANSFER
+    ];
+
+    const CUSTOMER_FEE_BEARER_NOT_SUPPORTED = [
+        self::FUND_ACCOUNT_VALIDATION
     ];
 
     public static function validateFeature($feature)
@@ -56,5 +62,10 @@ class Feature
     public static function isFeaturePricingOptional(string $feature): bool
     {
         return (in_array($feature, self::OPTIONAL_PRICING, true) === true);
+    }
+
+    public static function isCustomerFeeBearerSupported(string $feature): bool
+    {
+        return (in_array($feature, self::CUSTOMER_FEE_BEARER_NOT_SUPPORTED, true) === false);
     }
 }

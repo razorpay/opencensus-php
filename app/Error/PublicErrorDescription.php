@@ -374,6 +374,7 @@ class PublicErrorDescription
     const BAD_REQUEST_EMANDATE_CANCELLED_INACTIVE                               = 'Payment failed because emandate is cancelled or inactive';
 
     const BAD_REQUEST_GATEWAY_REFUND_ABSENT                                     = 'Refund not done on the gateway side.';
+    const BAD_REQUEST_PAYMENT_REVERSAL_NOT_SUPPORTED                            = 'Void is not supported by the gateway';
     const BAD_REQUEST_INVALID_GATEWAY                                           = 'Invalid gateway provided for the request';
     const BAD_REQUEST_PAYMENT_SUBSCRIPTION_NOT_RECURRING                        = 'Recurring is not set for the subscription payment';
     const BAD_REQUEST_SUBSCRIPTION_TOKEN_ALREADY_ASSOCIATED                     = 'The subscription already has a token associated with it';
@@ -477,6 +478,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_ALREADY_REFUND_INITIATED                          = 'Refund already initiated';
     const BAD_REQUEST_PAYMENT_PROBLEM_IN_UPDATING                               = 'Problem in updating payment';
     const BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                          = 'The fees calculated for payment is greater than the payment amount. Please provide a higher amount';
+    const BAD_REQUEST_FUND_ACCOUNT_VALIDATION_FEES_GREATER_THAN_FEE_CREDITS     = 'The fees calculated for fund account validation is greater than the fee credits available.';
     const BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED                               = 'Payment created long back and cannot be cancelled now';
     const BAD_REQUEST_PAYMENT_ALREADY_UNDER_DISPUTE                             = 'Payment already has an open dispute';
     const BAD_REQUEST_DISPUTE_AMOUNT_GREATER_THAN_PAYMENT_AMOUNT                = 'Disputed amount cannot be greater than payment amount';
@@ -764,4 +766,5 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_UPI_DEBIT_AND_CREDIT_SAME_ACCOUNT                     = 'The debit and credit for the transaction is done on the same account';
     const BAD_REQUEST_INVALID_ACCOUNT_TYPE_PASSED_FOR_MODE                          = 'The mode is not valid for the given account type';
     const BAD_REQUEST_INVALID_AMOUNT_PASSED_FOR_ACCOUNT_TYPE                        = 'Amount exceeds the max amount for the given account type';
+    const BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE                          = 'Payment failed';
 }

@@ -13,6 +13,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
+use RZP\Models\FundAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Settlement\Channel;
@@ -188,6 +189,13 @@ abstract class EntityProcessor extends Base\Core
             return;
         }
 
+        if ($this->source->getEntity() === Entity::FUND_ACCOUNT_VALIDATION)
+        {
+            (new FundAccount\Validation\Core)->updateStatusAfterFtaRecon($source, $this->reconEntity, $this->parsedData);
+
+            return;
+        }
+
         $sourceStatus = $this->getSourceStatusFromReconEntityStatus($attemptStatus);
 
         $this->source->setStatus($sourceStatus);
@@ -358,7 +366,9 @@ abstract class EntityProcessor extends Base\Core
                 $exception,
                 Trace::ERROR,
                 TraceCode::FUND_TRANSFER_RECON_EMAIL_FAILED,
-                ['fta'=> $this->fta->getId()]
+                [
+                    'fta' => $this->fta->getId()
+                ]
             );
         }
     }

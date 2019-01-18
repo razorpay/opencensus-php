@@ -48,4 +48,14 @@ class Core extends Base\Core
 
         return $this->repo->addon->deleteOrFail($addon);
     }
+
+    public function getAddonsForHostedSubscription(Subscription\Entity $subscription)
+    {
+        if($subscription->getStatus() === 'created')
+        {
+            return $this->repo->addon->getAddonsForSubscription($subscription);
+        }
+
+        return $this->repo->addon->getUnusedAddonsForSubscription($subscription);
+    }
 }

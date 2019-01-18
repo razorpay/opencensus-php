@@ -84,7 +84,11 @@
 <td class="text-center" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; text-align: center;">
               <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: {{ $merchant['brand_text_color'] }};">
                   @if ($invoice['receipt'])
-                      {{ $invoice['type_label'] }} Receipt: {{$invoice['receipt']}}
+                      @if ($custom_labels['receipt_number'] ?? false)
+                        {{ $custom_labels['receipt_number'] }}: {{$invoice['receipt']}}
+                      @else
+                        {{ $invoice['type_label'] }} Receipt: {{$invoice['receipt']}}
+                      @endif
                   @else
                       {{ $invoice['type_label'] }} Id: {{$invoice['id']}}
                   @endif

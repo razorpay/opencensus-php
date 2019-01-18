@@ -14,7 +14,6 @@ class CardVault
     const SECRET            = 'secret';
     const SUCCESS           = 'success';
     const TOKENEX_TOKEN     = 'tokenex_token';
-
     const X_RAZORPAY_TASKID     = 'X-Razorpay-TaskId';
 
     const REQUEST_TIMEOUT = 20;
@@ -51,7 +50,7 @@ class CardVault
 
         $response = $this->sendRequest('tokenize', 'post', $input);
 
-        return $response[self::TOKENEX_TOKEN];
+        return $response[self::TOKEN];
     }
 
     public function validateToken($token)
@@ -74,6 +73,27 @@ class CardVault
         $response = $this->sendRequest('detokenize', 'post', $input);
 
         return $response[self::VALUE];
+    }
+
+    //temp code
+    public function getTokenexToken($token)
+    {
+        $input = [
+            self::TOKEN   => $token
+        ];
+
+        $response = $this->sendRequest('tokenex_token', 'post', $input);
+
+        return $response[self::TOKENEX_TOKEN];
+    }
+
+    public function getVaultTokenFromTokenexToken($token)
+    {
+        $cardNumber = $this->detokenize($token);
+
+        $token = $this->tokenize($cardNumber);
+
+        return $token;
     }
 
     public function deleteToken($token)

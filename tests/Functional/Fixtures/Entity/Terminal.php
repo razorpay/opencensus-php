@@ -224,10 +224,7 @@ class Terminal extends Base
 
     public function createDisableDefaultHdfcTerminal()
     {
-        $term = \RZP\Models\Terminal\Entity::findOrFail('1n25f6uN5S1Z5a');
-        $term->forceDelete();
-
-        return $term;
+        return $this->disableTerminal('1n25f6uN5S1Z5a');
     }
 
     public function disableTerminal($id = '1RecurringTerm')

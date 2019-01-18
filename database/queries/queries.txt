@@ -4630,3 +4630,22 @@ ALTER TABLE payouts
     ADD COLUMN reversed_at int(11) DEFAULT NULL AFTER `processed_at`,
     ADD INDEX payouts_reversed_at_index (reversed_at),
     ADD INDEX payouts_processed_at_index (processed_at);
+
+ALTER TABLE bank_accounts
+    ADD COLUMN registered_beneficiary_name VARCHAR(255) DEFAULT NULL after beneficiary_name,
+
+ALTER TABLE transactions
+    MODIFY COLUMN type VARCHAR(255) DEFAULT NULL;
+
+ALTER TABLE pricing
+    MODIFY COLUMN feature VARCHAR(255) DEFAULT NULL;
+
+ALTER TABLE fund_transfer_attempts
+    MODIFY COLUMN source_type VARCHAR(255) DEFAULT NULL;
+
+ALTER TABLE fund_account_validations
+    ADD COLUMN account_status VARCHAR(255) DEFAULT NULL after status,
+    ADD COLUMN registered_name VARCHAR(255) DEFAULT NULL after account_status,
+    CHANGE COLUMN fee fees INT UNSIGNED DEFAULT 0;
+
+ALTER TABLE bank_accounts DROP COLUMN registered_beneficiary_name;

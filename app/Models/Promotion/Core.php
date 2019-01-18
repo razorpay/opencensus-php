@@ -108,12 +108,17 @@ class Core extends Base\Core
     {
        $anchor = null;
 
-       //For Hourly AND DAILY, ANCHOR is not significant
+       //For hourly AND daily, anchor is not significant
 
-       if ($period === Schedule\Period::HOURLY || $period === Schedule\Period::DAILY)
-       {
-            return $anchor;
-       }
+        $unAnchoredPeriods = [
+            Schedule\Period::HOURLY,
+            Schedule\Period::DAILY
+        ];
+
+        if (in_array($period, $unAnchoredPeriods, true) === true)
+        {
+            return null;
+        }
 
        $currentTime = Carbon::now(Timezone::IST);
 
