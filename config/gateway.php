@@ -23,6 +23,7 @@ return [
         'esigner_digio',
         'esigner_legaldesk',
         'enach_rbl',
+        'enach_npci_netbanking',
         'ebs',
         'first_data',
         'hdfc',
@@ -83,6 +84,7 @@ return [
     'mock_esigner_digio'          => env('ESIGNER_DIGIO_MOCK'),
     'mock_esigner_legaldesk'      => env('ESIGNER_LEGALDESK_MOCK'),
     'mock_enach_rbl'              => env('ENACH_RBL_MOCK'),
+    'mock_enach_npci_netbanking'  => env('ENACH_NPCI_NETBANKING_MOCK'),
     'mock_axis_migs'              => env('AXIS_MIGS_MOCK'),
     'mock_axis_genius'            => env('AXIS_GENIUS_MOCK'),
     'mock_kotak'                  => env('KOTAK_MOCK'),
@@ -482,7 +484,9 @@ return [
         'pooling_account_number' => env('KOTAK_NODAL_ACCOUNT_NUMBER'),
     ],
 
-    'enach_rbl' => [
+    'enach_rbl' => [],
+
+    'enach_npci_netbanking' => [
         'test_merchant_id'                          => env('NPCI_EMANDATE_TEST_MERCHANT_ID'),
         'test_emandate_private_key'                 => env('NPCI_EMANDATE_TEST_PRIVATE_KEY'),
         //TODO : Verify this please
@@ -494,7 +498,7 @@ return [
         'live_npci_emandate_signing_certificate'    => env('NPCI_EMANDATE_LIVE_SIGNING_CERTIFICATE'),
         'live_emandate_npci_creditor_account'       => env('NPCI_EMANDATE_LIVE_CREDITOR_ACCOUNT'),
         'live_emandate_npci_sponser_ifsc'           => env('NPCI_EMANDATE_LIVE_SPONSER_IFSC'),
-      ],
+    ],
       
     'netbanking_allahabad' => [
         'test_merchant_id'       => env('NETBANKING_ALLAHABAD_GATEWAY_TEST_MERCHANT_ID'),

@@ -37,6 +37,7 @@ class Gateway
     const ESIGNER_DIGIO          = 'esigner_digio';
     const ESIGNER_LEGALDESK      = 'esigner_legaldesk';
     const ENACH_RBL              = 'enach_rbl';
+    const ENACH_NPCI_NETBANKING  = 'enach_npci_netbanking';
     const FIRST_DATA             = 'first_data';
     const HDFC                   = 'hdfc';
     const HITACHI                = 'hitachi';
@@ -935,6 +936,7 @@ class Gateway
         Gateway::ESIGNER_DIGIO,
         Gateway::ESIGNER_LEGALDESK,
         Gateway::ENACH_RBL,
+        Gateway::ENACH_NPCI_NETBANKING,
     ];
 
     public static $recurringCardNetworks = [
@@ -968,6 +970,8 @@ class Gateway
             IFSC::HDFC,
             //TODO add banks supported by NPCI for emandate
             IFSC::CBIN,
+            IFSC::IDFB,
+            IFSC::YESB,
         ],
         // Please keep this list sorted
         // You can find the latest PDF version
@@ -990,7 +994,7 @@ class Gateway
             Gateway::NETBANKING_AXIS,
             Gateway::NETBANKING_ICICI,
             Gateway::NETBANKING_HDFC,
-            Gateway::ENACH_RBL,
+            Gateway::ENACH_NPCI_NETBANKING,
         ],
         AuthType::AADHAAR     => self::EMANDATE_AADHAAR_GATEWAYS,
         AuthType::AADHAAR_FP  => self::EMANDATE_AADHAAR_GATEWAYS,
@@ -1077,11 +1081,11 @@ class Gateway
             Gateway::NETBANKING_ICICI   => [IFSC::ICIC],
             Gateway::NETBANKING_AXIS    => [IFSC::UTIB],
             Gateway::NETBANKING_HDFC    => [IFSC::HDFC],
-            //TODO this list is not accurate keeping hdfc, icici for test cases
-            Gateway::ENACH_RBL          => [
-                IFSC::HDFC,
-                IFSC::ICIC,
-                IFSC::CBIN,
+            //TODO this list is not constant have to setup a way to update these values
+            Gateway::ENACH_NPCI_NETBANKING => [
+                IFSC::YESB,
+                IFSC::IDFB,
+                IFSC::UTIB,
             ]
         ],
         AuthType::AADHAAR => [

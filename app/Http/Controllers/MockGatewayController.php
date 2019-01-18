@@ -272,11 +272,11 @@ class MockGatewayController extends Controller
         return $server->sign($input);
     }
 
-    public function postEnachPayment($bank)
+    public function postEnachNpciNetbankingPayment($authType)
     {
         $input = Request::all();
 
-        $driver = 'enach_' . $bank;
+        $driver = 'enach_npci_' . $authType;
 
         $server = $this->gateway->server($driver);
 
