@@ -58,25 +58,19 @@ function fakeFetch() {
   });
 }
 
-const baseUrl = 'featureFlags';
-
 @observer
 export default class extends React.Component {
   collection = new Collection({
     fetchFn: rexFetch, // fakeFetch,
     data: {
-      url: `${this.props.mode}/${baseUrl}`,
-    },
-    extraFields: {
-      mode: this.props.mode || 'live',
+      url: 'featureFlags',
     },
     filters: this.props.params,
   });
 
   componentDidUpdate(prevProps) {
     if (prevProps.mode !== this.props.mode) {
-      this.collection.data.url = `${this.props.mode}/${baseUrl}`;
-      this.collection.fetch();
+      this.collection.fetch(); // Automatically fetches as per current mode
     }
   }
 

@@ -1,36 +1,49 @@
-import fetch from 'common/fetch';
+import { adminFormUpload } from 'common/fetch';
+import { AppStore } from 'admin/user';
+import { stringifyQueryParams } from 'rzp/utils/rzp-utils';
+import { notifyError } from 'common/modal';
 
 /*
   For all custom rexFetch, Post, /etc helpers, payload must have relative url to "/admin/api/"
   Eg: rexFetch({url: '{mode}/your_url'}), or rexFetch('{mode}/your_url')
 */
-export const rexFetch = payload => fetch(_makePayload(payload, 'get'));
-export const rexPost = payload => fetch(_makePayload(payload, 'post'));
-export const rexPut = payload => fetch(_makePayload(payload, 'put'));
-export const rexDelete = payload => fetch(_makePayload(payload, 'delete'));
-export const rexPatch = payload => fetch(_makePayload(payload, 'patch'));
+export const rexFetch = payload => _makeRequest(payload, 'GET');
+export const rexPost = payload => _makeRequest(payload, 'POST');
+export const rexPut = payload => _makeRequest(payload, 'PUT');
+export const rexDelete = payload => _makeRequest(payload, 'DELETE');
+export const rexPatch = payload => _makeRequest(payload, 'PATCH');
 
-function _makePayload(payload, type) {
-  let reqPayload = {
+function _makeRequest(payload, type) {
+  const BASE_URL = '/makeapicall/service/razorx';
+  const reqPayload = {
     method: type,
+    mode: payload.mode || AppStore.mode,
+    auth: 'admin',
   };
 
+  if (payload.data) {
+    reqPayload.body = payload.data;
+  }
+
+  let url;
   if (typeof payload === 'string') {
-    reqPayload.url = payload;
+    url = payload;
   } else {
-    reqPayload = { ...reqPayload, ...payload };
+    url = payload.url;
   }
-  // TODO: Construct payload here as per makeapicall:
-  // http://dashboard.razorpay.in/makeapicall/service/razorx?service_path=experiments
-  /*
-  {
-    mode: 'live',
-    body: {""}
-    params: // To be attached in URL itself
-  }
-*/
 
-  reqPayload.url = '/makeapicall/service/razorx?' + reqPayload.url; // final url is "/admin/api/+url"
+  const queryParams = payload.params || {};
+  url = BASE_URL + stringifyQueryParams({ service_path: url, ...queryParams });
 
-  return reqPayload;
+  return adminFormUpload(reqPayload, url) // Final request is axios.post
+    .then(resp => {
+      if (resp.status === '200') {
+        return resp.data;
+      }
+
+      throw { errors: resp.data.errors || ['Some network error has occurred'] };
+    })
+    .catch(({ errors = {} }) => {
+      notifyError(errors[0]);
+    });
 }
