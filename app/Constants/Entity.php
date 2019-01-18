@@ -35,7 +35,6 @@ class Entity
     const GEO_IP                    = 'geo_ip';
     const COUPON                    = 'coupon';
     const DEVICE                    = 'device';
-    const ORIGIN                    = 'origin';
     const PAYOUT                    = 'payout';
     const REFUND                    = 'refund';
     const REPORT                    = 'report';
@@ -80,6 +79,7 @@ class Entity
     const SUBSCRIPTION              = 'subscription';
     const ENTITY_OFFER              = 'entity_offer';
     const FUND_ACCOUNT              = 'fund_account';
+    const ENTITY_ORIGIN             = 'entity_origin';
     const GATEWAY_TOKEN             = 'gateway_token';
     const BANK_TRANSFER             = 'bank_transfer';
     const SCHEDULE_TASK             = 'schedule_task';

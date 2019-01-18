@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Origin;
+namespace RZP\Models\EntityOrigin;
 
 class Constants
 {
