@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { openModal, notifyError } from 'common/modal';
 import { formatDate, titleCase, classList } from 'common/util';
-import { adminFetch, adminPatch } from 'common/fetch';
+import { rexFetch, rexPatch } from 'admin/razorx/fetch';
 import AsyncButton from 'ui/AsyncButton';
 import ExperimentsModal from './ExperimentsModal';
 
@@ -57,7 +57,7 @@ export default class extends React.Component {
       data: null,
     });
 
-    adminFetch({ url: '/experiments/' + id })
+    rexFetch({ url: '/experiments/' + id })
       .then(resp => {
         this.setState({
           isFetching: false,

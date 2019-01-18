@@ -3,7 +3,7 @@ import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
 import Field, { SelectField, SearchableSelectField } from 'ui/Field';
 import Collection from 'model/collection';
-import { adminFetch } from 'common/fetch';
+import { rexFetch } from 'admin/razorx/fetch';
 import { observer } from 'mobx-react';
 import { formatDate } from 'common/util';
 import { isSuperAdmin } from 'admin/user';
@@ -16,7 +16,7 @@ export default class WorkflowRequestsList extends Component {
   };
 
   collection = new Collection({
-    fetchFn: adminFetch,
+    fetchFn: rexFetch,
     data: {
       url: 'live/w-actions',
     },
@@ -44,7 +44,7 @@ export default class WorkflowRequestsList extends Component {
   componentWillMount() {
     let requests = ['live/admins'];
 
-    Promise.all(requests.map(url => adminFetch(url))).then(([admins]) => {
+    Promise.all(requests.map(url => rexFetch(url))).then(([admins]) => {
       this.setState({
         admins: admins.items,
       });

@@ -1,7 +1,7 @@
 import { classList, formatDate } from 'common/util';
 import { Link } from 'react-router-dom';
 import Collection from 'model/collection';
-import { adminFetch } from 'common/fetch';
+import { rexFetch } from 'admin/razorx/fetch';
 import { observer } from 'mobx-react';
 import { PageTable } from 'ui/Table';
 
@@ -63,7 +63,7 @@ const baseUrl = 'featureFlags';
 @observer
 export default class extends React.Component {
   collection = new Collection({
-    fetchFn: adminFetch, // fakeFetch,
+    fetchFn: rexFetch, // fakeFetch,
     data: {
       url: `${this.props.mode}/${baseUrl}`,
     },

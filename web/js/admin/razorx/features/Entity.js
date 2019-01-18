@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { openModal, notifyError } from 'common/modal';
 import { formatDate, titleCase } from 'common/util';
-import { adminFetch } from 'common/fetch';
+import { rexFetch } from 'admin/razorx/fetch';
 import FeaturesModal from './FeaturesModal';
 
 const dummy_data = {
@@ -33,7 +33,7 @@ export default class extends React.Component {
       data: null,
     });
 
-    adminFetch({ url: '/featureFlags/' + id })
+    rexFetch({ url: '/featureFlags/' + id })
       .then(resp => {
         this.setState({
           isFetching: false,

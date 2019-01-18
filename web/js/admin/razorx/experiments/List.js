@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import Collection from 'model/collection';
-import { adminFetch } from 'common/fetch';
+import { rexFetch } from 'admin/razorx/fetch';
 import { observer } from 'mobx-react';
 import { PageTable } from 'ui/Table';
 import { formatDate } from 'common/util';
@@ -90,7 +90,7 @@ const baseUrl = 'experiments';
 @observer
 export default class extends React.Component {
   collection = new Collection({
-    fetchFn: adminFetch,
+    fetchFn: rexFetch,
     data: {
       url: `${this.props.mode}/${baseUrl}`,
     },
