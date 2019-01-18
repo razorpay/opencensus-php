@@ -406,7 +406,7 @@ class Gateway extends Base\Gateway
 
     public function setMode($mode)
     {
-        assert ($mode === Mode::TEST);
+        assertTrue ($mode === Mode::TEST);
 
         parent::setMode($mode);
     }

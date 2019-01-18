@@ -586,7 +586,7 @@ class Core extends Base\Core
         // refund's payment must have transaction
         $payment = $refund->payment;
 
-        assert ($payment->hasTransaction() === true);
+        assertTrue ($payment->hasTransaction() === true);
 
         return $this->createTransactionForSource($refund);
     }

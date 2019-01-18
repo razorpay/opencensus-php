@@ -320,7 +320,7 @@ class RepositoryManager extends Illuminate\Support\Manager
 
     public function assertTransactionActive()
     {
-        assert ($this->isTransactionActive());
+        assertTrue ($this->isTransactionActive());
     }
 
     public function resetConnectionAttributes()

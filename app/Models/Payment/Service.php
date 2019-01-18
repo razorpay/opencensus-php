@@ -1036,7 +1036,7 @@ class Service extends Base\Service
         {
             try
             {
-                assert ($payment->isAuthorized() === true);
+                assertTrue ($payment->isAuthorized() === true);
 
                 $merchant = $payment->merchant;
 

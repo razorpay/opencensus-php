@@ -1900,7 +1900,7 @@ class Processor
             return $ba;
         }
 
-        assert ($this->mode === Mode::TEST);
+        assertTrue ($this->mode === Mode::TEST);
 
         $attributes = array(
             'merchant_id'           => $merchant->getId(),

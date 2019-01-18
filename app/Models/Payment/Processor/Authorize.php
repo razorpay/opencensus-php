@@ -2848,7 +2848,7 @@ trait Authorize
 
     protected function fillReturnRequestDataForMerchant(Payment\Entity $payment, array & $returnData)
     {
-        assert ($payment->getCallbackUrl() !== null);
+        assertTrue ($payment->getCallbackUrl() !== null);
 
         //
         // This would be normal request data at this point.

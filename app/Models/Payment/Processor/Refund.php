@@ -436,11 +436,11 @@ trait Refund
         Payment\Refund\Validator::validateManualGatewayRefundAllowed($gateway);
 
         // The refund should have already been successful and everything on the api side.
-        assert ($refund->getTransactionId() !== null);
+        assertTrue ($refund->getTransactionId() !== null);
 
         // Just making sure that the payment also has the transaction id. Refund will not have a transaction
         // if payment does not have a transaction, anyway.
-        assert ($payment->getTransactionId() !== null);
+        assertTrue ($payment->getTransactionId() !== null);
 
         // The payment should have been captured. Otherwise, refund transaction should not have been created.
         // Though, there are some edge cases where refund transaction was created even though the payment has not
@@ -537,11 +537,11 @@ trait Refund
 
         // The refund should have already been successful and everything on the api side.
         // Because on timeout, we would have ignored it and created a refund as it was successful.
-        assert ($refund->getTransactionId() !== null);
+        assertTrue ($refund->getTransactionId() !== null);
 
         // Just making sure that the payment also has the transaction id. Refund will not have a transaction
         // if payment does not have a transaction, anyway.
-        assert ($payment->getTransactionId() !== null);
+        assertTrue ($payment->getTransactionId() !== null);
 
         $data = [
             'payment'   => $payment->toArrayGateway(),
@@ -1546,7 +1546,7 @@ trait Refund
                 ]
             );
 
-            assert($count === 1);
+            assertTrue ($count === 1);
 
             return $refunds[0];
         }
@@ -1699,9 +1699,9 @@ trait Refund
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
-        assert ($refund->getTransactionId() !== null);
+        assertTrue ($refund->getTransactionId() !== null);
 
-        assert ($payment->getTransactionId() !== null);
+        assertTrue ($payment->getTransactionId() !== null);
 
         $data = [
             'payment'   => $payment->toArrayGateway(),

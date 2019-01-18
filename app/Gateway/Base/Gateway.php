@@ -359,7 +359,7 @@ class Gateway
 
     public function setMock($mock)
     {
-        assert (is_bool($mock));
+        assertTrue (is_bool($mock));
 
         $this->mock = $mock;
     }

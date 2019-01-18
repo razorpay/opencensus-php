@@ -144,13 +144,13 @@ trait Capture
         $this->setPayment($payment);
 
         // If it has already been captured, we would have a transaction for it.
-        assert ($payment->hasBeenCaptured() === false);
+        assertTrue ($payment->hasBeenCaptured() === false);
 
         // If the transaction is already present for this, we should not be running verifyCapture at all.
-        assert ($payment->getTransactionId() === null);
+        assertTrue ($payment->getTransactionId() === null);
 
         // The payment should be in authorized or refunded state only.
-        assert ($payment->isStatusCreatedOrFailed() === false);
+        assertTrue ($payment->isStatusCreatedOrFailed() === false);
 
         $gatewayCaptured = $payment->isGatewayCaptured();
 

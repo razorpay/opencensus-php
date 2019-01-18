@@ -382,7 +382,7 @@ class PaymentCreateController extends Controller
             }
         }
 
-        assert ($data !== null);
+        assertTrue ($data !== null);
 
         return $this->returnCheckoutCallbackView($data);
     }
