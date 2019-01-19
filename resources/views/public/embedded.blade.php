@@ -14,8 +14,9 @@
     </script>
     <?php endif; ?>
     <script>
+      var meta = {!! $meta !!};
       var options = {!! $options !!};
-      var urls = {!! isset($urls) ? $urls : json_encode([], JSON_FORCE_OBJECT) !!};
+      var urls = {!! $urls !!};
       options.key = "{!! $key !!}";
     </script>
   </head>
