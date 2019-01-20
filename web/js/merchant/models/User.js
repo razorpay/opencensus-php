@@ -25,6 +25,9 @@ export default class User {
 
   constructor(props) {
     Object.assign(this, props);
+    if (!this.tags) {
+      this.tags = [];
+    }
   }
 
   isFeatureEnabled(feature) {
@@ -97,6 +100,11 @@ export default class User {
   }
 
   isAllowedEdit(moduleName) {
+    if (moduleName === 'refunds') {
+      if (this.findTag('hide_payment_refund')) {
+        return false;
+      }
+    }
     const isEditAllowed = _isAllowed(
       this.userRole,
       moduleName,
@@ -188,7 +196,7 @@ export default class User {
   }
 
   get isGSTDisabled() {
-    return (this.tags || []).indexOf('Gst_Invoice_Disabled') !== -1;
+    return this.findTag('Gst_Invoice_Disabled');
   }
 
   get isChargeAtWillEnabled() {
@@ -223,9 +231,7 @@ export default class User {
 
   /* Check case-insensitive tag check existence */
   findTag(tag) {
-    return !!(
-      this.tags && this.tags.find(t => t.toLowerCase() === tag.toLowerCase())
-    );
+    return this.tags.some(t => t.toLowerCase() === tag.toLowerCase());
   }
 
   /**
