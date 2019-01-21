@@ -2165,9 +2165,8 @@ class Entity extends Base\PublicEntity
                         'method'            => $this->getMethod(),
                     ]);
             }
-            $authType = $this->getAuthType();
 
-            return (Payment\Gateway::isFileBasedEMandateRegistrationGatewayForAuthType($gateway, $authType) === true);
+            return (Payment\Gateway::isFileBasedEMandateRegistrationGateway($gateway) === true);
         }
 
         return false;

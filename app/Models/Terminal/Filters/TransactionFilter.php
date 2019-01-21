@@ -154,33 +154,18 @@ class TransactionFilter extends Terminal\Filter
 
         $authTypeGateways = ($authType !== null) ? Gateway::getEmandateGatewaysForAuthType($authType) : [];
 
-        if($authType === Payment\AuthType::NETBANKING)
+        // @todo: Can be more cleaner
+        foreach (Gateway::$gatewaysEmandateBanksMap as $gateway => $gatewaySupportedBanks)
         {
-            foreach ($authTypeGateways as $gateway)
+            if (in_array($paymentBank, $gatewaySupportedBanks, true) === true)
             {
-                $gatewaySupportedBanks = Gateway::getEmandateBanksForGatewayAndAuthType($gateway, $authType);
-
-                if (in_array($paymentBank, $gatewaySupportedBanks, true) === true)
+                if (($authType !== null) and
+                    (in_array($gateway, $authTypeGateways, true) === false))
                 {
-                    $gateways[] = $gateway;
+                    continue;
                 }
-            }
-        }
-        else
-        {
-            // @todo: Can be more cleaner
-            foreach (Gateway::$gatewaysEmandateBanksMap as $gateway => $gatewaySupportedBanks)
-            {
-                if (in_array($paymentBank, $gatewaySupportedBanks, true) === true)
-                {
-                    if (($authType !== null) and
-                        (in_array($gateway, $authTypeGateways, true) === false))
-                    {
-                        continue;
-                    }
 
-                    $gateways[] = $gateway;
-                }
+                $gateways[] = $gateway;
             }
         }
 
