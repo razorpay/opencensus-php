@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { PageTable } from 'ui/Table';
 import Collection from 'model/collection';
+import CollectionItem from 'model/collectionItem';
 import { SelectField } from 'ui/Field';
 
 import { adminFetch } from 'common/fetch';
@@ -31,6 +32,10 @@ export default class PlanList extends Component {
     data: {
       url: 'live/pricing/merchants',
       copyItem: rules => this.copyPricing(rules),
+      handleOrgChange: e => this.handleOrgChange(e),
+    },
+    extraFields: {
+      selectedOrg: null,
     },
     fetchFn,
   });
@@ -69,7 +74,6 @@ export default class PlanList extends Component {
 
   handleOrgChange = e => {
     const orgId = e.target.value;
-
     fetchFn({
       data: {
         count: 20,
@@ -85,7 +89,11 @@ export default class PlanList extends Component {
       this.setState({
         selectedOrg: orgId,
       });
-      this.collection.items.replace(response);
+
+      this.collection.extraFields.selectedOrg = orgId;
+      this.collection.items.replace(
+        response.map(item => new CollectionItem(this.collection, item))
+      );
     });
   };
 
@@ -118,18 +126,21 @@ export default class PlanList extends Component {
           </header>
           {isOrgRazorpay() &&
             !isBlank(orgs) && (
-              <SelectField
-                label="Organisation"
-                name="org_id"
-                onChange={this.handleOrgChange}
-              >
-                <option value="">All</option>
-                {Object.keys(orgs).map(orgId => (
-                  <option key={orgId} value={orgId}>
-                    {orgs[orgId]}
-                  </option>
-                ))}
-              </SelectField>
+              <div class="filters">
+                <SelectField
+                  label="Organisation"
+                  name="org_id"
+                  value={this.state.selectedOrg}
+                  onChange={this.handleOrgChange}
+                >
+                  <option value="">All</option>
+                  {Object.keys(orgs).map(orgId => (
+                    <option key={orgId} value={orgId}>
+                      {orgs[orgId]}
+                    </option>
+                  ))}
+                </SelectField>
+              </div>
             )}
         </div>
         <PageTable
