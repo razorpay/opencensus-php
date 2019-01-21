@@ -2438,15 +2438,6 @@ class Entity extends Base\PublicEntity
         return $data;
     }
 
-    public function getCreatedAtFormatted()
-    {
-        $createdAt = Carbon::createFromTimestamp($this->getCreatedAt(), Timezone::IST);
-
-        $createdAtFormatted = $createdAt->format('jS M, Y');
-
-        return $createdAtFormatted;
-    }
-
 // --------------- Relation to other entities ----------------------------------
 
     public function card()
