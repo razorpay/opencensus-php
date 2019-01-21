@@ -1559,6 +1559,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKENEX_MIGRATION_FAILED            = 'TOKENEX_MIGRATION_FAILED';
     const TOKENEX_MIGRATION_RESPONSE          = 'TOKENEX_MIGRATION_RESPONSE';
 
+    // fund transfer service trace codes
+    const FTS_REQUEST                           = 'FTS_REQUEST';
+    const FTS_RESPONSE                          = 'FTS_RESPONSE';
+    const FTS_FAILURE_EXCEPTION                 = 'FTS_FAILURE_EXCEPTION';
+    const FTS_CREATE_ACCOUNT                    = 'FTS_CREATE_ACCOUNT';
+    const FTS_ACCOUNT_CREATED_FOR_MERCHANT      = 'FTS_ACCOUNT_CREATED_FOR_MERCHANT';
+    const FTS_ACCOUNT_CREATION_FAILED           = 'FTS_ACCOUNT_CREATION_FAILED';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',

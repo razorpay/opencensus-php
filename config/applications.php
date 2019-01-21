@@ -272,4 +272,11 @@ return [
     'vajra' => [
         'secret'   => env('APP_VAJRA_SECRET'),
     ],
+
+    'fts' => [
+        'url'               => env('FTS_URL'),
+        'secret'            => env('APP_FTS_SECRET'),
+        'fts_key'           => env('FTS_KEY'),
+        'fts_secret'        => env('FTS_SECRET'),
+    ],
 ];

@@ -260,6 +260,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerKubernetesClient();
 
         $this->registerCustomSessionProvider();
+
+        $this->registerFTS();
     }
 
     /**
@@ -296,6 +298,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'pincodesearch',
             'shield.service',
             'beam',
+            'fts',
         ];
     }
 
@@ -642,6 +645,18 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $manager->extend('custom', function($app) {
             return new CustomSessionHandler($app);
+        });
+    }
+
+    protected function registerFTS()
+    {
+        $this->app->bind('fts', function($app)
+        {
+            $mock = $app['config']->get('applications.fts.mock');
+
+            $implementation = $mock ? Mock\FTS::class : FTS::class;
+
+            return new $implementation($app);
         });
     }
 }

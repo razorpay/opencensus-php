@@ -309,6 +309,8 @@ class Core extends Base\Core
 
         (new Beneficiary)->enqueueForBeneficiaryRegistration($ba);
 
+        $this->callFTSCreateAccount($ba);
+
         return $ba;
     }
 
@@ -405,5 +407,12 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+
+    protected function callFTSCreateAccount($ba)
+    {
+        $id = $ba->getId();
+
+        FTSCreateAccount::dispatch($id, $this->mode);
     }
 }

@@ -334,6 +334,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BENEFICIARY_MOBILE);
     }
 
+    public function getBeneficiaryState()
+    {
+        return $this->getAttribute(self::BENEFICIARY_STATE);
+    }
+
+    public function getBeneficiaryCountry()
+    {
+        return $this->getAttribute(self::BENEFICIARY_COUNTRY);
+    }
+
+    public function getBeneficiaryPin()
+    {
+        return $this->getAttribute(self::BENEFICIARY_PIN);
+    }
+
     public function setMobileBankingEnabled($mobileBankingEnabled)
     {
         return $this->setAttribute(self::MOBILE_BANKING_ENABLED, $mobileBankingEnabled);
