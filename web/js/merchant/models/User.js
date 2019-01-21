@@ -194,6 +194,10 @@ export default class User {
     return this.findTag('Gst_Invoice_Disabled');
   }
 
+  get isRefundsDisabled() {
+    return this.isFeatureEnabled('disable_refunds');
+  }
+
   get isChargeAtWillEnabled() {
     return this.findTag('Charge_at_will');
   }
@@ -276,7 +280,7 @@ export default class User {
   // Allowed roles can be revoked refund access selectively with this tag
   get isRefundAllowed() {
     return (
-      this.isAllowedEdit('refunds') && !this.findTag('hide_payment_refund')
+      this.isAllowedEdit('refunds') && !this.isRefundsDisabled
     );
   }
 }
