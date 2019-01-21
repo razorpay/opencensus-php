@@ -13,10 +13,10 @@ export default class ConfigDetails extends Component {
   constructor(props) {
     super();
     this.state = {
-      selectedColumns: Object.keys(props.fieldsMap).reduce(
+      selectedColumns: (props.outputFields || []).reduce(
         (allColumns, column) => ({
           ...allColumns,
-          [column]: true,
+          [props.fieldsMap[column]]: true,
         }),
         {}
       ),
@@ -82,7 +82,7 @@ export default class ConfigDetails extends Component {
                 selectedColumns={Object.keys(selectedColumns).filter(
                   column => selectedColumns[column]
                 )}
-                fieldsMap={this.props.fieldsMap}
+                fieldsMap={getInternalFielsMap(this.props.fieldsMap)}
                 fieldsWithNotes={this.fieldsWithNotes}
                 toggleField={this.toggleField}
                 availableFilters={props.availableFilters}
@@ -518,6 +518,16 @@ class CollapsiblePanel extends Component {
       </div>
     );
   }
+}
+
+function getInternalFielsMap(fieldsMap = {}) {
+  return Object.keys(fieldsMap).reduce(
+    (map, field) => ({
+      ...map,
+      [fieldsMap[field][0]]: field,
+    }),
+    {}
+  );
 }
 
 // helper methods
