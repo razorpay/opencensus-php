@@ -37,7 +37,7 @@ const initSmooch = data => {
 
 const initFreshchat = data => {
   let role = data.userRole;
-  fcWidget.init({
+  window.fcWidget.init({
     token: FRESHCHAT_TOKEN,
     host: FRESHCHAT_HOST,
     config: {
