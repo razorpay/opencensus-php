@@ -3,7 +3,6 @@
 use Auth;
 use Gate;
 use Closure;
-use Carbon\Carbon;
 use App\Http\ApiUrl;
 use App\Http\Headers;
 use Illuminate\Contracts\Auth\Guard;
@@ -47,7 +46,7 @@ class SetApiHeaders {
 
         $csrfToken = $request->session()->token();
 
-        $timeStamp = Carbon::now()->getTimestamp();
+        $timeStamp = microtime(true);
 
         $csrfTokenHeader = [
             Headers::CSRF_TOKEN => $csrfToken . ',' . $timeStamp,
