@@ -360,10 +360,14 @@ trait Refund
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
-        $successCount = $failureCount = $totalCount = 0;
+        $successCount = $refundFailedCount = $failureCount = $totalCount = 0;
+
+        $successAttempt = [];
 
         for ($attempt = 1; $attempt <= $attempts; $attempt++)
         {
+            $totalCount += 1;
+
             try
             {
                 $refund->setAttempts($attempt);
@@ -382,7 +386,12 @@ trait Refund
                         'verify_response'   => $verifyResponse,
                     ]);
 
-                ($success === true) ? $successCount += 1 : $failureCount += 1;
+                ($success === true) ? ($successCount += 1 and $successAttempt[] = $attempt) : $refundFailedCount += 1;
+
+                if (($success === true) and ($refund->getAmount() === $payment->getAmount()))
+                {
+                    break;
+                }
             }
             catch (\Exception $ex)
             {
@@ -397,15 +406,15 @@ trait Refund
 
                 $failureCount += 1;
             }
-
-            $totalCount += 1;
         }
 
         return [
-            'refund_id'         => $refund->getId(),
-            'success_count'     => $successCount,
-            'failure_count'     => $failureCount,
-            'total_count'       => $totalCount
+            'refund_id'             => $refund->getId(),
+            'success_count'         => $successCount,
+            'success_attempt'       => $successAttempt,
+            'refund_failed_count'   => $refundFailedCount,
+            'failure_count'         => $failureCount,
+            'total_count'           => $totalCount
         ];
     }
 
