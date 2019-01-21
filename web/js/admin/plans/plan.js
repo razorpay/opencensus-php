@@ -306,16 +306,16 @@ class Rule extends CollectionItem {
     ).then(data => {
       if (data && !isWorkflow(data)) {
         notifySuccess(data.message);
-
+        let removablePlan = planItems.find(item => item.id === planId);
         //- remove pricing plan when all rules are deleted as backend soft deletes it
         if (
           planId &&
           this.collection.items.peek().length === 2 //- rule would have a dummy item
         ) {
-          let removablePlan = planItems.find(item => item.id === planId);
           planItems.remove(removablePlan);
           closeModal();
         } else {
+          removablePlan.rules_count--;
           this.collection.items.remove(this);
         }
       }
