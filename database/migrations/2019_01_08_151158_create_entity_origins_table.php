@@ -5,9 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\Origin\Entity;
+use RZP\Models\EntityOrigin\Entity;
 
-class CreateOriginsTable extends Migration
+class CreateEntityOriginsTable extends Migration
 {
     /**
      * Run the migrations.
