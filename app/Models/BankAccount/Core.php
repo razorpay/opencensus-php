@@ -11,6 +11,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
+use RZP\Jobs\FTSCreateAccount;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
