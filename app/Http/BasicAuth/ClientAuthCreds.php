@@ -20,9 +20,10 @@ class ClientAuthCreds extends AuthCreds
     protected $partnerClient = null;
 
     /**
-     * @var OAuthApp\Entity
+     * Partner's OAuth application id
+     * @var null
      */
-    protected $partnerApplication = null;
+    protected $partnerApplicationId = null;
 
     /**
      * Client types are interpreted differently in API vs
@@ -53,7 +54,7 @@ class ClientAuthCreds extends AuthCreds
                 self::$clientModes[$this->getMode()]
             );
 
-            $this->partnerApplication = $this->partnerClient->application;
+            $this->partnerApplicationId = $this->partnerClient->getApplicationId();
         }
         catch (\Throwable $e)
         {
@@ -150,8 +151,8 @@ class ClientAuthCreds extends AuthCreds
         return $this->partnerClient;
     }
 
-    public function getPartnerApplication()
+    public function getPartnerApplicationId()
     {
-        return $this->partnerApplication;
+        return $this->partnerApplicationId;
     }
 }
