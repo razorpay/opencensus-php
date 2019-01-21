@@ -10,6 +10,7 @@ use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Upi\Base\Secure;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\GatewayErrorException;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Tests\Functional\Fixtures\Entity\Terminal;
@@ -1124,5 +1125,37 @@ class UpiMindgateGatewayTest extends TestCase
         {
             $this->doAuthPaymentViaAjaxRoute($this->payment);
         });
+    }
+
+    public function testEmptyBodyInCallback()
+    {
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $this->makeRequestAndCatchException(
+            function()
+            {
+                $this->makeS2SCallbackAndGetContent(['meRes' => null]);
+            },
+            GatewayErrorException::class,
+            "Payment processing failed due to error at bank or wallet gateway\n" .
+            "Gateway Error Code: \n" .
+            "Gateway Error Desc: Uninitialized string offset: -1");
+    }
+
+    public function testDecryptedContentInCallback()
+    {
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $content = 'NA|1231232112321|231|Your transaction failed';
+
+        $this->makeRequestAndCatchException(
+            function() use ($content)
+            {
+                $this->makeS2SCallbackAndGetContent(['meRes' => $content]);
+            },
+            GatewayErrorException::class,
+            "Payment processing failed due to error at bank or wallet gateway\n" .
+            "Gateway Error Code: \n" .
+            "Gateway Error Desc: hex2bin(): Input string must be hexadecimal string");
     }
 }
