@@ -4,6 +4,8 @@ namespace RZP\Models\Payment\Processor;
 
 use App;
 use Route;
+use Config;
+
 use Carbon\Carbon;
 use RZP\Base\RepositoryManager;
 use RZP\Constants\Mode;
@@ -27,7 +29,6 @@ use RZP\Models\Payment\Status;
 use RZP\Models\Pricing;
 use RZP\Models\Risk;
 use RZP\Models\Terminal;
-use RZP\Models\Transaction;
 use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -2294,6 +2295,19 @@ class Processor
 
     protected function disableTerminal(Terminal\Entity $terminal)
     {
+        $this->app['slack']->queue(
+            TraceCode::TERMINAL_AUTO_DISABLE,
+            [
+                    'merchant_id'           => $terminal->getMerchantId(),
+                    'merchant_name'         => $terminal->merchant->getName(),
+                    'terminal_id'           => $terminal->getId(),
+                    'payment_id'            => $this->payment->getId(),
+                    'channel'               => Config::get('slack.channels.tech_alerts'),
+                    'username'              => 'alerts',
+                    'icon'                  => ':x:'
+            ]
+        );
+
         $this->trace->error(
             TraceCode::TERMINAL_AUTO_DISABLE,
             [
