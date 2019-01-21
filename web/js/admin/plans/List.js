@@ -32,6 +32,10 @@ export default class PlanList extends Component {
     data: {
       url: 'live/pricing/merchants',
       copyItem: rules => this.copyPricing(rules),
+      handleOrgChange: e => this.handleOrgChange(e),
+    },
+    extraFields: {
+      selectedOrg: null,
     },
     fetchFn,
   });
@@ -70,7 +74,6 @@ export default class PlanList extends Component {
 
   handleOrgChange = e => {
     const orgId = e.target.value;
-
     fetchFn({
       data: {
         count: 20,
@@ -86,6 +89,8 @@ export default class PlanList extends Component {
       this.setState({
         selectedOrg: orgId,
       });
+
+      this.collection.extraFields.selectedOrg = orgId;
       this.collection.items.replace(
         response.map(item => new CollectionItem(this.collection, item))
       );
@@ -125,6 +130,7 @@ export default class PlanList extends Component {
                 <SelectField
                   label="Organisation"
                   name="org_id"
+                  value={this.state.selectedOrg}
                   onChange={this.handleOrgChange}
                 >
                   <option value="">All</option>

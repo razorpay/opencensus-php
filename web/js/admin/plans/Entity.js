@@ -19,6 +19,10 @@ export default class PlanEntity extends Component {
   collection = new Plan(this.props.plan);
 
   componentWillMount() {
+    this.collection.updateOrg({
+      target: { value: this.props.plan.collection.extraFields.selectedOrg },
+    });
+
     adminFetch('live/pricing/networks').then(networks => {
       networks.netbanking = networks.bank;
       networks.emi = networks.card;
@@ -69,8 +73,14 @@ export default class PlanEntity extends Component {
                   <SelectField
                     label="Organisation"
                     name="org_id"
-                    defaultValue="org_100000razorpay"
-                    onChange={updateOrg}
+                    defaultValue={
+                      this.props.plan.collection.extraFields.selectedOrg ||
+                      'org_100000razorpay'
+                    }
+                    onChange={e => {
+                      updateOrg(e);
+                      this.props.plan.collection.data.handleOrgChange(e);
+                    }}
                   >
                     {Object.keys(orgs).map(orgId => (
                       <option key={orgId} value={orgId}>
