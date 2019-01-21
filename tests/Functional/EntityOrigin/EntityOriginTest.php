@@ -124,4 +124,34 @@ class EntityOriginTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedOrigin, $origin);
     }
+
+    /**
+     * Asserts that the origin entity is created for a payment initiated using the private auth.
+     */
+    public function testCreatePaymentOriginPrivateAuth()
+    {
+        $merchantId = '10000000000000';
+
+        $this->ba->privateAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $response = $this->doS2SPrivateAuthPayment($payment);
+
+        $origin = $this->getDbLastEntity('entity_origin');
+
+        $this->assertNotNull($origin);
+
+        $origin = $origin->toArray();
+
+        $expectedOrigin = $this->testData[__FUNCTION__]['response']['content'];
+
+        $expectedOrigin['entity_id'] = PublicEntity::stripDefaultSign($response['razorpay_payment_id']);
+
+        $expectedOrigin['origin_id'] = $merchantId;
+
+        $this->assertArraySelectiveEquals($expectedOrigin, $origin);
+    }
 }

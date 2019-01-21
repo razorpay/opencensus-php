@@ -31,4 +31,14 @@ return [
             ],
         ]
     ],
+
+    'testCreatePaymentOriginPrivateAuth' => [
+        'response' => [
+            'content' => [
+                'entity_type' => 'payment',
+                'entity_id'   => 'randomPaymentId',
+                'origin_type' => 'merchant',
+            ],
+        ]
+    ],
 ];
