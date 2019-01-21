@@ -34,11 +34,6 @@ class Constants
     {
         $entityType = $entity->getEntity();
 
-        if (in_array($entityType, self::getSourceEntities(), true) === false)
-        {
-            return false;
-        }
-
-        return true;
+        return (in_array($entityType, self::getSourceEntities(), true) === true);
     }
 }

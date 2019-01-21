@@ -26,10 +26,7 @@ class Core extends Base\Core
 
         $commission->partnerConfig()->associate($partnerConfig);
 
-        if (empty($txn) === false)
-        {
-            $commission->transaction()->associate($txn);
-        }
+        $commission->transaction()->associate($txn);
 
         return $commission;
     }

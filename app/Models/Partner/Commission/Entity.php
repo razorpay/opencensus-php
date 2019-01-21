@@ -36,7 +36,6 @@ class Entity extends Base\PublicEntity
     protected $primaryKey = self::ID;
 
     protected $fillable = [
-        self::ID,
         self::FEE,
         self::TAX,
         self::DEBIT,
@@ -64,6 +63,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
+        self::ENTITY,
         self::FEE,
         self::TAX,
         self::DEBIT,

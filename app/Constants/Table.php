@@ -220,9 +220,4 @@ class Table
 
         return constant(Table::class . '::' . strtoupper($entity));
     }
-
-    public function commissions()
-    {
-        return $this->hasMany(Commission\Entity::class, Commission\Entity::PARTNER_ID, Entity::ID);
-    }
 }
