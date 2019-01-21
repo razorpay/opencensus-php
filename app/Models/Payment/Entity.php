@@ -2576,9 +2576,12 @@ class Entity extends Base\PublicEntity
         return $this->hasOne('RZP\Models\Discount\Entity');
     }
 
-    public function origin()
+    /**
+     * Points to the pivot table entity `entityOrigin` for the payment
+     */
+    public function entityOrigin()
     {
-        return $this->morphOne(\RZP\Models\Origin\Entity::class, 'origin');
+        return $this->morphOne(\RZP\Models\EntityOrigin\Entity::class, 'entity');
     }
 
     public function offers()

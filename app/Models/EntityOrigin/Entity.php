@@ -30,6 +30,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
+        self::ENTITY,
         self::ENTITY_ID,
         self::ORIGIN_ID,
         self::ENTITY_TYPE,
@@ -59,6 +60,6 @@ class Entity extends Base\PublicEntity
      */
     public function origin()
     {
-        return $this->morphTo('origin');
+        return $this->morphTo();
     }
 }
