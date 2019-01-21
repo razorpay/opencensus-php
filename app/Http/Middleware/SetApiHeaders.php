@@ -1,10 +1,11 @@
 <?php namespace App\Http\Middleware;
 
-use App\Http\Headers;
 use Auth;
 use Gate;
 use Closure;
+use Carbon\Carbon;
 use App\Http\ApiUrl;
+use App\Http\Headers;
 use Illuminate\Contracts\Auth\Guard;
 use Razorpay\Api\Request as ApiRequest;
 
@@ -46,8 +47,10 @@ class SetApiHeaders {
 
         $csrfToken = $request->session()->token();
 
+        $timeStamp = Carbon::now()->getTimestamp();
+
         $csrfTokenHeader = [
-            Headers::CSRF_TOKEN => $csrfToken,
+            Headers::CSRF_TOKEN => $csrfToken . ',' . $timeStamp,
         ];
 
         $response = $next($request);
