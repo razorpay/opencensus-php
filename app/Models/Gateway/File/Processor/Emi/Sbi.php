@@ -300,7 +300,7 @@ class Sbi extends Base
 
         $den = $expression - 1;
 
-        return (round($num / $den) / 100);
+        return round($num / $den);
     }
 
     //-------------------------- Helpers ------------------------------------//
