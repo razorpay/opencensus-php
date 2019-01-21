@@ -1,5 +1,6 @@
 import { readableFileSize } from 'rzp/utils/rzp-utils';
-import { classList, isBlank } from 'common/util';
+import { classList } from 'common/util';
+import { isBlank } from 'rzp/utils/rzp-utils';
 
 import Staged from './Staged';
 
