@@ -206,11 +206,11 @@ class Validator extends Base\Validator
 
         $ifsc = $input[Entity::BANK_ACCOUNT][Entity::IFSC];
 
-        /*if (IFSC::validate($ifsc) === false)
+        if (IFSC::validate($ifsc) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid IFSC Code in Bank Account');
-        }*/
+        }
     }
 
     protected function validateTokenMaxAmount(array $input)

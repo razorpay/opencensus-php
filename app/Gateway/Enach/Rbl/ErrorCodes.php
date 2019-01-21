@@ -459,15 +459,6 @@ class ErrorCodes
         return self::$debitPublicErrorCodeMappings[$errorCode] ?? $defaultErrorCode;
     }
 
-    public static function getEmandateRegisterErrorDescriptionFromCode($code)
-    {
-        $defaultErrorCode = ErrorCode::GATEWAY_ERROR_TOKEN_REGISTRATION_FAILED;
-
-        $errorCode = self::$emandateRegisterErrorCodeMappings[$code] ?? $defaultErrorCode;
-
-        return self::getDescriptionFromErrorCode($errorCode);
-    }
-
     protected static function throwInvalidResponseErrorIfCodeNotMapped($errorCode, array $mapping, array $content)
     {
         if (isset($mapping[$errorCode]) === false)
