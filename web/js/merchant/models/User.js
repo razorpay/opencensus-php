@@ -100,11 +100,6 @@ export default class User {
   }
 
   isAllowedEdit(moduleName) {
-    if (moduleName === 'refunds') {
-      if (this.findTag('hide_payment_refund')) {
-        return false;
-      }
-    }
     const isEditAllowed = _isAllowed(
       this.userRole,
       moduleName,
@@ -276,6 +271,13 @@ export default class User {
 
   get isSubLinkEnabled() {
     return this.getExpStatus('subscription_link');
+  }
+
+  // Allowed roles can be revoked refund access selectively with this tag
+  get isRefundAllowed() {
+    return (
+      this.isAllowedEdit('refunds') && !this.findTag('hide_payment_refund')
+    );
   }
 }
 

@@ -112,7 +112,7 @@ export default ({
           )}
         </div>
         {
-          <ShowWhen additionalCondition={user => user.isAllowedEdit('refunds')}>
+          <ShowWhen additionalCondition={user => user.isRefundAllowed}>
             <p>
               <button
                 className="btn btn-default"
