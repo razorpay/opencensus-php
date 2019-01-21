@@ -191,7 +191,10 @@ abstract class EntityProcessor extends Base\Core
 
         if ($this->source->getEntity() === Entity::FUND_ACCOUNT_VALIDATION)
         {
-            (new FundAccount\Validation\Core)->updateStatusAfterFtaRecon($source, $this->reconEntity, $this->parsedData);
+            (new FundAccount\Validation\Core)->updateStatusAfterFtaRecon(
+                $this->source,
+                $attemptStatus,
+                $attemptFailureReason);
 
             return;
         }

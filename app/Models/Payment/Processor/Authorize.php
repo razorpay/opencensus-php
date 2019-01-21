@@ -4180,6 +4180,7 @@ trait Authorize
         if (($payment->merchant->isAxisExpressPayEnabled() === true) and
             ($payment->card->iinRelation !== null) and
             ($payment->card->iinRelation->getIssuer() === IFSC::UTIB) and
+            ($this->isAuthTypeOtp($payment) === true) and
             ($payment->card->iinRelation->supports(IIN\Flow::OTP) === true))
         {
             return true;
@@ -4192,6 +4193,7 @@ trait Authorize
     {
         if (($payment->merchant->isFeatureEnabled(Feature\Constants::IVR) === true) and
             ($payment->card->iinRelation !== null) and
+            ($this->isAuthTypeOtp($payment) === true) and
             ($payment->card->iinRelation->supports(IIN\Flow::IVR) === true))
         {
             return true;

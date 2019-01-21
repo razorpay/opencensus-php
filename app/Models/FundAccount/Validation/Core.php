@@ -9,7 +9,8 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Models\FundAccount;
 use RZP\Models\Pricing\Fee;
-use RZP\Models\FundTransfer\Attempt as AttemptStatus;
+use RZP\Models\FundTransfer\Attempt;
+use RZP\Listeners\ApiEventSubscriber;
 
 class Core extends Base\Core
 {
@@ -110,20 +111,20 @@ class Core extends Base\Core
 
         switch ($ftaStatus)
         {
-            case AttemptStatus::PROCESSED:
+            case Attempt\Status::PROCESSED:
                 $validation->setAccountStatus(Status::ACTIVE);
                 $this->repo->saveOrFail($validation);
                 break;
 
-            case AttemptStatus::FAILED:
+            case Attempt\Status::FAILED:
                 $validation->setAccountStatus(Status::INVALID);
                 $this->repo->saveOrFail($validation);
                 break;
 
-            case AttemptStatus::CREATED:
+            case Attempt\Status::CREATED:
                 break;
 
-            case AttemptStatus::INITIATED:
+            case Attempt\Status::INITIATED:
                 break;
 
             default:
@@ -136,6 +137,15 @@ class Core extends Base\Core
                     ]);
         }
 
-        // TODO: Send a webhook here
+        $this->triggerValidationCompletedWebhook($validation);
+    }
+
+    protected function triggerValidationCompletedWebhook(Entity $validation)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $validation
+        ];
+
+        $this->app['events']->fire('api.fund_account.validation.completed', $eventPayload);
     }
 }

@@ -26,6 +26,7 @@ final class Route
 
         // hosted checkout for IRCTC and Bescom
         'checkout_embedded'                        => ['post',     'checkout/embedded',                              'PublicController@renderEmbedded'                                   ],
+        'checkout_hdfcvas'                         => ['post',     'checkout/hdfcvas',                               'PublicController@renderHdfcVas'                                    ],
         'checkout_hosted'                          => ['post',     'checkout/hosted',                                'PublicController@renderCheckoutHosted'                             ],
         'checkout_hosted_get'                      => ['get',      'checkout/hosted',                                'PublicController@renderCheckoutHosted'                             ],
         // TODO: Check Splunk and remove the write here
@@ -2291,6 +2292,7 @@ final class Route
         'gateway_downtime_source_webhook',
         'checkout_onyx',
         'checkout_embedded',
+        'checkout_hdfcvas',
         'checkout_hosted',
         'checkout_hosted_get',
         'mock_event_tracker',
