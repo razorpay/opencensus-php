@@ -125,8 +125,9 @@ class Gateway extends Base\Gateway
         parent::callback($input);
 
         $now = time();
-        // todo: Revert later
-        if ($now - $input['payment']['updated_at'] > 380)
+
+        // Timeout if callback received after 6 minutes
+        if ($now - $input['payment']['updated_at'] > 360)
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_TIMED_OUT,
