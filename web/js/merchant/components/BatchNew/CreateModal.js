@@ -64,7 +64,7 @@ export default class BatchCreateModal extends Component {
                 class="form-control"
                 autoFocus={true}
                 validate={[required()]}
-                maxlength="255"
+                maxLength="255"
                 onFocus={this.moveCaretAtEnd}
               />
             </div>
