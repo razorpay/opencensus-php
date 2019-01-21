@@ -1650,8 +1650,10 @@ class BasicAuth
             return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER);
         }
 
-        // OAuthApplicationId can be set to null if it is not set in authCreds. Also, it defaults to null here.
-        $this->setOAuthApplicationId($this->authCreds->getPartnerApplicationId());
+        $applicationId = $this->authCreds->getPartnerApplicationId();
+
+        // $this->applicationId will be set to null if it is not set in authCreds. Also, it defaults to null.
+        $this->setOAuthApplicationId($applicationId);
     }
 
     protected function isPartnerAuthAllowed(): bool
@@ -2041,7 +2043,7 @@ class BasicAuth
      * Returns the origin type and origin id based on the auth used.
      *
      * If the merchant's credentials are used, ['merchant', $merchantId] is returned.
-     * If the partner or the Oauth credentials are used, ['application', $oauthApplicationId] is returned.
+     * If the partner or the oauth credentials are used, ['application', $oauthApplicationId] is returned.
      *
      * @return array
      */
@@ -2059,7 +2061,7 @@ class BasicAuth
             case (empty($this->getOAuthApplicationId()) === false):
 
                 $originType = EntityOrigin\Constants::APPLICATION;
-                $originId = $this->getOAuthApplicationId();
+                $originId   = $this->getOAuthApplicationId();
                 break;
 
             //
@@ -2071,7 +2073,7 @@ class BasicAuth
             case ($this->isPrivateAuth() === true):
 
                 $originType = EntityOrigin\Constants::MERCHANT;
-                $originId = $this->getMerchantId();
+                $originId   = $this->getMerchantId();
                 break;
         }
 
