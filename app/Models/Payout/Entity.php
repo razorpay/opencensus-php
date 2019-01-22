@@ -5,7 +5,6 @@ namespace RZP\Models\Payout;
 use Carbon\Carbon;
 
 use RZP\Constants;
-use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Payment;
@@ -22,6 +21,7 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\FundTransfer\Yesbank\NodalAccount;
 
 /**

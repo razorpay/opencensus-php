@@ -24,6 +24,17 @@ return [
         'type'              => 'settlement',
     ],
 
+    'testFileCreationSettlementApi' => [
+        'amount'            => 1952600,
+        'fees'              => 47200,
+        'tax'               => 7200,
+        'processed_amount'  => 0,
+        'processed_count'   => 0,
+        'total_count'       => 1,
+        'transaction_count' => 4,
+        'type'              => 'settlement',
+    ],
+
     'testFileCreationPayoutVpa' => [
         'amount'            => 1000,
         'fees'              => 602,
@@ -46,6 +57,16 @@ return [
         'type'              => 'payout',
     ],
 
+    'testFileCreationPayoutApi' => [
+        'amount'            => 1000,
+        'fees'              => 602,
+        'tax'               => 92,
+        'processed_amount'  => 1000,
+        'processed_count'   => 1,
+        'total_count'       => 1,
+        'transaction_count' => 1,
+        'type'              => 'payout',
+    ],
 
     'matchAttemptForReconSuccessKotak' => [
         'version'           => 'V3',
@@ -187,7 +208,7 @@ return [
         'amount'            => 1952600,
         'fees'              => 47200,
         'tax'               => 7200,
-        'failure_reason'    => 'Reconciliation',
+        'failure_reason'    => 'transfer not completed',
         'status'            => SettlementStatus::FAILED,
         'attempts'          => 1,
     ],

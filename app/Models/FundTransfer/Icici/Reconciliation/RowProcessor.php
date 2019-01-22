@@ -9,12 +9,13 @@ use RZP\Models\FundTransfer\Base\Reconciliation\RowProcessor as BaseRowProcessor
 
 class RowProcessor extends BaseRowProcessor
 {
-    const PAYMENT_REF_NO    = 'payment_ref_no';
-    const UTR               = 'utr';
-    const BANK_STATUS_CODE  = 'bank_status_code';
-    const REMARKS           = 'remarks';
-    const PAYMENT_DATE      = 'payment_date';
-    const CMS_REF_NO        = 'cms_ref_no';
+    const PAYMENT_REF_NO        = 'payment_ref_no';
+    const UTR                   = 'utr';
+    const BANK_STATUS_CODE      = 'bank_status_code';
+    const REMARKS               = 'remarks';
+    const PAYMENT_DATE          = 'payment_date';
+    const CMS_REF_NO            = 'cms_ref_no';
+    const NAME_WITH_BENE_BANK   = 'name_with_bene_bank';
 
     protected function processRow()
     {
@@ -41,12 +42,13 @@ class RowProcessor extends BaseRowProcessor
         }
 
         $this->parsedData = [
-            self::PAYMENT_REF_NO    => $this->getNullOnEmpty(Headings::PAYMENT_REF_NO),
-            self::UTR               => $utr,
-            self::BANK_STATUS_CODE  => $bankStatus,
-            self::REMARKS           => $remarks,
-            self::PAYMENT_DATE      => $this->getNullOnEmpty(Headings::PAYMENT_DATE),
-            self::CMS_REF_NO        => $cmsRefNo,
+            self::PAYMENT_REF_NO        => $this->getNullOnEmpty(Headings::PAYMENT_REF_NO),
+            self::UTR                   => $utr,
+            self::BANK_STATUS_CODE      => $bankStatus,
+            self::REMARKS               => $remarks,
+            self::PAYMENT_DATE          => $this->getNullOnEmpty(Headings::PAYMENT_DATE),
+            self::CMS_REF_NO            => $cmsRefNo,
+            self::NAME_WITH_BENE_BANK   => null,
         ];
 
         $this->reconEntityId = $this->parsedData[self::PAYMENT_REF_NO];

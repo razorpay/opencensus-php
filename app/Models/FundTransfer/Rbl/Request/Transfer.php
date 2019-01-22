@@ -137,7 +137,7 @@ class Transfer extends Base
             self::PAYMENT_DATE     => $this->getNullOnEmpty($paymentDate),
             self::REFERENCE_NUMBER => $this->getNullOnEmpty($referenceNo),
             self::UTR              => $utr,
-            self::REMARK           => null,
+            self::REMARKS          => null,
         ];
 
         return $data;
@@ -162,7 +162,7 @@ class Transfer extends Base
             self::PAYMENT_DATE          => null,
             self::REFERENCE_NUMBER      => null,
             self::UTR                   => null,
-            self::REMARK                => $this->getNullOnEmpty($remark),
+            self::REMARKS               => $this->getNullOnEmpty($remark),
             self::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason)
         ];
     }

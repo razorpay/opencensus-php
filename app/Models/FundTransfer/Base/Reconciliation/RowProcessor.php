@@ -3,14 +3,13 @@
 namespace RZP\Models\FundTransfer\Base\Reconciliation;
 
 use Carbon\Carbon;
+use Monolog\Logger;
 
-use RZP\Constants;
 use RZP\Models\Base;
-use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
-use RZP\Models\FundAccount\Validation;
-use RZP\Models\FundTransfer\Attempt\Lock;
+use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Attempt\Metric;
 
 abstract class RowProcessor extends Base\Core
@@ -23,6 +22,9 @@ abstract class RowProcessor extends Base\Core
 
     protected $parsedData;
 
+    /**
+     * @var Attempt\Entity
+     */
     protected $reconEntity   = null;
 
     protected $reconEntityId = null;
@@ -76,7 +78,7 @@ abstract class RowProcessor extends Base\Core
 
         // We are accepting a dummy collection because
         // that's how the function was written.
-        (new Lock)->acquireLockAndProcessAttempt(
+        (new Attempt\Lock)->acquireLockAndProcessAttempt(
             $this->reconEntity,
             function(Base\PublicCollection $collection)
             {
@@ -156,31 +158,73 @@ abstract class RowProcessor extends Base\Core
     {
         $source = $this->reconEntity->source;
 
-        if ($source->getEntity() === Constants\Entity::PAYOUT)
-        {
-            (new Payout\Core)->updateWithDetailsBeforeFtaRecon($source, $this->reconEntity, $this->parsedData);
+        $statusNamespace = $this->getStatusClass($this->reconEntity);
 
-            return;
+        $statusClass = new $statusNamespace;
+
+        $isInternalError = $statusClass::isCriticalError($this->reconEntity);
+
+        $bankStatusCode = $this->reconEntity->getBankStatusCode();
+
+        $publicErrorMessage = $statusClass::getPublicFailureReason($bankStatusCode);
+
+        $ftaData = [
+            'bank_account_id'   => $this->reconEntity->getBankAccountId(),
+            'vpa_id'            => $this->reconEntity->getVpaId(),
+            'merchant_id'       => $this->reconEntity->getMerchantId(),
+            'fta_id'            => $this->reconEntity->getId(),
+            'mode'              => $this->reconEntity->getMode(),
+            'source_id'         => $source->getId(),
+            'beneficiary_name'  => $this->parsedData[Constants::NAME_WITH_BENE_BANK],
+            'remarks'           => $this->reconEntity->getRemarks(),
+            'utr'               => $this->reconEntity->getUtr(),
+            'fta_status'        => $this->reconEntity->getStatus(),
+            'bank_status_code'  => $bankStatusCode,
+            'internal_error'    => $isInternalError,
+            'failure_reason'    => $publicErrorMessage,
+        ];
+
+        $this->postFtaStatusProcess($source, $ftaData);
+    }
+
+    protected function postFtaStatusProcess($entity, array $ftaData)
+    {
+        try
+        {
+            $sourceType = $entity->getEntity();
+
+            $sourceCoreClass = Entity::getEntityNamespace($sourceType) . '\\Core';
+
+            $sourceCore = new $sourceCoreClass();
+
+            if (method_exists($sourceCore, 'updateWithDetailsBeforeFtaRecon') === false)
+            {
+                return;
+            }
+
+            $sourceCore->updateWithDetailsBeforeFtaRecon($entity, $ftaData);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::FTA_SOURCE_PROCESSING_FAILED,
+                $ftaData
+            );
+        }
+    }
+
+    protected function getStatusClass(Attempt\Entity $entity)
+    {
+        $channel = $entity->getChannel();
+
+        if ($entity->hasVpa() === true)
+        {
+            return '\\RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\GatewayStatus';
         }
 
-        $utr = $this->reconEntity->getUtr();
-
-        $remarks = $this->reconEntity->getRemarks();
-
-        $source->setUtr($utr);
-
-        $source->setRemarks($remarks);
-
-        $this->trace->info(
-            TraceCode::FTA_RECON_SOURCE_UPDATED,
-            [
-                'source_id'         => $source->getId(),
-                'fta_id'            => $this->reconEntityId,
-                'source_original'   => $source->getOriginalAttributesAgainstDirty(),
-                'source_dirty'      => $source->getDirty(),
-            ]);
-
-        $this->repo->saveOrFail($source);
+        return 'RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\Status';
     }
 
     /**
@@ -237,5 +281,27 @@ abstract class RowProcessor extends Base\Core
         }
 
         $this->updateSourceEntity();
+    }
+
+    /**
+     * Gives request type for the given attempt.
+     * Based on these attempts nodal config will be picked while making any request to bank
+     *
+     * @param Attempt\Entity $attempt
+     * @return string
+     */
+    protected function getRequestType(Attempt\Entity $attempt): string
+    {
+        switch (true)
+        {
+            case $attempt->isOfBanking():
+                return Attempt\Type::BANKIING;
+
+            case $attempt->isPennyTesting():
+                return Attempt\Type::SYNC;
+
+            default:
+                return Attempt\Type::PRIMARY;
+        }
     }
 }

@@ -65,6 +65,8 @@ class Status extends BaseStatus
 
     const INVALID_BENEFICIARY_DETAILS   = 'INVALID_BENEFICIARY_DETAILS';
 
+    const TRANSFER_TIMEOUT              = 'TRANSFER_TIMEOUT';
+
     const BENE_ACCOUNT_BLOCKED          = 'BENE_ACCOUNT_BLOCKED';
 
     const BENE_NOT_REGISTERED           = 'BENE_NOT_REGISTERED';
@@ -114,6 +116,11 @@ class Status extends BaseStatus
             'npci:EM3'   => self::BENE_ACCOUNT_BLOCKED,
             'ns:E1029'   => self::IMPS_NOT_ENABLED_FOR_REMITTER,
             'atom:E449'  => self::INVALID_BENEFICIARY_DETAILS,
+            'ns:E502'    => self::TRANSFER_TIMEOUT,
+            'ns:E1001'   => self::TRANSFER_TIMEOUT,
+            'ns:E1002'   => self::TRANSFER_TIMEOUT,
+            'ns:E8000'   => self::TRANSFER_TIMEOUT,
+            'flex:E404'  => self::TRANSFER_TIMEOUT,
         ],
     ];
 
@@ -254,7 +261,8 @@ class Status extends BaseStatus
             self::IMPS_NOT_ENABLED_FOR_REMITTER,
             self::INVALID_ACCOUNT_DETAILS,
             self::BAD_GATEWAY,
-            self::ACQUIRING_BANK_CBS_OFFLINE
+            self::ACQUIRING_BANK_CBS_OFFLINE,
+            self::TRANSFER_TIMEOUT,
         ];
     }
 
@@ -408,7 +416,7 @@ class Status extends BaseStatus
     public static function getPublicFailureReason($bankSubStatus)
     {
         // sub status code will be empty if the request was complete
-        if (empty($bankSubStatus) === true)
+        if ((empty($bankSubStatus) === true) || (in_array($bankSubStatus, self::getSuccessfulStatus(), true)))
         {
             return null;
         }
@@ -417,6 +425,6 @@ class Status extends BaseStatus
             return self::FAILURE_CODE_PUBLIC_MAPPING[$bankSubStatus];
         }
 
-        return 'Transfer not completed. Contact support for help.';
+        return 'transfer not completed';
     }
 }

@@ -29,7 +29,7 @@ abstract class Base extends ApiProcessor
     const PAYMENT_DATE          = 'payment_date';
     const BANK_SUB_STATUS_CODE  = 'sub_status_code';
     const REFERENCE_NUMBER      = 'reference_number';
-    const REMARK                = 'remark';
+    const REMARKS               = 'remarks';
     const TRANSFER_TYPE         = 'transfer_type';
     const MODE                  = 'mode';
     const PUBLIC_FAILURE_REASON = 'public_failure_reason';

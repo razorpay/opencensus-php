@@ -11,11 +11,12 @@ class StatusProcessor extends BaseRowProcessor
     const UTR                   = 'utr';
     const BANK_STATUS_CODE      = 'bank_status_code';
     const PAYMENT_DATE          = 'payment_date';
-    const REMARK                = 'remark';
+    const REMARKS               = 'remarks';
     const PAYMENT_REF_NO        = 'payment_ref_no';
     const RRN                   = 'rrn';
     const REFERENCE_NUMBER      = 'reference_number';
     const PUBLIC_FAILURE_REASON = 'pubic_failure_reason';
+    const NAME_WITH_BENE_BANK   = 'name_with_bene_bank';
 
     public function updateTransferStatus()
     {
@@ -46,10 +47,11 @@ class StatusProcessor extends BaseRowProcessor
             self::REFERENCE_NUMBER      => $response[self::REFERENCE_NUMBER],
             self::UTR                   => $response[self::UTR],
             self::BANK_STATUS_CODE      => $response[self::BANK_STATUS_CODE],
-            self::REMARK                => $response[self::REMARK],
+            self::REMARKS               => $response[self::REMARKS],
             self::PAYMENT_DATE          => $response[self::PAYMENT_DATE],
             // Won't be present in case of success response
             self::PUBLIC_FAILURE_REASON => $response[self::PUBLIC_FAILURE_REASON] ?? null,
+            self::NAME_WITH_BENE_BANK   => null,
         ];
 
         $this->reconEntityId = $response[self::PAYMENT_REF_NO];
@@ -67,7 +69,7 @@ class StatusProcessor extends BaseRowProcessor
 
         $this->reconEntity->setCmsRefNo($this->parsedData[self::REFERENCE_NUMBER]);
 
-        $this->reconEntity->setRemarks($this->parsedData[self::REMARK]);
+        $this->reconEntity->setRemarks($this->parsedData[self::REMARKS]);
 
         $this->reconEntity->saveOrFail();
     }

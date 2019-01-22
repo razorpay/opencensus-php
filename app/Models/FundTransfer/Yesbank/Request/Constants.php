@@ -125,7 +125,8 @@ final class Constants
 
     const REQ_TRANSFER_TYPE                   = 'reqTransferType';
 
-    const DEFAULT_TRANSFER_TYPE               = 'ANY';
+    // Used only in generating mock responses
+    const DEFAULT_TRANSFER_TYPE               = 'IMPS';
 
     const DEFAULT_CURRENCY                    = 'INR';
 

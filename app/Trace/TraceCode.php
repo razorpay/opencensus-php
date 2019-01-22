@@ -291,6 +291,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const NODAL_REQUEST_FAILED                          = 'NODAL_REQUEST_FAILED';
     const NODAL_TRANSFER_STATUS_UPDATE_FAILED           = 'NODAL_TRANSFER_STATUS_UPDATE_FAILED';
     const FTA_SOURCE_PROCESSING_FAILED                  = 'FTA_SOURCE_PROCESSING_FAILED';
+    const FTA_SOURCE_PROCESSING_DATA                    = 'FTA_SOURCE_PROCESSING_DATA';
     const SETTLEMENT_API_RESPONSE                       = 'NODAL_SETTLEMENT_API_RESPONSE';
     const SETTLEMENT_API_REQUEST                        = 'NODAL_SETTLEMENT_API_REQUEST';
 

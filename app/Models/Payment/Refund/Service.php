@@ -1242,44 +1242,6 @@ class Service extends Base\Service
         }
     }
 
-    /**
-     * Updates refund entity status after FTA recon
-     *
-     * @param Entity $refund
-     * @param string $ftaStatus
-     * @param string|null $ftaFailureReason
-     */
-    public function updateStatusAfterFtaRecon(Entity $refund, string $ftaStatus, string $ftaFailureReason = null)
-    {
-        switch ($ftaStatus)
-        {
-            case Status::PROCESSED:
-                $refund->setStatusProcessed();
-                $this->repo->saveOrFail($refund);
-                break;
-
-            case Status::FAILED:
-                $refund->setStatus(Status::FAILED);
-                $this->repo->saveOrFail($refund);
-                break;
-
-            case Status::CREATED:
-                break;
-
-            case Status::INITIATED:
-                break;
-
-            default:
-                $this->trace->error(
-                    TraceCode::UNKNOWN_FTA_STATUS_SENT_TO_REFUND,
-                    [
-                        'refund_id'             => $refund->getId(),
-                        'fta_status'            => $ftaStatus,
-                        'fta_failure_reason'    => $ftaFailureReason,
-                    ]);
-        }
-    }
-
     public function updateProcessedAt(array $input)
     {
         if (isset($input['limit']) === true)

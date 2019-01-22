@@ -161,6 +161,16 @@ class Entity extends Base\PublicEntity
 
     // ------------------------------- getters ---------------------------------
 
+    public function getVpaId()
+    {
+        return $this->getAttribute(self::VPA_ID);
+    }
+
+    public function getBankAccountId()
+    {
+        return $this->getAttribute(self::BANK_ACCOUNT_ID);
+    }
+
     public function getChannel()
     {
         return $this->getAttribute(self::CHANNEL);
@@ -429,7 +439,7 @@ class Entity extends Base\PublicEntity
 
     public function isPennyTesting(): bool
     {
-        return ($this->getSourceType() === Type::PENNY_TESTING);
+        return ($this->getSourceType() === Type::FUND_ACCOUNT_VALIDATION);
     }
 
     // ---------------------------- public setters -----------------------------

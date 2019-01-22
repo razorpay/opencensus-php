@@ -3,18 +3,18 @@
 namespace RZP\Models\FundTransfer\Base\Initiator;
 
 use Carbon\Carbon;
-
 use Monolog\Logger;
+
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Constants\Entity;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Refund;
 use RZP\Models\FundTransfer\Mode;
-use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Batch;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Holidays;
@@ -170,12 +170,6 @@ abstract class NodalAccount extends Base\Core
 
                 $attempt->setStatus(Attempt\Status::INITIATED);
 
-                $attempt->source->batchFundTransfer()->associate($this->batchFundTransfer);
-
-                $sourceStatus = $this->getSourceStatusForInitiated($attempt);
-
-                $attempt->source->setStatus($sourceStatus);
-
                 $this->trace->info(
                     TraceCode::FUND_TRANSFER_ATTEMPT_STATUS_UPDATED,
                     ['fta_id' => $attempt->getId()]);
@@ -193,22 +187,6 @@ abstract class NodalAccount extends Base\Core
         $this->updateBatchFundTransferEntity();
 
         $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_FTA_UPDATE_STATUS_END);
-    }
-
-    protected function getSourceStatusForInitiated(Attempt\Entity $attempt): string
-    {
-        $sourceEntityName = $attempt->source->getEntity();
-
-        switch ($sourceEntityName)
-        {
-            case Constants\Entity::SETTLEMENT:
-            case Constants\Entity::PAYOUT:
-            case Constants\Entity::REFUND:
-                return $this->getInitiatedStatusForEntity($sourceEntityName);
-
-            default:
-                throw new LogicException('Unrecognized source entity: ' . $sourceEntityName);
-        }
     }
 
     protected function getInitiatedStatusForEntity(string $sourceEntityName): string
@@ -417,6 +395,36 @@ abstract class NodalAccount extends Base\Core
 
             default:
                 return Attempt\Type::PRIMARY;
+        }
+    }
+
+    protected function postFtaInitiateProcess(Attempt\Entity $fta)
+    {
+        try
+        {
+            $source = $fta->source;
+
+            $entityType = $source->getEntity();
+
+            $sourceCoreClass = Entity::getEntityNamespace($entityType) . '\\Core';
+
+            $sourceCore = new $sourceCoreClass();
+
+            if (method_exists($sourceCore, 'updateStatusAfterFtaInitiated') === false)
+            {
+                return;
+            }
+
+            $sourceCore->updateStatusAfterFtaInitiated($source, $fta);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::FTA_SOURCE_PROCESSING_FAILED,
+                []
+            );
         }
     }
 }

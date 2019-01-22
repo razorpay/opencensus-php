@@ -436,6 +436,8 @@ class PayoutTest extends TestCase
         {
             $this->assertTestResponse($attempt, 'testPayoutAttemptSuccess');
 
+            $this->assertNotNull($attempt['utr']);
+
             $this->assertNotNull($attempt['batch_fund_transfer_id']);
         }
 
@@ -451,6 +453,10 @@ class PayoutTest extends TestCase
             $this->assertTestResponse($payout, 'testPayoutEntitySuccess');
 
             $this->assertNotNull($payout['batch_fund_transfer_id']);
+
+            $this->assertNotNull($payout['utr']);
+
+            $this->assertNotNull($payout['processed_at']);
         }
 
         Carbon::setTestNow();

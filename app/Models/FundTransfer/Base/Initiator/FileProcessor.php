@@ -6,8 +6,8 @@ use App;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\FileStore;
 use RZP\Trace\TraceCode;
+use RZP\Models\FileStore;
 
 abstract class FileProcessor extends NodalAccount
 {
@@ -79,7 +79,7 @@ abstract class FileProcessor extends NodalAccount
         {
             $this->repo->saveOrFail($attempt);
 
-            $this->repo->saveOrFail($attempt->source);
+            $this->postFtaInitiateProcess($attempt);
 
             $this->trace->info(TraceCode::FUND_TRANSFER_ATTEMPT_UPDATED, ['fta_id' => $attempt->getId()]);
 

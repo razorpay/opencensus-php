@@ -334,10 +334,10 @@ class Transfer extends Base
         $publicFailureReason = Status::getPublicFailureReason($bankSubStatus);
 
         return [
-            self::PAYMENT_REF_NO       => $this->getNullOnEmpty($rzpReferenceNo),
+            self::PAYMENT_REF_NO        => $this->getNullOnEmpty($rzpReferenceNo),
             self::UTR                   => null,
             self::BANK_STATUS_CODE      => $this->getNullOnEmpty($statusCode),
-            self::REMARK                => null,
+            self::REMARKS               => null,
             self::BANK_SUB_STATUS_CODE  => $this->getNullOnEmpty($bankSubStatus),
             self::PAYMENT_DATE          => null,
             self::TRANSFER_TYPE         => $mode,
@@ -370,10 +370,10 @@ class Transfer extends Base
         $publicFailureReason = Status::getPublicFailureReason($bankSubStatus);
 
         return [
-            self::PAYMENT_REF_NO       => $this->getNullOnEmpty($rzpReferenceNo),
+            self::PAYMENT_REF_NO        => $this->getNullOnEmpty($rzpReferenceNo),
             self::UTR                   => null,
             self::BANK_STATUS_CODE      => $this->getNullOnEmpty($statusCode),
-            self::REMARK                => $this->getNullOnEmpty($remark),
+            self::REMARKS               => $this->getNullOnEmpty($remark),
             self::BANK_SUB_STATUS_CODE  => $this->getNullOnEmpty($bankSubStatus),
             self::PAYMENT_DATE          => null,
             self::TRANSFER_TYPE         => null,
@@ -423,7 +423,7 @@ class Transfer extends Base
             self::UTR                   => $this->getNullOnEmpty($utr),
             self::STATUS_CODE           => $this->getNullOnEmpty($statusCode),
             self::BANK_STATUS_CODE      => $this->getNullOnEmpty($finalResponseCode),
-            self::REMARK                => $this->getNullOnEmpty($remark),
+            self::REMARKS               => $this->getNullOnEmpty($remark),
             self::BANK_SUB_STATUS_CODE  => null,
             self::PAYMENT_DATE          => null,
             self::TRANSFER_TYPE         => null,

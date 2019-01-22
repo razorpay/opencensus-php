@@ -17,17 +17,19 @@ class StatusProcessor extends BaseRowProcessor
     const BANK_STATUS_CODE      = 'bank_status_code';
     const STATUS_CODE           = 'status_code';
     const PAYMENT_DATE          = 'payment_date';
-    const REMARK                = 'remark';
+    const REMARKS               = 'remarks';
     const PAYMENT_REF_NO        = 'payment_ref_no';
     const RRN                   = 'rrn';
     const REFERENCE_NUMBER      = 'reference_number';
     const MODE                  = 'mode';
     const PUBLIC_FAILURE_REASON = 'public_failure_reason';
+    const NAME_WITH_BENE_BANK   = 'name_with_bene_bank';
 
     /**
      * This will update the status based on the transfer API response
      *
      * @return null
+     * @throws LogicException
      */
     public function updateTransferStatus()
     {
@@ -49,7 +51,7 @@ class StatusProcessor extends BaseRowProcessor
     {
         $gateway = ($this->row->hasVpa() === true);
 
-        $type = $this->row->getRequestType();
+        $type = $this->getRequestType($this->row);
 
         $makeRequest = $this->shouldMakeStatusRequestCall($gateway);
 
@@ -134,12 +136,13 @@ class StatusProcessor extends BaseRowProcessor
             // `status_code` will be present only for vpa ones. not the normal ones.
             self::STATUS_CODE           => $response[self::STATUS_CODE] ?? null,
             self::BANK_STATUS_CODE      => $response[self::BANK_STATUS_CODE],
-            self::REMARK                => $response[self::REMARK],
+            self::REMARKS               => $response[self::REMARKS],
             self::PAYMENT_DATE          => $response[self::PAYMENT_DATE],
             self::REFERENCE_NUMBER      => $response[self::REFERENCE_NUMBER],
             self::MODE                  => Mode::getInternalModeFromExternalMode($response[self::MODE]),
             // Won't be present in case of a successful response
             self::PUBLIC_FAILURE_REASON => $response[self::PUBLIC_FAILURE_REASON] ?? null,
+            self::NAME_WITH_BENE_BANK   => $this->row[self::NAME_WITH_BENE_BANK] ?? null,
         ];
 
         $this->trace->info(
@@ -164,7 +167,7 @@ class StatusProcessor extends BaseRowProcessor
 
         $this->reconEntity->setDateTime($this->parsedData[self::PAYMENT_DATE]);
 
-        $this->reconEntity->setRemarks($this->parsedData[self::REMARK]);
+        $this->reconEntity->setRemarks($this->parsedData[self::REMARKS]);
 
         $this->reconEntity->setMode($this->parsedData[self::MODE]);
 

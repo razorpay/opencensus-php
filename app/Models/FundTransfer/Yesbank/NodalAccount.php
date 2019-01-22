@@ -83,13 +83,11 @@ class NodalAccount extends NodalBase\NodalAccount
                 $lowBalanceAlert = $response[self::LOW_BALANCE_ALERT] ?? false;
                 $attempt->setMode($transfer->transferType);
 
-                $this->repo->save($attempt);
-
                 // We set attempt's status to `initiated` before calling this function, `process`.
                 // Only if the request is executed successfully, we want to save the attempt's status.
                 $this->repo->saveOrFail($attempt);
 
-                $this->repo->saveOrFail($attempt->source);
+                $this->postFtaInitiateProcess($attempt);
 
                 $this->trackAttemptsInitiatedSuccess($this->channel, $this->purpose, $attempt->getSourceType());
             }
@@ -130,8 +128,6 @@ class NodalAccount extends NodalBase\NodalAccount
                 );
             }
 
-            $this->initiatePostProcessing($attempt, $response);
-
             if ($lowBalanceAlert === true)
             {
                 $this->sendLowBalanceAlert([
@@ -144,35 +140,6 @@ class NodalAccount extends NodalBase\NodalAccount
         $this->updateTransferStatus($processedCount);
 
         return $this->transferStatus;
-    }
-
-    protected function initiatePostProcessing(Attempt\Entity $attempt, array $response)
-    {
-        try
-        {
-            $sourceCoreClass = substr(get_class($attempt->source), 0, -6) . 'Core';
-
-            $sourceCore = new $sourceCoreClass();
-
-            $response['fta_id']    = $attempt->getId();
-            $response['source_id'] = $attempt->source->getId();
-
-            if (method_exists($sourceCore, 'postFundTransfer') === false)
-            {
-                return;
-            }
-
-            $sourceCore->postFundTransfer($response);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::FTA_SOURCE_PROCESSING_FAILED,
-                $response
-            );
-        }
     }
 
     /**
