@@ -656,10 +656,6 @@ class PublicEntity extends UniqueIdEntity
         return $currencySymbol . ' ' . $amount;
     }
 
-
-
-    // returns amount INR 12012(in paise) as ['₹',120, 12] (rupees paise as separate entry in array)
-
     /**
      * 12012(in paise) as  ['₹',120, 12] (rupees paise as separate entry in array)
      *

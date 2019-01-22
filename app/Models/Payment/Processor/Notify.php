@@ -426,12 +426,12 @@ class Notify
         if ($this->refund)
         {
             $data['refund'] = [
-                'id'                => $this->refund->getId(),
-                'amount'            => $this->refund->getFormattedAmount(),
-                'amount_components' => $this->refund->getAmountComponents(),
-                'timestamp'         => $this->refund->getCreatedAt(),
-                'payment_id'        => $this->refund->payment->getId(),
-                'public_id'         => $this->refund->getPublicId(),
+                'id'                   => $this->refund->getId(),
+                'amount'               => $this->refund->getFormattedAmount(),
+                'amount_components'    => $this->refund->getAmountComponents(),
+                'timestamp'            => $this->refund->getCreatedAt(),
+                'payment_id'           => $this->refund->payment->getId(),
+                'public_id'            => $this->refund->getPublicId(),
                 'created_at_formatted' => Utility::getTimestampFormatted($this->refund->getCreatedAt(), 'jS M, Y'),
             ];
         }
