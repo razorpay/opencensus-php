@@ -234,7 +234,20 @@ class Gateway
         }
         catch (\Throwable $exc)
         {
-            if (property_exists($exc, 'isPropagatedException') === false)
+            $previousExc = $exc->getPrevious();
+
+            if (($previousExc instanceof \Requests_Exception) and
+                ($previousExc->getType() === 'curlerror') and
+                (property_exists($exc, 'isPropagatedException') === false))
+            {
+                $excData = curl_errno($previousExc->getData());
+
+                $this->pushDimensions($action, $input, Metric::CURL_ERROR, $excData);
+
+                $exc->isPropagatedException = true;
+            }
+
+            else if (property_exists($exc, 'isPropagatedException') === false)
             {
                 $this->pushDimensions($action, $input, Metric::FAILED);
 
@@ -1396,11 +1409,11 @@ class Gateway
         return $this->externalMockDomain . '/' . $this->gateway . $this->getRelativeUrl($type);
     }
 
-    protected function pushDimensions($action, $input, $status)
+    protected function pushDimensions($action, $input, $status, $excData = null)
     {
         $gatewayMetric = new Metric;
 
-        $gatewayMetric->pushGatewayDimensions($action, $input, $status, $this->gateway);
+        $gatewayMetric->pushGatewayDimensions($action, $input, $status, $this->gateway, $excData);
     }
 
     //
