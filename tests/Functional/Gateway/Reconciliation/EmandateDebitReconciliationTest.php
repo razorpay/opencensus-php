@@ -68,7 +68,7 @@ class EmandateDebitReconciliationTest extends TestCase
             {
                 if ($action === 'row_data' and $content[0] === $debitPaymentIds[1])
                 {
-                    $content[10] = 'Rejected';
+                    $content[10] = 'REJECTED';
                     $content[11] = 'No Funds Available';
                 }
             },
@@ -360,6 +360,6 @@ class EmandateDebitReconciliationTest extends TestCase
         $gatewayPayment = $this->getDbEntity('netbanking', ['payment_id' => $debitPaymentId])
             ->toArray();
 
-        $this->assertEquals('Rejected', $gatewayPayment['status']);
+        $this->assertEquals('REJECTED', $gatewayPayment['status']);
     }
 }
