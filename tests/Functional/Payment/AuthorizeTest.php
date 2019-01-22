@@ -67,7 +67,7 @@ class AuthorizeTest extends TestCase
 
         Mail::assertQueued(AuthorizedMail::class, function ($mail)
         {
-            $this->assertEquals($mail->view, 'emails.new.customer.payment');
+            $this->assertEquals($mail->view, 'emails.mjml.customer.payment');
             return true;
         });
     }

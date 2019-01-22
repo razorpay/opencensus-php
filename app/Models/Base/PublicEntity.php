@@ -665,9 +665,9 @@ class PublicEntity extends UniqueIdEntity
     {
         $currency = $this->getCurrency();
 
-        $currencySymbol = Currency\Currency::SYMBOL[$currency];
+        $currencySymbol = Currency\Currency::SYMBOL[$currency] ?: 'INR';
 
-        $denominationFactor = Currency\Currency::DENOMINATION_FACTOR[$currency];
+        $denominationFactor = Currency\Currency::DENOMINATION_FACTOR[$currency] ?: 100;
 
         $amount = $this->getAmount();
 

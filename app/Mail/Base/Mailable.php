@@ -251,7 +251,7 @@ class Mailable extends BaseMailable
     {
         $variant  =  app('razorx')->getTreatment(
                             $this->data['merchant']['id'],
-                            Merchant\RazorxTreatment::NEW_DESIGN_MAILERS,
+                            Merchant\RazorxTreatment::MJML_BASED_MAILERS,
                             $this->mode);
 
         return strtolower($variant) === 'on' ? $newView : $oldView;

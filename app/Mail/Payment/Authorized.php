@@ -8,7 +8,7 @@ class Authorized extends Base
 {
     protected function addHtmlView()
     {
-        $emailView = $this->getView('emails.new.customer.payment', 'emails.payment.customer');
+        $emailView = $this->getView('emails.mjml.customer.payment', 'emails.payment.customer');
 
         $this->view($emailView);
 

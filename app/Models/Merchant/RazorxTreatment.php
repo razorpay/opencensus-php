@@ -11,5 +11,5 @@ final class RazorxTreatment
     const K8S_BATCH_TREATMENT   = 'k8s-batch-upload';
 
     // Decide whom to send new design mailers
-    const NEW_DESIGN_MAILERS = 'new_design_mailers';
+    const MJML_BASED_MAILERS = 'mjml_based_mailers';
 }
