@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Enach\Rbl;
 
 use Carbon\Carbon;
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
@@ -81,12 +82,6 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
-
-        if (($input['payment']['method'] === 'emandate') and
-            ($input['payment']['auth_type'] === 'netbanking'))
-        {
-            return $this->netbankingCallback($input);
-        }
 
         $enach = $this->repo->findByPaymentIdAndAction(
             $input['payment']['id'],

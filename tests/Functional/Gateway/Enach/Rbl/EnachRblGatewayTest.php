@@ -1352,22 +1352,6 @@ class EnachRblGatewayTest extends TestCase
                 $url, $method, $content);
         }
 
-        if($this->isNpciEmandateFlow($content) === true)
-        {
-            $response = $this->sendRequest($request);
-
-            $this->assertEquals($response->getStatusCode(), '302');
-
-            $data = array(
-                'url' => $response->headers->get('location'),
-                'method' => 'post');
-
-            if (filter_var($data['url'], FILTER_VALIDATE_URL))
-            {
-                return $this->submitPaymentCallbackRedirect($data['url']);
-            }
-        }
-
         return $this->submitPaymentCallbackRequest($request);
     }
 
@@ -1590,43 +1574,6 @@ class EnachRblGatewayTest extends TestCase
         ];
 
         return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function mockFailedCallbackResponse()
-    {
-        $this->mockServerContentFunction(function(& $content, $action = null)
-        {
-            if ($action === 'authorize')
-            {
-                $content = 'ErrorXML';
-            }
-        });
-    }
-
-    protected function mockRejectCallbackResponse()
-    {
-        $this->mockServerContentFunction(function(& $content, $action = null)
-        {
-            if ($action === 'authorize_get_secure_data')
-            {
-                $content['Accptd'] = 'false';
-                $content['ReasonCode'] = '1022';
-                $content['ReasonDesc'] = 'Invalid Authentication';
-                $content['RejectBy'] = 'Bank';
-            }
-        });
-    }
-
-    protected function isNpciEmandateFlow($content)
-    {
-        $keys = array_keys($content);
-
-        $result = in_array('MerchantID', $keys) and
-                  in_array('MandateReqDoc', $keys) and
-                  in_array('CheckSumVal', $keys) and
-                  in_array('BankID', $keys);
-
-        return $result;
     }
 
     protected function mockPaymentRequestTimeout()

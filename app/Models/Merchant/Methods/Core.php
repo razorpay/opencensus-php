@@ -482,8 +482,8 @@ class Core extends Base\Core
             if (isset(Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway]) === true)
             {
                 $availableEmandateBanks = array_merge(
-                    $availableEmandateBanks,
-                    Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway]);
+                                                $availableEmandateBanks,
+                                                Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway]);
             }
         }
 

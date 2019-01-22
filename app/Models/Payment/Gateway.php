@@ -1076,40 +1076,6 @@ class Gateway
         ],
     ];
 
-    public static $gatewaysEmandateBanksMapForAuthType = [
-        AuthType::NETBANKING => [
-            Gateway::NETBANKING_ICICI   => [IFSC::ICIC],
-            Gateway::NETBANKING_AXIS    => [IFSC::UTIB],
-            Gateway::NETBANKING_HDFC    => [IFSC::HDFC],
-            //TODO this list is not constant have to setup a way to update these values
-            Gateway::ENACH_NPCI_NETBANKING => [
-                IFSC::YESB,
-                IFSC::IDFB,
-                IFSC::UTIB,
-            ]
-        ],
-        AuthType::AADHAAR => [
-            // This is added here just for test cases
-            // We are using UTIB in test cases
-            Gateway::ESIGNER_DIGIO     => [
-                IFSC::UTIB,
-            ],
-            Gateway::ESIGNER_LEGALDESK => [
-                IFSC::UTIB,
-            ],
-            Gateway::ENACH_RBL         => self::EMANDATE_AADHAAR_BANKS,
-        ],
-        AuthType::AADHAAR_FP => [
-            Gateway::ESIGNER_DIGIO     => [
-                IFSC::UTIB,
-            ],
-            Gateway::ESIGNER_LEGALDESK => [
-                IFSC::UTIB,
-            ],
-            Gateway::ENACH_RBL         => self::EMANDATE_AADHAAR_BANKS,
-        ]
-    ];
-
     /**
      * List of netbanking gateways that process recurring payments through file send
      *
@@ -1129,17 +1095,6 @@ class Gateway
     public static $fileBasedEMandateRegistrationGateways = [
         Gateway::NETBANKING_HDFC,
         Gateway::ENACH_RBL,
-    ];
-
-    /**
-     * List of netbanking gateways that process emandate registration through file send
-     *
-     * @var array
-     */
-    public static $fileBasedEMandateRegistrationGatewaysForAuthType = [
-        AuthType::AADHAAR    => [Gateway::ENACH_RBL],
-        AuthType::AADHAAR_FP => [Gateway::ENACH_RBL],
-        AuthType::NETBANKING => [Gateway::NETBANKING_HDFC]
     ];
 
     /**
@@ -1467,11 +1422,6 @@ class Gateway
     public static function isFileBasedEMandateRegistrationGateway(string $gateway): bool
     {
         return (in_array($gateway, self::$fileBasedEMandateRegistrationGateways) === true);
-    }
-
-    public static function isFileBasedEMandateRegistrationGatewayForAuthType(string $gateway, $authType): bool
-    {
-        return (in_array($gateway, self::$fileBasedEMandateRegistrationGatewaysForAuthType[$authType]));
     }
 
     /**
@@ -1844,15 +1794,5 @@ class Gateway
         // Currently we are only using MindGate and SBI for live and Sharp for test, later when
         // we have more gateways, we can introduce gateway selection logic here.
         return self::$upiValidateVpaTerminals[$mode];
-    }
-
-    public static function getEmandateBanksForGatewayAndAuthType($gateway, $authType)
-    {
-        if (isset(self::$gatewaysEmandateBanksMapForAuthType[$authType][$gateway]))
-        {
-            return self::$gatewaysEmandateBanksMapForAuthType[$authType][$gateway];
-        }
-
-        return [];
     }
 }

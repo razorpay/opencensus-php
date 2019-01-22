@@ -35,5 +35,7 @@ class Gateway extends Rbl\Gateway
 
             $request['url'] = $url;
         }
+
+        $request['url'] = $url;
     }
 }
