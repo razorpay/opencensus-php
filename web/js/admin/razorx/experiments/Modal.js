@@ -1,6 +1,11 @@
 import { observer } from 'mobx-react';
 import debounce from 'rzp/utils/debounce';
-import { openModal, closeModal, notifySuccess } from 'common/modal';
+import {
+  openModal,
+  closeModal,
+  notifySuccess,
+  notifyError,
+} from 'common/modal';
 import Form from 'ui/Form';
 import Field, {
   TextAreaField,
@@ -31,9 +36,9 @@ export default class extends React.Component {
       params.id = data.id;
     }
 
-    this.fetchFeaturesList(params).then(data => {
-      if (data) {
-        this.defaultFeaturesList = data.items;
+    this.fetchFeaturesList(params).then(list => {
+      if (list) {
+        this.defaultFeaturesList = list;
       }
     });
   }
@@ -45,19 +50,89 @@ export default class extends React.Component {
       url: 'featureFlags',
       params: { ...params, count: COUNT },
     }).then(data => {
+      data = {
+        items: data.items,
+        success: true,
+      };
       if (data && data.success) {
-        this.setState({ featuresList: data.items });
+        const featuresList = data.items.map(f => ({
+          name: f.name,
+          id: String(f.id),
+          variants: f.variants,
+        }));
 
-        return data;
+        this.setState({ featuresList });
+
+        return featuresList;
       }
     });
   }
 
   onSubmit = form => {
     const isEdit = this.props.data && this.props.data.id;
+    const { description, environment, mode } = form;
+
     console.log('....FORM...', form);
 
-    return; // ..TESTING..
+    if (!description) {
+      return notifyError('Description is required');
+    }
+
+    if (!this.state.selectedFeature) {
+      return notifyError('Select a Feature');
+    }
+
+    const segments = [...this.state.segments];
+
+    let msg = '';
+    for (let i = 0; i < segments.length; i++) {
+      const segment = segments[i];
+
+      if (typeof segment.variant === 'undefined') {
+        msg = 'variant cannot be empty';
+        break;
+      } else if (typeof segment.type === 'undefined') {
+        msg = 'type cannot be empty';
+        break;
+      }
+
+      if (
+        ['context-ramp', 'whitelist', 'blacklist'].indexOf(segment.type) > -1
+      ) {
+        if (typeof segment.ids === 'undefined' || !segment.ids) {
+          msg = 'ids cannot be empty';
+          break;
+        }
+
+        segment.ids = segment.ids
+          .trim()
+          .split(',')
+          .map(id => id.trim());
+      }
+
+      if (['context-ramp', 'ramp'].indexOf(segment.type) > -1) {
+        if (typeof segment.weight === 'undefined') {
+          msg = 'weight cannot be empty';
+          break;
+        } else if (segment.weight < 1 || segment.weight > 100000) {
+          msg = 'weight must be between [1,100000] inclusive';
+          break;
+        }
+      }
+    }
+
+    if (msg) {
+      notifyError(msg);
+      return;
+    }
+
+    const reqPayload = {
+      description,
+      environment,
+      mode,
+      feature_id: this.state.selectedFeature.id,
+      segments,
+    };
 
     let requestFn = rexPost,
       url = 'experiments',
@@ -123,8 +198,10 @@ export default class extends React.Component {
     this.setState({ selectedFeature: option, variantsList: option.variants });
   };
 
-  onChangeSegmentsList = list => {
-    console.log('....onChangeSegmentsList...', list);
+  onChangeSegmentsList = segments => {
+    this.setState({
+      segments,
+    });
   };
 
   render() {
@@ -138,6 +215,8 @@ export default class extends React.Component {
     }
 
     this.JSONObj.mode = AppStore.mode;
+
+    const { featuresList, selectedFeature } = this.state;
 
     return (
       <ModalContent class="modal-experiments modal-json-edit" header={header}>
@@ -179,8 +258,8 @@ export default class extends React.Component {
                 searchIndices={['id', 'name']}
                 label="Feature"
                 trackBy="id"
-                options={this.state.featuresList || []}
-                selected={this.state.selectedFeature}
+                options={featuresList || []}
+                selected={selectedFeature}
                 name="feature_id"
                 defaultValue={isEdit ? data.feature_id : ''}
                 onInput={this.onInput}
@@ -188,12 +267,15 @@ export default class extends React.Component {
                 beforeOptionsComponent={() => <div class="heading">Recent</div>}
               />
 
-              <div class="sub-heading">Segments</div>
-
-              <SegmentsList
-                variantsList={this.props.variantsList}
-                onChange={this.onChangeSegmentsList}
-              />
+              {selectedFeature && (
+                <React.Fragment>
+                  <div class="sub-heading">Segments</div>
+                  <SegmentsList
+                    variantsList={selectedFeature.variants}
+                    onChange={this.onChangeSegmentsList}
+                  />
+                </React.Fragment>
+              )}
 
               <div style={{ marginTop: 24 }} />
             </React.Fragment>
