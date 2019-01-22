@@ -1,7 +1,7 @@
 <?php
 
-namespace RZP\Gateway\Enach\Npci\Netbanking\Mock
-;
+namespace RZP\Gateway\Enach\Npci\Netbanking\Mock;
+
 use RZP\Gateway\Base;
 use RZP\Gateway\Enach\Npci\Netbanking;
 
