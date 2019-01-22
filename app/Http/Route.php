@@ -2115,7 +2115,7 @@ final class Route
         'merchant_beneficiary_file'                => '*',
         'merchant_create'                          => '*',
         'merchant_create_terminal'                 => '*',
-        'merchant_onboard_terminal'                => '*',
+        'merchant_onboard_terminal'                => Permission::ASSIGN_MERCHANT_TERMINAL,
         'merchant_delete_terminal'                 => '*',
         'merchant_edit_free_credits'               => '*',
         'merchant_fetch_multiple'                  => '*',

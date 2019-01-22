@@ -11,16 +11,24 @@ use RZP\Gateway\Wallet\Olamoney\RequestFields;
 use RZP\Gateway\Wallet\Olamoney\ResponseFields;
 use RZP\Gateway\Wallet\Olamoney\Status;
 use RZP\Models\Payment;
+use phpseclib\Crypt\RSA;
+use phpseclib\Crypt\AES;
 
 class Server extends Base\Mock\Server
 {
     public function authorize($input)
     {
+        if (isset($input['signature']))
+        {
+            return $this->authorizeV2($input);
+        }
+
         parent::authorize($input);
 
         $bill = RequestFields::BILL;
 
         $input[$bill] = json_decode(base64_decode(urldecode($input[$bill])), true);
+
 
         $this->validateActionInput($input, $input[$bill][RequestFields::COMMAND]);
 
@@ -46,6 +54,55 @@ class Server extends Base\Mock\Server
         $url = $this->route->getPublicCallbackUrlWithHash($publicId);
 
         $url .= '?' . http_build_query($content);
+
+        return \Redirect::to($url);
+    }
+
+    public function authorizeV2($input)
+    {
+        parent::authorize($input);
+
+        $content = [
+            ResponseFields::TYPE              => 'debit',
+            ResponseFields::STATUS            => Status::SUCCESS,
+            ResponseFields::MERCHANT_BILL_ID  => $input[RequestFields::UNIQUE_ID],
+            ResponseFields::TRANSACTION_ID    => 'dqtf-j717-qlfb',
+            ResponseFields::AMOUNT            => $input[RequestFields::AMOUNT],
+            ResponseFields::COMMENTS          => $input[RequestFields::COMMENTS],
+            ResponseFields::UDF               => $input[RequestFields::UDF],
+            ResponseFields::IS_CASHBACK_ATTEMPTED =>"false",
+            ResponseFields::IS_CASHBACK_SUCCESSFUL =>"false",
+            ResponseFields::TIMESTAMP         => time(),
+            ResponseFields::SALT              => 'merchant_salt'
+
+        ];
+
+        $this->content($content);
+
+        $content[ResponseFields::HASH] = $this->generateHash($content);
+
+        $uuid = 'dummyuuid';
+        $encryptedXTtenantKey = $this->encryptXTenantKey($uuid.':'.time());
+
+        if ($content[ResponseFields::TRANSACTION_ID] == 'invalid_body')
+        {
+            $output[ResponseFields::BODY] = 'Invalid Body';
+        }
+
+        $output = [
+            ResponseFields::X_TENANT     => 'Ola',
+            ResponseFields::X_TENANT_KEY => $encryptedXTtenantKey,
+            ResponseFields::X_AUTH_KEY   => $this->signTenantKey($encryptedXTtenantKey),
+            ResponseFields::BODY         => $this->encryptBody($content, $uuid)
+        ];
+
+        $paymentId = $input['paymentId'];
+
+        $publicId = $this->getSignedPaymentId($paymentId);
+
+        $url = $this->route->getPublicCallbackUrlWithHash($publicId);
+
+        $url .= '?' . http_build_query($output);
 
         return \Redirect::to($url);
     }
@@ -234,5 +291,53 @@ class Server extends Base\Mock\Server
         $response->headers->set('Cache-Control', 'no-cache');
 
         return $response;
+    }
+
+    public function signTenantKey($tenantKey)
+    {
+        //$ola_private_key= (new Gateway)->getOlaPublicKey();
+        $ola_private_key = 'MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQCWF5PFBUAGMulXKgzguT3PaxriJLvJ82MjRJUFjgPG9X1+tQrMy/it28E4059AExIDHA74jxM+o8CLtiNRz9Y7+ciIPzavkd/KfxP2Ic7kTaO6M8LLfITUA6dS4dGgPJGAeMZKWVQG/IwoeWNJOrOinaxnO3l77RmYr3E/UkSVnY435Gl2jdWivPr8u3eErnsu2CtWaB+VCASj44Honl7kqXdq8ZdZLVwDGjrfLgawVm79cOI3JtQwI/9gn+zpJbzpbhp65yO0PAQ+RaojpCdn3DiHxYmNlSdN4dkFW45dp3s6iffsAust/SGBJan+VOQKQtZt4a9VjmglZwuNxw4FAgMBAAECggEAEM2Y7IC29zqx5uE9SddTNSpvewvTvjsySRt/d3y7rYWERDAuglj/gS9OBXejp3+7D4APqQITjHq2rq14bMtQ16wSKDazf5pcLIZnjLGiQOr0Pn9W+oL5N+ckz2Gan07Il1JuGJrBjnqtkkZsuCELRVRTnccJxbb4m6BglE84gGtT3+PQx9/4ejmeE2J3hY8LalCVIDZlWvySqIJGeaOnpzt4cKSTk85ZNwwP9a2U33fZsoSjZw1tGJAlC1+NiXq+GFsmPRTqb7bEg1NWE9KS4m+B3x8uEz68CqXEqcl15Iw/YQMxzWs9baCCXpfpV5dudVH0VQKfdpFzmnE2FGK1rQKBgQDfqKRuSL8gRuxihadR8nzVzZQMo/0qef5LZ1KUIyiSAHjH2BKFHSeKoYc+L5QgufQLA5cdjHOUFy8XM04/b2xhLAhAzOn7PshEinXtQ554vih6+ZVWoU/vrR2gAlsg9UETsiX9U8JoOwUFa+TZiAS/015vuNdaMyGrS+WtsQJ+iwKBgQCry6h+PiU6OB4LZe2PU6X5xTIipZgoPlDhShJOvPoZaaV6x1kLc79NF9akR5H+WZdHzjlxoq5cQWM/fiRkM6/QGZuh6ivt/kpBN4hezTpPIRZwLb73+eJ/s2e/vm9typSIosiT9P4VSg+Xhq0V2BZb8e6RGg2heIFjN3maPS5HrwKBgQDIw0y2Yj6N7pwJ5AdJm+1KzfpzTlDWbCND9D9AEj88r4e7e81EB+OSoWQRAgxpRAI4UMS5FXY6HIV8weUfNBmJMElIQahWiwih3df1XplFsQwNNzRCSxLCBhdtpi++6ee8klFfkGwVu8TKFQub6Gi6+DTw/G7y3KsAZGSLATVH+QKBgQCZAMkPpkmBkHkxrZXmEJnB2d7M/K6HKPjfrRihB6229GBs+R5VFMFL5+9CYHumDCSvzvtaOYkQoSvDYJUIqP/sVuJFUknNrKx1aQALbrx/vPg+8H8kW2leUmoUW4biQYoIJvJ807V3QH6idU+yJMHFIbNXh9yb8rdJph6nP9X4AQKBgQCtHehQ09hduCObOC0URDuowQV1/9hU/2PL7ezZUsQ1+B6G6KVnRm+S8ak5a7MsaiVjbVjAlXVlHCLHAhcMkr3Vy3W0HapVBC5/T+JLf16OrqjpxmaQ1YPmbzbtg2PhkY0wDHEUETTpIi7OeLiT3Cg28NNTNkLvTTHb0FWZrxLgvw==';
+
+        $rsa = new RSA();
+
+        extract($rsa->createKey());
+
+        $rsa->setPrivateKeyFormat(RSA::PRIVATE_FORMAT_PKCS8);
+
+        $rsa->loadKey(base64_decode($ola_private_key), RSA::PRIVATE_FORMAT_PKCS8);
+
+        $rsa->setSignatureMode(RSA::SIGNATURE_PKCS1);
+
+        return base64_encode($rsa->sign(base64_decode($tenantKey)));
+    }
+
+    public function encryptBody($content,$uuid)
+    {
+        //$getIvParamFromConfig = (new Gateway)->getIV();
+        $getIvParamFromConfig = 'OlaM0neyEncrypt0';
+
+        $cipher = new AES();
+
+        $cipher->setKey($uuid);
+
+        $cipher->setIV($getIvParamFromConfig);
+
+        return base64_encode(($cipher->encrypt((json_encode($content)))));
+    }
+
+    public function encryptXTenantKey($content)
+    {
+        //$public_key= (new Gateway)->getPublicKey();
+        $public_key = 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlheTxQVABjLpVyoM4Lk9z2sa4iS7yfNjI0SVBY4DxvV9frUKzMv4rdvBONOfQBMSAxwO+I8TPqPAi7YjUc/WO/nIiD82r5Hfyn8T9iHO5E2jujPCy3yE1AOnUuHRoDyRgHjGSllUBvyMKHljSTqzop2sZzt5e+0ZmK9xP1JElZ2ON+Rpdo3Vorz6/Lt3hK57LtgrVmgflQgEo+OB6J5e5Kl3avGXWS1cAxo63y4GsFZu/XDiNybUMCP/YJ/s6SW86W4aeucjtDwEPkWqI6QnZ9w4h8WJjZUnTeHZBVuOXad7Oon37ALrLf0hgSWp/lTkCkLWbeGvVY5oJWcLjccOBQIDAQAB';
+
+        $rsa = new RSA();
+
+        $rsa->setPublicKeyFormat(RSA::PUBLIC_FORMAT_PKCS8);
+
+        $rsa->loadKey(base64_decode($public_key));
+
+        $rsa->setEncryptionMode(RSA::ENCRYPTION_PKCS1);
+
+        return base64_encode($rsa->encrypt(($content)));
     }
 }

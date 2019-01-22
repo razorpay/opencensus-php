@@ -242,7 +242,7 @@ class ErrorCode
     const GATEWAY_ERROR_INVALID_TRANSACTION_INAPPROPRIATE_CODE_REMITTER             = 'GATEWAY_ERROR_INVALID_TRANSACTION_INAPPROPRIATE_CODE_REMITTER';
     const GATEWAY_ERROR_PSP_NOT_AVAILABLE                                           = 'GATEWAY_ERROR_PSP_NOT_AVAILABLE';
     const GATEWAY_ERROR_CONNECTION_TIMEOUT_IN_REQPAY_CREDIT                         = 'GATEWAY_ERROR_CONNECTION_TIMEOUT_IN_REQPAY_CREDIT';
-    const GATEWAY_ERROR_CONNECTION_TIMEOUT_IN_REQPAY_DEBIT                         = 'GATEWAY_ERROR_CONNECTION_TIMEOUT_IN_REQPAY_DEBIT';
+    const GATEWAY_ERROR_CONNECTION_TIMEOUT_IN_REQPAY_DEBIT                          = 'GATEWAY_ERROR_CONNECTION_TIMEOUT_IN_REQPAY_DEBIT';
     const GATEWAY_ERROR_CREDIT_TIMEOUT                                              = 'GATEWAY_ERROR_CREDIT_TIMEOUT';
     const GATEWAY_ERROR_CREDIT_FAILED                                               = 'GATEWAY_ERROR_CREDIT_FAILED';
     const GATEWAY_ERROR_CREDIT_REVERSAL_TIMEOUT                                     = 'GATEWAY_ERROR_CREDIT_REVERSAL_TIMEOUT';
@@ -836,6 +836,9 @@ class ErrorCode
 
     const SERVER_ERROR_INVALID_ATTEMPT_ID                                           = 'SERVER_ERROR_INVALID_ATTEMPT_ID';
 
+    const SERVER_ERROR_HASH_MISMATCH                                                = 'SERVER_ERROR_HASH_MISMATCH';
+
+
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED                                     = 'BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED';
     const BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS                                  = 'BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS';
@@ -1081,6 +1084,8 @@ class ErrorCode
     const GATEWAY_ERROR_SEND_EMAIL_ERROR                                            = 'GATEWAY_ERROR_SEND_EMAIL_ERROR';
     const GATEWAY_ERROR_FAILED_DATA_UPDATE                                          = 'GATEWAY_ERROR_FAILED_DATA_UPDATE';
     const GATEWAY_ERROR_ACQUIRER_UNAVAILABLE                                        = 'GATEWAY_ERROR_ACQUIRER_UNAVAILABLE';
+    const GATEWAY_ERROR_USER_MERCHANT_LIMIT_BREACHED                                = 'GATEWAY_ERROR_USER_MERCHANT_LIMIT_BREACHED';
+    const GATEWAY_ERROR_OUTSTANDING_LIMIT_BREACHED                                  = 'GATEWAY_ERROR_OUTSTANDING_LIMIT_BREACHED';
 
     // Scrooge error codes
     const GATEWAY_VERIFY_REFUND_ABSENT                                              = 'GATEWAY_VERIFY_REFUND_ABSENT';

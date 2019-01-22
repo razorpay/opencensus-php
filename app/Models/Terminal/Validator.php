@@ -83,6 +83,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_CANARA,
         Payment\Gateway::NETBANKING_VIJAYA,
         Payment\Gateway::EMI_SBI,
+        Payment\Gateway::WALLET_OLAMONEY,
     ];
 
     protected static $createValidators = [
@@ -379,6 +380,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE        => 'required|string',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string|in:v2',
+    ];
+
+    protected static $walletOlamoneyEditTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:wallet_olamoney',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::TYPE . '.ivr'              => 'required_with:type|in:1,0',
     ];
 
     protected static $walletAirtelmoneyTerminalRules = [

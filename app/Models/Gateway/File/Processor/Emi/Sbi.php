@@ -58,6 +58,7 @@ class Sbi extends Base
 
     /**
      * Implements \RZP\Models\Gateway\File\Processor\Base::createFile($data).
+     * @throws GatewayFileException
      */
     public function createFile($data)
     {
@@ -79,7 +80,7 @@ class Sbi extends Base
             $creator->extension(static::EXTENSION)
                     ->content($fileData)
                     ->name($fileName)
-                    ->store(FileStore\Store::S3)
+                    ->store(FileStore\Store::LOCAL)
                     ->type(static::FILE_TYPE)
                     ->entity($this->gatewayFile)
                     ->metadata($metadata);
@@ -299,7 +300,7 @@ class Sbi extends Base
 
         $den = $expression - 1;
 
-        return (round($num / $den) / 100);
+        return round($num / $den);
     }
 
     //-------------------------- Helpers ------------------------------------//

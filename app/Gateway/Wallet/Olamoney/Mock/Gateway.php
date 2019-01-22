@@ -23,10 +23,14 @@ class Gateway extends Olamoney\Gateway
                         'paymentId' => $input['payment']['id']
                     ]);
 
-        $url = $url . '&' .$parts['query'];
+        if($this->version != "v2")
+        {
+            $url = $url . '&' .$parts['query'];
+        }
 
         $request['url'] = $url;
 
         return $request;
     }
+
 }
