@@ -46,6 +46,8 @@ class Notifier extends Base\Core
 
     protected function notifyViaSms()
     {
+        // Note: Ensure template file for sms exists in raven. Refer getSmsRequestPayload() method.
+
         if ((method_exists($this->source, 'shouldNotifyTxnViaSms') === false) or
             ($this->source->shouldNotifyTxnViaSms() === false))
         {

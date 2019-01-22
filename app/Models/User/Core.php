@@ -428,6 +428,17 @@ class Core extends Base\Core
                 'amount'         => amount_format_IN($input['amount']),
                 'account_number' => mask_except_last4($input['account_number']),
             ];
+
+            if (isset($input['fund_account_id']) === true)
+            {
+                $contactName = $this->repo
+                                    ->fund_account
+                                    ->findByPublicIdAndMerchant($input['fund_account_id'], $merchant)
+                                    ->contact
+                                    ->getName();
+
+                $payload['params']['contact_name'] = $contactName;
+            }
         }
 
         $this->app->raven->sendSms($payload);
