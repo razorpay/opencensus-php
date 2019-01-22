@@ -5,14 +5,17 @@ namespace RZP\Models\EntityOrigin;
 use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
     /**
-     * @param Base\PublicEntity $entity
-     * @param                   $originEntity
-     * @param array             $input
+     * Origin entity can be an instance of Merchant entity or an Oauth application
+     *
+     * @param Base\PublicEntity                 $entity
+     * @param Merchant\Entity|OAuthApp\Entity   $originEntity
+     * @param array                             $input
      *
      * @return Entity
      */
@@ -53,40 +56,45 @@ class Core extends Base\Core
                 return;
             }
 
-            $this->create($entity, $originEntity);
+            $entityOrigin = $this->create($entity, $originEntity);
+
+            // @todo : Remove later, not required
+            $this->trace->info(TraceCode::ORIGIN_CREATED,
+                                    [
+                                        Entity::ID => $entityOrigin->getId(),
+                                    ]);
         }
         catch (\Throwable $e)
         {
             // The payment should not be blocked even if the origin cannot be created. Log an error and proceed.
-            $this->trace->error(TraceCode::ORIGIN_SET_FAILED, [
-                'message'           => $e->getMessage(),
-                Entity::ENTITY_TYPE => $entity->getEntity(),
-                Entity::ENTITY_ID   => $entity->getId(),
-            ]);
+            $this->trace->critical(TraceCode::ORIGIN_SET_FAILED,
+                                    [
+                                        'message'           => $e->getMessage(),
+                                        Entity::ENTITY_TYPE => $entity->getEntity(),
+                                        Entity::ENTITY_ID   => $entity->getId(),
+                                    ]);
 
             return;
         }
     }
 
     /**
-     * @param string $originType
-     * @param string $originId
+     * Origin type and id can be null.
+     *
+     * @param $originType
+     * @param $originId
      *
      * @return mixed|null
      */
-    protected function fetchOriginEntity(string $originType, string $originId)
+    protected function fetchOriginEntity($originType, $originId)
     {
-        if (empty($originId) === true)
-        {
-            return null;
-        }
-
         $originEntity = null;
 
         switch ($originType)
         {
             case Constants::MERCHANT:
-                $originEntity = $this->repo->merchant->find($originId);
+                // If the merchant's credentials are used, fetch the merchant entity directly from the BasicAuth
+                $originEntity = app('basicauth')->getMerchant();
                 break;
 
             case Constants::APPLICATION:
@@ -94,7 +102,20 @@ class Core extends Base\Core
                 break;
 
             default:
-                break;
+                $this->trace->critical(TraceCode::ORIGIN_INVALID_TYPE,
+                                       [
+                                           Entity::ORIGIN_TYPE => $originType,
+                                           Entity::ORIGIN_ID   => $originId,
+                                       ]);
+        }
+
+        if ($originEntity === null)
+        {
+            $this->trace->critical(TraceCode::ORIGIN_INVALID_TYPE,
+                                   [
+                                       Entity::ORIGIN_TYPE => $originType,
+                                       Entity::ORIGIN_ID   => $originId,
+                                   ]);
         }
 
         return $originEntity;
