@@ -65,15 +65,14 @@ class Repository extends Base\Repository
     }
 
     /**
-     * @param string $entityType
-     * @param string $entityId
+     * @param array $ids
+     *
      * @return mixed
      */
-    public function deleteMerchantAccessMapByEntityTypeAndId(string $entityType, string $entityId)
+    public function deleteMerchantAccessMapsByEntityIds(array $ids)
     {
         return $this->newQuery()
-                    ->where(Entity::ENTITY_TYPE, $entityType)
-                    ->where(Entity::ENTITY_ID, $entityId)
+                    ->whereIn(Entity::ID, $ids)
                     ->delete();
     }
 }

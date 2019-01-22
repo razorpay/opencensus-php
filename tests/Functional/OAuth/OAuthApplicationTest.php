@@ -6,12 +6,10 @@ use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class OAuthApplicationTest extends TestCase
 {
     use OAuthTrait;
-    use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
     protected $authServiceMock;
@@ -176,17 +174,12 @@ class OAuthApplicationTest extends TestCase
     {
         $requestParams = $this->getDefaultParamsForAuthServiceRequest();
 
-        $this->fixtures->create('merchant_access_map', ['entity_id' => '8ckeirnw84ifke']);
-
         $this->setAuthServiceMockDetail(
                                     'applications/8ckeirnw84ifke',
                                     'PUT',
                                     $requestParams);
 
         $this->startTest();
-
-        $accessMap = $this->getDbLastEntity('merchant_access_map');
-        $this->assertEmpty($accessMap);
     }
 
     protected function markPartner(

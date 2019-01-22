@@ -10,7 +10,6 @@ use RZP\Trace\TraceCode;
 use Razorpay\OAuth\Token;
 use Razorpay\OAuth\Client;
 use Razorpay\OAuth\Application;
-use RZP\Models\Merchant\AccessMap as AccessMap;
 
 class AuthService
 {
@@ -97,20 +96,7 @@ class AuthService
     {
         $input = [Application\Entity::MERCHANT_ID => $merchantId];
 
-        $this->trace->info(
-            TraceCode::PARTNER_DELETE_APPLICATION,
-            [
-                'application_id' => $id,
-                'merchant_id'    => $merchantId,
-            ]
-        );
-
-        $result = $this->sendRequest('applications/' . $id, Requests::PUT, $input);
-        
-        // deletes the access mapping for the application
-        (new AccessMap\Core)->deleteAccessMapByApplicationId($id);
-
-        return $result;
+        return $this->sendRequest('applications/' . $id, Requests::PUT, $input);
     }
 
     public function updateApplication(string $id, array $input, string $merchantId) : array
