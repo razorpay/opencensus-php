@@ -579,6 +579,8 @@ class ErrorCodes extends Cards\ErrorCodes
         'GW01181' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //Invalid Key length.
         'GW01182' => ErrorCode::GATEWAY_ERROR_RESPONSE_ENCRYPTION_FAILED, //Key encryption failed.
 
+        'GW00555' => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID, //Terminal ID is Deactivated, Please contact PG Helpdesk.
+
         'CM00001' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT, //External message timeout.
         'CM00002' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //External message system error.
         'CM00026' => ErrorCode::GATEWAY_ERROR_CONNECTION_ERROR, //External connection ID required.
@@ -621,10 +623,21 @@ class ErrorCodes extends Cards\ErrorCodes
         'PY20081' => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS, //Invalid Payment Page Header File.
         'PY20082' => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS, //Invalid Payment Page Footer File.
         'PY20050' => ErrorCode::GATEWAY_ERROR_CARD_ENCRYPTION_FAILED, //Card Number Encryption Failure.
+
+        '412' => ErrorCode::GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE, //Issuer Authentication Server failure
+        '410' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED_DUE_TO_INVALID_BIN, //Failed Initiate CheckBin - BIN not present
+        '404' => ErrorCode::GATEWAY_ERROR_SQL_ERROR, //SQL Exception
+        '408' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //Caught ERROR of type:[ System.Xml.XmlException ] . strXML is not a valid XML string    23
+
+       'IPAY0200301' => ErrorCode::BAD_REQUEST_INVALID_CARD_DETAILS, //Invalid transaction details
+       'IPAY0200300' => ErrorCode::BAD_REQUEST_PAYMENT_MISSING_DATA, //Missing transaction details
+
+       'FSS00003' => ErrorCode::GATEWAY_ERROR_INVALID_CARD_TYPE, //Only Debit Card Allowed
+
+        '03' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //System error. Could not process transaction
     );
 
     public static $authRespCodeErrorMap = [
-        '00' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'Approved or completed successfully',
         '01' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_CONTACT_ISSUING_BANK,
         '02' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_CONTACT_ISSUING_BANK, //'Refer to special conditions Card Issuer',
         '03' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR, //'Merchant not on file',

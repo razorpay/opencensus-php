@@ -24,7 +24,9 @@ class OlamoneyGatewayTest extends TestCase
 
         parent::setUp();
 
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_olamoney_terminal');
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_olamoney_terminal', ['type' => ['non_recurring' => '1', 'ivr' => '1']]);
+
+        $this->sharedTerminalV2 = $this->fixtures->create('terminal:shared_olamoney_terminal', ['gateway_merchant_id2' => 'v2', 'id' => '1001OlamoneyTl']);
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
@@ -42,10 +44,29 @@ class OlamoneyGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertTestResponse($payment, 'testPayment');
+        $this->assertEquals('1000OlamoneyTl', $payment['terminal_id']);
 
         $this->assertNotEmpty($payment['global_token_id']);
 
         $this->assertNotEmpty($payment['global_customer_id']);
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
+    }
+
+    public function testPaymentV2()
+    {
+        $this->fixtures->terminal->disableTerminal($this->sharedTerminal->getId());
+
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $authPayment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment, 'testPayment');
+        $this->assertEquals('1001OlamoneyTl', $payment['terminal_id']);
 
         $wallet = $this->getLastEntity('wallet', true);
 
@@ -69,6 +90,25 @@ class OlamoneyGatewayTest extends TestCase
         });
     }
 
+    public function testAmountTamperingV2()
+    {
+        $this->fixtures->terminal->disableTerminal($this->sharedTerminal->getId());
+
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content['amount'] = '100.00';
+        });
+
+        $data = $this->testData['testAmountTampering'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testErrorPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
@@ -76,6 +116,25 @@ class OlamoneyGatewayTest extends TestCase
         $payment['contact'] = '9008119029';
 
         $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testErrorPaymentV2()
+    {
+        $this->fixtures->terminal->disableTerminal($this->sharedTerminal->getId());
+
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content['status'] = 'failed';
+        });
+
+        $data = $this->testData['testErrorPayment'];
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {

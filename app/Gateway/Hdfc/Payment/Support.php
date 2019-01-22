@@ -181,7 +181,7 @@ trait Support
 
     protected function isAnAcceptedError()
     {
-        assert ($this->error === true);
+        assertTrue ($this->error === true);
 
         $response = $this->supportPaymentResponse;
 
@@ -429,7 +429,7 @@ trait Support
 
         // The transaction id for the refund should be present. Otherwise, it means that
         // the refund should come via normal flow and not via manualGatewayRefund.
-        assert ($input['refund'][PaymentModel\Refund\Entity::TRANSACTION_ID] !== null);
+        assertTrue ($input['refund'][PaymentModel\Refund\Entity::TRANSACTION_ID] !== null);
 
         return true;
     }

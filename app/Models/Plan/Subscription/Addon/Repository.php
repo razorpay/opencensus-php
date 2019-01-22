@@ -45,6 +45,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getAddonsForSubscription(Subscription\Entity $subscription)
+    {
+        return $this->newQuery()
+                    ->where(Entity::SUBSCRIPTION_ID, '=', $subscription->getId())
+                    ->with(Constants\Entity::ITEM)
+                    ->get();
+    }
+
     protected function addQueryParamDeleted($query, $params)
     {
         $includeSoftDeleted = (bool) $params[self::DELETED];

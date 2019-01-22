@@ -4,6 +4,8 @@ namespace RZP\Models\Payment\Processor;
 
 use App;
 use Route;
+use Config;
+
 use Carbon\Carbon;
 use RZP\Base\RepositoryManager;
 use RZP\Constants\Mode;
@@ -27,7 +29,6 @@ use RZP\Models\Payment\Status;
 use RZP\Models\Pricing;
 use RZP\Models\Risk;
 use RZP\Models\Terminal;
-use RZP\Models\Transaction;
 use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -89,6 +90,12 @@ class Processor
     const PAYMENT_FALLBACK_TIME_DURATION = 600;  // 10 min * 60 sec
 
     /**
+     * We only allow payment to fallback within a certain duration.
+     * A payment can fallback only within few minutes
+     */
+    const PAYMENT_REDIRECT_TO_AUTHORIZE_TIME_DURATION = 300;  // 5min * 60 sec
+
+    /**
      * If a payment is async, it can receive a callback for 5 mins after which it is converted to a
      * failed payment
      */
@@ -108,6 +115,11 @@ class Processor
      * Timeout to store card details for fallback auth type
      */
     const CACHE_TTL = 10;
+
+    /**
+     * Timeout to store card details for redirect to authorize
+     */
+    const REDIRECT_CACHE_TTL = 5;
 
     const CACHE_KEY = 'fallback_%s_card_details';
 
@@ -1889,7 +1901,7 @@ class Processor
             return $ba;
         }
 
-        assert ($this->mode === Mode::TEST);
+        assertTrue ($this->mode === Mode::TEST);
 
         $attributes = array(
             'merchant_id'           => $merchant->getId(),
@@ -2283,6 +2295,19 @@ class Processor
 
     protected function disableTerminal(Terminal\Entity $terminal)
     {
+        $this->app['slack']->queue(
+            TraceCode::TERMINAL_AUTO_DISABLE,
+            [
+                    'merchant_id'           => $terminal->getMerchantId(),
+                    'merchant_name'         => $terminal->merchant->getName(),
+                    'terminal_id'           => $terminal->getId(),
+                    'payment_id'            => $this->payment->getId(),
+                    'channel'               => Config::get('slack.channels.tech_alerts'),
+                    'username'              => 'alerts',
+                    'icon'                  => ':x:'
+            ]
+        );
+
         $this->trace->error(
             TraceCode::TERMINAL_AUTO_DISABLE,
             [

@@ -20,9 +20,9 @@ class CouponsTest extends TestCase
         $this->ba->adminAuth();
     }
 
-    public function createCoupon()
+    public function createCoupon(array $attributes = [])
     {
-        $promotion = $this->fixtures->create('promotion:onetime');
+        $promotion = $this->fixtures->create('promotion:onetime', $attributes);
 
         $this->testData[__FUNCTION__]['request']['content']['entity_id'] = $promotion->getPublicId();
 
@@ -343,18 +343,73 @@ class CouponsTest extends TestCase
         $this->checkValidResponse($response);
     }
 
-    public function testCreateCouponAndCheckOnMerchant()
+    public function testValidateCoupon()
+    {
+        $scheduleAttributes = [
+            'period' => Period::DAILY,
+        ];
+
+        $schedule = $this->fixtures->create('schedule', $scheduleAttributes);
+
+        $promoAttributes = [
+            'schedule_id' => $schedule->getId(),
+        ];
+
+        $this->createCoupon($promoAttributes);
+
+        $content = [
+            'code' => 'RANDOM-123',
+        ];
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '100AgentUserId'], 'agent');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', '100AgentUserId', 'agent');
+
+        $response = $this->checkCouponOnMerchant($content);
+
+        $this->assertEquals($response['credit_amount'], 100);
+
+        $this->assertEquals($response['expire_days'],1);
+    }
+
+    public function testValidateCouponProxyAuthWithMerchantId()
+    {
+        $scheduleAttributes = [
+            'period' => Period::DAILY,
+        ];
+
+        $schedule = $this->fixtures->create('schedule', $scheduleAttributes);
+
+        $promoAttributes = [
+            'schedule_id'       => $schedule->getId(),
+        ];
+
+        $this->createCoupon($promoAttributes);
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '100AgentUserId'], 'agent');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', '100AgentUserId', 'agent');
+
+        $this->startTest();
+    }
+
+    public function testValidateCouponWithoutSchedule()
     {
         $this->createCoupon();
 
         $content = [
-            'merchant_id' => '10000000000000',
             'code'        => 'RANDOM-123',
         ];
 
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '100AgentUserId'], 'agent');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', '100AgentUserId', 'agent');
+
         $response = $this->checkCouponOnMerchant($content);
 
-        $this->assertEquals($response['message'], 'Coupon is valid');
+        $this->assertEquals($response['credit_amount'], 100);
+
+        $this->assertEquals($response['expire_days'],null);
     }
 
     public function testMultiCouponApply()

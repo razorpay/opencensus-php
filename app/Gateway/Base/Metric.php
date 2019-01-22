@@ -22,10 +22,12 @@ class Metric
 
     // Counter type metric names only for gateway api calls
     const GATEWAY_REQUEST_COUNT          = 'gateway_request_count_v2';
+    const GATEWAY_REQUEST_COUNT_V3       = 'gateway_request_count_v3';
 
     // class constants for usage in the class
     const SUCCESS                        = 'success';
     const FAILED                         = 'failed';
+    const CURL_ERROR                     = 'curl_error';
 
     // Dimensions for gateway api calls to log
     const DIMENSION_GATEWAY              = 'gateway';
@@ -45,6 +47,7 @@ class Metric
     const DIMENSION_STATUS               = 'status';
     const DIMENSION_TERMINAL_ID          = 'terminal_id';
     const DIMENSION_MERCHANT_CATEGORY    = 'merchant_category';
+    const DIMENSION_ERROR                = 'curl_error_no';
 
     // Actions array for which we need to push data to prometheus
     const ACTIONS_TO_ALLOW  = [
@@ -54,6 +57,8 @@ class Metric
         Payment\Action::REFUND,
         Payment\Action::CHECK_ACCOUNT,
         Payment\Action::FETCH_TOKEN,
+        Payment\Action::VERIFY,
+        Payment\Action::VERIFY_REFUND,
         // Payment\Action::OTP_GENERATE,
         // Payment\Action::REVERSE,
         // Payment\Action::AUTHORIZE_PUSH,
@@ -122,6 +127,15 @@ class Metric
             Metric::DIMENSION_TERMINAL_ID          => 'none',
             Metric::DIMENSION_MERCHANT_CATEGORY    => $merchantCategory
         ];
+    }
+
+    public function getV2Dimensions($action, $input, $gateway = 'none', $excData = 'none')
+    {
+        $dimensions = $this->getDimensions($action, $input, $gateway);
+
+        $dimensions[Metric::DIMENSION_ERROR] = $excData;
+
+        return $dimensions;
     }
 
     protected function getInstrumentType($input, $method)
@@ -288,7 +302,7 @@ class Metric
         return $input[Entity::PAYMENT][Payment\Entity::MERCHANT_ID];
     }
 
-    public function pushGatewayDimensions($action, $input, $status, $gateway = null)
+    public function pushGatewayDimensions($action, $input, $status, $gateway = null, $excData = null)
     {
         try
         {
@@ -298,11 +312,25 @@ class Metric
             {
                 $dimensions = $this->getDimensions($action, $input, $gateway);
 
+                $dimensions2 = $this->getV2Dimensions($action, $input, $gateway, $excData);
+
+                $dimensions2[Metric::DIMENSION_STATUS] = $status;
+
+                /**
+                 * Not making any change to the old metric. Hence pushing status as failed and not curl error.
+                 */
+                if ($status === Metric::CURL_ERROR)
+                {
+                    $status = Metric::FAILED;
+                }
+
                 $dimensions[Metric::DIMENSION_STATUS] = $status;
 
                 $gatewayMetrics = app('trace')->metricsDriver(self::DOGSTATSD_DRIVER);
 
                 $gatewayMetrics->count(Metric::GATEWAY_REQUEST_COUNT, 1, $dimensions);
+
+                $gatewayMetrics->count(Metric::GATEWAY_REQUEST_COUNT_V3, 1, $dimensions2);
             }
         }
         catch (\Throwable $exc)

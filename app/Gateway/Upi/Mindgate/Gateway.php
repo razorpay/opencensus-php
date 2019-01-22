@@ -328,26 +328,42 @@ class Gateway extends Base\Gateway
      */
     protected function parseGatewayResponse($responseBody, $type = Action::COLLECT)
     {
-        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
-            'body'              => $responseBody,
-            'encrypted'         => true,
-            'gateway'           => $this->gateway,
-            'type'              => $type
-        ]);
+        $response = null;
 
-        $response = $this->decrypt($responseBody);
-
-        $type = strtoupper($type);
-
-        $fields = constant(__NAMESPACE__ . "\ResponseFields::$type");
-
-        $values = explode('|', $response);
-
-        $result = [];
-
-        foreach ($fields as $index => $key)
+        try
         {
-            $result[$key]     =   $values[$index];
+            $response = $this->decrypt($responseBody);
+
+            $type = strtoupper($type);
+
+            $fields = constant(__NAMESPACE__ . "\ResponseFields::$type");
+
+            $values = explode('|', $response);
+
+            $result = [];
+
+            foreach ($fields as $index => $key)
+            {
+                $result[$key] = $values[$index];
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
+                'body'              => $responseBody,
+                'decrypted'         => $response,
+                'gateway'           => $this->gateway,
+                'type'              => $type,
+                'error'             => $e->getMessage()
+            ]);
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                null,
+                $e->getMessage(),
+                [
+                    Payment\Gateway::GATEWAY_RESPONSE  => $responseBody,
+                ]);
         }
 
         $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
@@ -590,24 +606,6 @@ class Gateway extends Base\Gateway
     protected function getMerchantCategoryCode(array $input)
     {
         return $input['merchant']['category'] ?: '6012';
-    }
-
-    /**
-     * This is same as the payment description, capped
-     * to 50 characters
-     *
-     * @param array $input
-     *
-     * @return string
-     */
-    protected function getPaymentRemark(array $input)
-    {
-        $paymentDescription = $input['payment']['description'] ?? '';
-        $filteredPaymentDescription = Payment\Entity::getFilteredDescription($paymentDescription);
-
-        $description = $input['merchant']->getFilteredDba() . ' ' . $filteredPaymentDescription;
-
-        return ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
     }
 
     /**

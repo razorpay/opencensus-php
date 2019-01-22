@@ -19,6 +19,7 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment\Refund;
 use RZP\Jobs\ScroogeRefundUpdate;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Jobs\BulkScroogeVerifyRefund;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 
@@ -1392,5 +1393,109 @@ class Service extends Base\Service
             'success_count' => $successCount,
             'time_taken'    => $processingTime,
         ];
+    }
+
+    public function verifyScroogeRefundsBulk(array $input)
+    {
+        $gateways = [Payment\Gateway::UPI_MINDGATE, Payment\Gateway::UPI_ICICI];
+
+        $limit = (isset($input['limit']) === true) ? intval($input['limit']) : 500;
+
+        $offset = (isset($input['offset']) === true) ? intval($input['offset']) : 0;
+
+        $from = $input['from'] ?? (now()->subHour(24)->getTimestamp());
+
+        $to = $input['to'] ?? (now()->getTimestamp());
+
+        $gateways = $input['gateways'] ?? $gateways;
+
+        $merchantIds = $input['merchant_id'] ?? [];
+
+        $status = $input['status'] ?? 'file_init';
+
+        $scroogeRefunds = $input['refunds'] ?? [];
+
+        $this->trace->info(
+            TraceCode::REFUND_SCROOGE_VERIFY_INITIATED,
+            [
+                'limit'      => $limit,
+                'from'       => $from,
+                'to'         => $to,
+                'gateways'   => $gateways,
+                'refunds'    => $scroogeRefunds,
+            ]);
+
+        if (empty($scroogeRefunds) === true)
+        {
+            $scroogeRefundsInput = [
+                'query' => [
+                    'gateway'       => $gateways,
+                    'status'        => $status,
+                    'created_at'    => [
+                        'gte' => (string) $from,
+                        'lte' => (string) $to
+                    ]
+                ],
+                'count' => $limit,
+                'skip'  => $offset,
+            ];
+
+            if (empty($merchantIds) === false)
+            {
+                $scroogeRefundsInput['query']['merchant_id'] = $merchantIds;
+            }
+
+            $response = $this->app['scrooge']->getRefunds($scroogeRefundsInput);
+
+            if (isset($response['body']->data) === true)
+            {
+                $scroogeRefunds = json_decode(json_encode($response['body']->data), true);
+            }
+        }
+
+        $failureRefunds = [];
+
+        $total = $success = $failure = 0;
+
+        if (empty($scroogeRefunds) === false)
+        {
+            foreach ($scroogeRefunds as $scroogeRefund)
+            {
+                $data = [
+                    RefundEntity::ID        => $scroogeRefund[RefundEntity::ID],
+                    RefundEntity::ATTEMPTS  => $scroogeRefund[RefundEntity::ATTEMPTS]
+                ];
+
+                $data['mode'] = Mode::LIVE;
+
+                try
+                {
+                    BulkScroogeVerifyRefund::dispatch($data);
+
+                    $success += 1;
+                }
+                catch (\Exception $exception)
+                {
+                    $failure +=1 ;
+
+                    $failureRefunds[] = $scroogeRefund[RefundEntity::ID];
+
+                    $this->trace->traceException($exception);
+                }
+
+                $total += 1;
+            }
+        }
+
+        $traceData = [
+            'total'             => $total,
+            'success'           => $success,
+            'failure'           => $failure,
+            'failure_refunds'   => $failureRefunds,
+        ];
+
+        $this->trace->info(TraceCode::BULK_SCROOGE_REFUND_VERIFY_JOB_DISPATCHED, $traceData);
+
+        return $traceData;
     }
 }

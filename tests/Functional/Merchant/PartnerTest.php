@@ -2,14 +2,18 @@
 
 namespace RZP\Tests\Functional\Merchant\Partner;
 
+use DB;
+use Mail;
 use RZP\Models\Batch;
 use RZP\Models\Merchant;
 use RZP\Models\User\Role;
+use Razorpay\OAuth\Application;
 use RZP\Models\Merchant\Request;
 use RZP\Models\Settings\Accessor;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
+use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 
 class PartnerTest extends OAuthTestCase
 {
@@ -1144,6 +1148,171 @@ class PartnerTest extends OAuthTestCase
         $this->ba->adminAuth();
 
         $this->startTest();
+    }
+
+    public function testSendSubmerchantPasswordResetLinkWhenMerchantIsNotAPartner()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testSendSubmerchantPasswordResetLinkWhenSubMerchantUserDoesNotExist()
+    {
+        Mail::fake();
+
+        $this->ba->proxyAuth();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, [
+            'partner_type' => 'aggregator'
+        ]);
+
+        $this->fixtures->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, [
+            'email' => 'testing@example.com',
+        ]);
+
+        $app = factory(Application\Entity::class)->create([
+            'id' => random_integer(10),
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+            'type' => 'partner'
+        ]);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $app->getId(),
+                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            ]
+        );
+
+        $this->startTest();
+
+        Mail::assertQueued(CreateSubMerchantAffiliate::class, 1);
+
+        Mail::assertQueued(CreateSubMerchantAffiliate::class, function($mail) {
+
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('org', $viewData);
+            $this->assertArrayHasKey('token', $viewData);
+            $this->assertArrayHasKey('merchant', $viewData);
+            $this->assertArrayHasKey('subMerchant', $viewData);
+            $this->assertEquals(self::DEFAULT_SUBMERCHANT_ID, $viewData['subMerchant']['id']);
+
+            return true;
+        });
+    }
+
+    public function testSendSubmerchantPasswordResetLinkWhenSubMerchantUserExistAndPartnerMappingDoesNotExist()
+    {
+        Mail::fake();
+
+        $merchantId = self::DEFAULT_MERCHANT_ID;
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, [
+            'partner_type' => 'aggregator',
+            'email'        => 'test@example.com',
+        ]);
+
+        $this->fixtures->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, [
+            'email' => 'testing@example.com',
+        ]);
+
+        $user = $this->fixtures->user->createEntityInTestAndLive('user', ['email' => 'testing@example.com']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $user->getId());
+
+        $app = factory(Application\Entity::class)->create([
+            'id' => random_integer(10),
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+            'type' => 'partner'
+        ]);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $app->getId(),
+                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            ]
+        );
+
+        $this->startTest();
+
+        $mapping = DB::table('merchant_users')->where('merchant_id', '=', self::DEFAULT_SUBMERCHANT_ID)
+                                              ->where('user_id', '=', $user->getId())
+                                              ->get();
+
+        $this->assertNotEmpty($mapping);
+
+        Mail::assertQueued(CreateSubMerchantAffiliate::class, 1);
+
+        Mail::assertQueued(CreateSubMerchantAffiliate::class, function($mail) {
+
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('org', $viewData);
+            $this->assertArrayHasKey('token', $viewData);
+            $this->assertArrayHasKey('merchant', $viewData);
+            $this->assertArrayHasKey('subMerchant', $viewData);
+            $this->assertEquals(self::DEFAULT_SUBMERCHANT_ID, $viewData['subMerchant']['id']);
+
+            return true;
+        });
+    }
+
+    public function testSendSubmerchantPasswordResetLinkWhenSubMerchantUserAndPartnerMappingExist()
+    {
+        Mail::fake();
+
+        $merchantId = self::DEFAULT_MERCHANT_ID;
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, [
+            'partner_type' => 'aggregator',
+            'email'        => 'test@example.com',
+        ]);
+
+        $this->fixtures->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, [
+            'email' => 'testing@example.com',
+        ]);
+
+        $user = $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID,
+                                                             ['email' => 'testing@example.com']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $user->getId());
+
+        $app = factory(Application\Entity::class)->create([
+           'id' => random_integer(10),
+           'merchant_id' => self::DEFAULT_MERCHANT_ID,
+           'type' => 'partner'
+        ]);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $app->getId(),
+                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            ]
+        );
+
+        $this->startTest();
+
+        Mail::assertQueued(CreateSubMerchantAffiliate::class, 1);
+
+        Mail::assertQueued(CreateSubMerchantAffiliate::class, function($mail) {
+
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('org', $viewData);
+            $this->assertArrayHasKey('token', $viewData);
+            $this->assertArrayHasKey('merchant', $viewData);
+            $this->assertArrayHasKey('subMerchant', $viewData);
+            $this->assertEquals(self::DEFAULT_SUBMERCHANT_ID, $viewData['subMerchant']['id']);
+
+            return true;
+        });
     }
 
     protected function createMerchantRequest(

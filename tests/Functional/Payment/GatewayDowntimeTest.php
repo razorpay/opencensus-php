@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\MockHttpResponseTrait;
 
 class GatewayDowntimeTest extends TestCase
 {
@@ -55,6 +56,16 @@ class GatewayDowntimeTest extends TestCase
     {
         $this->testGatewayCreateDowntimeNetbanking();
 
+        $this->startTest();
+    }
+
+    public function testExternalApiHealth()
+    {
+        $this->startTest();
+    }
+
+    public function testExternalApiInvalidUrl()
+    {
         $this->startTest();
     }
 

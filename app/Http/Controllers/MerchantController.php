@@ -1236,4 +1236,18 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    /**
+     * Used when partner wants to send the link to submerchant for password setting.
+     *
+     * @param string $id submerchant id.
+     *
+     * @return mixed
+     */
+    public function sendSubmerchantPasswordResetLink(string $id)
+    {
+        $data = $this->service()->sendSubmerchantPasswordResetLink($id);
+
+        return ApiResponse::json($data);
+    }
 }

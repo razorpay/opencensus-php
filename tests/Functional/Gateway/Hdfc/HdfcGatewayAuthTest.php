@@ -250,6 +250,27 @@ class HdfcGatewayAuthTest extends TestCase
         $this->assertEquals($dataFields, array_keys($content['request']['content']));
     }
 
+    public function testEnrollResponseWithOnlyErrorText()
+    {
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'enroll')
+            {
+                $content = [
+                    'error_text' => '!ERROR!-GW00555-Terminal ID is Deactivated, Please contact PG Helpdesk.',
+                    'trackid'    => $content['trackid'],
+                    'udf1'       => 'test',
+                    'udf2'       => 'a@b.com',
+                    'udf3'       => '9918899029',
+                    'udf4'       => 'test',
+                    'udf5'       => 'test',
+                ];
+            }
+        });
+
+        $this->startTest();
+    }
+
     public function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

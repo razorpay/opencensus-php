@@ -97,16 +97,16 @@ class StatementTest extends TestCase
 
         $txn = $response['items'][0];
 
-        $this->assertEquals($this->transaction['id'], $txn['id']);
+        $this->assertEquals($this->transaction->getPublicId(), $txn['id']);
         $this->assertEquals($this->transaction['amount'], $txn['amount']);
-        $this->assertEquals($this->transaction['entity_id'], $txn['source']['id']);
+        $this->assertEquals($this->transaction->getSignedEntityId(), $txn['source']['id']);
     }
 
     public function testFetchByPayoutId()
     {
         $this->createPayout();
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?payout_id=' . $this->payout['id'];
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?payout_id=' . $this->payout->getPublicId();
 
         $this->ba->privateAuth();
 
@@ -116,9 +116,9 @@ class StatementTest extends TestCase
 
         $txn = $response['items'][0];
 
-        $this->assertEquals($this->transaction['id'], $txn['id']);
+        $this->assertEquals($this->transaction->getPublicId(), $txn['id']);
         $this->assertEquals($this->transaction['amount'], $txn['amount']);
-        $this->assertEquals($this->transaction['entity_id'], $txn['source']['id']);
+        $this->assertEquals($this->transaction->getSignedEntityId(), $txn['source']['id']);
     }
 
     public function testFetchByContactName()
@@ -140,9 +140,9 @@ class StatementTest extends TestCase
 
         $txn = $response['items'][0];
 
-        $this->assertEquals($this->transaction['id'], $txn['id']);
+        $this->assertEquals($this->transaction->getPublicId(), $txn['id']);
         $this->assertEquals($this->transaction['amount'], $txn['amount']);
-        $this->assertEquals($this->transaction['entity_id'], $txn['source']['id']);
+        $this->assertEquals($this->transaction->getSignedEntityId(), $txn['source']['id']);
     }
 
     public function testFetchByContactEmail()
@@ -163,9 +163,9 @@ class StatementTest extends TestCase
 
         $txn = $response['items'][0];
 
-        $this->assertEquals($this->transaction['id'], $txn['id']);
+        $this->assertEquals($this->transaction->getPublicId(), $txn['id']);
         $this->assertEquals($this->transaction['amount'], $txn['amount']);
-        $this->assertEquals($this->transaction['entity_id'], $txn['source']['id']);
+        $this->assertEquals($this->transaction->getSignedEntityId(), $txn['source']['id']);
     }
 
     public function testFetchByContactPhone()
@@ -181,16 +181,16 @@ class StatementTest extends TestCase
 
         $txn = $response['items'][0];
 
-        $this->assertEquals($this->transaction['id'], $txn['id']);
+        $this->assertEquals($this->transaction->getPublicId(), $txn['id']);
         $this->assertEquals($this->transaction['amount'], $txn['amount']);
-        $this->assertEquals($this->transaction['entity_id'], $txn['source']['id']);
+        $this->assertEquals($this->transaction->getSignedEntityId(), $txn['source']['id']);
     }
 
     public function testFetchByFundAccountId()
     {
         $this->createPayout();
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?fund_account_id=' . $this->fundAccount['id'];
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?fund_account_id=' . $this->fundAccount->getPublicId();
 
         $this->ba->privateAuth();
 
@@ -200,9 +200,9 @@ class StatementTest extends TestCase
 
         $txn = $response['items'][0];
 
-        $this->assertEquals($this->transaction['id'], $txn['id']);
+        $this->assertEquals($this->transaction->getPublicId(), $txn['id']);
         $this->assertEquals($this->transaction['amount'], $txn['amount']);
-        $this->assertEquals($this->transaction['entity_id'], $txn['source']['id']);
+        $this->assertEquals($this->transaction->getSignedEntityId(), $txn['source']['id']);
     }
 
 

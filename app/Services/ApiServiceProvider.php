@@ -27,6 +27,7 @@ use RZP\Models\Promotion;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
+use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Models\BankTransfer;
 use RZP\Constants\Entity as E;
@@ -128,17 +129,16 @@ class ApiServiceProvider extends BaseServiceProvider
                 return new Mock\TokenEx($app);
             }
 
-            $requestId = $app['request']->getId();
+            return new CardVault($app);
+        });
 
-            $mode = $app['rzp.mode'] ?? 'test';
+        $this->app->singleton('card.cardVault', function($app)
+        {
+            $cardVaultMock = $app['config']->get('applications.card_vault.mock');
 
-            $cardVault = $app->razorx->getTreatment($requestId, 'api_card_vault', $mode);
-
-            if (($this->app->environment('testing') === true) or
-                ($cardVault === 'off') or
-                ($cardVault === 'control'))
+            if ($cardVaultMock === true)
             {
-                return new TokenEx($app);
+                return new Mock\CardVault($app);
             }
 
             return new CardVault($app);
@@ -457,6 +457,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'settlement'                => Settlement\Entity::class,
             'payout'                    => Payout\Entity::class,
             'transaction'               => Transaction\Entity::class,
+            'fund_account_validation'   => FundAccount\Validation\Entity::class,
             'customer_transaction'      => Customer\Transaction\Entity::class,
 
             'bank_account'              => BankAccount\Entity::class,

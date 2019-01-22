@@ -2938,6 +2938,16 @@ class Entity extends Base\PublicEntity
         return 'payment:fallback.' . $this->getId() . '.card_number';
     }
 
+    public function getCacheRedirectInputKey(): string
+    {
+        return 'payment:redirect.' . $this->getId() . '.input';
+    }
+
+    public static function getRedirectToAuthorizeTrackIdKey(string $trackId): string
+    {
+        return 'payment:redirect.authorize.' . $trackId . '.encrypt';
+    }
+
     public function getTransactionType()
     {
         if ($this->isRecurring() === true)

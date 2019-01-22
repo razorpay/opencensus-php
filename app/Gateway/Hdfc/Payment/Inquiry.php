@@ -201,7 +201,7 @@ trait Inquiry
 
         if (empty($content['trackid']) === false)
         {
-            assert ($content['trackid'] === $input['payment']['id']);
+            assertTrue ($content['trackid'] === $input['payment']['id']);
         }
 
         if ((isset($content['result'])) and

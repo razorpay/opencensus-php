@@ -109,5 +109,11 @@ class ErrorCodes extends Base\ErrorCodes\BaseCodes
         'XD'    => ErrorCode::GATEWAY_ERROR_CARD_INVALID_AMOUNT,
         'U96'   => ErrorCode::BAD_REQUEST_PAYMENT_UPI_DEBIT_AND_CREDIT_SAME_ACCOUNT,
         'XK'    => ErrorCode::BAD_REQUEST_PAYMENT_UPI_FUNCTION_NOT_SUPPORTED,
+        'T03'   => ErrorCode::GATEWAY_ERROR_INVALID_FORMAT,
+        'L04'   => ErrorCode::GATEWAY_ERROR_INVALID_FORMAT,
+        'R02'   => ErrorCode::GATEWAY_ERROR_INVALID_FORMAT,
+        'A09'   => ErrorCode::GATEWAY_ERROR_INVALID_FORMAT,
+        'U78'   => ErrorCode::GATEWAY_ERROR_BENEFICIARY_CBS_OFFLINE,
+        'L05'   => ErrorCode::GATEWAY_ERROR_TIMED_OUT,
     ];
 }

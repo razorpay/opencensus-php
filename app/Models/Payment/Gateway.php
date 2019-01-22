@@ -66,6 +66,7 @@ class Gateway
     const UPI_AXIS               = 'upi_axis';
     const UPI_ICICI              = 'upi_icici';
     const UPI_HULK               = 'upi_hulk';
+    const UPI_RBL                = 'upi_rbl';
     const UPI_YESBANK            = 'upi_yesbank';
     const AEPS_ICICI             = 'aeps_icici';
     const ISG                    = 'isg';
@@ -479,13 +480,13 @@ class Gateway
      */
     public static $scroogeGateways = [
         Payment\Gateway::AMEX => [
-            self::GO_LIVE_TIMESTAMP => 1547115346
+            self::GO_LIVE_TIMESTAMP => 1547183527
         ],
         Payment\Gateway::SHARP => [
             self::GO_LIVE_TIMESTAMP => 1535712088
         ],
         Payment\Gateway::HDFC => [
-            self::GO_LIVE_TIMESTAMP => 1546592646
+            self::GO_LIVE_TIMESTAMP => 1547176106
         ],
         Payment\Gateway::AXIS_MIGS      => [
             self::GO_LIVE_TIMESTAMP => 1542272247
@@ -742,6 +743,7 @@ class Gateway
         self::UPI_SBI,
         self::SHARP,
         self::UPI_AXIS,
+        self::UPI_RBL,
         self::UPI_YESBANK,
     ];
 
@@ -1110,6 +1112,7 @@ class Gateway
         Gateway::NETBANKING_CORPORATION,
         Gateway::SHARP,
         Gateway::UPI_AXIS,
+        Gateway::UPI_RBL,
         Gateway::UPI_YESBANK,
     ];
 
@@ -1291,6 +1294,7 @@ class Gateway
         Gateway::UPI_HULK,
         Gateway::UPI_MINDGATE,
         Gateway::UPI_AXIS,
+        Gateway::UPI_RBL,
     ];
 
     public static $upiValidateVpaTerminals = [
