@@ -359,7 +359,7 @@ class Gateway
 
     public function setMock($mock)
     {
-        assert (is_bool($mock));
+        assertTrue (is_bool($mock));
 
         $this->mock = $mock;
     }
@@ -868,6 +868,21 @@ class Gateway
                 'request'    => $request,
                 'gateway'    => $this->gateway,
                 'payment_id' => $input['payment']['id'],
+            ]);
+    }
+
+    protected function traceGatewayPaymentResponseForMozart(
+        $response,
+        $input,
+        $traceCode = TraceCode::GATEWAY_RESPONSE)
+    {
+        $this->trace->info(
+            $traceCode,
+            [
+                'action'     => $this->action,
+                'response'   => $response,
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['entities']['payment']['id'],
             ]);
     }
 
@@ -1454,5 +1469,80 @@ class Gateway
         $cachePrefix = 'gateway';
 
         return sprintf($cachePrefix.':'.'%s_netbanking_url', $bank);
+    }
+
+    protected function sendMozartRequest(array $input)
+    {
+        $baseUrl = $this->app['config']->get('applications.mozart.url');
+
+        $url =  $baseUrl . 'payments/' . $this->gateway. '/v1/' . $this->action;
+
+        $authentication = [
+            'api',
+            $this->app['config']->get('applications.mozart.password')
+        ];
+
+        $input['terminal'] = $input['terminal']->toArrayWithPassword();
+
+        $requestBody['entities'] = $input;
+
+        $request = [
+            'url' => $url,
+            'method' => 'POST',
+            'headers' => [
+                'Content-Type'  => 'application/json',
+                'X-Task-ID'     => $this->app['request']->getTaskId(),
+            ],
+            'content' => json_encode($requestBody),
+            'options' => [
+                'auth' => $authentication
+            ]
+        ];
+
+        $response = $this->sendGatewayRequest($request);
+
+        $responseBody = json_decode($response->body, true);
+
+        $this->traceGatewayPaymentResponseForMozart($responseBody ?? '', $requestBody);
+
+        unset($responseBody['data']['_raw']);
+
+        if (in_array($this->action, ['pay_init', 'authenticate_init', 'authenticate_verify'], true) === true)
+        {
+            $this->action = 'authorize';
+        }
+
+        $attributes = $this->getMappedAttributes($responseBody['data']);
+
+        if ($this->action === Action::VERIFY)
+        {
+            return $responseBody;
+        }
+        if (isset($this->gatewayPayment) === true)
+        {
+            $this->gatewayPayment = $this->updateGatewayPaymentEntity($this->gatewayPayment, $attributes, false);
+        }
+        else
+        {
+            $this->gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input);
+        }
+
+       $this->checkErrorsAndThrowExceptionFromMozartResponse($responseBody);
+
+       return $responseBody['next']['redirect'] ?? null;
+    }
+
+    protected function checkErrorsAndThrowExceptionFromMozartResponse(array $response)
+    {
+        if ($response['success'] !== true)
+        {
+            throw new Exception\GatewayErrorException(
+                $response['error']['internal_error_code'] ?? 'BAD_REQUEST_PAYMENT_FAILED',
+                $response['error']['gateway_error_code'] ?? 'gateway_error_code',
+                $response['error']['gateway_error_description'] ?? 'gateway_error_desc',
+                [],
+                null,
+                $this->action);
+        }
     }
 }

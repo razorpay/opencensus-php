@@ -47,10 +47,10 @@ class Hitachi extends BaseProcessor
                 Terminal\Entity::GATEWAY_ACQUIRER    => Payment\Gateway::ACQUIRER_RATN,
                 Terminal\Entity::CARD                => 1,
                 Terminal\Entity::TYPE                => [
-                    Terminal\Type::NON_RECURRING     => 1,
-                    Terminal\Type::RECURRING_3DS     => 1,
-                    Terminal\Type::RECURRING_NON_3DS => 1,
-                    Terminal\Type::DEBIT_RECURRING   => 1,
+                    Terminal\Type::NON_RECURRING     => '1',
+                    Terminal\Type::RECURRING_3DS     => '1',
+                    Terminal\Type::RECURRING_NON_3DS => '1',
+                    Terminal\Type::DEBIT_RECURRING   => '1',
                 ],
                 Terminal\Entity::CATEGORY            => $category,
                 Terminal\Entity::CURRENCY            => $currency
@@ -68,7 +68,8 @@ class Hitachi extends BaseProcessor
                 }
             }
 
-            $entry[Batch\Header::STATUS]            = Batch\Status::SUCCESS;
+            $entry[Batch\Header::STATUS]              = Batch\Status::SUCCESS;
+            $entry[Batch\Header::HITACHI_TERMINAL_ID] = $terminal[Terminal\Entity::ID];
         }
         catch (BaseException $e)
         {

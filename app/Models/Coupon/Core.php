@@ -13,8 +13,6 @@ class Core extends Base\Core
 {
     const SUCCESS_MESSAGE = 'Coupon Applied Successfully';
 
-    const SUCCESS_MESSAGE_COUPON_VALID = 'Coupon is valid';
-
     public function create(array $input): Entity
     {
         $coupon = (new Entity)->build($input);
@@ -67,16 +65,47 @@ class Core extends Base\Core
         return $coupon;
     }
 
-    public function apply(Merchant\Entity $merchant, Entity $coupon,bool $isCheck = false): array
+    /**
+     * @param Merchant\Entity $merchant
+     * @param array $input
+     * @return mixed|Entity
+     * @throws Exception\BadRequestException
+     */
+    public function validateAndGetDetails(Merchant\Entity $merchant, array $input): Entity
     {
+        $coupon = $this->getCouponByCode($merchant, $input);
+
         $this->validateMerchantPromotion($merchant, $coupon);
 
-        if($isCheck === true)
+        return $coupon;
+    }
+
+    /**
+     *  Validating and Checking whether coupon and merchant is valid
+     *
+     * @param Merchant\Entity $merchant
+     * @param array $input
+     * @return mixed
+     * @throws Exception\BadRequestException
+     */
+    protected function getCouponByCode(Merchant\Entity $merchant, array $input): Entity
+    {
+        $coupon = $this->repo->coupon->fetchByCodeWithRelations($input[Entity::CODE], $merchant->getId());
+
+        if ($coupon === null)
         {
-            return [
-                'message'  =>  self::SUCCESS_MESSAGE_COUPON_VALID
-            ];
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_COUPON_CODE,
+                null,
+                $input);
         }
+
+        return $coupon;
+    }
+
+    public function apply(Merchant\Entity $merchant, array $input): array
+    {
+        $coupon = $this->validateAndGetDetails($merchant, $input);
 
         $this->applyMerchantPromotion($merchant, $coupon);
 
@@ -86,7 +115,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Check if the coupon is valid for given merchant
+     * Check if the coupon has been used by the merchant
      *
      * @param Merchant\Entity $merchant
      * @param Entity          $coupon

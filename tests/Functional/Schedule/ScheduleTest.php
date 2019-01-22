@@ -48,6 +48,21 @@ class ScheduleTest extends TestCase
         $this->assertArraySelectiveEquals($data, $schedule);
     }
 
+    public function testCreateScheduleWithoutType()
+    {
+        $schedule = $this->createSchedule([
+            'name'       => 'Every Wednesday',
+            'period'     => 'weekly',
+            'interval'   => 1,
+            'delay'      => 1,
+            'anchor'     => 3,
+        ]);
+
+        $data = $this->testData['testCreateSchedule'];
+
+        $this->assertArraySelectiveEquals($data, $schedule);
+    }
+
     public function testEditSchedule()
     {
         $schedule = $this->createSchedule();
@@ -86,11 +101,11 @@ class ScheduleTest extends TestCase
 
     public function testScheduleInvalidType()
     {
-        $this->markTestSkipped('No type in schedules now');
+        //$this->markTestSkipped('No type in schedules now');
 
         $input = $this->getDefaultScheduleArray();
 
-        $input['type'] = 'not_settlement';
+        $input['type'] = 'invalidType';
 
         $data = $this->testData[__FUNCTION__];
 

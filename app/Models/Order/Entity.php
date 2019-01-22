@@ -186,10 +186,6 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_DUE,
     ];
 
-    protected static $generators = [
-        self::FORCE_OFFER,
-    ];
-
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
@@ -207,6 +203,10 @@ class Entity extends Base\PublicEntity
     protected static $sign = 'order';
 
     protected $entity = 'order';
+
+    protected static $generators = [
+        self::FORCE_OFFER,
+    ];
 
     /** Related Models */
 

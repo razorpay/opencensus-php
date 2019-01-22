@@ -260,8 +260,8 @@ class Service extends Base\Service
     {
         $processor = $this->getNewProcessor($payment->merchant);
 
-        $processor->refundPaymentViaMerchant(
-                        $payment->getPublicId(),
+        $processor->refundCapturedPayment(
+                        $payment,
                         [
                             'amount' => $amount,
                         ]);

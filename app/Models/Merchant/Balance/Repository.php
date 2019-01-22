@@ -34,7 +34,7 @@ class Repository extends Base\Repository
 
     public function getBalanceLockForUpdate($id)
     {
-        assert ($this->isTransactionActive());
+        assertTrue ($this->isTransactionActive());
 
         return Entity::lockForUpdate()->newQuery()
                                       ->merchantIdAndType($id)
@@ -44,7 +44,7 @@ class Repository extends Base\Repository
     // not in use
     public function getMerchantBalanceLockForUpdate($merchant)
     {
-        assert ($this->isTransactionActive());
+        assertTrue ($this->isTransactionActive());
 
         return $this->getBalanceLockForUpdate($merchant->getKey());
     }
@@ -70,7 +70,7 @@ class Repository extends Base\Repository
 
     private function editMerchantAmountCreditsInTransaction($merchant, $amountCredits, $channel)
     {
-        assert ($this->isTransactionActive());
+        assertTrue ($this->isTransactionActive());
 
         $balance = $this->findOrFail($merchant->getId());
 
@@ -113,7 +113,7 @@ class Repository extends Base\Repository
 
     private function editMerchantFeeCreditsInTransaction($merchant, $feeCredits, $channel)
     {
-        assert ($this->isTransactionActive());
+        assertTrue ($this->isTransactionActive());
 
         $balance = $this->findOrFail($merchant->getId());
 
@@ -126,7 +126,7 @@ class Repository extends Base\Repository
 
     private function editMerchantRefundCreditsInTransaction($merchant, $credits, $channel)
     {
-        assert ($this->isTransactionActive());
+        assertTrue ($this->isTransactionActive());
 
         $balance = $this->findOrFail($merchant->getId());
 
@@ -139,14 +139,14 @@ class Repository extends Base\Repository
 
     public function updateBalance($balance)
     {
-        assert ($this->isTransactionActive());
+        assertTrue ($this->isTransactionActive());
 
         $balance->saveOrFail();
     }
 
     public function createBalance($balance)
     {
-        assert ($balance->exists === false);
+        assertTrue ($balance->exists === false);
 
         $balance->saveOrFail();
     }
@@ -160,7 +160,7 @@ class Repository extends Base\Repository
 
     public function getKotakBalance()
     {
-        assert ($this->isTransactionActive());
+        assertTrue ($this->isTransactionActive());
 
         return $this->findOrFail(Merchant\Account::NODAL_ACCOUNT);
     }
@@ -174,14 +174,14 @@ class Repository extends Base\Repository
 
     public function getKotakBalanceLockForUpdate()
     {
-        assert ($this->isTransactionActive());
+        assertTrue ($this->isTransactionActive());
 
         return $this->getBalanceLockForUpdate(Merchant\Account::NODAL_ACCOUNT);
     }
 
     public function getAtomBalanceLockForUpdate()
     {
-        assert ($this->isTransactionActive());
+        assertTrue ($this->isTransactionActive());
 
         return $this->getBalanceLockForUpdate(Merchant\Account::ATOM_ACCOUNT);
     }

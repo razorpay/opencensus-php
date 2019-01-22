@@ -4,8 +4,8 @@ namespace RZP\Models\Gateway\Terminal;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Terminal\Core;
 use RZP\Gateway\Base\Terminal;
 
 class Service extends Base\Service
@@ -31,11 +31,9 @@ class Service extends Base\Service
         $merchantDetail = $merchant->merchantDetail->toArray();
 
         $gateway = $input['gateway'];
-
-        $pgMerchant =$this->repo->merchant->findByPublicId($input['terminal']['pg_merchant_id']);
-
+        
         $gatewayData = [
-            'merchant'          => $pgMerchant,
+            'merchant'          => $merchant,
             'merchant_details'  => $merchantDetail,
             'gateway_input'     => $input[self::GATEWAY_INPUT],
         ];
@@ -47,7 +45,7 @@ class Service extends Base\Service
                                                         $gatewayData,
                                                         $this->mode);
 
-            $terminal = (new \RZP\Models\Terminal\Core)->create($terminalData, $pgMerchant);
+            $terminal = (new Core)->create($terminalData, $merchant);
 
             return $terminal->toArrayPublic();
         }

@@ -21,6 +21,7 @@ use RZP\Models\State\Reason;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Constants;
 use RZP\Models\Merchant\Action as Action;
+use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
@@ -209,6 +210,27 @@ class Core extends Base\Core
 
             return $response;
         });
+    }
+
+    /**
+     * Logs for debugging merchant activated =  false issue for some whitelist merchant
+     *
+     * @param Merchant\Entity $merchant
+     * @param Entity          $merchantDetails
+     * @param string          $traceContext
+     */
+    public function addLogForDebugging(Merchant\Entity $merchant, Entity $merchantDetails, string $traceContext)
+    {
+        if (($merchantDetails->getActivationFlow() === ActivationFlow::WHITELIST) and
+            ($merchant->isActivated() === false))
+        {
+            $data = [
+                EntityConstant::MERCHANT        => $merchant->toArrayPublic(),
+                EntityConstant::MERCHANT_DETAIL => $merchantDetails->toArrayPublic()
+            ];
+
+            $this->trace->info($traceContext, $data);
+        }
     }
 
     /**

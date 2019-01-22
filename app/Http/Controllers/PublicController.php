@@ -118,7 +118,7 @@ class PublicController extends Controller
         }
         else if (isset($postParams['error']))
         {
-            assert (isset($postParams['action']) === false);
+            assertTrue (isset($postParams['action']) === false);
 
             // just pass in error.
             $data['error'] = $postParams['error'];
@@ -135,12 +135,25 @@ class PublicController extends Controller
         return View::make('public.callback_params', $data);
     }
 
-    public function renderEmbedded()
-    {
+    public function getEmbeddedCommon($meta) {
         return View::make('public.embedded', [
             'key'          => $this->ba->getPublicKey(),
-            'options'      => json_encode(Request::all()),
-            'script'       => $this->config->get('url.cdn.production') . '/static/hosted/embedded.js'
+            'options'      => json_encode(Request::all(), JSON_FORCE_OBJECT),
+            'meta'         => json_encode($meta, JSON_FORCE_OBJECT),
+            'script'       => $this->config->get('url.cdn.production') . '/static/hosted/embedded.js',
+            'urls'         => "{}"
+        ]);
+    }
+
+    public function renderEmbedded()
+    {
+        return $this->getEmbeddedCommon([]);
+    }
+
+    public function renderHdfcVas()
+    {
+        return $this->getEmbeddedCommon([
+            'type' => 'hdfcvas'
         ]);
     }
 
@@ -161,6 +174,7 @@ class PublicController extends Controller
             $data = [
                 'key'          => $key,
                 'options'      => $options,
+                'meta'         => "{}",
                 'script'       => $embeddedJsUrl,
                 'urls'         => $urls,
             ];

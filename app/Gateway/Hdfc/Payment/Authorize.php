@@ -246,6 +246,18 @@ trait Authorize
             $result = $authResponse['data']['Error'];
         }
 
+        if ((isset($authResponse['data']['Error']) === true) and
+            (isset($authResponse['data']['result']) === true) and
+            ($authResponse['data']['Error'] !== '') and
+            ($result === Payment\Result::AUTH_ERROR_IPAY))
+        {
+            //
+            // If Error is set then it is given higher priority than result for failure cases only
+            // if result is AUTH+ERROR
+            //
+            $result = $authResponse['data']['Error'];
+        }
+
         //
         // Check enroll result code.
         //

@@ -68,7 +68,7 @@ class Gateway extends Base\Gateway
         // RefundStatus is null.
 
         // assert ($payment['RefStatus'] === null);
-        assert ($gatewayPayment['AuthStatus'] === AuthStatus::SUCCESS);
+        assertTrue ($gatewayPayment['AuthStatus'] === AuthStatus::SUCCESS);
     }
 
     public function callback(array $input)
@@ -293,7 +293,7 @@ class Gateway extends Base\Gateway
 
         // The transaction id for the refund should be present. Otherwise, it means that
         // the refund should come via normal flow and not via manualGatewayRefund.
-        assert ($input['refund'][Payment\Refund\Entity::TRANSACTION_ID] !== null);
+        assertTrue ($input['refund'][Payment\Refund\Entity::TRANSACTION_ID] !== null);
 
         return true;
     }
@@ -1104,13 +1104,13 @@ class Gateway extends Base\Gateway
             // If merchant is tpv then terminal should also be tpv
             if ($this->input['merchant']->isTPVRequired())
             {
-                assert ($this->input['terminal']->isTpvAllowed() === true);
+                assertTrue ($this->input['terminal']->isTpvAllowed() === true);
 
                 return true;
             }
 
             // If merchant is not tpv then terminal should also not be tpv
-            assert ($this->input['terminal']->isNonTpvAllowed() === true);
+            assertTrue ($this->input['terminal']->isNonTpvAllowed() === true);
         }
 
         return false;

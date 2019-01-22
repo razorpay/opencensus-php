@@ -30,7 +30,7 @@ class CreatePricing extends Migration
             $table->string(Pricing::PRODUCT, 255)
                   ->default(Product::PRIMARY);
 
-            $table->string(Pricing::FEATURE, 20);
+            $table->string(Pricing::FEATURE, 255);
 
             $table->string(Pricing::GATEWAY)
                   ->nullable();
