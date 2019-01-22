@@ -14,8 +14,6 @@ class EmandateSorterTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__ . '/EnachRblGatewayTestData.php';
-
         parent::setUp();
 
         $this->fixtures->create(Entity::CUSTOMER);
@@ -101,7 +99,7 @@ class EmandateSorterTest extends TestCase
     }
 
 
-    protected function runPaymentCallbackFlowEnachRbl($response, &$callback = null)
+    protected function runPaymentCallbackFlowNetbanking($response, &$callback = null)
     {
         $mock = $this->isGatewayMocked();
 
@@ -113,20 +111,17 @@ class EmandateSorterTest extends TestCase
                 $url, $method, $content);
         }
 
-        if($this->isNpciEmandateFlow($content) === true)
+        $response = $this->sendRequest($request);
+
+        $this->assertEquals($response->getStatusCode(), '302');
+
+        $data = array(
+            'url' => $response->headers->get('location'),
+            'method' => 'post');
+
+        if (filter_var($data['url'], FILTER_VALIDATE_URL))
         {
-            $response = $this->sendRequest($request);
-
-            $this->assertEquals($response->getStatusCode(), '302');
-
-            $data = array(
-                'url' => $response->headers->get('location'),
-                'method' => 'post');
-
-            if (filter_var($data['url'], FILTER_VALIDATE_URL))
-            {
-                return $this->submitPaymentCallbackRedirect($data['url']);
-            }
+            return $this->submitPaymentCallbackRedirect($data['url']);
         }
 
         return $this->submitPaymentCallbackRequest($request);
