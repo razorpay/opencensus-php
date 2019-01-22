@@ -205,9 +205,8 @@ export default class CreateMerchantReportConfig extends Component {
                 {...this.state.configComponents.data}
                 loadingConfigComponents={this.state.configComponents.loading}
                 ref={ref => (this.configDetails = ref)}
-                fieldsMap={getInternalFielsMap(
-                  (this.props.values.template || {}).fields_map
-                )}
+                fieldsMap={(this.props.values.template || {}).fields_map}
+                outputFields={(this.props.values.template || {}).output_fields}
                 filters={(this.props.values.template || {}).filters}
               />
               <AsyncButton
@@ -224,16 +223,6 @@ export default class CreateMerchantReportConfig extends Component {
       </>
     );
   }
-}
-
-function getInternalFielsMap(fieldsMap = {}) {
-  return Object.keys(fieldsMap).reduce(
-    (map, field) => ({
-      ...map,
-      [fieldsMap[field][0]]: field,
-    }),
-    {}
-  );
 }
 
 const selfServeReportBase = 'live/admin-reporting/';
