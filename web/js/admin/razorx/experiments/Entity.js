@@ -3,7 +3,7 @@ import { openModal, notifyError } from 'common/modal';
 import { formatDate, titleCase, classList } from 'common/util';
 import { rexFetch, rexPatch } from 'admin/razorx/fetch';
 import AsyncButton from 'ui/AsyncButton';
-import ExperimentsModal from './ExperimentsModal';
+import ExperimentsModal from './Modal';
 
 const dummy_data = {
   id: 201,

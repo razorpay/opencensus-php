@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { openModal, notifyError } from 'common/modal';
 import { formatDate, titleCase } from 'common/util';
 import { rexFetch } from 'admin/razorx/fetch';
-import FeaturesModal from './FeaturesModal';
+import FeaturesModal from './Modal';
 
 const dummy_data = {
   id: 182,
