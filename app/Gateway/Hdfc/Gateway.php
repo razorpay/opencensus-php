@@ -946,6 +946,13 @@ class Gateway extends Base\Gateway
 
         $gatewayErrorCode = $error['code'];
 
+        // We would like to use authRespCode for gateway error code over rzp defined error code from result
+        // error_code_tag and authRespCode will never occur together. Hence this would not override that
+        if ((isset($error['authRespCode']) === true) and ($error['authRespCode'] !== ''))
+        {
+            $gatewayErrorCode = $error['authRespCode'];
+        }
+
         $apiErrorCode = Hdfc\ErrorCodes\ErrorCodes::getInternalErrorCode($error);
 
         $gatewayErrorDesc = Hdfc\ErrorCodes\ErrorCodeDescriptions::getGatewayErrorDescription($error);

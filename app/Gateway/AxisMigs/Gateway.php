@@ -377,8 +377,8 @@ class Gateway extends Base\Gateway
 
         $txnNo = $input['gateway']['vpc_TransactionNo'];
         $txnNo = (int) $txnNo;
-        assert (strlen($txnNo) === 10);
-        assert (is_integer($txnNo) === true);
+        assertTrue (strlen($txnNo) === 10);
+        assertTrue (is_integer($txnNo) === true);
 
         $terminalId = $input['terminal']['id'];
 
@@ -497,7 +497,7 @@ class Gateway extends Base\Gateway
 
     protected function captureAuthorizedPayment(array $input)
     {
-        assert ($input['payment']['status'] === 'authorized');
+        assertTrue ($input['payment']['status'] === 'authorized');
 
         $gatewayPayment = $this->repo->findByPaymentIdAndCommandOrFail(
             $input['payment']['id'], Command::PAY);
@@ -613,7 +613,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            assert ($content['vpc_DRExists'] === 'Y');
+            assertTrue ($content['vpc_DRExists'] === 'Y');
 
             $this->verifyPaymentReconcileWithGatewayResponse($content, $verify);
         }
@@ -1121,7 +1121,7 @@ class Gateway extends Base\Gateway
 
     protected function addTestCardDetailsInTestMode(array & $content)
     {
-        assert ($this->mode === Mode::TEST);
+        assertTrue ($this->mode === Mode::TEST);
 
         if ($content['vpc_CardNum'] === '4111111111111111')
         {

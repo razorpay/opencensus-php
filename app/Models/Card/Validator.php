@@ -31,6 +31,10 @@ class Validator extends Base\Validator
         Entity::IIN                => 'required|numeric|digits:6'
     ];
 
+    protected static $tokenMigrationRules = [
+        'limit'              => 'sometimes|numeric',
+    ];
+
     protected static $cardNumberRules = [
         'card_number'              => 'required|numeric|luhn|digits_between:12,19',
     ];

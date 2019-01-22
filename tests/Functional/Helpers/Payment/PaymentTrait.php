@@ -62,6 +62,8 @@ trait PaymentTrait
 
     protected $merchantCallbackFlow = false;
 
+    protected $redirectToAuthorize = false;
+
     /**
      * For certain payments, user has the option to fail it
      * on the bank page. If this property is set to true in
@@ -1632,6 +1634,18 @@ trait PaymentTrait
         ];
 
         $url = \URL::route('payment_redirect_3ds', $params, false);
+        $url = 'http://localhost' . $url;
+
+        return $url;
+    }
+
+    public function getPaymentRedirectToAuthorizrUrl($trackId)
+    {
+        $params = [
+            'id' => $trackId,
+        ];
+
+        $url = \URL::route('payment_redirect_to_authoize', $params, false);
         $url = 'http://localhost' . $url;
 
         return $url;

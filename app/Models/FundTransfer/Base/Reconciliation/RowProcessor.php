@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\FundAccount\Validation;
 use RZP\Models\FundTransfer\Attempt\Lock;
 use RZP\Models\FundTransfer\Attempt\Metric;
 

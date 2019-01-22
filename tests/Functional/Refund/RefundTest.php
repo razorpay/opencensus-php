@@ -81,6 +81,19 @@ class RefundTest extends TestCase
         Mail::assertQueued(RefundedMail::class);
     }
 
+    public function testRefundWhenDisabledOnMerchant()
+    {
+        $this->fixtures->merchant->addFeatures('disable_refunds');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment');
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+    }
+
     public function testVoidRefundFeatureDeactivated()
     {
         $payment = $this->getDefaultPaymentArray();

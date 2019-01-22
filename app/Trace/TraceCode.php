@@ -9,6 +9,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     /*
      * Payment component error messages
      */
+
+    const GATEWAY_HEALTH_CHECK_REQUEST                  = 'GATEWAY_HEALTH_CHECK_REQUEST';
     const PAYMENT_NEW_REQUEST                           = 'PAYMENT_NEW_REQUEST';
     const PAYMENT_CREATED                               = 'PAYMENT_CREATED';
     const PAYMENT_CREATED_RESPONSE                      = 'PAYMENT_CREATED_RESPONSE';
@@ -456,6 +458,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const COUPON_DELETE_REQUEST                         = 'COUPON_DELETE_REQUEST';
     const COUPON_DELETED                                = 'COUPON_DELETED';
     const COUPON_UPDATE_REQUEST                         = 'COUPON_UPDATE_REQUEST';
+    const COUPON_VALIDATE_REQUEST                       = 'COUPON_VALIDATE_REQUEST';
 
     const ITEM_CREATE_REQUEST                           = 'ITEM_CREATE_REQUEST';
     const ITEM_UPDATE_REQUEST                           = 'ITEM_UPDATE_REQUEST';
@@ -1539,9 +1542,22 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_DISPATCH_FOR_PAYOUT_COMPLETE    = 'FTA_DISPATCH_FOR_PAYOUT_COMPLETE';
     const FTA_RECONCILIATION_JOB_RELEASED     = 'FTA_RECONCILIATION_JOB_RELEASED';
 
+    // redirect to authorize trace code
+    const PAYMENT_CREATED_IN_REDIRECT_TO_AUTHORIZE_FLOW  = 'PAYMENT_CREATED_IN_REDIRECT_TO_AUTHORIZE_FLOW';
+    const PAYMENT_REDIRECT_TO_AUTHORIZE_VALIDATION_ERROR = 'PAYMENT_REDIRECT_TO_AUTHORIZE_VALIDATION_ERROR';
+    const PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST          = 'PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST';
+    const PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST_PAYLOAD  = 'PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST_PAYLOAD';
+    const PAYMENT_REDIRECT_TO_AUTHORIZE_FAILURE          = 'PAYMENT_REDIRECT_TO_AUTHORIZE_FAILURE';
+    const PAYMENT_REDIRECT_TO_AUTHORIZE_PAYMENT          = 'PAYMENT_REDIRECT_TO_AUTHORIZE_PAYMENT';
+
     const CARD_DETOKENIZE_MIGRATION_REQUEST     = 'CARD_DETOKENIZE_MIGRATION_REQUEST';
     const CARD_DETOKENIZE_MIGRATION_RESPONSE    = 'CARD_DETOKENIZE_MIGRATION_RESPONSE';
     const CARD_DETOKENIZE_MIGRATION_FAILED      = 'CARD_DETOKENIZE_MIGRATION_FAILED';
+
+    // vault migration
+    const TOKENEX_MIGRATION_REQUEST           = 'TOKENEX_MIGRATION_REQUEST';
+    const TOKENEX_MIGRATION_FAILED            = 'TOKENEX_MIGRATION_FAILED';
+    const TOKENEX_MIGRATION_RESPONSE          = 'TOKENEX_MIGRATION_RESPONSE';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

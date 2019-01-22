@@ -186,6 +186,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH                           = 'Payment currency provided does not match with the currency in order';
     const BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID                                = 'Payment already done for this order.';
     const BAD_REQUEST_REFUND_FAILED                                             = 'Refund failed';
+    const BAD_REQUEST_REFUND_NOT_ALLOWED                                        = 'Refunds cannot be created on your account.';
     const BAD_REQUEST_PAYMENT_ALREADY_REFUNDED                                  = 'Refund failed';
     const BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE                                 = 'Your account does not have enough balance to carry out the refund operation. You can add funds to your account from your Razorpay dashboard or capture new payments.';
     const BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS                                 = 'Your account does not have enough credits to carry out the refund operation.';
@@ -248,6 +249,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_SCHEDULE                                          = 'Schedule cannot be created, it is invalid.';
     const BAD_REQUEST_SCHEDULE_REQUIRED                                         = 'Mandatory param: Schedule not given.';
     const BAD_REQUEST_SCHEDULE_INVALID_PERIOD                                   = 'Invalid period, must be among hourly, daily, weekly, monthly-date, and monthly-week';
+    const BAD_REQUEST_SCHEDULE_INVALID_TYPE                                     = 'Invalid type, must be among settlement, subscription';
     const BAD_REQUEST_SCHEDULE_ANCHOR_NOT_PERMITTED                             = 'Setting anchor is not permitted for the schedule.';
     const BAD_REQUEST_SCHEDULE_HOURLY_HOUR_NOT_PERMITTED                        = 'Setting hour is not permitted for hourly schedules';
     const BAD_REQUEST_SCHEDULE_HOURLY_WITHOUT_INTERVAL                          = 'Hourly schedules require an interval to be set.';
@@ -766,4 +768,5 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_UPI_DEBIT_AND_CREDIT_SAME_ACCOUNT                     = 'The debit and credit for the transaction is done on the same account';
     const BAD_REQUEST_INVALID_ACCOUNT_TYPE_PASSED_FOR_MODE                          = 'The mode is not valid for the given account type';
     const BAD_REQUEST_INVALID_AMOUNT_PASSED_FOR_ACCOUNT_TYPE                        = 'Amount exceeds the max amount for the given account type';
+    const BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE                          = 'Payment failed';
 }

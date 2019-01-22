@@ -21,6 +21,7 @@ use RZP\Models\Coupon;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Models\Schedule;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -268,12 +269,14 @@ class Service extends Base\Service
      * @param Entity      $aggregator
      * @param User\Entity $user
      * @param bool        $createdNewUser
+     * @param bool        $retry
      */
     protected function sendSubMerchantCreationMail(
         Entity $subMerchant,
         Entity $aggregator,
         User\Entity $user = null,
-        bool $createdNewUser = false)
+        bool $createdNewUser = false,
+        bool $retry = false)
     {
         $isPartnerFlow = $aggregator->isPartner();
 
@@ -283,7 +286,7 @@ class Service extends Base\Service
 
         if ($isPartnerFlow === true)
         {
-            $this->sendNewSubMerchantCreationMails($subMerchant, $aggregator, $user, $createdNewUser);
+            $this->sendNewSubMerchantCreationMails($subMerchant, $aggregator, $user, $createdNewUser, $retry);
         }
         else
         {
@@ -298,24 +301,32 @@ class Service extends Base\Service
      * @param array       $aggregator
      * @param User\Entity $user
      * @param bool        $createdNewUser
+     * @param bool        $retry
      */
     protected function sendNewSubMerchantCreationMails(
         array $subMerchant,
         array $aggregator,
         User\Entity $user = null,
-        bool $createdNewUser = false)
+        bool $createdNewUser = false,
+        bool $retry = false)
     {
-        // This mail goes to the partner who has added the sub-merchant
-        $createSubMerchantPartnerMail = new CreateSubMerchantPartner($subMerchant, $aggregator);
+        // This mail goes to the partner who has added the sub-merchant. If the partner is adding the merchant then mail
+        // is sent to both partner and merchant but when partner sends the mail as a reminder to merchant for setting
+        // the password, mail is only sent to merchant and not to the partner. In this case, retry is true and partner
+        // does not get any mail.
+        if ($retry === false)
+        {
+            $createSubMerchantPartnerMail = new CreateSubMerchantPartner($subMerchant, $aggregator);
 
-        Mail::queue($createSubMerchantPartnerMail);
+            Mail::queue($createSubMerchantPartnerMail);
+        }
 
         if ($subMerchant[Entity::EMAIL] === $aggregator[Entity::EMAIL])
         {
             return;
         }
 
-        $orgId = $subMerchant['org']['id'];
+        $orgId = (isset($subMerchant['org_id']) === true) ? $subMerchant['org_id'] : $subMerchant['org']['id'];
 
         /** @var Org\Entity $org */
         $org = $this->repo->org->find($orgId);
@@ -2788,5 +2799,64 @@ class Service extends Base\Service
         {
             $merchant->setBusinessBanking(true);
         }
+    }
+
+    /**
+     * Used when partner sends a reminder mail to sub merchant for creation of password.
+     * Mail is sent only to sub merchant and partner does not get any mail.
+     *
+     * @param string $id submerchant id.
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function sendSubmerchantPasswordResetLink(string $id)
+    {
+        $merchant = $this->auth->getMerchant();
+
+        (new Validator)->validateIsPartner($merchant);
+
+        /** @var Entity $subMerchant */
+        $subMerchant = $this->repo->merchant->findOrFailPublic($id);
+
+        if ($this->isPartnerMerchantMapped($subMerchant->getId(), $merchant->getId()) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER);
+        }
+
+        if (strtolower($subMerchant->getEmail()) === strtolower($merchant->getEmail()))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL,
+                Merchant\Entity::EMAIL,
+                $merchant->getEmail()
+            );
+        }
+
+        $subMerchantUser = $this->repo->user->getUserFromEmail($subMerchant->getEmail());
+
+        $mapping = null;
+
+        if (empty($subMerchantUser) === false)
+        {
+            $mapping = $this->repo->merchant->getMerchantUserMapping($subMerchant->getId(),
+                                                                     $subMerchantUser->getId());
+        }
+
+        if ((empty($subMerchantUser) === true) or (empty($mapping) === true))
+        {
+            list($subMerchantUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($subMerchant,
+                                                                                                 $merchant);
+        }
+
+        //
+        // If user already exists, we do not send mail to the user and createNewUser (4th param in following function)
+        // is false in that case. Here, for resending the mail to the user, we are passing createdNewUser as true always
+        // so that user always get a mail.
+        //
+        $this->sendSubMerchantCreationMail($subMerchant, $merchant, $subMerchantUser, true, true);
+
+        return ['success' => true];
     }
 }

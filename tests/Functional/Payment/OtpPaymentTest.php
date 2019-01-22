@@ -893,6 +893,42 @@ class OtpPaymentTest extends TestCase
         self::assertEquals('mpi_enstage', $payment['gateway']);
     }
 
+    public function testExpressPay3dsflow()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1'
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['axis_express_pay']);
+        $this->mockTokenEx();
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'UTIB',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds' => '1',
+                'otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['preferred_auth'] = ['3ds', 'otp'];
+        // $this->setOtp('213433');
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        self::assertNull($this->otpFlow);
+        self::assertEquals('authorized', $payment['status']);
+        self::assertNull($payment['auth_type']);
+        self::assertEquals('hdfc', $payment['gateway']);
+    }
+
     public function testExpressPayOtpResend()
     {
         $this->fixtures->create('terminal:shared_hitachi_terminal', [

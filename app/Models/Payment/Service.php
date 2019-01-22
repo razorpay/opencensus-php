@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment;
 
 use Mail;
+use Crypt;
 use Config;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
@@ -20,6 +21,7 @@ use RZP\Models\Card;
 use RZP\Models\Transaction;
 use RZP\Models\Admin\Org;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Constants;
 use RZP\Constants\MailTags;
 use Razorpay\Trace\Logger as Trace;
@@ -248,6 +250,77 @@ class Service extends Base\Service
     public function redirectTo3ds($id)
     {
         return $this->getNewProcessor()->redirectTo3ds($id);
+    }
+
+    public function redirectToAuthorize($id)
+    {
+        try
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST,
+                ['track_id' => $id]
+            );
+
+            list($merchant, $paymentId) = $this->setRequiredDetailsGetMerchantAndPaymentId($id);
+
+            return $this->getNewProcessor($merchant)->processRedirectToAuthorize($paymentId);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_FAILURE,
+                ['track_id' => $id]
+            );
+            // add metrics
+            throw $e;
+        }
+    }
+
+    //
+    // Since, redirectToAuthorize is a direct auth we don't have any
+    // merchant/auth/mode. We set merchant in basic auth and return
+    // merchant and paymentId
+    //
+    protected function setRequiredDetailsGetMerchantAndPaymentId($id)
+    {
+        $key = Payment\Entity::getRedirectToAuthorizeTrackIdKey($id);
+
+        $encryptedText = $this->app['cache']->get($key);
+
+        if ($encryptedText === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED
+            );
+        }
+
+        $payload = Crypt::decrypt($encryptedText);
+
+        if (empty($payload) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED
+            );
+        }
+
+        $this->app['basicauth']->setModeAndDbConnection($payload['mode']);
+
+        $merchant = $this->repo->merchant->findOrFail($payload['merchant_id']);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST_PAYLOAD,
+            $payload
+        );
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $this->app['basicauth']->setPublicKey($payload['public_key']);
+
+        $this->app['basicauth']->authCreds->setPublicKey($payload['public_key']);
+
+        return [$merchant, $payload['payment_id']];
     }
 
     public function forceAuthorizeFailed($id, $input)
@@ -963,7 +1036,7 @@ class Service extends Base\Service
         {
             try
             {
-                assert ($payment->isAuthorized() === true);
+                assertTrue ($payment->isAuthorized() === true);
 
                 $merchant = $payment->merchant;
 

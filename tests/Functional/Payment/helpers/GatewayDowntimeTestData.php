@@ -925,6 +925,39 @@ return [
         ]
     ],
 
+
+    'testExternalApiHealth' => [
+        'request' => [
+            'content' => [
+                'url' => 'http://www.validUrl.com',
+            ],
+            'method' => 'POST',
+            'url'   => '/externalapi/health/',
+        ],
+        'response' => [
+            'content' => [
+                'http_status' => 200,
+            ],
+            'status_code' => 200
+        ],
+    ],
+
+    'testExternalApiInvalidUrl' => [
+        'request' => [
+            'content' => [
+                'url' => 'http://www.invalidUrl.com',
+            ],
+            'method' => 'POST',
+            'url'   => '/externalapi/health/',
+        ],
+        'response' => [
+            'content' => [
+                'http_status' => 400,
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testVajraAlertUPIWebHook' => [
         'request' => [
             'content' => [

@@ -26,6 +26,7 @@ final class Route
 
         // hosted checkout for IRCTC and Bescom
         'checkout_embedded'                        => ['post',     'checkout/embedded',                              'PublicController@renderEmbedded'                                   ],
+        'checkout_hdfcvas'                         => ['post',     'checkout/hdfcvas',                               'PublicController@renderHdfcVas'                                    ],
         'checkout_hosted'                          => ['post',     'checkout/hosted',                                'PublicController@renderCheckoutHosted'                             ],
         'checkout_hosted_get'                      => ['get',      'checkout/hosted',                                'PublicController@renderCheckoutHosted'                             ],
         // TODO: Check Splunk and remove the write here
@@ -48,6 +49,7 @@ final class Route
         'payment_create_wallet'                    => ['post',     'payments/create/wallet',                         'PaymentCreateController@postCreateWalletPayment'                   ],
         'payment_create_upi'                       => ['post',     'payments/create/upi',                            'PaymentCreateController@postCreateUpiPayment'                      ],
         'payment_create_openwallet'                => ['post',     'payments/create/openwallet',                     'PaymentCreateController@postCreateS2SPayment'                      ],
+        'payment_redirect_to_authoize'             => ['get',      'payments/{id}/redirect',                         'PaymentCreateController@postRedirectToAuthorize'                   ],
         'payment_callback_ajax_with_key_get'       => ['get',      'payments/{id}/callback/ajax/{hash}/{key}',       'PaymentCreateController@postAJAXCallback'                          ],
         'payment_callback_post'                    => ['post',     'payments/{x_entity_id}/callback/{hash}',         'PaymentCreateController@postCallback'                              ],
         'payment_callback_get'                     => ['get',      'payments/{x_entity_id}/callback/{hash}',         'PaymentCreateController@postCallback'                              ],
@@ -164,6 +166,7 @@ final class Route
         'merchant_edit_config_logo'                => ['post',     'account/config/logo',                            'MerchantController@postMerchantConfigLogo'                         ],
         'merchant_delete_config_logo'              => ['delete',   'account/config/logo',                            'MerchantController@deleteMerchantConfigLogo'                       ],
         'merchant_sub_create'                      => ['post',     'submerchants',                                   'MerchantController@postCreateSubMerchant'                          ],
+        'merchant_sub_send_password_link'          => ['post',     'submerchants/{id}/reset_password',               'MerchantController@sendSubmerchantPasswordResetLink'               ],
         'merchant_pre_signup_details'              => ['get',      'pre_signup',                                     'MerchantController@getPreSignupDetails'                            ],
         'merchant_edit_pre_signup_details'         => ['put',      'pre_signup',                                     'MerchantController@putPreSignupDetails'                            ],
         'merchant_fetch_config'                    => ['get',      'account/config',                                 'MerchantController@getAccountConfig'                               ],
@@ -939,6 +942,7 @@ final class Route
 
         // Apspdcl integration - bridge for remote endpoint access for hosted via api.
         'apspdcl_bridge'                           => ['any',      'apspdcl/{path?}',                                'ApspdclController@any'                                             ],
+        'third_party_health_check'                 => ['post',     'externalapi/health',                             'GatewayController@getExternalApiHealth'                            ],
 
         // Instant Activations
         'merchant_instant_activation_post'         => ['post',     'merchant/instant_activation',                    'MerchantController@saveInstantActivationDetails'                   ],
@@ -982,6 +986,7 @@ final class Route
         'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
         'transaction_statement_fetch_multiple'     => ['get',      'transactions',                                   'StatementController@list'                                          ],
         'vault_migration_detokenize'               => ['post',     'card/migration/detokenize',                      'CardController@postCardDetokenize'                                 ],
+        'tokenex_migrate_cron'                     => ['post',     'card/migrate/tokenex',                           'CardController@postCardsTokenMigrate'                              ],
     ];
 
     public static $public = [
@@ -1337,6 +1342,7 @@ final class Route
         'entity_balance_id_update',
         'merchant_es_sync_cron',
         'gateway_downtime_vajra_webhook',
+        'tokenex_migrate_cron',
         'scrooge_refund_verify_bulk'
     ];
 
@@ -1395,6 +1401,7 @@ final class Route
         'merchant_fetch_config',
         'merchant_fetch_config_internal',
         'merchant_sub_create',
+        'merchant_sub_send_password_link',
         'merchant_fetch_referrals',
         'webhook_fetch_events',
         'customer_delete',
@@ -1458,6 +1465,7 @@ final class Route
         'feature_onboarding_fetch_responses',
         'merchant_pre_signup_details',
         'merchant_edit_pre_signup_details',
+        'coupon_validate',
         'create_submerchant_user',
         'user_merchant_mapping_action',
         'onboarding_features_fetch_details',
@@ -1688,7 +1696,6 @@ final class Route
         'coupon_create',
         'coupon_delete',
         'coupon_update',
-        'coupon_validate',
         'credits_create',
         'credits_create_bulk',
         'credits_edit',
@@ -1866,7 +1873,6 @@ final class Route
         'merchant_schedule_bulk',
         'merchant_pricing_bulk',
         'merchant_balance_bulk_backfill_ids',
-
         //Bulk Add/Remove bank for terminal
         'terminal_bank_bulk',
         'vault_migration_detokenize',
@@ -2250,6 +2256,7 @@ final class Route
     ];
 
     public static $direct = [
+        'third_party_health_check',
         'inspector_view_get',
         'batch_upload_form_get',
         'batch_upload_form_validate_file',
@@ -2287,6 +2294,7 @@ final class Route
         'gateway_downtime_source_webhook',
         'checkout_onyx',
         'checkout_embedded',
+        'checkout_hdfcvas',
         'checkout_hosted',
         'checkout_hosted_get',
         'mock_event_tracker',
@@ -2299,6 +2307,7 @@ final class Route
         'gateway_payment_callback_bharatqr',
         'gateway_payment_validate_bharatqr',
         'refund_fetch_for_customer',
+        'payment_redirect_to_authoize',
     ];
 
     /**
@@ -2436,6 +2445,7 @@ final class Route
             'billdesk_reconcile_cancelled',
             'merchant_es_sync_cron',
             'entity_balance_id_update',
+            'tokenex_migrate_cron',
             'scrooge_refund_verify_bulk',
         ],
 

@@ -177,7 +177,6 @@ class MerchantCreateTest extends TestCase
             $delay = $scheduledTask['international'] ? 7 : 3;
 
             $this->assertEquals($merchant['id'], $scheduledTask['merchant_id']);
-            $this->assertEquals($schedule['merchant_id'], '100000Razorpay');
             $this->assertEquals($schedule['period'], 'daily');
             $this->assertEquals($schedule['delay'], $delay);
         }

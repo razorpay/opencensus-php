@@ -84,6 +84,7 @@ trait ScheduleTrait
             'interval'   => 1,
             'anchor'     => 3,
             'delay'      => 1,
+            'type'       => 'settlement',
         ];
     }
 }

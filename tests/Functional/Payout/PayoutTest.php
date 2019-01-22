@@ -15,6 +15,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -22,6 +23,7 @@ class PayoutTest extends TestCase
 {
     use PaymentTrait;
     use SettlementTrait;
+    use DbEntityFetchTrait;
     use TestsBusinessBanking;
 
     public function setUp()
@@ -288,7 +290,7 @@ class PayoutTest extends TestCase
     public function testGetPayouts()
     {
         $this->createEsIndex();
-        
+
         $payout = $this->testCreatePayout();
 
         $payout = $this->testCreatePayout();

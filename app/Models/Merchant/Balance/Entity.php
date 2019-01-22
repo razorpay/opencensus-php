@@ -234,28 +234,28 @@ class Entity extends Base\PublicEntity
 
         $credits -= $amount;
 
-        assert($credits >= 0);
+        assertTrue ($credits >= 0);
 
         $this->setAttribute(self::REFUND_CREDITS, $credits);
     }
 
     public function setAmountCredits($credits)
     {
-        assert ($credits >= 0);
+        assertTrue ($credits >= 0);
 
         $this->setAttribute(self::AMOUNT_CREDITS, $credits);
     }
 
     public function setFeeCredits(int $credits)
     {
-        assert ($credits >= 0);
+        assertTrue ($credits >= 0);
 
         $this->setAttribute(self::FEE_CREDITS, $credits);
     }
 
     public function setRefundCredits(int $credits)
     {
-        assert ($credits >= 0);
+        assertTrue ($credits >= 0);
 
         $this->setAttribute(self::REFUND_CREDITS, $credits);
     }
