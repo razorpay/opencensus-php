@@ -1,6 +1,7 @@
 import {
   openModal,
   closeModal,
+  notify,
   notifySuccess,
   notifyError,
 } from 'common/modal';
@@ -10,69 +11,13 @@ import { ModalContent } from 'component/Modal';
 import JSONEdit from 'admin/razorx/JSONEdit';
 import EnumList from 'component/Input/EnumList';
 import { rexPost, rexPatch } from 'admin/razorx/fetch';
-
-const initJSONObj = {
-  name: '',
-  description: '',
-  notify: ['// Eg: Array of Slack identifiers without @'],
-  variants: ['// Eg: Array of strings'],
-};
-
-const validatorJSON = {
-  name: function(val) {
-    if (!val || typeof val !== 'string') {
-      return 'name must be non-empty String';
-    }
-  },
-  description: function(val) {
-    if (!val || typeof val !== 'string') {
-      return 'description must be non-empty String';
-    }
-  },
-  notify: function(val) {
-    if (val) {
-      let errorMsg;
-      if (!(val instanceof Array)) {
-        errorMsg = 'notify must be an Array';
-      }
-      val.forEach(v => {
-        if (v.indexOf('@') > -1) {
-          errorMsg = '@ is not required in notify Array';
-          return false;
-        }
-      });
-
-      return errorMsg;
-    }
-  },
-  variants: function(val) {
-    if (!val || !(val instanceof Array || !val.length)) {
-      return 'variants must be a non-empty Array';
-    }
-
-    let errorMsg;
-
-    val.forEach(v => {
-      const reg = new RegExp(/^[a-z0-9]+$/i);
-      if (typeof v !== 'string') {
-        errorMsg = 'Each variant must be a String';
-        return false;
-      } else if (!reg.test(v)) {
-        errorMsg = 'variant can only contain Alphanumeric, - and _';
-        return false;
-      }
-    });
-
-    return errorMsg;
-  },
-};
+import { initJSONObj, validatorJSON } from './validators';
 
 export default class extends React.Component {
   state = { variants: this.props.data ? this.props.variants : [''] };
 
   onSubmit = form => {
-    if (!this.state.variants.length || !this.state.variants[0]) {
-      notifyError('Add atleast 1 variant to create Feature');
+    if (!this.isValid()) {
       return;
     }
 
@@ -86,12 +31,12 @@ export default class extends React.Component {
       reqPayload.notify = reqPayload.notify.split(',').map(n => n.trim());
     }
 
-    const requestFn = isEdit ? rexPatch : rexPost;
-
-    let url = 'featureFlags';
-    let successMsg = 'Feature is successfully created';
+    let requestFn = rexPost,
+      url = 'featureFlags',
+      successMsg = 'Feature is successfully created';
 
     if (isEdit) {
+      requestFn = rexPatch;
       url += `/${this.props.data.id}`;
       successMsg = `Feature ${this.props.data.id} is successfully updated`;
     }
@@ -102,6 +47,17 @@ export default class extends React.Component {
       }
     });
   };
+
+  isValid() {
+    if (this.props.JSONView) {
+      // Check if JSON is valid and all required params are there
+      return true;
+    } else {
+      if (!this.state.variants.length || !this.state.variants[0]) {
+        return false;
+      }
+    }
+  }
 
   JSONObj = (() => {
     let prepareObj = {};
@@ -116,16 +72,6 @@ export default class extends React.Component {
 
     return prepareObj;
   })();
-
-  isValid() {
-    if (this.props.JSONView) {
-      // Check if JSON is valid and all required params are there
-    } else {
-      // Check if all required params are there
-    }
-
-    return true;
-  }
 
   onChangeEnumList = (enumList = []) => {
     let trimmedEnums = enumList.concat();
@@ -143,14 +89,12 @@ export default class extends React.Component {
 
   render() {
     const { data, JSONView } = this.props;
-    let header = data ? 'Edit Feature' : 'Create Feature';
     const isEdit = !!(data && data.id);
+
+    let header = isEdit ? `Edit Feature – ${data.id}` : 'Create Feature';
 
     if (JSONView) {
       header += ' (JSON)';
-    }
-    if (isEdit) {
-      header += ` – ${data.id}`;
     }
 
     return (
@@ -168,10 +112,9 @@ export default class extends React.Component {
                 defaultValue={isEdit ? data.name : ''}
                 required
               />
-              <Field
+              <TextAreaField
                 label="Description"
                 name="description"
-                type="text"
                 placeholder="Feature Description"
                 defaultValue={isEdit ? data.description : ''}
                 required
@@ -179,7 +122,7 @@ export default class extends React.Component {
               <Field
                 label="Slack Notify"
                 placeholder="Comma separated list without @"
-                defaultValue={data.notify.join(', ') || ''}
+                defaultValue={isEdit ? data.notify.join(', ') : ''}
                 type="text"
                 name="notify"
               />

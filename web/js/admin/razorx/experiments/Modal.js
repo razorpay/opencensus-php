@@ -11,90 +11,10 @@ import Field, {
 import { ModalContent } from 'component/Modal';
 import JSONEdit from 'admin/razorx/JSONEdit';
 
-import { rexFetch } from 'admin/razorx/fetch';
-
+import { rexFetch, rexPost, rexPatch } from 'admin/razorx/fetch';
 import { AppStore } from 'admin/user';
-
-const initJSONObj = {
-  description: '',
-  environment: 'beta',
-  mode: 'test',
-  feature_id: 0,
-  segments: [
-    {
-      variant: '',
-      type: '// Eg: String: whitelist, blacklist, ramp, context-ramp',
-      ids: [],
-      weight: '// Eg: Number: 1(=> 0.001%)',
-    },
-  ],
-};
-
-const validatorJSON = {
-  description: function(val) {
-    if (!val || typeof val !== 'string') {
-      return 'description must be non-empty String';
-    }
-  },
-  environment: function(val) {
-    if (!val || ['production', 'beta'].indexOf(val) === -1) {
-      return 'environment must be one of [production, beta]';
-    }
-  },
-  mode: function(val) {
-    if (!val || ['test', 'live'].indexOf(val) === -1) {
-      return 'mode must be one of [test, live]';
-    }
-  },
-  feature_id: function(val) {
-    if (typeof val === 'undefined' || typeof val !== 'number') {
-      return 'feature id must be a valid Number';
-    }
-  },
-  segments: function(val) {
-    if (!val || !(val instanceof Array || !val.length)) {
-      return 'segments must be a non-empty Array';
-    }
-
-    let errorMsg;
-
-    val.forEach(s => {
-      const isVariantInvalid = !s.variant || typeof s.variant !== 'string';
-      if (isVariantInvalid) {
-        errorMsg = 'variant must be a non-empty String';
-        return false;
-      }
-
-      const isTypeInvalid =
-        !s.type ||
-        ['whitelist', 'blacklist', 'ramp', 'context-ramp'].indexOf(s.type) ===
-          -1;
-      if (isTypeInvalid) {
-        errorMsg =
-          'type must be one of [whitelist, blacklist, ramp, context-ramp]';
-        return false;
-      }
-
-      const isIdInvalid = !s.ids || !(s.ids instanceof Array);
-      if (isIdInvalid) {
-        errorMsg = 'Invalid Array of ids';
-        return false;
-      }
-
-      const isWeightInvalid =
-        !s.weight ||
-        typeof s.weight !== 'number' ||
-        s.weight < 1 ||
-        s.weight > 100000;
-      if (isWeightInvalid) {
-        errorMsg = 'weight must be a valid Number between [1-100000]';
-        return false;
-      }
-    });
-
-    return errorMsg;
-  },
-};
+import { initJSONObj, validatorJSON } from './validators';
+import SegmentsList from './SegmentsList';
 
 const COUNT = 10;
 const MIN_NAME_TYPE = 2;
@@ -119,6 +39,8 @@ export default class extends React.Component {
   }
 
   fetchFeaturesList(params) {
+    this.setState({ variantsList: [] }); // Refresh variants list for new Feature list search
+
     return rexFetch({
       url: 'featureFlags',
       params: { ...params, count: COUNT },
@@ -129,6 +51,40 @@ export default class extends React.Component {
         return data;
       }
     });
+  }
+
+  onSubmit = form => {
+    const isEdit = this.props.data && this.props.data.id;
+    console.log('....FORM...', form);
+
+    return; // ..TESTING..
+
+    let requestFn = rexPost,
+      url = 'experiments',
+      successMsg = 'Experiment is successfully created';
+
+    if (isEdit) {
+      requestFn = rexPatch;
+      url += `/${this.props.data.id}`;
+      successMsg = `Experiment ${this.props.data.id} is successfully updated`;
+    }
+
+    requestFn({ url, data: reqPayload }).then(data => {
+      if (data && data.success) {
+        notifySuccess(successMsg);
+        this.props.history.push('/experiments/' + data.id);
+      }
+    });
+  };
+
+  isValid() {
+    if (this.props.JSONView) {
+      // Check if JSON is valid and all required params are there
+    } else {
+      // Check if all required params are there
+    }
+
+    return true;
   }
 
   JSONObj = (() => {
@@ -144,18 +100,6 @@ export default class extends React.Component {
 
     return prepareObj;
   })();
-
-  onSubmit = data => {};
-
-  isValid() {
-    if (this.props.JSONView) {
-      // Check if JSON is valid and all required params are there
-    } else {
-      // Check if all required params are there
-    }
-
-    return true;
-  }
 
   searchInFeatureList(val) {
     this.fetchFeaturesList({ name: val });
@@ -176,22 +120,23 @@ export default class extends React.Component {
   };
 
   handleSelectFeature = ({ option }) => {
-    this.setState({ selectedFeature: option });
+    this.setState({ selectedFeature: option, variantsList: option.variants });
+  };
+
+  onChangeSegmentsList = list => {
+    console.log('....onChangeSegmentsList...', list);
   };
 
   render() {
     const { data, JSONView } = this.props;
-    let header = data ? 'Edit Experiment' : 'Create Experiment';
-
     const isEdit = !!(data && data.id);
+
+    let header = data ? `Edit Experiment – ${data.id}` : 'Create Experiment';
 
     if (JSONView) {
       header += ' (JSON)';
     }
 
-    if (isEdit) {
-      header += ` – ${data.id}`;
-    }
     this.JSONObj.mode = AppStore.mode;
 
     return (
@@ -241,6 +186,13 @@ export default class extends React.Component {
                 onInput={this.onInput}
                 onChange={this.handleSelectFeature}
                 beforeOptionsComponent={() => <div class="heading">Recent</div>}
+              />
+
+              <div class="sub-heading">Segments</div>
+
+              <SegmentsList
+                variantsList={this.props.variantsList}
+                onChange={this.onChangeSegmentsList}
               />
 
               <div style={{ marginTop: 24 }} />
