@@ -830,7 +830,7 @@ class Gateway extends Base\Gateway
 
     public function getTestSecret()
     {
-        assert ($this->mode === Mode::TEST);
+        assertTrue ($this->mode === Mode::TEST);
 
         if ($this->action === Action::AUTHORIZE)
         {

@@ -29,4 +29,10 @@ class RequestFields
     const MERCHANT_REFERENCE_ID     = 'merchantReferenceId';
     const IS_CASHBACK_ATTEMPTED     = 'isCashbackAttempted';
     const IS_CASHBACK_SUCCESSFUL    = 'isCashbackSuccessful';
+    const LINK_NOTIFICATION_URL     = 'linkNotifUrl';
+    const SALE_ID_V2                = 'olaTransactionId';
+    const MOBILE                    = 'mobile';
+    const BALANCE_PREFERENCE        = 'balancePreference';
+    const SALT                      = 'SALT';
+    const SIGNATURE                 = 'signature';
 }

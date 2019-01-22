@@ -175,7 +175,7 @@ class P2pSeeder extends Seeder
     private function seedHandles()
     {
         P2p\Vpa\Handle\Entity::whereIn(
-            P2p\Vpa\Handle\Entity::HANDLE,
+            P2p\Vpa\Handle\Entity::CODE,
             [
                 Constants::RAZOR_SHARP,
                 Constants::RZP_SHARP,
@@ -184,22 +184,25 @@ class P2pSeeder extends Seeder
 
         factory(P2p\Vpa\Handle\Entity::class)->create(
             [
-                'handle'                => Constants::RAZOR_SHARP,
+                'code'                  => Constants::RAZOR_SHARP,
                 'acquirer'              => Constants::P2P_UPI_SHARP,
+                'bank'                  => Constants::ARZP,
                 'active'                => true,
             ]);
 
         factory(P2p\Vpa\Handle\Entity::class)->create(
             [
-                'handle'                => Constants::RZP_SHARP,
+                'code'                  => Constants::RZP_SHARP,
                 'acquirer'              => Constants::P2P_UPI_SHARP,
+                'bank'                  => Constants::BRZP,
                 'active'                => true,
             ]);
 
         factory(P2p\Vpa\Handle\Entity::class)->create(
             [
-                'handle'                => Constants::NORZP_SHARP,
+                'code'                  => Constants::NORZP_SHARP,
                 'acquirer'              => Constants::P2P_UPI_SHARP,
+                'bank'                  => Constants::CRZP,
                 'active'                => false,
             ]);
     }

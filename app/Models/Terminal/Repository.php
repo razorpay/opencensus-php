@@ -122,6 +122,20 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function getByParams(array $params)
+    {
+        $params = $this->unsetEmptyParams($params);
+
+        $query = $this->newQuery();
+
+        foreach ($params as $key => $value)
+        {
+            $query = $query->where($key, '=', $value);
+        }
+
+        return $query->get();
+    }
+
     public function getTerminalsForMerchantAndSharedMerchant(Merchant\Entity $merchant)
     {
         $merchantIds = [$merchant->getId(), Merchant\Account::SHARED_ACCOUNT];

@@ -20,10 +20,12 @@ class CreateP2pHandleTable extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->string(Entity::HANDLE, 50)
+            $table->string(Entity::CODE, 50)
                   ->primary();
 
             $table->string(Entity::MERCHANT_ID, Entity::ID_LENGTH);
+
+            $table->string(Entity::BANK, 11);
 
             $table->string(Entity::ACQUIRER, 50);
 

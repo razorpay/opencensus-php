@@ -190,6 +190,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Merchant\Entity::class);
     }
 
+    public function validations()
+    {
+        return $this->hasMany(Validation\Entity::class);
+    }
+
     public function account()
     {
         return $this->morphTo();

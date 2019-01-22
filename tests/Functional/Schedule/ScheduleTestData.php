@@ -11,6 +11,16 @@ return [
         'interval'   => 1,
         'anchor'     => 3,
         'delay'      => 1,
+        'type'       => 'settlement',
+    ],
+
+    'testCreateSchedule' => [
+        'name'       => 'Every Wednesday',
+        'period'     => 'weekly',
+        'interval'   => 1,
+        'anchor'     => 3,
+        'delay'      => 1,
+        'type'       => 'settlement',
     ],
 
     'testAssignSchedule' => [
@@ -62,7 +72,6 @@ return [
                 'items' =>  [
                     [
                         'name'        => 'Basic T3',
-                        'merchant_id' => '100000Razorpay',
                         'period'      => 'daily',
                         'interval'    => 1,
                         'anchor'      => null,
@@ -71,7 +80,6 @@ return [
                     ],
                     [
                         'name'        => 'Basic T60',
-                        'merchant_id' => '100000Razorpay',
                         'period'      => 'daily',
                         'interval'    => 1,
                         'delay'       => 60,
@@ -123,8 +131,8 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_SCHEDULE_INVALID_TYPE,
         ],
     ],
 

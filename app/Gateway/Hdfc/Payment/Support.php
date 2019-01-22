@@ -72,6 +72,14 @@ trait Support
             $this->supportPaymentResponse);
 
         $this->verifyAndSaveSupportResponse($type, $input);
+
+        if ($type === 'refund')
+        {
+            return [
+                PaymentModel\Gateway::GATEWAY_RESPONSE => json_encode($this->supportPaymentResponse['xml']),
+                PaymentModel\Gateway::GATEWAY_KEYS     => $this->getGatewayData($this->supportPaymentResponse['data'])
+            ];
+        }
     }
 
     protected function retrievePreviousGatewayTransaction($input, $type)
@@ -173,7 +181,7 @@ trait Support
 
     protected function isAnAcceptedError()
     {
-        assert ($this->error === true);
+        assertTrue ($this->error === true);
 
         $response = $this->supportPaymentResponse;
 
@@ -421,7 +429,7 @@ trait Support
 
         // The transaction id for the refund should be present. Otherwise, it means that
         // the refund should come via normal flow and not via manualGatewayRefund.
-        assert ($input['refund'][PaymentModel\Refund\Entity::TRANSACTION_ID] !== null);
+        assertTrue ($input['refund'][PaymentModel\Refund\Entity::TRANSACTION_ID] !== null);
 
         return true;
     }

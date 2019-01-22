@@ -221,9 +221,9 @@ trait VirtualAccountTrait
         return $response;
     }
 
-    private function payViaBharatQr(string $qrCodeId, string $gateway)
+    private function payViaBharatQr($qrCodeId, string $gateway)
     {
-        $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeId,'123456789012');
+        $content = $this->getMockServer($gateway)->getBharatQrCallbackForRecon($qrCodeId);
 
         $request = [
             'method'  => 'POST',

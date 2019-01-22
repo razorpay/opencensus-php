@@ -9,6 +9,7 @@ use RZP\Gateway\Upi\Axis\Fields;
 use RZP\Gateway\Upi\Axis\Action;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Reconciliator\Base\Reconciliate;
 use Razorpay\Spine\Exception\DbQueryException;
 
@@ -38,6 +39,26 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         {
             return (isset($row[$pid]) === true);
         });
+
+        if (UniqueIdEntity::verifyUniqueId($row[$paymentId], false) === false)
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'  => Base\InfoCode::UNEXPECTED_PAYMENT,
+                    'row'        => $row,
+                    'payment_id' => $row[$paymentId],
+                    'gateway'    => $this->gateway
+                ]);
+
+            //
+            // Setting this unprocessed row as success as we receive such direct settlements daily.
+            // And as these payments are expected, not counting them as failure.
+            //
+            $this->setFailUnprocessedRow(false);
+
+            return null;
+        }
 
         return $row[$paymentId] ?? null;
     }

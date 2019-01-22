@@ -10,7 +10,9 @@
     "properties": {
         "cl": {
             "type": "object",
+            "additionalProperties": false,
             "required": [
+                "account",
                 "registration_format",
                 "mobileNumber",
                 "appId",
@@ -20,6 +22,10 @@
                 "CredAllowed"
             ],
             "properties": {
+                "account": {
+                    "type": "string",
+                    "pattern": "^(.*)$"
+                },
                 "registration_format": {
                     "type": "string",
                     "enum": [
@@ -43,11 +49,7 @@
                     "pattern": "^(.*)$"
                 },
                 "note": {
-                    "type": "string",
-                    "enum": [
-                        "Set UPI Pin"
-                    ],
-                    "pattern": "^(.*)$"
+                    "type": "string"
                 },
                 "txnId": {
                     "type": "string",

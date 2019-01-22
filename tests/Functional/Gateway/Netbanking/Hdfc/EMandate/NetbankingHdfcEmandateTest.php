@@ -351,6 +351,16 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $this->ba->adminAuth();
 
+        // setting created at to 8am. Payments are picked from 9 to 9 cycle.
+        $createdAt = Carbon::today(Timezone::IST)->addHours(8)->getTimestamp();
+
+        $this->fixtures->edit(
+            'payment',
+            $debitPayment[Payment\Entity::ID],
+            [
+                Payment\Entity::CREATED_AT => $createdAt,
+            ]);
+
         Mail::fake();
 
         $content = $this->startTest();

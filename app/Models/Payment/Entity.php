@@ -443,7 +443,7 @@ class Entity extends Base\PublicEntity
         self::RECURRING_TYPE       => null,
         self::AUTH_TYPE            => null,
         self::ACKNOWLEDGED_AT      => null,
-        self::REFUND_AT            => null
+        self::REFUND_AT            => null,
     ];
 
     protected $amounts = [
@@ -2944,6 +2944,16 @@ class Entity extends Base\PublicEntity
     public function getCacheInputKey(): string
     {
         return 'payment:fallback.' . $this->getId() . '.card_number';
+    }
+
+    public function getCacheRedirectInputKey(): string
+    {
+        return 'payment:redirect.' . $this->getId() . '.input';
+    }
+
+    public static function getRedirectToAuthorizeTrackIdKey(string $trackId): string
+    {
+        return 'payment:redirect.authorize.' . $trackId . '.encrypt';
     }
 
     public function getTransactionType()

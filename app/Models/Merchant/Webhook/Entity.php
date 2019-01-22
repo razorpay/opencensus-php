@@ -282,7 +282,7 @@ class Entity extends Base\PublicEntity
 
     protected function setFailureCountAttribute($count)
     {
-        assert ($count <= self::MAX_FAILURE_COUNT);
+        assertTrue ($count <= self::MAX_FAILURE_COUNT);
 
         $this->attributes[self::FAILURE_COUNT] = $count;
 

@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Card;
 
+use RZP\Models\Card\IIN;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -41,6 +42,17 @@ class IinTest extends TestCase
         $this->testAddIin();
 
         $this->startTest();
+    }
+
+    public function testLockedIin()
+    {
+        $this->testAddIin();
+
+        $this->startTest();
+
+        $iin = $this->getLastEntity('iin', true);
+
+        $this->assertEquals($iin[IIN\Entity::LOCKED], true);
     }
 
     public function testGetIin()

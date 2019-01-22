@@ -201,6 +201,7 @@ final class P2pRoute
     ];
 
     public static $public = [
+        Requests::P2P_HANDLES_FETCH_ALL,
         Requests::P2P_CUSTOMER_START_VERIFICATION,
         Requests::P2P_CUSTOMER_VERIFICATION_STATUS,
     ];
@@ -218,7 +219,6 @@ final class P2pRoute
         Requests::P2P_CUSTOMER_BA_INITIATE_FETCH_BALANCE,
         Requests::P2P_CUSTOMER_BA_FETCH_BALANCE,
 
-        Requests::P2P_HANDLES_FETCH_ALL,
         Requests::P2P_CUSTOMER_VPA_CREATE,
         Requests::P2P_CUSTOMER_VPA_FETCH_ALL,
         Requests::P2P_CUSTOMER_VPA_FETCH,

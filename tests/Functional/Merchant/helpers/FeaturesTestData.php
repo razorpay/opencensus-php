@@ -645,6 +645,7 @@ return [
                     'expose_card_expiry',
                     'expose_card_iin',
                     's2s_optional_data',
+                    'void_refunds',
                     'partner',
                     'payment_nobranding',
                     'otpelf',

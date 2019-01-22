@@ -17,6 +17,11 @@ return [
                             'payment_network'   => 'SIBL',
                         ],
                         [
+                            'feature'           => 'fund_account_validation',
+                            'payment_method'    => 'bank_account',
+                            'fixed_rate'        => 1000,
+                        ],
+                        [
                             'payment_method'        => 'card',
                             'payment_method_type'   => 'credit',
                             'payment_network'       => 'DICL',
@@ -42,7 +47,7 @@ return [
             'content' => [
                 'name'      => 'TestUploadPlan2',
                 'entity'    => 'pricing',
-                'count'     => 3,
+                'count'     => 4,
                 'rules'     => [
                     [
                         'plan_name'             => 'TestUploadPlan2',
@@ -70,6 +75,12 @@ return [
                         'amount_range_max'      => null,
                         'min_fee'               => 10,
                         'max_fee'               => 10000,
+                    ],
+                    [
+                        'plan_name'             => 'TestUploadPlan2',
+                        'feature'               => 'fund_account_validation',
+                        'payment_method'        => 'bank_account',
+                        'fixed_rate'            => 1000,
                     ],
                 ],
             ],
@@ -483,6 +494,29 @@ return [
         ],
     ],
 
+    'testAddPricingPlanFundAccountValidationRule' => [
+        'request' => [
+            'content' => [
+                'feature'        => 'fund_account_validation',
+                'payment_method' => 'bank_account',
+                'fixed_rate'     => 1000
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'feature'             => 'fund_account_validation',
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'bank_account',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1000
+            ],
+        ],
+    ],
+
     'testAddPricingPlanEmandateRule' => [
         'request' => [
             'content' => [
@@ -736,7 +770,7 @@ return [
                 'entity' => 'collection',
                 'items' => [
                     [
-                        'name' => "Banking default plan",
+                        'name' => 'Banking default plan',
                     ],
                     [
                         'name' => 'testDefaultEmiPlan',
@@ -824,7 +858,7 @@ return [
                     [
                         'name' => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count' => 19,
+                        'count' => 20,
                         'rules' => [
                             [],
                         ],
@@ -842,7 +876,7 @@ return [
         'response' => [
             'content' => [
                 [
-                    'plan_name'   => "Banking default plan",
+                    'plan_name'   => 'Banking default plan',
                     'rules_count' => 6,
                 ],
                 [
@@ -863,7 +897,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'testDefaultPlan',
-                    'rules_count' => 19,
+                    'rules_count' => 20,
                 ],
             ],
         ],

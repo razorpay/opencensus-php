@@ -57,4 +57,110 @@ class Service extends Base\Service
 
         return [$responseKey => $recurring];
     }
+
+    public function cardDetokenize(array $input)
+    {
+        $this->trace->info(TraceCode::CARD_DETOKENIZE_MIGRATION_REQUEST, $input);
+
+        if (empty($input['tokens']) === true)
+        {
+            return;
+        }
+
+        $cardTokenex = (new Card\Tokenex);
+
+        $tokens = $input['tokens'];
+
+        $failedTokens = [];
+
+        foreach ($tokens as $token)
+        {
+            try
+            {
+                $cardTokenex->getCardNumber($token);
+            }
+            catch(\Exception $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    TraceCode::CARD_DETOKENIZE_MIGRATION_FAILED,
+                    ['token' => $token]
+                );
+
+                $failedTokens[] = $token;
+            }
+        }
+
+        $response = [
+            'failed_tokens' => $failedTokens,
+            'count'         => count($failedTokens),
+            'total_count'   => count($tokens),
+        ];
+
+        $this->trace->info(
+            TraceCode::CARD_DETOKENIZE_MIGRATION_RESPONSE,
+            $response);
+
+        return $response;
+    }
+
+    public function cardsTokenMigrate(array $input)
+    {
+        $this->trace->info(
+            TraceCode::TOKENEX_MIGRATION_REQUEST,
+            $input);
+
+        (new Card\Validator)->validateInput('token_migration', $input);
+
+        $tokenexTokens = $this->getTokenexTokens($input);
+
+        if (empty($tokenexTokens) === true)
+        {
+            return [];
+        }
+
+        $successTokens = [];
+
+        $failedTokens = [];
+
+        $cardVault = (new Card\CardVault);
+
+        foreach ($tokenexTokens as $tokenexToken)
+        {
+            try
+            {
+                $vaultToken = $cardVault->getVaultTokenFromTokenexToken($tokenexToken);
+
+                $this->repo->card->replaceToknexToken($tokenexToken, $vaultToken);
+
+                $successTokens[] = $vaultToken;
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    TraceCode::TOKENEX_MIGRATION_FAILED,
+                    ['token' => $tokenexToken]
+                );
+
+                $failedTokens[] = $tokenexToken;
+            }
+        }
+
+        $response =[
+            'successful_tokens' => $successTokens,
+            'failed_tokens'     => $failedTokens,
+        ];
+
+        return $response;
+    }
+
+    public function getTokenexTokens(array $input) : array
+    {
+        $limit = (int) ($input['limit'] ?? 200);
+
+        return $this->repo->card->getTokenexTokens($limit);
+    }
 }

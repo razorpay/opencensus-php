@@ -58,6 +58,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
         Entity::IFSC_CODE                   => 'sometimes|string|size:11',
         Entity::CARDLESS_EMI                => 'sometimes|boolean',
+        Entity::ENABLED                     => 'sometimes|in:0,1',
     ];
 
     protected static $editTerminalGateways = [
@@ -82,6 +83,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_CANARA,
         Payment\Gateway::NETBANKING_VIJAYA,
         Payment\Gateway::EMI_SBI,
+        Payment\Gateway::WALLET_OLAMONEY,
     ];
 
     protected static $createValidators = [
@@ -378,6 +380,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE        => 'required|string',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string|in:v2',
+    ];
+
+    protected static $walletOlamoneyEditTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:wallet_olamoney',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::TYPE . '.ivr'              => 'required_with:type|in:1,0',
     ];
 
     protected static $walletAirtelmoneyTerminalRules = [
@@ -991,7 +1000,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function usedTerminalValidator($terminal, $input)
+    public function editTerminalValidator($terminal, $input)
     {
         if (in_array($terminal->getGateway(), self::$editTerminalGateways))
         {
@@ -1001,7 +1010,7 @@ class Validator extends Base\Validator
         else
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Editing not defined for used terminal of gateway: ' . $terminal->getGateway());
+                'Editing not defined for terminal of gateway: ' . $terminal->getGateway());
         }
     }
 

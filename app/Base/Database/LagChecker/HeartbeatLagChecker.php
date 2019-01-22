@@ -117,7 +117,7 @@ class HeartbeatLagChecker implements LagChecker
         //
         // We wont be checking heartbeat for test mode
         //
-        if ($this->mode === Mode::TEST)
+        if ($this->mode === null)
         {
             return $useSlave;
         }
@@ -247,17 +247,22 @@ class HeartbeatLagChecker implements LagChecker
         // Using raw query here as we can not use model or eloquent builder here
         // as it also calls this flow to get the connection
         //
-        $query = 'select ts, ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000) as now_in_mili from heartbeat.heartbeat limit 1';
+        $query = 'SELECT ROUND(( ROUND(UNIX_TIMESTAMP(Now(6)) * 1000000) - ( 
+                            UNIX_TIMESTAMP(SUBSTR(ts, 1, 19)) * 1000000 + 
+                            SUBSTR(ts, 21, 6) ) 
+                         ) / 1000) AS replica_lag_milli, ts 
+                    FROM   heartbeat.heartbeat
+                    LIMIT  1';
 
         $result = $pdo->query($query)->fetch();
 
-        $lastHeartbeatTimestamp = $result['ts'];
+        $this->lag = $result['replica_lag_milli'];
 
-        $this->lag = $this->diffInMilliseconds($lastHeartbeatTimestamp);
+//        $result['diff_in_code'] = $this->diffInMilliseconds($result['ts']);
 
         $status = ($this->lag <= $threshold)? false : true;
 
-        $this->traceConnectionSelection(TraceCode::HEARTBEAT_LAG_CHECK_DEBUG_TRACE, !$status, $result);
+//        $this->traceConnectionSelection(TraceCode::HEARTBEAT_LAG_CHECK_DEBUG_TRACE, !$status, $result);
 
         return $status;
     }
@@ -284,19 +289,6 @@ class HeartbeatLagChecker implements LagChecker
 
         $diff = $now->diff($hbTimestamp);
 
-        $this->trace->info(
-            TraceCode::HEARTBEAT_CHECK_TIME_CONVERSION,
-            [
-                'message'             => 'pre_processing',
-                'heartbeat_timestamp' => $timestamp,
-                'current_timestamp'   => $now->getTimestamp(),
-                'current_micro'       => $now->micro,
-                'parsed_timestamp'    => $hbTimestamp->getTimestamp(),
-                'parsed_micro'        => $hbTimestamp->micro,
-                'time_difference'     => $diff->format('%H:%I:%S.%F'),
-                'diff'                => $diff,
-            ]);
-
         try {
             $value = (int)round(((((($diff->days * Carbon::HOURS_PER_DAY) +
                         $diff->h) * Carbon::MINUTES_PER_HOUR +
@@ -318,19 +310,6 @@ class HeartbeatLagChecker implements LagChecker
             // Setting this as 0. which will evaluate to no lag
             $value = 0;
         }
-
-        $this->trace->info(
-            TraceCode::HEARTBEAT_CHECK_TIME_CONVERSION,
-            [
-                'message'             => 'post_processing',
-                'heartbeat_timestamp' => $timestamp,
-                'current_timestamp'   => $now->getTimestamp(),
-                'current_micro'       => $now->micro,
-                'parsed_timestamp'    => $hbTimestamp->getTimestamp(),
-                'parsed_micro'        => $hbTimestamp->micro,
-                'time_difference'     => $diff->format('%H:%I:%S.%F'),
-                'difference_in_mili'  => $value,
-            ]);
 
         return $absolute || !$diff->invert ? $value : -$value;
     }

@@ -91,6 +91,11 @@ class Entity extends Base\PublicEntity
     const OFFERS            = 'offers';
 
     /**
+    * Used for expand order payments
+    */
+    const PAYMENTS          = 'payments';
+
+    /**
      * Used in creation request to create and link bank account
      */
     const BANK_ACCOUNT      = 'bank_account';
@@ -148,6 +153,7 @@ class Entity extends Base\PublicEntity
         // but still needs to be discussed.
         // See setPublicDiscountAttribute
         // self::DISCOUNT,
+        self::PAYMENTS,
         self::OFFER_ID,
         self::OFFERS,
         self::STATUS,
@@ -180,10 +186,6 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_DUE,
     ];
 
-    protected static $generators = [
-        self::FORCE_OFFER,
-    ];
-
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
@@ -201,6 +203,10 @@ class Entity extends Base\PublicEntity
     protected static $sign = 'order';
 
     protected $entity = 'order';
+
+    protected static $generators = [
+        self::FORCE_OFFER,
+    ];
 
     /** Related Models */
 

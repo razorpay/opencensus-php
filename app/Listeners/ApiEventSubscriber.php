@@ -14,6 +14,7 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Customer\Token;
 use RZP\Models\VirtualAccount;
@@ -177,7 +178,8 @@ class ApiEventSubscriber extends Base\Core
         $merchant = $this->getMerchantFromEntity($payment);
 
         if (($payment->hasSubscription() === true) and
-            ($merchant->isFeatureEnabled(Feature\Constants::SUBSCRIPTION_AUTH_V2) === true)) {
+            ($merchant->isFeatureEnabled(Feature\Constants::SUBSCRIPTION_AUTH_V2) === true))
+        {
             $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
 
             SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
@@ -233,6 +235,13 @@ class ApiEventSubscriber extends Base\Core
     protected function onPaymentDisputeClosed($payment)
     {
         $payload = $this->getPaymentPayloadWithDispute($payment);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onFundAccountValidationCompleted(FundAccount\Validation\Entity $fundAccountValidation)
+    {
+        $payload = $this->getFundAccountValidationPayload($fundAccountValidation);
 
         $this->prepareAndDispatchWebhook($payload);
     }
@@ -534,6 +543,15 @@ class ApiEventSubscriber extends Base\Core
     {
         $partialPayload[Constants\Entity::VIRTUAL_ACCOUNT] = [
             'entity' => $virtualAccount->toArrayPublic()
+        ];
+
+        return $partialPayload;
+    }
+
+    protected function getFundAccountValidationPayload(FundAccount\Validation\Entity $fundAccountValidation)
+    {
+        $partialPayload['fund_account.validation'] = [
+            'entity' => $fundAccountValidation->toArrayPublic()
         ];
 
         return $partialPayload;

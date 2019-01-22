@@ -352,7 +352,7 @@ class Repository extends \Razorpay\Spine\Repository
 
     public function assertTransactionActive()
     {
-        assert ($this->isTransactionActive());
+        assertTrue ($this->isTransactionActive());
     }
 
     public function fetchBetweenTimestampWithRelations($merchantId, $from, $to, $count, $skip = 0, $relations = [])

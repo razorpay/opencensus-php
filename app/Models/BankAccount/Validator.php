@@ -5,10 +5,11 @@ namespace RZP\Models\BankAccount;
 use App;
 
 use Razorpay\IFSC\IFSC;
+
 use RZP\Base;
+use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Exception;
 use RZP\Models\Merchant\Detail;
 use RZP\Exception\BadRequestValidationFailureException;
 

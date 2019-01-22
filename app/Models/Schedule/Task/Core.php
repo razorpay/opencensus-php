@@ -100,9 +100,7 @@ class Core extends Base\Core
 
         $scheduleId = $input[Entity::SCHEDULE_ID];
 
-        $merchantId = Merchant\Account::SHARED_ACCOUNT;
-
-        $schedule = $this->repo->schedule->findByIdAndMerchantId($scheduleId, $merchantId);
+        $schedule = $this->repo->schedule->find($scheduleId);
 
         $scheduleTask->schedule()->associate($schedule);
 
@@ -277,9 +275,12 @@ class Core extends Base\Core
 
             $scheduleTask = $this->repo
                                  ->schedule_task
-                                 ->findByMerchantAndMethod($parentMerchant, null);
+                                 ->findByMerchantAndMethod($parentMerchant, null, $international);
 
-            $schedule = $scheduleTask->schedule;
+            if ($scheduleTask !== null)
+            {
+                $schedule = $scheduleTask->schedule;
+            }
         }
 
         if ($schedule === null)

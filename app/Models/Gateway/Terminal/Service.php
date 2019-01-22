@@ -4,9 +4,11 @@ namespace RZP\Models\Gateway\Terminal;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Terminal\Core;
+use RZP\Models\Terminal\Type;
 use RZP\Gateway\Base\Terminal;
+use RZP\Models\Terminal\Entity;
 
 class Service extends Base\Service
 {
@@ -31,11 +33,9 @@ class Service extends Base\Service
         $merchantDetail = $merchant->merchantDetail->toArray();
 
         $gateway = $input['gateway'];
-
-        $pgMerchant =$this->repo->merchant->findByPublicId($input['terminal']['pg_merchant_id']);
-
+        
         $gatewayData = [
-            'merchant'          => $pgMerchant,
+            'merchant'          => $merchant,
             'merchant_details'  => $merchantDetail,
             'gateway_input'     => $input[self::GATEWAY_INPUT],
         ];
@@ -47,7 +47,9 @@ class Service extends Base\Service
                                                         $gatewayData,
                                                         $this->mode);
 
-            $terminal = (new \RZP\Models\Terminal\Core)->create($terminalData, $pgMerchant);
+            $this->setTerminalType($terminalData);
+
+            $terminal = (new Core)->create($terminalData, $merchant);
 
             return $terminal->toArrayPublic();
         }
@@ -56,5 +58,20 @@ class Service extends Base\Service
             //TODO: Handle error if needed.
             throw $e;
         }
+    }
+
+    public function setTerminalType(&$terminalData, $type = null)
+    {
+        if ($type === null)
+        {
+            $type = [
+                Type::NON_RECURRING         => '1',
+                Type::RECURRING_3DS         => '1',
+                Type::RECURRING_NON_3DS     => '1',
+                Type::DEBIT_RECURRING       => '1',
+            ];
+        }
+
+        $terminalData[Entity::TYPE] = $type;
     }
 }

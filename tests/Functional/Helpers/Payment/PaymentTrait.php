@@ -62,6 +62,8 @@ trait PaymentTrait
 
     protected $merchantCallbackFlow = false;
 
+    protected $redirectToAuthorize = false;
+
     /**
      * For certain payments, user has the option to fail it
      * on the bank page. If this property is set to true in
@@ -1071,7 +1073,7 @@ trait PaymentTrait
         //TODO: remove merchant id check
         if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway, '10000000000000'))
         {
-            $this->scroogeRefund($data);
+            $this->scroogeRefund($this->getLastEntity('refund'));
         }
 
         return $data;
@@ -1637,6 +1639,18 @@ trait PaymentTrait
         return $url;
     }
 
+    public function getPaymentRedirectToAuthorizrUrl($trackId)
+    {
+        $params = [
+            'id' => $trackId,
+        ];
+
+        $url = \URL::route('payment_redirect_to_authoize', $params, false);
+        $url = 'http://localhost' . $url;
+
+        return $url;
+    }
+
     /**
      * Get Otp resend Url
      */
@@ -1872,6 +1886,10 @@ trait PaymentTrait
 
     protected function mockTokenex()
     {
+        $this->mockCardVault();
+
+        return;
+
         $tokenex = Mockery::mock('RZP\Services\TokenEx')->makePartial();
 
         $this->app->instance('card.tokenex', $tokenex);
@@ -1913,7 +1931,7 @@ trait PaymentTrait
     {
         $cardVault = Mockery::mock('RZP\Services\CardVault')->makePartial();
 
-        $this->app->instance('card.tokenex', $cardVault);
+        $this->app->instance('card.cardVault', $cardVault);
 
         $cardVault->shouldReceive('sendRequest')
             ->with(Mockery::type('string'), 'post', Mockery::type('array'))
@@ -1928,7 +1946,7 @@ trait PaymentTrait
                 switch ($route)
                 {
                     case 'tokenize':
-                        $response['tokenex_token'] = base64_encode($input['secret']);
+                        $response['token'] = base64_encode($input['secret']);
                         break;
 
                     case 'detokenize':
@@ -1941,6 +1959,9 @@ trait PaymentTrait
                             $response['success'] = false;
                         }
                         break;
+                    case 'tokenex_token';
+                        $response['tokenex_token'] = $input['token'];
+                        break;
 
                     case 'delete':
                         break;
@@ -1948,7 +1969,7 @@ trait PaymentTrait
                 return $response;
             });
 
-        $this->app->instance('card.tokenex', $cardVault);
+        $this->app->instance('card.cardVault', $cardVault);
     }
 
     protected function mockShield()

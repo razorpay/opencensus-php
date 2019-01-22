@@ -14,36 +14,37 @@ use RZP\Constants\Product;
  */
 class Event
 {
-    const PAYMENT_AUTHORIZED        = 'payment.authorized';
-    const PAYMENT_FAILED            = 'payment.failed';
-    const PAYMENT_CAPTURED          = 'payment.captured';
-    const PAYMENT_DISPUTE_CREATED   = 'payment.dispute.created';
-    const ORDER_PAID                = 'order.paid';
-    const INVOICE_PAID              = 'invoice.paid';
-    const INVOICE_PARTIALLY_PAID    = 'invoice.partially_paid';
-    const INVOICE_EXPIRED           = 'invoice.expired';
-    const VPA_EDITED                = 'vpa.edited';
-    const P2P_CREATED               = 'p2p.created';
-    const P2P_REJECTED              = 'p2p.rejected';
-    const P2P_TRANSFERRED           = 'p2p.transferred';
-    const SUBSCRIPTION_ACTIVATED    = 'subscription.activated';
-    const SUBSCRIPTION_CHARGED      = 'subscription.charged';
-    const SUBSCRIPTION_PENDING      = 'subscription.pending';
-    const SUBSCRIPTION_HALTED       = 'subscription.halted';
-    const SUBSCRIPTION_CANCELLED    = 'subscription.cancelled';
-    const SUBSCRIPTION_COMPLETED    = 'subscription.completed';
-    const TOKEN_CONFIRMED           = 'token.confirmed';
-    const TOKEN_REJECTED            = 'token.rejected';
-    const SETTLEMENT_PROCESSED      = 'settlement.processed';
-    const VIRTUAL_ACCOUNT_CREDITED  = 'virtual_account.credited';
-    const VIRTUAL_ACCOUNT_CREATED   = 'virtual_account.created';
-    const PAYMENT_DISPUTE_WON       = 'payment.dispute.won';
-    const PAYMENT_DISPUTE_LOST      = 'payment.dispute.lost';
-    const PAYMENT_DISPUTE_CLOSED    = 'payment.dispute.closed';
-    const TRANSACTION_CREATED       = 'transaction.created';
-    const PAYOUT_CREATED            = 'payout.created';
-    const PAYOUT_PROCESSED          = 'payout.processed';
-    const PAYOUT_REVERSED           = 'payout.reversed';
+    const PAYMENT_AUTHORIZED                = 'payment.authorized';
+    const PAYMENT_FAILED                    = 'payment.failed';
+    const PAYMENT_CAPTURED                  = 'payment.captured';
+    const PAYMENT_DISPUTE_CREATED           = 'payment.dispute.created';
+    const ORDER_PAID                        = 'order.paid';
+    const INVOICE_PAID                      = 'invoice.paid';
+    const INVOICE_PARTIALLY_PAID            = 'invoice.partially_paid';
+    const INVOICE_EXPIRED                   = 'invoice.expired';
+    const VPA_EDITED                        = 'vpa.edited';
+    const P2P_CREATED                       = 'p2p.created';
+    const P2P_REJECTED                      = 'p2p.rejected';
+    const P2P_TRANSFERRED                   = 'p2p.transferred';
+    const SUBSCRIPTION_ACTIVATED            = 'subscription.activated';
+    const SUBSCRIPTION_CHARGED              = 'subscription.charged';
+    const SUBSCRIPTION_PENDING              = 'subscription.pending';
+    const SUBSCRIPTION_HALTED               = 'subscription.halted';
+    const SUBSCRIPTION_CANCELLED            = 'subscription.cancelled';
+    const SUBSCRIPTION_COMPLETED            = 'subscription.completed';
+    const TOKEN_CONFIRMED                   = 'token.confirmed';
+    const TOKEN_REJECTED                    = 'token.rejected';
+    const SETTLEMENT_PROCESSED              = 'settlement.processed';
+    const VIRTUAL_ACCOUNT_CREDITED          = 'virtual_account.credited';
+    const VIRTUAL_ACCOUNT_CREATED           = 'virtual_account.created';
+    const PAYMENT_DISPUTE_WON               = 'payment.dispute.won';
+    const PAYMENT_DISPUTE_LOST              = 'payment.dispute.lost';
+    const PAYMENT_DISPUTE_CLOSED            = 'payment.dispute.closed';
+    const TRANSACTION_CREATED               = 'transaction.created';
+    const PAYOUT_CREATED                    = 'payout.created';
+    const PAYOUT_PROCESSED                  = 'payout.processed';
+    const PAYOUT_REVERSED                   = 'payout.reversed';
+    const FUND_ACCOUNT_VALIDATION_COMPLETED = 'fund_account.validation.completed';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -76,6 +77,7 @@ class Event
         self::PAYOUT_CREATED,
         self::PAYOUT_PROCESSED,
         self::PAYOUT_REVERSED,
+        self::FUND_ACCOUNT_VALIDATION_COMPLETED,
     ];
 
     /**
@@ -114,40 +116,42 @@ class Event
         self::PAYOUT_CREATED,
         self::PAYOUT_PROCESSED,
         self::PAYOUT_REVERSED,
+        self::FUND_ACCOUNT_VALIDATION_COMPLETED,
     ];
 
     protected static $bitPosition = [
-        self::PAYMENT_AUTHORIZED        => 1,
-        self::PAYMENT_FAILED            => 2,
-        self::PAYMENT_CAPTURED          => 3,
-        self::ORDER_PAID                => 4,
-        self::INVOICE_PAID              => 5,
-        self::VPA_EDITED                => 6,
-        self::P2P_CREATED               => 7,
-        self::P2P_REJECTED              => 8,
-        self::P2P_TRANSFERRED           => 9,
-        self::SUBSCRIPTION_ACTIVATED    => 10,
-        self::SUBSCRIPTION_PENDING      => 11,
-        self::SUBSCRIPTION_HALTED       => 12,
-        self::SUBSCRIPTION_CHARGED      => 13,
-        self::SUBSCRIPTION_CANCELLED    => 14,
-        self::SUBSCRIPTION_COMPLETED    => 15,
-        // self::SUBSCRIPTION_EXPIRED      => 16,
-        self::INVOICE_EXPIRED           => 17,
-        self::INVOICE_PARTIALLY_PAID    => 18,
-        self::TOKEN_CONFIRMED           => 19,
-        self::TOKEN_REJECTED            => 20,
-        self::SETTLEMENT_PROCESSED      => 21,
-        self::PAYMENT_DISPUTE_CREATED   => 22,
-        self::VIRTUAL_ACCOUNT_CREDITED  => 23,
-        self::VIRTUAL_ACCOUNT_CREATED   => 24,
-        self::PAYMENT_DISPUTE_WON       => 25,
-        self::PAYMENT_DISPUTE_LOST      => 26,
-        self::PAYMENT_DISPUTE_CLOSED    => 27,
-        self::TRANSACTION_CREATED       => 28,
-        self::PAYOUT_CREATED            => 29,
-        self::PAYOUT_PROCESSED          => 30,
-        self::PAYOUT_REVERSED           => 31,
+        self::PAYMENT_AUTHORIZED                => 1,
+        self::PAYMENT_FAILED                    => 2,
+        self::PAYMENT_CAPTURED                  => 3,
+        self::ORDER_PAID                        => 4,
+        self::INVOICE_PAID                      => 5,
+        self::VPA_EDITED                        => 6,
+        self::P2P_CREATED                       => 7,
+        self::P2P_REJECTED                      => 8,
+        self::P2P_TRANSFERRED                   => 9,
+        self::SUBSCRIPTION_ACTIVATED            => 10,
+        self::SUBSCRIPTION_PENDING              => 11,
+        self::SUBSCRIPTION_HALTED               => 12,
+        self::SUBSCRIPTION_CHARGED              => 13,
+        self::SUBSCRIPTION_CANCELLED            => 14,
+        self::SUBSCRIPTION_COMPLETED            => 15,
+        // self::SUBSCRIPTION_EXPIRED              => 16,
+        self::INVOICE_EXPIRED                   => 17,
+        self::INVOICE_PARTIALLY_PAID            => 18,
+        self::TOKEN_CONFIRMED                   => 19,
+        self::TOKEN_REJECTED                    => 20,
+        self::SETTLEMENT_PROCESSED              => 21,
+        self::PAYMENT_DISPUTE_CREATED           => 22,
+        self::VIRTUAL_ACCOUNT_CREDITED          => 23,
+        self::VIRTUAL_ACCOUNT_CREATED           => 24,
+        self::PAYMENT_DISPUTE_WON               => 25,
+        self::PAYMENT_DISPUTE_LOST              => 26,
+        self::PAYMENT_DISPUTE_CLOSED            => 27,
+        self::TRANSACTION_CREATED               => 28,
+        self::PAYOUT_CREATED                    => 29,
+        self::PAYOUT_PROCESSED                  => 30,
+        self::PAYOUT_REVERSED                   => 31,
+        self::FUND_ACCOUNT_VALIDATION_COMPLETED => 32,
     ];
 
     /**
@@ -156,32 +160,33 @@ class Event
      * @var array
      */
     protected static $launchedEvents = [
-        self::PAYMENT_AUTHORIZED            => [Product::PRIMARY],
-        self::PAYMENT_FAILED                => [Product::PRIMARY],
-        self::PAYMENT_CAPTURED              => [Product::PRIMARY],
-        self::PAYMENT_DISPUTE_CREATED       => [Product::PRIMARY],
-        self::ORDER_PAID                    => [Product::PRIMARY],
-        self::INVOICE_PAID                  => [Product::PRIMARY],
-        self::INVOICE_PARTIALLY_PAID        => [Product::PRIMARY],
-        self::INVOICE_EXPIRED               => [Product::PRIMARY],
-        self::SUBSCRIPTION_ACTIVATED        => [Product::PRIMARY],
-        self::SUBSCRIPTION_PENDING          => [Product::PRIMARY],
-        self::SUBSCRIPTION_HALTED           => [Product::PRIMARY],
-        self::SUBSCRIPTION_CHARGED          => [Product::PRIMARY],
-        self::SUBSCRIPTION_CANCELLED        => [Product::PRIMARY],
-        self::SUBSCRIPTION_COMPLETED        => [Product::PRIMARY],
-        self::TOKEN_CONFIRMED               => [Product::PRIMARY],
-        self::TOKEN_REJECTED                => [Product::PRIMARY],
-        self::SETTLEMENT_PROCESSED          => [Product::PRIMARY],
-        self::VIRTUAL_ACCOUNT_CREDITED      => [Product::PRIMARY],
-        self::VIRTUAL_ACCOUNT_CREATED       => [Product::PRIMARY],
-        self::PAYMENT_DISPUTE_WON           => [Product::PRIMARY],
-        self::PAYMENT_DISPUTE_LOST          => [Product::PRIMARY],
-        self::PAYMENT_DISPUTE_CLOSED        => [Product::PRIMARY],
-        self::TRANSACTION_CREATED           => [Product::BANKING],
-        self::PAYOUT_CREATED                => [Product::BANKING],
-        self::PAYOUT_PROCESSED              => [Product::BANKING],
-        self::PAYOUT_REVERSED               => [Product::BANKING],
+        self::PAYMENT_AUTHORIZED                => [Product::PRIMARY],
+        self::PAYMENT_FAILED                    => [Product::PRIMARY],
+        self::PAYMENT_CAPTURED                  => [Product::PRIMARY],
+        self::PAYMENT_DISPUTE_CREATED           => [Product::PRIMARY],
+        self::ORDER_PAID                        => [Product::PRIMARY],
+        self::INVOICE_PAID                      => [Product::PRIMARY],
+        self::INVOICE_PARTIALLY_PAID            => [Product::PRIMARY],
+        self::INVOICE_EXPIRED                   => [Product::PRIMARY],
+        self::SUBSCRIPTION_ACTIVATED            => [Product::PRIMARY],
+        self::SUBSCRIPTION_PENDING              => [Product::PRIMARY],
+        self::SUBSCRIPTION_HALTED               => [Product::PRIMARY],
+        self::SUBSCRIPTION_CHARGED              => [Product::PRIMARY],
+        self::SUBSCRIPTION_CANCELLED            => [Product::PRIMARY],
+        self::SUBSCRIPTION_COMPLETED            => [Product::PRIMARY],
+        self::TOKEN_CONFIRMED                   => [Product::PRIMARY],
+        self::TOKEN_REJECTED                    => [Product::PRIMARY],
+        self::SETTLEMENT_PROCESSED              => [Product::PRIMARY],
+        self::VIRTUAL_ACCOUNT_CREDITED          => [Product::PRIMARY],
+        self::VIRTUAL_ACCOUNT_CREATED           => [Product::PRIMARY],
+        self::PAYMENT_DISPUTE_WON               => [Product::PRIMARY],
+        self::PAYMENT_DISPUTE_LOST              => [Product::PRIMARY],
+        self::PAYMENT_DISPUTE_CLOSED            => [Product::PRIMARY],
+        self::FUND_ACCOUNT_VALIDATION_COMPLETED => [Product::PRIMARY],
+        self::TRANSACTION_CREATED               => [Product::BANKING],
+        self::PAYOUT_CREATED                    => [Product::PRIMARY, Product::BANKING],
+        self::PAYOUT_PROCESSED                  => [Product::PRIMARY, Product::BANKING],
+        self::PAYOUT_REVERSED                   => [Product::PRIMARY, Product::BANKING],
     ];
 
     /**
@@ -191,49 +196,51 @@ class Event
      * @var array
      */
     public static $eventsToEntityMap = [
-        self::PAYMENT_AUTHORIZED        => Entity::PAYMENT,
-        self::PAYMENT_CAPTURED          => Entity::PAYMENT,
-        self::PAYMENT_FAILED            => Entity::PAYMENT,
-        self::PAYMENT_DISPUTE_CREATED   => Entity::PAYMENT,
-        self::VIRTUAL_ACCOUNT_CREDITED  => Entity::PAYMENT,
-        self::VIRTUAL_ACCOUNT_CREATED   => Entity::VIRTUAL_ACCOUNT,
-        self::INVOICE_PAID              => Entity::INVOICE,
-        self::INVOICE_PARTIALLY_PAID    => Entity::INVOICE,
-        self::INVOICE_EXPIRED           => Entity::INVOICE,
-        self::ORDER_PAID                => Entity::ORDER,
-        self::SUBSCRIPTION_ACTIVATED    => Entity::SUBSCRIPTION,
-        self::SUBSCRIPTION_PENDING      => Entity::SUBSCRIPTION,
-        self::SUBSCRIPTION_HALTED       => Entity::SUBSCRIPTION,
-        self::SUBSCRIPTION_CHARGED      => Entity::SUBSCRIPTION,
-        self::SUBSCRIPTION_CANCELLED    => Entity::SUBSCRIPTION,
-        self::SUBSCRIPTION_COMPLETED    => Entity::SUBSCRIPTION,
-        self::TOKEN_CONFIRMED           => Entity::TOKEN,
-        self::TOKEN_REJECTED            => Entity::TOKEN,
-        self::SETTLEMENT_PROCESSED      => Entity::SETTLEMENT,
-        self::PAYMENT_DISPUTE_WON       => Entity::DISPUTE,
-        self::PAYMENT_DISPUTE_LOST      => Entity::DISPUTE,
-        self::PAYMENT_DISPUTE_CLOSED    => Entity::DISPUTE,
-        self::TRANSACTION_CREATED       => Entity::TRANSACTION,
-        self::PAYOUT_CREATED            => Entity::PAYOUT,
-        self::PAYOUT_PROCESSED          => Entity::PAYOUT,
-        self::PAYOUT_REVERSED           => Entity::PAYOUT,
+        self::PAYMENT_AUTHORIZED                => Entity::PAYMENT,
+        self::PAYMENT_CAPTURED                  => Entity::PAYMENT,
+        self::PAYMENT_FAILED                    => Entity::PAYMENT,
+        self::PAYMENT_DISPUTE_CREATED           => Entity::PAYMENT,
+        self::VIRTUAL_ACCOUNT_CREDITED          => Entity::PAYMENT,
+        self::VIRTUAL_ACCOUNT_CREATED           => Entity::VIRTUAL_ACCOUNT,
+        self::INVOICE_PAID                      => Entity::INVOICE,
+        self::INVOICE_PARTIALLY_PAID            => Entity::INVOICE,
+        self::INVOICE_EXPIRED                   => Entity::INVOICE,
+        self::ORDER_PAID                        => Entity::ORDER,
+        self::SUBSCRIPTION_ACTIVATED            => Entity::SUBSCRIPTION,
+        self::SUBSCRIPTION_PENDING              => Entity::SUBSCRIPTION,
+        self::SUBSCRIPTION_HALTED               => Entity::SUBSCRIPTION,
+        self::SUBSCRIPTION_CHARGED              => Entity::SUBSCRIPTION,
+        self::SUBSCRIPTION_CANCELLED            => Entity::SUBSCRIPTION,
+        self::SUBSCRIPTION_COMPLETED            => Entity::SUBSCRIPTION,
+        self::TOKEN_CONFIRMED                   => Entity::TOKEN,
+        self::TOKEN_REJECTED                    => Entity::TOKEN,
+        self::SETTLEMENT_PROCESSED              => Entity::SETTLEMENT,
+        self::PAYMENT_DISPUTE_WON               => Entity::DISPUTE,
+        self::PAYMENT_DISPUTE_LOST              => Entity::DISPUTE,
+        self::PAYMENT_DISPUTE_CLOSED            => Entity::DISPUTE,
+        self::TRANSACTION_CREATED               => Entity::TRANSACTION,
+        self::PAYOUT_CREATED                    => Entity::PAYOUT,
+        self::PAYOUT_PROCESSED                  => Entity::PAYOUT,
+        self::PAYOUT_REVERSED                   => Entity::PAYOUT,
+        self::FUND_ACCOUNT_VALIDATION_COMPLETED => Entity::FUND_ACCOUNT_VALIDATION,
     ];
 
     public static $eventsToFeatureMap = [
-        self::SUBSCRIPTION_ACTIVATED    => Feature\Constants::SUBSCRIPTIONS,
-        self::SUBSCRIPTION_PENDING      => Feature\Constants::SUBSCRIPTIONS,
-        self::SUBSCRIPTION_HALTED       => Feature\Constants::SUBSCRIPTIONS,
-        self::SUBSCRIPTION_CHARGED      => Feature\Constants::SUBSCRIPTIONS,
-        self::SUBSCRIPTION_CANCELLED    => Feature\Constants::SUBSCRIPTIONS,
-        self::SUBSCRIPTION_COMPLETED    => Feature\Constants::SUBSCRIPTIONS,
-        self::TOKEN_CONFIRMED           => Feature\Constants::CHARGE_AT_WILL,
-        self::TOKEN_REJECTED            => Feature\Constants::CHARGE_AT_WILL,
-        self::VIRTUAL_ACCOUNT_CREDITED  => Feature\Constants::VIRTUAL_ACCOUNTS,
-        self::VIRTUAL_ACCOUNT_CREATED   => Feature\Constants::VIRTUAL_ACCOUNTS,
-        self::SETTLEMENT_PROCESSED      => Feature\Constants::MARKETPLACE,
-        self::PAYOUT_CREATED            => Feature\Constants::PAYOUT,
-        self::PAYOUT_PROCESSED          => Feature\Constants::PAYOUT,
-        self::PAYOUT_REVERSED           => Feature\Constants::PAYOUT,
+        self::SUBSCRIPTION_ACTIVATED            => Feature\Constants::SUBSCRIPTIONS,
+        self::SUBSCRIPTION_PENDING              => Feature\Constants::SUBSCRIPTIONS,
+        self::SUBSCRIPTION_HALTED               => Feature\Constants::SUBSCRIPTIONS,
+        self::SUBSCRIPTION_CHARGED              => Feature\Constants::SUBSCRIPTIONS,
+        self::SUBSCRIPTION_CANCELLED            => Feature\Constants::SUBSCRIPTIONS,
+        self::SUBSCRIPTION_COMPLETED            => Feature\Constants::SUBSCRIPTIONS,
+        self::TOKEN_CONFIRMED                   => Feature\Constants::CHARGE_AT_WILL,
+        self::TOKEN_REJECTED                    => Feature\Constants::CHARGE_AT_WILL,
+        self::VIRTUAL_ACCOUNT_CREDITED          => Feature\Constants::VIRTUAL_ACCOUNTS,
+        self::VIRTUAL_ACCOUNT_CREATED           => Feature\Constants::VIRTUAL_ACCOUNTS,
+        self::SETTLEMENT_PROCESSED              => Feature\Constants::MARKETPLACE,
+        self::PAYOUT_CREATED                    => Feature\Constants::PAYOUT,
+        self::PAYOUT_PROCESSED                  => Feature\Constants::PAYOUT,
+        self::PAYOUT_REVERSED                   => Feature\Constants::PAYOUT,
+        self::FUND_ACCOUNT_VALIDATION_COMPLETED => Feature\Constants::FUND_ACCOUNT_VALIDATIONS,
     ];
 
     /**
