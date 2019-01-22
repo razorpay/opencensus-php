@@ -239,8 +239,13 @@ class SearchableSelect extends Component {
     this.setState({ selectedOption: option });
   };
 
-  handleInput = e => {
-    this.props.onInput && this.props.onInput(e.target.value);
+  handleKeyDown = e => {
+    const target = e.target;
+
+    setTimeout(() => {
+      const val = target.value;
+      this.props.onInput && this.props.onInput(val);
+    }, 5);
   };
 
   componentWillReceiveProps(nextProps) {
@@ -281,7 +286,7 @@ class SearchableSelect extends Component {
             optionLabelPath="name"
             selected={this.state.selectedOption}
             onChange={this.handleChange}
-            onInput={this.handleInput}
+            onKeyDown={this.handleKeyDown}
             {...props}
           />
         ) : (

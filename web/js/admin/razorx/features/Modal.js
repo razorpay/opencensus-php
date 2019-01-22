@@ -144,11 +144,12 @@ export default class extends React.Component {
   render() {
     const { data, JSONView } = this.props;
     let header = data ? 'Edit Feature' : 'Create Feature';
+    const isEdit = !!(data && data.id);
 
     if (JSONView) {
       header += ' (JSON)';
     }
-    if (data) {
+    if (isEdit) {
       header += ` – ${data.id}`;
     }
 
@@ -164,7 +165,7 @@ export default class extends React.Component {
                 label="Name"
                 name="name"
                 placeholder="Feature Name"
-                defaultValue={data.name || ''}
+                defaultValue={isEdit ? data.name : ''}
                 required
               />
               <Field
@@ -172,7 +173,7 @@ export default class extends React.Component {
                 name="description"
                 type="text"
                 placeholder="Feature Description"
-                defaultValue={data.description || ''}
+                defaultValue={isEdit ? data.description : ''}
                 required
               />
               <Field

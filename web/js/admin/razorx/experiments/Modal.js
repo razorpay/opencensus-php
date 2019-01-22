@@ -5,10 +5,13 @@ import Form from 'ui/Form';
 import Field, {
   TextAreaField,
   SwitchField,
+  SelectField,
   SearchableSelectField,
 } from 'ui/Field';
 import { ModalContent } from 'component/Modal';
 import JSONEdit from 'admin/razorx/JSONEdit';
+
+import { rexFetch } from 'admin/razorx/fetch';
 
 import { AppStore } from 'admin/user';
 
@@ -93,9 +96,40 @@ const validatorJSON = {
   },
 };
 
+const COUNT = 10;
+const MIN_NAME_TYPE = 2;
+
 @observer
 export default class extends React.Component {
   state = { featuresList: [] };
+
+  componentWillMount() {
+    const params = {};
+    const data = this.props.data;
+
+    if (data && data.id) {
+      params.id = data.id;
+    }
+
+    this.fetchFeaturesList(params).then(data => {
+      if (data) {
+        this.defaultFeaturesList = data.items;
+      }
+    });
+  }
+
+  fetchFeaturesList(params) {
+    return rexFetch({
+      url: 'featureFlags',
+      params: { ...params, count: COUNT },
+    }).then(data => {
+      if (data && data.success) {
+        this.setState({ featuresList: data.items });
+
+        return data;
+      }
+    });
+  }
 
   JSONObj = (() => {
     let prepareObj = {};
@@ -124,39 +158,38 @@ export default class extends React.Component {
   }
 
   searchInFeatureList(val) {
-    this.setState({ featuresList: [] });
+    this.fetchFeaturesList({ name: val });
   }
 
   debounce_searchInFeatureList = debounce(
     this.searchInFeatureList.bind(this),
-    50
+    200
   );
 
-  onInput = e => {
-    const target = e.target;
+  onInput = val => {
+    if (val.length <= MIN_NAME_TYPE) {
+      this.setState({ featuresList: this.defaultFeaturesList });
+      return;
+    }
 
-    setTimeout(() => {
-      const val = target.value;
+    this.debounce_searchInFeatureList(val);
+  };
 
-      console.log('....VAL...', val);
-
-      if (val.length < 2) {
-        this.setState({ featuresList: null });
-        return;
-      }
-
-      this.debounce_searchInFeatureList(val);
-    }, 5);
+  handleSelectFeature = ({ option }) => {
+    this.setState({ selectedFeature: option });
   };
 
   render() {
     const { data, JSONView } = this.props;
     let header = data ? 'Edit Experiment' : 'Create Experiment';
 
+    const isEdit = !!(data && data.id);
+
     if (JSONView) {
       header += ' (JSON)';
     }
-    if (data) {
+
+    if (isEdit) {
       header += ` – ${data.id}`;
     }
     this.JSONObj.mode = AppStore.mode;
@@ -174,37 +207,40 @@ export default class extends React.Component {
               <SwitchField
                 name="mode"
                 label="Mode"
-                defaultValue={AppStore.mode}
+                defaultValue={isEdit ? data.mode.toLowerCase() : AppStore.mode}
                 disabledLabel="Test"
                 enabledLabel="Live"
                 enabledValue="live"
                 disabledValue="test"
               />
-              <Field
-                label="Environment"
-                type="text"
+              <SelectField
                 name="environment"
-                defaultValue="production"
+                label="Environment"
+                defaultValue={isEdit ? data.environment : 'production'}
                 required
-              />
+              >
+                <option value="production">Production</option>
+                <option value="beta">Beta</option>
+              </SelectField>
 
               <TextAreaField
                 label="Description"
                 name="description"
-                defaultValue=""
+                defaultValue={isEdit ? data.description : ''}
                 required
               />
-
               <SearchableSelectField
+                selectedOptionLabelPath="name"
+                searchIndices={['id', 'name']}
                 label="Feature"
-                trackBy="value"
+                trackBy="id"
+                options={this.state.featuresList || []}
+                selected={this.state.selectedFeature}
                 name="feature_id"
-                defaultValue=""
+                defaultValue={isEdit ? data.feature_id : ''}
                 onInput={this.onInput}
-                options={Object.keys(this.state.featuresList).map(key => ({
-                  name: this.state.featuresList[key],
-                  value: key,
-                }))}
+                onChange={this.handleSelectFeature}
+                beforeOptionsComponent={() => <div class="heading">Recent</div>}
               />
 
               <div style={{ marginTop: 24 }} />

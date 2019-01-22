@@ -126,15 +126,19 @@
       -webkit-appearance: none
 
 
-    .searchable-select
-      .PowerSelect
-        border: none
-        border-radius: 0
-        background: transparent
-        box-shadow: none
+    .PowerSelect
+      border: 1px solid rgba(0,0,0,0.08)
+      background: transparent
+      box-shadow: none
+      border-radius: 2px
+      height: 32px
+      &--open
+        border: 1px solid #48bbff
 
+    .searchable-select
+      border: none
       .PowerSelect__Trigger
-        min-height: 32px
+        min-height: 30px
 
       .PowerSelect__TriggerInput
         height: 100%
@@ -148,3 +152,25 @@
         height: 70px
         line-height: 20px
         font-size: 12px
+
+
+.PowerSelect__Tether
+  box-shadow: 1px 4px 7px rgba(0,0,0, 0.08)
+  overflow: auto
+  z-index: 11
+
+  .heading
+    padding: 0 8px
+    line-height: 32px
+    height: 32px
+    opacity: 0.4
+    font-size: 12px
+
+  .PowerSelect__Option
+    height: 32px
+    line-height: 32px
+    margin-bottom: -1px
+    padding: 0 8px
+
+    &--highlighted
+      background-color: #fffedc
