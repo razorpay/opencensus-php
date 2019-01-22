@@ -2023,6 +2023,50 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedUpiRblCollectTerminal(array $attributes)
+    {
+        $termId = Shared::UPI_RBL_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'upi_rbl',
+            'gateway_merchant_id'       => 'test_merchant',
+            'gateway_merchant_id2'      => 'test@rbl',
+            'upi'                       => true,
+            'type'                      => [
+                'non_recurring'         => '1',
+                'pay'                   => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedUpiRblIntentTerminal(array $attributes)
+    {
+        $termId = Shared::UPI_RBL_RAZORPAY_INTENT_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'upi_rbl',
+            'gateway_merchant_id'       => 'test_merchant',
+            'vpa'                       => 'test@rbl',
+            'upi'                       => true,
+            'type'                      => [
+                'non_recurring' => 1,
+                'pay'           => 1,
+            ]
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedUpiAxisTpvTerminal(array $attributes)
     {
         $attributes = [

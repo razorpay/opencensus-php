@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Upi\Base;
 
 use RZP\Gateway\Base;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
@@ -126,5 +127,15 @@ class Gateway extends Base\Gateway
         $secure = new Secure($config);
 
         return $secure;
+    }
+
+    protected function getPaymentRemark(array $input)
+    {
+        $paymentDescription = $input['payment']['description'] ?? '';
+        $filteredPaymentDescription = Payment\Entity::getFilteredDescription($paymentDescription);
+
+        $description = $input['merchant']->getFilteredDba() . ' ' . $filteredPaymentDescription;
+
+        return ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
     }
 }
