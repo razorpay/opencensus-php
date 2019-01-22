@@ -5,7 +5,6 @@ namespace RZP\Models\Payment;
 use App;
 use RZP\Exception;
 use RZP\Constants\Mode;
-use RZP\Gateway\Base\Mock\GatewayTrait;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;

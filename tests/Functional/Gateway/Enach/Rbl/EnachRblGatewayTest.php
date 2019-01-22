@@ -13,7 +13,6 @@ use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Status;
 use RZP\Models\Customer\Token;
-use RZP\Error\PublicErrorCode;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Webhook;
@@ -21,7 +20,6 @@ use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Gateway\Base\VerifyResult;
-use RZP\Models\Settlement\Holidays;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payment\Entity as Payment;
@@ -33,6 +31,7 @@ use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Fixtures\Entity\TransactionTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
+
 /**
  * @group dns-sensitive
  */
