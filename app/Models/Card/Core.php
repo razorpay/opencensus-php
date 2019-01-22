@@ -3,6 +3,7 @@
 namespace RZP\Models\Card;
 
 use Route;
+use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -64,6 +65,12 @@ class Core extends Base\Core
             $newCard = (new Card\Entity)->build($input);
 
             $card = $this->findExistingCards($newCard, $merchant);
+
+            // temp code
+            if ($card === null)
+            {
+                $card = $this->lookupTokenexCards($newCard, $merchant);
+            }
 
             $this->card = $card;
         }
@@ -251,5 +258,33 @@ class Core extends Base\Core
         }
 
         return null;
+    }
+
+    protected function lookupTokenexCards(Card\Entity $card, Merchant\Entity $merchant)
+    {
+         // temp code
+        $tokenexCard = $card;
+
+        $vaultToken = $card->getVaultToken();
+
+        $tokenexToken = (new Card\CardVault)->getTokenexToken($vaultToken);
+
+        $tokenexCard->setVaultToken($tokenexToken);
+
+        $tokenexCard->setVault(Card\Vault::TOKENEX);
+
+        $card = $this->findExistingCards($tokenexCard, $merchant);
+
+        if ($card !== null)
+        {
+            $this->app['trace']->count(Constants\Metric::VAULT_MIGRATION_READ_MISS, []);
+
+            $card->setVaultToken($vaultToken);
+            $card->setVault(Card\Vault::RZP_VAULT);
+
+            $this->repo->card->replaceToknexToken($tokenexToken, $vaultToken);
+        }
+
+        return $card;
     }
 }

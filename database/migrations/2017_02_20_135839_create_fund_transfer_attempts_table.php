@@ -26,7 +26,7 @@ class CreateFundTransferAttemptsTable extends Migration
             $table->char(FundTransferAttempt::ID, FundTransferAttempt::ID_LENGTH)
                   ->primary();
 
-            $table->string(FundTransferAttempt::SOURCE_TYPE, 20);
+            $table->string(FundTransferAttempt::SOURCE_TYPE, 255);
 
             $table->string(FundTransferAttempt::SOURCE_ID, FundTransferAttempt::ID_LENGTH);
 

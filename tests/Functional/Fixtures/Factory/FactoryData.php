@@ -10,6 +10,7 @@ use RZP\Models;
 use RZP\Models\Contact;
 use RZP\Constants\Timezone;
 use RZP\Models\Settlement\Channel;
+use RZP\Models\FundAccount\Validation as FundAccountValidation;
 
 final class FactoryData
 {
@@ -965,6 +966,19 @@ final class FactoryData
             'id'          => $faker->uniqueid,
             'active'      => 1,
             'merchant_id' => '10000000000000',
+        ]);
+
+        $factory(\RZP\Models\FundAccount\Validation\Entity::class, [
+            'id'                => $faker->uniqueid,
+            'fund_account_id'   => $faker->uniqueid,
+            'fund_account_type' => Models\FundAccount\Type::BANK_ACCOUNT,
+            'merchant_id'       => '10000000000000',
+            'amount'            => 100,
+            'currency'          => 'INR',
+            'status'            => 'created',
+            'notes'             => null,
+            'created_at'        => $faker->timestamp,
+            'updated_at'        => $faker->timestamp,
         ]);
     }
 }

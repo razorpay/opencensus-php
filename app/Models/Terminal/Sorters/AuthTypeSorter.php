@@ -6,6 +6,7 @@ use RZP\Models\Bank;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
+use RZP\Models\Feature;
 
 class AuthTypeSorter extends Terminal\Sorter
 {
@@ -65,9 +66,8 @@ class AuthTypeSorter extends Terminal\Sorter
     {
         if (($authType === Payment\AuthType::OTP) and
             ($payment->card->iinRelation !== null) and
-            ($payment->card->iinRelation->getIssuer() === Bank\IFSC::UTIB) and
-            ($payment->card->iinRelation->supports(Card\IIN\Flow::OTP) === true) and
-            ($payment->merchant->isAxisExpressPayEnabled() === true))
+            (($payment->card->iinRelation->supports(Card\IIN\Flow::OTP) === true) or
+             ($payment->card->iinRelation->supports(Card\IIN\Flow::IVR) === true)))
         {
             return ($terminal->getGateway() === Payment\Gateway::HITACHI);
         }

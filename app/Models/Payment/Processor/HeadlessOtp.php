@@ -39,7 +39,7 @@ trait HeadlessOtp
         return $newActions;
     }
 
-    protected function canRunHeadlessOtpFlow($payment)
+    protected function canRunHeadlessOtpFlow($payment, $gatewayInput)
     {
         if (($payment->isMethodCardOrEmi() === true) and
             ($this->isAuthTypeOtp($payment) === true) and
@@ -47,7 +47,9 @@ trait HeadlessOtp
         {
             if ((Payment\Gateway::supportsHeadlessBrowser($payment->getGateway()) === true) and
                 ($payment->card->iinRelation !== null) and
-                ($payment->card->iinRelation->supports(IIN\Flow::HEADLESS_OTP) === true))
+                ($payment->card->iinRelation->supports(IIN\Flow::HEADLESS_OTP) === true) and
+                ((isset($gatewayInput['authenticate']['auth_type']) === false) or
+                 ($gatewayInput['authenticate']['auth_type'] === '3ds')))
             {
                 return true;
             }

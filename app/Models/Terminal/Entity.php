@@ -899,35 +899,7 @@ class Entity extends Base\PublicEntity
 
     public function edit(array $input = [], $operation = 'edit')
     {
-        if ($this->isUsed() === false)
-        {
-            // Essentially we ask for all the input anew and fill it in.
-            // Put the values which are not changing like gateway and merchant_id
-            // by ourselves.
-
-            $input[Entity::GATEWAY] = $this->getGateway();
-            $input[Entity::MERCHANT_ID] = $this->getMerchantId();
-
-            $terminal = parent::edit($input, 'create');
-
-            // This is done here because if we already have a type in DB
-            // which is no longer valid after new Types are added too,
-            // This will throw an error.
-            $terminal->getValidator()->validateType();
-
-            return $terminal;
-        }
-        else
-        {
-            $this->editUsedTerminal($input);
-        }
-    }
-
-    protected function editUsedTerminal(array $input)
-    {
-        assert ($this->isUsed() === true);
-
-        $this->getValidator()->usedTerminalValidator($this, $input);
+        $this->getValidator()->editTerminalValidator($this, $input);
 
         $this->fill($input);
     }
@@ -958,8 +930,9 @@ class Entity extends Base\PublicEntity
     {
         $terminal = $this->toArray();
 
-        $terminal[self::GATEWAY_TERMINAL_PASSWORD]   = $this->getGatewayTerminalPasswordAttribute();
-        $terminal[self::GATEWAY_TERMINAL_PASSWORD2]  = $this->getGatewayTerminalPassword2Attribute();
+        $terminal[self::GATEWAY_TERMINAL_PASSWORD]  = $this->getGatewayTerminalPasswordAttribute();
+        $terminal[self::GATEWAY_TERMINAL_PASSWORD2] = $this->getGatewayTerminalPassword2Attribute();
+        $terminal[self::GATEWAY_SECURE_SECRET]      = $this->getGatewaySecureSecretAttribute();
 
         return $terminal;
     }

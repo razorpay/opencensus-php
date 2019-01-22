@@ -3,6 +3,7 @@
 namespace RZP\Models\Gateway\File\Processor\Claim;
 
 use RZP\Models\Payment;
+use RZP\Models\Base\PublicCollection;
 
 class Allahabad extends Base
 {
@@ -11,6 +12,18 @@ class Allahabad extends Base
     public function createFile($data)
     {
         return;
+    }
+
+    protected function fetchPaymentsToClaim(int $begin, int $end, array $statuses): PublicCollection
+    {
+        $claims = $this->repo->payment->fetchCreatedPaymentsWithStatus(
+            $begin,
+            $end,
+            static::GATEWAY,
+            $statuses
+        );
+
+        return $claims;
     }
 }
 

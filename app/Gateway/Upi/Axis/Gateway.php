@@ -418,27 +418,6 @@ class Gateway extends Base\Gateway
         return number_format($amount / 100, 2, '.', '');
     }
 
-    /**
-     * This is same as the payment description, capped
-     * to 50 characters
-     *
-     * @param array $input
-     *
-     * @return string
-     */
-    protected function getPaymentRemark(array $input)
-    {
-        $paymentDescription = $input['payment']['description'] ?? '';
-
-        $filteredPaymentDescription = Payment\Entity::getFilteredDescription($paymentDescription);
-
-        $description = $input['merchant']->getFilteredDba() . ' ' . $filteredPaymentDescription;
-
-        $description = trim($description);
-
-        return ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
-    }
-
     // ************************* CALLBACK *********************/
 
     public function preProcessServerCallback($input): array
@@ -740,6 +719,29 @@ class Gateway extends Base\Gateway
         $rsa->loadKey($publickey);
 
         return $rsa->encrypt($data);
+    }
+
+    /**
+     * UPI Axis doesn't have verify refund. Returning true or false so that refund can be processed based on
+     * GATEWAY_UNPROCESSED_REFUNDS config value
+     *
+     * @param array $input
+     * @return bool|void
+     * @throws Exception\LogicException
+     */
+    public function verifyRefund(array $input)
+    {
+        if ($this->isUnprocessedRefund($input) === true)
+        {
+            return false;
+        }
+
+        if ($this->isProcessedRefund($input) === true)
+        {
+            return true;
+        }
+
+        parent::verifyRefund($input);
     }
 
     public function refund(array $input)

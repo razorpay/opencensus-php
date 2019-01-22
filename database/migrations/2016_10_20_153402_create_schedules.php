@@ -26,7 +26,11 @@ class CreateSchedules extends Migration
             $table->string(Schedule::NAME, 50)
                   ->nullable();
 
-            $table->char(Schedule::MERCHANT_ID, Schedule::ID_LENGTH);
+            $table->char(Schedule::MERCHANT_ID, Schedule::ID_LENGTH)
+                  ->nullable();
+
+            $table->string(Schedule::TYPE, 255)
+                  ->nullable();
 
             $table->string(Schedule::PERIOD, 15);
 
@@ -51,11 +55,6 @@ class CreateSchedules extends Migration
 
             $table->index(Schedule::NAME);
             $table->index(Schedule::CREATED_AT);
-
-            $table->foreign(Schedule::MERCHANT_ID)
-                  ->references(Merchant::ID)
-                  ->on(Table::MERCHANT)
-                  ->on_delete('restrict');
         });
     }
 

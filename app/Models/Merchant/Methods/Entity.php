@@ -130,7 +130,7 @@ class Entity extends Base\PublicEntity
     protected $defaults = array(
         self::AMEX           => false,
         self::PAYTM          => false,
-        self::MOBIKWIK       => false,
+        self::MOBIKWIK       => true,
         self::PAYZAPP        => false,
         self::PAYUMONEY      => false,
         self::AIRTELMONEY    => false,

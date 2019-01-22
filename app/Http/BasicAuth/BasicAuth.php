@@ -100,7 +100,7 @@ class BasicAuth
      *
      * @var string|null
      */
-    protected $applicationId;
+    protected $applicationId = null;
 
     /**
      * OAuth's access token (public) id.
@@ -1650,12 +1650,10 @@ class BasicAuth
             return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER);
         }
 
-        $application = $this->authCreds->getPartnerApplication();
+        $applicationId = $this->authCreds->getPartnerApplicationId();
 
-        if ($application !== null)
-        {
-            $this->setOAuthApplicationId($application->getId());
-        }
+        // $this->applicationId will be set to null if it is not set in authCreds. Also, it defaults to null.
+        $this->setOAuthApplicationId($applicationId);
     }
 
     protected function isPartnerAuthAllowed(): bool
@@ -2044,9 +2042,8 @@ class BasicAuth
     /**
      * Returns the origin type and origin id based on the auth used.
      *
-     * If the merchant's credentials are used, the entity origin details are set to - ['merchant', $merchantId].
-     * If the partner's credentials are used, the entity origin details are set to - ['partner', $partnerMerchantId].
-     * If the OAuth credentials are used, the entity origin details are set to - ['application', $oauthApplicationId].
+     * If the merchant's credentials are used, ['merchant', $merchantId] is returned.
+     * If the partner or the oauth credentials are used, ['application', $oauthApplicationId] is returned.
      *
      * @return array
      */
@@ -2064,17 +2061,19 @@ class BasicAuth
             case (empty($this->getOAuthApplicationId()) === false):
 
                 $originType = EntityOrigin\Constants::APPLICATION;
-                $originId = $this->getOAuthApplicationId();
+                $originId   = $this->getOAuthApplicationId();
                 break;
 
             //
             // isPublicAuth() returns true even for partner auth when the partner key is used.
             // Hence keep this case at the end.
+            // privateAuth is required for S2S payments.
             //
             case ($this->isPublicAuth() === true):
+            case ($this->isPrivateAuth() === true):
 
                 $originType = EntityOrigin\Constants::MERCHANT;
-                $originId = $this->getMerchantId();
+                $originId   = $this->getMerchantId();
                 break;
         }
 

@@ -148,6 +148,20 @@ return [
         ],
     ],
 
+    'testLockedIin' => [
+        'request' => [
+            'url' => '/iins/112333',
+            'method' => 'put',
+            'content' => [
+                'locked' => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'locked' => true,
+            ],
+        ],
+    ],
 
     'testGetIin' => [
         'request' => [

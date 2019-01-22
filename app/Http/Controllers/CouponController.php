@@ -17,4 +17,13 @@ class CouponController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function validateCoupon()
+    {
+        $input = Request::all();
+
+        $data  = $this->service()->validateCouponAndGetDetails($input);
+
+        return ApiResponse::json($data);
+    }
 }

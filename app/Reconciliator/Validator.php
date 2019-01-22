@@ -701,7 +701,7 @@ class Validator extends Base\Core
     {
         $message = 'function name should start with validate : ' . $func;
 
-        assert (strpos($func, 'validate') === 0, $message);
+        assertTrue (strpos($func, 'validate') === 0, $message);
 
         $this->$func($attribute, $value, $parameters);
     }

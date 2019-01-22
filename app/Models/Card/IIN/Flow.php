@@ -10,6 +10,7 @@ class Flow
     const IFRAME       = 'iframe';
     const MAGIC        = 'magic';
     const HEADLESS_OTP = 'headless_otp';
+    const IVR          = 'ivr';
 
     public static $flows = [
         self::_3DS         => 1,
@@ -18,6 +19,7 @@ class Flow
         self::IFRAME       => 8,
         self::MAGIC        => 16,
         self::HEADLESS_OTP => 32,
+        self::IVR          => 64,
     ];
 
     /**

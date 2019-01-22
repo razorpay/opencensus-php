@@ -12,6 +12,7 @@ use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Checkout;
+use RZP\Models\Plan\Subscription\Addon;
 
 /**
  * This class is common source of subscription and related data to be sent
@@ -105,15 +106,16 @@ class ViewDataSerializer extends Base\Core
     {
         $chargeAt          = $this->subscription->getChargeAtAttribute();
         $chargeAtFormatted = Carbon::createFromTimestamp($chargeAt, Timezone::IST)->format('d F Y');
+        $cardChangeStatus  = $this->subscription->isCardChangeStatus();
 
         return [
             'id'                 => $this->subscription->getPublicId(),
             'status'             => $this->subscription->getStatus(),
             'quantity'           => $this->subscription->getQuantity(),
             'charge_at'          => $chargeAtFormatted,
-            'card_change_status' => $this->subscription->isCardChangeStatus(),
-            'card_change_amount' => (new Core)->getAuthTransactionAmountForCardChange($this->subscription),
-            'addons'             => $this->repo->addon->getUnusedAddonsForSubscription($this->subscription),
+            'card_change_status' => $cardChangeStatus,
+            'total_amount'       => (new Core)->getAuthTransactionAmount($this->subscription, $cardChangeStatus),
+            'addons'             => (new Addon\Core)->getAddonsForHostedSubscription($this->subscription),
         ];
     }
 

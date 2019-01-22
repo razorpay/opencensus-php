@@ -39,4 +39,14 @@ class Entity extends Base\Entity
     {
         $this->setAttribute(self::AMOUNT, $amount);
     }
+
+    public function getGatewayTransactionId()
+    {
+        return $this->getAttribute(self::BANK_REFERENCE_NUMBER);
+    }
+
+    public function setGatewayTransactionId($gatewayTransactionId)
+    {
+        $this->setAttribute(self::BANK_REFERENCE_NUMBER, $gatewayTransactionId);
+    }
 }

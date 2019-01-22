@@ -34,12 +34,11 @@ class Validator extends Base\Validator
         Entity::EMI           => 'sometimes|integer|in:0,1',
         Entity::ENABLED       => 'sometimes|integer|in:0,1',
         Entity::FLOWS         => 'sometimes|array|filled|custom',
+        Entity::LOCKED        => 'sometimes|integer|in:0,1',
     );
 
     protected static $binIssuerValidationRules = [
-        Entity::ISSUER       => 'required|string|in:HDFC',
         Entity::NUMBER       => 'required|numeric|digits_between:6,19',
-        Entity::TYPE         => 'required|string|in:credit,debit',
     ];
 
     protected static $createValidators = [

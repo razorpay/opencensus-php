@@ -20,13 +20,13 @@ class Core extends Base\Core
     {
         $entityOrigin = new Entity;
 
-        $entityOrigin ->build($input);
+        $entityOrigin->build($input);
 
         $entityOrigin->origin()->associate($originEntity);
 
         $entityOrigin->entity()->associate($entity);
 
-        $this->repo->saveOrFail($entityOrigin );
+        $this->repo->saveOrFail($entityOrigin);
 
         return $entityOrigin;
     }

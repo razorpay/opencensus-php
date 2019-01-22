@@ -39,7 +39,8 @@ class Scrooge
         'bulk_status_update'    => 'bulk-status-update',
         'get_refunds'           => 'refunds',
         'status_update'         => 'status-update',
-        'download_refunds'      => 'refunds/download'
+        'download_refunds'      => 'refunds/download',
+        'enqueue'               => 'enqueue',
     ];
 
     // Headers
@@ -133,6 +134,19 @@ class Scrooge
     {
         return $this->sendRequest(self::RefundsBaseURL . '/' . self::URLS['bulk_status_update'],
                             'POST', $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param array $input
+     * @param bool $throwExceptionOnFailure
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Requests_Exception
+     */
+    public function enqueueRefunds(array $input,  bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::RefundsBaseURL . '/' . self::URLS['enqueue'],
+            'POST', $input, $throwExceptionOnFailure);
     }
 
     /**

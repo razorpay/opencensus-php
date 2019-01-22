@@ -328,26 +328,42 @@ class Gateway extends Base\Gateway
      */
     protected function parseGatewayResponse($responseBody, $type = Action::COLLECT)
     {
-        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
-            'body'              => $responseBody,
-            'encrypted'         => true,
-            'gateway'           => $this->gateway,
-            'type'              => $type
-        ]);
+        $response = null;
 
-        $response = $this->decrypt($responseBody);
-
-        $type = strtoupper($type);
-
-        $fields = constant(__NAMESPACE__ . "\ResponseFields::$type");
-
-        $values = explode('|', $response);
-
-        $result = [];
-
-        foreach ($fields as $index => $key)
+        try
         {
-            $result[$key]     =   $values[$index];
+            $response = $this->decrypt($responseBody);
+
+            $type = strtoupper($type);
+
+            $fields = constant(__NAMESPACE__ . "\ResponseFields::$type");
+
+            $values = explode('|', $response);
+
+            $result = [];
+
+            foreach ($fields as $index => $key)
+            {
+                $result[$key] = $values[$index];
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
+                'body'              => $responseBody,
+                'decrypted'         => $response,
+                'gateway'           => $this->gateway,
+                'type'              => $type,
+                'error'             => $e->getMessage()
+            ]);
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                null,
+                $e->getMessage(),
+                [
+                    Payment\Gateway::GATEWAY_RESPONSE  => $responseBody,
+                ]);
         }
 
         $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
@@ -593,24 +609,6 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * This is same as the payment description, capped
-     * to 50 characters
-     *
-     * @param array $input
-     *
-     * @return string
-     */
-    protected function getPaymentRemark(array $input)
-    {
-        $paymentDescription = $input['payment']['description'] ?? '';
-        $filteredPaymentDescription = Payment\Entity::getFilteredDescription($paymentDescription);
-
-        $description = $input['merchant']->getFilteredDba() . ' ' . $filteredPaymentDescription;
-
-        return ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
-    }
-
-    /**
      * Returns a refund description, capped to 50 chars
      * @param  array  $input
      * @return string
@@ -839,10 +837,12 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * This is done in order to fix duplicate
-     * merchant transaction id issue in case
-     * refund is retried multiple times
+     * This is done in order to fix duplicate merchant transaction id issue in case refund is retried multiple times.
      *
+     * UPI gateways do not process refund which has been failed, they process new refund everytime. And hence,
+     * we send the refund id appended with attempts to generate new refund id.
+     *
+     * @param array $refund
      * @return string
      */
     protected function getRefundId(array $refund)
@@ -885,9 +885,19 @@ class Gateway extends Base\Gateway
 
     protected function getRefundVerifyRequestArray($input)
     {
+        //
+        // Appending (attempt count - 1)  to refund id for verifying previous refund if that was successful.
+        // For scrooge refunds, attempts are sent from scrooge which signifies the attempts which have been done on this.
+        // As attempts in scrooge starts with 0, For eg. if attempts = 5,
+        // that means we will be requesting refund R5 and we need to verify for R4.
+        //
         $attempts = $input['refund']['attempts'] - 1;
 
-        if ($input['refund']['attempts'] === 1)
+        //
+        // If this is 0th or 1st attempt, verify refund should be called for first refund (exact Refund Id)
+        // Appending empty string to refund if we want to verify refund with 14 digit refund id.
+        //
+        if (((int) $attempts === 0) or ((int) $input['refund']['attempts'] === 0))
         {
             $attempts = '';
         }

@@ -188,6 +188,15 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchCreatedPaymentsWithStatus($from, $to, $gateway, $status)
+    {
+        return $this->newQuery()
+                    ->whereBetween(Payment\Entity::CREATED_AT, array($from, $to))
+                    ->whereIn('status', $status)
+                    ->where(Payment\Entity::GATEWAY, '=', $gateway)
+                    ->get();
+    }
+
     /**
      * Returns the captured payments
      * between the given timestamps (using CAPTURED_AT)
@@ -1638,10 +1647,11 @@ class Repository extends Base\Repository
             ->first();
     }
 
-    public function fetchPaymentsCreatedBetween(string $gateway, int $from, int $to)
+    public function fetchCreatedPaymentsBetween(string $gateway, int $from, int $to)
     {
         return $this->newQuery()
                     ->betweenTime($from, $to)
+                    ->where(Entity::STATUS, '=', Status::CREATED)
                     ->where(Payment\Entity::GATEWAY, '=', $gateway)
                     ->get();
     }

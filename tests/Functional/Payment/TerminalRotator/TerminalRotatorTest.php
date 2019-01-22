@@ -129,9 +129,9 @@ class TerminalRotatorTest extends TestCase
         // Throw timeout exception from cybersource server
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
-            if ($action === 'enrollment')
+            if ($action === 'auth_init')
             {
-                throw new \SoapFault('HTTP', 'Error Fetching http headers');
+                throw new GatewayTimeoutException('curl error 38', null, true);
             }
         }, 'cybersource');
 

@@ -32,7 +32,7 @@ class CreateTransactions extends Migration
 
             $table->char(Transaction::ENTITY_ID, Transaction::ID_LENGTH);
 
-            $table->string(Transaction::TYPE, 20);
+            $table->string(Transaction::TYPE, 255);
 
             $table->char(Transaction::MERCHANT_ID, Transaction::ID_LENGTH);
 

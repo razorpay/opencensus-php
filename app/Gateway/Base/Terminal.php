@@ -5,10 +5,10 @@ namespace RZP\Gateway\Base;
 use App;
 use Requests;
 use RZP\Exception;
-use RZP\Base\JitValidator;
-use RZP\Gateway\Base;
 use RZP\Gateway\Utility;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Base\JitValidator;
 
 abstract class Terminal
 {
@@ -217,7 +217,6 @@ abstract class Terminal
                 TraceCode::GATEWAY_PAYMENT_RESPONSE,
                 [
                     'status_code' => $response->status_code,
-                    'gateway' => $this->gateway
                 ]);
         }
     }

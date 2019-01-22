@@ -2,10 +2,16 @@
 
 namespace RZP\Models\P2p\Device\DeviceToken;
 
+use RZP\Base\BuilderEx;
 use RZP\Models\P2p\Base;
+use RZP\Models\P2p\Device;
+use RZP\Models\P2p\Device\RegisterToken;
 
 class Entity extends Base\Entity
 {
+    use Base\Traits\HasDevice;
+    use Base\Traits\HasHandle;
+
     const DEVICE_ID        = 'device_id';
     const HANDLE           = 'handle';
     const GATEWAY_DATA     = 'gateway_data';
@@ -16,8 +22,10 @@ class Entity extends Base\Entity
 
     protected $entity             = 'p2p_device_token';
     protected static $sign        = 'device_token';
-    protected $generateIdOnCreate = false;
-    protected static $generators  = [];
+    protected $generateIdOnCreate = true;
+    protected static $generators  = [
+        Entity::REFRESHED_AT,
+    ];
 
     protected $dates = [
         Entity::REFRESHED_AT,
@@ -27,8 +35,6 @@ class Entity extends Base\Entity
     ];
 
     protected $fillable = [
-        Entity::DEVICE_ID,
-        Entity::HANDLE,
         Entity::GATEWAY_DATA,
         Entity::STATUS,
         Entity::CL,
@@ -57,10 +63,8 @@ class Entity extends Base\Entity
     ];
 
     protected $defaults = [
-        Entity::DEVICE_ID        => null,
-        Entity::HANDLE           => null,
-        Entity::GATEWAY_DATA     => null,
-        Entity::STATUS           => null,
+        Entity::GATEWAY_DATA     => [],
+        Entity::STATUS           => RegisterToken\Status::VERIFIED,
         Entity::CL               => [],
     ];
 
@@ -114,9 +118,25 @@ class Entity extends Base\Entity
     /**
      * @return $this
      */
+    public function setStatusExpired()
+    {
+        return $this->setStatus(RegisterToken\Status::EXPIRED);
+    }
+
+    /**
+     * @return $this
+     */
     public function setCl(array $cl)
     {
         return $this->setAttribute(self::CL, $cl);
+    }
+
+    /**
+     * @return $this
+     */
+    public function mergeCl(array $cl)
+    {
+        return $this->setCl(array_merge($this->getCl(), $cl));
     }
 
     /***************** GETTERS *****************/
@@ -153,11 +173,23 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::STATUS);
     }
 
+    public function isExpired()
+    {
+        return ($this->getStatus() === RegisterToken\Status::EXPIRED);
+    }
+
     /**
      * @return string self::CL
      */
     public function getCl()
     {
         return $this->getAttribute(self::CL);
+    }
+
+    /***************** SCOPES *****************/
+
+    public function scopeVerified(BuilderEx $query)
+    {
+        return $query->where(self::STATUS, RegisterToken\Status::VERIFIED);
     }
 }

@@ -99,7 +99,7 @@ class Transfer extends Base
                 Constants::TRANSFER_TYPE                => $this->transferType,
                 Constants::TRANSFER_CURRENCY_CODE       => Constants::DEFAULT_CURRENCY,
                 Constants::TRANSFER_AMOUNT              => $amount,
-                Constants::REMITTER_TO_BENEFICIARY_INFO => $this->getNarration(),
+                Constants::REMITTER_TO_BENEFICIARY_INFO => $this->getNarration($this->entity),
             ],
         ]);
 
@@ -132,6 +132,7 @@ class Transfer extends Base
                 'amount'    => $amount,
                 'vpa'       => $fta->vpa->getAddress(),
                 'ref_id'    => $fta->getId(),
+                'narration' => $this->getNarration($fta),
             ]
         ];
     }
@@ -183,11 +184,13 @@ class Transfer extends Base
      * - Max: 120 characters
      * - Regex: [\w\s]
      *
+     * @param Attempt\Entity $fta
+     *
      * @return string
      */
-    protected function getNarration()
+    protected function getNarration(Attempt\Entity $fta)
     {
-        $ftaNarration = $this->entity->getNarration();
+        $ftaNarration = $fta->getNarration();
 
         if (empty($ftaNarration) === false)
         {
@@ -195,7 +198,7 @@ class Transfer extends Base
         }
         else
         {
-            $narration = $this->entity->merchant->getBillingLabel();
+            $narration = $fta->merchant->getBillingLabel();
         }
 
         $formattedNarration = preg_replace('/[^a-zA-Z0-9 ]+/', '', $narration);
