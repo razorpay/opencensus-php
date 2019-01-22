@@ -8,6 +8,8 @@ class InfoCode
 
     const PAYMENT_ABSENT                    = 'PAYMENT_ABSENT';
 
+    const PAYMENT_TRANSACTION_ABSENT        = 'PAYMENT_TRANSACTION_ABSENT';
+
     const REFUND_ABSENT                     = 'REFUND_ABSENT';
 
     const CARD_TYPE_ABSENT                  = 'CARD_TYPE_ABSENT';

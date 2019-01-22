@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Reconciliator\Base\InfoCode;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
@@ -30,7 +31,7 @@ class EmandateDebitReconciliate extends PaymentReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code' => TraceCode::RECON_MISMATCH,
-                    'info_code'  => 'PAYMENT_ABSENT',
+                    'info_code'  => InfoCode::PAYMENT_ABSENT,
                     'message'    => 'Payment not found in DB. -> ' . $ex->getMessage(),
                     'row'        => $row,
                     'payment_id' => $paymentId,

@@ -70,7 +70,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         $this->trace->info(TraceCode::BANK_TRANSFER_UNEXPECTED, [
             'message'       => 'Unexpected bank transfer',
-            'info_code'     => 'PAYMENT_ABSENT',
+            'info_code'     => Base\InfoCode::PAYMENT_ABSENT,
             'utr'           => $row[self::COLUMN_UTR],
             'row'           => $row,
         ]);
@@ -89,7 +89,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             [
                 'trace_code'    => TraceCode::BANK_TRANSFER_UNEXPECTED,
                 'message'       => 'Unexpected bank transfer',
-                'info_code'     => 'PAYMENT_ABSENT',
+                'info_code'     => Base\InfoCode::PAYMENT_ABSENT,
                 'utr'           => $row[self::COLUMN_UTR],
                 'row'           => $row,
             ]);
