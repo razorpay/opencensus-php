@@ -403,12 +403,19 @@ class Validator extends Base\Validator
         ];
     }
 
-    protected function validateRefundEntries(
-        array & $entries,
-        array $params,
-        ME $merchant)
+    protected function validateRefundEntries(array & $entries, array $params, ME $merchant)
     {
         $existingPaymentIds = [];
+
+        if ($merchant->isFeatureEnabled(Feature::DISABLE_REFUNDS) === true)
+        {
+            throw new BadRequestValidationFailureException(
+                'Refunds are not allowed on this account',
+                null,
+                [
+                    Entity::MERCHANT_ID => $merchant->getId(),
+                ]);
+        }
 
         foreach ($entries as $entry)
         {

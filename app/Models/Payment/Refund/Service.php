@@ -1401,6 +1401,8 @@ class Service extends Base\Service
 
         $limit = (isset($input['limit']) === true) ? intval($input['limit']) : 500;
 
+        $offset = (isset($input['offset']) === true) ? intval($input['offset']) : 0;
+
         $from = $input['from'] ?? (now()->subHour(24)->getTimestamp());
 
         $to = $input['to'] ?? (now()->getTimestamp());
@@ -1435,6 +1437,7 @@ class Service extends Base\Service
                     ]
                 ],
                 'count' => $limit,
+                'skip'  => $offset,
             ];
 
             if (empty($merchantIds) === false)

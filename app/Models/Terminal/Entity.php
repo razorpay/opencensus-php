@@ -930,8 +930,9 @@ class Entity extends Base\PublicEntity
     {
         $terminal = $this->toArray();
 
-        $terminal[self::GATEWAY_TERMINAL_PASSWORD]   = $this->getGatewayTerminalPasswordAttribute();
-        $terminal[self::GATEWAY_TERMINAL_PASSWORD2]  = $this->getGatewayTerminalPassword2Attribute();
+        $terminal[self::GATEWAY_TERMINAL_PASSWORD]  = $this->getGatewayTerminalPasswordAttribute();
+        $terminal[self::GATEWAY_TERMINAL_PASSWORD2] = $this->getGatewayTerminalPassword2Attribute();
+        $terminal[self::GATEWAY_SECURE_SECRET]      = $this->getGatewaySecureSecretAttribute();
 
         return $terminal;
     }

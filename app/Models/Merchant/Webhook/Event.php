@@ -184,9 +184,9 @@ class Event
         self::PAYMENT_DISPUTE_CLOSED            => [Product::PRIMARY],
         self::FUND_ACCOUNT_VALIDATION_COMPLETED => [Product::PRIMARY],
         self::TRANSACTION_CREATED               => [Product::BANKING],
-        self::PAYOUT_CREATED                    => [Product::BANKING],
-        self::PAYOUT_PROCESSED                  => [Product::BANKING],
-        self::PAYOUT_REVERSED                   => [Product::BANKING],
+        self::PAYOUT_CREATED                    => [Product::PRIMARY, Product::BANKING],
+        self::PAYOUT_PROCESSED                  => [Product::PRIMARY, Product::BANKING],
+        self::PAYOUT_REVERSED                   => [Product::PRIMARY, Product::BANKING],
     ];
 
     /**
