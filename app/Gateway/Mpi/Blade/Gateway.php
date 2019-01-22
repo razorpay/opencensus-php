@@ -93,7 +93,7 @@ class Gateway extends Base\Gateway
     protected function runEnrollmentCheckForCard(array $input)
     {
         // We will skip the enrollment check for all the US issued cards
-        if (($input['card']['country'] === 'US') and
+        if (($input['card']['country'] !== 'IN') and
             ($input['merchant']->isFeatureEnabled('skip_international_auth') === true))
         {
             return false;
