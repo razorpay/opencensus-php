@@ -5,6 +5,7 @@ namespace RZP\Models\Payment;
 use App;
 use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Gateway\Base\Mock\GatewayTrait;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;
@@ -256,6 +257,13 @@ class Gateway
         Payment\Gateway::NETBANKING_AIRTEL,
         Payment\Gateway::ATOM,
         Payment\Gateway::SHARP
+    ];
+
+    const ENACH_NPCI_NETBANKING_BANKS = [
+        IFSC::YESB,
+        IFSC::IDFB,
+        IFSC::UTIB,
+        IFSC::CBIN,
     ];
 
     // The 2 commented banks are mentioned at the bottom
@@ -1062,16 +1070,17 @@ class Gateway
      * @var array
      */
     public static $gatewaysEmandateBanksMap = [
-        Gateway::NETBANKING_ICICI  => [IFSC::ICIC],
-        Gateway::NETBANKING_AXIS   => [IFSC::UTIB],
-        Gateway::NETBANKING_HDFC   => [IFSC::HDFC],
-        Gateway::ENACH_RBL         => self::EMANDATE_AADHAAR_BANKS,
+        Gateway::NETBANKING_ICICI      => [IFSC::ICIC],
+        Gateway::NETBANKING_AXIS       => [IFSC::UTIB],
+        Gateway::NETBANKING_HDFC       => [IFSC::HDFC],
+        Gateway::ENACH_NPCI_NETBANKING => self::ENACH_NPCI_NETBANKING_BANKS,
+        Gateway::ENACH_RBL             => self::EMANDATE_AADHAAR_BANKS,
         // This is added here just for test cases
         // We are using UTIB in test cases
-        Gateway::ESIGNER_DIGIO     => [
+        Gateway::ESIGNER_DIGIO         => [
             IFSC::UTIB,
         ],
-        Gateway::ESIGNER_LEGALDESK => [
+        Gateway::ESIGNER_LEGALDESK     => [
             IFSC::UTIB,
         ],
     ];
