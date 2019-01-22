@@ -123,28 +123,24 @@ export default function InviteForm({
           <b>Merchant Details:</b>
         </div>
         {fields.indexOf('merchant_name') > -1 && (
-          <Field
-            label="Merchant Name"
-            name="merchant_name"
-            required={!isHDFC}
-          />
+          <Field label="Merchant Name" name="merchant_name" required />
         )}
 
         {fields.indexOf('contact_name') > -1 && (
-          <Field label="Contact Name" name="contact_name" required={!isHDFC} />
+          <Field label="Contact Name" name="contact_name" required />
         )}
 
         {fields.indexOf('contact_email') > -1 && (
           <Field
             label="Contact Email"
             name="contact_email"
-            required={!isHDFC}
+            required
             type="email"
           />
         )}
 
         {fields.indexOf('dba_name') > -1 && (
-          <Field label="DBA Name" name="dba_name" required={!isHDFC} />
+          <Field label="DBA Name" name="dba_name" required />
         )}
         <AsyncButton
           text="Save"
