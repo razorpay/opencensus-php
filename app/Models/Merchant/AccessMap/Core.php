@@ -106,6 +106,32 @@ class Core extends Base\Core
     }
 
     /**
+     * To delete access map entries when oauth application is getting deleted
+     *
+     * @param string $appId oauth application Id
+     * @return mixed
+     */
+    public function deleteAccessMapByApplicationId(string $appId)
+    {
+        $accessMaps  = $this->repo->merchant_access_map->fetchMerchantAccessMapOnEntity(Entity::APPLICATION, $appId);
+
+        $merchantIds = $accessMaps->pluck(Entity::MERCHANT_ID)->toArray();
+
+        $this->trace->info(
+            TraceCode::PARTNER_ACCESS_MAPS_DELETE,
+            [
+                'merchant_ids' => $merchantIds,
+            ]
+        );
+
+        $result = $this->repo
+                       ->merchant_access_map
+                       ->deleteMerchantAccessMapByEntityTypeAndId(Entity::APPLICATION, $appId);
+
+        return $result;
+    }
+
+    /**
      * Gets all active oauth tokens across merchants and updates the
      * merchant_access_map accordingly. Needed for one time migrations
      * in case there are anomalies due to bugs.
