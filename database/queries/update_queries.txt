@@ -2279,3 +2279,7 @@ WHERE id IN ('BbmXWhXSCu2p1d',
 
 #Settled at value changes in refund for report fixes
 UPDATE transactions set settled_at = created_at WHERE  type='refund' and settled_at=1
+
+# Fixes merchant's entities state introduced because of an issue which is fixed separately.
+UPDATE bank_accounts SET deleted_at = NULL WHERE id = 'BikuFg4LjWPaRc' LIMIT 1;
+UPDATE virtual_accounts SET status = 'active' WHERE id = 'BikuFWAIzbn1Hb' LIMIT 1;
