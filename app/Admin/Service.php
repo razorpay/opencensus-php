@@ -218,7 +218,7 @@ class Service extends Base\Service
 
         $genericUsers = (new Helper)->createGenericUsers($users);
 
-        $primaryOwner = $genericUsers->where('role', 'owner')
+        $primaryOwner = $genericUsers->whereIn('role', ['owner', 'linked_account_owner'])
                                      ->first();
 
         if ($primaryOwner === null)

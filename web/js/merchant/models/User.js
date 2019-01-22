@@ -25,6 +25,9 @@ export default class User {
 
   constructor(props) {
     Object.assign(this, props);
+    if (!this.tags) {
+      this.tags = [];
+    }
   }
 
   isFeatureEnabled(feature) {
@@ -188,7 +191,11 @@ export default class User {
   }
 
   get isGSTDisabled() {
-    return (this.tags || []).indexOf('Gst_Invoice_Disabled') !== -1;
+    return this.findTag('Gst_Invoice_Disabled');
+  }
+
+  get isRefundsDisabled() {
+    return this.isFeatureEnabled('disable_refunds');
   }
 
   get isChargeAtWillEnabled() {
@@ -223,9 +230,7 @@ export default class User {
 
   /* Check case-insensitive tag check existence */
   findTag(tag) {
-    return !!(
-      this.tags && this.tags.find(t => t.toLowerCase() === tag.toLowerCase())
-    );
+    return this.tags.some(t => t.toLowerCase() === tag.toLowerCase());
   }
 
   /**
@@ -270,6 +275,13 @@ export default class User {
 
   get isSubLinkEnabled() {
     return this.getExpStatus('subscription_link');
+  }
+
+  // Allowed roles can be revoked refund access selectively with this tag
+  get isRefundAllowed() {
+    return (
+      this.isAllowedEdit('refunds') && !this.isRefundsDisabled
+    );
   }
 }
 

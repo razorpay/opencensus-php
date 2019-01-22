@@ -34,7 +34,15 @@ export default class ApplicationContainer extends Component {
 
   deleteApp = application => {
     this.context.confirm({
-      message: `Are you sure you want to delete ${application.name}?`,
+      message: () => (
+        <span>
+          Merchants mapped to this application will no longer be associated with
+          it.
+          <br />
+          <br />
+          Are you sure you want to delete <b>{application.name}</b>?
+        </span>
+      ),
       affirmativeLabel: 'Delete',
       affirmativePendingLabel: 'Deleting...',
       action: () =>
