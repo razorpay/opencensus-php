@@ -53,7 +53,14 @@ trait AuthorizePush
             $success = false;
         }
 
-        return ['success' => $success];
+        $response =  ['success' => $success];
+
+        if ($success === true)
+        {
+            $response['payment_id'] = $this->payment->getId();
+        }
+
+        return $response;
     }
 
     protected function validatePushPayment(string $gateway, array $callbackData, Terminal\Entity $terminal)
