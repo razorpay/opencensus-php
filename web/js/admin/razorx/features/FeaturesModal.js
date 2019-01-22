@@ -1,9 +1,15 @@
-import { openModal, closeModal, notifySuccess } from 'common/modal';
+import {
+  openModal,
+  closeModal,
+  notifySuccess,
+  notifyError,
+} from 'common/modal';
 import Form from 'ui/Form';
 import Field, { TextAreaField } from 'ui/Field';
 import { ModalContent } from 'component/Modal';
 import JSONEdit from 'admin/razorx/JSONEdit';
 import EnumList from 'component/Input/EnumList';
+import { rexPost, rexPatch } from 'admin/razorx/fetch';
 
 const initJSONObj = {
   name: '',
@@ -62,8 +68,40 @@ const validatorJSON = {
 };
 
 export default class extends React.Component {
-  state = { enum: [''] };
-  onSubmit = data => {};
+  state = { variants: this.props.data ? this.props.variants : [''] };
+
+  onSubmit = form => {
+    if (!this.state.variants.length || !this.state.variants[0]) {
+      notifyError('Add atleast 1 variant to create Feature');
+      return;
+    }
+
+    const isEdit = !!(this.props.data && this.props.data.id);
+    const reqPayload = {
+      ...form,
+      variants: this.state.variants.map(v => v.trim()),
+    };
+
+    if (reqPayload.notify && typeof reqPayload.notify === 'string') {
+      reqPayload.notify = reqPayload.notify.split(',').map(n => n.trim());
+    }
+
+    const requestFn = isEdit ? rexPatch : rexPost;
+
+    let url = 'featureFlags';
+    let successMsg = 'Feature is successfully created';
+
+    if (isEdit) {
+      url += `/${this.props.data.id}`;
+      successMsg = `Feature ${this.props.data.id} is successfully updated`;
+    }
+
+    requestFn({ url, data: reqPayload }).then(data => {
+      if (data && data.success) {
+        notifySuccess(successMsg);
+      }
+    });
+  };
 
   JSONObj = (() => {
     let prepareObj = {};
@@ -100,7 +138,7 @@ export default class extends React.Component {
       return r;
     }, []);
 
-    this.setState({ enum: trimmedEnums });
+    this.setState({ variants: trimmedEnums });
   };
 
   render() {
@@ -122,22 +160,25 @@ export default class extends React.Component {
           ) : (
             <React.Fragment>
               <Field
-                label="Name"
-                placeholder="Feature Name"
                 type="text"
+                label="Name"
                 name="name"
+                placeholder="Feature Name"
+                defaultValue={data.name || ''}
                 required
               />
               <Field
                 label="Description"
-                type="text"
                 name="description"
+                type="text"
                 placeholder="Feature Description"
+                defaultValue={data.description || ''}
                 required
               />
               <Field
                 label="Slack Notify"
                 placeholder="Comma separated list without @"
+                defaultValue={data.notify.join(', ') || ''}
                 type="text"
                 name="notify"
               />
@@ -145,8 +186,7 @@ export default class extends React.Component {
               <EnumList
                 class="variants-list"
                 onChange={this.onChangeEnumList}
-                defaultValue={this.state.enum}
-                inputClass="square-pills label-semi-muted"
+                defaultValue={this.state.variants}
                 addNewBtn={() => (
                   <button type="button" class="btn btn--pill">
                     <i class="i i-return-key" /> Add Variant

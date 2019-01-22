@@ -61,7 +61,7 @@ export default class extends React.Component {
       data: null,
     });
 
-    rexFetch({ url: '/experiments/' + id })
+    rexFetch({ url: 'experiments/' + id })
       .then(resp => {
         this.setState({
           isFetching: false,
