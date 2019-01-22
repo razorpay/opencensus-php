@@ -411,6 +411,17 @@ return [
         'test_merchant_id'      => env('OLAMONEY_WALLET_TEST_MERCHANT_ID'),
         'test_hash_secret'      => env('OLAMONEY_WALLET_TEST_HASH_SECRET'),
         'test_access_code'      => env('OLAMONEY_WALLET_TEST_CLIENT_ID'),
+        'test_public_key'       => env('OLAMONEY_WALLET_TEST_PUBLIC_KEY'),
+        'test_private_key'      => env('OLAMONEY_WALLET_TEST_PRIVATE_KEY'),
+        'test_iv'               => env('OLAMONEY_WALLET_TEST_IV'),
+        'test_ola_public_key'   => env('OLAMONEY_WALLET_TEST_OLA_PUBLIC_KEY'),
+        'live_public_key'       => env('OLAMONEY_WALLET_LIVE_PUBLIC_KEY'),
+        'live_private_key'      => env('OLAMONEY_WALLET_LIVE_PRIVATE_KEY'),
+        'live_iv'               => env('OLAMONEY_WALLET_LIVE_IV'),
+        'live_ola_public_key'   => env('OLAMONEY_WALLET_LIVE_OLA_PUBLIC_KEY'),
+        'test_merchant_id_v2'   => env('OLAMONEY_WALLET_TEST_MERCHANT_ID_V2'),
+        'test_hash_secret_v2'   => env('OLAMONEY_WALLET_TEST_HASH_SECRET_V2'),
+        'test_access_code_v2'   => env('OLAMONEY_WALLET_TEST_CLIENT_ID_V2'),
     ],
 
     'wallet_payumoney' => [

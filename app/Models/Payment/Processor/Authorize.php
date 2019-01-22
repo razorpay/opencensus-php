@@ -4170,6 +4170,18 @@ trait Authorize
             }
         }
 
+        //
+        // We are doing this for Olamoney to maintain a smooth
+        // transition from Olamoney Power wallet to Olamoney Postpaid
+        //
+        if ($wallet === Wallet::OLAMONEY)
+        {
+            if ($payment->terminal->isIvr() === false)
+            {
+                return false;
+            }
+        }
+
         // TODO: Figure out a way to do this for other power wallets
 
         return true;
