@@ -25,6 +25,7 @@ class ConfigKey
     const BLOCK_SMART_COLLECT                   = 'block_smart_collect';
     const BLOCK_YESBANK                         = 'block_yesbank';
     const BLOCK_AADHAAR_REG                     = 'block_aadhaar_reg';
+    const HITACHI_DYNAMIC_DESCR_ENABLED         = 'hitachi_dynamic_descr_enabled';
 
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
@@ -44,6 +45,7 @@ class ConfigKey
         self::BLOCK_SMART_COLLECT,
         self::BLOCK_YESBANK,
         self::BLOCK_AADHAAR_REG,
+        self::HITACHI_DYNAMIC_DESCR_ENABLED,
     ];
 
     public static function isSensitive(string $key)
