@@ -277,7 +277,10 @@ class Gateway extends Base\Gateway
     /**
      * Takes in S2S request input array
      * and returns the parsed response as an array
+     *
      * @param  array $input Request Input arrau
+     * @param bool   $isBharatQr
+     *
      * @return array
      */
     public function preProcessServerCallback($input, $isBharatQr = false): array
@@ -1016,7 +1019,9 @@ class Gateway extends Base\Gateway
 
     /**
      * Returns Payment Id
-     * @param  string $body Request Body
+     *
+     * @param array $response
+     *
      * @return string Payment Id
      */
     public function getPaymentIdFromServerCallback(array $response)

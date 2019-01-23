@@ -4,6 +4,7 @@ namespace RZP\Http\BasicAuth;
 
 use ApiResponse;
 use Razorpay\OAuth\Client as OAuthClient;
+use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -17,6 +18,12 @@ class ClientAuthCreds extends AuthCreds
      * @var OAuthClient\Entity
      */
     protected $partnerClient = null;
+
+    /**
+     * Partner's OAuth application id
+     * @var null
+     */
+    protected $partnerApplicationId = null;
 
     /**
      * Client types are interpreted differently in API vs
@@ -46,6 +53,8 @@ class ClientAuthCreds extends AuthCreds
                 $keyId,
                 self::$clientModes[$this->getMode()]
             );
+
+            $this->partnerApplicationId = $this->partnerClient->getApplicationId();
         }
         catch (\Throwable $e)
         {
@@ -140,5 +149,10 @@ class ClientAuthCreds extends AuthCreds
     public function getPartnerClient()
     {
         return $this->partnerClient;
+    }
+
+    public function getPartnerApplicationId()
+    {
+        return $this->partnerApplicationId;
     }
 }

@@ -40,6 +40,7 @@ class Table
     const MERCHANT              = 'merchants';
     const PAYMENT_LINK          = 'payment_links';
     const FUND_ACCOUNT          = 'fund_accounts';
+    const ENTITY_ORIGIN         = 'entity_origins';
 
     // Account entity is currently pointing to the 'merchants' table.
     // It will be used for basic CRUD operations over regular merchants,

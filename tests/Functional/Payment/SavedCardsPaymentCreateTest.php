@@ -938,9 +938,19 @@ class SavedCardsPaymentCreateTest extends TestCase
                         }
                         break;
                     case 'tokenex_token';
-                        $response['tokenex_token'] = strrev($input['token']);
+                        $response['token'] = strrev($input['token']);
                         break;
-
+                    case 'vault-tokens';
+                        $tokenexTokens = $input['tokenex_tokens'];
+                        $tokenexMapping = [];
+                        foreach ($tokenexTokens as $token) {
+                            $tokenexMapping[] = [
+                                'tokenex_token' => $token,
+                                'vault_token' => strrev($token)
+                            ];
+                        }
+                        $response['tokenex_vault_mapping'] = $tokenexMapping;
+                        break;
                     case 'delete':
                         break;
                 }

@@ -791,7 +791,7 @@ class Service extends Base\Service
     {
         $isProduction = ($this->app->environment('production') === true);
 
-        // set mode for unexpectecd payments
+        // set mode for unexpected payments
         $mode = $isProduction ? Mode::LIVE : Mode::TEST;
 
         $this->app['basicauth']->setModeAndDbConnection($mode);

@@ -79,6 +79,7 @@ class Entity
     const SUBSCRIPTION              = 'subscription';
     const ENTITY_OFFER              = 'entity_offer';
     const FUND_ACCOUNT              = 'fund_account';
+    const ENTITY_ORIGIN             = 'entity_origin';
     const GATEWAY_TOKEN             = 'gateway_token';
     const BANK_TRANSFER             = 'bank_transfer';
     const SCHEDULE_TASK             = 'schedule_task';

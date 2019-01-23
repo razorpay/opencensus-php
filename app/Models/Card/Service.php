@@ -126,17 +126,34 @@ class Service extends Base\Service
 
         $cardVault = (new Card\CardVault);
 
-        foreach ($tokenexTokens as $tokenexToken)
+        $vaultTokensMapping = $cardVault->getVaultTokensFromTokenexTokens($tokenexTokens);
+
+        if (empty($vaultTokensMapping) === true)
+        {
+            $this->trace->info(
+                TraceCode::TOKENEX_MIGRATION_RESPONSE,
+                [
+                    'successful_tokens' => 0,
+                    'failed_tokens'     => $tokenexTokens,
+                ]
+            );
+
+            return [];
+        }
+
+        $vaultTokenexTokens = [];
+
+        foreach ($vaultTokensMapping as  $vaultTokenMapping)
         {
             try
             {
-                $vaultToken = $cardVault->getVaultTokenFromTokenexToken($tokenexToken);
+                $tokenexToken = $vaultTokenMapping['tokenex_token'];
+                $vaultToken   = $vaultTokenMapping['vault_token'];
+                $vaultTokenexTokens[] = $tokenexToken;
 
                 $this->repo->card->replaceToknexToken($tokenexToken, $vaultToken);
-
-                $successTokens[] = $vaultToken;
             }
-            catch (\Exception $e)
+            catch(\Exception $e)
             {
                 $this->trace->traceException(
                     $e,
@@ -149,10 +166,18 @@ class Service extends Base\Service
             }
         }
 
-        $response =[
-            'successful_tokens' => $successTokens,
+
+        $response =  [
+            'successful_tokens' => count($vaultTokenexTokens) - count($failedTokens),
             'failed_tokens'     => $failedTokens,
+            'no_found_tokens'   => array_diff($tokenexTokens, $vaultTokenexTokens)
         ];
+
+        $this->trace->info(
+            TraceCode::TOKENEX_MIGRATION_RESPONSE,
+            $response
+        );
+
 
         return $response;
     }
