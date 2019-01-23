@@ -30,6 +30,7 @@ const gatewayMapping = {
   upi_icici: 'UPI/ICICI',
   upi_hulk: 'UPI/HULK',
   upi_mindgate: 'UPI/Mindgate',
+  upi_axis:  'UPI/Axis',
   aeps_icici: 'AEPS/ICICI',
   wallet_airtelmoney: 'Airtelmoney',
   wallet_freecharge: 'Freecharge',
@@ -84,6 +85,7 @@ const gatewayAcquirerMapping = {
   fss: 'FSS',
   zestmoney: 'ZestMoney',
   earlysalary: 'EarlySalary',
+  amex: 'Amex',
 };
 
 const HDFC_gatewayAcquirerMapping = {
