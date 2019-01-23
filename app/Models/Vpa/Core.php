@@ -4,6 +4,7 @@ namespace RZP\Models\Vpa;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Jobs\FTSCreateAccount;
 use RZP\Models\FundAccount\Type as Type;
 
 class Core extends Base\Core
