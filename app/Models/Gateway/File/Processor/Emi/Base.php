@@ -196,11 +196,7 @@ class Base extends BaseProcessor
 
     protected function getAuthCode(Payment\Entity $payment)
     {
-        $gateway = $payment->getGateway();
-
-        $gatewayPayment = $this->repo->$gateway->findCapturedPaymentByIdOrFail($payment->getId());
-
-        $authCode = $gatewayPayment->getAuthCode();
+        $authCode = $payment->getReference2();
 
         if (empty($authCode) === true)
         {

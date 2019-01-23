@@ -40,7 +40,7 @@ class CardVault extends BaseCardVault
         return [];
     }
 
-    public function getVaultTokenFromTokenexToken($token)
+    public function getVaultTokensFromTokenexTokens($tokens)
     {
         $card = $this->detokenize($token);
 

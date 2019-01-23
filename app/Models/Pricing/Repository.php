@@ -41,6 +41,20 @@ class Repository extends Base\Repository
 
         $orgId = (empty($app['basicauth']->getOrgId()) === true) ? $rzpOrgId : $app['basicauth']->getOrgId();
 
+        $crossOrgId = $app['basicauth']->getCrossOrgId();
+
+        if (empty($crossOrgId) === false)
+        {
+            $orgId = $crossOrgId;
+        }
+        elseif ($app['basicauth']->adminHasCrossOrgAccess() === true)
+        {
+            //
+            // We don't need to add org filter to query if admin has accesss to other orgs also.
+            //
+            return $query;
+        }
+
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
 
         $query = $query->where(Pricing\Entity::ORG_ID, '=', $orgId);
@@ -168,8 +182,9 @@ class Repository extends Base\Repository
                     ->selectRaw(
                        Pricing\Entity::PLAN_ID . ','.
                        Pricing\Entity::PLAN_NAME . ','.
+                       Pricing\Entity::ORG_ID . ','.
                        'COUNT(*) AS rules_count')
-                    ->groupBy(Pricing\Entity::PLAN_ID, Pricing\Entity::PLAN_NAME)
+                    ->groupBy(Pricing\Entity::PLAN_ID, Pricing\Entity::PLAN_NAME, Pricing\Entity::ORG_ID)
                     ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
                     ->get();
     }

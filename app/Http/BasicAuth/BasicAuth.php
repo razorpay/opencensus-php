@@ -17,6 +17,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Models\Admin\Org;
 use RZP\Http\RequestHeader;
 use RZP\Models\EntityOrigin;
 use RZP\Base\RepositoryManager;
@@ -267,6 +268,12 @@ class BasicAuth
     protected $adminToken;
 
     protected $orgId       = null;
+
+    /**
+     * If admin's organisation has cross route enabled, admin will have access to other organisations as well. In this
+     * case, admin may have cross Id. Cross id is the id of the organisation to which admin want to access.
+     */
+    protected $crossOrgId;
 
     protected $orgHostName = null;
 
@@ -1863,9 +1870,36 @@ class BasicAuth
         $this->orgId = $orgId;
     }
 
+    /**
+     * Setting and validating crossOrgId.
+     *
+     * @param $crossOrgId
+     */
+    public function setCrossOrgId(string $crossOrgId = null)
+    {
+        $validateOrgId = $crossOrgId;
+
+        if (empty($validateOrgId) === false)
+        {
+            $this->repo->org->isValidOrg(Org\Entity::verifyIdAndStripSign($validateOrgId));
+        }
+
+        $this->crossOrgId = $crossOrgId;
+    }
+
     public function getOrgId()
     {
         return $this->orgId;
+    }
+
+    /**
+     * Getting crossOrgId.
+     *
+     * @return string|null $crossOrgId
+     */
+    public function getCrossOrgId()
+    {
+        return $this->crossOrgId;
     }
 
     public function fetchOrgByHostname($orgHostname)
@@ -2039,6 +2073,19 @@ class BasicAuth
         $this->request->request->remove($key);
     }
 
+    /**
+     * Check if admin has access to other organisations.
+     *
+     * @return bool
+     *
+     */
+    public function adminHasCrossOrgAccess()
+    {
+        return ($this->isAdminAuth() === true) and
+               (empty($this->admin) === false) and
+               ($this->getAdmin()->org->isCrossOrgAccessEnabled() === true);
+    }
+  
     /**
      * Returns the origin type and origin id based on the auth used.
      *

@@ -801,6 +801,15 @@ class Gateway
             ]);
     }
 
+    /**
+     * verify flow - methods to implement:
+     * 1. sendPaymentVerifyRequest - sends request to gateway, parse the response and set it
+     *  on $verify->verifyResponseContent
+     * 2. checkGatewaySuccess - return true/false after checking gateway status
+     * 3. setVerifyAmountMismatch - assert amount and return true/false
+     * 4. getVerifyAttributesToSave - return gatewayPayment attributes array to save
+     *
+     */
     protected function runPaymentVerifyFlow($verify)
     {
         // This payment is the gateway entity payment.

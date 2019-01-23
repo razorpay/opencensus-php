@@ -236,6 +236,54 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
+
+    'testCreatePricingPlanByRZPAdmin' => [
+        'request'  => [
+            'content' => [
+                'plan_name' => 'TestPlan1',
+                'rules'     => [
+                    [
+                        'payment_method'      => 'card',
+                        'payment_method_type' => 'credit',
+                        'payment_network'     => 'DICL',
+                        'payment_issuer'      => 'HDFC',
+                        'percent_rate'        => 1000,
+                        'amount_range_active' => false,
+                        'amount_range_min'    => null,
+                        'amount_range_max'    => null,
+                        'min_fee'             => null,
+                        'max_fee'             => null,
+                    ],
+                ],
+            ],
+            'url'     => '/pricing/',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'name'   => 'TestPlan1',
+                'entity' => 'pricing',
+                'count'  => 1,
+                'rules'  => [
+                    [
+                        'payment_method'      => 'card',
+                        'payment_method_type' => 'credit',
+                        'payment_network'     => 'DICL',
+                        'payment_issuer'      => 'HDFC',
+                        'percent_rate'        => 1000,
+                        'international'       => false,
+                        'amount_range_active' => false,
+                        'amount_range_min'    => null,
+                        'amount_range_max'    => null,
+                        //Defaults to 0
+                        'min_fee'             => 0,
+                        'max_fee'             => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testAddPricingPlanRule' => [
         'request' => [
             'content' => [
@@ -264,6 +312,67 @@ return [
                 'amount_range_min' => null,
                 'amount_range_max' => null,
             ],
+        ],
+    ],
+
+    'testAddPricingPlanRuleByRZPAdmin' => [
+        'request'  => [
+            'content' => [
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => 0,
+                'amount_range_active' => '0',
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+            ],
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => false,
+                'amount_range_active' => false,
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+            ],
+        ],
+    ],
+
+    'testAddPricingPlanRuleBySBIAdmin' => [
+        'request'   => [
+            'content' => [
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => 0,
+                'amount_range_active' => '0',
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+            ],
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID
         ],
     ],
 
@@ -694,6 +803,52 @@ return [
         ],
     ],
 
+    'testUpdatePricingPlanRuleByRZPAdmin' => [
+        'request'  => [
+            'content' => [
+                'min_fee'      => 101,
+                'max_fee'      => 10000,
+                'percent_rate' => 450,
+                'fixed_rate'   => 0,
+            ],
+            'method'  => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'    => 'TestPlan2',
+                'percent_rate' => 450,
+                'fixed_rate'   => 0,
+                'min_fee'      => 101,
+                'max_fee'      => 10000,
+            ],
+        ],
+    ],
+
+    'testUpdatePricingPlanRuleBySBIAdmin' => [
+        'request'   => [
+            'content' => [
+                'min_fee'      => 101,
+                'max_fee'      => 10000,
+                'percent_rate' => 450,
+                'fixed_rate'   => 0,
+            ],
+            'method'  => 'PATCH'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'No db records found.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
+        ],
+    ],
+
     'testGetPricingPlan' => [
         'response' => [
             'content' => [
@@ -756,6 +911,77 @@ return [
                     ],
                 ],
             ],
+        ],
+    ],
+
+    'testGetPricingPlanByRZPAdmin' => [
+        'response' => [
+            'content' => [
+                'name'   => 'TestPlan2',
+                'entity' => 'pricing',
+                'count'  => 4,
+                'rules'  => [
+                    [
+                        'plan_name'           => 'TestPlan2',
+                        'payment_method'      => 'card',
+                        'payment_method_type' => 'credit',
+                        'payment_network'     => 'MC',
+                        'payment_issuer'      => 'AXIS',
+                        'percent_rate'        => 0,
+                        'fixed_rate'          => 3000,
+                        'international'       => false,
+                        'amount_range_active' => false,
+                        'amount_range_min'    => null,
+                        'amount_range_max'    => null,
+                    ],
+                    [
+                        'plan_name'           => 'TestPlan2',
+                        'payment_method'      => 'card',
+                        'payment_method_type' => 'debit',
+                        'payment_network'     => 'MAES',
+                        'payment_issuer'      => 'PUNB',
+                        'percent_rate'        => 250,
+                        'fixed_rate'          => 0,
+                        'international'       => false,
+                        'amount_range_active' => false,
+                        'amount_range_min'    => null,
+                        'amount_range_max'    => null,
+                    ],
+                    [
+                        'plan_name'           => 'TestPlan2',
+                        'payment_method'      => 'card',
+                        'payment_method_type' => 'credit',
+                        'payment_network'     => 'DICL',
+                        'payment_issuer'      => 'ICIC',
+                        'percent_rate'        => 250,
+                        'fixed_rate'          => 0,
+                        'international'       => false,
+                        'amount_range_active' => false,
+                        'amount_range_min'    => null,
+                        'amount_range_max'    => null,
+                    ],
+                    [
+                        'plan_name'           => 'TestPlan2',
+                        'gateway'             => null,
+                        'payment_method'      => 'card',
+                        'payment_method_type' => 'credit',
+                        'payment_network'     => 'DICL',
+                        'payment_issuer'      => 'SBIN',
+                        'percent_rate'        => 275,
+                        'fixed_rate'          => 0,
+                        'international'       => false,
+                        'amount_range_active' => false,
+                        'amount_range_min'    => null,
+                        'amount_range_max'    => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetPricingPlanBySBIAdmin' => [
+        'response' => [
+            'content' => []
         ],
     ],
 
@@ -868,6 +1094,178 @@ return [
         ]
     ],
 
+    'testGetPricingPlansByRZPAdmin' => [
+        'request'  => [
+            'url'    => '/pricing',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'count'  => 7,
+                'entity' => 'collection',
+                'items'  => [
+                    [
+                        'name' => 'Banking default plan',
+                    ],
+                    [
+                        'name'   => 'testDefaultEmiPlan',
+                        'entity' => 'pricing',
+                        'count'  => 1,
+                        'rules'  => [
+                            [],
+                        ],
+                    ],
+                    [
+                        'name'   => 'testDefaultQrPlan',
+                        'entity' => 'pricing',
+                        'count'  => 2,
+                        'rules'  => [
+                            [],
+                        ],
+                    ],
+                    [
+                        'name'   => 'TestPlan2',
+                        'entity' => 'pricing',
+                        'count'  => 4,
+                        'rules'  => [
+                            [
+                                'plan_name'           => 'TestPlan2',
+                                'gateway'             => null,
+                                'payment_method'      => 'card',
+                                'payment_method_type' => 'credit',
+                                'payment_network'     => 'MC',
+                                'payment_issuer'      => 'AXIS',
+                                'percent_rate'        => 0,
+                                'fixed_rate'          => 3000,
+                                'international'       => false,
+                            ],
+                            [
+                                'plan_name'           => 'TestPlan2',
+                                'payment_method'      => 'card',
+                                'payment_method_type' => 'debit',
+                                'payment_network'     => 'MAES',
+                                'payment_issuer'      => 'PUNB',
+                                'percent_rate'        => 250,
+                                'fixed_rate'          => 0,
+                                'international'       => false,
+                            ],
+                            [
+                                'plan_name'           => 'TestPlan2',
+                                'payment_method'      => 'card',
+                                'payment_method_type' => 'credit',
+                                'payment_network'     => 'DICL',
+                                'payment_issuer'      => 'ICIC',
+                                'percent_rate'        => 250,
+                                'fixed_rate'          => 0,
+                                'international'       => false,
+                            ],
+                            [
+                                'plan_name'           => 'TestPlan2',
+                                'payment_method'      => 'card',
+                                'payment_method_type' => 'credit',
+                                'payment_network'     => 'DICL',
+                                'payment_issuer'      => 'SBIN',
+                                'percent_rate'        => 275,
+                                'fixed_rate'          => 0,
+                                'international'       => false,
+                            ],
+                        ]
+                    ],
+                    [
+                        'name'   => 'TestPlan1',
+                        'entity' => 'pricing',
+                        'count'  => 1,
+                        'rules'  => [
+                            [
+                                'plan_name'           => 'TestPlan1',
+                                'gateway'             => null,
+                                'payment_method'      => 'card',
+                                'payment_method_type' => 'credit',
+                                'payment_network'     => 'DICL',
+                                'payment_issuer'      => 'HDFC',
+                                'percent_rate'        => 1000,
+                                'international'       => false,
+                                'fixed_rate'          => 0,
+                                'expired_at'          => null
+                            ]
+                        ]
+                    ],
+                    [
+                        'name'   => 'testDefaultPlan',
+                        'entity' => 'pricing',
+                        'count'  => 20,
+                        'rules'  => [
+                            [],
+                        ],
+                    ],
+                ]
+            ]
+        ]
+    ],
+
+    'testGetPricingPlansBySBIAdmin' => [
+        'request'  => [
+            'url'    => '/pricing',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'count'  => 1,
+                'entity' => 'collection',
+                'items'  => [
+                    [
+                        'name'   => 'TestPlan2',
+                        'entity' => 'pricing',
+                        'count'  => 4,
+                        'rules'  => [
+                            [
+                                'plan_name'           => 'TestPlan2',
+                                'gateway'             => null,
+                                'payment_method'      => 'card',
+                                'payment_method_type' => 'credit',
+                                'payment_network'     => 'MC',
+                                'payment_issuer'      => 'AXIS',
+                                'percent_rate'        => 0,
+                                'fixed_rate'          => 3000,
+                                'international'       => false,
+                            ],
+                            [
+                                'plan_name'           => 'TestPlan2',
+                                'payment_method'      => 'card',
+                                'payment_method_type' => 'debit',
+                                'payment_network'     => 'MAES',
+                                'payment_issuer'      => 'PUNB',
+                                'percent_rate'        => 250,
+                                'fixed_rate'          => 0,
+                                'international'       => false,
+                            ],
+                            [
+                                'plan_name'           => 'TestPlan2',
+                                'payment_method'      => 'card',
+                                'payment_method_type' => 'credit',
+                                'payment_network'     => 'DICL',
+                                'payment_issuer'      => 'ICIC',
+                                'percent_rate'        => 250,
+                                'fixed_rate'          => 0,
+                                'international'       => false,
+                            ],
+                            [
+                                'plan_name'           => 'TestPlan2',
+                                'payment_method'      => 'card',
+                                'payment_method_type' => 'credit',
+                                'payment_network'     => 'DICL',
+                                'payment_issuer'      => 'SBIN',
+                                'percent_rate'        => 275,
+                                'fixed_rate'          => 0,
+                                'international'       => false,
+                            ],
+                        ]
+                    ],
+                ]
+            ]
+        ]
+    ],
+
     'testGetPricingPlansGrouping' => [
         'request' => [
             'url' => '/pricing/merchants',
@@ -898,6 +1296,56 @@ return [
                 [
                     'plan_name'   => 'testDefaultPlan',
                     'rules_count' => 20,
+                ],
+            ],
+        ],
+    ],
+
+    'testGetPricingPlansGroupingByRZPAdmin' => [
+        'request'  => [
+            'url'    => '/pricing/merchants',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'plan_name'   => 'Banking default plan',
+                    'rules_count' => 6,
+                ],
+                [
+                    'plan_name'   => 'testDefaultEmiPlan',
+                    'rules_count' => 1,
+                ],
+                [
+                    'plan_name'   => 'testDefaultQrPlan',
+                    'rules_count' => 2,
+                ],
+                [
+                    'plan_name'   => 'TestPlan2',
+                    'rules_count' => 4,
+                ],
+                [
+                    'plan_name'   => 'TestPlan1',
+                    'rules_count' => 1,
+                ],
+                [
+                    'plan_name'   => 'testDefaultPlan',
+                    'rules_count' => 20,
+                ],
+            ],
+        ],
+    ],
+
+    'testGetPricingPlansGroupingBySBIAdmin' => [
+        'request'  => [
+            'url'    => '/pricing/merchants',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'plan_name'   => 'TestPlan2',
+                    'rules_count' => 4,
                 ],
             ],
         ],
@@ -1074,6 +1522,38 @@ return [
             'content' => [
                 'message' => 'Pricing successfully deleted',
             ],
+        ],
+    ],
+
+    'testDeletePricingPlanRuleByRZPAdmin' => [
+        'request'  => [
+            'url'    => '/pricing/1hDYlICobzOCYt/rule/1zE3QYFf1zbys6',
+            'method' => 'delete',
+        ],
+        'response' => [
+            'content' => [
+                'message' => 'Pricing successfully deleted',
+            ],
+        ],
+    ],
+
+    'testDeletePricingPlanRuleBySBIAdmin' => [
+        'request'   => [
+            'url'    => '/pricing/1hDYlICobzOCYt/rule/1zD0BXpeOyaqpB',
+            'method' => 'delete',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'No db records found.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
         ],
     ],
 

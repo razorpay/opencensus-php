@@ -50,7 +50,7 @@ class Entity extends Base\PublicEntity
 
     public function toArrayBag()
     {
-        return (new ArrayBag($this->toArray()));
+        return (new ArrayBag($this->attributesToArray()));
     }
 
     public function setPublicEntityAttribute(array & $array)

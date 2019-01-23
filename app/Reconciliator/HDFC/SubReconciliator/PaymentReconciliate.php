@@ -126,10 +126,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 $this->trace->info(
                     TraceCode::RECON_MISMATCH,
                     [
-                        'info_code' => 'PAYMENT_ABSENT',
-                        'message'   => 'Payment not found. Skipping',
-                        'row'       => $row,
-                        'gateway'   => $this->gateway
+                        'info_code'     => Base\InfoCode::PAYMENT_ABSENT,
+                        'payment_id'    => $ref,
+                        'row'           => $row,
+                        'gateway'       => $this->gateway
                     ]);
             }
         }
