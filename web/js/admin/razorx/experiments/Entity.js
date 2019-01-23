@@ -50,12 +50,16 @@ export default class extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.id !== nextProps.id && nextProps.id) {
+    if (this.props.id !== nextProps.id) {
       this.fetch(nextProps.id);
     }
   }
 
   fetch(id) {
+    if (!id) {
+      return;
+    }
+
     this.setState({
       isFetching: true,
       data: null,

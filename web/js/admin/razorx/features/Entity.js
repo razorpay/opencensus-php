@@ -17,6 +17,10 @@ export default class extends React.Component {
   }
 
   fetch(id) {
+    if (!id) {
+      return;
+    }
+
     this.setState({
       isFetching: true,
       data: null,
