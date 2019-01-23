@@ -16,6 +16,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Card;
 use RZP\Models\Customer;
+use RZP\Models\EntityOrigin;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
@@ -260,7 +261,12 @@ class Processor
             // This flow is being used for only hosted (Shopify).
             $this->checkSignature($input, $payment);
 
-            return $this->authorize($payment, $input, $gatewayInput);
+            $paymentData = $this->authorize($payment, $input, $gatewayInput);
+
+            // Creates an origin entity for the payment based on the auth used to initiate the payment.
+            (new EntityOrigin\Core)->createEntityOrigin($payment);
+
+            return $paymentData;
         }
         catch (\Throwable $e)
         {

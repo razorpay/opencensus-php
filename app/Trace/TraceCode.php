@@ -1565,6 +1565,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKENEX_MIGRATION_FAILED            = 'TOKENEX_MIGRATION_FAILED';
     const TOKENEX_MIGRATION_RESPONSE          = 'TOKENEX_MIGRATION_RESPONSE';
 
+    // Origin trace codes
+    const ORIGIN_CREATED                      = 'ORIGIN_CREATED';
+    const ORIGIN_SET_FAILED                   = 'ORIGIN_SET_FAILED';
+    const ORIGIN_INVALID_TYPE                 = 'ORIGIN_INVALID_TYPE';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
