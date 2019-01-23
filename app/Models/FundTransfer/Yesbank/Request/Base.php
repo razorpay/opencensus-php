@@ -184,7 +184,12 @@ abstract class Base extends ApiProcessor
 
         if ($response->status_code !== 200)
         {
-            throw new LogicException('Invalid response from api', null, $response + $additionalInfo);
+            throw new LogicException(
+                'Invalid response from api',
+                null,
+                [
+                    'response' => $response
+                ] + $additionalInfo);
         }
 
         if (isset($responseBody[Constants::FAULT_RESPONSE_IDENTIFIER]) === true)
@@ -196,7 +201,12 @@ abstract class Base extends ApiProcessor
             return $this->extractSuccessfulData($responseBody[$this->responseIdentifier]);
         }
 
-        throw new LogicException('Invalid response from api', null, $response + $additionalInfo);
+        throw new LogicException(
+            'Invalid response from api',
+            null,
+            [
+                'response' => $response
+            ] + $additionalInfo);
     }
 
     public function processGatewayResponse(array $response): array

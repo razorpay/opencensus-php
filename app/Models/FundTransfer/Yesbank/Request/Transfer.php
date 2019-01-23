@@ -113,11 +113,15 @@ class Transfer extends Base
     {
         $amount = $this->getFormattedAmount();
 
+        $this->transferType = $this->getPaymentType($this->entity, $amount);
+
         $data = [
             $this->requestIdentifier => [
                 Constants::VERSION                      => self::VERSION,
                 Constants::UNIQUE_REQUEST_NO            => $this->entity->getId(),
                 Constants::APP_ID                       => $this->appId,
+                // This should be in this place else the request will fail
+                Constants::PURPOSE_CODE                 => Constants::PURPOSE_CODE_MAP[$this->purpose],
                 Constants::CUSTOMER_ID                  => $this->customerId,
                 Constants::DEBIT_ACCOUNT_NUMBER         => $this->accountNumber,
                 Constants::BENEFICIARY                  => $this->getPurposeSpecificData(),
@@ -131,9 +135,9 @@ class Transfer extends Base
         //
         // Purpose is required for async mode transfers
         //
-        if ($this->requestType !== Attempt\Type::SYNC)
+        if ($this->requestType === Attempt\Type::SYNC)
         {
-            $data[Constants::PURPOSE_CODE] = Constants::PURPOSE_CODE_MAP[$this->purpose];
+            unset($data[$this->requestIdentifier][Constants::PURPOSE_CODE]);
         }
 
         return $data;
