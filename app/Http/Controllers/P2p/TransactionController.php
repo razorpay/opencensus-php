@@ -38,7 +38,7 @@ class TransactionController extends Controller
 
     public function fetch()
     {
-        $input = $this->request()->all();
+        $input['id'] = $this->request()->route('transaction_id');
 
         $response = $this->service->fetch($input);
 
@@ -47,7 +47,7 @@ class TransactionController extends Controller
 
     public function initiateAuthorize()
     {
-        $input = $this->request()->all();
+        $input['id'] = $this->request()->route('transaction_id');
 
         $response = $this->service->initiateAuthorize($input);
 
@@ -58,7 +58,9 @@ class TransactionController extends Controller
     {
         $input = $this->request()->all();
 
-        $response = $this->service->authorize($input);
+        $input['id'] = $this->request()->route('transaction_id');
+
+        $response = $this->service->authorizeTransaction($input);
 
         return $this->response($response);
     }
@@ -66,6 +68,8 @@ class TransactionController extends Controller
     public function reject()
     {
         $input = $this->request()->all();
+
+        $input['id'] = $this->request()->route('transaction_id');
 
         $response = $this->service->reject($input);
 

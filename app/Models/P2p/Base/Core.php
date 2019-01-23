@@ -52,4 +52,18 @@ class Core
 
         return $entity;
     }
+
+    public function find(string $id): Entity
+    {
+        return $this->repo->findByPublicId($id);
+    }
+
+    public function build(array $input): Entity
+    {
+        $entity = $this->repo->newP2pEntity();
+
+        $entity->build($input);
+
+        return $entity;
+    }
 }

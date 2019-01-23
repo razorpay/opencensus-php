@@ -3,9 +3,13 @@
 namespace RZP\Models\P2p\Transaction\UpiTransaction;
 
 use RZP\Models\P2p\Base;
+use RZP\Models\P2p\Transaction;
 
 class Entity extends Base\Entity
 {
+    use Base\Traits\HasDevice;
+    use Base\Traits\HasHandle;
+
     const TRANSACTION_ID               = 'transaction_id';
     const DEVICE_ID                    = 'device_id';
     const HANDLE                       = 'handle';
@@ -28,9 +32,11 @@ class Entity extends Base\Entity
     /************** Entity Properties ************/
 
     protected $entity             = 'p2p_upi_transaction';
-    protected static $sign        = 'upi_transaction';
+    protected $primaryKey         = Entity::TRANSACTION_ID;
     protected $generateIdOnCreate = false;
-    protected static $generators  = [];
+    protected static $generators  = [
+        Entity::REF_ID,
+    ];
 
     protected $dates = [
         Entity::CREATED_AT,
@@ -38,9 +44,6 @@ class Entity extends Base\Entity
     ];
 
     protected $fillable = [
-        Entity::TRANSACTION_ID,
-        Entity::DEVICE_ID,
-        Entity::HANDLE,
         Entity::GATEWAY_DATA,
         Entity::ACTION,
         Entity::STATUS,
@@ -103,10 +106,7 @@ class Entity extends Base\Entity
     ];
 
     protected $defaults = [
-        Entity::TRANSACTION_ID               => null,
-        Entity::DEVICE_ID                    => null,
-        Entity::HANDLE                       => null,
-        Entity::GATEWAY_DATA                 => null,
+        Entity::GATEWAY_DATA                 => [],
         Entity::ACTION                       => null,
         Entity::STATUS                       => null,
         Entity::NETWORK_TRANSACTION_ID       => null,
@@ -145,6 +145,11 @@ class Entity extends Base\Entity
         Entity::CREATED_AT                   => 'int',
         Entity::UPDATED_AT                   => 'int',
     ];
+
+    protected function generateRefId($input)
+    {
+        return $this->setAttribute(Entity::REF_ID, gen_uuid());
+    }
 
     /***************** SETTERS *****************/
 
@@ -436,5 +441,17 @@ class Entity extends Base\Entity
     public function getPayeeIfscCode()
     {
         return $this->getAttribute(self::PAYEE_IFSC_CODE);
+    }
+
+    /***************** RELATIONS *****************/
+
+    public function transaction()
+    {
+        return $this->belongsTo(Transaction\Entity::class);
+    }
+
+    public function associateTransaction(Transaction\Entity $entity)
+    {
+        $this->transaction()->associate($entity);
     }
 }
