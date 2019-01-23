@@ -4,12 +4,15 @@ import Field, { SelectField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import { ModalContent } from 'component/Modal';
 
+import { isOrgHDFC } from 'admin/user';
+
 export default function InviteForm({
   fields,
   merchant_type,
   promo_code,
   onInvite,
 }) {
+  const isHDFC = isOrgHDFC();
   return (
     <ModalContent
       header="Invitation details"
@@ -27,7 +30,11 @@ export default function InviteForm({
       >
         {fields.indexOf('channel_code') > -1 && (
           <div>
-            <SelectField label="Channel Code" name="channel_code" required>
+            <SelectField
+              label="Channel Code"
+              name="channel_code"
+              required={!isHDFC}
+            >
               <option value="">Please select a channel code</option>
               <option value="mrm">MRM</option>
               <option value="branch">Branch/CANI</option>
@@ -39,50 +46,58 @@ export default function InviteForm({
               label="Channel Code"
               placeholder="Please mention a Channel_code"
               name="channel_code_others"
-              required
+              required={!isHDFC}
             />
           </div>
         )}
 
         {fields.indexOf('crm_next_no') > -1 && (
-          <Field label="CRM Next No." name="crm_next_no" required />
+          <Field label="CRM Next No." name="crm_next_no" required={!isHDFC} />
         )}
 
         {fields.indexOf('db_token_no') > -1 && (
-          <Field label="Database Token No." name="db_token_no" required />
+          <Field
+            label="Database Token No."
+            name="db_token_no"
+            required={!isHDFC}
+          />
         )}
 
         {fields.indexOf('branch_lts_no') > -1 && (
-          <Field label="Branch LTS No." name="branch_lts_no" required />
+          <Field
+            label="Branch LTS No."
+            name="branch_lts_no"
+            required={!isHDFC}
+          />
         )}
 
         {fields.indexOf('branch_code') > -1 && (
-          <Field label="Branch Code" name="branch_code" required />
+          <Field label="Branch Code" name="branch_code" required={!isHDFC} />
         )}
 
         {fields.indexOf('source_code') > -1 && (
-          <Field label="Source Code" name="source_code" required />
+          <Field label="Source Code" name="source_code" required={!isHDFC} />
         )}
 
         {fields.indexOf('promo_code') > -1 && (
           <Field
             label="Promo Code"
             name="promo_code"
-            required
+            required={!isHDFC}
             defaultValue={promo_code}
           />
         )}
 
         {fields.indexOf('lg_code') > -1 && (
-          <Field label="LG Code" name="lg_code" required />
+          <Field label="LG Code" name="lg_code" required={!isHDFC} />
         )}
 
         {fields.indexOf('lc_ro_code') > -1 && (
-          <Field label="LG/RO Code" name="lc_ro_code" required />
+          <Field label="LG/RO Code" name="lc_ro_code" required={!isHDFC} />
         )}
 
         {fields.indexOf('mrm_code') > -1 && (
-          <Field label="MRM Code" name="mrm_code" required />
+          <Field label="MRM Code" name="mrm_code" required={!isHDFC} />
         )}
 
         {fields.indexOf('merchant_type') > -1 && (
@@ -90,7 +105,7 @@ export default function InviteForm({
             label="Type of Merchant"
             name="merchant_type"
             defaultValue={merchant_type}
-            required
+            required={!isHDFC}
           >
             <option value="stp">STP</option>
             <option value="nstp">NSTP</option>
@@ -98,7 +113,7 @@ export default function InviteForm({
         )}
 
         {fields.indexOf('mcc_category') > -1 && (
-          <Field label="MCC Category" name="mcc_category" required />
+          <Field label="MCC Category" name="mcc_category" required={!isHDFC} />
         )}
 
         <div

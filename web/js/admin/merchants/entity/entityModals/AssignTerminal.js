@@ -30,6 +30,7 @@ const gatewayMapping = {
   upi_icici: 'UPI/ICICI',
   upi_hulk: 'UPI/HULK',
   upi_mindgate: 'UPI/Mindgate',
+  upi_axis:  'UPI/Axis',
   aeps_icici: 'AEPS/ICICI',
   wallet_airtelmoney: 'Airtelmoney',
   wallet_freecharge: 'Freecharge',
@@ -56,6 +57,7 @@ const gatewayMapping = {
   netbanking_csb: 'Netbanking CSB',
   netbanking_bob: 'Netbanking BOB',
   netbanking_allahabad: 'Netbanking Allahabad',
+  netbanking_vijaya: 'Netbanking Vijaya',
   cybersource: 'Cybersource',
   hitachi: 'Hitachi',
   wallet_openwallet: 'RZP Open Wallet',
@@ -83,6 +85,7 @@ const gatewayAcquirerMapping = {
   fss: 'FSS',
   zestmoney: 'ZestMoney',
   earlysalary: 'EarlySalary',
+  amex: 'Amex',
 };
 
 const HDFC_gatewayAcquirerMapping = {

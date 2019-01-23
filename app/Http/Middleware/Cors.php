@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use App\Http\ApiUrl;
+use App\Http\Headers;
 
 class Cors
 {
@@ -41,11 +42,17 @@ class Cors
 
         if ($crossOriginPolicy === true)
         {
+            $allowHeaders = [
+                'X-Requested-With',
+                Headers::CSRF_TOKEN,
+                'Content-Type',
+            ];
             $headers = [
                 'Access-Control-Allow-Origin'       => $originDomain,
                 'Access-Control-Allow-Methods'      => 'POST, GET, OPTIONS, PATCH, PUT, DELETE',
                 'Access-Control-Allow-Credentials'  => 'true',
-                'Access-Control-Allow-Headers'      => 'X-Requested-With, X-CSRF-TOKEN, Content-Type'
+                'Access-Control-Allow-Headers'      => implode(',', $allowHeaders),
+                'Access-Control-Expose-Headers'     => Headers::CSRF_TOKEN,
             ];
 
             //

@@ -356,6 +356,8 @@ class Service extends Base\Service
 
         $data['user'] = $userDetails;
 
+        $data['_token'] = \Request::getSession()->token();
+        
         $activated = false;
 
         // Default values in case no merchant is associated
@@ -381,8 +383,6 @@ class Service extends Base\Service
         {
             $data['primaryOwner'] = false;
         }
-
-        $data['_token'] = \Request::getSession()->token();
 
         $currentMerchantId = $currentMerchant->id;
 

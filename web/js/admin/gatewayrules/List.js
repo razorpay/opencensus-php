@@ -14,7 +14,7 @@ import Model from './model';
 
 import { adminFetch } from 'common/fetch';
 import { methods, gateways, categories } from 'common/data';
-import { isBlank } from 'common/util';
+import { isBlank } from 'rzp/utils/rzp-utils';
 
 let gateway_url = 'admin/gateway_rule';
 

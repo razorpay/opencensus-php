@@ -1,5 +1,6 @@
 import { readableFileSize } from 'rzp/utils/rzp-utils';
 import { classList } from 'common/util';
+import { isBlank } from 'rzp/utils/rzp-utils';
 
 import Staged from './Staged';
 
@@ -87,7 +88,19 @@ export default class FileUpload extends React.Component {
   };
 
   isFileTypeAllowed = file => {
-    const type = file.type;
+    let type = file.type;
+
+    //- windows sends empty file.type if it is not set in user registry
+    //- so manually add file type from the map
+    if (isBlank(type)) {
+      type = fileTypesMap[file.name.split('.').pop()];
+    }
+
+    //- if it is still empty return false for other types which are not required
+    if (isBlank(type)) {
+      return false;
+    }
+
     if (unsafeFileTypes.indexOf(type) < -1) {
       return false; // Don't allow unsafe file types in any case
     }

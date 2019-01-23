@@ -28,6 +28,7 @@ const typeToTargetMap = {
     'idfc',
     'equitas',
     'corporation',
+    'vijaya',
     'allahabad',
   ],
   emandate_register: ['hdfc'],

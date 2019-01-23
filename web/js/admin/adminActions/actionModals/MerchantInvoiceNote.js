@@ -7,7 +7,7 @@ import AsyncButton from 'ui/AsyncButton';
 
 import { notifySuccess, notifyError, closeModal } from 'common/modal';
 import { adminPost } from 'common/fetch';
-import { isBlank } from 'common/util';
+import { isBlank } from 'rzp/utils/rzp-utils';
 
 export default class MerchantInvoiceNote extends Component {
   static title = 'Merchant Invoice Notes (credit/debit)';
