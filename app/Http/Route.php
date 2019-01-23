@@ -2628,6 +2628,15 @@ final class Route
         'merchant_invoice_update_gstin',
         'setl_retry',
         'merchant_invoice_add_bulk',
+        'pricing_create_plan',
+        'pricing_get_plans',
+        'pricing_get_merchant_plans',
+        'pricing_get_gateway_plans',
+        'pricing_get_plan',
+        'pricing_add_plan_rule',
+        'pricing_delete_plan_rule',
+        'pricing_delete_plan_rule_force',
+        'pricing_update_plan_rule'
     ];
 
     // Sets TRACE level to CRITICAL for these routes
