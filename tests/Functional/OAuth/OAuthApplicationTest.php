@@ -120,8 +120,7 @@ class OAuthApplicationTest extends TestCase
                                     'GET',
                                     $requestParams);
 
-        // TODO: Enable post migrations
-        //$this->markPartner();
+        $this->markPartner();
 
         $this->startTest();
     }
@@ -182,9 +181,7 @@ class OAuthApplicationTest extends TestCase
         $this->startTest();
     }
 
-    protected function markPartner(
-        string $type = 'pure_platform',
-        string $merchantId = '10000000000000')
+    protected function markPartner(string $type = 'pure_platform', string $merchantId = '10000000000000')
     {
         $this->fixtures->merchant->edit($merchantId, ['partner_type' => $type]);
 

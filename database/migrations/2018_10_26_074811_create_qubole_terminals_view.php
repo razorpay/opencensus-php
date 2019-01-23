@@ -31,6 +31,7 @@ class CreateQuboleTerminalsView extends Migration
             Terminal::AEPS,
             Terminal::EMI,
             Terminal::RECURRING,
+            Terminal::CAPABILITY,
             Terminal::INTERNATIONAL,
             Terminal::TYPE,
             Terminal::CREATED_AT,

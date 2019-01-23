@@ -5,6 +5,7 @@ namespace RZP\Services;
 use RZP;
 use Redis;
 use Swift_Mailer;
+use Razorpay\OAuth\Application;
 use Illuminate\Database\Connection;
 use Http\Mock\Client as MockHttplug;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -478,7 +479,9 @@ class ApiServiceProvider extends BaseServiceProvider
             'subscription_registration' => SubscriptionRegistration\Entity::class,
 
             'contact'                   => Contact\Entity::class,
+
             'entity_origin'             => EntityOrigin\Entity::class,
+            'application'               => Application\Entity::class,
         ]);
     }
 

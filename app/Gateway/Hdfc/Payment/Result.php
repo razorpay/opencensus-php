@@ -128,7 +128,29 @@ final class Result
                 $success = false;
         }
 
-        return array($result, $success);
+        return [$result, $success];
+    }
+
+    public static function getPreAuthResultCode($result)
+    {
+        $success = true;
+
+        switch ($result)
+        {
+            case 'APPROVED':
+                $result = self::APPROVED;
+                break;
+            case 'CAPTURED':
+                $result = self::CAPTURED;
+                break;
+            case 'SUCCESS':
+                $result = self::SUCCESS;
+                break;
+            default:
+                $success = false;
+        }
+
+        return [$result, $success];
     }
 
     public static function isResultCodeIndicatingSuccess($result)

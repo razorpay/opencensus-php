@@ -116,7 +116,11 @@ class CreateTerminals extends Migration
 
             $table->tinyInteger(Terminal::RECURRING)
                   ->unsigned()
-                  ->default(1);
+                  ->default(0);
+
+            $table->tinyInteger(Terminal::CAPABILITY)
+                  ->unsigned()
+                  ->default(0);
 
             $table->tinyInteger(Terminal::INTERNATIONAL)
                   ->default(0);
