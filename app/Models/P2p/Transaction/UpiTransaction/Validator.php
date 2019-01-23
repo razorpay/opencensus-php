@@ -7,6 +7,7 @@ use RZP\Models\P2p\Base;
 
 class Validator extends Base\Validator
 {
+    protected static $editRules;
     protected static $initiatePayRules;
     protected static $initiateCollectRules;
     protected static $fetchAllRules;
@@ -45,8 +46,6 @@ class Validator extends Base\Validator
     {
         $rules = $this->makeRules([
             Entity::TRANSACTION_ID               => 'sometimes',
-            Entity::DEVICE_ID                    => 'sometimes',
-            Entity::HANDLE                       => 'sometimes',
             Entity::GATEWAY_DATA                 => 'sometimes',
             Entity::ACTION                       => 'sometimes',
             Entity::STATUS                       => 'sometimes',
@@ -67,49 +66,54 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    public function makeInitiatePayRules()
+    public function makeEditRules()
+    {
+        return $this->makeCreateRules();
+    }
+
+    public function makeInitiatePaySuccessRules()
+    {
+        $rules = $this->makeRules([
+            Entity::TRANSACTION_ID          => 'required',
+            Entity::NETWORK_TRANSACTION_ID  => 'required',
+            Entity::GATEWAY_TRANSACTION_ID  => 'required',
+        ]);
+
+        return $rules;
+    }
+
+    public function makeInitiateCollectSuccessRules()
+    {
+        $rules = $this->makeRules([
+            Entity::NETWORK_TRANSACTION_ID  => 'required',
+            Entity::GATEWAY_TRANSACTION_ID  => 'required',
+            Entity::GATEWAY_REFERENCE_ID    => 'sometimes',
+            Entity::RRN                     => 'sometimes',
+        ]);
+
+        return $rules;
+    }
+
+    public function makeInitiateAuthorizeSuccessRules()
     {
         $rules = $this->makeRules([]);
 
         return $rules;
     }
 
-    public function makeInitiateCollectRules()
+    public function makeAuthorizeTransactionSuccessRules()
     {
-        $rules = $this->makeRules([]);
+        $rules = $this->makeRules([
+            Entity::NETWORK_TRANSACTION_ID  => 'required',
+            Entity::GATEWAY_TRANSACTION_ID  => 'required',
+            Entity::GATEWAY_REFERENCE_ID    => 'sometimes',
+            Entity::RRN                     => 'sometimes',
+        ]);
 
         return $rules;
     }
 
-    public function makeFetchAllRules()
-    {
-        $rules = $this->makeRules([]);
-
-        return $rules;
-    }
-
-    public function makeFetchRules()
-    {
-        $rules = $this->makeRules([]);
-
-        return $rules;
-    }
-
-    public function makeInitiateAuthorizeRules()
-    {
-        $rules = $this->makeRules([]);
-
-        return $rules;
-    }
-
-    public function makeAuthorizeRules()
-    {
-        $rules = $this->makeRules([]);
-
-        return $rules;
-    }
-
-    public function makeRejectRules()
+    public function makeRejectSuccessRules()
     {
         $rules = $this->makeRules([]);
 

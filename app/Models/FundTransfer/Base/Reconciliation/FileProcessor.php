@@ -8,6 +8,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Kotak;
+use RZP\Models\Settlement\SlackNotification;
 
 abstract class FileProcessor extends Processor
 {
@@ -137,16 +138,23 @@ abstract class FileProcessor extends Processor
     {
         $reconcileFile = null;
 
-        if ((isset($input['source']) === true) and
-            ($input['source'] === 'lambda'))
+        try
         {
-            $key = urldecode($input['key']);
+            if ((isset($input['source']) === true) and
+                ($input['source'] === 'lambda'))
+            {
+                $key = urldecode($input['key']);
 
-            $reconcileFile = $this->getH2HFileFromAws($key);
+                $reconcileFile = $this->getH2HFileFromAws($key);
+            }
+            else
+            {
+                $reconcileFile = $this->getFile($input);
+            }
         }
-        else
+        catch (\Throwable $exception)
         {
-            $reconcileFile = $this->getFile($input);
+            (new SlackNotification)->send("Reverse feed download failed", $input, $exception);
         }
 
         return $reconcileFile;

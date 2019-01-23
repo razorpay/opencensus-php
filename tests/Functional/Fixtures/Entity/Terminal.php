@@ -76,6 +76,7 @@ class Terminal extends Base
         $this->createSharedNetbankingIndusindTerminal();
         $this->createSharedNetbankingPnbTerminal();
         $this->createSharedNetbankingEquitasTerminal();
+        $this->createSharedNetbankingSbiTerminal();
         $this->createSharedCybersourceHdfcTerminal();
         $this->createSharedCybersourceHdfcRecurringTerminals();
         $this->createSharedCybersourceAxisTerminal();
@@ -1937,6 +1938,22 @@ class Terminal extends Base
             'gateway'               => Gateway::NETBANKING_EQUITAS,
             'gateway_merchant_id'   => 'netbanking_equitas_merchant_id',
             'gateway_merchant_id2'  => 'netbanking_equitas_merchant_id2',
+            'netbanking'            => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+    public function createSharedNetbankingSbiTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => Shared::NETBANKING_SBI_TERMINAL,
+            'merchant_id'           => $merchantId,
+            'gateway'               => Gateway::NETBANKING_SBI,
+            'gateway_merchant_id'   => 'netbanking_sbi_merchant_id',
             'netbanking'            => 1,
         ];
 
