@@ -14,6 +14,7 @@ use RZP\Models\Pricing;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\ConfigKey;
@@ -79,13 +80,23 @@ class FeeCalculator
         $this->taxComponents = self::getTaxComponents($this->entity->merchant);
     }
 
+    protected function isFeeBearerCustomer()
+    {
+        $entity = $this->entity;
+
+        $entityName = $entity->getEntity();
+
+        return ((Feature::isCustomerFeeBearerSupported($entityName) === true) and
+                ($entity->merchant->isFeeBearerCustomer() === true));
+    }
+
     public function calculate(Pricing\Plan $pricing): array
     {
         $entity = $this->entity;
 
         $amount = $entity->getBaseAmount();
 
-        if ($entity->merchant->isFeeBearerCustomer())
+        if ($this->isFeeBearerCustomer() === true)
         {
             // 1. The first call will have the fee = 0,
             //    hence fees will be calculated on the original amount
@@ -117,30 +128,62 @@ class FeeCalculator
 
         $totalFees = $fees + $totalTaxes;
 
-        // In case the merchant is customer fee bearer, we shouldn't check
-        // $amount < $totalFees because amount is already inclusive of the fees.
-        if (($this->entity->merchant->isFeeBearerCustomer() === false) and
-            ($this->isEntityPayoutOnBankingBalance() === false) and
-            ($this->entity->merchant->getFeeModel() !== Merchant\FeeModel::POSTPAID) and
-            ($amount !== 0))
-        {
-            list($amountCredits, $feeCredits) = $this->getAvailableAmountOrFeeCredits();
-
-            if (($totalFees > $amount) and
-                ($amountCredits <= 0) and
-                ($totalFees > $feeCredits))
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,
-                    Payment\Entity::AMOUNT,
-                    [
-                        'amount' => $amount,
-                        'fees'   => $totalFees
-                    ]);
-            }
-        }
+        $this->validateFees($totalFees, $amount);
 
         return [$totalFees, $totalTaxes];
+    }
+
+    protected function validateFees($totalFees, $amount)
+    {
+        // In case the merchant is customer fee bearer, we shouldn't check
+        // $amount <= $totalFees because amount is already inclusive of the fees.
+        if ($this->isFeeBearerCustomer() === true)
+        {
+            return;
+        }
+
+        // For payout, we don't have to check for fees > amount, since
+        // the balance check and balance deduction happens almost together.
+        if ($this->entity->getEntity() === Constants\Entity::PAYOUT)
+        {
+            return;
+        }
+
+        // In case the merchant is fee bearer but on postpaid model,
+        // we shouldn't check $amount <= $totalFees.
+        if ($this->entity->merchant->getFeeModel() === Merchant\FeeModel::POSTPAID)
+        {
+            return;
+        }
+
+        // In this case, fees will almost always be greater than 0.
+        // For e-mandate registration, we have taken a call to fail
+        // later if balance not present.
+        if ($amount === 0)
+        {
+            return;
+        }
+
+        // Can't use fee credits for fund account validation, so only balance matters
+        if ($this->isEntityFundAccountValidation() === true)
+        {
+            return;
+        }
+
+        list($amountCredits, $feeCredits) = $this->getAvailableAmountOrFeeCredits();
+
+        if (($totalFees > $amount) and
+            ($amountCredits <= 0) and
+            ($totalFees > $feeCredits))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,
+                Payment\Entity::AMOUNT,
+                [
+                    'amount' => $amount,
+                    'fees'   => $totalFees
+                ]);
+        }
     }
 
     protected function getAvailableAmountOrFeeCredits()
@@ -328,6 +371,11 @@ class FeeCalculator
         $rule = $this->getRelevantPricingRuleForMethod($rules);
 
         return $rule;
+    }
+
+    protected function getRelevantFundAccountValidationPricingRule($rules, $method)
+    {
+        return $this->applyAmountRangeFilterAndReturnOneRule($rules);
     }
 
     protected function getRelevantPricingRuleForMethod($rules)
@@ -966,9 +1014,8 @@ class FeeCalculator
         return $fee;
     }
 
-    protected function isEntityPayoutOnBankingBalance(): bool
+    protected function isEntityFundAccountValidation(): bool
     {
-        return (($this->entity instanceof Payout\Entity === true) and
-            ($this->entity->isBalanceTypeBanking() === true));
+        return (($this->entity instanceof FundAccount\Validation\Entity) === true);
     }
 }

@@ -83,8 +83,8 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'      => TraceCode::RECON_MISMATCH,
-                    'info_code'       => 'REFUND_ABSENT',
-                    'message'         => 'Refund not found. Skipping.',
+                    'info_code'       => Base\InfoCode::REFUND_ABSENT,
+                    'refund_id'       => $rrn,
                     'row'             => $row,
                     'gateway'         => $this->gateway
                 ]);
@@ -111,10 +111,10 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
             $this->trace->info(
                 TraceCode::RECON_MISMATCH,
                 [
-                    'info_code' => 'REFUND_ABSENT',
-                    'message'   => 'Refund not found. Skipping',
-                    'row'       => $row,
-                    'gateway'   => $this->gateway
+                    'info_code'     => Base\InfoCode::REFUND_ABSENT,
+                    'refund_id'     => $orderId,
+                    'row'           => $row,
+                    'gateway'       => $this->gateway
                 ]);
         }
 

@@ -11,13 +11,16 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 use RZP\Models\Card\Entity as Card;
+use RZP\Models\Card\Vault;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Customer\Token\Entity as Token;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class SavedCardsPaymentCreateTest extends TestCase
 {
     use InteractsWithSession;
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -778,6 +781,205 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->runRequestResponseFlow($data);
 
+    }
+
+    public function testCreateCardVaultToken()
+    {
+        // create payment data
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $this->payment['save'] = 1;
+
+        $this->payment[Payment::CARD]['number'] = '4000400000000004';
+
+        $this->payment[Payment::CARD]['expiry_year'] = '20';
+
+        $this->payment[Payment::CUSTOMER_ID] = 'cust_100000customer';
+
+        // create payment 1
+        $content = $this->doAuthAndCapturePayment($this->payment);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals(Vault::RZP_VAULT, $card['vault']);
+    }
+
+    public function testUpdateExistingTokenexToken()
+    {
+        // create payment data
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $this->payment['save'] = 1;
+
+        $this->payment[Payment::CARD]['number'] = '4000400000000004';
+
+        $this->payment[Payment::CARD]['expiry_year'] = '20';
+
+        $this->payment[Payment::CUSTOMER_ID] = 'cust_100000customer';
+
+        // create payment 1
+        $content = $this->doAuthAndCapturePayment($this->payment);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->fixtures->edit('card', $card['id'], ['vault' => 'tokenex']);
+
+        $newCard = $this->getLastEntity('card', true);
+
+        $token = $card['vault_token'];
+
+        $this->assertEquals($card['id'], $newCard['id']);
+        $this->assertEquals(Vault::TOKENEX, $newCard['vault']);
+
+        $cardVault = Mockery::mock('RZP\Services\CardVault')->makePartial();
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing(function ($route, $method, $input)
+            {
+
+                $response = [
+                    'error' => '',
+                    'success' => true,
+                ];
+
+                switch ($route)
+                {
+                    case 'tokenize':
+                        $response['token'] = strrev(base64_encode($input['secret']));
+                        break;
+
+                    case 'detokenize':
+                        $response['value'] = base64_decode(strrev($input['token']));
+                        break;
+
+                    case 'validate':
+                        if ($input['token'] === 'fail')
+                        {
+                            $response['success'] = false;
+                        }
+                        break;
+                    case 'tokenex_token';
+                        $response['tokenex_token'] = strrev($input['token']);
+                        break;
+
+                    case 'delete':
+                        break;
+                }
+                return $response;
+            });
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $this->payment['save'] = 1;
+
+        $this->payment[Payment::CARD]['number'] = '4000400000000004';
+
+        $this->payment[Payment::CARD]['expiry_year'] = '20';
+
+        $this->payment[Payment::CUSTOMER_ID] = 'cust_100000customer';
+
+        // create payment 1
+        $content = $this->doAuthAndCapturePayment($this->payment);
+
+        $cardVaultCard = $this->getLastEntity('card', true);
+
+        $this->assertEquals($newCard['id'], $cardVaultCard['id']);
+        $this->assertEquals(Vault::RZP_VAULT, $cardVaultCard['vault']);
+        $this->assertEquals(strrev($token), $cardVaultCard['vault_token']);
+    }
+
+    public function testUpdateExistingTokenexTokenCron()
+    {
+        $this->ba->cronAuth();
+
+        $content = [
+            'limit' => 500
+        ];
+
+        $request = [
+            'url' => '/card/migrate/tokenex',
+            'method' => 'post',
+            'content' => $content,
+        ];
+
+        $cardVault = Mockery::mock('RZP\Services\CardVault')->makePartial();
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing(function ($route, $method, $input)
+            {
+
+                $response = [
+                    'error' => '',
+                    'success' => true,
+                ];
+
+                switch ($route)
+                {
+                    case 'tokenize':
+                        $response['token'] = strrev(base64_encode($input['secret']));
+                        break;
+
+                    case 'detokenize':
+                        $response['value'] = base64_decode($input['token']);
+                        break;
+
+                    case 'validate':
+                        if ($input['token'] === 'fail')
+                        {
+                            $response['success'] = false;
+                        }
+                        break;
+                    case 'tokenex_token';
+                        $response['token'] = strrev($input['token']);
+                        break;
+                    case 'vault-tokens';
+                        $tokenexTokens = $input['tokenex_tokens'];
+                        $tokenexMapping = [];
+                        foreach ($tokenexTokens as $token) {
+                            $tokenexMapping[] = [
+                                'tokenex_token' => $token,
+                                'vault_token' => strrev($token)
+                            ];
+                        }
+                        $response['tokenex_vault_mapping'] = $tokenexMapping;
+                        break;
+                    case 'delete':
+                        break;
+                }
+                return $response;
+            });
+
+        $token = base64_encode('4111111121111111');
+        $attributes = [
+                    'id'                =>  '100000011lcard',
+                    'merchant_id'       =>  '10000000000000',
+                    'name'              =>  'test',
+                    'expiry_month'      =>  '12',
+                    'expiry_year'       =>  '2100',
+                    'iin'               =>  '411111',
+                    'last4'             =>  '1111',
+                    'vault_token'       =>  $token,
+                    'vault'             => 'tokenex',
+                ];
+
+        $card = $this->fixtures->create('card', $attributes);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(0, count($response['failed_tokens']));
+
+        $card = $this->getDbEntityById('card', '100000011lcard')->toArray();
+
+        $this->assertEquals(strrev($token), $card['vault_token']);
+        $this->assertEquals('rzpvault', $card['vault']);
     }
 
     protected function mockSession($appToken = 'capp_1000000custapp')

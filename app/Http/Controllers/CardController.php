@@ -39,4 +39,13 @@ class CardController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function postCardsTokenMigrate()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->cardsTokenMigrate($input);
+
+        return ApiResponse::json($response);
+    }
 }

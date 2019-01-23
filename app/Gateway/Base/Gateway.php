@@ -234,7 +234,20 @@ class Gateway
         }
         catch (\Throwable $exc)
         {
-            if (property_exists($exc, 'isPropagatedException') === false)
+            $previousExc = $exc->getPrevious();
+
+            if (($previousExc instanceof \Requests_Exception) and
+                ($previousExc->getType() === 'curlerror') and
+                (property_exists($exc, 'isPropagatedException') === false))
+            {
+                $excData = curl_errno($previousExc->getData());
+
+                $this->pushDimensions($action, $input, Metric::CURL_ERROR, $excData);
+
+                $exc->isPropagatedException = true;
+            }
+
+            else if (property_exists($exc, 'isPropagatedException') === false)
             {
                 $this->pushDimensions($action, $input, Metric::FAILED);
 
@@ -359,7 +372,7 @@ class Gateway
 
     public function setMock($mock)
     {
-        assert (is_bool($mock));
+        assertTrue (is_bool($mock));
 
         $this->mock = $mock;
     }
@@ -880,6 +893,21 @@ class Gateway
             ]);
     }
 
+    protected function traceGatewayPaymentResponseForMozart(
+        $response,
+        $input,
+        $traceCode = TraceCode::GATEWAY_RESPONSE)
+    {
+        $this->trace->info(
+            $traceCode,
+            [
+                'action'     => $this->action,
+                'response'   => $response,
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['entities']['payment']['id'],
+            ]);
+    }
+
     protected function traceGatewayPaymentResponse(
         $response,
         $input,
@@ -1390,11 +1418,11 @@ class Gateway
         return $this->externalMockDomain . '/' . $this->gateway . $this->getRelativeUrl($type);
     }
 
-    protected function pushDimensions($action, $input, $status)
+    protected function pushDimensions($action, $input, $status, $excData = null)
     {
         $gatewayMetric = new Metric;
 
-        $gatewayMetric->pushGatewayDimensions($action, $input, $status, $this->gateway);
+        $gatewayMetric->pushGatewayDimensions($action, $input, $status, $this->gateway, $excData);
     }
 
     //
@@ -1463,5 +1491,80 @@ class Gateway
         $cachePrefix = 'gateway';
 
         return sprintf($cachePrefix.':'.'%s_netbanking_url', $bank);
+    }
+
+    protected function sendMozartRequest(array $input)
+    {
+        $baseUrl = $this->app['config']->get('applications.mozart.url');
+
+        $url =  $baseUrl . 'payments/' . $this->gateway. '/v1/' . $this->action;
+
+        $authentication = [
+            'api',
+            $this->app['config']->get('applications.mozart.password')
+        ];
+
+        $input['terminal'] = $input['terminal']->toArrayWithPassword();
+
+        $requestBody['entities'] = $input;
+
+        $request = [
+            'url' => $url,
+            'method' => 'POST',
+            'headers' => [
+                'Content-Type'  => 'application/json',
+                'X-Task-ID'     => $this->app['request']->getTaskId(),
+            ],
+            'content' => json_encode($requestBody),
+            'options' => [
+                'auth' => $authentication
+            ]
+        ];
+
+        $response = $this->sendGatewayRequest($request);
+
+        $responseBody = json_decode($response->body, true);
+
+        $this->traceGatewayPaymentResponseForMozart($responseBody ?? '', $requestBody);
+
+        unset($responseBody['data']['_raw']);
+
+        if (in_array($this->action, ['pay_init', 'authenticate_init', 'authenticate_verify'], true) === true)
+        {
+            $this->action = 'authorize';
+        }
+
+        $attributes = $this->getMappedAttributes($responseBody['data']);
+
+        if ($this->action === Action::VERIFY)
+        {
+            return $responseBody;
+        }
+        if (isset($this->gatewayPayment) === true)
+        {
+            $this->gatewayPayment = $this->updateGatewayPaymentEntity($this->gatewayPayment, $attributes, false);
+        }
+        else
+        {
+            $this->gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input);
+        }
+
+       $this->checkErrorsAndThrowExceptionFromMozartResponse($responseBody);
+
+       return $responseBody['next']['redirect'] ?? null;
+    }
+
+    protected function checkErrorsAndThrowExceptionFromMozartResponse(array $response)
+    {
+        if ($response['success'] !== true)
+        {
+            throw new Exception\GatewayErrorException(
+                $response['error']['internal_error_code'] ?? 'BAD_REQUEST_PAYMENT_FAILED',
+                $response['error']['gateway_error_code'] ?? 'gateway_error_code',
+                $response['error']['gateway_error_description'] ?? 'gateway_error_desc',
+                [],
+                null,
+                $this->action);
+        }
     }
 }

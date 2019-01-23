@@ -196,7 +196,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Editing not defined for used terminal of gateway: '.Gateway::BT_YESBANK,
+                    'description' => 'Editing not defined for terminal of gateway: '.Gateway::BT_YESBANK,
                 ],
             ],
             'status_code' => 400,
@@ -223,18 +223,18 @@ return [
             ],
             'method' => 'PUT'
         ],
-        'response' =>  [
+        'response' => [
             'content' => [
-                'merchant_id'          => '100001Razorpay',
-                'gateway'              => Gateway::BT_YESBANK,
-                'gateway_merchant_id'  => '222334',
-                'gateway_merchant_id2' => '01',
-                'type'                 => [
-                    'non_recurring',
-                    Terminal\Type::ALPHA_NUMERIC_ACCOUNT,
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Editing not defined for terminal of gateway: '.Gateway::BT_YESBANK,
                 ],
-                'bank_transfer'             => true,
-            ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
@@ -1189,8 +1189,8 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\ExtraFieldsException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED ,
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE ,
         ],
     ],
 

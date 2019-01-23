@@ -35,9 +35,9 @@ class Terminal extends Base\Terminal
             Detail\Entity::BUSINESS_OPERATION_ADDRESS       => 'required|string',
             Detail\Entity::BUSINESS_OPERATION_STATE         => 'required|string',
             Detail\Entity::BUSINESS_OPERATION_PIN           => 'required|numeric|digits:6',
-            Detail\Entity::BUSINESS_DBA                     => 'required|string|max:25',
-            Detail\Entity::BUSINESS_NAME                    => 'sometimes|string',
-            Detail\Entity::BUSINESS_OPERATION_CITY          => 'sometimes|string|max:13',
+            Detail\Entity::BUSINESS_DBA                     => 'required|string',
+            Detail\Entity::BUSINESS_NAME                    => 'required|string',
+            Detail\Entity::BUSINESS_OPERATION_CITY          => 'required|string',
         ];
     }
 

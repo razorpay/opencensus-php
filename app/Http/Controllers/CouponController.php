@@ -13,7 +13,7 @@ class CouponController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->apply($input, false);
+        $data = $this->service()->apply($input);
 
         return ApiResponse::json($data);
     }
@@ -22,7 +22,7 @@ class CouponController extends Controller
     {
         $input = Request::all();
 
-        $data  = $this->service()->apply($input,true);
+        $data  = $this->service()->validateCouponAndGetDetails($input);
 
         return ApiResponse::json($data);
     }

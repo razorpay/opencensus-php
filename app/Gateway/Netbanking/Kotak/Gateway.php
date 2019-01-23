@@ -308,6 +308,9 @@ class Gateway extends Base\Gateway
 
         $content = $this->getDataFromResponse($content);
 
+        // adding checksum verification for verify
+        $this->validateCallbackChecksum($content);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
             ['responseContent' => $content]);
@@ -365,7 +368,7 @@ class Gateway extends Base\Gateway
 
     protected function getLiveSecret()
     {
-        assert ($this->mode === Mode::LIVE);
+        assertTrue ($this->mode === Mode::LIVE);
 
         if ($this->tpv === true)
         {

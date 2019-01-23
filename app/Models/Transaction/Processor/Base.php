@@ -337,12 +337,14 @@ abstract class Base extends BaseCore
         //    and so we expect it to be set to 0 always.
         // 3. For txn of type other than transfers(where txn.credit = 0) expectation
         //    is that the credit amount is same as txn amount (as fee is 0).
+        // 4. Amount Credits cannot be used for Fund Account Validation.
         //
         assertTrue($this->txn->isGratis() === true);
         assertTrue($this->txn->getFee() === 0);
         assertTrue(
             (($this->txn->isTypePayment() === true) and ($this->txn->getCredit() === $this->txn->getAmount())) or
             (($this->txn->isTypeTransfer() === true) and ($this->txn->getDebit() === $this->txn->getAmount())));
+        assertTrue($this->txn->isTypeFundAccountValidation() === false);
 
         $amount = $this->txn->getAmount();
 
@@ -430,7 +432,7 @@ abstract class Base extends BaseCore
         }
     }
 
-     public function updateFeeCredits()
+    public function updateFeeCredits()
     {
         // While filling the txn fees and amount, we have not used fee credits.
         if (($this->txn->isFeeCredits() === false) or
@@ -474,11 +476,16 @@ abstract class Base extends BaseCore
 
         if ($feeCreditsThreshold !== null)
         {
-            $this->sendFeeCreditAlertIfNeeded($fee, $feeCredits, $feeCreditsThreshold, $this->merchantBalance->merchant);
+            $this->sendFeeCreditAlertIfNeeded(
+                $fee, $feeCredits, $feeCreditsThreshold, $this->merchantBalance->merchant);
         }
     }
 
-    private function sendFeeCreditAlertIfNeeded(int $fee, int $feeCredits, int $feeCreditsThreshold, Merchant\Entity $merchant)
+    private function sendFeeCreditAlertIfNeeded(
+        int $fee,
+        int $feeCredits,
+        int $feeCreditsThreshold,
+        Merchant\Entity $merchant)
     {
         $alertRatios = [1, 0.75, 0.5, 0.25, 0.1];
 
@@ -494,7 +501,7 @@ abstract class Base extends BaseCore
                     'email'        => $merchant->getTransactionReportEmail(),
                     'merchant_id'  => $merchant->getId(),
                     'merchant_dba'  => $merchant->getBillingLabel(),
-                    'fee_credits'  => '₹ '.(($feeCredits - $fee)/100),
+                    'fee_credits'  => '₹ '.(($feeCredits - $fee) / 100),
                     'org_hostname' => $merchant->org->getPrimaryHostName(),
                     'timestamp'    => Carbon::now(Timezone::IST)->format('d-m-Y H:i:s'),
                 ];

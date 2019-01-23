@@ -134,12 +134,12 @@ class Constants
         ],
 
         Type::EMANDATE_REGISTER => [
-            self::HDFC      => ['hdfc.emandate@razorpay.com'],
+            self::HDFC      => ['hdfc.emandate@razorpay.com', 'amit.salvi@hdfcbank.com'],
             self::ENACH_RBL => ['rbl.emandate@razorpay.com'],
         ],
 
         Type::EMANDATE_DEBIT => [
-            self::HDFC      => ['hdfc.emandate@razorpay.com'],
+            self::HDFC      => ['hdfc.emandate@razorpay.com', 'amit.salvi@hdfcbank.com'],
             self::AXIS      => ['axis.emandate@razorpay.com'],
             self::ENACH_RBL => ['rbl.emandate@razorpay.com'],
         ],

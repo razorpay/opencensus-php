@@ -4,11 +4,14 @@ namespace RZP\Models\FundAccount\Validation;
 
 class Status
 {
-    const CREATED               = 'created';
-    // In case of Bank Account Validations,
-    // Status = Validated will either have Beneficiary Name,
-    // or error code in case of failures that are valid like
-    // Transfer failed because of wrong IFSC/Name.
-    const VALIDATED             = 'validated';
-    const FAILED                = 'failed';
+    const CREATED   = 'created';
+    const COMPLETED = 'completed';
+
+    // Account status
+    const ACTIVE    = 'active';
+    const INVALID   = 'invalid';
+
+   // This is here because FTA recon expects all source entities to have
+   // the same status, and attempts to resolve the constant. TODO: Fix.
+   const PROCESSED = 'processed';
 }

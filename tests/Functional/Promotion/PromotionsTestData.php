@@ -291,5 +291,6 @@ return [
     'scheduleEntity' => [
         'interval' => 1,
         'period'   => 'monthly',
+        'type'     => 'promotion',
     ],
 ];

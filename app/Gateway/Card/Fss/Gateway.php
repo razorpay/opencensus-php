@@ -1032,7 +1032,7 @@ class Gateway extends Base\Gateway
      */
     protected function getTestSecret()
     {
-        assert ($this->mode === Mode::TEST);
+        assertTrue ($this->mode === Mode::TEST);
 
         $gatewayAquirer = $this->getGatewayAcquirer($this->input);
 

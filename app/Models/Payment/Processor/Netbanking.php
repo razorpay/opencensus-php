@@ -222,6 +222,7 @@ class Netbanking
                 IFSC::UBIN,
                 IFSC::UTBI,
                 IFSC::VIJB,
+                IFSC::YESB,
             ],
             'tpv' => [
                 IFSC::SBIN,

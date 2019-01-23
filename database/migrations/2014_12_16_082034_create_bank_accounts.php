@@ -44,9 +44,6 @@ class CreateBankAccounts extends Migration
 
             $table->string(BankAccount::BENEFICIARY_NAME, 120);
 
-            $table->string(BankAccount::REGISTERED_BENEFICIARY_NAME, 255)
-                  ->nullable();
-
             $table->string(BankAccount::BENEFICIARY_ADDRESS1, 30)
                   ->nullable();
 

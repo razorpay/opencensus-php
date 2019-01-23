@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\Upi\Yesbank\Fields;
 use RZP\Gateway\Upi\Base\Entity;
 use Razorpay\Trace\Logger as Trace;
@@ -47,6 +48,14 @@ trait Vpa
             }
             catch (Exception\GatewayErrorException $exception)
             {
+                // As of now, MindGate sends INVALID VPA code when gateway returns code VN.
+                // SBI does not have this check, but we currently do not need that.
+                // Now, If the code is INVALID VPA, we can skip calling next VPA.
+                if ($exception->getCode() === ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA)
+                {
+                    break;
+                }
+
                 $this->trace->traceException($exception, Trace::INFO, TraceCode::RECOVERABLE_EXCEPTION);
             }
         }

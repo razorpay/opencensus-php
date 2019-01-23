@@ -114,7 +114,7 @@ class Gateway extends Base\Gateway
         if ((isset($input['s2s']) === true) and ($input['s2s'] === true))
         {
             // Should occur only in corporate payments.
-            assert($this->isCorporateBanking() === true);
+            assertTrue ($this->isCorporateBanking() === true);
 
             $content = $input['gateway'];
         }
@@ -786,7 +786,7 @@ class Gateway extends Base\Gateway
 
     protected function getLiveSecret()
     {
-        assert ($this->mode === Mode::LIVE);
+        assertTrue ($this->mode === Mode::LIVE);
 
         if ($this->isRetailBanking() === true)
         {
@@ -821,7 +821,7 @@ class Gateway extends Base\Gateway
 
     protected function getTestSecret()
     {
-        assert ($this->mode === Mode::TEST);
+        assertTrue ($this->mode === Mode::TEST);
 
         if ($this->isRetailBanking() === true)
         {

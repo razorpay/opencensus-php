@@ -4642,3 +4642,24 @@ ALTER TABLE pricing
 
 ALTER TABLE fund_transfer_attempts
     MODIFY COLUMN source_type VARCHAR(255) DEFAULT NULL;
+
+# Shivam | 3-1-2019 | PAY-589 | Add column type to schedules table
+ALTER TABLE schedules
+    ADD COLUMN type VARCHAR(255) DEFAULT NULL AFTER MERCHANT_ID,
+    ADD INDEX schedules_type_index (type),
+    DROP FOREIGN KEY schedules_merchant_id_foreign,
+    MODIFY merchant_id varchar(14) null,
+    ADD COLUMN org_id VARCHAR(14) DEFAULT NULL AFTER name;
+
+ALTER TABLE fund_account_validations
+    ADD COLUMN account_status VARCHAR(255) DEFAULT NULL after status,
+    ADD COLUMN registered_name VARCHAR(255) DEFAULT NULL after account_status,
+    CHANGE COLUMN fee fees INT UNSIGNED DEFAULT 0;
+
+ALTER TABLE bank_accounts DROP COLUMN registered_beneficiary_name;
+
+ALTER TABLE webhooks
+    MODIFY COLUMN events BIGINT;
+
+ALTER TABLE fund_account_validations
+    ADD COLUMN batch_fund_transfer_id CHAR(14) AFTER currency;

@@ -26,6 +26,11 @@ class Service extends Base\Service
         return $downtime->toArrayAdmin();
     }
 
+    public function getExternalApiHealth($input)
+    {
+        return $this->core()->getExternalApiHealthData($input);
+    }
+
     public function getGatewayDowntimeDataForDashboard(): array
     {
         $downtimes = $this->core()->getCurrentAndFutureGatewayDowntimeData();

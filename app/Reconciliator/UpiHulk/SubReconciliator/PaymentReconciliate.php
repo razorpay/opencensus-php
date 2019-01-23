@@ -55,6 +55,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 [
                     'trace_code'      => TraceCode::RECON_INFO_ALERT,
                     'info_code'       => Base\InfoCode::PAYMENT_ABSENT,
+                    'payment_id'      => $npciTxnId,
                     'row'             => $row,
                     'gateway'         => $this->gateway,
                     'message'         => $message,

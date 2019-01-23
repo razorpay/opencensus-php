@@ -5,6 +5,7 @@ namespace RZP\Gateway\Hitachi;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Gateway\Mpi;
+use RZP\Models\Admin;
 use RZP\Models\Card;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
@@ -37,6 +38,7 @@ class Gateway extends Base\Gateway
 
     const TIME_FORMAT = 'His';
     const DATE_FORMAT = 'md';
+    const DYNAMIC_DESCRIPTOR_PREFIX = 'RAZ*';
 
     public function setGatewayParams($input, $mode, $terminal)
     {
@@ -788,22 +790,28 @@ class Gateway extends Base\Gateway
         $date = Carbon::now(Timezone::IST)->format(self::DATE_FORMAT);
 
         $currencyCode = Currency::getIsoCode($input['payment']['currency']);
+        $dynamicMerchantName = self::DYNAMIC_DESCRIPTOR_PREFIX . $this->getDynamicMerchantName($input['merchant'], 16);
 
         $content = [
-            RequestFields::TRANSACTION_TYPE    => TransactionType::AUTH,
-            RequestFields::TRANSACTION_AMOUNT  => $this->getFormattedAmount($input['payment']['amount']),
-            RequestFields::TRANSACTION_TIME    => $time,
-            RequestFields::TRANSACTION_DATE    => $date,
-            RequestFields::MERCHANT_ID         => $this->getMerchantId(),
-            RequestFields::MERCHANT_REF_NUMBER => $input['payment']['id'],
-            RequestFields::AUTH_STATUS         => '',
-            RequestFields::ECI                 => '',
-            RequestFields::XID                 => '',
-            RequestFields::ALGORITHM           => '',
-            RequestFields::CAVV2               => '',
-            RequestFields::UCAF                => '',
-            RequestFields::CURRENCY_CODE       => $currencyCode,
+            RequestFields::TRANSACTION_TYPE         => TransactionType::AUTH,
+            RequestFields::TRANSACTION_AMOUNT       => $this->getFormattedAmount($input['payment']['amount']),
+            RequestFields::TRANSACTION_TIME         => $time,
+            RequestFields::TRANSACTION_DATE         => $date,
+            RequestFields::MERCHANT_ID              => $this->getMerchantId(),
+            RequestFields::MERCHANT_REF_NUMBER      => $input['payment']['id'],
+            RequestFields::AUTH_STATUS              => '',
+            RequestFields::ECI                      => '',
+            RequestFields::XID                      => '',
+            RequestFields::ALGORITHM                => '',
+            RequestFields::CAVV2                    => '',
+            RequestFields::UCAF                     => '',
+            RequestFields::CURRENCY_CODE            => $currencyCode,
         ];
+
+        if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::HITACHI_DYNAMIC_DESCR_ENABLED, false) === true)
+        {
+            $content[RequestFields::DYNAMIC_MERCHANT_NAME] = $dynamicMerchantName;
+        }
 
         return $content;
     }

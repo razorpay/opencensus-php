@@ -79,6 +79,7 @@ class Entity
     const SUBSCRIPTION              = 'subscription';
     const ENTITY_OFFER              = 'entity_offer';
     const FUND_ACCOUNT              = 'fund_account';
+    const ENTITY_ORIGIN             = 'entity_origin';
     const GATEWAY_TOKEN             = 'gateway_token';
     const BANK_TRANSFER             = 'bank_transfer';
     const SCHEDULE_TASK             = 'schedule_task';
@@ -164,6 +165,7 @@ class Entity
     const UPI_SBI                = 'upi_sbi';
     const UPI_AXIS               = 'upi_axis';
     const UPI_ICICI              = 'upi_icici';
+    const UPI_RBL                = 'upi_rbl';
     const UPI_HULK               = 'upi_hulk';
     const UPI_YESBANK            = 'upi_yesbank';
     const ENACH_RBL              = 'enach_rbl';
@@ -361,6 +363,7 @@ class Entity
         self::UPI_ICICI              => \RZP\Gateway\Upi\Icici::class,
         self::UPI_AXIS               => \RZP\Gateway\Upi\Axis::class,
         self::UPI_HULK               => \RZP\Gateway\Upi\Hulk::class,
+        self::UPI_RBL                => \RZP\Gateway\Upi\Rbl::class,
         self::UPI_YESBANK            => \RZP\Gateway\Upi\Yesbank::class,
         self::AEPS                   => \RZP\Gateway\Aeps\Base::class,
         self::AEPS_ICICI             => \RZP\Gateway\Aeps\Icici::class,
@@ -477,6 +480,7 @@ class Entity
         self::UPI_AXIS               => \RZP\Gateway\Upi\Base::class,
         self::UPI_HULK               => \RZP\Gateway\Upi\Base::class,
         self::UPI_NPCI               => \RZP\Gateway\Upi\Base::class,
+        self::UPI_RBL                => \RZP\Gateway\Upi\Base::class,
         self::UPI_YESBANK            => \RZP\Gateway\Upi\Base::class,
 
         self::AEPS_ICICI             => \RZP\Gateway\Aeps\Base::class,

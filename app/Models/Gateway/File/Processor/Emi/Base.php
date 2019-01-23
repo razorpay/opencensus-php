@@ -8,12 +8,11 @@ use Carbon\Carbon;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
+use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Mail\Emi as EmiMail;
 use RZP\Models\Gateway\File\Status;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Models\Gateway\File\Processor\Base as BaseProcessor;
@@ -190,7 +189,7 @@ class Base extends BaseProcessor
 
         $cardToken = $card->getVaultToken();
 
-        $cardNumber = (new Card\Tokenex)->getCardNumber($cardToken);
+        $cardNumber = (new Card\CardVault)->getCardNumber($cardToken);
 
         return $cardNumber;
     }

@@ -21,7 +21,7 @@ class Core extends Base\Core
         $fundAccount = (new Entity)->build($input);
 
         $this->repo->transaction(function() use ($input, $merchant, $source, $fundAccount) {
-            $account = $this->createAccount($input, $source);
+            $account = $this->createAccount($input, $merchant, $source);
 
             $fundAccount->merchant()->associate($merchant);
 
@@ -35,7 +35,9 @@ class Core extends Base\Core
         return $fundAccount;
     }
 
-    protected function createAccount(array $input, Base\PublicEntity $source): Base\PublicEntity
+    protected function createAccount(array $input,
+                                     Merchant\Entity $merchant,
+                                     Base\PublicEntity $source = null): Base\PublicEntity
     {
         $accountType = $input[Entity::ACCOUNT_TYPE];
 
@@ -46,7 +48,7 @@ class Core extends Base\Core
         switch ($accountType)
         {
             case Type::BANK_ACCOUNT:
-                $account = (new BankAccount\Core)->createBankAccountForBankingSource($accountInput, $source);
+                $account = (new BankAccount\Core)->createBankAccountForFundAccount($accountInput, $merchant, $source);
                 break;
 
             case Type::VPA:
