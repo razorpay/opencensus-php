@@ -377,6 +377,18 @@ class Notifier extends Base\Core
     {
         $template = $params = $sender = null;
 
+        $receipt = $this->invoice->getReceipt();
+
+        // TODO: Make this generic later. Keep a list of requiredParams[] and trace/fail if those params are not set
+        if ($receipt === null)
+        {
+            $this->trace->info(
+                TraceCode::INVOICE_SMS_CUSTOM_PARAMETER_NOT_SET,
+                [
+                    'parameter' => Entity::RECEIPT,
+                ]);
+        }
+
         switch ($merchant->getId())
         {
             case Preferences::MID_RBLCARD:
@@ -385,7 +397,7 @@ class Notifier extends Base\Core
                 $template = 'sms.custom_invoice.rbl_card';
                 $sender   = 'RBLCRD';
                 $params   = [
-                    'receipt'      => $this->invoice->getReceipt(),
+                    'receipt'      => $receipt,
                     'invoice_link' => $this->invoice->getShortUrl(),
                     'amount'       => $this->invoice->getAmount() / 100,
                 ];
@@ -398,12 +410,20 @@ class Notifier extends Base\Core
                 $template = 'sms.custom_invoice.rbl_loan';
                 $sender   = 'RBLBNK';
                 $params   = [
-                    'receipt'      => $this->invoice->getReceipt(),
+                    'receipt'      => $receipt,
                     'invoice_link' => $this->invoice->getShortUrl(),
                     'amount'       => $this->invoice->getAmount() / 100,
                 ];
 
                 break;
+
+            case Preferences::MID_DMI_FINANCE:
+
+                $template = 'sms.custom_invoice.dmi_finance';
+                $params   = [
+                    'receipt'      => $receipt,
+                    'invoice_link' => $this->invoice->getShortUrl(),
+                ];
         }
 
         return ['template' => $template, 'params' => $params, 'sender' => $sender];
