@@ -357,7 +357,7 @@ class Service extends Base\Service
         $data['user'] = $userDetails;
 
         $data['_token'] = \Request::getSession()->token();
-        
+
         $activated = false;
 
         // Default values in case no merchant is associated
@@ -415,6 +415,7 @@ class Service extends Base\Service
                     $data['experiments']['new_chat'] = $merchantService->getTreatment('new_chat');
 
                     $data['experiments']['subscription_link'] = $merchantService->getTreatment('subscription_link');
+                    $data['experiments']['mjml_based_mailers'] = $merchantService->getTreatment('mjml_based_mailers');
 
                     $data['current'] = $currentMerchantId;
 
