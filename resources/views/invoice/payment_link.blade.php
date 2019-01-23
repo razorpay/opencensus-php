@@ -282,7 +282,7 @@ $custom_labels                  = $data['custom_labels'];
                                 @endif
 
                                 <div class="info">
-                                    <span id="pay-title">{{ isset($invoice_data['first_payment_min_amount']) ? 'TOTAL OVERDUE AMOUNT' : 'AMOUNT PAYABLE'}}</span>
+                                    <span id="pay-title">{{ isset($invoice_data['first_payment_min_amount']) ? 'TOTAL AMOUNT OVERDUE' : 'AMOUNT PAYABLE'}}</span>
                                     <div class="val" id="display-pay-amt">
                                         ₹{{amount_format_IN($invoice_data['amount'])}}
                                     </div>
@@ -431,7 +431,7 @@ $custom_labels                  = $data['custom_labels'];
                         @endif
 
                         <div class="info">
-                            <span id="pay-title">{{ isset($invoice_data['first_payment_min_amount']) ? 'TOTAL OVERDUE AMOUNT' : 'AMOUNT PAYABLE'}}</span>
+                            <span id="pay-title">{{ isset($invoice_data['first_payment_min_amount']) ? 'TOTAL AMOUNT OVERDUE' : 'AMOUNT PAYABLE'}}</span>
                             <div class="val" id="display-pay-amt">
                                 ₹{{amount_format_IN($invoice_data['amount'])}}
                             </div>
