@@ -13,6 +13,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Jobs\FTSCreateAccount;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\FundAccount\Type as Type;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 
@@ -414,6 +415,6 @@ class Core extends Base\Core
     {
         $id = $ba->getId();
 
-        FTSCreateAccount::dispatch($id, $this->mode);
+        FTSCreateAccount::dispatch($id, $this->mode, Type::BANK_ACCOUNT);
     }
 }

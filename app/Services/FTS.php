@@ -84,18 +84,8 @@ class FTS
      */
     public function createFundAccount(array $input, bool $throwExceptionOnFailure = false): array
     {
+        //TODO: How to handle update?
         return $this->createAndSendRequest(self::FundAccountBaseURL . '/' . self::URLS['create'], 'POST', $input, $throwExceptionOnFailure);
-    }
-
-    /**
-     * @param array $input
-     * @param bool  $throwExceptionOnFailure
-     *
-     * @return array
-     */
-    public function updateFundAccount(array $input, bool $throwExceptionOnFailure = false): array
-    {
-        return $this->createAndSendRequest(self::FundAccountBaseURL . '/' . self::URLS['update'], 'PUT', $input, $throwExceptionOnFailure);
     }
 
     /**

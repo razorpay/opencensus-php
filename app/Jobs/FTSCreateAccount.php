@@ -27,6 +27,13 @@ class FTSCreateAccount extends Job
     const BENEFICIARY_ACCOUNT_TYPE      = "beneficiary_account_type";
     const BENEFICIARY_ACCOUNT_NUMBER    = "beneficiary_account_number";
 
+    const USERNAME        = 'username';
+    const HANDLE          = 'handle';
+    const MERCHANT_ID     = 'merchant_id';
+
+    const BANK_ACCOUNT              = 'bank_account';
+    const VPA                       = 'vpa';
+
     /**
      * @var string
      */
@@ -36,11 +43,15 @@ class FTSCreateAccount extends Job
 
     protected $merchantId;
 
-    public function __construct(string $id, string $mode)
+    protected $type;
+
+    public function __construct(string $id, string $mode, string $type)
     {
         parent::__construct($mode);
 
-        $this->id = $id;
+        $this->id  = $id;
+
+        $this->type = $type;
     }
 
     /**
@@ -59,19 +70,30 @@ class FTSCreateAccount extends Job
 
             parent::handle();
 
-            $this->trace->info(
-                TraceCode::FTS_CREATE_ACCOUNT,
-                [
+            $this->trace->info(TraceCode::FTS_CREATE_ACCOUNT, $this->type);
 
-                ]
-            );
+            switch ($this->type)
+            {
+                case self::BANK_ACCOUNT:
+                    $account[self::BANK_ACCOUNT] = (new BankAccount\Core)->createBankAccount($this->id);
+                    break;
 
-            $ba =$this->repoManager->bank_account->getBankAccountById($this->id);
+                case self::VPA:
+                    $account[self::VPA] = (new Vpa\Core)->createVPA($this->id);
+                    break;
 
-            $data = $this->getAccountDetails($ba);
+                default:
+                    throw new LogicException('Creation logic not defined for fund account type: ' . $this->type);
+            }
 
-            $ftsResponse = App::getFacadeRoot()['fts']->createFundAccount($data, true);
+            $ftsResponse = App::getFacadeRoot()['fts']->createFundAccount($account, true);
 
+            $fa_id = $ftsResponse['body']['fa_id'];
+
+            if(!empty($fa_id))
+            {
+                //TODO: to update fa_id for BANK_ACCOUNT OR VPA
+            }
 
             $this->trace->info(
                 TraceCode::FTS_ACCOUNT_CREATED_FOR_MERCHANT,
@@ -91,6 +113,13 @@ class FTSCreateAccount extends Job
                 $data);
 
         }
+    }
+
+    public function createBankAccount($BankAccountId)
+    {
+        $ba =$this->repoManager->bank_account->getBankAccountById($this->id);
+
+        return $this->getBankAccountDetails($ba);
     }
 
     public function getAccountDetails($ba)
@@ -125,6 +154,22 @@ class FTSCreateAccount extends Job
 
         $data[self::BENEFICIARY_ACCOUNT_NUMBER] = $ba->getAccountNumber();
 
+        //TODO: to fetch the merchantId
+        //$data[self::MERCHANT_ID]                = $this->merchantId;
 
+        return $data;
+    }
+
+    public function getVPADetails($vpa)
+    {
+
+        $data[self::HANDLE]       = $vpa->getHandle();
+
+        $data[self::USERNAME]     = $vpa->getUsername();
+
+        //TODO: to fetch the merchantId
+        //$data[self::MERCHANT_ID]  = $this->merchantId;
+
+        return $data;
     }
 }
