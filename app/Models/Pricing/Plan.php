@@ -12,9 +12,10 @@ use RZP\Models\VirtualAccount\Receiver;
 
 class Plan extends PublicCollection
 {
-    const ID    = 'id';
-    const RULES = 'rules';
-    const NAME  = 'name';
+    const ID     = 'id';
+    const RULES  = 'rules';
+    const NAME   = 'name';
+    const ORG_ID = 'org_id';
 
     protected $entity = 'pricing';
 
@@ -194,6 +195,7 @@ class Plan extends PublicCollection
             self::ID        => $item->getPlanId(),
             self::NAME      => $item->getPlanName(),
             self::ENTITY    => $this->entity,
+            self::ORG_ID    => $item->getOrgId(),
             self::COUNT     => $count,
             self::RULES     => $rules);
 
@@ -253,6 +255,21 @@ class Plan extends PublicCollection
             }
         }
         return false;
+    }
+
+    /**
+     * Returns the org id of pricing plan.
+     *
+     * @return string|null
+     */
+    public function getOrgId()
+    {
+        if ($this->count() !== 0)
+        {
+            return $this->items[0]->getOrgId();
+        }
+
+        return null;
     }
 
     public function hasBankingPayoutRuleForMethod(string $method): bool
