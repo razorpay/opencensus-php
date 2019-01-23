@@ -35,6 +35,14 @@ class Rules implements ArrayableInterface
         return $this;
     }
 
+    /**
+     * Make array rules with $prepend string. And append in the existing rules.
+     *
+     * @param string $prepend
+     * @param array $rules
+     * @param bool $nested
+     * @return $this
+     */
     public function arrayRules(string $prepend, array $rules, bool $nested = false)
     {
         $prepended = [
@@ -49,6 +57,31 @@ class Rules implements ArrayableInterface
         }
 
         $this->merge(new Rules($prepended));
+
+        return $this;
+    }
+
+    /**
+     * Wrap all the rules into given $prepend string. And replace the existing rules
+     *
+     * @param string $prepend
+     * @param bool $nested
+     * @return $this
+     */
+    public function wrapRules(string $prepend, bool $nested = false)
+    {
+        $prepended = [
+            $prepend    => 'sometimes|array',
+        ];
+
+        $connector = $nested ? '.*.' : '.';
+
+        foreach ($this->rules as $key => $rule)
+        {
+            $prepended[$prepend . $connector . $key] = $rule;
+        }
+
+        $this->rules = $prepended;
 
         return $this;
     }
