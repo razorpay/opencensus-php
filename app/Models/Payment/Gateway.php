@@ -57,6 +57,7 @@ class Gateway
     const NETBANKING_CSB         = 'netbanking_csb';
     const NETBANKING_PNB         = 'netbanking_pnb';
     const NETBANKING_OBC         = 'netbanking_obc';
+    const NETBANKING_SBI         = 'netbanking_sbi';
     const NETBANKING_ALLAHABAD   = 'netbanking_allahabad';
     const NETBANKING_CANARA      = 'netbanking_canara';
     const PAYTM                  = 'paytm';
@@ -602,6 +603,7 @@ class Gateway
             self::NETBANKING_CSB,
             self::NETBANKING_ALLAHABAD,
             self::NETBANKING_EQUITAS,
+            self::NETBANKING_SBI,
             self::NETBANKING_CANARA,
             self::NETBANKING_VIJAYA,
         ],
@@ -1185,6 +1187,7 @@ class Gateway
         IFSC::ALLA         => Gateway::NETBANKING_ALLAHABAD,
         IFSC::CNRB         => Gateway::NETBANKING_CANARA,
         IFSC::ESFB         => Gateway::NETBANKING_EQUITAS,
+        IFSC::SBIN         => Gateway::NETBANKING_SBI,
         IFSC::VIJB         => Gateway::NETBANKING_VIJAYA,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
