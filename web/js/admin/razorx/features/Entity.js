@@ -4,21 +4,6 @@ import { formatDate, titleCase } from 'common/util';
 import { rexFetch } from 'admin/razorx/fetch';
 import FeaturesModal from './Modal';
 
-const dummy_data = {
-  id: 182,
-  name: 'Reports-V3-migration',
-  description:
-    'Move reports to ES Move reports to ES Move reports to ES Move reports to ES',
-  created_by: 'tom',
-  active_experiments: 4,
-  total_experiments: 10,
-  created_at: 1546434027,
-  updated_at: 1546434027,
-  updated_by: 'dom',
-  deleted_at: 0,
-  variants: ['on', 'off'],
-};
-
 export default class extends React.Component {
   state = {};
   componentDidMount() {
@@ -57,7 +42,7 @@ export default class extends React.Component {
   }
 
   showFeatureModal = _ => {
-    openModal(<FeaturesModal data={dummy_data} />);
+    openModal(<FeaturesModal data={this.state.data} />);
   };
 
   showJSONModal = _ => {
@@ -66,7 +51,7 @@ export default class extends React.Component {
       return;
     }
 
-    openModal(<FeaturesModal data={dummy_data} JSONView />);
+    openModal(<FeaturesModal data={this.state.data} JSONView />);
   };
 
   render() {
