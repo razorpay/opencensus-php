@@ -7,9 +7,14 @@ import { rexFetch } from 'admin/razorx/fetch';
 import { AppStore } from 'admin/user';
 
 export default class MerchantEvaluation extends React.Component {
-  state = { evaluation_result: null };
+  state = { evaluationResult: null };
 
   evaluateMerchant = filters => {
+    this.setState({
+      evaluationResult: null,
+      isFetching: true,
+    });
+
     const payload = {
       url: 'evaluate',
       params: {
@@ -19,16 +24,43 @@ export default class MerchantEvaluation extends React.Component {
       },
     };
 
-    return rexFetch(payload).then(data => {
-      if (data) {
-        this.setState({ evaluation_result: data.result });
-      }
-    });
+    return rexFetch(payload)
+      .then(data => {
+        this.setState({
+          isFetching: false,
+          evaluationResult: data ? data.result : false,
+        });
+      })
+      .catch(({ errors = ['Some network error'] }) => {
+        this.setState({
+          isFetching: false,
+          evaluationResult: false,
+        });
+
+        notifyError(errors[0]);
+      });
   };
 
   render() {
+    let { isFetching, evaluationResult } = this.state;
+    let result;
+
+    if (isFetching) {
+      result = <span class="dot-loader">.</span>;
+    } else if (evaluationResult === false) {
+      result = (
+        <span>
+          Oh Snap! <br /> No Results
+        </span>
+      );
+    } else if (evaluationResult === null) {
+      result = <span>Search Something!</span>;
+    } else if (evaluationResult) {
+      result = <span class="highlight">{evaluationResult}</span>;
+    }
+
     return (
-      <div class="parent-container features-container">
+      <div class="parent-container merchant-evaluation-container">
         <div class="header">
           <span class="title">Merchant Evaluation</span>
           <SwitchField
@@ -53,8 +85,12 @@ export default class MerchantEvaluation extends React.Component {
               </SelectField>
               <button class="btn btn--primary field">Search</button>
             </Form>
-            <div>
-              <b>Result:</b>
+            <div class="evaluation-result">
+              <div>
+                <i class="i i-flask" />
+                <div class="title">RESULT</div>
+                {result}
+              </div>
             </div>
           </div>
         </div>
