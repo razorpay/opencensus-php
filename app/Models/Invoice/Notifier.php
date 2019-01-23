@@ -379,16 +379,6 @@ class Notifier extends Base\Core
 
         $receipt = $this->invoice->getReceipt();
 
-        // TODO: Make this generic later. Keep a list of requiredParams[] and trace/fail if those params are not set
-        if ($receipt === null)
-        {
-            $this->trace->info(
-                TraceCode::INVOICE_SMS_CUSTOM_PARAMETER_NOT_SET,
-                [
-                    'parameter' => Entity::RECEIPT,
-                ]);
-        }
-
         switch ($merchant->getId())
         {
             case Preferences::MID_RBLCARD:
@@ -424,6 +414,16 @@ class Notifier extends Base\Core
                     'receipt'      => $receipt,
                     'invoice_link' => $this->invoice->getShortUrl(),
                 ];
+        }
+
+        // TODO: Make this generic later. Keep a list of requiredParams[] and trace/fail if those params are not set
+        if ($params !== null and $receipt === null)
+        {
+            $this->trace->info(
+                TraceCode::INVOICE_SMS_CUSTOM_PARAMETER_NOT_SET,
+                [
+                    'parameter' => Entity::RECEIPT,
+                ]);
         }
 
         return ['template' => $template, 'params' => $params, 'sender' => $sender];

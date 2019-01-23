@@ -107,7 +107,8 @@ class ViewDataSerializer extends Base\Core
             case Preferences::MID_AMIT_RBLCARD:
 
                 $customLabels = [
-                    'receipt_number' => 'Credit Card Number',
+                    'receipt_number'           => 'Credit Card Number',
+                    'first_payment_min_amount' => 'Minimum Amount Due',
                 ];
 
                 break;
