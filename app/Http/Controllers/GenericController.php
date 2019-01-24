@@ -15,6 +15,7 @@ class GenericController extends Controller
     const WHITELISTED_HEADERS = [
         'x-consumer',
         'x-report-type',
+        'x-cross-org-id',
     ];
 
     public function handleAny($mode, $path)

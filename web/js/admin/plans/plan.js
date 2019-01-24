@@ -13,6 +13,7 @@ import { deepClone } from 'common/util';
 import { cardTypes } from 'common/data';
 import { SwitchField } from 'ui/Field';
 import { isWorkflow } from 'common/util';
+import { closeModal } from 'common/modal';
 
 export default class Plan extends Collection {
   constructor(props = {}) {
@@ -37,8 +38,7 @@ export default class Plan extends Collection {
         this.items.push(new Rule(this));
       }
     }
-
-    this.bind(['save', 'updateName']);
+    this.bind(['save', 'updateName', 'updateOrg']);
   }
 
   fetch() {
@@ -62,7 +62,9 @@ export default class Plan extends Collection {
   }
 
   save() {
-    let name = this.props.name;
+    let name = this.props.name,
+      orgId = this.props.orgId || null;
+
     if (!name) {
       notifyError('Name the pricing plan first.');
       return Promise.resolve();
@@ -71,13 +73,20 @@ export default class Plan extends Collection {
       'save',
       adminPost({
         url: 'live/pricing',
+        ...(orgId && {
+          headers: {
+            'x-cross-org-id': orgId,
+          },
+        }),
         data: {
           plan_name: name,
           rules: this.items.slice(0, -1).map(p => p.serialize()),
         },
       }).then(data => {
         if (data) {
-          this.props.collection.items.push(data);
+          this.props.collection.items.push(
+            new CollectionItem(this.props.collection, data)
+          );
           notifySuccess('Plan added successfully.');
           return data;
         }
@@ -87,6 +96,10 @@ export default class Plan extends Collection {
 
   updateName(e) {
     this.props.name = e.target.value;
+  }
+
+  updateOrg(e) {
+    this.props.orgId = e.target.value;
   }
 }
 
@@ -260,11 +273,20 @@ class Rule extends CollectionItem {
         })
       ).then(data => {
         if (data && !isWorkflow(data)) {
+          let plan = null;
+
           notifySuccess(`Rule added for ${data.plan_name}`);
           data.isEditing = false;
           this.amount_range_min = '';
           this.amount_range = '';
           this.collection.items.splice(-1, 0, new Rule(this.collection, data));
+
+          // update rules_count in plans list
+          plan = this.collection.props.collection.items.find(
+            item => item.id === this.collection.props.id
+          );
+          plan.rules_count++;
+
           return data;
         }
       });
@@ -272,18 +294,30 @@ class Rule extends CollectionItem {
   }
 
   delete() {
-    if (!this.collection.props.id) {
+    const planId = this.collection.props.id,
+      planItems = this.collection.props.collection.items;
+
+    if (!planId) {
       return this.collection.items.remove(this);
     }
     return this.request(
       'delete',
-      adminDelete(
-        `live/pricing/${this.collection.props.id}/rule/${this.id}/force`
-      )
+      adminDelete(`live/pricing/${planId}/rule/${this.id}/force`)
     ).then(data => {
       if (data && !isWorkflow(data)) {
         notifySuccess(data.message);
-        this.collection.items.remove(this);
+        let removablePlan = planItems.find(item => item.id === planId);
+        //- remove pricing plan when all rules are deleted as backend soft deletes it
+        if (
+          planId &&
+          this.collection.items.peek().length === 2 //- rule would have a dummy item
+        ) {
+          planItems.remove(removablePlan);
+          closeModal();
+        } else {
+          removablePlan.rules_count--;
+          this.collection.items.remove(this);
+        }
       }
     });
   }
