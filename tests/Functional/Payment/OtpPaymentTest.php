@@ -1960,7 +1960,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'headless']);
+        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 's2s_otp_json']);
         $this->mockTokenEx();
         $this->mockOtpElf();
 

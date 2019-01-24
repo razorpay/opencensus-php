@@ -169,27 +169,6 @@ class Repository extends Base\Repository
                     })->pluck(Entity::ID)->toArray();
     }
 
-    public function replaceToknexToken(string $tokenexToken, string $hVaultToken)
-    {
-        $this->newQuery()
-             ->where(Entity::VAULT_TOKEN, $tokenexToken)
-             ->update([
-                Entity::VAULT_TOKEN => $hVaultToken,
-                Entity::VAULT => Card\Vault::RZP_VAULT,
-             ]);
-    }
-
-    public function getTokenexTokens(int $limit)
-    {
-        return $this->newQuery()
-                    ->where(Entity::VAULT, Card\Vault::TOKENEX)
-                    ->select(Entity::VAULT_TOKEN)
-                    ->limit($limit)
-                    ->distinct()
-                    ->pluck(Entity::VAULT_TOKEN)
-                    ->toArray();
-    }
-
     protected function addQueryParamInternational($query, $params)
     {
         $international = $this->dbColumn(Entity::INTERNATIONAL);

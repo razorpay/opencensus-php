@@ -1889,42 +1889,6 @@ trait PaymentTrait
         $this->mockCardVault();
 
         return;
-
-        $tokenex = Mockery::mock('RZP\Services\TokenEx')->makePartial();
-
-        $this->app->instance('card.tokenex', $tokenex);
-
-        $tokenex->shouldReceive('sendRequest')
-            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
-            ->andReturnUsing(function ($route, $method, $input)
-            {
-                $response = [
-                    'Error' => '',
-                    'ReferenceNumber' => '15102913382030662954',
-                    'Success' => true,
-                ];
-
-                switch ($route)
-                {
-                    case 'REST/Tokenize':
-                        $response['Token'] = base64_encode($input['Data']);
-                        break;
-
-                    case 'REST/Detokenize':
-                        $response['Value'] = base64_decode($input['Token']);
-                        break;
-
-                    case 'REST/ValidateToken':
-                        $response['Valid'] = true;
-                        break;
-
-                    case 'REST/DeleteToken':
-                        break;
-                }
-                return $response;
-            });
-
-        $this->app->instance('card.tokenex', $tokenex);
     }
 
     protected function mockCardVault()
@@ -1958,9 +1922,6 @@ trait PaymentTrait
                         {
                             $response['success'] = false;
                         }
-                        break;
-                    case 'tokenex_token';
-                        $response['tokenex_token'] = $input['token'];
                         break;
 
                     case 'delete':
