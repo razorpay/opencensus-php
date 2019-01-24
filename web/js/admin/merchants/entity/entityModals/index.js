@@ -6,6 +6,7 @@ export AssignTerminal from './AssignTerminal';
 export AssignBanks from './AssignBanks';
 export AssignMerchantHandle from './AssignMerchantHandle';
 export AddAdjustment from './AddAdjustment';
+export CreateTerminal from './CreateTerminal';
 export CreateOffer from './CreateOffer';
 export CreateVA from './CreateVA';
 export EditMerchant from './EditMerchant';

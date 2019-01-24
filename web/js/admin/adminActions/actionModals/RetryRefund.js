@@ -9,6 +9,10 @@ import { notifySuccess, closeModal, notifyError } from 'common/modal';
 RetryRefund.title = 'Retry Refund to Bank Account';
 RetryRefund.permission = 'edit_payment_refund';
 
+const options = {
+  transfer_modes: ['IMPS', 'NEFT', 'RTGS', 'IFT'],
+};
+
 export default function RetryRefund() {
   return (
     <Form class="full-span">
@@ -26,6 +30,19 @@ export default function RetryRefund() {
         required
       />
       <Field label="IFSC" type="text" name="ifsc_code" required />
+
+      <div class="field multi">
+        <label>Transfer Mode</label>
+        <select name="transfer_mode">
+          <option value="">Any</option>
+          {options.transfer_modes.map((opt, idx) => (
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <SelectMode defaultValue="live" />
       <AsyncButton
         text="Submit"
@@ -40,6 +57,7 @@ export default function RetryRefund() {
                 account_number: body.account_number,
                 ifsc_code: body.ifsc_code,
                 beneficiary_name: body.beneficiary_name,
+                transfer_mode: body.transfer_mode,
               },
             },
           }).then(response => {

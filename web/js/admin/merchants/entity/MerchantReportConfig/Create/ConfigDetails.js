@@ -3,14 +3,26 @@ import { Component } from 'react';
 import { snakeToTitleCase, classList } from 'common/util';
 import { openModal, closeModal, notifyError } from 'common/modal';
 import { ModalContent } from 'component/Modal';
+import { isPresent } from 'rzp/utils/rzp-utils';
 
 import AddCustomNote from './AddCustomNote';
 import AddConstantField from './AddConstantField';
+import { dotToString } from './index';
 
 export default class ConfigDetails extends Component {
-  state = {
-    selectedColumns: {},
-  };
+  constructor(props) {
+    super();
+    this.state = {
+      selectedColumns: (props.outputFields || []).reduce(
+        (allColumns, column) => ({
+          ...allColumns,
+          [props.fieldsMap[column]]: true,
+        }),
+        {}
+      ),
+    };
+    this.fieldsWithNotes = haveNotesField(props.fields);
+  }
 
   handleColumCheckChange = ({ target }) => {
     const { name, checked } = target;
@@ -61,18 +73,23 @@ export default class ConfigDetails extends Component {
                 fieldName={fieldName}
                 columns={props.fields[fieldName]}
                 onColumnCheckChange={this.handleColumCheckChange}
+                selectedColumns={selectedColumns}
               />
             ))}
 
-            <ReportColumns
-              selectedColumns={Object.keys(selectedColumns).filter(
-                column => selectedColumns[column]
-              )}
-              fieldsWithNotes={this.fieldsWithNotes}
-              toggleField={this.toggleField}
-              filters={props.filters}
-              ref={ref => (this.reportColumns = ref)}
-            />
+            {isPresent(props.fields) && (
+              <ReportColumns
+                selectedColumns={Object.keys(selectedColumns).filter(
+                  column => selectedColumns[column]
+                )}
+                fieldsMap={getInternalFielsMap(this.props.fieldsMap)}
+                fieldsWithNotes={this.fieldsWithNotes}
+                toggleField={this.toggleField}
+                availableFilters={props.availableFilters}
+                filters={props.filters}
+                ref={ref => (this.reportColumns = ref)}
+              />
+            )}
           </>
         ) : (
           <div class="text-center">
@@ -95,16 +112,17 @@ class ReportColumns extends Component {
   references = {};
 
   constructor(props) {
-    super();
+    super(props);
     this.state = {
       ...this.state,
-      ...this.getInitialState(props.selectedColumns),
+      ...this.getInitialState(props.selectedColumns, 'props'),
+      filters: props.filters || {},
     };
   }
 
   componentWillReceiveProps(nextProps) {
     this.setState({
-      ...this.getInitialState(nextProps.selectedColumns),
+      ...this.getInitialState(nextProps.selectedColumns, 'state'),
     });
   }
 
@@ -171,23 +189,25 @@ class ReportColumns extends Component {
     );
 
     const filters = Object.keys(this.state.filters).reduce(
-      (newFilter, filterField) => {
-        const [field, column] = filterField.split('.');
-        if (!this.state.fieldsMap[filterField]) {
-          return { ...newFilter };
-        }
-        return {
-          ...newFilter,
-          [field]: {
-            ...newFilter[field],
-            [column]: {
-              ...(newFilter[field] && newFilter[field][column]),
-              op: this.state.filters[filterField],
-              values: this.references[filterField].getValue(),
-            },
+      (otherFields, field) => ({
+        ...otherFields,
+        [field]: Object.keys(this.state.filters[field]).reduce(
+          (otherColumns, column) => {
+            if (!this.state.fieldsMap[`${field}.${column}`]) {
+              return { ...otherColumns };
+            }
+
+            return {
+              ...otherColumns,
+              [column]: {
+                op: this.state.filters[field][column].op,
+                values: this.references[`${field}.${column}`].getValue(),
+              },
+            };
           },
-        };
-      },
+          {}
+        ),
+      }),
       {}
     );
 
@@ -196,8 +216,9 @@ class ReportColumns extends Component {
 
   handleFilterOpChange = ({ target }) => {
     let { name, value } = target;
+    const filters = { ...this.state.filters };
     name = name.replace('filters.', '');
-    let filters = { ...this.state.filters, [name]: value };
+    dotToString(name, value, filters);
     if (!value) delete filters[name];
     this.setState({ filters });
   };
@@ -287,29 +308,39 @@ class ReportColumns extends Component {
                 />
               </div>
               <div class="filter-op">
-                {!!this.props.filters[fieldName] &&
-                  !!this.props.filters[fieldName][columnName] && (
+                {!!this.props.availableFilters[fieldName] &&
+                  !!this.props.availableFilters[fieldName][columnName] && (
                     <select
-                      name={`filters.${column}`}
+                      name={`filters.${column}.op`}
                       onChange={this.handleFilterOpChange}
+                      defaultValue={
+                        (
+                          (this.state.filters[fieldName] || {})[columnName] ||
+                          {}
+                        ).op
+                      }
                     >
                       <option value="">Select Filter...</option>
-                      {this.props.filters[fieldName][columnName].op.map(
-                        operation => (
-                          <option key={operation} value={operation}>
-                            {operation}
-                          </option>
-                        )
-                      )}
+                      {this.props.availableFilters[fieldName][
+                        columnName
+                      ].op.map(operation => (
+                        <option key={operation} value={operation}>
+                          {operation}
+                        </option>
+                      ))}
                     </select>
                   )}
               </div>
               <div className="filter-value">
-                {!!this.state.filters[column] && (
+                {!!((this.state.filters[fieldName] || {})[columnName] || {})
+                  .op && (
                   <FilterValue
-                    filterOp={this.state.filters[column]}
-                    values={this.props.filters[fieldName][columnName].values}
+                    filterOp={this.state.filters[fieldName][columnName].op}
+                    avlblValues={
+                      this.props.availableFilters[fieldName][columnName].values
+                    }
                     column={column}
+                    values={this.state.filters[fieldName][columnName].values}
                     ref={ref => (this.references[column] = ref)}
                   />
                 )}
@@ -329,16 +360,22 @@ class ReportColumns extends Component {
     );
   }
 
-  getInitialState = (selectedColumns = []) => {
+  getInitialState = (selectedColumns = [], checkAgainstField) => {
     const fieldsMap = {};
     const outputFields = [];
+
+    const original = this[checkAgainstField];
+
     selectedColumns.forEach(selectedCol => {
       outputFields.push(selectedCol);
-      if (this.state.outputFields.indexOf(selectedCol) < 0) {
+      if (
+        checkAgainstField === 'state' &&
+        this.state.outputFields.indexOf(selectedCol) < 0
+      ) {
         fieldsMap[selectedCol] = selectedCol;
       } else {
         // retaining state for existing items
-        fieldsMap[selectedCol] = this.state.fieldsMap[selectedCol];
+        fieldsMap[selectedCol] = original.fieldsMap[selectedCol];
       }
     });
 
@@ -352,6 +389,7 @@ function ReportField(props) {
       <div className="ReportConfig--inline-fields">
         {props.columns.map(column => {
           const name = `${props.fieldName}.${column}`;
+          const defaultChecked = props.selectedColumns[name];
           return (
             <div key={column}>
               <input
@@ -359,6 +397,7 @@ function ReportField(props) {
                 type="checkbox"
                 name={name}
                 onChange={props.onColumnCheckChange}
+                defaultChecked={defaultChecked}
               />
               <label htmlFor={name}>{column}</label>
             </div>
@@ -375,7 +414,7 @@ class FilterValue extends Component {
     switch (this.props.filterOp) {
       case 'IN':
       case 'NOT IN':
-        return this.props.values.filter(
+        return this.props.avlblValues.filter(
           val => document.getElementById(`${name}${val}`).checked
         );
       case '<':
@@ -391,18 +430,23 @@ class FilterValue extends Component {
   }
 
   render() {
-    const column = this.props.column;
+    const { column, values = [] } = this.props;
     let name;
     switch (this.props.filterOp) {
       case 'IN':
       case 'NOT IN':
         return (
           <div class="filter-value--type-in">
-            {this.props.values.map(val => {
+            {this.props.avlblValues.map(val => {
               name = `${column}.filter-value-${val}`;
               return (
                 <div key={name}>
-                  <input type="checkbox" name={name} id={name} />
+                  <input
+                    defaultChecked={values.indexOf(val) >= 0}
+                    type="checkbox"
+                    name={name}
+                    id={name}
+                  />
                   <label htmlFor={name}>{String(val)}</label>
                 </div>
               );
@@ -414,15 +458,25 @@ class FilterValue extends Component {
         name = `${column}.filter-value-compare`;
         return (
           <div class="filter-value--type-compare">
-            <input id={name} type="text" name={name} />
+            <input defaultValue={values[0]} id={name} type="text" name={name} />
           </div>
         );
       case 'BETWEEN':
         name = `${column}.filter-value-between-`;
         return (
           <div className="filter-value--type-between">
-            <input type="text" name={`${name}0`} id={`${name}0`} />
-            <input type="text" name={`${name}1`} id={`${name}1`} />
+            <input
+              defaultValue={values[0]}
+              type="text"
+              name={`${name}0`}
+              id={`${name}0`}
+            />
+            <input
+              defaultValue={values[1]}
+              type="text"
+              name={`${name}1`}
+              id={`${name}1`}
+            />
           </div>
         );
     }
@@ -464,6 +518,16 @@ class CollapsiblePanel extends Component {
       </div>
     );
   }
+}
+
+function getInternalFielsMap(fieldsMap = {}) {
+  return Object.keys(fieldsMap).reduce(
+    (map, field) => ({
+      ...map,
+      [fieldsMap[field][0]]: field,
+    }),
+    {}
+  );
 }
 
 // helper methods

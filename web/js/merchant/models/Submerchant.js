@@ -30,4 +30,17 @@ export default class Submerchant extends GenericEntity {
       '/merchant/api'
     ).then(response => response.data);
   }
+
+  fetchAll(params = {}) {
+    const data = { ...params };
+
+    // API need to be fixed to remove this
+    if (data.id) {
+      data.id = data.id.replace('acc_', '');
+    }
+
+    return this.makeGenericAjaxCall({ data }).then(response => {
+      return response;
+    });
+  }
 }

@@ -108,6 +108,12 @@ class Service extends Base\Service
             $res = [
                 'id' => $genericUser->id,
             ];
+            $merchantIds = [];
+            foreach ($genericUser->merchants as $merchant)
+            {
+                $merchantIds[] = $merchant->id;
+            }
+            $res['merchantIds'] = $merchantIds;
         }
 
         $user = Auth::user();
@@ -350,6 +356,8 @@ class Service extends Base\Service
 
         $data['user'] = $userDetails;
 
+        $data['_token'] = \Request::getSession()->token();
+
         $activated = false;
 
         // Default values in case no merchant is associated
@@ -375,8 +383,6 @@ class Service extends Base\Service
         {
             $data['primaryOwner'] = false;
         }
-
-        $data['_token'] = \Request::getSession()->token();
 
         $currentMerchantId = $currentMerchant->id;
 
@@ -407,6 +413,9 @@ class Service extends Base\Service
                     }
 
                     $data['experiments']['new_chat'] = $merchantService->getTreatment('new_chat');
+
+                    $data['experiments']['subscription_link'] = $merchantService->getTreatment('subscription_link');
+                    $data['experiments']['mjml_based_mailers'] = $merchantService->getTreatment('mjml_based_mailers');
 
                     $data['current'] = $currentMerchantId;
 

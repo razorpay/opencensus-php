@@ -4,6 +4,7 @@ use Auth;
 use Gate;
 use Closure;
 use App\Http\ApiUrl;
+use App\Http\Headers;
 use Illuminate\Contracts\Auth\Guard;
 use Razorpay\Api\Request as ApiRequest;
 
@@ -43,6 +44,18 @@ class SetApiHeaders {
 
         ApiRequest::addHeader('X-Request-Origin', $originDomain);
 
-        return $next($request);
+        $csrfToken = $request->session()->token();
+
+        $timeStamp = microtime(true);
+
+        $csrfTokenHeader = [
+            Headers::CSRF_TOKEN => $csrfToken . ',' . $timeStamp,
+        ];
+
+        $response = $next($request);
+
+        $response->withHeaders($csrfTokenHeader);
+
+        return $response;
 	}
 }

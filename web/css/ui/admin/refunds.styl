@@ -1,7 +1,7 @@
 .refund-reports
   .table
     .td
-      min-width: 105px
+      min-width: 105px;
 
 .refund-errors-modal
   .table
@@ -20,38 +20,58 @@
 .refunds-tabs-box
   margin-bottom: -29px;
   .tabs-nav
-    list-style: none
-    padding: 0
-    margin-bottom: 0
-    position: relative
+    list-style: none;
+    padding: 0;
+    margin-bottom: 0;
+    position: relative;
 
     li
-      display: inline-block
-      cursor: pointer
-      text-align: center
-      background-color: #fff
+      display: inline-block;
+      cursor: pointer;
+      text-align: center;
+      background-color: #fff;
       box-shadow: 0 4px 7px rgba(0,0,0,.08);
 
       a
         display: block;
-        padding: 10px 14px
+        padding: 10px 14px;
       i
         margin-right: 6px;
 
       &.selected
-        border-bottom: 2px solid #528ff0
-        color: #5e70d2
+        border-bottom: 2px solid #528ff0;
+        color: #5e70d2;
 
   .tabs-control
     padding: 10px
     overflow: auto
-    border-top: 1px solid #edf1f2
+    border-top: 1px solid #edf1f2;
 
     .pill
-      cursor: pointer
+      cursor: pointer;
 
     .prev
-      float: left
+      float: left;
 
     .next
-      float: right
+      float: right;
+
+.list-container.refunds
+  .refunds-list
+    .tr
+      //checkbox in table 1st row
+      div:first-of-type
+        min-width: 0;
+        .field
+          vertical-align: middle;
+          label
+            width: 0;
+
+  .bulk-actions
+    margin-bottom: 0;
+    min-height: 52px;
+
+    .download-selected
+      position: relative;
+      top: 17px;
+      font-size: 13px;
