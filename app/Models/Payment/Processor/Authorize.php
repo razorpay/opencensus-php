@@ -408,7 +408,7 @@ trait Authorize
             'contact'    => $payment->getContact(),
             'amount'     => number_format(($payment->getAmount() / 100), 2),
             'wallet'     => $payment->getWallet(),
-            'merchant'   => $payment->merchant->getDbaName(),
+            'merchant'   => $payment->merchant->getBillingLabel(),
         ];
 
         // This is a hack to return direct method for IVR payments
