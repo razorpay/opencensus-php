@@ -32,6 +32,7 @@ class ScheduleTest extends TestCase
             'period'     => 'daily',
             'interval'   => 1,
             'delay'      => 60,
+            'org_id'     => 'org_100000razorpay',
         ]);
 
         $this->ba->adminAuth();

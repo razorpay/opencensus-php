@@ -25,12 +25,15 @@ class Entity extends Base\PublicEntity
      */
     const DELAY       = 'delay';
 
+    const ORG_ID      = 'org_id';
+
     const TYPE        = 'type';
 
     const DELETED_AT  = 'deleted_at';
 
     protected $fillable = [
         self::NAME,
+        self::ORG_ID,
         self::PERIOD,
         self::INTERVAL,
         self::ANCHOR,
@@ -42,6 +45,7 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::NAME,
+        self::ORG_ID,
         self::TYPE,
         self::PERIOD,
         self::INTERVAL,
@@ -67,6 +71,7 @@ class Entity extends Base\PublicEntity
         self::ANCHOR      => null,
         self::INTERVAL    => null,
         self::NAME        => null,
+        self::ORG_ID      => null,
     ];
 
     protected $entity = 'schedule';
