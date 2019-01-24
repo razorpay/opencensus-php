@@ -12,6 +12,7 @@ use RZP\Models\FundTransfer\Yesbank\Mode;
 use RZP\Models\FundTransfer\Yesbank\NodalAccount;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\Status;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\GatewayStatus;
+use RZP\Models\FundTransfer\Base\Reconciliation\Constants as ReconConstants;
 
 class Transfer extends Base
 {
@@ -338,18 +339,19 @@ class Transfer extends Base
         $publicFailureReason = Status::getPublicFailureReason($bankSubStatus);
 
         return [
-            self::PAYMENT_REF_NO        => $this->getNullOnEmpty($rzpReferenceNo),
-            self::UTR                   => null,
-            self::BANK_STATUS_CODE      => $this->getNullOnEmpty($statusCode),
-            self::REMARKS               => null,
-            self::BANK_SUB_STATUS_CODE  => $this->getNullOnEmpty($bankSubStatus),
-            self::PAYMENT_DATE          => null,
-            self::TRANSFER_TYPE         => $mode,
-            self::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNo),
-            self::MODE                  => null,
-            self::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason),
-            self::NAME_WITH_BENE_BANK   => $beneName,
-            self::LOW_BALANCE_ALERT     => $lowBalanceAlert,
+            ReconConstants::PAYMENT_REF_NO        => $this->getNullOnEmpty($rzpReferenceNo),
+            ReconConstants::UTR                   => null,
+            ReconConstants::BANK_STATUS_CODE      => $this->getNullOnEmpty($statusCode),
+            ReconConstants::REMARKS               => null,
+            ReconConstants::BANK_SUB_STATUS_CODE  => $this->getNullOnEmpty($bankSubStatus),
+            ReconConstants::PAYMENT_DATE          => null,
+            ReconConstants::TRANSFER_TYPE         => $mode,
+            ReconConstants::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNo),
+            ReconConstants::MODE                  => null,
+            ReconConstants::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason),
+            ReconConstants::NAME_WITH_BENE_BANK   => $beneName,
+            ReconConstants::LOW_BALANCE_ALERT     => $lowBalanceAlert,
+            ReconConstants::REQUEST_FAILURE       => $this->isRequestFailure,
         ];
     }
 
@@ -374,18 +376,19 @@ class Transfer extends Base
         $publicFailureReason = Status::getPublicFailureReason($bankSubStatus);
 
         return [
-            self::PAYMENT_REF_NO        => $this->getNullOnEmpty($rzpReferenceNo),
-            self::UTR                   => null,
-            self::BANK_STATUS_CODE      => $this->getNullOnEmpty($statusCode),
-            self::REMARKS               => $this->getNullOnEmpty($remark),
-            self::BANK_SUB_STATUS_CODE  => $this->getNullOnEmpty($bankSubStatus),
-            self::PAYMENT_DATE          => null,
-            self::TRANSFER_TYPE         => null,
-            self::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNo),
-            self::MODE                  => null,
-            self::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason),
-            self::NAME_WITH_BENE_BANK   => null,
-            self::LOW_BALANCE_ALERT     => false,
+            ReconConstants::PAYMENT_REF_NO        => $this->getNullOnEmpty($rzpReferenceNo),
+            ReconConstants::UTR                   => null,
+            ReconConstants::BANK_STATUS_CODE      => $this->getNullOnEmpty($statusCode),
+            ReconConstants::REMARKS               => $this->getNullOnEmpty($remark),
+            ReconConstants::BANK_SUB_STATUS_CODE  => $this->getNullOnEmpty($bankSubStatus),
+            ReconConstants::PAYMENT_DATE          => null,
+            ReconConstants::TRANSFER_TYPE         => null,
+            ReconConstants::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNo),
+            ReconConstants::MODE                  => null,
+            ReconConstants::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason),
+            ReconConstants::NAME_WITH_BENE_BANK   => null,
+            ReconConstants::LOW_BALANCE_ALERT     => false,
+            ReconConstants::REQUEST_FAILURE       => $this->isRequestFailure,
         ];
     }
 
@@ -423,17 +426,18 @@ class Transfer extends Base
         $publicFailureReason = GatewayStatus::getPublicFailureReason($finalResponseCode);
 
         return [
-            self::PAYMENT_REF_NO        => $this->getNullOnEmpty($ftaId),
-            self::UTR                   => $this->getNullOnEmpty($utr),
-            self::STATUS_CODE           => $this->getNullOnEmpty($statusCode),
-            self::BANK_STATUS_CODE      => $this->getNullOnEmpty($finalResponseCode),
-            self::REMARKS               => $this->getNullOnEmpty($remark),
-            self::BANK_SUB_STATUS_CODE  => null,
-            self::PAYMENT_DATE          => null,
-            self::TRANSFER_TYPE         => null,
-            self::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNumber),
-            self::MODE                  => Mode::UPI,
-            self::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason),
+            ReconConstants::PAYMENT_REF_NO        => $this->getNullOnEmpty($ftaId),
+            ReconConstants::UTR                   => $this->getNullOnEmpty($utr),
+            ReconConstants::STATUS_CODE           => $this->getNullOnEmpty($statusCode),
+            ReconConstants::BANK_STATUS_CODE      => $this->getNullOnEmpty($finalResponseCode),
+            ReconConstants::REMARKS               => $this->getNullOnEmpty($remark),
+            ReconConstants::BANK_SUB_STATUS_CODE  => null,
+            ReconConstants::PAYMENT_DATE          => null,
+            ReconConstants::TRANSFER_TYPE         => null,
+            ReconConstants::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNumber),
+            ReconConstants::MODE                  => Mode::UPI,
+            ReconConstants::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason),
+            ReconConstants::REQUEST_FAILURE       => $this->isRequestFailure,
         ];
     }
 

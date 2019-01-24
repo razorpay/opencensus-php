@@ -162,7 +162,9 @@ abstract class RowProcessor extends Base\Core
 
         $statusClass = new $statusNamespace;
 
-        $isInternalError = $statusClass::isCriticalError($this->reconEntity);
+        $requestFailure = $this->parsedData[Constants::REQUEST_FAILURE] ?? false;
+
+        $isInternalError = $requestFailure || $statusClass::isCriticalError($this->reconEntity);
 
         $bankStatusCode = $this->reconEntity->getBankStatusCode();
 

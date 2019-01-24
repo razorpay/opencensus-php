@@ -3,6 +3,7 @@
 namespace RZP\Models\FundTransfer\Yesbank\Reconciliation;
 
 use RZP\Error\ErrorCode;
+use RZP\Models\FundTransfer\Base\Reconciliation\Constants;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Yesbank\Mode;
@@ -13,18 +14,6 @@ use RZP\Models\FundTransfer\Base\Reconciliation\RowProcessor as BaseRowProcessor
 
 class StatusProcessor extends BaseRowProcessor
 {
-    const UTR                   = 'utr';
-    const BANK_STATUS_CODE      = 'bank_status_code';
-    const STATUS_CODE           = 'status_code';
-    const PAYMENT_DATE          = 'payment_date';
-    const REMARKS               = 'remarks';
-    const PAYMENT_REF_NO        = 'payment_ref_no';
-    const RRN                   = 'rrn';
-    const REFERENCE_NUMBER      = 'reference_number';
-    const MODE                  = 'mode';
-    const PUBLIC_FAILURE_REASON = 'public_failure_reason';
-    const NAME_WITH_BENE_BANK   = 'name_with_bene_bank';
-
     /**
      * This will update the status based on the transfer API response
      *
@@ -117,7 +106,7 @@ class StatusProcessor extends BaseRowProcessor
      */
     protected function setParsedData(array $response)
     {
-        $this->reconEntityId = $response[self::PAYMENT_REF_NO];
+        $this->reconEntityId = $response[Constants::PAYMENT_REF_NO];
 
         if ($this->reconEntityId === null)
         {
@@ -132,17 +121,17 @@ class StatusProcessor extends BaseRowProcessor
         // TODO: Use yesbank/transfer/request.php while reading from the response.
 
         $this->parsedData = [
-            self::UTR                   => $response[self::UTR],
+            Constants::UTR                   => $response[Constants::UTR],
             // `status_code` will be present only for vpa ones. not the normal ones.
-            self::STATUS_CODE           => $response[self::STATUS_CODE] ?? null,
-            self::BANK_STATUS_CODE      => $response[self::BANK_STATUS_CODE],
-            self::REMARKS               => $response[self::REMARKS],
-            self::PAYMENT_DATE          => $response[self::PAYMENT_DATE],
-            self::REFERENCE_NUMBER      => $response[self::REFERENCE_NUMBER],
-            self::MODE                  => Mode::getInternalModeFromExternalMode($response[self::MODE]),
+            Constants::STATUS_CODE           => $response[Constants::STATUS_CODE] ?? null,
+            Constants::BANK_STATUS_CODE      => $response[Constants::BANK_STATUS_CODE],
+            Constants::REMARKS               => $response[Constants::REMARKS],
+            Constants::PAYMENT_DATE          => $response[Constants::PAYMENT_DATE],
+            Constants::REFERENCE_NUMBER      => $response[Constants::REFERENCE_NUMBER],
+            Constants::MODE                  => Mode::getInternalModeFromExternalMode($response[Constants::MODE]),
             // Won't be present in case of a successful response
-            self::PUBLIC_FAILURE_REASON => $response[self::PUBLIC_FAILURE_REASON] ?? null,
-            self::NAME_WITH_BENE_BANK   => $this->row[self::NAME_WITH_BENE_BANK] ?? null,
+            Constants::PUBLIC_FAILURE_REASON => $response[Constants::PUBLIC_FAILURE_REASON] ?? null,
+            Constants::NAME_WITH_BENE_BANK   => $this->row[Constants::NAME_WITH_BENE_BANK] ?? null,
         ];
 
         $this->trace->info(
@@ -161,17 +150,17 @@ class StatusProcessor extends BaseRowProcessor
 
         $currentStatus = $this->reconEntity->getBankStatusCode();
 
-        $this->reconEntity->setBankStatusCode($this->parsedData[self::BANK_STATUS_CODE]);
+        $this->reconEntity->setBankStatusCode($this->parsedData[Constants::BANK_STATUS_CODE]);
 
-        $this->reconEntity->setBankResponseCode($this->parsedData[self::STATUS_CODE]);
+        $this->reconEntity->setBankResponseCode($this->parsedData[Constants::STATUS_CODE]);
 
-        $this->reconEntity->setDateTime($this->parsedData[self::PAYMENT_DATE]);
+        $this->reconEntity->setDateTime($this->parsedData[Constants::PAYMENT_DATE]);
 
-        $this->reconEntity->setRemarks($this->parsedData[self::REMARKS]);
+        $this->reconEntity->setRemarks($this->parsedData[Constants::REMARKS]);
 
-        $this->reconEntity->setMode($this->parsedData[self::MODE]);
+        $this->reconEntity->setMode($this->parsedData[Constants::MODE]);
 
-        if ($this->parsedData[self::BANK_STATUS_CODE] !== $currentStatus)
+        if ($this->parsedData[Constants::BANK_STATUS_CODE] !== $currentStatus)
         {
             $this->reconEntity->setStatus(AttemptStatus::INITIATED);
         }
@@ -180,9 +169,9 @@ class StatusProcessor extends BaseRowProcessor
         // Reference number is only available in transfer request's response.
         // It is null in status request's response.
         //
-        if (empty($this->parsedData[self::REFERENCE_NUMBER]) === false)
+        if (empty($this->parsedData[Constants::REFERENCE_NUMBER]) === false)
         {
-            $this->reconEntity->setCmsRefNo($this->parsedData[self::REFERENCE_NUMBER]);
+            $this->reconEntity->setCmsRefNo($this->parsedData[Constants::REFERENCE_NUMBER]);
         }
 
         $this->reconEntity->saveOrFail();
@@ -190,14 +179,14 @@ class StatusProcessor extends BaseRowProcessor
 
     protected function getUtrToUpdate()
     {
-        return $this->parsedData[self::UTR];
+        return $this->parsedData[Constants::UTR];
     }
 
     protected function updateVerifyReconEntity()
     {
         $currentStatus = $this->reconEntity->getBankStatusCode();
 
-        if ($this->parsedData[self::BANK_STATUS_CODE] === $currentStatus)
+        if ($this->parsedData[Constants::BANK_STATUS_CODE] === $currentStatus)
         {
            return;
         }

@@ -21,21 +21,6 @@ abstract class Base extends ApiProcessor
     const BENE_DEFAULT_NAME      = 'Not Available';
     const BENE_DEFAULT_BANK_NAME = 'bank';
 
-    // Identifiers used store the response data
-    const PAYMENT_REF_NO        = 'payment_ref_no';
-    const UTR                   = 'utr';
-    const BANK_STATUS_CODE      = 'bank_status_code';
-    const STATUS_CODE           = 'status_code';
-    const PAYMENT_DATE          = 'payment_date';
-    const BANK_SUB_STATUS_CODE  = 'sub_status_code';
-    const REFERENCE_NUMBER      = 'reference_number';
-    const REMARKS               = 'remarks';
-    const TRANSFER_TYPE         = 'transfer_type';
-    const MODE                  = 'mode';
-    const PUBLIC_FAILURE_REASON = 'public_failure_reason';
-    const NAME_WITH_BENE_BANK   = 'name_with_bene_bank';
-    const LOW_BALANCE_ALERT     = 'low_balance_alert';
-
     protected $appId;
 
     protected $version;
@@ -53,6 +38,8 @@ abstract class Base extends ApiProcessor
     protected $requestIdentifier;
 
     protected $responseIdentifier;
+
+    protected $isRequestFailure = false;
 
     public function __construct(string $type = null)
     {
@@ -184,6 +171,8 @@ abstract class Base extends ApiProcessor
 
         if ($response->status_code !== 200)
         {
+            $this->isRequestFailure = true;
+
             throw new LogicException(
                 'Invalid response from api',
                 null,
@@ -194,12 +183,16 @@ abstract class Base extends ApiProcessor
 
         if (isset($responseBody[Constants::FAULT_RESPONSE_IDENTIFIER]) === true)
         {
+            $this->isRequestFailure = true;
+
             return $this->extractFailedData($responseBody[Constants::FAULT_RESPONSE_IDENTIFIER]);
         }
         else if (isset($responseBody[$this->responseIdentifier]) === true)
         {
             return $this->extractSuccessfulData($responseBody[$this->responseIdentifier]);
         }
+
+        $this->isRequestFailure = true;
 
         throw new LogicException(
             'Invalid response from api',
