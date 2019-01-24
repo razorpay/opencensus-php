@@ -542,6 +542,16 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $debitPaymentId = substr($debitPayment['id'], 4);
 
+        // setting created at to 8am. Payments are picked from 9 to 9 cycle.
+        $createdAt = Carbon::today(Timezone::IST)->addHours(8)->getTimestamp();
+
+        $this->fixtures->edit(
+            'payment',
+            $debitPaymentId,
+            [
+                Payment\Entity::CREATED_AT => $createdAt,
+            ]);
+
         $this->ba->appAuth();
 
         // Email send will throw exception, but file, and gateway-entity will still be created
