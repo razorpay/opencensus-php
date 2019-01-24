@@ -36,8 +36,7 @@ class CreateCommissionsTable extends Migration
 
             $table->char(Commission::PARTNER_CONFIG_ID, PartnerConfig::ID_LENGTH);
 
-            $table->char(Commission::TRANSACTION_ID, Transaction::ID_LENGTH)
-                  ->nullable();
+            $table->string(Commission::STATUS);
 
             $table->bigInteger(Commission::DEBIT)
                   ->unsigned();
@@ -55,7 +54,8 @@ class CreateCommissionsTable extends Migration
                   ->unsigned()
                   ->nullable();
 
-            $table->string(Commission::STATUS);
+            $table->char(Commission::TRANSACTION_ID, Transaction::ID_LENGTH)
+                  ->nullable();
 
             $table->text(Commission::NOTES);
 
@@ -63,13 +63,11 @@ class CreateCommissionsTable extends Migration
 
             $table->integer(Commission::UPDATED_AT);
 
-            $table->index(Commission::CREATED_AT);
-
             $table->index([Commission::SOURCE_TYPE, Commission::SOURCE_ID]);
 
-            $table->index([Commission::SOURCE_TYPE, Commission::CREATED_AT]);
+            $table->index([Commission::CREATED_AT, Commission::SOURCE_TYPE]);
 
-            $table->index([Commission::PARTNER_ID, Commission::CREATED_AT]);
+            $table->index([Commission::PARTNER_ID, Commission::SOURCE_TYPE]);
 
             $table->index(Commission::PARTNER_CONFIG_ID);
 
