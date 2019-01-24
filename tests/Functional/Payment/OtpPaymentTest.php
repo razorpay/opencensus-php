@@ -1950,6 +1950,80 @@ class OtpPaymentTest extends TestCase
         'Gateway request timed out');
     }
 
+    public function testMerchantCallbackUrl()
+    {
+        $this->app['config']->set('app.throw_exception_in_testing', false);
+
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1'
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['s2s', 'headless']);
+        $this->mockTokenEx();
+        $this->mockOtpElf();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['auth_type'] = 'otp';
+        $payment['callback_url'] = 'https://google.com';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/redirect',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+        $content = $this->getJsonContentFromResponse($response);
+
+        self::assertArrayHasKey('next', $content);
+        self::assertArrayHasKey('razorpay_payment_id', $content);
+        self::assertNotNull($content['razorpay_payment_id']);
+
+        $route = $this->app['api.route'];
+
+        $url = $route->getPublicCallbackUrlWithHash($content['razorpay_payment_id'], 'rzp_test_TheTestAuthKey', 'payment_callback_post');
+
+        Redis::shouldReceive('get')
+                ->twice()
+                ->andReturnUsing(function()
+                {
+                   throw new \RZP\Exception\BadRequestException(
+                    \RZP\Error\ErrorCode::BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING);
+                });
+
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => $url,
+            'content' => [],
+        ];
+        $this->app['env'] = 'dev';
+        $this->app['config']->set('app.debug', false);
+        $response = $this->makeRequestParent($request);
+
+        $request = $this->getFormRequestFromResponse($response->getContent(), $url);
+
+        $this->assertEquals('https://google.com', $request['url']);
+    }
+
     // @codingStandardsIgnoreLine
     protected function doS2SOtpSubmitCallback(array $content, string $otp)
     {
