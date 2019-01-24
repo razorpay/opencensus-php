@@ -486,4 +486,9 @@ class Payment extends Base
 
         return $this->create($attributes);
     }
+
+    public function createTxnForAuthPayment($payment)
+    {
+        return $this->createTransactionForPaymentAuthorized($payment);
+    }
 }
