@@ -549,7 +549,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ENABLED_BANKS, $banksToEnable);
     }
 
-    public function setCapability($Capability)
+    public function setCapability($capability)
     {
         $this->setAttribute(self::CAPABILITY, $capability);
     }
