@@ -3838,4 +3838,40 @@ class MerchantTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testGetMerchantPartnerStatus()
+    {
+        $this->ba->directAuth();
+
+        $this->startTest();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['email'] = 'test@razorpay.com';
+
+        $testData['response']['content']['merchant'] = true;
+
+        $this->startTest();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
+
+        $testData['response']['content']['partner'] = true;
+
+        $this->startTest();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['org_id' => Org::SBIN_ORG]);
+
+        $testData['response']['content']['partner'] = false;
+
+        $testData['response']['content']['merchant'] = false;
+
+        $this->startTest();
+    }
+
+    public function testGetMerchantPartnerStatusExtraInput()
+    {
+        $this->ba->directAuth();
+
+        $this->startTest();
+    }
 }

@@ -1237,6 +1237,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getMerchantPartnerStatus()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchMerchantPartnerStatus($input);
+
+        return ApiResponse::json($data);
+    }
+
     /**
      * Used when partner wants to send the link to submerchant for password setting.
      *
