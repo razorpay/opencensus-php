@@ -4,9 +4,10 @@ namespace RZP\Tests\Functional\Fixtures\Entity;
 
 class FundAccount extends Base
 {
-    public function createBankAccount(array $attributes = [])
+    public function createBankAccount(array $attributes = [], array $bankAccountAttributes = null)
     {
-        $bankAccount = $this->fixtures->create('bank_account');
+        // Why ?: operator is used below & $bankAccountAttributes defaults to null, check Fixtures/Fixtures::create().
+        $bankAccount = $this->fixtures->create('bank_account', $bankAccountAttributes ?: []);
 
         $defaultAttrs = [
             'account_id'   => $bankAccount['id'],

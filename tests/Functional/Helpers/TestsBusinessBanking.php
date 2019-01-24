@@ -2,14 +2,13 @@
 
 namespace RZP\Tests\Functional\Helpers;
 
-use RZP\Models\Payout as PayoutModel;
+use RZP\Models\Payout;
 
 /**
  * Consists reusable methods to help with business banking related tests.
  */
 trait TestsBusinessBanking
 {
-
     /**
      * @var \RZP\Models\Merchant\Balance\Entity|null
      */
@@ -24,6 +23,21 @@ trait TestsBusinessBanking
      * @var \RZP\Models\BankAccount\Entity|null
      */
     protected $bankAccount;
+
+    /**
+     * @var \RZP\Models\Contact\Entity|null
+     */
+    protected $contact;
+
+    /**
+     * @var \RZP\Models\Transaction\Entity|null
+     */
+    protected $transaction;
+
+    /**
+     * @var \RZP\Models\Payout\Entity|null
+     */
+    protected $payout;
 
     /**
      * Setup merchant for business banking.
@@ -75,61 +89,35 @@ trait TestsBusinessBanking
 
     protected function createPayout()
     {
-        $this->fixtures->merchant->addFeatures(['payout']);
-
         $this->createContact();
+
         $this->createFundAccount();
 
-        $testData = [
-            'request'  => [
-                'method'  => 'POST',
-                'url'     => '/payouts',
-                'content' => [
-                    'account_number'  => '2224440041626905',
-                    'amount'          => 1000,
-                    'currency'        => 'INR',
-                    'fund_account_id' => $this->fundAccount['id'],
-                    'purpose'         => 'refund',
-                    'notes'           => [
-                        'abc' => 'xyz',
-                    ],
+        $this->payout = $this->fixtures->create(
+            'payout',
+            [
+                'purpose'           => 'refund',
+                'fund_account_id'   => $this->fundAccount['id'],
+                'notes'             => [
+                    'abc' => 'xyz',
                 ],
-            ],
-            'response' => [
-                'content' => []
-            ],
-        ];
+                'amount'            => 1000,
+                'currency'          => 'INR',
+                'balance_id'        => $this->bankingBalance->getId(),
+            ]);
 
-        $this->ba->privateAuth();
-        $this->runRequestResponseFlow($testData);
-
-        $payout = $this->getLastEntity('payout', true);
-
-        // Verify transaction entity
-        $txn = $this->getLastEntity('transaction', true);
-
-        $this->assertEquals($payout['transaction_id'], $txn['id']);
-        $this->assertNotNull($txn['balance_id']);
-
-        $balance = $this->getEntityById('balance', $txn['balance_id'], true);
-        $this->assertEquals('banking', $balance['type']);
-
-        $this->payout      = $payout;
-        $this->transaction = $txn;
-        $this->ba->publicAuth();
-
-        return $payout;
+        $this->transaction = $this->getDbLastEntity('transaction');
     }
 
-    protected function reversePayout(PayoutModel\Entity $payout)
+    protected function reversePayout(Payout\Entity $payout)
     {
         // TODO: Fix this shit with proper fixtures
-        (new PayoutModel\Core)->updateStatusAfterFtaRecon($payout, 'failed');
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, 'failed');
     }
 
     protected function createContact()
     {
-        $contact = $this->fixtures->create(
+        $this->contact = $this->fixtures->create(
             'contact',
             [
                 'id'      => '1000010contact',
@@ -137,32 +125,19 @@ trait TestsBusinessBanking
                 'contact' => '8888888888',
                 'name'    => 'test user'
             ]);
-
-        $this->contact = $contact;
     }
 
     protected function createFundAccount()
     {
-        $testdata = [
-            'request'  => [
-                'url'     => '/fund_accounts',
-                'method'  => 'post',
-                'content' => [
-                    'account_type' => "bank_account",
-                    'contact_id'   => $this->contact->getPublicId(),
-                    'details'      => [
-                        'name'           => "test",
-                        'ifsc'           => 'SBIN0007105',
-                        'account_number' => '111000',
-                    ],
-                ],
+        $this->fundAccount = $this->fixtures->fund_account->createBankAccount(
+            [
+                'source_type' => 'contact',
+                'source_id'   => $this->contact->getId(),
             ],
-            'response' => [
-                'content' => [
-                ],
-            ],
-        ];
-        $this->ba->privateAuth();
-        $this->fundAccount = $this->runRequestResponseFlow($testdata);
+            [
+                'name'           => "test",
+                'ifsc'           => 'SBIN0007105',
+                'account_number' => '111000',
+            ]);
     }
 }

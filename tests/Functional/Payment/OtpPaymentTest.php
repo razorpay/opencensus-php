@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Payment;
 use Redis;
 use Cache;
 
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\GatewayRequestException;
 use RZP\Exception\GatewayTimeoutException;
@@ -363,7 +364,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'headless']);
+        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 's2s_otp_json']);
         $this->mockTokenEx();
         $this->mockOtpElf();
 
@@ -415,6 +416,131 @@ class OtpPaymentTest extends TestCase
         self::assertEquals('authorized', $payment['status']);
     }
 
+    public function testHeadlessOtpAuthenticationPaymentS2SRedirectFlow()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1'
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 'otp_auth_default', 'redirect_s2s_authorize']);
+        $this->mockTokenEx();
+        $this->mockOtpElf();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('On');
+
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        // $payment['auth_type'] = 'otp';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/redirect',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($response->getTargetUrl()));
+
+        $response = $this->makeRedirectToAuthorize($response->getTargetUrl());
+
+        $content = $this->getJsonContentFromResponse($response, null);
+
+        self::assertNotNull($content['razorpay_payment_id']);
+
+        $payment = $this->getEntityById('payment', $content['razorpay_payment_id'], true);
+
+        self::assertEquals('headless_otp', $payment['auth_type']);
+        self::assertEquals('hitachi', $payment['gateway']);
+        self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
+        self::assertEquals('authorized', $payment['status']);
+        assertTrue($this->otpFlow);
+    }
+
+    public function testHeadlessOtpAuthenticationPaymentS2SHtmlView()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1'
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 's2s_otp_json']);
+        $this->mockTokenEx();
+        $this->mockOtpElf();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['auth_type'] = 'otp';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/redirect',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+        $content = json_decode($response->getContent(), true);
+
+        self::assertArrayHasKey('next', $content);
+        self::assertArrayHasKey('razorpay_payment_id', $content);
+        self::assertNotNull($content['razorpay_payment_id']);
+
+        $this->fixtures->merchant->removeFeatures(['s2s_otp_json']);
+
+        $response = $this->makeRequestParent($request);
+        $content = json_decode($response->getContent(), true);
+        self::assertNull($content);
+
+        $response = $this->doS2sPrivateAuthPayment($payment);
+
+        self::assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+        self::assertEquals('authorized', $payment['status']);
+    }
+
     public function testHeadlessOtpResendPaymentS2S()
     {
         $this->fixtures->create('terminal:shared_hitachi_terminal', [
@@ -423,7 +549,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'headless']);
+        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 's2s_otp_json']);
         $this->mockTokenEx();
         $this->mockOtpElf();
 
@@ -893,7 +1019,7 @@ class OtpPaymentTest extends TestCase
         self::assertEquals('mpi_enstage', $payment['gateway']);
     }
 
-    public function testExpressPayOtpResend()
+    public function testExpressPay3dsflow()
     {
         $this->fixtures->create('terminal:shared_hitachi_terminal', [
             'type' => [
@@ -902,6 +1028,42 @@ class OtpPaymentTest extends TestCase
         ]);
 
         $this->fixtures->merchant->addFeatures(['axis_express_pay']);
+        $this->mockTokenEx();
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'UTIB',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds' => '1',
+                'otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['preferred_auth'] = ['3ds', 'otp'];
+        // $this->setOtp('213433');
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        self::assertNull($this->otpFlow);
+        self::assertEquals('authorized', $payment['status']);
+        self::assertNull($payment['auth_type']);
+        self::assertEquals('hdfc', $payment['gateway']);
+    }
+
+    public function testExpressPayOtpResend()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1'
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['axis_express_pay', 's2s_otp_json']);
         $this->mockTokenEx();
 
         $this->fixtures->iin->create([
@@ -1096,7 +1258,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'headless']);
+        $this->fixtures->merchant->addFeatures(['s2s', 'headless','s2s_otp_json']);
         $this->mockTokenEx();
         $otpelf = \Mockery::mock('RZP\Services\Mock\OtpElf')->makePartial();
 
@@ -1177,7 +1339,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'headless']);
+        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 's2s_otp_json']);
         $this->mockTokenEx();
         $otpelf = \Mockery::mock('RZP\Services\Mock\OtpElf')->makePartial();
 
@@ -1407,7 +1569,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'headless']);
+        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 's2s_otp_json']);
         $this->mockTokenEx();
         $otpelf = \Mockery::mock('RZP\Services\Mock\OtpElf')->makePartial();
 
@@ -1786,6 +1948,80 @@ class OtpPaymentTest extends TestCase
         },
         GatewayRequestException::class,
         'Gateway request timed out');
+    }
+
+    public function testMerchantCallbackUrl()
+    {
+        $this->app['config']->set('app.throw_exception_in_testing', false);
+
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1'
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['s2s', 'headless']);
+        $this->mockTokenEx();
+        $this->mockOtpElf();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['auth_type'] = 'otp';
+        $payment['callback_url'] = 'https://google.com';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/redirect',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+        $content = $this->getJsonContentFromResponse($response);
+
+        self::assertArrayHasKey('next', $content);
+        self::assertArrayHasKey('razorpay_payment_id', $content);
+        self::assertNotNull($content['razorpay_payment_id']);
+
+        $route = $this->app['api.route'];
+
+        $url = $route->getPublicCallbackUrlWithHash($content['razorpay_payment_id'], 'rzp_test_TheTestAuthKey', 'payment_callback_post');
+
+        Redis::shouldReceive('get')
+                ->twice()
+                ->andReturnUsing(function()
+                {
+                   throw new \RZP\Exception\BadRequestException(
+                    \RZP\Error\ErrorCode::BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING);
+                });
+
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => $url,
+            'content' => [],
+        ];
+        $this->app['env'] = 'dev';
+        $this->app['config']->set('app.debug', false);
+        $response = $this->makeRequestParent($request);
+
+        $request = $this->getFormRequestFromResponse($response->getContent(), $url);
+
+        $this->assertEquals('https://google.com', $request['url']);
     }
 
     // @codingStandardsIgnoreLine

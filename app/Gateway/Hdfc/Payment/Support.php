@@ -181,7 +181,7 @@ trait Support
 
     protected function isAnAcceptedError()
     {
-        assert ($this->error === true);
+        assertTrue ($this->error === true);
 
         $response = $this->supportPaymentResponse;
 
@@ -429,7 +429,7 @@ trait Support
 
         // The transaction id for the refund should be present. Otherwise, it means that
         // the refund should come via normal flow and not via manualGatewayRefund.
-        assert ($input['refund'][PaymentModel\Refund\Entity::TRANSACTION_ID] !== null);
+        assertTrue ($input['refund'][PaymentModel\Refund\Entity::TRANSACTION_ID] !== null);
 
         return true;
     }
@@ -591,4 +591,29 @@ trait Support
 
         assertTrue($input['payment'][PaymentModel\Entity::CAPTURED] === false);
     }
+
+    protected function decideAuthenticationGateway($input)
+    {
+        if ((isset($input['authenticate']['gateway']) === true) and
+            ($input['authenticate']['gateway'] === PaymentModel\Gateway::MPI_ENSTAGE))
+        {
+            $authenticationGateway = PaymentModel\Gateway::MPI_ENSTAGE;
+        }
+        else
+        {
+            $authenticationGateway = PaymentModel\Gateway::MPI_BLADE;
+        }
+
+        return $authenticationGateway;
+    }
+
+    protected function callAuthenticationGateway(array $input, $authenticationGateway)
+    {
+        return $this->app['gateway']->call(
+            $authenticationGateway,
+            $this->action,
+            $input,
+            $this->mode);
+    }
+
 }

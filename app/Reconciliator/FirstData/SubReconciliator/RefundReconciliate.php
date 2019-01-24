@@ -44,10 +44,10 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
             $this->trace->info(
                 TraceCode::RECON_MISMATCH,
                 [
-                    'info_code' => 'REFUND_ABSENT',
-                    'message'   => 'Refund not found. Skipping',
-                    'row'       => $row,
-                    'gateway'   => $this->gateway
+                    'info_code'     => Base\InfoCode::REFUND_ABSENT,
+                    'payment_id'    => $row[self::COLUMN_CAPS_PAYMENT_ID] ?? null,
+                    'row'           => $row,
+                    'gateway'       => $this->gateway
                 ]);
 
             $this->setFailUnprocessedRow(false);

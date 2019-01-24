@@ -418,27 +418,6 @@ class Gateway extends Base\Gateway
         return number_format($amount / 100, 2, '.', '');
     }
 
-    /**
-     * This is same as the payment description, capped
-     * to 50 characters
-     *
-     * @param array $input
-     *
-     * @return string
-     */
-    protected function getPaymentRemark(array $input)
-    {
-        $paymentDescription = $input['payment']['description'] ?? '';
-
-        $filteredPaymentDescription = Payment\Entity::getFilteredDescription($paymentDescription);
-
-        $description = $input['merchant']->getFilteredDba() . ' ' . $filteredPaymentDescription;
-
-        $description = trim($description);
-
-        return ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
-    }
-
     // ************************* CALLBACK *********************/
 
     public function preProcessServerCallback($input): array

@@ -5,6 +5,7 @@ namespace RZP\Services;
 use RZP;
 use Redis;
 use Swift_Mailer;
+use Razorpay\OAuth\Application;
 use Illuminate\Database\Connection;
 use Http\Mock\Client as MockHttplug;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -30,6 +31,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Models\BankTransfer;
+use RZP\Models\EntityOrigin;
 use RZP\Constants\Entity as E;
 use RZP\Models\Admin as Admin;
 use RZP\Models\VirtualAccount;
@@ -477,6 +479,9 @@ class ApiServiceProvider extends BaseServiceProvider
             'subscription_registration' => SubscriptionRegistration\Entity::class,
 
             'contact'                   => Contact\Entity::class,
+
+            'entity_origin'             => EntityOrigin\Entity::class,
+            'application'               => Application\Entity::class,
         ]);
     }
 

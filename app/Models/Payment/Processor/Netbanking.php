@@ -77,6 +77,7 @@ class Netbanking
         IFSC::ALLA,
         IFSC::CNRB,
         IFSC::ESFB,
+        IFSC::SBIN,
         IFSC::VIJB,
         self::PUNB_R,
         self::BARB_R,
@@ -431,6 +432,13 @@ class Netbanking
                 IFSC::ESFB,
             ]
         ],
+
+        Gateway::NETBANKING_SBI => [
+            'retail' => [
+                IFSC::SBIN,
+            ]
+        ],
+
         Gateway::NETBANKING_ALLAHABAD => [
             'retail' => [
                 IFSC::ALLA,

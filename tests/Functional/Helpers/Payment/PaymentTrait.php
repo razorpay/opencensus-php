@@ -62,6 +62,8 @@ trait PaymentTrait
 
     protected $merchantCallbackFlow = false;
 
+    protected $redirectToAuthorize = false;
+
     /**
      * For certain payments, user has the option to fail it
      * on the bank page. If this property is set to true in
@@ -1637,6 +1639,18 @@ trait PaymentTrait
         return $url;
     }
 
+    public function getPaymentRedirectToAuthorizrUrl($trackId)
+    {
+        $params = [
+            'id' => $trackId,
+        ];
+
+        $url = \URL::route('payment_redirect_to_authoize', $params, false);
+        $url = 'http://localhost' . $url;
+
+        return $url;
+    }
+
     /**
      * Get Otp resend Url
      */
@@ -1984,5 +1998,36 @@ trait PaymentTrait
                 });
 
         $this->app->instance('shield.service', $shield);
+    }
+
+    /**
+     * @param $payment
+     * @param $clientId
+     * @param $submerchantId Signed submerchant id
+     *
+     * @return bool|mixed|string
+     */
+    protected function doPartnerAuthPayment($payment, $clientId, $submerchantId)
+    {
+        $server = [
+            'HTTP_X-Razorpay-Account' => $submerchantId,
+        ];
+
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments',
+            'content' => $payment,
+            'server'  => $server,
+        ];
+
+        $this->ba->publicAuth('rzp_test_partner_' . $clientId);
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
     }
 }

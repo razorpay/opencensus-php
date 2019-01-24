@@ -15,7 +15,7 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    public function createSchedule(array $input, $merchant = null)
+    public function createSchedule(array $input)
     {
         $this->trace->info(
             TraceCode::SCHEDULE_CREATE_REQUEST,
@@ -25,13 +25,6 @@ class Core extends Base\Core
         $schedule = (new Entity)->build($input);
 
         $schedule->generateId();
-
-        if ($merchant === null)
-        {
-            $merchant = $this->repo->merchant->getSharedAccount();
-        }
-
-        $schedule->merchant()->associate($merchant);
 
         $this->repo->saveOrFail($schedule);
 

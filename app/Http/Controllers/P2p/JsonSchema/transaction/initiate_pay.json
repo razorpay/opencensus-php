@@ -107,7 +107,7 @@
                                 "pattern": "^(.*)$"
                             },
                             "dLength": {
-                                "type": "string",
+                                "type": "integer",
                                 "pattern": "^(.*)$"
                             },
                             "dFormat": {

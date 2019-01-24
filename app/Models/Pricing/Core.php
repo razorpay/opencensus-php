@@ -7,11 +7,24 @@ use RZP\Models\Admin\Action;
 
 class Core extends Base\Core
 {
-    public function addPlanRule(Plan $plan, array $input): Entity
+    /**
+     * Add a rule to a pricing plan.
+     *
+     * @param Plan   $plan
+     * @param array  $input
+     * @param string $ruleOrgId
+     *
+     * @return Entity
+     */
+    public function addPlanRule(Plan $plan, array $input, string $ruleOrgId = null): Entity
     {
         $rule = (new Entity)->addPlanRule($input, $plan);
 
         $rule = $rule->generateId();
+
+        $ruleOrgId = Entity::stripDefaultSign($ruleOrgId);
+
+        $rule->setAttribute(Entity::ORG_ID, $ruleOrgId);
 
         $rule->getValidator()->validateRuleDoesNotMatch($plan);
 
@@ -29,14 +42,24 @@ class Core extends Base\Core
     /**
      * Create a pricing plan from rule input
      * The $planName is sent separately
+     *
+     * @param string $planName
+     * @param array  $input
+     * @param string $ruleOrgId
+     *
+     * @return Plan
      */
-    public function createPlan(string $planName, array $input): Plan
+    public function createPlan(string $planName, array $input, string $ruleOrgId = null): Plan
     {
         $input[Entity::PLAN_NAME] = $planName;
 
         $rule = (new Entity)->build($input);
 
         $rule = $rule->generateId();
+
+        $ruleOrgId = Entity::stripDefaultSign($ruleOrgId);
+
+        $rule->setAttribute(Entity::ORG_ID, $ruleOrgId);
 
         $rule->setAuditAction(Action::CREATE_MERCHANT_PRICING_PLAN);
 
@@ -85,7 +108,7 @@ class Core extends Base\Core
         return $newRule;
     }
 
-    public function createPricing(array $input)
+    public function createPricing(array $input, string $ruleOrgId)
     {
         $validator = new Validator();
 
@@ -100,15 +123,15 @@ class Core extends Base\Core
 
         $validator->validatePlanCountZero($plan);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($planName, $inputRules)
+        $this->repo->transactionOnLiveAndTest(function() use ($planName, $inputRules, $ruleOrgId)
         {
-            $plan = $this->createPlan($planName, $inputRules[0]);
+            $plan = $this->createPlan($planName, $inputRules[0], $ruleOrgId);
 
             array_shift($inputRules);
 
             foreach ($inputRules as $inputRule)
             {
-                $rule = $this->addPlanRule($plan, $inputRule);
+                $rule = $this->addPlanRule($plan, $inputRule, $ruleOrgId);
 
                 $plan->add($rule);
             }

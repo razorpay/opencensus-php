@@ -62,6 +62,11 @@ return [
         'secret'    => env('APP_HOSTED_SECRET'),
     ],
 
+    'mozart' => [
+        'url'       => env('MOZART_URL'),
+        'password'  => env('MOZART_PASSWORD'),
+    ],
+
     'card_tokenex' => [
         'mock'      => env('TOKENEX_MOCK', false),
         'id'        => env('TOKENEX_ID'),
@@ -130,6 +135,10 @@ return [
         'mock'              => env('HARVESTER_MOCK', false),
         'identifier'        => env('HARVESTER_API_IDENTIFIER'),
         'analytics_token'   => env('HARVESTER_ANALYTICS_TOKEN'),
+    ],
+
+    'health_check_client' => [
+        'mock'              => env('HEALTH_CHECK_CLIENT_MOCK', false),
     ],
 
     'elfin' => [

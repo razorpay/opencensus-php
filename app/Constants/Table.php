@@ -41,6 +41,7 @@ class Table
     const COMMISSION            = 'commissions';
     const PAYMENT_LINK          = 'payment_links';
     const FUND_ACCOUNT          = 'fund_accounts';
+    const ENTITY_ORIGIN         = 'entity_origins';
 
     // Account entity is currently pointing to the 'merchants' table.
     // It will be used for basic CRUD operations over regular merchants,
@@ -73,6 +74,7 @@ class Table
     const BANK_TRANSFER             = 'bank_transfers';
     const GATEWAY_TOKEN             = 'gateway_tokens';
     const SCHEDULE_TASK             = 'schedule_tasks';
+    const PARTNER_CONFIG            = 'partner_configs';
     const MERCHANT_USERS            = 'merchant_users';
     const MERCHANT_OFFER            = 'merchant_offer';
     const LINE_ITEM_TAX             = 'line_item_taxes';

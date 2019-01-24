@@ -31,13 +31,30 @@ class Payment extends Base
 
     public function createTransaction()
     {
-        if ($this->source->isAuthorized() === true)
+        //
+        // We have the check on captured_at because of the following reason:
+        // - A payment happens on an auth&capture supported gateway. This means
+        //   that the transaction will get created on `capture` in the normal flow.
+        // - Capture completes and then API/DB goes down, due to which the transaction
+        //   is not created. Also, payment is not marked as `captured`.
+        // - This payment is refunded.
+        // - Now we find out that this payment was actually successful from the bank side and that the capture is
+        //   complete from the bank side. So we try to create a nodal transaction for this (not merchant transaction
+        //   since it's not captured by the merchant). Note that the payment status is `refunded` currently.
+        // - When we call `createTransaction`, the payment can either be ONLY gateway_captured or merchant_captured.
+        //   If it's NOT merchant_captured, we create a nodal transaction. If it's merchant_captured, we create
+        //   merchant transaction + nodal transaction (taken care by the parent::createTransaction).
+        // - NOTE: `merchant_captured` is signified by `captured_at` value being set or not.
+        //
+
+        if ($this->source->hasBeenCaptured() === false)
         {
-             $this->trace->info(
+            $this->trace->info(
                 TraceCode::PAYMENT_AUTHORIZE_CREATE_TRANSACTION,
                 [
                     'payment_id' => $this->source->getId()
                 ]);
+
             // Creates new or fetches existing transaction entity for the source entity
             $this->setTransactionForSource();
 

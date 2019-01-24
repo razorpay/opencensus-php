@@ -3863,4 +3863,45 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testGetMerchantPartnerStatus' => [
+        'request'  => [
+            'url'     => '/merchant/partner_status',
+            'method'  => 'get',
+            'content' => [
+                'email' => 'testdum@razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant' => false,
+                'partner'  => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetMerchantPartnerStatusExtraInput' => [
+        'request'  => [
+            'url'     => '/merchant/partner_status',
+            'method'  => 'get',
+            'content' => [
+                'email' => 'testdum@razorpay.com',
+                'name' => 'testdum',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'name is/are not required and should not be sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\ExtraFieldsException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
 ];

@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Payment;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -752,6 +753,94 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals('netbanking_hdfc', $payment['gateway']);
         $this->assertEquals('Razorpay', $payment['settled_by']);
+    }
+
+    public function testPaymentS2SRedirectPrivateAuth()
+    {
+        $this->ba->privateAuth();
+
+        $this->mockTokenex();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('On');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->merchant->addFeatures(['s2s', 'redirect_s2s_authorize']);
+
+        $response = $this->doS2SPrivateAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['id'], $response['razorpay_payment_id']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertTrue($this->redirectToAuthorize);
+    }
+
+    public function testPaymentS2SRedirectPrivateAuthRazorx()
+    {
+        $this->ba->privateAuth();
+
+        $this->mockTokenex();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('off');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->merchant->addFeatures(['s2s', 'redirect_s2s_authorize']);
+
+        $response = $this->doS2SPrivateAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['id'], $response['razorpay_payment_id']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertFalse($this->redirectToAuthorize);
+    }
+
+    public function testPaymentS2SRedirectPrivateAuthInvalidTrackId()
+    {
+        $request = [
+            'request' => [
+                'url' => '/payments/1234/redirect',
+                'method' => 'get',
+                'content' => [],
+            ],
+            'response' => []
+        ];
+
+        $this->ba->directAuth();
+
+        $this->makeRequestAndCatchException(
+        function() use ($request)
+        {
+            $this->runRequestResponseFlow($request);
+        },
+        \RZP\Exception\BadRequestException::class,
+        'Payment failed');
     }
 
     protected function setupEmandateAndGetPaymentRequest($bank = 'HDFC', $amount = 2000)

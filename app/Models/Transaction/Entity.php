@@ -13,6 +13,7 @@ use RZP\Models\Transfer;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\Payment\Refund;
+use RZP\Exception\LogicException;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Base\Traits\HasBalance;
 
@@ -277,6 +278,18 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ENTITY_ID);
     }
 
+    public function getSignedEntityId(): string
+    {
+        if (($this->getType() === null) or ($this->getEntityId() === null))
+        {
+            throw new LogicException('Unexpected method call, source entity has not been associated yet.');
+        }
+
+        $entityClass = Constants\Entity::getEntityClass($this->getType());
+
+        return $entityClass::getSignedId($this->getEntityId());
+    }
+
     public function getGatewayAmount()
     {
         return $this->getAttribute(self::GATEWAY_AMOUNT);
@@ -496,28 +509,28 @@ class Entity extends Base\PublicEntity
 
     public function setEscrowBalance($balance)
     {
-        assert ($balance >= 0);
+        assertTrue ($balance >= 0);
 
         $this->setAttribute(self::ESCROW_BALANCE, $balance);
     }
 
     public function setBalance($balance)
     {
-        assert ($balance >= 0);
+        assertTrue ($balance >= 0);
 
         $this->setAttribute(self::BALANCE, $balance);
     }
 
     public function setAmount($amount)
     {
-        assert ($amount >= 0);
+        assertTrue ($amount >= 0);
 
         $this->setAttribute(self::AMOUNT, $amount);
     }
 
     public function setFee($fee)
     {
-        assert ($fee >= 0);
+        assertTrue ($fee >= 0);
 
         $this->setAttribute(self::FEE, $fee);
     }
@@ -534,7 +547,7 @@ class Entity extends Base\PublicEntity
 
     public function setCredit($credit)
     {
-        assert ($credit >= 0);
+        assertTrue ($credit >= 0);
 
         $this->setAttribute(self::CREDIT, $credit);
     }
@@ -556,7 +569,7 @@ class Entity extends Base\PublicEntity
 
     public function setDebit($amount)
     {
-        assert ($amount >= 0);
+        assertTrue ($amount >= 0);
 
         $this->setAttribute(self::DEBIT, $amount);
     }

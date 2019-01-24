@@ -362,6 +362,16 @@ class Entity extends Base\PublicEntity
     }
 
     /**
+     * Returns the org id of pricing plan.
+     *
+     * @return mixed
+     */
+    public function getOrgId()
+    {
+        return Org\Entity::getSignedId($this->getAttribute(self::ORG_ID));
+    }
+
+    /**
      * For adding plan_id filter in queries
      *
      * @param $query

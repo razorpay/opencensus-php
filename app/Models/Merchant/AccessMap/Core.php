@@ -15,7 +15,7 @@ use Razorpay\OAuth\Application as OAuthApp;
 class Core extends Base\Core
 {
     public function create(
-        $entityOwner,
+        Merchant\Entity $entityOwner,
         Merchant\Entity $merchant,
         array $input = null,
         Base\PublicEntity $entity = null)
@@ -26,10 +26,7 @@ class Core extends Base\Core
 
         $merchantMapping->merchant()->associate($merchant);
 
-        if (empty($entityOwner) === false)
-        {
-            $merchantMapping->entityOwner()->associate($entityOwner);
-        }
+        $merchantMapping->entityOwner()->associate($entityOwner);
 
         if (empty($entity) === false)
         {
@@ -47,13 +44,13 @@ class Core extends Base\Core
      * on this relation. This can be otherwise fetched from auth-service but
      * since it is read-heavy, we maintain it in the access_map table too.
      *
-     * @param Merchant\Entity $entityOwner can be null
+     * @param Merchant\Entity $entityOwner
      * @param Merchant\Entity $merchant
      * @param array           $input
      *
      * @return Entity
      */
-    public function addMappingForOAuthApp($entityOwner, Merchant\Entity $merchant, array $input): Entity
+    public function addMappingForOAuthApp(Merchant\Entity $entityOwner, Merchant\Entity $merchant, array $input): Entity
     {
         $merchantId = $merchant->getId();
 
@@ -153,9 +150,9 @@ class Core extends Base\Core
                 $createdAt  = $mapping->created_at;
 
                 $traceData = [
-                    Entity::APPLICATION_ID => $appId,
-                    Entity::MERCHANT_ID    => $merchantId,
-                    Entity::ENTITY_OWNER_ID     => $partnerId
+                    Entity::APPLICATION_ID  => $appId,
+                    Entity::MERCHANT_ID     => $merchantId,
+                    Entity::ENTITY_OWNER_ID => $partnerId,
                 ];
 
                 $this->trace->info(TraceCode::ACCESS_MAP_UPDATE_REQUEST, $traceData);

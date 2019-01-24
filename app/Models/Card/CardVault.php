@@ -82,4 +82,23 @@ class CardVault extends Base\Core
             throw $e;
         }
     }
+
+    public function getVaultTokensFromTokenexTokens($tokenexTokens)
+    {
+        try
+        {
+            return $this->cardVault->getVaultTokensFromTokenexTokens($tokenexTokens);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(
+                TraceCode::CARD_VAULT_REQUEST,
+                [
+                    'message' => 'Failed to fetch vault tokens - getVaultTokensFromTokenexTokens'
+                ]
+            );
+
+            throw $e;
+        }
+    }
 }
