@@ -420,6 +420,7 @@ trait Authorize
             if ($this->isRupayNetwork($payment) === false)
             {
                 $redirectUrl = $this->getPaymentRedirectTo3dsUrl();
+                $response['redirect'] = $redirectUrl;
             }
 
             $metaData = [
@@ -468,7 +469,6 @@ trait Authorize
                 'payment_id' => $payment->getPublicId(),
                 'next'       => $next,
                 'gateway'    => $response['gateway'],
-                'redirect'   => $redirectUrl,
                 'submit_url' => $request['url'],
                 'resend_url' => $resendUrl,
                 'metadata'   => $metaData,
