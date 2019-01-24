@@ -70,7 +70,7 @@ class OauthMigrationToken extends Base
             // Getting the merchant here instead of later in the connect call as this
             // would act as a validation for the merchant_id input before even making
             // auth-service call for token.
-            $subMerchant       = $this->repo->merchant->findOrFailPublic($tokenInput[Header::MERCHANT_ID]);
+            $subMerchant = $this->repo->merchant->findOrFailPublic($tokenInput[Header::MERCHANT_ID]);
             $entityOwner = $this->repo->merchant->findOrFailPublic($tokenInput[H::PARTNER_MERCHANT_ID]);
 
             $token = $this->createOAuthToken($tokenInput);

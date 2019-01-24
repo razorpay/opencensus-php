@@ -896,11 +896,12 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Merchant\AccessMap\Entity::class, [
-            'merchant_id' => '10000000000000',
-            'entity_type' => 'application',
-            'entity_id'   => '10000000000App',
-            'created_at'  => Carbon::now()->getTimestamp(),
-            'updated_at'  => Carbon::now()->getTimestamp(),
+            'merchant_id'     => '10000000000000',
+            'entity_type'     => 'application',
+            'entity_id'       => '10000000000App',
+            'entity_owner_id' => '10000000000000',
+            'created_at'      => Carbon::now()->getTimestamp(),
+            'updated_at'      => Carbon::now()->getTimestamp(),
         ]);
 
         $factory(\RZP\Models\Merchant\Request\Entity::class, [

@@ -85,6 +85,7 @@ class Entity
     const SCHEDULE_TASK             = 'schedule_task';
     const LINE_ITEM_TAX             = 'line_item_tax';
     const MERCHANT_EMAIL            = 'merchant_email';
+    const PARTNER_CONFIG            = 'partner_config';
     const DISPUTE_REASON            = 'dispute_reason';
     const NODAL_STATEMENT           = 'nodal_statement';
     const VIRTUAL_ACCOUNT           = 'virtual_account';
@@ -344,6 +345,7 @@ class Entity
         self::VIRTUAL_ACCOUNT           => \RZP\Models\VirtualAccount::class,
         self::FUND_ACCOUNT_VALIDATION   => \RZP\Models\FundAccount\Validation::class,
         self::SUBSCRIPTION_REGISTRATION => \RZP\Models\SubscriptionRegistration::class,
+        self::PARTNER_CONFIG            => \RZP\Models\Partner\Config::class,
 
         // gateways
         self::EBS                    => \RZP\Gateway\Ebs::class,

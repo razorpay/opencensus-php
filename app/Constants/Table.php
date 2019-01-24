@@ -73,6 +73,7 @@ class Table
     const BANK_TRANSFER             = 'bank_transfers';
     const GATEWAY_TOKEN             = 'gateway_tokens';
     const SCHEDULE_TASK             = 'schedule_tasks';
+    const PARTNER_CONFIG            = 'partner_configs';
     const MERCHANT_USERS            = 'merchant_users';
     const MERCHANT_OFFER            = 'merchant_offer';
     const LINE_ITEM_TAX             = 'line_item_taxes';
