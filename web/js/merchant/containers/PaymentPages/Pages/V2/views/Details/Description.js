@@ -1,68 +1,73 @@
 import { classList } from 'common/util';
-import Input from 'component/Input';
+import debounce from 'rzp/utils/debounce';
 
-const DESC_LIMIT = {
-  DESKTOP: 720,
-  MOBILE: 125,
+const QUILL_OPTIONS = {
+  modules: {
+    toolbar: [
+      [{ header: [2, 3, false] }],
+      [{ color: ['#000', '#8a4'] }, 'bold', 'italic', 'underline'],
+      [{ list: 'bullet' }, { list: 'ordered' }],
+      ['link', 'image', 'video'],
+    ],
+  },
+  placeholder: 'Enter page description',
+  theme: 'snow',
 };
 
+// BEWARE: Don't remove whitespaces from infoTxt.
 const infoTxt = `Give your customers more information about this page.
 
 Note:
 All URLs will convert to links.`;
 
 export default class extends React.PureComponent {
-  handleOnInput = ({ target }) => {
-    this.autoAdjustHeight(target);
-  };
+  state = { isScriptLoaded: null };
 
-  autoAdjustHeight(target) {
-    if (!target) {
-      return;
-    }
+  componentWillMount() {
+    // Quill Script
+    const script = document.createElement('script');
 
-    const content = target.value;
-    const fakeEle = window.document.querySelector(
-      '#description .fake-textarea'
-    );
+    script.onload = () => {
+      this.setState({ isScriptLoaded: true }, () => {
+        this.QUILL = new window.Quill('#description-quill', QUILL_OPTIONS);
 
-    let newLineChars = 0;
-    for (let i = 0; i < content.length; i++) {
-      if (content[i] === '\n') {
-        newLineChars++;
-      }
-    }
+        this.props.description &&
+          this.QUILL.setContents(JSON.parse(this.props.description));
 
-    let fakeLinesHeight = newLineChars * 22; // 22 is line-height
+        this.QUILL.on('text-change', (delta, oldDelta, source) => {
+          if (source == 'user') {
+            this.updateDescription();
+          }
+        });
+      });
+    };
+    script.onerror = () => {
+      this.setState({ isScriptLoaded: false });
+    };
+    script.src = 'https://cdn.quilljs.com/1.3.6/quill.min.js';
 
-    fakeEle.innerHTML = content;
-    this.elHeight = fakeEle.scrollHeight + fakeLinesHeight + 10 + 'px'; // 10 is combination of vertical padding and line height of the textarea in css
-    target.style.height = this.elHeight;
+    // Quill CSS
+    const link = document.createElement('link');
+    link.href = 'https://cdn.quilljs.com/1.3.6/quill.snow.css';
+    link.rel = 'stylesheet';
+
+    document.head.appendChild(link);
+    document.head.appendChild(script);
   }
 
-  componentDidMount() {
-    this.autoAdjustHeight(
-      document.body.querySelector('#description textarea[name="description"]')
-    );
+  updateDescription() {
+    const desc = this.QUILL.getContents();
+    this.props.updateData({
+      target: { name: 'description', value: JSON.stringify(desc.ops) },
+    });
   }
+
+  updateDescription = debounce(::this.updateDescription, 200);
 
   render() {
-    const ele = document.body.querySelector(
-      '#description textarea[name="description"]'
-    );
-    const hasVal = ele ? ele.value : this.props.description;
-
     return (
-      <div id="description" class={classList(!hasVal && 'Input-highlight')}>
-        <div class="fake-textarea" />
-        <Input.Textarea
-          name="description"
-          placeholder="Enter page description"
-          info={infoTxt}
-          defaultValue={this.props.description}
-          onInput={this.handleOnInput}
-          onBlur={this.props.updateData}
-        />
+      <div id="description">
+        <div id="description-quill" />
       </div>
     );
   }
