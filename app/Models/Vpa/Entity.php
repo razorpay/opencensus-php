@@ -13,6 +13,7 @@ class Entity extends Base\PublicEntity
     const USERNAME        = 'username';
     const HANDLE          = 'handle';
     const MERCHANT_ID     = 'merchant_id';
+    const FTS_ACCOUNT_ID  = 'fts_account_id';
 
     const ADDRESS               = 'address';
 
@@ -86,11 +87,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ENTITY_ID);
     }
 
+    public function getFTSAccountId()
+    {
+        return $this->getAttribute(self::FTS_ACCOUNT_ID);
+    }
+
     // ----------------------- Setters -----------------------
 
     public function setHandle($handle)
     {
         return $this->setAttribute(self::HANDLE, $handle);
+    }
+
+    public function setFTSAccountId($ftsAccountId)
+    {
+        return $this->setAttribute(self::FTS_ACCOUNT_ID, $ftsAccountId);
     }
 
     // ----------------------- Accessor ----------------------

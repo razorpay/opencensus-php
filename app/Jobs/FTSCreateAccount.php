@@ -75,25 +75,28 @@ class FTSCreateAccount extends Job
             switch ($this->type)
             {
                 case self::BANK_ACCOUNT:
-                    $account[self::BANK_ACCOUNT] = (new BankAccount\Core)->createBankAccount($this->id);
+                    $account = $this->getBankAccount($this->id);
+
+                    $request[self::BANK_ACCOUNT] = $this->getAccountDetails($account);
+
                     break;
 
                 case self::VPA:
-                    $account[self::VPA] = (new Vpa\Core)->createVPA($this->id);
+                    $account = $this->getVPA($this->id);
+
+                    $request[self::VPA] = $this->getVPADetails($account);
+
                     break;
 
                 default:
-                    throw new LogicException('Creation logic not defined for fund account type: ' . $this->type);
+                    throw new LogicException('Type is not supported ' . $this->type);
             }
 
-            $ftsResponse = App::getFacadeRoot()['fts']->createFundAccount($account, true);
+            $ftsResponse = App::getFacadeRoot()['fts']->createFundAccount($request, true);
 
-            $fa_id = $ftsResponse['body']['fa_id'];
+            $ftsAccountId = array_key_exists('ftsAccountId', $ftsResponse['body']) ? $ftsResponse['body']['ftsAccountId'] : null;
 
-            if(!empty($fa_id))
-            {
-                //TODO: to update fa_id for BANK_ACCOUNT OR VPA
-            }
+            $this->saveFTSAccountId($ftsAccountId, $account);
 
             $this->trace->info(
                 TraceCode::FTS_ACCOUNT_CREATED_FOR_MERCHANT,
@@ -115,11 +118,14 @@ class FTSCreateAccount extends Job
         }
     }
 
-    public function createBankAccount($BankAccountId)
+    public function getBankAccount($BankAccountId)
     {
-        $ba =$this->repoManager->bank_account->getBankAccountById($this->id);
+        return $this->repoManager->bank_account->getBankAccountById($BankAccountId);
+    }
 
-        return $this->getBankAccountDetails($ba);
+    public function getVPA($vpaId)
+    {
+        return $this->repoManager->vpa->getVPAById($vpaId);
     }
 
     public function getAccountDetails($ba)
@@ -171,5 +177,22 @@ class FTSCreateAccount extends Job
         //$data[self::MERCHANT_ID]  = $this->merchantId;
 
         return $data;
+    }
+
+    public function saveFTSAccountId($ftsAccountId, $account)
+    {
+        $account->setFTSAccountId($ftsAccountId);
+
+        switch ($this->type)
+        {
+            case self::BANK_ACCOUNT:
+                $this->repoManager->saveOrFail($account);
+
+            case self::VPA:
+                $this->repoManager->saveOrFail($account);
+
+            default:
+                throw new LogicException('Type is not supported ' . $this->type);
+        }
     }
 }

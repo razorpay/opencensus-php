@@ -40,6 +40,7 @@ class Entity extends Base\PublicEntity
     const MOBILE_BANKING_ENABLED        = 'mobile_banking_enabled';
     const ACCOUNT_TYPE                  = 'account_type';
     const MPIN                          = 'mpin';
+    const FTS_ACCOUNT_ID                = 'fts_account_id';
 
     const NAME                          = 'name';
     const IFSC                          = 'ifsc';
@@ -349,6 +350,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BENEFICIARY_PIN);
     }
 
+    public function getFTSAccountId()
+    {
+        return $this->getAttribute(self::FTS_ACCOUNT_ID);
+    }
+
     public function setMobileBankingEnabled($mobileBankingEnabled)
     {
         return $this->setAttribute(self::MOBILE_BANKING_ENABLED, $mobileBankingEnabled);
@@ -377,6 +383,11 @@ class Entity extends Base\PublicEntity
     public function setRegisteredBeneficiaryName($name)
     {
         $this->setAttribute(self::REGISTERED_BENEFICIARY_NAME, $name);
+    }
+
+    public function setFTSAccountId($ftsAccountId)
+    {
+        return $this->setAttribute(self::FTS_ACCOUNT_ID, $ftsAccountId);
     }
 
     protected function setIfscAttribute($code)

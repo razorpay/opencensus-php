@@ -18,4 +18,17 @@ class Repository extends Base\Repository
                     ->where(Entity::HANDLE, '=', $handle)
                     ->first();
     }
+
+    /**
+     * Fetches the details of vpa for the given id
+     *
+     * @param string $vpaId
+     * @return mixed
+     */
+    public function getVPAById(string $vpaId)
+    {
+        return $this->newQuery()
+            ->where(Entity::ID, $vpaId)
+            ->first();
+    }
 }
