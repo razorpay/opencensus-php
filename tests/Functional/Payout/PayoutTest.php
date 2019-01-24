@@ -162,28 +162,7 @@ class PayoutTest extends TestCase
     public function testRetryPayout(): array
     {
         $payout = $this->testCreatePayout();
-
-        // ----- start testing payout retry for non failed payouts ------ //
-
-        $this->retryPayout((array) $payout['id'], false);
-
-        $payoutAfterRetry = $this->getLastEntity('payout', true);
         $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
-
-        $this->assertEquals($payout['status'], $payoutAfterRetry['status']);
-        $this->assertNotEquals($payoutAttempt['status'], Attempt\Status::FAILED);
-
-        // Verify attempt entity
-        $this->assertEquals($payout['attempts'], 1);
-        $this->assertEquals($payoutAfterRetry['attempts'], 1);
-        $this->assertEquals($payoutAfterRetry['id'], $payoutAttempt['source']);
-        $this->assertEquals($payoutAfterRetry['merchant_id'], $payoutAttempt['merchant_id']);
-        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
-        $this->assertEquals($payoutAfterRetry['batch_fund_transfer_id'], $payoutAttempt['batch_fund_transfer_id']);
-
-        // ----- End of testing payout retry for non failed payouts ------ //
-
-        // ----- start testing payout retry for failed payouts ------- //
 
         $this->fixtures->edit(
             'payout',
@@ -204,51 +183,43 @@ class PayoutTest extends TestCase
 
         $this->assertEquals($payout['transaction_id'], $txn['id']);
 
-        $this->retryPayout((array) $payout['id']);
+        $this->retryPayout($payout['id']);
 
-        $payout = $this->getLastEntity('payout', true);
+        $newPayout = $this->getLastEntity('payout', true);
 
-        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $newPayoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
-        $this->assertEquals($payout['status'], Payout\Status::PROCESSING);
-        $this->assertEquals($payoutAttempt['status'], Attempt\Status::CREATED);
+        $this->assertEquals(Payout\Status::PROCESSING, $newPayout['status']);
+        $this->assertEquals(Attempt\Status::INITIATED, $payoutAttempt['status']);
 
         // Verify attempt entity
-        $this->assertEquals($payout['attempts'], 2);
-        $this->assertEquals($payout['id'], $payoutAttempt['source']);
-        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
-        $this->assertEquals($payout['fund_account_id'], 'fa_100000000000fa');
-        $this->assertNull($payout['batch_fund_transfer_id']);
-        $this->assertNull($payoutAttempt['batch_fund_transfer_id']);
+        $this->assertEquals($newPayout['attempts'], 1);
+        $this->assertEquals($newPayout['id'], $newPayoutAttempt['source']);
+        $this->assertEquals($newPayout['merchant_id'], $newPayoutAttempt['merchant_id']);
+        $this->assertEquals($newPayout['fund_account_id'], 'fa_100000000000fa');
+        $this->assertNotNull($newPayout['batch_fund_transfer_id']);
+        $this->assertNotNull($newPayoutAttempt['batch_fund_transfer_id']);
+        $this->assertEquals($newPayout['batch_fund_transfer_id'], $newPayoutAttempt['batch_fund_transfer_id']);
 
         // ----- End of testing payout retry for failed payouts ------ //
 
-        return $payout;
+        return $newPayout;
     }
 
-    protected function retryPayout(array $ids, $success = true)
+    protected function retryPayout($id)
     {
         $request = [
-            'url' => '/payouts/retry',
+            'url' => "/payouts/$id/retry",
             'method' => 'POST',
-            'content' => [
-                'ids' => $ids
-            ]
+            'content' => []
         ];
 
         $this->ba->adminAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $key = ($success === true)? 'payouts_retried' : 'not_attempted';
-
-        $this->assertEquals(
-            $ids,
-            array_map(
-                function($val)
-                {
-                    return 'pout_' . $val;
-                },  $response[$key]));
+        $this->assertNotNull($response['id']);
+        $this->assertNotEquals($id, $response['id']);
     }
 
     public function testCreateMerchantPayout()

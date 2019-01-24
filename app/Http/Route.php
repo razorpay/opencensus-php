@@ -688,7 +688,7 @@ final class Route
         'payout_create_with_otp'                   => ['post',     'payouts_with_otp',                               'PayoutController@postFundAccountPayoutWithOtp'                     ],
         'payout_fetch_by_id'                       => ['get',      'payouts/{id}',                                   'PayoutController@getPayout'                                        ],
         'payout_fetch_multiple'                    => ['get',      'payouts',                                        'PayoutController@getPayouts'                                       ],
-        'payout_retry'                             => ['post',     'payouts/retry',                                  'PayoutController@postPayoutRetry'                                  ],
+        'payout_retry'                             => ['post',     'payouts/{id}/retry',                             'PayoutController@postPayoutRetry'                                  ],
         'payout_purpose_get'                       => ['get',      'payouts/purposes',                               'PayoutController@getPurposes'                                      ],
         'payout_purpose_post'                      => ['post',     'payouts/purposes',                               'PayoutController@postPurpose'                                      ],
         'payout_fetch_reversals'                   => ['get',      'payouts/{id}/reversals',                         'PayoutController@getPayoutReversal'                                ],
