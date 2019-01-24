@@ -122,18 +122,6 @@ class ApiServiceProvider extends BaseServiceProvider
             return new RazorXClient($app);
         });
 
-        $this->app->singleton('card.tokenex', function($app)
-        {
-            $tokenexMock = $app['config']->get('applications.card_tokenex.mock');
-
-            if ($tokenexMock === true)
-            {
-                return new Mock\TokenEx($app);
-            }
-
-            return new CardVault($app);
-        });
-
         $this->app->singleton('card.cardVault', function($app)
         {
             $cardVaultMock = $app['config']->get('applications.card_vault.mock');
@@ -275,7 +263,6 @@ class ApiServiceProvider extends BaseServiceProvider
             'api.mutex',
             'bitly',
             'razorx',
-            'card.tokenex',
             'es',
             'exception.handler',
             'gateway',

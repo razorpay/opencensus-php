@@ -77,34 +77,6 @@ class CardVault
         return $response[self::VALUE];
     }
 
-    //temp code
-    public function getTokenexToken($token)
-    {
-        $input = [
-            self::TOKEN   => $token
-        ];
-
-        $response = $this->sendRequest('tokenex_token', 'post', $input);
-
-        return $response[self::TOKENEX_TOKEN];
-    }
-
-    public function getVaultTokensFromTokenexTokens($tokens)
-    {
-        $input = [
-            self::TOKENEX_TOKENS   => $tokens
-        ];
-
-        $response = $this->sendRequest('vault-tokens', 'post', $input);
-
-        if (empty($response[self::TOKENEX_VAULT_MAPPING]) === false)
-        {
-            return $response[self::TOKENEX_VAULT_MAPPING];
-        }
-
-        return [];
-    }
-
     public function deleteToken($token)
     {
         // need to implement this

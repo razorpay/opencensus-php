@@ -123,7 +123,7 @@ final class FactoryData
             'emi'               => false,
             'international'     => false,
             'vault_token'       => 'NDExMTExMTExMTExMTExMQ==',
-            'vault'             => 'tokenex',
+            'vault'             => 'rzpvault',
             'trivia'            => '',
         ]);
 
