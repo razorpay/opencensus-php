@@ -243,7 +243,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
                 'name'        => 's2s'
             ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'headless']);
+        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 's2s_otp_json']);
 
         $this->fixtures->create('terminal:shared_hitachi_terminal', [
             'type' => [

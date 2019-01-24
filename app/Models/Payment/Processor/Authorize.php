@@ -5088,6 +5088,8 @@ trait Authorize
             $this->setCardNumberAndCvv($inputDetails);
         }
 
+        $this->setPreferredAuthIfApplicable($payment);
+
         $resource = $this->getCallbackMutexResource($payment);
 
         $response = $this->mutex->acquireAndRelease(
