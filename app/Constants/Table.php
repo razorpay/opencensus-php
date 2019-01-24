@@ -197,8 +197,6 @@ class Table
     const P2P_TRANSACTION       = 'p2p_transactions';
     const P2P_UPI_TRANSACTION   = 'p2p_upi_transactions';
 
-    const PARTNER_CONFIG        = 'partner_configs';
-
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS           => self::MIGS,
         Entity::AXIS_GENIUS         => self::MIGS,

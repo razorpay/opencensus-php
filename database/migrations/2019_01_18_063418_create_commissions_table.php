@@ -34,7 +34,7 @@ class CreateCommissionsTable extends Migration
 
             $table->char(Commission::PARTNER_ID, Merchant::ID_LENGTH);
 
-            $table->char(Commission::PARTNER_CONFIG_ID, ParterConfig::ID_LENGTH);
+            $table->char(Commission::PARTNER_CONFIG_ID, PartnerConfig::ID_LENGTH);
 
             $table->char(Commission::TRANSACTION_ID, Transaction::ID_LENGTH)
                   ->nullable();

@@ -10,11 +10,7 @@ class Constants
 
     /**
      * List of entities for which the commission can be rolled out.
-     *
-     * The entities defined here must the following relations/functions defined -
-     *      $sourceEntity->merchant;
-     *      $sourceEntity->origin;
-     *      $sourceEntity->getCurrency();
+     * The entities defined here must implement the CommissionSourceInterface.
      *
      * @var array
      */
