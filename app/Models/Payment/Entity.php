@@ -32,6 +32,7 @@ use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Partner\Commission\CommissionSourceInterface;
 
 /**
  * @property Subscription\Entity    $subscription
@@ -43,7 +44,7 @@ use RZP\Models\Payment\Processor\Netbanking;
  * @property PaymentLink\Entity     $paymentLink
  * @property Transaction\Entity     $transaction
  */
-class Entity extends Base\PublicEntity
+class Entity extends Base\PublicEntity implements CommissionSourceInterface
 {
     use NotesTrait;
 
