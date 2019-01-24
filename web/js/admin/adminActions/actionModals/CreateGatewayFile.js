@@ -31,8 +31,8 @@ const typeToTargetMap = {
     'vijaya',
     'allahabad',
   ],
-  emandate_register: ['hdfc'],
-  emandate_debit: ['hdfc', 'axis'],
+  emandate_register: ['hdfc', 'enach_rbl'],
+  emandate_debit: ['hdfc', 'axis', 'enach_rbl'],
   // TODO: uncomment this when api branch supporting this gets merge
   // claim: [],
   refund_failed: [
