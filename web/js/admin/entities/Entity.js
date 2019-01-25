@@ -261,6 +261,12 @@ const actions = {
       updateEntity={entityComponent::updateEntity}
     />
   ),
+  coupon: (entity, entityComponent) => (
+    <action.CouponActions
+      entity={entity}
+      updateEntity={entityComponent::updateEntity}
+    />
+  ),
 };
 
 function updateEntity(data) {
