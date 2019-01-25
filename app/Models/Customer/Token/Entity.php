@@ -168,6 +168,8 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::CUSTOMER,
         self::BANK_DETAILS,
+        self::MAX_AMOUNT,
+        self::EXPIRED_AT
         // TODO: uncomment when we start accepting token as input
         // self::MAX_AMOUNT,
     ];
@@ -200,7 +202,9 @@ class Entity extends Base\PublicEntity
         self::MRN,
         self::BANK_DETAILS,
         // TODO: Remove this after deciding on how to expose
-        self::RECURRING_DETAILS
+        self::RECURRING_DETAILS,
+        self::MAX_AMOUNT,
+        self::EXPIRED_AT
     ];
 
     protected $appends = [
@@ -553,6 +557,23 @@ class Entity extends Base\PublicEntity
             ];
         }
 
+    }
+
+    protected function setPublicMaxAmountAttribute(array & $array)
+    {
+        if($this->getMethod() !== Payment\Method::EMANDATE)
+        {
+            unset($array[self::MAX_AMOUNT]);
+        }
+    }
+
+    protected function setPublicExpiredAtAttribute(array & $array)
+    {
+        if( ($this->getMethod() !== Payment\Method::EMANDATE) and
+            ($this->getMethod() !== Payment\Method::CARD) )
+        {
+            unset($array[self::EXPIRED_AT]);
+        }
     }
 
     protected function setPublicMrnAttribute(array & $array)
