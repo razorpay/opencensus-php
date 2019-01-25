@@ -473,6 +473,7 @@ trait Authorize
                 'submit_url' => $request['url'],
                 'resend_url' => $resendUrl,
                 'metadata'   => $metaData,
+                'redirect'   => $redirectUrl,
             ];
         }
 
