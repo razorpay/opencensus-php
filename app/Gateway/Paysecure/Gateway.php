@@ -141,7 +141,8 @@ class Gateway extends Base\Gateway
             );
         }
 
-        if ($input['payment']['id'] !== $input['gateway'][Fields::SESSION])
+        if ((isset($input['gateway'][Fields::SESSION]) === true) and
+            ($input['payment']['id'] !== $input['gateway'][Fields::SESSION]))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_DATA_MISMATCH,
