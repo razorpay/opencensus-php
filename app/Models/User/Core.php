@@ -420,26 +420,7 @@ class Core extends Base\Core
             ],
         ];
 
-        // Temporary: Need to send these payloads for raven's sms content.
-        if (($input[Entity::ACTION] === 'create_payout') and
-            (isset($input['amount'], $input['account_number']) === true))
-        {
-            $payload['params'] += [
-                'amount'         => amount_format_IN($input['amount']),
-                'account_number' => mask_except_last4($input['account_number']),
-            ];
-
-            if (isset($input['fund_account_id']) === true)
-            {
-                $contactName = $this->repo
-                                    ->fund_account
-                                    ->findByPublicIdAndMerchant($input['fund_account_id'], $merchant)
-                                    ->contact
-                                    ->getName();
-
-                $payload['params']['contact_name'] = $contactName;
-            }
-        }
+        $payload['params'] += $this->getExtraRavenSmsPayload($input, $merchant);
 
         $this->app->raven->sendSms($payload);
 
@@ -461,7 +442,9 @@ class Core extends Base\Core
     {
         $otp = $otp ?: $this->generateOtpFromRaven($input, $merchant, $user);
 
-        $mailable = new OtpMail($input, $user, $otp);
+        $payload = $input + $this->getExtraRavenSmsPayload($input, $merchant);
+
+        $mailable = new OtpMail($payload, $user, $otp);
 
         Mail::queue($mailable);
 
@@ -550,5 +533,43 @@ class Core extends Base\Core
         {
             $user->getSettingsAccessor()->upsert($settings)->save();
         }
+    }
+
+    /**
+     * Gets extra attributes in payload for raven sms request if applicable. E.g. for payout
+     * we send related fund account details, contact name etc in mail and sms otp content.
+     *
+     * @param  array           $input
+     * @param  Merchant\Entity $merchant
+     * @return
+     */
+    protected function getExtraRavenSmsPayload(array $input, Merchant\Entity $merchant)
+    {
+        $payload = [];
+
+        if (($input[Entity::ACTION] !== 'create_payout') or
+            (isset($input['amount'], $input['account_number']) === false))
+        {
+            return [];
+        }
+
+        $payload = [
+            'amount'         => amount_format_IN($input['amount']),
+            'account_number' => mask_except_last4($input['account_number']),
+            'purpose'        => $input['purpose'] ?? '',
+        ];
+
+        if (isset($input['fund_account_id']) === true)
+        {
+            $fa = $this->repo->fund_account->findByPublicIdAndMerchant($input['fund_account_id'], $merchant);
+
+            $payload += [
+                'contact'             => $fa->contact->toArrayPublic(),
+                'account_destination' => $fa->getAccountDestinationAsText(),
+                'account_type'        => $fa->getAccountTypeAsText(),
+            ];
+        }
+
+        return $payload;
     }
 }

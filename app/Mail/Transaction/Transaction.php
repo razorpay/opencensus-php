@@ -9,6 +9,12 @@ use RZP\Mail\Base\Constants;
 class Transaction extends Mailable
 {
     /**
+     * @see \RZP\Models\Transaction\Notifier's $event
+     * @var string
+     */
+    protected $event;
+
+    /**
      * @var array
      */
     protected $balance;
@@ -28,10 +34,11 @@ class Transaction extends Mailable
      */
     protected $merchant;
 
-    public function __construct(array $balance, array $txn, array $source, array $merchant)
+    public function __construct(string $event, array $balance, array $txn, array $source, array $merchant)
     {
         parent::__construct();
 
+        $this->event    = $event;
         $this->balance  = $balance;
         $this->txn      = $txn;
         $this->source   = $source;
@@ -57,7 +64,8 @@ class Transaction extends Mailable
 
     protected function addMailData()
     {
-        return $this->with('balance', $this->balance)
+        return $this->with('event', $this->event)
+                    ->with('balance', $this->balance)
                     ->with('txn', $this->txn)
                     ->with('source', $this->source)
                     ->with('merchant', $this->merchant);
@@ -84,8 +92,5 @@ class Transaction extends Mailable
      */
     protected function modifyAttributes()
     {
-        $this->balance['account_number_masked'] = mask_except_last4($this->balance['account_number']);
-
-        $this->txn['amount_formatted'] = amount_format_IN($this->txn['amount']);
     }
 }

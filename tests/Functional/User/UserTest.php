@@ -477,7 +477,7 @@ class UserTest extends TestCase
 
         Mail::assertQueued(Otp::class, function ($mail)
         {
-            $this->assertEquals('Create Payout', $mail->formattedAction);
+            $this->assertEquals('create_payout', $mail->input['action']);
             $this->assertNotEmpty($mail->user);
             $this->assertNotEmpty($mail->otp);
             $this->assertEquals('emails.user.otp_create_payout', $mail->view);

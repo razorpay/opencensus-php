@@ -97,8 +97,9 @@ class Validator extends Base\Validator
         // Temporary: Need to send these payloads for raven's sms content.
         'amount'          => 'sometimes|integer|min:100|required_if:action,create_payout',
         'account_number'  => 'sometimes|alpha_num|between:5,22|required_if:action,create_payout',
-        // Todo: Append '|required_if:action,create_payout' below. For now handles bc.
+        // Todo: Make followings required. For now handles backward compatibility.
         'fund_account_id' => 'sometimes|public_id|size:17',
+        'purpose'         => 'sometimes|string|max:30|alpha_dash',
     ];
 
     protected static $verifyOtpRules = [

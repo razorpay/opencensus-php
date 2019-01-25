@@ -857,7 +857,9 @@ class Entity extends Base\PublicEntity
 
     public function shouldNotifyTxnViaEmail(): bool
     {
-        return $this->isBalanceTypeBanking();
+        return (($this->isBalanceTypeBanking() === true) and
+                // We only send transaction mail when we have UTR available, post reconciliation.
+                ($this->isAttributeNotNull(Entity::UTR) === true));
     }
 
     /**
