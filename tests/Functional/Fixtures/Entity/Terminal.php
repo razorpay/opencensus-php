@@ -891,6 +891,26 @@ class Terminal extends Base
         return [$terminal1, $terminal2];
     }
 
+    public function createDirectFirstDataRecurringTerminal($inputAttrs)
+    {
+        $attributes = [
+            'id'                        => 'FDRcrDTrmnl3DS',
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'first_data',
+            'gateway_acquirer'          => 'icic',
+            'card'                      => 1,
+            'type'                      => [
+                Type::NON_RECURRING => '1',
+                Type::RECURRING_3DS => '1'
+            ],
+            'gateway_merchant_id'       => '3ds_gateway_merchant_id',
+        ];
+
+        $attributes = array_merge($attributes, $inputAttrs);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedMigsRecurringTerminals()
     {
         $attributes = [
