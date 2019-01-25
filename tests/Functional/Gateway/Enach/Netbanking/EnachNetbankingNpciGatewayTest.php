@@ -55,7 +55,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $this->assertNotNull($enach['gateway_reference_id']);
 
-        $this->assertEquals('true', $enach['registration_status']);
+        $this->assertEquals('true', $enach['status']);
 
         //$this->assertNotNull($enach['registration_date']);
 
@@ -63,7 +63,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $this->assertEquals('netbanking', $token['auth_type']);
 
-        $this->assertEquals('confirmed', $token['recurring_status']);
+        $this->assertEquals('initiated', $token['recurring_status']);
     }
 
     public function testPaymentRejectResponse()
@@ -96,7 +96,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $enach = $this->getLastEntity('enach', true);
 
-        $this->assertEquals('false', $enach['registration_status']);
+        $this->assertEquals('false', $enach['status']);
 
         $token = $this->getLastEntity('token', true);
 
@@ -135,7 +135,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $enach = $this->getLastEntity('enach', true);
 
-        $this->assertEquals('false', $enach['registration_status']);
+        $this->assertEquals('false', $enach['status']);
 
         $token = $this->getLastEntity('token', true);
 
