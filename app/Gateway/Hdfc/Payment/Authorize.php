@@ -246,6 +246,18 @@ trait Authorize
             $result = $authResponse['data']['Error'];
         }
 
+        if ((isset($authResponse['data']['Error']) === true) and
+            (isset($authResponse['data']['result']) === true) and
+            ($authResponse['data']['Error'] !== '') and
+            ($result === Payment\Result::AUTH_ERROR_IPAY))
+        {
+            //
+            // If Error is set then it is given higher priority than result for failure cases only
+            // if result is AUTH+ERROR
+            //
+            $result = $authResponse['data']['Error'];
+        }
+
         //
         // Check enroll result code.
         //
@@ -380,6 +392,14 @@ trait Authorize
             $authResponse);
     }
 
+    protected function tracePreAuthResponse($authResponse)
+    {
+        $this->trace(
+            Trace::INFO,
+            TraceCode::GATEWAY_PRE_AUTH_RESPONSE,
+            $authResponse);
+    }
+
     protected function persistAfterAuthNotEnrolled()
     {
         if ($this->error)
@@ -505,9 +525,9 @@ trait Authorize
 
             $data['eci'] = $this->getEci($input);
 
-            $data['type'] = Hdfc\Constants::DEBIT_SECOND_RECURRING_PAYMENT_TYPE;
+            $data['type'] = Hdfc\Constants::PRE_AUTH_TYPE;
 
-            $this->authSecondRecurringRequest['url'] = Hdfc\Urls::AUTH_NOT_ENROLLED_URL_DEBIT_SI;
+            $this->authSecondRecurringRequest['url'] = Hdfc\Urls::PRE_AUTH_URL;
         }
 
         // Collect udf fields
@@ -529,6 +549,47 @@ trait Authorize
         unset($this->authSecondRecurringRequest['data']['cvv2']);
     }
 
+    protected function createPreAuthRequestFields(array $input)
+    {
+        $payment = $input['payment'];
+
+        $card = $input['card'];
+
+        // set the iso numeric currency code
+        $currency = $payment['currency'];
+
+        $data = [
+            'trackid'            => $payment['id'],
+            'amt'                => $payment['amount'] / 100,
+            'udf1'               => 'test',
+            'udf2'               => $payment['email'],
+            'udf3'               => $payment['contact'],
+            'udf4'               => 'test',
+            'udf5'               => 'test',
+            'currencycode'       => Currency::ISO_NUMERIC_CODES[$currency],
+            'action'             => Action::AUTHORIZE,
+            'cavv'               => $input['authentication']['cavv'],
+            'xid'                => $input['authentication']['xid'],
+            'enrollmentflag'     => $input['authentication']['enrolled'],
+            'authenticationflag' => $input['authentication']['status'],
+            'eci'                => $input['authentication']['eci'],
+            'type'               => Hdfc\Constants::PRE_AUTH_TYPE,
+        ];
+
+        // Collect udf fields
+        // Only visa/master are supported for recurring
+        $this->populateRiskUdfIfApplicable($data, $input);
+
+        $this->udfCheckAndMeetHdfcRequirements($data);
+
+        $this->udfRemoveHackCharacters($data);
+
+        // Collect fields related to the card
+        $this->mapKeys($card, $this->cardKeyMappings, $data);
+
+        $this->preAuthorizeRequest['data'] = $data;
+    }
+
     protected function getEci($input)
     {
         $network = $input['card']['network_code'];
@@ -536,6 +597,60 @@ trait Authorize
         $eci = ($network === Card\Network::VISA) ? '05' : '02';
 
         return $eci;
+    }
+
+    protected function postPreAuthRequest($input)
+    {
+        $this->createPreAuthRequestFields($input);
+
+        $this->trace(
+           Trace::DEBUG,
+           TraceCode::GATEWAY_PRE_AUTH_REQUEST,
+           $this->preAuthorizeRequest);
+
+        $this->runRequestResponseFlow(
+            $this->preAuthorizeRequest,
+            $this->preAuthorizeResponse);
+
+        $this->tracePreAuthResponse($this->preAuthorizeResponse);
+
+        $this->isPreAuthSuccess();
+
+        $this->persistAfterPreAuth();
+
+        if ($this->error)
+        {
+            $this->throwException($this->preAuthorizeResponse['error']);
+        }
+    }
+
+    protected function isPreAuthSuccess()
+    {
+        if ($this->error)
+        {
+            false;
+        }
+
+        $result = $this->preAuthorizeResponse['data']['result'];
+
+        //
+        // Check enroll result code.
+        //
+        list($result, $success) = Payment\Result::getPreAuthResultCode($result);
+
+        if ($success === false)
+        {
+            $matches = [];
+            preg_match('/!ERROR!-(.*)-[a-zA-Z ]+/', $result, $matches);
+
+            $errorCode = $matches[1];
+
+            $this->preAuthorizeResponse['error'] = Hdfc\ErrorHandler::getErrorDetails($errorCode);
+
+            $this->error = true;
+        }
+
+        return $success;
     }
 
     protected function authorizeRecurring($input)
@@ -565,7 +680,6 @@ trait Authorize
         {
             $this->throwException($this->authSecondRecurringResponse['error']);
         }
-
     }
 
     protected function authorizeDebitPin($input)
@@ -592,10 +706,10 @@ trait Authorize
         $this->trace->info(
             TraceCode::GATEWAY_DEBIT_PIN_AUTHENTICATION_RESPONSE,
             [
-                'content'    => $this->debitPinAuthenticationResponse,
-                'gateway'    => $this->gateway,
-                'payment_id' => $input['payment']['id'],
-                'terminal_id'=> $input['terminal']['id'],
+                'content'     => $this->debitPinAuthenticationResponse,
+                'gateway'     => $this->gateway,
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
             ]);
 
         $response = $this->debitPinAuthenticationResponse;
@@ -665,7 +779,7 @@ trait Authorize
 
         $data = [
             Hdfc\Fields::ACTION        => Action::PURCHASE,
-            Hdfc\Fields::AMOUNT        => $payment['amount']/100,
+            Hdfc\Fields::AMOUNT        => $payment['amount'] / 100,
             Hdfc\Fields::CURRENCY      => Currency::ISO_NUMERIC_CODES[$currency],
             Hdfc\Fields::TRACKID       => $payment['id'],
             Hdfc\Fields::CARD          => $card['number'],
@@ -698,7 +812,7 @@ trait Authorize
 
         $currency = $payment['currency'];
 
-        $amt = $payment['amount']/100;
+        $amt = $payment['amount'] / 100;
 
         $currencyCode = Currency::ISO_NUMERIC_CODES[$currency];
 
@@ -749,6 +863,24 @@ trait Authorize
                 $this->authSecondRecurringRequest['data'],
                 $this->authSecondRecurringResponse['data']);
         }
+    }
+
+    protected function persistAfterPreAuth()
+    {
+        if ($this->error)
+        {
+            $model = $this->repo->persistAfterPreAuthError(
+                $this->preAuthorizeRequest['data'],
+                $this->preAuthorizeResponse['error']);
+        }
+        else
+        {
+            $model = $this->repo->persistAfterPreAuth(
+                $this->preAuthorizeRequest['data'],
+                $this->preAuthorizeResponse['data']);
+        }
+
+        $this->model = $model;
     }
 
     protected function validateAuthRecurringResponse()

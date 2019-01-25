@@ -13,24 +13,33 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\FundTransfer;
 use RZP\Models\Settlement;
+use RZP\Models\FundAccount;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
-use RZP\Models\Settlement\Merchant as SettlementMerchant;
 
+/**
+ * Class Core
+ *
+ * IMPORTANT: None of the flows in payout should rely on Basic Auth's merchant
+ * since payout creation can happen via admin route too (retry_payouts)
+ * In this class, everything should be taken in the input only.
+ *
+ * @package RZP\Models\Payout
+ */
 class Core extends Base\Core
 {
-    const PAYOUT_RETRY          = 'payout_retry_%s';
+    const PAYOUT_RETRY                      = 'payout_retry_%s';
 
-    const MUTEX_RESOURCE        = 'PAYOUT_PROCESSING_%s_%s';
+    const MUTEX_RESOURCE                    = 'PAYOUT_PROCESSING_%s_%s';
 
-    const CUSTOMER_WALLET_MUTEX_RESOURCE = 'CUSTOMER_WALLET_PAYOUT_%s_%s_%s';
+    const CUSTOMER_WALLET_MUTEX_RESOURCE    = 'CUSTOMER_WALLET_PAYOUT_%s_%s_%s';
 
-    const MAX_PAYOUT_AMOUNT     = 800000000; // 80 Lakhs
+    const MAX_PAYOUT_AMOUNT                 = 800000000; // 80 Lakhs
 
-    const MUTEX_LOCK_TIMEOUT    = 300;
+    const MUTEX_LOCK_TIMEOUT                = 300;
 
-    const PAYOUT_MUTEX_LOCK_TIMEOUT = 180;
+    const PAYOUT_MUTEX_LOCK_TIMEOUT         = 180;
 
     /**
      * @var Mutex
@@ -213,30 +222,42 @@ class Core extends Base\Core
         return $payout;
     }
 
-    public function retryReversedPayouts(array $input): array
+    public function retryReversedPayout(Entity $payout): Entity
     {
-        $this->trace->info(TraceCode::MERCHANT_PAYOUT_RETRY_REQUEST, $input);
+        // We can't just retry the existing payout (create another FTA and process it via that) since the
+        // payout will be marked as reversed. A reverse transaction would also get created for the same.
+        // Hence, we create a new payout and a new transaction and so on.
 
-        (new Validator)->validateInput('payout_retry', $input);
+        $this->trace->info(
+            TraceCode::PAYOUT_RETRY_REQUEST,
+            [
+                'payout' => $payout->toArray(),
+            ]);
 
-        $ids = Entity::verifyIdAndStripSignMultiple($input['ids']);
+        (new Validator)->validateRetryPayout($payout);
 
-        $payouts = $this->repo->payout->fetchReversedPayouts($ids);
-
-        $mutexResource = sprintf(self::PAYOUT_RETRY, $this->mode);
-
-        $result = $this->mutex->acquireAndRelease(
-            $mutexResource,
-            function () use ($payouts)
+        if ($payout->hasFundAccount() === true)
+        {
+            if ($payout->hasCustomer() === true)
             {
-                return $this->attemptRetryForReversedPayouts($payouts);
-            },
-            self::MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_PAYOUT_ANOTHER_OPERATION_IN_PROGRESS);
+                $payoutInput = $this->getRetryPayoutInputForCustomerWallet($payout);
 
-        return $result + [
-            'not_attempted' => array_diff($ids, $payouts->getIds()),
-        ];
+                return $this->createPayoutFromCustomerWallet($payoutInput, $payout->customer, $payout->merchant);
+            }
+            else
+            {
+                $payoutInput = $this->getRetryPayoutInputForFundAccount($payout);
+
+                return $this->createPayoutToFundAccount($payoutInput, $payout->merchant);
+            }
+
+        }
+        else
+        {
+            $payoutInput = $this->getRetryPayoutInputForMerchant($payout);
+
+            return $this->createPayoutToMerchant($payoutInput, $payout->merchant);
+        }
     }
 
     public function updateStatusAfterFtaRecon(Entity $payout, string $ftaStatus, string $ftaFailureReason = null)
@@ -295,6 +316,45 @@ class Core extends Base\Core
         $this->repo->saveOrFail($payout);
     }
 
+    protected function getRetryPayoutInputForMerchant(Entity $payout): array
+    {
+        return [
+            Entity::AMOUNT      => $payout->getAmount(),
+            Entity::CURRENCY    => $payout->getCurrency(),
+            Entity::TYPE        => $payout->getPayoutType()
+        ];
+    }
+
+    protected function getRetryPayoutInputForFundAccount(Entity $payout): array
+    {
+        $payoutInput = [
+            Entity::FUND_ACCOUNT_ID => FundAccount\Entity::getSignedId($payout->getFundAccountId()),
+            Entity::AMOUNT          => $payout->getAmount(),
+            Entity::CURRENCY        => $payout->getCurrency(),
+            Entity::PURPOSE         => $payout->getPurpose(),
+            Entity::BALANCE_ID      => $payout->getBalanceId(),
+            Entity::MODE            => $payout->getMode(),
+        ];
+
+        // TODO: Support Notes copy also.
+
+        return $payoutInput;
+    }
+
+    protected function getRetryPayoutInputForCustomerWallet(Entity $payout): array
+    {
+        $payoutInput = [
+            Entity::FUND_ACCOUNT_ID => FundAccount\Entity::getSignedId($payout->getFundAccountId()),
+            Entity::AMOUNT          => $payout->getAmount(),
+            Entity::CURRENCY        => $payout->getCurrency(),
+            Entity::PURPOSE         => $payout->getPurpose(),
+        ];
+
+        // TODO: Support Notes copy also.
+
+        return $payoutInput;
+    }
+
     protected function handleFtaProcessed(Entity $payout)
     {
         $payout->setStatus(Status::PROCESSED);
@@ -344,58 +404,6 @@ class Core extends Base\Core
             });
 
         return $reversal;
-    }
-
-    protected function attemptRetryForReversedPayouts(Base\PublicCollection $payouts): array
-    {
-        $payoutsRetried = [];
-
-        $retryReversed = [];
-
-        foreach ($payouts as $payout)
-        {
-            $channel = $payout->getChannel();
-
-            $merchantSettler = new SettlementMerchant($payout->merchant, $channel, $this->repo);
-
-            try
-            {
-                $payout = $this->repo->transaction(
-                    function () use ($merchantSettler, $payout)
-                    {
-                        return $merchantSettler->retryReversedPayout($payout);
-                    });
-
-                $payoutsRetried[] = $payout->getId();
-            }
-            catch (\Throwable $e)
-            {
-                $retryReversed[] = $payout->getId();
-
-                $this->trace->traceException(
-                    $e,
-                    Trace::ERROR,
-                    TraceCode::MERCHANT_PAYOUT_RETRY_FAILED,
-                    [
-                        'id'      => $payout->getId(),
-                        'message' => $e->getMessage()
-                    ]
-                );
-
-                continue;
-            }
-
-            return [
-                'payouts_retried'       => $payoutsRetried,
-                'failed_retries'        => $retryReversed,
-            ];
-        }
-
-        $this->trace->info(
-            TraceCode::MERCHANT_PAYOUT_RETRIED_IDS,
-            $payoutsRetried);
-
-        return $payoutsRetried;
     }
 
     protected function getMerchantPayoutAmount(array $input, Merchant\Entity $merchant)

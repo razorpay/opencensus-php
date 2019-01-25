@@ -446,13 +446,14 @@ class SharpGatewayTest extends TestCase
 
     protected function otpCommonFlow($otp)
     {
-        $this->fixtures->merchant->enableWallet('10000000000000', 'olamoney');
+        $this->fixtures->merchant->enableWallet('10000000000000', 'mobikwik');
 
         $this->ba->publicAuth();
 
         $this->setOtp($otp);
 
-        $payment = $this->getDefaultWalletPaymentArray('olamoney');
+        $payment = $this->getDefaultWalletPaymentArray('mobikwik');
+        $payment['_']['source'] = 'checkoutjs';
 
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $name = $trace[1]['function'];
@@ -480,7 +481,7 @@ class SharpGatewayTest extends TestCase
 
     protected function setupCacheMock($paymentId)
     {
-        $key = "upi.polling." . $paymentId . ".status";
+        $key = 'upi.polling.' . $paymentId . '.status';
 
          Cache::shouldReceive('get')
             ->once()
@@ -522,7 +523,7 @@ class SharpGatewayTest extends TestCase
 
     protected function setupCacheMissMock($paymentId)
     {
-        $key = "upi.polling." . $paymentId . ".status";
+        $key = 'upi.polling.' . $paymentId . '.status';
 
         Cache::shouldReceive('get')
             ->once()
@@ -530,7 +531,7 @@ class SharpGatewayTest extends TestCase
             ->andReturnUsing(function()
             {
                 throw new Exception\RuntimeException(
-                    "Test Exception");
+                    'Test Exception');
             });
     }
 }

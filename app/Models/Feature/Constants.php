@@ -141,6 +141,11 @@ class Constants
 
     const EDIT_METHODS                  = 'edit_methods';
 
+    /**
+     * If set, disables all refund operations on the merchant's account
+     */
+    const DISABLE_REFUNDS               = 'disable_refunds';
+
     // Different actions for feature activation flow
     const CREATE           = 'create';
     const UPDATE           = 'update';
@@ -282,6 +287,7 @@ class Constants
         self::IVR                             => true,
         self::S2S_OTP_JSON                    => true,
         self::FUND_ACCOUNT_VALIDATIONS        => true,
+        self::DISABLE_REFUNDS                 => true,
     ];
 
     // Entity type constants
@@ -359,6 +365,11 @@ class Constants
         self::PL_FIRST_MIN_AMOUNT => [
             'feature'       => self::PL_FIRST_MIN_AMOUNT,
             'display_name'  => 'Partial payments: minimum first amount',
+            'documentation' => '',
+        ],
+        self::DISABLE_REFUNDS => [
+            'feature'       => self::DISABLE_REFUNDS,
+            'display_name'  => 'Disable Refund Operations',
             'documentation' => '',
         ],
     ];

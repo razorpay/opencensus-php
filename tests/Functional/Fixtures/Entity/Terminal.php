@@ -13,6 +13,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Terminal\BankingType;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Terminal\Entity as TerminalEntity;
 
 class Terminal extends Base
 {
@@ -76,6 +77,7 @@ class Terminal extends Base
         $this->createSharedNetbankingIndusindTerminal();
         $this->createSharedNetbankingPnbTerminal();
         $this->createSharedNetbankingEquitasTerminal();
+        $this->createSharedNetbankingSbiTerminal();
         $this->createSharedCybersourceHdfcTerminal();
         $this->createSharedCybersourceHdfcRecurringTerminals();
         $this->createSharedCybersourceAxisTerminal();
@@ -476,18 +478,19 @@ class Terminal extends Base
         $termId = \RZP\Models\Terminal\Shared::ENACH_RBL_RAZORPAY_TERMINAL;
 
         $defaultValues = [
-            'id'                        => $termId,
-            'merchant_id'               => '100000Razorpay',
-            'gateway'                   => 'enach_rbl',
-            'gateway_acquirer'          => 'ratn',
-            'card'                      => 0,
-            'emandate'                  => 1,
-            'type'                      => [
+            TerminalEntity::ID                  => $termId,
+            TerminalEntity::MERCHANT_ID         => '100000Razorpay',
+            TerminalEntity::GATEWAY             => 'enach_rbl',
+            TerminalEntity::GATEWAY_ACQUIRER    => 'ratn',
+            TerminalEntity::CARD                => 0,
+            TerminalEntity::EMANDATE            => 1,
+            TerminalEntity::TYPE                => [
                 Type::RECURRING_3DS => '1',
                 Type::RECURRING_NON_3DS => '1',
             ],
-            'shared'                    => 1,
-            'gateway_merchant_id'       => 'random',
+            TerminalEntity::SHARED              => 1,
+            TerminalEntity::CAPABILITY          => 2,
+            TerminalEntity::GATEWAY_MERCHANT_ID => 'random',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -530,7 +533,7 @@ class Terminal extends Base
     {
         $termId = \RZP\Models\Terminal\Shared::PAYUMONEY_RAZORPAY_TERMINAL;
 
-        $attributes = [
+        $default = [
             'id'                        => $termId,
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'wallet_payumoney',
@@ -544,6 +547,8 @@ class Terminal extends Base
             'gateway_secure_secret'     => 'secret',
         ];
 
+        $attributes = array_merge($default, $attributes);
+
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
@@ -551,7 +556,7 @@ class Terminal extends Base
     {
         $termId = \RZP\Models\Terminal\Shared::OLAMONEY_RAZORPAY_TERMINAL;
 
-        $attributes = [
+        $default = [
             'id'                        => $termId,
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'wallet_olamoney',
@@ -564,6 +569,8 @@ class Terminal extends Base
             'gateway_access_code'       => 'random_access_code',
             'gateway_secure_secret'     => 'secret',
         ];
+
+        $attributes = array_merge($default, $attributes);
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
@@ -1065,16 +1072,17 @@ class Terminal extends Base
         $terminalId = \RZP\Models\Terminal\Shared::HITACHI_TERMINAL;
 
         $defaultValues = [
-            'id'                        => $terminalId,
-            'merchant_id'               => '100000Razorpay',
-            'gateway'                   => 'hitachi',
-            'card'                      => 1,
-            'netbanking'                => 0,
-            'shared'                    => 1,
-            'gateway_acquirer'          => 'rbl',
-            'gateway_merchant_id'       => 'hitachi',
-            'gateway_terminal_password' => 'hitachi',
-            'gateway_secure_secret'     => 'secret',
+            TerminalEntity::ID                        => $terminalId,
+            TerminalEntity::MERCHANT_ID               => '100000Razorpay',
+            TerminalEntity::GATEWAY                   => 'hitachi',
+            TerminalEntity::CARD                      => 1,
+            TerminalEntity::NETBANKING                => 0,
+            TerminalEntity::SHARED                    => 1,
+            TerminalEntity::GATEWAY_ACQUIRER          => 'rbl',
+            TerminalEntity::GATEWAY_MERCHANT_ID       => 'hitachi',
+            TerminalEntity::GATEWAY_TERMINAL_PASSWORD => 'hitachi',
+            TerminalEntity::GATEWAY_SECURE_SECRET     => 'secret',
+            TerminalEntity::CAPABILITY                => '2',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -1940,6 +1948,22 @@ class Terminal extends Base
 
         return $this->create($attributes);
     }
+    public function createSharedNetbankingSbiTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => Shared::NETBANKING_SBI_TERMINAL,
+            'merchant_id'           => $merchantId,
+            'gateway'               => Gateway::NETBANKING_SBI,
+            'gateway_merchant_id'   => 'netbanking_sbi_merchant_id',
+            'netbanking'            => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
 
     public function createSharedAmexTerminal(array $attributes = [])
     {
@@ -2012,6 +2036,50 @@ class Terminal extends Base
             'gateway_merchant_id2'      => 'TSTMERCHIAPP',
             'vpa'                       => 'a@axis',
             'upi'                       => true,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedUpiRblCollectTerminal(array $attributes)
+    {
+        $termId = Shared::UPI_RBL_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'upi_rbl',
+            'gateway_merchant_id'       => 'test_merchant',
+            'gateway_merchant_id2'      => 'test@rbl',
+            'upi'                       => true,
+            'type'                      => [
+                'non_recurring'         => '1',
+                'pay'                   => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedUpiRblIntentTerminal(array $attributes)
+    {
+        $termId = Shared::UPI_RBL_RAZORPAY_INTENT_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'upi_rbl',
+            'gateway_merchant_id'       => 'test_merchant',
+            'vpa'                       => 'test@rbl',
+            'upi'                       => true,
+            'type'                      => [
+                'non_recurring' => 1,
+                'pay'           => 1,
+            ]
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

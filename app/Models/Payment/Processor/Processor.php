@@ -4,6 +4,8 @@ namespace RZP\Models\Payment\Processor;
 
 use App;
 use Route;
+use Config;
+
 use Carbon\Carbon;
 use RZP\Base\RepositoryManager;
 use RZP\Constants\Mode;
@@ -14,6 +16,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Card;
 use RZP\Models\Customer;
+use RZP\Models\EntityOrigin;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
@@ -27,7 +30,6 @@ use RZP\Models\Payment\Status;
 use RZP\Models\Pricing;
 use RZP\Models\Risk;
 use RZP\Models\Terminal;
-use RZP\Models\Transaction;
 use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -259,7 +261,12 @@ class Processor
             // This flow is being used for only hosted (Shopify).
             $this->checkSignature($input, $payment);
 
-            return $this->authorize($payment, $input, $gatewayInput);
+            $paymentData = $this->authorize($payment, $input, $gatewayInput);
+
+            // Creates an origin entity for the payment based on the auth used to initiate the payment.
+            (new EntityOrigin\Core)->createEntityOrigin($payment);
+
+            return $paymentData;
         }
         catch (\Throwable $e)
         {
@@ -2294,6 +2301,19 @@ class Processor
 
     protected function disableTerminal(Terminal\Entity $terminal)
     {
+        $this->app['slack']->queue(
+            TraceCode::TERMINAL_AUTO_DISABLE,
+            [
+                    'merchant_id'           => $terminal->getMerchantId(),
+                    'merchant_name'         => $terminal->merchant->getName(),
+                    'terminal_id'           => $terminal->getId(),
+                    'payment_id'            => $this->payment->getId(),
+                    'channel'               => Config::get('slack.channels.tech_alerts'),
+                    'username'              => 'alerts',
+                    'icon'                  => ':x:'
+            ]
+        );
+
         $this->trace->error(
             TraceCode::TERMINAL_AUTO_DISABLE,
             [

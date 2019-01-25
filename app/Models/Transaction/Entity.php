@@ -13,6 +13,7 @@ use RZP\Models\Transfer;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\Payment\Refund;
+use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\HasBalance;
 
 /**
@@ -269,6 +270,18 @@ class Entity extends Base\PublicEntity
     public function getEntityId()
     {
         return $this->getAttribute(self::ENTITY_ID);
+    }
+
+    public function getSignedEntityId(): string
+    {
+        if (($this->getType() === null) or ($this->getEntityId() === null))
+        {
+            throw new LogicException('Unexpected method call, source entity has not been associated yet.');
+        }
+
+        $entityClass = Constants\Entity::getEntityClass($this->getType());
+
+        return $entityClass::getSignedId($this->getEntityId());
     }
 
     public function getGatewayAmount()

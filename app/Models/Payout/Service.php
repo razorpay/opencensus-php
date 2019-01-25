@@ -103,11 +103,13 @@ class Service extends Base\Service
         return $payouts->toArrayPublic();
     }
 
-    public function processReversedPayouts(array $input)
+    public function processReversedPayout(string $id)
     {
-        $data = (new Core)->retryReversedPayouts($input);
+        $payout = $this->repo->payout->findByPublicId($id);
 
-        return $data;
+        $newPayout = (new Core)->retryReversedPayout($payout);
+
+        return $newPayout->toArrayPublic();
     }
 
     public function getPurposes(): array

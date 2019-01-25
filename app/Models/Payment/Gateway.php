@@ -57,6 +57,7 @@ class Gateway
     const NETBANKING_CSB         = 'netbanking_csb';
     const NETBANKING_PNB         = 'netbanking_pnb';
     const NETBANKING_OBC         = 'netbanking_obc';
+    const NETBANKING_SBI         = 'netbanking_sbi';
     const NETBANKING_ALLAHABAD   = 'netbanking_allahabad';
     const NETBANKING_CANARA      = 'netbanking_canara';
     const PAYTM                  = 'paytm';
@@ -66,6 +67,7 @@ class Gateway
     const UPI_AXIS               = 'upi_axis';
     const UPI_ICICI              = 'upi_icici';
     const UPI_HULK               = 'upi_hulk';
+    const UPI_RBL                = 'upi_rbl';
     const UPI_YESBANK            = 'upi_yesbank';
     const AEPS_ICICI             = 'aeps_icici';
     const ISG                    = 'isg';
@@ -601,6 +603,7 @@ class Gateway
             self::NETBANKING_CSB,
             self::NETBANKING_ALLAHABAD,
             self::NETBANKING_EQUITAS,
+            self::NETBANKING_SBI,
             self::NETBANKING_CANARA,
             self::NETBANKING_VIJAYA,
         ],
@@ -742,6 +745,7 @@ class Gateway
         self::UPI_SBI,
         self::SHARP,
         self::UPI_AXIS,
+        self::UPI_RBL,
         self::UPI_YESBANK,
     ];
 
@@ -1110,6 +1114,7 @@ class Gateway
         Gateway::NETBANKING_CORPORATION,
         Gateway::SHARP,
         Gateway::UPI_AXIS,
+        Gateway::UPI_RBL,
         Gateway::UPI_YESBANK,
     ];
 
@@ -1182,6 +1187,7 @@ class Gateway
         IFSC::ALLA         => Gateway::NETBANKING_ALLAHABAD,
         IFSC::CNRB         => Gateway::NETBANKING_CANARA,
         IFSC::ESFB         => Gateway::NETBANKING_EQUITAS,
+        IFSC::SBIN         => Gateway::NETBANKING_SBI,
         IFSC::VIJB         => Gateway::NETBANKING_VIJAYA,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
@@ -1291,6 +1297,7 @@ class Gateway
         Gateway::UPI_HULK,
         Gateway::UPI_MINDGATE,
         Gateway::UPI_AXIS,
+        Gateway::UPI_RBL,
     ];
 
     public static $upiValidateVpaTerminals = [

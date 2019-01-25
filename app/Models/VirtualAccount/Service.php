@@ -108,7 +108,6 @@ class Service extends Base\Service
 
     protected function getExpectedAmountForVirtualAccount(Order\Entity $order)
     {
-
         $fee = (new BankTransfer\Core)->getFeesForOrder($order);
 
         return ($order->getAmountDue() + $fee);
@@ -116,21 +115,21 @@ class Service extends Base\Service
 
     public function fetch(string $id)
     {
-        Entity::verifyIdAndStripSign($id);
-
         $virtualAccount = $this->repo
                                ->virtual_account
-                               ->findByIdAndMerchantWithRelations(
-                                $id,
-                                $this->merchant,
-                                ['bankAccount']
-                               );
+                               ->findByPublicIdAndMerchantWithRelations(
+                                    $id,
+                                    $this->merchant,
+                                    ['bankAccount']);
 
         return $virtualAccount->toArrayPublic();
     }
 
     public function fetchMultiple(array $input)
     {
+        // Via http route virtual accounts of primary balance only are exposed.
+        $input[Entity::BALANCE_ID] = $this->merchant->primaryBalance->getId();
+
         $virtualAccounts = $this->repo
                                 ->virtual_account
                                 ->fetch($input, $this->merchant->getId());
@@ -144,6 +143,8 @@ class Service extends Base\Service
                                ->virtual_account
                                ->findByPublicIdAndMerchant($id, $this->merchant);
 
+        $virtualAccount->getValidator()->validateOfPrimaryBalance();
+
         $virtualAccount = $this->core->edit($virtualAccount, $input);
 
         return $virtualAccount->toArrayPublic();
@@ -154,6 +155,8 @@ class Service extends Base\Service
         $virtualAccount = $this->repo
                                ->virtual_account
                                ->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $virtualAccount->getValidator()->validateOfPrimaryBalance();
 
         $virtualAccount = $this->core->updateStatus($virtualAccount, STATUS::CLOSED);
 
@@ -260,8 +263,8 @@ class Service extends Base\Service
     {
         $processor = $this->getNewProcessor($payment->merchant);
 
-        $processor->refundPaymentViaMerchant(
-                        $payment->getPublicId(),
+        $processor->refundCapturedPayment(
+                        $payment,
                         [
                             'amount' => $amount,
                         ]);

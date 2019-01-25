@@ -28,22 +28,8 @@ class CardVault extends BaseCardVault
         return $data;
     }
 
-    public function getTokenexToken($token)
-    {
-        $data = base64_decode($token);
-
-        return $data;
-    }
-
     public function deleteToken($token)
     {
         return [];
-    }
-
-    public function getVaultTokenFromTokenexToken($token)
-    {
-        $card = $this->detokenize($token);
-
-        return $this->tokenize($card);
     }
 }

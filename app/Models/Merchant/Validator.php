@@ -224,6 +224,10 @@ class Validator extends Base\Validator
         Constants::SKIP                  => 'integer',
     ];
 
+    protected static $merchantPartnerStatusRules = [
+        'email' => 'required|email',
+    ];
+
     protected static $bulkSyncBalanceRules = [
         Constants::INTERVAL => 'sometimes|integer|min:15|max:120'
     ];

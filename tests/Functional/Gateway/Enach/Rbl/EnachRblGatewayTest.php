@@ -742,6 +742,18 @@ class EnachRblGatewayTest extends TestCase
 
         $response = $this->doS2SRecurringPayment($payment);
 
+        $lastDebitPayment = $this->getLastEntity('payment', true);
+
+        // setting created at to 8am. Payments are picked from 9 to 9 cycle.
+        $createdAt = Carbon::today(Timezone::IST)->addHours(8)->getTimestamp();
+
+        $this->fixtures->edit(
+            'payment',
+            $lastDebitPayment['id'],
+            [
+                'created_at' => $createdAt,
+            ]);
+
         $paymentId = substr($response['razorpay_payment_id'], 4);
 
         $this->ba->adminAuth();

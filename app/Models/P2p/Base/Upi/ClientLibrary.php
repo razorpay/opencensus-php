@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Base\Upi;
 
 use RZP\Models\P2p\Device;
 use RZP\Models\P2p\BankAccount;
+use RZP\Models\P2p\Transaction;
 use RZP\Models\P2p\Base\Libraries\Rules;
 
 class ClientLibrary
@@ -14,6 +15,11 @@ class ClientLibrary
     const TOKEN             = 'token';
     const PAYLOAD           = 'payload';
     const FORMAT            = 'format';
+
+    /**
+     * @var Transaction\Entity
+     */
+    protected $transaction;
 
     /**
      * @var BankAccount\Entity
@@ -39,6 +45,13 @@ class ClientLibrary
             self::PAYLOAD       => 'string',
             self::FORMAT        => 'string',
         ]);
+    }
+
+    public function setTransaction(Transaction\Entity $transaction)
+    {
+        $this->transaction = $transaction;
+
+        $this->setBankAccount($transaction->bankAccount);
     }
 
     public function setBankAccount(BankAccount\Entity $bankAccount)
@@ -74,6 +87,11 @@ class ClientLibrary
             $this->setBankAccountProperties($array);
         }
 
+        if (is_null($this->transaction) === false)
+        {
+            $this->setTransactionProperties($array);
+        }
+
         return $array;
     }
 
@@ -102,5 +120,16 @@ class ClientLibrary
     {
         $array['txnId'] = $this->txn->get('id');
         $array['note'] = $this->txn->get('note');
+    }
+
+    private function setTransactionProperties(array & $array)
+    {
+        $array['txnId']     = $this->transaction->upi->getNetworkTransactionId();
+        $array['txnAmount'] = $this->transaction->getRupeesAmount();
+        $array['refurl']    = 'https://razorpay.com';
+        $array['payerAddr'] = $this->transaction->payer->getAddress();
+        $array['payeeAddr'] = $this->transaction->payee->getAddress();
+        $array['payeeName'] = $this->transaction->payee->getBeneficiaryName();
+        $array['note']      = $this->transaction->getDescription() ?? 'Razorpay UPI';
     }
 }

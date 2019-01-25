@@ -53,6 +53,16 @@ class Service extends Base\Service
 
         foreach ($fundTransferAttempts as $fundTransferAttempt)
         {
+            //
+            // Payouts have a proper status management and is exposed to the merchants.
+            // FTA cannot change it randomly. Payouts creates reversals in case of failures.
+            // Payouts state cannot change from reversed to processed.
+            //
+            if ($fundTransferAttempt->getSourceType() === Type::PAYOUT)
+            {
+                continue;
+            }
+
             $sourceId = null;
 
             $id = $fundTransferAttempt->getId();

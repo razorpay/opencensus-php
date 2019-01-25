@@ -47,6 +47,7 @@ class Shared
     const NETBANKING_INDUSIND_TERMINAL       = '100NbIndnTrmnl';
     const NETBANKING_INDUSIND_TPV_TERMINAL   = '100NbIndnTpvTl';
     const NETBANKING_PNB_TERMINAL            = '100NbPunbTrmnl';
+    const NETBANKING_SBI_TERMINAL            = '100NbSbinTrmnl';
     const NETBANKING_PNB_CRP_TERMINAL        = '100NbPunbCrpTl';
     const NETBANKING_ESFB_TERMINAL           = '100NbEsfbTrmnl';
     const OLAMONEY_RAZORPAY_TERMINAL         = '1000OlamoneyTl';
@@ -67,7 +68,9 @@ class Shared
     const UPI_MINDGATE_SBI_RAZORPAY_TERMINAL = '100UPIMgateSbi';
     const UPI_ICICI_RAZORPAY_TERMINAL        = '100UPIICICITml';
     const UPI_AXIS_RAZORPAY_TERMINAL         = '100UPIAXISTmnl';
+    const UPI_RBL_RAZORPAY_TERMINAL          = '100UPIRBLTrmnl';
     const UPI_AXIS_TPV_RAZORPAY_TERMINAL     = '100UPIAXISTpvl';
+    const UPI_RBL_RAZORPAY_INTENT_TERMINAL   = '100UPIRBLITrnl';
     const UPI_HULK_RAZORPAY_TERMINAL         = '100UPIHulkTrml';
     const UPI_HULK_RAZORPAY_INTENT_TERMINAL  = '1UPIInHulkTrml';
     const UPI_HULK_RAZORPAY_TPV_TERMINAL     = '1UPITpvHulkTml';
@@ -118,6 +121,7 @@ class Shared
         self::NETBANKING_CANARA_TERMINAL,
         self::NETBANKING_PNB_TERMINAL,
         self::NETBANKING_ESFB_TERMINAL,
+        self::NETBANKING_SBI_TERMINAL,
         self::PAYZAPP_RAZORPAY_TERMINAL,
         self::PAYUMONEY_RAZORPAY_TERMINAL,
         self::FREECHARGE_RAZORPAY_TERMINAL,
@@ -177,6 +181,7 @@ class Shared
         self::NETBANKING_RBL_TERMINAL            => Gateway::NETBANKING_RBL,
         self::NETBANKING_INDUSIND_TERMINAL       => Gateway::NETBANKING_INDUSIND,
         self::NETBANKING_PNB_TERMINAL            => Gateway::NETBANKING_PNB,
+        self::NETBANKING_SBI_TERMINAL            => Gateway::NETBANKING_SBI,
         self::NETBANKING_ESFB_TERMINAL           => Gateway::NETBANKING_EQUITAS,
         self::OLAMONEY_RAZORPAY_TERMINAL         => Gateway::WALLET_OLAMONEY,
         self::PAYTM_RAZORPAY_TERMINAL            => Gateway::PAYTM,

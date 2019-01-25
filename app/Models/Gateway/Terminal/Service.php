@@ -6,7 +6,9 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal\Core;
+use RZP\Models\Terminal\Type;
 use RZP\Gateway\Base\Terminal;
+use RZP\Models\Terminal\Entity;
 
 class Service extends Base\Service
 {
@@ -45,6 +47,8 @@ class Service extends Base\Service
                                                         $gatewayData,
                                                         $this->mode);
 
+            $this->setTerminalType($terminalData);
+
             $terminal = (new Core)->create($terminalData, $merchant);
 
             return $terminal->toArrayPublic();
@@ -54,5 +58,20 @@ class Service extends Base\Service
             //TODO: Handle error if needed.
             throw $e;
         }
+    }
+
+    public function setTerminalType(&$terminalData, $type = null)
+    {
+        if ($type === null)
+        {
+            $type = [
+                Type::NON_RECURRING         => '1',
+                Type::RECURRING_3DS         => '1',
+                Type::RECURRING_NON_3DS     => '1',
+                Type::DEBIT_RECURRING       => '1',
+            ];
+        }
+
+        $terminalData[Entity::TYPE] = $type;
     }
 }

@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Models\Vpa\Core;
@@ -29,7 +30,8 @@ use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
  *
  * @package RZP\Models\Payment\Processor
  *
- * @property RefundEntity  $refund
+ * @property RefundEntity    $refund
+ * @property Merchant\Entity $merchant
  */
 trait Refund
 {
@@ -360,10 +362,14 @@ trait Refund
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
-        $successCount = $failureCount = $totalCount = 0;
+        $successCount = $refundFailedCount = $failureCount = $totalCount = 0;
+
+        $successAttempt = [];
 
         for ($attempt = 1; $attempt <= $attempts; $attempt++)
         {
+            $totalCount += 1;
+
             try
             {
                 $refund->setAttempts($attempt);
@@ -382,7 +388,12 @@ trait Refund
                         'verify_response'   => $verifyResponse,
                     ]);
 
-                ($success === true) ? $successCount += 1 : $failureCount += 1;
+                ($success === true) ? ($successCount += 1 and $successAttempt[] = $attempt) : $refundFailedCount += 1;
+
+                if (($success === true) and ($refund->getAmount() === $payment->getAmount()))
+                {
+                    break;
+                }
             }
             catch (\Exception $ex)
             {
@@ -397,15 +408,15 @@ trait Refund
 
                 $failureCount += 1;
             }
-
-            $totalCount += 1;
         }
 
         return [
-            'refund_id'         => $refund->getId(),
-            'success_count'     => $successCount,
-            'failure_count'     => $failureCount,
-            'total_count'       => $totalCount
+            'refund_id'             => $refund->getId(),
+            'success_count'         => $successCount,
+            'success_attempt'       => $successAttempt,
+            'refund_failed_count'   => $refundFailedCount,
+            'failure_count'         => $failureCount,
+            'total_count'           => $totalCount
         ];
     }
 
@@ -605,6 +616,16 @@ trait Refund
         if ($this->ba->isSubscriptionsApp() === true)
         {
             return $this->refundAuthorizedPayment($payment, $input);
+        }
+
+        //
+        // This check is here since only Merchant initiated refunds hit this function.
+        // Downstream functions such as `refundCapturePayment` are used by other cases where we will
+        // actually need to refund captured payment always: like payment pages, or virtual accounts
+        //
+        if ($this->merchant->isFeatureEnabled(Feature::DISABLE_REFUNDS) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REFUND_NOT_ALLOWED);
         }
 
         return $this->refundCapturedPayment($payment, $input);
@@ -1561,8 +1582,7 @@ trait Refund
         // Captured payments of transfer cannot be refunded via direct API requests
         if ($payment->isTransfer() === true)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED);
         }
 
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($input, $payment)

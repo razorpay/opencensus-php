@@ -4,6 +4,8 @@ namespace RZP\Http\Middleware;
 
 use Closure;
 use ApiResponse;
+use RZP\Models\Admin\Org;
+use Illuminate\Http\Request;
 use Illuminate\Foundation\Application;
 
 use RZP\Http\Route;
@@ -16,6 +18,8 @@ class AdminAccess
     const WILDCARD_PERMISSION = '*';
 
     const ORG_HEADER_KEY = 'X-Org-Id';
+
+    const CROSS_ORG_HEADER_KEY = 'X-Cross-Org-Id';
 
     const ORG_HOSTNAME_HEADER_KEY = 'X-Org-Hostname';
 
@@ -100,6 +104,10 @@ class AdminAccess
         if ((in_array($routeName, Route::$crossOrgRoutes, true) === true) and
             ($admin->org->isCrossOrgAccessEnabled() === true))
         {
+            $crossOrgId = $this->getCrossOrgIdForRoute($request);
+
+            $this->ba->setCrossOrgId($crossOrgId);
+
             return true;
         }
 
@@ -115,7 +123,19 @@ class AdminAccess
     }
 
     /**
-     * Get the OrgId from different source.
+     * Fetching crossOrgId from the headers of request.
+     *
+     * @param $request
+     *
+     * @return crossOrgId.
+     */
+    private function getCrossOrgIdForRoute(Request $request)
+    {
+        return $request->headers->get(self::CROSS_ORG_HEADER_KEY);
+    }
+
+    /**
+     * Get the OrgId from different source and validate it.
      * Precedence of sources
      * 1. Route
      * 2. Params or PostData
@@ -137,6 +157,13 @@ class AdminAccess
         if ($orgId === null)
         {
             $orgId = $request->headers->get(self::ORG_HEADER_KEY);
+        }
+
+        $validateOrgId = $orgId;
+
+        if(empty($validateOrgId) === false)
+        {
+            $this->repo->org->isValidOrg(Org\Entity::verifyIdAndStripSign($validateOrgId));
         }
 
         // Resolving OrgId from hostname.

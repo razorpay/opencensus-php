@@ -17,7 +17,9 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Models\Admin\Org;
 use RZP\Http\RequestHeader;
+use RZP\Models\EntityOrigin;
 use RZP\Base\RepositoryManager;
 use RZP\Exception\LogicException;
 use RZP\Models\User\Entity as User;
@@ -99,7 +101,7 @@ class BasicAuth
      *
      * @var string|null
      */
-    protected $applicationId;
+    protected $applicationId = null;
 
     /**
      * OAuth's access token (public) id.
@@ -266,6 +268,12 @@ class BasicAuth
     protected $adminToken;
 
     protected $orgId       = null;
+
+    /**
+     * If admin's organisation has cross route enabled, admin will have access to other organisations as well. In this
+     * case, admin may have cross Id. Cross id is the id of the organisation to which admin want to access.
+     */
+    protected $crossOrgId;
 
     protected $orgHostName = null;
 
@@ -1648,6 +1656,11 @@ class BasicAuth
         {
             return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER);
         }
+
+        $applicationId = $this->authCreds->getPartnerApplicationId();
+
+        // $this->applicationId will be set to null if it is not set in authCreds. Also, it defaults to null.
+        $this->setOAuthApplicationId($applicationId);
     }
 
     protected function isPartnerAuthAllowed(): bool
@@ -1857,9 +1870,36 @@ class BasicAuth
         $this->orgId = $orgId;
     }
 
+    /**
+     * Setting and validating crossOrgId.
+     *
+     * @param $crossOrgId
+     */
+    public function setCrossOrgId(string $crossOrgId = null)
+    {
+        $validateOrgId = $crossOrgId;
+
+        if (empty($validateOrgId) === false)
+        {
+            $this->repo->org->isValidOrg(Org\Entity::verifyIdAndStripSign($validateOrgId));
+        }
+
+        $this->crossOrgId = $crossOrgId;
+    }
+
     public function getOrgId()
     {
         return $this->orgId;
+    }
+
+    /**
+     * Getting crossOrgId.
+     *
+     * @return string|null $crossOrgId
+     */
+    public function getCrossOrgId()
+    {
+        return $this->crossOrgId;
     }
 
     public function fetchOrgByHostname($orgHostname)
@@ -2031,5 +2071,59 @@ class BasicAuth
     {
         $this->request->query->remove($key);
         $this->request->request->remove($key);
+    }
+
+    /**
+     * Check if admin has access to other organisations.
+     *
+     * @return bool
+     *
+     */
+    public function adminHasCrossOrgAccess()
+    {
+        return ($this->isAdminAuth() === true) and
+               (empty($this->admin) === false) and
+               ($this->getAdmin()->org->isCrossOrgAccessEnabled() === true);
+    }
+  
+    /**
+     * Returns the origin type and origin id based on the auth used.
+     *
+     * If the merchant's credentials are used, ['merchant', $merchantId] is returned.
+     * If the partner or the oauth credentials are used, ['application', $oauthApplicationId] is returned.
+     *
+     * @return array
+     */
+    public function getOriginDetailsFromAuth(): array
+    {
+        $originId = $originType = null;
+
+        switch (true)
+        {
+            //
+            // This case covers the following cases -
+            //      the bearer auth (pure platform partner flow), and,
+            //      the partner auth (aggregator, fully managed partner flow)
+            //
+            case (empty($this->getOAuthApplicationId()) === false):
+
+                $originType = EntityOrigin\Constants::APPLICATION;
+                $originId   = $this->getOAuthApplicationId();
+                break;
+
+            //
+            // isPublicAuth() returns true even for partner auth when the partner key is used.
+            // Hence keep this case at the end.
+            // privateAuth is required for S2S payments.
+            //
+            case ($this->isPublicAuth() === true):
+            case ($this->isPrivateAuth() === true):
+
+                $originType = EntityOrigin\Constants::MERCHANT;
+                $originId   = $this->getMerchantId();
+                break;
+        }
+
+        return [$originType, $originId];
     }
 }

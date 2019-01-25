@@ -10,6 +10,13 @@ class Repository extends Base\Repository
 {
     use ApplicationTrait;
 
+    protected function getEntityObject()
+    {
+        $className = str_replace('\Repository', '\Entity', static::class);
+
+        return new $className;
+    }
+
     public function newP2pEntity(): Entity
     {
         $entity = $this->getEntityObject();
