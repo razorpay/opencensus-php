@@ -85,9 +85,9 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::SIGNED_XML);
     }
 
-    public function getRegistrationStatus()
+    public function getStatus()
     {
-        return $this->getAttribute(self::REGISTRATION_STATUS);
+        return $this->getAttribute(self::STATUS);
     }
 
     public function getErrorCode()

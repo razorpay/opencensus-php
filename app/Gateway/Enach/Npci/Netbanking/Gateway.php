@@ -476,12 +476,12 @@ class Gateway extends Base\Gateway
 
         if ($accepted === RegistrationStatus::SUCCESS)
         {
-            $attr[Base\Entity::REGISTRATION_STATUS]  = RegistrationStatus::SUCCESS;
-            $attr[Base\Entity::GATEWAY_REFERENCE_ID] = $data[ResponseXmlTags::ACCEPT_REF_NO];
+            $attr[Base\Entity::STATUS]               = RegistrationStatus::SUCCESS;
+            $attr[Base\Entity::GATEWAY_REFERENCE_ID] = $data[ResponseXmlTags::ACCEPT_REF_NO]; // TODO is there a better field
         }
         else
         {
-            $attr[Base\Entity::REGISTRATION_STATUS] = RegistrationStatus::FAILURE;
+            $attr[Base\Entity::STATUS]              = RegistrationStatus::FAILURE;
             $attr[Base\Entity::ERROR_CODE]          = $data[ResponseXmlTags::REJECTION_CODE];
             $attr[Base\Entity::ERROR_MESSAGE]       = $data[ResponseXmlTags::REJECT_DESCRIPTION];
         }
@@ -492,15 +492,15 @@ class Gateway extends Base\Gateway
     protected function getErrorResponseGatewayAttributes($data)
     {
         return [
-            Base\Entity::REGISTRATION_STATUS => RegistrationStatus::FAILURE,
-            Base\Entity::ERROR_CODE          => $data[ResponseXmlTags::ERROR_CODE],
-            Base\Entity::ERROR_MESSAGE       => $data[ResponseXmlTags::ERROR_DESCRIPTION],
+            Base\Entity::STATUS        => RegistrationStatus::FAILURE,
+            Base\Entity::ERROR_CODE    => $data[ResponseXmlTags::ERROR_CODE],
+            Base\Entity::ERROR_MESSAGE => $data[ResponseXmlTags::ERROR_DESCRIPTION],
         ];
     }
 
     protected function getRecurringDataFromNpciResponse($gatewayPayment)
     {
-        $status = $gatewayPayment->getRegistrationStatus();
+        $status = $gatewayPayment->getStatus();
 
         if (isset(RegistrationStatus::STATUS_TO_RECURRING_STATUS_MAP[$status]) === false)
         {
