@@ -19,6 +19,18 @@ class Plan extends PublicCollection
 
     protected $entity = 'pricing';
 
+    public function isTypePricing(): bool
+    {
+        // @todo: Later refer to pricing.type column which can have values - pricing, commission
+        return true;
+    }
+
+    public function isTypeCommission(): bool
+    {
+        // @todo: Later refer to pricing.type column which can have values - pricing, commission
+        return false;
+    }
+
     /**
      * Get the collection of items as a plain array.
      * @return array
