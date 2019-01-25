@@ -2,6 +2,7 @@ import { withRouter } from 'react-router';
 import { connect } from 'react-redux';
 import { render } from 'react-dom';
 
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import { Link } from 'react-router-dom';
 import Button, { AsyncBtn } from 'component/Button';
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
@@ -11,6 +12,7 @@ import FormView from './views/Form/index';
 
 import PPSettingsView from '../Modals/Settings';
 import PPShareView from '../Modals/Share';
+import PPEmbedButtonView from '../Modals/EmbedButton';
 import { createPaymentPage, editPaymentPage, sendLink } from '../model';
 
 import {
@@ -388,6 +390,20 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     }, 100);
   };
 
+  openEmbedButtonView = () => {
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <PPEmbedButtonView
+          handleClose={this.props.closeModal}
+          trackerFn={function() {}}
+          url={this.props.paymentPageEntity.short_url}
+          color={this.props.config.brand_color}
+        />
+      ),
+    });
+  };
+
   togglePageSettings = () => {
     this.setState({
       isSettingsOpened: !this.state.isSettingsOpened,
@@ -410,6 +426,33 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       paymentPageEntity.title;
     const actionBtns = (
       <React.Fragment>
+        {
+          <span class="help-content">
+            <Button.Transparent
+              type="button"
+              style={{ color: '#fff' }}
+              disabled={
+                !(
+                  paymentPageEntity.id &&
+                  typeof paymentPageEntity.title !== 'undefined'
+                )
+              }
+              onClick={this.openEmbedButtonView}
+            >
+              Embed Button
+            </Button.Transparent>
+            {!(
+              paymentPageEntity.id &&
+              typeof paymentPageEntity.title !== 'undefined'
+            ) && (
+              <Popover align="top" theme="light">
+                <PopoverBody>
+                  You can customize Embed Button after creating Payment Page
+                </PopoverBody>
+              </Popover>
+            )}
+          </span>
+        }
         <Button.Transparent
           type="button"
           style={{ color: '#fff' }}
