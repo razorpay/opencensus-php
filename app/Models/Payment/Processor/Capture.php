@@ -12,6 +12,7 @@ use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Models\VirtualAccount;
+use RZP\Models\Partner\Commission;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\Capture as CaptureJob;
 use RZP\Listeners\ApiEventSubscriber;
@@ -539,8 +540,15 @@ trait Capture
 
             $this->updateVirtualAccountStatusIfApplicable($payment);
 
+            $this->createPartnerCommission($payment);
+
             $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
+    }
+
+    protected function createPartnerCommission(Payment\Entity $payment)
+    {
+        (new Commission\Core)->createFromCapturedPayment($payment);
     }
 
     /**
