@@ -30,4 +30,20 @@ class Core extends Base\Core
 
         return $commission;
     }
+
+    public function createFromCapturedPayment(Payment\Entity $payment)
+    {
+        $calculator = new Calculator($payment);
+
+        if ($calculator->shouldCreateCommission() === false)
+        {
+            return false;
+        }
+
+        $calculator->calculate();
+
+        $commission = $this->saveCommission();
+
+        return $commission;
+    }
 }
