@@ -420,8 +420,9 @@ trait Authorize
             if ($this->isRupayNetwork($payment) === false)
             {
                 $redirectUrl = $this->getPaymentRedirectTo3dsUrl();
-                $response['redirect'] = $redirectUrl;
             }
+
+            $response['redirect'] = $redirectUrl;
 
             $metaData = [
                 'issuer'     => $card->getIssuer(),
