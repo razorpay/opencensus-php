@@ -47,7 +47,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $this->assertEquals(0, $payment['amount']);
 
-        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('authorized', $payment['status']);
 
         $this->assertEquals('initial', $payment['recurring_type']);
 
