@@ -4346,6 +4346,11 @@ ALTER TABLE payments
 ALTER TABLE axis
     ADD INDEX axis_refund_id_index (refund_id);
 
+# Bene name udpate for IRCTC refund (VA)
+UPDATE bank_accounts
+    SET beneficiary_name = 'MAA SHERAVALI SAMITI SEVA', updated_at = UNIX_TIMESTAMP(now())
+    WHERE id = 'AotxkoHq2buSM8' LIMIT 1
+
 #Changes for payout on demand
 ALTER TABLE payouts ADD COLUMN `type` char(30) not null default 'default' AFTER settled_on;
 
