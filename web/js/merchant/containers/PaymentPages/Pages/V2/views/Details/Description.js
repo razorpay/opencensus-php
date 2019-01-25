@@ -23,36 +23,19 @@ All URLs will convert to links.`;
 export default class extends React.PureComponent {
   state = { isScriptLoaded: null };
 
-  componentWillMount() {
-    // Quill Script
-    const script = document.createElement('script');
+  componentDidMount() {
+    window.onQuillLoad = () => {
+      this.QUILL = new window.Quill('#description-quill', QUILL_OPTIONS);
 
-    script.onload = () => {
-      this.setState({ isScriptLoaded: true }, () => {
-        this.QUILL = new window.Quill('#description-quill', QUILL_OPTIONS);
+      this.props.description &&
+        this.QUILL.setContents(JSON.parse(this.props.description));
 
-        this.props.description &&
-          this.QUILL.setContents(JSON.parse(this.props.description));
-
-        this.QUILL.on('text-change', (delta, oldDelta, source) => {
-          if (source == 'user') {
-            this.updateDescription();
-          }
-        });
+      this.QUILL.on('text-change', (delta, oldDelta, source) => {
+        if (source == 'user') {
+          this.updateDescription();
+        }
       });
     };
-    script.onerror = () => {
-      this.setState({ isScriptLoaded: false });
-    };
-    script.src = 'https://cdn.quilljs.com/1.3.6/quill.min.js';
-
-    // Quill CSS
-    const link = document.createElement('link');
-    link.href = 'https://cdn.quilljs.com/1.3.6/quill.snow.css';
-    link.rel = 'stylesheet';
-
-    document.head.appendChild(link);
-    document.head.appendChild(script);
   }
 
   updateDescription() {

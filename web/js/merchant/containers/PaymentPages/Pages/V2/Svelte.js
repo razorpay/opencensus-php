@@ -1,5 +1,3 @@
-import DESC_LIMIT from './views/Details/Description';
-
 export default class Svelte extends React.Component {
   shouldComponentUpdate() {
     return false; // No need to re-render again, all 3 React apps are working independently bridged via store
@@ -19,10 +17,6 @@ export default class Svelte extends React.Component {
           : 'Create New Payment Page',
         form_title: 'Payment Details',
         isWYSIWYGMode: true,
-        DESC_LIMIT: {
-          DESKTOP: DESC_LIMIT.DESKTOP,
-          MOBILE: DESC_LIMIT.MOBILE,
-        },
       },
       // Other keys are not required by Svelte app in isWYSIWYGMode
     };
