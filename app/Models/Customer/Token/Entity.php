@@ -32,6 +32,7 @@ class Entity extends Base\PublicEntity
     const CARD_ID                   = 'card_id';
     const CARD                      = 'card';
     const BANK                      = 'bank';
+    const BANK_DETAILS              = 'bank_details';
     const WALLET                    = 'wallet';
     const ACCOUNT_NUMBER            = 'account_number';
     const ACCOUNT_TYPE              = 'account_type';
@@ -166,6 +167,7 @@ class Entity extends Base\PublicEntity
         self::USED_AT,
         self::CREATED_AT,
         self::CUSTOMER,
+        self::BANK_DETAILS,
         // TODO: uncomment when we start accepting token as input
         // self::MAX_AMOUNT,
     ];
@@ -196,6 +198,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::CARD,
         self::MRN,
+        self::BANK_DETAILS,
         // TODO: Remove this after deciding on how to expose
         self::RECURRING_DETAILS
     ];
@@ -535,6 +538,21 @@ class Entity extends Base\PublicEntity
         {
             $array[self::CARD] = $this->card->toArrayToken();
         }
+    }
+
+    protected function setPublicBankDetailsAttribute(array & $array)
+    {
+        if($this->getMethod() === Payment\Method::EMANDATE)
+        {
+            $array[self::BANK_DETAILS] =
+            [
+                self::BENEFICIARY_NAME => $this->getBeneficiaryName(),
+                self::ACCOUNT_NUMBER   => $this->getAccountNumber(),
+                self::IFSC             => $this->getIfsc(),
+                self::ACCOUNT_TYPE     => $this->getAccountType(),
+            ];
+        }
+
     }
 
     protected function setPublicMrnAttribute(array & $array)
