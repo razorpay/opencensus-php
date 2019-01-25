@@ -546,17 +546,19 @@ class Entity extends Base\PublicEntity
 
     protected function setPublicBankDetailsAttribute(array & $array)
     {
-        if($this->getMethod() === Payment\Method::EMANDATE)
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::TOKEN_BANK_DETAILS) === true)
         {
-            $array[self::BANK_DETAILS] =
-            [
-                self::BENEFICIARY_NAME => $this->getBeneficiaryName(),
-                self::ACCOUNT_NUMBER   => $this->getAccountNumber(),
-                self::IFSC             => $this->getIfsc(),
-                self::ACCOUNT_TYPE     => $this->getAccountType(),
-            ];
+            if($this->getMethod() === Payment\Method::EMANDATE)
+            {
+                $array[self::BANK_DETAILS] =
+                [
+                    self::BENEFICIARY_NAME => $this->getBeneficiaryName(),
+                    self::ACCOUNT_NUMBER   => $this->getAccountNumber(),
+                    self::IFSC             => $this->getIfsc(),
+                    self::ACCOUNT_TYPE     => $this->getAccountType(),
+                ];
+            }
         }
-
     }
 
     protected function setPublicMaxAmountAttribute(array & $array)
