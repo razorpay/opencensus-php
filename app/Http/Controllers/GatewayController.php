@@ -185,6 +185,11 @@ class GatewayController extends Controller
                 break;
 
             // Special case because we need the raw request body
+            case Gateway::UPI_RBL:
+                $input = Request::getContent();
+                $data = $this->processServerCallbackWithGatewayResponse($input, $gateway);
+                break;
+
             case Gateway::UPI_ICICI:
                 $input = Request::getContent();
 

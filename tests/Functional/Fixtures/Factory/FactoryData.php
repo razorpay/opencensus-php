@@ -123,7 +123,7 @@ final class FactoryData
             'emi'               => false,
             'international'     => false,
             'vault_token'       => 'NDExMTExMTExMTExMTExMQ==',
-            'vault'             => 'tokenex',
+            'vault'             => 'rzpvault',
             'trivia'            => '',
         ]);
 
@@ -740,6 +740,7 @@ final class FactoryData
             'interval'          => 1,
             'delay'             => 3,
             'hour'              => 5,
+            'org_id'            => \RZP\Tests\Functional\Fixtures\Entity\Org::RZP_ORG,
         ]);
 
         $factory(\RZP\Models\Schedule\Task\Entity::class, [
@@ -896,11 +897,12 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Merchant\AccessMap\Entity::class, [
-            'merchant_id' => '10000000000000',
-            'entity_type' => 'application',
-            'entity_id'   => '10000000000App',
-            'created_at'  => Carbon::now()->getTimestamp(),
-            'updated_at'  => Carbon::now()->getTimestamp(),
+            'merchant_id'     => '10000000000000',
+            'entity_type'     => 'application',
+            'entity_id'       => '10000000000App',
+            'entity_owner_id' => '10000000000000',
+            'created_at'      => Carbon::now()->getTimestamp(),
+            'updated_at'      => Carbon::now()->getTimestamp(),
         ]);
 
         $factory(\RZP\Models\Merchant\Request\Entity::class, [

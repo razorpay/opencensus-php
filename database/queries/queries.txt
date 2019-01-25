@@ -4657,3 +4657,19 @@ ALTER TABLE fund_account_validations
     CHANGE COLUMN fee fees INT UNSIGNED DEFAULT 0;
 
 ALTER TABLE bank_accounts DROP COLUMN registered_beneficiary_name;
+
+ALTER TABLE webhooks
+    MODIFY COLUMN events BIGINT;
+
+ALTER TABLE fund_account_validations
+    ADD COLUMN batch_fund_transfer_id CHAR(14) AFTER currency;
+    
+ALTER TABLE `partner_configs` DROP FOREIGN KEY `partner_configs_default_plan_id_foreign`;
+ALTER TABLE `partner_configs` DROP FOREIGN KEY `partner_configs_implicit_plan_id_foreign`;
+ALTER TABLE `partner_configs` DROP FOREIGN KEY `partner_configs_explicit_plan_id_foreign`;
+
+ALTER TABLE terminals
+   ADD COLUMN capability TINYINT(1) DEFAULT 0 AFTER recurring;
+
+ALTER VIEW qubole_terminals_view AS
+    SELECT id, merchant_id, category, network_category, enabled, gateway, gateway_merchant_id, gateway_terminal_id, gateway_acquirer, card, netbanking, upi, emandate, aeps, emi, recurring, capability, international, type, created_at, updated_at, deleted_at FROM terminal;

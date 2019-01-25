@@ -7,6 +7,7 @@ use Cache;
 use Redis;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
+use RZP\Services\RazorXClient;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment as PaymentModel;
@@ -50,11 +51,25 @@ class AuthorizeTest extends TestCase
     {
         Mail::fake();
 
+        // Mock Razorx
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+             ->willReturn('On');
+
         $content = $this->startTest();
 
         $this->assertArrayHasKey('razorpay_payment_id', $content);
 
-        Mail::assertQueued(AuthorizedMail::class);
+        Mail::assertQueued(AuthorizedMail::class, function ($mail)
+        {
+            $this->assertEquals($mail->view, 'emails.mjml.customer.payment');
+            return true;
+        });
     }
 
     public function testMagicKeyFalseMerchantDisabled()

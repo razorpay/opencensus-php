@@ -655,4 +655,26 @@ class PublicEntity extends UniqueIdEntity
 
         return $currencySymbol . ' ' . $amount;
     }
+
+    /**
+     * 12012(in paise) as  ['₹',120, 12] (rupees paise as separate entry in array)
+     *
+     * @return array
+     */
+    public function getAmountComponents(): array
+    {
+        $currency = $this->getCurrency();
+
+        $currencySymbol = Currency\Currency::SYMBOL[$currency] ?: 'INR';
+
+        $denominationFactor = Currency\Currency::DENOMINATION_FACTOR[$currency] ?: 100;
+
+        $amount = $this->getAmount();
+
+        $rupeesInAmount = (integer)($amount / $denominationFactor);
+
+        $paiseInAmount = $amount % $denominationFactor;
+
+        return [$currencySymbol, $rupeesInAmount, $paiseInAmount];
+    }
 }

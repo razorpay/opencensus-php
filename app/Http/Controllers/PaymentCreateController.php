@@ -431,11 +431,13 @@ class PaymentCreateController extends Controller
             {
                 if ($data['request']['method'] === 'direct')
                 {
+                    $merchant = $this->app['basicauth']->getMerchant();
                     //
                     // For S2S headless_otp payments we return the JSON data
                     // instead of the normal view
                     //
-                    if ($this->app['basicauth']->isStrictPrivateAuth() === true)
+                    if (($this->app['basicauth']->isStrictPrivateAuth() === true) and
+                        ($merchant->isFeatureEnabled(Feature::S2S_OTP_JSON) === true))
                     {
                         $response = [
                             'next'                => $data['next'],

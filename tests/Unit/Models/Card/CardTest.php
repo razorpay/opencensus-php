@@ -78,6 +78,9 @@ class ValidationTest extends TestCase
             ['6073849700004947', '888', 'RuPay', 'credit'],
             ['341111111111111', '8888', 'American Express', 'credit'],
             ['5010000000000007', '888', 'Maestro', 'debit'],
+            ['3538105814111110',  '888', 'JCB',  'credit'],
+            ['2131005964111147',  '888', 'JCB',  'credit'],
+            ['3538001111111111',  '888', 'RuPay',  'credit'],
         );
 
         foreach ($map as $values)

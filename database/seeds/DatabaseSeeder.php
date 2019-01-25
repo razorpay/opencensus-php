@@ -1168,6 +1168,7 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingFederalTerminal();
         $this->createNetbankingIndusindTerminal();
         $this->createNetbankingPnbTerminal();
+        $this->createNetbankingSbiTerminal();
         $this->createOlamoneyTerminals();
         $this->createUpiTerminals();
         $this->createAirtelmoneyTerminals();
@@ -1649,6 +1650,23 @@ class DatabaseSeeder extends Seeder
                 'netbanking'            => '1',
                 'gateway_merchant_id'   => 'test_merchant_netbanking_equitas',
                 'gateway_secure_secret' => Crypt::encrypt('test_equitas_terminal_salt'),
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
+    }
+
+    protected function createNetbankingSbiTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_SBI_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_SBI,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'RAZORPAY',
+                'gateway_secure_secret' => Crypt::encrypt('test_secure_secret'),
                 'created_at'            => time(),
                 'updated_at'            => time(),
             ]

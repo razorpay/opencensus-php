@@ -3,6 +3,8 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Gateway\Wallet\Olamoney\ResponseCode;
+
 
 return [
     'testPayment'               => [
@@ -26,7 +28,6 @@ return [
             'merchant_order_id' => 'random order id',
         ],
         'gateway'           => 'wallet_olamoney',
-        'terminal_id'       => '1000OlamoneyTl',
         'signed'            => false,
         'verified'          => null,
         'entity'            => 'payment',

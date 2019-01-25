@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Base\Libraries;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\P2p\Base\MorphMap;
 use RZP\Models\P2p\Device;
 use RZP\Base\JitValidator;
 use Illuminate\Http\Request;
@@ -72,6 +73,8 @@ class Context
 
     public function loadWithRequest(Request $request)
     {
+        MorphMap::boot();
+
         // Setting the options first as options will be use to resolve the context
         $this->setOptions(ContextMap::resolveRequestHeaders($request));
 

@@ -193,7 +193,6 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('RZP\Models\Transaction\FeeBreakup\Entity', 'pricing_rule_id');
     }
 
-
     protected function generatePlanId()
     {
         $this->setAttribute(self::PLAN_ID, static::generateUniqueId());
@@ -360,6 +359,16 @@ class Entity extends Base\PublicEntity
     public function isBankingProduct(): bool
     {
         return ($this->getProduct() === Product::BANKING);
+    }
+
+    /**
+     * Returns the org id of pricing plan.
+     *
+     * @return mixed
+     */
+    public function getOrgId()
+    {
+        return Org\Entity::getSignedId($this->getAttribute(self::ORG_ID));
     }
 
     /**

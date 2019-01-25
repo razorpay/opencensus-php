@@ -62,6 +62,11 @@ return [
         'secret'    => env('APP_HOSTED_SECRET'),
     ],
 
+    'mozart' => [
+        'url'       => env('MOZART_URL'),
+        'password'  => env('MOZART_PASSWORD'),
+    ],
+
     'card_tokenex' => [
         'mock'      => env('TOKENEX_MOCK', false),
         'id'        => env('TOKENEX_ID'),

@@ -142,8 +142,9 @@ class FeeCalculator
             return;
         }
 
-        //
-        if ($this->isEntityPayoutOnBankingBalance() === true)
+        // For payout, we don't have to check for fees > amount, since
+        // the balance check and balance deduction happens almost together.
+        if ($this->entity->getEntity() === Constants\Entity::PAYOUT)
         {
             return;
         }
@@ -155,7 +156,9 @@ class FeeCalculator
             return;
         }
 
-        //
+        // In this case, fees will almost always be greater than 0.
+        // For e-mandate registration, we have taken a call to fail
+        // later if balance not present.
         if ($amount === 0)
         {
             return;
@@ -1009,12 +1012,6 @@ class FeeCalculator
         }
 
         return $fee;
-    }
-
-    protected function isEntityPayoutOnBankingBalance(): bool
-    {
-        return (($this->entity instanceof Payout\Entity === true) and
-            ($this->entity->isBalanceTypeBanking() === true));
     }
 
     protected function isEntityFundAccountValidation(): bool

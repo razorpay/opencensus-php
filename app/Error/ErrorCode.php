@@ -242,7 +242,7 @@ class ErrorCode
     const GATEWAY_ERROR_INVALID_TRANSACTION_INAPPROPRIATE_CODE_REMITTER             = 'GATEWAY_ERROR_INVALID_TRANSACTION_INAPPROPRIATE_CODE_REMITTER';
     const GATEWAY_ERROR_PSP_NOT_AVAILABLE                                           = 'GATEWAY_ERROR_PSP_NOT_AVAILABLE';
     const GATEWAY_ERROR_CONNECTION_TIMEOUT_IN_REQPAY_CREDIT                         = 'GATEWAY_ERROR_CONNECTION_TIMEOUT_IN_REQPAY_CREDIT';
-    const GATEWAY_ERROR_CONNECTION_TIMEOUT_IN_REQPAY_DEBIT                         = 'GATEWAY_ERROR_CONNECTION_TIMEOUT_IN_REQPAY_DEBIT';
+    const GATEWAY_ERROR_CONNECTION_TIMEOUT_IN_REQPAY_DEBIT                          = 'GATEWAY_ERROR_CONNECTION_TIMEOUT_IN_REQPAY_DEBIT';
     const GATEWAY_ERROR_CREDIT_TIMEOUT                                              = 'GATEWAY_ERROR_CREDIT_TIMEOUT';
     const GATEWAY_ERROR_CREDIT_FAILED                                               = 'GATEWAY_ERROR_CREDIT_FAILED';
     const GATEWAY_ERROR_CREDIT_REVERSAL_TIMEOUT                                     = 'GATEWAY_ERROR_CREDIT_REVERSAL_TIMEOUT';
@@ -319,6 +319,8 @@ class ErrorCode
     const BAD_REQUEST_PERMISSION_ERROR                                              = 'BAD_REQUEST_PERMISSION_ERROR';
     const BAD_REQUEST_APP_TOKEN_NOT_GLOBAL                                          = 'BAD_REQUEST_APP_TOKEN_NOT_GLOBAL';
     const BAD_REQUEST_INVALID_BANK_FOR_EMANDATE                                     = 'BAD_REQUEST_INVALID_BANK_FOR_EMANDATE';
+    const BAD_REQUEST_PAYOUT_RETRY_FOR_PAYMENT_NOT_ALLOWED                          = 'BAD_REQUEST_PAYOUT_RETRY_FOR_PAYMENT_NOT_ALLOWED';
+    const BAD_REQUEST_PAYOUT_RETRY_NOT_IN_REVERSED                                  = 'BAD_REQUEST_PAYOUT_RETRY_NOT_IN_REVERSED';
 
     const BAD_REQUEST_CUSTOMER_ID_MISSING                                           = 'BAD_REQUEST_CUSTOMER_ID_MISSING';
     const BAD_REQUEST_BANK_ACCOUNT_ID_MISSING                                       = 'BAD_REQUEST_BANK_ACCOUNT_ID_MISSING';
@@ -608,6 +610,7 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER                          = 'BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER';
 
     const BAD_REQUEST_REFUND_FAILED                                                 = 'BAD_REQUEST_REFUND_FAILED';
+    const BAD_REQUEST_REFUND_NOT_ALLOWED                                            = 'BAD_REQUEST_REFUND_NOT_ALLOWED';
     const BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE                                     = 'BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE';
     const BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS                                     = 'BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS';
     const BAD_REQUEST_REFUND_INVALID_STATE_TO_PROCESSED                             = 'BAD_REQUEST_REFUND_INVALID_STATE_TO_PROCESSED';
@@ -834,6 +837,9 @@ class ErrorCode
     const SERVER_ERROR_DUPLICATE_SESSION_ID                                         = 'SERVER_ERROR_DUPLICATE_SESSION_ID';
 
     const SERVER_ERROR_INVALID_ATTEMPT_ID                                           = 'SERVER_ERROR_INVALID_ATTEMPT_ID';
+
+    const SERVER_ERROR_HASH_MISMATCH                                                = 'SERVER_ERROR_HASH_MISMATCH';
+
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED                                     = 'BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED';
@@ -1080,6 +1086,8 @@ class ErrorCode
     const GATEWAY_ERROR_SEND_EMAIL_ERROR                                            = 'GATEWAY_ERROR_SEND_EMAIL_ERROR';
     const GATEWAY_ERROR_FAILED_DATA_UPDATE                                          = 'GATEWAY_ERROR_FAILED_DATA_UPDATE';
     const GATEWAY_ERROR_ACQUIRER_UNAVAILABLE                                        = 'GATEWAY_ERROR_ACQUIRER_UNAVAILABLE';
+    const GATEWAY_ERROR_USER_MERCHANT_LIMIT_BREACHED                                = 'GATEWAY_ERROR_USER_MERCHANT_LIMIT_BREACHED';
+    const GATEWAY_ERROR_OUTSTANDING_LIMIT_BREACHED                                  = 'GATEWAY_ERROR_OUTSTANDING_LIMIT_BREACHED';
 
     // Scrooge error codes
     const GATEWAY_VERIFY_REFUND_ABSENT                                              = 'GATEWAY_VERIFY_REFUND_ABSENT';

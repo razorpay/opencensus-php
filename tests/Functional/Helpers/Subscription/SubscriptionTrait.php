@@ -5,8 +5,10 @@ namespace RZP\Tests\Functional\Helpers\Subscription;
 use Mockery;
 use Closure;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
+
 use RZP\Exception;
+use RZP\Constants\Timezone;
+use RZP\Exception\RuntimeException;
 
 trait SubscriptionTrait
 {
@@ -299,7 +301,7 @@ trait SubscriptionTrait
     {
         $this->mockServerContentFunction(function($input, $action)
         {
-            throw new \SoapFault('HTTP', 'Random SoapFault Exception');
+            throw new RuntimeException('Error occured while sending request to Gateway');
         });
     }
 
@@ -307,7 +309,7 @@ trait SubscriptionTrait
     {
         $this->mockServerContentFunction(function($input, $action)
         {
-            if ($action === 'validate_capture')
+            if ($action === 'capture')
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Invalid Capture');

@@ -9,8 +9,15 @@ class Refunded extends Base
 {
     protected function addHtmlView()
     {
-        $this->view('emails.refund.common');
+        if($this->isCustomerReceiptEmail() === true)
+        {
+            $emailView = $this->getView('emails.mjml.customer.refund', 'emails.refund.common');
+        } else
+        {
+            $emailView = 'emails.refund.common';
+        }
 
+        $this->view($emailView);
         return $this;
     }
 

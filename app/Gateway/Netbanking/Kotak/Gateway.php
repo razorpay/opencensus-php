@@ -308,6 +308,9 @@ class Gateway extends Base\Gateway
 
         $content = $this->getDataFromResponse($content);
 
+        // adding checksum verification for verify
+        $this->validateCallbackChecksum($content);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY,
             ['responseContent' => $content]);

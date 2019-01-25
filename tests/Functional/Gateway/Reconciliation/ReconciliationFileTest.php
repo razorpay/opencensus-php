@@ -152,8 +152,8 @@ class ReconciliationFileTest extends TestCase
         // change the amount  and set status to 'failed'
         $this->fixtures->payment->edit($payment['id'],
             [
-                'amount'                => $payment['amount']*2,
-                'base_amount'           => $payment['base_amount']*2,
+                'amount'                => $payment['amount'] * 2,
+                'base_amount'           => $payment['base_amount'] * 2,
                 'status'                => PaymentStatus::FAILED,
                 'error_code'            => 'BAD_REQUEST_ERROR',
                 'internal_error_code'   => 'BAD_REQUEST_PAYMENT_TIMED_OUT',
@@ -1031,7 +1031,7 @@ class ReconciliationFileTest extends TestCase
     {
         $facade = $this->testData['facades']['freecharge'];
 
-        $facade[0][FreechargePaymentRecon::COLUMN_PAYMENT_ID] = 'pay_' . $payment['payment_id'];;
+        $facade[0][FreechargePaymentRecon::COLUMN_PAYMENT_ID] = 'pay_' . $payment['payment_id'];
 
         return $facade;
     }
@@ -1178,14 +1178,14 @@ class ReconciliationFileTest extends TestCase
     {
         $facade = $this->testData['facades']['mobikwik'];
 
-        $paymentId = str_replace("pay_", '', $payment['id']);
+        $paymentId = str_replace('pay_', '', $payment['id']);
 
         $facade['OrderID'] = '"""'. $paymentId;
 
         return $facade;
     }
 
-    protected function runForFiles(array $files, string $gateway, array $forceUpdate = [],  array $forceAuthorizePayments = [])
+    protected function runForFiles(array $files, string $gateway, array $forceUpdate = [], array $forceAuthorizePayments = [])
     {
         $this->ba->appAuth();
 
@@ -1300,7 +1300,7 @@ class ReconciliationFileTest extends TestCase
 
         $entries[0][HitachiPaymentRecon::COLUMN_TERMINAL_NUMBER] = '38R00450';
 
-        $entries[0][HitachiPaymentRecon::COLUMN_PAYMENT_AMOUNT] = $payment['amount']/100;
+        $entries[0][HitachiPaymentRecon::COLUMN_PAYMENT_AMOUNT] = $payment['amount'] / 100;
 
         $file = $this->writeToExcelFile($entries, 'hitachi');
 
@@ -1418,7 +1418,7 @@ class ReconciliationFileTest extends TestCase
 
     public function testOlamoneyReconPaymentFile()
     {
-        $this->fixtures->create('terminal:shared_olamoney_terminal');
+        $this->fixtures->create('terminal:shared_olamoney_terminal', ['type' => ['non_recurring' => '1', 'ivr' => '1']]);
 
         $gatewayPayment1 = $this->getNewWalletEntity('10000000000000', 'olamoney');
 
@@ -1554,7 +1554,7 @@ class ReconciliationFileTest extends TestCase
 
         $headers[] = ['Merchant Setttlment' => '  '];
 
-        $headers[] = ['From Settlement'=>' To Settlement' , '31-08-2018' => '31-08-2018'];
+        $headers[] = ['From Settlement' => ' To Settlement', '31-08-2018' => '31-08-2018'];
 
         $file = $this->writeToCsvFile($headers, 'MerchantSettlementTransactionListing');
 
@@ -1652,7 +1652,7 @@ class ReconciliationFileTest extends TestCase
 
         $headers[] = ['Merchant Setttlment' => '  '];
 
-        $headers[] = ['From Settlement'=>' To Settlement' , '31-08-2018' => '31-08-2018'];
+        $headers[] = ['From Settlement' => ' To Settlement', '31-08-2018' => '31-08-2018'];
 
         $file = $this->writeToCsvFile($headers, 'MerchantSettlementTransactionListing');
 
@@ -1793,13 +1793,13 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals(1, $batch['failure_count']);
     }
 
-    private function overrideFssBobRecon(array $gatewayPayment, string $entityId, $transactionType ='Purchase')
+    private function overrideFssBobRecon(array $gatewayPayment, string $entityId, $transactionType = 'Purchase')
     {
         $facade = $this->testData['facades']['testFssBobRecon'];
 
         $facade['Transaction Amount'] = number_format($gatewayPayment['amount'] / 100, 2);
 
-        $facade['Settlement Amount'] = $facade['Transaction Amount']/100;
+        $facade['Settlement Amount'] = $facade['Transaction Amount'] / 100;
 
         $facade['Auth/Approval Code'] = $gatewayPayment['auth'];
 

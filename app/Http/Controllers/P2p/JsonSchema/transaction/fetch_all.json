@@ -27,20 +27,19 @@
                 "required": [
                     "id",
                     "entity",
-                    "txn_id",
                     "status",
                     "amount",
                     "description",
+                    "flow",
                     "type",
                     "currency",
-                    "error_description",
                     "error_code",
-                    "transaction_type",
-                    "rrn",
+                    "error_description",
                     "created_at",
                     "completed_at",
                     "expire_at"
                 ],
+                "additionalProperties": false,
                 "properties": {
                     "id": {
                         "type": "string",
@@ -53,10 +52,6 @@
                             "customer.transaction"
                         ],
                         "default": null,
-                        "pattern": "^(.*)$"
-                    },
-                    "txn_id": {
-                        "type": "string",
                         "pattern": "^(.*)$"
                     },
                     "status": {
@@ -84,22 +79,21 @@
                     "error_code": {
                         "type": "null"
                     },
-                    "transaction_type": {
+                    "flow": {
                         "type": "string",
                         "pattern": "^(.*)$"
                     },
-                    "rrn": {
-                        "type": "string",
-                        "pattern": "^(.*)$"
+                    "initiated_at": {
+                        "type": ["integer", "null"]
                     },
                     "created_at": {
-                        "type": "integer"
+                        "type": ["integer", "null"]
                     },
                     "completed_at": {
-                        "type": "null"
+                        "type": ["integer", "null"]
                     },
                     "expire_at": {
-                        "type": "integer"
+                        "type": ["integer", "null"]
                     }
                 }
             }

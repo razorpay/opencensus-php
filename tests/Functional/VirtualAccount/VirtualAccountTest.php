@@ -1160,6 +1160,40 @@ class VirtualAccountTest extends TestCase
             $merchant->bankingBalance->getAccountNumber());
     }
 
+    public function testUpdateOnVirtualAccountOfBankingBalanceFails()
+    {
+        $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true);
+
+        $this->expectException(\Rzp\Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('Operation is not allowed for this specific virtual account');
+
+        // This method calls the update route.
+        $this->closeVirtualAccountViaEdit($this->virtualAccount->getPublicId());
+    }
+
+    public function testClosingOfVirtualAccountOfBankingBalanceFails()
+    {
+        $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true);
+
+        $this->expectException(\Rzp\Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('Operation is not allowed for this specific virtual account');
+
+        $this->closeVirtualAccount($this->virtualAccount->getPublicId());
+    }
+
+    public function testFetchVirtualAccountsMustNotIncludeBankingVAs()
+    {
+        // Creates virtual account on primary balance.
+        $this->createVirtualAccount();
+
+        // Creates virtual account on banking balance.
+        $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true);
+
+        $this->assertArraySelectiveEquals($this->testData[__FUNCTION__], $this->fetchVirtualAccounts());
+    }
+
     protected function mockInfernoFire(Closure $closure)
     {
         $inferno = Mockery::mock(Webhook\Inferno::class, [])->makePartial();

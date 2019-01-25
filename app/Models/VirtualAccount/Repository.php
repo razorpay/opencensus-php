@@ -12,26 +12,6 @@ class Repository extends Base\Repository
 {
     protected $entity = Constants\Entity::VIRTUAL_ACCOUNT;
 
-    const WITH_TRASHED = 'deleted';
-
-    protected $entityFetchParamRules = [
-        Entity::STATUS      => 'sometimes|in:active,closed,paid',
-        Entity::CUSTOMER_ID => 'sometimes|string|min:14|max:19',
-        Entity::NOTES       => 'sometimes|notes_fetch',
-    ];
-
-    protected $appFetchParamRules = [
-        Entity::MERCHANT_ID => 'sometimes|alpha_num|size:14',
-    ];
-
-    protected $proxyFetchParamRules = [
-        Entity::RECEIVER_TYPE => 'sometimes|in:bank_account,qr_code',
-    ];
-
-    protected $signedIds = [
-        Entity::CUSTOMER_ID,
-    ];
-
     protected function addQueryParamReceiverType(BuilderEx $query, array $params)
     {
         if ($params[Entity::RECEIVER_TYPE] === Receiver::BANK_ACCOUNT)
@@ -77,21 +57,14 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function findByIdAndMerchantWithRelations(
-        string $id,
-        Merchant $merchant,
-        array $relations = [],
-        array $columns = ['*'])
+    public function findByPublicIdAndMerchantWithRelations(string $id, Merchant $merchant, array $relations = [])
     {
-        $query = $this->newQuery()
-                      ->merchantId($merchant->getId());
+        Entity::verifyIdAndStripSign($id);
 
-        if (empty($relations) === false)
-        {
-            $query->with($relations);
-        }
-
-        return $query->findOrFailPublic($id, $columns);
+        return $this->newQuery()
+                    ->merchantId($merchant->getId())
+                    ->with($relations)
+                    ->findOrFailPublic($id);
     }
 
     public function findActiveByDescriptorAndMerchant(
