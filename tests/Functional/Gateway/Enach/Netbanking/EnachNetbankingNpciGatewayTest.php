@@ -57,7 +57,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $this->assertEquals('true', $enach['status']);
 
-        //$this->assertNotNull($enach['registration_date']);
+        $this->assertEquals('true' ,$enach['acknowledge_status']);
 
         $token = $this->getLastEntity('token', true);
 

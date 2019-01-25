@@ -33,7 +33,7 @@ class Gateway extends Base\Gateway
 
         return $request;
     }
-    
+
     public function callback(array $input)
     {
         parent::callback($input);
@@ -485,6 +485,8 @@ class Gateway extends Base\Gateway
             $attr[Base\Entity::ERROR_CODE]          = $data[ResponseXmlTags::REJECTION_CODE];
             $attr[Base\Entity::ERROR_MESSAGE]       = $data[ResponseXmlTags::REJECT_DESCRIPTION];
         }
+
+        $attr[Base\Entity::ACKNOWLEDGE_STATUS] = 'true';
 
         return $attr;
     }
