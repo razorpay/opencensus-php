@@ -522,6 +522,7 @@ class Gateway extends Base\Gateway
         $recurringData = [
             Token\Entity::RECURRING_STATUS         => $recurringStatus,
             Token\Entity::RECURRING_FAILURE_REASON => $recurringFailureReason,
+            Token\Entity::ACKNOWLEDGED_AT          => Carbon::now(Timezone::IST)->getTimestamp()
         ];
 
         return $recurringData;
