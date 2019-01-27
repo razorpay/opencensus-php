@@ -134,3 +134,13 @@ const fields = [
 ];
 
 const href = item => '/requests/' + item.id;
+
+export function getEntityIdNugget(entityId, entityName) {
+  const url = `${entityName}/${entityId}`;
+
+  return (
+    <a class="link" href={`/razorx/${url}`} target="_blank">
+      {entityId}
+    </a>
+  );
+}
