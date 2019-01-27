@@ -25,7 +25,7 @@ import WorkflowEntity from 'admin/workflows/Entity';
 import WorkflowList from 'admin/workflows/List';
 
 import RequestEntity from 'admin/requests/Entity';
-import RequestList from 'admin/requests/List';
+import RequestList, { getEntityIdNugget } from 'admin/requests/List';
 
 import GroupList from 'admin/groups/List';
 import UserList from 'admin/users/List';
@@ -119,7 +119,7 @@ export default ({ location }) => (
     <Route path="/workflows/:id" component={WorkflowEntity} />
     <Route path="/workflows" component={WorkflowList} />
 
-    <Route path="/requests/:id" component={RequestEntity} />
+    <Route path="/requests/:id" component={RequestEntity(getEntityIdNugget)} />
     <Route path="/requests" component={RequestList} />
     <Route path="/groups" component={GroupList} />
     <Route path="/users/:id" component={UserEntity} />

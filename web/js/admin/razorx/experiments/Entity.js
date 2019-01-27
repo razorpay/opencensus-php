@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { openModal, notifyError } from 'common/modal';
+import { openModal, notifyError, notifySuccess } from 'common/modal';
 import { formatDate, titleCase, classList } from 'common/util';
 import { rexFetch, rexPatch } from 'admin/razorx/fetch';
 import AsyncButton from 'ui/AsyncButton';
@@ -50,12 +50,16 @@ export default class extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.id !== nextProps.id && nextProps.id) {
+    if (this.props.id !== nextProps.id) {
       this.fetch(nextProps.id);
     }
   }
 
   fetch(id) {
+    if (!id) {
+      return;
+    }
+
     this.setState({
       isFetching: true,
       data: null,
@@ -80,8 +84,20 @@ export default class extends React.Component {
       });
   }
 
+  activate = (id, mode) => {
+    return adminPatch(`${mode}/experiments/${id}/activate`).then(data => {
+      if (data.success) {
+        notifySuccess('Experiment is successfully Activated');
+      }
+    });
+  };
+
   terminate = (id, mode) => {
-    return adminPatch(`${mode}/experiments/${id}/terminate`);
+    return adminPatch(`${mode}/experiments/${id}/terminate`).then(data => {
+      if (data.success) {
+        notifySuccess('Experiment is successfully Terminated');
+      }
+    });
   };
 
   showExperimentModal = _ => {
@@ -121,6 +137,7 @@ export default class extends React.Component {
       content = (
         <Details
           data={data}
+          activate={this.activate}
           terminate={this.terminate}
           showExperimentModal={this.showExperimentModal}
           showJSONModal={this.showJSONModal}
@@ -132,7 +149,13 @@ export default class extends React.Component {
   }
 }
 
-const Details = ({ data, terminate, showExperimentModal, showJSONModal }) => {
+const Details = ({
+  data,
+  activate,
+  terminate,
+  showExperimentModal,
+  showJSONModal,
+}) => {
   const segments = getSegmentsGroupedByVariant(data.segments);
 
   return (
@@ -186,6 +209,25 @@ const Details = ({ data, terminate, showExperimentModal, showJSONModal }) => {
           </div>
         </div>
       </div>
+
+      {/* Experiment is in pending state */}
+      {!data.activated_at &&
+        !data.terminated_at && (
+          <React.Fragment>
+            <br />
+            <div>
+              <AsyncButton
+                class="link danger text-danger text-bold"
+                pendingClass="link danger-faded text-danger text-bold btn-pending"
+                confirm={`Do you want to Activate Experiment id "${data.id}"?`}
+                onClick={_ => activate(data.id, data.mode)}
+              >
+                Activate Experiment
+                <span class="dot-loader">.</span>
+              </AsyncButton>
+            </div>
+          </React.Fragment>
+        )}
 
       <br />
 

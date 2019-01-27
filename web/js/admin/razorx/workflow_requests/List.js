@@ -3,7 +3,7 @@ import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
 import Field, { SelectField, SearchableSelectField } from 'ui/Field';
 import Collection from 'model/collection';
-import { rexFetch } from 'admin/razorx/fetch';
+import { adminFetch } from 'common/fetch';
 import { observer } from 'mobx-react';
 import { formatDate } from 'common/util';
 import { isSuperAdmin } from 'admin/user';
@@ -16,13 +16,14 @@ export default class WorkflowRequestsList extends Component {
   };
 
   collection = new Collection({
-    fetchFn: rexFetch,
+    fetchFn: adminFetch,
     data: {
       url: 'live/w-actions',
     },
     filters: {
       duty: 'checker',
       type: 'requested',
+      include: 'razorx',
     },
   });
 
@@ -41,23 +42,13 @@ export default class WorkflowRequestsList extends Component {
     this.setState({ selectedType: value });
   };
 
-  componentWillMount() {
-    let requests = ['live/admins'];
-
-    Promise.all(requests.map(url => rexFetch(url))).then(([admins]) => {
-      this.setState({
-        admins: admins.items,
-      });
-    });
-  }
-
   render() {
     const { selectedType, admins } = this.state;
 
     return (
       <div class="parent-container workflow_requests-container">
         <div class="header">
-          <span class="title">Workflows List</span>
+          <span class="title">Workflow Requests</span>
         </div>
         <div class="container-group">
           <div class="list-container">
@@ -99,12 +90,7 @@ export default class WorkflowRequestsList extends Component {
                   />
                 )}
 
-              <input
-                name="workflow_id"
-                value="Fixed value for RazorX workflow requests"
-                class="hide"
-                readOnly
-              />
+              <input name="include" value="razorx" class="hide" readOnly />
 
               <button class="btn btn--primary field">Search</button>
             </Form>
@@ -144,3 +130,13 @@ const fields = [
 ];
 
 const href = item => '/requests/' + item.id;
+
+export function getEntityIdNugget(entityId, entityName) {
+  const url = `${entityName}/${entityId}`;
+
+  return (
+    <a class="link" href={`/razorx/${url}`} target="_blank">
+      {entityId}
+    </a>
+  );
+}

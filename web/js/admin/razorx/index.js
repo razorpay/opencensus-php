@@ -12,8 +12,10 @@ import user, { org } from 'admin/user';
 
 import Experiments from './experiments';
 import Features from './features';
-import WorkflowRequestsList from './workflow_requests/List';
-import WorkflowRequestsEntity from '../requests/Entity';
+import WorkflowRequestsList, {
+  getEntityIdNugget,
+} from './workflow_requests/List';
+import WorkflowRequestsEntity from 'admin/requests/Entity';
 import MerchantEvaluation from './merchant_evaluation';
 
 import ModalContainer, { openSlider, closeSlider } from 'common/modal';
@@ -57,10 +59,15 @@ export default class RazorXApp extends React.Component {
                   <ShowWhenRoute path="/features" component={Features} exact />
                   <Route path="/features/:id" component={Features} exact />
 
-                  <Route path="/requests" component={WorkflowRequestsList} />
+                  <Route
+                    path="/requests"
+                    component={WorkflowRequestsList}
+                    exact
+                  />
                   <Route
                     path="/requests/:id(w_action_.+)"
-                    component={WorkflowRequestsEntity}
+                    component={WorkflowRequestsEntity(getEntityIdNugget)}
+                    exact
                   />
 
                   <Route
