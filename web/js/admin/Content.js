@@ -1,8 +1,8 @@
 import { Route, Switch, Redirect } from 'react-router-dom';
 import MainNavLink from 'admin/components/MainNavLink';
-import { org } from 'admin/user';
-import { isOrgRazorpay } from 'admin/user';
-import { RZPRoute } from './helper';
+import { org, isOrgRazorpay } from 'admin/user';
+import { ShowWhenRoute } from 'admin/components/ShowWhen';
+
 import Profile from 'admin/profile';
 
 import MerchantList from 'admin/merchants/MerchantList';
@@ -25,7 +25,7 @@ import WorkflowEntity from 'admin/workflows/Entity';
 import WorkflowList from 'admin/workflows/List';
 
 import RequestEntity from 'admin/requests/Entity';
-import RequestList from 'admin/requests/List';
+import RequestList, { getEntityIdNugget } from 'admin/requests/List';
 
 import GroupList from 'admin/groups/List';
 import UserList from 'admin/users/List';
@@ -119,7 +119,7 @@ export default ({ location }) => (
     <Route path="/workflows/:id" component={WorkflowEntity} />
     <Route path="/workflows" component={WorkflowList} />
 
-    <Route path="/requests/:id" component={RequestEntity} />
+    <Route path="/requests/:id" component={RequestEntity(getEntityIdNugget)} />
     <Route path="/requests" component={RequestList} />
     <Route path="/groups" component={GroupList} />
     <Route path="/users/:id" component={UserEntity} />
@@ -189,3 +189,9 @@ export const Sidebar = ({ props }) => (
     ))}
   </aside>
 );
+
+function RZPRoute(props) {
+  return (
+    <ShowWhenRoute {...props} additionalCondition={_ => isOrgRazorpay()} />
+  );
+}

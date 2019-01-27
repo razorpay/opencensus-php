@@ -1,0 +1,220 @@
+.RazorX-container.RazorX-container
+  /* Toast Notifications */
+  #toast-container
+    right: unset
+    transform: translateX(-50%)
+    left: 50%
+
+    .toast
+      margin: 12px auto 0
+      &.success
+        background: $toast-success-bg
+        color: $toast-success-text
+
+      &.error
+        background: $toast-error-bg
+        color: $toast-error-text
+
+  /* Modal */
+  .Modal-mask
+    background-color: rgba(45, 36, 37, 0.92)
+    overflow: auto
+
+    .Modal-container
+      border-radius: 2px
+      background: transparent
+      box-shadow: none
+      overflow: hidden
+      max-height: unset
+
+      .Modal-close
+        color: rgba(255, 255, 255, 0.4)
+        top: 10px
+        padding: 9px 12px 11px
+        right: -12px
+
+      .Modal-content, .confirm-modal
+        header
+          position: relative
+          color: rgba(255,255,255,0.9)
+          padding: 12px 48px 12px 12px
+          border-bottom: 0
+
+          &::after
+            content: ''
+            display: block
+            position: absolute
+            top: 18px
+            left: 0
+            height: 24px
+            width: 5px
+            background: $highlight-color
+
+      .Modal-content .Modal-body, .confirm-modal .confirm-body
+        background: #fff
+        min-width: 400px
+
+      .Modal-content .Modal-body
+        .footer
+          margin: 0 -24px -24px
+          padding: 16px
+          border-top: 1px solid rgba(0,0,0,0.04)
+
+        .form
+          .field > label
+            font-weight: 600
+
+      .confirm-modal .confirm-body
+        .message
+          padding: 24px
+
+        .action-buttons
+          display: flex
+          justify-content: flex-end
+          padding: 16px
+          border-top: 1px solid rgba(0,0,0,0.04)
+
+          button
+            margin: 0
+            border-radius: 2px
+            font-weight: 600
+            border: none
+
+            &:nth-of-type(n+1)
+              margin-left: 16px
+
+            &.btn-confirm
+              background-color: $color-primary
+
+            &.btn-reject
+              color: $color-primary
+
+  /* Table */
+  .table-striped .td
+    min-width: auto
+
+  .table-empty, .table-pending
+    opacity: 0.6
+
+  .list-container
+    .box
+      margin: 0 24px
+      box-shadow: none
+      background: transparent
+
+      .thead
+        color: rgba(0,0,0,0.2)
+        .th
+          font-size: 12px
+          font-weight: 600
+          text-transform: uppercase
+
+          &:first-of-type
+            font-weight: 700
+            color: rgba(0,0,0,0.6)
+
+      .tr:nth-child(2n+1):not(.thead)
+        background: #fafafa
+
+    .table-container
+      width: 100%
+
+      .th
+        vertical-align: bottom
+
+  /* Spinner */
+  .spinner
+    &::after, &::before
+      background-color: #dad9d9
+
+  /* Pills */
+  .pill
+    color: #fff
+    font-weight: 600
+    background-color: #e3e3e6
+
+    &.label-success
+      background-color: #84e64c
+
+    &.label-danger
+      background-color: #e05555
+
+  /* Square Pills */
+  .square-pills
+    background: #efeeee
+    color: inherit
+
+  /* Misc */
+
+  .text-danger
+    color: #f35d5d !important
+
+  .link
+    &.danger
+      border-color: #f35d5d
+
+      &-faded
+        border-color: transparent
+        color: rgba(243, 93, 93, 0.5)
+
+
+.text-bold
+    font-weight: 600
+
+
+.Input--SegmentList.Input--SegmentList
+  .Input-el-btn
+    font-size: 20px
+    position: absolute
+    left: 280px
+    top: 5px
+    width: 20px
+    line-height: 20px
+    text-align: center
+    cursor: pointer
+    color: #bfbfbf
+    z-index: 5
+
+    &:hover
+      color: #7b8199
+
+  .Input-Segment
+    position: relative
+    display: inline-block
+    width: 100%
+    margin: 8px 0
+
+  .field
+    margin: -1px 0 0 0
+
+    & > label
+      display: none
+
+    input, select, textarea
+      margin-top: 0
+      margin-left: 0
+      border-radius: 0
+
+      &:focus
+        border: 1px solid rgba(0,0,0,0.08)
+        border-bottom: 1px solid #48bbff
+
+    &:first-of-type
+      margin-top: 0
+      z-index: 4
+
+      select
+        border-radius: 2px 2px 0 0
+
+    &:last-of-type
+      input, select
+        border-radius: 0 2px 2px 0
+
+    &:nth-of-type(2)
+      z-index: 3
+
+    &:nth-of-type(3)
+      z-index: 2
+
+    &:nth-of-type(4)
+      z-index: 1

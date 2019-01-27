@@ -44,7 +44,7 @@ async function admin(browser) {
   page.on('pageerror', adminLog).on('error', adminLog);
   await page.goto(adminURL);
 
-  return page.waitForSelector('#app-container').then(_ => {
+  return page.waitForSelector('.app-container').then(_ => {
     clearTimeout(timeout);
     console.log('Admin Successful');
   });

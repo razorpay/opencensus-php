@@ -136,7 +136,7 @@ export function SwitchField({
 }) {
   return (
     <div class="field">
-      <label class={props.required ? 'required' : ''}>{label}</label>
+      {label && <label class={props.required ? 'required' : ''}>{label}</label>}
 
       {disabledLabel && (
         <span class={`${nocaption ? '' : 'caption'} m-r`}>{disabledLabel}</span>
@@ -239,6 +239,15 @@ class SearchableSelect extends Component {
     this.setState({ selectedOption: option });
   };
 
+  handleKeyDown = e => {
+    const target = e.target;
+
+    setTimeout(() => {
+      const val = target.value;
+      this.props.onInput && this.props.onInput(val);
+    }, 5);
+  };
+
   componentWillReceiveProps(nextProps) {
     if (nextProps.defaultValue !== this.state.selectedOption.value) {
       this.setState({
@@ -277,6 +286,7 @@ class SearchableSelect extends Component {
             optionLabelPath="name"
             selected={this.state.selectedOption}
             onChange={this.handleChange}
+            onKeyDown={this.handleKeyDown}
             {...props}
           />
         ) : (

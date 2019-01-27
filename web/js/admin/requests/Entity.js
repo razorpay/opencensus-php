@@ -9,33 +9,15 @@ import RequestForm from './RequestForm';
 import RequestActions from './RequestActions';
 import { formatDate, titleCase } from 'common/util';
 
-/* entities in this will have redirection to 'merchants/{id}', otherwise to '/entity/{entity_name/{id}' */
-const entityMap = {
-  merchant: {
-    url: 'merchants',
-  },
-  merchant_detail: {
-    url: 'merchants',
-  },
-  credits: {
-    url: 'merchants',
-  },
-  methods: {
-    url: 'merchants',
-  },
-  adjustment: {
-    url: 'merchants',
-  },
-  schedule_task: {
-    url: 'merchants',
-  },
-  feature: {
-    url: 'merchants',
-  },
-};
+let getEntityIdNugget;
+
+export default function(entityIdNugget) {
+  getEntityIdNugget = entityIdNugget;
+  return RequestEntity;
+}
 
 @observer
-export default class RequestEntity extends Component {
+class RequestEntity extends Component {
   //mobx observables
   comments = observable.array();
   checkers = observable.array();
@@ -117,23 +99,6 @@ export default class RequestEntity extends Component {
     );
   };
 
-  getEntityIdNugget(entityId, entityName) {
-    const mapping = entityMap[entityName];
-    let url;
-
-    if (mapping) {
-      url = mapping.url;
-    } else {
-      url = `entity/${entityName}`;
-    }
-
-    return (
-      <a class="link" href={`/admin/${url}/${entityId}`} target="_blank">
-        {entityId}
-      </a>
-    );
-  }
-
   render() {
     if (this.pending) {
       return <div class="spinner center" />;
@@ -149,7 +114,7 @@ export default class RequestEntity extends Component {
         <header class="heading">
           {data.permission.description &&
             titleCase(data.permission.description)}{' '}
-          {this.getEntityIdNugget(data.entity_id, data.entity_name)}
+          {getEntityIdNugget(data.entity_id, data.entity_name)}
         </header>
         <div class="box-container">
           <main class="container requests-content">

@@ -1,0 +1,42 @@
+.RazorX-container.RazorX-container .parent-container.experiments-container
+  .list-container
+    .table
+      .tr .td
+        &:nth-child(1)
+          width: 236px
+
+        &:nth-child(3)
+          width: 86px
+
+        &:nth-child(4), &:nth-child(5)
+          width: 128px
+
+  .entity-container
+    width: 400px
+
+    .segment
+      margin-bottom: 22px
+
+      > div:first-of-type
+        background: $background-anti-overlay-mask
+        position: -webkit-sticky /* Safari */
+        position: sticky
+        top: 0
+
+    .sub-segment
+      margin: 16px 0
+      padding-left: 12px
+      border-left: 4px solid rgba(0,0,0,0.05)
+
+      > div
+        margin: 8px 0
+
+      .sub-segment-group
+        display: block
+
+.modal-experiments
+  &.modal-json-edit
+    width: 540px
+
+  #json-edit-view
+    height: 72vh

@@ -24,6 +24,7 @@ export default class RequestList extends Component {
     filters: {
       duty: 'checker',
       type: 'requested',
+      exclude: 'razorx',
     },
   });
 
@@ -107,6 +108,7 @@ export default class RequestList extends Component {
                   }))}
                 />
               )}
+            <input name="exclude" value="razorx" class="hide" readOnly />
             <button class="pull-right">Search</button>
           </Form>
         </div>
@@ -136,3 +138,45 @@ const fields = [
 ];
 
 const href = item => '/requests/' + item.id;
+
+/* entities in this will have redirection to 'merchants/{id}', otherwise to '/entity/{entity_name/{id}' */
+const entityMap = {
+  merchant: {
+    url: 'merchants',
+  },
+  merchant_detail: {
+    url: 'merchants',
+  },
+  credits: {
+    url: 'merchants',
+  },
+  methods: {
+    url: 'merchants',
+  },
+  adjustment: {
+    url: 'merchants',
+  },
+  schedule_task: {
+    url: 'merchants',
+  },
+  feature: {
+    url: 'merchants',
+  },
+};
+
+export function getEntityIdNugget(entityId, entityName) {
+  const mapping = entityMap[entityName];
+  let url;
+
+  if (mapping) {
+    url = mapping.url;
+  } else {
+    url = `entity/${entityName}`;
+  }
+
+  return (
+    <a class="link" href={`/admin/${url}/${entityId}`} target="_blank">
+      {entityId}
+    </a>
+  );
+}

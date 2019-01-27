@@ -1,0 +1,142 @@
+import React, { Component } from 'react';
+import Form from 'ui/Form';
+import { PageTable } from 'ui/Table';
+import Field, { SelectField, SearchableSelectField } from 'ui/Field';
+import Collection from 'model/collection';
+import { adminFetch } from 'common/fetch';
+import { observer } from 'mobx-react';
+import { formatDate } from 'common/util';
+import { isSuperAdmin } from 'admin/user';
+
+@observer
+export default class WorkflowRequestsList extends Component {
+  state = {
+    selectedType: 'checker-requested',
+    admins: null,
+  };
+
+  collection = new Collection({
+    fetchFn: adminFetch,
+    data: {
+      url: 'live/w-actions',
+    },
+    filters: {
+      duty: 'checker',
+      type: 'requested',
+      include: 'razorx',
+    },
+  });
+
+  onSubmit = filters => {
+    let selectedType = this.state.selectedType;
+
+    selectedType = selectedType.split('-');
+    filters = { ...filters, duty: selectedType[0], type: selectedType[1] };
+
+    this.collection.applyFilters(filters);
+  };
+
+  selectType = e => {
+    let value = e.target.value;
+
+    this.setState({ selectedType: value });
+  };
+
+  render() {
+    const { selectedType, admins } = this.state;
+
+    return (
+      <div class="parent-container workflow_requests-container">
+        <div class="header">
+          <span class="title">Workflow Requests</span>
+        </div>
+        <div class="container-group">
+          <div class="list-container">
+            <Form onSubmit={this.onSubmit} class="filters">
+              <Field
+                label="Search Entity Id"
+                onChange={this.selectId}
+                name="entity_id"
+              />
+              <SelectField
+                label="Request Type"
+                value={selectedType}
+                onChange={this.selectType}
+              >
+                <option value="maker-created">Made by You</option>
+                <option value="checker-requested">
+                  Awaiting your Approval
+                </option>
+                <option value="maker-closed">Closed by You</option>
+                <option value="checker-created">Checked by You</option>
+                {isSuperAdmin() && (
+                  <option value="super-open">View all Open Actions</option>
+                )}
+                {isSuperAdmin() && (
+                  <option value="super-all">View all Actions</option>
+                )}
+              </SelectField>
+
+              {admins &&
+                selectedType !== 'maker-created' && (
+                  <SearchableSelectField
+                    label="Maker Id"
+                    name="maker_id"
+                    placeholder="Search"
+                    options={admins.map(admin => ({
+                      name: admin.name,
+                      value: admin.id.replace('admin_', ''),
+                    }))}
+                  />
+                )}
+
+              <input name="include" value="razorx" class="hide" readOnly />
+
+              <button class="btn btn--primary field">Search</button>
+            </Form>
+
+            <div>
+              <PageTable
+                model={this.collection}
+                fields={fields}
+                href={href}
+                info={false}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
+
+// Resources
+const fields = [
+  ['Action', item => item.permission_description],
+  ['Title', item => item.title],
+  [
+    'Created By',
+    item =>
+      item.maker
+        ? item.maker.name +
+          (item.maker_type ? ' (' + item.maker_type + ')' : '')
+        : '--',
+  ],
+  ['Created At', item => formatDate(item.created_at)],
+  [
+    'State',
+    item => <span class={`pill ${item.state}-state`}>{item.state}</span>,
+  ],
+];
+
+const href = item => '/requests/' + item.id;
+
+export function getEntityIdNugget(entityId, entityName) {
+  const url = `${entityName}/${entityId}`;
+
+  return (
+    <a class="link" href={`/razorx/${url}`} target="_blank">
+      {entityId}
+    </a>
+  );
+}

@@ -1,0 +1,48 @@
+.RazorX-container.RazorX-container .parent-container.features-container
+  .list-container
+    .table
+      .tr .td
+        &:nth-child(1)
+          max-width: 236px
+
+        &:nth-child(2)
+          max-width: 180px
+          overflow: hidden
+          white-space: nowrap
+          text-overflow: ellipsis
+
+        &:nth-child(3)
+          width: 110px
+
+        &:nth-child(4)
+          width: 86px
+
+        &:nth-child(5)
+          width: 128px
+      .td
+        position: relative
+
+        .is-active::before
+          content: ''
+          position: absolute
+          top: 0
+          bottom:0
+          left: 0
+          border-left: 3px solid #84e64c
+
+  .entity-container
+    width: 448px
+
+    .title
+      position: -webkit-sticky /* Safari */
+      position: sticky
+      top: 0
+      background: $background-anti-overlay-mask
+
+.modal-features
+  &.modal-json-edit
+    width: 520px
+
+  #json-edit-view
+    height: 48vh
+

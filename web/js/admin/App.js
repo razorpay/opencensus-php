@@ -8,9 +8,7 @@ import {
   Link,
   withRouter,
 } from 'react-router-dom';
-import { matchFullPageView } from './routes/helper';
-
-import MainContent, { Sidebar as MainSidebar } from './routes';
+import Content, { Sidebar } from 'admin/Content';
 
 import ModalContainer, { openSlider, closeSlider } from 'common/modal';
 import ErrorBoundary from 'common/ErrorBoundary';
@@ -19,6 +17,7 @@ import user, { org } from 'admin/user';
 
 import AsyncButton from 'ui/AsyncButton';
 
+import { classList } from 'common/util';
 import fetch, { adminFetch } from 'common/fetch';
 
 @withRouter
@@ -57,30 +56,12 @@ export default class App extends Component {
     });
   };
 
-  getFPView() {
-    const matchView = matchFullPageView(this.props.location.pathname);
-
-    if (matchView && matchView.match) {
-      return {
-        component: matchView.component,
-        props: matchView.match.params,
-        sidebar: matchView.sidebar,
-      };
-    }
-  }
-
   render() {
-    const FPView = this.getFPView();
-
     return (
-      <div id="app-container">
+      <div class="app-container">
         <main>
           <ErrorBoundary resetOnProps location={this.props.location}>
-            {FPView ? (
-              <FPView.component {...FPView.props} />
-            ) : (
-              <MainContent {...this.props} />
-            )}
+            <Content {...this.props} />
           </ErrorBoundary>
         </main>
         <header>
@@ -104,15 +85,7 @@ export default class App extends Component {
             </div>
           </div>
         </header>
-        {do {
-          if (FPView) {
-            if (FPView.sidebar) {
-              <FPView.sidebar />;
-            }
-          } else {
-            <MainSidebar />;
-          }
-        }}
+        <Sidebar />;
         <ModalContainer />
       </div>
     );
