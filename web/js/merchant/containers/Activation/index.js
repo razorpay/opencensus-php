@@ -130,7 +130,9 @@ export default class ActivationContainer extends Component {
       isModal = !!this.props.onClose,
       { isL1Submitted, isBlacklistFlow } = user.instantActivation,
       showL1Modal =
-        user.showInstantActivation && (!isL1Submitted || isBlacklistFlow);
+        !this.props.accountId &&
+        user.showInstantActivation &&
+        (!isL1Submitted || isBlacklistFlow);
 
     let content = null,
       modalClasses = ['animate-down'];

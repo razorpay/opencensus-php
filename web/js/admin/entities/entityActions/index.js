@@ -5,3 +5,4 @@ export PaymentActions from './payment';
 export DisputeActions from './dispute';
 export RefundActions from './refund';
 export CreditActions from './credit';
+export CouponActions from './coupons.js';

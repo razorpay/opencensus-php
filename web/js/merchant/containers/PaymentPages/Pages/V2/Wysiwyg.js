@@ -87,7 +87,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   }
 
   changeFETheme(theme) {
-    const parentEl = document.getElementById('payment-pages-v2');
+    const parentEl = document.getElementById('paymentpage-container');
 
     if (theme === 'dark') {
       parentEl.classList.add('dark');
@@ -140,7 +140,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     document.head.appendChild(script);
 
-    document.getElementById('payment-pages-v2').classList.add('theme-desktop');
+    document
+      .getElementById('paymentpage-container')
+      .classList.add('theme-desktop');
 
     if (!this.props.id) {
       this.changeFETheme('light');
@@ -446,7 +448,11 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     }
 
     return (
-      <div id="payment-pages-v2" style={{ backgroundColor: themeColor }}>
+      <div
+        id="paymentpage-container"
+        class="payment-pages-v2"
+        style={{ backgroundColor: themeColor }}
+      >
         {this.state.isIntroOpened && (
           <IntroMask onClose={this.handleIntroClose} />
         )}
