@@ -21,3 +21,73 @@ form
 
     .Input-el.Input-el
       width: 98%
+
+.RazorX-container.RazorX-container
+  @import '../ui/admin/requests'
+
+  .requests-container
+    background: #fcfcfc
+    color: inherit
+
+    .box-container
+      height: calc(100vh - 62px)
+      display: flex
+      flex-wrap: wrap
+      align-content: flex-start
+
+   main.requests-content
+      height: 100%
+      width: unset
+      vertical-align: unset
+      display: flex
+      flex-direction: column
+      margin: 20px 28px
+      flex: 1
+      align-self: stretch
+      overflow-y: auto
+
+      .box
+        margin: 0 0 32px 0
+
+    aside.requests-actions
+      display: block
+      width: 240px
+      padding: 0 28px
+
+      .btn
+        box-shadow: 0 0 12px rgba(0,0,0,0.08)
+        margin: 12px 0
+        transition: 0.08s linear
+
+        i
+          margin-top: -4px
+
+        &:hover
+          background: #f8f8f8
+          box-shadow: 0 0 12px rgba(0,0,0,0.08)
+          border: 1px solid rgba(0,0,0,0.1)
+          transform: scale(1.03);
+
+      .header
+        display: inline-block
+        margin: 16px 0 -1px
+
+  .heading
+    padding: 12px
+    margin-bottom: -1px
+    background: rgba(0,0,0,0.03)
+    border: none
+    border-bottom: 1px solid rgba(0,0,0,0.02)
+
+  header.heading
+    padding: 0 36px
+    height: 62px
+    align-items: center
+    display: flex
+    position: relative
+    z-index: 2
+    font-weight: 500
+    color: rgba(70,59,61,0.24)
+    font-size: 22px
+    background: transparent
+    border: none
