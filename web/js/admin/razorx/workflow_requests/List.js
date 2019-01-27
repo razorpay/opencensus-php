@@ -23,6 +23,7 @@ export default class WorkflowRequestsList extends Component {
     filters: {
       duty: 'checker',
       type: 'requested',
+      include: 'razorx',
     },
   });
 
@@ -47,7 +48,7 @@ export default class WorkflowRequestsList extends Component {
     return (
       <div class="parent-container workflow_requests-container">
         <div class="header">
-          <span class="title">Workflows List</span>
+          <span class="title">Workflow Requests</span>
         </div>
         <div class="container-group">
           <div class="list-container">
@@ -89,12 +90,7 @@ export default class WorkflowRequestsList extends Component {
                   />
                 )}
 
-              <input
-                name="workflow_id"
-                value="Fixed value for RazorX workflow requests"
-                class="hide"
-                readOnly
-              />
+              <input name="include" value="razorx" class="hide" readOnly />
 
               <button class="btn btn--primary field">Search</button>
             </Form>
