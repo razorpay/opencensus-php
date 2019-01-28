@@ -1363,6 +1363,15 @@ class Service extends Base\Service
             $to = 1544693490;
         }
 
+        if (isset($input['delay']) === true)
+        {
+            $delay = $input['delay'];
+        }
+        else
+        {
+            $delay = 3600;
+        }
+
         $start = microtime(true);
 
         $this->trace->info(
@@ -1371,10 +1380,20 @@ class Service extends Base\Service
                 'start_time' => $start,
                 'limit'      => $limit,
                 'from'       => $from,
-                'to'         => $to
+                'to'         => $to,
+                'delay'      => $delay,
             ]);
 
-        $successCount  = $this->repo->refund->backfillUpiMindgateReference1($limit, $from, $to);
+        $successCount  = 0;
+
+        $time = $to;
+
+        while ($time >= $from)
+        {
+            $successCount += $this->repo->refund->backfillUpiMindgateReference1($limit, ($time - $delay), $time);
+
+            $time -= $delay;
+        }
 
         $end = microtime(true);
 
