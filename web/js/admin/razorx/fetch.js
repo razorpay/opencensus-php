@@ -40,6 +40,12 @@ function _makeRequest(payload, type) {
     method: type,
   };
 
+  if (reqPayload.method.toLowerCase() !== 'get') {
+    reqPayload.headers = {
+      'Content-Type': 'application/json',
+    };
+  }
+
   let url;
   if (typeof payload === 'string') {
     url = payload;
@@ -67,7 +73,7 @@ function _makeRequest(payload, type) {
 
   return fetch(reqPayload)
     .then(resp => {
-      if (resp.status_code / 100 !== 2) {
+      if (Math.floor(resp.status_code / 100) !== 2) {
         throw { errors: [resp.response.error] };
       }
 

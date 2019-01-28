@@ -1,3 +1,4 @@
+import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react';
 import debounce from 'rzp/utils/debounce';
 import {
@@ -24,6 +25,7 @@ import SegmentsList from './SegmentsList';
 const COUNT = 10;
 const MIN_NAME_TYPE = 2;
 
+@withRouter
 @observer
 export default class extends React.Component {
   state = { featuresList: [] };
@@ -72,8 +74,6 @@ export default class extends React.Component {
     const isEdit = this.props.data && this.props.data.id;
     const { description, environment, mode } = form;
 
-    console.log('....FORM...', form);
-
     if (!description) {
       return notifyError('Description is required');
     }
@@ -82,7 +82,7 @@ export default class extends React.Component {
       return notifyError('Select a Feature');
     }
 
-    const segments = [...this.state.segments];
+    const segments = this.state.segments.map(s => ({ ...s }));
 
     let msg = '';
     for (let i = 0; i < segments.length; i++) {
@@ -130,7 +130,7 @@ export default class extends React.Component {
       description,
       environment,
       mode,
-      feature_id: this.state.selectedFeature.id,
+      feature_id: Number(this.state.selectedFeature.id),
       segments,
     };
 
@@ -144,10 +144,11 @@ export default class extends React.Component {
       successMsg = `Experiment ${this.props.data.id} is successfully updated`;
     }
 
-    requestFn({ url, data: reqPayload }).then(data => {
-      if (data && data.success) {
+    requestFn({ url, data: reqPayload }).then(resp => {
+      if (resp) {
+        closeModal();
         notifySuccess(successMsg);
-        this.props.history.push('/experiments/' + data.id);
+        this.props.history.push('/experiments/' + resp.id);
       }
     });
   };

@@ -90,8 +90,8 @@ class Segment extends React.Component {
   onChangeVariant = e => {
     this.setState(
       {
-        value: {
-          ...this.state.value,
+        segment: {
+          ...this.state.segment,
           variant: e.target.value,
         },
       },
@@ -142,7 +142,7 @@ class Segment extends React.Component {
       {
         segment: {
           ...this.state.segment,
-          weight: e.target.value,
+          weight: Number(e.target.value),
         },
       },
       () => {
@@ -189,6 +189,7 @@ class Segment extends React.Component {
         </span>
 
         <SelectField
+          label={'Segment ' + (this.props.index + 1)}
           placeholder="Feature Variant"
           onChange={this.onChangeVariant}
           value={segment.variant}
