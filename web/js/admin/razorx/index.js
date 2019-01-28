@@ -37,6 +37,8 @@ export default class RazorXApp extends React.Component {
   };
 
   render() {
+    const paths = this.props.location.pathname.split('/');
+
     return (
       <div class="app-container RazorX-container">
         <Logo />
@@ -44,7 +46,7 @@ export default class RazorXApp extends React.Component {
           <ErrorBoundary resetOnProps location={this.props.location}>
             <TransitionGroup id="main-routes">
               <CSSTransition
-                key={this.props.location.pathname}
+                key={paths[1] || paths[0]}
                 classNames="slide"
                 timeout={420}
               >

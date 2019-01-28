@@ -46,17 +46,20 @@ export default class extends React.Component {
       });
   }
 
-  activate = (id, mode) => {
-    return adminPatch(`${mode}/experiments/${id}/activate`).then(data => {
-      if (data.success) {
-        notifySuccess('Experiment is successfully Activated');
+  activate = id => {
+    return rexPatch(`experiments/${id}/activate`).then(resp => {
+      if (resp) {
+        const successMsg = resp.workflow_id
+          ? `Workflow ${resp.workflow_id} is created`
+          : 'Experiment is successfully Activated';
+        notifySuccess(successMsg);
       }
     });
   };
 
-  terminate = (id, mode) => {
-    return adminPatch(`${mode}/experiments/${id}/terminate`).then(data => {
-      if (data.success) {
+  terminate = id => {
+    return rexPatch(`experiments/${id}/terminate`).then(resp => {
+      if (resp) {
         notifySuccess('Experiment is successfully Terminated');
       }
     });
@@ -126,16 +129,18 @@ const Details = ({
         <span>
           <b>ID:</b> {data.id}
         </span>
-        <span class="to-right">
-          <a class="link text-bold" onClick={showExperimentModal}>
-            Edit Experiment
-          </a>{' '}
-          ({' '}
-          <a class="link text-bold" onClick={showJSONModal}>
-            RAW
-          </a>{' '}
-          )
-        </span>
+        {!data.activated_at && (
+          <span class="to-right">
+            <a class="link text-bold" onClick={showExperimentModal}>
+              Edit Experiment
+            </a>{' '}
+            ({' '}
+            <a class="link text-bold" onClick={showJSONModal}>
+              RAW
+            </a>{' '}
+            )
+          </span>
+        )}
       </div>
 
       <div class="pad-highlight">
@@ -164,6 +169,7 @@ const Details = ({
               <div class="text-danger" style={{ opacity: 0.8 }}>
                 <b>Terminated by</b> {titleCase(data.terminated_by)}
                 <span class="inline-block">
+                  {' '}
                   on {formatDate(data.terminated_at)}
                 </span>
               </div>
@@ -182,7 +188,7 @@ const Details = ({
                 class="link danger text-danger text-bold"
                 pendingClass="link danger-faded text-danger text-bold btn-pending"
                 confirm={`Do you want to Activate Experiment id "${data.id}"?`}
-                onClick={_ => activate(data.id, data.mode)}
+                onClick={_ => activate(data.id)}
               >
                 Activate Experiment
                 <span class="dot-loader">.</span>
@@ -221,22 +227,23 @@ const Details = ({
         <span class="square-pills label-semi-muted">{data.mode}</span>
       </div>
 
-      {!data.terminated_at && (
-        <React.Fragment>
-          <br />
-          <div>
-            <AsyncButton
-              class="link danger text-danger text-bold"
-              pendingClass="link danger-faded text-danger text-bold btn-pending"
-              confirm={`Do you want to terminate Experiment id "${data.id}"?`}
-              onClick={_ => terminate(data.id, data.mode)}
-            >
-              Terminate Experiment
-              <span class="dot-loader">.</span>
-            </AsyncButton>
-          </div>
-        </React.Fragment>
-      )}
+      {data.activated_at &&
+        !data.terminated_at && (
+          <React.Fragment>
+            <br />
+            <div>
+              <AsyncButton
+                class="link danger text-danger text-bold"
+                pendingClass="link danger-faded text-danger text-bold btn-pending"
+                confirm={`Do you want to terminate Experiment id "${data.id}"?`}
+                onClick={_ => terminate(data.id)}
+              >
+                Terminate Experiment
+                <span class="dot-loader">.</span>
+              </AsyncButton>
+            </div>
+          </React.Fragment>
+        )}
       <div class="separator" />
 
       <div>
@@ -253,6 +260,10 @@ const Details = ({
               {segment.map((s, j) => (
                 <div class="sub-segment" key={j}>
                   {Object.keys(s).map((g, ix) => {
+                    if (s[g] === null) {
+                      return;
+                    }
+
                     const isArray = s[g] instanceof Array;
 
                     return (

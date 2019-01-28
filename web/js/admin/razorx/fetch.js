@@ -73,15 +73,26 @@ function _makeRequest(payload, type) {
 
   return fetch(reqPayload)
     .then(resp => {
-      if (Math.floor(resp.status_code / 100) !== 2) {
+      if (!resp) {
+        return;
+      }
+
+      if (resp.status_code && Math.floor(resp.status_code / 100) !== 2) {
         throw { errors: [resp.response.error] };
       }
 
-      if (resp && resp.response) {
-        return resp.response;
+      // In some cases like Workflow creation, resp.response / resp.status_code doesn't exist => resp is success
+      if (resp) {
+        return resp.response || resp;
       }
     })
-    .catch(({ errors }) => {
-      notifyError(errors[0]);
+    .catch(err => {
+      let error = typeof err.errors !== 'undefined' ? err.errors : err;
+
+      if (error instanceof Array) {
+        error = errors[0];
+      }
+
+      notifyError(error);
     });
 }
