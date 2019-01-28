@@ -230,8 +230,8 @@ class Rule extends CollectionItem {
       if (data.amount_range !== 'custom') {
         let range = data.amount_range.split('-');
         data.amount_range_min = range[0];
-        // if the max not specified its 2cr
-        data.amount_range_max = range[1] || 1000000000;
+        // If the max not specified it should be mysql unsigned int max value.
+        data.amount_range_max = range[1] || 4294967295;
       }
     }
     delete data.amount_range;
