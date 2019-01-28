@@ -12,58 +12,12 @@ import Field, { DateField } from 'ui/Field';
 
 import { AppStore } from 'admin/user';
 
-const data = {
-  items: [
-    {
-      id: 182,
-      name: 'Reports-V3-migration',
-      description: 'Move reports to ES',
-      created_by: 'tom',
-      active_experiments: 4,
-      created_at: 1546434027,
-      updated_at: 1546434027,
-      deleted_at: 0,
-      variants: ['on', 'off'],
-    },
-    {
-      id: 184,
-      name: 'Ymmm-V8-migration',
-      description: 'Move reports to ES',
-      created_by: 'tom',
-      active_experiments: 0,
-      created_at: 1546434027,
-      updated_at: 1546434027,
-      deleted_at: 0,
-      variants: ['on', 'off'],
-    },
-    {
-      id: 181,
-      name: 'Blabla-V0-migration',
-      description: 'Move reports to ES',
-      created_by: 'tom',
-      active_experiments: 8,
-      created_at: 1546434027,
-      updated_at: 1546434027,
-      deleted_at: 0,
-      variants: ['on', 'off'],
-    },
-  ],
-};
-
-function fakeFetch() {
-  return new Promise((resolve, reject) => {
-    setTimeout(function() {
-      resolve(data);
-    }, 2000);
-  });
-}
-
 @observer
 export default class extends React.Component {
   collection = new Collection({
-    fetchFn: rexFetch, // fakeFetch,
+    fetchFn: rexFetch,
     data: {
-      url: 'featureFlags',
+      url: 'feature_flags',
     },
     filters: this.props.params,
   });

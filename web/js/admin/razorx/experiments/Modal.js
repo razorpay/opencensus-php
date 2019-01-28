@@ -47,7 +47,7 @@ export default class extends React.Component {
     this.setState({ variantsList: [] }); // Refresh variants list for new Feature list search
 
     return rexFetch({
-      url: 'featureFlags',
+      url: 'feature_flags',
       params: { ...params, count: COUNT },
     }).then(data => {
       data = {

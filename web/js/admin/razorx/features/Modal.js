@@ -32,7 +32,7 @@ export default class extends React.Component {
     }
 
     let requestFn = rexPost,
-      url = 'featureFlags',
+      url = 'feature_flags',
       successMsg = 'Feature is successfully created';
 
     if (isEdit) {

@@ -5,44 +5,6 @@ import { rexFetch, rexPatch } from 'admin/razorx/fetch';
 import AsyncButton from 'ui/AsyncButton';
 import ExperimentsModal from './Modal';
 
-const dummy_data = {
-  id: 201,
-  description: 'Random description for this experiment',
-  environment: 'production',
-  mode: 'test',
-  feature_name: 'Some Random name',
-  feature_id: 182,
-  segments: [
-    {
-      variant: 'on',
-      type: 'whitelist',
-      ids: ['merchant1', 'merchant2'],
-      weight: 0,
-    },
-    {
-      variant: 'on',
-      type: 'context-ramp',
-      ids: ['merchant3', 'merchant5'],
-      weight: 5,
-    },
-    {
-      variant: 'off',
-      type: 'ramp',
-      ids: ['random'],
-      weight: 8,
-    },
-  ],
-  created_by: 'a@a.com',
-  updated_by: '',
-  activated_by: 'Quala',
-  terminated_by: 'Quala',
-  status: 'terminated',
-  created_at: 1546434038,
-  updated_at: 1546434038,
-  activated_at: 1546434062,
-  deleted_at: 0,
-};
-
 export default class extends React.Component {
   state = {};
   componentDidMount() {
@@ -71,9 +33,9 @@ export default class extends React.Component {
           isFetching: false,
         });
 
-        if (resp.data) {
+        if (resp) {
           this.setState({
-            data: resp.data,
+            data: resp,
           });
         }
       })

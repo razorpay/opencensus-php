@@ -47,13 +47,17 @@ function _makeRequest(payload, type) {
     url = payload.url;
   }
 
-  const queryParams = payload.params || {};
-  if (!queryParams.mode && type.toLowerCase() === 'get') {
-    queryParams.mode = mode; // To be attached in query params only when it's GET request, or sent explicitly otherwise
+  const razorxQueryParams = payload.params || {};
+  if (!razorxQueryParams.mode && type.toLowerCase() === 'get') {
+    razorxQueryParams.mode = mode; // To be attached in query params only when it's GET request, or sent explicitly otherwise
   }
 
   // Construct url
-  url = BASE_URL + stringifyQueryParams({ service_path: url, ...queryParams });
+  url =
+    BASE_URL +
+    '?service_path=' +
+    url +
+    window.encodeURIComponent(stringifyQueryParams(razorxQueryParams));
   reqPayload.url = url;
 
   if (payload.data) {
@@ -62,8 +66,8 @@ function _makeRequest(payload, type) {
 
   return fetch(reqPayload)
     .then(resp => {
-      if (resp && resp.success) {
-        return resp.data;
+      if (resp && resp.response) {
+        return resp.response;
       }
     })
     .catch(({ errors }) => {

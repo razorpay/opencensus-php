@@ -26,15 +26,15 @@ export default class extends React.Component {
       data: null,
     });
 
-    rexFetch({ url: 'featureFlags/' + id })
+    rexFetch({ url: 'feature_flags/' + id })
       .then(resp => {
         this.setState({
           isFetching: false,
         });
 
-        if (resp.data) {
+        if (resp) {
           this.setState({
-            data: resp.data,
+            data: resp,
           });
         }
       })

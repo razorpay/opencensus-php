@@ -56,7 +56,10 @@ export default class Experiments extends React.Component {
         <div class="container-group">
           <List
             mode={AppStore.mode}
-            queryParams={{ feature_id: queryParams.feature_id }}
+            queryParams={{
+              feature_id: queryParams.feature_id,
+              status: queryParams.status,
+            }}
           />
           <Entity id={this.props.match.params.id} />
         </div>
