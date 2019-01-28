@@ -9,6 +9,7 @@ import Form from 'ui/Form';
 import Field, { DateField, SelectField } from 'ui/Field';
 
 import { statusPill } from 'admin/razorx/data';
+import { AppStore } from 'admin/razorx/store';
 
 @observer
 export default class extends React.Component {
@@ -72,8 +73,11 @@ export default class extends React.Component {
 
           <SelectField name="environment" label="Environment">
             <option value="">All</option>
-            <option value="production">Production</option>
-            <option value="beta">Beta</option>
+            {AppStore.environmentList.map((e, i) => (
+              <option key={i} value={e}>
+                {e}
+              </option>
+            ))}
           </SelectField>
 
           <DateField

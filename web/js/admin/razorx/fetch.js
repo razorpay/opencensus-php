@@ -1,5 +1,5 @@
 import fetch from 'common/fetch';
-import { AppStore } from 'admin/user';
+import { AppStore } from 'admin/razorx/store';
 import { stringifyQueryParams } from 'rzp/utils/rzp-utils';
 import { notifyError } from 'common/modal';
 

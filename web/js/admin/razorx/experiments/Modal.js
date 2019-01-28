@@ -18,7 +18,7 @@ import { ModalContent } from 'component/Modal';
 import JSONEdit from 'admin/razorx/JSONEdit';
 
 import { rexFetch, rexPost, rexPatch } from 'admin/razorx/fetch';
-import { AppStore } from 'admin/user';
+import { AppStore } from 'admin/razorx/store';
 import validatorJSON, { initJSONObj } from './validators';
 import SegmentsList from './SegmentsList';
 
@@ -244,8 +244,11 @@ export default class extends React.Component {
                 defaultValue={isEdit ? data.environment : 'production'}
                 required
               >
-                <option value="production">Production</option>
-                <option value="beta">Beta</option>
+                {AppStore.environmentList.map((e, i) => (
+                  <option key={i} value={e}>
+                    {e}
+                  </option>
+                ))}
               </SelectField>
 
               <TextAreaField

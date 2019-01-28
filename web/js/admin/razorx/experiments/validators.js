@@ -1,6 +1,8 @@
+import { AppStore } from 'admin/razorx/store';
+
 export const initJSONObj = {
   description: '',
-  environment: 'beta',
+  environment: AppStore.environmentList[0] || 'beta',
   mode: 'test',
   feature_id: 0,
   segments: [
@@ -20,8 +22,10 @@ const required = {
     }
   },
   environment: function(val) {
-    if (!val || ['production', 'beta'].indexOf(val) === -1) {
-      return 'environment must be one of [production, beta]';
+    if (!val || AppStore.environmentList.indexOf(val) === -1) {
+      return (
+        'environment must be one of ' + JSON.stringify(AppStore.environmentList)
+      );
     }
   },
   mode: function(val) {

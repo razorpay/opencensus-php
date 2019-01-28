@@ -4,7 +4,7 @@ import Field, { SelectField } from 'ui/Field';
 import { SwitchField } from 'ui/Field';
 
 import { rexFetch } from 'admin/razorx/fetch';
-import { AppStore } from 'admin/user';
+import { AppStore } from 'admin/razorx/store';
 
 export default class MerchantEvaluation extends React.Component {
   state = { evaluationResult: null };
@@ -80,8 +80,11 @@ export default class MerchantEvaluation extends React.Component {
               <Field name="feature_flag" label="Feature Name" />
 
               <SelectField name="environment" label="Environment">
-                <option value="production">Production</option>
-                <option value="beta">Beta</option>
+                {AppStore.environmentList.map((e, i) => (
+                  <option key={i} value={e}>
+                    {e}
+                  </option>
+                ))}
               </SelectField>
               <button class="btn btn--primary field">Search</button>
             </Form>

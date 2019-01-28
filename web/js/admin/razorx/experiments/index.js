@@ -7,7 +7,7 @@ import { SwitchField } from 'ui/Field';
 import List from './List';
 import Entity from './Entity';
 
-import { AppStore } from 'admin/user';
+import { AppStore } from 'admin/razorx/store';
 
 @withRouter
 @observer

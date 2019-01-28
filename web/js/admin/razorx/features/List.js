@@ -10,7 +10,7 @@ import { statusPill } from 'admin/razorx/data';
 import Form from 'ui/Form';
 import Field, { DateField } from 'ui/Field';
 
-import { AppStore } from 'admin/user';
+import { AppStore } from 'admin/razorx/store';
 
 @observer
 export default class extends React.Component {
