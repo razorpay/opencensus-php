@@ -4685,3 +4685,6 @@ ALTER VIEW qubole_terminals_view AS
 
 ALTER TABLE promotions
     MODIFY COLUMN credit_amount int(11) NOT NULL DEFAULT 0;
+
+ALTER TABLE orgs
+    ADD COLUMN type varchar(255) DEFAULT NULL AFTER email;
