@@ -424,7 +424,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 'otp_auth_default', 'redirect_s2s_authorize']);
+        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 'otp_auth_default']);
         $this->mockTokenEx();
         $this->mockOtpElf();
 

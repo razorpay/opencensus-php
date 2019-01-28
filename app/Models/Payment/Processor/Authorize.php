@@ -4986,8 +4986,7 @@ trait Authorize
     {
         $merchant = $payment->merchant;
 
-        if (($this->app['basicauth']->isPrivateAuth() === false) or
-            ($merchant->isFeatureEnabled(Feature\Constants::REDIRECT_S2S_AUTHORIZE) === false))
+        if ($this->app['basicauth']->isPrivateAuth() === false)
         {
             return null;
         }
