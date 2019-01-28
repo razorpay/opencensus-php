@@ -386,10 +386,11 @@ class Notify
                 'billing_label' => $this->merchant->getBillingLabel(),
                 'website'       => $this->merchant->getWebsite(),
                 // This is the reporting email address for the merchant
-                'email'         => $this->merchant->getTransactionReportEmail(),
-                'id'            => $this->merchant->getId(),
-                'brand_color'   => $this->merchant->getBrandColorOrDefault(),
-                'brand_logo'    => $this->merchant->getLogoUrl(),
+                'email'             => $this->merchant->getTransactionReportEmail(),
+                'id'                => $this->merchant->getId(),
+                'brand_color'       => $this->merchant->getBrandColorOrDefault(),
+                'contrast_color'    => $this->merchant->getContrastColorOfBrandColor(),
+                'brand_logo'        => $this->merchant->getLogoUrl(),
             ],
             'payment'   => [
                 'id'                   => $this->payment->getId(),
