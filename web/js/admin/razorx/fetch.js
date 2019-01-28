@@ -53,11 +53,12 @@ function _makeRequest(payload, type) {
   }
 
   // Construct url
-  url =
-    BASE_URL +
-    '?service_path=' +
-    url +
-    window.encodeURIComponent(stringifyQueryParams(razorxQueryParams));
+  url = BASE_URL + '?service_path=' + url;
+
+  if (razorxQueryParams && Object.keys(razorxQueryParams).length) {
+    url += window.encodeURIComponent(stringifyQueryParams(razorxQueryParams));
+  }
+
   reqPayload.url = url;
 
   if (payload.data) {

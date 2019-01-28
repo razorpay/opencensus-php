@@ -22,17 +22,17 @@ export default class EnumList extends React.PureComponent {
   removeOption = i => {
     const newOptions = this.state.options.concat();
     newOptions.splice(i, 1);
-    this.setState({ options: newOptions });
+    this.setState({ options: newOptions }, () => {
+      this.updateEnumList && this.updateEnumList(this.state.options);
+    });
   };
 
-  updateEnumList = this.props.onChange && debounce(::this.props.onChange, 100);
+  updateEnumList = this.props.onChange && debounce(::this.props.onChange, 60);
 
   updateOption = (i, val) => {
     const newOptions = this.state.options.concat();
     newOptions[i] = val;
-    this.setState({ options: newOptions });
-
-    setTimeout(() => {
+    this.setState({ options: newOptions }, () => {
       this.updateEnumList && this.updateEnumList(this.state.options);
     });
   };

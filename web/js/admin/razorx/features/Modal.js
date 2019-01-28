@@ -17,7 +17,10 @@ export default class extends React.Component {
   state = { variants: this.props.data ? this.props.variants : [''] };
 
   onSubmit = form => {
-    if (!this.isValid()) {
+    const isInvalid = this.isInvalid();
+
+    if (!!isInvalid) {
+      notifyError(isInvalid);
       return;
     }
 
@@ -41,20 +44,29 @@ export default class extends React.Component {
       successMsg = `Feature ${this.props.data.id} is successfully updated`;
     }
 
-    requestFn({ url, data: reqPayload }).then(data => {
-      if (data && data.success) {
+    requestFn({ url, data: reqPayload }).then(resp => {
+      if (resp) {
         notifySuccess(successMsg);
+        closeModal();
       }
     });
   };
 
-  isValid() {
+  isInvalid() {
     if (this.props.JSONView) {
       // Check if JSON is valid and all required params are there
-      return true;
+      return false;
     } else {
       if (!this.state.variants.length || !this.state.variants[0]) {
-        return false;
+        return 'Atleast 1 variant must be added';
+      }
+
+      const trimmedVariants = this.state.variants.filter(
+        (v, i) => this.state.variants.indexOf(v) === i
+      );
+
+      if (trimmedVariants.length !== this.state.variants.length) {
+        return 'Duplicate variants in the list';
       }
     }
   }
@@ -141,7 +153,7 @@ export default class extends React.Component {
             </React.Fragment>
           )}
           <div class="footer">
-            <button class="btn btn--primary" disabled={!this.isValid()}>
+            <button class="btn btn--primary">
               Create
               <span class="spin-btn" />
             </button>
