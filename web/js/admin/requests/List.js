@@ -108,7 +108,6 @@ export default class RequestList extends Component {
                   }))}
                 />
               )}
-            <input name="exclude" value="razorx" class="hide" readOnly />
             <button class="pull-right">Search</button>
           </Form>
         </div>

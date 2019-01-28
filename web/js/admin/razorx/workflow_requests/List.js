@@ -12,20 +12,30 @@ import { isSuperAdmin } from 'admin/user';
 export default class WorkflowRequestsList extends Component {
   state = {
     selectedType: 'checker-requested',
-    admins: null,
+    workflows: null,
   };
 
-  collection = new Collection({
-    fetchFn: adminFetch,
-    data: {
-      url: 'live/w-actions',
-    },
-    filters: {
-      duty: 'checker',
-      type: 'requested',
-      include: 'razorx',
-    },
-  });
+  componentWillMount() {
+    return adminFetch('live/workflows').then(data => {
+      const workflows = data.items.filter(i => i.name.indexOf('razorx_') > -1);
+
+      this.defaultWorkflowId = workflows[0].id.replace('workflow_', '');
+
+      this.collection = new Collection({
+        fetchFn: adminFetch,
+        data: {
+          url: 'live/w-actions',
+        },
+        filters: {
+          duty: 'checker',
+          type: 'requested',
+          workflow_id: this.defaultWorkflowId,
+        },
+      });
+
+      this.setState({ workflows });
+    });
+  }
 
   onSubmit = filters => {
     let selectedType = this.state.selectedType;
@@ -43,7 +53,7 @@ export default class WorkflowRequestsList extends Component {
   };
 
   render() {
-    const { selectedType, admins } = this.state;
+    const { selectedType, workflows } = this.state;
 
     return (
       <div class="parent-container workflow_requests-container">
@@ -77,31 +87,36 @@ export default class WorkflowRequestsList extends Component {
                 )}
               </SelectField>
 
-              {admins &&
-                selectedType !== 'maker-created' && (
-                  <SearchableSelectField
-                    label="Maker Id"
-                    name="maker_id"
-                    placeholder="Search"
-                    options={admins.map(admin => ({
-                      name: admin.name,
-                      value: admin.id.replace('admin_', ''),
-                    }))}
-                  />
-                )}
-
-              <input name="include" value="razorx" class="hide" readOnly />
+              {workflows && (
+                <SearchableSelectField
+                  label="Workflow Type"
+                  name="workflow_id"
+                  placeholder="Search"
+                  trackBy="value"
+                  defaultValue={this.defaultWorkflowId}
+                  options={workflows.map(workflow => ({
+                    name: workflow.name,
+                    value: workflow.id.replace('workflow_', ''),
+                  }))}
+                  isSearchable={false}
+                  allowClear={false}
+                />
+              )}
 
               <button class="btn btn--primary field">Search</button>
             </Form>
 
             <div>
-              <PageTable
-                model={this.collection}
-                fields={fields}
-                href={href}
-                info={false}
-              />
+              {this.collection ? (
+                <PageTable
+                  model={this.collection}
+                  fields={fields}
+                  href={href}
+                  info={false}
+                />
+              ) : (
+                <div class="table-pending" />
+              )}
             </div>
           </div>
         </div>
