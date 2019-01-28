@@ -4682,3 +4682,6 @@ ALTER TABLE terminals
 
 ALTER VIEW qubole_terminals_view AS
     SELECT id, merchant_id, category, network_category, enabled, gateway, gateway_merchant_id, gateway_terminal_id, gateway_acquirer, card, netbanking, upi, emandate, aeps, emi, recurring, capability, international, type, created_at, updated_at, deleted_at FROM terminal;
+
+ALTER TABLE promotions
+    MODIFY COLUMN credit_amount int(11) NOT NULL DEFAULT 0;
