@@ -322,6 +322,7 @@ class Entity
         self::SUBSCRIPTION              => \RZP\Models\Plan\Subscription::class,
         self::PAYMENT_LINK              => \RZP\Models\PaymentLink::class,
         self::GATEWAY_TOKEN             => \RZP\Models\Customer\GatewayToken::class,
+        self::ENTITY_ORIGIN             => \RZP\Models\EntityOrigin::class,
         self::SCHEDULE_TASK             => \RZP\Models\Schedule\Task::class,
         self::DISPUTE_REASON            => \RZP\Models\Dispute\Reason::class,
         self::MERCHANT_DETAIL           => \RZP\Models\Merchant\Detail::class,
