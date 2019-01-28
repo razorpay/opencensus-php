@@ -25,10 +25,10 @@ export default class MerchantEvaluation extends React.Component {
     };
 
     return rexFetch(payload)
-      .then(data => {
+      .then(res => {
         this.setState({
           isFetching: false,
-          evaluationResult: data ? data.result : false,
+          evaluationResult: res ? res.value : false,
         });
       })
       .catch(({ errors = ['Some network error'] }) => {
