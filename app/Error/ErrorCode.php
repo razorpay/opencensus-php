@@ -1011,6 +1011,7 @@ class ErrorCode
     const BAD_REQUEST_INVALID_COUPON_CODE                                           = 'BAD_REQUEST_INVALID_COUPON_CODE';
     const BAD_REQUEST_PROMOTION_ALREADY_HAS_COUPON                                  = 'BAD_REQUEST_PROMOTION_ALREADY_HAS_COUPON';
     const BAD_REQUEST_MERCHANT_ID_NOT_REQUIRED                                      = 'BAD_REQUEST_MERCHANT_ID_NOT_REQUIRED';
+    const BAD_REQUEST_COUPON_ALREADY_EXISTS                                         = 'BAD_REQUEST_COUPON_ALREADY_EXISTS';
 
     const BAD_REQUEST_SNS_PUBLISH_FAILED                                            = 'BAD_REQUEST_SNS_PUBLISH_FAILED';
 

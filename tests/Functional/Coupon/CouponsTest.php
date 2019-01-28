@@ -5,11 +5,13 @@ namespace RZP\Tests\Functional\Coupon;
 use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Schedule\Period;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class CouponsTest extends TestCase
 {
     use RequestResponseFlowTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -341,6 +343,28 @@ class CouponsTest extends TestCase
         $response = $this->applyCouponOnMerchant($content);
 
         $this->checkValidResponse($response);
+    }
+
+    public function testCreateCouponAndApplyOnMerchantandVerifyPricingPlan()
+    {
+        $promotionAttributes = [
+            'pricing_plan_id' => 'BAJq6FJDNJ4ZqD',
+        ];
+
+        $this->createCoupon($promotionAttributes);
+
+        $content = [
+            'merchant_id' => '10000000000000',
+            'code'        => 'RANDOM-123',
+        ];
+
+        $response = $this->applyCouponOnMerchant($content);
+
+        $this->checkValidResponse($response);
+
+        $testMerchant = $this->getDbEntityById('merchant', '10000000000000', 'test');
+
+        $this->assertSame('BAJq6FJDNJ4ZqD', $testMerchant->getPricingPlanId());
     }
 
     public function testValidateCoupon()

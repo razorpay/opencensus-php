@@ -453,6 +453,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PROMOTION_CREATE_REQUEST                      = 'PROMOTION_CREATE_REQUEST';
     const PROMOTION_UPDATE_REQUEST                      = 'PROMOTION_UPDATE_REQUEST';
     const PROMOTION_ACTIVATION_FAILED                   = 'PROMOTION_ACTIVATION_FAILED';
+    const MERCHANT_PROMOTION_CREATED                    = 'MERCHANT_PROMOTION_CREATED';
+    const MERCHANT_PROMOTION_ACTIVATED                  = 'MERCHANT_PROMOTION_ACTIVATED';
+    const MERCHANT_PROMOTION_PRICING_CHANGED            = 'MERCHANT_PROMOTION_PRICING_CHANGED';
 
     const COUPON_CREATE_REQUEST                         = 'COUPON_CREATE_REQUEST';
     const COUPON_APPLY_REQUEST                          = 'COUPON_APPLY_REQUEST';

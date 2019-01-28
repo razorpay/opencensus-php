@@ -694,6 +694,52 @@ return [
         ],
     ],
 
+    'testPutPreSignupDetailsWithCouponCode' => [
+        'request' => [
+            'content' => [
+                'business_type' => '2',
+                'department'    => '7',
+                'coupon_code'   => 'RANDOM',
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'business_type'      => '2',
+                'transaction_volume' => null,
+                'department'         => '7',
+                'contact_mobile'     => null,
+                'role'               => null,
+            ],
+        ],
+    ],
+
+    'testPutPreSignupDetailsWithInvalidCouponCode' => [
+        'request'   => [
+            'content' => [
+                'business_type' => '2',
+                'department'    => '7',
+                'coupon_code'   => 'RANDOM',
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_COUPON_CODE,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_COUPON_CODE,
+        ],
+    ],
+
     'testBulkAssignReviewer' => [
         'request' => [
             'content' => [
