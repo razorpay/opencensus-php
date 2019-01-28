@@ -29,12 +29,10 @@ class FTS
 
     protected $auth;
 
-    const FundAccountBaseURL  = '/fund_account';
+    const FundAccountBaseURL  = '/accounts';
     const FundTransferBaseURL = '/fund_transfer';
 
     const URLS = [
-        'create'                => 'create',
-        'update'                => 'update',
         'register'              => 'register',
         'status'                => 'status',
         'request'               => 'request',
@@ -85,7 +83,7 @@ class FTS
     public function createFundAccount(array $input, bool $throwExceptionOnFailure = false): array
     {
         //TODO: How to handle update?
-        return $this->createAndSendRequest(self::FundAccountBaseURL . '/' . self::URLS['create'], 'POST', $input, $throwExceptionOnFailure);
+        return $this->createAndSendRequest(self::FundAccountBaseURL, 'POST', $input, $throwExceptionOnFailure);
     }
 
     /**

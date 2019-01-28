@@ -2,6 +2,8 @@
 
 namespace RZP\Jobs;
 
+use App;
+
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 
@@ -70,7 +72,10 @@ class FTSCreateAccount extends Job
 
             parent::handle();
 
-            $this->trace->info(TraceCode::FTS_CREATE_ACCOUNT, $this->type);
+            $this->trace->info(TraceCode::FTS_CREATE_ACCOUNT,
+                [
+                    "type"  => $this->type,
+                ]);
 
             switch ($this->type)
             {
@@ -96,7 +101,10 @@ class FTSCreateAccount extends Job
 
             $ftsAccountId = array_key_exists('ftsAccountId', $ftsResponse['body']) ? $ftsResponse['body']['ftsAccountId'] : null;
 
-            $this->saveFTSAccountId($ftsAccountId, $account);
+            if(!empty(trim($ftsAccountId)))
+            {
+                $this->saveFTSAccountId($ftsAccountId, $account);
+            }
 
             $this->trace->info(
                 TraceCode::FTS_ACCOUNT_CREATED_FOR_MERCHANT,
@@ -134,6 +142,8 @@ class FTSCreateAccount extends Job
 
         $data[self::TYPE]                       = $ba->getType();
 
+        $data[self::MERCHANT_ID]                = $ba->merchant->getId();
+
         $data[self::BENEFICIARY_PIN]            = $ba->getBeneficiaryPin();
 
         $data[self::BENEFICIARY_NAME]           = $ba->getBeneficiaryName();
@@ -160,9 +170,6 @@ class FTSCreateAccount extends Job
 
         $data[self::BENEFICIARY_ACCOUNT_NUMBER] = $ba->getAccountNumber();
 
-        //TODO: to fetch the merchantId
-        //$data[self::MERCHANT_ID]                = $this->merchantId;
-
         return $data;
     }
 
@@ -173,8 +180,7 @@ class FTSCreateAccount extends Job
 
         $data[self::USERNAME]     = $vpa->getUsername();
 
-        //TODO: to fetch the merchantId
-        //$data[self::MERCHANT_ID]  = $this->merchantId;
+        $data[self::MERCHANT_ID]  = $vpa->merchant->getId();
 
         return $data;
     }
