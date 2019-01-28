@@ -1246,6 +1246,10 @@ class OtpPaymentTest extends TestCase
 
             $iin = $this->getEntityById('iin', 556763, true);
 
+            $payment = $this->getLastEntity('payment', true);
+
+            $this->assertEquals('headless_otp', $payment['auth_type']);
+
             self::assertNotContains('headless_otp', $iin['flows']);
         }
     }
@@ -2007,6 +2011,10 @@ class OtpPaymentTest extends TestCase
         },
         GatewayRequestException::class,
         'Gateway request timed out');
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('headless_otp', $payment['auth_type']);
     }
 
     public function testMerchantCallbackUrl()
