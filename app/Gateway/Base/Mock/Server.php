@@ -103,6 +103,13 @@ class Server extends Base\Core
         $this->input = $input;
     }
 
+    protected function verifyRefund($input)
+    {
+        $this->action = Action::VERIFY_REFUND;
+
+        $this->input = $input;
+    }
+
     protected function validatePush($input)
     {
         $this->action = Action::VALIDATE_PUSH;

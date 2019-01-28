@@ -27,6 +27,12 @@ class ResponseFields
     const REFUND_REFERENCE_NO = 'refund_reference_no';
     const ERROR_MESSAGE       = 'message';
 
+    //Verify Refund
+    const REFUND_AMOUNT      = 'refund_amount';
+    const REFUND_DETAILS     = 'refund_details';
+    const REFUND_STATUS      = 'refund_status';
+    const TRANSACTION_AMOUNT = 'transaction_amount';
+
     //error
     const CODE = 'code';
 }
