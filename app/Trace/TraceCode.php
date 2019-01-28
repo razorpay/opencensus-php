@@ -1388,6 +1388,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BEAM_REQUEST                                  = 'BEAM_REQUEST';
     const BEAM_RESPONSE                                 = 'BEAM_RESPONSE';
     const BEAM_PUSH                                     = 'BEAM_PUSH';
+    const BEAM_PUSH_FAILED                              = 'BEAM_PUSH_FAILED';
 
     // Partners trace codes
     const PARTNER_REQUEST_SUBMITTED                     = 'PARTNER_REQUEST_SUBMITTED';
