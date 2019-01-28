@@ -586,6 +586,8 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('pre_signup', $input);
 
+        $this->trace->count(Merchant\Metric::PRE_EDIT_SIGNUP_TOTAL);
+
         $this->applyCoupon($input);
 
         $this->saveMerchantDetails($input);
@@ -641,6 +643,8 @@ class Service extends Base\Service
         ];
 
         (new Coupon\Core)->apply($merchant, $couponInput);
+
+        $this->trace->count(Merchant\Metric::SIGNUP_COUPON_TOTAL);
 
         unset($input[Entity::COUPON_CODE]);
     }

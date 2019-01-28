@@ -642,6 +642,7 @@ class PublicErrorDescription
     const BAD_REQUEST_COUPON_NOT_VALID_FOR_MERCHANT                             = 'Coupon code not valid for this merchant';
     const BAD_REQUEST_COUPON_NOT_APPLICABLE                                     = 'Coupon code is not applicable right now';
     const BAD_REQUEST_COUPON_EXPIRED                                            = 'Coupon code is expired';
+    const BAD_REQUEST_COUPON_ALREADY_EXISTS                                     = 'Coupon code already exists';
 
     const BAD_REQUEST_SNS_PUBLISH_FAILED                                        = 'Sns Publish failed';
 
