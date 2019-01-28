@@ -13,7 +13,7 @@ export const initJSONObj = {
   ],
 };
 
-export const validatorJSON = {
+const required = {
   description: function(val) {
     if (!val || typeof val !== 'string') {
       return 'description must be non-empty String';
@@ -77,4 +77,8 @@ export const validatorJSON = {
 
     return errorMsg;
   },
+};
+
+export default {
+  required,
 };

@@ -11,7 +11,7 @@ import { ModalContent } from 'component/Modal';
 import JSONEdit from 'admin/razorx/JSONEdit';
 import EnumList from 'component/Input/EnumList';
 import { rexPost, rexPatch } from 'admin/razorx/fetch';
-import { initJSONObj, validatorJSON } from './validators';
+import validatorJSON, { initJSONObj } from './validators';
 
 export default class extends React.Component {
   state = { variants: this.props.data ? this.props.variants : [''] };

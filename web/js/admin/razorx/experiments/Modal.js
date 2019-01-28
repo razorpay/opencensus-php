@@ -18,7 +18,7 @@ import JSONEdit from 'admin/razorx/JSONEdit';
 
 import { rexFetch, rexPost, rexPatch } from 'admin/razorx/fetch';
 import { AppStore } from 'admin/user';
-import { initJSONObj, validatorJSON } from './validators';
+import validatorJSON, { initJSONObj } from './validators';
 import SegmentsList from './SegmentsList';
 
 const COUNT = 10;

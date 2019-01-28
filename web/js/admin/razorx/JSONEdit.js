@@ -48,16 +48,17 @@ export default class extends React.PureComponent {
     // Do deep check only when blurred
     if (validator) {
       const JSON2Obj = JSON.parse(this.flask.getCode());
+      const allValidators = { ...validator.required, ...validator.notRequired };
 
-      for (let i = 0; i < Object.keys(validator).length; i++) {
-        const k = Object.keys(validator)[i],
+      for (let i = 0; i < Object.keys(allValidators).length; i++) {
+        const k = Object.keys(allValidators)[i],
           valInJSON = JSON2Obj[k];
         let errorMsg;
 
-        if (typeof valInJSON === 'undefined' && !!validator[k]) {
+        if (typeof valInJSON === 'undefined' && !!validator.required[k]) {
           errorMsg = k + ' is missing'; // => If validator is present but valueInJSON is undefined
         } else {
-          errorMsg = validator[k] && validator[k](valInJSON);
+          errorMsg = allValidators[k] && allValidators[k](valInJSON);
         }
 
         if (errorMsg) {

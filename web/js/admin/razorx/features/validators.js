@@ -5,7 +5,7 @@ export const initJSONObj = {
   variants: ['// Eg: Array of strings'],
 };
 
-export const validatorJSON = {
+const required = {
   name: function(val) {
     if (!val || typeof val !== 'string') {
       return 'name must be non-empty String';
@@ -14,22 +14,6 @@ export const validatorJSON = {
   description: function(val) {
     if (!val || typeof val !== 'string') {
       return 'description must be non-empty String';
-    }
-  },
-  notify: function(val) {
-    if (val) {
-      let errorMsg;
-      if (!(val instanceof Array)) {
-        errorMsg = 'notify must be an Array';
-      }
-      val.forEach(v => {
-        if (v.indexOf('@') > -1) {
-          errorMsg = '@ is not required in notify Array';
-          return false;
-        }
-      });
-
-      return errorMsg;
     }
   },
   variants: function(val) {
@@ -52,4 +36,28 @@ export const validatorJSON = {
 
     return errorMsg;
   },
+};
+
+const notRequired = {
+  notify: function(val) {
+    if (val) {
+      let errorMsg;
+      if (!(val instanceof Array)) {
+        errorMsg = 'notify must be an Array';
+      }
+      val.forEach(v => {
+        if (v.indexOf('@') > -1) {
+          errorMsg = '@ is not required in notify Array';
+          return false;
+        }
+      });
+
+      return errorMsg;
+    }
+  },
+};
+
+export default {
+  required,
+  notRequired,
 };

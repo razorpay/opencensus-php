@@ -67,6 +67,10 @@ function _makeRequest(payload, type) {
 
   return fetch(reqPayload)
     .then(resp => {
+      if (resp.status_code / 100 !== 2) {
+        throw { errors: [resp.response.error] };
+      }
+
       if (resp && resp.response) {
         return resp.response;
       }
