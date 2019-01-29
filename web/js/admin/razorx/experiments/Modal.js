@@ -17,7 +17,7 @@ import Field, {
 import { ModalContent } from 'component/Modal';
 import JSONEdit from 'admin/razorx/JSONEdit';
 
-import { rexFetch, rexPost, rexPatch } from 'admin/razorx/fetch';
+import { rexFetch, rexPost, rexPut } from 'admin/razorx/fetch';
 import { AppStore } from 'admin/razorx/store';
 import validatorJSON, { initJSONObj } from './validators';
 import SegmentsList from './SegmentsList';
@@ -156,7 +156,7 @@ export default class extends React.Component {
       successMsg = 'Experiment is successfully created';
 
     if (isEdit) {
-      requestFn = rexPatch;
+      requestFn = rexPut;
       url += `/${this.props.data.id}`;
       successMsg = `Experiment ${this.props.data.id} is successfully updated`;
     }

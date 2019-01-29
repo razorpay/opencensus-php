@@ -11,7 +11,7 @@ import Field, { TextAreaField } from 'ui/Field';
 import { ModalContent } from 'component/Modal';
 import JSONEdit from 'admin/razorx/JSONEdit';
 import EnumList from 'component/Input/EnumList';
-import { rexPost, rexPatch } from 'admin/razorx/fetch';
+import { rexPost, rexPut } from 'admin/razorx/fetch';
 import validatorJSON, { initJSONObj } from './validators';
 
 @withRouter
@@ -41,7 +41,7 @@ export default class extends React.Component {
       successMsg = 'Feature is successfully created';
 
     if (isEdit) {
-      requestFn = rexPatch;
+      requestFn = rexPut;
       url += `/${this.props.data.id}`;
       successMsg = `Feature ${this.props.data.id} is successfully updated`;
     }
