@@ -56,6 +56,7 @@ export default class extends React.Component {
     return (
       <div class="list-container">
         <Form onSubmit={this.applyFilters} class="filters">
+          <Field label="Name" name="name" />
           <Field label="Id" name="id" defaultValue={params.id || ''} />
           <Field label="Name" name="name" />
           <Field label="Created By" name="created_by" />

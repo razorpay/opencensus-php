@@ -52,10 +52,6 @@ export default class extends React.Component {
       url: 'feature_flags',
       params: { ...params, count: COUNT },
     }).then(data => {
-      data = {
-        items: data.items,
-        success: true,
-      };
       if (data && data.success) {
         const featuresList = data.items.map(f => ({
           name: f.name,
@@ -259,6 +255,7 @@ export default class extends React.Component {
               />
               <SearchableSelectField
                 selectedOptionLabelPath="name"
+                placeholder="Atleast 2 characters"
                 searchIndices={['id', 'name']}
                 label="Feature"
                 trackBy="id"
