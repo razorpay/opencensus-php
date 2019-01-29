@@ -106,6 +106,11 @@ class Entity extends PublicEntity
         return $this->getAttribute(self::DEFAULT_PLAN_ID);
     }
 
+    public function getImplicitPricingPlanId()
+    {
+        return $this->getAttribute(self::IMPLICIT_PLAN_ID);
+    }
+
     // --------------------- SETTERS ---------------------
     public function setEntityType($entityType)
     {
