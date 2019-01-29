@@ -89,9 +89,17 @@ trait HeadlessOtp
             $this->setHeadlessDummyCallbackUrl($request['content']);
         }
 
+        $card = [
+            'iin'     => $payment->card->getIin(),
+            'issuer'  => $payment->card->getIssuer(),
+            'network' => $payment->card->getNetwork(),
+            'type'    => $payment->card->getType()
+        ];
+
         $data = [
             'payment_id' => $payment->getId(),
             'request'    => $request,
+            'card'       => $card
         ];
 
         $response = $this->app['card.otpelf']->otpSend($data);
