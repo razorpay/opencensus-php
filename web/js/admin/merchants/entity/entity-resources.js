@@ -645,6 +645,8 @@ export function getDetailsViewMap(model) {
     {
       label: 'Methods',
       children: () => {
+        if (!details.methods) return;
+
         let methodRows = Object.keys(details.methods)
           .filter(method => {
             var value = details.methods[method];
