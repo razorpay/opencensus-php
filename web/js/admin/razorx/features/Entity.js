@@ -103,7 +103,7 @@ export default class extends React.Component {
   }
 
   showFeatureModal = _ => {
-    openModal(<FeaturesModal data={this.state.data} />);
+    openModal(<FeaturesModal data={this.state.data} onEdit={this.onEdit} />);
   };
 
   showJSONModal = _ => {
@@ -112,7 +112,15 @@ export default class extends React.Component {
       return;
     }
 
-    openModal(<FeaturesModal data={this.state.data} JSONView />);
+    openModal(
+      <FeaturesModal data={this.state.data} onEdit={this.onEdit} JSONView />
+    );
+  };
+
+  onEdit = data => {
+    this.setState({
+      data,
+    });
   };
 
   goToExperiment = (mode, url) => {

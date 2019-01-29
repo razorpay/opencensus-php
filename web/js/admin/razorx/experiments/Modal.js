@@ -165,7 +165,12 @@ export default class extends React.Component {
       if (resp) {
         closeModal();
         notifySuccess(successMsg);
-        this.props.history.push('/experiments/' + resp.id);
+
+        if (!isEdit) {
+          this.props.history.push('/experiments/' + resp.id);
+        } else {
+          this.props.onEdit(resp);
+        }
       }
     });
   };

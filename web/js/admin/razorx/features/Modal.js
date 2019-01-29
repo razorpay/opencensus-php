@@ -50,7 +50,12 @@ export default class extends React.Component {
       if (resp) {
         notifySuccess(successMsg);
         closeModal();
-        this.props.history.push('/features_flags/' + resp.id);
+
+        if (!isEdit) {
+          this.props.history.push('/features_flags/' + resp.id);
+        } else {
+          this.props.onEdit(resp);
+        }
       }
     });
   };

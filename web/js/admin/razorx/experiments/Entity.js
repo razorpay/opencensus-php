@@ -82,7 +82,11 @@ export default class extends React.Component {
 
   showExperimentModal = _ => {
     openModal(
-      <ExperimentsModal data={this.state.data} feature={this.state.feature} />
+      <ExperimentsModal
+        data={this.state.data}
+        feature={this.state.feature}
+        onEdit={this.onEdit}
+      />
     );
   };
 
@@ -92,7 +96,15 @@ export default class extends React.Component {
       return;
     }
 
-    openModal(<ExperimentsModal data={this.state.data} JSONView />);
+    openModal(
+      <ExperimentsModal data={this.state.data} onEdit={this.onEdit} JSONView />
+    );
+  };
+
+  onEdit = data => {
+    this.setState({
+      data,
+    });
   };
 
   render() {
