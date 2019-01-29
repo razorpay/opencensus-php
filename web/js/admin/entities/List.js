@@ -12,7 +12,7 @@ import { PageTable } from 'ui/Table';
 import Collection, { defaultFilters } from 'model/collection';
 import { statusPill } from 'common/data';
 
-import { stringifyQueryParams } from 'rzp/utils/rzp-utils';
+import { stringifyQueryParams, capitalize } from 'rzp/utils/rzp-utils';
 
 // fetch entity columns
 var sharedData;
@@ -289,25 +289,31 @@ export default class EntityList extends Component {
     return (
       <div class="list-container entities-list">
         <div class="box entity-container">
-          <header>Entities</header>
+          <header>
+            {sharedData.entitiesArray.length > 1
+              ? Entities
+              : capitalize(sharedData.entitiesArray[0])}
+          </header>
           <Form
             name="entity-search"
             id="entity-form"
             onSubmit={this.submit}
             class="filters"
           >
-            <SelectField
-              label="Entity"
-              id="selected-entity"
-              value={this.selectedEntity}
-              onChange={this.selectEntity}
-            >
-              {sharedData.entitiesArray.map(e => (
-                <option value={e} key={e}>
-                  {e}
-                </option>
-              ))}
-            </SelectField>
+            {sharedData.entitiesArray.length > 1 && (
+              <SelectField
+                label="Entity"
+                id="selected-entity"
+                value={this.selectedEntity}
+                onChange={this.selectEntity}
+              >
+                {sharedData.entitiesArray.map(e => (
+                  <option value={e} key={e}>
+                    {e}
+                  </option>
+                ))}
+              </SelectField>
+            )}
             <SelectMode
               name={null}
               onChange={this.onModeChange}
