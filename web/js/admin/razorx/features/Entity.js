@@ -1,9 +1,12 @@
-import { Link } from 'react-router-dom';
+import { withRouter, Link } from 'react-router-dom';
 import { openModal, notifyError } from 'common/modal';
 import { formatDate, titleCase } from 'common/util';
 import { rexFetch } from 'admin/razorx/fetch';
 import FeaturesModal from './Modal';
 
+import { AppStore } from 'admin/razorx/store';
+
+@withRouter
 export default class extends React.Component {
   state = {};
   componentDidMount() {
@@ -27,45 +30,73 @@ export default class extends React.Component {
     });
 
     const fetchFeature = rexFetch({ url: 'feature_flags/' + id });
-    const featureExperimentLive = rexFetch({
-      url: 'experiments',
-      params: {
-        count: 1,
-        skip: 0,
-        feature_id: id,
-        mode: 'live',
-      },
-    });
-    const featureExperimentTest = rexFetch({
-      url: 'experiments',
-      params: {
-        count: 1,
-        skip: 0,
-        feature_id: id,
-        mode: 'live',
-      },
-    });
 
-    Promise.all([fetchFeature, featureExperimentLive, featureExperimentTest])
-      .then(([feature, experimentLive, experimentTest]) => {
-        this.setState({
-          isFetching: false,
-        });
-
-        if (feature) {
+    Promise.all([fetchFeature, ...this.getExperimentsFetchArray(id)])
+      .then(
+        ([
+          feature,
+          expLiveTotal,
+          expTestTotal,
+          expLiveCreated,
+          expTestCreated,
+          expActivated,
+        ]) => {
           this.setState({
-            data: feature,
-            hasExperiment:
-              !!(experimentLive && experimentLive.items.length) ||
-              (!!experimentTest && experimentTest.items.length),
+            isFetching: false,
           });
+
+          if (feature) {
+            this.setState({
+              data: feature,
+              experiments: {
+                live: {
+                  total: expLiveTotal && expLiveTotal.items.length,
+                  created: expLiveCreated && expLiveCreated.items.length,
+                },
+                test: {
+                  total: expTestTotal && expTestTotal.items.length,
+                  created: expTestCreated && expTestCreated.items.length,
+                },
+                activated: expActivated.items[0],
+              },
+            });
+          }
         }
-      })
+      )
       .catch(({ errors }) => {
         this.setState({
           isFetching: false,
         });
       });
+  }
+
+  getExperimentsFetchArray(id) {
+    const experimentsParams = {
+      url: 'experiments',
+      params: {
+        count: 1,
+        skip: 0,
+        feature_id: id,
+        mode: 'live',
+      },
+    };
+
+    const liveTotal = rexFetch(experimentsParams);
+
+    experimentsParams.mode = 'test';
+    const testTotal = rexFetch(experimentsParams);
+
+    experimentsParams.status = 'created';
+    const testCreated = rexFetch(experimentsParams);
+
+    experimentsParams.mode = 'live';
+    const liveCreated = rexFetch(experimentsParams);
+
+    delete experimentsParams.mode;
+    experimentsParams.status = 'activated';
+    const activeExperiment = rexFetch(experimentsParams);
+
+    return [liveTotal, testTotal, liveCreated, testCreated, activeExperiment];
   }
 
   showFeatureModal = _ => {
@@ -81,8 +112,19 @@ export default class extends React.Component {
     openModal(<FeaturesModal data={this.state.data} JSONView />);
   };
 
+  goToExperiment = (mode, url) => {
+    return () => {
+      console.log('....', mode);
+      AppStore.updateMode(mode);
+
+      setTimeout(() => {
+        this.props.history.push(url);
+      });
+    };
+  };
+
   render() {
-    const { isFetching, data, hasExperiment } = this.state;
+    const { isFetching, data, experiments } = this.state;
     const { id } = this.props;
 
     let content;
@@ -108,7 +150,8 @@ export default class extends React.Component {
           terminate={this.terminate}
           showFeatureModal={this.showFeatureModal}
           showJSONModal={this.showJSONModal}
-          hasExperiment={hasExperiment}
+          experiments={experiments}
+          goToExperiment={this.goToExperiment}
         />
       );
     }
@@ -117,25 +160,32 @@ export default class extends React.Component {
   }
 }
 
-const Details = ({ data, showFeatureModal, showJSONModal, hasExperiment }) => {
+const Details = ({
+  data,
+  showFeatureModal,
+  showJSONModal,
+  experiments,
+  goToExperiment,
+}) => {
   return (
     <div class="entity-details">
       <div class="sub-description">
         <span>
           <b>ID:</b> {data.id}
         </span>
-        {!hasExperiment && (
-          <span class="to-right">
-            <a class="link text-bold" onClick={showFeatureModal}>
-              Edit Feature
-            </a>{' '}
-            ({' '}
-            <a class="link text-bold" onClick={showJSONModal}>
-              RAW
-            </a>{' '}
-            )
-          </span>
-        )}
+        {!experiments.live.total &&
+          !experiments.test.total && (
+            <span class="to-right">
+              <a class="link text-bold" onClick={showFeatureModal}>
+                Edit Feature
+              </a>{' '}
+              ({' '}
+              <a class="link text-bold" onClick={showJSONModal}>
+                RAW
+              </a>{' '}
+              )
+            </span>
+          )}
       </div>
 
       <div class="pad-highlight">
@@ -169,18 +219,27 @@ const Details = ({ data, showFeatureModal, showJSONModal, hasExperiment }) => {
       <br />
 
       <div>
-        <div class="label">Total Active Experiments</div>
-        {
+        {experiments.activated ? (
           <div>
-            {data.active_experiments}
-            <Link
-              class="link m-l"
-              to={`/experiments?feature_id=${data.id}&status=activated`}
-            >
-              View Active Experiments
-            </Link>
+            <div class="label">Active Experiment</div>
+
+            <div class="sub-description column">
+              <div>
+                <b>ID: </b> {experiments.activated.id}
+                <Link
+                  class="link m-l"
+                  to={`/experiments/${experiments.activated.id}?feature_id=${
+                    data.id
+                  }`}
+                >
+                  View
+                </Link>
+              </div>
+            </div>
           </div>
-        }
+        ) : (
+          <div class="label">No Active Experiment</div>
+        )}
       </div>
 
       <br />
@@ -189,10 +248,76 @@ const Details = ({ data, showFeatureModal, showJSONModal, hasExperiment }) => {
         <div class="label">Total Experiments</div>
         {
           <div>
-            {data.total_experiments}
-            <Link class="link m-l" to={`/experiments?feature_id=${data.id}`}>
-              View All Experiments
-            </Link>
+            <div class="sub-description column">
+              <div>
+                <b>LIVE: </b> {experiments.live.total}
+                {!!experiments.live.total && (
+                  <a
+                    class="link m-l"
+                    onClick={goToExperiment(
+                      'live',
+                      `/experiments?feature_id=${data.id}`
+                    )}
+                  >
+                    View
+                  </a>
+                )}
+              </div>
+              <div>
+                <b>TEST: </b> {experiments.test.total}
+                {!!experiments.test.total && (
+                  <a
+                    class="link m-l"
+                    onClick={goToExperiment(
+                      'test',
+                      `/experiments?feature_id=${data.id}`
+                    )}
+                  >
+                    View
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <br />
+
+      <div>
+        <div class="label">Total Pending Experiments</div>
+        {
+          <div>
+            <div class="sub-description column">
+              <div>
+                <b>LIVE: </b> {experiments.live.created}
+                {!!experiments.live.created && (
+                  <a
+                    class="link m-l"
+                    onClick={goToExperiment(
+                      'live',
+                      `/experiments?feature_id=${data.id}&status=created`
+                    )}
+                  >
+                    View
+                  </a>
+                )}
+              </div>
+              <div>
+                <b>TEST: </b> {experiments.test.created}
+                {!!experiments.test.created && (
+                  <a
+                    class="link m-l"
+                    onClick={goToExperiment(
+                      'test',
+                      `/experiments?feature_id=${data.id}&status=created`
+                    )}
+                  >
+                    View
+                  </a>
+                )}
+              </div>
+            </div>
           </div>
         }
       </div>

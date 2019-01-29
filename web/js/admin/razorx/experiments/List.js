@@ -24,8 +24,21 @@ export default class extends React.Component {
   componentDidUpdate(prevProps) {
     if (prevProps.mode !== this.props.mode) {
       this.collection.fetch(); // Automatically fetches as per current mode
-    } else if (prevProps.queryParams !== this.props.queryParams) {
-      this.collection.applyFilters(this.props.queryParams);
+    } else {
+      const lastQP = Object.keys(prevProps.queryParams);
+      const curQP = Object.keys(this.props.queryParams);
+
+      let isDiff = false;
+      for (let i = 0; i < lastQP.length; i++) {
+        if (lastQP[i] !== curQP[i]) {
+          isDiff = true;
+          break;
+        }
+      }
+
+      if (isDiff) {
+        this.collection.applyFilters(this.props.queryParams);
+      }
     }
   }
 
@@ -120,7 +133,7 @@ const experimentFields = [
     'Feature',
     item => (
       <object>
-        <Link to={`/features/${item.feature_id}`}>
+        <Link to={`/features_flags/${item.feature_id}`}>
           <span class="link">{item.feature_id}</span>
         </Link>
       </object>

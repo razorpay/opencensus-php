@@ -169,7 +169,7 @@ const Details = ({
           <div class="sub-description">
             <b>Created by</b> {titleCase(data.created_by)} on{' '}
             {formatDate(data.created_at)}
-            {data.activated_at && (
+            {!!data.activated_at && (
               <div>
                 <b>Activated by</b> {titleCase(data.activated_by)}{' '}
                 <span class="inline-block">
@@ -185,7 +185,7 @@ const Details = ({
                 </span>
               </div>
             )}
-            {data.terminated_at && (
+            {!!data.terminated_at && (
               <div class="text-danger" style={{ opacity: 0.8 }}>
                 <b>Terminated by</b> {titleCase(data.terminated_by)}
                 <span class="inline-block">
@@ -222,19 +222,16 @@ const Details = ({
       <div>
         <div class="label">Feature</div>
         {feature && (
-          <span
-            class="sub-description"
-            style={{ flexDirection: 'column', marginBottom: 0 }}
-          >
+          <div class="sub-description column">
             <div>
               <b>ID: </b> {feature.id}
             </div>
             <div>
               <b>NAME: </b> {feature.name}
             </div>
-          </span>
+          </div>
         )}
-        <Link class="link" to={`/features/${data.feature_id}`}>
+        <Link class="link" to={`/features_flags/${data.feature_id}`}>
           View Feature
         </Link>
         <Link

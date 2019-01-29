@@ -58,8 +58,16 @@ export default class RazorXApp extends React.Component {
                     exact
                   />
 
-                  <ShowWhenRoute path="/features" component={Features} exact />
-                  <Route path="/features/:id" component={Features} exact />
+                  <ShowWhenRoute
+                    path="/features_flags"
+                    component={Features}
+                    exact
+                  />
+                  <Route
+                    path="/features_flags/:id"
+                    component={Features}
+                    exact
+                  />
 
                   <Route
                     path="/requests"
@@ -92,7 +100,7 @@ export default class RazorXApp extends React.Component {
 const links = [
   // title, url, permission, icon
   ['Experiments', '/experiments', '', 'flask'],
-  ['Features', '/features', '', 'layers'],
+  ['Features', '/features_flags', '', 'layers'],
   ['Workflow Requests', '/requests', '', 'yes'],
   ['Merchant Evaluation', '/merchant-evaluation', '', 'user-search'],
 ];

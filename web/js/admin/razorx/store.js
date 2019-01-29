@@ -22,7 +22,16 @@ export const AppStore = observable
     },
 
     updateMode: function(e) {
-      AppStore.appMode = e.target.value;
+      let newMode = e;
+      if (!newMode) {
+        return;
+      }
+
+      if (typeof newMode.target !== 'undefined') {
+        newMode = newMode.target.value;
+      }
+
+      AppStore.appMode = newMode;
     },
   })
   .get();

@@ -19,14 +19,7 @@ export default class extends React.Component {
     data: {
       url: 'feature_flags',
     },
-    filters: this.props.queryParams,
   });
-
-  componentDidUpdate(prevProps) {
-    if (prevProps.queryParams !== this.props.queryParams) {
-      this.collection.applyFilters(this.props.queryParams);
-    }
-  }
 
   resetFilters = e => {
     const hasAppliedFilters = Object.keys(this.collection.filters).length > 2; // count and skip are by default
@@ -87,7 +80,7 @@ export default class extends React.Component {
   }
 }
 
-const href = item => '/features/' + item.id;
+const href = item => '/features_flags/' + item.id;
 
 const featuresFields = [
   ['ID', item => item.id],
