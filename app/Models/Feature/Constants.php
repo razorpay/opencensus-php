@@ -291,6 +291,7 @@ class Constants
         self::S2S_OTP_JSON                    => true,
         self::FUND_ACCOUNT_VALIDATIONS        => true,
         self::DISABLE_REFUNDS                 => true,
+        self::INVOICE_RECEIPT_MANDATORY       => true,
     ];
 
     // Entity type constants
