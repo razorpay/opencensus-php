@@ -1,3 +1,4 @@
+import { withRouter } from 'react-router-dom';
 import {
   openModal,
   closeModal,
@@ -13,6 +14,7 @@ import EnumList from 'component/Input/EnumList';
 import { rexPost, rexPatch } from 'admin/razorx/fetch';
 import validatorJSON, { initJSONObj } from './validators';
 
+@withRouter
 export default class extends React.Component {
   state = { variants: this.props.data ? this.props.variants : [''] };
 
@@ -48,6 +50,7 @@ export default class extends React.Component {
       if (resp) {
         notifySuccess(successMsg);
         closeModal();
+        this.props.history.push('/features/' + resp.id);
       }
     });
   };
