@@ -28,7 +28,25 @@ const MIN_NAME_TYPE = 2;
 @withRouter
 @observer
 export default class extends React.Component {
-  state = { featuresList: [] };
+  state = this.initState();
+
+  initState() {
+    const isEdit = !!this.props.data;
+    let selectedFeature = null;
+    const state = {
+      selectedFeature,
+    };
+
+    if (isEdit) {
+      selectedFeature = [...this.props.feature];
+      selectedFeature.id = String(selectedFeature.id);
+
+      state.featuresList = [selectedFeature];
+      state.segments = this.props.data.segments;
+    }
+
+    return state;
+  }
 
   componentWillMount() {
     const params = {};
@@ -46,18 +64,21 @@ export default class extends React.Component {
   }
 
   fetchFeaturesList(params) {
-    this.setState({ variantsList: [] }); // Refresh variants list for new Feature list search
-
     return rexFetch({
       url: 'feature_flags',
       params: { ...params, count: COUNT },
-    }).then(data => {
-      if (data && data.success) {
-        const featuresList = data.items.map(f => ({
+    }).then(resp => {
+      if (resp) {
+        const featuresList = resp.items.map(f => ({
           name: f.name,
           id: String(f.id),
           variants: f.variants,
         }));
+
+        const isEdit = !!this.props.data;
+        if (isEdit) {
+          featuresList.push(this.state.selectedFeature);
+        }
 
         this.setState({ featuresList });
 
@@ -192,7 +213,7 @@ export default class extends React.Component {
   };
 
   handleSelectFeature = ({ option }) => {
-    this.setState({ selectedFeature: option, variantsList: option.variants });
+    this.setState({ selectedFeature: option });
   };
 
   onChangeSegmentsList = segments => {
@@ -274,6 +295,7 @@ export default class extends React.Component {
                   <SegmentsList
                     variantsList={selectedFeature.variants}
                     onChange={this.onChangeSegmentsList}
+                    defaultValue={this.state.segments}
                   />
                 </React.Fragment>
               )}

@@ -3,7 +3,7 @@ import Field, { TextAreaField, SelectField } from 'ui/Field';
 import { notifyError } from 'common/modal';
 
 export default class extends React.Component {
-  state = { segmentsList: [{}] };
+  state = { segmentsList: this.props.defaultValue || [{}] };
 
   addNewSegment = e => {
     const { segmentsList } = this.state;

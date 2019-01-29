@@ -43,7 +43,7 @@ export default class extends React.Component {
           rexFetch({ url: 'feature_flags/' + resp.feature_id }).then(resp => {
             if (resp) {
               this.setState({
-                feature: { id: resp.id, name: resp.name },
+                feature: resp,
               });
             }
           });
@@ -81,7 +81,9 @@ export default class extends React.Component {
   };
 
   showExperimentModal = _ => {
-    openModal(<ExperimentsModal data={this.state.data} />);
+    openModal(
+      <ExperimentsModal data={this.state.data} feature={this.state.feature} />
+    );
   };
 
   showJSONModal = _ => {
@@ -146,18 +148,19 @@ const Details = ({
         <span>
           <b>ID:</b> {data.id}
         </span>
-        {!data.activated_at && (
-          <span class="to-right">
-            <a class="link text-bold" onClick={showExperimentModal}>
-              Edit Experiment
-            </a>{' '}
-            ({' '}
-            <a class="link text-bold" onClick={showJSONModal}>
-              RAW
-            </a>{' '}
-            )
-          </span>
-        )}
+        {!data.activated_at &&
+          feature && (
+            <span class="to-right">
+              <a class="link text-bold" onClick={showExperimentModal}>
+                Edit Experiment
+              </a>{' '}
+              ({' '}
+              <a class="link text-bold" onClick={showJSONModal}>
+                RAW
+              </a>{' '}
+              )
+            </span>
+          )}
       </div>
 
       <div class="pad-highlight">
