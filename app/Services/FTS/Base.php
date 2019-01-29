@@ -71,6 +71,40 @@ class Base
     }
 
     /**
+     * @param array $input
+     * @param bool  $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    public function createFundAccount(array $input, bool $throwExceptionOnFailure = false): array
+    {
+        //TODO: How to handle update?
+        return $this->createAndSendRequest(self::FundAccountBaseURL, 'POST', $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param array $input
+     * @param bool  $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    public function registerFundAccount(array $input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->createAndSendRequest(self::FundAccountBaseURL . '/' . self::URLS['register'], 'POST', $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param array $input
+     * @param bool  $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    public function requestFundTransfer(array $input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->createAndSendRequest(self::FundTransferBaseURL . '/' . self::URLS['request'], 'POST', $input, $throwExceptionOnFailure);
+    }
+
+    /**
      * Creates and Sends the Request
      * to FTS endpoint.
      *
