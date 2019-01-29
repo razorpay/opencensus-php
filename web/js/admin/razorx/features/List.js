@@ -90,6 +90,7 @@ export default class extends React.Component {
 const href = item => '/features/' + item.id;
 
 const featuresFields = [
+  ['ID', item => item.id],
   [
     'Name',
     item => (

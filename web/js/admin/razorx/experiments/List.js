@@ -114,6 +114,7 @@ export default class extends React.Component {
 const href = item => '/experiments/' + item.id;
 
 const experimentFields = [
+  ['ID', item => item.id],
   ['Description', item => item.description],
   [
     'Feature',
