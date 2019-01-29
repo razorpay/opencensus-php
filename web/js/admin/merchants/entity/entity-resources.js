@@ -301,26 +301,6 @@ export function getMappingFor(key) {
   return utilMapping[key];
 }
 
-const _getMethods = {
-  amex: 'Amex',
-  debit_card: 'Debit Card',
-  credit_card: 'Credit Card',
-  netbanking: 'Netbanking',
-  airtelmoney: 'AirtelMoney',
-  freecharge: 'Freecharge',
-  mobikwik: 'Mobikwik',
-  olamoney: 'Olamoney',
-  payumoney: 'PayUMoney',
-  payzapp: 'Payzapp',
-  jiomoney: 'Jiomoney',
-  sbibuddy: 'SBI Buddy',
-  upi: 'UPI',
-  emi: 'EMI',
-  emandate: 'e-Mandate',
-  mpesa: 'Mpesa',
-  amazonpay: 'Amazon Pay',
-};
-
 /*---------------------------------------- Render UI resource --------------------------------------------*/
 export function getDetailsViewMap(model) {
   const {
@@ -409,13 +389,14 @@ export function getDetailsViewMap(model) {
                   value={() => <Amount value={balanceDetails.test.balance} />}
                 />
               )}
-              {balanceDetails.live && details.activated && (
-                <EntityRow
-                  className="separate"
-                  label="Live:"
-                  value={() => <Amount value={balanceDetails.live.balance} />}
-                />
-              )}
+              {balanceDetails.live &&
+                details.activated && (
+                  <EntityRow
+                    className="separate"
+                    label="Live:"
+                    value={() => <Amount value={balanceDetails.live.balance} />}
+                  />
+                )}
             </div>
           )
         : null,
@@ -432,13 +413,14 @@ export function getDetailsViewMap(model) {
                   value={() => <Amount value={balanceDetails.test.credits} />}
                 />
               )}
-              {balanceDetails.live && details.activated && (
-                <EntityRow
-                  className="separate"
-                  label="Live:"
-                  value={() => <Amount value={balanceDetails.live.credits} />}
-                />
-              )}
+              {balanceDetails.live &&
+                details.activated && (
+                  <EntityRow
+                    className="separate"
+                    label="Live:"
+                    value={() => <Amount value={balanceDetails.live.credits} />}
+                  />
+                )}
             </div>
           )
         : null,
@@ -457,15 +439,16 @@ export function getDetailsViewMap(model) {
                   )}
                 />
               )}
-              {balanceDetails.live && details.activated && (
-                <EntityRow
-                  className="separate"
-                  label="Live:"
-                  value={() => (
-                    <Amount value={balanceDetails.live.fee_credits} />
-                  )}
-                />
-              )}
+              {balanceDetails.live &&
+                details.activated && (
+                  <EntityRow
+                    className="separate"
+                    label="Live:"
+                    value={() => (
+                      <Amount value={balanceDetails.live.fee_credits} />
+                    )}
+                  />
+                )}
             </div>
           )
         : null,
@@ -662,15 +645,22 @@ export function getDetailsViewMap(model) {
     {
       label: 'Methods',
       children: () => {
-        let methodRows = Object.keys(_getMethods).map(method => (
-          <EntityRow
-            key={method}
-            label={_getMethods[method]}
-            value={
-              details.methods ? _getBoolIcon(details.methods[method]) : '-'
+        let methodRows = Object.keys(details.methods)
+          .filter(method => {
+            var value = details.methods[method];
+            if (typeof value === 'boolean' || typeof value === 'number') {
+              return true;
             }
-          />
-        ));
+          })
+          .map(method => (
+            <EntityRow
+              key={method}
+              label={method}
+              value={
+                details.methods ? _getBoolIcon(details.methods[method]) : '-'
+              }
+            />
+          ));
 
         if (details.methods) {
           let disabledBanks = details.methods.disabled_banks;
