@@ -43,8 +43,6 @@ class Transaction extends Mailable
         $this->txn      = $txn;
         $this->source   = $source;
         $this->merchant = $merchant;
-
-        $this->modifyAttributes();
     }
 
     protected function addSender()
@@ -85,12 +83,5 @@ class Transaction extends Mailable
     protected function addSubject()
     {
         return $this->subject($this->getSubject());
-    }
-
-    /**
-     * Modifies/appends attributes for easy use in views etcetera.
-     */
-    protected function modifyAttributes()
-    {
     }
 }

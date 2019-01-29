@@ -55,6 +55,7 @@ class Otp extends Mailable
 
     protected function addSubject()
     {
+        // Generic fall back subject.
         $subject = "RazorpayX | OTP to {$this->getFormattedAction()}";
 
         switch ($this->input['action'])
@@ -65,14 +66,10 @@ class Otp extends Mailable
                     $subject = sprintf(
                         "OTP for payout amount INR %s to %s generated at %s IST",
                         amount_format_IN($this->input['amount']),
-                        $this->input['contact']['name'],
+                        str_limit($this->input['contact']['name'], 10),
                         Carbon::now(Timezone::IST)->format('m D, Y, H:i A'));
                 }
-
                 break;
-
-            default:
-                throw new LogicException("Not handled action: {$this->input['action']}");
         }
 
         $this->subject($subject);
@@ -84,10 +81,10 @@ class Otp extends Mailable
     {
         $this->with(
             [
-                'input'           => $this->input,
-                'user'            => $this->user,
-                'otp'             => $this->otp,
-                'formattedAction' => $this->getFormattedAction(),
+                'input'            => $this->input,
+                'user'             => $this->user,
+                'otp'              => $this->otp,
+                'formatted_action' => $this->getFormattedAction(),
             ]);
 
         return $this;
