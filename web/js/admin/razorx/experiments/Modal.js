@@ -50,9 +50,7 @@ export default class extends React.Component {
   componentWillMount() {
     const isEdit = !!this.props.data;
 
-    if (isEdit) {
-      this.defaultFeaturesList = this.state.featuresList;
-    } else {
+    if (!isEdit) {
       this.fetchFeaturesList().then(list => {
         if (list) {
           this.defaultFeaturesList = list;
@@ -140,9 +138,13 @@ export default class extends React.Component {
       description,
       environment,
       mode,
-      feature_id: Number(this.state.selectedFeature.id),
       segments,
     };
+
+    // Feature id cannot be edited once tied with experiment
+    if (!isEdit) {
+      reqPayload.feature_id = Number(this.state.selectedFeature.id);
+    }
 
     let requestFn = rexPost,
       url = 'experiments',
@@ -221,7 +223,7 @@ export default class extends React.Component {
   };
 
   render() {
-    const { data, JSONView } = this.props;
+    const { data, feature, JSONView } = this.props;
     const isEdit = !!(data && data.id);
 
     let header = data ? `Edit Experiment – ${data.id}` : 'Create Experiment';
@@ -272,20 +274,30 @@ export default class extends React.Component {
                 defaultValue={isEdit ? data.description : ''}
                 required
               />
-              <SearchableSelectField
-                selectedOptionLabelPath="name"
-                placeholder="Atleast 2 characters"
-                searchIndices={['id', 'name']}
-                label="Feature"
-                trackBy="id"
-                options={featuresList || []}
-                selected={selectedFeature}
-                name="feature_id"
-                defaultValue={isEdit ? data.feature_id : ''}
-                onInput={this.onInput}
-                onChange={this.handleSelectFeature}
-                beforeOptionsComponent={() => <div class="heading">Recent</div>}
-              />
+              {isEdit ? (
+                <Field
+                  label="Feature"
+                  name="feature_id"
+                  defaultValue={feature.name}
+                  readOnly
+                />
+              ) : (
+                <SearchableSelectField
+                  name="feature_id"
+                  selectedOptionLabelPath="name"
+                  placeholder="Atleast 2 characters"
+                  searchIndices={['id', 'name']}
+                  label="Feature"
+                  trackBy="id"
+                  options={featuresList || []}
+                  selected={selectedFeature}
+                  onInput={this.onInput}
+                  onChange={this.handleSelectFeature}
+                  beforeOptionsComponent={() => (
+                    <div class="heading">Recent</div>
+                  )}
+                />
+              )}
 
               {selectedFeature && (
                 <div key={selectedFeature.id}>
