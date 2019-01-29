@@ -26,15 +26,38 @@ export default class extends React.Component {
       data: null,
     });
 
-    rexFetch({ url: 'feature_flags/' + id })
-      .then(resp => {
+    const fetchFeature = rexFetch({ url: 'feature_flags/' + id });
+    const featureExperimentLive = rexFetch({
+      url: 'experiments',
+      params: {
+        count: 1,
+        skip: 0,
+        feature_id: id,
+        mode: 'live',
+      },
+    });
+    const featureExperimentTest = rexFetch({
+      url: 'experiments',
+      params: {
+        count: 1,
+        skip: 0,
+        feature_id: id,
+        mode: 'live',
+      },
+    });
+
+    Promise.all([fetchFeature, featureExperimentLive, featureExperimentTest])
+      .then(([feature, experimentLive, experimentTest]) => {
         this.setState({
           isFetching: false,
         });
 
-        if (resp) {
+        if (feature) {
           this.setState({
-            data: resp,
+            data: feature,
+            hasExperiment:
+              !!(experimentLive && experimentLive.items.length) ||
+              (!!experimentTest && experimentTest.items.length),
           });
         }
       })
@@ -59,7 +82,7 @@ export default class extends React.Component {
   };
 
   render() {
-    const { isFetching, data } = this.state;
+    const { isFetching, data, hasExperiment } = this.state;
     const { id } = this.props;
 
     let content;
@@ -85,6 +108,7 @@ export default class extends React.Component {
           terminate={this.terminate}
           showFeatureModal={this.showFeatureModal}
           showJSONModal={this.showJSONModal}
+          hasExperiment={hasExperiment}
         />
       );
     }
@@ -93,23 +117,25 @@ export default class extends React.Component {
   }
 }
 
-const Details = ({ data, showFeatureModal, showJSONModal }) => {
+const Details = ({ data, showFeatureModal, showJSONModal, hasExperiment }) => {
   return (
     <div class="entity-details">
       <div class="sub-description">
         <span>
           <b>ID:</b> {data.id}
         </span>
-        <span class="to-right">
-          <a class="link text-bold" onClick={showFeatureModal}>
-            Edit Feature
-          </a>{' '}
-          ({' '}
-          <a class="link text-bold" onClick={showJSONModal}>
-            RAW
-          </a>{' '}
-          )
-        </span>
+        {!hasExperiment && (
+          <span class="to-right">
+            <a class="link text-bold" onClick={showFeatureModal}>
+              Edit Feature
+            </a>{' '}
+            ({' '}
+            <a class="link text-bold" onClick={showJSONModal}>
+              RAW
+            </a>{' '}
+            )
+          </span>
+        )}
       </div>
 
       <div class="pad-highlight">
