@@ -100,7 +100,7 @@ const featuresFields = [
     ),
   ],
   ['Description', item => item.description],
-  ['Active Experiments', item => item.active_experiments],
+  // ['Active Experiments', item => item.active_experiments],
   ['Total Variants', item => item.variants.length],
   ['Created On', item => formatDate(item.created_at)],
 ];
