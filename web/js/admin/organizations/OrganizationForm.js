@@ -93,6 +93,8 @@ export default function OrgForm({
             name="allow_sign_up"
           />
 
+          {!org.id && <CheckField label="Restricted" name="type" />}
+
           {org.id ? (
             <div class="logo-container">
               <header>Upload/Select Logo:</header>
