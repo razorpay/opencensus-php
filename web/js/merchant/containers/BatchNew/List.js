@@ -140,7 +140,9 @@ export default class BatchList extends ListContainer {
           onSubmit={this.search}
           EmptyComponent={EmptyComponent(
             uploadUrl,
-            !this.props.multiBatch ? this.openUploadModal : undefined
+            !this.props.multiBatch
+              ? this.openUploadModal(this.props.renderUploadModal)
+              : undefined
           )}
           {...this.props}
         />
