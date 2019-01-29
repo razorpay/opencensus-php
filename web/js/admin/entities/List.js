@@ -291,7 +291,7 @@ export default class EntityList extends Component {
         <div class="box entity-container">
           <header>
             {sharedData.entitiesArray.length > 1
-              ? Entities
+              ? 'Entities'
               : capitalize(sharedData.entitiesArray[0])}
           </header>
           <Form

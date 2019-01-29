@@ -1,6 +1,6 @@
 import { Route, Switch, Redirect } from 'react-router-dom';
 import MainNavLink from 'admin/components/MainNavLink';
-import { org, isOrgRazorpay } from 'admin/user';
+import user, { org, isOrgRazorpay } from 'admin/user';
 import { ShowWhenRoute } from 'admin/components/ShowWhen';
 
 import Profile from 'admin/profile';
@@ -151,7 +151,9 @@ export default ({ location }) => (
       component={ScroogeRefund}
     />
 
-    <Redirect to="/merchants" />
+    {user.permissions.indexOf('view_all_merchants') > -1 && (
+      <Redirect to="/merchants" />
+    )}
   </Switch>
 );
 
