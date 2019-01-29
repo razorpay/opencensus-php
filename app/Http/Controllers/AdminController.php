@@ -68,7 +68,7 @@ class AdminController extends Controller
             {
                 $view = 'admin.index';
 
-                if ($currentRouteName === 'razorx_catchall') {
+                if ($currentRouteName === 'razorx_catchall' and $org.custom_code === 'rzp') {
                     $view = 'admin.razorx';
                 }
 
