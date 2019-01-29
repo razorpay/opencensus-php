@@ -11,7 +11,7 @@ import { adminFetch } from 'common/fetch';
 
 import { adminPost } from 'common/fetch';
 
-import { notifySuccess, closeModal } from 'common/modal';
+import { notifySuccess, notifyError, closeModal } from 'common/modal';
 
 const options = {
   period: ['', 'Hourly', 'Daily', 'Weekly', 'Monthly'],
@@ -26,10 +26,16 @@ export default class CreatePromotion extends Component {
     couponCode: '',
     shouldExpire: false,
     pending: true,
+    shouldCouponExpire: false,
   };
 
   componentWillMount() {
-    adminFetch('live/pricing/merchants').then(data => {
+    adminFetch({
+      url: 'live/pricing/merchants',
+      headers: {
+        'x-cross-org-id': 'org_100000razorpay',
+      },
+    }).then(data => {
       const pricingPlans = {};
 
       Object.keys(data).forEach(key => {
@@ -41,15 +47,23 @@ export default class CreatePromotion extends Component {
   }
 
   onSubmit = body => {
+    if (!body.credit_amount && !body.pricing_plan_id) {
+      return notifyError(
+        'Please select a pricing plan or enter amount credits or do both.'
+      );
+    }
+
     body.credits_expire = parseInt(body.credits_expire);
+
+    body.coupon_expire = parseInt(body.coupon_expire);
 
     let payload = {
       name: body.name,
-      credit_amount: body.credit_amount,
       credit_type: 'amount',
       credits_expire: body.credits_expire,
       purpose: body.purpose,
-      pricing_plan_id: body.pricing_plan_id,
+      ...(body.pricing_plan_id && { pricing_plan_id: body.pricing_plan_id }),
+      ...(body.credit_amount && { credit_amount: body.credit_amount * 100 }),
     };
 
     if (body.credits_expire) {
@@ -67,28 +81,27 @@ export default class CreatePromotion extends Component {
       data: payload,
     }).then(response => {
       if (response) {
-        let startDate = moment().unix();
         let endDate = moment().unix();
-
-        if (body.start_at_date && body.end_at_date) {
-          startDate = moment(
-            `${body.start_at_date} ${body.start_at_time}`,
-            'DD/MM/YYYY HH:mm'
-          ).unix();
-          endDate = moment(
-            `${body.end_at_date} ${body.end_at_time}`,
-            'DD/MM/YYYY HH:mm'
-          ).unix();
-        }
 
         let payloadCoupon = {
           entity_id: response.id,
           entity_type: 'promotion',
           code: body.coupon_code,
           max_count: body.max_count,
-          start_at: startDate,
-          end_at: endDate,
         };
+
+        if (body.end_at_date && body.coupon_expire === 1) {
+          endDate = moment(
+            `${body.end_at_date} ${body.end_at_time}`,
+            'DD/MM/YYYY HH:mm'
+          ).format('X');
+
+          payloadCoupon = {
+            ...payloadCoupon,
+            end_at: endDate,
+          };
+        }
+
         return adminPost({
           url: 'live/coupons',
           data: payloadCoupon,
@@ -117,8 +130,21 @@ export default class CreatePromotion extends Component {
     });
   };
 
+  handleShouldCouponExpire = e => {
+    this.setState({
+      shouldCouponExpire: parseInt(e.target.value),
+    });
+  };
+
   render() {
-    const { couponCode, pricingPlans, shouldExpire } = this.state;
+    const {
+      couponCode,
+      pricingPlans,
+      shouldExpire,
+      shouldCouponExpire,
+    } = this.state;
+
+    const { protocol, hostname } = window.location;
 
     const pricingKeys = Object.keys(pricingPlans);
 
@@ -135,10 +161,9 @@ export default class CreatePromotion extends Component {
         <input type="hidden" name="name" defaultValue={couponCode} />
         <Field label="Purpose" name="purpose" required />
         <Field
-          label="Credit Amount (in Paise)"
+          label="Credit Amount (in Rupees)"
           type="number"
           name="credit_amount"
-          required
         />
 
         <SwitchField
@@ -148,7 +173,6 @@ export default class CreatePromotion extends Component {
           enabledLabel="Yes"
           disabledLabel="No"
           defaultValue="No"
-          required
         />
 
         {shouldExpire === 1 && (
@@ -167,7 +191,6 @@ export default class CreatePromotion extends Component {
           name="pricing_plan_id"
           label="Pricing Plan Id"
           trackBy="value"
-          defaultValue={pricingKeys[0]}
           options={pricingKeys.map(key => ({
             name: pricingPlans[key] + ' (' + key + ')',
             value: key,
@@ -176,28 +199,28 @@ export default class CreatePromotion extends Component {
 
         <Field label="Maximum Redemptions" name="max_count" type="number" />
 
-        <DateField
+        <SwitchField
+          label="Should Coupon Code expire ?"
+          name="coupon_expire"
+          onChange={this.handleShouldCouponExpire}
+          enabledLabel="Yes"
+          disabledLabel="No"
+          defaultValue="No"
           required
-          name="start_at_date"
-          label="Starts at"
-          component={
-            <input type="time" name="start_at_time" defaultValue="23:59" />
-          }
-          disablePastDates={true}
-          defaultValue={moment()}
         />
-
-        <DateField
-          required
-          name="end_at_date"
-          label="Ends at"
-          component={
-            <input type="time" name="end_at_time" defaultValue="23:59" />
-          }
-          disablePastDates={true}
-          allowToday={false}
-          defaultValue={moment().add(3, 'days')}
-        />
+        {shouldCouponExpire === 1 && (
+          <DateField
+            required
+            name="end_at_date"
+            label="Ends at"
+            component={
+              <input type="time" name="end_at_time" defaultValue="23:59" />
+            }
+            disablePastDates
+            allowToday={false}
+            defaultValue={moment().add(3, 'days')}
+          />
+        )}
         {couponCode !== '' && (
           <div class="field">
             <label>Signup Link:</label>
@@ -208,9 +231,7 @@ export default class CreatePromotion extends Component {
                 border: 'none',
               }}
             >
-              https://dashboard.razorpay.com/#/access/signup?coupon_code={
-                couponCode
-              }
+              {`${protocol}//${hostname}/#/access/signup?coupon_code=${couponCode}`}
             </span>
           </div>
         )}
