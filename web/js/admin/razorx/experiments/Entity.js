@@ -268,7 +268,7 @@ const Details = ({
         <span class="square-pills label-semi-muted">{data.mode}</span>
       </div>
 
-      {data.activated_at &&
+      {!!data.activated_at &&
         !data.terminated_at && (
           <React.Fragment>
             <br />
