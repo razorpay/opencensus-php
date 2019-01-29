@@ -3,6 +3,7 @@
 namespace RZP\Models\Partner\Commission;
 
 use RZP\Models\Base;
+use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Partner\Config as PartnerConfig;
@@ -42,8 +43,6 @@ class Core extends Base\Core
 
         $calculator->calculate();
 
-        $commission = $this->saveCommission();
-
-        return $commission;
+        $calculator->saveCommission();
     }
 }
