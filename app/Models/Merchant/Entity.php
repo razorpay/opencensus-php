@@ -30,6 +30,7 @@ use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Balance;
 use RZP\Exception\LogicException;
+use RZP\Models\Partner\Commission;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\QueryCache\Cacheable;
 
@@ -845,6 +846,11 @@ class Entity extends Base\PublicEntity
     public function merchantDetail()
     {
         return $this->hasOne(Detail\Entity::class, self::MERCHANT_ID, self::ID);
+    }
+
+    public function commissions()
+    {
+        return $this->hasMany(Commission\Entity::class, Commission\Entity::PARTNER_ID, Entity::ID);
     }
 
     public function setPricingPlan($planId)

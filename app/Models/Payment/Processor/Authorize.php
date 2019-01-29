@@ -408,7 +408,7 @@ trait Authorize
             'contact'    => $payment->getContact(),
             'amount'     => number_format(($payment->getAmount() / 100), 2),
             'wallet'     => $payment->getWallet(),
-            'merchant'   => $payment->merchant->getDbaName(),
+            'merchant'   => $payment->merchant->getBillingLabel(),
         ];
 
         // This is a hack to return direct method for IVR payments
@@ -421,6 +421,8 @@ trait Authorize
             {
                 $redirectUrl = $this->getPaymentRedirectTo3dsUrl();
             }
+
+            $response['redirect'] = $redirectUrl;
 
             $metaData = [
                 'issuer'     => $card->getIssuer(),
@@ -468,10 +470,10 @@ trait Authorize
                 'payment_id' => $payment->getPublicId(),
                 'next'       => $next,
                 'gateway'    => $response['gateway'],
-                'redirect'   => $redirectUrl,
                 'submit_url' => $request['url'],
                 'resend_url' => $resendUrl,
                 'metadata'   => $metaData,
+                'redirect'   => $redirectUrl,
             ];
         }
 
@@ -4984,8 +4986,7 @@ trait Authorize
     {
         $merchant = $payment->merchant;
 
-        if (($this->app['basicauth']->isPrivateAuth() === false) or
-            ($merchant->isFeatureEnabled(Feature\Constants::REDIRECT_S2S_AUTHORIZE) === false))
+        if ($this->app['basicauth']->isPrivateAuth() === false)
         {
             return null;
         }

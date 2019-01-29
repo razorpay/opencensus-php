@@ -453,6 +453,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PROMOTION_CREATE_REQUEST                      = 'PROMOTION_CREATE_REQUEST';
     const PROMOTION_UPDATE_REQUEST                      = 'PROMOTION_UPDATE_REQUEST';
     const PROMOTION_ACTIVATION_FAILED                   = 'PROMOTION_ACTIVATION_FAILED';
+    const MERCHANT_PROMOTION_CREATED                    = 'MERCHANT_PROMOTION_CREATED';
+    const MERCHANT_PROMOTION_ACTIVATED                  = 'MERCHANT_PROMOTION_ACTIVATED';
+    const MERCHANT_PROMOTION_PRICING_CHANGED            = 'MERCHANT_PROMOTION_PRICING_CHANGED';
 
     const COUPON_CREATE_REQUEST                         = 'COUPON_CREATE_REQUEST';
     const COUPON_APPLY_REQUEST                          = 'COUPON_APPLY_REQUEST';
@@ -872,7 +875,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_LIVE_DISABLE_REQUEST             = 'MERCHANT_LIVE_DISABLE_REQUEST';
     const MERCHANT_PAYOUT_NOTIFICATION_REQUEST      = 'MERCHANT_PAYOUT_NOTIFICATION_REQUEST';
     const MERCHANT_PAYOUT_NOTIFICATION_RESPONSE     = 'MERCHANT_PAYOUT_NOTIFICATION_RESPONSE';
-    const MERCHANT_PAYOUT_RETRY_REQUEST             = 'MERCHANT_PAYOUT_RETRY_REQUEST';
     const MERCHANT_PAYOUT_RETRY_FAILED              = 'MERCHANT_PAYOUT_RETRY_FAILED';
     const MERCHANT_PAYOUT_RETRIED_IDS               = 'MERCHANT_PAYOUT_RETRIED_IDS';
     const MERCHANT_ONBOARD_REQUEST                  = 'MERCHANT_ONBOARD_REQUEST';
@@ -880,6 +882,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_PROCESS_WHITELIST_ACTIVATION     = 'MERCHANT_PROCESS_WHITELIST_ACTIVATION';
     const MERCHANT_PROCESS_BLACKLIST_ACTIVATION     = 'MERCHANT_PROCESS_BLACKLIST_ACTIVATION';
     const MERCHANT_PROCESS_GREYLIST_ACTIVATION      = 'MERCHANT_PROCESS_GREYLIST_ACTIVATION';
+    const PAYOUT_RETRY_REQUEST                      = 'PAYOUT_RETRY_REQUEST';
 
     const MERCHANT_ARCHIVE                          = 'MERCHANT_ARCHIVE';
     const MERCHANT_UNARCHIVE                        = 'MERCHANT_UNARCHIVE';
@@ -1385,6 +1388,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BEAM_REQUEST                                  = 'BEAM_REQUEST';
     const BEAM_RESPONSE                                 = 'BEAM_RESPONSE';
     const BEAM_PUSH                                     = 'BEAM_PUSH';
+    const BEAM_PUSH_FAILED                              = 'BEAM_PUSH_FAILED';
 
     // Partners trace codes
     const PARTNER_REQUEST_SUBMITTED                     = 'PARTNER_REQUEST_SUBMITTED';

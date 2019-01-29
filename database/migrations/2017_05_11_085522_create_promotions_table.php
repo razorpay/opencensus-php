@@ -28,7 +28,8 @@ class CreatePromotionsTable extends Migration
             $table->string(Promotion::NAME, 50);
 
             $table->integer(Promotion::CREDIT_AMOUNT)
-                  ->unsigned();
+                  ->unsigned()
+                  ->default(0);
 
             $table->string(Promotion::CREDIT_TYPE, 20);
 

@@ -202,35 +202,112 @@ class NetbankingPnbGatewayTest extends TestCase
                 $refund = $this->refundPayment($payment['id'], 100000);
             });
     }
-    /*
 
-    public function testPnbDailyFileGeneration()
+    public function testVerifyRefundSuccessfulOnGateway()
     {
-        Mail::fake();
+        $this->ba->publicAuth();
 
-        $payments = $this->createPaymentsToClaim();
+        $payment = $this->doAuthAndCapturePayment($this->payment);
 
-        $this->createRefundForFileGeneration($payments);
+        $this->mockFailedRefundResponse();
 
-        $data = $this->generateRefundsExcelForNB('PUNB_R');
+        $this->refundPayment($payment['id']);
 
-        $this->checkRefundTextData($data);
+        $refund = $this->getLastEntity('refund', true);
 
-        $this->checkMailQueue();
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $this->clearMockFunction();
+
+        $response = $this->retryFailedRefund($refund['id']);
+
+        $this->assertEquals($refund['id'], $response['refund_id']);
+        $this->assertEquals('processed', $response['status']);
+        $this->assertEquals(1, $refund['attempts']);
     }
 
-    public function testPnbDailyFileGenerationEmpty()
+    public function testVerifyRefundFailedOnGateway()
     {
-        Mail::fake();
+        $this->ba->publicAuth();
 
-        $payments = $this->createPaymentsToClaim();
+        $payment = $this->doAuthAndCapturePayment($this->payment);
 
-        $data = $this->generateRefundsExcelForNb('PUNB_R');
+        $this->mockFailedRefundResponse();
 
-        $this->checkEmptyRefundTextData($data);
+        $this->refundPayment($payment['id']);
 
-        $this->checkEmptyRefundsMailQueue();
-    }*/
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $this->clearMockFunction();
+
+        $this->mockVerifyRefundFailed();
+
+        $response = $this->retryFailedRefund($refund['id']);
+
+        $refund = $this->getEntityById('refund', $refund['id'], true);
+
+        $this->assertEquals($refund['id'], $response['refund_id']);
+        $this->assertEquals('processed', $response['status']);
+        $this->assertEquals(2, $refund['attempts']);
+    }
+
+    public function testVerifyRefundProcessingOnGateway()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $this->mockFailedRefundResponse();
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $this->clearMockFunction();
+
+        $this->mockVerifyRefundProcessing();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($refund)
+        {
+            $this->retryFailedRefund($refund['id']);
+        });
+    }
+
+    public function testVerifyRefundDuplicateRecordOnGateway()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $this->mockFailedRefundResponse();
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $this->clearMockFunction();
+
+        $this->mockVerifyRefundDuplicateRecord();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($refund)
+        {
+            $this->retryFailedRefund($refund['id']);
+        });
+    }
 
     protected function mockFailedVerifyResponse()
     {
@@ -262,7 +339,6 @@ class NetbankingPnbGatewayTest extends TestCase
             if ($action === 'refund')
             {
                 unset($content['data']);
-                unset($content['hash']);
 
                 $error = [
                     'code'    => '1024',
@@ -270,6 +346,47 @@ class NetbankingPnbGatewayTest extends TestCase
                 ];
 
                 $content['error'] = $error;
+            }
+        });
+    }
+
+    protected function mockVerifyRefundFailed()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'verify_refund')
+            {
+                unset($content['data']);
+
+                $error = [
+                    'code'    => '1024',
+                    'message' => 'Invalid Parameters'
+                ];
+
+                $content['error'] = $error;
+            }
+        });
+    }
+
+    protected function mockVerifyRefundProcessing()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'verify_refund')
+            {
+                $content['data'][0]['refund_details'][0]['refund_status'] = 'Processing';
+            }
+        });
+    }
+
+
+    protected function mockVerifyRefundDuplicateRecord()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'verify_refund')
+            {
+                $content['data'][0]['refund_details'][0]['refund_status'] = 'Duplicate Refund';
             }
         });
     }

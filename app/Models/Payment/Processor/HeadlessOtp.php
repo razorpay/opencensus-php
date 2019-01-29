@@ -141,6 +141,8 @@ trait HeadlessOtp
 
             if ($response['error']['reason'] === OtpElf::ERROR_TIMEOUT)
             {
+                $payment->setAuthType(Payment\AuthType::HEADLESS_OTP);
+
                 throw new Exception\GatewayTimeoutException(
                     ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
                     null,
@@ -152,6 +154,8 @@ trait HeadlessOtp
 
         if ($payment->getAuthType() === Payment\AuthType::OTP)
         {
+            $payment->setAuthType(Payment\AuthType::HEADLESS_OTP);
+
             throw new Exception\GatewayRequestException(
                 'Failed to open Headless Browser',
                 null,

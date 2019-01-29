@@ -6,10 +6,12 @@ use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class MethodsTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -89,6 +91,8 @@ class MethodsTest extends TestCase
 
         $this->assertEquals($content['netbanking'], true);
         $this->assertEquals($content['mobikwik'], true);
+
+        $this->assertEquals($content['card_networks']['DICL'], true);
     }
 
     public function testBulkMethodUpdateInvalidMerchantId()
@@ -274,5 +278,31 @@ class MethodsTest extends TestCase
         $this->fixtures->merchant->addFeatures([Feature\Constants::EDIT_METHODS]);
 
         $this->startTest();
+    }
+
+    public function testEnableCardNetworks()
+    {
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $merchantMethods->setDinersCard(true);
+
+        $merchantMethods->setAmexCard(true);
+
+        $this->assertTrue($merchantMethods->isDinersEnabled());
+
+        $this->assertTrue($merchantMethods->isAmexCardEnabled());
+    }
+
+    public function testDisableCardNetworks()
+    {
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $merchantMethods->setMaestroCard(false);
+
+        $merchantMethods->setJcbCard(false);
+
+        $this->assertFalse($merchantMethods->isMaestroEnabled());
+
+        $this->assertFalse($merchantMethods->isJcbEnabled());
     }
 }

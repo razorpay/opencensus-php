@@ -4,10 +4,10 @@ namespace RZP\Http;
 
 use ApiResponse;
 use Illuminate\Routing\Router;
+
 use RZP\Foundation\Application;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Feature\Constants as Feature;
-
 use RZP\Models\Admin\Permission\Name as Permission;
 
 final class Route
@@ -688,7 +688,7 @@ final class Route
         'payout_create_with_otp'                   => ['post',     'payouts_with_otp',                               'PayoutController@postFundAccountPayoutWithOtp'                     ],
         'payout_fetch_by_id'                       => ['get',      'payouts/{id}',                                   'PayoutController@getPayout'                                        ],
         'payout_fetch_multiple'                    => ['get',      'payouts',                                        'PayoutController@getPayouts'                                       ],
-        'payout_retry'                             => ['post',     'payouts/retry',                                  'PayoutController@postPayoutRetry'                                  ],
+        'payout_retry'                             => ['post',     'payouts/{id}/retry',                             'PayoutController@postPayoutRetry'                                  ],
         'payout_purpose_get'                       => ['get',      'payouts/purposes',                               'PayoutController@getPurposes'                                      ],
         'payout_purpose_post'                      => ['post',     'payouts/purposes',                               'PayoutController@postPurpose'                                      ],
         'payout_fetch_reversals'                   => ['get',      'payouts/{id}/reversals',                         'PayoutController@getPayoutReversal'                                ],
@@ -986,8 +986,6 @@ final class Route
         // Banking statement routes
         'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
         'transaction_statement_fetch_multiple'     => ['get',      'transactions',                                   'StatementController@list'                                          ],
-        'vault_migration_detokenize'               => ['post',     'card/migration/detokenize',                      'CardController@postCardDetokenize'                                 ],
-        'tokenex_migrate_cron'                     => ['post',     'card/migrate/tokenex',                           'CardController@postCardsTokenMigrate'                              ],
     ];
 
     public static $public = [
@@ -1343,7 +1341,6 @@ final class Route
         'entity_balance_id_update',
         'merchant_es_sync_cron',
         'gateway_downtime_vajra_webhook',
-        'tokenex_migrate_cron',
         'scrooge_refund_verify_bulk'
     ];
 
@@ -1876,7 +1873,6 @@ final class Route
         'merchant_balance_bulk_backfill_ids',
         //Bulk Add/Remove bank for terminal
         'terminal_bank_bulk',
-        'vault_migration_detokenize',
     ];
 
     public static $routePermission = [
@@ -2253,7 +2249,6 @@ final class Route
         'entity_balance_id_update'                 => '*',
         'merchant_balance_bulk_backfill_ids'       => '*',
         'terminal_bank_bulk'                       => Permission::EDIT_TERMINAL,
-        'vault_migration_detokenize'               => '*',
     ];
 
     public static $direct = [
@@ -2447,7 +2442,6 @@ final class Route
             'billdesk_reconcile_cancelled',
             'merchant_es_sync_cron',
             'entity_balance_id_update',
-            'tokenex_migrate_cron',
             'scrooge_refund_verify_bulk',
         ],
 
@@ -2696,8 +2690,8 @@ final class Route
         'addon_delete',
         'subscription_create_addon',
         'subscription_fetch_due_addons',
-        'subscription_test_charge',
-        'subscription_manual_retry',
+        //'subscription_test_charge',
+        //'subscription_manual_retry',
         // Crons
         'subscriptions_expire',
         // 'subscriptions_charge_invoices',
@@ -2719,11 +2713,8 @@ final class Route
         'addon_delete',
         'subscription_create_addon',
         'subscription_fetch_due_addons',
-        'subscription_test_charge',
-        'subscription_manual_retry',
-        'subscription_cancel',
-        'subscription_test_charge',
-        'subscription_manual_retry',
+        //'subscription_test_charge',
+        //'subscription_manual_retry',
     ];
 
     /**

@@ -65,6 +65,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_PENDING                = 'The payout amount provided is greater than the payout amount pending for the payment';
     const BAD_REQUEST_PAYOUT_FUND_TRANSFER_ON_CREDIT_CARD_PAYMENT               = 'Payouts of method fund_transfer cannot be created on Credit Card payments';
     const BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH                               = 'Given mode cannot be used for the payout amount specified';
+    const BAD_REQUEST_PAYOUT_RETRY_FOR_PAYMENT                                  = 'Payout retry is not allowed only for payment payouts';
+    const BAD_REQUEST_PAYOUT_RETRY_NOT_IN_REVERSED                              = 'Payout retry is allowed only for reversed payouts';
     const BAD_REQUEST_PAYMENT_FULLY_PAIDOUT                                     = 'The payment has been fully paidout already';
     const BAD_REQUEST_GATEWAY_TOKEN_EMPTY                                       = 'Invalid token has been passed for recurring payment';
     const BAD_REQUEST_TOKEN_NOT_ENABLED_FOR_RECURRING                           = 'Invalid token has been passed for recurring payment';
@@ -244,6 +246,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PRICING_NOT_DEFINED_FOR_MERCHANT                          = 'The merchant does not have pricing assigned';
     const BAD_REQUEST_PRICING_FIELD_NOT_REQUIRED_FOR_NB                         = 'The field should be null for net-banking';
     const BAD_REQUEST_PRICING_RULE_FOR_AMEX_NOT_PRESENT                         = 'Amex pricing rule not present for merchant';
+    const BAD_REQUEST_PRICING_RULE_FOR_CARD_NETWORK_NOT_PRESENT                 = 'Pricing rule not present for merchant with this card network';
     const BAD_REQUEST_PRICING_RULE_FOR_AMOUNT_RANGE_OVERLAP                     = 'Pricing rule amount range collides with another existing rule\'s amount range.';
     const BAD_REQUEST_UNKNOWN_SCHEDULE                                          = 'Schedule not found in database.';
     const BAD_REQUEST_INVALID_SCHEDULE                                          = 'Schedule cannot be created, it is invalid.';
@@ -639,6 +642,7 @@ class PublicErrorDescription
     const BAD_REQUEST_COUPON_NOT_VALID_FOR_MERCHANT                             = 'Coupon code not valid for this merchant';
     const BAD_REQUEST_COUPON_NOT_APPLICABLE                                     = 'Coupon code is not applicable right now';
     const BAD_REQUEST_COUPON_EXPIRED                                            = 'Coupon code is expired';
+    const BAD_REQUEST_COUPON_ALREADY_EXISTS                                     = 'Coupon code already exists';
 
     const BAD_REQUEST_SNS_PUBLISH_FAILED                                        = 'Sns Publish failed';
 

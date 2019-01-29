@@ -66,12 +66,6 @@ class Core extends Base\Core
 
             $card = $this->findExistingCards($newCard, $merchant);
 
-            // temp code
-            if ($card === null)
-            {
-                $card = $this->lookupTokenexCards($newCard, $merchant);
-            }
-
             $this->card = $card;
         }
 
@@ -258,33 +252,5 @@ class Core extends Base\Core
         }
 
         return null;
-    }
-
-    protected function lookupTokenexCards(Card\Entity $card, Merchant\Entity $merchant)
-    {
-         // temp code
-        $tokenexCard = $card;
-
-        $vaultToken = $card->getVaultToken();
-
-        $tokenexToken = (new Card\CardVault)->getTokenexToken($vaultToken);
-
-        $tokenexCard->setVaultToken($tokenexToken);
-
-        $tokenexCard->setVault(Card\Vault::TOKENEX);
-
-        $card = $this->findExistingCards($tokenexCard, $merchant);
-
-        if ($card !== null)
-        {
-            $this->app['trace']->count(Constants\Metric::VAULT_MIGRATION_READ_MISS, []);
-
-            $card->setVaultToken($vaultToken);
-            $card->setVault(Card\Vault::RZP_VAULT);
-
-            $this->repo->card->replaceToknexToken($tokenexToken, $vaultToken);
-        }
-
-        return $card;
     }
 }

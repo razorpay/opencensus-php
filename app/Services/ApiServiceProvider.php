@@ -122,18 +122,6 @@ class ApiServiceProvider extends BaseServiceProvider
             return new RazorXClient($app);
         });
 
-        $this->app->singleton('card.tokenex', function($app)
-        {
-            $tokenexMock = $app['config']->get('applications.card_tokenex.mock');
-
-            if ($tokenexMock === true)
-            {
-                return new Mock\TokenEx($app);
-            }
-
-            return new CardVault($app);
-        });
-
         $this->app->singleton('card.cardVault', function($app)
         {
             $cardVaultMock = $app['config']->get('applications.card_vault.mock');
@@ -260,8 +248,6 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerMyOperator();
 
         $this->registerKubernetesClient();
-
-        $this->registerCustomSessionProvider();
     }
 
     /**
@@ -275,7 +261,6 @@ class ApiServiceProvider extends BaseServiceProvider
             'api.mutex',
             'bitly',
             'razorx',
-            'card.tokenex',
             'es',
             'exception.handler',
             'gateway',
@@ -638,15 +623,6 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('k8s_client', function($app)
         {
             return new KubernetesClient($app);
-        });
-    }
-
-    protected function registerCustomSessionProvider()
-    {
-        $manager = $this->app['session'];
-
-        $manager->extend('custom', function($app) {
-            return new CustomSessionHandler($app);
         });
     }
 }

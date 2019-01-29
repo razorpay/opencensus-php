@@ -5,7 +5,6 @@ namespace RZP\Models\Payout;
 use Carbon\Carbon;
 
 use RZP\Constants;
-use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Payment;
@@ -349,6 +348,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CUSTOMER_ID);
     }
 
+    public function hasCustomer()
+    {
+        return ($this->isAttributeNotNull(self::CUSTOMER_ID) === true);
+    }
+
     public function getFundAccountId()
     {
         return $this->getAttribute(self::FUND_ACCOUNT_ID);
@@ -479,6 +483,16 @@ class Entity extends Base\PublicEntity
     public function getPayoutType()
     {
         return $this->getAttribute(self::TYPE);
+    }
+
+    public function getPaymentId()
+    {
+        return $this->getAttribute(self::PAYMENT_ID);
+    }
+
+    public function hasPayment()
+    {
+        return ($this->isAttributeNotNull(self::PAYMENT_ID) === true);
     }
 
     public function getUserId()

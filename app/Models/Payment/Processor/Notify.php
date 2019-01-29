@@ -395,7 +395,7 @@ class Notify
             'payment'   => [
                 'id'                   => $this->payment->getId(),
                 'public_id'            => $this->payment->getPublicId(),
-                'amount'               => $this->payment->getAmount(),
+                'amount'               => $this->payment->getFormattedAmount(),
                 'raw_amount'           => $this->payment['base_amount'],
                 'adjusted_amount'      => $this->payment->getAdjustedAmountWrtCustFeeBearer(),
                 'timestamp'            => $this->payment->getUpdatedAt(),

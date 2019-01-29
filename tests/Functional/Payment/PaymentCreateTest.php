@@ -773,7 +773,7 @@ class PaymentCreateTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'redirect_s2s_authorize']);
+        $this->fixtures->merchant->addFeatures(['s2s']);
 
         $response = $this->doS2SPrivateAuthPayment($payment);
 
@@ -806,7 +806,7 @@ class PaymentCreateTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'redirect_s2s_authorize']);
+        $this->fixtures->merchant->addFeatures(['s2s']);
 
         $response = $this->doS2SPrivateAuthPayment($payment);
 

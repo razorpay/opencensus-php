@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Methods;
 
 use RZP\Models\Base;
+use RZP\Models\Card\Network;
 use RZP\Models\Payment\Processor\Netbanking as NetbankingProcessor;
 
 class Entity extends Base\PublicEntity
@@ -33,6 +34,7 @@ class Entity extends Base\PublicEntity
     const AEPS              = 'aeps';
     const EMANDATE          = 'emandate';
     const CARDLESS_EMI      = 'cardless_emi';
+    const CARD_NETWORKS     = 'card_networks';
 
     const METHODS           = 'methods';
 
@@ -68,6 +70,7 @@ class Entity extends Base\PublicEntity
         self::BANK_TRANSFER,
         self::AMAZONPAY,
         self::CARDLESS_EMI,
+        self::CARD_NETWORKS,
     ];
 
     protected $visible = [
@@ -96,6 +99,7 @@ class Entity extends Base\PublicEntity
         self::BANK_TRANSFER,
         self::AMAZONPAY,
         self::CARDLESS_EMI,
+        self::CARD_NETWORKS,
     ];
 
     protected $public = [
@@ -125,6 +129,7 @@ class Entity extends Base\PublicEntity
         self::BANK_TRANSFER,
         self::AMAZONPAY,
         self::CARDLESS_EMI,
+        self::CARD_NETWORKS,
     ];
 
     protected $defaults = array(
@@ -152,6 +157,7 @@ class Entity extends Base\PublicEntity
         self::BANK_TRANSFER  => true,
         self::AMAZONPAY      => false,
         self::CARDLESS_EMI   => false,
+        self::CARD_NETWORKS  => Network::DEFAULT_CARD_NETWORKS,
     );
 
     protected $wallets = array(
@@ -215,11 +221,6 @@ class Entity extends Base\PublicEntity
         self::EMANDATE      => 'bool',
         self::CARDLESS_EMI  => 'bool',
     ];
-
-    public function setMethods(array $input = array())
-    {
-        $this->edit($input, 'setMethods');
-    }
 
     public function merchant()
     {
@@ -288,6 +289,41 @@ class Entity extends Base\PublicEntity
     public function isAmexEnabled()
     {
         return $this->getAttribute(self::AMEX);
+    }
+
+    public function isAmexCardEnabled()
+    {
+        return $this->getCardNetworks()[Network::AMEX];
+    }
+
+    public function isDinersEnabled()
+    {
+        return $this->getCardNetworks()[Network::DICL];
+    }
+
+    public function isMastercardEnabled()
+    {
+        return $this->getCardNetworks()[Network::MC];
+    }
+
+    public function isMaestroEnabled()
+    {
+        return $this->getCardNetworks()[Network::MAES];
+    }
+
+    public function isVisaEnabled()
+    {
+        return $this->getCardNetworks()[Network::VISA];
+    }
+
+    public function isJcbEnabled()
+    {
+        return $this->getCardNetworks()[Network::JCB];
+    }
+
+    public function isRupayEnabled()
+    {
+        return $this->getCardNetworks()[Network::RUPAY];
     }
 
     public function isPaytmEnabled()
@@ -377,6 +413,8 @@ class Entity extends Base\PublicEntity
         return $this->$func();
     }
 
+    // ----------------------- Getters --------------------------------------------
+
     public function getMerchantId()
     {
         return $this->getAttribute(self::MERCHANT_ID);
@@ -402,6 +440,11 @@ class Entity extends Base\PublicEntity
     public function getAmex()
     {
         return $this->getAttribute(self::AMEX);
+    }
+
+    public function getCardNetworks(): array
+    {
+        return $this->getAttribute(self::CARD_NETWORKS);
     }
 
     public function getEnabledBanks()
@@ -463,6 +506,104 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMI);
     }
 
+    public function getWallets()
+    {
+        $walletsStatus = array();
+
+        foreach ($this->wallets as $wallet)
+        {
+            $walletsStatus[$wallet] = $this->getAttribute($wallet);
+        }
+
+        return $walletsStatus;
+    }
+
+    public function getSupportedBanks()
+    {
+        $banks = NetbankingProcessor::getSupportedBanks($this->merchant);
+
+        $supportedBanks = array_diff($banks, $this->getDisabledBanks());
+
+        return $supportedBanks;
+    }
+
+    public static function getAllMethodNames()
+    {
+        return self::$methods;
+    }
+
+    // ----------------------- Getters End -----------------------------------------
+
+    // ----------------------- Setters --------------------------------------------
+
+    public function setMethods(array $input = array())
+    {
+        $this->edit($input, 'setMethods');
+    }
+
+    public function setDisabledBanks(array $banks)
+    {
+        $this->setAttribute(self::DISABLED_BANKS, $banks);
+    }
+
+    public function setCardNetworks(array $networks)
+    {
+        $this->setAttribute(self::CARD_NETWORKS, $networks);
+    }
+
+    public function setAmex($amex)
+    {
+        $this->setAttribute(self::AMEX, $amex);
+
+        $this->setAmexCard($amex);
+    }
+
+    public function setAmexCard(bool $value)
+    {
+        $this->setCardNetwork(Network::AMEX, $value);
+    }
+
+    public function setDinersCard(bool $value)
+    {
+        $this->setCardNetwork(Network::DICL, $value);
+    }
+
+    public function setMasterCard(bool $value)
+    {
+        $this->setCardNetwork(Network::MC, $value);
+    }
+
+    public function setMaestroCard(bool $value)
+    {
+        $this->setCardNetwork(Network::MAES, $value);
+    }
+
+    public function setVisaCard(bool $value)
+    {
+        $this->setCardNetwork(Network::VISA, $value);
+    }
+
+    public function setJcbCard(bool $value)
+    {
+        $this->setCardNetwork(Network::JCB, $value);
+    }
+
+    public function setRupayCard(bool $value)
+    {
+        $this->setCardNetwork(Network::RUPAY, $value);
+    }
+
+    protected function setCardNetwork(string $network, bool $value)
+    {
+        $cardNetworks = $this->getAttribute(self::CARD_NETWORKS);
+
+        Network::checkNetworkValidity($network);
+
+        $cardNetworks[$network] = $value;
+
+        $this->setCardNetworks($cardNetworks);
+    }
+
     public function setWallets($wallets)
     {
         foreach ($wallets as $wallet) {
@@ -478,28 +619,6 @@ class Entity extends Base\PublicEntity
                     break;
             }
         }
-    }
-
-    public function getWallets()
-    {
-        $walletsStatus = array();
-
-        foreach ($this->wallets as $wallet)
-        {
-            $walletsStatus[$wallet] = $this->getAttribute($wallet);
-        }
-
-        return $walletsStatus;
-    }
-
-    public function setDisabledBanks(array $banks)
-    {
-        $this->setAttribute(self::DISABLED_BANKS, $banks);
-    }
-
-    public function setAmex($amex)
-    {
-        $this->setAttribute(self::AMEX, $amex);
     }
 
     public function setPaytm($paytm)
@@ -584,21 +703,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::EMI, $emi);
     }
 
-    protected function getDisabledBanksAttribute()
-    {
-        if (empty($this->attributes[self::DISABLED_BANKS]) === true)
-        {
-            return [];
-        }
-        return json_decode($this->attributes[self::DISABLED_BANKS], true);
-    }
+    // ----------------------- Setters End ----------------------------------------
 
-    protected function setDisabledBanksAttribute(array $banks)
-    {
-        $this->attributes[self::DISABLED_BANKS] = json_encode(array_values($banks));
-    }
+    // ----------------------- Accessors --------------------------------------------
 
-    public function getWalletAttribute()
+    protected function getWalletAttribute()
     {
         $wallets = array();
 
@@ -610,17 +719,45 @@ class Entity extends Base\PublicEntity
         return $wallets;
     }
 
-    public function getSupportedBanks()
+    protected function getCardNetworksAttribute()
     {
-        $banks = NetbankingProcessor::getSupportedBanks($this->merchant);
-
-        $supportedBanks = array_diff($banks, $this->getDisabledBanks());
-
-        return $supportedBanks;
+        return $this->getEnabledCardNetworks();
     }
 
-    public static function getAllMethodNames()
+    protected function getEnabledCardNetworks(): array
     {
-        return self::$methods;
+        $networks = $this->attributes[self::CARD_NETWORKS];
+
+        return Network::getEnabledCardNetworks($networks);
     }
+
+    protected function getDisabledBanksAttribute()
+    {
+        if (empty($this->attributes[self::DISABLED_BANKS]) === true)
+        {
+            return [];
+        }
+        return json_decode($this->attributes[self::DISABLED_BANKS], true);
+    }
+
+    // ----------------------- Accessors End ----------------------------------------
+
+    // ----------------------- Mutators --------------------------------------------
+
+    protected function setCardNetworksAttribute($networks)
+    {
+        if (is_array($networks) === true)
+        {
+            $value = Network::getHexValue($networks);
+
+            $this->attributes[self::CARD_NETWORKS] = $value;
+        }
+    }
+
+    protected function setDisabledBanksAttribute(array $banks)
+    {
+        $this->attributes[self::DISABLED_BANKS] = json_encode(array_values($banks));
+    }
+
+    // ----------------------- Mutators End --------------------------------------------
 }

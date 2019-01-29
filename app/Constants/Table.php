@@ -38,6 +38,7 @@ class Table
     const ADDRESS               = 'addresses';
     const DISCOUNT              = 'discounts';
     const MERCHANT              = 'merchants';
+    const COMMISSION            = 'commissions';
     const PAYMENT_LINK          = 'payment_links';
     const FUND_ACCOUNT          = 'fund_accounts';
     const ENTITY_ORIGIN         = 'entity_origins';

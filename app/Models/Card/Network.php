@@ -19,6 +19,12 @@ class Network
     // Unidentified
     const UNKNOWN = 'UNKNOWN';
 
+    /**
+     * Amex disabled by default
+     * Bin => 1111110
+     */
+    const DEFAULT_CARD_NETWORKS = 126;
+
     public static $fullName = array(
         self::AMEX    => 'American Express',
         self::DICL    => 'Diners Club',
@@ -52,6 +58,16 @@ class Network
         self::VISA,
         self::DISC,
     );
+
+    public static $cardNetworkMap = [
+        Network::AMEX  => 1,
+        Network::DICL  => 2,
+        Network::MC    => 4,
+        Network::MAES  => 8,
+        Network::VISA  => 16,
+        Network::JCB   => 32,
+        Network::RUPAY => 64,
+    ];
 
     public static $networkRegexes = array(
         self::MC    => '/^5[1-5][0-9]{4,}$/',
@@ -151,6 +167,51 @@ class Network
     public static function isUnsupportedNetwork($network)
     {
         return (in_array($network, self::$unsupportedNetworks, true));
+    }
+
+    /**
+     * Iterates through cardnetwork and returns the hex value to be stored
+     */
+    public static function getHexValue(array $cardNetworks): int
+    {
+        $cardNetwork = 0;
+
+        foreach ($cardNetworks as $network => $value)
+        {
+            $bitPosition = self::$cardNetworkMap[strtoupper($network)];
+
+            // Set the bit
+            if ($value === true)
+            {
+                $cardNetwork = $cardNetwork | $bitPosition;
+            }
+            // Reset the bit
+            else
+            {
+                $cardNetwork = $cardNetwork & (~$bitPosition);
+            }
+        }
+
+        return $cardNetwork;
+    }
+
+    public static function getEnabledCardNetworks($networks): array
+    {
+        $cardNetworks = [];
+
+        foreach (self::$cardNetworkMap as $cardNetwork => $value)
+        {
+            if (($networks & $value) > 0)
+            {
+                $cardNetworks[$cardNetwork] = true;
+            }
+            else
+            {
+                $cardNetworks[$cardNetwork] = false;
+            }
+        }
+
+        return $cardNetworks;
     }
 
     public static function getFullName($network)
