@@ -66,6 +66,7 @@ class Entity extends Base\PublicEntity
     const SETTLED_ON             = 'settled_on';
     const TYPE                   = 'type';
     const MODE                   = 'mode';
+    const REFERENCE_ID           = 'reference_id';
 
     // Public attribute
     const DESTINATION            = 'destination';
@@ -128,6 +129,7 @@ class Entity extends Base\PublicEntity
         self::SETTLED_ON,
         self::TYPE,
         self::MODE,
+        self::REFERENCE_ID,
     ];
 
     protected $visible = [
@@ -161,6 +163,7 @@ class Entity extends Base\PublicEntity
         self::SETTLED_ON,
         self::TYPE,
         self::MODE,
+        self::REFERENCE_ID,
         self::INTERNAL_STATUS,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -185,6 +188,7 @@ class Entity extends Base\PublicEntity
         self::USER_ID,
         self::USER,
         self::MODE,
+        self::REFERENCE_ID,
         self::REVERSAL,
         self::FAILURE_REASON,
         self::CREATED_AT,
@@ -228,6 +232,7 @@ class Entity extends Base\PublicEntity
         self::MODE              => null,
         self::UTR               => null,
         self::FAILURE_REASON    => null,
+        self::REFERENCE_ID      => null,
     ];
 
     protected $amounts = [
@@ -341,6 +346,11 @@ class Entity extends Base\PublicEntity
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
+    }
+
+    public function getReferenceId()
+    {
+        return $this->getAttribute(self::REFERENCE_ID);
     }
 
     public function getCustomerId()

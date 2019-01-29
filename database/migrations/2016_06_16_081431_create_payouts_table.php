@@ -39,6 +39,9 @@ class CreatePayoutsTable extends Migration
 
             $table->string(Payout::METHOD);
 
+            $table->string(Payout::REFERENCE_ID, 255)
+                  ->nullable();
+
             $table->char(Payout::BALANCE_ID, Balance\Entity::ID_LENGTH)
                   ->nullable();
 
@@ -137,6 +140,8 @@ class CreatePayoutsTable extends Migration
             $table->index(Payout::STATUS);
 
             $table->index(Payout::MODE);
+
+            $table->index(Payout::REFERENCE_ID);
 
             $table->index(Payout::BALANCE_ID, Payout::MERCHANT_ID);
 
