@@ -9,4 +9,6 @@ interface CommissionSourceInterface
     public function merchant();
 
     public function getCurrency();
+
+    public function transaction();
 }
