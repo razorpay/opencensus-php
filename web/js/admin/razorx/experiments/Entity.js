@@ -25,6 +25,7 @@ export default class extends React.Component {
     this.setState({
       isFetching: true,
       data: null,
+      feature: null,
     });
 
     rexFetch({ url: 'experiments/' + id })
@@ -36,6 +37,15 @@ export default class extends React.Component {
         if (resp) {
           this.setState({
             data: resp,
+          });
+
+          // Fetch corresponding feature
+          rexFetch({ url: 'feature_flags/' + resp.feature_id }).then(resp => {
+            if (resp) {
+              this.setState({
+                feature: { id: resp.id, name: resp.name },
+              });
+            }
           });
         }
       })
@@ -61,6 +71,11 @@ export default class extends React.Component {
     return rexPatch(`experiments/${id}/terminate`).then(resp => {
       if (resp) {
         notifySuccess('Experiment is successfully Terminated');
+
+        // Update view on terminating experiment
+        this.setState({
+          data: resp,
+        });
       }
     });
   };
@@ -79,7 +94,7 @@ export default class extends React.Component {
   };
 
   render() {
-    const { isFetching, data } = this.state;
+    const { isFetching, data, feature } = this.state;
     const { id } = this.props;
 
     let content;
@@ -102,6 +117,7 @@ export default class extends React.Component {
       content = (
         <Details
           data={data}
+          feature={feature}
           activate={this.activate}
           terminate={this.terminate}
           showExperimentModal={this.showExperimentModal}
@@ -116,6 +132,7 @@ export default class extends React.Component {
 
 const Details = ({
   data,
+  feature,
   activate,
   terminate,
   showExperimentModal,
@@ -201,7 +218,19 @@ const Details = ({
 
       <div>
         <div class="label">Feature</div>
-        {data.feature_name} <br />
+        {feature && (
+          <span
+            class="sub-description"
+            style={{ flexDirection: 'column', marginBottom: 0 }}
+          >
+            <div>
+              <b>ID: </b> {feature.id}
+            </div>
+            <div>
+              <b>NAME: </b> {feature.name}
+            </div>
+          </span>
+        )}
         <Link class="link" to={`/features/${data.feature_id}`}>
           View Feature
         </Link>
