@@ -5,6 +5,8 @@ namespace RZP\Models\Merchant\AccessMap;
 use DB;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
+use RZP\Constants\Table;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
 
 class Repository extends Base\Repository
@@ -34,6 +36,18 @@ class Repository extends Base\Repository
                     ->merchantId($merchantId)
                     ->where(Entity::ENTITY_ID, $entityId)
                     ->where(Entity::ENTITY_TYPE, $entityType)
+                    ->first();
+    }
+
+    public function getPartnerApplication(string $merchantId)
+    {
+        $accessMapsEntityOwnerId = $this->dbColumn(Entity::ENTITY_OWNER_ID);
+        $merchantsId             = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+
+        return $this->newQuery()
+                    ->merchantId($merchantId)
+                    ->join(Table::MERCHANT, $accessMapsEntityOwnerId, $merchantsId)
+                    ->where(Table::MERCHANT . '.' . Merchant\Entity::PARTNER_TYPE, '!=', Merchant\Constants::PURE_PLATFORM)
                     ->first();
     }
 
