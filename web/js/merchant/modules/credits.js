@@ -23,6 +23,12 @@ export const fetchCreditBalance = () => {
   };
 };
 
+export const fetchCreditById = id => {
+  return merchantFetch({
+    url: `credits/${id}`,
+  });
+};
+
 let initialState = {
   loading: true,
   creditsData: {

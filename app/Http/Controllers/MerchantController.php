@@ -247,4 +247,13 @@ class MerchantController extends Controller
 
         return AppResponse::jsonResponse($error, $data);
     }
+    
+    public function validateCoupon()
+    {
+        $input = Input::all();
+        
+        list($error, $data) = (new Merchant\Service)->validateCouponCode($input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }    
 }

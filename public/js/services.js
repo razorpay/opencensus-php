@@ -79,6 +79,12 @@ angular
             });
           return deferred.promise;
         },
+        getTreatment: function(feature) {
+          return (
+            (((_identity || {}).experiments || {})[feature] || {}).result ===
+            'on'
+          );
+        },
       };
     },
   ])

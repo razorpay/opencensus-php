@@ -416,6 +416,7 @@ class Service extends Base\Service
 
                     $data['experiments']['subscription_link'] = $merchantService->getTreatment('subscription_link');
                     $data['experiments']['mjml_based_mailers'] = $merchantService->getTreatment('mjml_based_mailers');
+                    $data['experiments']['coupons'] = $merchantService->getTreatment('coupons');
 
                     $data['current'] = $currentMerchantId;
 

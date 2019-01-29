@@ -3,8 +3,8 @@ import Spinner from 'rzp/ui/Spinner';
 import HeaderAction from 'rzp/ui/HeaderAction';
 
 import { groupBy } from 'rzp/utils/rzp-utils';
-
 import CreditDetails from './CreditDetails';
+import CreditDetailsNew from './CreditDetailsNew';
 
 export default props => {
   let { creditsData, balanceData, loading, currentUser } = props;
@@ -41,11 +41,12 @@ export default props => {
           ) : (
             <Fragment>
               {(!!balanceData.credits || !!creditItems.amount) && (
-                <CreditDetails
+                <CreditDetailsNew
                   totalCredits={balanceData.credits}
                   title="Amount Credits"
-                  description="Get your amounts settled in full. Transaction amount gets deducted from amount credits."
+                  description="Transactions worth amount credits will be free of charge."
                   creditItems={creditItems.amount}
+                  toggleText={'Past Coupons'}
                   trackToggleHistory={props.trackToggleHistory}
                 />
               )}

@@ -63,6 +63,7 @@ const gatewayMapping = {
   wallet_openwallet: 'RZP Open Wallet',
   card_fss: 'Card FSS',
   enach_rbl: 'eNach RBL',
+  enach_npci_netbanking: 'eNach NPCI Netbanking',
   bt_yesbank: 'Bank Transfer - Yes Bank',
   bt_kotak: 'Bank Transfer - Kotak',
   bt_dashboard: 'Bank Transfer - Dashboard (Test)',

@@ -33,6 +33,8 @@ app
     'isHostedInBB',
     'appHost',
     'authCallbacks',
+    '$sce',
+    '$filter',
     function(
       $scope,
       $timeout,
@@ -49,7 +51,9 @@ app
       utils,
       isHostedInBB,
       appHost,
-      authCallbacks
+      authCallbacks,
+      $sce,
+      $filter
     ) {
       $scope.toArray = function(obj) {
         if (!obj) {
@@ -399,6 +403,10 @@ app
         i.src =
           'https://q.quora.com/_/ad/0b40045f43e5492d916199b03c35aa48/pixel?tag=ViewContent&noscript=1';
 
+        if ($scope.coupon.val !== '' && $scope.coupon.status === 'success') {
+          $scope.signup.merchantData.coupon_code = $scope.coupon.val;
+        }
+
         var payload = {
           method: 'post',
           url: '/user/pre_signup',
@@ -494,6 +502,9 @@ app
       };
 
       function goToVerification() {
+        //reset coupons
+        $scope.removeCoupon();
+
         if (!$scope.rightLayout) {
           $scope.goToSignupStep(2);
         } else {
@@ -1098,6 +1109,120 @@ app
             'auth'
           );
       }
+
+      $scope.coupon = {
+        val: '',
+        allowInput: false,
+        disabled: false,
+        status: '',
+        msg: '',
+        isValidating: false,
+        shouldRender: false,
+      };
+
+      $scope.onGotCouponCodeClick = function() {
+        $scope.allowInput = true;
+      };
+
+      $scope.onCouponChange = function() {
+        $scope.coupon.val = $filter('uppercase')($scope.coupon.val);
+      };
+
+      $scope.clearCoupon = function() {
+        $scope.coupon.val = '';
+      };
+
+      $scope.removeCoupon = function() {
+        $scope.coupon.val = '';
+        $scope.coupon.disabled = false;
+        $scope.coupon.status = '';
+        $scope.coupon.msg = '';
+        delete $scope.signup.merchantData.coupon_code;
+      };
+
+      $scope.validateCoupon = function() {
+        if ($scope.coupon.val === '') {
+          return;
+        }
+
+        $scope.coupon.disabled = true;
+        $scope.coupon.isValidating = true;
+
+        var payload = {
+          method: 'post',
+          url: 'user/coupons/validate',
+          data: {
+            code: $scope.coupon.val,
+          },
+        };
+
+        $http(payload).success(function(response) {
+          var msg = '',
+            status = '';
+
+          if (response.success) {
+            var today = new Date();
+            var amount = response.data.credit_amount / 100;
+            var expiryDate = new Date(
+              today.setDate(today.getDate() + response.data.expire_days)
+            ).toDateString();
+
+            msg = $sce.trustAsHtml(
+              'Transactions worth amount ' +
+                '<strong>₹' +
+                amount +
+                '</strong>' +
+                '/- will be free of charge' +
+                (response.data.expire_days ? ' till ' + expiryDate : '.')
+            );
+
+            status = 'success';
+          } else {
+            msg = $sce.trustAsHtml(response.errors[0]);
+            status = 'failure';
+          }
+          $scope.coupon.isValidating = false;
+          $scope.coupon.msg = msg;
+
+          $scope.coupon.status = status;
+        });
+      };
+
+      function shouldRenderCouponCode() {
+        var coupon_code = $location.search().coupon_code;
+        var shouldRender = false;
+
+        if (isHostedInBB) {
+          shouldRender = false;
+        }
+
+        // always render via url
+        if (!isHostedInBB && coupon_code && coupon_code.length > 0) {
+          $scope.coupon.val = coupon_code;
+          shouldRender = true;
+        }
+
+        $scope.coupon.shouldRender = shouldRender;
+      }
+
+      shouldRenderCouponCode();
+
+      $scope.$watch('signup.currentSubStep', function(newVal) {
+        if (newVal === 3) {
+          if (
+            !isHostedInBB &&
+            !$scope.coupon.shouldRender &&
+            user.getTreatment('coupons')
+          ) {
+            $scope.coupon.shouldRender = true;
+          }
+
+          if ($scope.coupon.shouldRender && $scope.coupon.val.length > 0) {
+            $scope.validateCoupon();
+            $scope.onGotCouponCodeClick();
+          }
+        }
+      });
     },
   ])
   .directive('overrideTab', [
