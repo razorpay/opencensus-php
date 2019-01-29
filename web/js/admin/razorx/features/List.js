@@ -23,9 +23,7 @@ export default class extends React.Component {
   });
 
   componentDidUpdate(prevProps) {
-    if (prevProps.mode !== this.props.mode) {
-      this.collection.fetch(); // Automatically fetches as per current mode
-    } else if (prevProps.queryParams !== this.props.queryParams) {
+    if (prevProps.queryParams !== this.props.queryParams) {
       this.collection.applyFilters(this.props.queryParams);
     }
   }
