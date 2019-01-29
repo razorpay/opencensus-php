@@ -56,7 +56,7 @@ export default class extends React.Component {
         <Form onSubmit={this.applyFilters} class="filters">
           <Field label="Id" name="id" defaultValue={params.id || ''} />
           <Field label="Name" name="name" />
-          <Field label="Created By" name="created_by" />
+          <Field label="Created By" name="created_by" placeholder="Email" />
 
           <DateField
             label="Activated On"

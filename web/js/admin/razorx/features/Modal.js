@@ -16,7 +16,7 @@ import validatorJSON, { initJSONObj } from './validators';
 
 @withRouter
 export default class extends React.Component {
-  state = { variants: this.props.data ? this.props.variants : [''] };
+  state = { variants: this.props.data ? this.props.data.variants : [''] };
 
   onSubmit = form => {
     const isInvalid = this.isInvalid();
@@ -137,7 +137,9 @@ export default class extends React.Component {
               <Field
                 label="Slack Notify"
                 placeholder="Comma separated list without @"
-                defaultValue={isEdit ? data.notify.join(', ') : ''}
+                defaultValue={
+                  isEdit && data.notify ? data.notify.join(', ') : ''
+                }
                 type="text"
                 name="notify"
               />
