@@ -210,6 +210,10 @@ export default class User {
     return this.findTag('announcement_razorpayx');
   }
 
+  get isInvoiceReceiptMandatory() {
+    return this.isFeatureEnabled('invoice_receipt_mandatory');
+  }
+
   get enabledFeatures() {
     let pluckKey = 'feature';
 
@@ -279,9 +283,7 @@ export default class User {
 
   // Allowed roles can be revoked refund access selectively with this tag
   get isRefundAllowed() {
-    return (
-      this.isAllowedEdit('refunds') && !this.isRefundsDisabled
-    );
+    return this.isAllowedEdit('refunds') && !this.isRefundsDisabled;
   }
 }
 

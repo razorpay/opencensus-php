@@ -244,6 +244,7 @@ export default class InvoiceDetailContainer extends Component {
 
     return (
       <InvoiceDetail
+        user={user}
         invoice={invoice}
         isLoading={loading}
         statusMsg={statusMsg}
