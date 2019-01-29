@@ -27,47 +27,50 @@ export default class extends React.Component {
     this.setState({
       isFetching: true,
       data: null,
+      experiments: null,
     });
 
-    const fetchFeature = rexFetch({ url: 'feature_flags/' + id });
+    rexFetch({ url: 'feature_flags/' + id })
+      .then(resp => {
+        this.setState({
+          isFetching: false,
+        });
 
-    Promise.all([fetchFeature, ...this.getExperimentsFetchArray(id)])
-      .then(
-        ([
-          feature,
-          expLiveTotal,
-          expTestTotal,
-          expLiveCreated,
-          expTestCreated,
-          expActivated,
-        ]) => {
+        if (resp) {
           this.setState({
-            isFetching: false,
+            data: resp,
           });
-
-          if (feature) {
-            this.setState({
-              data: feature,
-              experiments: {
-                live: {
-                  total: expLiveTotal && expLiveTotal.items.length,
-                  created: expLiveCreated && expLiveCreated.items.length,
-                },
-                test: {
-                  total: expTestTotal && expTestTotal.items.length,
-                  created: expTestCreated && expTestCreated.items.length,
-                },
-                activated: expActivated.items[0],
-              },
-            });
-          }
         }
-      )
-      .catch(({ errors }) => {
+      })
+      .catch(err => {
         this.setState({
           isFetching: false,
         });
       });
+
+    Promise.all(this.getExperimentsFetchArray(id)).then(
+      ([
+        expLiveTotal,
+        expTestTotal,
+        expLiveCreated,
+        expTestCreated,
+        expActivated,
+      ]) => {
+        this.setState({
+          experiments: {
+            live: {
+              total: expLiveTotal && expLiveTotal.items.length,
+              created: expLiveCreated && expLiveCreated.items.length,
+            },
+            test: {
+              total: expTestTotal && expTestTotal.items.length,
+              created: expTestCreated && expTestCreated.items.length,
+            },
+            activated: expActivated.items[0],
+          },
+        });
+      }
+    );
   }
 
   getExperimentsFetchArray(id) {
@@ -173,7 +176,8 @@ const Details = ({
         <span>
           <b>ID:</b> {data.id}
         </span>
-        {!experiments.live.total &&
+        {experiments &&
+          !experiments.live.total &&
           !experiments.test.total && (
             <span class="to-right">
               <a class="link text-bold" onClick={showFeatureModal}>
@@ -218,109 +222,113 @@ const Details = ({
 
       <br />
 
-      <div>
-        {experiments.activated ? (
+      {experiments && (
+        <React.Fragment>
           <div>
-            <div class="label">Active Experiment</div>
-
-            <div class="sub-description column">
+            {experiments.activated ? (
               <div>
-                <b>ID: </b> {experiments.activated.id}
-                <Link
-                  class="link m-l"
-                  to={`/experiments/${experiments.activated.id}?feature_id=${
-                    data.id
-                  }`}
-                >
-                  View
-                </Link>
+                <div class="label">Active Experiment</div>
+
+                <div class="sub-description column">
+                  <div>
+                    <b>ID: </b> {experiments.activated.id}
+                    <Link
+                      class="link m-l"
+                      to={`/experiments/${
+                        experiments.activated.id
+                      }?feature_id=${data.id}`}
+                    >
+                      View
+                    </Link>
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div class="label">No Active Experiment</div>
+            )}
           </div>
-        ) : (
-          <div class="label">No Active Experiment</div>
-        )}
-      </div>
 
-      <br />
+          <br />
 
-      <div>
-        <div class="label">Total Experiments</div>
-        {
           <div>
-            <div class="sub-description column">
+            <div class="label">Total Experiments</div>
+            {
               <div>
-                <b>LIVE: </b> {experiments.live.total}
-                {!!experiments.live.total && (
-                  <a
-                    class="link m-l"
-                    onClick={goToExperiment(
-                      'live',
-                      `/experiments?feature_id=${data.id}`
+                <div class="sub-description column">
+                  <div>
+                    <b>LIVE: </b> {experiments.live.total}
+                    {!!experiments.live.total && (
+                      <a
+                        class="link m-l"
+                        onClick={goToExperiment(
+                          'live',
+                          `/experiments?feature_id=${data.id}`
+                        )}
+                      >
+                        View
+                      </a>
                     )}
-                  >
-                    View
-                  </a>
-                )}
-              </div>
-              <div>
-                <b>TEST: </b> {experiments.test.total}
-                {!!experiments.test.total && (
-                  <a
-                    class="link m-l"
-                    onClick={goToExperiment(
-                      'test',
-                      `/experiments?feature_id=${data.id}`
+                  </div>
+                  <div>
+                    <b>TEST: </b> {experiments.test.total}
+                    {!!experiments.test.total && (
+                      <a
+                        class="link m-l"
+                        onClick={goToExperiment(
+                          'test',
+                          `/experiments?feature_id=${data.id}`
+                        )}
+                      >
+                        View
+                      </a>
                     )}
-                  >
-                    View
-                  </a>
-                )}
+                  </div>
+                </div>
               </div>
-            </div>
+            }
           </div>
-        }
-      </div>
 
-      <br />
+          <br />
 
-      <div>
-        <div class="label">Total Pending Experiments</div>
-        {
           <div>
-            <div class="sub-description column">
+            <div class="label">Total Pending Experiments</div>
+            {
               <div>
-                <b>LIVE: </b> {experiments.live.created}
-                {!!experiments.live.created && (
-                  <a
-                    class="link m-l"
-                    onClick={goToExperiment(
-                      'live',
-                      `/experiments?feature_id=${data.id}&status=created`
+                <div class="sub-description column">
+                  <div>
+                    <b>LIVE: </b> {experiments.live.created}
+                    {!!experiments.live.created && (
+                      <a
+                        class="link m-l"
+                        onClick={goToExperiment(
+                          'live',
+                          `/experiments?feature_id=${data.id}&status=created`
+                        )}
+                      >
+                        View
+                      </a>
                     )}
-                  >
-                    View
-                  </a>
-                )}
-              </div>
-              <div>
-                <b>TEST: </b> {experiments.test.created}
-                {!!experiments.test.created && (
-                  <a
-                    class="link m-l"
-                    onClick={goToExperiment(
-                      'test',
-                      `/experiments?feature_id=${data.id}&status=created`
+                  </div>
+                  <div>
+                    <b>TEST: </b> {experiments.test.created}
+                    {!!experiments.test.created && (
+                      <a
+                        class="link m-l"
+                        onClick={goToExperiment(
+                          'test',
+                          `/experiments?feature_id=${data.id}&status=created`
+                        )}
+                      >
+                        View
+                      </a>
                     )}
-                  >
-                    View
-                  </a>
-                )}
+                  </div>
+                </div>
               </div>
-            </div>
+            }
           </div>
-        }
-      </div>
+        </React.Fragment>
+      )}
     </div>
   );
 };
