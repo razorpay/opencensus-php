@@ -30,7 +30,7 @@ class FTS
     protected $auth;
 
     const FundAccountBaseURL  = '/accounts';
-    const FundTransferBaseURL = '/fund_transfer';
+    const FundTransferBaseURL = '/transfer';
 
     const URLS = [
         'register'              => 'register',
@@ -95,6 +95,17 @@ class FTS
     public function registerFundAccount(array $input, bool $throwExceptionOnFailure = false): array
     {
         return $this->createAndSendRequest(self::FundAccountBaseURL . '/' . self::URLS['register'], 'POST', $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param array $input
+     * @param bool  $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    public function requestFundTransfer(array $input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->createAndSendRequest(self::FundTransferBaseURL . '/' . self::URLS['request'], 'POST', $input, $throwExceptionOnFailure);
     }
 
     /**
