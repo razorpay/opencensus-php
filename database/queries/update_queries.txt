@@ -2286,3 +2286,7 @@ UPDATE merchant_banks SET card_networks=127 WHERE amex=1;
 # Fixes merchant's entities state introduced because of an issue which is fixed separately.
 UPDATE bank_accounts SET deleted_at = NULL WHERE id = 'BikuFg4LjWPaRc' LIMIT 1;
 UPDATE virtual_accounts SET status = 'active' WHERE id = 'BikuFWAIzbn1Hb' LIMIT 1;
+
+# Missed to update updated_at in above queries ^
+# The virtual account has already received new payments and updated_at is touched.
+UPDATE bank_accounts SET updated_at = UNIX_TIMESTAMP() WHERE id = 'BikuFg4LjWPaRc' LIMIT 1;
