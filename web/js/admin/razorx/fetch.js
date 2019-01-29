@@ -90,7 +90,7 @@ function _makeRequest(payload, type) {
       let error = typeof err.errors !== 'undefined' ? err.errors : err;
 
       if (error instanceof Array) {
-        error = errors[0];
+        error = error[0];
       }
 
       notifyError(error);

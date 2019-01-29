@@ -33,14 +33,13 @@ export default class extends React.Component {
   initState() {
     const isEdit = !!this.props.data;
     let selectedFeature = null;
-    const state = {
-      selectedFeature,
-    };
+    let state = {};
 
     if (isEdit) {
-      selectedFeature = [...this.props.feature];
+      selectedFeature = { ...this.props.feature };
       selectedFeature.id = String(selectedFeature.id);
 
+      state.selectedFeature = selectedFeature;
       state.featuresList = [selectedFeature];
       state.segments = this.props.data.segments;
     }
@@ -49,18 +48,17 @@ export default class extends React.Component {
   }
 
   componentWillMount() {
-    const params = {};
-    const data = this.props.data;
+    const isEdit = !!this.props.data;
 
-    if (data && data.id) {
-      params.id = data.id;
+    if (isEdit) {
+      this.defaultFeaturesList = this.state.featuresList;
+    } else {
+      this.fetchFeaturesList().then(list => {
+        if (list) {
+          this.defaultFeaturesList = list;
+        }
+      });
     }
-
-    this.fetchFeaturesList(params).then(list => {
-      if (list) {
-        this.defaultFeaturesList = list;
-      }
-    });
   }
 
   fetchFeaturesList(params) {
@@ -74,11 +72,6 @@ export default class extends React.Component {
           id: String(f.id),
           variants: f.variants,
         }));
-
-        const isEdit = !!this.props.data;
-        if (isEdit) {
-          featuresList.push(this.state.selectedFeature);
-        }
 
         this.setState({ featuresList });
 
@@ -218,7 +211,7 @@ export default class extends React.Component {
   };
 
   handleSelectFeature = ({ option }) => {
-    this.setState({ selectedFeature: option });
+    this.setState({ selectedFeature: option, segments: null });
   };
 
   onChangeSegmentsList = segments => {
@@ -295,14 +288,14 @@ export default class extends React.Component {
               />
 
               {selectedFeature && (
-                <React.Fragment>
+                <div key={selectedFeature.id}>
                   <div class="sub-heading">Segments</div>
                   <SegmentsList
                     variantsList={selectedFeature.variants}
                     onChange={this.onChangeSegmentsList}
                     defaultValue={this.state.segments}
                   />
-                </React.Fragment>
+                </div>
               )}
 
               <div style={{ marginTop: 24 }} />
