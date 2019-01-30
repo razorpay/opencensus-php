@@ -343,7 +343,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $sponsor = $this->config['live_emandate_npci_sponser_ifsc'];
+            $sponsor = $this->getLiveGatewayAccessCode();
         }
 
         return $sponsor;
