@@ -1182,6 +1182,7 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingCsbTerminal();
         $this->createEbsTerminal();
         $this->createEnachRblTerminal();
+        $this->createEnachNetbankingNpciTerminal();
         $this->createAepsTerminal();
         $this->createHitachiGatewayMotoTerminal();
         $this->createEnstageTerminal();
