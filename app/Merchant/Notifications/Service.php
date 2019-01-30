@@ -43,7 +43,7 @@ class Service extends Base\Service
                 $filteredNotifications[] = $value;
             }
         });
-        s($filteredNotifications);
+
         return $filteredNotifications;
     }
 
