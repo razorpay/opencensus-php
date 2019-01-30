@@ -963,7 +963,7 @@ class Gateway extends Base\Gateway
 
         if ($status !== Status::SUCCESS)
         {
-            $message = "Payment Failed during callback";
+            $message = 'Payment Failed during callback';
 
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
@@ -1064,7 +1064,7 @@ class Gateway extends Base\Gateway
     {
         if (empty($refundFields) === false)
         {
-            return[
+            return [
                 Fields::ORIGINAL_BANK_RRN_REQ => $refundFields[Fields::ORIGINAL_BANK_RRN_REQ] ?? null,
                 Fields::STATUS                => $refundFields[Fields::STATUS] ?? null,
                 Fields::RESPONSE              => $refundFields[Fields::RESPONSE] ?? null,
@@ -1172,5 +1172,16 @@ class Gateway extends Base\Gateway
         $gatewayPayment->saveOrFail();
 
         return true;
+    }
+
+    protected function getStandardRequestArray($content = [], $method = 'post', $type = null)
+    {
+        $request = parent::getStandardRequestArray($content, $method, $type);
+
+        $request['headers'] = [
+            'Content-Type' => 'text/plain'
+        ];
+
+        return $request;
     }
 }

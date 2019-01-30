@@ -1820,6 +1820,35 @@ class AdminFetch
                     Fetch::VALUES => NodalBeneficiary\Status::getAllowedBeneficiaryStatus(),
                 ],
             ],
+
+            Entity::ENTITY_ORIGIN => [
+                'origin_id'   => [
+                    Fetch::LABEL => 'Origin Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'origin_type' => [
+                    Fetch::LABEL  => 'Origin Type',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => ['merchant', 'application'],
+                ],
+                'entity_id'   => [
+                    Fetch::LABEL => 'Entity Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'entity_type' => [
+                    Fetch::LABEL  => 'Entity Type',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => ['payment'],
+                ],
+            ],
+
+            Entity::MERCHANT_ACCESS_MAP => [
+                'merchant_id'     => FETCH::FIELD_MERCHANT_ID,
+                'entity_owner_id' => [
+                    Fetch::LABEL => 'Entity Owner Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+            ],
         ];
     }
 

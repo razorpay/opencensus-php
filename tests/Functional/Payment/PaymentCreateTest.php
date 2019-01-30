@@ -3,14 +3,17 @@
 namespace RZP\Tests\Functional\Payment;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factory;
+
 use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Fixtures;
+use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class PaymentCreateTest extends TestCase
 {
+    use OAuthTrait;
     use PaymentTrait;
 
     public function setUp()
@@ -18,6 +21,10 @@ class PaymentCreateTest extends TestCase
         $this->testDataFilePath = __DIR__.'/helpers/PaymentCreateTestData.php';
 
         parent::setUp();
+
+        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->app->make(Factory::class)->load($factoryPath);
 
         $this->ba->publicAuth();
 
@@ -566,6 +573,86 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($error['description'], 'The cvv must be between 3 and 4 digits.');
     }
 
+    /**
+     * Tests S2S on partner auth with application feature(S2S)
+     */
+    public function testPaymentS2SOnPartnerAuth()
+    {
+        $client = $this->createPartnerApplicationAndGetClientByEnv(
+            'dev',
+            [
+                'type' => 'partner',
+                'id'   => 'AwtIC8XQqM0Wet'
+            ]);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        $sub = $this->fixtures->merchant->createWithBalance();
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'application', 'entity_id'  => 'AwtIC8XQqM0Wet', 'name' => 's2s']);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => $sub->getId(),
+            ]
+        );
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->methods->createDefaultMethods(['merchant_id' => $sub->getId()]);
+
+        $response = $this->doS2SPartnerAuthPayment($payment, $client, 'acc_' . $sub->getId());
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $pay = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($pay['public_id'], $response['razorpay_payment_id']);
+
+        $this->assertEquals($pay['status'], 'authorized');
+    }
+
+    /**
+     * Tests S2S failure on partner auth with application feature(S2S) missing
+     */
+    public function testPaymentS2SOnPartnerAuthWrongApp()
+    {
+        $client = $this->createPartnerApplicationAndGetClientByEnv(
+            'dev',
+            [
+                'type' => 'partner',
+                'id'   => 'notAllowedPApp'
+            ]);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        $sub = $this->fixtures->merchant->createWithBalance();
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'application', 'entity_id'  => 'notAllowedPApp', 'name' => 's2s']);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => $sub->getId(),
+            ]
+        );
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->methods->createDefaultMethods(['merchant_id' => $sub->getId()]);
+
+        $response = $this->doS2SPartnerAuthPayment($payment, $client, 'acc_' . $sub->getId());
+
+        $error = $response['error'];
+        $this->assertEquals($error['code'], 'BAD_REQUEST_ERROR');
+        $this->assertEquals($error['description'], 'The requested URL was not found on the server.');
+    }
+
     public function testNotEnrolledCardPaymentS2SOnPrivateAuth()
     {
         $payment = $this->getDefaultPaymentArray();
@@ -773,7 +860,7 @@ class PaymentCreateTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'redirect_s2s_authorize']);
+        $this->fixtures->merchant->addFeatures(['s2s']);
 
         $response = $this->doS2SPrivateAuthPayment($payment);
 
@@ -806,7 +893,7 @@ class PaymentCreateTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'redirect_s2s_authorize']);
+        $this->fixtures->merchant->addFeatures(['s2s']);
 
         $response = $this->doS2SPrivateAuthPayment($payment);
 

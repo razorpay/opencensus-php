@@ -4,10 +4,10 @@ namespace RZP\Http;
 
 use ApiResponse;
 use Illuminate\Routing\Router;
+
 use RZP\Foundation\Application;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Feature\Constants as Feature;
-
 use RZP\Models\Admin\Permission\Name as Permission;
 
 final class Route
@@ -49,7 +49,9 @@ final class Route
         'payment_create_wallet'                    => ['post',     'payments/create/wallet',                         'PaymentCreateController@postCreateWalletPayment'                   ],
         'payment_create_upi'                       => ['post',     'payments/create/upi',                            'PaymentCreateController@postCreateUpiPayment'                      ],
         'payment_create_openwallet'                => ['post',     'payments/create/openwallet',                     'PaymentCreateController@postCreateS2SPayment'                      ],
-        'payment_redirect_to_authoize'             => ['get',      'payments/{id}/redirect',                         'PaymentCreateController@postRedirectToAuthorize'                   ],
+        'payment_redirect_to_authorize'            => ['get',      'payments/{id}/redirect',                         'PaymentCreateController@postRedirectToAuthorize'                   ],
+        'payment_redirect_to_authorize_get'        => ['get',      'payments/{id}/authorize',                        'PaymentCreateController@postRedirectToAuthorize'                   ],
+        'payment_redirect_to_authorize_post'       => ['post',     'payments/{id}/authorize',                        'PaymentCreateController@postRedirectToAuthorize'                   ],
         'payment_callback_ajax_with_key_get'       => ['get',      'payments/{id}/callback/ajax/{hash}/{key}',       'PaymentCreateController@postAJAXCallback'                          ],
         'payment_callback_post'                    => ['post',     'payments/{x_entity_id}/callback/{hash}',         'PaymentCreateController@postCallback'                              ],
         'payment_callback_get'                     => ['get',      'payments/{x_entity_id}/callback/{hash}',         'PaymentCreateController@postCallback'                              ],
@@ -2304,7 +2306,9 @@ final class Route
         'gateway_payment_validate_bharatqr',
         'refund_fetch_for_customer',
         'get_merchant_partner_status',
-        'payment_redirect_to_authoize',
+        'payment_redirect_to_authorize',
+        'payment_redirect_to_authorize_get',
+        'payment_redirect_to_authorize_post',
     ];
 
     /**
@@ -2690,8 +2694,8 @@ final class Route
         'addon_delete',
         'subscription_create_addon',
         'subscription_fetch_due_addons',
-        'subscription_test_charge',
-        'subscription_manual_retry',
+        //'subscription_test_charge',
+        //'subscription_manual_retry',
         // Crons
         'subscriptions_expire',
         // 'subscriptions_charge_invoices',
@@ -2713,11 +2717,8 @@ final class Route
         'addon_delete',
         'subscription_create_addon',
         'subscription_fetch_due_addons',
-        'subscription_test_charge',
-        'subscription_manual_retry',
-        'subscription_cancel',
-        'subscription_test_charge',
-        'subscription_manual_retry',
+        //'subscription_test_charge',
+        //'subscription_manual_retry',
     ];
 
     /**

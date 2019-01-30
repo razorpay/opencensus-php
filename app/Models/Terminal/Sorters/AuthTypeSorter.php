@@ -72,6 +72,14 @@ class AuthTypeSorter extends Terminal\Sorter
             return ($terminal->getGateway() === Payment\Gateway::HITACHI);
         }
 
+        // headless check
+        if (($authType === Payment\AuthType::OTP) and
+            ($payment->card->iinRelation !== null) and
+            ($payment->card->iinRelation->supports(Card\IIN\Flow::HEADLESS_OTP) === false))
+        {
+            return false;
+        }
+
         return true;
     }
 }

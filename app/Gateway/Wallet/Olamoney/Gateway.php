@@ -1036,7 +1036,23 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::HASH] = $this->getHashForRefundRequest($content);
 
-        $request = $this->getStandardRequestArray(json_encode($content));
+        // Changes for olamoney postpaid
+        $type = null;
+
+        if ($this->version === 'v2')
+        {
+            $type = 'refund_v3';
+
+            unset($content[RequestFields::SALE_ID]);
+
+            $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                $input['payment']['id'],
+                Action::AUTHORIZE);
+
+            $content[RequestFields::SALE_ID_V2] = $gatewayPayment->getGatewayPaymentId();
+        }
+
+        $request = $this->getStandardRequestArray(json_encode($content), 'post', $type);
 
         return $request;
     }

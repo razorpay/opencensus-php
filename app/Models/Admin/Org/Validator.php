@@ -26,6 +26,7 @@ class Validator extends Base\Validator
         Entity::SIGNATURE_EMAIL      => 'sometimes|email',
         Entity::PERMISSIONS          => 'required|array',
         Entity::WORKFLOW_PERMISSIONS => 'sometimes|array',
+        Entity::TYPE                 => 'filled|in:restricted',
     ];
 
     protected static $editRules = [
