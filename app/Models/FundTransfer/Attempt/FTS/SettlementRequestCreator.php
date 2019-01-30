@@ -12,16 +12,16 @@ use RZP\Models\Base;
 
 class SettlementRequestCreator extends Base\Core
 {
-    const MERCHANT_ID       = 'merchant_id';
+    const MODE              = 'mode';
+    const AMOUNT            = 'amount';
+    const CHANNEL           = 'channel';
     const PRODUCT           = 'product';
     const ENTITY_ID         = 'entity_id';
-    const FUND_ACCOUNT_ID   = 'fund_account_id';
-    const CHANNEL           = 'channel';
-    const AMOUNT            = 'amount';
-    const MODE              = 'mode';
-    const INITIATE_AT       = 'initiate_at';
-    const SETTLEMENT        = 'settlement';
     const NARRATION         = 'narration';
+    const SETTLEMENT        = 'settlement';
+    const MERCHANT_ID       = 'merchant_id';
+    const INITIATE_AT       = 'initiate_at';
+    const FUND_ACCOUNT_ID   = 'fund_account_id';
 
     public function createRequest(array $attempt): array
     {
@@ -30,15 +30,15 @@ class SettlementRequestCreator extends Base\Core
         $settlement   = $this->repo->settlement->getSettlementById($settlementId);
 
         $request['transfer'] = [
-            self::PRODUCT           => self::SETTLEMENT,
-            self::MERCHANT_ID       => $attempt->merchant->getId(),
-            self::ENTITY_ID         => $attempt->getId(),
-            self::FUND_ACCOUNT_ID   => $attempt->bank_account->getFTSAccountId(),
-            self::CHANNEL           => $attempt->getChannel(),
-            self::AMOUNT            => $settlement->getAmount(),
             self::MODE              => $attempt->getMode(),
-            self::INITIATE_AT       => $attempt->getInitiateAt(),
+            self::AMOUNT            => $settlement->getAmount(),
+            self::CHANNEL           => $attempt->getChannel(),
+            self::PRODUCT           => self::SETTLEMENT,
+            self::ENTITY_ID         => $attempt->getId(),
             self::NARRATION         => $attempt->getNarration(),
+            self::MERCHANT_ID       => $attempt->merchant->getId(),
+            self::INITIATE_AT       => $attempt->getInitiateAt(),
+            self::FUND_ACCOUNT_ID   => $attempt->bank_account->getFTSAccountId(),
         ];
 
         return $request;
