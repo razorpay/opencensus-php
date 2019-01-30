@@ -64,7 +64,7 @@ class Gateway extends Base\Gateway
 
             $this->validateCallbackChecksum(
                 $this->generateHash($secureData),
-                $input['gateway'][ResponseFields::CHECKSUM]
+                $input
             );
 
             $attributes = $this->getResponseGatewayAttributes($xmlData);
@@ -533,12 +533,19 @@ class Gateway extends Base\Gateway
         return $recurringData;
     }
 
-    protected function validateCallbackChecksum($expectedChecksum, $checksum)
+    protected function validateCallbackChecksum($expectedChecksum, $input)
     {
-        if ($checksum !== $expectedChecksum)
+        $calculated = $input['gateway'][ResponseFields::CHECKSUM];
+
+        if ($calculated !== $expectedChecksum)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Failed checksum verification');
+                'Failed checksum verification',
+                '',
+                [
+                    'payment_id'            => $input['payment']['id'],
+                    'gateway'               => $this->gateway,
+                ]);
         }
     }
 
