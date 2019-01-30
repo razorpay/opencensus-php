@@ -6,7 +6,6 @@ use Carbon\Carbon;
 
 use RZP\Constants;
 use RZP\Models\Base;
-use RZP\Models\FundTransfer\Attempt\FTS\SettlementRequestHandler;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Services\Beam\Service;
@@ -15,6 +14,7 @@ use RZP\Models\Vpa\Entity as VpaEntity;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
+use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
 class Core extends Base\Core
 {
