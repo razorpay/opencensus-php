@@ -134,6 +134,11 @@ class Gateway extends Base\Gateway
 
         $bank = $input['payment']['bank'];
 
+        if (in_array($bank, Payment\Processor\Netbanking::$inconsistentIfsc) === true)
+        {
+            $bank = array_search ($bank, Payment\Processor\Netbanking::$defaultInconsistentBankCodesMapping);
+        }
+
         $content = [
             RequestFields::MERCHANT_ID => $mid,
             RequestFields::REQUEST_XML => $signedxml,
