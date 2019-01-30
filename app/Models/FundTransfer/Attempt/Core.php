@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Models\FundTransfer\Attempt\FTS\SettlementRequestHandler;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Services\Beam\Service;
@@ -38,6 +39,13 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($fundTransferAttempt);
 
+        if(strcasecmp($this->channel , Channel::ICICI2) === 0)
+        {
+            $requestHandler = new FundTransferAttempt\FTS\RequestHandler();
+
+            $requestHandler->sendFTSFundTransferRequestUsingBankAccount($source, $bankAccount, $fundTransferAttempt);
+        }
+
         return $fundTransferAttempt;
     }
 
@@ -54,6 +62,13 @@ class Core extends Base\Core
         $fundTransferAttempt->getValidator()->validateModeIfSet($values);
 
         $this->repo->saveOrFail($fundTransferAttempt);
+
+        if(strcasecmp($this->channel , Channel::ICICI2) === 0)
+        {
+            $requestHandler = new FundTransferAttempt\FTS\RequestHandler();
+
+            $requestHandler->sendFTSFundTransferRequestUsingVPA($source, $vpa, $fundTransferAttempt);
+        }
 
         return $fundTransferAttempt;
     }

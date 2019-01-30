@@ -2,7 +2,6 @@
 
 namespace RZP\Models\FundTransfer\Attempt;
 
-use App;
 use Carbon\Carbon;
 
 use Monolog\Logger;
@@ -19,7 +18,6 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Jobs\AttemptsRecon as AttemptsReconJob;
 use RZP\Jobs\AttemptStatusCheck as AttemptStatusCheckJob;
-use RZP\Models\FundTransfer\Attempt\FTS\SettlementRequestCreator;
 
 class Initiator extends Base\Core
 {
@@ -29,8 +27,6 @@ class Initiator extends Base\Core
     const FTA_PURPOSE = 'settlement';
 
     protected $mutex;
-
-    public $requestCreator;
 
     public function __construct()
     {
@@ -119,14 +115,7 @@ class Initiator extends Base\Core
 
             $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_FTA_ENTITIES_FETCHED);
 
-            if(strcasecmp($channel, Channel::ICICI2) === 0)
-            {
-                $data[$channel] = $this->processFundTransferThroughFTS($purpose, $channel, $attempts);
-            }
-            else
-            {
-                $data[$channel] = $this->processFundTransferAttempts($purpose, $channel, $attempts);
-            }
+            $data[$channel] = $this->processFundTransferAttempts($purpose, $channel, $attempts);
 
             return $data;
         });
@@ -421,56 +410,5 @@ class Initiator extends Base\Core
         }
 
         return [true, null];
-    }
-
-    public function processFundTransferThroughFTS($purpose, $channel, $attempts): array
-    {
-        $count = $attempts->count();
-
-        $data = ['channel' => $channel, 'count' => $count];
-
-        if ($count === 0)
-        {
-            $data['message'] = 'No Attempts to process';
-
-            return $data;
-        }
-
-        $this->setRequestCreator($purpose);
-
-        foreach ($attempts as $attempt)
-        {
-            $request  = $this->requestCreator->createRequest($attempt);
-
-            App::getFacadeRoot()['fts']->requestFundTransfer($request, true);
-        }
-
-        return $data;
-    }
-
-    public function setRequestCreator($purpose)
-    {
-
-        switch ($purpose)
-        {
-            case 'settlement':
-
-                $this->requestCreator = new SettlementRequestCreator();
-
-                break;
-
-            case 'refund':
-                //TODO:: Add request creator for refund
-
-                break;
-
-            case 'payouts':
-                //TODO:: Add request creator for payouts
-
-                break;
-
-            default:
-                throw new LogicException('Source is not supported ' . $this->type);
-        }
     }
 }
