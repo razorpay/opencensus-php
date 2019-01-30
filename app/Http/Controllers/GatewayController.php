@@ -405,6 +405,7 @@ class GatewayController extends Controller
         }
         else
         {
+            //TODO : what if payment id is not present : possible
             $paymentId = $responseArray['MndtRejResp']['OrigReqInfo']['MndtReqId'];
         }
 
