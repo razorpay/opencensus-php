@@ -4,8 +4,12 @@ namespace RZP\Tests\Functional\Fixtures\Entity;
 
 class Customer extends Base
 {
+    protected $expiredAtTime;
+
     public function setUp()
     {
+        $this->expiredAtTime = now()->timestamp; + 9000000;
+
         $this->fixtures->create('customer:customers');
         $this->fixtures->create('customer:app_tokens');
         $this->fixtures->create('customer:tokens');
@@ -163,6 +167,11 @@ class Customer extends Base
 
         foreach ($this->customerTokens as $attributes)
         {
+            if (($attributes['method'] === 'card') or
+                ($attributes['method'] === 'emandate'))
+            {
+                $attributes['expired_at'] = $this->expiredAtTime;
+            }
             $tokens[] = $this->fixtures->create('token', $attributes);
         }
 

@@ -32,6 +32,7 @@ class CustomerTokenTest extends TestCase
 
     public function testGetTokenWithoutBankDetails()
     {
+        //bank details only when method is emandage and feature flag is set
         $token = $this->getTokenById('token_100000emandate');
         self::assertArrayNotHasKey(Token\Entity::BANK_DETAILS, $token);
 
@@ -49,6 +50,7 @@ class CustomerTokenTest extends TestCase
 
     public function testGetTokenMaxAmount()
     {
+        //max amount should be present only in method = emandate
         $token = $this->getTokenById('token_100000emandate');
         self::assertArrayHasKey(Token\Entity::MAX_AMOUNT, $token);
 
@@ -60,6 +62,24 @@ class CustomerTokenTest extends TestCase
 
         $token = $this->getTokenById('token_100000custbank');
         self::assertArrayNotHasKey(Token\Entity::MAX_AMOUNT, $token);
+    }
+
+    public function testGetTokenExpiredAt()
+    {
+        //expired at should be present only when method is emandate and card
+        $token = $this->getTokenById('token_100000emandate');
+        self::assertArrayHasKey(Token\Entity::EXPIRED_AT, $token);
+
+        $token = $this->getTokenById('token_100001custcard');
+        self::assertArrayHasKey(Token\Entity::EXPIRED_AT, $token);
+
+
+        //expired at should not exist in following
+        $token = $this->getTokenById('token_1000custwallet');
+        self::assertArrayNotHasKey(Token\Entity::EXPIRED_AT, $token);
+
+        $token = $this->getTokenById('token_100000custbank');
+        self::assertArrayNotHasKey(Token\Entity::EXPIRED_AT, $token);
     }
 
     public function testAddCustomerTokenCard()
