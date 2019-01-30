@@ -28,7 +28,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Verify;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Offer\EntityOffer;
-use RZP\Models\Pricing\FeeCalculator;
+use RZP\Models\Pricing\Calculator;
 use RZP\Error\PublicErrorDescription;
 use RZP\Constants\Entity as EntityName;
 use RZP\Models\Merchant\Invoice\Type as InvoiceType;
@@ -1559,13 +1559,13 @@ class Repository extends Base\Repository
 
             case InvoiceType::CARD_LTE_2K:
                 $query = $query->whereNotNull(Entity::CARD_ID)
-                               ->where(Entity::BASE_AMOUNT, '<=', FeeCalculator::CARD_TAX_CUT_OFF);
+                               ->where(Entity::BASE_AMOUNT, '<=', Calculator\Base::CARD_TAX_CUT_OFF);
 
                 break;
 
             case InvoiceType::CARD_GT_2K:
                 $query = $query->whereNotNull(Entity::CARD_ID)
-                               ->where(Entity::BASE_AMOUNT, '>', FeeCalculator::CARD_TAX_CUT_OFF);
+                               ->where(Entity::BASE_AMOUNT, '>', Calculator\Base::CARD_TAX_CUT_OFF);
 
                 break;
 
