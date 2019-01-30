@@ -2160,9 +2160,7 @@ class Gateway extends Base\Gateway
 
     public function setS2sFlowFlag($input)
     {
-        $isS2sFlow = $input['merchant']->isFeatureEnabled(Feature\Constants::FIRST_DATA_S2S_FLOW) === true;
-
-        $this->s2sFlowFlag = $isS2sFlow;
+        $this->s2sFlowFlag = true;
     }
 
     protected function enroll($input)
@@ -2251,8 +2249,7 @@ class Gateway extends Base\Gateway
     {
         $cardNetwork = $input[Constants\Entity::CARD][Card\Entity::NETWORK_CODE];
 
-        if (($this->s2sFlowFlag === true) and
-            ($cardNetwork !== Card\Network::RUPAY))
+        if ($cardNetwork !== Card\Network::RUPAY)
         {
             return true;
         }
