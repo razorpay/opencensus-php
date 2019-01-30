@@ -664,9 +664,8 @@ class Validator extends Base\Validator
     protected static $enachNpciNetbankingTerminalRules = [
         Entity::GATEWAY                     => 'required|in:enach_npci_netbanking',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
-        Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
-        Entity::GATEWAY_TERMINAL_ID         => 'required|string',
-        Entity::GATEWAY_ACCESS_CODE         => 'required|size:11',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE         => 'required|size',
         Entity::TYPE                        => 'required|array',
     ];
 
