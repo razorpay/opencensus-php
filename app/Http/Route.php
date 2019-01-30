@@ -224,6 +224,7 @@ final class Route
         'merchant_delete_app_access_mapping'       => ['delete',   'merchants/{id}/applications/{appId}',            'MerchantController@deleteMapOAuthApplication'                      ],
         'merchant_tags_bulk'                       => ['post',     'merchants/tags/bulk',                            'MerchantController@bulkTagMerchants'                               ],
         'merchant_schedule_bulk'                   => ['post',     'merchants/schedules/bulk',                       'MerchantController@bulkAssignSchedule'                             ],
+        'merchant_schedule_reset'                  => ['post',     'merchants/schedule/reset',                       'MerchantController@resetSettlementSchedule'                        ],
         'merchant_pricing_bulk'                    => ['post',     'merchants/pricing/bulk',                         'MerchantController@bulkAssignPricing'                              ],
         'create_submerchant_user'                  => ['post',     'submerchant/user/{id}',                          'MerchantController@postSubMerchantUser'                            ],
         'balance_fetch'                            => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
@@ -1871,6 +1872,7 @@ final class Route
 
         'merchant_details_patch',
         'merchant_schedule_bulk',
+        'merchant_schedule_reset',
         'merchant_pricing_bulk',
         'merchant_balance_bulk_backfill_ids',
         //Bulk Add/Remove bank for terminal
@@ -2246,6 +2248,7 @@ final class Route
         'terminal_set_banks'                       => Permission::EDIT_TERMINAL,
         'merchant_details_patch'                   => Permission::EDIT_MERCHANT,
         'merchant_schedule_bulk'                   => Permission::SCHEDULE_ASSIGN_BULK,
+        'merchant_schedule_reset'                  => Permission::SCHEDULE_ASSIGN_BULK,
         'merchant_pricing_bulk'                    => Permission::PRICING_ASSIGN_BULK,
         'virtual_account_create'                   => Permission::CREATE_VIRTUAL_ACCOUNTS,
         'entity_balance_id_update'                 => '*',

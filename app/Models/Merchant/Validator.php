@@ -191,6 +191,11 @@ class Validator extends Base\Validator
         Methods\Entity::EMI => 'required|bool',
     ];
 
+    protected static $resetSettlementScheduleRules = [
+        'merchant_ids'   => 'required|associative_array',
+        'merchant_ids.*' => 'required|alpha_num|size:14',
+    ];
+
     protected static $editConfigValidators = [
         'csv_email',
     ];
