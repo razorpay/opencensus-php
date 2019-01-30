@@ -436,9 +436,11 @@ class Initiator extends Base\Core
             return $data;
         }
 
+        $this->setRequestCreator($purpose);
+
         foreach ($attempts as $attempt)
         {
-            $request  = $this->createRequestForPurpose($purpose, $attempt);
+            $request  = $this->requestCreator->createRequest($attempt);
 
             App::getFacadeRoot()['fts']->requestFundTransfer($request, true);
         }
@@ -446,33 +448,29 @@ class Initiator extends Base\Core
         return $data;
     }
 
-    public function createRequestForPurpose($purpose, $attempt): array
+    public function setRequestCreator($purpose)
     {
-        $request = null;
 
-        switch ($this->type)
+        switch ($purpose)
         {
             case 'settlement':
-                $this->requestCreator = new SettlementRequestCreator();
 
-                $request = $this->requestCreator->createRequestForSettlement($attempt);
+                $this->requestCreator = new SettlementRequestCreator();
 
                 break;
 
             case 'refund':
-                //TODO:: Add logic for request population
+                //TODO:: Add request creator for refund
 
                 break;
 
             case 'payouts':
-                //TODO:: Add logic for request population
+                //TODO:: Add request creator for payouts
 
                 break;
 
             default:
-                throw new LogicException('Type is not supported ' . $this->type);
+                throw new LogicException('Source is not supported ' . $this->type);
         }
-
-        return $request;
     }
 }
