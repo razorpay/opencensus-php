@@ -108,6 +108,20 @@ class Customer extends Base
             'used_at'       => 10,
             'created_at'    => 1500000004,
         ],
+        [
+            'id'                => '100000emandate',
+            'token'             => '10001emantoken',
+            'customer_id'       => '100000customer',
+            'method'            => 'emandate',
+            'bank'              => 'HDFC',
+            'beneficiary_name'  => 'BeneficiaryName',
+            'account_number'    => '10000',
+            'IFSC'              => 'ifsc',
+            'account_type'      => 'account_type',
+            'used_at'           => 10,
+            'created_at'        => 1500000005,
+            'max_amount'        => 105,
+        ],
     );
 
     protected $bankAccounts = array(
