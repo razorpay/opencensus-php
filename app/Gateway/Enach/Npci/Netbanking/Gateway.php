@@ -355,70 +355,64 @@ class Gateway extends Base\Gateway
     {
         $data = [
             ResponseXmlTags::MESSAGE_ID         => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
-            [ResponseXmlTags::GROUP_HEADER]
-            [ResponseXmlTags::MESSAGE_ID],
+                                                                 [ResponseXmlTags::GROUP_HEADER]
+                                                                 [ResponseXmlTags::MESSAGE_ID],
 
             ResponseXmlTags::CREATION_DATE_TIME => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
-            [ResponseXmlTags::GROUP_HEADER]
-            [ResponseXmlTags::CREATION_DATE_TIME],
+                                                                 [ResponseXmlTags::GROUP_HEADER]
+                                                                 [ResponseXmlTags::CREATION_DATE_TIME],
 
             ResponseXmlTags::RESPONSE_PARTY     => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
-            [ResponseXmlTags::GROUP_HEADER]
-            [ResponseXmlTags::RESPONSE_PARTY],
+                                                                 [ResponseXmlTags::GROUP_HEADER]
+                                                                 [ResponseXmlTags::RESPONSE_PARTY],
 
             ResponseXmlTags::MANDATE_REQUEST_ID => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
-            [ResponseXmlTags::ACCEPT_DETAILS]
-            [ResponseXmlTags::ORIGINAL_MSG_INFO]
-            [ResponseXmlTags::MANDATE_REQUEST_ID],
+                                                                 [ResponseXmlTags::ACCEPT_DETAILS]
+                                                                 [ResponseXmlTags::ORIGINAL_MSG_INFO]
+                                                                 [ResponseXmlTags::MANDATE_REQUEST_ID],
 
             ResponseXmlTags::ORIGINGAL_MSG_ID   => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
-            [ResponseXmlTags::ACCEPT_DETAILS]
-            [ResponseXmlTags::ORIGINAL_MSG_INFO]
-            [ResponseXmlTags::ORIGINGAL_MSG_ID],
+                                                                 [ResponseXmlTags::ACCEPT_DETAILS]
+                                                                 [ResponseXmlTags::ORIGINAL_MSG_INFO]
+                                                                 [ResponseXmlTags::ORIGINGAL_MSG_ID],
 
             ResponseXmlTags::REQUEST_DATE_TIME  => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
-            [ResponseXmlTags::ACCEPT_DETAILS]
-            [ResponseXmlTags::ORIGINAL_MSG_INFO]
-            [ResponseXmlTags::MANDATE_REQUEST_CREATION_DATE_TIME],
+                                                                 [ResponseXmlTags::ACCEPT_DETAILS]
+                                                                 [ResponseXmlTags::ORIGINAL_MSG_INFO]
+                                                                 [ResponseXmlTags::MANDATE_REQUEST_CREATION_DATE_TIME],
 
             ResponseXmlTags::ACCEPTED           => $this->crypto->decrypt(
-                $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
-                [ResponseXmlTags::ACCEPT_DETAILS]
-                [ResponseXmlTags::ACCEPT_RESULT]
-                [ResponseXmlTags::ACCEPTED]),
+                                                    $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+                                                                  [ResponseXmlTags::ACCEPT_DETAILS]
+                                                                  [ResponseXmlTags::ACCEPT_RESULT]
+                                                                  [ResponseXmlTags::ACCEPTED]),
 
             ResponseXmlTags::ACCEPT_REF_NO      => $this->crypto->decrypt(
-                $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
-                [ResponseXmlTags::ACCEPT_DETAILS]
-                [ResponseXmlTags::ACCEPT_RESULT]
-                [ResponseXmlTags::ACCEPT_REF_NO]),
+                                                    $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+                                                                  [ResponseXmlTags::ACCEPT_DETAILS]
+                                                                  [ResponseXmlTags::ACCEPT_RESULT]
+                                                                  [ResponseXmlTags::ACCEPT_REF_NO]),
 
             ResponseXmlTags::REJECTION_CODE     => $this->crypto->decrypt(
-                $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
-                [ResponseXmlTags::ACCEPT_DETAILS]
-                [ResponseXmlTags::ACCEPT_RESULT]
-                [ResponseXmlTags::REJECT_REASON]
-                [ResponseXmlTags::REJECTION_CODE]),
+                                                    $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+                                                                  [ResponseXmlTags::ACCEPT_DETAILS]
+                                                                  [ResponseXmlTags::ACCEPT_RESULT]
+                                                                  [ResponseXmlTags::REJECT_REASON]
+                                                                  [ResponseXmlTags::REJECTION_CODE]),
 
             ResponseXmlTags::REJECT_DESCRIPTION => $this->crypto->decrypt(
-                $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
-                [ResponseXmlTags::ACCEPT_DETAILS]
-                [ResponseXmlTags::ACCEPT_RESULT]
-                [ResponseXmlTags::REJECT_REASON]
-                [ResponseXmlTags::REJECT_DESCRIPTION]),
+                                                    $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+                                                                  [ResponseXmlTags::ACCEPT_DETAILS]
+                                                                  [ResponseXmlTags::ACCEPT_RESULT]
+                                                                  [ResponseXmlTags::REJECT_REASON]
+                                                                  [ResponseXmlTags::REJECT_DESCRIPTION]),
 
             ResponseXmlTags::REJECTION_BY       => $this->crypto->decrypt(
-                $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
-                [ResponseXmlTags::ACCEPT_DETAILS]
-                [ResponseXmlTags::ACCEPT_RESULT]
-                [ResponseXmlTags::REJECT_REASON]
-                [ResponseXmlTags::REJECTION_BY]),
-
-            /*ResponseXmlTags::DEBTOR_IFSC        => $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
-                                                                 [ResponseXmlTags::ACCEPT_DETAILS]
-                                                                 [ResponseXmlTags::ACCEPT_RESULT]
-                                                                 [ResponseXmlTags::DEBTOR]
-                                                                 [ResponseXmlTags::DEBTOR_IFSC],*/
+                                                    $responseArray[ResponseXmlTags::MANDATE_ACCEPT_RESPONSE]
+                                                                  [ResponseXmlTags::ACCEPT_DETAILS]
+                                                                  [ResponseXmlTags::ACCEPT_RESULT]
+                                                                  [ResponseXmlTags::REJECT_REASON]
+                                                                  [ResponseXmlTags::REJECTION_BY]),
         ];
 
         foreach ($data as $key => $value)
@@ -436,40 +430,40 @@ class Gateway extends Base\Gateway
     {
         return [
             ResponseXmlTags::MESSAGE_ID         => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
-            [ResponseXmlTags::GROUP_HEADER]
-            [ResponseXmlTags::MESSAGE_ID],
+                                                                 [ResponseXmlTags::GROUP_HEADER]
+                                                                 [ResponseXmlTags::MESSAGE_ID],
 
             ResponseXmlTags::CREATION_DATE_TIME => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
-            [ResponseXmlTags::GROUP_HEADER]
-            [ResponseXmlTags::CREATION_DATE_TIME],
+                                                                 [ResponseXmlTags::GROUP_HEADER]
+                                                                 [ResponseXmlTags::CREATION_DATE_TIME],
 
             ResponseXmlTags::RESPONSE_PARTY     => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
-            [ResponseXmlTags::GROUP_HEADER]
-            [ResponseXmlTags::RESPONSE_PARTY],
+                                                                 [ResponseXmlTags::GROUP_HEADER]
+                                                                 [ResponseXmlTags::RESPONSE_PARTY],
 
             ResponseXmlTags::MANDATE_REQUEST_ID => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
-            [ResponseXmlTags::ORIGINIAL_REQUEST_INFO]
-            [ResponseXmlTags::MANDATE_REQUEST_ID],
+                                                                 [ResponseXmlTags::ORIGINIAL_REQUEST_INFO]
+                                                                 [ResponseXmlTags::MANDATE_REQUEST_ID],
 
             ResponseXmlTags::ORIGINGAL_MSG_ID   => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
-            [ResponseXmlTags::ORIGINIAL_REQUEST_INFO]
-            [ResponseXmlTags::ORIGINGAL_MSG_ID],
+                                                                 [ResponseXmlTags::ORIGINIAL_REQUEST_INFO]
+                                                                 [ResponseXmlTags::ORIGINGAL_MSG_ID],
 
             'Mandate_Creation_Date_Time'        => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
-            [ResponseXmlTags::ORIGINIAL_REQUEST_INFO]
-            [ResponseXmlTags::MANDATE_REQUEST_CREATION_DATE_TIME],
+                                                                 [ResponseXmlTags::ORIGINIAL_REQUEST_INFO]
+                                                                 [ResponseXmlTags::MANDATE_REQUEST_CREATION_DATE_TIME],
 
             ResponseXmlTags::ERROR_CODE         => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
-            [ResponseXmlTags::MANDATE_ERROR_DETAILS]
-            [ResponseXmlTags::ERROR_CODE],
+                                                                 [ResponseXmlTags::MANDATE_ERROR_DETAILS]
+                                                                 [ResponseXmlTags::ERROR_CODE],
 
             ResponseXmlTags::ERROR_DESCRIPTION  => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
-            [ResponseXmlTags::MANDATE_ERROR_DETAILS]
-            [ResponseXmlTags::ERROR_DESCRIPTION],
+                                                                 [ResponseXmlTags::MANDATE_ERROR_DETAILS]
+                                                                 [ResponseXmlTags::ERROR_DESCRIPTION],
 
             ResponseXmlTags::REJECTION_BY       => $responseArray[ResponseXmlTags::MANDATE_REJECT_RESPONSE]
-            [ResponseXmlTags::MANDATE_ERROR_DETAILS]
-            [ResponseXmlTags::REJECTION_BY],
+                                                                 [ResponseXmlTags::MANDATE_ERROR_DETAILS]
+                                                                 [ResponseXmlTags::REJECTION_BY],
         ];
     }
 

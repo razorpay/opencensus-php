@@ -1107,7 +1107,7 @@ class Gateway
     public static $fileBasedEMandateRegistrationGateways = [
         Gateway::NETBANKING_HDFC,
         Gateway::ENACH_RBL,
-        Gateway::ENACH_NPCI_NETBANKING
+        Gateway::ENACH_NPCI_NETBANKING,
     ];
 
     /**
