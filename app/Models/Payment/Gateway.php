@@ -260,6 +260,7 @@ class Gateway
         Payment\Gateway::SHARP
     ];
 
+    //TODO : Get complete list
     const ENACH_NPCI_NETBANKING_BANKS = [
         IFSC::YESB,
         IFSC::IDFB,
@@ -267,8 +268,17 @@ class Gateway
         IFSC::CBIN,
     ];
 
+    const EMANDATE_NB_DIRECT_BANKS= [
+        IFSC::ICIC,
+        IFSC::UTIB,
+        IFSC::HDFC,
+    ];
+
     // The 2 commented banks are mentioned at the bottom
     // with their retail versions
+    // Please keep this list sorted
+    // You can find the latest PDF version
+    // at https://www.npci.org.in/nach-e-mandates
     const EMANDATE_AADHAAR_BANKS = [
         IFSC::ABHY,
         IFSC::ACUX,
@@ -971,6 +981,7 @@ class Gateway
     /**
      * List of ALL auth types and the corresponding
      * banks supported by that auth type.
+     * Use of this array is deprecated. Use getEmandateBanks function
      *
      * @var array
      */
@@ -1462,7 +1473,7 @@ class Gateway
     {
         $banks = [];
 
-        foreach (self::$emandateBanks as $emandateBanks)
+        foreach (self::getEmandateAuthTypeToBankMap() as $emandateBanks)
         {
             $banks = array_merge($banks, $emandateBanks);
         }
@@ -1491,9 +1502,11 @@ class Gateway
     {
         $banks = [];
 
-        if (isset(self::$emandateBanks[$authType]) === true)
+        $emandateBanks = self::getEmandateAuthTypeToBankMap();
+
+        if (isset($emandateBanks[$authType]) === true)
         {
-            $banks = self::$emandateBanks[$authType];
+            $banks = $emandateBanks[$authType];
         }
 
         return $banks;
@@ -1515,7 +1528,9 @@ class Gateway
     {
         $emandateBanks = [];
 
-        foreach (self::$emandateBanks as $authType => $banks)
+        $emandateBanks = self::getEmandateAuthTypeToBankMap();
+
+        foreach ($emandateBanks as $authType => $banks)
         {
             $emandateBanks = array_merge($emandateBanks, $banks);
         }
@@ -1803,6 +1818,22 @@ class Gateway
         }
 
         return $gateways;
+    }
+
+    public static function getEmandateAuthTypeToBankMap()
+    {
+        $netbankingBanks = array_unique(
+                                         array_merge(
+                                             self::EMANDATE_NB_DIRECT_BANKS,
+                                             self::ENACH_NPCI_NETBANKING_BANKS
+                                          )
+                           );
+
+        return [
+            AuthType::NETBANKING  => $netbankingBanks,
+            AuthType::AADHAAR     => self::EMANDATE_AADHAAR_BANKS,
+            AuthType::AADHAAR_FP  => self::EMANDATE_AADHAAR_BANKS,
+        ];
     }
 
     public static function getTerminalsForValidateVpaForMode(string $mode)
