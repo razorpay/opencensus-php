@@ -1,6 +1,9 @@
 <?php
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
+use RZP\Models\Customer\Token;
 
 class Customer extends Base
 {
@@ -8,7 +11,9 @@ class Customer extends Base
 
     public function setUp()
     {
-        $this->expiredAtTime = now()->timestamp; + 9000000;
+        $this->expiredAtTime = Carbon::now(Timezone::IST)
+                                ->addYears(Token\Entity::DEFAULT_EXPIRY_YEARS)
+                                ->getTimestamp();
 
         $this->fixtures->create('customer:customers');
         $this->fixtures->create('customer:app_tokens');
