@@ -660,7 +660,6 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
     ];
 
-    //TODO : Verify these values
     protected static $enachNpciNetbankingTerminalRules = [
         Entity::GATEWAY                     => 'required|in:enach_npci_netbanking',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
