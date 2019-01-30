@@ -47,6 +47,8 @@ import ScroogeRefunds from 'admin/scrooge/Refunds';
 import ScroogeActions from 'admin/scrooge/Actions';
 import ScroogeRefund from 'admin/scrooge/Refund';
 
+import BankFileUpload from 'admin/banks/file-upload';
+
 const links = [
   [
     // title, url, permission, icon
@@ -85,6 +87,9 @@ const links = [
     ['Groups', '/groups', 'view_group', 'group'],
     ['Audit Log', '/audit-log', 'view_auditlog'],
   ],
+
+  // banking dashboard
+  [['Upload File', '/bank-file-upload', 'admin_bank_file_upload']],
 ];
 
 // restrict routes to other orgs
@@ -131,6 +136,8 @@ export default ({ location }) => (
     <Route path="/profile" component={Profile} />
     <Route path="/permissions" component={PermissionsList} />
     <Route path="/audit-log" component={AuditLog} />
+
+    <Route path="/bank-file-upload" component={BankFileUpload} />
 
     <Route
       path="/entity/:type/:mode(live|test)/:id"
