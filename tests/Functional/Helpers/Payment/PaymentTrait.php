@@ -947,10 +947,22 @@ trait PaymentTrait
 
         $request = array(
             'method'  => 'POST',
-            'url'     => '/refunds/'.$input['id'].'/gateway_refund',
+            'url'     => '/refunds/'.$input['id'].'/gateway_verify',
             'content' => $input);
 
         $response = $this->makeRequestAndGetContent($request);
+
+        $callRefund = $this->checkForRefundCall($response);
+
+        if ($callRefund === true)
+        {
+            $request = array(
+                'method'  => 'POST',
+                'url'     => '/refunds/'.$input['id'].'/gateway_refund',
+                'content' => $input);
+
+            $response = $this->makeRequestAndGetContent($request);
+        }
 
         if ($response['status_code'] === 'REFUND_SUCCESSFUL')
         {
@@ -958,6 +970,24 @@ trait PaymentTrait
         }
 
         return $response;
+    }
+
+    protected function checkForRefundCall($response)
+    {
+        $verifyFailures = [
+            '0',
+            'GATEWAY_VERIFY_OLDER_REFUNDS_DISABLED',
+            'GATEWAY_ERROR_REQUEST_ERROR',
+            'REFUND_SUCCESSFUL',
+            'GATEWAY_ERROR_UNEXPECTED_STATUS'
+        ];
+
+        if (in_array($response['status_code'], $verifyFailures, true) === true)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     protected function scroogeRefundMarkProcessed(array $refund)

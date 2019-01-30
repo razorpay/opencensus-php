@@ -344,13 +344,13 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function makeGatewayVerifyRefundCall(string $refundId)
+    public function makeGatewayVerifyRefundCall(string $refundId, array $input)
     {
         $refund = $this->repo->refund->findOrFail($refundId);
 
         $merchant = $refund->merchant;
 
-        $response = $this->getNewProcessor($merchant)->scroogeGatewayVerifyRefund($refund);
+        $response = $this->getNewProcessor($merchant)->scroogeGatewayVerifyRefund($refund, $input);
 
         return $response;
     }

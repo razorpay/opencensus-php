@@ -467,8 +467,8 @@ class Gateway extends Base\Gateway
                 'Cannot verify old MiGS refunds',
                 ErrorCode::GATEWAY_VERIFY_OLDER_REFUNDS_DISABLED,
                 [
-                    Payment\Gateway::GATEWAY_RESPONSE  => json_encode($content),
-                    Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($content)
+                    Payment\Gateway::GATEWAY_VERIFY_RESPONSE  => json_encode($content),
+                    Payment\Gateway::GATEWAY_KEYS             => $this->getGatewayData($content)
                 ]
             );
         }
