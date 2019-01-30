@@ -390,6 +390,13 @@ class Merchant
         $this->repo->saveOrFail($fundTransferAttempt);
 
         $this->bankTransferAtpt = $fundTransferAttempt;
+
+        if(strcasecmp($this->channel , Channel::ICICI2) === 0)
+        {
+            $requestHandler = new FundTransferAttempt\FTS\RequestHandler();
+
+            $requestHandler->sendFTSFundTransferRequest($source, $fundTransferAttempt);
+        }
     }
 
     protected function saveSettlementEntitiesToDb()
