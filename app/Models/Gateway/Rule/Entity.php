@@ -37,6 +37,7 @@ class Entity extends Base\PublicEntity
     const IINS             = 'iins';
     const RECURRING        = 'recurring';
     const RECURRING_TYPE   = 'recurring_type';
+    const CAPABILITY       = 'capability';
 
     // Terminal and payment properties both
     const EMI_DURATION     = 'emi_duration';
@@ -123,6 +124,7 @@ class Entity extends Base\PublicEntity
         self::RECURRING_TYPE,
         self::AUTHENTICATION_GATEWAY,
         self::AUTH_TYPE,
+        self::CAPABILITY,
     ];
 
     /**
@@ -212,6 +214,7 @@ class Entity extends Base\PublicEntity
         self::EMI_DURATION    => 'int',
         self::IINS            => 'array',
         self::RECURRING       => 'boolean',
+        self::CAPABILITY      => 'int',
     ];
 
     protected $fillable = [
@@ -237,6 +240,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::RECURRING,
         self::RECURRING_TYPE,
+        self::CAPABILITY,
         self::COMMENTS,
         self::AUTHENTICATION_GATEWAY,
         self::AUTH_TYPE,
@@ -270,6 +274,7 @@ class Entity extends Base\PublicEntity
         self::RECURRING_TYPE,
         self::AUTHENTICATION_GATEWAY,
         self::AUTH_TYPE,
+        self::CAPABILITY,
         self::COMMENTS,
         self::AUTHENTICATION_GATEWAY,
         self::AUTH_TYPE,
@@ -295,6 +300,7 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::MIN_AMOUNT => 0,
         self::STEP       => self::AUTHORIZATION,
+        self::CAPABILITY => null,
     ];
 
     public function merchant()
@@ -349,6 +355,11 @@ class Entity extends Base\PublicEntity
     public function getRecurringType()
     {
         return $this->getAttribute(self::RECURRING_TYPE);
+    }
+
+    public function getCapability()
+    {
+        return $this->getAttribute(self::CAPABILITY);
     }
 
     public function getMethodType()
