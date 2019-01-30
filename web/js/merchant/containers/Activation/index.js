@@ -57,6 +57,14 @@ export default class ActivationContainer extends Component {
             name: 'notifyOnKYCSuccess',
             hasReply: true,
           },
+          {
+            name: 'notifySupportPopupOpen',
+            hasReply: true,
+          },
+          {
+            name: 'notifySupportPopupClose',
+            hasReply: true,
+          },
         ];
 
       const { isL1Submitted } = props.user.instantActivation;
