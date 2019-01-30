@@ -12,7 +12,6 @@ class Helper
     public function getCurrentMerchant(GenericUser $user)
     {
         $sessionMerchantId = Session::get('current_merchant_id');
-
         $currentMerchant = null;
 
         if ($sessionMerchantId !== null)
@@ -22,7 +21,17 @@ class Helper
 
             if ($currentMerchant === null)
             {
-                $currentMerchant = $user->merchants->first();
+                // Update the user and check if he accepted any new invites after logging in.
+                list($error, $updatedUser) = (new Service())->getUserFromApi($user->id);
+
+                if (empty($error) === true)
+                {
+                    $currentMerchant = $updatedUser->merchants->where('id', $sessionMerchantId)->first();
+                }
+                else
+                {
+                    $currentMerchant = $user->merchants->first();
+                }
             }
         }
         else
