@@ -1167,7 +1167,7 @@ class Entity extends Base\PublicEntity
     {
         $brandColor = $this->getBrandColorOrDefault();
 
-        $relativeLuminance = getRelativeLuminanceOfColorWithWhite($brandColor);
+        $relativeLuminance = getRelativeLuminanceOfColorWithWhite(str_replace('#', '', $brandColor));
 
         // similar as in checkout (instead of #000000 checkout has rgba(0, 0, 0, 0.85)),
         return $relativeLuminance < 0.5 ? '#FFFFFF' : '#000000';
