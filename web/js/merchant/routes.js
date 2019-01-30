@@ -32,6 +32,7 @@ import PlanNew from 'merchant/containers/Plans/New';
 import ActivationContainer from 'merchant/containers/Activation';
 import NewAuthLink from 'merchant/containers/Subscriptions/AuthLinks/New';
 import NewSubscriptionLink from 'merchant/containers/Subscriptions/SubscriptionLinks/New';
+import CreditSubDetails from 'merchant/components/Credits/CreditSubDetails';
 /*
  * NOTE: entityDetailsMap and entityModalsMap must be mutually exclusive sets
  * */
@@ -110,6 +111,7 @@ const entityDetailsMap = {
     component: DisputeDetails,
     additionalCondition: user => user.isAllowedView('payments'),
   },
+  '/credits/:id(credits_.+)': { component: CreditSubDetails },
 };
 
 /*

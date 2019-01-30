@@ -103,6 +103,7 @@ const getPaymentDetail = invoice => (
 
 export default props => {
   let {
+    user,
     invoice,
     isLoading,
     statusMsg,
@@ -279,6 +280,7 @@ export default props => {
                             editFn={editPaymentLink}
                             trackerFn={trackDetailViewEdits}
                             isRoleAllowedEdit={isRoleAllowedEdit}
+                            required={user.isInvoiceReceiptMandatory}
                           />
                         )
                       : invoice.receipt || '--'

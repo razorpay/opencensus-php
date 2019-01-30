@@ -65,6 +65,9 @@ function defaultFieldProps(f) {
   if (f.name === 'expire_by') {
     f.onChange = self.onTimeChange.bind(self);
   }
+  if (f.name === 'receipt') {
+    f.required = self.props.user.isInvoiceReceiptMandatory;
+  }
 }
 
 function WizardFields(field) {

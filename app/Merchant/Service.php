@@ -567,4 +567,23 @@ class Service extends Base\Service
 
         return [$error, $data];
     }
+
+    public function validateCouponCode($input)
+    {
+        $request = new ApiRequestAny(['client_type' => 'merchant']);
+
+        list($error, $data) = $request->processInput($input)->send('coupons/validate', 'POST');
+
+        if (empty($error) === false)
+        {
+            throw new BadRequestError(
+                $error[0],
+                ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+
+        return [$error, $data];
+    }
+
 }

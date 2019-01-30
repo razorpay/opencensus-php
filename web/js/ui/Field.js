@@ -249,7 +249,10 @@ class SearchableSelect extends Component {
   };
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.defaultValue !== this.state.selectedOption.value) {
+    if (
+      nextProps.defaultValue &&
+      nextProps.defaultValue !== this.state.selectedOption.value
+    ) {
       this.setState({
         selectedOption: this.getDefaultOption(nextProps),
       });

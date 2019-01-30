@@ -53,6 +53,8 @@ Route::group(['middleware' => ['web']], function () {
         // This returns all the needed information
         Route::get('/', 'UserController@getUserDetailsV2'); //ePOS
         Route::get('/details', 'UserController@getUserDetailsV2');
+        
+        Route::post('/coupons/validate', 'MerchantController@validateCoupon');
     });
 
     Route::group(['middleware'  =>  ['auth:user', 'verified']], function()
