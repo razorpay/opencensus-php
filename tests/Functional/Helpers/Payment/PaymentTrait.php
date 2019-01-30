@@ -612,10 +612,12 @@ trait PaymentTrait
         return $this->sendRequest($request);
     }
 
-    protected function makeS2sCallbackAndGetContent($content)
+    protected function makeS2sCallbackAndGetContent($content, $gateway = null)
     {
+        $gateway = $gateway ?: $this->gateway;
+
         $request = [
-            'url'    => '/callback/' . $this->gateway,
+            'url'    => '/callback/' . $gateway,
             'method' => 'post'
         ];
 

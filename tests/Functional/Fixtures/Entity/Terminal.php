@@ -2037,6 +2037,10 @@ class Terminal extends Base
             'gateway_merchant_id2'      => 'razorpay@eazypay',
             'gateway_terminal_password' => 'razorpay_password',
             'upi'                       => true,
+            'type'                      => [
+                'non_recurring' => '1',
+                'collect'       => '1',
+            ]
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

@@ -133,7 +133,7 @@ class Repository extends Base\Repository
         if (((empty($merchant) === true) or ($merchant->isLinkedAccount() === false)) and
             (($value === 'transfer') or ($value === 'transfer.settlement')))
         {
-            throw new Exception\ExtraFieldsException("expand=transfer");
+            throw new Exception\ExtraFieldsException('expand=transfer');
         }
     }
 
@@ -1044,7 +1044,7 @@ class Repository extends Base\Repository
                        Payment\Entity::MERCHANT_ID . ','.
                        Merchant\Entity::NAME . ','.
                        Merchant\Entity::WEBSITE . ','.
-                       "SUM(amount) / 100 AS volume" . ','.
+                       'SUM(amount) / 100 AS volume' . ','.
                        'COUNT(*) AS count')
                     ->betweenTime($from, $to)
                     ->statusSuccess()
@@ -1071,7 +1071,7 @@ class Repository extends Base\Repository
                        Payment\Entity::MERCHANT_ID . ','.
                        Merchant\Entity::NAME . ','.
                        Merchant\Entity::WEBSITE . ','.
-                       "SUM(amount) / 100 AS volume" . ','.
+                       'SUM(amount) / 100 AS volume' . ','.
                        'COUNT(*) AS count')
                     ->betweenTime($from, $to)
                     ->statusSuccess()
@@ -1654,5 +1654,34 @@ class Repository extends Base\Repository
                     ->where(Entity::STATUS, '=', Status::CREATED)
                     ->where(Payment\Entity::GATEWAY, '=', $gateway)
                     ->get();
+    }
+
+    public function determineLiveOrTestModeForEntityWithGateway($id, $gateway)
+    {
+        $obj = $this->connection(Mode::LIVE)->newQuery()->where(Entity::GATEWAY, $gateway)->find($id);
+
+        if ($obj !== null)
+        {
+            return Mode::LIVE;
+        }
+
+        $obj = $this->connection(Mode::TEST)->newQuery()->where(Entity::GATEWAY, $gateway)->find($id);
+
+        if ($obj !== null)
+        {
+            return Mode::TEST;
+        }
+
+        //
+        // We need to set connection to null
+        // because it will be set to test if the
+        // id is not found in any of the database.
+        // So even if the db connection is later set
+        // to live, query connection will be set to
+        // test.
+        //
+        $this->connection(null);
+
+        return null;
     }
 }
