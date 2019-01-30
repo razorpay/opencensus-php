@@ -327,7 +327,15 @@ trait Refund
         }
         catch (\Exception $ex)
         {
-            $gatewayVerifyRefundResponse = $this->prepareScroogeRefundResponse([], false, $ex, Payment\Action::VERIFY);
+            $gatewayResponse = [];
+
+            // Only BaseException would have `getData` function
+            if ($ex instanceof Exception\BaseException)
+            {
+                $gatewayResponse = $ex->getData();
+            }
+
+            $gatewayVerifyRefundResponse = $this->prepareScroogeRefundResponse($gatewayResponse, false, $ex, Payment\Action::VERIFY);
         }
 
         $this->traceScroogeResponse(TraceCode::REFUND_SCROOGE_VERIFY_RESPONSE,
