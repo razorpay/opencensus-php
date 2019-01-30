@@ -86,6 +86,7 @@ export class PaymentPagesEntity extends React.Component {
       component: (
         <ShareView
           handleClose={this.props.closeModal}
+          openModal={this.props.openModal}
           handleAction={sendLink.bind(null, paymentPageEntity.id)}
           showNotification={this.props.showNotification}
           url={paymentPageEntity.short_url}

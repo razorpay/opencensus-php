@@ -5,6 +5,9 @@ import Form from 'component/Form';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import Input from 'component/Input';
 
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import PPEmbedButtonView from './EmbedButton';
+
 import { isEmail, isPhone } from 'rzp/utils/validators';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
@@ -22,6 +25,7 @@ if (isMobileAndTablet()) {
 
 export default ({
   isNew,
+  showEmbedButton,
   isPaymentPagesV2,
   isEditExistingId,
   handleClose,
@@ -32,8 +36,16 @@ export default ({
   description,
   AddonAction,
   closeModal,
+  openModal,
   ...props
 }) => {
+  function openEmbedButtonView() {
+    openModal({
+      size: 'small',
+      component: <PPEmbedButtonView shortUrl={url} />,
+    });
+  }
+
   function onSubmit(formData) {
     const reqPayload = {};
     const msg = [];
@@ -198,6 +210,34 @@ export default ({
                 </CustomClipboard>
               </div>
               {AddonAction}
+            </div>
+          )}
+
+          {showEmbedButton && (
+            <div class="Share-section">
+              <span class="label--faded">Embed Payment button </span>
+              <div style={{ display: 'inline-block' }}>
+                <span class="help-content">
+                  <i class="i i-info-outline" style={{ marginLeft: 4 }} />
+                  <Popover
+                    align="top"
+                    theme="light"
+                    parentQuerySelector=".ReactModal__Content"
+                  >
+                    <PopoverBody>
+                      You can embed this custom button on your website
+                    </PopoverBody>
+                  </Popover>
+                </span>
+              </div>
+              <Button.Transparent
+                type="button"
+                class="Button--Link"
+                onClick={openEmbedButtonView}
+                style={{ float: 'right' }}
+              >
+                <b>Create</b>
+              </Button.Transparent>
             </div>
           )}
 

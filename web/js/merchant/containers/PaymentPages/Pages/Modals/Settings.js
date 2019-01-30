@@ -2,9 +2,12 @@ import { ModalMask, Modal, ModalContent } from 'component/Modal';
 import Form from 'component/Form';
 import Button, { AsyncBtn } from 'component/Button';
 import Input from 'component/Input';
-
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import { lenientUrl } from 'rzp/utils/validators';
 import { DateField } from '../../../PaymentLinks/Edit/EditExpiry';
 import { validateSlug } from 'rzp/utils/validators';
+
+import PPEmbedButtonView from '../Modals/EmbedButton';
 
 export default class extends React.Component {
   state = {
@@ -32,8 +35,23 @@ export default class extends React.Component {
     });
   };
 
+  openEmbedButtonView = () => {
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <PPEmbedButtonView shortUrl={this.props.paymentPageEntity.short_url} />
+      ),
+    });
+  };
+
   render() {
-    const { isNew, handleClose, handleAction, isTestMode } = this.props;
+    const {
+      isNew,
+      handleClose,
+      handleAction,
+      isTestMode,
+      paymentPageEntity,
+    } = this.props;
 
     const { slug, theme, expire_by, disableSubmit } = this.state;
 
@@ -88,12 +106,11 @@ export default class extends React.Component {
                 <input
                   name="expire_by"
                   value={expire_by || ''}
-                  defaultValue={expire_by || ''}
                   readOnly
                   hidden
                 />
                 <DateField
-                  label="Set Page Expiry Date"
+                  label="Page Expiry Date"
                   className="Input--vTop Input--expiryby"
                   updateDate={this.updateDate}
                   expire_by={expire_by}
@@ -102,6 +119,43 @@ export default class extends React.Component {
                 />
               </div>
 
+              <div class="settings-section">
+                <b>Payment Button</b>
+                <div>
+                  Put a payment button on your website
+                  <span class="help-content">
+                    <i class="i i-info-outline" style={{ marginLeft: 4 }} />
+                    <Popover
+                      align="top"
+                      theme="light"
+                      parentQuerySelector={`.Modal-mask--paymentpages-settings .Modal-body`}
+                    >
+                      <PopoverBody>
+                        {!(
+                          paymentPageEntity.id &&
+                          typeof paymentPageEntity.title !== 'undefined'
+                        )
+                          ? 'You can customize Embed Button after creating Payment Page'
+                          : 'You can embed this custom button on your website'}
+                      </PopoverBody>
+                    </Popover>
+                  </span>
+                  <Button.Transparent
+                    type="button"
+                    class="Button--Link"
+                    disabled={
+                      !(
+                        paymentPageEntity.id &&
+                        typeof paymentPageEntity.title !== 'undefined'
+                      )
+                    }
+                    onClick={this.openEmbedButtonView}
+                    style={{ float: 'right' }}
+                  >
+                    <b>Create</b>
+                  </Button.Transparent>
+                </div>
+              </div>
               <footer>
                 <Button.Transparent type="button" onClick={handleClose}>
                   Cancel

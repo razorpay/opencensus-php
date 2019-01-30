@@ -1,9 +1,17 @@
+import { connect } from 'react-redux';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Button from 'component/Button';
 import Input from 'component/Input';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import ReactDOMServer from 'react-dom/server';
+import { closeModal } from 'rzp/modules/modals';
 
+@connect(
+  state => ({
+    config: state.config.config,
+  }),
+  { closeModal }
+)
 export default class extends React.Component {
   state = { btnSize: '0', btnLabel: 'Pay Now' };
   componentWillMount() {
@@ -11,7 +19,7 @@ export default class extends React.Component {
 
     script.onload = () => {
       const textClr =
-        !window.colorLib || window.colorLib.isDark(this.props.color)
+        !window.colorLib || window.colorLib.isDark(this.color)
           ? '#fff'
           : 'rgba(0, 0, 0, 0.85)';
 
@@ -36,8 +44,12 @@ export default class extends React.Component {
     });
   };
 
+  get color() {
+    return this.props.config.brand_color;
+  }
+
   render() {
-    const { handleClose } = this.props;
+    const { shortUrl, closeModal } = this.props;
     const { btnLabel, btnSize } = this.state;
     const el = document.getElementById('embed-btn-preview');
 
@@ -55,10 +67,10 @@ export default class extends React.Component {
 
     const previewBtnCode = (
       <a
-        href={this.props.url}
+        href={shortUrl}
         style={{
           textAlign: 'center',
-          backgroundColor: this.props.color,
+          backgroundColor: this.color,
           color: this.state.textClr || '#fff',
           width,
           padding: 10,
@@ -79,7 +91,7 @@ export default class extends React.Component {
 
     return (
       <div>
-        <ModalHeader title="Create Embed Button" onCloseClick={handleClose} />
+        <ModalHeader title="Create Embed Button" onCloseClick={closeModal} />
 
         <div class="modal-body embed-button-form" style={{ paddingTop: 0 }}>
           <div class="ModalForm ModalForm--Share">
@@ -124,7 +136,7 @@ export default class extends React.Component {
             />
 
             <br />
-            <Button.Primary class="btn-block" onClick={handleClose}>
+            <Button.Primary class="btn-block" onClick={closeModal}>
               Done
             </Button.Primary>
           </div>
