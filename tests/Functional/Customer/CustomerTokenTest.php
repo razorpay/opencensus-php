@@ -47,6 +47,21 @@ class CustomerTokenTest extends TestCase
         self::assertArrayNotHasKey(Token\Entity::BANK_DETAILS, $token);
     }
 
+    public function testGetTokenMaxAmount()
+    {
+        $token = $this->getTokenById('token_100000emandate');
+        self::assertArrayHasKey(Token\Entity::MAX_AMOUNT, $token);
+
+        $token = $this->getTokenById('token_1000custwallet');
+        self::assertArrayNotHasKey(Token\Entity::MAX_AMOUNT, $token);
+
+        $token = $this->getTokenById('token_100001custcard');
+        self::assertArrayNotHasKey(Token\Entity::MAX_AMOUNT, $token);
+
+        $token = $this->getTokenById('token_100000custbank');
+        self::assertArrayNotHasKey(Token\Entity::MAX_AMOUNT, $token);
+    }
+
     public function testAddCustomerTokenCard()
     {
         $this->mockTokenEx();
