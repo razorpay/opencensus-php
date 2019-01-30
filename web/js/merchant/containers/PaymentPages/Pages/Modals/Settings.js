@@ -120,6 +120,58 @@ export default class extends React.Component {
               </div>
 
               <div class="settings-section">
+                <div class="InputGroup InputGroup--vTop InputGroup--near Input">
+                  <div class="Input-label">
+                    Action after successful payment?
+                  </div>
+                  <div class="Input-content">
+                    <Input.Check
+                      fieldLabel="Show custom message"
+                      onChange={e => {
+                        const isChecked = e.target.value == '1';
+
+                        this.setState({ _hasCustomMessage: isChecked }, () => {
+                          if (this.state._hasCustomMessage) {
+                            document
+                              .getElementsByName('payment_success_message')[0]
+                              .focus();
+                          }
+                        });
+                      }}
+                    />
+
+                    {this.state._hasCustomMessage && (
+                      <Input name="payment_success_message" />
+                    )}
+
+                    <Input.Check
+                      fieldLabel="Redirect to your website"
+                      onChange={e => {
+                        const isChecked = e.target.value == '1';
+
+                        this.setState({ _hasRedirectUrl: isChecked }, () => {
+                          if (this.state._hasRedirectUrl) {
+                            document
+                              .getElementsByName(
+                                'payment_success_redirect_url'
+                              )[0]
+                              .focus();
+                          }
+                        });
+                      }}
+                    />
+
+                    {this.state._hasRedirectUrl && (
+                      <Input
+                        name="payment_success_redirect_url"
+                        validator={lenientUrl('Please enter a valid URL')}
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-section">
                 <b>Payment Button</b>
                 <div>
                   Put a payment button on your website

@@ -13,6 +13,8 @@ import PPSettingsView from '../Modals/Settings';
 import PPShareView from '../Modals/Share';
 import { createPaymentPage, editPaymentPage, sendLink } from '../model';
 
+import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
+
 import {
   fetchPaymentPage,
   updateData,
@@ -239,6 +241,17 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       } else {
         payload.settings.theme = 'light';
       }
+    }
+
+    if (typeof formData.payment_success_message !== 'undefined') {
+      payload.settings.payment_success_message =
+        formData.payment_success_message;
+    }
+
+    if (typeof formData.payment_success_redirect_url !== 'undefined') {
+      payload.settings.payment_success_redirect_url = autoPrefixUrls(
+        formData.payment_success_redirect_url
+      );
     }
 
     const isEditExistingId = this.props.id;
