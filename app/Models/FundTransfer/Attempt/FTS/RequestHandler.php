@@ -15,13 +15,13 @@ use RZP\Models\BankAccount;
 use RZP\Models\Vpa;
 use RZP\Models\FundTransfer\Attempt\Entity;
 
-class RequestHandler
+class RequestHandler extends Base\Core
 {
     const MODE              = 'mode';
     const AMOUNT            = 'amount';
     const CHANNEL           = 'channel';
     const PRODUCT           = 'product';
-    const TRANSFER          = 'transfer;'
+    const TRANSFER          = 'transfer';
     const ENTITY_ID         = 'entity_id';
     const NARRATION         = 'narration';
     const SETTLEMENT        = 'settlement';
@@ -82,7 +82,7 @@ class RequestHandler
 
         $response = App::getFacadeRoot()['fts']->requestFundTransfer($request, true);
 
-        $this->updateSourceAndFTA($response);
+        $this->updateSourceAndFTA($fta, $source, $response);
     }
 
     public function sendFTSFundTransferRequestUsingBankAccount(
@@ -96,7 +96,7 @@ class RequestHandler
 
         $response = App::getFacadeRoot()['fts']->requestFundTransfer($request, true);
 
-        $this->updateSourceAndFTA($response);
+        $this->updateSourceAndFTA($fta, $source, $response);
     }
 
     public function sendFTSFundTransferRequestUsingVPA(
@@ -110,12 +110,12 @@ class RequestHandler
 
         $response = App::getFacadeRoot()['fts']->requestFundTransfer($request, true);
 
-        $this->updateSourceAndFTA($response);
+        $this->updateSourceAndFTA($fta, $source, $response);
     }
 
     public function addFTSAccountId(
         array $request,
-        Entity $fta)
+        Entity $fta):array
     {
         $request[] = array(
             self::FUND_ACCOUNT_ID   => $fta->bank_account->getFTSAccountId(),
@@ -126,7 +126,7 @@ class RequestHandler
 
     public function addBankAccountDetails(
         array $request,
-        BankAccount\Entity $ba)
+        BankAccount\Entity $ba):array
     {
         $request['bank_account'] = [
             self::TYPE                       => $ba->getType(),
@@ -150,7 +150,7 @@ class RequestHandler
 
     public function addVpaDetails(
         array $request,
-        vpa\Entity $vpa)
+        vpa\Entity $vpa):array
     {
         $request['vpa'] = [
             self::HANDLE       => $vpa->getHandle(),
@@ -158,5 +158,21 @@ class RequestHandler
         ];
 
         return $request;
+    }
+
+    public function updateSourceAndFTA(
+        Entity $fta,
+        Base\Entity $source,
+        array $response)
+    {
+        $this->updateFundTransferAttempt($fta, $response);
+
+        $fta->setStatus($response['status']);
+
+        $this->repo->saveOrFail($fta);
+
+        $source->setFTSTransferId($response['transfer_id']);
+
+        $this->repo->saveOrFail($source);
     }
 }
