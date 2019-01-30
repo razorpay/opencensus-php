@@ -9,6 +9,9 @@ use RZP\Models\FundTransfer\Attempt\Type;
 use RZP\Models\FundTransfer\Yesbank\NodalAccount;
 use RZP\Models\Settlement\Channel;
 
+/**
+ * @property mixed batchFundTransfer
+ */
 class Entity extends Base\PublicEntity
 {
     const SOURCE                 = 'source';

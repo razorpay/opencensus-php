@@ -164,7 +164,7 @@ class FeeCalculator
             return;
         }
 
-        // Can't use fee credits for fund account validation, so only balance matters
+        // For Fund Account Validation Fees will always be greater then amount transferred
         if ($this->isEntityFundAccountValidation() === true)
         {
             return;
