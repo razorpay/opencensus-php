@@ -13,7 +13,7 @@ import { adminPatch } from 'common/fetch';
 
 class EditCoupons extends Component {
   handleSubmit = body => {
-    const { id, start_at } = this.props.entity;
+    const { id } = this.props.entity;
 
     const endDate = moment(
       `${body.end_at_date} ${body.end_at_time}`,
@@ -22,7 +22,7 @@ class EditCoupons extends Component {
 
     return adminPatch({
       url: `live/coupons/${id}`,
-      data: { start_at, end_at: endDate },
+      data: { end_at: endDate },
     }).then(response => {
       if (response) {
         notifySuccess(

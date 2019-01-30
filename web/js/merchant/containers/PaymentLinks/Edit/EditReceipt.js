@@ -47,6 +47,7 @@ export default class EditReceipt extends React.Component {
             class="Input--small"
             value={this.state.receipt}
             validator={maxLength(40)}
+            required={this.props.required}
             onChange={e => {
               this.setState({
                 receipt: e.target.value,
