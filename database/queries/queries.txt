@@ -4679,3 +4679,6 @@ ALTER TABLE vpas
 
 ALTER TABLE bank_accounts
     ADD COLUMN fts_account_id VARCHAR(255) DEFAULT NULL AFTER beneficiary_mobile;
+
+ALTER TABLE settlements
+    ADD COLUMN fts_transfer_id VARCHAR(14) DEFAULT NULL AFTER status;
