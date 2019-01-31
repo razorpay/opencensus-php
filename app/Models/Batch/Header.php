@@ -386,6 +386,15 @@ class Header
     const HITACHI_TERMINAL_ID  = 'Terminal ID';
     const FAILURE_REASON       = 'Failure Reason';
 
+    //
+    // ICICI netbanking bulk terminal creation headers
+    //
+    const ICIC_NB_MERCHANT_ID  = 'merchant_id';
+    const ICIC_NB_SUB_IDS      = 'Sub IDs';
+    const ICIC_NB_GATEWAY_MID  = 'SPID';
+    const ICIC_NB_GATEWAY_MID2 = 'Payee ID';
+    const ICIC_NB_SECTOR       = 'Sector';
+    const ICIC_NB_TERMINAL_ID  = 'Terminal ID';
 
     /**
      * Input and output file headers
@@ -1124,6 +1133,26 @@ class Header
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ],
+        ],
+
+        'terminal_netbanking_icici' => [
+            self::INPUT => [
+                self::ICIC_NB_GATEWAY_MID,
+                self::ICIC_NB_GATEWAY_MID2,
+                self::ICIC_NB_MERCHANT_ID,
+                self::ICIC_NB_SECTOR,
+                self::ICIC_NB_SUB_IDS,
+            ],
+            self::OUTPUT => [
+                self::ICIC_NB_GATEWAY_MID,
+                self::ICIC_NB_GATEWAY_MID2,
+                self::ICIC_NB_MERCHANT_ID,
+                self::ICIC_NB_SECTOR,
+                self::ICIC_NB_SUB_IDS,
+                self::ICIC_NB_TERMINAL_ID,
+                self::STATUS,
+                self::FAILURE_REASON
+            ]
         ],
 
         'terminal_hitachi' => [
