@@ -396,6 +396,15 @@ class Header
     const ICIC_NB_SECTOR       = 'Sector';
     const ICIC_NB_TERMINAL_ID  = 'Terminal ID';
 
+    // Contact Headers
+    const CONTACT_ID                  = 'Contact Id';
+    const CONTACT_TYPE                = 'Contact Type';
+    // Using small suffix as there exists with snake cased values. :(
+    const CONTACT_NAME_2              = 'Contact Name';
+    const CONTACT_EMAIL_2             = 'Contact Email';
+    const CONTACT_MOBILE_2            = 'Contact Mobile';
+    const CONTACT_REFERENCE_ID        = 'Contact Reference Id';
+
     /**
      * Input and output file headers
      * The keys need to be like <type>_<sub-type>_<gateway>.
@@ -1197,9 +1206,32 @@ class Header
                 self::HITACHI_CURRENCY,
                 self::HITACHI_TERMINAL_ID,
                 self::STATUS,
-                self::FAILURE_REASON
-            ]
-        ]
+                self::FAILURE_REASON,
+            ],
+        ],
+
+        Type::CONTACT => [
+            self::INPUT => [
+                self::CONTACT_TYPE,
+                self::CONTACT_NAME_2,
+                self::CONTACT_EMAIL_2,
+                self::CONTACT_MOBILE_2,
+                self::CONTACT_REFERENCE_ID,
+                self::NOTES,
+            ],
+            self::OUTPUT => [
+                self::CONTACT_TYPE,
+                self::CONTACT_NAME_2,
+                self::CONTACT_EMAIL_2,
+                self::CONTACT_MOBILE_2,
+                self::CONTACT_REFERENCE_ID,
+                self::NOTES,
+                self::CONTACT_ID,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
     ];
 
     /**

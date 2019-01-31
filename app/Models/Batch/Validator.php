@@ -11,6 +11,7 @@ use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Entity as ME;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Contact as ContactModel;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Batch\Helpers\OauthMigration as OMHelper;
@@ -478,6 +479,8 @@ class Validator extends Base\Validator
             return;
         }
 
+        // TODO: Use validateEntriesWithPublicExceptionHandled() method.
+
         // Associative array with index as input file's row index and values
         // as the error message.
 
@@ -673,6 +676,51 @@ class Validator extends Base\Validator
                         $errorMessage, $attr, $entry);
                 }
             }
+        }
+    }
+
+    protected function validateContactEntries(array & $entries, array $params, ME $merchant)
+    {
+        $validator = new ContactModel\Validator;
+
+        $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry) use ($validator)
+        {
+            $input = Helpers\Contact::getContactInput($entry);
+
+            $validator->validateInput('create', $input);
+        });
+    }
+
+    protected function validateEntriesWithPublicExceptionHandled(array & $entries, \Closure $validator)
+    {
+        // Indexed errors map against row number.
+        $errors = [];
+
+        foreach ($entries as $seq => $entry)
+        {
+            try
+            {
+                $validator($entry);
+            }
+            catch (BaseException $e)
+            {
+                $errors[$seq] = [
+                    Header::ERROR_CODE        => $e->getError()->getPublicErrorCode(),
+                    Header::ERROR_DESCRIPTION => $e->getError()->getDescription(),
+                ];
+
+                // Updates the referenced row for to be used in validated file.
+                $entries[$seq] += $errors;
+            }
+        }
+
+        // If request done via earlier direct upload flow (instead of validation flow), throw 4XX.
+        if ((count($errors) > 0) and ($this->entity->isCreatedByFileUpload() === true))
+        {
+            throw new BadRequestValidationFailureException(
+                sprintf('There are validation errors in %s number of rows in file', count($errors)),
+                Entity::FILE,
+                array_slice($errors, 0, 15, true));
         }
     }
 }
