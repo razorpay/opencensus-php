@@ -32,6 +32,13 @@ class Core extends Base\Core
         return $commission;
     }
 
+    /**
+     * Creates partner commission entities from a captured payment
+     *
+     * @param Payment\Entity $payment
+     *
+     * @return bool
+     */
     public function createFromCapturedPayment(Payment\Entity $payment)
     {
         $calculator = new Calculator($payment);

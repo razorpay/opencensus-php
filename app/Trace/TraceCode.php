@@ -1597,10 +1597,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_RECONCILIATION_JOB_RELEASED     = 'FTA_RECONCILIATION_JOB_RELEASED';
 
     // Commission trace codes
+    const COMMISSION_CREATED                            = 'COMMISSION_CREATED';
     const COMMISSION_COMPUTED                           = 'COMMISSION_COMPUTED';
     const COMMISSION_NOT_ENABLED                        = 'COMMISSION_NOT_ENABLED';
     const COMMISSION_NOT_DEFINED                        = 'COMMISSION_NOT_DEFINED';
     const COMMISSION_COMPUTED_ZERO                      = 'COMMISSION_COMPUTED_ZERO';
+    const COMMISSION_CREATE_FAILED                      = 'COMMISSION_CREATE_FAILED';
     const COMMISSION_NOT_APPLICABLE                     = 'COMMISSION_NOT_APPLICABLE';
     const COMMISSION_COMPUTED_NEGATIVE                  = 'COMMISSION_COMPUTED_NEGATIVE';
     const COMMISSION_INVALID_SOURCE_ENTITY              = 'COMMISSION_INVALID_SOURCE_ENTITY';

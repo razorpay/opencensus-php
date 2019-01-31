@@ -546,9 +546,26 @@ trait Capture
         });
     }
 
+    /**
+     * Creates partner commission entities from a captured payment
+     *
+     * @param Payment\Entity $payment
+     */
     protected function createPartnerCommission(Payment\Entity $payment)
     {
-        (new Commission\Core)->createFromCapturedPayment($payment);
+        try
+        {
+            (new Commission\Core)->createFromCapturedPayment($payment);
+        }
+        catch (Exception\BaseException $e)
+        {
+            $this->trace->critical(
+                TraceCode::COMMISSION_CREATE_FAILED,
+                [
+                    'payment_id' => $this->payment->getId(),
+                    'message'    => $e->getMessage(),
+                ]);
+        }
     }
 
     /**

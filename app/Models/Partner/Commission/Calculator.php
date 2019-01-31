@@ -7,21 +7,22 @@ use Razorpay\Trace\Logger as Trace;
 use Illuminate\Foundation\Application;
 
 use RZP\Models\Base;
-use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Models\Transaction;
-use RZP\Models\Pricing\Plan;
-use RZP\Exception\LogicException;
-use RZP\Models\Merchant\AccessMap;
-use RZP\Models\Partner\Commission;
-use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Models\EntityOrigin;
-
+use RZP\Models\Pricing\Plan;
 use RZP\Base\RepositoryManager;
+use RZP\Exception\LogicException;
+use RZP\Models\Partner\Commission;
+use Razorpay\OAuth\Application as OAuthApp;
+use RZP\Models\Partner\Config as PartnerConfig;
 
-
+/**
+ * Class Calculator
+ *
+ * @package RZP\Models\Partner\Commission
+ */
 class Calculator
 {
     /**
@@ -67,6 +68,9 @@ class Calculator
      */
     protected $partner = null;
 
+    /**
+     * @var OAuthApp\Entity|null
+     */
     protected $partnerApp = null;
 
     /**
@@ -89,8 +93,14 @@ class Calculator
      */
     protected $commissionTax;
 
+    /**
+     * @var array
+     */
     protected $commissions = [];
 
+    /**
+     * @var null
+     */
     protected $implicitPricingPlan = null;
 
     /**
@@ -118,7 +128,6 @@ class Calculator
             return;
         }
 
-        // required to check if the commission entity must be created (shouldCreateCommission function)
         $this->setBaseContext($sourceEntity);
     }
 
@@ -132,6 +141,9 @@ class Calculator
         return $this->subMerchant;
     }
 
+    /**
+     * @return Base\PublicEntity
+     */
     public function getSource()
     {
         return $this->source;
@@ -155,13 +167,43 @@ class Calculator
         return $this->partnerConfig;
     }
 
+    /**
+     * @return OAuthApp\Entity|null
+     */
     public function getPartnerApp()
     {
         return $this->partnerApp;
     }
 
-    // ==================================== SETTERS ====================================
+    /**
+     * @return Plan|null
+     */
+    public function getImplicitPricingPlan()
+    {
+        return $this->implicitPricingPlan;
+    }
 
+    /**
+     * Returns the list of commission entities created
+     *
+     * @return array
+     */
+    public function getCommissions(): array
+    {
+        return $this->commissions;
+    }
+
+    public function getCommissionFee(): int
+    {
+        return $this->commissionFee;
+    }
+
+    public function getCommissionTax(): int
+    {
+        return $this->commissionTax;
+    }
+
+    // ==================================== SETTERS ====================================
 
     /**
      * @param Base\PublicEntity $source
@@ -179,7 +221,10 @@ class Calculator
         $this->partner = $partner;
     }
 
-    public function setPartnerApp($partnerApp)
+    /**
+     * @param OAuthApp\Entity $partnerApp
+     */
+    public function setPartnerApp(OAuthApp\Entity $partnerApp)
     {
         $this->partnerApp = $partnerApp;
     }
@@ -200,13 +245,29 @@ class Calculator
         $this->partnerConfig = $partnerConfig;
     }
 
+    /**
+     * @param Plan $pricingPlan
+     */
     public function setImplicitPricingPlan(Plan $pricingPlan)
     {
         $this->implicitPricingPlan = $pricingPlan;
     }
 
+    public function setCommissionFee(int $fee)
+    {
+        $this->commissionFee = $fee;
+    }
+
+    public function setCommissionTax(int $tax)
+    {
+        $this->commissionTax = $tax;
+    }
+
     // ====================================== END ======================================
 
+    /**
+     * @param Base\PublicEntity $sourceEntity
+     */
     protected function setBaseContext(Base\PublicEntity $sourceEntity)
     {
         // payment, refund etc
@@ -228,38 +289,28 @@ class Calculator
         $this->setImplicitPricingPlanContext();
     }
 
+    /**
+     * @return bool
+     */
     public function shouldCreateCommission(): bool
     {
         if (Constants::isValidCommissionSource($this->getSource()) === false)
         {
-            $sourceEntity = $this->getSource()->getEntity();
-
-            $this->trace->info(
-                TraceCode::COMMISSION_INVALID_SOURCE_ENTITY,
-                ['entity' => $sourceEntity]);
+            $this->traceContext(TraceCode::COMMISSION_INVALID_SOURCE_ENTITY);
 
             return false;
         }
 
         if ($this->isCommissionApplicable() === false)
         {
-            // @todo: add a log for each one here
-
-            $this->trace->info(TraceCode::COMMISSION_NOT_APPLICABLE);
+            $this->traceContext(TraceCode::COMMISSION_NOT_APPLICABLE);
 
             return false;
         }
 
         if ($this->isCommissionEnabled() === false)
         {
-            $this->trace->info(TraceCode::COMMISSION_NOT_ENABLED);
-
-            return false;
-        }
-
-        if ($this->isCommissionDefined() === false)
-        {
-            $this->trace->info(TraceCode::COMMISSION_NOT_DEFINED);
+            $this->traceContext(TraceCode::COMMISSION_NOT_ENABLED);
 
             return false;
         }
@@ -267,42 +318,44 @@ class Calculator
         return true;
     }
 
+    /**
+     * @return bool
+     */
     public function isCommissionApplicable(): bool
     {
-        if ($this->partner === null)
+        if ($this->getPartner() === null)
         {
-            $this->trace->info(TraceCode::COMMISSION_PARTNER_DOES_NOT_EXIST);
+            $this->traceContext(TraceCode::COMMISSION_PARTNER_DOES_NOT_EXIST);
 
             return false;
         }
 
-        if ($this->partnerConfig === null)
+        if ($this->getPartnerConfig() === null)
         {
-            $this->trace->info(TraceCode::COMMISSION_PARTNER_CONFIG_NOT_DEFINED);
+            $this->traceContext(TraceCode::COMMISSION_PARTNER_CONFIG_NOT_DEFINED);
 
             return false;
         }
 
         // Blocks create commission if the conditions are not supported, from here -
 
-        if ($this->implicitPricingPlan->isTypePricing() === false)
+        if ($this->getImplicitPricingPlan()->isTypePricing() === false)
         {
-            $this->trace->info(TraceCode::COMMISSION_PARTNER_PRICING_TYPE_NOT_SUPPORTED);
+            $this->traceContext(TraceCode::COMMISSION_PARTNER_PRICING_TYPE_NOT_SUPPORTED);
 
             return false;
         }
 
         if ($this->isCustomerFeeBearer() === true)
         {
-            $this->trace->info(TraceCode::COMMISSION_CUSTOMER_FEE_BEARER_NOT_SUPPORTED);
+            $this->traceContext(TraceCode::COMMISSION_CUSTOMER_FEE_BEARER_NOT_SUPPORTED);
 
             return false;
         }
 
         if ($this->getSubMerchant()->isPrepaid() === false)
         {
-            // @todo - add data for traces
-            $this->trace->info(TraceCode::COMMISSION_CUSTOMER_FEE_MODEL_NOT_SUPPORTED);
+            $this->traceContext(TraceCode::COMMISSION_CUSTOMER_FEE_MODEL_NOT_SUPPORTED);
 
             return false;
         }
@@ -310,6 +363,9 @@ class Calculator
         return true;
     }
 
+    /**
+     * @return bool
+     */
     protected function isCustomerFeeBearer(): bool
     {
         // Eg: 'payment', 'refund'
@@ -321,115 +377,176 @@ class Calculator
                     ($submerchant->isFeeBearerCustomer() === true));
     }
 
+    /**
+     * @return bool
+     */
     public function isCommissionEnabled(): bool
     {
         return ($this->getPartnerConfig()->isCommissionEnabled() === true);
     }
 
-    public function isCommissionDefined(): bool
+    /**
+     * @param Entity $commission
+     */
+    protected function addCommission(Commission\Entity $commission)
     {
-        // @todo
-        return true;
+        $this->commissions[] = $commission;
     }
 
+    /**
+     * Calculates all types of applicable commissions [implicit (fixed and variable), explicit (fixed)]
+     * and updates the class property - $this->commissions.
+     */
     public function calculate()
     {
-        $this->getCommissionSplit();
-
-        return;
-
-        //        list($merchantFee, $merchantTax, $merchantFeesSplit) = $this->getMerchantFees();
+        $this->buildImplicitVariableCommissionEntities();
     }
 
+    /**
+     * Saves the list of commission entities built so far
+     */
     public function saveCommission()
     {
         foreach ($this->commissions as $commission)
         {
             $this->repo->saveOrFail($commission);
         }
+
+        $this->traceContext(TraceCode::COMMISSION_CREATED);
     }
 
-    protected function getCommissionSplit()
+    /**
+     * For variable commissions, this will calculate the difference b/w the merchant pricing and the partner pricing.
+     * For fixed commissions, this will use the fixed commission pricing to calculate the commissions.
+     *
+     * Once calculated, the commission entities will be added to the class property - $this->commissions
+     *
+     * @return null
+     * @throws LogicException
+     */
+    protected function buildImplicitVariableCommissionEntities()
     {
-        if ($this->implicitPricingPlan->isTypePricing() === false)
-        {
-            throw new LogicException("Commission type pricing not yet supported");
-        }
-
         list($merchantFee, $merchantTax, $merchantFeesSplit) = $this->getMerchantFees();
 
         list($partnerFee, $partnerTax, $partnerSplit) = $this->getPartnerPricing();
 
-        $commissionAmount = $merchantFee - $partnerFee;
+        if ($partnerFee === 0)
+        {
+            $this->traceContext(
+                TraceCode::COMMISSION_NOT_DEFINED,
+                [
+                    'merchant_fees' => $merchantFee,
+                    'partner_fees'  => $partnerFee,
+                    'merchant_tax'  => $merchantTax,
+                    'partner_tax'   => $partnerTax,
+                ]);
+
+            return;
+        }
+
+        $commissionFee = $merchantFee - $partnerFee;
 
         $commissionTax = $merchantTax - $partnerTax;
 
-        if ($commissionAmount < 0)
+        if ($commissionFee < 0)
         {
-            $this->trace->info(TraceCode::COMMISSION_COMPUTED_NEGATIVE, [
+            $this->traceContext(
+                TraceCode::COMMISSION_COMPUTED_NEGATIVE,
+                [
+                    'merchant_fees' => $merchantFee,
+                    'partner_fees'  => $partnerFee,
+                    'merchant_tax'  => $merchantTax,
+                    'partner_tax'   => $partnerTax,
+                ],
+                Trace::CRITICAL);
+
+            return;
+        }
+
+        if ($commissionFee == 0)
+        {
+            $this->traceContext(TraceCode::COMMISSION_COMPUTED_ZERO, [
                 'merchant_fees' => $merchantFee,
                 'partner_fees'  => $partnerFee,
                 'merchant_tax'  => $merchantTax,
                 'partner_tax'   => $partnerTax,
             ]);
 
-            return null;
+            return;
         }
 
-        if ($commissionAmount == 0)
-        {
-            $this->trace->info(TraceCode::COMMISSION_COMPUTED_ZERO, [
-                'merchant_fees' => $merchantFee,
-                'partner_fees'  => $partnerFee,
-                'merchant_tax'  => $merchantTax,
-                'partner_tax'   => $partnerTax,
-            ]);
-
-            return null;
-        }
-
-        $this->trace->info(TraceCode::COMMISSION_COMPUTED, [
+        $this->traceContext(TraceCode::COMMISSION_COMPUTED, [
             'merchant_fees'     => $merchantFee,
             'partner_fees'      => $partnerFee,
             'merchant_tax'      => $merchantTax,
             'partner_tax'       => $partnerTax,
-            'commission_amount' => $commissionAmount,
+            'commission_amount' => $commissionFee,
             'commission_tax'    => $commissionTax,
         ]);
 
-        // @todo: Add comments here
-        $this->commissionFee = $commissionAmount;
+        $this->setCommissionFee($commissionFee);
 
-        $this->commissionTax = $commissionTax;
+        $this->setCommissionTax($commissionTax);
 
         $payload = $this->getCreateCommissionPayload();
 
-        $commission = (new Commission\Core)->build($this->getSource(), $this->partner, $this->partnerConfig, $payload);
+        $commission = (new Commission\Core)->build(
+                                                $this->getSource(),
+                                                $this->getPartner(),
+                                                $this->getPartnerConfig(),
+                                                $payload);
 
-        array_push($this->commissions, $commission);
+        $this->addCommission($commission);
     }
 
+    /**
+     * @return array
+     */
     protected function getCreateCommissionPayload()
     {
         return [
-            Entity::FEE      => $this->commissionFee,
-            Entity::TAX      => $this->commissionTax,
+            Entity::FEE      => $this->getCommissionFee(),
+            Entity::TAX      => $this->getCommissionTax(),
             Entity::DEBIT    => 0,
-            Entity::CREDIT   => $this->commissionFee,
+            Entity::CREDIT   => $this->getCommissionFee(),
             Entity::STATUS   => Status::CREATED,
             Entity::CURRENCY => $this->getSource()->getCurrency(),
         ];
     }
 
+    /**
+     * @return array
+     */
+    protected function getMerchantFees()
+    {
+        $pricingFee = new Pricing\Fee;
+
+        return $pricingFee->calculateMerchantFees($this->getSource());
+    }
+
+    /**
+     * Partner pricing refers to the base pricing at which Razorpay expects the payments from the partners'
+     * sub-merchants. Anything additional, goes as a commission to the partner.
+     *
+     * Eg: When the partner pricing is 1.8%, and,
+     *     Sub-merchant A's pricing is 2%   => Commission = 0.2%
+     *     Sub-merchant B's pricing is 2.5% => Commission = 0.7%
+     *
+     * Here, the partner pricing is fixed, and the merchant pricing depends on the rate at which the partner resells.
+     * Hence, this is variable commission.
+     *
+     * @return array
+     */
     protected function getPartnerPricing()
     {
         $pricingFee = new Pricing\Fee;
 
+        // primary or banking
         $product = $pricingFee->getProductForEntity($this->getSource());
 
         $calculator = new Pricing\FeeCalculator($this->getSource(), $product);
 
-        $pricingPlanId = $this->partnerConfig->getImplicitPricingPlanId();
+        $pricingPlanId = $this->getPartnerConfig()->getImplicitPricingPlanId();
 
         $pricing = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($pricingPlanId);
 
@@ -452,13 +569,6 @@ class Calculator
         $pricingPlan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($pricingPlanId);
 
         $this->setImplicitPricingPlan($pricingPlan);
-    }
-
-    protected function getMerchantFees()
-    {
-        $pricingFee = new Pricing\Fee;
-
-        return $pricingFee->calculateMerchantFees($this->getSource());
     }
 
     protected function setPartnerAppContext()
@@ -521,7 +631,9 @@ class Calculator
 
         if ($partner === null)
         {
-            // should not happen. @todo add a critical log
+            // This should never happen because the partner context is fetched from the database
+            $this->traceContext(TraceCode::COMMISSION_PARTNER_DOES_NOT_EXIST, [], Trace::CRITICAL);
+
             return;
         }
 
@@ -542,8 +654,46 @@ class Calculator
         $this->setPartnerConfig($partnerConfig);
     }
 
+    /**
+     * No fallback pricing rules are required for commissions as of now.
+     *
+     * @todo: Does the calculation break if the required pricing rules are not added or does it ignore assuming 0?
+     *
+     * @param Plan $pricing
+     *
+     * @return Plan
+     */
     public function addFallbackPricingRulesForCommissions(Pricing\Plan $pricing)
     {
         return $pricing;
+    }
+
+    protected function traceContext(string $traceCode, array $input = [], string $level = Trace::INFO)
+    {
+        $data = $this->getTraceData();
+
+        $data = array_intersect($data, $input);
+
+        $this->trace->addRecord($level, $traceCode, $data);
+    }
+
+    protected function getTraceData(): array
+    {
+        $commissionIds = array_map(
+                            function ($commission)
+                            {
+                                return $commission->getId();
+                            },
+                            $this->getCommissions());
+
+        return [
+            'source_type'    => $this->getSource()->getId()         ?? null,
+            'source_id'      => $this->getSource()->getEntityName() ?? null,
+            'submerchant'    => $this->getSubMerchant()->getId()    ?? null,
+            'partner'        => $this->getPartner()->getId()        ?? null,
+            'partner_app'    => $this->getPartnerApp()->getId()     ?? null,
+            'partner_config' => $this->getPartnerConfig()->getId()  ?? null,
+            'commissions'    => $commissionIds,
+        ];
     }
 }
