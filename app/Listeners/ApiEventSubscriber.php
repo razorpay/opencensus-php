@@ -419,7 +419,10 @@ class ApiEventSubscriber extends Base\Core
 
     protected function onPayoutProcessed(Payout\Entity $payout)
     {
-        (new Transaction\Notifier($payout->transaction, $this->event))->notify();
+        if ($payout->isOfMerchantTransaction() === true)
+        {
+            (new Transaction\Notifier($payout->transaction, $this->event))->notify();
+        }
 
         if ($this->webhookEnabledForEvent === true)
         {
@@ -432,7 +435,10 @@ class ApiEventSubscriber extends Base\Core
     protected function onPayoutReversed(Payout\Entity $payout)
     {
         // Todo: Uncomment this once payout_reversed.blade.php file is updated with content.
-        // (new Transaction\Notifier($payout->transaction, $this->event))->notify();
+        // if ($payout->isOfMerchantTransaction() === true)
+        // {
+        //     (new Transaction\Notifier($payout->transaction, $this->event))->notify();
+        // }
 
         if ($this->webhookEnabledForEvent === true)
         {
