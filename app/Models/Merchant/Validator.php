@@ -192,7 +192,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $resetSettlementScheduleRules = [
-        'merchant_ids'   => 'required|associative_array',
+        'merchant_ids'   => 'required|sequential_array',
         'merchant_ids.*' => 'required|alpha_num|size:14',
     ];
 
