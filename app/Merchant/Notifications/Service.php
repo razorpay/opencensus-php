@@ -126,6 +126,41 @@ class Service extends Base\Service
                     $isUserEligible = in_array(strtolower($userFilterValue), $value, true);
 
                     break;
+
+                case 'experiments':
+
+                    if (isset($user[$key]) === false)
+                    {
+                        return false;
+                    }
+
+                    $userFilterValue = $user[$key];
+
+                    foreach ($userFilterValue as $key => $subValue)
+                    {
+                        $userFilterValue[strtolower($key)] = $userFilterValue[$key]['result'];
+
+                        if (strtolower($key) !== $key)
+                        {
+                            unset($userFilterValue[$key]);
+                        }
+                    }
+
+                    $userFilterValue = array_map('strtolower', $userFilterValue);
+
+                    $value = array_map('strtolower', $value);
+
+                    foreach ($value as $key => $subValue)
+                    {
+                        if (isset($userFilterValue[$subValue]) === true)
+                        {
+                            $value[$key] = $userFilterValue[$subValue];
+                        }
+                    }
+
+                    $isUserEligible = in_array("on", $value);
+
+                    break;
             }
 
             if ($isUserEligible === false)

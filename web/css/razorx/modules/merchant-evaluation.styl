@@ -1,0 +1,55 @@
+.RazorX-container.RazorX-container .merchant-evaluation-container
+  .evaluation-result
+    display: flex
+    margin: 20px 36px 8px
+
+    > div
+      display: flex
+      position: relative
+      justify-content: center
+      align-items: center
+      min-width: 300px
+      max-width: 450px
+      min-height: 200px
+      padding: 12px 20px
+      background: #fff
+      box-shadow: 1px 1px 7px rgba(0,0,0,0.08)
+      text-align: center
+
+      .title
+        opacity: 0.03
+        font-weight: 800
+        font-size: 54px
+        position: absolute
+        right: 0
+        bottom: 0
+        line-height: 44px
+
+      i
+        position: absolute
+        left: 0
+        top: 0
+        line-height: 40px
+        font-size: 48px
+        opacity: 0.03
+        transform: rotate(135deg)
+
+      > span
+        font-size: 16px
+        opacity: 0.5
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.08)
+        line-height: 24px
+
+        &.highlight
+          opacity: 1
+          font-size: 28px
+          color: $slime-glow
+          line-height: 32px
+          background: transparent
+
+      .dot-loader
+        font-size: 40px !important
+        opacity: 0.4
+        left: 32px
+        top: 48px
+        transform: rotate(90deg)

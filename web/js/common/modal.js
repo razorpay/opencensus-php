@@ -38,20 +38,22 @@ class ModalStore {
       let Confirm = (
         <div class="confirm-modal">
           <header>Confirm</header>
-          <div class="message">{message}</div>
-          <div class="action-buttons">
-            <button
-              onClick={_ => {
-                isResolved = 1;
-                this.closeModal();
-              }}
-              class="btn-confirm"
-            >
-              {confirmLabel}
-            </button>
-            <button onClick={_ => this.closeModal()} class="btn-reject">
-              {rejectLabel}
-            </button>
+          <div class="confirm-body">
+            <div class="message">{message}</div>
+            <div class="action-buttons">
+              <button
+                onClick={_ => {
+                  isResolved = 1;
+                  this.closeModal();
+                }}
+                class="btn-confirm"
+              >
+                {confirmLabel}
+              </button>
+              <button onClick={_ => this.closeModal()} class="btn-reject">
+                {rejectLabel}
+              </button>
+            </div>
           </div>
         </div>
       );

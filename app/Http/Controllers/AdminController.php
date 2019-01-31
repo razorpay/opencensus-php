@@ -57,6 +57,8 @@ class AdminController extends Controller
             return AppResponse::jsonResponse(['Organization not found'], null);
         }
 
+        $currentRouteName = \Route::currentRouteName();
+
         // If already logged in
         if (Auth::guard('api')->check())
         {
@@ -64,7 +66,13 @@ class AdminController extends Controller
 
             if (empty($admin['data']) === false)
             {
-                return view('admin.index', [
+                $view = 'admin.index';
+
+                if ($currentRouteName === 'razorx_catchall' and (empty($org['custom_code'] === false) and ($org['custom_code'] === 'rzp'))) {
+                    $view = 'admin.razorx';
+                }
+
+                return view($view, [
                     'cdn' => \Config::get('app.cdn_dashboard_url'),
                     'org'   => $org,
                     'user'  => $admin['data'],
@@ -85,7 +93,7 @@ class AdminController extends Controller
         }
 
         // /admin/merchants → /admin, to avoid google oauth error (redirect_uri_mismatch)
-        if (\Route::currentRouteName() === 'admin_catchall') {
+        if ($currentRouteName === 'admin_catchall' or $currentRouteName === 'razorx_catchall') {
             return redirect(self::REDIRECT_TO);
         }
 
@@ -115,7 +123,7 @@ class AdminController extends Controller
     public function putAction($merchantId)
     {
         list($error, $data) = (new Admin\Service)->action($merchantId);
-        
+
         return AppResponse::jsonResponse($error, $data);
     }
 

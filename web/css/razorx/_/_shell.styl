@@ -1,0 +1,198 @@
+.RazorX-container.RazorX-container
+  -webkit-font-smoothing: antialiased
+  -moz-osx-font-smoothing: grayscale
+  color: $color-text-main
+  background: $background
+  overflow: hidden
+
+  #fixed-container
+    z-index: 10
+    width: 100%
+
+  > main
+    height: 100%
+    margin-left: 96px
+    opacity: 0
+    animation: appear-in 0.45s 0.8s cubic-bezier(0.32, 1.13, 1, 1) forwards
+    background: transparent
+    padding: 16px 16px 0 0
+    z-index: 2
+
+  > aside
+    background: $background
+    width: 96px
+    padding: 0 0 80px 0
+    overflow: visible
+    transform: translateX(-100%)
+    animation: slide-in 0.45s 0.8s cubic-bezier(0.32, 1.13, 1, 1) forwards
+    border-right: 1px solid rgba(0,0,0,0.1)
+
+    &:hover
+      z-index: 2
+
+    > div
+      border: none
+
+    .scroll-nav
+      height: calc(100% - 88px)
+      overflow-y: auto
+
+    .main-nav
+      text-align: center
+      padding: 16px 0
+      line-height: 16px
+      font-size: 10px
+      text-transform: uppercase
+      color: #fff
+      opacity: 0.5
+
+      i
+        margin: 0
+        font-size: 20px
+        line-height: 20px
+        display: block
+        color: inherit
+        opacity: 1
+        margin-bottom: 8px
+
+      &:hover
+        opacity: 0.75
+
+      &.active
+        opacity: 1
+        color: $slime-glow
+
+        i
+          animation: text-glow 2s infinite
+
+    #profile-nav
+      cursor: pointer
+      position: absolute
+      bottom: 8px
+      width: 100%
+
+      .ellipsis-wrap
+        width: 80%
+        margin: 0 auto
+        overflow: hidden
+        white-space: nowrap
+        text-overflow: ellipsis
+
+      &:before
+        content: ''
+        display: block
+        border-top: 2px solid rgba(255,255,255,0.24)
+        position: absolute
+        top: 0
+        left: 20px
+        right: 20px
+        margin-bottom: 16px
+        //box-shadow: 0px -16px 40px rgba(255,255,255,1)
+
+      .menu
+        display: none
+        position: absolute
+        background: #fff
+        box-shadow: 0 3px 13px rgba(0,0,0,0.09), 0 1px 5px 0 rgba(0,0,0,0.14)
+        bottom: 0
+        left: 100%
+        min-width: 160px
+        font-size: 12px
+        font-weight: 500
+
+        > div, > a
+          display: block
+          position: relative
+          padding: 8px 0
+          color: $color-primary
+
+        .btn-default + .btn-default
+          margin-top: -1px
+
+        .spin-btn
+          position: absolute
+          top: 12px
+
+       &:hover .menu
+        display: block
+
+    #razorx-logo
+      background: url('/img/logo.png') no-repeat center
+      background-size: contain
+      height: 28px
+      position: relative
+      text-align: center
+      margin: 16px 0 32px
+      padding: 10px 20px
+      display: block
+      &:after
+        display: block
+        border-bottom: 2px solid rgba(255,255,255,0.12)
+        content: ''
+        position: absolute
+        top: 100%
+        left: 20px
+        right: 20px
+        margin-top: 16px
+
+
+  #page-logo
+    color: rgba(255,255,255,0.06)
+
+    > div
+      font-size: 32px
+      line-height: 32px
+      color: rgba(255,255,255,0.08)
+
+      strong
+        font-style: italic
+        font-size: 40px
+        opacity: 0
+        position: relative
+        display: inline-block
+        transform: translateX(10px)
+        animation: glitch-left 0.2s forwards
+
+        &::before, &::after
+          content: 'X'
+          position: absolute
+          left: 0
+          top: 0
+        &::before
+          transform: translateX(14px)
+          animation: glitch-left 0.22s 0.08s forwards
+        &::after
+          transform: translateX(22px)
+          animation: glitch-left 0.22s 0.16s forwards, text-glow 1.8s 0.16s forwards, make-slime 1.8s 0.25s
+
+@keyframes glitch-left
+  100%
+    opacity: 1
+    transform: translateX(0)
+
+@keyframes slide-in
+  100%
+    transform: translateX(-1px)
+
+@keyframes appear-in
+  100%
+    opacity: 1
+
+@keyframes text-glow
+  0%
+    text-shadow: 0 0 4px rgba(255,255,255,0.1)
+
+  50%
+    text-shadow: 0 0 12px rgba(255,255,255,0.8)
+
+  100%
+    text-shadow: 0 0 8px rgba(255,255,255,0.1)
+
+@keyframes make-slime
+  0%
+    color: rgba(255,255,255,0.06)
+  50%
+    color: $slime-glow
+
+  100%
+    color: rgba(255,255,255,0.06)

@@ -13,6 +13,7 @@ class AppResponse
         'admin_catchall',
         'dashboard',
         'admin_merchant_stats',
+        'razorx_catchall',
     ];
 
     /**

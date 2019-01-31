@@ -1,0 +1,291 @@
+.RazorX-container.RazorX-container
+  .page-center
+    position: absolute
+    left: 50%
+    top: 50%
+    transform: translate(-50%, -50%)
+    text-align: center
+
+  .empty-entity
+    color: #dad9d9
+    i
+      font-size: 40px
+      margin-bottom: 16px
+
+    .description
+      font-size: 20px
+      font-weight: 600
+
+      div
+        font-size: 16px
+        font-weight: 400
+
+  #main-routes
+    height: 100%
+    position: relative
+
+    &::before, &::after
+      content: ''
+      position: absolute
+      border-right: 1px solid $slime-glow
+      border-top: 1px solid $slime-glow
+      animation: glitch-up 6s infinite cubic-bezier(0, 0.99, 0.68, 1.93)
+
+    &::before
+      height: 48px
+      width: 48px
+      right: -8px
+      top: -8px
+      opacity: 0.8
+
+    &::after
+      height: 36px
+      width: 68px
+      right: -12px
+      top: -12px
+      opacity: 0.8
+      animation-name: glitch-down
+
+
+  .parent-container
+    height: 100%
+    position: absolute
+    top: 0
+    left: 0
+    width: 100%
+    background: $background-anti
+    box-shadow: -4px 0 72px rgba(0,0,0,0.4)
+    z-index: 1
+
+    &.slide-enter
+      transform: translateY(100vh)
+      z-index: 2
+
+    &.slide-enter-active
+      transition: 0.4s cubic-bezier(0.43, 0.86, 1, 1)
+      transform: translateY(0)
+
+    .container-group
+      height 100%
+      padding-top: 62px
+      margin-top: -62px
+      display: flex
+      flex-wrap: wrap
+      align-content: flex-start
+
+      .list-container
+        flex: 1
+        align-self: stretch
+        overflow-y: auto
+        height: 100%
+
+      .entity-container
+        width: 400px
+        background: $background-anti-overlay
+        border-left: 1px solid rgba(0,0,0,0.02)
+        padding: 12px 0 0 0
+
+        > .entity-details
+          overflow-y: auto
+          height: 100%
+          padding: 0  24px 12px
+
+        .pad-highlight
+          padding: 8px
+          background: rgba(0,0,0,0.01)
+          border: 1px solid rgba(0,0,0,0.02)
+          border-radius: 2px
+          margin-left: -8px
+          margin-right: -8px
+          width: unset
+          position: relative
+
+        .separator
+          border-top: 1px solid rgba(0,0,0,0.02)
+          margin: 22px auto
+
+        .title
+          font-size: 20px
+          font-weight: 500
+          margin-bottom: 8px
+
+          &::after
+            content: ''
+            display: block
+            width: 24px
+            height: 5px
+            margin: 12px 0
+            background: $highlight-color
+
+        .description
+          line-height: 20px
+
+        .sub-description
+          margin-top: 0
+          margin-bottom: 8px
+          font-size: 12px
+          color: #c7c7c7
+          display: flex
+          align-items: baseline
+
+          &.column
+            flex-direction: column
+            margin-bottom: 0
+
+          .to-right
+            margin: 0 0 0 auto
+
+
+        .description .sub-description
+          margin-top: 8px
+          margin-bottom: 0
+          font-style: italic
+          display: block
+
+        .title + .description
+          color: #878787
+
+        .label
+          margin-bottom: 4px
+          font-weight: 700
+
+        .square-pills
+          font-size: 14px
+          display: inline-block
+          margin-bottom: 4px
+          max-width: 100%
+          word-wrap: break-word
+          white-space: normal
+          text-align: left
+
+        .link
+          margin: 0
+          font-size: 12px
+
+
+  .btn.raw-btn.raw-btn
+    font-size: 8px
+    height: unset
+    width: 32px
+    letter-spacing: 0.4px
+    line-height: 20px
+    padding: 0 4px
+    margin: 0 0 0 -7px
+    border-bottom-right-radius: 0
+    border-bottom-left-radius: 0
+    transform: rotate(90deg)
+    background: #fff
+    color: $color-primary
+
+  main
+    .header, .filters
+      display: flex
+      position: relative
+      z-index: 2
+      font-weight: 500
+
+    .parent-container > .header
+      padding: 0 36px
+      height: 62px
+      align-items: center
+
+      .title
+        color: $color-primary-light
+        font-size: 22px
+
+      .field
+        margin: 0
+        margin-left: 16px
+
+    .filters
+      align-items: flex-end
+      width: 100%
+      padding: 12px 36px 8px
+      border-bottom: 1px solid rgba(0,0,0,0.04)
+      box-shadow: 0 4px 10px -3px rgba(0,0,0,0.03)
+      background: transparent
+
+      .field
+        margin: 0 16px 12px 0
+
+        label
+          font-size: 12px
+          font-weight: 600
+          opacity: 0.6
+          text-transform: uppercase
+
+@keyframes glitch-up
+  0%
+    transform: translate(0)
+
+  3%
+    transform: translate(2px, -2px)
+    opacity: 1
+    box-shadow: 6px -3px 5px -5px rgba(240, 255, 184, 0.4)
+
+  12%
+    transform: translate(2px, -2px)
+    opacity: 1
+    box-shadow: 6px -3px 5px -5px rgba(240, 255, 184, 0.4)
+
+  15%
+    transform: translate(0)
+    box-shadow: none
+
+  100%
+    transform: translate(0)
+
+
+@keyframes glitch-down
+  0%
+    transform: translate(0)
+
+  3%
+    transform: translate(-2px, 2px)
+    opacity: 1
+    box-shadow: 3px -5px 4px -4px rgba(240, 255, 184, 0.4)
+
+  12%
+    transform: translate(-2px, 2px)
+    opacity: 1
+    box-shadow: 3px -5px 4px -4px rgba(240, 255, 184, 0.4)
+
+
+  15%
+    transform: translate(0)
+    box-shadow: none
+
+  100%
+    transform: translate(0)
+
+
+.RazorX-container.RazorX-container main .header .btn-group,
+.Modal-body .footer
+  margin: 0 0 0 auto
+  display: flex
+  align-items: center
+  justify-content: flex-end
+
+  > button
+    margin: 0
+    margin-left: 16px
+
+
+
+/* width */
+::-webkit-scrollbar
+  width: 6px;
+
+/* Track */
+::-webkit-scrollbar-track
+  background: rgba(255,255,255,0.4)
+  border-radius: 10px
+
+/* Handle */
+::-webkit-scrollbar-thumb
+  background: rgba(0,0,0,0.2)
+  border-radius: 10px
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover
+  background: rgba(0,0,0,0.3)

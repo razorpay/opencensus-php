@@ -75,8 +75,32 @@ export default class ActivationContainer extends React.Component {
       props.rpc.notifyOnKYCSuccess(reply => {
         this.onKYCSuccess = reply;
       });
+
+      props.rpc.notifySupportPopupOpen(reply => {
+        this.onSupportOpen = reply;
+      });
+
+      props.rpc.notifySupportPopupClose(reply => {
+        this.onSupportClose = reply;
+      });
     }
+
+    window.addEventListener('modal-open', this.handleSupportModalOpen);
   }
+
+  get isSupportUrl() {
+    return window.location.href.indexOf('#ticket') > 0;
+  }
+
+  handleSupportModalOpen = () => {
+    window.addEventListener('modal-close', this.handleSupportModalClose);
+    return this.isSupportUrl && this.onSupportOpen && this.onSupportOpen();
+  };
+
+  handleSupportModalClose = () => {
+    window.removeEventListener('modal-close', this.handleSupportModalClose);
+    return this.onSupportClose && this.onSupportClose();
+  };
 
   preloadWelcomeAsset() {
     const welcome = new Image();
@@ -323,6 +347,10 @@ export default class ActivationContainer extends React.Component {
 
   componentDidMount() {
     this.handleUIUpdate();
+  }
+
+  componentWillUnmount() {
+    this.handleSupportModalClose();
   }
 
   /*
