@@ -1528,9 +1528,9 @@ class Gateway
     {
         $emandateBanks = [];
 
-        $emandateBanks = self::getEmandateAuthTypeToBankMap();
+        $emandateBanksMap = self::getEmandateAuthTypeToBankMap();
 
-        foreach ($emandateBanks as $authType => $banks)
+        foreach ($emandateBanksMap as $authType => $banks)
         {
             $emandateBanks = array_merge($emandateBanks, $banks);
         }
@@ -1828,6 +1828,8 @@ class Gateway
                                              self::ENACH_NPCI_NETBANKING_BANKS
                                           )
                            );
+
+        $netbankingBanks = array_values($netbankingBanks);
 
         return [
             AuthType::NETBANKING  => $netbankingBanks,
