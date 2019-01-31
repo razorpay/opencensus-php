@@ -109,7 +109,7 @@ class Validator extends Base\Validator
 
     protected static $terminalCreateRules = [
         Entity::TYPE                 => 'required|custom',
-        Entity::SUB_TYPE             => 'required|string|in:hitachi,icici',
+        Entity::SUB_TYPE             => 'required|string|in:hitachi,netbanking_icici',
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
     ];

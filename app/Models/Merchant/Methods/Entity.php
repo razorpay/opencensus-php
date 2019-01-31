@@ -133,6 +133,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = array(
+        self::CARD_NETWORKS  => Network::DEFAULT_CARD_NETWORKS,
         self::AMEX           => false,
         self::PAYTM          => false,
         self::MOBIKWIK       => true,
@@ -157,7 +158,6 @@ class Entity extends Base\PublicEntity
         self::BANK_TRANSFER  => true,
         self::AMAZONPAY      => false,
         self::CARDLESS_EMI   => false,
-        self::CARD_NETWORKS  => Network::DEFAULT_CARD_NETWORKS,
     );
 
     protected $wallets = array(
@@ -291,39 +291,39 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMEX);
     }
 
-    public function isAmexCardEnabled()
+    public function isAmexCardEnabled(): bool
     {
-        return $this->getCardNetworks()[Network::AMEX];
+        return ((bool) $this->getCardNetworks()[Network::AMEX]);
     }
 
-    public function isDinersEnabled()
+    public function isDinersEnabled(): bool
     {
-        return $this->getCardNetworks()[Network::DICL];
+        return ((bool) $this->getCardNetworks()[Network::DICL]);
     }
 
-    public function isMastercardEnabled()
+    public function isMastercardEnabled(): bool
     {
-        return $this->getCardNetworks()[Network::MC];
+        return ((bool) $this->getCardNetworks()[Network::MC]);
     }
 
-    public function isMaestroEnabled()
+    public function isMaestroEnabled(): bool
     {
-        return $this->getCardNetworks()[Network::MAES];
+        return ((bool) $this->getCardNetworks()[Network::MAES]);
     }
 
-    public function isVisaEnabled()
+    public function isVisaEnabled(): bool
     {
-        return $this->getCardNetworks()[Network::VISA];
+        return ((bool) $this->getCardNetworks()[Network::VISA]);
     }
 
-    public function isJcbEnabled()
+    public function isJcbEnabled(): bool
     {
-        return $this->getCardNetworks()[Network::JCB];
+        return ((bool) $this->getCardNetworks()[Network::JCB]);
     }
 
-    public function isRupayEnabled()
+    public function isRupayEnabled(): bool
     {
-        return $this->getCardNetworks()[Network::RUPAY];
+        return ((bool) $this->getCardNetworks()[Network::RUPAY]);
     }
 
     public function isPaytmEnabled()
@@ -546,11 +546,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::DISABLED_BANKS, $banks);
     }
 
-    public function setCardNetworks(array $networks)
-    {
-        $this->setAttribute(self::CARD_NETWORKS, $networks);
-    }
-
     public function setAmex($amex)
     {
         $this->setAttribute(self::AMEX, $amex);
@@ -558,42 +553,42 @@ class Entity extends Base\PublicEntity
         $this->setAmexCard($amex);
     }
 
-    public function setAmexCard(bool $value)
+    public function setAmexCard(int $value)
     {
         $this->setCardNetwork(Network::AMEX, $value);
     }
 
-    public function setDinersCard(bool $value)
+    public function setDinersCard(int $value)
     {
         $this->setCardNetwork(Network::DICL, $value);
     }
 
-    public function setMasterCard(bool $value)
+    public function setMasterCard(int $value)
     {
         $this->setCardNetwork(Network::MC, $value);
     }
 
-    public function setMaestroCard(bool $value)
+    public function setMaestroCard(int $value)
     {
         $this->setCardNetwork(Network::MAES, $value);
     }
 
-    public function setVisaCard(bool $value)
+    public function setVisaCard(int $value)
     {
         $this->setCardNetwork(Network::VISA, $value);
     }
 
-    public function setJcbCard(bool $value)
+    public function setJcbCard(int $value)
     {
         $this->setCardNetwork(Network::JCB, $value);
     }
 
-    public function setRupayCard(bool $value)
+    public function setRupayCard(int $value)
     {
         $this->setCardNetwork(Network::RUPAY, $value);
     }
 
-    protected function setCardNetwork(string $network, bool $value)
+    protected function setCardNetwork(string $network, int $value)
     {
         $cardNetworks = $this->getAttribute(self::CARD_NETWORKS);
 
@@ -601,7 +596,7 @@ class Entity extends Base\PublicEntity
 
         $cardNetworks[$network] = $value;
 
-        $this->setCardNetworks($cardNetworks);
+        $this->setAttribute(self::CARD_NETWORKS, $cardNetworks);
     }
 
     public function setWallets($wallets)
@@ -748,15 +743,31 @@ class Entity extends Base\PublicEntity
     {
         if (is_array($networks) === true)
         {
+            $cardNetworks = $this->getCardNetworks();
+
+            $networks = array_merge($cardNetworks, $networks);
+
             $value = Network::getHexValue($networks);
 
             $this->attributes[self::CARD_NETWORKS] = $value;
+        }
+        else
+        {
+            $this->attributes[self::CARD_NETWORKS] = $networks;
         }
     }
 
     protected function setDisabledBanksAttribute(array $banks)
     {
         $this->attributes[self::DISABLED_BANKS] = json_encode(array_values($banks));
+    }
+
+    // TODO: Remove this once Amex column is removed
+    protected function setAmexAttribute($value)
+    {
+        $this->attributes[self::AMEX] = $value;
+
+        $this->setAmexCard($value);
     }
 
     // ----------------------- Mutators End --------------------------------------------

@@ -54,7 +54,7 @@ return [
                     'credit_card' => true,
                     'netbanking' => true,
                     'card_networks' => [
-                        'dicl' => true
+                        'dicl' => 1
                     ],
                 ],
             ],
