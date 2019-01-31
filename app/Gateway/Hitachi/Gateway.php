@@ -189,6 +189,11 @@ class Gateway extends Base\Gateway
         $refundEntity = $this->updateGatewayRefundEntity($refundEntity, $attributes, false);
 
         $this->checkErrorsAndThrowException($response);
+
+        return [
+            Payment\Gateway::GATEWAY_RESPONSE  => json_encode($response),
+            Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($response)
+        ];
     }
 
     public function reverse(array $input)
@@ -211,6 +216,11 @@ class Gateway extends Base\Gateway
         $this->createGatewayRefundEntity($input, $attributes);
 
         $this->checkErrorsAndThrowException($response);
+
+        return [
+            Payment\Gateway::GATEWAY_RESPONSE  => json_encode($response),
+            Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($response)
+        ];
     }
 
     public function verify(array $input)
@@ -449,14 +459,19 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
+        $scroogeResponse = new Base\ScroogeResponse();
+
         if ($this->isUnprocessedRefund($input) === true)
         {
-            return false;
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
+                                   ->toArray();
         }
 
         if ($this->isProcessedRefund($input) === true)
         {
-            return true;
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
         }
 
         $verifyRefundRequest = $this->getVerifyRequestArray($input, 'refund');
@@ -472,6 +487,9 @@ class Gateway extends Base\Gateway
             ]);
 
         $verifyRefundResponse = $this->sendGatewayRequest($verifyRefundRequest);
+
+        $scroogeResponse->setGatewayVerifyResponse($verifyRefundResponse)
+                        ->setGatewayKeys($this->getGatewayData($verifyRefundResponse));
 
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
@@ -502,10 +520,13 @@ class Gateway extends Base\Gateway
                 $this->createGatewayRefundEntity($input, $attributes, 'refund');
             }
 
-            return true;
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
         }
 
-        return false;
+        return $scroogeResponse->setSuccess(false)
+                               ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
+                               ->toArray();
     }
 
     protected function verifyPayment(Verify $verify)
@@ -1106,12 +1127,22 @@ class Gateway extends Base\Gateway
 
         $message = ErrorCodes\ErrorCodeDescriptions::getGatewayErrorDescription($response);
 
+        // The following checks are being made to avoid the case where an array is returned
+        // because $code should be a string there are multiple levels of mapping
+        // so if one of the index is missing in the message the $code and $msg will be an array instead of a string
+        $errorCode = (is_string ($errorCode) === true) ? $errorCode : ErrorCode::BAD_REQUEST_REFUND_FAILED;
+        $message = (is_string($message) === true) ? $message : ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR;
+
         if ($respCode !== Status::SUCCESS_CODE)
         {
             throw new Exception\GatewayErrorException(
                 $errorCode,
                 $respCode,
-                $message);
+                $message,
+                [
+                    Payment\Gateway::GATEWAY_RESPONSE  => json_encode($response),
+                    Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($response)
+                ]);
         }
     }
 
@@ -1248,5 +1279,18 @@ class Gateway extends Base\Gateway
         }
 
         return $input['content'];
+    }
+
+    protected function getGatewayData(array $refundFields)
+    {
+        return [
+            ResponseFields::REQUEST_ID           => $refundFields[ResponseFields::REQUEST_ID] ?? null,
+            ResponseFields::MERCHANT_ID          => $refundFields[ResponseFields::MERCHANT_ID] ?? null,
+            ResponseFields::RESPONSE_CODE        => $refundFields[ResponseFields::RESPONSE_CODE] ?? null,
+            ResponseFields::TRANSACTION_TYPE     => $refundFields[ResponseFields::TRANSACTION_TYPE] ?? null,
+            ResponseFields::RETRIEVAL_REF_NUM    => $refundFields[ResponseFields::RETRIEVAL_REF_NUM] ?? null,
+            ResponseFields::TRANSACTION_AMOUNT   => $refundFields[ResponseFields::TRANSACTION_AMOUNT] ?? null,
+            ResponseFields::MERCHANT_REF_NUMBER  => $refundFields[ResponseFields::MERCHANT_REF_NUMBER] ?? null,
+        ];
     }
 }

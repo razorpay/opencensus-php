@@ -258,9 +258,9 @@ return [
         'amount'           => 50000,
         'currency'         => 'INR',
         'base_amount'      => 50000,
-        'gateway_refunded' => false,
+        'gateway_refunded' => null,
         'entity'           => 'refund',
-        'status'           => 'failed',
+        'status'           => 'created',
     ],
 
     'testPaymentCaptureEntity' => [

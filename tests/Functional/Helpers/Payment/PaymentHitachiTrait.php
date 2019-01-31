@@ -147,6 +147,11 @@ trait PaymentHitachiTrait
         $this->mockServerContentFunction(
             function(& $content, $action = null)
             {
+                if ($action === 'verify')
+                {
+                    $content[Hitachi\ResponseFields::STATUS] = 'Error';
+                }
+
                 $content[Hitachi\ResponseFields::RESPONSE_CODE] = '06';
 
                 if ($action === 'capture')
@@ -165,6 +170,11 @@ trait PaymentHitachiTrait
         $this->mockServerContentFunction(
             function(& $content, $action = null)
             {
+                if ($action === 'verify')
+                {
+                    $content['pStatus'] = 'Error';
+                }
+
                 if ($action === 'reverse')
                 {
                     $content = [
