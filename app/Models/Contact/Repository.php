@@ -27,20 +27,16 @@ class Repository extends Base\Repository
      */
     public function getContactWithSimilarDetails(array $input, Merchant\Entity $merchant)
     {
-        $contact = $this->newQuery()
-                        ->where(Entity::CONTACT, $input[Entity::CONTACT] ?? null)
-                        ->where(Entity::EMAIL, $input[Entity::EMAIL] ?? null)
-                        ->merchantId($merchant->getId())
-                        ->orderBy(Entity::CREATED_AT, 'desc')
-                        ->orderBy(Entity::ID, 'desc')
-                        ->first();
-
-        $exists = (($contact !== null) and
-                   ($contact->getName() === ($input[Entity::NAME] ?? null)) and
-                   ($contact->getType() === ($input[Entity::TYPE] ?? null)) and
-                   ($contact->getReferenceId() === ($input[Entity::REFERENCE_ID] ?? null)));
-
-        return $exists ? $contact : null;
+        return $this->newQuery()
+                    ->where(Entity::CONTACT, $input[Entity::CONTACT] ?? null)
+                    ->where(Entity::EMAIL, $input[Entity::EMAIL] ?? null)
+                    ->where(Entity::REFERENCE_ID, $input[Entity::REFERENCE_ID] ?? null)
+                    ->merchantId($merchant->getId())
+                    ->where(Entity::TYPE, $input[Entity::TYPE] ?? null)
+                    ->where(Entity::NAME, $input[Entity::NAME] ?? null)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->orderBy(Entity::ID, 'desc')
+                    ->first();
     }
 
     protected function addQueryParamId($query, $params)

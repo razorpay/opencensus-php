@@ -701,17 +701,19 @@ class Validator extends Base\Validator
             try
             {
                 $validator($entry);
+
+                $error[Header::ERROR_CODE] = null;
+                $error[Header::ERROR_DESCRIPTION] = null;
             }
             catch (BaseException $e)
             {
-                $errors[$seq] = [
-                    Header::ERROR_CODE        => $e->getError()->getPublicErrorCode(),
-                    Header::ERROR_DESCRIPTION => $e->getError()->getDescription(),
-                ];
+                $error[Header::ERROR_CODE] = $e->getError()->getPublicErrorCode();
+                $error[Header::ERROR_DESCRIPTION] = $e->getError()->getDescription();
 
-                // Updates the referenced row for to be used in validated file.
-                $entries[$seq] += $errors;
+                $errors[$seq] = $error;
             }
+
+            $entries[$seq] += $error;
         }
 
         // If request done via earlier direct upload flow (instead of validation flow), throw 4XX.
