@@ -240,7 +240,7 @@ class RequestHandler extends Base\Core
 
         $this->repo->saveOrFail($fta);
 
-        //TODO:: We will not updating the source as recon cron should take care of it
+        //TODO:: We are not updating the source as recon cron should take care of it
         /*
         $source->setFTSTransferId($transferId);
 

@@ -42,7 +42,7 @@ class BankAccount extends Base
         $fundTransferAttempt = $this->createFundTransferAttempt();
 
         // TODO: Add Trace FTA
-        // TODO: Initiate FTA here.l
+        // TODO: Initiate FTA here.
         // postFundTransfer will be called when its done execution.
     }
 
