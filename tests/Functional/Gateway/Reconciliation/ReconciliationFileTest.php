@@ -1315,11 +1315,21 @@ class ReconciliationFileTest extends TestCase
 
     public function testHitachiReconRefundFile()
     {
+        $this->gateway = 'hitachi';
+
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
         $this->fixtures->create('terminal:shared_hitachi_terminal');
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
         $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['pStatus'] = 'Error';
+            }
+        });
 
         $refund1 = $this->getNewRefundEntity(true);
 
