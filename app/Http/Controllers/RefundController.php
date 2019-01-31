@@ -182,7 +182,9 @@ class RefundController extends Controller
 
     public function postGatewayVerifyRefundCall(string $id)
     {
-        $response = $this->service()->makeGatewayVerifyRefundCall($id);
+        $input = Request::all();
+
+        $response = $this->service()->makeGatewayVerifyRefundCall($id, $input);
 
         return ApiResponse::json($response);
     }

@@ -2,9 +2,9 @@
 
 namespace RZP\Gateway\Netbanking\Pnb;
 
-use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Action;
@@ -26,8 +26,14 @@ class Gateway extends Base\Gateway
     protected $bank = 'pnb';
 
     protected $map = [
-        RequestFields::AMOUNT      => Base\Entity::AMOUNT,
-        RequestFields::PAYMENT_ID  => Base\Entity::PAYMENT_ID,
+        RequestFields::AMOUNT        => Base\Entity::AMOUNT,
+        RequestFields::PAYMENT_ID    => Base\Entity::PAYMENT_ID,
+        Base\Entity::STATUS          => Base\Entity::STATUS,
+        Base\Entity::ERROR_MESSAGE   => Base\Entity::ERROR_MESSAGE,
+        Base\Entity::REFERENCE1      => Base\Entity::REFERENCE1,
+        Base\Entity::BANK_PAYMENT_ID => Base\Entity::BANK_PAYMENT_ID,
+        Base\Entity::RECEIVED        => Base\Entity::RECEIVED,
+        Base\Entity::REFUND_ID       => Base\Entity::REFUND_ID,
     ];
 
     public function authorize(array $input): array
@@ -96,6 +102,8 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
+        $this->domainType = 'refund';
+
         $content = $this->getRefundRequestData($input);
 
         $request = $this->getStandardRequestArray($content);
@@ -110,6 +118,76 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request);
 
         $this->processRefundResponse($response, $input);
+    }
+
+    public function verifyRefund(array $input)
+    {
+        parent::action($input, Action::VERIFY_REFUND);
+
+        $this->domainType = 'refund';
+
+        $unprocessedRefunds = $this->getUnprocessedRefunds();
+
+        $processedRefunds = $this->getProcessedRefunds();
+
+        if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
+        {
+            return false;
+        }
+
+        if (in_array($input['refund']['id'], $processedRefunds) === true)
+        {
+            return true;
+        }
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction($input['payment']['id'], Action::AUTHORIZE);
+
+        $content = $this->getVerifyRefundRequestData($input, $gatewayPayment);
+
+        $request = $this->getStandardRequestArray($content, 'post','verify_refund');
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
+            [
+                'request'     => $request,
+                'payment_id'  => $input['payment']['id'],
+                'refund_id'   => $input['refund']['id'],
+                'gateway'     => $this->gateway,
+            ]);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $responseContent = $this->jsonToArray($response->body);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
+            [
+                'response'    => $responseContent,
+                'gateway'     => $this->gateway,
+                'payment_id'  => $input['payment']['id'],
+                'refund_id'   => $input['refund']['id'],
+            ]);
+
+        if (isset($responseContent['error']) === true)
+        {
+            return false;
+        }
+
+        $refundDetail = $responseContent['data'][0][ResponseFields::REFUND_DETAILS][0];
+
+        if ($refundDetail[ResponseFields::MERCHANT_REFUND_ID] === $input['refund']['id'])
+        {
+            return $this->processVerifyRefundResponse($refundDetail, $input);
+        }
+        else
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_DATA_MISMATCH,
+                '',
+                '',
+                ['message' => 'refund id does not match']
+            );
+        }
     }
 
     protected function verifyCallback(array $input, $gatewayPayment)
@@ -260,7 +338,7 @@ class Gateway extends Base\Gateway
             RequestFields::CITY           => Constants::CITY,
             RequestFields::COUNTRY        => Constants::COUNTRY,
             RequestFields::CURRENCY       => Constants::INDIAN_RUPEE,
-            RequestFields::DESCRIPTION    => Constants::RZP_NAME, //TODO find what to send here
+            RequestFields::DESCRIPTION    => Constants::RZP_NAME,
             RequestFields::EMAIL          => Constants::RZP_EMAIL,
             RequestFields::MODE           => 'LIVE',
             RequestFields::NAME           => Constants::RZP_NAME,
@@ -370,10 +448,25 @@ class Gateway extends Base\Gateway
         $bankPaymentId = $gatewayPayment[Base\Entity::BANK_PAYMENT_ID];
 
         $data = [
-            RequestFields::API_KEY         => $this->getMerchantId(),
-            RequestFields::BANK_PAYMENT_ID => $bankPaymentId,
-            RequestFields::AMOUNT          => $this->formatAmount($input['refund']['amount']),
-            RequestFields::DESCRIPTION     => Constants::REFUND_DESCRIPTION,
+            RequestFields::API_KEY            => $this->getMerchantId(),
+            RequestFields::BANK_PAYMENT_ID    => $bankPaymentId,
+            RequestFields::MERCHANT_REFUND_ID => $input['refund']['id'],
+            RequestFields::AMOUNT             => $this->formatAmount($input['refund']['amount']),
+            RequestFields::DESCRIPTION        => Constants::REFUND_DESCRIPTION,
+        ];
+
+        $data[RequestFields::CHECKSUM] = $this->generateHash($data);
+
+        return $data;
+    }
+
+    protected function getVerifyRefundRequestData($input, $gatewayPayment)
+    {
+        $data = [
+            RequestFields::API_KEY            => $this->getMerchantId(),
+            RequestFields::BANK_PAYMENT_ID    => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
+            RequestFields::MERCHANT_REFUND_ID => $input['refund']['id'],
+            RequestFields::MERCHANT_ORDER_ID  => $input['payment']['id'],
         ];
 
         $data[RequestFields::CHECKSUM] = $this->generateHash($data);
@@ -389,7 +482,7 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_REFUND_RESPONSE,
             [
                 'response' => $content,
-                 'gateway' => $this->gateway
+                'gateway' => $this->gateway
             ]);
 
         if (isset($content['error']) === true)
@@ -410,8 +503,8 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $attributes[Base\Entity::REFERENCE1]      = $responseArray[ResponseFields::REFUND_ID];
-            $attributes[Base\Entity::BANK_PAYMENT_ID] = $responseArray[ResponseFields::REFUND_REFERENCE_NO];
+            $attributes[Base\Entity::REFERENCE1]      = $responseArray[ResponseFields::REFUND_REFERENCE_NO];
+            $attributes[Base\Entity::BANK_PAYMENT_ID] = $responseArray[ResponseFields::REFUND_ID];
         }
 
         $this->createGatewayPaymentEntity($attributes);
@@ -553,6 +646,15 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
+    protected function setRefundGatewayStatus($gatewayEntity)
+    {
+        $gatewayEntity->setStatus(RefundStatus::REFUNDED);
+
+        $gatewayEntity->setReceived(true);
+
+        $this->repo->saveOrFail($gatewayEntity);
+    }
+
     protected function getAuthSuccessStatus()
     {
         return Status::SUCCESS;
@@ -622,7 +724,17 @@ class Gateway extends Base\Gateway
 
     protected function getStringToHash($content, $glue = '|')
     {
-        return $this->getSalt() . '|' . implode('|', array_filter($content));
+        $stringToHash = $this->getSalt();
+
+        foreach ($content as $key => $value)
+        {
+            if (strlen($value) > 0)
+            {
+                $stringToHash .= '|' . $value;
+            }
+        }
+
+        return $stringToHash;
     }
 
     protected function getHashOfString($str)
@@ -632,5 +744,39 @@ class Gateway extends Base\Gateway
         $secure_hash = strtoupper(hash('sha512', $str));
 
         return $secure_hash;
+    }
+
+    protected function processVerifyRefundResponse($refundDetail, $input)
+    {
+        $status = $refundDetail[ResponseFields::REFUND_STATUS];
+
+        if (RefundStatus::isVerifySuccess($status) === true)
+        {
+            $gatewayEntity = $this->repo->findByRefundId($refundDetail[ResponseFields::MERCHANT_REFUND_ID]);
+
+            if ($gatewayEntity === null)
+            {
+                $attributes = $this->getRefundAttributesFromVerify($refundDetail, $input);
+
+                $gatewayEntity = $this->createGatewayPaymentEntity($attributes);
+            }
+
+            $this->setRefundGatewayStatus($gatewayEntity);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function getRefundAttributesFromVerify($refundDetail, $input)
+    {
+        $attributes = $this->getRefundAttributes($input);
+
+        $attributes[Base\Entity::REFERENCE1]      = $refundDetail[ResponseFields::REFUND_REFERENCE_NO];
+
+        $attributes[Base\Entity::BANK_PAYMENT_ID] = $refundDetail[ResponseFields::REFUND_ID];
+
+        return $attributes;
     }
 }

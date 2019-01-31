@@ -783,7 +783,7 @@ class Gateway extends Base\Gateway
             ($content[Fields::STATUS] === Status::FAIL))
         {
             return $scroogeResponse->setSuccess(false)
-                                   ->setStatusCode(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR)
+                                   ->setStatusCode(ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED)
                                    ->toArray();
         }
 
@@ -802,8 +802,8 @@ class Gateway extends Base\Gateway
                 'Shouldn\'t reach here',
                 ErrorCode::GATEWAY_ERROR_UNEXPECTED_STATUS,
                 [
-                    Payment\Gateway::GATEWAY_RESPONSE  => json_encode($content),
-                    Payment\Gateway::GATEWAY_KEYS      =>
+                    Payment\Gateway::GATEWAY_VERIFY_RESPONSE  => json_encode($content),
+                    Payment\Gateway::GATEWAY_KEYS             =>
                         [
                             'gateway_status' => $content[Fields::STATUS],
                             'refund_id'      => $input['refund']['id'],
@@ -813,13 +813,15 @@ class Gateway extends Base\Gateway
 
     protected function checkVerifyRefundStatus(array $input, array $content)
     {
+        $responseKey = ($this->action === Action::VERIFY) ? Payment\Gateway::GATEWAY_VERIFY_RESPONSE : Payment\Gateway::GATEWAY_RESPONSE;
+
         if (($content[Fields::STATUS] === Status::DEEMED))
         {
             throw new Exception\LogicException(
                 PublicErrorDescription::GATEWAY_ERROR_REFUND_DEEMED,
                 ErrorCode::GATEWAY_ERROR_REFUND_DEEMED,
                 [
-                    Payment\Gateway::GATEWAY_RESPONSE  => json_encode($content),
+                    $responseKey                       => json_encode($content),
                     Payment\Gateway::GATEWAY_KEYS      =>
                         [
                             'gateway_status' => $content[Fields::STATUS],
@@ -834,7 +836,7 @@ class Gateway extends Base\Gateway
                 PublicErrorDescription::GATEWAY_ERROR_TRANSACTION_PENDING,
                 ErrorCode::GATEWAY_ERROR_TRANSACTION_PENDING,
                 [
-                    Payment\Gateway::GATEWAY_RESPONSE  => json_encode($content),
+                    $responseKey                       => json_encode($content),
                     Payment\Gateway::GATEWAY_KEYS      =>
                         [
                             'gateway_status' => $content[Fields::STATUS],
@@ -963,7 +965,7 @@ class Gateway extends Base\Gateway
 
         if ($status !== Status::SUCCESS)
         {
-            $message = "Payment Failed during callback";
+            $message = 'Payment Failed during callback';
 
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
@@ -1064,7 +1066,7 @@ class Gateway extends Base\Gateway
     {
         if (empty($refundFields) === false)
         {
-            return[
+            return [
                 Fields::ORIGINAL_BANK_RRN_REQ => $refundFields[Fields::ORIGINAL_BANK_RRN_REQ] ?? null,
                 Fields::STATUS                => $refundFields[Fields::STATUS] ?? null,
                 Fields::RESPONSE              => $refundFields[Fields::RESPONSE] ?? null,
@@ -1172,5 +1174,16 @@ class Gateway extends Base\Gateway
         $gatewayPayment->saveOrFail();
 
         return true;
+    }
+
+    protected function getStandardRequestArray($content = [], $method = 'post', $type = null)
+    {
+        $request = parent::getStandardRequestArray($content, $method, $type);
+
+        $request['headers'] = [
+            'Content-Type' => 'text/plain'
+        ];
+
+        return $request;
     }
 }

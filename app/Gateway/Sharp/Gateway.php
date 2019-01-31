@@ -506,7 +506,7 @@ class Gateway extends Base\Gateway
         return false;
     }
 
-    protected function getGatewayResponse(int $amount)
+    protected function getGatewayResponse(int $amount, int $attempts)
     {
         $response = [
             'amount'                => $amount,
@@ -543,7 +543,7 @@ class Gateway extends Base\Gateway
                 break;
 
              // Request failure
-            case (($amount === 7777) or ($amount === 9999)):
+            case ((($amount === 7777) or ($amount === 9999)) and ((int) $attempts === 0)):
                 $response['result']         = 'Request Timeout. Please try again.';
                 $response['status_code']    = ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT;
                 break;
@@ -564,7 +564,7 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
-    protected function getVerifyGatewayResponse(int $amount, int $amountRefunded)
+    protected function getVerifyGatewayResponse(int $amount, int $amountRefunded, int $attempts)
     {
         $response = [
             'amount'                => $amount,
@@ -577,7 +577,7 @@ class Gateway extends Base\Gateway
 
         switch ($amount)
         {
-            case ($amount === 8888):
+            case (($amount === 8888) and ((int) $attempts === 0) and ($amount === $amountRefunded)):
                 $response['result']         = 'Request Timeout. Please try again.';
                 $response['status_code']    = ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT;
 
@@ -629,12 +629,12 @@ class Gateway extends Base\Gateway
     {
         if ($action === 'refund')
         {
-            $gatewayResponse['gateway_response'] = $this->getGatewayResponse($input['refund']['amount']);
+            $gatewayResponse['gateway_response'] = $this->getGatewayResponse($input['refund']['amount'], $input['refund']['attempts']);
         }
         else
         {
             $gatewayResponse['gateway_verify_response'] = $this->getVerifyGatewayResponse($input['refund']['amount'],
-                                                                $input['payment']['amount_refunded']);
+                                                                $input['payment']['amount_refunded'], $input['refund']['attempts']);
         }
 
         if (($action === 'refund') and ($gatewayResponse['gateway_response']['status_code'] !== 'REFUND_SUCCESSFUL'))
@@ -654,6 +654,7 @@ class Gateway extends Base\Gateway
         $gatewayResponseFinal = (($action === 'verify') ?
                             $gatewayResponse['gateway_verify_response'] :
                             $gatewayResponse['gateway_response']);
+
 
         $response = [
             'gateway_response'          => json_encode($gatewayResponse['gateway_response'] ?? ''),

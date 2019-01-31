@@ -56,13 +56,13 @@ return [
             'url'      => '',
             'method'   => 'PATCH',
             'content'  => [
-                'name'  => 'Updated name'
+                'name'  => 'Updated_Name'
             ]
         ],
         'response' => [
             'content' => [
                 'id'                => null,
-                'name'              => 'Updated name',
+                'name'              => 'Updated_Name',
                 'credit_amount'     => 100,
                 'credits_expire'    => false,
             ]

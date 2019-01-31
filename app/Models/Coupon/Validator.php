@@ -39,7 +39,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::START_AT => 'required|epoch',
+        Entity::START_AT => 'sometimes|epoch',
         Entity::END_AT  =>  'required|epoch'
     ];
 

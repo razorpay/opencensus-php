@@ -41,13 +41,15 @@ class CardVault extends Base\Core
         }
     }
 
-    public function getVaultToken($cardNumber)
+    public function getVaultToken($input)
     {
         try
         {
-            $cardNumber = preg_replace('/[^0-9]/', '', $cardNumber);
+            $cardNumber = preg_replace('/[^0-9]/', '', $input['card']);
 
-            $token = $this->cardVault->tokenize($cardNumber);
+            $input['card'] = $cardNumber;
+
+            $token = $this->cardVault->tokenize($input);
 
             return $token;
         }

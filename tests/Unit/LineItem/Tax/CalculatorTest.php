@@ -4,9 +4,9 @@ namespace RZP\Tests\Unit\LineItem\Tax;
 
 use RZP\Models\Tax;
 use RZP\Models\Base;
-use RZP\Tests\TestCase;
 use RZP\Models\Invoice;
 use RZP\Models\LineItem;
+use RZP\Tests\Functional\TestCase;
 use RZP\Models\LineItem\Tax\Calculator;
 
 /**
@@ -28,7 +28,13 @@ class CalculatorTest extends TestCase
      */
     public function testTaxCalculationAgainstLineItemAndTaxes()
     {
-        $invoice = (new Invoice\Entity)->build();
+        $merchant = $this->fixtures->create('merchant');
+
+        $invoice = new Invoice\Entity;
+
+        $invoice->merchant()->associate($merchant);
+
+        $invoice->build();
 
         foreach ($this->testData as $i => $testData)
         {

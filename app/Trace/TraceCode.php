@@ -90,6 +90,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SCROOGE_VERIFY_REFUND_CRON_EXCEPTION          = 'SCROOGE_VERIFY_REFUND_CRON_EXCEPTION';
     const REFUND_UPDATE_PROCESSED_AT_SUMMARY            = 'REFUND_UPDATE_PROCESSED_AT_SUMMARY';
     const REFUND_UPDATE_RRN_SUMMARY                     = 'REFUND_UPDATE_RRN_SUMMARY';
+    const RESET_SCHEDULES_SUMMARY                       = 'RESET_SCHEDULES_SUMMARY';
     const PAYMENT_TIMED_OUT                             = 'PAYMENT_TIMED_OUT';
     const PAYMENT_VERIFY_FAILED                         = 'PAYMENT_VERIFY_FAILED';
     const PAYMENT_FAILED                                = 'PAYMENT_FAILED';
@@ -135,6 +136,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SCHEDULE_TASKS_PROCESS_REQUEST                = 'SCHEDULE_TASKS_PROCESS_REQUEST';
     const SCHEDULE_TASKS_PROCESSED                      = 'SCHEDULE_TASKS_PROCESSED';
     const SCHEDULE_TASK_PROCESSING_FAILED               = 'SCHEDULE_TASK_PROCESSING_FAILED';
+    const FAILED_TO_ASSIGN_SCHEDULE                     = 'FAILED_TO_ASSIGN_SCHEDULE';
     const PAYMENT_NOT_CAPTURED_CREATE_TRANSACTION       = 'PAYMENT_NOT_CAPTURED_CREATE_TRANSACTION';
     const VERIFY_CAPTURE_RESPONSE                       = 'VERIFY_CAPTURE_RESPONSE';
     const PAYMENT_ANALYTICS_SAVE_FAILED                 = 'PAYMENT_ANALYTICS_SAVE_FAILED';
@@ -453,6 +455,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PROMOTION_CREATE_REQUEST                      = 'PROMOTION_CREATE_REQUEST';
     const PROMOTION_UPDATE_REQUEST                      = 'PROMOTION_UPDATE_REQUEST';
     const PROMOTION_ACTIVATION_FAILED                   = 'PROMOTION_ACTIVATION_FAILED';
+    const MERCHANT_PROMOTION_CREATED                    = 'MERCHANT_PROMOTION_CREATED';
+    const MERCHANT_PROMOTION_ACTIVATED                  = 'MERCHANT_PROMOTION_ACTIVATED';
+    const MERCHANT_PROMOTION_PRICING_CHANGED            = 'MERCHANT_PROMOTION_PRICING_CHANGED';
 
     const COUPON_CREATE_REQUEST                         = 'COUPON_CREATE_REQUEST';
     const COUPON_APPLY_REQUEST                          = 'COUPON_APPLY_REQUEST';
@@ -1117,6 +1122,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MERCHANT_SCHEDULE_BULK_REQUEST                = 'MERCHANT_SCHEDULE_BULK_REQUEST';
     const MERCHANT_SCHEDULE_BULK_EXCEPTION              = 'MERCHANT_SCHEDULE_BULK_EXCEPTION';
+    const MERCHANT_SCHEDULE_UPDATED                     = 'MERCHANT_SCHEDULE_UPDATED';
 
     const MERCHANT_PRICING_BULK_REQUEST                 = 'MERCHANT_PRICING_BULK_REQUEST';
     const MERCHANT_PRICING_BULK_EXCEPTION               = 'MERCHANT_PRICING_BULK_EXCEPTION';
@@ -1385,6 +1391,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BEAM_REQUEST                                  = 'BEAM_REQUEST';
     const BEAM_RESPONSE                                 = 'BEAM_RESPONSE';
     const BEAM_PUSH                                     = 'BEAM_PUSH';
+    const BEAM_PUSH_FAILED                              = 'BEAM_PUSH_FAILED';
 
     // Partners trace codes
     const PARTNER_REQUEST_SUBMITTED                     = 'PARTNER_REQUEST_SUBMITTED';
@@ -1399,6 +1406,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EXCEL_READER_IMPORT_CONFIG                    = 'EXCEL_READER_IMPORT_CONFIG';
 
     const FUND_TRANSFER_RECON_EMAIL_FAILED              = 'FUND_TRANSFER_RECON_EMAIL_FAILED';
+    const FUND_TRANSFER_SOURCE_UPDATE_RECON_FAILED      = 'FUND_TRANSFER_SOURCE_UPDATE_RECON_FAILED';
 
     // Subscription service
     const SUBSCRIPTION_SERVICE_REQUEST                  = 'SUBSCRIPTION_SERVICE_REQUEST';

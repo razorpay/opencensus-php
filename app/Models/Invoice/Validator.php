@@ -48,6 +48,8 @@ class Validator extends Base\Validator
     const EDIT_ISSUED   = 'editIssued';
     const ISSUE_BATCH   = 'issueBatch';
 
+    const RECEIPT_REQUIRED = 'receipt_required';
+
     const MAX_ALLOWED_LINE_ITEMS = 20;
 
     const MIN_AMOUNT = 100;
@@ -252,16 +254,19 @@ class Validator extends Base\Validator
         Entity::AMOUNT,
         Entity::CUSTOMER_ID,
         Entity::FIRST_PAYMENT_MIN_AMOUNT,
+        self::RECEIPT_REQUIRED,
     ];
 
     protected static $editDraftValidators = [
         Entity::AMOUNT,
         Entity::CUSTOMER_ID,
         Entity::FIRST_PAYMENT_MIN_AMOUNT,
+        self::RECEIPT_REQUIRED,
     ];
 
     protected static $editIssuedValidators = [
         Entity::FIRST_PAYMENT_MIN_AMOUNT,
+        self::RECEIPT_REQUIRED,
     ];
 
     protected static $validExternalEntities = [
@@ -544,6 +549,23 @@ class Validator extends Base\Validator
                     'amount'                   => $amount,
                     'first_payment_min_amount' => $firstPaymentAmount,
                 ]);
+        }
+    }
+
+    public function validateReceiptRequired(array $input)
+    {
+        if (empty($input[Entity::RECEIPT]) === true)
+        {
+            $isReceiptMandatory = $this->entity
+                                       ->merchant
+                                       ->isFeatureEnabled(Feature\Constants::INVOICE_RECEIPT_MANDATORY);
+
+            if ($isReceiptMandatory === true)
+            {
+                throw new BadRequestValidationFailureException(
+                    "Receipt is a required field and must be set",
+                    Entity::RECEIPT);
+            }
         }
     }
 

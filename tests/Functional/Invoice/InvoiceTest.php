@@ -62,6 +62,8 @@ class InvoiceTest extends TestCase
 
     public function testCreateInvoiceWithNewCustomer()
     {
+        $this->fixtures->merchant->addFeatures(['invoice_receipt_mandatory']);
+
         $response = $this->startTest();
 
         $this->assertInvoiceCreateResponse($response);
@@ -461,6 +463,13 @@ class InvoiceTest extends TestCase
         // Case 4: Draft invoice with same receipt already exists
         $attributes = ['status' => 'draft', 'issued_at' => null];
         $this->fixtures->invoice->edit('1000000invoice', $attributes);
+
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceWithReceiptMandatoryFailure()
+    {
+        $this->fixtures->merchant->addFeatures(['invoice_receipt_mandatory']);
 
         $this->startTest();
     }
