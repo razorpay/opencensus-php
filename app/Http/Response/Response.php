@@ -174,38 +174,6 @@ class Response
         {
             $data['http_status_code'] = $status;
 
-            $paymentId = request()->route('id');
-
-            // Todo: Remove this after PaySecure certification
-            if ($paymentId !== null)
-            {
-                $paymentId = substr($paymentId, 4);
-
-                $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
-
-                $this->app['basicauth']->setModeAndDbConnection($mode);
-
-                $payment = $this->app['repo']->payment->findOrFailPublic($paymentId);
-
-                if ($payment['gateway'] === Payment\Gateway::PAYSECURE)
-                {
-                    $gatewayPayment = $this->app['repo']->paysecure->findByPaymentIdAndActionOrFail(
-                        $paymentId,
-                        \RZP\Gateway\Base\Action::AUTHORIZE
-                    );
-
-                    $data['razorpay_payment_id'] = $paymentId;
-
-                    $data['rrn'] = $gatewayPayment['rrn'];
-
-                    $data['status'] = $payment['status'];
-
-                    $view = \View::make('gateway.callbackPaysecure')->with('data', $data);
-
-                    return \Response::make($view);
-                }
-            }
-
             $view = \View::make('gateway.callback')->with('data', $data)->render();
 
             return \Response::make($view);

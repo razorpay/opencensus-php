@@ -60,25 +60,14 @@ class Gateway extends Base\Gateway
 
         $checkBin2Response = $this->checkBin2();
 
-        // Todo: Revert once done with certification
-        $return = $this->handleFailure($checkBin2Response, 'checkbin2');
-
-        if ($return)
-        {
-            return $return;
-        }
+        $this->handleFailure($checkBin2Response, 'checkbin2');
 
         // Redirect flow
         if ($checkBin2Response[Fields::IMPLEMENTS_REDIRECT] === Constants::VALUE_TRUE)
         {
             list($gatewayPayment, $response) = $this->initiate2();
 
-            $return = $this->handleFailure($response, 'initiate2', $gatewayPayment);
-
-            if ($return)
-            {
-                return $return;
-            }
+            $this->handleFailure($response, 'initiate2');
 
             $content = $this->getGatewayPaymentAttributes($response);
 
@@ -95,12 +84,7 @@ class Gateway extends Base\Gateway
         {
             list($gatewayPayment, $response) = $this->initiate();
 
-            $return = $this->handleFailure($response, 'initiate', $gatewayPayment);
-
-            if ($return)
-            {
-                return $return;
-            }
+            $this->handleFailure($response, 'initiate');
 
             $attributes = $this->getMappedAttributes($response);
 
@@ -195,7 +179,6 @@ class Gateway extends Base\Gateway
                 'payment_id' => $input['payment']['id'],
             ];
 
-            // todo: map error code for authorize response
             $internalErrorCode = ErrorCodes::getErrorCodeMapped($response[Fields::ERROR_CODE]);
 
             throw new Exception\GatewayErrorException(
@@ -270,7 +253,6 @@ class Gateway extends Base\Gateway
 
         $hash = $this->generateHashOfData($dataToHash, $hkey);
 
-        // todo: Check if hexadecimal format is required here
         $hash = base64_encode($hash);
 
         $requestContent = [
@@ -474,45 +456,25 @@ class Gateway extends Base\Gateway
     /**
      * @param $response
      * @param $action
+     * @return bool
      * @throws Exception\GatewayErrorException
      */
-    protected function handleFailure($response, $action, $gatewayPayment = null)
+    protected function handleFailure($response, $action)
     {
         if ($response[Fields::STATUS] !== StatusCode::SUCCESS)
         {
-            $request = ['method' => 'direct'];
+            $errorCode = ErrorCodes::getErrorCodeMapped($response[Fields::ERROR_CODE]);
 
-            $data = [
-                'status' => 'failed',
-                'razorpay_payment_id' => $this->input['payment']['id'],
-            ];
-
-            if ($gatewayPayment !== null)
-            {
-                $data['rrn'] = $gatewayPayment[Entity::RRN];
-            }
-
-            $request['content'] = View::make('gateway.callbackPaysecure')
-                ->with(
-                    'data',
-                    $data
-                )
-                ->render();
-            return $request;
-
-//            Todo: Uncomment below once done with certification
-//            $errorCode = ErrorCodes::getErrorCodeMapped($response[Fields::ERROR_CODE]);
-//
-//            throw new Exception\GatewayErrorException(
-//                $errorCode,
-//                $response[Fields::ERROR_CODE],
-//                $response[Fields::ERROR_MESSAGE],
-//                [
-//                    'gateway'    => $this->gateway,
-//                    'payment_id' => $this->input['payment']['id'],
-//                    'command'    => $action,
-//                ]
-//            );
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $response[Fields::ERROR_CODE],
+                $response[Fields::ERROR_MESSAGE],
+                [
+                    'gateway'    => $this->gateway,
+                    'payment_id' => $this->input['payment']['id'],
+                    'command'    => $action,
+                ]
+            );
         }
 
         return false;

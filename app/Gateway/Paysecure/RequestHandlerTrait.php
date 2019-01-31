@@ -75,7 +75,6 @@ trait RequestHandlerTrait
 
         $gatewayPayment = $this->createGatewayPaymentEntity($content);
 
-        //todo: Check what value to pass in http_accept
         $extraParameters = [
             Fields::BROWSER_USERAGENT => $this->input['paymentAnalytics']['user_agent'],
             Fields::IP_ADDRESS        => $this->input['paymentAnalytics']['ip'],
@@ -109,14 +108,6 @@ trait RequestHandlerTrait
         // In UAT they want us to pass 6012
         $mcc = $this->mode == Mode::TEST ? '6012' : $this->input['merchant']['category'];
 
-        // todo: This needs to be removed  when going live.
-        if ((isset($this->input['payment']['notes']['test_name']) === true) and
-            ($this->input['payment']['notes']['test_name'] === 'AQPG_12')
-        )
-        {
-            $mcc = '6011';
-        }
-
         $rrn = $this->generateRrn($systemTraceAuditNumber);
 
         $requestArray = [
@@ -135,7 +126,6 @@ trait RequestHandlerTrait
             Fields::MCC                               => $mcc,
             Fields::ACQUIRER_INSTITUTION_COUNTRY_CODE => '356',
             Fields::RETRIEVAL_REF_NUMBER              => $rrn,
-            // todo: Confirm this
             Fields::CARD_ACCEPTOR_ID                  => $this->config['merchant_id'],
             Fields::TERMINAL_OWNER_NAME               => $this->input['merchant']->getBillingLabel() ?? 'Razorpay',
             Fields::TERMINAL_CITY                     => 'Bangalore',
@@ -145,21 +135,6 @@ trait RequestHandlerTrait
             Fields::MERCHANT_TELEPHONE                => '9999999999',
             Fields::ORDER_ID                          => $this->input['payment']['id'],
         ];
-
-        // todo: This needs to be removed  when going live.
-        if ((isset($this->input['payment']['notes']['test_name']) === true) and
-            ($this->input['payment']['notes']['test_name'] === 'AQPG_03')
-        )
-        {
-            $requestArray[Fields::CUSTOM4] = 'S';
-        }
-
-        // todo: This needs to be removed  when going live.
-        // Added here just for certifications
-        if (in_array($card['number'], Constants::$dmsCards) === true)
-        {
-            $requestArray[Fields::TRANSACTION_TYPE_INDICATOR] = 'DMS';
-        }
 
         return [$rrn, $requestArray];
     }
@@ -293,18 +268,7 @@ trait RequestHandlerTrait
                     }
                 }
 
-                // Todo: Revert this after certification
-                $response = new \stdClass();
-
-                $response->CallPaySecureResult = '<?xml version="1.0" encoding="utf-16"?>
-                            <paysecure xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-                              <status>failure</status>
-                              <errorcode>0</errorcode>
-                              <errormsg />
-                              <qualified_internetpin>TRUE</qualified_internetpin>
-                              <Implements_Redirect>TRUE</Implements_Redirect>
-                            </paysecure>';
-//                throw new Exception\GatewayTimeoutException($sf->getMessage(), $sf);
+                throw new Exception\GatewayTimeoutException($sf->getMessage(), $sf);
             }
             else
             {
@@ -330,14 +294,6 @@ trait RequestHandlerTrait
     protected function getRequestHeaders()
     {
         $tokenId = $this->config['token'];
-
-        // Todo: Remove after certification
-        if ((isset($this->input['payment']['notes']['test_name']) === true) and
-            ($this->input['payment']['notes']['test_name'] === 'AQPG_04')
-        )
-        {
-            $tokenId = '8cbce028-98bc-49b1-a090-16dbe2043bd9';
-        }
 
         $token = new SoapVar($tokenId, XSD_STRING, null, null, Fields::TOKEN, '');
         $version = new SoapVar(Constants::VERSION, XSD_STRING, null, null, Fields::VERSION, '');
