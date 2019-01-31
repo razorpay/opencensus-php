@@ -269,7 +269,7 @@ class Gateway
         IFSC::CBIN,
     ];
 
-    const EMANDATE_NB_DIRECT_BANKS= [
+    const EMANDATE_NB_DIRECT_BANKS = [
         IFSC::ICIC,
         IFSC::UTIB,
         IFSC::HDFC,

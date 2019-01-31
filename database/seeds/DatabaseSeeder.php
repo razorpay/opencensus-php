@@ -2276,7 +2276,6 @@ class DatabaseSeeder extends Seeder
 
     protected function createEnachNetbankingNpciTerminal()
     {
-        // TODO add missing values
         DB::table(Table::TERMINAL)->insert(
             [
                 'id'                    => Terminal\Shared::ENACH_NPCI_NETBANKING_TERMINAL,
