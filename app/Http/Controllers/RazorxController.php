@@ -41,7 +41,7 @@ class RazorxController extends Controller
     const EXPERIMENT_ACTIVATE_ROUTE = 'EXPERIMENT_ACTIVATE_ROUTE';
 
     const WORKFLOW_REGEX_ROUTES = [
-        //self::EXPERIMENT_ACTIVATE_ROUTE => '/^experiments\/(\w+)\/activate$/',
+        self::EXPERIMENT_ACTIVATE_ROUTE => '/^experiments\/(\w+)\/activate$/',
     ];
 
     public function __construct()
@@ -117,7 +117,7 @@ class RazorxController extends Controller
     {
         $this->app['workflow']
              ->setEntityAndId('razorx_experiment_activate', $experimentId)
-             ->handle([], ['razorx_experiment_workflow_started']);
+             ->handle([], ['status' => 'razorx_experiment_workflow_started']);
     }
 
     protected function validateActivateRequest($experimentId, $requestParams)
