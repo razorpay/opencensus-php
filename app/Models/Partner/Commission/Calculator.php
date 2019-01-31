@@ -400,7 +400,7 @@ class Calculator
         // @todo: Add comments here
         $this->commissionFee = $commissionAmount;
 
-        $this->commissionTax = $commissionTax - $merchantTax;
+        $this->commissionTax = $commissionTax;
 
         $payload = $this->getCreateCommissionPayload();
 
@@ -482,7 +482,12 @@ class Calculator
         // @todo add comments
         if (($entityOrigin === null) or ($originType == EntityOrigin\Constants::MERCHANT))
         {
-            $partnerApp = $this->repo->merchant_access_map->getPartnerApplication($this->subMerchant);
+            $accessMap = $this->repo->merchant_access_map->getPartnerApplication($this->subMerchant->getId());
+
+            if($accessMap !== null)
+            {
+                $partnerApp = $accessMap->entity;
+            }
         }
         else if ($originType == EntityOrigin\Constants::APPLICATION)
         {
