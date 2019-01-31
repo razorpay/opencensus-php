@@ -79,9 +79,8 @@ class CreateSettlements extends Migration
 
             $table->index(Settlement::STATUS);
 
-            $table->string(Settlement::FTS_TRANSFER_ID, Settlement::ID_LENGTH)
-                  ->nullable()
-                  ->unique();
+            $table->string(Settlement::FTS_TRANSFER_ID, 255)
+                  ->nullable();
 
             $table->index(Settlement::CREATED_AT);
 

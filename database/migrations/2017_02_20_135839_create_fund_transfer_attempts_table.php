@@ -85,6 +85,9 @@ class CreateFundTransferAttemptsTable extends Migration
 
             $table->index(FundTransferAttempt::STATUS);
 
+            $table->string(Settlement::FTS_TRANSFER_ID, 255)
+                ->nullable();
+
             $table->index([FundTransferAttempt::SOURCE_ID, FundTransferAttempt::SOURCE_TYPE]);
 
             $table->index(FundTransferAttempt::CHANNEL);

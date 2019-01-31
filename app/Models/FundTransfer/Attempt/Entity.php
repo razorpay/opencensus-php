@@ -33,6 +33,7 @@ class Entity extends Base\PublicEntity
     const TXT_FILE_ID            = 'txt_file_id';
     const EXCEL_FILE_ID          = 'excel_file_id';
     const INITIATE_AT            = 'initiate_at';
+    const FTS_TRANSFER_ID        = 'fts_transfer_id';
 
     //Fund transfer retry constants
     const FILE                  = 'file';
@@ -271,6 +272,11 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function getFTSTransferId()
+    {
+        return $this->getAttribute(self::FTS_TRANSFER_ID);
+    }
+
     public function hasBankAccount()
     {
         return ($this->isAttributeNotNull(self::BANK_ACCOUNT_ID));
@@ -336,6 +342,11 @@ class Entity extends Base\PublicEntity
     public function setInitiateAt($initiateAt)
     {
         $this->setAttribute(self::INITIATE_AT, $initiateAt);
+    }
+
+    public function setFTSTransferId($ftsTransferId)
+    {
+        $this->setAttribute(self::FTS_TRANSFER_ID, $ftsTransferId);
     }
 
     // ------------------------------ modifiers --------------------------------
