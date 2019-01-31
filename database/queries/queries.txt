@@ -4680,5 +4680,12 @@ ALTER TABLE vpas
 ALTER TABLE bank_accounts
     ADD COLUMN fts_account_id INTEGER DEFAULT NULL AFTER beneficiary_mobile;
 
+ALTER TABLE fund_transfer_attempts
+    ADD COLUMN fts_transfer_id VARCHAR(255) DEFAULT NULL AFTER status;
+
+#TODO::Adding fts_transfer_id in source table (need to add for refunds and penny testing as well)
 ALTER TABLE settlements
-    ADD COLUMN fts_transfer_id VARCHAR(14) DEFAULT NULL AFTER status;
+    ADD COLUMN fts_transfer_id VARCHAR(255) DEFAULT NULL AFTER status;
+
+ALTER TABLE payouts
+    ADD COLUMN fts_transfer_id VARCHAR(255) DEFAULT NULL AFTER status;

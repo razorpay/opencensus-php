@@ -10,6 +10,7 @@ use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Services\Beam\Service;
 use RZP\Exception\LogicException;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\Vpa\Entity as VpaEntity;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Services\Beam\Constants as BeamConstants;
@@ -39,7 +40,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($fundTransferAttempt);
 
-        if(strcasecmp($this->channel , Channel::ICICI2) === 0)
+        if(strcasecmp($fundTransferAttempt->getChannel() , Channel::ICICI2) === 0)
         {
             $requestHandler = new FundTransferAttempt\FTS\RequestHandler();
 
@@ -63,7 +64,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($fundTransferAttempt);
 
-        if(strcasecmp($this->channel , Channel::ICICI2) === 0)
+        if(strcasecmp($fundTransferAttempt->getChannel() , Channel::ICICI2) === 0)
         {
             $requestHandler = new FundTransferAttempt\FTS\RequestHandler();
 

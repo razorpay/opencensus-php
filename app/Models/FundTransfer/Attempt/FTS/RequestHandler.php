@@ -52,6 +52,15 @@ class RequestHandler extends Base\Core
     const BANK_ACCOUNT              = 'bank_account';
     const VPA                       = 'vpa';
 
+    protected $validator;
+
+    /**
+     * Method to create transfer block in Fund Transfer Request
+     *
+     * @param $attempt
+     * @param $source
+     * @return array
+     */
     public function createTransferRequest($attempt, $source): array
     {
         $request = [
@@ -71,7 +80,13 @@ class RequestHandler extends Base\Core
         return $request;
     }
 
-
+    /**
+     * Method to handle generic fund transfer request
+     * using fts_account_id
+     *
+     * @param Base\Entity $source
+     * @param Entity $fta
+     */
     public function sendFTSFundTransferRequest(
         Base\Entity $source,
         Entity $fta)
@@ -85,6 +100,14 @@ class RequestHandler extends Base\Core
         $this->updateSourceAndFTA($fta, $source, $response);
     }
 
+    /**
+     * Method to handle FTS request using
+     * bank account details
+     *
+     * @param Base\Entity $source
+     * @param BankAccount\Entity $bankAccount
+     * @param Entity $fta
+     */
     public function sendFTSFundTransferRequestUsingBankAccount(
         Base\Entity $source,
         BankAccount\Entity $bankAccount,
@@ -99,6 +122,14 @@ class RequestHandler extends Base\Core
         $this->updateSourceAndFTA($fta, $source, $response);
     }
 
+    /**
+     * Method to handle FTS request using
+     * VPA details
+     *
+     * @param Base\Entity $source
+     * @param Vpa\Entity $vpa
+     * @param Entity $fta
+     */
     public function sendFTSFundTransferRequestUsingVPA(
         Base\Entity $source,
         vpa\Entity $vpa,
@@ -113,6 +144,14 @@ class RequestHandler extends Base\Core
         $this->updateSourceAndFTA($fta, $source, $response);
     }
 
+    /**
+     * Method to add fts_account_id in
+     * the request
+     *
+     * @param array $request
+     * @param Entity $fta
+     * @return array
+     */
     public function addFTSAccountId(
         array $request,
         Entity $fta):array
@@ -124,6 +163,14 @@ class RequestHandler extends Base\Core
         return $request;
     }
 
+    /**
+     * Method to add bank account details
+     * in the request
+     *
+     * @param array $request
+     * @param BankAccount\Entity $ba
+     * @return array
+     */
     public function addBankAccountDetails(
         array $request,
         BankAccount\Entity $ba):array
@@ -148,6 +195,14 @@ class RequestHandler extends Base\Core
         return $request;
     }
 
+    /**
+     * Method to add VPA details
+     * int the request
+     *
+     * @param array $request
+     * @param Vpa\Entity $vpa
+     * @return array
+     */
     public function addVpaDetails(
         array $request,
         vpa\Entity $vpa):array
@@ -160,19 +215,38 @@ class RequestHandler extends Base\Core
         return $request;
     }
 
+    /**
+     * Method to update source and fund_transfer_attempt
+     * using the response from FTS
+     *
+     * @param Entity $fta
+     * @param Base\Entity $source
+     * @param array $response
+     */
     public function updateSourceAndFTA(
         Entity $fta,
         Base\Entity $source,
         array $response)
     {
-        $this->updateFundTransferAttempt($fta, $response);
+        $responseBody = $response['body'];
 
-        $fta->setStatus($response['status']);
+        $transferId   = $responseBody['transfer_id'];
+
+        $status       = $responseBody['status'];
+
+        $fta->setFTSTransferId($transferId);
+
+        $fta->setStatus($status);
 
         $this->repo->saveOrFail($fta);
 
-        $source->setFTSTransferId($response['transfer_id']);
+        //TODO:: We will not updating the source as recon cron should take care of it
+        /*
+        $source->setFTSTransferId($transferId);
+
+        $source->setStatus($status);
 
         $this->repo->saveOrFail($source);
+        */
     }
 }
