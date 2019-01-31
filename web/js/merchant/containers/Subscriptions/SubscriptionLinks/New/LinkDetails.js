@@ -13,7 +13,11 @@ export default function NewSubscriptionLinkLinkDetails({
 
   return (
     <>
-      <Input.Group class="InputGroup--inline" label="Customer Contact">
+      <Input.Group
+        class="InputGroup--inline"
+        label="Customer Contact"
+        required={fields.customer_notify}
+      >
         <div class="Input-content">
           <Input
             placeholder="Email"
@@ -48,6 +52,7 @@ export default function NewSubscriptionLinkLinkDetails({
         fieldLabel="No Expiry"
         data-name="_isNonExpiringLink"
         checked={internals._isNonExpiringLink}
+        required
       />
       <Input.Group class="InputGroup--inline InputGroup--near">
         <div class="Input-content">
