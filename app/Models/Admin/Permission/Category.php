@@ -28,4 +28,5 @@ class Category
     const WALLET_CONFIG    = 'wallet_config';
     const MERCHANT_DETAIL  = 'merchant_detail';
     const MERCHANT_REQUEST = 'merchant_request';
+    const RAZORX           = 'razorx';
 }

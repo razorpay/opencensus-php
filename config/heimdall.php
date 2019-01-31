@@ -28,6 +28,10 @@ return [
             Permission::VIEW_HOMEPAGE => 'View Dashboard Home',
         ],
 
+        PermissionCategory::RAZORX => [
+            Permission::RAZORX_APPROVERS => 'Approve workflows for activation of razorx experiments',
+        ],
+
         PermissionCategory::MERCHANT => [
             Permission::VIEW_ALL_MERCHANTS            => [
                 'description' => 'View all merchants in merchant lists',
