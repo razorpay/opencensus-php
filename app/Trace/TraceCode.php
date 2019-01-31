@@ -1406,6 +1406,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EXCEL_READER_IMPORT_CONFIG                    = 'EXCEL_READER_IMPORT_CONFIG';
 
     const FUND_TRANSFER_RECON_EMAIL_FAILED              = 'FUND_TRANSFER_RECON_EMAIL_FAILED';
+    const FUND_TRANSFER_SOURCE_UPDATE_RECON_FAILED      = 'FUND_TRANSFER_SOURCE_UPDATE_RECON_FAILED';
 
     // Subscription service
     const SUBSCRIPTION_SERVICE_REQUEST                  = 'SUBSCRIPTION_SERVICE_REQUEST';
