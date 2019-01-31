@@ -35,6 +35,8 @@ class Core extends Base\Core
             'input' => $input
         ]);
 
+        $this->modifyValidationRequestToOldFormat($input);
+
         try
         {
             $validation = $this->createValidationEntity($input, $merchant, function ($fundAccountValidation) {
@@ -54,6 +56,18 @@ class Core extends Base\Core
 
         return $validation;
     }
+
+    protected function modifyValidationRequestToOldFormat(array & $input)
+    {
+        if ((isset($input[Entity::FUND_ACCOUNT]) === true) and
+            (isset($input[Entity::FUND_ACCOUNT][FundAccountType::BANK_ACCOUNT])))
+        {
+            $input[Entity::FUND_ACCOUNT][FundAccount\Entity::DETAILS] = $input[Entity::FUND_ACCOUNT][FundAccountType::BANK_ACCOUNT];
+
+            unset($input[Entity::FUND_ACCOUNT][FundAccountType::BANK_ACCOUNT]);
+        }
+    }
+
 
     /**
      * @param array $input
