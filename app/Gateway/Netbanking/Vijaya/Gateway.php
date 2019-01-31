@@ -274,6 +274,6 @@ class Gateway extends Base\Gateway
 
     protected function getActionsToRetry()
     {
-        return [Action::AUTHORIZE, Action::VALIDATE_VPA, Action::VERIFY];
+        return [Action::VERIFY];
     }
 }
