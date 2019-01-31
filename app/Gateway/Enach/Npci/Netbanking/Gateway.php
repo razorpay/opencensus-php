@@ -329,7 +329,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $credAccount = $this->config['live_emandate_npci_creditor_account'];
+            $credAccount = $this->getLiveMerchantId();
         }
 
         return $credAccount;
