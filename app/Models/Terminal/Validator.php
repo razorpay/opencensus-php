@@ -664,7 +664,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY                     => 'required|in:enach_npci_netbanking',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
-        Entity::GATEWAY_ACCESS_CODE         => 'required|size',
+        Entity::GATEWAY_ACCESS_CODE         => 'required|string',
         Entity::TYPE                        => 'required|array',
     ];
 
