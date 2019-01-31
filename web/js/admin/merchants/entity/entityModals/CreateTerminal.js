@@ -28,12 +28,10 @@ export default class TerminalForm extends Component {
   // Creates terminal
   handleCreate = body => {
     confirm('Are you sure you want to create this terminal?').then(_ => {
-      const { pg_merchant_id, gateway, mid, tid, currency_code, mode } = body;
+      const { pg_merchant_id, gateway, currency_code, mode } = body;
       var data = {
         gateway: gateway,
         gateway_input: {
-          mid: mid,
-          tid: tid,
           mcc: this.getMcc(),
           currency_code: currency_code,
           trans_mode: gateway ? 'hitachi' : 'CARDS',
@@ -75,8 +73,6 @@ export default class TerminalForm extends Component {
             name="category"
             defaultValue={this.getMcc()}
           />
-          <Field label="Gateway Merchant Id" name="mid" />
-          <Field label="Gateway Terminal Id" name="tid" />
           <SelectField name="currency_code" label="Currency" defaultValue="INR">
             <option value="" />
             {CurrencyData.data.map(({ code }) => (
