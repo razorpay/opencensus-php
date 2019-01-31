@@ -215,7 +215,7 @@ export default class ActivationContainer extends React.Component {
             if (er.toLowerCase().indexOf('status code') === -1) {
               // TODO: BE treats LLPin as cin currently. So, gives error for cin, not LLPin. To revert when BE handles.
               if (er.indexOf('cin') !== -1) {
-                const businessType = this.state.data.business_type;
+                const businessType = this.props.data.business_type;
 
                 if (
                   businessType &&
