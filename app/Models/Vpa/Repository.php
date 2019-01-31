@@ -11,11 +11,23 @@ class Repository extends Base\Repository
 
     public function findByAddress($address)
     {
-        list($username, $handle) = explode(Entity::AROBASE, $address);
-
         return $this->newQuery()
-                    ->where(Entity::USERNAME, '=', $username)
-                    ->where(Entity::HANDLE, '=', $handle)
+                    ->address($address)
+                    ->first();
+    }
+
+    /**
+     * @param  string $address
+     * @param  string $merchantId
+     * @return Entity|null
+     */
+    public function findLatestByAddressAndMerchantId(string $address, string $merchantId)
+    {
+        return $this->newQuery()
+                    ->address($address)
+                    ->merchantId($merchantId)
+                    ->orderByDesc(Entity::CREATED_AT)
+                    ->orderByDesc(Entity::ID)
                     ->first();
     }
 }
