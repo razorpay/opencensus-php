@@ -2,7 +2,6 @@
 
 namespace RZP\Tests\Functional\Gateway\Enach\Netbanking;
 
-use Mockery;
 use RZP\Models\Feature;
 use RZP\Constants\Entity;
 use RZP\Tests\Functional\TestCase;
