@@ -161,7 +161,7 @@ return [
         ],
         'exception' => [
             'class'                 => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         ],
     ],
 

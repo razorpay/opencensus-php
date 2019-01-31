@@ -4986,8 +4986,7 @@ trait Authorize
     {
         $merchant = $payment->merchant;
 
-        if (($this->app['basicauth']->isPrivateAuth() === false) or
-            ($merchant->isFeatureEnabled(Feature\Constants::REDIRECT_S2S_AUTHORIZE) === false))
+        if ($this->app['basicauth']->isPrivateAuth() === false)
         {
             return null;
         }
@@ -5030,7 +5029,7 @@ trait Authorize
 
         $this->cache->put($key, $encryptedPayload, self::REDIRECT_CACHE_TTL);
 
-        $redirectUrl = $this->route->getUrl('payment_redirect_to_authoize', ['id' => $trackId]);
+        $redirectUrl = $this->route->getUrl('payment_redirect_to_authorize_get', ['id' => $trackId]);
 
         $data['type'] = 'first';
 

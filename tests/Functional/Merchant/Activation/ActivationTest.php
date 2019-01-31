@@ -369,10 +369,6 @@ class ActivationTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $this->startTest();
-
-        $merchant = $this->getDbEntityById('merchant', $merchantId);
-
-        $this->assertTrue($merchant->isFeatureEnabled('diwali_promotional_plan'));
     }
 
 

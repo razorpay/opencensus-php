@@ -40,7 +40,6 @@ class TransactionFilter extends Terminal\Filter
         'bharat_qr',
         'direct_settlement',
         'bank_account_type',
-        'capability',
     ];
 
     public function methodFilter($terminal)

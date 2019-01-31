@@ -171,6 +171,7 @@ class Validator extends Base\Validator
 
     protected static $preSignupRules = [
         Entity::BUSINESS_TYPE                   => 'sometimes|numeric|digits_between:1,10',
+        Entity::COUPON_CODE                     => 'filled|string|max:10',
         Entity::TRANSACTION_VOLUME              => 'sometimes|numeric|digits_between:1,4',
         Entity::ROLE                            => 'sometimes|numeric|digits_between:1,6',
         Entity::DEPARTMENT                      => 'sometimes|numeric|digits_between:1,7',

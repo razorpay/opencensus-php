@@ -6,8 +6,8 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Promotion as MerchantPromotion;
-use RZP\Models\Merchant\Repository as MerchantRepository;
 
 class Core extends Base\Core
 {
@@ -37,7 +37,7 @@ class Core extends Base\Core
         if ($couponExists !== null)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_COUPON_CODE);
+                ErrorCode::BAD_REQUEST_COUPON_ALREADY_EXISTS);
         }
 
         $coupon->source()->associate($entity);
@@ -166,23 +166,32 @@ class Core extends Base\Core
 
             $merchant->setPricingPlan($pricingPlanId);
 
-            (new MerchantRepository)->saveOrFail($merchant);
+            $this->repo->saveOrFail($merchant);
+
+            $this->trace->info(TraceCode::MERCHANT_PROMOTION_PRICING_CHANGED,
+                               [
+                                   'merchant_old_pricing_plan' => $merchant->getPricingPlanId(),
+                                   'merchant_new_pricing_plan' => $pricingPlanId,
+                               ]);
 
             $merchantPromotionCore = (new MerchantPromotion\Core);
 
             $merchantPromotion = $merchantPromotionCore->create($merchant, $promotion);
 
-
             //
-            // Merchant need not be activated for redeeming the coupon. Merchants signing up through
-            // the promotional signup link must be eligible for the promotion
+            //  Promotion/Coupon is applied to merchant only if merchant is activated.
+            //  As credits and balance are credited for merchant in live mode once activated.
             //
-
-            $merchantPromotionCore->activate($merchantPromotion);
+            if ($merchant->isActivated() === true)
+            {
+                $merchantPromotionCore->activate($merchantPromotion);
+            }
 
             $coupon->incrementUsedCount();
 
             $this->repo->saveOrFail($coupon);
+
+            $this->trace->info(TraceCode::MERCHANT_PROMOTION_CREATED);
         });
     }
 }

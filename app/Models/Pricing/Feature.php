@@ -39,10 +39,6 @@ class Feature
         self::TRANSFER
     ];
 
-    const CUSTOMER_FEE_BEARER_NOT_SUPPORTED = [
-        self::FUND_ACCOUNT_VALIDATION
-    ];
-
     public static function validateFeature($feature)
     {
         if (defined(__CLASS__ . '::' . strtoupper($feature)) === false)
@@ -62,10 +58,5 @@ class Feature
     public static function isFeaturePricingOptional(string $feature): bool
     {
         return (in_array($feature, self::OPTIONAL_PRICING, true) === true);
-    }
-
-    public static function isCustomerFeeBearerSupported(string $feature): bool
-    {
-        return (in_array($feature, self::CUSTOMER_FEE_BEARER_NOT_SUPPORTED, true) === false);
     }
 }

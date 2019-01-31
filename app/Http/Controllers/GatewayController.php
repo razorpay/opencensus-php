@@ -56,8 +56,10 @@ class GatewayController extends Controller
         // used preProcessServerCallback itself to return it in some way
         $paymentId = $gateway->getPaymentIdFromServerCallback($input);
 
+        $paymentRepo = $this->app['repo']->payment;
+
         // This is hackish, we find mode based on searchin in both DB's
-        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+        $mode = $paymentRepo->determineLiveOrTestModeForEntityWithGateway($paymentId, $gatewayDriver);
 
         if ($mode === null)
         {
@@ -81,7 +83,9 @@ class GatewayController extends Controller
 
         $paymentId = $gateway->getPaymentIdFromServerCallback($input);
 
-        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+        $paymentRepo = $this->app['repo']->payment;
+
+        $mode = $paymentRepo->determineLiveOrTestModeForEntityWithGateway($paymentId, $gatewayDriver);
 
         $postInput = [
             'gateway' => $input,

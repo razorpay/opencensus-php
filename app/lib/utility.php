@@ -720,3 +720,17 @@ if (! function_exists('mask_except_last4'))
         return str_repeat($masker, max(strlen($value) - 4, 0)) . substr($value, -4);
     }
 }
+
+if (! function_exists('dashboard_url'))
+{
+    /**
+     * Returns dashboard url for given path, for current environment.
+     * @param  string $path
+     * @return string
+     */
+    function dashboard_url(string $path = ''): string
+    {
+        // Domain value from config includes trailing / and hence strips leading / from @path argument if it exists.
+        return config('applications.dashboard.url') . str_after($path, '/');
+    }
+}

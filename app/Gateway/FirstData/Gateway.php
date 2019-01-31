@@ -660,13 +660,15 @@ class Gateway extends Base\Gateway
             // Cryptic error messages that First Data keeps sending us
             $this->checkSpecialCases($errorCode, $gatewayEntity, $gatewayErrorDesc);
 
+            $responseKey = ($this->action === Action::VERIFY_REFUND) ? Payment\Gateway::GATEWAY_VERIFY_RESPONSE : Payment\Gateway::GATEWAY_RESPONSE;
+
             throw new Exception\GatewayErrorException(
                 $mappedErrorCode,
                 $errorCode,
                 $gatewayErrorDesc,
                 [
-                    Payment\Gateway::GATEWAY_RESPONSE  => json_encode($response),
-                    Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($refundFields)
+                    $responseKey                    => json_encode($response),
+                    Payment\Gateway::GATEWAY_KEYS   => $this->getGatewayData($refundFields)
                 ]);
         }
     }
@@ -2160,9 +2162,7 @@ class Gateway extends Base\Gateway
 
     public function setS2sFlowFlag($input)
     {
-        $isS2sFlow = $input['merchant']->isFeatureEnabled(Feature\Constants::FIRST_DATA_S2S_FLOW) === true;
-
-        $this->s2sFlowFlag = $isS2sFlow;
+        $this->s2sFlowFlag = true;
     }
 
     protected function enroll($input)
@@ -2251,8 +2251,7 @@ class Gateway extends Base\Gateway
     {
         $cardNetwork = $input[Constants\Entity::CARD][Card\Entity::NETWORK_CODE];
 
-        if (($this->s2sFlowFlag === true) and
-            ($cardNetwork !== Card\Network::RUPAY))
+        if ($cardNetwork !== Card\Network::RUPAY)
         {
             return true;
         }

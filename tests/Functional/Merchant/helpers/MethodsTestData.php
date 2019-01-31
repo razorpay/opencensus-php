@@ -52,7 +52,10 @@ return [
                 'methods' => [
                     'debit_card' => true,
                     'credit_card' => true,
-                    'netbanking' => true
+                    'netbanking' => true,
+                    'card_networks' => [
+                        'dicl' => true
+                    ],
                 ],
             ],
         ],
@@ -102,14 +105,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The methods.0 field must be true or false.',
+                    'description' => '0 is/are not required and should not be sent',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'class'               => RZP\Exception\ExtraFieldsException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
         ],
     ],
 

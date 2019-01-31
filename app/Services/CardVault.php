@@ -44,10 +44,10 @@ class CardVault
         $this->request = $app['request'];
     }
 
-    public function tokenize($data)
+    public function tokenize($input)
     {
         $input = [
-            self::SECRET => $data,
+            self::SECRET => $input['card'],
         ];
 
         $response = $this->sendRequest('tokenize', 'post', $input);

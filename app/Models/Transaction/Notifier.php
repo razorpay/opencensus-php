@@ -7,6 +7,7 @@ use Mail;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
+use RZP\Models\Merchant\Webhook\Event;
 
 class Notifier extends Base\Core
 {
@@ -26,13 +27,22 @@ class Notifier extends Base\Core
      */
     protected $merchant;
 
-    public function __construct(Entity $txn)
+    /**
+     * Same transaction can be notified basis multiple events(of source) multiple times.
+     * E.g. when a source payout of a transaction is created, processed & reversed.
+     *
+     * @var string|null
+     */
+    protected $event;
+
+    public function __construct(Entity $txn, string $event = Event::TRANSACTION_CREATED)
     {
         parent::__construct();
 
         $this->txn      = $txn;
         $this->source   = $txn->source;
         $this->merchant = $txn->merchant;
+        $this->event    = $event;
     }
 
     /**
@@ -46,6 +56,8 @@ class Notifier extends Base\Core
 
     protected function notifyViaSms()
     {
+        // Note: Ensure template file for sms exists in raven. Refer getSmsRequestPayload() method.
+
         if ((method_exists($this->source, 'shouldNotifyTxnViaSms') === false) or
             ($this->source->shouldNotifyTxnViaSms() === false))
         {
@@ -79,6 +91,7 @@ class Notifier extends Base\Core
         // Using getAttributes() on entity(s) here to avoid getting repeating relations(e.g. merchant exists in all)
         // and surpassing SQS message content length limit.
         $mailable = new $mailableClass(
+            $this->event,
             $this->txn->accountBalance->getAttributes(),
             $this->txn->getAttributes(),
             $this->source->getAttributes(),
@@ -114,6 +127,7 @@ class Notifier extends Base\Core
             'transaction_id' => $this->txn->getId(),
             'source_id'      => $this->source->getId(),
             'source_type'    => $this->source->getEntity(),
+            'event'          => $this->event,
         ] + $with;
     }
 }

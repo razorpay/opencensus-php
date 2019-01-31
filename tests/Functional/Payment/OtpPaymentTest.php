@@ -424,7 +424,7 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 'otp_auth_default', 'redirect_s2s_authorize']);
+        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 'otp_auth_default']);
         $this->mockTokenEx();
         $this->mockOtpElf();
 
@@ -1246,6 +1246,10 @@ class OtpPaymentTest extends TestCase
 
             $iin = $this->getEntityById('iin', 556763, true);
 
+            $payment = $this->getLastEntity('payment', true);
+
+            $this->assertEquals('headless_otp', $payment['auth_type']);
+
             self::assertNotContains('headless_otp', $iin['flows']);
         }
     }
@@ -1444,6 +1448,65 @@ class OtpPaymentTest extends TestCase
         self::assertEquals('headless_otp', $payment['auth_type']);
         self::assertEquals('hitachi', $payment['gateway']);
         self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
+    }
+
+    public function testHeadlessOtpDefaultAuthType3ds()
+    {
+
+        $this->fixtures->create('gateway_rule', [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'first_data',
+            'type'          => 'sorter',
+            'filter_type'   => 'select',
+            'min_amount'    => 0,
+            'load'          => 100,
+            'group'         => null,
+            'currency'      => 'INR'
+        ]);
+
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->create('terminal:direct_first_data_recurring_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['otp_auth_default', 'headless']);
+        $this->mockTokenEx();
+        $this->mockOtpElf();
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+
+        $this->setOtp('213433');
+
+        $response = $this->doAuthPayment($payment);
+
+        self::assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        // self::assertTrue($this->otpFlow);
+        self::assertEquals('authorized', $payment['status']);
+        self::assertNull($payment['auth_type']);
+        self::assertEquals('first_data', $payment['gateway']);
+        self::assertEquals('FDRcrDTrmnl3DS', $payment['terminal_id']);
     }
 
     public function testHeadlessOtpDefaultAuthTypeFallback()
@@ -1948,6 +2011,10 @@ class OtpPaymentTest extends TestCase
         },
         GatewayRequestException::class,
         'Gateway request timed out');
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('headless_otp', $payment['auth_type']);
     }
 
     public function testMerchantCallbackUrl()

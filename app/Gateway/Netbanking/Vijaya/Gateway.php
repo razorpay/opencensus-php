@@ -271,4 +271,9 @@ class Gateway extends Base\Gateway
     {
         return number_format($amount / 100, 2, '.', '');
     }
+
+    protected function getActionsToRetry()
+    {
+        return [Action::AUTHORIZE, Action::VALIDATE_VPA, Action::VERIFY];
+    }
 }
