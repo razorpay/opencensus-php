@@ -9,6 +9,8 @@ import Svelte from './Svelte';
 import DetailsView from './views/Details/index';
 import FormView from './views/Form/index';
 
+import IntroMask from './views/templates/IntroMask';
+import TemplatesMask from './views/templates/Templates';
 import PPSettingsView from '../Modals/Settings';
 import PPShareView from '../Modals/Share';
 import { createPaymentPage, editPaymentPage, sendLink } from '../model';
@@ -52,7 +54,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     confirm: PropTypes.func,
   };
 
-  state = { isPageReady: false, isIntroOpened: !this.props.id }; // isIntroOpened = false if editing existing Payment page
+  state = { isPageReady: false, isTemplatesViewOpened: !this.props.id }; // isTemplatesViewOpened = false if editing existing Payment page
 
   componentWillMount() {
     this.fetchEntity(this.props.id);
@@ -65,12 +67,12 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
       this.setState({
         isPageLoadError: null,
-        isIntroOpened: false,
+        isTemplatesViewOpened: false,
         isSettingsOpened: false,
       });
 
       if (!nextProps.id) {
-        this.setState({ isIntroOpened: true });
+        this.setState({ isTemplatesViewOpened: true });
       }
     }
   }
@@ -393,7 +395,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   handleIntroClose = () => {
-    this.setState({ isIntroOpened: false });
+    this.setState({ isTemplatesViewOpened: false });
 
     setTimeout(function() {
       const titleEle = document.querySelector(
@@ -407,6 +409,12 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     this.setState({
       isSettingsOpened: !this.state.isSettingsOpened,
     });
+  };
+
+  selectTemplate = meta => {
+    return function() {
+      console.log('...', meta);
+    };
   };
 
   render() {
@@ -468,8 +476,11 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         class="payment-pages-v2"
         style={{ backgroundColor: themeColor }}
       >
-        {this.state.isIntroOpened && (
-          <IntroMask onClose={this.handleIntroClose} />
+        {this.state.isTemplatesViewOpened && (
+          <TemplatesMask
+            onClose={this.handleIntroClose}
+            selectTemplate={this.selectTemplate}
+          />
         )}
 
         {this.state.isSettingsOpened && (
@@ -535,33 +546,5 @@ const Header = ({ title, actionBtns, handleClose, isPageReady }) => {
           )}
       </div>
     </div>
-  );
-};
-
-const IntroMask = ({ onClose }) => {
-  return (
-    <ModalMask
-      maskClosable={false}
-      class="payment-pages-v2-intro"
-      isBlur={true}
-    >
-      <Link class="back-btn" to="/paymentpages/">
-        <i class="i i-chevron-left" />
-        Back to Dashboard
-      </Link>
-      <Modal showCloseBtn={false}>
-        <ModalContent>
-          <div class="heading">Create New Payment Page</div>
-          <p>
-            This is how the page will appear to your customers.
-            <br />
-            You can preview and edit the page at the same time!
-          </p>
-          <Button.Primary onClick={onClose} autoFocus>
-            Let's Go!
-          </Button.Primary>
-        </ModalContent>
-      </Modal>
-    </ModalMask>
   );
 };
