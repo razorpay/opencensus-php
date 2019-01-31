@@ -978,30 +978,6 @@ class Gateway
         Network::MAES,
     ];
 
-    /**
-     * List of ALL auth types and the corresponding
-     * banks supported by that auth type.
-     * Use of this array is deprecated. Use getEmandateBanks function
-     *
-     * @var array
-     */
-    public static $emandateBanks = [
-        AuthType::NETBANKING => [
-            IFSC::ICIC,
-            IFSC::UTIB,
-            IFSC::HDFC,
-            //TODO add banks supported by NPCI for emandate
-            IFSC::CBIN,
-            IFSC::IDFB,
-            IFSC::YESB,
-        ],
-        // Please keep this list sorted
-        // You can find the latest PDF version
-        // at https://www.npci.org.in/nach-e-mandates
-        AuthType::AADHAAR     => self::EMANDATE_AADHAAR_BANKS,
-        AuthType::AADHAAR_FP  => self::EMANDATE_AADHAAR_BANKS,
-    ];
-
     public static $bharatQrGateways = [
         self::UPI_ICICI,
         self::HITACHI,
