@@ -2135,8 +2135,15 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 12,
+                'count' => 13,
                 'items' => [
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'ABPB',
+                        ],
+                    ],
                     [
                         'method' => 'netbanking',
                         'severity' => 'low',
@@ -2234,13 +2241,20 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 13,
+                'count' => 14,
                 'items' => [
                     [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
                             'issuer'    => 'HDFC'
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'ABPB',
                         ],
                     ],
                     [
@@ -2507,6 +2521,7 @@ return [
                     'netbanking' => [
                         [
                             'issuer'      => [
+                                'ABPB',
                                 'BBKM',
                                 'BKDN',
                                 'COSB',

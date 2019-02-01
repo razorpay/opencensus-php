@@ -211,6 +211,87 @@ class GatewayDowntimeSorterTest extends TestCase
     /**
      * Card/EMI Downtime
      *
+     * card downtime for hdfc for all networks, all cards, all acquirers
+     * payment via MC
+     *
+     * this payment should go through via axis_migs
+     * because hdfc is down for all network & issuer
+     */
+    public function testDowntimeSortingCardHdfcPaymentMastercardAllAcquirers()
+    {
+        // without downtime
+        $payment = $this->makePayment('555555555555558');
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('hdfc', $payment['gateway']);
+
+        // with downtime
+        $hdfcAllNetworkAllIssuerAllAcquirerDowntimeData = $this->testData['hdfcAllNetworkAllIssuerAllAcquirerDowntimeData'];
+        $this->fixtures->create('gateway_downtime:card', $hdfcAllNetworkAllIssuerAllAcquirerDowntimeData);
+
+        $payment = $this->makePayment('555555555555558');
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('axis_migs', $payment['gateway']);
+    }
+
+    /**
+     * Card/EMI Downtime
+     *
+     * card downtime for hdfc for all networks, all cards, hdfc acquirers
+     * payment via MC
+     *
+     * this payment should go through via axis_migs
+     * because acquirer hdfc is down
+     */
+    public function testDowntimeSortingCardHdfcPaymentMastercardHdfcAcquirer()
+    {
+        // without downtime
+        $payment = $this->makePayment('555555555555558');
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('hdfc', $payment['gateway']);
+
+        // with downtime
+        $hdfcAllNetworkAllIssuerHdfcAcquirerDowntimeData = $this->testData['hdfcAllNetworkAllIssuerHdfcAcquirerDowntimeData'];
+        $this->fixtures->create('gateway_downtime:card', $hdfcAllNetworkAllIssuerHdfcAcquirerDowntimeData);
+
+        $payment = $this->makePayment('555555555555558');
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('axis_migs', $payment['gateway']);
+    }
+
+    /**
+     * Card/EMI Downtime
+     *
+     * card downtime for hdfc for all networks, all cards, hdfc acquirers
+     * payment via MC
+     *
+     * this payment should go through via axis_migs
+     * because acquirer hdfc is down
+     */
+    public function testDowntimeSortingCardHdfcPaymentAllIssuerHdfcAcquirer()
+    {
+        // without downtime
+        $payment = $this->makePayment('555555555555558');
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('hdfc', $payment['gateway']);
+
+        // with downtime
+        $allGatewayAllIssuerAllNetworkHdfcAcquirerData = $this->testData['allGatewayAllIssuerAllNetworkHdfcAcquirerData'];
+        $this->fixtures->create('gateway_downtime:card', $allGatewayAllIssuerAllNetworkHdfcAcquirerData);
+
+        $payment = $this->makePayment('555555555555558');
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('axis_migs', $payment['gateway']);
+    }
+
+    /**
+     * Card/EMI Downtime
+     *
      * card downtime for hdfc for MC networks,
      * payment via MC
      *
@@ -392,7 +473,7 @@ class GatewayDowntimeSorterTest extends TestCase
             'method'      => 'upi',
             'gateway'     => $iciciTerminal['gateway'],
             'terminal_id' => $iciciTerminal['id'],
-        ]; 
+        ];
 
         $this->testData[__FUNCTION__]['request']['content']['message'] = json_encode($vajraWebhookMessage, true);
 
