@@ -3909,7 +3909,12 @@ trait Authorize
             }
             else if ($payment->hasInvoice() === true)
             {
-                assertTrue($payment->hasBeenCaptured() === true);
+                $invoice = $payment->invoice;
+
+                if ($invoice->isTypeOfSubscriptionRegistration() === false)
+                {
+                    assertTrue($payment->hasBeenCaptured() === true);
+                }
 
                 $this->fillReturnDataWithInvoice($payment, $returnData);
             }
