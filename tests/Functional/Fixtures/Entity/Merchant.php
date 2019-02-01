@@ -8,6 +8,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 
 use RZP\Models\Feature;
+use RZP\Models\Card\Network;
+use RZP\Models\Merchant\Methods;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Credits;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
@@ -321,6 +323,28 @@ class Merchant extends Base
     public function enableMethod($id = '10000000000000', $method)
     {
         return $this->fixtures->edit('methods', $id, [$method => true]);
+    }
+
+    public function enableCardNetwork($id = '10000000000000', $network)
+    {
+        $cardNetworks = Network::getEnabledCardNetworks(Network::DEFAULT_CARD_NETWORKS);
+
+        $cardNetworks[strtoupper($network)] = 1;
+
+        $hexValue = Network::getHexValue($cardNetworks);
+
+        return $this->fixtures->edit('methods', $id, ['card_networks' => $hexValue]);
+    }
+
+    public function disableCardNetwork($id = '10000000000000', $network)
+    {
+        $cardNetworks = Network::getEnabledCardNetworks(Network::DEFAULT_CARD_NETWORKS);
+
+        $cardNetworks[strtoupper($network)] = 0;
+
+        $hexValue = Network::getHexValue($cardNetworks);
+
+        return $this->fixtures->edit('methods', $id, ['card_networks' => $hexValue]);
     }
 
     public function disableMethod($id = '10000000000000', $method)

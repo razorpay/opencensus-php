@@ -76,34 +76,6 @@ class Merchant
         return [$this->setl, $this->bankTransferAtpt];
     }
 
-    public function retryReversedPayout(Payout\Entity $payout): Payout\Entity
-    {
-        $this->payout = $payout;
-
-        $this->payout->reload();
-
-        if ($this->payout->getStatus() !== Payout\Status::REVERSED)
-        {
-            throw new Exception\RuntimeException(
-                'Invalid Payout.',
-                [
-                    'id'     => $this->payout->getId(),
-                    'status' => $this->payout->getStatus()
-                ]);
-        }
-
-        $this->resetPayoutEntity();
-
-        $this->payout->incrementAttempts();
-
-        $this->repo->saveOrFail($this->payout);
-
-        // TODO: This should be the same as how we create during the first time
-        $this->createPayoutAttemptEntity();
-
-        return $this->payout;
-    }
-
     public function settle(
         $txns,
         $amount,

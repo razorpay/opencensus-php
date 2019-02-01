@@ -1020,15 +1020,16 @@ class Gateway extends Base\Gateway
 
         switch ($this->getLiveMerchantId2())
         {
-            case $this->config['live_merchant_id2']:
-            case $this->config['live_merchant_id2_aditiya_birla_direct']:
-                return $this->config['live_hash_secret'];
-
             case $this->config['live_merchant_id2_tpv']:
                 return $this->config['live_hash_secret_tpv'];
 
             case $this->config['live_merchant_id2_corp']:
                 return $this->config['live_hash_secret_corp'];
+
+            case $this->config['live_merchant_id2']:
+            case $this->config['live_merchant_id2_aditiya_birla_direct']:
+            default:
+                return $this->config['live_hash_secret'];
         }
     }
 

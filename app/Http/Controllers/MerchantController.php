@@ -1237,6 +1237,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getMerchantPartnerStatus()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchMerchantPartnerStatus($input);
+
+        return ApiResponse::json($data);
+    }
+
     /**
      * Used when partner wants to send the link to submerchant for password setting.
      *
@@ -1249,5 +1258,14 @@ class MerchantController extends Controller
         $data = $this->service()->sendSubmerchantPasswordResetLink($id);
 
         return ApiResponse::json($data);
+    }
+
+    public function resetSettlementSchedule()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->resetSettlementSchedule($input);
+
+        return ApiResponse::json($response);
     }
 }

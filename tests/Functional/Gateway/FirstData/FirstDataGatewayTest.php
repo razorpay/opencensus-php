@@ -10,6 +10,7 @@ use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use \RZP\Error\ErrorCode;
+use RZP\Gateway\FirstData\SoapWrapper;
 
 class FirstDataGatewayTest extends TestCase
 {
@@ -27,6 +28,10 @@ class FirstDataGatewayTest extends TestCase
      */
     protected $payment;
 
+    /**
+     * This file covers testing on the old flow that is supported by firstdata.
+     * Currently rupay cards will go through old flow.
+     */
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/FirstDataGatewayTestData.php';
@@ -40,6 +45,8 @@ class FirstDataGatewayTest extends TestCase
         $this->gateway = 'first_data';
 
         $this->payment = $this->getDefaultPaymentArray();
+
+        $this->payment['card']['number'] = '6522622211727786';
     }
 
     public function testRecurringPayment()
@@ -468,7 +475,7 @@ class FirstDataGatewayTest extends TestCase
 
         $this->runRequestResponseFlow($data, function ()
         {
-            $this->doAuthPayment();
+            $this->doAuthPayment($this->payment);
         });
     }
 
@@ -646,7 +653,11 @@ class FirstDataGatewayTest extends TestCase
 
     public function testFailedCapture()
     {
-        $this->doAuthPayment($this->payment);
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '4160210902353047';
+
+        $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -700,7 +711,11 @@ class FirstDataGatewayTest extends TestCase
 
     public function testCaptureTimeout()
     {
-        $this->doAuthPayment($this->payment);
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '4160210902353047';
+
+        $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
 

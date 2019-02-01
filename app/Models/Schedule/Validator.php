@@ -18,6 +18,9 @@ class Validator extends Base\Validator
         Entity::HOUR     => 'sometimes|integer|min:0|max:23',
         Entity::DELAY    => 'sometimes|integer|min:0|max:90',
         Entity::TYPE     => 'sometimes|string|custom',
+        //temporary, will be removed after migration
+        Entity::ORG_ID   => 'sometimes|string',
+
     );
 
     protected static $editRules = array(
@@ -28,6 +31,9 @@ class Validator extends Base\Validator
         Entity::HOUR     => 'sometimes|integer|min:0|max:23',
         Entity::DELAY    => 'sometimes|integer|min:0|max:90',
         Entity::TYPE     => 'sometimes|string|custom',
+        //temporary, will be removed after migration
+        Entity::ORG_ID     => 'sometimes|string',
+
 
     );
 

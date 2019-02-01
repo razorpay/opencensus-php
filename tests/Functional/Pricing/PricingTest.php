@@ -6,11 +6,19 @@ use RZP\Models\Pricing;
 use RZP\Models\Transaction;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class PricingTest extends TestCase
 {
     use PaymentTrait;
+    use HeimdallTrait;
+    use DbEntityFetchTrait;
+
+    protected $authToken = null;
+
+    protected $org = null;
 
     public function setUp()
     {
@@ -21,11 +29,34 @@ class PricingTest extends TestCase
         $this->ba->adminAuth();
     }
 
-    public function testAddPricingPlanRule()
+    /**
+     * RZP admin (cross org feature enabled) is able to add rules to pricing plan belonging to other organisations too.
+     * Here, we are testing the case where RZP admin is adding a rule to pricing plan of SBI organisation.
+     */
+    public function testAddPricingPlanRuleByRZPAdmin()
+    {
+        $content = $this->createPricingPlan(['org_id' => Org::SBIN_ORG]);
+
+        $testData['request']['url'] = '/pricing/' . $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    /**
+     * SBI admin (cross org feature disabled) can add rules to pricing plans belonging to SBI organisation only.
+     * Here, we are testing the case where SBI admin is trying to add a rule to pricing plan of RZP organisation.
+     */
+    public function testAddPricingPlanRuleBySBIAdmin()
     {
         $content = $this->createPricingPlan();
 
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->org = $this->getDbEntityById('org', Org::SBIN_ORG);
+
+        $this->authToken = $this->getAuthTokenForOrg($this->org);
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_' . Org::SBIN_ORG);
 
         $this->startTest($testData);
     }
@@ -72,6 +103,17 @@ class PricingTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * RZP admin due to cross org feature enabled can create pricing plan for all orgs like SBI and HDFC.
+     * Here, we are testing the case where RZP admin is creating a pricing plan for SBI organisation.
+     */
+    public function testCreatePricingPlanByRZPAdmin()
+    {
+        $this->ba->adminAuth('test', null, 'org_' . Org::SBIN_ORG);
+
+        $this->startTest();
+    }
+
     public function testCreatePricingPlanWithMinAndMaxFee()
     {
         $this->startTest();
@@ -81,7 +123,6 @@ class PricingTest extends TestCase
     {
         $this->startTest();
     }
-
 
     public function testAddPricingPlanNBRule()
     {
@@ -190,7 +231,7 @@ class PricingTest extends TestCase
 
         $this->assertEquals($rule['deleted_at'], null);
 
-        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule/'. $rule['id'];
+        $testData['request']['url'] = '/pricing/' . $content['id'] . '/rule/' . $rule['id'];
 
         $this->startTest($testData);
 
@@ -199,17 +240,114 @@ class PricingTest extends TestCase
         $this->assertNotNull($rule['deleted_at']);
     }
 
+    /**
+     * RZP admin will be able to update the pricing plan for SBI or any other organisation.
+     * Here, we are testing the case where RZP admin is updating SBI pricing plan rule.
+     */
+    public function testUpdatePricingPlanRuleByRZPAdmin()
+    {
+        $content = $this->createPricingPlan2(
+            [
+                'org_id' => Org::SBIN_ORG,
+            ],
+            [
+                'X-Cross-Org-Id' => 'org_' . Org::SBIN_ORG
+            ]
+        );
+
+        $rule = $this->getEntityById('pricing', $content['rules']['0']['id'], true);
+
+        $this->assertEquals($rule['deleted_at'], null);
+
+        $testData['request']['url'] = '/pricing/' . $content['id'] . '/rule/' . $rule['id'];
+
+        $this->startTest($testData);
+
+        $rule = Pricing\Entity::withTrashed()->findOrFail($rule['id']);
+
+        $this->assertNotNull($rule['deleted_at']);
+    }
+
+    /**
+     * SBI admin will not be able to update any pricing plan rule belonging to any other org.
+     * Here, we are testing the case where SBI admin is trying to update the pricing plan rule of RZP organisation.
+     */
+    public function testUpdatePricingPlanRuleBySBIAdmin()
+    {
+        $content = $this->createPricingPlan2();
+
+        $rule = $this->getEntityById('pricing', $content['rules']['0']['id'], true);
+
+        $this->assertEquals($rule['deleted_at'], null);
+
+        $testData['request']['url'] = '/pricing/' . $content['id'] . '/rule/' . $rule['id'];
+
+        $this->org = $this->getDbEntityById('org', Org::SBIN_ORG);
+
+        $this->authToken = $this->getAuthTokenForOrg($this->org);
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_' . Org::SBIN_ORG);
+
+        $this->startTest($testData);
+    }
+
     public function testGetPricingPlan()
     {
         $id = $this->createPricingPlan2()['id'];
 
-        $testData['request']['url'] = '/pricing/'.$id;
+        $testData['request']['url']    = '/pricing/' . $id;
         $testData['request']['method'] = 'GET';
 
         $this->ba->adminAuth('test');
         $this->startTest($testData);
 
         $this->ba->adminAuth('live');
+        $this->startTest($testData);
+    }
+
+    /**
+     * RZP admin has access to pricing plans of all orgs due to cross route feature enabled.
+     */
+    public function testGetPricingPlanByRZPAdmin()
+    {
+        $id = $this->createPricingPlan2(
+            [
+                'org_id'  => Org::SBIN_ORG,
+                'plan_id' => '1ycviEdCgurrFY'
+            ],
+            [
+                'X-Cross-Org-Id' => "org_" . Org::SBIN_ORG
+            ]
+        )['id'];
+
+        $testData['request']['url']    = '/pricing/' . $id;
+        $testData['request']['method'] = 'GET';
+
+        $this->ba->adminAuth('test');
+        $this->startTest($testData);
+
+        $this->ba->adminAuth('live');
+        $this->startTest($testData);
+    }
+
+    /**
+     * SBI admin has access to pricing plans of only SBI organisation due to cross route feature disabled.
+     */
+    public function testGetPricingPlanBySBIAdmin()
+    {
+        $id = $this->createPricingPlan2()['id'];
+
+        $testData['request']['url']    = '/pricing/' . $id;
+        $testData['request']['method'] = 'GET';
+
+        $this->org = $this->getDbEntityById('org', Org::SBIN_ORG);
+
+        $this->authToken = $this->getAuthTokenForOrg($this->org);
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_' . Org::SBIN_ORG);
+        $this->startTest($testData);
+
+        $this->ba->adminAuth('live', $this->authToken, 'org_' . Org::SBIN_ORG);
         $this->startTest($testData);
     }
 
@@ -241,6 +379,61 @@ class PricingTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * RZP admin has access to pricing plans of all orgs due to cross route feature enabled.
+     */
+    public function testGetPricingPlansByRZPAdmin()
+    {
+        $this->createPricingPlan();
+        $this->createPricingPlan2(
+            [
+                'org_id'  => Org::SBIN_ORG,
+                'plan_id' => '1ycviEdCgurrFY'
+            ],
+            [
+                'X-Cross-Org-Id' => "org_" . Org::SBIN_ORG
+            ]
+        );
+
+        $this->ba->adminAuth('test');
+        $this->startTest();
+
+        $this->ba->adminAuth('live');
+        $this->startTest();
+    }
+
+    /**
+     * SBI admin will have access to pricing plans of only SBI organisation because cross org feature is disabled for
+     * SBI organisation.
+     */
+    public function testGetPricingPlansBySBIAdmin()
+    {
+        // Pricing plan Belonging to RZP organisation
+        $this->createPricingPlan();
+
+        // Pricing plan belonging to SBI organisation
+        $this->createPricingPlan2(
+            [
+                'org_id'  => Org::SBIN_ORG,
+                'plan_id' => '1ycviEdCgurrFY'
+            ],
+            [
+                'X-Cross-Org-Id' => "org_" . Org::SBIN_ORG
+            ]
+        );
+
+        $this->org = $this->getDbEntityById('org', Org::SBIN_ORG);
+
+        $this->authToken = $this->getAuthTokenForOrg($this->org);
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_' . Org::SBIN_ORG);
+
+        $this->startTest();
+
+        $this->ba->adminAuth('live', $this->authToken, 'org_' . Org::SBIN_ORG);
+        $this->startTest();
+    }
+
     public function testGetPricingPlansGrouping()
     {
         $this->ba->adminAuth();
@@ -254,6 +447,62 @@ class PricingTest extends TestCase
         $this->startTest();
 
         $this->ba->adminAuth('live');
+        $this->startTest();
+    }
+
+    /**
+     * RZP admin has access to pricing plans of all orgs due to cross route feature enabled.
+     */
+    public function testGetPricingPlansGroupingByRZPAdmin()
+    {
+        $this->ba->adminAuth();
+
+        $this->createPricingPlan();
+
+        $this->createPricingPlan2(
+            [
+                'org_id'  => Org::SBIN_ORG,
+            ],
+            [
+                'X-Cross-Org-Id' => "org_" . Org::SBIN_ORG
+            ]
+        );
+
+        $this->ba->adminAuth('test');
+        $this->startTest();
+
+        $this->ba->adminAuth('live');
+        $this->startTest();
+    }
+
+    /**
+     * SBI admin will have access to pricing plans of only SBI organisation because cross org feature is disabled for
+     * SBI organisation.
+     */
+    public function testGetPricingPlansGroupingBySBIAdmin()
+    {
+        $this->ba->adminAuth();
+
+        $this->createPricingPlan();
+
+        $this->createPricingPlan2(
+            [
+                'org_id'  => Org::SBIN_ORG,
+                'plan_id' => '1ycviEdCgurrFY'
+            ],
+            [
+                'X-Cross-Org-Id' => "org_" . Org::SBIN_ORG
+            ]
+        );
+
+        $this->org = $this->getDbEntityById('org', Org::SBIN_ORG);
+
+        $this->authToken = $this->getAuthTokenForOrg($this->org);
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_' . Org::SBIN_ORG);
+        $this->startTest();
+
+        $this->ba->adminAuth('live', $this->authToken, 'org_' . Org::SBIN_ORG);
         $this->startTest();
     }
 
@@ -371,7 +620,7 @@ class PricingTest extends TestCase
 
         $this->startTest();
     }
-
+    //
     public function testAddInternationalPricingPlanRule()
     {
         $content = $this->createPricingPlan();
@@ -469,6 +718,34 @@ class PricingTest extends TestCase
         $content = $this->startTest();
     }
 
+    /**
+     * RZP Admin will have right to delete the pricing plan of other orgs as well.
+     * Here, we are considering the case where RZP admin is deleting the pricing plan beloning to SBI org.
+     */
+    public function testDeletePricingPlanRuleByRZPAdmin()
+    {
+        $this->fixtures->edit('pricing', '1zE3QYFf1zbys6', ['org_id' => Org::SBIN_ORG]);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * SBI admin will not be allowed to delete the pricing plan of RZP organisation.
+     * Here, we are testing the case where SBI admin is trying to delete the pricing plan of RZP organisation.
+     */
+    public function testDeletePricingPlanRuleBySBIAdmin()
+    {
+        $this->org = $this->getDbEntityById('org', Org::SBIN_ORG);
+
+        $this->authToken = $this->getAuthTokenForOrg($this->org);
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_' . Org::SBIN_ORG);
+
+        $this->startTest();
+    }
+
     public function testDeletePricingPlanRuleForce()
     {
 
@@ -512,6 +789,7 @@ class PricingTest extends TestCase
 
         $this->replaceValuesRecursively($testData, $testDataToReplace);
 
+        //s("running request flow");
         return $this->runRequestResponseFlow($testData);
     }
 
@@ -545,7 +823,7 @@ class PricingTest extends TestCase
          // fetching the same entity
         $response = $this->runRequestResponseFlow($fetchTestData);
          // no data;
-        $this->assertEmpty($response);
+        $this->assertNotEmpty($response);
 
         $content = $this->createPricingPlan(['org_id' => $org->getId(), 'plan_id' => '1ycviEdCguraFI']);
 
@@ -561,7 +839,7 @@ class PricingTest extends TestCase
         // fetching the same entity
         $response = $this->runRequestResponseFlow($fetchTestData);
          // no data;
-        $this->assertEmpty($response);
+        $this->assertNotEmpty($response);
     }
 
     protected function setDefaultMerchantMethods()
@@ -632,7 +910,7 @@ class PricingTest extends TestCase
     }
 
 
-    protected function createPricingPlan2()
+    protected function createPricingPlan2(array $pricingPlanData = [], array $adminHeaders = null)
     {
         $planData = [
             'plan_name'           => 'TestPlan2',
@@ -644,6 +922,8 @@ class PricingTest extends TestCase
             'percent_rate'        => '275',
             'fixed_rate'          => 0,
             ];
+
+        $planData = array_merge($planData, $pricingPlanData);
 
         $pricingData = [
                 [
@@ -674,6 +954,12 @@ class PricingTest extends TestCase
         $pricingPlanId = $plan['id'];
 
         $this->ba->adminAuth();
+
+
+        if($adminHeaders !=null)
+        {
+            $this->ba->setAdminHeaders($adminHeaders);
+        }
 
         foreach ($pricingData as $data)
         {

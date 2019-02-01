@@ -1034,9 +1034,25 @@ class Gateway extends Base\Gateway
             RequestFields::CURRENCY         => $input['payment']['currency'],
         ];
 
+        // Changes for olamoney postpaid
+        $type = null;
+
+        if ($this->version === 'v2')
+        {
+            $type = 'refund_v3';
+
+            unset($content[RequestFields::SALE_ID]);
+
+            $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                $input['payment']['id'],
+                Action::AUTHORIZE);
+
+            $content[RequestFields::SALE_ID_V2] = $gatewayPayment->getGatewayPaymentId();
+        }
+
         $content[RequestFields::HASH] = $this->getHashForRefundRequest($content);
 
-        $request = $this->getStandardRequestArray(json_encode($content));
+        $request = $this->getStandardRequestArray(json_encode($content), 'post', $type);
 
         return $request;
     }
@@ -1055,6 +1071,7 @@ class Gateway extends Base\Gateway
             RequestFields::BALANCE_TYPE,
             RequestFields::BALANCE_NAME,
             RequestFields::SALE_ID,
+            RequestFields::SALE_ID_V2,
         ];
 
         $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);

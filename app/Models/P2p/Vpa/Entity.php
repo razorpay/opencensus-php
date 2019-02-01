@@ -265,6 +265,14 @@ class Entity extends Base\Entity
     }
 
     /**
+     * @return string self::ADDRESS
+     */
+    public function getAddress()
+    {
+        return $this->getAttribute(self::ADDRESS);
+    }
+
+    /**
      * @return string self::BANK_ACCOUNT_ID
      */
     public function getBankAccountId()
@@ -332,8 +340,13 @@ class Entity extends Base\Entity
         $query->where(self::DEFAULT, $value);
     }
 
+    public function getAddressAttribute()
+    {
+        return implode(self::AEROBASE, [$this->getUsername(), $this->getHandle()]);
+    }
+
     public function setPublicAddressAttribute(array & $array)
     {
-        $array[self::ADDRESS] = implode(self::AEROBASE, [$this->getUsername(), $this->getHandle()]);
+        $array[self::ADDRESS] = $this->getAddress();
     }
 }

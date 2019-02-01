@@ -7,7 +7,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Models\Payment;
 use RZP\Base\RuntimeManager;
-use RZP\Models\Pricing\FeeCalculator;
+use RZP\Models\Pricing\Calculator;
 use RZP\Models\Transaction\FeeBreakup as FeeBreakup;
 
 
@@ -56,7 +56,7 @@ class DataMigration extends Base\Service
 
             $payment = $this->repo->payment->findOrFail($transaction->getEntityId());
 
-            $this->feeCalculator = new FeeCalculator($payment);
+            $this->feeCalculator = Calculator\Base::make($payment);
 
             $taxTime = $this->getTaxTime($payment);
 

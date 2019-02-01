@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Pricing;
 
+use App;
 use RZP\Models\Bank;
 use RZP\Models\Base;
 use RZP\Models\Card;
@@ -14,7 +15,9 @@ class Service extends Base\Service
 {
     public function createPricingPlan($input)
     {
-        (new Pricing\Core())->createPricing($input);
+        $ruleOrgId = $this->getRuleOrgId();
+
+        (new Pricing\Core())->createPricing($input, $ruleOrgId);
 
         $plan = $this->repo->pricing->getPricingPlanByName($input[Entity::PLAN_NAME]);
 
@@ -29,7 +32,9 @@ class Service extends Base\Service
 
         $plan = $this->repo->pricing->getPricingPlanByIdOrFailPublic($id);
 
-        $rule = (new Pricing\Core)->addPlanRule($plan, $input);
+        $ruleOrgId = $plan->getOrgId();
+
+        $rule = (new Pricing\Core)->addPlanRule($plan, $input, $ruleOrgId);
 
         $this->trace->info(
             TraceCode::PRICING_PLAN_RULE_ADD_SUCCESS,
@@ -141,5 +146,23 @@ class Service extends Base\Service
         ];
 
         return $networks;
+    }
+
+    /**
+     * If crossOrgId is present, rule org Id is same as crossOrgId else it is same as admin org Id.
+     *
+     * @return mixed
+     */
+    private function getRuleOrgId()
+    {
+        $app = App::getFacadeRoot();
+
+        $orgId = $app['basicauth']->getOrgId();
+
+        $crossOrgId = $app['basicauth']->getCrossOrgId();
+
+        $ruleOrgId = $crossOrgId ?: $orgId;
+
+        return $ruleOrgId;
     }
 }

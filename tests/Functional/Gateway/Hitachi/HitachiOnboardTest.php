@@ -49,7 +49,10 @@ class HitachiOnboardTest extends TestCase
         $response = $this->onboard($this->merchantId, $data);
 
         $this->assertNotNull($response);
+
         $this->assertEquals($response['gateway'], 'hitachi');
+
+        $this->assertEquals($response['type'], ['non_recurring', 'recurring_3ds', 'recurring_non_3ds', 'debit_recurring']);
     }
 
     public function testOnboardFailure()

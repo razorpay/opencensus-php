@@ -29,6 +29,7 @@ use RZP\Models\FundTransfer\Yesbank\NodalAccount;
  * @property Merchant\Entity    $merchant
  * @property User\Entity        $user
  * @property FundAccount\Entity $fundAccount
+ * @property Transaction\Entity $transaction
  */
 class Entity extends Base\PublicEntity
 {
@@ -67,6 +68,7 @@ class Entity extends Base\PublicEntity
     const SETTLED_ON             = 'settled_on';
     const TYPE                   = 'type';
     const MODE                   = 'mode';
+    const REFERENCE_ID           = 'reference_id';
 
     // Public attribute
     const DESTINATION            = 'destination';
@@ -129,6 +131,7 @@ class Entity extends Base\PublicEntity
         self::SETTLED_ON,
         self::TYPE,
         self::MODE,
+        self::REFERENCE_ID,
     ];
 
     protected $visible = [
@@ -162,6 +165,7 @@ class Entity extends Base\PublicEntity
         self::SETTLED_ON,
         self::TYPE,
         self::MODE,
+        self::REFERENCE_ID,
         self::INTERNAL_STATUS,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -186,6 +190,7 @@ class Entity extends Base\PublicEntity
         self::USER_ID,
         self::USER,
         self::MODE,
+        self::REFERENCE_ID,
         self::REVERSAL,
         self::FAILURE_REASON,
         self::CREATED_AT,
@@ -229,6 +234,7 @@ class Entity extends Base\PublicEntity
         self::MODE              => null,
         self::UTR               => null,
         self::FAILURE_REASON    => null,
+        self::REFERENCE_ID      => null,
     ];
 
     protected $amounts = [
@@ -344,9 +350,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CURRENCY);
     }
 
+    public function getReferenceId()
+    {
+        return $this->getAttribute(self::REFERENCE_ID);
+    }
+
     public function getCustomerId()
     {
         return $this->getAttribute(self::CUSTOMER_ID);
+    }
+
+    public function hasCustomer()
+    {
+        return ($this->isAttributeNotNull(self::CUSTOMER_ID) === true);
     }
 
     public function getFundAccountId()
@@ -357,6 +373,11 @@ class Entity extends Base\PublicEntity
     public function hasFundAccount()
     {
         return ($this->isAttributeNotNull(self::FUND_ACCOUNT_ID) === true);
+    }
+
+    public function isOfMerchantTransaction(): bool
+    {
+        return $this->getAttribute(self::TRANSACTION_TYPE) === Constants\Entity::TRANSACTION;
     }
 
     /**
@@ -479,6 +500,16 @@ class Entity extends Base\PublicEntity
     public function getPayoutType()
     {
         return $this->getAttribute(self::TYPE);
+    }
+
+    public function getPaymentId()
+    {
+        return $this->getAttribute(self::PAYMENT_ID);
+    }
+
+    public function hasPayment()
+    {
+        return ($this->isAttributeNotNull(self::PAYMENT_ID) === true);
     }
 
     public function getUserId()
@@ -833,7 +864,9 @@ class Entity extends Base\PublicEntity
 
     public function shouldNotifyTxnViaEmail(): bool
     {
-        return $this->isBalanceTypeBanking();
+        return (($this->isBalanceTypeBanking() === true) and
+                // We only send transaction mail when we have UTR available, post reconciliation.
+                ($this->isAttributeNotNull(Entity::UTR) === true));
     }
 
     /**

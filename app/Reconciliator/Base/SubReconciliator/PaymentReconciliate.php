@@ -566,7 +566,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 $this->messenger->raiseReconAlert(
                     [
                         'trace_code'    => TraceCode::RECON_FAILURE,
-                        'failure_code'  => 'PAYMENT_TRANSACTION_ABSENT',
+                        'failure_code'  => Base\InfoCode::PAYMENT_TRANSACTION_ABSENT,
                         'message'       => 'Unable to create payment transaction after verifying',
                         'payment_id'    => $this->payment->getId(),
                         'gateway'       => $this->gateway
@@ -717,8 +717,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 $this->trace->info(
                     TraceCode::RECON_INFO,
                     [
-                        'message'    => 'Payment Transaction not found in DB.',
-                        'info_code'  => 'PAYMENT_TRANSACTION_ABSENT',
+                        'info_code'  => Base\InfoCode::PAYMENT_TRANSACTION_ABSENT,
                         'payment_id' => $paymentId,
                         'gateway'    => $this->gateway
                     ]);
@@ -729,7 +728,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code' => TraceCode::RECON_MISMATCH,
-                    'info_code'  => 'PAYMENT_ABSENT',
+                    'info_code'  => Base\InfoCode::PAYMENT_ABSENT,
                     'message'    => 'Payment not found in DB. -> ' . $ex->getMessage(),
                     'row'        => $row,
                     'payment_id' => $paymentId,
@@ -1402,8 +1401,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 $this->messenger->raiseReconAlert(
                     [
                         'trace_code'    => TraceCode::RECON_FAILURE,
-                        'failure_code'  => 'PAYMENT_TRANSACTION_ABSENT',
-                        'message'       => 'Transaction not present for the given payment ID.',
+                        'failure_code'  => Base\InfoCode::PAYMENT_TRANSACTION_ABSENT,
                         'row_details'   => $rowDetails,
                         'gateway'       => $this->gateway
                     ]);
@@ -1483,8 +1481,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 $this->trace->warning(
                     TraceCode::RECON_INFO_ALERT,
                     [
-                        'info_code'     => 'PAYMENT_TRANSACTION_ABSENT',
-                        'message'       => 'Transaction not present for the given payment ID.',
+                        'info_code'     => Base\InfoCode::PAYMENT_TRANSACTION_ABSENT,
                         'row_details'   => $rowDetails,
                         'gateway'       => $this->gateway
                     ]);

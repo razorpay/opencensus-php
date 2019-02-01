@@ -18,7 +18,6 @@ use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Offer;
 use RZP\Models\Coupon;
-use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -35,6 +34,7 @@ use RZP\Base\RuntimeManager;
 use RZP\Models\Pricing\Plan;
 use RZP\Models\Admin\Org\Hostname;
 use RZP\Error\PublicErrorDescription;
+use RZP\Constants\{Mode, Entity as CE};
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
@@ -130,6 +130,19 @@ class Service extends Base\Service
         }
 
         return $this->createSubMerchantAndSetRelations($merchant, $isLinkedAccount, $input);
+    }
+
+    /**
+     * resets the merchant settlement schedule to default
+     *
+     * @param array $input
+     * @return array
+     */
+    public function resetSettlementSchedule(array $input): array
+    {
+        (new Validator)->validateInput('reset_settlement_schedule', $input);
+
+        return $this->core()->resetSettlementSchedule($input['merchant_ids']);
     }
 
     /**
@@ -2789,6 +2802,55 @@ class Service extends Base\Service
 
             (new Activate)->activateBusinessBankingIfApplicable($merchant);
         });
+    }
+
+    /**
+     * Checks if a merchant exists with the input email
+     * and if it is marked as a partner
+     *
+     * @param  array $input
+     * @return array
+     */
+    public function fetchMerchantPartnerStatus(array $input)
+    {
+        $partnerExists = $merchantExists = false;
+
+        (new Validator)->validateInput('merchant_partner_status', $input);
+
+        $this->auth->setModeAndDbConnection(Mode::LIVE);
+
+        /** @var Base\PublicCollection $merchants */
+        $merchants = $this->repo->merchant->fetchByEmailAndOrgId($input[Entity::EMAIL]);
+
+        if ($merchants->count() > 0)
+        {
+            $merchantExists = true;
+
+            //
+            // First entry should be partner if there is a partner
+            // as we order by created_at asc.
+            //
+
+            /** @var Entity $first */
+            $first = $merchants->first();
+
+            if ($first->getPartnerType() !== null)
+            {
+                $partnerExists = true;
+            }
+        }
+
+        $result = [CE::MERCHANT => $merchantExists, Constants::PARTNER => $partnerExists];
+
+        $this->trace->info(
+            TraceCode::MERCHANT_PARTNER_STATUS_RESPONSE,
+            [
+                'input'  => $input,
+                'result' => $result
+            ]
+        );
+
+        return $result;
     }
 
     protected function enableBusinessBankingIfApplicable(Entity $merchant)

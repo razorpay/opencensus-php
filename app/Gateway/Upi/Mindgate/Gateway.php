@@ -225,6 +225,8 @@ class Gateway extends Base\Gateway
     {
         if ($status !== $successStatus)
         {
+            $responseKey = ($this->action === Action::VERIFY) ? Payment\Gateway::GATEWAY_VERIFY_RESPONSE : Payment\Gateway::GATEWAY_RESPONSE;
+
             $errorCode = ErrorCodes\ErrorCodes::getErrorCode($response);
 
             $errorMessage = ErrorCodes\ErrorCodeDescriptions::getGatewayErrorDescription($response);
@@ -234,8 +236,8 @@ class Gateway extends Base\Gateway
                 $response[ResponseFields::RESPCODE],
                 $errorMessage,
                 [
-                    Payment\Gateway::GATEWAY_RESPONSE  => json_encode($response),
-                    Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($response)
+                    $responseKey                    => json_encode($response),
+                    Payment\Gateway::GATEWAY_KEYS   => $this->getGatewayData($response)
                 ]);
         }
     }
@@ -277,7 +279,10 @@ class Gateway extends Base\Gateway
     /**
      * Takes in S2S request input array
      * and returns the parsed response as an array
+     *
      * @param  array $input Request Input arrau
+     * @param bool   $isBharatQr
+     *
      * @return array
      */
     public function preProcessServerCallback($input, $isBharatQr = false): array
@@ -357,12 +362,14 @@ class Gateway extends Base\Gateway
                 'error'             => $e->getMessage()
             ]);
 
+            $responseKey = ($this->action === Action::VERIFY) ? Payment\Gateway::GATEWAY_VERIFY_RESPONSE : Payment\Gateway::GATEWAY_RESPONSE;
+
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
                 null,
                 $e->getMessage(),
                 [
-                    Payment\Gateway::GATEWAY_RESPONSE  => $responseBody,
+                    $responseKey  => $responseBody,
                 ]);
         }
 
@@ -1000,7 +1007,7 @@ class Gateway extends Base\Gateway
             ($content[ResponseFields::STATUS] === Status::REFUND_FAILED))
         {
             return $scroogeResponse->setSuccess(false)
-                                   ->setStatusCode(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR)
+                                   ->setStatusCode(ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED)
                                    ->toArray();
         }
 
@@ -1016,7 +1023,9 @@ class Gateway extends Base\Gateway
 
     /**
      * Returns Payment Id
-     * @param  string $body Request Body
+     *
+     * @param array $response
+     *
      * @return string Payment Id
      */
     public function getPaymentIdFromServerCallback(array $response)

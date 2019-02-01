@@ -59,6 +59,7 @@ class Validator extends Base\Validator
         Entity::IFSC_CODE                   => 'sometimes|string|size:11',
         Entity::CARDLESS_EMI                => 'sometimes|boolean',
         Entity::ENABLED                     => 'sometimes|in:0,1',
+        Entity::CAPABILITY                  => 'sometimes|in:0,1,2',
     ];
 
     protected static $editTerminalGateways = [
@@ -130,6 +131,7 @@ class Validator extends Base\Validator
         Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
         Entity::TYPE                       => 'sometimes|array',
         Entity::CURRENCY                   => 'sometimes|alpha|size:3',
+        Entity::CAPABILITY                 => 'sometimes|in:0,2',
     ];
 
     protected static $hitachiTerminalRules = [
@@ -285,6 +287,7 @@ class Validator extends Base\Validator
         Entity::MODE                       => 'sometimes|in:3',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
         Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
+        Entity::CAPABILITY                 => 'sometimes',
     ];
 
     protected static $hitachiEditTerminalRules = [
@@ -588,6 +591,12 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
     ];
 
+    protected static $netbankingSbiTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_SBI,
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string'
+    ];
+
     protected static $netbankingAllahabadTerminalRules = [
         Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_ALLAHABAD,
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
@@ -649,6 +658,14 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
         Entity::TYPE                        => 'sometimes|array',
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
+    ];
+
+    protected static $enachNpciNetbankingTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:enach_npci_netbanking',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE         => 'required|string',
+        Entity::TYPE                        => 'required|array',
     ];
 
     protected static $editWalletAirtelmoneyTerminalRules = [

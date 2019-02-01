@@ -46,10 +46,11 @@ class Repository extends Base\Repository
         return $query->first();
     }
 
-    public function findByMerchantAndMethod(Merchant\Entity $merchant, $method, bool $international = false)
+    public function findMerchantSettlementSchedule(Merchant\Entity $merchant, $method, bool $international = false)
     {
         $query = $this->newQuery()
                       ->merchantId($merchant->getId())
+                      ->where(Entity::ENTITY_ID, '=', $merchant->getId())
                       ->where(Entity::INTERNATIONAL, '=', $international);
 
         if ($method === null)

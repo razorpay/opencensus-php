@@ -201,6 +201,7 @@ class Name
     const CREATE_GATEWAY_DOWNTIME             = 'create_gateway_downtime';
     const UPDATE_GATEWAY_DOWNTIME             = 'update_gateway_downtime';
     const CREATE_PROMOTION_COUPON             = 'create_promotion_coupon';
+    const RAZORX_APPROVERS                    = 'razorx_approvers';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,

@@ -142,11 +142,18 @@ class Core extends Base\Core
 
         $input[Task\Entity::SCHEDULE_ID] = $promotion->schedule->getId();
 
+        //
+        // merchant's signup timestamp
+        // Here the merchants creation time is considered as NEXT_RUN_AT and not current time or Activation time
+        // Credits are given when merchant signups and not when merchant activates.
+        // Need to revisit on this as merchant's signup time is not considered to calculate next_run_at.
+        //
+        $input[Task\Entity::NEXT_RUN_AT] = $merchant->getCreatedAt();
+
         $task = (new Task\Core)->create($merchant, $promotion, $input);
 
         return $task;
     }
-
 
     public function activate(Entity $merchantPromotion)
     {
@@ -170,6 +177,13 @@ class Core extends Base\Core
             $merchantPromotion->decrementRemainingIterations();
 
             $this->repo->saveOrFail($merchantPromotion);
+
+            $this->trace->info(
+                TraceCode::MERCHANT_PROMOTION_ACTIVATED,
+                [
+                    'merchant_id'  => $merchantPromotion->merchant->getId(),
+                    'promotion_id' => $merchantPromotion->promotion->getId(),
+                ]);
         });
     }
 

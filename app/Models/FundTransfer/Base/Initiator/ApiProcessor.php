@@ -5,6 +5,7 @@ namespace RZP\Models\FundTransfer\Base\Initiator;
 use App;
 use Request;
 use Requests;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Gateway;
 use Razorpay\Trace\Logger as Trace;
@@ -164,7 +165,7 @@ abstract class ApiProcessor extends NodalAccount
 
         $this->traceRequest();
 
-        if ($this->config['mock'] === true)
+        if (($this->config['mock'] === true) or ($this->mode === Mode::TEST))
         {
             $response = $this->sendMockRequest();
         }

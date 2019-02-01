@@ -37,6 +37,7 @@ class Gateway
     const ESIGNER_DIGIO          = 'esigner_digio';
     const ESIGNER_LEGALDESK      = 'esigner_legaldesk';
     const ENACH_RBL              = 'enach_rbl';
+    const ENACH_NPCI_NETBANKING  = 'enach_npci_netbanking';
     const FIRST_DATA             = 'first_data';
     const HDFC                   = 'hdfc';
     const HITACHI                = 'hitachi';
@@ -57,6 +58,7 @@ class Gateway
     const NETBANKING_CSB         = 'netbanking_csb';
     const NETBANKING_PNB         = 'netbanking_pnb';
     const NETBANKING_OBC         = 'netbanking_obc';
+    const NETBANKING_SBI         = 'netbanking_sbi';
     const NETBANKING_ALLAHABAD   = 'netbanking_allahabad';
     const NETBANKING_CANARA      = 'netbanking_canara';
     const PAYTM                  = 'paytm';
@@ -254,12 +256,30 @@ class Gateway
         Payment\Gateway::HITACHI,
         Payment\Gateway::UPI_HULK,
         Payment\Gateway::NETBANKING_AIRTEL,
+        Payment\Gateway::NETBANKING_PNB,
         Payment\Gateway::ATOM,
         Payment\Gateway::SHARP
     ];
 
+    //TODO : Get complete list
+    const ENACH_NPCI_NETBANKING_BANKS = [
+        IFSC::YESB,
+        IFSC::IDFB,
+        IFSC::UTIB,
+        IFSC::CBIN,
+    ];
+
+    const EMANDATE_NB_DIRECT_BANKS = [
+        IFSC::ICIC,
+        IFSC::UTIB,
+        IFSC::HDFC,
+    ];
+
     // The 2 commented banks are mentioned at the bottom
     // with their retail versions
+    // Please keep this list sorted
+    // You can find the latest PDF version
+    // at https://www.npci.org.in/nach-e-mandates
     const EMANDATE_AADHAAR_BANKS = [
         IFSC::ABHY,
         IFSC::ACUX,
@@ -602,6 +622,7 @@ class Gateway
             self::NETBANKING_CSB,
             self::NETBANKING_ALLAHABAD,
             self::NETBANKING_EQUITAS,
+            self::NETBANKING_SBI,
             self::NETBANKING_CANARA,
             self::NETBANKING_VIJAYA,
         ],
@@ -937,6 +958,7 @@ class Gateway
         Gateway::ESIGNER_DIGIO,
         Gateway::ESIGNER_LEGALDESK,
         Gateway::ENACH_RBL,
+        Gateway::ENACH_NPCI_NETBANKING,
     ];
 
     public static $recurringCardNetworks = [
@@ -957,25 +979,6 @@ class Gateway
         Network::MAES,
     ];
 
-    /**
-     * List of ALL auth types and the corresponding
-     * banks supported by that auth type.
-     *
-     * @var array
-     */
-    public static $emandateBanks = [
-        AuthType::NETBANKING => [
-            IFSC::ICIC,
-            IFSC::UTIB,
-            IFSC::HDFC,
-        ],
-        // Please keep this list sorted
-        // You can find the latest PDF version
-        // at https://www.npci.org.in/nach-e-mandates
-        AuthType::AADHAAR     => self::EMANDATE_AADHAAR_BANKS,
-        AuthType::AADHAAR_FP  => self::EMANDATE_AADHAAR_BANKS,
-    ];
-
     public static $bharatQrGateways = [
         self::UPI_ICICI,
         self::HITACHI,
@@ -990,6 +993,7 @@ class Gateway
             Gateway::NETBANKING_AXIS,
             Gateway::NETBANKING_ICICI,
             Gateway::NETBANKING_HDFC,
+            Gateway::ENACH_NPCI_NETBANKING,
         ],
         AuthType::AADHAAR     => self::EMANDATE_AADHAAR_GATEWAYS,
         AuthType::AADHAAR_FP  => self::EMANDATE_AADHAAR_GATEWAYS,
@@ -1057,16 +1061,17 @@ class Gateway
      * @var array
      */
     public static $gatewaysEmandateBanksMap = [
-        Gateway::NETBANKING_ICICI  => [IFSC::ICIC],
-        Gateway::NETBANKING_AXIS   => [IFSC::UTIB],
-        Gateway::NETBANKING_HDFC   => [IFSC::HDFC],
-        Gateway::ENACH_RBL         => self::EMANDATE_AADHAAR_BANKS,
+        Gateway::NETBANKING_ICICI      => [IFSC::ICIC],
+        Gateway::NETBANKING_AXIS       => [IFSC::UTIB],
+        Gateway::NETBANKING_HDFC       => [IFSC::HDFC],
+        Gateway::ENACH_NPCI_NETBANKING => self::ENACH_NPCI_NETBANKING_BANKS,
+        Gateway::ENACH_RBL             => self::EMANDATE_AADHAAR_BANKS,
         // This is added here just for test cases
         // We are using UTIB in test cases
-        Gateway::ESIGNER_DIGIO     => [
+        Gateway::ESIGNER_DIGIO         => [
             IFSC::UTIB,
         ],
-        Gateway::ESIGNER_LEGALDESK => [
+        Gateway::ESIGNER_LEGALDESK     => [
             IFSC::UTIB,
         ],
     ];
@@ -1090,6 +1095,7 @@ class Gateway
     public static $fileBasedEMandateRegistrationGateways = [
         Gateway::NETBANKING_HDFC,
         Gateway::ENACH_RBL,
+        Gateway::ENACH_NPCI_NETBANKING,
     ];
 
     /**
@@ -1185,6 +1191,7 @@ class Gateway
         IFSC::ALLA         => Gateway::NETBANKING_ALLAHABAD,
         IFSC::CNRB         => Gateway::NETBANKING_CANARA,
         IFSC::ESFB         => Gateway::NETBANKING_EQUITAS,
+        IFSC::SBIN         => Gateway::NETBANKING_SBI,
         IFSC::VIJB         => Gateway::NETBANKING_VIJAYA,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
@@ -1443,7 +1450,7 @@ class Gateway
     {
         $banks = [];
 
-        foreach (self::$emandateBanks as $emandateBanks)
+        foreach (self::getEmandateAuthTypeToBankMap() as $emandateBanks)
         {
             $banks = array_merge($banks, $emandateBanks);
         }
@@ -1472,9 +1479,11 @@ class Gateway
     {
         $banks = [];
 
-        if (isset(self::$emandateBanks[$authType]) === true)
+        $emandateBanks = self::getEmandateAuthTypeToBankMap();
+
+        if (isset($emandateBanks[$authType]) === true)
         {
-            $banks = self::$emandateBanks[$authType];
+            $banks = $emandateBanks[$authType];
         }
 
         return $banks;
@@ -1496,7 +1505,9 @@ class Gateway
     {
         $emandateBanks = [];
 
-        foreach (self::$emandateBanks as $authType => $banks)
+        $emandateBanksMap = self::getEmandateAuthTypeToBankMap();
+
+        foreach ($emandateBanksMap as $authType => $banks)
         {
             $emandateBanks = array_merge($emandateBanks, $banks);
         }
@@ -1784,6 +1795,24 @@ class Gateway
         }
 
         return $gateways;
+    }
+
+    public static function getEmandateAuthTypeToBankMap()
+    {
+        $netbankingBanks = array_unique(
+                                         array_merge(
+                                             self::EMANDATE_NB_DIRECT_BANKS,
+                                             self::ENACH_NPCI_NETBANKING_BANKS
+                                          )
+                           );
+
+        $netbankingBanks = array_values($netbankingBanks);
+
+        return [
+            AuthType::NETBANKING  => $netbankingBanks,
+            AuthType::AADHAAR     => self::EMANDATE_AADHAAR_BANKS,
+            AuthType::AADHAAR_FP  => self::EMANDATE_AADHAAR_BANKS,
+        ];
     }
 
     public static function getTerminalsForValidateVpaForMode(string $mode)

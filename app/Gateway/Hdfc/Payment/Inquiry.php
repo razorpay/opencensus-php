@@ -99,8 +99,8 @@ trait Inquiry
             'Unexpected refund verify result received',
             ErrorCode::GATEWAY_ERROR_UNEXPECTED_STATUS,
             [
-                PaymentModel\Gateway::GATEWAY_RESPONSE  => json_encode($response['xml']),
-                PaymentModel\Gateway::GATEWAY_KEYS      =>
+                PaymentModel\Gateway::GATEWAY_VERIFY_RESPONSE  => json_encode($response['xml']),
+                PaymentModel\Gateway::GATEWAY_KEYS             =>
                     [
                         'payment_id' => $input['refund']['payment_id'],
                         'refund_id'  => $input['refund']['id'],

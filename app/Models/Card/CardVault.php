@@ -41,11 +41,15 @@ class CardVault extends Base\Core
         }
     }
 
-    public function getVaultToken($cardNumber)
+    public function getVaultToken($input)
     {
         try
         {
-            $token = $this->cardVault->tokenize($cardNumber);
+            $cardNumber = preg_replace('/[^0-9]/', '', $input['card']);
+
+            $input['card'] = $cardNumber;
+
+            $token = $this->cardVault->tokenize($input);
 
             return $token;
         }
@@ -55,48 +59,6 @@ class CardVault extends Base\Core
                 TraceCode::CARD_VAULT_REQUEST,
                 [
                     'message' => 'Failed to tokenize data'
-                ]
-            );
-
-            throw $e;
-        }
-    }
-
-    public function getTokenexToken($token)
-    {
-        try
-        {
-            $token = $this->cardVault->getTokenexToken($token);
-
-            return $token;
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->error(
-                TraceCode::CARD_VAULT_REQUEST,
-                [
-                    'message' => 'Failed to get tokenex token'
-                ]
-            );
-
-            throw $e;
-        }
-    }
-
-    public function getVaultTokenFromTokenexToken($tokenexToken)
-    {
-        try
-        {
-            $token = $this->cardVault->getVaultTokenFromTokenexToken($tokenexToken);
-
-            return $token;
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->error(
-                TraceCode::CARD_VAULT_REQUEST,
-                [
-                    'message' => 'Failed to fetch vault tokens - getVaultTokenFromTokenexToken'
                 ]
             );
 

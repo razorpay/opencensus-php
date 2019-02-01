@@ -5,6 +5,7 @@ namespace RZP\Services;
 use RZP;
 use Redis;
 use Swift_Mailer;
+use Razorpay\OAuth\Application;
 use Illuminate\Database\Connection;
 use Http\Mock\Client as MockHttplug;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -30,6 +31,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Models\BankTransfer;
+use RZP\Models\EntityOrigin;
 use RZP\Constants\Entity as E;
 use RZP\Models\Admin as Admin;
 use RZP\Models\VirtualAccount;
@@ -118,18 +120,6 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('razorx', function($app)
         {
             return new RazorXClient($app);
-        });
-
-        $this->app->singleton('card.tokenex', function($app)
-        {
-            $tokenexMock = $app['config']->get('applications.card_tokenex.mock');
-
-            if ($tokenexMock === true)
-            {
-                return new Mock\TokenEx($app);
-            }
-
-            return new CardVault($app);
         });
 
         $this->app->singleton('card.cardVault', function($app)
@@ -258,8 +248,6 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerMyOperator();
 
         $this->registerKubernetesClient();
-
-        $this->registerCustomSessionProvider();
     }
 
     /**
@@ -273,7 +261,6 @@ class ApiServiceProvider extends BaseServiceProvider
             'api.mutex',
             'bitly',
             'razorx',
-            'card.tokenex',
             'es',
             'exception.handler',
             'gateway',
@@ -477,6 +464,9 @@ class ApiServiceProvider extends BaseServiceProvider
             'subscription_registration' => SubscriptionRegistration\Entity::class,
 
             'contact'                   => Contact\Entity::class,
+
+            'entity_origin'             => EntityOrigin\Entity::class,
+            'application'               => Application\Entity::class,
         ]);
     }
 
@@ -633,15 +623,6 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('k8s_client', function($app)
         {
             return new KubernetesClient($app);
-        });
-    }
-
-    protected function registerCustomSessionProvider()
-    {
-        $manager = $this->app['session'];
-
-        $manager->extend('custom', function($app) {
-            return new CustomSessionHandler($app);
         });
     }
 }

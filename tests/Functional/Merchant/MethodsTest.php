@@ -6,10 +6,12 @@ use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class MethodsTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -89,6 +91,8 @@ class MethodsTest extends TestCase
 
         $this->assertEquals($content['netbanking'], true);
         $this->assertEquals($content['mobikwik'], true);
+
+        $this->assertEquals($content['card_networks']['DICL'], true);
     }
 
     public function testBulkMethodUpdateInvalidMerchantId()
@@ -274,5 +278,40 @@ class MethodsTest extends TestCase
         $this->fixtures->merchant->addFeatures([Feature\Constants::EDIT_METHODS]);
 
         $this->startTest();
+    }
+
+    public function testEnableDisableCardnetworks()
+    {
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'amex' => 1,
+                'card_networks' => [
+                    'dicl' => 0,
+                    'jcb'  => 0,
+                ]
+            ],
+        ];
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertTrue($merchantMethods->isAmexCardEnabled());
+
+        $this->assertFalse($merchantMethods->isJcbEnabled());
+
+        $this->assertFalse($merchantMethods->isDinersEnabled());
     }
 }

@@ -77,12 +77,15 @@ return [
                         'anchor'      => null,
                         'hour'        => 5,
                         'delay'       => 3,
+                        'org_id'      => '100000razorpay',
                     ],
                     [
                         'name'        => 'Basic T60',
                         'period'      => 'daily',
                         'interval'    => 1,
                         'delay'       => 60,
+                        'org_id'      => '100000razorpay',
+
                     ],
                 ]
             ],

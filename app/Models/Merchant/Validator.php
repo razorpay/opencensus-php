@@ -191,6 +191,11 @@ class Validator extends Base\Validator
         Methods\Entity::EMI => 'required|bool',
     ];
 
+    protected static $resetSettlementScheduleRules = [
+        'merchant_ids'   => 'required|sequential_array',
+        'merchant_ids.*' => 'required|alpha_num|size:14',
+    ];
+
     protected static $editConfigValidators = [
         'csv_email',
     ];
@@ -222,6 +227,10 @@ class Validator extends Base\Validator
         Constants::TO                    => 'integer',
         Constants::COUNT                 => 'integer|min:1|max:50',
         Constants::SKIP                  => 'integer',
+    ];
+
+    protected static $merchantPartnerStatusRules = [
+        'email' => 'required|email',
     ];
 
     protected static $bulkSyncBalanceRules = [

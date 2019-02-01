@@ -12,8 +12,8 @@ use RZP\Models\Schedule\Period;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::NAME                    => 'required|string|max:50',
-        Entity::CREDIT_AMOUNT           => 'required|integer|min:100',
+        Entity::NAME                    => 'required|alpha_dash|max:50',
+        Entity::CREDIT_AMOUNT           => 'sometimes|integer|min:0',
         Entity::CREDIT_TYPE             => 'required|in:amount',
         Entity::ITERATIONS              => 'sometimes|integer|min:1',
         Entity::CREDITS_EXPIRE          => 'sometimes|integer|in:0,1',
@@ -25,8 +25,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::NAME                    => 'sometimes|string|max:50',
-        Entity::CREDIT_AMOUNT           => 'sometimes|integer|min:100',
+        Entity::NAME                    => 'sometimes|alpha_dash|max:50',
+        Entity::CREDIT_AMOUNT           => 'sometimes|integer|min:0',
         Entity::CREDIT_TYPE             => 'sometimes|in:amount',
         Entity::ITERATIONS              => 'sometimes|integer|min:1',
         Entity::CREDITS_EXPIRE          => 'sometimes|integer|in:0,1',

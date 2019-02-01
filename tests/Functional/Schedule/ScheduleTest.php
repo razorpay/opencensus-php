@@ -32,6 +32,7 @@ class ScheduleTest extends TestCase
             'period'     => 'daily',
             'interval'   => 1,
             'delay'      => 60,
+            'org_id'     => 'org_100000razorpay',
         ]);
 
         $this->ba->adminAuth();
@@ -244,6 +245,47 @@ class ScheduleTest extends TestCase
         $this->ba->privateAuth();
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    public function testExpireCreditsDaily()
+    {
+        $this->ba->adminAuth();
+
+        $promotionAttributes = [
+            'credit_amount' => '1000',
+        ];
+
+        $promotion = $this->fixtures->create('promotion:onetime_daily', $promotionAttributes);
+
+        $couponAttributes = [
+            'entity_id'   => $promotion['id'],
+            'entity_type' => 'promotion',
+            'merchant_id' => '100000Razorpay',
+        ];
+
+        $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->applyCouponOnMerchant($coupon['code']);
+
+        $request = $this->testData['testExpireCredits'];
+
+        $time = Carbon::now(Timezone::IST);
+
+        $time->addDay(1);
+
+        Carbon::setTestNow($time);
+
+        $this->ba->cronAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $credits = $this->getLastEntity('credits', true);
+
+        $this->assertEquals($credits['value'], -1000);
+
+        Carbon::setTestNow();
     }
 
     public function testExpireCredits()

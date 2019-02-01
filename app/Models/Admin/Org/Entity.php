@@ -2,34 +2,39 @@
 
 namespace RZP\Models\Admin\Org;
 
-use App;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 use RZP\Constants\Table;
 use RZP\Models\Admin\Base;
-use RZP\Models\Admin\Admin;
 use RZP\Models\Base\Traits\RevisionableTrait;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\Entity
 {
     use SoftDeletes;
     use RevisionableTrait;
 
-    const AUTH_TYPE        = 'auth_type';
-    const BUSINESS_NAME    = 'business_name';
-    const DISPLAY_NAME     = 'display_name';
-    const EMAIL            = 'email';
-    const EMAIL_DOMAINS    = 'email_domains';
-    const ALLOW_SIGN_UP    = 'allow_sign_up';
-    const LOGIN_LOGO_URL   = 'login_logo_url';
-    const MAIN_LOGO_URL    = 'main_logo_url';
-    const INVOICE_LOGO_URL = 'invoice_logo_url';
-    const DELETED_AT       = 'deleted_at';
-    const CUSTOM_CODE      = 'custom_code';
-    const ADMIN            = 'admin';
-    const FROM_EMAIL       = 'from_email';
-    const SIGNATURE_EMAIL  = 'signature_email';
-    const CROSS_ORG_ACCESS = 'cross_org_access';
-    const DEFAULT_PRICING_PLAN_ID  = 'default_pricing_plan_id';
+    const AUTH_TYPE               = 'auth_type';
+    const BUSINESS_NAME           = 'business_name';
+    const DISPLAY_NAME            = 'display_name';
+    const EMAIL                   = 'email';
+    const EMAIL_DOMAINS           = 'email_domains';
+    const ALLOW_SIGN_UP           = 'allow_sign_up';
+    const LOGIN_LOGO_URL          = 'login_logo_url';
+    const MAIN_LOGO_URL           = 'main_logo_url';
+    const INVOICE_LOGO_URL        = 'invoice_logo_url';
+    const DELETED_AT              = 'deleted_at';
+    const CUSTOM_CODE             = 'custom_code';
+    const ADMIN                   = 'admin';
+    const FROM_EMAIL              = 'from_email';
+    const SIGNATURE_EMAIL         = 'signature_email';
+    const CROSS_ORG_ACCESS        = 'cross_org_access';
+    const DEFAULT_PRICING_PLAN_ID = 'default_pricing_plan_id';
+    /**
+     * Added to distinguish between regular heimdall orgs and restricted ones like SBI
+     * which need a custom admin view of transaction entities and some file upload
+     * functionality like disputes and emi files
+     */
+    const TYPE                    = 'type';
 
     const WORKFLOW_PERMISSIONS = 'workflow_permissions';
 
@@ -41,6 +46,11 @@ class Entity extends Base\Entity
     const RAZORPAY_ORG_ID = '100000razorpay';
     const HDFC_ORG_ID     = '6dLbNSpv5XbCOG';
     const BOB_ORG_ID      = '7ia1ttoyqIL8sw';
+
+    /**
+     * One of the types
+     */
+    const RESTRICTED      = 'restricted';
 
     protected static $sign = 'org';
 
@@ -72,6 +82,7 @@ class Entity extends Base\Entity
         self::FROM_EMAIL,
         self::SIGNATURE_EMAIL,
         self::DEFAULT_PRICING_PLAN_ID,
+        self::TYPE,
     ];
 
     protected $visible = [
@@ -94,6 +105,7 @@ class Entity extends Base\Entity
         self::PERMISSIONS,
         self::WORKFLOW_PERMISSIONS,
         self::DEFAULT_PRICING_PLAN_ID,
+        self::TYPE,
     ];
 
     protected $public = [
@@ -127,8 +139,9 @@ class Entity extends Base\Entity
     ];
 
     protected $defaults = [
-        self::CROSS_ORG_ACCESS         => false,
-        self::DEFAULT_PRICING_PLAN_ID  => null,
+        self::CROSS_ORG_ACCESS        => false,
+        self::DEFAULT_PRICING_PLAN_ID => null,
+        self::TYPE                    => null,
     ];
 
     protected $publicSetters = [
@@ -245,6 +258,11 @@ class Entity extends Base\Entity
     public function getDefaultPricingPlanId()
     {
         return $this->getAttribute(self::DEFAULT_PRICING_PLAN_ID);
+    }
+
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
     }
 
     public function isCrossOrgAccessEnabled()

@@ -408,7 +408,7 @@ trait Authorize
             'contact'    => $payment->getContact(),
             'amount'     => number_format(($payment->getAmount() / 100), 2),
             'wallet'     => $payment->getWallet(),
-            'merchant'   => $payment->merchant->getDbaName(),
+            'merchant'   => $payment->merchant->getBillingLabel(),
         ];
 
         // This is a hack to return direct method for IVR payments
@@ -421,6 +421,8 @@ trait Authorize
             {
                 $redirectUrl = $this->getPaymentRedirectTo3dsUrl();
             }
+
+            $response['redirect'] = $redirectUrl;
 
             $metaData = [
                 'issuer'     => $card->getIssuer(),
@@ -468,10 +470,10 @@ trait Authorize
                 'payment_id' => $payment->getPublicId(),
                 'next'       => $next,
                 'gateway'    => $response['gateway'],
-                'redirect'   => $redirectUrl,
                 'submit_url' => $request['url'],
                 'resend_url' => $resendUrl,
                 'metadata'   => $metaData,
+                'redirect'   => $redirectUrl,
             ];
         }
 
@@ -1478,7 +1480,12 @@ trait Authorize
      */
     protected function setAuthenticationGateway(Payment\Entity $payment, array & $gatewayInput)
     {
-        if (Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true)
+        //
+        // Keeping this condition for backward compatibility
+        // @todo: Remove the authorization gateway check once it's live
+        //
+        if ((Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true) or
+            ($payment->terminal->getCapability() === Terminal\Capability::AUTHORIZE))
         {
             $method = $payment->getMethod();
 
@@ -1528,7 +1535,6 @@ trait Authorize
                     }
 
                     $gatewayInput['authenticate']['gateway'] = $eSignerGateway;
-
                     break;
 
                 case Payment\Method::CARD:
@@ -1536,30 +1542,26 @@ trait Authorize
                     if (($payment->isRecurring() === false) or
                         ($payment->isRecurringTypeInitial() === true))
                     {
-                        if ($payment->getGateway() === Payment\Gateway::HITACHI)
+                        $gateway = Payment\Gateway::MPI_BLADE;
+                        $authType = '3ds';
+
+                        if ($this->canRunIvrFlow($payment) === true)
                         {
+                            $authType = 'otp';
                             $gateway = Payment\Gateway::MPI_BLADE;
-                            $authType = '3ds';
-
-                            if ($this->canRunIvrFlow($payment) === true)
-                            {
-                                $authType = 'otp';
-                                $gateway = Payment\Gateway::MPI_BLADE;
-                            }
-
-                            if ($this->canRunAxisExpressPay($payment) === true)
-                            {
-                                $authType = 'otp';
-                                $gateway = Payment\Gateway::MPI_ENSTAGE;
-                            }
-
-                            $gatewayInput['authenticate'] = [
-                                'gateway'   => $gateway,
-                                'auth_type' => $authType,
-                            ];
                         }
-                    }
 
+                        if ($this->canRunAxisExpressPay($payment) === true)
+                        {
+                            $authType = 'otp';
+                            $gateway = Payment\Gateway::MPI_ENSTAGE;
+                        }
+
+                        $gatewayInput['authenticate'] = [
+                            'gateway'   => $gateway,
+                            'auth_type' => $authType,
+                        ];
+                    }
                     break;
             }
         }
@@ -4984,8 +4986,7 @@ trait Authorize
     {
         $merchant = $payment->merchant;
 
-        if (($this->app['basicauth']->isPrivateAuth() === false) or
-            ($merchant->isFeatureEnabled(Feature\Constants::REDIRECT_S2S_AUTHORIZE) === false))
+        if ($this->app['basicauth']->isPrivateAuth() === false)
         {
             return null;
         }
@@ -5028,7 +5029,7 @@ trait Authorize
 
         $this->cache->put($key, $encryptedPayload, self::REDIRECT_CACHE_TTL);
 
-        $redirectUrl = $this->route->getUrl('payment_redirect_to_authoize', ['id' => $trackId]);
+        $redirectUrl = $this->route->getUrl('payment_redirect_to_authorize_get', ['id' => $trackId]);
 
         $data['type'] = 'first';
 
@@ -5087,6 +5088,8 @@ trait Authorize
         {
             $this->setCardNumberAndCvv($inputDetails);
         }
+
+        $this->setPreferredAuthIfApplicable($payment);
 
         $resource = $this->getCallbackMutexResource($payment);
 
