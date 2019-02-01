@@ -373,7 +373,7 @@ return [
                 'reason_code' => 'LOW_SUCCESS_RATE',
                 'method'      => 'card',
                 'issuer'      => 'HDFC',
-                'source'      => 'other'
+                'source'      => 'other',
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes'
@@ -391,7 +391,8 @@ return [
                 'gateway'     => 'axis_migs',
                 'reason_code' => 'LOW_SUCCESS_RATE',
                 'method'      => 'card',
-                'source'      => 'other'
+                'source'      => 'other',
+                'acquirer'    => 'AXIS',
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes'
@@ -409,7 +410,8 @@ return [
                 'reason_code' => 'LOW_SUCCESS_RATE',
                 'method'      => 'card',
                 'network'     => 'DICL',
-                'source'      => 'other'
+                'source'      => 'other',
+                'acquirer'    => 'AXIS',
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes'
@@ -485,6 +487,7 @@ return [
                 'reason_code' => 'LOW_SUCCESS_RATE',
                 'method'      => 'card',
                 'issuer'      => 'HDFC',
+                'acquirer'    => 'HDFC',
                 'card_type'   => 'debit',
                 'network'     => 'VISA',
                 'source'      => 'other'
@@ -506,6 +509,7 @@ return [
                 'reason_code' => 'LOW_SUCCESS_RATE',
                 'method'      => 'card',
                 'issuer'      => 'HDFC',
+                'acquirer'    => 'HDFC',
                 'source'      => 'other'
             ],
             'method' => 'POST',
@@ -525,6 +529,7 @@ return [
                 'reason_code' => 'LOW_SUCCESS_RATE',
                 'method'      => 'card',
                 'issuer'      => 'HDFC',
+                'acquirer'    => 'HDFC',
                 'network'     => 'VISA',
                 'source'      => 'other'
             ],
@@ -544,7 +549,8 @@ return [
                 'gateway'     => 'ALL',
                 'reason_code' => 'LOW_SUCCESS_RATE',
                 'method'      => 'card',
-                'source'      => 'other'
+                'source'      => 'other',
+                'acquirer'    => 'UNKNOWN',
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes'
