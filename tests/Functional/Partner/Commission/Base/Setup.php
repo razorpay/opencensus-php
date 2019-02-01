@@ -58,17 +58,19 @@ class Setup
 
     public function attachSubmerchant(array $data, array & $output)
     {
+        $merchant = $this->fixtures->create('merchant');
+
         $accessMapArray = [
             'entity_type'     => 'application',
             'entity_id'       => $output['application_id'],
-            'merchant_id'     => $data['merchant_id'],
+            'merchant_id'     => $merchant->getId(),
             'entity_owner_id' => $data['partner_id'],
         ];
 
         $this->fixtures->create('merchant_access_map', $accessMapArray);
     }
 
-    public function defineConfigs(array $data, array & $output)
+    public function defineConfig(array $data, array & $output)
     {
         if ($data['type'] === 'partner')
         {
@@ -78,14 +80,37 @@ class Setup
         else
         {
             $data['entity_type'] = 'merchant';
-            $data['entity_id'] = $data['submerchant_id'];
+            $data['entity_id'] = $data['merchant_id'];
             $data['origin_type'] = 'application';
             $data['origin_id'] = $output['application_id'];
         }
 
-        $data = array_merge($data, $this->getDefaultPartnerConfig());
+        unset($data['type']);
 
-        $this->fixtures->create('partnr_config', $data);
+        $data = array_merge($this->getDefaultPartnerConfig(), $data);
+
+        $this->fixtures->create('partner_config', $data);
+    }
+
+    public function createPayment(array $data, array & $output)
+    {
+        $payment = $this->fixtures->create('payment:authorized');
+
+        if (isset($data['auth']))
+        {
+            $attributes = $this->getEntityOriginData();
+
+            $auth = $data['auth'];
+
+            unset($data['auth']);
+            $attributes = array_merge($attributes, $data);
+
+            switch($auth)
+            {
+                case 'partner':
+                    $this->fixtures->create('entity_origin', $attributes);
+            }
+        }
     }
 
     protected function getDefaultCreatePartnerData(): array
@@ -108,8 +133,18 @@ class Setup
     protected function getDefaultPartnerConfig()
     {
         return [
-            'default_plan_id' => '',
+            'default_plan_id' => '1hDYlICobzOCYt',
             'implicit_plan_id' => '',
+        ];
+    }
+
+    protected function getEntityOriginData()
+    {
+        return [
+            'entity_id'   => 'RandomPayment0',
+            'entity_type' => 'payment',
+            'origin_id'   => 'RandomApp10000',
+            'origin_type' => 'application',
         ];
     }
 }

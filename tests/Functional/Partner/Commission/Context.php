@@ -23,7 +23,6 @@ return [
             ],
             'define_config' => [
                 'type'             => 'partner',
-                'partner_id'       => 'BptVjGnFv6ITBm',
                 'implicit_plan_id' => '180PartnerPlan',
             ],
             'create_payment' => [
