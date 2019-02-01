@@ -1906,7 +1906,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         if ($settledBy === null)
         {
-            $settledBy = "Razorpay";
+            $settledBy = 'Razorpay';
         }
 
         return $settledBy;
@@ -1989,7 +1989,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             case Method::NETBANKING:
                 return [$method, $this->getBankName()];
             case Method::WALLET:
-                return [$method, ucfirst($this->getWallet())];
+                return [$method, Processor\Wallet::getName($this->getWallet())];
             case Method::UPI:
                 return [$method, $this->getVpa()];
             case Method::AEPS:
