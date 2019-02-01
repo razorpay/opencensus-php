@@ -80,8 +80,8 @@ class CreateBankAccounts extends Migration
             $table->char(BankAccount::BENEFICIARY_MOBILE, 32)
                   ->nullable();
 
-            $table->string(BankAccount::FTS_ACCOUNT_ID, 255)
-                ->nullable();
+            $table->integer(BankAccount::FTS_ACCOUNT_ID)
+                  ->nullable();
 
             $table->integer(BankAccount::CREATED_AT);
             $table->integer(BankAccount::UPDATED_AT);

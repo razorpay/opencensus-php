@@ -47,7 +47,7 @@ class CreateVpas extends Migration
 
             $table->index(Entity::MERCHANT_ID);
 
-            $table->string(Entity::FTS_ACCOUNT_ID, 255)
+            $table->integer(Entity::FTS_ACCOUNT_ID)
                   ->nullable();
 
             $table->index(Entity::CREATED_AT);

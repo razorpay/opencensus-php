@@ -4675,7 +4675,7 @@ ALTER VIEW qubole_terminals_view AS
     SELECT id, merchant_id, category, network_category, enabled, gateway, gateway_merchant_id, gateway_terminal_id, gateway_acquirer, card, netbanking, upi, emandate, aeps, emi, recurring, capability, international, type, created_at, updated_at, deleted_at FROM terminal;
 
 ALTER TABLE vpas
-    ADD COLUMN fts_account_id VARCHAR(255) DEFAULT NULL AFTER merchant_id;
+    ADD COLUMN fts_account_id INTEGER DEFAULT NULL AFTER merchant_id;
 
 ALTER TABLE bank_accounts
-    ADD COLUMN fts_account_id VARCHAR(255) DEFAULT NULL AFTER beneficiary_mobile;
+    ADD COLUMN fts_account_id INTEGER DEFAULT NULL AFTER beneficiary_mobile;
