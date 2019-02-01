@@ -687,12 +687,12 @@ class Calculator
                             $this->getCommissions());
 
         return [
-            'source_type'    => $this->getSource()->getId()         ?? null,
-            'source_id'      => $this->getSource()->getEntityName() ?? null,
-            'submerchant'    => $this->getSubMerchant()->getId()    ?? null,
-            'partner'        => $this->getPartner()->getId()        ?? null,
-            'partner_app'    => $this->getPartnerApp()->getId()     ?? null,
-            'partner_config' => $this->getPartnerConfig()->getId()  ?? null,
+            'source_type'    => optional($this->getSource())->getId()         ?? null,
+            'source_id'      => optional($this->getSource())->getEntityName() ?? null,
+            'submerchant'    => optional($this->getSubMerchant())->getId()    ?? null,
+            'partner'        => optional($this->getPartner())->getId()        ?? null,
+            'partner_app'    => optional($this->getPartnerApp())->getId()     ?? null,
+            'partner_config' => optional($this->getPartnerConfig())->getId()  ?? null,
             'commissions'    => $commissionIds,
         ];
     }
