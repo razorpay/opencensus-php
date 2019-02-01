@@ -23,7 +23,7 @@ class Wallet
 
     public static $fullName = array(
         self::MOBIKWIK      => 'Mobikwik',
-        self::OLAMONEY      => 'Olamoney',
+        self::OLAMONEY      => 'Olamoney (Postpaid + Wallet)',
         self::PAYTM         => 'Paytm',
         self::PAYUMONEY     => 'Payumoney',
         self::PAYZAPP       => 'Payzapp',

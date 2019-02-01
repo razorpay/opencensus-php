@@ -24,6 +24,28 @@ class CategoryCode
     const U005 = 'U005'; //'Utility Bill payment mobile telephone broadband';
     const U006 = 'U006'; //'Utility Bill payment water';
 
+    protected static $catCodeToDescriptionMapping = [
+      self::A001 => 'API mandate',
+      self::C001 => 'B2B Corporate',
+      self::B001 => 'Bill Payment Credit card',
+      self::D001 => 'Destination Bank Mandate',
+      self::E001 => 'Education fees',
+      self::I001 => 'Insurance Premium',
+      self::I002 => 'Insurance other payment',
+      self::L099 => 'Legacy One crore and Above',
+      self::L002 => 'Loan amount security',
+      self::L001 => 'Loan instalment payment',
+      self::M001 => 'Mutual Fund Payment',
+      self::U099 => 'Others',
+      self::F001 => 'Subscription Fees',
+      self::T002 => 'TReDS',
+      self::T001 => 'Tax Payment',
+      self::U001 => 'Utility Bill Payment Electricity',
+      self::U003 => 'Utility Bill payment Gas Supply Cos',
+      self::U005 => 'Utility Bill payment mobile telephone broadband',
+      self::U006 => 'Utility Bill payment water',
+    ];
+
     protected static $mccToCategoryCodeMapping = [
         '6012' => self::L001,
         '6050' => self::B001,
@@ -52,4 +74,8 @@ class CategoryCode
         return self::A001;
     }
 
+    public static function getCategoryDescriptionFromCode($code)
+    {
+        return self::$catCodeToDescriptionMapping[$code];
+    }
 }
