@@ -175,26 +175,43 @@ abstract class EntityProcessor extends Base\Core
         $attemptStatus = $this->fta->getStatus();
         $attemptFailureReason = $this->fta->getFailureReason();
 
-        if ($this->source->getEntity() === Entity::PAYOUT)
+        try
         {
-            (new Payout\Core)->updateStatusAfterFtaRecon($this->source, $attemptStatus, $attemptFailureReason);
+            if ($this->source->getEntity() === Entity::PAYOUT)
+            {
+                (new Payout\Core)->updateStatusAfterFtaRecon($this->source, $attemptStatus, $attemptFailureReason);
 
-            return;
+                return;
+            }
+
+            if ($this->source->getEntity() === Entity::REFUND)
+            {
+                (new Refund\Service)->updateStatusAfterFtaRecon($this->source, $attemptStatus, $attemptFailureReason);
+
+                return;
+            }
+
+            if ($this->source->getEntity() === Entity::FUND_ACCOUNT_VALIDATION)
+            {
+                (new FundAccount\Validation\Core)->updateStatusAfterFtaRecon(
+                    $this->source,
+                    $attemptStatus,
+                    $attemptFailureReason);
+
+                return;
+            }
         }
-
-        if ($this->source->getEntity() === Entity::REFUND)
+        catch (\Exception $ex)
         {
-            (new Refund\Service)->updateStatusAfterFtaRecon($this->source, $attemptStatus, $attemptFailureReason);
-
-            return;
-        }
-
-        if ($this->source->getEntity() === Entity::FUND_ACCOUNT_VALIDATION)
-        {
-            (new FundAccount\Validation\Core)->updateStatusAfterFtaRecon(
-                $this->source,
-                $attemptStatus,
-                $attemptFailureReason);
+            $this->trace->traceException($ex,
+                                         Trace::CRITICAL,
+                                         TraceCode::FUND_TRANSFER_SOURCE_UPDATE_RECON_FAILED,
+                                         [
+                                             'attempt_status'           => $attemptStatus,
+                                             'attempt_failure_reason'   => $attemptFailureReason,
+                                             'source_id'                => $this->source->getId(),
+                                             'source_type'              => $this->source->getEntity(),
+                                         ]);
 
             return;
         }

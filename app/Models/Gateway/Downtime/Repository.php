@@ -25,6 +25,7 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = array(
         Entity::GATEWAY     => 'sometimes|string|max:255',
         Entity::ISSUER      => 'sometimes|string|max:50',
+        Entity::ACQUIRER    => 'sometimes|string|max:30',
         Entity::METHOD      => 'sometimes|string|max:30',
         Entity::BEGIN       => 'sometimes|integer',
         Entity::END         => 'required_with:begin|integer',
@@ -35,6 +36,7 @@ class Repository extends Base\Repository
     const KEY_OPERATOR_MAP = [
         Entity::GATEWAY     => '=',
         Entity::ISSUER      => '=',
+        Entity::ACQUIRER    => '=',
         Entity::METHOD      => '=',
         Entity::SOURCE      => '=',
         Entity::BEGIN       => '<=',

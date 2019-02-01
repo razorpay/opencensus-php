@@ -159,7 +159,10 @@ class GatewayDowntimeSorter extends Terminal\Sorter
             return $terminal->getId() === $downtime->getTerminalId();
         }
 
-        return (($downtime->getGateway() === Downtime\Entity::ALL) or
-                ($terminal->getGateway() === $downtime->getGateway()));
+        return ((($downtime->getGateway() === Downtime\Entity::ALL) or
+                 ($terminal->getGateway() === $downtime->getGateway())) and
+                (($downtime->getAcquirer() === Downtime\Entity::ALL) or
+                 ($downtime->getAcquirer() === Downtime\Entity::UNKNOWN) or
+                 ($terminal->getGatewayAcquirer() === $downtime->getAcquirer())));
     }
 }

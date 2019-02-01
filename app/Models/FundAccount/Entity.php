@@ -110,6 +110,31 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACTIVE);
     }
 
+    public function getAccountDestinationAsText(): string
+    {
+        switch ($this->getAccountType())
+        {
+            case Type::BANK_ACCOUNT:
+                return mask_except_last4($this->account->getAccountNumber());
+
+            case Type::VPA:
+                return $this->account->getAddress();
+        }
+    }
+
+    public function getAccountTypeAsText(): string
+    {
+        switch ($this->getAccountType())
+        {
+            case Type::VPA:
+                return 'VPA';
+
+            // Generic format for all other types, but be explicit.
+            case Type::BANK_ACCOUNT:
+                return ucfirst(str_replace('_', ' ', $this->getAccountType()));
+        }
+    }
+
     // ------------- End Getters -------------
 
     // --------------- Setters ---------------

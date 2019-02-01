@@ -29,6 +29,30 @@ return [
         'issuer'      => 'ALL',
     ],
 
+    'hdfcAllNetworkAllIssuerAllAcquirerDowntimeData' => [
+        'gateway'     => 'hdfc',
+        'reason_code' => 'LOW_SUCCESS_RATE',
+        'network'     => 'ALL',
+        'issuer'      => 'ALL',
+        'acquirer'    => 'ALL',
+    ],
+
+    'hdfcAllNetworkAllIssuerHdfcAcquirerDowntimeData' => [
+        'gateway'     => 'hdfc',
+        'reason_code' => 'LOW_SUCCESS_RATE',
+        'network'     => 'ALL',
+        'issuer'      => 'ALL',
+        'acquirer'    => 'hdfc',
+    ],
+
+    'allGatewayAllIssuerAllNetworkHdfcAcquirerData' => [
+        'gateway'     => 'ALL',
+        'reason_code' => 'LOW_SUCCESS_RATE',
+        'network'     => 'ALL',
+        'issuer'      => 'ALL',
+        'acquirer'    => 'hdfc',
+    ],
+
     'hdfcMastercardNetworkData' => [
         'gateway'     => 'hdfc',
         'reason_code' => 'LOW_SUCCESS_RATE',

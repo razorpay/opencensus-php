@@ -62,6 +62,8 @@ class Reporting implements ExternalService
 
     protected $headers;
 
+    protected  $app;
+
     /**
      * @var \RZP\Http\BasicAuth\BasicAuth
      */
@@ -71,6 +73,7 @@ class Reporting implements ExternalService
     {
         $app = App::getFacadeRoot();
 
+        $this->app    = $app;
         $this->config = $app['config']['applications.reporting'];
         $this->trace  = $app['trace'];
         $this->mode   = $app['rzp.mode'];
@@ -294,6 +297,8 @@ class Reporting implements ExternalService
 
         $response = $this->createScheduleOnReportingService($reportingServiceRequest);
 
+        $apiResponse = null;
+
         // In case reporting service returns error, then we dont create schedule/schedule task
         if (isset($response['error']) === false)
         {
@@ -302,10 +307,16 @@ class Reporting implements ExternalService
             // Need to store entity_id without sign.
             $scheduleRequest[ScheduleTask\Entity::ENTITY_ID] = $this->generateEntityId($response['id']);
 
-            $this->createScheduleOnApi($scheduleRequest);
+            $apiResponse = $this->createScheduleOnApi($scheduleRequest);
         }
 
-        return $response;
+        if (empty($apiResponse) === true)
+        {
+            throw new Exception\DbQueryException(
+                'Failed to create schedule');
+        }
+
+        return $apiResponse;
     }
 
     public function fetchScheduleMultiple(array $input): array
@@ -441,7 +452,9 @@ class Reporting implements ExternalService
             ScheduleTask\Entity::SCHEDULE_ID => $input[ScheduleTask\Entity::SCHEDULE_ID],
         ];
 
-        (new ScheduleTask\Core)->createForExternalService($merchant, $scheduleTaskRequest);
+        $scheduleTask = (new ScheduleTask\Core)->createForExternalService($merchant, $scheduleTaskRequest);
+
+        return $scheduleTask->toArrayPublic();
     }
 
     protected function createScheduleOnReportingService(array $input): array
@@ -608,6 +621,8 @@ class Reporting implements ExternalService
         $hasSubscriptionsTag           = in_array(Feature::SUBSCRIPTIONS, $features, true);
         $hasGenericNotesTag            = in_array(Feature::REPORTING_GENRERIC_NOTES, $features, true);
 
+        $merchantInvoiceExperimentValue = $this->app->razorx->getTreatment($merchant, 'reporting_merchant_invoice', $this->mode);
+
         $items = $items->filter(function ($value, $key) use (
             $hasPlTag,
             $hasMarketplaceTag,
@@ -654,6 +669,12 @@ class Reporting implements ExternalService
                      ($value['consumer'] === Account::SHARED_ACCOUNT))
             {
                 return $hasGenericNotesTag;
+            }
+            else if (($value['name'] === 'Merchant Invoice') and
+                     ($value['type'] === null) and
+                     ($value['consumer'] === Account::SHARED_ACCOUNT))
+            {
+                return $merchantInvoiceExperimentValue;
             }
 
             return true;

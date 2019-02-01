@@ -1389,8 +1389,10 @@ class BasicAuth
         {
             $this->authCreds->setMode($mode);
 
-            $this->mode = $this->authCreds->getMode();
+            $mode = $this->authCreds->getMode();
         }
+
+        $this->mode = $mode;
 
         $this->app['rzp.mode'] = $mode;
     }

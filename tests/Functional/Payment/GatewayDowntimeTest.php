@@ -187,7 +187,8 @@ class GatewayDowntimeTest extends TestCase
                 'gateway'     => 'axis_migs',
                 'reason_code' => 'LOW_SUCCESS_RATE',
                 'method'      => 'card',
-                'source'      => 'other'
+                'source'      => 'other',
+                'acquirer'    => 'axis',
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes'

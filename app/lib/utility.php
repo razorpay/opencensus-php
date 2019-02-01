@@ -751,3 +751,17 @@ function getRelativeLuminanceOfColorWithWhite($color): float
 
     return (0.2126 * $redGamma) + (0.7152 * $greenGamma) + (0.0722 * $blueGamma);
 }
+
+if (! function_exists('dashboard_url'))
+{
+    /**
+     * Returns dashboard url for given path, for current environment.
+     * @param  string $path
+     * @return string
+     */
+    function dashboard_url(string $path = ''): string
+    {
+        // Domain value from config includes trailing / and hence strips leading / from @path argument if it exists.
+        return config('applications.dashboard.url') . str_after($path, '/');
+    }
+}

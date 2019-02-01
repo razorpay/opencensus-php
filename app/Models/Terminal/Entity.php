@@ -660,7 +660,14 @@ class Entity extends Base\PublicEntity
 
     protected function getBankingTypesAttribute()
     {
-        return BankingType::getBankingTypes($this->getAttribute(self::CORPORATE));
+        $corporate = $this->getAttribute(self::CORPORATE);
+
+        if ($corporate === null)
+        {
+            return;
+        }
+
+        return BankingType::getBankingTypes($corporate);
     }
 
     // ---------------------- END ACCESSORS ----------------------

@@ -145,6 +145,11 @@ class Constants
      */
     const DISABLE_REFUNDS               = 'disable_refunds';
 
+    /**
+     * Makes `receipt` a mandatory field for invoice creation
+     */
+    const INVOICE_RECEIPT_MANDATORY     = 'invoice_receipt_mandatory';
+
     // Different actions for feature activation flow
     const CREATE           = 'create';
     const UPDATE           = 'update';
@@ -286,6 +291,7 @@ class Constants
         self::S2S_OTP_JSON                    => true,
         self::FUND_ACCOUNT_VALIDATIONS        => true,
         self::DISABLE_REFUNDS                 => true,
+        self::INVOICE_RECEIPT_MANDATORY       => true,
     ];
 
     // Entity type constants
@@ -355,19 +361,24 @@ class Constants
             'display_name'  => 'Report V2',
             'documentation' => '',
         ],
-        self::ES_ON_DEMAND => [
+        self::ES_ON_DEMAND              => [
             'feature'       => self::ES_ON_DEMAND,
             'display_name'  => 'On demand Payout',
             'documentation' => '',
         ],
-        self::PL_FIRST_MIN_AMOUNT => [
+        self::PL_FIRST_MIN_AMOUNT       => [
             'feature'       => self::PL_FIRST_MIN_AMOUNT,
             'display_name'  => 'Partial payments: minimum first amount',
             'documentation' => '',
         ],
-        self::DISABLE_REFUNDS => [
+        self::DISABLE_REFUNDS           => [
             'feature'       => self::DISABLE_REFUNDS,
             'display_name'  => 'Disable Refund Operations',
+            'documentation' => '',
+        ],
+        self::INVOICE_RECEIPT_MANDATORY => [
+            'feature'       => self::INVOICE_RECEIPT_MANDATORY,
+            'display_name'  => 'Mandatory invoice receipt field',
             'documentation' => '',
         ],
     ];

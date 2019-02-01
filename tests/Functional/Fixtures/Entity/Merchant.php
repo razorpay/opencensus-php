@@ -329,7 +329,7 @@ class Merchant extends Base
     {
         $cardNetworks = Network::getEnabledCardNetworks(Network::DEFAULT_CARD_NETWORKS);
 
-        $cardNetworks[strtoupper($network)] = true;
+        $cardNetworks[strtoupper($network)] = 1;
 
         $hexValue = Network::getHexValue($cardNetworks);
 
@@ -340,7 +340,7 @@ class Merchant extends Base
     {
         $cardNetworks = Network::getEnabledCardNetworks(Network::DEFAULT_CARD_NETWORKS);
 
-        $cardNetworks[strtoupper($network)] = false;
+        $cardNetworks[strtoupper($network)] = 0;
 
         $hexValue = Network::getHexValue($cardNetworks);
 

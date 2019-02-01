@@ -660,6 +660,14 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
     ];
 
+    protected static $enachNpciNetbankingTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:enach_npci_netbanking',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE         => 'required|string',
+        Entity::TYPE                        => 'required|array',
+    ];
+
     protected static $editWalletAirtelmoneyTerminalRules = [
         Entity::GATEWAY                     => 'required|in:wallet_airtelmoney',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',

@@ -11,6 +11,7 @@ class Entity extends Base\PublicEntity
     const ID            = 'id';
     const GATEWAY       = 'gateway';
     const ISSUER        = 'issuer';
+    const ACQUIRER      = 'acquirer';
     const CARD_TYPE     = 'card_type';
     const NETWORK       = 'network';
     const METHOD        = 'method';
@@ -42,6 +43,7 @@ class Entity extends Base\PublicEntity
         self::COMMENT,
         self::REASON_CODE,
         self::ISSUER,
+        self::ACQUIRER,
         self::SCHEDULED,
         self::PARTIAL,
         self::CARD_TYPE,
@@ -54,6 +56,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::GATEWAY,
         self::ISSUER,
+        self::ACQUIRER,
         self::CARD_TYPE,
         self::NETWORK,
         self::METHOD,
@@ -74,6 +77,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY,
         self::METHOD,
         self::ISSUER,
+        self::ACQUIRER,
         self::NETWORK,
         self::CARD_TYPE,
         self::BEGIN,
@@ -97,6 +101,7 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::GATEWAY       => self::ALL,
         self::ISSUER        => self::UNKNOWN,
+        self::ACQUIRER      => self::UNKNOWN,
         self::TERMINAL_ID   => null,
         self::CARD_TYPE     => self::UNKNOWN,
         self::NETWORK       => self::UNKNOWN,
@@ -322,6 +327,11 @@ class Entity extends Base\PublicEntity
     public function getIssuer()
     {
         return $this->getAttribute(self::ISSUER);
+    }
+
+    public function getAcquirer()
+    {
+        return $this->getAttribute(self::ACQUIRER);
     }
 
     public function getReasonCode()
