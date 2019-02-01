@@ -866,4 +866,99 @@ class GatewayDowntimeTest extends TestCase
             $this->commonAlertUPIWebHookTestHandler();
         }
     }
+
+    public function testVajraAlertUPIWebhookWithoutTerminalDowntime()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create("terminal:shared_upi_mindgate_terminal");
+
+        // Create alert for gateway + terminal
+
+        array_set(
+            $this->testData[__FUNCTION__],
+            'request.content.message',
+            $this->testData[__FUNCTION__]['messageFor']['withTerminal']
+        );
+
+        array_set(
+            $this->testData[__FUNCTION__],
+            'response',
+            $this->testData[__FUNCTION__]['downtimeResponseWithTerminal']
+        );
+
+        $responseDataArray = $this->startTest();
+
+        $this->assertNotNull($responseDataArray[0]['terminal_id']);
+
+        $downtimeWithTerminalId = $responseDataArray[0]['id'];
+
+        // Create alert for gateway
+
+        array_set(
+            $this->testData[__FUNCTION__],
+            'request.content.message',
+            $this->testData[__FUNCTION__]['messageFor']['withoutTerminal']
+        );
+
+        array_set(
+            $this->testData[__FUNCTION__],
+            'response',
+            $this->testData[__FUNCTION__]['downtimeResponseWithoutTerminal']
+        );
+
+        $responseDataArray = $this->startTest();
+
+        $this->assertNull($responseDataArray[0]['terminal_id']);
+
+        $downtimeWithoutTerminalId = $responseDataArray[0]['id'];
+
+        // Check if seperate downtimes created
+
+        $this->assertNotEquals($downtimeWithTerminalId, $downtimeWithoutTerminalId);
+
+        // Resolve alert for gateway
+
+        $this->testData[__FUNCTION__]['request']['content']['state'] = 'ok';
+
+        $this->startTest();
+
+        $downtimeWithoutTerminalEntity = $this->getEntityById('gateway_downtime', $downtimeWithoutTerminalId, true);
+
+        $downtimeWithTerminalEntity = $this->getEntityById('gateway_downtime', $downtimeWithTerminalId, true);
+
+        // Check end times
+
+        $this->assertNotNull($downtimeWithoutTerminalEntity['end']);
+
+        $this->assertNull($downtimeWithTerminalEntity['end']);
+
+        // Resolve alert for gateway + terminal
+
+        array_set(
+            $this->testData[__FUNCTION__],
+            'request.content.message',
+            $this->testData[__FUNCTION__]['messageFor']['withTerminal']
+        );
+
+        array_set(
+            $this->testData[__FUNCTION__],
+            'response',
+            $this->testData[__FUNCTION__]['downtimeResponseWithTerminal']
+        );
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $downtimeWithoutTerminalEntity = $this->getEntityById('gateway_downtime', $downtimeWithoutTerminalId, true);
+
+        $downtimeWithTerminalEntity = $this->getEntityById('gateway_downtime', $downtimeWithTerminalId, true);
+
+        // Check end times
+
+        $this->assertNotNull($downtimeWithoutTerminalEntity['end']);
+
+        $this->assertNotNull($downtimeWithTerminalEntity['end']);
+    }
 }
