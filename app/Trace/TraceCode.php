@@ -1579,7 +1579,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ORIGIN_SET_FAILED                   = 'ORIGIN_SET_FAILED';
     const ORIGIN_INVALID_TYPE                 = 'ORIGIN_INVALID_TYPE';
 
-
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',

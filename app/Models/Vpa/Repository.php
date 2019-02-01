@@ -28,7 +28,7 @@ class Repository extends Base\Repository
     public function getVPAById(string $vpaId)
     {
         return $this->newQuery()
-            ->where(Entity::ID, $vpaId)
-            ->first();
+                    ->where(Entity::ID, $vpaId)
+                    ->first();
     }
 }

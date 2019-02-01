@@ -1,21 +1,20 @@
 <?php
 
-namespace RZP\Services;
+namespace RZP\Services\FTS;
 
 use Requests;
-use RZP\Exception;
-use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 
-class FTS
+use RZP\Exception;
+use RZP\Trace\TraceCode;
+
+class Base
 {
     protected $trace;
 
     protected $config;
 
     protected $baseUrl;
-
-    protected $mode;
 
     protected $key;
 
@@ -30,10 +29,10 @@ class FTS
     protected $auth;
 
     const FundAccountBaseURL  = '/accounts';
-    const FundTransferBaseURL = '/fund_transfer';
+    const FundTransferBaseURL = '/transfer';
 
     const URLS = [
-        'register'              => 'register',
+        'register'              => 'registration',
         'status'                => 'status',
         'request'               => 'request',
         'attempt'               => 'attempt',
@@ -41,7 +40,6 @@ class FTS
 
     // Headers
     const ACCEPT        = 'Accept';
-    const X_MODE        = 'X-Mode';
     const ADMIN_EMAIL   = 'X-Dashboard-Admin-Email';
     const CONTENT_TYPE  = 'Content-Type';
     const X_REQUEST_ID  = 'X-Request-ID';
@@ -49,7 +47,7 @@ class FTS
     const REQUEST_TIMEOUT = 60;
 
     /**
-     * FTS constructor.
+     * FTS Base constructor.
      *
      * @param $app
      */
@@ -60,8 +58,6 @@ class FTS
         $this->config = $app['config']->get('applications.fts');
 
         $this->baseUrl = $this->config['url'];
-
-        $this->mode = $app['rzp.mode'];
 
         $this->request = $app['request'];
 
@@ -75,43 +71,20 @@ class FTS
     }
 
     /**
-     * @param array $input
-     * @param bool  $throwExceptionOnFailure
-     *
-     * @return array
-     */
-    public function createFundAccount(array $input, bool $throwExceptionOnFailure = false): array
-    {
-        //TODO: How to handle update?
-        return $this->createAndSendRequest(self::FundAccountBaseURL, 'POST', $input, $throwExceptionOnFailure);
-    }
-
-    /**
-     * @param array $input
-     * @param bool  $throwExceptionOnFailure
-     *
-     * @return array
-     */
-    public function registerFundAccount(array $input, bool $throwExceptionOnFailure = false): array
-    {
-        return $this->createAndSendRequest(self::FundAccountBaseURL . '/' . self::URLS['register'], 'POST', $input, $throwExceptionOnFailure);
-    }
-
-    /**
      * Creates and Sends the Request
      * to FTS endpoint.
+     *
      * @param string $endpoint
      * @param string $method
-     * @param array  $data
-     * @param bool   $throwExceptionOnFailure
-     *
+     * @param array $data
      * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
      */
     protected function createAndSendRequest(
         string $endpoint,
         string $method,
-        array $data = [],
-        bool $throwExceptionOnFailure = false): array
+        array $data = []): array
     {
         $request = $this->generateRequest($endpoint, $method, $data);
 
@@ -121,11 +94,43 @@ class FTS
             'response' => $response->body
         ]);
 
-        $decodedResponse = json_decode($response->body, true);
+        return $this->parseResponse($response);
+    }
 
-        $this->trace->info(TraceCode::FTS_RESPONSE, $decodedResponse ?? []);
+    /**
+     * Generates request using the given params
+     *
+     * @param string $endpoint
+     * @param string $method
+     * @param array  $data
+     *
+     * @return array
+     */
+    protected function generateRequest(string $endpoint, string $method, array $data): array
+    {
+        $url = $this->baseUrl . $endpoint;
 
-        return $this->parseResponse($response, $throwExceptionOnFailure);
+        // json encode if data is must, else ignore.
+        if (in_array($method, [Requests::POST, Requests::PATCH, Requests::PUT], true) === true)
+        {
+            $data = (empty($data) === false) ? json_encode($data) : null;
+        }
+
+        $options = [
+            'timeout' => self::REQUEST_TIMEOUT,
+            'auth'    => [
+                $this->key,
+                $this->secret
+            ],
+        ];
+
+        return [
+            'url'       => $url,
+            'method'    => $method,
+            'headers'   => $this->headers,
+            'options'   => $options,
+            'content'   => $data
+        ];
     }
 
     /**
@@ -137,16 +142,16 @@ class FTS
 
         $headers[self::ACCEPT]        = 'application/json';
         $headers[self::CONTENT_TYPE]  = 'application/json';
-        $headers[self::X_MODE]        = $this->mode;
 
         $this->headers = $headers;
     }
 
     /**
-     * @param array $request
+     * Method to send request to FTS endpoint
      *
+     * @param array $request
      * @return \Requests_Response
-     * @throws \Requests_Exception
+     * @throws \Throwable
      */
     protected function sendFTSRequest(array $request): \Requests_Response
     {
@@ -188,14 +193,15 @@ class FTS
         $this->trace->info(TraceCode::FTS_REQUEST, $request);
     }
 
+
     /**
-     * @param \Requests_Response $response
-     * @param bool               $throwExceptionOnFailure
+     * Method to parse response from FTS
      *
+     * @param \Requests_Response $response
      * @return array
      * @throws Exception\RuntimeException
      */
-    protected function parseResponse(\Requests_Response $response, bool $throwExceptionOnFailure = false): array
+    protected function parseResponse(\Requests_Response $response): array
     {
         $code = null;
 
@@ -205,8 +211,7 @@ class FTS
         }
 
 
-        if (($throwExceptionOnFailure === true) and
-            (in_array($code, [200, 201, 204], true) === false))
+        if (in_array($code, [200, 201, 204], true) === false)
         {
 
             throw new Exception\RuntimeException(
@@ -222,39 +227,4 @@ class FTS
             'code' => $code,
         ];
     }
-
-    /**
-     * @param string $endpoint
-     * @param string $method
-     * @param array  $data
-     *
-     * @return array
-     */
-    protected function generateRequest(string $endpoint, string $method, array $data): array
-    {
-        $url = $this->baseUrl . $endpoint;
-
-        // json encode if data is must, else ignore.
-        if (in_array($method, [Requests::POST, Requests::PATCH, Requests::PUT], true) === true)
-        {
-            $data = (empty($data) === false) ? json_encode($data) : null;
-        }
-
-        $options = [
-            'timeout' => self::REQUEST_TIMEOUT,
-            'auth'    => [
-                $this->key,
-                $this->secret
-            ],
-        ];
-
-        return [
-            'url'       => $url,
-            'method'    => $method,
-            'headers'   => $this->headers,
-            'options'   => $options,
-            'content'   => $data
-        ];
-    }
-
 }

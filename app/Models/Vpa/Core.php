@@ -4,7 +4,7 @@ namespace RZP\Models\Vpa;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Jobs\FTSCreateAccount;
+use RZP\Jobs\FTS\CreateAccount;
 use RZP\Models\FundAccount\Type as Type;
 
 class Core extends Base\Core
@@ -31,6 +31,16 @@ class Core extends Base\Core
     {
         $id = $vpa->getId();
 
-        FTSCreateAccount::dispatch($id, $this->mode, Type::VPA);
+        CreateAccount::dispatch($id, $this->mode, Type::VPA);
+    }
+
+    public function getVPAEntity(string $id)
+    {
+        return $this->repo->getVPAById($id);
+    }
+
+    public function saveFTSAccountId($entity)
+    {
+        $this->repo->saveOrFail($entity);
     }
 }

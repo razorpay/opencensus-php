@@ -279,8 +279,11 @@ return [
     ],
 
     'fts' => [
+        'mock'              => env('FTS_MOCK', false),
         'url'               => env('FTS_URL'),
         'secret'            => env('APP_FTS_SECRET'),
+
+        // Key and secret through which api will call fts
         'fts_key'           => env('FTS_KEY'),
         'fts_secret'        => env('FTS_SECRET'),
     ],
