@@ -168,7 +168,6 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::STATUS, '=', Status::ISSUED)
                     ->where(Entity::EXPIRE_BY, '<', $currentTime)
-                    ->with(Entity::ORDER)
                     ->get();
     }
 
