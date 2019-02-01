@@ -390,7 +390,7 @@ class Core extends Base\Core
      */
     public function expireInvoices(): array
     {
-        RuntimeManager::setMaxExecTime(600);
+        RuntimeManager::setMaxExecTime(720);
 
         RuntimeManager::setMemoryLimit('1024M');
 
