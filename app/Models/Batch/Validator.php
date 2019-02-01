@@ -4,6 +4,7 @@ namespace RZP\Models\Batch;
 
 use App;
 use RZP\Base;
+use RZP\Models\Payout;
 use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -213,6 +214,29 @@ class Validator extends Base\Validator
         Header::CONTACT_MOBILE_2          => 'sometimes|nullable|string',
         Header::CONTACT_REFERENCE_ID      => 'sometimes|nullable|string',
         Header::NOTES                     => 'sometimes|nullable|notes',
+    ];
+
+    // This is not a copy paste of above ^ rules!
+    protected static $payoutTypeRowRules = [
+        Header::ACCOUNT_NUMBER              => 'required|string',
+        Header::PAYOUT_PURPOSE              => 'required|filled|string|max:30|alpha_dash',
+        Header::PAYOUT_AMOUNT               => 'required|integer|min:100|max:500000000',
+        Header::PAYOUT_CURRENCY             => 'required|size:3|in:INR',
+        Header::PAYOUT_MODE                 => 'sometimes|nullable|string',
+        Header::PAYOUT_REFERENCE_ID         => 'sometimes|nullable|string|max:40',
+        Header::FUND_ACCOUNT_ID             => 'sometimes|nullable|public_id|size:17',
+        Header::FUND_ACCOUNT_USE_EXISTING   => 'required_without:Fund Account Id|string|in:1,0',
+        Header::FUND_ACCOUNT_TYPE           => 'required_without:Fund Account Id|string|in:bank_account,vpa',
+        Header::FUND_ACCOUNT_CONTACT_NAME   => 'required_if:Fund Account Type,bank_account|nullable|string',
+        Header::FUND_ACCOUNT_IFSC           => 'required_if:Fund Account Type,bank_account|nullable|string',
+        Header::FUND_ACCOUNT_ACCOUNT_NUMBER => 'required_if:Fund Account Type,bank_account|nullable|string',
+        Header::FUND_ACCOUNT_VPA            => 'required_if:Fund Account Type,vpa|nullable|string',
+        Header::CONTACT_TYPE                => 'required_without:Fund Account Id|string',
+        Header::CONTACT_NAME_2              => 'required_without:Fund Account Id|string',
+        Header::CONTACT_EMAIL_2             => 'sometimes|nullable|string',
+        Header::CONTACT_MOBILE_2            => 'sometimes|nullable|string',
+        Header::CONTACT_REFERENCE_ID        => 'sometimes|nullable|string',
+        Header::NOTES                       => 'sometimes|nullable|notes',
     ];
 
     protected function validateType($attribute, $value)
@@ -550,6 +574,11 @@ class Validator extends Base\Validator
                     Entity::MERCHANT_ID => $merchant->getId(),
                 ]);
         }
+
+        $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
+        {
+            $this->validateInput('payoutTypeRow', $entry);
+        });
     }
 
     protected function validateLinkedAccountEntries(array & $entries, array $params, ME $merchant)
