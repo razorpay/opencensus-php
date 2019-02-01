@@ -385,6 +385,57 @@ class GatewayController extends Controller
         return Redirect::to($url);
     }
 
+    public function callbackEmandateNpciNb()
+    {
+        $input = Request::all();
+
+        $this->app['trace']->info(
+            TraceCode::NETBANKING_PAYMENT_CALLBACK,
+            [
+                'input'   => $input ,
+                'gateway' => 'enach_rbl',
+            ]
+        );
+
+        $responseXml = (array) simplexml_load_string(trim($input['MandateRespDoc']));
+
+        $json = json_encode($responseXml);
+
+        $responseArray = json_decode($json,true);
+
+        if($input['RespType'] === 'RespXML')
+        {
+            $paymentId = $responseArray['MndtAccptResp']['UndrlygAccptncDtls']['OrgnlMsgInf']['MndtReqId'];
+        }
+        else
+        {
+            //TODO : what if payment id is not present : possible
+            $paymentId = $responseArray['MndtRejResp']['OrigReqInfo']['MndtReqId'];
+        }
+
+        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+
+        $this->app['config']->set('database.default', $mode);
+
+        $this->app['basicauth']->setMode($mode);
+
+        $payment = $this->repo->payment->findOrFailPublic($paymentId);
+
+        $publicPaymentId = $payment->getPublicId();
+
+        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
+
+        $publicKey = $keys->first()->getPublicKey($mode);
+
+        $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
+
+        $inputMsg = http_build_query($input);
+
+        $url = $url . '?' . $inputMsg;
+
+        return Redirect::to($url);
+    }
+
     public function callbackAmazonpay($responseFormat = 'html')
     {
         $input = Request::all();

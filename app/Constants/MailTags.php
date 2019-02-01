@@ -65,6 +65,7 @@ class MailTags
     const BATCH_REFUNDS_FILE               = 'batch_refunds_file';
     const BATCH_PAYMENT_LINK_FILE          = 'batch_payment_link_file';
     const BATCH_AUTH_LINK_FILE             = 'batch_auth_link_file';
+    const BATCH_CONTACT_FILE               = 'batch_contact_file';
 
     const PAYMENT_SUCCESSFUL               = 'payment_successful';
     const REFUND_SUCCESSFUL                = 'refund_successful';
