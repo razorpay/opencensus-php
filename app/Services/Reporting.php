@@ -16,6 +16,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
+use RZP\Models\Admin\Org;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Feature\Constants as Feature;
@@ -156,6 +157,16 @@ class Reporting implements ExternalService
             {
                 $headers[self::REPORT_TYPE_HEADER] = $reportType;
                 $headers[self::CONSUMER_HEADER] = $consumer;
+            }
+
+            //
+            // The below if condition check is not for admins of RZP organisation. Here, Admin should not be able to
+            // access the consumer(org id here) which is not same as his organisation. Admin auth will be used here.
+            //
+            if ($this->ba->getAdmin()->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID &&
+                $this->ba->getAdmin()->getOrgId() !== $consumer)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REPORTING_INTEGRATION);
             }
         }
 
