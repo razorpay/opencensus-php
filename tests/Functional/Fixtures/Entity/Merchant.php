@@ -112,6 +112,8 @@ class Merchant extends Base
         $this->fixtures->create('merchant:schedule_task', ['merchant_id' => $merchantId]);
 
         $this->fixtures->merchant->enableInternational($merchantId);
+
+        return $apiMerchant;
     }
 
     public function createEventAccount()
@@ -542,6 +544,7 @@ class Merchant extends Base
 
     public function addFeatures($featureNames, $id = '10000000000000')
     {
+        s("hello");
         $features = collect();
 
         foreach ((array) $featureNames as $featureName) {
