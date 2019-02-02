@@ -1569,10 +1569,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // fund transfer service trace codes
     const FTS_REQUEST                           = 'FTS_REQUEST';
     const FTS_RESPONSE                          = 'FTS_RESPONSE';
-    const FTS_FAILURE_EXCEPTION                 = 'FTS_FAILURE_EXCEPTION';
+    const FTS_FUND_TRANSFER                     = 'FTS_FUND_TRANSFER';
     const FTS_CREATE_ACCOUNT                    = 'FTS_CREATE_ACCOUNT';
-    const FTS_ACCOUNT_CREATED_FOR_MERCHANT      = 'FTS_ACCOUNT_CREATED_FOR_MERCHANT';
+    const FTS_FAILURE_EXCEPTION                 = 'FTS_FAILURE_EXCEPTION';
+    const FTS_FUND_TRANSFER_SENT                = 'FTS_FUND_TRANSFER_SENT';
+    const FTS_FUND_TRANSFER_FAILED              = 'FTS_FUND_TRANSFER_FAILED';
     const FTS_ACCOUNT_CREATION_FAILED           = 'FTS_ACCOUNT_CREATION_FAILED';
+    const FTS_ACCOUNT_CREATED_FOR_MERCHANT      = 'FTS_ACCOUNT_CREATED_FOR_MERCHANT';
 
     // Origin trace codes
     const ORIGIN_CREATED                      = 'ORIGIN_CREATED';

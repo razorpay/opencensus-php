@@ -521,4 +521,9 @@ class Core extends Base\Core
                 1);
         }
     }
+
+    public function getPayoutEntityById(string $payoutId)
+    {
+        return $this->repo->getPayoutById($payoutId);
+    }
 }

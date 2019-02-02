@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Settlement;
+use RZP\Models\FundAccount;
 use RZP\Constants\Timezone;
 use RZP\Services\Beam\Service;
 use RZP\Exception\LogicException;
@@ -40,12 +41,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($fundTransferAttempt);
 
-        if(strcasecmp($fundTransferAttempt->getChannel() , Channel::ICICI2) === 0)
-        {
-            $requestHandler = new FundTransferAttempt\FTS\RequestHandler();
-
-            $requestHandler->sendFTSFundTransferRequestUsingBankAccount($source, $bankAccount, $fundTransferAttempt);
-        }
+        $this->sendFTSFundTransferRequest($fundTransferAttempt, FundAccount\Type::BANK_ACCOUNT);
 
         return $fundTransferAttempt;
     }
@@ -64,12 +60,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($fundTransferAttempt);
 
-        if(strcasecmp($fundTransferAttempt->getChannel() , Channel::ICICI2) === 0)
-        {
-            $requestHandler = new FundTransferAttempt\FTS\RequestHandler();
-
-            $requestHandler->sendFTSFundTransferRequestUsingVPA($source, $vpa, $fundTransferAttempt);
-        }
+        $this->sendFTSFundTransferRequest($fundTransferAttempt, FundAccount\Type::VPA);
 
         return $fundTransferAttempt;
     }
@@ -233,5 +224,15 @@ class Core extends Base\Core
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+    }
+
+    public function sendFTSFundTransferRequest($fta, string $type)
+    {
+        FundTransfer::dispatch($fta->getId(), $type);
+    }
+
+    public function getFTAEntityById(string $ftaId)
+    {
+        return $this->repo->getAttemptById($ftaId);
     }
 }

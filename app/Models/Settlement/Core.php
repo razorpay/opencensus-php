@@ -232,4 +232,9 @@ class Core extends Base\Core
 
         return new $nodalClass();
     }
+
+    public function getSettlementEntityById(string $setlId)
+    {
+        return $this->repo->getSettlementById($setlId);
+    }
 }

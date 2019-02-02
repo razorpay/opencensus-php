@@ -253,6 +253,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerCustomSessionProvider();
 
         $this->registerFTSCreateAccount();
+
+        $this->registerFTSFundTransfer();
     }
 
     /**
@@ -289,6 +291,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'shield.service',
             'beam',
             'fts_create_account',
+            'fts_fund_transfer',
         ];
     }
 
@@ -648,6 +651,18 @@ class ApiServiceProvider extends BaseServiceProvider
             $mock = $app['config']->get('applications.fts.mock');
 
             $implementation = $mock ? Mock\FTS\CreateAccount::class : FTS\CreateAccount::class;
+
+            return new $implementation($app);
+        });
+    }
+
+    protected function registerFTSFundTransfer()
+    {
+        $this->app->bind('fts_fund_transfer', function($app)
+        {
+            $mock = $app['config']->get('applications.fts.mock');
+
+            $implementation = $mock ? Mock\FTS\FundTransfer::class : FTS\FundTransfer::class;
 
             return new $implementation($app);
         });

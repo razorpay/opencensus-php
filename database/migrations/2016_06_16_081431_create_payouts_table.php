@@ -78,7 +78,7 @@ class CreatePayoutsTable extends Migration
 
             $table->string(Payout::STATUS);
 
-            $table->string(Payout::FTS_TRANSFER_ID, 255)
+            $table->integer(Payout::FTS_TRANSFER_ID)
                   ->nullable();
 
             $table->char(Payout::TRANSACTION_ID, Payout::ID_LENGTH)

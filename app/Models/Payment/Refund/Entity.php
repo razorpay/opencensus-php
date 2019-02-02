@@ -32,6 +32,7 @@ class Entity extends Base\PublicEntity
     const INTERNAL_ERROR_CODE    = 'internal_error_code';
     const ERROR_DESCRIPTION      = 'error_description';
     const NOTES                  = 'notes';
+    const FTS_TRANSFER_ID        = 'fts_transfer_id';
 
     //merchant reference number for refund if provided by merchant
     const RECEIPT                = 'receipt';
@@ -438,6 +439,11 @@ class Entity extends Base\PublicEntity
         return (new Dictionary($acquirerData));
     }
 
+    public function getFTSTransferId()
+    {
+        return $this->getAttribute(self::FTS_TRANSFER_ID);
+    }
+
     /**
      * Used by FTA reconciliation
      */
@@ -466,6 +472,11 @@ class Entity extends Base\PublicEntity
     public function setSettledBy($settledBy)
     {
         $this->setAttribute(self::SETTLED_BY, $settledBy);
+    }
+
+    public function setFTSTransferId($ftsTransferId)
+    {
+        $this->setAttribute(self::FTS_TRANSFER_ID, $ftsTransferId);
     }
 
     public function pushStatusChangeMetrics($statusToChange)

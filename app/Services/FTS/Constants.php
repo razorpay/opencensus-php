@@ -10,19 +10,47 @@ final class Constants
 
     const TYPE                          = 'type';
 
+    const MODE                          = 'mode';
+
     const HANDLE                        = 'handle';
 
+    const AMOUNT                        = 'amount';
+
+    const PAYOUT                        = 'payout';
+
+    const REFUND                        = 'refund';
+
+    const ACCOUNT                       = 'account';
+
+    const CHANNEL                       = 'channel';
+
+    const PRODUCT                       = 'product';
+
+    const TRANSFER                      = 'transfer';
+
     const USERNAME                      = 'username';
+
+    const NARRATION                     = 'narration';
+
+    const ENTITY_ID                     = 'entity_id';
+
+    const SETTLEMENT                    = 'settlement';
+
+    const INITIATE_AT                   = 'initiate_at';
 
     const MERCHANT_ID                   = 'merchant_id';
 
     const BANK_ACCOUNT                  = 'bank_account';
 
-    const DEFAULT_CHANNEL               ='default_channel';
+    const FUND_ACCOUNT_ID               = 'fund_account_id';
+
+    const DEFAULT_CHANNEL               = 'default_channel';
 
     const BENEFICIARY_PIN               = 'beneficiary_pin';
 
     const BENEFICIARY_NAME              = 'beneficiary_name';
+
+    const FTS_FUND_ACCOUNT              = 'FTS_FUND_ACCOUNT';
 
     const BENEFICIARY_CODE              = 'beneficiary_code';
 
@@ -41,6 +69,8 @@ final class Constants
     const BENEFICIARY_IFSC_CODE         = 'beneficiary_ifsc_code';
 
     const BENEFICIARY_BANK_NAME         = 'beneficiary_bank_name';
+
+    const FUND_ACCOUNT_VALIDATION       = 'fund_account_validation';
 
     const BENEFICIARY_ACCOUNT_TYPE      = 'beneficiary_account_type';
 

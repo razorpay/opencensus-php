@@ -148,4 +148,9 @@ class Core extends Base\Core
 
         $this->app['events']->fire('api.fund_account.validation.completed', $eventPayload);
     }
+
+    public function getFundAccountValidationEntityById(string $id)
+    {
+        return $this->repo->getFundAccountValidationById($id);
+    }
 }

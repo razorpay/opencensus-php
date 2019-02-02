@@ -286,4 +286,11 @@ class Repository extends Base\Repository
 
         return $query->first();
     }
+
+    public function getAttemptById(string $ftaId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ID, $ftaId)
+                    ->first();
+    }
 }

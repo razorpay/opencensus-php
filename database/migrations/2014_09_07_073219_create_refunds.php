@@ -42,6 +42,9 @@ class CreateRefunds extends Migration
             $table->string(Refund::STATUS)
                   ->nullable();
 
+            $table->integer(Refund::FTS_TRANSFER_ID)
+                  ->nullable();
+
             $table->string(Payment::ERROR_CODE, 128)
                   ->nullable();
 
