@@ -18,26 +18,41 @@ class Engine extends TestCase
 
     public function __construct($fixtures)
     {
-        $this->loadContextData = __DIR__ . '/../Context.php';
-        $this->loadContextData = __DIR__ . '/../Context.php';
+        $this->loadContext(__DIR__ . '/../Context.php');
 
-        $this->loadContext();
+        $this->loadSetup(__DIR__ . '/../Setup.php', $fixtures);
 
-        require __DIR__ . '/Setup.php';
-        $this->setup = new Setup($fixtures);
+        $this->loadAction(__DIR__ . '/../Action.php');
 
-        require __DIR__ . '/../Action.php';
-        $this->action = new Action;
-
-        require __DIR__ . '/../Rules.php';
-        $this->rules = new Rules;
+        $this->loadRules(__DIR__ . '/../Rules.php');
     }
 
-    protected function loadContext()
+    protected function loadContext($path)
     {
-        $contextData = require($this->loadContextData);
+        $contextData = require $path;
 
         $this->setContext($contextData);
+    }
+
+    protected function loadSetup(string $path, $fixtures)
+    {
+        require $path;
+
+        $this->setup = new Setup($fixtures);
+    }
+
+    protected function loadAction($path)
+    {
+        require $path;
+
+        $this->action = new Action;
+    }
+
+    protected function loadRules($path)
+    {
+        require $path;
+
+        $this->rules = new Rules;
     }
 
     /**

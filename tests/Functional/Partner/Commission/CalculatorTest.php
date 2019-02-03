@@ -29,10 +29,6 @@ class CalculatorTest extends OAuthTestCase
 
     public function testImplicitVariable()
     {
-        $account = $this->fixtures->merchant->createAccount('10ModalAccount');
-
-        $this->fixtures->merchant->edit($account->getId(), ['partner_type' => 'reseller']);
-
         $this->ruleEngine->execute('BptVjGnFv6ITBm');
     }
 }

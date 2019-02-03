@@ -3,30 +3,31 @@
 return [
     'BptVjGnFv6ITBm' => [
         'setup' => [
-            'create_partner'      => [
+            'create_partner'     => [
                 'id'   => 'BptVjGnFv6ITBm',
                 'type' => 'fully_managed',
             ],
-            'create_plans'        => [
+            'create_plans'       => [
                 [
-                    'plan_id'           => '200MerchantPln',
+                    'plan_id'      => '200MerchantPln',
                     'percent_rate' => '200',
                 ],
                 [
-                    'plan_id'           => '180PartnerPlan',
+                    'plan_id'      => '180PartnerPlan',
                     'percent_rate' => '180',
                 ],
             ],
-            'attach_submerchant'  => [
+            'attach_submerchant' => [
                 'partner_id' => 'BptVjGnFv6ITBm',
                 'plan_id'    => '200MerchantPln',
             ],
-            'define_config' => [
+            'define_config'      => [
                 'type'             => 'partner',
                 'implicit_plan_id' => '180PartnerPlan',
             ],
-            'create_payment' => [
-                'auth' => 'partner',
+            'create_payment'     => [
+                'amount' => 4000*100, // paise
+                'auth'   => 'partner',
             ],
         ],
     ],

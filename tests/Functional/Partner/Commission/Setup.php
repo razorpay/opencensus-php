@@ -2,8 +2,6 @@
 
 namespace RZP\Tests\Functional\Partner\Commission\Base;
 
-use RZP\Tests\Functional\TestCase;
-
 class Setup
 {
     protected $fixtures;
@@ -41,11 +39,9 @@ class Setup
     {
         $defaultPricingPlan = $this->getDefaultPricingPlan();
 
-        $data = array_merge($data, $defaultPricingPlan);
+        $data = array_merge($defaultPricingPlan, $data);
 
-        $pricingPlan = array_merge($data, $defaultPricingPlan);
-
-        $this->fixtures->create('pricing', $pricingPlan);
+        $this->fixtures->create('pricing', $data);
     }
 
     public function createPlans(array $data, array & $output)
@@ -58,7 +54,7 @@ class Setup
 
     public function attachSubmerchant(array $data, array & $output)
     {
-        $merchant = $this->fixtures->create('merchant');
+        $merchant = $this->fixtures->create('merchant:with_balance', ['pricing_plan_id' => $data['plan_id']]);
 
         $accessMapArray = [
             'entity_type'     => 'application',
@@ -68,6 +64,8 @@ class Setup
         ];
 
         $this->fixtures->create('merchant_access_map', $accessMapArray);
+
+        $output['merchant_id'] = $merchant->getId();
     }
 
     public function defineConfig(array $data, array & $output)
@@ -94,15 +92,21 @@ class Setup
 
     public function createPayment(array $data, array & $output)
     {
-        $payment = $this->fixtures->create('payment:authorized');
+        $payment = $this->fixtures->create('payment:authorized', [
+            'merchant_id' => $output['merchant_id'],
+            'amount'      => $data['amount'],
+        ]);
+        unset($data['amount']);
 
         if (isset($data['auth']))
         {
             $attributes = $this->getEntityOriginData();
 
             $auth = $data['auth'];
-
             unset($data['auth']);
+
+            $data['entity_id'] = $payment->getId();
+            $data['origin_id'] = $output['application_id'];
             $attributes = array_merge($attributes, $data);
 
             switch($auth)
@@ -126,9 +130,10 @@ class Setup
     protected function getDefaultPricingPlan(): array
     {
         return [
-            'percent_rate' => 200,
-            'fixed_rate'   => 0,
-            'org_id'       => '100000razorpay',
+            'percent_rate'        => 200,
+            'fixed_rate'          => 0,
+            'org_id'              => '100000razorpay',
+            'payment_method_type' => 'debit',
         ];
     }
 
@@ -137,6 +142,7 @@ class Setup
         return [
             'default_plan_id' => '1hDYlICobzOCYt',
             'implicit_plan_id' => '',
+            'commissions_enabled' => true,
         ];
     }
 
