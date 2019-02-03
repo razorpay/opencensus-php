@@ -721,35 +721,43 @@ if (! function_exists('mask_except_last4'))
     }
 }
 
-/**
- * Gets gamma channel of the color
- * ref: https://ux.stackexchange.com/questions/82056/how-to-measure-the-contrast-between-any-given-color-and-white
- *
- * @param String $colorHash
- * @param Integer $startIndex
- * @return Float
- */
-function getColorChannelGamma($colorHash, $startIndex): float
+if (! function_exists('get_gamma_channel'))
 {
-    $colorInDec = hexdec(substr($colorHash, $startIndex, 2));
+    /**
+     * Gets gamma channel of the color
+     * ref: https://ux.stackexchange.com/questions/82056/how-to-measure-the-contrast-between-any-given-color-and-white
+     *
+     * @param String $colorHash
+     * @param Integer $startIndex
+     * @return Float
+     */
+    function get_gamma_channel($colorHash, $startIndex): float
+    {
+        $colorInDec = hexdec(substr($colorHash, $startIndex, 2));
 
-    return $colorInDec <= 10 ? ($colorInDec / 3294) : (pow(($colorInDec / 269) + 0.0513, 2.4));
+        return $colorInDec <= 10 ? ($colorInDec / 3294) : (pow(($colorInDec / 269) + 0.0513, 2.4));
 
+    }
 }
 
-/**
- * Compares the contrast of the color with respect to white color
- * ref: https://ux.stackexchange.com/questions/82056/how-to-measure-the-contrast-between-any-given-color-and-white
- * @param String $color
- * @return Float
- */
-function getRelativeLuminanceOfColorWithWhite($color): float
-{
-    $redGamma       = getColorChannelGamma($color, 0);
-    $greenGamma     = getColorChannelGamma($color, 2);
-    $blueGamma      = getColorChannelGamma($color, 4);
 
-    return (0.2126 * $redGamma) + (0.7152 * $greenGamma) + (0.0722 * $blueGamma);
+if (! function_exists('get_contrast_with_white'))
+{
+    /**
+     * Compares the contrast of the color with respect to white color
+     * ref: https://ux.stackexchange.com/questions/82056/how-to-measure-the-contrast-between-any-given-color-and-white
+     * @param String $color
+     * @return Float
+     */
+    function get_contrast_with_white($color): float
+    {
+        $redGamma       = get_gamma_channel($color, 0);
+        $greenGamma     = get_gamma_channel($color, 2);
+        $blueGamma      = get_gamma_channel($color, 4);
+
+        return (0.2126 * $redGamma) + (0.7152 * $greenGamma) + (0.0722 * $blueGamma);
+    }
+
 }
 
 if (! function_exists('dashboard_url'))

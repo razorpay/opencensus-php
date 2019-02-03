@@ -1163,11 +1163,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REFUND_SOURCE);
     }
 
-    public function getContrastColorOfBrandColor()
+    public function getContrastOfBrandColor()
     {
         $brandColor = $this->getBrandColorOrDefault();
 
-        $relativeLuminance = getRelativeLuminanceOfColorWithWhite(str_replace('#', '', $brandColor));
+        $relativeLuminance = get_contrast_with_white(str_replace('#', '', $brandColor));
 
         // similar as in checkout (instead of #000000 checkout has rgba(0, 0, 0, 0.85)),
         return $relativeLuminance < 0.5 ? '#FFFFFF' : '#000000';
