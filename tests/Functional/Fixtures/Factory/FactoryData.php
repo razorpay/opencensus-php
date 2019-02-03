@@ -992,5 +992,15 @@ final class FactoryData
             'created_at'        => $faker->timestamp,
             'updated_at'        => $faker->timestamp,
         ]);
+
+        $factory(\RZP\Models\EntityOrigin\Entity::class, [
+            'id'                => $faker->uniqueid,
+            'origin_id'         => '10000000000000',
+            'origin_type'       => 'merchant',
+            'entity_id'         => 'factory:\RZP\Models\Payment\Entity',
+            'entity_type'       => 'payment',
+            'created_at'        => $faker->timestamp,
+            'updated_at'        => $faker->timestamp,
+        ]);
     }
 }

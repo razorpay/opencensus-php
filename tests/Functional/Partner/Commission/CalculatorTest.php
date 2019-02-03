@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Partner\Commission;
 
+use RZP\Models\Partner\Commission\Calculator;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\TestCase;

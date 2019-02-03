@@ -2,11 +2,19 @@
 
 namespace RZP\Tests\Functional\Partner\Commission\Base;
 
-class Engine
+use RZP\Tests\Functional\TestCase;
+use Functional\Partner\Commission\Action;
+use Functional\Partner\Commission\Rules;
+
+class Engine extends TestCase
 {
     private $context;
 
     private $setup;
+
+    private $action;
+
+    private $rules;
 
     public function __construct($fixtures)
     {
@@ -17,6 +25,12 @@ class Engine
 
         require __DIR__ . '/Setup.php';
         $this->setup = new Setup($fixtures);
+
+        require __DIR__ . '/../Action.php';
+        $this->action = new Action;
+
+        require __DIR__ . '/../Rules.php';
+        $this->rules = new Rules;
     }
 
     protected function loadContext()
@@ -57,32 +71,19 @@ class Engine
 
         $this->setupFixtures($testContext['setup'], $testContext['post_setup']);
 
-        $output = $this->runAction($testContext['action'], $testContext['post_setup']);
+        $this->action->$contextName($testContext['post_setup'], $testContext['post_action']);
 
-        $testContext['post_action'] = $output;
-
-        $this->executeRulesPostAction($testContext);
+        $this->rules->$contextName($testContext);
     }
 
     public function setupFixtures(array $setupRequests, array & $output)
     {
         foreach($setupRequests as $setupRequest => $data)
         {
-
             $setupFunction = studly_case($setupRequest);
 
             $this->setup->$setupFunction($data, $output);
         }
-    }
-
-    public function executeRulesPostAction(array $data)
-    {
-
-    }
-
-    public function runAction($actionData, $postSetupData)
-    {
-        return [];
     }
 
     public function getDefaultContext(): array
@@ -90,7 +91,6 @@ class Engine
         return [
             'setup'       => [],
             'post_setup'  => [],
-            'action'      => function () {},
             'post_action' => [],
         ];
     }

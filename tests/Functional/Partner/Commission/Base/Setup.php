@@ -111,6 +111,8 @@ class Setup
                     $this->fixtures->create('entity_origin', $attributes);
             }
         }
+
+        $output['source_entity'] = $payment;
     }
 
     protected function getDefaultCreatePartnerData(): array
