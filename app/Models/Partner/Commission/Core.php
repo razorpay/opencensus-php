@@ -43,13 +43,6 @@ class Core extends Base\Core
     {
         $calculator = new Calculator($payment);
 
-        if ($calculator->shouldCreateCommission() === false)
-        {
-            return false;
-        }
-
-        $calculator->calculate();
-
-        $calculator->saveCommission();
+        $calculator->calculateAndSaveCommission();
     }
 }

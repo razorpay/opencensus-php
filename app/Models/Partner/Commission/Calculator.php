@@ -86,12 +86,32 @@ class Calculator
     /**
      * @var int
      */
-    protected $commissionFee;
+    protected $commissionFee = 0;
 
     /**
      * @var int
      */
-    protected $commissionTax;
+    protected $commissionTax = 0;
+
+    /**
+     * @var int
+     */
+    protected $merchantFee = 0;
+
+    /**
+     * @var int
+     */
+    protected $merchantTax = 0;
+
+    /**
+     * @var int
+     */
+    protected $partnerFee = 0;
+
+    /**
+     * @var int
+     */
+    protected $partnerTax = 0;
 
     /**
      * @var array
@@ -193,14 +213,52 @@ class Calculator
         return $this->commissions;
     }
 
+    /**
+     * @return int
+     */
     public function getCommissionFee(): int
     {
         return $this->commissionFee;
     }
 
+    /**
+     * @return int
+     */
     public function getCommissionTax(): int
     {
         return $this->commissionTax;
+    }
+
+    /**
+     * @return int
+     */
+    public function getMerchantFee(): int
+    {
+        return $this->merchantFee;
+    }
+
+    /**
+     * @return int
+     */
+    public function getMerchantTax(): int
+    {
+        return $this->merchantTax;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPartnerFee(): int
+    {
+        return $this->partnerFee;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPartnerTax(): int
+    {
+        return $this->partnerTax;
     }
 
     // ==================================== SETTERS ====================================
@@ -261,6 +319,38 @@ class Calculator
     public function setCommissionTax(int $tax)
     {
         $this->commissionTax = $tax;
+    }
+
+    /**
+     * @param int $merchantFee
+     */
+    public function setMerchantFee(int $merchantFee)
+    {
+        $this->merchantFee = $merchantFee;
+    }
+
+    /**
+     * @param int $merchantTax
+     */
+    public function setMerchantTax(int $merchantTax)
+    {
+        $this->merchantTax = $merchantTax;
+    }
+
+    /**
+     * @param int $partnerFee
+     */
+    public function setPartnerFee(int $partnerFee)
+    {
+        $this->partnerFee = $partnerFee;
+    }
+
+    /**
+     * @param int $partnerTax
+     */
+    public function setPartnerTax(int $partnerTax)
+    {
+        $this->partnerTax = $partnerTax;
     }
 
     // ====================================== END ======================================
@@ -399,13 +489,30 @@ class Calculator
      */
     public function calculate()
     {
+        if ($this->shouldCreateCommission() === false)
+        {
+            return;
+        }
+
         $this->buildImplicitVariableCommissionEntities();
     }
 
     /**
      * Saves the list of commission entities built so far
      */
-    public function saveCommission()
+    public function calculateAndSaveCommission()
+    {
+        if ($this->shouldCreateCommission() === false)
+        {
+            return;
+        }
+
+        $this->calculate();
+
+        $this->saveCommission();
+    }
+
+    protected function saveCommission()
     {
         foreach ($this->commissions as $commission)
         {
@@ -429,6 +536,11 @@ class Calculator
         list($merchantFee, $merchantTax, $merchantFeesSplit) = $this->getMerchantFees();
 
         list($partnerFee, $partnerTax, $partnerSplit) = $this->getPartnerPricing();
+
+        $this->setMerchantFee($merchantFee);
+        $this->setMerchantTax($merchantTax);
+        $this->setPartnerFee($partnerFee);
+        $this->setPartnerTax($partnerTax);
 
         if ($partnerFee === 0)
         {
@@ -672,7 +784,7 @@ class Calculator
     {
         $data = $this->getTraceData();
 
-        $data = array_intersect($data, $input);
+        $data = array_merge($data, $input);
 
         $this->trace->addRecord($level, $traceCode, $data);
     }
