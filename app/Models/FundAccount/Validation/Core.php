@@ -153,4 +153,9 @@ class Core extends Base\Core
     {
         return $this->repo->getFundAccountValidationById($id);
     }
+
+    public function updateFundAccountValidationEntity($entity)
+    {
+        return $this->repo->saveOrFail($entity);
+    }
 }

@@ -190,4 +190,9 @@ class Core extends Base\Core
             }
         });
     }
+
+    public function updateRefundEntity($entity)
+    {
+        return $this->repo->refund->saveOrFail($entity);
+    }
 }

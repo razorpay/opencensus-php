@@ -143,12 +143,12 @@ class CreateAccount extends Base
         switch ($this->type)
         {
             case Constants::BANK_ACCOUNT:
-                $this->bankAccountCore->saveFTSAccountId($account);
+                $this->bankAccountCore->updateBankAccountEntity($account);
 
                 break;
 
             case Constants::VPA:
-                $this->vpaCore->saveFTSAccountId($account);
+                $this->vpaCore->updateVPAEntity($account);
 
                 break;
 

@@ -39,7 +39,7 @@ class Core extends Base\Core
         return $this->repo->getVPAById($id);
     }
 
-    public function saveFTSAccountId($entity)
+    public function updateVPAEntity($entity)
     {
         $this->repo->saveOrFail($entity);
     }

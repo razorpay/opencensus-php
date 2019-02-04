@@ -235,4 +235,9 @@ class Core extends Base\Core
     {
         return $this->repo->getAttemptById($ftaId);
     }
+
+    public function updateFTA(Entity $fta)
+    {
+        $this->repo->saveOrFail($fta);
+    }
 }

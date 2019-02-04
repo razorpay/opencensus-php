@@ -423,7 +423,7 @@ class Core extends Base\Core
         return $this->repo->getBankAccountById($id);
     }
 
-    public function saveFTSAccountId($entity)
+    public function updateBankAccountEntity($entity)
     {
         $this->repo->saveOrFail($entity);
     }

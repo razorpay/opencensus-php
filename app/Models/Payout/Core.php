@@ -526,4 +526,9 @@ class Core extends Base\Core
     {
         return $this->repo->getPayoutById($payoutId);
     }
+
+    public function updatePayoutEntity($entity)
+    {
+        return $this->repo->saveOrFail($entity);
+    }
 }

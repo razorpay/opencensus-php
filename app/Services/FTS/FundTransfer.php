@@ -3,9 +3,11 @@
 namespace RZP\Services\FTS;
 
 use RZP\Exception\LogicException;
+use RZP\Models\Vpa\Core as VPACore;
 use RZP\Models\Payout\Core as PayoutCore;
 use RZP\Models\Payment\Core as PaymentCore;
 use RZP\Models\Settlement\Core as SettlementCore;
+use RZP\Models\BankAccount\Core as BankAccountCore;
 use RZP\Models\FundTransfer\Attempt\Core as FundTransferAttemptCore;
 use RZP\Models\FundAccount\Validation\Core  as FundAccountValidationCore;
 
@@ -30,7 +32,8 @@ class FundTransfer extends Base
 
         $response = $this->createAndSendRequest(parent::FundTransferBaseURL . '/' . parent::URLS['request'], 'POST', $input);
 
-        //TODO:: Add Logic to update Source and FTA using response
+        $this->handleResponse($response['body'], $type);
+
         return $response;
     }
 
@@ -59,7 +62,7 @@ class FundTransfer extends Base
 
                 break;
 
-            case Constants::BANK_ACCOUNT:
+            case Constants::bankAccount:
                 $request = $this->addBankAccountDetails($request);
 
                 break;
@@ -70,7 +73,7 @@ class FundTransfer extends Base
                 break;
 
             default:
-                throw new LogicException('Account Type is not supported ' . $this->type);
+                throw new LogicException('Account Type is not supported ' . $type);
 
         }
 
@@ -99,7 +102,7 @@ class FundTransfer extends Base
     public function addFTSAccountId(array $request):array
     {
         $request[Constants::ACCOUNT] = array(
-            Constants::FUND_ACCOUNT_ID   => $this->fta->bank_account->getFTSAccountId(),
+            Constants::FUND_ACCOUNT_ID   => $this->fta->bankAccount->getFTSAccountId(),
         );
 
         return $request;
@@ -109,21 +112,21 @@ class FundTransfer extends Base
     {
         $request[Constants::ACCOUNT] = [
 
-                Constants::BANK_ACCOUNT => [
-                        Constants::TYPE                       => $this->fta->bank_account->getType(),
-                        Constants::BENEFICIARY_PIN            => $this->fta->bank_account->getBeneficiaryPin(),
-                        Constants::BENEFICIARY_NAME           => $this->fta->bank_account->getBeneficiaryName(),
-                        Constants::BENEFICIARY_CODE           => $this->fta->bank_account->getBeneficiaryCode(),
-                        Constants::BENEFICIARY_CITY           => $this->fta->bank_account->getBeneficiaryCity(),
-                        Constants::BENEFICIARY_STATE          => $this->fta->bank_account->getBeneficiaryState(),
-                        Constants::BENEFICIARY_MOBILE         => $this->fta->bank_account->getBeneficiaryMobile(),
-                        Constants::BENEFICIARY_ADDRESS        => $this->fta->bank_account->getBeneficiaryAddress1(),
-                        Constants::BENEFICIARY_COUNTRY        => $this->fta->bank_account->getBeneficiaryCountry(),
-                        Constants::BENEFICIARY_EMAIL_ID       => $this->fta->bank_account->getBeneficiaryEMail(),
-                        Constants::BENEFICIARY_IFSC_CODE      => $this->fta->bank_account->getIfscCode(),
-                        Constants::BENEFICIARY_BANK_NAME      => $this->fta->bank_account->getBankName(),
-                        Constants::BENEFICIARY_ACCOUNT_TYPE   => $this->fta->bank_account->getAccountType(),
-                        Constants::BENEFICIARY_ACCOUNT_NUMBER => $this->fta->bank_account->getAccountNumber(),
+                Constants::bankAccount => [
+                        Constants::TYPE                       => $this->fta->bankAccount->getType(),
+                        Constants::BENEFICIARY_PIN            => $this->fta->bankAccount->getBeneficiaryPin(),
+                        Constants::BENEFICIARY_NAME           => $this->fta->bankAccount->getBeneficiaryName(),
+                        Constants::BENEFICIARY_CODE           => $this->fta->bankAccount->getBeneficiaryCode(),
+                        Constants::BENEFICIARY_CITY           => $this->fta->bankAccount->getBeneficiaryCity(),
+                        Constants::BENEFICIARY_STATE          => $this->fta->bankAccount->getBeneficiaryState(),
+                        Constants::BENEFICIARY_MOBILE         => $this->fta->bankAccount->getBeneficiaryMobile(),
+                        Constants::BENEFICIARY_ADDRESS        => $this->fta->bankAccount->getBeneficiaryAddress1(),
+                        Constants::BENEFICIARY_COUNTRY        => $this->fta->bankAccount->getBeneficiaryCountry(),
+                        Constants::BENEFICIARY_EMAIL_ID       => $this->fta->bankAccount->getBeneficiaryEMail(),
+                        Constants::BENEFICIARY_IFSC_CODE      => $this->fta->bankAccount->getIfscCode(),
+                        Constants::BENEFICIARY_BANK_NAME      => $this->fta->bankAccount->getBankName(),
+                        Constants::BENEFICIARY_ACCOUNT_TYPE   => $this->fta->bankAccount->getAccountType(),
+                        Constants::BENEFICIARY_ACCOUNT_NUMBER => $this->fta->bankAccount->getAccountNumber(),
                 ],
         ];
 
@@ -168,8 +171,87 @@ class FundTransfer extends Base
                 break;
 
             default:
-                throw new LogicException('Source Type is not supported ' . $this->type);
+                throw new LogicException('Source Type is not supported ' . $sourceType);
 
+        }
+    }
+
+    protected function handleResponse(array $responseBody, string $type)
+    {
+        $this->updateSource($responseBody);
+
+        $this->updateFTA($responseBody);
+
+        $this->updatePaymentInstrumentByType($responseBody, $type);
+    }
+
+    protected function updateSource(array $responseBody)
+    {
+        $this->source->setFTSTransferId($responseBody['transfer_id']);
+
+        $this->source->setStatus($responseBody['status']);
+
+        $this->updateSourceByType($this->fta->source);
+    }
+
+    protected function updateFTA(array $responseBody)
+    {
+        $this->fta->setFTSTransferId($responseBody['transfer_id']);
+
+        $this->fta->setStatus($responseBody['status']);
+
+        $this->FTACore->updateFTA($this->fta);
+    }
+
+    protected function updatePaymentInstrument(array $responseBody, string $type)
+    {
+        switch ($type)
+        {
+            case Constants::bankAccount:
+                $this->fta->bankAccount->setFTSAccountId($responseBody['fa_id']);
+
+                (new BankAccountCore)->updateBankAccountEntity($this->fta->bankAccount);
+
+                break;
+
+            case Constants::VPA:
+                $this->fta->vpa->setFTSAccountId($responseBody['fa_id']);
+
+                (new VPACore)->updateVPAEntity($this->fa->vpa);
+
+                break;
+
+            default:
+                throw new LogicException('Account Type is not supported ' . $type);
+        }
+    }
+
+    protected function updateSourceByType($source)
+    {
+        switch ($this->fta->getSourceType())
+        {
+            case Constants::SETTLEMENT:
+                (new SettlementCore)->updateSettlementEntity($source);
+
+                break;
+
+            case Constants::REFUND:
+                (new PaymentCore)->updateRefundEntity($source);
+
+                break;
+
+            case Constants::PAYOUT:
+                (new PayoutCore)->getPayoutEntityById($source);
+
+                break;
+
+            case Constants::FUND_ACCOUNT_VALIDATION:
+                (new FundAccountValidationCore)->updateFundAccountValidationEntity($source);
+
+                break;
+
+            default:
+                throw new LogicException('Source Type is not supported ' . $this->fta->getSourceType());
         }
     }
 }
