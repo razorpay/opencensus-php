@@ -6,11 +6,11 @@ class Constants
 {
     const NOTIFICATIONS = [
         [
-            'title'       => 'Early Settlements',
+            'title'       => 'Instant Settlements',
             'description' =>
                 'Get your payments settled within a few hours and never have a shortfall of working capital. ',
-            'start_ts'    => 1542688200,
-            'end_ts'      => 1545280200,
+            'start_ts'    => 1548909000,
+            'end_ts'      => 1556728200,
             'icon'        => 'settlements',
             'buttons'     => [
                 [
@@ -20,10 +20,10 @@ class Constants
                 ],
             ],
             'filters'     => [
-                'tags'         => ['announcement_early_settlements'],
-                'not_tags'     => ['es_automatic'],
-                'activated'    => 1,
-                'not_features' => ['es_on_demand']
+                'experiments'         => ['is_announcement'],
+            ],
+            'ga'          => [
+                'action'        => 'Instant Settlements - Announcement'
             ]
         ],
         [

@@ -62,3 +62,10 @@ const trackESAnnouncements = () => {
 };
 
 export default trackESAnnouncements();
+
+export const trackInstantSettlementsBanner = label => {
+  track({
+    eventAction: 'Instant Settlements - Banner',
+    eventLabel: label,
+  });
+};

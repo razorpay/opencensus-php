@@ -285,6 +285,11 @@ export default class User {
   get isRefundAllowed() {
     return this.isAllowedEdit('refunds') && !this.isRefundsDisabled;
   }
+
+  //instant settlements
+  get isISBannerEnabled() {
+    return this.getExpStatus('is_banner');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {
