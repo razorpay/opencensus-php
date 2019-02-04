@@ -740,6 +740,7 @@ final class FactoryData
             'interval'          => 1,
             'delay'             => 3,
             'hour'              => 5,
+            'type'              => 'settlement',
             'org_id'            => \RZP\Tests\Functional\Fixtures\Entity\Org::RZP_ORG,
         ]);
 
