@@ -215,7 +215,10 @@ export default ({
 
           {showEmbedButton && (
             <div class="Share-section">
-              <span class="label--faded">Embed Payment button </span>
+              <span class="label--faded">
+                <i class="i i-embed-btn" />
+                Embed Payment button
+              </span>
               <div style={{ display: 'inline-block' }}>
                 <span class="help-content">
                   <i class="i i-info-outline" style={{ marginLeft: 4 }} />
@@ -242,7 +245,9 @@ export default ({
           )}
 
           <div class="Share-section">
-            <span class="label--faded">Share on social media. </span>
+            <span class="label--faded">
+              <i class="i i-share" /> Share{' '}
+            </span>
             <div class="social-media" style={{ display: 'inline-block' }}>
               <a onClick={mediaWindowUrl} data-type="fb">
                 <img src="/img/social-media/fb.png" alt="Facebook share" />
