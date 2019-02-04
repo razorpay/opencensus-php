@@ -714,11 +714,11 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
 
         $liveMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'live');
-        $this->assertSame(6211, $liveMerchant->getCategory());
+        $this->assertSame('6211', $liveMerchant->getCategory());
         $this->assertSame('mutual_funds', $liveMerchant->getCategory2());
 
         $testMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'test');
-        $this->assertSame(6211, $testMerchant->getCategory());
+        $this->assertSame('6211', $testMerchant->getCategory());
         $this->assertSame('mutual_funds', $testMerchant->getCategory2());
     }
 
@@ -738,11 +738,11 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
 
         $liveMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'live');
-        $this->assertSame(5399, $liveMerchant->getCategory());
+        $this->assertSame('5399', $liveMerchant->getCategory());
         $this->assertSame('others', $liveMerchant->getCategory2());
 
         $testMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'test');
-        $this->assertSame(5399, $testMerchant->getCategory());
+        $this->assertSame('5399', $testMerchant->getCategory());
         $this->assertSame('others', $testMerchant->getCategory2());
     }
 
@@ -791,7 +791,7 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
 
         $liveMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'live');
-        $this->assertSame(6211, $liveMerchant->getCategory());
+        $this->assertSame('6211', $liveMerchant->getCategory());
         $this->assertSame('mutual_funds', $liveMerchant->getCategory2());
     }
 

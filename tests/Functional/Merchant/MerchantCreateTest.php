@@ -606,6 +606,8 @@ class MerchantCreateTest extends TestCase
 
         $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
 
+        $account = $this->fixtures->edit('merchant', $account->getId(), ['category' => '1100']);
+
         $this->ba->proxyAuth();
 
         $account = $account->toArrayPublic();
@@ -639,6 +641,8 @@ class MerchantCreateTest extends TestCase
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
+
+        $account = $this->fixtures->edit('merchant', $account->getId(), ['category' => '1100']);
 
         $user = $this->fixtures->create('user', ['email' => 'testing1@testing.com']);
 

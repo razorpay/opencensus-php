@@ -321,7 +321,7 @@ return [
                 'entity' => 'merchant',
                 'international' => true,
                 'linked_account_kyc' => true,
-                'category' => 1111,
+                'category' => '1111',
                 'website' => 'http://abc.com',
                 'transaction_report_email'  => [
                     'test@razorpay.com'
@@ -374,7 +374,7 @@ return [
                 'international' => '1',
                 'linked_account_kyc' => '1',
                 'website' => 'https://www.example.com',
-                'category' => '1111',
+                'category' => 1111,
                 'transaction_report_email'  => [
                     'test@razorpay.com'
                 ],
@@ -395,7 +395,7 @@ return [
                 'entity' => 'merchant',
                 'international' => true,
                 'linked_account_kyc' => true,
-                'category' => 1111,
+                'category' => '1111',
                 'website' => 'https://www.example.com',
                 'transaction_report_email'  => [
                     'test@razorpay.com'
