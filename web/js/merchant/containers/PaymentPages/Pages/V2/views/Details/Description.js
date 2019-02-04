@@ -51,7 +51,11 @@ export default class extends React.PureComponent {
   }
 
   componentWillUpdate(nextProps) {
-    if (this.props.description !== nextProps.description) {
+    if (
+      this.props.description !== nextProps.description &&
+      !this.templateInitDone
+    ) {
+      this.templateInitDone = true;
       this.QUILL && this.QUILL.setContents(JSON.parse(nextProps.description));
     }
   }
