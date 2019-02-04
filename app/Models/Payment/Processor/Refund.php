@@ -18,6 +18,7 @@ use RZP\Models\Transaction;
 use RZP\Jobs\ScroogeRefund;
 use RZP\Models\BankTransfer;
 use RZP\Jobs\ScroogeRefundRetry;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Gateway\Base\ScroogeResponse;
 use RZP\Models\Feature\Constants as Feature;
@@ -1182,7 +1183,19 @@ trait Refund
             $data
         );
 
-        ScroogeRefund::dispatch($data);
+        try
+        {
+            ScroogeRefund::dispatch($data);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::REFUND_QUEUE_SCROOGE_DISPATCH_FAILED,
+                $data
+            );
+        }
     }
 
     protected function callRefundFunctionOnApi($payment, $data)
@@ -1336,7 +1349,19 @@ trait Refund
             $data
         );
 
-        ScroogeRefundRetry::dispatch($data);
+        try
+        {
+            ScroogeRefundRetry::dispatch($data);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::REFUND_RETRY_QUEUE_SCROOGE_DISPATCH_FAILED,
+                $data
+            );
+        }
     }
 
     public function callRefundRetryFunctionOnApi($refund, $data)

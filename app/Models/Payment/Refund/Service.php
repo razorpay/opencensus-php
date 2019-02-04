@@ -1114,7 +1114,19 @@ class Service extends Base\Service
                      $data
         );
 
-        ScroogeRefundUpdate::dispatch($data);
+        try
+        {
+            ScroogeRefundUpdate::dispatch($data);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::REFUND_UPDATE_QUEUE_SCROOGE_DISPATCH_FAILED,
+                $data
+            );
+        }
     }
 
     public function fetchRefundDetailsForCustomer(array $input)
