@@ -32,7 +32,7 @@ const typeToTargetMap = {
     'allahabad',
   ],
   emandate_register: ['hdfc', 'enach_rbl'],
-  emandate_debit: ['hdfc', 'axis', 'enach_rbl'],
+  emandate_debit: ['hdfc', 'axis', 'enach_rbl', 'enach_npci_netbanking'],
   // TODO: uncomment this when api branch supporting this gets merge
   // claim: [],
   refund_failed: [

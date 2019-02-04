@@ -87,6 +87,7 @@ const gatewayAcquirerMapping = {
   zestmoney: 'ZestMoney',
   earlysalary: 'EarlySalary',
   amex: 'Amex',
+  yesb: 'Yes Bank',
 };
 
 const HDFC_gatewayAcquirerMapping = {
