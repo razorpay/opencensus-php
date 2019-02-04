@@ -62,7 +62,7 @@ class FundTransfer extends Base
 
                 break;
 
-            case Constants::bankAccount:
+            case Constants::BANK_ACCOUNT:
                 $request = $this->addBankAccountDetails($request);
 
                 break;
@@ -178,20 +178,9 @@ class FundTransfer extends Base
 
     protected function handleResponse(array $responseBody, string $type)
     {
-        $this->updateSource($responseBody);
-
         $this->updateFTA($responseBody);
 
         $this->updatePaymentInstrumentByType($responseBody, $type);
-    }
-
-    protected function updateSource(array $responseBody)
-    {
-        $this->source->setFTSTransferId($responseBody['transfer_id']);
-
-        $this->source->setStatus($responseBody['status']);
-
-        $this->updateSourceByType($this->fta->source);
     }
 
     protected function updateFTA(array $responseBody)
@@ -223,35 +212,6 @@ class FundTransfer extends Base
 
             default:
                 throw new LogicException('Account Type is not supported ' . $type);
-        }
-    }
-
-    protected function updateSourceByType($source)
-    {
-        switch ($this->fta->getSourceType())
-        {
-            case Constants::SETTLEMENT:
-                (new SettlementCore)->updateSettlementEntity($source);
-
-                break;
-
-            case Constants::REFUND:
-                (new PaymentCore)->updateRefundEntity($source);
-
-                break;
-
-            case Constants::PAYOUT:
-                (new PayoutCore)->getPayoutEntityById($source);
-
-                break;
-
-            case Constants::FUND_ACCOUNT_VALIDATION:
-                (new FundAccountValidationCore)->updateFundAccountValidationEntity($source);
-
-                break;
-
-            default:
-                throw new LogicException('Source Type is not supported ' . $this->fta->getSourceType());
         }
     }
 }

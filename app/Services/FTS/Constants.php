@@ -12,6 +12,8 @@ final class Constants
 
     const MODE                          = 'mode';
 
+    const FA_ID                         = 'fa_id';
+
     const HANDLE                        = 'handle';
 
     const AMOUNT                        = 'amount';

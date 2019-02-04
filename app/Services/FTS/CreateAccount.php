@@ -40,11 +40,11 @@ class CreateAccount extends Base
 
         $response = $this->createAndSendRequest(parent::FundAccountBaseURL, 'POST', $input);
 
-        $ftsAccountId = array_key_exists('fa_id', $response['body']) ? $response['body']['fa_id'] : null;
+        $ftsAccountId = array_key_exists(Constants::FA_ID, $response['body']) ? $response['body'][Constants::FA_ID] : null;
 
         if(empty(trim($ftsAccountId)) === false)
         {
-            $this->saveFTSAccountId($ftsAccountId, $this->account);
+            $this->saveFTSAccountId($ftsAccountId, $type);
         }
 
         return $response;
@@ -64,21 +64,21 @@ class CreateAccount extends Base
         switch ($type)
         {
             case Constants::BANK_ACCOUNT:
-                $account = $this->bankAccountCore->getBankAccountEntity($id);
+                $this->account = $this->bankAccountCore->getBankAccountEntity($id);
 
-                $request[Constants::BANK_ACCOUNT] = $this->getAccountDetails($account);
+                $request[Constants::BANK_ACCOUNT] = $this->getAccountDetails($this->account);
 
                 break;
 
             case Constants::VPA:
-                $account = $this->vpaCore->getVPAEntity($id);
+                $this->account = $this->vpaCore->getVPAEntity($id);
 
-                $request[Constants::VPA] = $this->getVPADetails($account);
+                $request[Constants::VPA] = $this->getVPADetails($this->account);
 
                 break;
 
             default:
-                throw new LogicException('Type is not supported ' . $this->type);
+                throw new LogicException('Type is not supported ' . $type);
         }
     }
 
@@ -134,26 +134,26 @@ class CreateAccount extends Base
      * to account entities of specific types
      *
      * @param $ftsAccountId
-     * @param $account
+     * @param $type
      */
-    public function saveFTSAccountId($ftsAccountId, $account)
+    public function saveFTSAccountId($ftsAccountId, $type)
     {
-        $account->setFTSAccountId($ftsAccountId);
+        $this->account->setFTSAccountId($ftsAccountId);
 
-        switch ($this->type)
+        switch ($type)
         {
             case Constants::BANK_ACCOUNT:
-                $this->bankAccountCore->updateBankAccountEntity($account);
+                $this->bankAccountCore->updateBankAccountEntity($this->account);
 
                 break;
 
             case Constants::VPA:
-                $this->vpaCore->updateVPAEntity($account);
+                $this->vpaCore->updateVPAEntity($this->account);
 
                 break;
 
             default:
-                throw new LogicException('Type is not supported ' . $this->type);
+                throw new LogicException('Account Type is not supported ' . $type);
         }
     }
 

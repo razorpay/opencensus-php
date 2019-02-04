@@ -237,9 +237,4 @@ class Core extends Base\Core
     {
         return $this->repo->getSettlementById($setlId);
     }
-
-    public function updateSettlementEntity($entity)
-    {
-        return $this->repo->saveOrFail($entity);
-    }
 }
