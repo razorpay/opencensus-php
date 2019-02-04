@@ -13,6 +13,7 @@ use RZP\Models\Merchant;
 use RZP\Models\LineItem;
 use RZP\Error\ErrorCode;
 use RZP\Models\User\Role;
+use RZP\Constants\Timezone;
 use RZP\Models\Plan\Subscription;
 
 class Repository extends Base\Repository
@@ -158,17 +159,17 @@ class Repository extends Base\Repository
     /**
      * Gets all ISSUED invoice which are past EXPIRE_BY and marks them as EXPIRED.
      * Invoices which are in DRAFT/PAID/CANCELLED status are not affected.
-     *
+     * @param  int $limit
      * @return Base\PublicCollection
      */
-    public function getIssuedAndPastExpiredByInvoices()
+    public function getIssuedAndPastExpiredByInvoices(int $limit = 10000): Base\PublicCollection
     {
-        $currentTime = Carbon::now()->getTimestamp();
+        $now = Carbon::now(Timezone::IST)->getTimestamp();
 
         return $this->newQuery()
                     ->where(Entity::STATUS, '=', Status::ISSUED)
-                    ->where(Entity::EXPIRE_BY, '<', $currentTime)
-                    ->with(Entity::ORDER)
+                    ->where(Entity::EXPIRE_BY, '<', $now)
+                    ->limit($limit)
                     ->get();
     }
 

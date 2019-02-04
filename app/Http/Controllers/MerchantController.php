@@ -1259,4 +1259,13 @@ class MerchantController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function resetSettlementSchedule()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->resetSettlementSchedule($input);
+
+        return ApiResponse::json($response);
+    }
 }

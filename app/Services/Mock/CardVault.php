@@ -6,9 +6,9 @@ use RZP\Services\CardVault as BaseCardVault;
 
 class CardVault extends BaseCardVault
 {
-    public function tokenize($data)
+    public function tokenize($input)
     {
-        $token = base64_encode($data);
+        $token = base64_encode($input['card']);
 
         return $token;
     }
@@ -28,22 +28,8 @@ class CardVault extends BaseCardVault
         return $data;
     }
 
-    public function getTokenexToken($token)
-    {
-        $data = base64_decode($token);
-
-        return $data;
-    }
-
     public function deleteToken($token)
     {
         return [];
-    }
-
-    public function getVaultTokensFromTokenexTokens($tokens)
-    {
-        $card = $this->detokenize($token);
-
-        return $this->tokenize($card);
     }
 }

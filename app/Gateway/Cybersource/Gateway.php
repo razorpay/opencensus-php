@@ -585,8 +585,8 @@ class Gateway extends Base\Gateway
                         'Unexpected status',
                         ErrorCode::GATEWAY_ERROR_UNEXPECTED_STATUS,
                         [
-                            Payment\Gateway::GATEWAY_RESPONSE  => json_encode($refundReply),
-                            Payment\Gateway::GATEWAY_KEYS      =>
+                            Payment\Gateway::GATEWAY_VERIFY_RESPONSE  => json_encode($refundReply),
+                            Payment\Gateway::GATEWAY_KEYS             =>
                                 ['received_status' => $refundReply[0]['@attributes'][F::NAME]]
                         ]);
                 }

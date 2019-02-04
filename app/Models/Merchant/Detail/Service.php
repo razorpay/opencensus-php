@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Admin;
+use RZP\Models\Coupon;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
@@ -585,6 +586,10 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('pre_signup', $input);
 
+        $this->trace->count(Merchant\Metric::PRE_EDIT_SIGNUP_TOTAL);
+
+        $this->applyCoupon($input);
+
         $this->saveMerchantDetails($input);
 
         if (empty($input[Entity::BUSINESS_NAME]) === false)
@@ -616,6 +621,32 @@ class Service extends Base\Service
         $preSignupDetails = $this->getPreSignupDetails();
 
         return $preSignupDetails;
+    }
+
+    /**
+     * Checks whether coupon_code is present in input and applies
+     * @param array $input
+     */
+    private function applyCoupon(array &$input)
+    {
+        if (empty($input[Entity::COUPON_CODE]) === true)
+        {
+            return;
+        }
+
+        $this->trace->info(TraceCode::COUPON_APPLY_REQUEST, $input);
+
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $couponInput = [
+            Coupon\Entity::CODE => $input[Entity::COUPON_CODE],
+        ];
+
+        (new Coupon\Core)->apply($merchant, $couponInput);
+
+        $this->trace->count(Merchant\Metric::SIGNUP_COUPON_TOTAL);
+
+        unset($input[Entity::COUPON_CODE]);
     }
 
     private function getZapierData($merchant, $input)

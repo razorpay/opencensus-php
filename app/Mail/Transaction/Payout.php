@@ -3,6 +3,8 @@
 namespace RZP\Mail\Transaction;
 
 use RZP\Models\FundAccount;
+use RZP\Exception\LogicException;
+use RZP\Models\Merchant\Webhook\Event;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Payout\Repository as PayoutRepository;
 
@@ -13,9 +15,9 @@ class Payout extends Transaction
      */
     protected $fundAccount;
 
-    public function  __construct(array $balance, array $txn, array $source, array $merchant)
+    public function  __construct(string $event, array $balance, array $txn, array $source, array $merchant)
     {
-        parent::__construct($balance, $txn, $source, $merchant);
+        parent::__construct($event, $balance, $txn, $source, $merchant);
 
         $this->addFundAccountAttributes();
 
@@ -24,34 +26,31 @@ class Payout extends Transaction
 
     protected function getSubject(): string
     {
-        return sprintf(
-            'RazorpayX | Your A/c %s has been debited by INR %s',
-            $this->balance['account_number_masked'],
-            $this->txn['amount_formatted']);
+        $payoutId            = $this->source['id'];
+        $formattedAmount     = amount_format_IN($this->txn['amount']);
+        $maskedAccountNumber = mask_except_last4($this->balance['account_number']);
+
+        switch ($this->event)
+        {
+            case Event::PAYOUT_PROCESSED:
+                return "Your A/C ending with {$maskedAccountNumber} has been debited by INR {$formattedAmount}";
+
+            case Event::PAYOUT_REVERSED:
+                return "Payout {$payoutId} has been reversed";
+
+            default:
+                throw new LogicException("Not handled transaction mail event: {$this->event}");
+        }
     }
 
     protected function addFundAccountAttributes()
     {
-        // Gets related fund account attributes.
         $payout = (new PayoutRepository)->find($this->source[PayoutEntity::ID]);
-        $this->fundAccount = $payout->fundAccount->toArrayPublic();
+        $fundAccount = $payout->fundAccount;
 
-        // Fund account could be of various types. Mail body is uniform and hence we pass general attributs.
-        $accountType = $this->fundAccount[FundAccount\Entity::ACCOUNT_TYPE];
-
-        if ($accountType === FundAccount\Type::BANK_ACCOUNT)
-        {
-            $accountTypeFormatted = ucfirst(str_replace('_', ' ', $accountType));
-            $destination = mask_except_last4($this->fundAccount[FundAccount\Entity::DETAILS]['account_number']);
-        }
-        elseif ($accountType === FundAccount\Type::VPA)
-        {
-            $accountTypeFormatted = strtoupper($accountType);
-            $destination = $this->fundAccount[FundAccount\Entity::DETAILS]['address'];
-        }
-
-        $this->fundAccount['account_type_formatted'] = $accountTypeFormatted;
-        $this->fundAccount['destination'] = $destination;
+        $this->fundAccount = $fundAccount->toArrayPublic();
+        $this->fundAccount['destination'] = $fundAccount->getAccountDestinationAsText();
+        $this->fundAccount['account_type_formatted'] = $fundAccount->getAccountTypeAsText();
     }
 
     protected function modifySourceAttributes()
@@ -68,6 +67,9 @@ class Payout extends Transaction
 
     protected function addHtmlView()
     {
-        return $this->view('emails.transaction.payout');
+        // E.g. payout_processed, payout_reversed etc.
+        $view = str_replace('.', '_', $this->event);
+
+        return $this->view("emails.transaction.{$view}");
     }
 }

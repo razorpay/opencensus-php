@@ -159,7 +159,6 @@ trait Authorize
 
         $request = $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
 
-
         $this->runShieldCheck($payment);
 
         //
@@ -273,6 +272,8 @@ trait Authorize
                 $internalErrorCode = $payment->getInternalErrorCode();
 
                 $this->logRiskFailureForGateway($payment, $internalErrorCode);
+
+                $this->disableIinFlowIfApplicable($payment, $internalErrorCode);
 
                 throw $e;
             }
@@ -422,6 +423,8 @@ trait Authorize
                 $redirectUrl = $this->getPaymentRedirectTo3dsUrl();
             }
 
+            $response['redirect'] = $redirectUrl;
+
             $metaData = [
                 'issuer'     => $card->getIssuer(),
                 'network'    => $card->getNetworkCode(),
@@ -468,10 +471,10 @@ trait Authorize
                 'payment_id' => $payment->getPublicId(),
                 'next'       => $next,
                 'gateway'    => $response['gateway'],
-                'redirect'   => $redirectUrl,
                 'submit_url' => $request['url'],
                 'resend_url' => $resendUrl,
                 'metadata'   => $metaData,
+                'redirect'   => $redirectUrl,
             ];
         }
 
@@ -4984,8 +4987,7 @@ trait Authorize
     {
         $merchant = $payment->merchant;
 
-        if (($this->app['basicauth']->isPrivateAuth() === false) or
-            ($merchant->isFeatureEnabled(Feature\Constants::REDIRECT_S2S_AUTHORIZE) === false))
+        if ($this->app['basicauth']->isPrivateAuth() === false)
         {
             return null;
         }
@@ -5028,7 +5030,7 @@ trait Authorize
 
         $this->cache->put($key, $encryptedPayload, self::REDIRECT_CACHE_TTL);
 
-        $redirectUrl = $this->route->getUrl('payment_redirect_to_authoize', ['id' => $trackId]);
+        $redirectUrl = $this->route->getUrl('payment_redirect_to_authorize_get', ['id' => $trackId]);
 
         $data['type'] = 'first';
 

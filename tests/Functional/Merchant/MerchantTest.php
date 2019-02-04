@@ -1089,6 +1089,8 @@ class MerchantTest extends TestCase
 
     public function testDiwaliPromotionalPlan()
     {
+        $this->markTestSkipped();
+
         $this->fixtures->pricing->createDiwaliPromotionalPlan();
 
         $payment = $this->getDefaultPaymentArray();
@@ -1130,6 +1132,8 @@ class MerchantTest extends TestCase
 
     public function testDiwaliPromotionalPlanFeatureRemoval()
     {
+        $this->markTestSkipped();
+
         $this->fixtures->merchant->addFeatures(['diwali_promotional_plan']);
         $this->fixtures->pricing->createStandardPlan();
         $this->fixtures->merchant->disableInternational();

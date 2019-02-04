@@ -448,6 +448,18 @@ class Gateway extends Base\Gateway
         $scroogeResponse->setGatewayVerifyResponse($content)
                         ->setGatewayKeys($this->getGatewayData($content));
 
+        if ((isset($content['vpc_DRExists']) === false) or (isset($content['vpc_FoundMultipleDRs']) === false))
+        {
+            throw new Exception\LogicException(
+                'Unexpected gateway verify refund response',
+                ErrorCode::GATEWAY_ERROR_UNEXPECTED_STATUS,
+                [
+                    Payment\Gateway::GATEWAY_VERIFY_RESPONSE  => json_encode($content),
+                    Payment\Gateway::GATEWAY_KEYS             => $this->getGatewayData($content)
+                ]
+            );
+        }
+
         // vpc_DRExists can be 'N' in two cases:
         // 1. If refund is older than 5 days (MiGS doesn't allow txn query on txns older than 5 days)
         //    We throw exception in this case as it has to be manually reviewed
@@ -467,8 +479,8 @@ class Gateway extends Base\Gateway
                 'Cannot verify old MiGS refunds',
                 ErrorCode::GATEWAY_VERIFY_OLDER_REFUNDS_DISABLED,
                 [
-                    Payment\Gateway::GATEWAY_RESPONSE  => json_encode($content),
-                    Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($content)
+                    Payment\Gateway::GATEWAY_VERIFY_RESPONSE  => json_encode($content),
+                    Payment\Gateway::GATEWAY_KEYS             => $this->getGatewayData($content)
                 ]
             );
         }

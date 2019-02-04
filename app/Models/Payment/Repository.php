@@ -28,7 +28,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Verify;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Offer\EntityOffer;
-use RZP\Models\Pricing\FeeCalculator;
+use RZP\Models\Pricing\Calculator;
 use RZP\Error\PublicErrorDescription;
 use RZP\Constants\Entity as EntityName;
 use RZP\Models\Merchant\Invoice\Type as InvoiceType;
@@ -133,7 +133,7 @@ class Repository extends Base\Repository
         if (((empty($merchant) === true) or ($merchant->isLinkedAccount() === false)) and
             (($value === 'transfer') or ($value === 'transfer.settlement')))
         {
-            throw new Exception\ExtraFieldsException("expand=transfer");
+            throw new Exception\ExtraFieldsException('expand=transfer');
         }
     }
 
@@ -1044,7 +1044,7 @@ class Repository extends Base\Repository
                        Payment\Entity::MERCHANT_ID . ','.
                        Merchant\Entity::NAME . ','.
                        Merchant\Entity::WEBSITE . ','.
-                       "SUM(amount) / 100 AS volume" . ','.
+                       'SUM(amount) / 100 AS volume' . ','.
                        'COUNT(*) AS count')
                     ->betweenTime($from, $to)
                     ->statusSuccess()
@@ -1071,7 +1071,7 @@ class Repository extends Base\Repository
                        Payment\Entity::MERCHANT_ID . ','.
                        Merchant\Entity::NAME . ','.
                        Merchant\Entity::WEBSITE . ','.
-                       "SUM(amount) / 100 AS volume" . ','.
+                       'SUM(amount) / 100 AS volume' . ','.
                        'COUNT(*) AS count')
                     ->betweenTime($from, $to)
                     ->statusSuccess()
@@ -1559,13 +1559,13 @@ class Repository extends Base\Repository
 
             case InvoiceType::CARD_LTE_2K:
                 $query = $query->whereNotNull(Entity::CARD_ID)
-                               ->where(Entity::BASE_AMOUNT, '<=', FeeCalculator::CARD_TAX_CUT_OFF);
+                               ->where(Entity::BASE_AMOUNT, '<=', Calculator\Base::CARD_TAX_CUT_OFF);
 
                 break;
 
             case InvoiceType::CARD_GT_2K:
                 $query = $query->whereNotNull(Entity::CARD_ID)
-                               ->where(Entity::BASE_AMOUNT, '>', FeeCalculator::CARD_TAX_CUT_OFF);
+                               ->where(Entity::BASE_AMOUNT, '>', Calculator\Base::CARD_TAX_CUT_OFF);
 
                 break;
 
@@ -1654,5 +1654,34 @@ class Repository extends Base\Repository
                     ->where(Entity::STATUS, '=', Status::CREATED)
                     ->where(Payment\Entity::GATEWAY, '=', $gateway)
                     ->get();
+    }
+
+    public function determineLiveOrTestModeForEntityWithGateway($id, $gateway)
+    {
+        $obj = $this->connection(Mode::LIVE)->newQuery()->where(Entity::GATEWAY, $gateway)->find($id);
+
+        if ($obj !== null)
+        {
+            return Mode::LIVE;
+        }
+
+        $obj = $this->connection(Mode::TEST)->newQuery()->where(Entity::GATEWAY, $gateway)->find($id);
+
+        if ($obj !== null)
+        {
+            return Mode::TEST;
+        }
+
+        //
+        // We need to set connection to null
+        // because it will be set to test if the
+        // id is not found in any of the database.
+        // So even if the db connection is later set
+        // to live, query connection will be set to
+        // test.
+        //
+        $this->connection(null);
+
+        return null;
     }
 }

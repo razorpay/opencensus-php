@@ -45,7 +45,7 @@ class Validator extends Base\Validator
         Entity::NAME                        => 'sometimes|string|max:200',
         Entity::HOLD_FUNDS                  => 'sometimes|in:0,1',
         Entity::WEBSITE                     => 'sometimes|url|max:255|nullable',
-        Entity::CATEGORY                    => 'sometimes|numeric|digits:4',
+        Entity::CATEGORY                    => 'sometimes|string|digits:4',
         Entity::CATEGORY2                   => 'sometimes|string|max:30|custom',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::BILLING_LABEL               => 'sometimes|max:255',
@@ -189,6 +189,11 @@ class Validator extends Base\Validator
     protected static $editMethodsRules = [
         //only this method editing is allowed for now
         Methods\Entity::EMI => 'required|bool',
+    ];
+
+    protected static $resetSettlementScheduleRules = [
+        'merchant_ids'   => 'required|sequential_array',
+        'merchant_ids.*' => 'required|alpha_num|size:14',
     ];
 
     protected static $editConfigValidators = [

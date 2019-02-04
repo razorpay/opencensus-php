@@ -84,6 +84,8 @@ class ApiEventSubscriber extends Base\Core
         WebhookEvent::INVOICE_PAID,
         WebhookEvent::PAYMENT_AUTHORIZED,
         WebhookEvent::PAYMENT_FAILED,
+        WebhookEvent::PAYOUT_PROCESSED,
+        WebhookEvent::PAYOUT_REVERSED,
     ];
 
     public function __construct()
@@ -417,18 +419,34 @@ class ApiEventSubscriber extends Base\Core
 
     protected function onPayoutProcessed(Payout\Entity $payout)
     {
-        $payload = $this->getPayoutPayload($payout);
+        if ($payout->isOfMerchantTransaction() === true)
+        {
+            (new Transaction\Notifier($payout->transaction, $this->event))->notify();
+        }
 
-        $this->prepareAndDispatchWebhook($payload);
+        if ($this->webhookEnabledForEvent === true)
+        {
+            $payload = $this->getPayoutPayload($payout);
+
+            $this->prepareAndDispatchWebhook($payload);
+        }
     }
 
     protected function onPayoutReversed(Payout\Entity $payout)
     {
-        $payload = $this->getPayoutPayload($payout);
+        // Todo: Uncomment this once payout_reversed.blade.php file is updated with content.
+        // if ($payout->isOfMerchantTransaction() === true)
+        // {
+        //     (new Transaction\Notifier($payout->transaction, $this->event))->notify();
+        // }
 
-        $this->prepareAndDispatchWebhook($payload);
+        if ($this->webhookEnabledForEvent === true)
+        {
+            $payload = $this->getPayoutPayload($payout);
+
+            $this->prepareAndDispatchWebhook($payload);
+        }
     }
-
 
     protected function getP2pPayload($p2p)
     {

@@ -36,7 +36,7 @@ class Validator extends Base\Validator
         Entity::VISA_MPAN                   => 'sometimes|string|size:16',
         Entity::RUPAY_MPAN                  => 'sometimes|string|size:16',
         Entity::VPA                         => 'sometimes|string|max:255',
-        Entity::CATEGORY                    => 'sometimes|integer|digits:4',
+        Entity::CATEGORY                    => 'sometimes|string|integer|digits:4',
         Entity::CARD                        => 'sometimes|boolean',
         Entity::NETBANKING                  => 'sometimes|boolean',
         Entity::EMANDATE                    => 'sometimes|boolean',
@@ -658,6 +658,14 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
         Entity::TYPE                        => 'sometimes|array',
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
+    ];
+
+    protected static $enachNpciNetbankingTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:enach_npci_netbanking',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE         => 'required|string',
+        Entity::TYPE                        => 'required|array',
     ];
 
     protected static $editWalletAirtelmoneyTerminalRules = [

@@ -454,6 +454,35 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function doS2sUpiPaymentPartner($client, $submerchantId, $payment = null, $server = null)
+    {
+        $server = [
+            'HTTP_X-Razorpay-Account' => $submerchantId,
+        ];
+
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/upi',
+            'content' => $payment
+        ];
+
+        if (isset($server))
+        {
+            $request['server'] = $server;
+        }
+
+        $this->ba->privateAuth('rzp_test_partner_' . $client->getId(), $client->getSecret());
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function doS2SPrivateAuthAndCapturePayment($payment = null)
     {
         $paymentAuth = $this->doS2SPrivateAuthPayment($payment);
@@ -583,10 +612,12 @@ trait PaymentTrait
         return $this->sendRequest($request);
     }
 
-    protected function makeS2sCallbackAndGetContent($content)
+    protected function makeS2sCallbackAndGetContent($content, $gateway = null)
     {
+        $gateway = $gateway ?: $this->gateway;
+
         $request = [
-            'url'    => '/callback/' . $this->gateway,
+            'url'    => '/callback/' . $gateway,
             'method' => 'post'
         ];
 
@@ -916,10 +947,22 @@ trait PaymentTrait
 
         $request = array(
             'method'  => 'POST',
-            'url'     => '/refunds/'.$input['id'].'/gateway_refund',
+            'url'     => '/refunds/'.$input['id'].'/gateway_verify',
             'content' => $input);
 
         $response = $this->makeRequestAndGetContent($request);
+
+        $callRefund = $this->checkForRefundCall($response);
+
+        if ($callRefund === true)
+        {
+            $request = array(
+                'method'  => 'POST',
+                'url'     => '/refunds/'.$input['id'].'/gateway_refund',
+                'content' => $input);
+
+            $response = $this->makeRequestAndGetContent($request);
+        }
 
         if ($response['status_code'] === 'REFUND_SUCCESSFUL')
         {
@@ -927,6 +970,24 @@ trait PaymentTrait
         }
 
         return $response;
+    }
+
+    protected function checkForRefundCall($response)
+    {
+        $verifyFailures = [
+            '0',
+            'GATEWAY_VERIFY_OLDER_REFUNDS_DISABLED',
+            'GATEWAY_ERROR_REQUEST_ERROR',
+            'REFUND_SUCCESSFUL',
+            'GATEWAY_ERROR_UNEXPECTED_STATUS'
+        ];
+
+        if (in_array($response['status_code'], $verifyFailures, true) === true)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     protected function scroogeRefundMarkProcessed(array $refund)
@@ -1645,7 +1706,7 @@ trait PaymentTrait
             'id' => $trackId,
         ];
 
-        $url = \URL::route('payment_redirect_to_authoize', $params, false);
+        $url = \URL::route('payment_redirect_to_authorize_get', $params, false);
         $url = 'http://localhost' . $url;
 
         return $url;
@@ -1889,42 +1950,6 @@ trait PaymentTrait
         $this->mockCardVault();
 
         return;
-
-        $tokenex = Mockery::mock('RZP\Services\TokenEx')->makePartial();
-
-        $this->app->instance('card.tokenex', $tokenex);
-
-        $tokenex->shouldReceive('sendRequest')
-            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
-            ->andReturnUsing(function ($route, $method, $input)
-            {
-                $response = [
-                    'Error' => '',
-                    'ReferenceNumber' => '15102913382030662954',
-                    'Success' => true,
-                ];
-
-                switch ($route)
-                {
-                    case 'REST/Tokenize':
-                        $response['Token'] = base64_encode($input['Data']);
-                        break;
-
-                    case 'REST/Detokenize':
-                        $response['Value'] = base64_decode($input['Token']);
-                        break;
-
-                    case 'REST/ValidateToken':
-                        $response['Valid'] = true;
-                        break;
-
-                    case 'REST/DeleteToken':
-                        break;
-                }
-                return $response;
-            });
-
-        $this->app->instance('card.tokenex', $tokenex);
     }
 
     protected function mockCardVault()
@@ -1958,9 +1983,6 @@ trait PaymentTrait
                         {
                             $response['success'] = false;
                         }
-                        break;
-                    case 'tokenex_token';
-                        $response['tokenex_token'] = $input['token'];
                         break;
 
                     case 'delete':
@@ -2026,6 +2048,37 @@ trait PaymentTrait
         ];
 
         $this->ba->publicAuth('rzp_test_partner_' . $clientId);
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    /**
+     * @param $payment
+     * @param $client
+     * @param $submerchantId
+     *
+     * @return bool|mixed|string
+     */
+    protected function doS2SPartnerAuthPayment($payment, $client, $submerchantId)
+    {
+        $server = [
+            'HTTP_X-Razorpay-Account' => $submerchantId,
+        ];
+
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/redirect',
+            'content' => $payment,
+            'server'  => $server,
+        ];
+
+        $this->ba->privateAuth('rzp_test_partner_' . $client->getId(), $client->getSecret());
         $content = $this->makeRequestAndGetContent($request);
 
         return $content;

@@ -277,6 +277,8 @@ class BasicAuth
 
     protected $orgHostName = null;
 
+    protected $orgType     = null;
+
     /**
      * User is set from the id received in X-Dashboard-User-Id header.
      *
@@ -1387,8 +1389,10 @@ class BasicAuth
         {
             $this->authCreds->setMode($mode);
 
-            $this->mode = $this->authCreds->getMode();
+            $mode = $this->authCreds->getMode();
         }
+
+        $this->mode = $mode;
 
         $this->app['rzp.mode'] = $mode;
     }
@@ -1424,9 +1428,15 @@ class BasicAuth
     {
         if ($merchant !== null)
         {
-            $this->setOrgId($merchant->org->getPublicId());
+            /** @var Org\Entity $org */
+            $org = $merchant->org;
 
-            // basic auth is scattered across the code in core and services  for avoiding duplicate code setting merchant here
+            $this->setOrgId($org->getPublicId());
+
+            $this->setOrgType($org->getType());
+
+            // basic auth is scattered across the code in core and services
+            // for avoiding duplicate code setting merchant here
 
             $this->merchant = $merchant;
         }
@@ -1945,6 +1955,26 @@ class BasicAuth
         $this->orgHostName = $orgHostName;
 
         return $this;
+    }
+
+    /**
+     * Certain access and return contents are controlled by org
+     * type, hence setting it in the auth object
+     *
+     * @param $orgType
+     *
+     * @return $this
+     */
+    public function setOrgType($orgType)
+    {
+        $this->orgType = $orgType;
+
+        return $this;
+    }
+
+    public function getOrgType()
+    {
+        return $this->orgType;
     }
 
     public function getOrgHostName()

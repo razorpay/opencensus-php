@@ -4,6 +4,7 @@ namespace RZP\Gateway\Netbanking\Pnb\Mock;
 
 use RZP\Exception;
 use RZP\Gateway\Base;
+use RZP\Gateway\Netbanking\Pnb\RefundStatus;
 use RZP\Gateway\Netbanking\Pnb\RequestFields;
 use RZP\Gateway\Netbanking\Pnb\ResponseFields;
 
@@ -68,6 +69,19 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($response);
     }
 
+    public function verifyRefund($input)
+    {
+        parent::verifyRefund($input);
+
+        $this->validateActionInput($input);
+
+        $response = $this->getVerifyRefundResponseData($input);
+
+        $this->content($response, 'verify_refund');
+
+        return $this->makeResponse($response);
+    }
+
     protected function getVerifyResponseData(array $input)
     {
         $payment = $this->repo->payment->findOrFail($input[RequestFields::PAYMENT_ID]);
@@ -98,13 +112,41 @@ class Server extends Base\Mock\Server
             ResponseFields::REFUND_ID           => '123',
             ResponseFields::BANK_PAYMENT_ID     => $bid,
             ResponseFields::MERCHANT_ORDER_ID   => $netbankingEntity['payment_id'],
-            ResponseFields::MERCHANT_REFUND_ID  => self::MOCK_MERCHANT_REFUND_ID,
+            ResponseFields::MERCHANT_REFUND_ID  => $request[ResponseFields::MERCHANT_REFUND_ID],
             ResponseFields::REFUND_REFERENCE_NO => self::MOCK_REFUND_ID,
         ];
 
         return [
-            'data'                   => $data,
-            ResponseFields::CHECKSUM => $this->generateHash($data)
+            'data' => $data,
+        ];
+    }
+
+    protected function getVerifyRefundResponseData($request)
+    {
+        $bid = $request[RequestFields::BANK_PAYMENT_ID];
+
+        $netbankingEntity = $this->repo->netbanking->findByGatewayPaymentIdAndAction($bid, Base\Action::AUTHORIZE);
+
+        $refund = $this->repo->refund->findByPublicId('rfnd_' . $request[RequestFields::MERCHANT_REFUND_ID]);
+
+        $data = [
+            ResponseFields::BANK_PAYMENT_ID    => $bid,
+            ResponseFields::MERCHANT_ORDER_ID  => $request[RequestFields::MERCHANT_ORDER_ID],
+            ResponseFields::REFUND_AMOUNT      => $refund['amount'],
+            ResponseFields::TRANSACTION_AMOUNT => $netbankingEntity['amount'],
+            ResponseFields::REFUND_DETAILS     => [
+                [
+                    ResponseFields::REFUND_ID           => '123',
+                    ResponseFields::MERCHANT_REFUND_ID  => $request[ResponseFields::MERCHANT_REFUND_ID],
+                    ResponseFields::REFUND_REFERENCE_NO => self::MOCK_REFUND_ID,
+                    ResponseFields::REFUND_AMOUNT       => $refund['amount'],
+                    ResponseFields::REFUND_STATUS       => RefundStatus::REFUNDED
+                ]
+            ]
+        ];
+
+        return [
+            'data' => [$data],
         ];
     }
 

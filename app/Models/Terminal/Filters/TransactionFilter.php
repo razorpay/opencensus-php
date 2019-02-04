@@ -6,6 +6,7 @@ use App;
 
 use RZP\Exception;
 use RZP\Models\BankAccount\Generator;
+use RZP\Models\Card;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
@@ -40,7 +41,6 @@ class TransactionFilter extends Terminal\Filter
         'bharat_qr',
         'direct_settlement',
         'bank_account_type',
-        'capability',
     ];
 
     public function methodFilter($terminal)
@@ -621,13 +621,14 @@ class TransactionFilter extends Terminal\Filter
                         break;
 
                     case Payment\AuthType::OTP:
+                        $iin = $payment->card->iinRelation;
                         // We should select the terminal only if iin is set and flows are supported
                         // by the IIN
-                        if ($payment->card->iinRelation !== null)
+                        if ($iin !== null)
                         {
                             if (($terminal->isIvr() === true) and
-                                (($payment->card->iinRelation->supports(Flow::IVR) === true) or
-                                 ($payment->card->iinRelation->supports(Flow::OTP) === true)))
+                                (($iin->supports(Flow::IVR) === true) or
+                                 ($iin->supports(Flow::OTP) === true)))
                             {
                                 return true;
                             }
@@ -639,14 +640,14 @@ class TransactionFilter extends Terminal\Filter
                             // Hence, it should be enabled only for all the IVR enabled iins.
                             //
                             if (($gateway === Payment\Gateway::HITACHI) and
-                                (($payment->card->iinRelation->supports(Flow::IVR) === true) or
-                                 ($payment->card->iinRelation->supports(Flow::OTP) === true)))
+                                (($iin->supports(Flow::IVR) === true) or
+                                 ($iin->supports(Flow::OTP) === true)))
                             {
                                 return true;
                             }
 
-                            if ((Gateway::supportsHeadlessBrowser($gateway) === true) and
-                                ($payment->card->iinRelation->supports(Flow::HEADLESS_OTP) === true))
+                            if ((Gateway::supportsHeadlessBrowser($gateway, $iin->getNetworkCode()) === true) and
+                                ($iin->supports(Flow::HEADLESS_OTP) === true))
                             {
                                 return true;
                             }
@@ -697,13 +698,14 @@ class TransactionFilter extends Terminal\Filter
 
     protected function isTerminalWithMerchantMccAbsent(
         array $applicableTerminals,
-        int $merchantMcc = null): bool
+        $merchantMcc = null): bool
     {
         foreach ($applicableTerminals as $terminal)
         {
             //
             // Currently this checks only for HDFC and hitachi gateway terminals
             //
+
             if ((in_array($terminal->getGateway(), Gateway::MCC_FILTER_GATEWAYS, true) === true) and
                 ($terminal->getCategory() === $merchantMcc))
             {

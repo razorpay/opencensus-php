@@ -62,6 +62,7 @@ class Entity extends Base\PublicEntity
         self::CREDIT_TYPE      => CreditType::FEE,
         self::ITERATIONS       => 1,
         self::PRICING_PLAN_ID  => DefaultPlan::PROMOTIONAL_PLAN_ID,
+        self::CREDIT_AMOUNT    => 0,
     ];
 
     protected $casts = [

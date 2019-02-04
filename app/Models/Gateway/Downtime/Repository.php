@@ -25,6 +25,7 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = array(
         Entity::GATEWAY     => 'sometimes|string|max:255',
         Entity::ISSUER      => 'sometimes|string|max:50',
+        Entity::ACQUIRER    => 'sometimes|string|max:30',
         Entity::METHOD      => 'sometimes|string|max:30',
         Entity::BEGIN       => 'sometimes|integer',
         Entity::END         => 'required_with:begin|integer',
@@ -35,6 +36,7 @@ class Repository extends Base\Repository
     const KEY_OPERATOR_MAP = [
         Entity::GATEWAY     => '=',
         Entity::ISSUER      => '=',
+        Entity::ACQUIRER    => '=',
         Entity::METHOD      => '=',
         Entity::SOURCE      => '=',
         Entity::BEGIN       => '<=',
@@ -72,6 +74,11 @@ class Repository extends Base\Repository
 
         $this->buildQuery(self::KEY_OPERATOR_MAP, $params, $query);
 
+        if (isset($params[Entity::TERMINAL_ID]) === false)
+        {
+            $query->whereNull(Entity::TERMINAL_ID);
+        }
+
         return $query->whereNull(Entity::END)
                      ->orderBy(Entity::CREATED_AT)
                      ->first();
@@ -94,6 +101,11 @@ class Repository extends Base\Repository
         $query = $this->newQuery();
 
         $this->buildQuery(self::KEY_OPERATOR_MAP, $params, $query);
+
+        if (isset($params[Entity::TERMINAL_ID]) === false)
+        {
+            $query->whereNull(Entity::TERMINAL_ID);
+        }
 
         return $query->whereNull(Entity::END)
                      ->where(Entity::SCHEDULED, '=', false)

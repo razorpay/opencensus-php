@@ -30,6 +30,7 @@ use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Balance;
 use RZP\Exception\LogicException;
+use RZP\Models\Partner\Commission;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\QueryCache\Cacheable;
 
@@ -360,7 +361,7 @@ class Entity extends Base\PublicEntity
         self::HOLD_FUNDS             => 'bool',
         self::LINKED_ACCOUNT_KYC     => 'bool',
         self::HAS_KEY_ACCESS         => 'bool',
-        self::CATEGORY               => 'int',
+        self::CATEGORY               => 'string',
         self::RISK_THRESHOLD         => 'int',
         self::CONVERT_CURRENCY       => 'bool',
         self::AUTO_CAPTURE_LATE_AUTH => 'bool',
@@ -847,6 +848,11 @@ class Entity extends Base\PublicEntity
         return $this->hasOne(Detail\Entity::class, self::MERCHANT_ID, self::ID);
     }
 
+    public function commissions()
+    {
+        return $this->hasMany(Commission\Entity::class, Commission\Entity::PARTNER_ID, Entity::ID);
+    }
+
     public function setPricingPlan($planId)
     {
         $this->setAttribute(self::PRICING_PLAN_ID, $planId);
@@ -961,7 +967,7 @@ class Entity extends Base\PublicEntity
 
     protected function getCategoryAttribute()
     {
-        return (int) $this->attributes[self::CATEGORY];
+        return $this->attributes[self::CATEGORY];
     }
 
     protected function getBillingLabelAttribute()

@@ -44,10 +44,10 @@ class CardVault
         $this->request = $app['request'];
     }
 
-    public function tokenize($data)
+    public function tokenize($input)
     {
         $input = [
-            self::SECRET => $data,
+            self::SECRET => $input['card'],
         ];
 
         $response = $this->sendRequest('tokenize', 'post', $input);
@@ -75,34 +75,6 @@ class CardVault
         $response = $this->sendRequest('detokenize', 'post', $input);
 
         return $response[self::VALUE];
-    }
-
-    //temp code
-    public function getTokenexToken($token)
-    {
-        $input = [
-            self::TOKEN   => $token
-        ];
-
-        $response = $this->sendRequest('tokenex_token', 'post', $input);
-
-        return $response[self::TOKENEX_TOKEN];
-    }
-
-    public function getVaultTokensFromTokenexTokens($tokens)
-    {
-        $input = [
-            self::TOKENEX_TOKENS   => $tokens
-        ];
-
-        $response = $this->sendRequest('vault-tokens', 'post', $input);
-
-        if (empty($response[self::TOKENEX_VAULT_MAPPING]) === false)
-        {
-            return $response[self::TOKENEX_VAULT_MAPPING];
-        }
-
-        return [];
     }
 
     public function deleteToken($token)

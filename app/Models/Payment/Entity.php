@@ -32,6 +32,7 @@ use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Partner\Commission\CommissionSourceInterface;
 
 /**
  * @property Subscription\Entity    $subscription
@@ -43,7 +44,7 @@ use RZP\Models\Payment\Processor\Netbanking;
  * @property PaymentLink\Entity     $paymentLink
  * @property Transaction\Entity     $transaction
  */
-class Entity extends Base\PublicEntity
+class Entity extends Base\PublicEntity implements CommissionSourceInterface
 {
     use NotesTrait;
 
@@ -1905,7 +1906,7 @@ class Entity extends Base\PublicEntity
 
         if ($settledBy === null)
         {
-            $settledBy = "Razorpay";
+            $settledBy = 'Razorpay';
         }
 
         return $settledBy;
@@ -1988,7 +1989,7 @@ class Entity extends Base\PublicEntity
             case Method::NETBANKING:
                 return [$method, $this->getBankName()];
             case Method::WALLET:
-                return [$method, ucfirst($this->getWallet())];
+                return [$method, Processor\Wallet::getName($this->getWallet())];
             case Method::UPI:
                 return [$method, $this->getVpa()];
             case Method::AEPS:

@@ -386,6 +386,24 @@ class Header
     const HITACHI_TERMINAL_ID  = 'Terminal ID';
     const FAILURE_REASON       = 'Failure Reason';
 
+    //
+    // ICICI netbanking bulk terminal creation headers
+    //
+    const ICIC_NB_MERCHANT_ID  = 'merchant_id';
+    const ICIC_NB_SUB_IDS      = 'Sub IDs';
+    const ICIC_NB_GATEWAY_MID  = 'SPID';
+    const ICIC_NB_GATEWAY_MID2 = 'Payee ID';
+    const ICIC_NB_SECTOR       = 'Sector';
+    const ICIC_NB_TERMINAL_ID  = 'Terminal ID';
+
+    // Contact Headers
+    const CONTACT_ID                  = 'Contact Id';
+    const CONTACT_TYPE                = 'Contact Type';
+    // Using small suffix as there exists with snake cased values. :(
+    const CONTACT_NAME_2              = 'Contact Name';
+    const CONTACT_EMAIL_2             = 'Contact Email';
+    const CONTACT_MOBILE_2            = 'Contact Mobile';
+    const CONTACT_REFERENCE_ID        = 'Contact Reference Id';
 
     /**
      * Input and output file headers
@@ -1126,6 +1144,26 @@ class Header
             ],
         ],
 
+        'terminal_netbanking_icici' => [
+            self::INPUT => [
+                self::ICIC_NB_GATEWAY_MID,
+                self::ICIC_NB_GATEWAY_MID2,
+                self::ICIC_NB_MERCHANT_ID,
+                self::ICIC_NB_SECTOR,
+                self::ICIC_NB_SUB_IDS,
+            ],
+            self::OUTPUT => [
+                self::ICIC_NB_GATEWAY_MID,
+                self::ICIC_NB_GATEWAY_MID2,
+                self::ICIC_NB_MERCHANT_ID,
+                self::ICIC_NB_SECTOR,
+                self::ICIC_NB_SUB_IDS,
+                self::ICIC_NB_TERMINAL_ID,
+                self::STATUS,
+                self::FAILURE_REASON
+            ]
+        ],
+
         'terminal_hitachi' => [
             self::INPUT => [
                 self::HITACHI_RID,
@@ -1168,9 +1206,32 @@ class Header
                 self::HITACHI_CURRENCY,
                 self::HITACHI_TERMINAL_ID,
                 self::STATUS,
-                self::FAILURE_REASON
-            ]
-        ]
+                self::FAILURE_REASON,
+            ],
+        ],
+
+        Type::CONTACT => [
+            self::INPUT => [
+                self::CONTACT_TYPE,
+                self::CONTACT_NAME_2,
+                self::CONTACT_EMAIL_2,
+                self::CONTACT_MOBILE_2,
+                self::CONTACT_REFERENCE_ID,
+                self::NOTES,
+            ],
+            self::OUTPUT => [
+                self::CONTACT_TYPE,
+                self::CONTACT_NAME_2,
+                self::CONTACT_EMAIL_2,
+                self::CONTACT_MOBILE_2,
+                self::CONTACT_REFERENCE_ID,
+                self::NOTES,
+                self::CONTACT_ID,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
     ];
 
     /**

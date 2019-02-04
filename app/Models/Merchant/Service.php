@@ -133,6 +133,19 @@ class Service extends Base\Service
     }
 
     /**
+     * resets the merchant settlement schedule to default
+     *
+     * @param array $input
+     * @return array
+     */
+    public function resetSettlementSchedule(array $input): array
+    {
+        (new Validator)->validateInput('reset_settlement_schedule', $input);
+
+        return $this->core()->resetSettlementSchedule($input['merchant_ids']);
+    }
+
+    /**
      * We create this mapping only in case of non-linked accounts if
      * 1. Is partner of type fully-managed
      * 2. Is partner of type aggregator and has exception given for optional sub-merchant email

@@ -75,7 +75,7 @@ class Fee extends Base\Core
     {
         $product = $this->getProductForEntity($entity);
 
-        $calculator = new FeeCalculator($entity, $product);
+        $calculator = Calculator\Base::make($entity, $product);
 
         $pricingPlanId = $this->getPricingPlanId($entity->merchant);
 
