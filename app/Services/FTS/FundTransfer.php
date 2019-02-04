@@ -112,7 +112,7 @@ class FundTransfer extends Base
     {
         $request[Constants::ACCOUNT] = [
 
-                Constants::bankAccount => [
+                Constants::BANK_ACCOUNT => [
                         Constants::TYPE                       => $this->fta->bankAccount->getType(),
                         Constants::BENEFICIARY_PIN            => $this->fta->bankAccount->getBeneficiaryPin(),
                         Constants::BENEFICIARY_NAME           => $this->fta->bankAccount->getBeneficiaryName(),
@@ -196,7 +196,7 @@ class FundTransfer extends Base
     {
         switch ($type)
         {
-            case Constants::bankAccount:
+            case Constants::BANK_ACCOUNT:
                 $this->fta->bankAccount->setFTSAccountId($responseBody['fa_id']);
 
                 (new BankAccountCore)->updateBankAccountEntity($this->fta->bankAccount);
