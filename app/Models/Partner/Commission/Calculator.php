@@ -725,47 +725,51 @@ class Calculator
 
     protected function setPartnerAppContext()
     {
-        $origin = $originType = $originId = $partnerApp = null;
-
         $entityOrigin = $this->getSource()->entityOrigin;
 
         //
-        // If the origin is defined for the source entity, fetch the origin.
-        // If an application had initiated the source entity (payment, refund etc) then
-        // fetch the partner configurations defined for the application-submerchant.
+        // If the origin (merchant / application) is defined for the source entity (payment, refund etc),
+        // fetch the origin, else, return null.
         //
-        if ($entityOrigin !== null)
-        {
-            $origin = $entityOrigin->origin;
+        $origin     = optional($entityOrigin)->origin;
+        $originType = optional($origin)->getEntityName();
 
-            $originType = $origin->getEntityName();
-        }
+        // If an application had initiated the source entity then
+        // fetch the partner configurations defined for the application-submerchant.
+        $accessMap = null;
 
-        // @todo add comments
-        if (($entityOrigin === null) or ($originType == EntityOrigin\Constants::MERCHANT))
-        {
-            $accessMap = $this->repo->merchant_access_map->getPartnerApplication($this->subMerchant->getId());
-
-            if ($accessMap !== null)
-            {
-                $partnerApp = $accessMap->entity;
-            }
-        }
-        else if ($originType == EntityOrigin\Constants::APPLICATION)
+        if ($originType == EntityOrigin\Constants::APPLICATION)
         {
             $partnerApp = $origin;
         }
-
-        if ($partnerApp !== null)
-        {
-            $this->setPartnerApp($partnerApp);
-        }
         else
         {
-            // no partner. @todo add logs
+            //
+            // If $origin is null or $originType is 'merchant',
+            // check if a reseller / aggregator / bank / fully managed partner exists for the submerchant
+            // and fetch the internal OAuth application linked to the partner merchant account.
+            //
+            $accessMap = $this->repo
+                              ->merchant_access_map
+                              ->getNonPurePlatformPartnerMapping($this->subMerchant->getId());
+
+            $partnerApp = optional($accessMap)->entity;
+        }
+
+        if ($partnerApp === null)
+        {
+            $this->traceContext(
+                TraceCode::COMMISSION_PARTNER_APP_DOES_NOT_EXIST,
+                [
+                    'access_map'  => optional($accessMap)->getId(),
+                    'partner_app' => optional($partnerApp)->getId(),
+                    'origin_type' => $originType,
+                ]);
 
             return;
         }
+
+        $this->setPartnerApp($partnerApp);
     }
 
     /**

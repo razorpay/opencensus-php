@@ -40,19 +40,19 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Returns the internal OAuth application linked to the non-pure-platform partner of the merchantId being sent.
+     * Returns the access map that links the submerchantId with a non pure-platform partner.
      *
-     * @param string $merchantId
+     * @param string $subMerchantId
      *
-     * @return mixed
+     * @return Entity|null
      */
-    public function getPartnerApplication(string $merchantId)
+    public function getNonPurePlatformPartnerMapping(string $subMerchantId)
     {
         $accessMapsEntityOwnerId = $this->dbColumn(Entity::ENTITY_OWNER_ID);
         $merchantsId             = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
 
         return $this->newQuery()
-                    ->merchantId($merchantId)
+                    ->merchantId($subMerchantId)
                     ->join(Table::MERCHANT, $accessMapsEntityOwnerId, $merchantsId)
                     ->where(Table::MERCHANT . '.' . Merchant\Entity::PARTNER_TYPE, '!=', Merchant\Constants::PURE_PLATFORM)
                     ->first();
