@@ -135,7 +135,7 @@ trait HeadlessOtp
 
             if (in_array($response['error']['reason'], OtpElf::$otpElfErrors, true) === true)
             {
-                $this->disableHeadlessFlow($payment);
+                $this->disableIinFlowIfApplicable($payment, TraceCode::HEADLESS_OTP_ELF_FAILURE);
 
                 $traceInput['disable_iin'] = true;
                 $traceCode = TraceCode::HEADLESS_OTP_ELF_FAILURE;
@@ -249,16 +249,31 @@ trait HeadlessOtp
         $content['TermUrl'] = 'https://api.razorpay.com';
     }
 
-    protected function disableHeadlessFlow($payment)
+    protected function disableIinFlowIfApplicable($payment, $code)
     {
-        $iin = $payment->card->getIin();
+        if (($payment->isMethodCardOrEmi() === false) or
+            ($payment->getAuthType() !== Payment\AuthType::OTP))
+        {
+            return;
+        }
 
-        $this->trace->info(TraceCode::IIN_FLOW_DISABLE, [
-            'iin' => $iin,
-            'flow'  => 'headless_otp',
-        ]);
+        $errorCodeToFlow = [
+            TraceCode::HEADLESS_OTP_ELF_FAILURE                       => 'headless_otp',
+            ErrorCode::GATEWAY_ERROR_IVR_AUTHENTICATION_NOT_AVAILABLE => 'ivr',
+        ];
 
-        (new IIN\Service)->disableIinFlow($iin, 'headless_otp');
+        if (isset($errorCodeToFlow[$code]) === true)
+        {
+            $iin = $payment->card->getIin();
+            $flow = $errorCodeToFlow[$code];
+
+            $this->trace->info(TraceCode::IIN_FLOW_DISABLE, [
+                'iin'  => $iin,
+                'flow' => $flow,
+            ]);
+
+            (new IIN\Service)->disableIinFlow($iin, $flow);
+        }
     }
 
     protected function isRupayNetwork($payment)
