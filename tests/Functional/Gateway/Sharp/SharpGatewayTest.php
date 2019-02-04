@@ -23,7 +23,7 @@ class SharpGatewayTest extends TestCase
 
         $this->gateway = 'sharp';
 
-        $this->mockTokenex();
+        $this->mockCardVault();
     }
 
     public function testPayment()
