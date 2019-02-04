@@ -45,9 +45,11 @@ trait HeadlessOtp
             ($this->isAuthTypeOtp($payment) === true) and
             ($this->merchant->isFeatureEnabled(Feature\Constants::HEADLESS) === true))
         {
-            if ((Payment\Gateway::supportsHeadlessBrowser($payment->getGateway()) === true) and
-                ($payment->card->iinRelation !== null) and
-                ($payment->card->iinRelation->supports(IIN\Flow::HEADLESS_OTP) === true) and
+            $iin = $payment->card->iinRelation;
+
+            if (($iin !== null) and
+                (Payment\Gateway::supportsHeadlessBrowser($payment->getGateway(), $iin->getNetworkCode()) === true) and
+                ($iin->supports(IIN\Flow::HEADLESS_OTP) === true) and
                 ((isset($gatewayInput['authenticate']['auth_type']) === false) or
                  ($gatewayInput['authenticate']['auth_type'] === '3ds')))
             {

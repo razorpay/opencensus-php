@@ -2091,6 +2091,114 @@ class OtpPaymentTest extends TestCase
         $this->assertEquals('https://google.com', $request['url']);
     }
 
+    public function testHeadlessOtpAuthenticationPaymentS2SFirstData()
+    {
+        $this->fixtures->create('terminal:shared_first_data_terminal', [
+            'type' => [
+                'non_recurring' => '1'
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 's2s_otp_json', 'first_data_s2s_flow']);
+        $this->mockTokenEx();
+        $this->mockOtpElf();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['auth_type'] = 'otp';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/redirect',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+        $content = $this->getJsonContentFromResponse($response);
+
+        self::assertArrayHasKey('next', $content);
+        self::assertArrayHasKey('razorpay_payment_id', $content);
+        self::assertNotNull($content['razorpay_payment_id']);
+
+        $payment = $this->getEntityById('payment', $content['razorpay_payment_id'], true);
+
+        self::assertEquals('created', $payment['status']);
+        self::assertEquals('headless_otp', $payment['auth_type']);
+        self::assertEquals('first_data', $payment['gateway']);
+        self::assertEquals('1000FrstDataTl', $payment['terminal_id']);
+
+        $response = $this->doS2SOtpSubmitCallback($content, '123456');
+
+        self::assertArrayHasKey('razorpay_payment_id', $content);
+        self::assertEquals($content['razorpay_payment_id'], $response['razorpay_payment_id']);
+
+        $payment = $this->getEntityById('payment', $content['razorpay_payment_id'], true);
+        self::assertEquals('authorized', $payment['status']);
+    }
+
+    public function testHeadlessOtpAuthenticationPaymentS2SFirstDataRupay()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->create('terminal:shared_first_data_terminal', [
+            'type' => [
+                'non_recurring' => '1'
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['headless']);
+        $this->mockTokenEx();
+        $this->mockOtpElfForRupay();
+
+        $this->fixtures->iin->create([
+            'iin'     => '607384',
+            'country' => 'IN',
+            'issuer'  => 'PUNB',
+            'network' => 'RuPay',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '6073849700004947';
+        $payment['auth_type'] = 'otp';
+
+        $this->setOtp('213433');
+
+        $response = $this->doAuthPayment($payment);
+
+        self::assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        self::assertTrue($this->otpFlow);
+        self::assertEquals('authorized', $payment['status']);
+        self::assertEquals('headless_otp', $payment['auth_type']);
+        self::assertEquals('hdfc', $payment['gateway']);
+        self::assertEquals('1n25f6uN5S1Z5a', $payment['terminal_id']);
+    }
+
     // @codingStandardsIgnoreLine
     protected function doS2SOtpSubmitCallback(array $content, string $otp)
     {
