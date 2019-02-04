@@ -7,6 +7,7 @@ use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Models\Feature;
+use RZP\Models\Card\Network;
 
 class AuthTypeSorter extends Terminal\Sorter
 {
@@ -32,6 +33,14 @@ class AuthTypeSorter extends Terminal\Sorter
 
         $orderedTerminals = [];
         $unorderedTerminals = $terminals;
+        $iin = $payment->card->iinRelation;
+
+        $networkCode = Network::UNKNOWN;
+
+        if ($iin !== null)
+        {
+            $networkCode = $iin->getNetworkCode();
+        }
 
         foreach ($preferredAuthentications as $authType)
         {
@@ -43,7 +52,8 @@ class AuthTypeSorter extends Terminal\Sorter
 
             foreach ($terminals as $key => $terminal)
             {
-                if (($terminal->isAuthTypeEnabled($authType) === true) and
+
+                if (($terminal->isAuthTypeEnabled($authType, $networkCode) === true) and
                     ($this->filterOtpAuthType($payment, $terminal, $authType) === true))
                 {
                     $orderedTerminals[] = $terminal;

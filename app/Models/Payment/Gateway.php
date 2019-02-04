@@ -769,9 +769,27 @@ class Gateway
     ];
 
     public static $headless = [
-        self::CYBERSOURCE,
-        self::HITACHI,
-        self::HDFC,
+       self::CYBERSOURCE => [
+            Network::VISA,
+            Network::MC,
+        ],
+        self::HITACHI => [
+            Network::MC,
+            Network::VISA,
+            Network::MAES,
+        ],
+        self::HDFC => [
+            Network::MC,
+            Network::VISA,
+            Network::MAES,
+            Network::DICL,
+            Network::RUPAY,
+        ],
+        self::FIRST_DATA => [
+            Network::MC,
+            Network::VISA,
+            Network::MAES,
+        ],
     ];
 
     /**
@@ -1629,9 +1647,15 @@ class Gateway
         return in_array($gateway, self::$asynchronous, true);
     }
 
-    public static function supportsHeadlessBrowser($gateway)
+    public static function supportsHeadlessBrowser($gateway, $networkCode)
     {
-        return in_array($gateway, self::$headless, true);
+        if ((isset(self::$headless[$gateway]) === true) and
+            (in_array($networkCode, self::$headless[$gateway], true) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public static function supportsAuthAndCaptureForNetwork($gateway, $networkCode)
