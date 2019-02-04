@@ -44,6 +44,12 @@ export default class extends React.Component {
     });
   };
 
+  onSuccessMsgChange = e => {
+    this.setState({
+      custom_success_message: e.target.value,
+    });
+  };
+
   render() {
     const {
       isNew,
@@ -141,7 +147,18 @@ export default class extends React.Component {
                     />
 
                     {this.state._hasCustomMessage && (
-                      <Input name="payment_success_message" />
+                      <div class="custom-success-msg">
+                        <Input.Textarea
+                          name="payment_success_message"
+                          maxLength="80"
+                          onChange={this.onSuccessMsgChange}
+                        />
+                        <span class="chars-pressed">
+                          {(this.state.custom_success_message
+                            ? this.state.custom_success_message.length
+                            : '0') + ' /80'}
+                        </span>
+                      </div>
                     )}
 
                     <Input.Check
