@@ -164,7 +164,7 @@ class Calculator
     /**
      * @return Base\PublicEntity
      */
-    public function getSource()
+    public function getSource(): Base\PublicEntity
     {
         return $this->source;
     }
@@ -180,6 +180,8 @@ class Calculator
     }
 
     /**
+     * Partner config property will be set to null if the partner does not exist.
+     *
      * @return PartnerConfig\Entity|null
      */
     public function getPartnerConfig()
@@ -188,6 +190,8 @@ class Calculator
     }
 
     /**
+     * Partner app property will be set to null if the partner does not exist.
+     *
      * @return OAuthApp\Entity|null
      */
     public function getPartnerApp()
@@ -196,6 +200,8 @@ class Calculator
     }
 
     /**
+     * Implicit pricing plan property will be set to null if the partner does not exist.
+     *
      * @return Plan|null
      */
     public function getImplicitPricingPlan()
@@ -311,11 +317,17 @@ class Calculator
         $this->implicitPricingPlan = $pricingPlan;
     }
 
+    /**
+     * @param int $fee
+     */
     public function setCommissionFee(int $fee)
     {
         $this->commissionFee = $fee;
     }
 
+    /**
+     * @param int $tax
+     */
     public function setCommissionTax(int $tax)
     {
         $this->commissionTax = $tax;
@@ -427,6 +439,13 @@ class Calculator
             return false;
         }
 
+        if ($this->getImplicitPricingPlan() === null)
+        {
+            $this->traceContext(TraceCode::COMMISSION_IMPLICIT_PRICING_PLAN_NOT_SET);
+
+            return false;
+        }
+
         // Blocks create commission if the conditions are not supported, from here -
 
         if ($this->getImplicitPricingPlan()->isTypePricing() === false)
@@ -458,10 +477,10 @@ class Calculator
      */
     protected function isCustomerFeeBearer(): bool
     {
+        $submerchant = $this->getSubMerchant();
+
         // Eg: 'payment', 'refund'
         $sourceEntityName = $this->getSource()->getEntity();
-
-        $submerchant = $this->getSubMerchant();
 
         return ((Pricing\Feature::isCustomerFeeBearerSupported($sourceEntityName) === true) and
                     ($submerchant->isFeeBearerCustomer() === true));
@@ -472,7 +491,7 @@ class Calculator
      */
     public function isCommissionEnabled(): bool
     {
-        return ($this->getPartnerConfig()->isCommissionEnabled() === true);
+        return ($this->getPartnerConfig()->isCommissionsEnabled() === true);
     }
 
     /**
@@ -498,7 +517,8 @@ class Calculator
     }
 
     /**
-     * Saves the list of commission entities built so far
+     * Calculates all types of applicable commissions [implicit (fixed and variable), explicit (fixed)] and saves them.
+     * This function should be called within a database transaction.
      */
     public function calculateAndSaveCommission()
     {
@@ -512,14 +532,28 @@ class Calculator
         $this->saveCommission();
     }
 
+    /**
+     * Saves the list of commission entities built so far
+     */
     protected function saveCommission()
     {
         foreach ($this->commissions as $commission)
         {
+            $this->updateStatus($commission);
+
             $this->repo->saveOrFail($commission);
         }
 
         $this->traceContext(TraceCode::COMMISSION_CREATED);
+    }
+
+    protected function updateStatus(Commission\Entity $commission)
+    {
+        //
+        // @todo: Add a check. Implicit commissions must be set processed once picked up, and, the status for the
+        // explicit commissions must be updated based on the explicit_should_charge flag. Also, add fn desctiption.
+        //
+        $commission->setStatus(Status::RECORDED);
     }
 
     /**
@@ -557,8 +591,9 @@ class Calculator
         }
 
         $commissionFee = $merchantFee - $partnerFee;
-
         $commissionTax = $merchantTax - $partnerTax;
+        $this->setCommissionFee($commissionFee);
+        $this->setCommissionTax($commissionTax);
 
         if ($commissionFee < 0)
         {
@@ -575,7 +610,7 @@ class Calculator
             return;
         }
 
-        if ($commissionFee == 0)
+        if ($commissionFee === 0)
         {
             $this->traceContext(TraceCode::COMMISSION_COMPUTED_ZERO, [
                 'merchant_fees' => $merchantFee,
@@ -595,10 +630,6 @@ class Calculator
             'commission_amount' => $commissionFee,
             'commission_tax'    => $commissionTax,
         ]);
-
-        $this->setCommissionFee($commissionFee);
-
-        $this->setCommissionTax($commissionTax);
 
         $payload = $this->getCreateCommissionPayload();
 
@@ -629,7 +660,7 @@ class Calculator
     /**
      * @return array
      */
-    protected function getMerchantFees()
+    protected function getMerchantFees(): array
     {
         $pricingFee = new Pricing\Fee;
 
@@ -649,7 +680,7 @@ class Calculator
      *
      * @return array
      */
-    protected function getPartnerPricing()
+    protected function getPartnerPricing(): array
     {
         $pricingFee = new Pricing\Fee;
 
@@ -667,6 +698,10 @@ class Calculator
         return $calculator->calculate($pricing);
     }
 
+    /**
+     * Fetches the implicit pricing plan id defined in the partner configs and sets the implicitPricingPlan property.
+     * The property is set to null if the partner config is set to null or if the implicit pricing plan is not defined.
+     */
     protected function setImplicitPricingPlanContext()
     {
         if ($this->getPartnerConfig() === null)
@@ -677,6 +712,11 @@ class Calculator
         $partnerConfig = $this->getPartnerConfig();
 
         $pricingPlanId = $partnerConfig->getImplicitPricingPlanId();
+
+        if ($pricingPlanId === null)
+        {
+            return;
+        }
 
         $pricingPlan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($pricingPlanId);
 
@@ -690,8 +730,8 @@ class Calculator
         $entityOrigin = $this->getSource()->entityOrigin;
 
         //
-        // If the origin is defined for the source entity, fetch the origin and if
-        // an application had initiated the source entity (payment, refund etc) then
+        // If the origin is defined for the source entity, fetch the origin.
+        // If an application had initiated the source entity (payment, refund etc) then
         // fetch the partner configurations defined for the application-submerchant.
         //
         if ($entityOrigin !== null)
@@ -706,7 +746,7 @@ class Calculator
         {
             $accessMap = $this->repo->merchant_access_map->getPartnerApplication($this->subMerchant->getId());
 
-            if($accessMap !== null)
+            if ($accessMap !== null)
             {
                 $partnerApp = $accessMap->entity;
             }
@@ -728,6 +768,9 @@ class Calculator
         }
     }
 
+    /**
+     * Fetch and set the partner merchant's details using the partner application
+     */
     protected function setPartnerContext()
     {
         if ($this->getPartnerApp() === null)
@@ -735,9 +778,7 @@ class Calculator
             return;
         }
 
-        $partnerApp = $this->getPartnerApp();
-
-        $partnerId = $partnerApp->getMerchantId();
+        $partnerId = $this->getPartnerApp()->getMerchantId();
 
         $partner = $this->repo->merchant->find($partnerId);
 
@@ -752,6 +793,11 @@ class Calculator
         $this->setPartner($partner);
     }
 
+    /**
+     * Fetch the relevant partner config for the application-submerchant mapping.
+     * The defined config could be blanket app-level configuration or a submerchant-level overridden configuration.
+     * Both the cases are handled internally.
+     */
     protected function setPartnerConfigContext()
     {
         if ($this->getPartnerApp() === null)
@@ -759,9 +805,7 @@ class Calculator
             return;
         }
 
-        $partnerApp = $this->getPartnerApp();
-
-        $partnerConfig = (new PartnerConfig\Core)->fetch($partnerApp, $this->getSubMerchant());
+        $partnerConfig = (new PartnerConfig\Core)->fetch($this->getPartnerApp(), $this->getSubMerchant());
 
         $this->setPartnerConfig($partnerConfig);
     }

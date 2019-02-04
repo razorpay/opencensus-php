@@ -26,6 +26,11 @@ class Constants
         return self::$sourceEntities;
     }
 
+    /**
+     * @param Base\PublicEntity $entity
+     *
+     * @return bool
+     */
     public static function isValidCommissionSource(Base\PublicEntity $entity): bool
     {
         $entityType = $entity->getEntity();

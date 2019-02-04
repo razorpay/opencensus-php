@@ -39,6 +39,13 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    /**
+     * Returns the internal OAuth application linked to the non-pure-platform partner of the merchantId being sent.
+     *
+     * @param string $merchantId
+     *
+     * @return mixed
+     */
     public function getPartnerApplication(string $merchantId)
     {
         $accessMapsEntityOwnerId = $this->dbColumn(Entity::ENTITY_OWNER_ID);
