@@ -511,7 +511,7 @@ class MerchantDetailTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures(['zoho', 'charge_at_will']);
         $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $payment = $this->getDefaultRecurringPaymentArray();
 

@@ -251,7 +251,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
             ]
         ]);
 
-        $this->mockTokenEx();
+        $this->mockCardVault();
         $this->mockOtpElf();
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');

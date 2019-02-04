@@ -54,7 +54,7 @@ class FirstDataGatewayTest extends TestCase
         list($terminal1, $terminal2) = $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
 
         $this->fixtures->merchant->addFeatures('charge_at_will');
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $payment = $this->getDefaultRecurringPaymentArray();
 
@@ -140,7 +140,7 @@ class FirstDataGatewayTest extends TestCase
         list($terminal1, $terminal2) = $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
 
         $this->fixtures->merchant->addFeatures('charge_at_will');
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $payment = $this->getDefaultRecurringPaymentArray();
 

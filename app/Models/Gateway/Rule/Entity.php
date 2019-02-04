@@ -583,7 +583,7 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute($key) === $terminal->getAttribute($key));
     }
 
-    protected function compareMethod(Terminal\Entity $terminal): bool
+    protected function compareMethod(Terminal\Entity $terminal, Merchant\Entity $merchant, Payment\Entity $payment = null): bool
     {
         $method = $this->getMethod();
 
@@ -596,6 +596,18 @@ class Entity extends Base\PublicEntity
                 return ($terminal->isNetbankingEnabled() === true);
 
             case Method::EMI:
+                // For certain banks whose EMI payments needs to go through card terminals
+                // And those terminals might not be EMI enabled terminals
+                if (isset($payment) === true)
+                {
+                    $bank = $payment->getBank();
+
+                    if (in_array($bank, Payment\Gateway::$emiBanksUsingCardTerminals, true) === true)
+                    {
+                        return ($terminal->isCardEnabled() === true);
+                    }
+                }
+
                 return ($terminal->isEmiEnabled() === true);
 
             case Method::WALLET:
@@ -665,6 +677,23 @@ class Entity extends Base\PublicEntity
 
             return (new Terminal\Core)->hasApplicableGatewayTokens($terminal, $payment, $gatewayTokens);
         }
+    }
+
+    protected function compareEmiSubvention(Terminal\Entity $terminal, Merchant\Entity $merchant, Payment\Entity $payment = null): bool
+    {
+        if (isset($payment) === true)
+        {
+            $bank = $payment->getBank();
+
+            // We are ignoring emi subvention property here
+            // for banks whose EMI payments needs to go through card terminals
+            if (in_array($bank, Payment\Gateway::$emiBanksUsingCardTerminals, true) === true)
+            {
+                return true;
+            }
+        }
+
+        return ($this->getAttribute(self::EMI_SUBVENTION) === $terminal->getAttribute(self::EMI_SUBVENTION));
     }
 
     /**
