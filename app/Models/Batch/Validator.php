@@ -11,6 +11,7 @@ use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Entity as ME;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Contact as ContactModel;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Batch\Helpers\OauthMigration as OMHelper;
@@ -109,7 +110,7 @@ class Validator extends Base\Validator
 
     protected static $terminalCreateRules = [
         Entity::TYPE                 => 'required|custom',
-        Entity::SUB_TYPE             => 'required|string|in:hitachi,icici',
+        Entity::SUB_TYPE             => 'required|string|in:hitachi,netbanking_icici',
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
     ];
@@ -478,6 +479,8 @@ class Validator extends Base\Validator
             return;
         }
 
+        // TODO: Use validateEntriesWithPublicExceptionHandled() method.
+
         // Associative array with index as input file's row index and values
         // as the error message.
 
@@ -673,6 +676,53 @@ class Validator extends Base\Validator
                         $errorMessage, $attr, $entry);
                 }
             }
+        }
+    }
+
+    protected function validateContactEntries(array & $entries, array $params, ME $merchant)
+    {
+        $validator = new ContactModel\Validator;
+
+        $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry) use ($validator)
+        {
+            $input = Helpers\Contact::getContactInput($entry);
+
+            $validator->validateInput('create', $input);
+        });
+    }
+
+    protected function validateEntriesWithPublicExceptionHandled(array & $entries, \Closure $validator)
+    {
+        // Indexed errors map against row number.
+        $errors = [];
+
+        foreach ($entries as $seq => $entry)
+        {
+            try
+            {
+                $validator($entry);
+
+                $error[Header::ERROR_CODE] = null;
+                $error[Header::ERROR_DESCRIPTION] = null;
+            }
+            catch (BaseException $e)
+            {
+                $error[Header::ERROR_CODE] = $e->getError()->getPublicErrorCode();
+                $error[Header::ERROR_DESCRIPTION] = $e->getError()->getDescription();
+
+                $errors[$seq] = $error;
+            }
+
+            $entries[$seq] += $error;
+        }
+
+        // If request done via earlier direct upload flow (instead of validation flow), throw 4XX.
+        if ((count($errors) > 0) and ($this->entity->isCreatedByFileUpload() === true))
+        {
+            throw new BadRequestValidationFailureException(
+                sprintf('There are validation errors in %s number of rows in file', count($errors)),
+                Entity::FILE,
+                array_slice($errors, 0, 15, true));
         }
     }
 }

@@ -575,6 +575,14 @@ class Gateway extends Base\Gateway
             'gateway_merchant_id'   => '10000000000000'
         ];
 
+        if (empty($amount) === true)
+        {
+            $response['result']         = 'Refund Failed';
+            $response['status_code']    = ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT;
+
+            return $response;
+        }
+
         switch ($amount)
         {
             case (($amount === 8888) and ((int) $attempts === 0) and ($amount === $amountRefunded)):

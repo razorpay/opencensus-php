@@ -1044,7 +1044,7 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(Type::RECURRING_NON_3DS) === true);
     }
 
-    public function isAuthTypeEnabled($authType)
+    public function isAuthTypeEnabled($authType, $networkCode)
     {
         switch ($authType)
         {
@@ -1056,7 +1056,7 @@ class Entity extends Base\PublicEntity
                 $gateway = $this->getGateway();
 
                 $isEnabled = (($this->isIvr() === true) or
-                              (Payment\Gateway::supportsHeadlessBrowser($gateway) === true));
+                              (Payment\Gateway::supportsHeadlessBrowser($gateway, $networkCode) === true));
 
                 break;
 

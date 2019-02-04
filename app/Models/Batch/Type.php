@@ -56,6 +56,8 @@ class Type
 
     const PARTNER_SUBMERCHANTS  = 'partner_submerchants';
 
+    const CONTACT               = 'contact';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -105,7 +107,8 @@ class Type
         self::ENTITY_MAPPING,
         self::AUTH_LINK,
         self::INSTANT_ACTIVATION,
-        self::TERMINAL
+        self::TERMINAL,
+        self::CONTACT,
     ];
 
     /**
@@ -116,6 +119,7 @@ class Type
      */
     public static $kubernetesJobGroup = [
         self::PAYMENT_LINK,
+        self::CONTACT,
     ];
 
     public static function exists(string $type)

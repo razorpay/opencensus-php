@@ -1150,6 +1150,11 @@ class Gateway
         return $this->input['terminal']['gateway_merchant_id2'];
     }
 
+    protected function getLiveGatewayAccessCode()
+    {
+        return $this->input['terminal']['gateway_access_code'];
+    }
+
     protected function getDataWithFieldsInOrder($content, $orderedFields)
     {
         $orderedData = [];
