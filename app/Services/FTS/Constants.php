@@ -10,6 +10,8 @@ final class Constants
 
     const TYPE                          = 'type';
 
+    const FA_ID                         = 'fa_id';
+
     const HANDLE                        = 'handle';
 
     const USERNAME                      = 'username';

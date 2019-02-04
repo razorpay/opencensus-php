@@ -22,7 +22,7 @@ class Repository extends Base\Repository
     /**
      * Fetches the details of vpa for the given id
      *
-     * @param string $vpaId
+     * @param $vpaId
      * @return mixed
      */
     public function getVPAById(string $vpaId)

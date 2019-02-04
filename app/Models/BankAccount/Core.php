@@ -418,12 +418,12 @@ class Core extends Base\Core
         CreateAccount::dispatch($id, $this->mode, Type::BANK_ACCOUNT);
     }
 
-    public function getBankAccountEntity(string $id)
+    public function getBankAccountEntity($id)
     {
         return $this->repo->getBankAccountById($id);
     }
 
-    public function saveFTSAccountId($entity)
+    public function updateBankAccountEntity($entity)
     {
         $this->repo->saveOrFail($entity);
     }

@@ -34,12 +34,12 @@ class Core extends Base\Core
         CreateAccount::dispatch($id, $this->mode, Type::VPA);
     }
 
-    public function getVPAEntity(string $id)
+    public function getVPAEntity($id)
     {
         return $this->repo->getVPAById($id);
     }
 
-    public function saveFTSAccountId($entity)
+    public function updateVPAEntity($entity)
     {
         $this->repo->saveOrFail($entity);
     }
