@@ -4699,3 +4699,9 @@ ALTER TABLE terminals
 ALTER TABLE gateway_downtimes
     ADD COLUMN acquirer VARCHAR(32) NOT NULL DEFAULT 'UNKNOWN' AFTER issuer,
     ADD INDEX gateway_downtimes_acquirer_index (acquirer);
+
+ALTER TABLE paytm
+    MODIFY `txnid` varchar(255) DEFAULT NULL;
+
+ALTER TABLE paytm
+    MODIFY `request_type` varchar(255) COLLATE utf8_bin NULL;
