@@ -165,6 +165,13 @@ export default class EditOrg extends Component {
       body.hostname = body.hostname.replace(/ /g, '');
     }
 
+    // api accepts string value for type
+    if (!!Number(body.type)) {
+      body.type = 'restricted';
+    } else {
+      delete body.type;
+    }
+
     if (body.id) {
       //delete unwanted props
       delete body.id;

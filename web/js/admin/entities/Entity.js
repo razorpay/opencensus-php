@@ -97,13 +97,15 @@ export default class GenericEntity extends Component {
           <Duplex pending={loading} model={data} fields={this.fields()} />
           {type === 'payment' &&
             data && (
-              <ToggleEntityRow label="Refunds">
-                <PaymentRefundsList
-                  id={data.id}
-                  merchant_id={data.merchant_id}
-                  mode={data.mode}
-                />
-              </ToggleEntityRow>
+              <ShowWhen permission="view_refund_payments">
+                <ToggleEntityRow label="Refunds">
+                  <PaymentRefundsList
+                    id={data.id}
+                    merchant_id={data.merchant_id}
+                    mode={data.mode}
+                  />
+                </ToggleEntityRow>
+              </ShowWhen>
             )}
 
           <br />
