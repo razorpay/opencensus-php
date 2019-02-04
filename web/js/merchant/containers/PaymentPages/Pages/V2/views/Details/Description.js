@@ -22,7 +22,6 @@ All URLs will convert to links.`;
 
 export default class extends React.PureComponent {
   state = { isScriptLoaded: null };
-
   componentDidMount() {
     window.onQuillLoad = () => {
       this.QUILL = new window.Quill('#description-quill', QUILL_OPTIONS);
@@ -36,6 +35,12 @@ export default class extends React.PureComponent {
         }
       });
     };
+  }
+
+  componentWillUpdate(nextProps) {
+    if (this.props.description !== nextProps.description) {
+      this.QUILL && this.QUILL.setContents(JSON.parse(nextProps.description));
+    }
   }
 
   updateDescription() {

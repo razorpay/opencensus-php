@@ -2,20 +2,22 @@ import { ModalMask, Modal, ModalContent } from 'component/Modal';
 import { Link } from 'react-router-dom';
 import Button from 'component/Button';
 
-export default ({ onClose }) => {
+export default ({ templateLabel, onClose, backToTemplate }) => {
   return (
     <ModalMask
       maskClosable={false}
       class="payment-pages-v2-intro"
       isBlur={true}
     >
-      <Link class="back-btn" to="/paymentpages/">
+      <Button.Transparent class="back-btn" onClick={backToTemplate}>
         <i class="i i-chevron-left" />
-        Back to Dashboard
-      </Link>
+        Back to Templates
+      </Button.Transparent>
       <Modal showCloseBtn={false}>
         <ModalContent>
-          <div class="heading">Create New Payment Page</div>
+          <div class="heading">
+            Create New {templateLabel || 'Payment'} Page
+          </div>
           <p>
             This is how the page will appear to your customers.
             <br />

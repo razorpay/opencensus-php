@@ -11,6 +11,12 @@ import { FIELD_CONST } from 'merchant/containers/PaymentPages/Pages/V2/views/For
 
 const FETCH_ENTITY = 'FETCH_ENTITY';
 
+export const updateTemplateType = data => {
+  return updateData({
+    description: JSON.stringify(data),
+  });
+};
+
 export const fetchPaymentPage = id => {
   if (!id) {
     return {

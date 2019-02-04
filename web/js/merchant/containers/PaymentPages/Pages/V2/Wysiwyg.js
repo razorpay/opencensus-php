@@ -9,7 +9,6 @@ import Svelte from './Svelte';
 import DetailsView from './views/Details/index';
 import FormView from './views/Form/index';
 
-import IntroMask from './views/templates/IntroMask';
 import TemplatesMask from './views/templates/Templates';
 import PPSettingsView from '../Modals/Settings';
 import PPShareView from '../Modals/Share';
@@ -21,6 +20,7 @@ import {
   fetchPaymentPage,
   updateData,
   markDataSaved,
+  updateTemplateType,
 } from 'merchant/modules/wysiwyg';
 import { closeModal, openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
@@ -47,6 +47,7 @@ const ERROR = {
     showNotification,
     closeModal,
     openModal,
+    updateTemplateType,
   }
 )
 export default class PaymentPagesWysiwyg extends React.PureComponent {
@@ -411,12 +412,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     });
   };
 
-  selectTemplate = meta => {
-    return function() {
-      console.log('...', meta);
-    };
-  };
-
   render() {
     const { isPageReady, isPageLoadError } = this.state;
     const { paymentPageEntity, id: payment_page_id } = this.props;
@@ -479,7 +474,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         {this.state.isTemplatesViewOpened && (
           <TemplatesMask
             onClose={this.handleIntroClose}
-            selectTemplate={this.selectTemplate}
+            selectTemplate={this.props.updateTemplateType}
           />
         )}
 

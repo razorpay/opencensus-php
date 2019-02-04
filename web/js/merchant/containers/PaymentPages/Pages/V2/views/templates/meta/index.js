@@ -1,4 +1,6 @@
-export eventsAndTickets from './events_and_tickets';
-export donations from './donations';
-export productSale from './product_sale';
-export competition from './competition';
+import eventsAndTickets from './events_and_tickets';
+import donations from './donations';
+import productSale from './product_sale';
+import competition from './competition';
+
+export default [eventsAndTickets, donations, productSale, competition];

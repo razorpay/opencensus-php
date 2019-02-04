@@ -1,53 +1,86 @@
 import { ModalMask, Modal, ModalContent } from 'component/Modal';
 import { Link } from 'react-router-dom';
 
-import * as META from './meta';
+import IntroMask from './IntroMask';
 
-export default ({ onClose, selectTemplate }) => {
-  return (
-    <ModalMask
-      maskClosable={false}
-      class="payment-pages-v2-intro"
-      isBlur={true}
-    >
-      <Link class="back-btn" to="/paymentpages/">
-        <i class="i i-chevron-left" />
-        Back to Dashboard
-      </Link>
-      <Modal showCloseBtn={false}>
-        <ModalContent>
-          <div class="heading">Choose from the templates</div>
-          <p>You can choose one of the templates from below</p>
+import META from './meta';
 
-          <div class="TemplateCard-list">
-            <TemplateCard
-              title="Start from Scratch"
-              description="Starting from scratch is fun"
-              img=""
-              selectTemplate={selectTemplate(null)}
-            />
-            {Object.keys(META).map((m, k) => {
-              if (k === 0) {
-                return; // 1st one is _es_module_
-              }
-              if (META.hasOwnProperty(m)) {
-                return (
-                  <TemplateCard
-                    key={k}
-                    title={META[m].title}
-                    description={META[m].description}
-                    img=""
-                    selectTemplate={selectTemplate(META[m].meta)}
-                  />
-                );
-              }
-            })}
-          </div>
-        </ModalContent>
-      </Modal>
-    </ModalMask>
-  );
-};
+export default class extends React.Component {
+  state = { isIntroOpened: false };
+
+  selectTemplate = (label, meta) => {
+    return () => {
+      this.props.selectTemplate(meta);
+
+      this.setState({
+        templateLabel: label,
+        isIntroOpened: true,
+      });
+    };
+  };
+
+  backToTemplate = _ => {
+    this.setState({
+      isIntroOpened: false,
+    });
+  };
+
+  render() {
+    if (this.state.isIntroOpened) {
+      return (
+        <IntroMask
+          onClose={this.props.onClose}
+          backToTemplate={this.backToTemplate}
+          templateLabel={this.state.templateLabel}
+        />
+      );
+    }
+
+    return (
+      <ModalMask
+        maskClosable={false}
+        class="payment-pages-v2-templates"
+        isBlur={true}
+      >
+        <Link class="back-btn" to="/paymentpages/">
+          <i class="i i-chevron-left" />
+          Back to Dashboard
+        </Link>
+        <Modal showCloseBtn={false}>
+          <ModalContent>
+            <div class="heading">Choose from the templates</div>
+            <p>You can choose one of the templates from below</p>
+
+            <div class="TemplateCard-list">
+              <TemplateCard
+                title="Start from Scratch"
+                description="Starting from scratch is fun"
+                img=""
+                selectTemplate={this.selectTemplate(null)}
+              />
+              {Object.keys(META).map((m, k) => {
+                if (META.hasOwnProperty(m)) {
+                  return (
+                    <TemplateCard
+                      key={k}
+                      title={META[m].title}
+                      description={META[m].description}
+                      img=""
+                      selectTemplate={this.selectTemplate(
+                        META[m].label,
+                        META[m].meta
+                      )}
+                    />
+                  );
+                }
+              })}
+            </div>
+          </ModalContent>
+        </Modal>
+      </ModalMask>
+    );
+  }
+}
 
 const TemplateCard = ({ title, description, img, selectTemplate }) => (
   <div class="TemplateCard" onClick={selectTemplate}>
