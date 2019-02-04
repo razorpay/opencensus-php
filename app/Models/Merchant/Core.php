@@ -314,6 +314,8 @@ class Core extends Base\Core
     {
         $merchant->setAuditAction(Action::EDIT_MERCHANT);
 
+        $input = $this->modifyEditInput($input);
+
         $merchant->edit($input);
 
         $plan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($merchant->getPricingPlanId());
@@ -345,6 +347,16 @@ class Core extends Base\Core
         }
 
         return $merchant;
+    }
+
+    public function modifyEditInput(array $input): array
+    {
+        if (array_key_exists('category', $input))
+
+        {
+            $input['category'] = (string) $input['category'];
+        }
+        return $input;
     }
 
     /**

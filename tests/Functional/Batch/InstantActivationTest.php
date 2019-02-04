@@ -67,7 +67,7 @@ class InstantActivationTest extends TestCase
 
         $this->assertSame(true, $liveMerchant->isActivated());
         $this->assertSame(true, $liveMerchant->getHoldFunds());
-        $this->assertSame(8931, $liveMerchant->getCategory());
+        $this->assertSame('8931', $liveMerchant->getCategory());
         $this->assertSame('others', $liveMerchant->getCategory2());
 
         $this->assertSame('whitelist', $liveMerchantDetails->getActivationFlow());
@@ -96,7 +96,7 @@ class InstantActivationTest extends TestCase
 
         $this->assertSame(false, $liveMerchant->isActivated());
         $this->assertSame(false, $liveMerchant->getHoldFunds());
-        $this->assertSame(5399, $liveMerchant->getCategory());
+        $this->assertSame('5399', $liveMerchant->getCategory());
         $this->assertSame('others', $liveMerchant->getCategory2());
 
         $this->assertSame('greylist', $liveMerchantDetails->getActivationFlow());

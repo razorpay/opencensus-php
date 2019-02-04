@@ -361,7 +361,7 @@ class Entity extends Base\PublicEntity
         self::HOLD_FUNDS             => 'bool',
         self::LINKED_ACCOUNT_KYC     => 'bool',
         self::HAS_KEY_ACCESS         => 'bool',
-        self::CATEGORY               => 'int',
+        self::CATEGORY               => 'string',
         self::RISK_THRESHOLD         => 'int',
         self::CONVERT_CURRENCY       => 'bool',
         self::AUTO_CAPTURE_LATE_AUTH => 'bool',
@@ -967,7 +967,7 @@ class Entity extends Base\PublicEntity
 
     protected function getCategoryAttribute()
     {
-        return (int) $this->attributes[self::CATEGORY];
+        return $this->attributes[self::CATEGORY];
     }
 
     protected function getBillingLabelAttribute()

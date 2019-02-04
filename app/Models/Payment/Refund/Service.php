@@ -1114,7 +1114,19 @@ class Service extends Base\Service
                      $data
         );
 
-        ScroogeRefundUpdate::dispatch($data);
+        try
+        {
+            ScroogeRefundUpdate::dispatch($data);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::REFUND_UPDATE_QUEUE_SCROOGE_DISPATCH_FAILED,
+                $data
+            );
+        }
     }
 
     public function fetchRefundDetailsForCustomer(array $input)
@@ -1329,6 +1341,73 @@ class Service extends Base\Service
                 'success_count' => $successCount,
                 'time_taken'    => $processingTime,
         ];
+    }
+
+    public function bulkUpdateRefundsReference1(array $input)
+    {
+        if (empty($input['refunds']) === true)
+        {
+            return [
+                'success_count' => 0
+            ];
+        }
+
+        $start = microtime(true);
+
+        $successCount = $failedCount = $validationErrorCount = 0;
+
+        $failedRefundIds = [];
+
+        foreach ($input['refunds'] as $refund)
+        {
+            if ((empty($refund[Refund\Entity::ID]) === true) or (empty($refund[Refund\Entity::REFERENCE1]) === true))
+            {
+                $validationErrorCount += 1;
+
+                continue;
+            }
+
+            $refundEntity = $this->repo->refund->findOrFail($refund[Refund\Entity::ID]);
+
+            $this->trace->info(
+                TraceCode::REFUND_UPDATE_REFERENCE1,
+                [
+                    'refund_id'      => $refund[Refund\Entity::ID],
+                    'old_reference1' => $refundEntity->getReference1(),
+                    'new_reference1' => $refund[Refund\Entity::REFERENCE1],
+                ]
+            );
+
+            if ($this->repo->refund->updateRefundReference1($refund) === 1)
+            {
+                $successCount += 1;
+            }
+            else
+            {
+                $failedCount += 1;
+
+                $failedRefundIds[] = $refund[Refund\Entity::ID];
+            }
+        }
+
+        $end = microtime(true);
+
+        $processingTime = $end - $start;
+
+        $response = [
+            'success_count'          => $successCount,
+            'failed_count'           => $failedCount,
+            'validation_error_count' => $validationErrorCount,
+            'time_taken'             => $processingTime,
+            'failed_refund_ids'      => $failedRefundIds,
+        ];
+
+        $this->trace->info(
+            TraceCode::REFUND_UPDATE_REFERENCE1_SUMMARY,
+            $response
+        );
+
+        return $response;
     }
 
     public function backfillUpiMindgateReference1(array $input)

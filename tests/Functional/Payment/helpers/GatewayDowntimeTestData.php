@@ -988,6 +988,7 @@ return [
         'downtimeResponse' => [
             'content' => [
                 [
+                    'acquirer'    => "UNKNOWN",
                     'scheduled'   => false,
                     'partial'     => false,
                     'source'      => 'VAJRA',
@@ -1002,6 +1003,7 @@ return [
                     'entity'      => 'gateway_downtime',
                 ],
                 [
+                    'acquirer'    => "UNKNOWN",
                     'scheduled'   => false,
                     'partial'     => false,
                     'source'      => 'VAJRA',
@@ -1025,6 +1027,71 @@ return [
             'merchant_id'  => '{"method":  "upi", "gateway":  "upi_mindgate", "merchant_id":  "100000Razorpay"}',
             'terminal_ids' => '{"method":  "upi", "gateway":  "upi_mindgate", "terminal_ids":  ["100UPIMindgate", "100UPIMindtml2"]}',
             'terminal_id'  => '{"method":  "upi", "gateway":  "upi_mindgate", "terminal_id":  "100UPIMindgate"}',
+        ],
+    ],
+
+    'testVajraAlertUPIWebhookWithoutTerminalDowntime' => [
+        'request' => [
+            'content' => [
+                'evalMatches' =>
+                [
+                    [
+                        'value'  => 58.45,
+                        'metric' => 'Total Success Rate',
+                        'tags'   => [],
+                    ],
+                ],
+                'message'  => null,
+                'ruleId'   => 242,
+                'ruleName' => 'Total Success  Rate is less then 80',
+                'ruleUrl'  => 'https://vajra.razorpay.com/d/XmyC-WYmz/prod-payments-success-rate?fullscreen=true&edit=true&tab=alert&panelId=2&orgId=1',
+                'state'    => 'alerting',
+                'title'    => '[Alerting] Total Success  Rate is less then 80',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/webhook/vajra'
+        ],
+        'downtimeResponseWithTerminal' => [
+            'content' => [
+                [
+                    'acquirer'    => 'UNKNOWN',
+                    'scheduled'   => false,
+                    'partial'     => false,
+                    'source'      => 'VAJRA',
+                    'reason_code' => 'LOW_SUCCESS_RATE',
+                    'method'      => 'upi',
+                    'gateway'     => 'upi_mindgate',
+                    'network'     => 'NA',
+                    'card_type'   => 'NA',
+                    'issuer'      => 'UNKNOWN',
+                    'terminal_id' => '100UPIMindgate',
+                    'admin'       => true,
+                    'entity'      => 'gateway_downtime',
+                ]
+            ]
+        ],
+        'downtimeResponseWithoutTerminal' => [
+            'content' => [
+                [
+                    'acquirer'    => 'UNKNOWN',
+                    'scheduled'   => false,
+                    'partial'     => false,
+                    'source'      => 'VAJRA',
+                    'reason_code' => 'LOW_SUCCESS_RATE',
+                    'method'      => 'upi',
+                    'gateway'     => 'upi_mindgate',
+                    'network'     => 'NA',
+                    'card_type'   => 'NA',
+                    'issuer'      => 'UNKNOWN',
+                    'terminal_id' => null,
+                    'admin'       => true,
+                    'entity'      => 'gateway_downtime',
+                ]
+            ]
+        ],
+        'messageFor' => [
+            'withTerminal'    => '{"method":  "upi", "gateway":  "upi_mindgate", "terminal_id":  "100UPIMindgate"}',
+            'withoutTerminal' => '{"method":  "upi", "gateway":  "upi_mindgate"}',
         ],
     ],
 ];

@@ -1278,6 +1278,7 @@ class TerminalSelectionTest extends TestCase
         $options = new Options;
         $selector = new Selector($input, $options);
         $selectedTerminals = $selector->select();
+
         $selectedTerminalIds = array_pluck($selectedTerminals, 'id');
 
         $this->assertArraySelectiveEquals($expectedTerminalIds, $selectedTerminalIds);
