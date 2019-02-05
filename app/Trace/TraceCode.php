@@ -1081,6 +1081,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const BATCH_FILE_DELETE_ERROR                       = 'BATCH_FILE_DELETE_ERROR';
 
+    const ADMIN_FILE_DELETE_ERROR                       = 'ADMIN_FILE_DELETE_ERROR';
+
     const MUTEX_LOCK_ALREADY_RELEASED                   = 'MUTEX_LOCK_ALREADY_RELEASED';
     const MUTEX_UNABLE_TO_ACQUIRE                       = 'MUTEX_UNABLE_TO_ACQUIRE';
 
@@ -1270,6 +1272,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DISPUTE_SAME_PARENT_LINKING                   = 'DISPUTE_SAME_PARENT_LINKING';
     const DISPUTE_FILE_CREATE                           = 'DISPUTE_FILE_CREATE';
     const DISPUTE_FILES_UPLOAD                          = 'DISPUTE_FILES_UPLOAD';
+
+    const ADMIN_FILES_UPLOAD                            = 'ADMIN_FILES_UPLOAD';
 
     const ACCESS_MAP_UPDATE_REQUEST                     = 'ACCESS_MAP_UPDATE_REQUEST';
     const ACCESS_MAP_UPDATE_ERROR                       = 'ACCESS_MAP_UPDATE_ERROR';

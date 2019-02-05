@@ -83,6 +83,7 @@ final class Route
         'batch_retry_output_file'                  => ['post',     'batches/{id}/retry_output_file',                 'BatchController@retryBatchOutputFile'                              ],
         'batch_download_file'                      => ['get',      'batches/{id}/download',                          'BatchController@downloadBatch'                                     ],
         'batch_stats'                              => ['get',      'batches/{id}/stats',                             'BatchController@getStats'                                          ],
+        'file_upload_admin'                        => ['post',     'admin/files/{type}',                             'AdminController@uploadFileAdmin'                                   ],
         'payment_capture'                          => ['post',     'payments/{id}/capture',                          'PaymentController@postCapture'                                     ],
         'payment_bulk_capture'                     => ['post',     'payments/capture/bulk',                          'PaymentController@postBulkCapture'                                 ],
         'payment_fetch_transfers'                  => ['get',      'payments/{id}/transfers',                        'PaymentController@getTransfers'                                    ],
@@ -1616,6 +1617,7 @@ final class Route
         'feature_delete_entity',
         'feature_get',
         'batch_create_admin',
+        'file_upload_admin',
         'admin_dummy_account_test',
         'admin_get_file',
         // workflows
@@ -2208,6 +2210,7 @@ final class Route
         'refund_mark_processed_bulk'               => Permission::EDIT_REFUND,
         'batch_create'                             => '*',
         'batch_create_admin'                       => Permission::ADMIN_BATCH_CREATE,
+        'file_upload_admin'                        => Permission::ADMIN_FILE_UPLOAD,
         'reporting_config_get'                     => '*',
         'reporting_config_list'                    => '*',
         'reporting_config_create'                  => Permission::CREATE_SELF_SERVE_REPORT,
