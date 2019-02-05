@@ -176,7 +176,16 @@ app
           },
         },
         showMore: false,
+        // disable signup submission before captcha in prod
+        submissionDisabled: $location.host() === 'dashboard.razorpay.com',
       };
+
+      // wait for recaptcha response
+      $scope.$watch('signup.data.captcha', function(newVal) {
+        if (newVal && newVal.length !== 0) {
+          $scope.signup.submissionDisabled = false;
+        }
+      });
 
       $scope.goToSignupStep = function(step, subStep) {
         $scope.signup.currentStep = step;
