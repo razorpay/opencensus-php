@@ -537,6 +537,7 @@ class Gateway
         '9DZkE60krEG4wq',
         '9ncOh0EZ8sC9z9',
         '9hefgkvGhT18Q9',
+        'BbaYzzPW541Aut',
     ];
 
     public static $channels = [
@@ -1388,6 +1389,11 @@ class Gateway
         return array_keys(self::$scroogeGateways);
     }
 
+    public static function getScroogeMerchants(): array
+    {
+        return self::$scroogeMerchants;
+    }
+
     public static function isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer)
     {
         $pinAuthGateways = self::$gatewayAcquirerIfscMapping;
@@ -1412,9 +1418,14 @@ class Gateway
      */
     public static function isScroogeGatewayAndMerchant(string $gateway = null, string $merchantId = null): bool
     {
+        if (empty($merchantId) === false)
+        {
+            return ((in_array($gateway, self::getScroogeGateways(), true) === true) and
+                (in_array($merchantId, self::getScroogeMerchants(), true) === true));
+        }
+
         return (in_array($gateway, self::getScroogeGateways(), true) === true);
     }
-
 
     /**
      * This function checks if the gateway was live at a particular timestamp

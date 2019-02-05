@@ -23,7 +23,7 @@ class CustomerTokenTest extends TestCase
 
     public function testAddCustomerTokenCard()
     {
-        $this->mockTokenEx();
+        $this->mockCardVault();
 
         $this->ba->privateAuth();
 

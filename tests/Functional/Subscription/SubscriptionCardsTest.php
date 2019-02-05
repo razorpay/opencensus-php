@@ -38,7 +38,7 @@ class SubscriptionCardsTest extends TestCase
 
         $this->gateway = 'cybersource';
 
-        $this->mockTokenex();
+        $this->mockCardVault();
     }
 
     // ----------------------- Preferences Start ----------------------------

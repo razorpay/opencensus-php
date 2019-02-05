@@ -988,9 +988,8 @@ class Service extends Base\Service
             $refund = $this->repo->refund->findOrFailPublic($refundId);
 
             $gateway = $refund->getGateway();
-            $merchantId = $refund->merchant->getId();
 
-            if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway, $merchantId) === true)
+            if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway) === true)
             {
                 $refund->getValidator()->validateMarkProcessed();
 
@@ -1009,7 +1008,7 @@ class Service extends Base\Service
                     TraceCode::REFUND_MARK_PROCESSED_NON_SCROOGE_GATEWAY,
                     [
                         'refund_id' => $refund->getId(),
-                        'status' => $refund->getStatus(),
+                        'status'    => $refund->getStatus(),
                     ]);
             }
         }

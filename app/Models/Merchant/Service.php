@@ -2360,16 +2360,7 @@ class Service extends Base\Service
             return;
         }
 
-        try
-        {
-            $app = $this->core()->getInternalPartnerApp($merchant);
-        }
-        catch (\Exception $e)
-        {
-            throw new Exception\LogicException(
-                'Server error app not found',
-                ErrorCode::SERVER_ERROR_PARTNER_APP_NOT_FOUND);
-        }
+        $app = $this->core()->getInternalPartnerApp($merchant);
 
         $appId = $app->getId();
 

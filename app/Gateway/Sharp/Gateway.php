@@ -352,8 +352,7 @@ class Gateway extends Base\Gateway
         parent::refund($input);
 
         if ((isset($input['payment'][Payment\Entity::GATEWAY]) === true) and
-            (Payment\Gateway::isScroogeGatewayAndMerchant($input['payment'][Payment\Entity::GATEWAY],
-                                                          $input['payment'][Payment\Entity::MERCHANT_ID]) === true))
+            (Payment\Gateway::isScroogeGatewayAndMerchant($input['payment'][Payment\Entity::GATEWAY]) === true))
         {
             return $this->getScroogeResponse($input, 'refund');
         }
@@ -497,8 +496,7 @@ class Gateway extends Base\Gateway
         parent::verify($input);
 
         if ((isset($input['payment'][Payment\Entity::GATEWAY]) === true) and
-            (Payment\Gateway::isScroogeGatewayAndMerchant($input['payment'][Payment\Entity::GATEWAY],
-                                                          $input['payment'][Payment\Entity::MERCHANT_ID]) === true))
+            (Payment\Gateway::isScroogeGatewayAndMerchant($input['payment'][Payment\Entity::GATEWAY]) === true))
         {
             return $this->getScroogeResponse($input, 'verify');
         }

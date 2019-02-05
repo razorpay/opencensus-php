@@ -85,6 +85,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_VIJAYA,
         Payment\Gateway::EMI_SBI,
         Payment\Gateway::WALLET_OLAMONEY,
+        Payment\Gateway::PAYTM,
     ];
 
     protected static $createValidators = [
@@ -611,6 +612,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
     ];
 
+    protected static $netbankingIdfcEditTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_IDFC,
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::TPV                         => 'sometimes|in:0,2',
+    ];
+
     protected static $cardFssTerminalRules = [
         Entity::GATEWAY                     => 'required|in:card_fss',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
@@ -640,6 +647,22 @@ class Validator extends Base\Validator
         Entity::EXPECTED                   => 'sometimes_if:type.bharat_qr,1|boolean',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string|in:proxy,app',
         Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
+    ];
+
+    protected static $paytmTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:paytm',
+        Entity::GATEWAY_TERMINAL_ID        => 'required',
+        Entity::GATEWAY_ACCESS_CODE        => 'required',
+        Entity::GATEWAY_MERCHANT_ID        => 'required',
+        Entity::TYPE                       => 'sometimes',
+    ];
+
+    protected static $paytmEditTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:paytm',
+        Entity::GATEWAY_TERMINAL_ID        => 'sometimes',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes',
+        Entity::TYPE                       => 'sometimes',
     ];
 
     protected static $enachRblTerminalRules = [
