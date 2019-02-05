@@ -202,7 +202,7 @@ class SubscriptionController extends Controller
     public function getInvoicesForSubscription(string $subscriptionId)
     {
         $input = Request::all();
-    
+
         $response = $this->service(E::INVOICE)->fetchInvoicesForSubscriptionId($subscriptionId, $input);
 
         return ApiResponse::json($response);
