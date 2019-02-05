@@ -144,7 +144,9 @@ export default class NewSubscriptionLink extends Component {
   };
 
   handleCreate = () => {
-    const { fields: data, internals } = this.state;
+    let { fields: data, internals } = this.state;
+    data = { ...data };
+
     if (internals._startsImmediately) {
       delete data.start_at;
     }
@@ -214,7 +216,8 @@ export default class NewSubscriptionLink extends Component {
 
   isFormValid = () => {
     const { currentTab, fields, internals } = this.state;
-    return isFormValid(currentTab, fields, internals);
+    const validateTotalCount = (this.planDetailsForm || {}).validateTotalCount;
+    return isFormValid(currentTab, fields, internals, validateTotalCount);
   };
 
   renderForm() {
@@ -228,6 +231,7 @@ export default class NewSubscriptionLink extends Component {
             onTimeChange={this.handleTimeChange}
             fields={this.state.fields}
             internals={this.state.internals}
+            ref={form => (this.planDetailsForm = form)}
           />
         );
       case 1:
@@ -309,7 +313,7 @@ export default class NewSubscriptionLink extends Component {
               type="submit"
               onClick={this.handleCreate}
             >
-              Create Subscription
+              Create Subscription Link
             </AsyncBtn.Primary>
           )}
         </footer>
@@ -334,13 +338,18 @@ export default class NewSubscriptionLink extends Component {
   }
 }
 
-function isFormValid(formIndex, fields, internals) {
+function isFormValid(
+  formIndex,
+  fields,
+  internals,
+  validateTotalCount = () => {}
+) {
   switch (formIndex) {
     case 0: {
       return (
         !!fields.plan_id &&
         (internals._startsImmediately || !!fields.start_at) &&
-        !!fields.total_count
+        !validateTotalCount(fields.total_count)
       );
     }
 
