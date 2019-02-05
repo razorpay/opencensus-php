@@ -1131,6 +1131,13 @@ app
 
       $scope.onGotCouponCodeClick = function() {
         $scope.allowInput = true;
+        window.ga &&
+          window.ga(
+            'send',
+            'event',
+            'Signup - Steps',
+            'Click- Got a coupon code'
+          );
       };
 
       $scope.onCouponChange = function() {
@@ -1156,6 +1163,15 @@ app
 
         $scope.coupon.disabled = true;
         $scope.coupon.isValidating = true;
+
+        window.ga &&
+          window.ga(
+            'send',
+            'event',
+            'Signup - Steps',
+            'Click - Coupon Apply',
+            $scope.coupon.val
+          );
 
         var payload = {
           method: 'post',
@@ -1186,9 +1202,25 @@ app
             );
 
             status = 'success';
+            window.ga &&
+              window.ga(
+                'send',
+                'event',
+                'Signup - Steps',
+                'Coupon - Response',
+                'Success | ' + $scope.coupon.val
+              );
           } else {
             msg = $sce.trustAsHtml(response.errors[0]);
             status = 'failure';
+            window.ga &&
+              window.ga(
+                'send',
+                'event',
+                'Signup - Steps',
+                'Coupon - Response',
+                'Fail | ' + $scope.coupon.val + ' | ' + response.errors[0]
+              );
           }
           $scope.coupon.isValidating = false;
           $scope.coupon.msg = msg;
