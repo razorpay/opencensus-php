@@ -2,7 +2,7 @@ import { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import { fetchSubmerchant } from 'merchant/modules/submerchant';
+import { fetchSubmerchant, resendInvite } from 'merchant/modules/submerchant';
 import { switchMerchant } from 'merchant/modules/session';
 import { openModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
@@ -25,7 +25,13 @@ const fullDetailsAccessMap = {
   state => ({
     ...state.submerchant,
   }),
-  { fetchSubmerchant, switchMerchant, openModal, showNotification }
+  {
+    fetchSubmerchant,
+    resendInvite,
+    switchMerchant,
+    openModal,
+    showNotification,
+  }
 )
 export default class SubmerchantEntityContainer extends Component {
   componentWillMount() {
@@ -54,6 +60,25 @@ export default class SubmerchantEntityContainer extends Component {
     });
   };
 
+  handleResendInvite = () => {
+    return this.props
+      .resendInvite(this.props.id)
+      .then(response => {
+        if (response.success) {
+          this.props.showNotification({
+            type: 'success',
+            message: 'Merchant invited to manage dashboard successfully',
+          });
+        }
+      })
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors,
+        });
+      });
+  };
+
   render() {
     const { item: submerchant, loading, error, switchMerchant } = this.props;
     return (
@@ -64,6 +89,7 @@ export default class SubmerchantEntityContainer extends Component {
           error={error}
           switchMerchant={switchMerchant}
           onInviteMerchant={this.handleInviteClick}
+          onResendInvite={this.handleResendInvite}
         />
       </div>
     );

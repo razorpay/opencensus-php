@@ -85,7 +85,10 @@ export default class NotificationsDropdown extends Component {
 
     // Mark all notifications as read
     this.state.notifications.forEach(notif => {
-      trackAnnouncement(notif.title, 'Marked as read');
+      const gaAction =
+        notif.ga && notif.ga.action ? notif.ga.action : notif.title;
+
+      trackAnnouncement(gaAction, 'Marked as read');
 
       if (
         _isUnreadNotification(
@@ -94,7 +97,7 @@ export default class NotificationsDropdown extends Component {
           this.state.lastReadTS
         )
       ) {
-        trackAnnouncement(notif.title, 'Unread announcement load');
+        trackAnnouncement(gaAction, 'Unread announcement load');
       }
     });
   };

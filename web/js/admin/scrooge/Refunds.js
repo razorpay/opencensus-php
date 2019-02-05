@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import { withRouter, Link } from 'react-router-dom';
 import { PageTable } from 'ui/Table';
 import Form, { serialize } from 'ui/Form';
 import AsyncButton from 'ui/AsyncButton';
@@ -27,6 +27,7 @@ import NavBar from 'admin/scrooge/NavBar';
 import { bulkUpdateRefundStatus } from 'admin/scrooge/util';
 import { updateStatusEvents } from 'admin/scrooge/constants';
 
+@withRouter
 export default class Refunds extends Component {
   constructor(props) {
     super(props);

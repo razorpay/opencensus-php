@@ -32,7 +32,7 @@ export default class TerminalForm extends Component {
       var data = {
         gateway: gateway,
         gateway_input: {
-          mcc: category,
+          mcc: category || this.getMcc(),
           currency_code: currency_code,
           trans_mode: gateway === 'hitachi' ? 'CARDS' : '', //todo else condition
         },

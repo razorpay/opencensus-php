@@ -28,7 +28,8 @@ class Helper
                 {
                     $currentMerchant = $updatedUser->merchants->where('id', $sessionMerchantId)->first();
                 }
-                else
+
+                if ($currentMerchant === null)
                 {
                     $currentMerchant = $user->merchants->first();
                 }

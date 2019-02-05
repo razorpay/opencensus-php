@@ -14,7 +14,8 @@ import * as ModalActions from 'rzp/modules/modals';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import EnableSettlementsBanner from 'merchant/components/EnableSettlementsBanner';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
-import RequestEarlyAccessForm from 'merchant/components/Announcements/EarlySettlementsModal';
+import EarlySettlementsAnnouncement from 'merchant/components/Announcements/EarlySettlements';
+import RequestEarlyAccessForm from 'merchant/components/Announcements/EarlySettlements/Modal';
 import {
   trackEarlySettlementRequests,
   trackHowSettlementsWorkClicks,
@@ -156,7 +157,14 @@ export default class SettlementsListContainer extends ListContainer {
 
     return (
       <React.Fragment>
-        <tabbed-container>
+        {/* instant settlements banner */}
+        {user.isISBannerEnabled && (
+          <EarlySettlementsAnnouncement userId={user.current} />
+        )}
+
+        <tabbed-container
+          style={{ paddingTop: user.isISBannerEnabled ? '0px' : '20px' }}
+        >
           <header>
             <NavLink to="/settlements">Settlements</NavLink>
           </header>
@@ -189,7 +197,8 @@ export default class SettlementsListContainer extends ListContainer {
                     target="_blank"
                     onClick={trackHowSettlementsWorkClicks}
                   >
-                    How settlements work?&nbsp;<span class="icon i-external-link" />
+                    How settlements work?&nbsp;
+                    <span class="icon i-external-link" />
                   </a>
                   <span class="settlement-balance-amount">
                     Current Balance: <Amount value={balance} />

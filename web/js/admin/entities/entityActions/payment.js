@@ -3,7 +3,7 @@ import { openModal, closeModal, confirm } from 'common/modal';
 import fetch, { adminFetch, adminPost } from 'common/fetch';
 import { notifyError, notifySuccess, notifyDone } from 'common/modal';
 import { getFields } from '../Entity';
-import user from 'admin/user';
+import user, { isOrgRazorpay } from 'admin/user';
 
 import Duplex from 'ui/Duplex';
 import AsyncButton from 'ui/AsyncButton';
@@ -110,18 +110,20 @@ export default ({ entity, mode, updateEntity }) => {
 
   return (
     <Fragment>
-      <button
-        class="btn btn-default text-primary"
-        onClick={_ =>
-          openModal(<PaymentAnalytics mode={mode} paymentId={entity.id} />)
-        }
-      >
-        <i
-          class="i-chart-bar text-success"
-          style={{ marginRight: '6px', fontSize: '11px' }}
-        />
-        Payment Analytics
-      </button>
+      {isOrgRazorpay() && (
+        <button
+          class="btn btn-default text-primary"
+          onClick={_ =>
+            openModal(<PaymentAnalytics mode={mode} paymentId={entity.id} />)
+          }
+        >
+          <i
+            class="i-chart-bar text-success"
+            style={{ marginRight: '6px', fontSize: '11px' }}
+          />
+          Payment Analytics
+        </button>
+      )}
       {entity.gateway != null &&
         entity.status === 'failed' &&
         entity.verified == 0 && (
@@ -145,18 +147,22 @@ export default ({ entity, mode, updateEntity }) => {
             Capture
           </AsyncButton>
         )}
-      {entity.status === 'authorized' && (
-        <AsyncButton
-          class="btn btn-default text-primary"
-          confirm="Are you sure you want to Refund this authorized payment?"
-          onClick={refundAuthorizedPayment}
-        >
-          Refund
-        </AsyncButton>
-      )}
+      {entity.status === 'authorized' &&
+        user.permissions &&
+        user.permissions.indexOf('edit_payment_refund') !== -1 && (
+          <AsyncButton
+            class="btn btn-default text-primary"
+            confirm="Are you sure you want to Refund this authorized payment?"
+            onClick={refundAuthorizedPayment}
+          >
+            Refund
+          </AsyncButton>
+        )}
 
       {entity.status === 'captured' &&
-        entity.refund_status !== 'full' && (
+        entity.refund_status !== 'full' &&
+        user.permissions &&
+        user.permissions.indexOf('edit_payment_refund') !== -1 && (
           <AsyncButton
             class="btn btn-default text-primary"
             onClick={() =>
@@ -185,23 +191,25 @@ export default ({ entity, mode, updateEntity }) => {
         </AsyncButton>
       )}
 
-      {!entity.disputed && (
-        <button
-          class="btn danger"
-          onClick={_ =>
-            openModal(
-              <DisputeForm
-                entity={entity}
-                handleSubmit={createDispute}
-                isEditMode={false}
-                mode={mode}
-              />
-            )
-          }
-        >
-          Create Dispute
-        </button>
-      )}
+      {!entity.disputed &&
+        user.permissions &&
+        user.permissions.indexOf('create_dispute') !== -1 && (
+          <button
+            class="btn danger"
+            onClick={_ =>
+              openModal(
+                <DisputeForm
+                  entity={entity}
+                  handleSubmit={createDispute}
+                  isEditMode={false}
+                  mode={mode}
+                />
+              )
+            }
+          >
+            Create Dispute
+          </button>
+        )}
     </Fragment>
   );
 };

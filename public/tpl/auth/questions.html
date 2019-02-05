@@ -33,7 +33,7 @@
           </div>
         </div>
         <div class="signup-nav">
-          <button override-tab ng-disabled="!signup.merchantData.business_type" class="btn btn-primary signup-details-button pull-right col-xs-6" ng-click="quickSendDetails(); trackStepClicksOnMore('Step - Select Business Type', 'Next');">
+          <button override-tab ng-disabled="!signup.merchantData.business_type" class="btn btn-primary signup-details-button pull-right" ng-click="quickSendDetails(); trackStepClicksOnMore('Step - Select Business Type', 'Next');">
             Next
           </button>
         </div>
@@ -54,11 +54,10 @@
           </div>
         </div>
         <div class="signup-nav">
-          <div class="back-btn btn col-xs-6" ng-click="goToSignupStep(1, 0);trackBackClick('Business Type');">
-            <i class="fa fa-angle-left"></i>
+          <div class="back-btn btn" ng-click="goToSignupStep(1, 0);trackBackClick('Business Type');">
             Back
           </div>
-          <button override-tab ng-disabled="!signup.merchantData.transaction_volume" class="btn btn-primary signup-details-button pull-right col-xs-6" ng-click="quickSendDetails(); trackStepClicksOnMore('Step - Monthly Revenue', 'Next');">
+          <button override-tab ng-disabled="!signup.merchantData.transaction_volume" class="btn btn-primary signup-details-button pull-right" ng-click="quickSendDetails(); trackStepClicksOnMore('Step - Monthly Revenue', 'Next');">
             Next
           </button>
         </div>
@@ -80,11 +79,10 @@
           </div>
         </div>
         <div class="signup-nav">
-          <div class="back-btn btn col-xs-6" ng-click="goToSignupStep(1, 1);trackBackClick('Estimated Monthly Revenue');">
-            <i class="fa fa-angle-left"></i>
+          <div class="back-btn btn" ng-click="goToSignupStep(1, 1);trackBackClick('Estimated Monthly Revenue');">
             Back
           </div>
-          <button override-tab ng-disabled="!signup.merchantData.department" class="btn btn-primary signup-details-button pull-right col-xs-6" ng-click="quickSendDetails(); trackStepClicksOnMore('Step - Your Role', 'Next')">
+          <button override-tab ng-disabled="!signup.merchantData.department" class="btn btn-primary signup-details-button pull-right" ng-click="quickSendDetails(); trackStepClicksOnMore('Step - Your Role', 'Next')">
             Next
           </button>
         </div>
@@ -103,6 +101,7 @@
               <i class="fa fa-globe"></i>
             <input type="text" name="business_website" id="business_website" ng-model="signup.merchantData.business_website"
               class="form-control auth-form-input" ng-pattern="websiteRegex" placeholder="Website" >
+              <span class="input-helper">Leave blank if unavailable</span>
           </div>
           
           <label class="form-label details-label" for="contact_name">Contact Details:</label>
@@ -137,11 +136,10 @@
           </div>
 
           <div class="signup-nav">
-            <div class="back-btn btn col-xs-6" ng-click="goToSignupStep(1, 2);trackBackClick('Department');">
-              <i class="fa fa-angle-left"></i>
+            <div class="back-btn btn" ng-click="goToSignupStep(1, 2);trackBackClick('Department');">
               Back
             </div>
-            <button type="submit" override-tab ng-disabled="!(signup.merchantData.contact_name && signup.merchantData.business_name && signup.merchantData.contact_mobile)" class="btn btn-primary signup-details-button pull-right  col-xs-6" ng-click="sendDetails()">
+            <button type="submit" override-tab ng-disabled="!(signup.merchantData.contact_name && signup.merchantData.business_name && signup.merchantData.contact_mobile)" class="btn btn-primary signup-details-button pull-right" ng-click="sendDetails()">
               Finish
             </button>
           </div>

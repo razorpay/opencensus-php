@@ -25,12 +25,7 @@ export default props => {
 
       <div class="form-group list-filter-item">
         <label>Plan ID</label>
-        <Field
-          name="plan_id"
-          component="input"
-          class="form-control input-sm"
-          placeholder="Enter plan id"
-        />
+        <Field name="plan_id" component="input" class="form-control input-sm" />
       </div>
 
       <div class="form-group list-filter-item">

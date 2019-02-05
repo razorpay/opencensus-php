@@ -1,6 +1,6 @@
 import { Route, Switch, Redirect } from 'react-router-dom';
 import MainNavLink from 'admin/components/MainNavLink';
-import { org, isOrgRazorpay } from 'admin/user';
+import user, { org, isOrgRazorpay } from 'admin/user';
 import { ShowWhenRoute } from 'admin/components/ShowWhen';
 
 import Profile from 'admin/profile';
@@ -47,6 +47,8 @@ import ScroogeRefunds from 'admin/scrooge/Refunds';
 import ScroogeActions from 'admin/scrooge/Actions';
 import ScroogeRefund from 'admin/scrooge/Refund';
 
+import BankFileUpload from 'admin/banks/file-upload';
+
 const links = [
   [
     // title, url, permission, icon
@@ -55,7 +57,7 @@ const links = [
     ['Instant Activations', '/instant-activation', 'view_activation_form'],
     ['Pricing Plans', '/pricing-plans', 'view_pricing_list', 'rupee'],
     ['Gateway Rules', '/gateway-rules', 'view_gateway_rule'],
-    ['Downtimes', '/downtimes', '', 'pulse'],
+    ['Downtimes', '/downtimes', 'view_gateway_downtime', 'pulse'],
     ['Entities', '/entities', 'view_all_entity'],
     ['Actions', '/actions', 'view_actions'],
     ['Email Logs', '/email-logs', 'view_email_logs', 'email'],
@@ -85,6 +87,9 @@ const links = [
     ['Groups', '/groups', 'view_group', 'group'],
     ['Audit Log', '/audit-log', 'view_auditlog'],
   ],
+
+  // banking dashboard
+  [['Upload File', '/bank-file-upload', 'admin_bank_file_upload']],
 ];
 
 // restrict routes to other orgs
@@ -132,6 +137,8 @@ export default ({ location }) => (
     <Route path="/permissions" component={PermissionsList} />
     <Route path="/audit-log" component={AuditLog} />
 
+    <Route path="/bank-file-upload" component={BankFileUpload} />
+
     <Route
       path="/entity/:type/:mode(live|test)/:id"
       component={GenericEntity}
@@ -151,7 +158,9 @@ export default ({ location }) => (
       component={ScroogeRefund}
     />
 
-    <Redirect to="/merchants" />
+    {user.permissions.indexOf('view_all_merchants') > -1 && (
+      <Redirect to="/merchants" />
+    )}
   </Switch>
 );
 

@@ -1,24 +1,16 @@
 import 'common/polyfill';
 import React, { Component } from 'react';
-import {
-  Route,
-  matchPath,
-  Switch,
-  Redirect,
-  Link,
-  withRouter,
-} from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import Content, { Sidebar } from 'admin/Content';
 
-import ModalContainer, { openSlider, closeSlider } from 'common/modal';
+import ModalContainer from 'common/modal';
 import ErrorBoundary from 'common/ErrorBoundary';
 
-import user, { org } from 'admin/user';
+import user from 'admin/user';
 
 import AsyncButton from 'ui/AsyncButton';
 
-import { classList } from 'common/util';
-import fetch, { adminFetch } from 'common/fetch';
+import fetch from 'common/fetch';
 
 @withRouter
 export default class App extends Component {

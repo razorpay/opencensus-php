@@ -155,7 +155,6 @@ class UserController extends Controller
         $traceData = [
             'id'          => $userDetails->id,
             'email'       => $userDetails->email,
-            'merchant_id' => $userDetails->currentMerchant()->id,
         ];
 
         $this->trace->info(TraceCode::USER_LOGOUT, $traceData);
