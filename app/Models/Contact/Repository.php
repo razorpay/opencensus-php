@@ -33,6 +33,7 @@ class Repository extends Base\Repository
                     ->where(Entity::REFERENCE_ID, $input[Entity::REFERENCE_ID] ?? null)
                     ->merchantId($merchant->getId())
                     ->where(Entity::TYPE, $input[Entity::TYPE] ?? null)
+                    ->where(Entity::ACTIVE, true)
                     ->where(Entity::NAME, $input[Entity::NAME] ?? null)
                     ->orderBy(Entity::CREATED_AT, 'desc')
                     ->orderBy(Entity::ID, 'desc')
