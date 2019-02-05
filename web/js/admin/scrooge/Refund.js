@@ -4,7 +4,7 @@ import Collection from 'model/collection';
 import { adminFetch, adminPost } from 'common/fetch';
 import AsyncButton from 'ui/AsyncButton';
 import ToggleEntityRow from 'ui/ToggleEntityRow';
-import { Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import Duplex from 'ui/Duplex';
 import { formatDate, getFormattedAmount } from 'common/util';
 import { openModal, notifySuccess, notifyError } from 'common/modal';
@@ -13,6 +13,7 @@ import Field, { SelectField } from 'ui/Field';
 import Form from 'ui/Form';
 import ShowWhen from 'admin/components/ShowWhen';
 
+@withRouter
 export default class RefundsList extends Component {
   mode = this.props.match.params.mode || 'live';
 

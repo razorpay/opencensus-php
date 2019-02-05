@@ -36,6 +36,7 @@ const gatewayMapping = {
   wallet_freecharge: 'Freecharge',
   wallet_jiomoney: 'Jiomoney',
   wallet_sbibuddy: 'SBI Buddy',
+  paytm: 'Paytm',
   mobikwik: 'Mobikwik',
   billdesk: 'Billdesk',
   ebs: 'EBS',
@@ -87,6 +88,7 @@ const gatewayAcquirerMapping = {
   zestmoney: 'ZestMoney',
   earlysalary: 'EarlySalary',
   amex: 'Amex',
+  yesb: 'Yes Bank',
 };
 
 const HDFC_gatewayAcquirerMapping = {
@@ -108,6 +110,7 @@ const terminalTypesMapping = [
   { value: 'bharat_qr', name: 'Bharat QR' },
   { value: 'debit_recurring', name: 'Debit Recurring' },
   { value: 'direct_settlement', name: 'Direct Settlement' },
+  { value: 'moto', name: 'Moto' },
 ];
 
 const HDFC_terminalTypesMapping = [

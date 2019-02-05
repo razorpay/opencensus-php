@@ -1,0 +1,26 @@
+import Announcement from 'merchant/components/Announcement';
+import { Link } from 'react-router-dom';
+import { trackInstantSettlementsBanner } from '../ga';
+
+export default ({ userId }) => {
+  trackInstantSettlementsBanner('Appear');
+
+  return (
+    <Announcement
+      class="settlement-anc"
+      theme="primary"
+      title="Instant Settlements"
+      canBeClosed={true}
+      bannerKey={`instant-settlements-banner-${userId}`}
+    >
+      Get your payments settled within a few hours and never have a shortfall of
+      working capital <span class="big-dot-separator" />
+      <Link
+        to="/settlements#requestearlyaccess"
+        onClick={() => trackInstantSettlementsBanner('Click Link')}
+      >
+        Request Access
+      </Link>
+    </Announcement>
+  );
+};

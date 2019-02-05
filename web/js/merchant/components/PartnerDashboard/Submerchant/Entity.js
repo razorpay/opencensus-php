@@ -6,11 +6,12 @@ import Time from 'rzp/ui/Time';
 import Alert from 'rzp/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import ShowWhen from 'merchant/components/ShowWhen';
+import AsyncButton from 'react-async-button';
 
 import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
 
 export default props => {
-  const { submerchant, isLoading, error } = props;
+  const { submerchant, isLoading, error, onResendInvite } = props;
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading ? (
@@ -33,6 +34,14 @@ export default props => {
                 </button>
               </div>
             ) */}
+            <div class="btn-toolbar pull-right">
+              <AsyncButton
+                text="Resend Invite"
+                pendingText="Sending..."
+                class="btn btn-primary btn-sm"
+                onClick={onResendInvite}
+              />
+            </div>
           </div>
           <Alert type="error" message={error} />
           <div class="SliderPanel__Body">

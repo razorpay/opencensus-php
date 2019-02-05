@@ -115,6 +115,7 @@ export const options = {
     transfer: 'Transfer',
     emi: 'EMI',
     esautomatic: 'Early Settlement',
+    fund_account_validation: 'Fund Account Validation'
   },
   payment_method: {
     ...methods,
@@ -127,6 +128,7 @@ export const options = {
     account: 'Transfer: Account (Marketplace)',
     customer: 'Transfer: Customer (Openwallet)',
     cardless_emi: 'Cardless EMI',
+    bank_account: 'Bank Account',
   },
   payment_method_type: {
     '': 'All',

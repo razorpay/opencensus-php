@@ -11,7 +11,7 @@ const options = {
   emandate: {
     subTypes: ['register', 'debit', 'acknowledge'],
     extraFields: ['name', 'gateway'],
-    gateways: ['enach_rbl', 'hdfc', 'axis'],
+    gateways: ['enach_rbl', 'hdfc', 'axis', 'enach_npci_netbanking'],
   },
   reconciliation: {
     extraFields: ['name', 'config', 'gateway'],

@@ -4,7 +4,7 @@ import Button from 'component/Button';
 import * as ModalActions from 'rzp/modules/modals';
 import { Field, reduxForm } from 'redux-form';
 import RadioButton from 'rzp/ui/Forms/RadioButton';
-import trackESAnnouncements from './ga';
+import trackESAnnouncements from '../ga';
 import ajax from 'merchant/utils/ajax';
 import LocalStorageService from 'rzp/utils/localStorage';
 
