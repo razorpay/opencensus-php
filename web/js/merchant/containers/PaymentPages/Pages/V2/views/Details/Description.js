@@ -3,6 +3,7 @@ import { classList } from 'common/util';
 import debounce from 'rzp/utils/debounce';
 import { showNotification } from 'rzp/modules/notifications';
 
+const FILE_SIZE_LIMIT = 10;
 const COLORS_LIST = [
   '#00BB55',
   '#528FF0',
@@ -93,6 +94,17 @@ export default class extends React.PureComponent {
 
     input.onchange = () => {
       const file = input.files[0];
+      const fileSizeMB = file.size / 1024 / 1024;
+
+      if (fileSizeMB > FILE_SIZE_LIMIT) {
+        self.props.showNotification({
+          type: 'error',
+          message: `Image too large. Max limit ${FILE_SIZE_LIMIT}MB`,
+        });
+
+        return;
+      }
+
       const isImageType = /^image\//.test(file.type);
 
       if (isImageType) {
@@ -111,6 +123,8 @@ export default class extends React.PureComponent {
           type: 'error',
           message: 'Select a valid Image',
         });
+
+        return;
       }
     };
   }
