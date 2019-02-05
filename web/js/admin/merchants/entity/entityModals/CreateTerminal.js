@@ -28,23 +28,13 @@ export default class TerminalForm extends Component {
   // Creates terminal
   handleCreate = body => {
     confirm('Are you sure you want to create this terminal?').then(_ => {
-      const {
-        pg_merchant_id,
-        gateway,
-        mid,
-        tid,
-        currency_code,
-        mode,
-        category,
-      } = body;
+      const { pg_merchant_id, gateway, currency_code, mode, category } = body;
       var data = {
         gateway: gateway,
         gateway_input: {
-          mid: mid,
-          tid: tid,
           mcc: category || this.getMcc(),
           currency_code: currency_code,
-          trans_mode: gateway ? 'hitachi' : 'CARDS',
+          trans_mode: gateway === 'hitachi' ? 'CARDS' : '', //todo else condition
         },
       };
       return adminPost({
@@ -52,12 +42,13 @@ export default class TerminalForm extends Component {
         data: data,
       })
         .then(response => {
-          if (response.data.success) {
+          if (response) {
             notifySuccess('Terminal created successfully.');
             closeModal();
           }
         })
         .catch(err => {
+          console.log(err);
           notifyError(JSON.stringify(err.response));
         });
     });
@@ -83,8 +74,6 @@ export default class TerminalForm extends Component {
             name="category"
             defaultValue={this.getMcc()}
           />
-          <Field label="Gateway Merchant Id" name="mid" />
-          <Field label="Gateway Terminal Id" name="tid" />
           <SelectField name="currency_code" label="Currency" defaultValue="INR">
             <option value="" />
             {CurrencyData.data.map(({ code }) => (
