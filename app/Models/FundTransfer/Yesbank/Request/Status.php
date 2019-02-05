@@ -13,6 +13,7 @@ use RZP\Models\FundTransfer\Mode;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\GatewayStatus;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\Status as ValidStatus;
+use RZP\Models\FundTransfer\Base\Reconciliation\Constants as ReconConstants;
 
 class Status extends Base
 {
@@ -26,9 +27,9 @@ class Status extends Base
 
     protected $responseIdentifier = Constants::STATUS_RESPONSE_IDENTIFIER;
 
-    public function __construct(bool $banking = false)
+    public function __construct(string $type = null)
     {
-        parent::__construct($banking);
+        parent::__construct($type);
 
         $this->urlIdentifier = $this->config['payment_status_url_suffix'];
     }
@@ -109,15 +110,15 @@ class Status extends Base
         $status = ValidStatus::getStatus($statusCode, $transactionType, $bankSubStatus);
 
         return [
-            self::PAYMENT_REF_NO       => $this->entity->getId(),
-            self::UTR                  => $this->getNullOnEmpty($utr),
-            self::BANK_STATUS_CODE     => $status,
-            self::REMARK               => $this->getNullOnEmpty($remark),
-            self::BANK_SUB_STATUS_CODE => $this->getNullOnEmpty($bankSubStatus),
-            self::PAYMENT_DATE         => $this->getNullOnEmpty($paymentDate),
-            self::TRANSFER_TYPE        => $transactionType,
-            self::REFERENCE_NUMBER     => null,
-            self::MODE                 => $mode,
+            ReconConstants::PAYMENT_REF_NO       => $this->entity->getId(),
+            ReconConstants::UTR                  => $this->getNullOnEmpty($utr),
+            ReconConstants::BANK_STATUS_CODE     => $status,
+            ReconConstants::REMARKS              => $this->getNullOnEmpty($remark),
+            ReconConstants::BANK_SUB_STATUS_CODE => $this->getNullOnEmpty($bankSubStatus),
+            ReconConstants::PAYMENT_DATE         => $this->getNullOnEmpty($paymentDate),
+            ReconConstants::TRANSFER_TYPE        => $transactionType,
+            ReconConstants::REFERENCE_NUMBER     => null,
+            ReconConstants::MODE                 => $mode,
         ];
     }
 
@@ -131,15 +132,15 @@ class Status extends Base
         $subCode = $response[Constants::CODE][Constants::SUB_CODE][Constants::VALUE] ?? null;
 
         return [
-            self::PAYMENT_REF_NO       => $this->entity->getId(),
-            self::UTR                  => null,
-            self::BANK_STATUS_CODE     => ValidStatus::FAILED,
-            self::REMARK               => $remark,
-            self::BANK_SUB_STATUS_CODE => $subCode,
-            self::PAYMENT_DATE         => null,
-            self::TRANSFER_TYPE        => null,
-            self::REFERENCE_NUMBER     => null,
-            self::MODE                 => null,
+            ReconConstants::PAYMENT_REF_NO       => $this->entity->getId(),
+            ReconConstants::UTR                  => null,
+            ReconConstants::BANK_STATUS_CODE     => ValidStatus::FAILED,
+            ReconConstants::REMARKS              => $remark,
+            ReconConstants::BANK_SUB_STATUS_CODE => $subCode,
+            ReconConstants::PAYMENT_DATE         => null,
+            ReconConstants::TRANSFER_TYPE        => null,
+            ReconConstants::REFERENCE_NUMBER     => null,
+            ReconConstants::MODE                 => null,
         ];
     }
 
@@ -178,17 +179,17 @@ class Status extends Base
 
 
         return [
-            self::PAYMENT_REF_NO        => $this->getNullOnEmpty($ftaId),
-            self::UTR                   => $this->getNullOnEmpty($utr),
-            self::STATUS_CODE           => $this->getNullOnEmpty($statusCode),
-            self::BANK_STATUS_CODE      => $this->getNullOnEmpty($finalResponseCode),
-            self::REMARK                => $this->getNullOnEmpty($remark),
-            self::BANK_SUB_STATUS_CODE  => null,
-            self::PAYMENT_DATE          => null,
-            self::TRANSFER_TYPE         => null,
-            self::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNumber),
-            self::MODE                  => Mode::UPI,
-            self::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason),
+            ReconConstants::PAYMENT_REF_NO        => $this->getNullOnEmpty($ftaId),
+            ReconConstants::UTR                   => $this->getNullOnEmpty($utr),
+            ReconConstants::STATUS_CODE           => $this->getNullOnEmpty($statusCode),
+            ReconConstants::BANK_STATUS_CODE      => $this->getNullOnEmpty($finalResponseCode),
+            ReconConstants::REMARKS               => $this->getNullOnEmpty($remark),
+            ReconConstants::BANK_SUB_STATUS_CODE  => null,
+            ReconConstants::PAYMENT_DATE          => null,
+            ReconConstants::TRANSFER_TYPE         => null,
+            ReconConstants::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNumber),
+            ReconConstants::MODE                  => Mode::UPI,
+            ReconConstants::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason),
         ];
     }
 
@@ -199,17 +200,17 @@ class Status extends Base
         $publicFailureReason = GatewayStatus::getPublicFailureReason($bankStatusCode);
 
         return [
-            self::PAYMENT_REF_NO        => $fta->getId(),
-            self::UTR                   => $fta->getUtr(),
-            self::STATUS_CODE           => $fta->getBankResponseCode(),
-            self::BANK_STATUS_CODE      => $bankStatusCode,
-            self::REMARK                => $fta->getRemarks(),
-            self::BANK_SUB_STATUS_CODE  => null,
-            self::PAYMENT_DATE          => null,
-            self::TRANSFER_TYPE         => null,
-            self::REFERENCE_NUMBER      => $fta->getCmsRefNo(),
-            self::MODE                  => $fta->getMode(),
-            self::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason),
+            ReconConstants::PAYMENT_REF_NO        => $fta->getId(),
+            ReconConstants::UTR                   => $fta->getUtr(),
+            ReconConstants::STATUS_CODE           => $fta->getBankResponseCode(),
+            ReconConstants::BANK_STATUS_CODE      => $bankStatusCode,
+            ReconConstants::REMARKS               => $fta->getRemarks(),
+            ReconConstants::BANK_SUB_STATUS_CODE  => null,
+            ReconConstants::PAYMENT_DATE          => null,
+            ReconConstants::TRANSFER_TYPE         => null,
+            ReconConstants::REFERENCE_NUMBER      => $fta->getCmsRefNo(),
+            ReconConstants::MODE                  => $fta->getMode(),
+            ReconConstants::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason),
         ];
     }
 

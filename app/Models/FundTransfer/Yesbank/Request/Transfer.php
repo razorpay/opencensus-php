@@ -3,8 +3,6 @@
 namespace RZP\Models\FundTransfer\Yesbank\Request;
 
 use RZP\Trace\TraceCode;
-use RZP\Models\Bank\IFSC;
-use RZP\Models\BankAccount;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Base as BaseModel;
@@ -14,10 +12,13 @@ use RZP\Models\FundTransfer\Yesbank\Mode;
 use RZP\Models\FundTransfer\Yesbank\NodalAccount;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\Status;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\GatewayStatus;
+use RZP\Models\FundTransfer\Base\Reconciliation\Constants as ReconConstants;
 
 class Transfer extends Base
 {
-    const VERSION = 1;
+    const VERSION = "1";
+
+    protected $requestType;
 
     protected $entity = null;
 
@@ -27,15 +28,17 @@ class Transfer extends Base
 
     protected $responseTraceCode = TraceCode::NODAL_TRANSFER_RESPONSE;
 
-    protected $responseIdentifier = Constants::TRANSFER_RESPONSE_IDENTIFIER;
-
-    public function __construct(string $purpose, bool $banking = false)
+    public function __construct(string $purpose, string $type = null)
     {
-        parent::__construct($banking);
+        parent::__construct($type);
+
+        $this->requestType = $type;
 
         $this->purpose = $purpose;
 
         $this->urlIdentifier = $this->config['fund_transfer_url_suffix'];
+
+        $this->setRequestResponseIdentifiers();
     }
 
     public function init()
@@ -68,30 +71,57 @@ class Transfer extends Base
      */
     public function requestBody(): string
     {
-        $source = $this->entity->source;
-
-        $this->trace->info(
-            TraceCode::YESBANK_SOURCE_AMOUNT, ['sourceAmount' => $source->getAmount() ]);
-
-        $amount = ($source->getAmount() / 100);
-
-        $this->trace->info(
-            TraceCode::YESBANK_CONVERTED_AMOUNT, ['convertedAmount' => $amount ]);
-
-        $amount = round($amount, 2);
-
         ini_set('serialize_precision', -1);
 
-        $this->trace->info(
-            TraceCode::YESBANK_TRANSFER_AMOUNT, ['transferAmount' => $amount ]);
+        $requestData = $this->getRequestData();
+
+        $jsonRequest  = json_encode($requestData);
+
+        ini_restore('serialize_precision');
+
+        return $jsonRequest;
+    }
+
+    public function getMaskedAccountNumber()
+    {
+        return mask_except_last4($this->accountNumber);
+    }
+
+    protected function setRequestResponseIdentifiers()
+    {
+        switch ($this->requestType)
+        {
+            case Attempt\Type::SYNC:
+                $this->requestIdentifier  = Constants::SYNC_TRANSFER_REQUEST_IDENTIFIER;
+                $this->responseIdentifier = Constants::SYNC_TRANSFER_RESPONSE_IDENTIFIER;
+                break;
+
+            default:
+                $this->requestIdentifier  = Constants::ASYNC_TRANSFER_REQUEST_IDENTIFIER;
+                $this->responseIdentifier = Constants::ASYNC_TRANSFER_RESPONSE_IDENTIFIER;
+                break;
+        }
+    }
+
+    /**
+     * Gives an request body in array format which has to be sent in request body
+     * this will construct the data based on type of request
+     * which is derived by entity
+     *
+     * @return array
+     */
+    protected function getRequestData(): array
+    {
+        $amount = $this->getFormattedAmount();
 
         $this->transferType = $this->getPaymentType($this->entity, $amount);
 
-        $jsonRequest  = json_encode([
-                Constants::TRANSFER_REQUEST_IDENTIFIER => [
+        $data = [
+            $this->requestIdentifier => [
                 Constants::VERSION                      => self::VERSION,
                 Constants::UNIQUE_REQUEST_NO            => $this->entity->getId(),
                 Constants::APP_ID                       => $this->appId,
+                // This should be in this place else the request will fail
                 Constants::PURPOSE_CODE                 => Constants::PURPOSE_CODE_MAP[$this->purpose],
                 Constants::CUSTOMER_ID                  => $this->customerId,
                 Constants::DEBIT_ACCOUNT_NUMBER         => $this->accountNumber,
@@ -101,11 +131,17 @@ class Transfer extends Base
                 Constants::TRANSFER_AMOUNT              => $amount,
                 Constants::REMITTER_TO_BENEFICIARY_INFO => $this->getNarration($this->entity),
             ],
-        ]);
+        ];
 
-        ini_restore('serialize_precision');
+        //
+        // Purpose is required for async mode transfers
+        //
+        if ($this->requestType === Attempt\Type::SYNC)
+        {
+            unset($data[$this->requestIdentifier][Constants::PURPOSE_CODE]);
+        }
 
-        return $jsonRequest;
+        return $data;
     }
 
     public function getRequestInputForGateway(): array
@@ -142,8 +178,49 @@ class Transfer extends Base
         return Action::PAYOUT;
     }
 
+    /**
+     * This will convert the amount which is in paise to rupees.
+     * and log outpput of each stage for debugging purpose
+     *
+     * @return float|int
+     */
+    protected function getFormattedAmount()
+    {
+        $source = $this->entity->source;
+
+        $this->trace->info(
+            TraceCode::YESBANK_SOURCE_AMOUNT,
+            [
+                'sourceAmount' => $source->getAmount()
+            ]);
+
+        $amount = ($source->getAmount() / 100);
+
+        $this->trace->info(
+            TraceCode::YESBANK_CONVERTED_AMOUNT,
+            [
+                'convertedAmount' => $amount
+            ]);
+
+        $amount = round($amount, 2);
+
+        $this->trace->info(
+            TraceCode::YESBANK_TRANSFER_AMOUNT,
+            [
+                'transferAmount' => $amount
+            ]);
+
+        return $amount;
+    }
+
     protected function getPaymentType(Attempt\Entity $attempt, $amount)
     {
+        // Penny test is only possible through IMPS
+        if ($attempt->isPennyTesting() === true)
+        {
+            return Mode::IMPS;
+        }
+
         $mode = (new NodalAccount)->getPaymentModeForBankAccount($attempt, $amount);
 
         return Mode::getExternalModeFromInternalMode($mode);
@@ -151,7 +228,12 @@ class Transfer extends Base
 
     protected function getPurposeSpecificData(): array
     {
-        if ($this->isRefund() === true)
+        $attempt = $this->entity;
+
+        // Beneficiary details are required when the request is of purpose `refund` or
+        // the request has to be made using sync API
+        if (($attempt->isRefund() === true) or
+            ($this->requestType === Attempt\Type::SYNC))
         {
             $beneName = $this->entity->bankAccount->getBeneficiaryName();
 
@@ -215,7 +297,12 @@ class Transfer extends Base
      */
     protected function extractSuccessfulData(array $response): array
     {
-        return $this->extractData($response);
+        if ($this->requestType === Attempt\Type::SYNC)
+        {
+            return $this->extractDataFromSyncResponse($response);
+        }
+
+        return $this->extractDataFromAsyncResponse($response);
     }
 
     /**
@@ -225,7 +312,47 @@ class Transfer extends Base
      */
     protected function extractFailedData(array $response): array
     {
-        return $this->extractData($response);
+        if ($this->requestType === Attempt\Type::SYNC)
+        {
+            return $this->extractDataFromSyncResponse($response);
+        }
+
+        return $this->extractDataFromAsyncResponse($response);
+    }
+
+    protected function extractDataFromSyncResponse(array $response): array
+    {
+        $rzpReferenceNo = $response[Constants::REQUEST_REFERENCE_NO] ?? null;
+
+        $beneName = $response[Constants::NAME_WITH_BENEFICIARY_BANK] ?? null;
+
+        $mode = $response[Constants::TRANSFER_TYPE] ?? null;
+
+        $lowBalanceAlert = $response[Constants::LOW_BALANCE_ALERT] ?? null;
+
+        $statusCode = $response[Constants::TRANSACTION_STATUS][Constants::STATUS_CODE] ?? null;
+
+        $bankSubStatus = $response[Constants::TRANSACTION_STATUS][Constants::SUB_STATUS_CODE] ?? null;
+
+        $bankReferenceNo = $response[Constants::TRANSACTION_STATUS][Constants::BANK_REFERENCE_NO] ?? null;
+
+        $publicFailureReason = Status::getPublicFailureReason($bankSubStatus);
+
+        return [
+            ReconConstants::PAYMENT_REF_NO        => $this->getNullOnEmpty($rzpReferenceNo),
+            ReconConstants::UTR                   => null,
+            ReconConstants::BANK_STATUS_CODE      => $this->getNullOnEmpty($statusCode),
+            ReconConstants::REMARKS               => null,
+            ReconConstants::BANK_SUB_STATUS_CODE  => $this->getNullOnEmpty($bankSubStatus),
+            ReconConstants::PAYMENT_DATE          => null,
+            ReconConstants::TRANSFER_TYPE         => $mode,
+            ReconConstants::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNo),
+            ReconConstants::MODE                  => null,
+            ReconConstants::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason),
+            ReconConstants::NAME_WITH_BENE_BANK   => $beneName,
+            ReconConstants::LOW_BALANCE_ALERT     => $lowBalanceAlert,
+            ReconConstants::REQUEST_FAILURE       => $this->isRequestFailure,
+        ];
     }
 
     /**
@@ -234,7 +361,7 @@ class Transfer extends Base
      * @param array $response
      * @return array
      */
-    protected function extractData(array $response): array
+    protected function extractDataFromAsyncResponse(array $response): array
     {
         $rzpReferenceNo = $response[Constants::REQUEST_REFERENCE_NO] ?? null;
 
@@ -249,16 +376,19 @@ class Transfer extends Base
         $publicFailureReason = Status::getPublicFailureReason($bankSubStatus);
 
         return [
-            self::PAYMENT_REF_NO       => $this->getNullOnEmpty($rzpReferenceNo),
-            self::UTR                   => null,
-            self::BANK_STATUS_CODE      => $this->getNullOnEmpty($statusCode),
-            self::REMARK                => $this->getNullOnEmpty($remark),
-            self::BANK_SUB_STATUS_CODE  => $this->getNullOnEmpty($bankSubStatus),
-            self::PAYMENT_DATE          => null,
-            self::TRANSFER_TYPE         => null,
-            self::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNo),
-            self::MODE                  => null,
-            self::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason)
+            ReconConstants::PAYMENT_REF_NO        => $this->getNullOnEmpty($rzpReferenceNo),
+            ReconConstants::UTR                   => null,
+            ReconConstants::BANK_STATUS_CODE      => $this->getNullOnEmpty($statusCode),
+            ReconConstants::REMARKS               => $this->getNullOnEmpty($remark),
+            ReconConstants::BANK_SUB_STATUS_CODE  => $this->getNullOnEmpty($bankSubStatus),
+            ReconConstants::PAYMENT_DATE          => null,
+            ReconConstants::TRANSFER_TYPE         => null,
+            ReconConstants::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNo),
+            ReconConstants::MODE                  => null,
+            ReconConstants::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason),
+            ReconConstants::NAME_WITH_BENE_BANK   => null,
+            ReconConstants::LOW_BALANCE_ALERT     => false,
+            ReconConstants::REQUEST_FAILURE       => $this->isRequestFailure,
         ];
     }
 
@@ -296,17 +426,18 @@ class Transfer extends Base
         $publicFailureReason = GatewayStatus::getPublicFailureReason($finalResponseCode);
 
         return [
-            self::PAYMENT_REF_NO        => $this->getNullOnEmpty($ftaId),
-            self::UTR                   => $this->getNullOnEmpty($utr),
-            self::STATUS_CODE           => $this->getNullOnEmpty($statusCode),
-            self::BANK_STATUS_CODE      => $this->getNullOnEmpty($finalResponseCode),
-            self::REMARK                => $this->getNullOnEmpty($remark),
-            self::BANK_SUB_STATUS_CODE  => null,
-            self::PAYMENT_DATE          => null,
-            self::TRANSFER_TYPE         => null,
-            self::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNumber),
-            self::MODE                  => Mode::UPI,
-            self::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason),
+            ReconConstants::PAYMENT_REF_NO        => $this->getNullOnEmpty($ftaId),
+            ReconConstants::UTR                   => $this->getNullOnEmpty($utr),
+            ReconConstants::STATUS_CODE           => $this->getNullOnEmpty($statusCode),
+            ReconConstants::BANK_STATUS_CODE      => $this->getNullOnEmpty($finalResponseCode),
+            ReconConstants::REMARKS               => $this->getNullOnEmpty($remark),
+            ReconConstants::BANK_SUB_STATUS_CODE  => null,
+            ReconConstants::PAYMENT_DATE          => null,
+            ReconConstants::TRANSFER_TYPE         => null,
+            ReconConstants::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNumber),
+            ReconConstants::MODE                  => Mode::UPI,
+            ReconConstants::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason),
+            ReconConstants::REQUEST_FAILURE       => $this->isRequestFailure,
         ];
     }
 
@@ -315,8 +446,39 @@ class Transfer extends Base
      */
     protected function mockGenerateSuccessResponse(): string
     {
+        if ($this->requestType === Attempt\Type::SYNC)
+        {
+            return $this->generateSyncMockSuccessResponse();
+        }
+
+        return $this->generateAsyncMockSuccessResponse();
+    }
+
+    protected function generateSyncMockSuccessResponse(): string
+    {
         return json_encode([
-            Constants::TRANSFER_RESPONSE_IDENTIFIER => [
+            Constants::SYNC_TRANSFER_RESPONSE_IDENTIFIER => [
+                Constants::VERSION                      => self::VERSION,
+                Constants::REQUEST_REFERENCE_NO         => $this->entity->getId(),
+                Constants::NAME_WITH_BENEFICIARY_BANK   => 'Someone',
+                Constants::LOW_BALANCE_ALERT            => false,
+                Constants::TRANSFER_TYPE                => Mode::IMPS,
+                Constants::ATTEMPT_NO                   => 1,
+                Constants::UNIQUE_RESPONSE_NO           => PublicEntity::generateUniqueId(),
+                Constants::TRANSACTION_STATUS           => [
+                    Constants::STATUS_CODE              => Status::COMPLETED,
+                    Constants::SUB_STATUS_CODE          => 0,
+                    Constants::BANK_REFERENCE_NO        => PublicEntity::generateUniqueId(),
+                    Constants::BENEFICIARY_REFERENCE_NO => json_decode('{}'),
+                ]
+            ],
+        ]);
+    }
+
+    protected function generateAsyncMockSuccessResponse(): string
+    {
+        return json_encode([
+            Constants::ASYNC_TRANSFER_RESPONSE_IDENTIFIER => [
                 Constants::VERSION              => self::VERSION,
                 Constants::REQUEST_REFERENCE_NO => $this->entity->getId(),
                 Constants::UNIQUE_RESPONSE_NO   => PublicEntity::generateUniqueId(),
@@ -331,8 +493,39 @@ class Transfer extends Base
      */
     protected function mockGenerateFailedResponse(): string
     {
+        if ($this->requestType === Attempt\Type::SYNC)
+        {
+            return $this->generateSyncMockFailureResponse();
+        }
+
+        return $this->generateAsyncMockFailureResponse();
+    }
+
+    protected function generateSyncMockFailureResponse(): string
+    {
         return json_encode([
-            Constants::TRANSFER_RESPONSE_IDENTIFIER => [
+            Constants::SYNC_TRANSFER_RESPONSE_IDENTIFIER => [
+                Constants::VERSION                      => self::VERSION,
+                Constants::REQUEST_REFERENCE_NO         => $this->entity->getId(),
+                Constants::NAME_WITH_BENEFICIARY_BANK   => '',
+                Constants::LOW_BALANCE_ALERT            => false,
+                Constants::TRANSFER_TYPE                => Mode::IMPS,
+                Constants::ATTEMPT_NO                   => 1,
+                Constants::UNIQUE_RESPONSE_NO           => PublicEntity::generateUniqueId(),
+                Constants::TRANSACTION_STATUS           => [
+                    Constants::STATUS_CODE              => Status::FAILED,
+                    Constants::SUB_STATUS_CODE          => 'npci:E307',
+                    Constants::BANK_REFERENCE_NO        => PublicEntity::generateUniqueId(),
+                    Constants::BENEFICIARY_REFERENCE_NO => json_decode('{}'),
+                ]
+            ],
+        ]);
+    }
+
+    protected function generateAsyncMockFailureResponse(): string
+    {
+        return json_encode([
+            Constants::ASYNC_TRANSFER_RESPONSE_IDENTIFIER => [
                 Constants::VERSION              => self::VERSION,
                 Constants::REQUEST_REFERENCE_NO => $this->entity->getId(),
                 Constants::UNIQUE_RESPONSE_NO   => PublicEntity::generateUniqueId(),

@@ -298,6 +298,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const NODAL_PAYMENT_STATUS_RESPONSE                 = 'NODAL_PAYMENT_STATUS_RESPONSE';
     const NODAL_REQUEST_FAILED                          = 'NODAL_REQUEST_FAILED';
     const NODAL_TRANSFER_STATUS_UPDATE_FAILED           = 'NODAL_TRANSFER_STATUS_UPDATE_FAILED';
+    const FTA_SOURCE_PROCESSING_FAILED                  = 'FTA_SOURCE_PROCESSING_FAILED';
+    const FTA_SOURCE_PROCESSING_DATA                    = 'FTA_SOURCE_PROCESSING_DATA';
     const SETTLEMENT_API_RESPONSE                       = 'NODAL_SETTLEMENT_API_RESPONSE';
     const SETTLEMENT_API_REQUEST                        = 'NODAL_SETTLEMENT_API_REQUEST';
 
@@ -1286,8 +1288,15 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_ACCOUNT_UPDATE_REQUEST                   = 'FUND_ACCOUNT_UPDATE_REQUEST';
     const FUND_ACCOUNT_DELETE_REQUEST                   = 'FUND_ACCOUNT_DELETE_REQUEST';
     // Trace codes for Fund Account Validation
-    const FUND_ACCOUNT_VALIDATION_CREATE_TRANSACTION    = 'FUND_ACCOUNT_VALIDATION_CREATE_TRANSACTION';
     const FUND_ACCOUNT_VALIDATION_REQUEST               = 'FUND_ACCOUNT_VALIDATION_REQUEST';
+    const BENEFICIARY_NAME_NOT_PRESENT                  = 'BENEFICIARY_NAME_NOT_PRESENT';
+    const FUND_ACCOUNT_VALIDATION_CREATE_TRANSACTION    = 'FUND_ACCOUNT_VALIDATION_CREATE_TRANSACTION';
+    const FUND_ACCOUNT_VALIDATION_TRANSACTION_FAILED    = 'FUND_ACCOUNT_VALIDATION_TRANSACTION_FAILED';
+
+    // Trace codes for Post FTA Processing
+    const UPDATE_STATUS_AFTER_FTA_RECON                 = 'UPDATE_STATUS_AFTER_FTA_RECON';
+    const UPDATE_STATUS_AFTER_FTA_INITIATED             = 'UPDATE_STATUS_AFTER_FTA_INITIATED';
+    const UPDATE_WITH_DETAILS_BEFORE_FTA_RECON          = 'UPDATE_WITH_DETAILS_BEFORE_FTA_RECON';
 
     // Trace code for Merchant Invoices
     const MERCHANT_INVOICE_ENTITY_CREATION_FAILED       = 'MERCHANT_INVOICE_ENTITY_CREATION_FAILED';
@@ -1689,6 +1698,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::TRANSACTION_CREATED_IN_VERIFY_CAPTURE     => 'Transaction created for a failed capture',
         self::REFUND_RETRY_INITIATED                    => 'Retry of failed refunds initiated',
         self::REFUND_RETRY_RESULT                       => 'Result of failed refunds retry.',
+
+        //Fund Account Validation Messages
+        self::FUND_ACCOUNT_VALIDATION_TRANSACTION_FAILED    => 'Transaction failed to create for Fund Account validation',
 
         self::TRANSACTION_MIGRATION_TAX_MISTMATCH       => 'Mismatch in the tax calculation during migration',
         self::TRANSACTION_MIGRATION_FEE_MISTMATCH       => 'Mismatch in the fees calculation during migration',

@@ -353,7 +353,7 @@ class Initiator extends Base\Core
             ]);
     }
 
-    public function initFundTransferOnChannel($fta, $channel)
+    public function initFundTransferOnChannel(Entity $fta, $channel)
     {
         $data = [
             'fta_id'  => $fta->getId(),

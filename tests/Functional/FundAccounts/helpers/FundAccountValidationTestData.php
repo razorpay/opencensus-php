@@ -9,7 +9,7 @@ use RZP\Models\FundAccount\Validation\Entity as Validation;
 return [
     'testGetValidations' => [
         'request' => [
-            'url'     => '/fund_accounts_validations',
+            'url'     => '/fund_accounts/validations',
             'method'  => 'get',
         ],
         'response' => [
@@ -30,7 +30,7 @@ return [
 
     'testCreateValidationWithFundAccountId' => [
         'request' => [
-            'url'     => '/fund_accounts_validations',
+            'url'     => '/fund_accounts/validations',
             'method'  => 'post',
             'content' => [
                 Validation::FUND_ACCOUNT => [
@@ -70,7 +70,7 @@ return [
 
     'testCreateValidationWithWrongFundAccountId' => [
         'request' => [
-            'url'     => '/fund_accounts_validations',
+            'url'     => '/fund_accounts/validations',
             'method'  => 'post',
             'content' => [
                 Validation::FUND_ACCOUNT => [
@@ -100,7 +100,7 @@ return [
 
     'createValidationWithFundAccountEntity' => [
         'request' => [
-            'url'     => '/fund_accounts_validations',
+            'url'     => '/fund_accounts/validations',
             'method'  => 'post',
             'content' => [
                 Validation::FUND_ACCOUNT  => [
@@ -145,7 +145,7 @@ return [
 
     'testCreateValidationWithWrongFundAccountEntity' => [
         'request' => [
-            'url'     => '/fund_accounts_validations',
+            'url'     => '/fund_accounts/validations',
             'method'  => 'post',
             'content' => [
                 Validation::FUND_ACCOUNT  => [
@@ -178,6 +178,40 @@ return [
         ],
     ],
 
+    'testFundAccValidationOnPrepaidModelWithNoFeeCreditsAndNoBalance' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                Validation::FUND_ACCOUNT  => [
+                    FundAccount::ACCOUNT_TYPE => 'bank_account',
+                    FundAccount::DETAILS      => [
+                        BankAccount::ACCOUNT_NUMBER => '123456789',
+                        BankAccount::NAME           => 'Rohit Keshwani',
+                        BankAccount::IFSC           => 'SBIN0010411',
+                    ],
+                ],
+                Validation::AMOUNT        => '100',
+                Validation::CURRENCY      => 'INR',
+                Validation::NOTES         => [],
+                Validation::RECEIPT       => '12345667',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The fees calculated for fund account validation is greater than available fee credits or balance.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INSUFFICIENT_BALANCE,
+        ],
+    ],
+
     'testWebhookFundAccountValidationCompleted' => [
         'mode' => 'test',
         'event' => [
@@ -190,26 +224,24 @@ return [
                 'fund_account.validation' => [
                     'entity' => [
                         'entity'       => 'fund_account.validation',
-                        // 'fund_account' => [
-                        //     'entity'       => 'fund_account',
-                        //     'account_type' => 'bank_account',
-                        //     'active'       => true,
-                        //     'details'      => [
-                        //         'ifsc'           => 'SBIN0010411',
-                        //         'bank_name'      => 'State Bank of India',
-                        //         'name'           => 'Rohit Keshwani',
-                        //         'account_number' => '123456789',
-                        //     ],
-                        // ],
+                         'fund_account' => [
+                             'entity'       => 'fund_account',
+                             'account_type' => 'bank_account',
+                             'active'       => true,
+                             'details'      => [
+                                 'ifsc'           => 'SBIN0010411',
+                                 'bank_name'      => 'State Bank of India',
+                                 'name'           => 'Rohit Keshwani',
+                                 'account_number' => '123456789',
+                             ],
+                         ],
                         'status'       => 'completed',
                         'amount'       => 100,
-                        'fees'         => 354,
-                        'tax'          => 54,
                         'currency'     => 'INR',
                         'notes'        => [],
                         'results'      => [
                             'account_status'  => 'active',
-                            'registered_name' => null,
+                            'registered_name' => 'Someone',
                         ],
                     ],
                 ],

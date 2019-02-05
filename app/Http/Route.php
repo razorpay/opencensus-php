@@ -983,16 +983,16 @@ final class Route
         'contact_types_get'                        => ['get',      'contacts/types',                                 'ContactController@getTypes'                                        ],
         'contact_types_post'                       => ['post',     'contacts/types',                                 'ContactController@postType'                                        ],
 
+        // Fund Account Validation
+        'fund_account_validate'                    => ['post',     'fund_accounts/validations',                      'FundAccountValidationController@create'                            ],
+        'fund_account_validate_fetch'              => ['get',      'fund_accounts/validations',                      'FundAccountValidationController@list'                              ],
+        'fund_account_validate_fetch_by_id'        => ['get',      'fund_accounts/validations/{id}',                 'FundAccountValidationController@get'                               ],
+
         'fund_account_get'                         => ['get',      'fund_accounts/{id}',                             'FundAccountController@get'                                         ],
         'fund_account_list'                        => ['get',      'fund_accounts',                                  'FundAccountController@list'                                        ],
         'fund_account_create'                      => ['post',     'fund_accounts',                                  'FundAccountController@create'                                      ],
         'fund_account_update'                      => ['patch',    'fund_accounts/{id}',                             'FundAccountController@update'                                      ],
         'fund_account_delete'                      => ['delete',   'fund_accounts/{id}',                             'FundAccountController@delete'                                      ],
-
-        // Fund Account Validation
-        'fund_account_validate'                    => ['post',     'fund_accounts_validations',                      'FundAccountValidationController@create'                            ],
-        'fund_account_validate_fetch'              => ['get',      'fund_accounts_validations',                      'FundAccountValidationController@list'                              ],
-        'fund_account_validate_fetch_by_id'        => ['get',      'fund_accounts_validations/{id}',                 'FundAccountValidationController@get'                               ],
 
         // Banking statement routes
         'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
@@ -1228,6 +1228,9 @@ final class Route
         'contact_create',
         'contact_update',
         //'contact_delete',
+        'fund_account_validate',
+        'fund_account_validate_fetch',
+        'fund_account_validate_fetch_by_id',
         'fund_account_get',
         'fund_account_list',
         'fund_account_create',
@@ -1238,9 +1241,6 @@ final class Route
         //'fund_account_delete',
         'transaction_statement_fetch',
         'transaction_statement_fetch_multiple',
-        'fund_account_validate',
-        'fund_account_validate_fetch',
-        'fund_account_validate_fetch_by_id',
     ];
 
     // Only routes defined in internalApps go here
