@@ -45,6 +45,7 @@ class Validator extends Base\Validator
         Entity::STEP                    => 'sometimes|in:authorization,authentication',
         Entity::AUTH_TYPE               => 'sometimes',
         Entity::AUTHENTICATION_GATEWAY  => 'sometimes',
+        Entity::CAPABILITY              => 'filled:in:0,1,2',
     ];
 
     protected static $editRules = [
@@ -422,7 +423,7 @@ class Validator extends Base\Validator
         if (in_array($method, $allowedMethods, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                "iins should be sent only for card or emi rules");
+                'iins should be sent only for card or emi rules');
         }
 
         if (is_associative_array($iins) === true)
