@@ -17,6 +17,8 @@ use RZP\Gateway\FirstData\ApiResponseFields;
 
 class Server extends Base\Mock\Server
 {
+    protected $gatewayName = Payment\Gateway::FIRST_DATA;
+
     public function __construct()
     {
         parent::__construct();
@@ -495,7 +497,7 @@ class Server extends Base\Mock\Server
 
     protected function getHash($approvalCode, $chargeTotal, $currencyCode, $txnDateTime, $storeId)
     {
-        $sharedSecret = $this->getGatewayInstance()->getSecret();
+        $sharedSecret = $this->getGatewayConfig('test_hash_secret');
 
         $stringToHash = $sharedSecret . $approvalCode . $chargeTotal . $currencyCode . $txnDateTime . $storeId;
 
@@ -513,7 +515,7 @@ class Server extends Base\Mock\Server
     {
         $xml = $this->arrayToXml($content);
 
-        $response = FirstData\SoapWrapper::defaultWrapper($xml,Constants::IPGAPI_ORDER_RESPONSE);
+        $response = FirstData\SoapWrapper::defaultWrapper($xml, Constants::IPGAPI_ORDER_RESPONSE);
 
         return $response;
     }

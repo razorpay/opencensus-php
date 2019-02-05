@@ -615,7 +615,7 @@ class Gateway extends Base\Gateway
         {
             $networkName = $this->getNetworkName();
 
-            $cert = $this->config['live_' . $networkName . '_certificate'];
+            $cert = $this->input['gateway_config']['live_' . $networkName . '_certificate'];
 
             $cert = str_replace('\n', "\n", $cert);
 
@@ -642,7 +642,7 @@ class Gateway extends Base\Gateway
         {
             $networkName = $this->getNetworkName();
 
-            $cert = $this->config['live_' . $networkName . '_key'];
+            $cert = $this->input['gateway_config']['live_' . $networkName . '_key'];
 
             $cert = str_replace('\n', "\n", $cert);
 
@@ -835,9 +835,9 @@ class Gateway extends Base\Gateway
         if ($this->mode === Mode::TEST)
         {
             $creds = [
-                VEReq::ACQ_BIN          => $this->config[self::GATEWAY_ACCESS_CODE],
-                VEReq::CRED_MERCHANT_ID => $this->config[self::GATEWAY_MERCHANT_ID2],
-                VEReq::PASSWORD         => $this->config[self::GATEWAY_TERMINAL_PASSWORD],
+                VEReq::ACQ_BIN          => $this->input['gateway_config'][self::GATEWAY_ACCESS_CODE],
+                VEReq::CRED_MERCHANT_ID => $this->input['gateway_config'][self::GATEWAY_MERCHANT_ID2],
+                VEReq::PASSWORD         => $this->input['gateway_config'][self::GATEWAY_TERMINAL_PASSWORD],
             ];
         }
         else
@@ -862,12 +862,12 @@ class Gateway extends Base\Gateway
         {
             case Card\Network::MC:
             case Card\Network::MAES:
-                $merchantId = $this->config['live_mastercard_merchant_id'];
+                $merchantId = $this->input['gateway_config']['live_mastercard_merchant_id'];
 
                 break;
 
             case Card\Network::VISA:
-                $merchantId = $this->config['live_visa_merchant_id'];
+                $merchantId = $this->input['gateway_config']['live_visa_merchant_id'];
 
                 break;
 
@@ -883,7 +883,7 @@ class Gateway extends Base\Gateway
 
         if ($this->mode === Mode::TEST)
         {
-            $merchantId = $this->config['test_merchant_id'];
+            $merchantId = $this->input['gateway_config']['test_merchant_id'];
         }
 
         return $merchantId;
@@ -1011,7 +1011,7 @@ class Gateway extends Base\Gateway
 
     protected function getGatewayCertDirName()
     {
-        return $this->config[self::CERTIFICATE_DIRECTORY_NAME];
+        return $this->input['gateway_config'][self::CERTIFICATE_DIRECTORY_NAME];
     }
 
     protected function isIvrPayment($input)

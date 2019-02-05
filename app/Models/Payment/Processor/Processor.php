@@ -403,7 +403,10 @@ class Processor
             'type' => 'respawn',
             'method' => 'cardless_emi',
             'request' => [
-                'url'     => $this->route->getUrlWithPublicAuth('otp_verify', ['method' => 'cardless_emi', 'provider' => $input['provider']]),
+                'url'     => $this->route->getUrlWithPublicAuth('otp_verify', [
+                                'method'   => 'cardless_emi',
+                                'provider' => $input['provider']
+                            ]),
                 'method'  => 'POST',
                 'content' => $input,
             ],
@@ -1425,6 +1428,16 @@ class Processor
 
         $gatewayData['merchant'] = $this->payment->merchant;
 
+        //
+        // This data was earlier picked up from env by gateways themselves.
+        // With the migration to CPS, it will become necessary for API to pick
+        // the values from env and pass them to CPS. As an intermediate step,
+        // we are passing relevant config from API to gateway, and blocking
+        // gateways from accessing env. It will then be easier to use CPS as
+        // a drop-in replacement for Gateway.
+        //
+        $this->addGatewayConfig($gatewayData);
+
         // Wrapping all gateway call, We can take actions on Exception here.
         try
         {
@@ -1445,6 +1458,16 @@ class Processor
             }
 
             throw $ex;
+        }
+    }
+
+    protected function addGatewayConfig(array & $gatewayData)
+    {
+        $commonGatewayConfig = $this->app['config']->get('gateway');
+
+        if (isset($commonGatewayConfig[$this->payment->getGateway()]) === true)
+        {
+            $gatewayData['gateway_config'] = $commonGatewayConfig[$this->payment->getGateway()];
         }
     }
 
@@ -2281,8 +2304,8 @@ class Processor
 
     protected function shouldHitGatewayForPayment(Payment\Entity $payment, array $gatewayInput = []): bool
     {
-        if ((isset($gatewayInput["skip_gateway_call"]) === true) and
-            ($gatewayInput["skip_gateway_call"] === true))
+        if ((isset($gatewayInput['skip_gateway_call']) === true) and
+            ($gatewayInput['skip_gateway_call'] === true))
         {
             return false;
         }
