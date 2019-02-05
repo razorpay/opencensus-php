@@ -11,6 +11,7 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Plan\Subscription;
 
 class External extends Base
@@ -78,6 +79,8 @@ class External extends Base
         {
             $requestBody[Payment\Entity::TOKEN] = $input[Payment\Entity::TOKEN];
         }
+
+        $this->traceRequest($requestBody);
 
         $headers = [
             self::MERCHANT_HEADER_KEY => $merchant->getId(),
