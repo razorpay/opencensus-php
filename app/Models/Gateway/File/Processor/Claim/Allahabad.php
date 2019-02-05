@@ -14,16 +14,4 @@ class Allahabad extends Base
         return;
     }
 
-    protected function fetchPaymentsToClaim(int $begin, int $end, array $statuses): PublicCollection
-    {
-        $claims = $this->repo->payment->fetchCreatedPaymentsWithStatus(
-            $begin,
-            $end,
-            static::GATEWAY,
-            $statuses
-        );
-
-        return $claims;
-    }
 }
-

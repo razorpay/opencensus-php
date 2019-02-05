@@ -2,6 +2,11 @@
 
 namespace RZP\Models\Payment\Refund;
 
+use App;
+use ApiResponse;
+use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -60,6 +65,9 @@ class Entity extends Base\PublicEntity
     const REVERSAL               = 'reversal';
     const RRN                    = 'rrn';
     const UTR                    = 'utr';
+
+    const RESPONSE_CODE          = 'code';
+    const RESPONSE_BODY          = 'body';
 
     /**
      * Holds the value of Reference number sent by bank for eg for upi, it contains npci_upi_txn_id
@@ -759,5 +767,69 @@ class Entity extends Base\PublicEntity
         );
 
         return $array;
+    }
+
+    protected function getPublicStatusFromScrooge($response)
+    {
+        $refundStatus = $this->getStatus();
+
+        if ($refundStatus === Status::PROCESSED)
+        {
+            $response[self::STATUS] = $refundStatus;
+        }
+        else
+        {
+            $app   = App::getFacadeRoot();
+            $trace = $app['trace'];
+
+            try
+            {
+                $scroogeResponse = $app['scrooge']->getPublicRefund($response[self::ID]);
+
+                if ($scroogeResponse[self::RESPONSE_CODE] === 200)
+                {
+                    $scroogeStatus = $scroogeResponse[self::RESPONSE_BODY]->status;
+
+                    if (empty($scroogeStatus) === false)
+                    {
+                        $response[self::STATUS] = $scroogeStatus;
+                    }
+                }
+            }
+            catch(\Throwable $e)
+            {
+                $trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::SCROOGE_GET_REFUND_STATUS_REQUEST_FAILED,
+                    [
+                        'refund_id' => $response[self::ID],
+                    ]);
+            }
+        }
+
+        return $response;
+    }
+
+    /**
+     * Overriding this function to get public refund status from scrooge
+     *
+     * @return array
+     */
+    public function toArrayPublic()
+    {
+        $response = parent::toArrayPublic();
+
+        $isScrooge = Payment\Gateway::isScroogeGatewayAndMerchant(
+            $this->getGateway(),
+            $this->getMerchantId()
+        );
+
+        if ($isScrooge === true)
+        {
+            return $this->getPublicStatusFromScrooge($response);
+        }
+
+        return $response;
     }
 }

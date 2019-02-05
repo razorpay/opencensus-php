@@ -884,7 +884,6 @@ trait Refund
             }
 
             $gateway = $data['payment'][Payment\Entity::GATEWAY];
-            $merchantId = $data['payment'][Payment\Entity::MERCHANT_ID];
 
             //
             // TODO: Remove for Scrooge
@@ -896,7 +895,7 @@ trait Refund
             // scrooge will not call API to mark processed as older refunds
             // are retried via API code itself and not via scrooge.
             //
-            if ((Payment\Gateway::isScroogeGatewayAndMerchant($gateway, $merchantId) === false) or
+            if ((Payment\Gateway::isScroogeGatewayAndMerchant($gateway) === false) or
                 ($retry === true))
             {
                 $this->refund->setStatusProcessed();
@@ -997,7 +996,6 @@ trait Refund
             }
 
             $gateway = $data['payment'][Payment\Entity::GATEWAY];
-            $merchantId = $data['payment'][Payment\Entity::MERCHANT_ID];
 
             //
             // TODO: Remove for Scrooge
@@ -1007,7 +1005,7 @@ trait Refund
             // refunds of scrooge gateways, scrooge will not call API to mark processed
             // as older refunds are retried via API admin dashboard not via scrooge.
             //
-            if ((Payment\Gateway::isScroogeGatewayAndMerchant($gateway, $merchantId) === false)
+            if ((Payment\Gateway::isScroogeGatewayAndMerchant($gateway) === false)
                 or ($retry === true))
             {
                 $this->refund->setStatusProcessed();
@@ -1141,10 +1139,9 @@ trait Refund
             });
 
             $gateway = $this->refund->getGateway();
-            $merchantId = $this->refund->merchant->getId();
 
             // TODO: Remove for Scrooge
-            if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway, $merchantId) === true)
+            if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway) === true)
             {
                 $this->callRefundFunctionOnScrooge($this->refund);
             }
@@ -1219,7 +1216,7 @@ trait Refund
 
         $gateway = $payment->getGateway();
 
-        $isScroogeGateway = Payment\Gateway::isScroogeGatewayAndMerchant($gateway, $payment->getMerchantId());
+        $isScroogeGateway = Payment\Gateway::isScroogeGatewayAndMerchant($gateway);
 
         if ((($isScroogeGateway === false) or ($retry === true)) and
             ($this->isFundTransferAttemptRefund($payment, $data) === true))
@@ -1325,7 +1322,7 @@ trait Refund
             return $refund->getStatus();
         }
 
-        if ((Payment\Gateway::isScroogeGatewayAndMerchant($refund->getGateway(), $refund->getMerchantId()) === true) and
+        if ((Payment\Gateway::isScroogeGatewayAndMerchant($refund->getGateway()) === true) and
             ($refund->isCreated() === true))
         {
             $this->callRefundRetryFunctionOnScrooge($refund);

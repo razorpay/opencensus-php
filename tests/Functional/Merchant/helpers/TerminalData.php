@@ -28,7 +28,7 @@ return [
                 'gateway_acquirer'    => 'hdfc',
                 'gateway_merchant_id' => '12345',
                 'gateway_terminal_id' => '12345678',
-                'category'            => 4567,
+                'category'            => '4567',
                 'enabled'             => true
             ]
         ]
@@ -80,7 +80,7 @@ return [
                 'gateway_acquirer'    => 'ratn',
                 'gateway_merchant_id' => '12345',
                 'gateway_terminal_id' => '12345678',
-                'category'            => 4567,
+                'category'            => '4567',
                 'enabled'             => true
             ]
         ]
@@ -113,7 +113,7 @@ return [
                 'gateway_acquirer'    => 'ratn',
                 'gateway_merchant_id' => '12345',
                 'gateway_terminal_id' => '12345678',
-                'category'            => 4567,
+                'category'            => '4567',
                 'enabled'             => true
             ]
         ]
@@ -402,7 +402,7 @@ return [
                 'gateway_merchant_id' => '12345',
                 'gateway_terminal_id' => '12345678',
                 'emi_subvention'      => 'customer',
-                'category'            => 4567,
+                'category'            => '4567',
                 'enabled'             => true
             ]
         ]
@@ -435,7 +435,7 @@ return [
                 'mc_mpan'             => '1234567880123456',
                 'visa_mpan'           => '1234567890123456',
                 'rupay_mpan'          => '1234567890123456',
-                'category'            => 4567,
+                'category'            => '4567',
                 'enabled'             => true
             ]
         ]
@@ -651,7 +651,7 @@ return [
             'content' => [
                 'gateway_merchant_id' => '12345',
                 'gateway_terminal_id' => '12345678',
-                'category'            => 4567,
+                'category'            => '4567',
                 'enabled'             => true,
                 'enabled_banks'       => ['KKBK'],
             ]

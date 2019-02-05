@@ -84,8 +84,8 @@ class Core extends Base\Core
 
         $anchor = $this->getAnchorForPromotion($period);
 
-        $schedule = $this->repo->schedule->getScheduleByPeriodIntervalAnchor(
-            $period, $interval, $anchor);
+        $schedule = $this->repo->schedule->getScheduleByPeriodIntervalAnchorAndType(
+            $period, $interval, $anchor, Schedule\Type::PROMOTION);
 
         if ($schedule === null)
         {

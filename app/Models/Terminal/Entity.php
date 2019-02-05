@@ -109,6 +109,8 @@ class Entity extends Base\PublicEntity
 
     const BANK                          = 'bank';
 
+    const CATEGORY_LENGTH               = 4;
+
     protected $fillable = [
         self::GATEWAY,
         self::CARD,
@@ -264,7 +266,7 @@ class Entity extends Base\PublicEntity
         self::TPV                       => 'int',
         self::TYPE                      => 'int',
         self::MODE                      => 'int',
-        self::CATEGORY                  => 'int',
+        self::CATEGORY                  => 'string',
         self::CORPORATE                 => 'int',
         self::EXPECTED                  => 'boolean',
         self::USED                      => 'boolean',
@@ -631,14 +633,7 @@ class Entity extends Base\PublicEntity
 
     protected function getCategoryAttribute()
     {
-        $category = $this->attributes[self::CATEGORY];
-
-        if ($category !== null)
-        {
-            $category = (int) $category;
-        }
-
-        return $category;
+        return $this->attributes[self::CATEGORY];
     }
 
     protected function getEmiDurationAttribute()

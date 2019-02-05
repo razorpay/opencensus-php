@@ -47,7 +47,7 @@ class ReconciliationFileTest extends TestCase
 
         $this->recurringPayment = $this->getDefaultRecurringPaymentArray();
 
-        $this->mockTokenex();
+        $this->mockCardVault();
     }
 
     public function testFirstDataReconPaymentFile()

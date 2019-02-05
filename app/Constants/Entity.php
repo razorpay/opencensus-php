@@ -523,13 +523,14 @@ class Entity
     protected static $syncedInLiveAndTest = [
         self::ORG,
         self::IIN,
+        self::USER,
         self::FEATURE,
         self::METHODS,
         self::PRICING,
         self::EMI_PLAN,
         self::MERCHANT,
-        self::USER,
         self::SCHEDULE,
+        self::PARTNER_CONFIG,
         self::MERCHANT_ACCESS_MAP,
     ];
 

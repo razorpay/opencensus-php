@@ -26,7 +26,7 @@ class CreatePaytm extends Migration
             $table->string('action');
             $table->string('method');
             $table->tinyInteger('received')->default(0);
-            $table->string('request_type');
+            $table->string('request_type')->nullable();
             $table->string('txn_amount');
             $table->string('cust_id');
             $table->string('channel_id');
@@ -35,7 +35,7 @@ class CreatePaytm extends Migration
             $table->string('bank_code', 10)->nullable();
             $table->string('payment_type_id', 5)->nullable();
             $table->string('industry_type_id');
-            $table->bigInteger('txnid')->nullable();
+            $table->string('txnid',255)->nullable();
             $table->string('txnamount')->nullable();
             $table->string('banktxnid', 20)->nullable();
             $table->string('orderid', 25)->nullable();

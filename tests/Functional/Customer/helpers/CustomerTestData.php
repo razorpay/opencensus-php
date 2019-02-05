@@ -362,6 +362,12 @@ return [
             'content' => [
                 'items' => [
                     [
+                        'token'         => '10001emantoken',
+                        'method'        => 'emandate',
+                        'bank'          => 'HDFC',
+                        'max_amount'    =>  105,
+                    ],
+                    [
                         'token'         => '10001cardtoken',
                         'method'        => 'card',
                         'card'          => [
@@ -796,6 +802,29 @@ return [
                 'bank'   => null,
             ],
         ],
+    ],
+
+    'testGetTokenWithBankDetails' => [
+        'request' => [
+            'url' => '/customers/cust_100000customer/tokens/10001emantoken',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'token'         => '10001emantoken',
+                'method'        => 'emandate',
+                'bank'          => 'HDFC',
+                'bank_details'  => [
+                    'beneficiary_name' => 'BeneficiaryName',
+                    'account_number'   => '10000',
+                    'ifsc'             => 'ifsc',
+                    'account_type'     => 'account_type',
+                ],
+                'max_amount'       =>  105,
+            ],
+        ]
     ],
 
 ];

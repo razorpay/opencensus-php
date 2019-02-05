@@ -698,13 +698,14 @@ class TransactionFilter extends Terminal\Filter
 
     protected function isTerminalWithMerchantMccAbsent(
         array $applicableTerminals,
-        int $merchantMcc = null): bool
+        $merchantMcc = null): bool
     {
         foreach ($applicableTerminals as $terminal)
         {
             //
             // Currently this checks only for HDFC and hitachi gateway terminals
             //
+
             if ((in_array($terminal->getGateway(), Gateway::MCC_FILTER_GATEWAYS, true) === true) and
                 ($terminal->getCategory() === $merchantMcc))
             {

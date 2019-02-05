@@ -248,7 +248,7 @@ class TerminalSelectionTest extends TestCase
         $emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
 
         $this->fixtures->merchant->enableEmi();
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $payment = $this->getDefaultPaymentArray();
         $payment['amount'] = 500000;
@@ -280,7 +280,7 @@ class TerminalSelectionTest extends TestCase
             'iins'          => ['457392'],
         ]);
 
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $payment = $this->getDefaultPaymentArray();
         $payment['amount'] = 500000;
@@ -303,7 +303,7 @@ class TerminalSelectionTest extends TestCase
         $emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
 
         $this->fixtures->merchant->enableEmi();
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $payment = $this->getDefaultPaymentArray();
         $content = $this->doAuthAndCapturePayment($payment);
@@ -325,7 +325,7 @@ class TerminalSelectionTest extends TestCase
 
         $this->fixtures->merchant->enableEmi();
         $this->fixtures->merchant->addFeatures('emi_merchant_subvention');
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $payment = $this->getDefaultPaymentArray();
 
@@ -358,7 +358,7 @@ class TerminalSelectionTest extends TestCase
         $this->emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
         $this->fixtures->merchant->enableEmi();
 
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $emiPlan = $this->emiPlan;
 
@@ -979,7 +979,7 @@ class TerminalSelectionTest extends TestCase
     public function testPharmaMerchantTerminalSelection()
     {
         $this->fixtures->merchant->editCategory2(Category::PHARMA);
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
@@ -1278,6 +1278,7 @@ class TerminalSelectionTest extends TestCase
         $options = new Options;
         $selector = new Selector($input, $options);
         $selectedTerminals = $selector->select();
+
         $selectedTerminalIds = array_pluck($selectedTerminals, 'id');
 
         $this->assertArraySelectiveEquals($expectedTerminalIds, $selectedTerminalIds);
@@ -1412,7 +1413,7 @@ class TerminalSelectionTest extends TestCase
 
     public function testHitachiFilterWithBharatQrFilter()
     {
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 

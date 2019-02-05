@@ -37,6 +37,12 @@ class NetbankingAllahabadCombinedFileTest extends TestCase
 
         $payment = $this->doAuthAndCapturePayment($payment);
 
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->fixtures->edit('transaction', $transaction['id'], [
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
+        ]);
+
         $refund = $this->refundPayment($payment['id']);
 
         $this->ba->adminAuth();

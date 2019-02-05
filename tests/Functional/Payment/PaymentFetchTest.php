@@ -176,7 +176,7 @@ class PaymentFetchTest extends TestCase
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
 

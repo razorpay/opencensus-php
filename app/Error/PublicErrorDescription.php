@@ -772,5 +772,11 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_UPI_DEBIT_AND_CREDIT_SAME_ACCOUNT                     = 'The debit and credit for the transaction is done on the same account';
     const BAD_REQUEST_INVALID_ACCOUNT_TYPE_PASSED_FOR_MODE                          = 'The mode is not valid for the given account type';
     const BAD_REQUEST_INVALID_AMOUNT_PASSED_FOR_ACCOUNT_TYPE                        = 'Amount exceeds the max amount for the given account type';
+
+    const BAD_REQUEST_PARTNER_ID_SENT_FOR_PURE_PLATFORM                             = 'Application id needs to be sent for pure platform instead of partner id';
+    const BAD_REQUEST_APPLICATION_ID_OR_PARTNER_ID_MISSING                          = 'Application id or Partner id is required';
+    const BAD_REQUEST_APPLICATION_ID_PARTNER_ID_BOTH_PRESENT                        = 'Application id and Partner id both sent in the request';
+    const BAD_REQUEST_APPLICATION_SUBMERCHANT_CONFIG_EXISTS                         = 'Application/submerchant config already exists';
+
     const BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE                          = 'Payment failed';
 }
