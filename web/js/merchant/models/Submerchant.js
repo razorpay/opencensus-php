@@ -1,4 +1,5 @@
 import ajax from 'merchant/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 import GenericEntity from './GenericEntity';
 
 export default class Submerchant extends GenericEntity {
@@ -29,6 +30,13 @@ export default class Submerchant extends GenericEntity {
       {},
       '/merchant/api'
     ).then(response => response.data);
+  }
+
+  resendInvite(submerchantId) {
+    return merchantFetch({
+      url: `submerchants/${submerchantId.replace('acc_', '')}/reset_password`,
+      method: 'post',
+    }).then(response => response.data);
   }
 
   fetchAll(params = {}) {
