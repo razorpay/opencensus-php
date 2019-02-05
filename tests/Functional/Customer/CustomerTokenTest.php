@@ -73,7 +73,6 @@ class CustomerTokenTest extends TestCase
         $token = $this->getTokenById('token_100001custcard');
         self::assertArrayHasKey(Token\Entity::EXPIRED_AT, $token);
 
-
         //expired at should not exist in following
         $token = $this->getTokenById('token_1000custwallet');
         self::assertArrayNotHasKey(Token\Entity::EXPIRED_AT, $token);
