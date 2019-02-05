@@ -961,6 +961,7 @@ final class FactoryData
 
         $factory(\RZP\Models\Contact\Entity::class, [
             'id'           => $faker->uniqueid,
+            'active'       => true,
             'name'         => $faker->word,
             'email'        => $faker->email,
             'contact'      => '9123456789',
