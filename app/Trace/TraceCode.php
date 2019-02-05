@@ -888,6 +888,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_PAYOUT_RETRY_FAILED              = 'MERCHANT_PAYOUT_RETRY_FAILED';
     const MERCHANT_PAYOUT_RETRIED_IDS               = 'MERCHANT_PAYOUT_RETRIED_IDS';
     const MERCHANT_ONBOARD_REQUEST                  = 'MERCHANT_ONBOARD_REQUEST';
+    const MERCHANT_ONBOARD_REQUEST_FAILED           = 'MERCHANT_ONBOARD_REQUEST_FAILED';
+    const MERCHANT_ONBOARD_GATEWAY_NOT_FOUND_ERROR  = 'MERCHANT_ONBOARD_GATEWAY_NOT_FOUND_ERROR';
+    const MERCHANT_ONBOARD_INDEX_OUT_OF_BOUND       = 'MERCHANT_ONBOARD_INDEX_OUT_OF_BOUND';
+    const MERCHANT_ONBOARD_INDEX_ABOVE_THRESHOLD    = 'MERCHANT_ONBOARD_INDEX_ABOVE_THRESHOLD';
     const MERCHANT_BALANCE_DEBIT_FAILURE            = 'MERCHANT_BALANCE_DEBIT_FAILURE';
     const MERCHANT_PROCESS_WHITELIST_ACTIVATION     = 'MERCHANT_PROCESS_WHITELIST_ACTIVATION';
     const MERCHANT_PROCESS_BLACKLIST_ACTIVATION     = 'MERCHANT_PROCESS_BLACKLIST_ACTIVATION';
@@ -955,6 +959,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ES_PRICING_KEY_SET                        = 'ES_PRICING_KEY_SET';
     const ES_PRICING_MERCHANT_KEY_SET               = 'ES_PRICING_MERCHANT_KEY_SET';
     const TERMINAL_CONFIG_FETCH_ERROR               = 'TERMINAL_CONFIG_FETCH_ERROR';
+    const PAYMENT_TERMINAL_CREATION_ERROR           = 'PAYMENT_TERMINAL_CREATION_ERROR';
     const PRICING_RULE_CONFIG_FETCH_ERROR           = 'PRICING_RULE_CONFIG_FETCH_ERROR';
 
     const MISC_TOSTRING_ERROR                       = 'MISC_TOSTRING_ERROR';
@@ -1720,6 +1725,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::PAYMENT_TRANSFER_VALIDATION_FAILED        => 'Transfer failed while validating transfer amount',
         self::CREATE_MERCHANT_DETAIL_FAILED             => 'Merchant Detail creation failed',
         self::MERCHANT_ONBOARD_REQUEST                  => 'Merchant onboarding request initiated',
+        self::MERCHANT_ONBOARD_REQUEST_FAILED           => 'Merchant onboarding request failed',
+        self::MERCHANT_ONBOARD_INDEX_ABOVE_THRESHOLD    => 'Merchant onboarding index above the set threshold',
+        self::MERCHANT_ONBOARD_INDEX_OUT_OF_BOUND       => 'Merchant onboarding index above the limit',
         self::SUBSCRIPTION_PAYMENT_AUTHORIZE_FAILED     => 'Subscription payment authorization failed',
         self::SUBSCRIPTION_STATE_UNEXPECTED             => 'Unexpected state of subscription',
         self::SUBSCRIPTION_LATE_AUTH_NO_AUTO_CAPTURE    => 'Not capturing late auth subscription payment',

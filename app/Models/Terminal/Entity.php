@@ -733,7 +733,6 @@ class Entity extends Base\PublicEntity
         {
             $hex = $this->attributes[self::TYPE];
         }
-
         $this->attributes[self::TYPE] = Type::getHexValue($type, $hex);
     }
 
