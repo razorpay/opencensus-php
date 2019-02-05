@@ -18,6 +18,7 @@ class Shared
     const DIGIO_RAZORPAY_TERMINAL            = '1000DigioTrmnl';
     const LEGALDESK_RAZORPAY_TERMINAL        = '1000LegalDskTl';
     const ENACH_RBL_RAZORPAY_TERMINAL        = '1000EnachRblTl';
+    const ENACH_NPCI_NETBANKING_TERMINAL     = '1EnachNbNpciTl';
     const EBS_RAZORPAY_TERMINAL              = '100000EbsTrmnl';
     const HDFC_RAZORPAY_TERMINAL             = '1000HdfcShared';
     const MOBIKWIK_RAZORPAY_TERMINAL         = '1000MobiKwikTl';
@@ -90,6 +91,7 @@ class Shared
     const CARDLESS_EMI_RAZORPAY_TERMINAL     = '1CrdlesEmiTrml';
     const CARDLESS_EMI_RAZORPAY_TERMINAL2    = '10CrdlesEmiTml';
     const ALLA_TPV_TERMINAL                  = '1000alltpvTrml';
+    const IDFB_TPV_TERMINAL                  = '100idfctpvTrml';
     const UPI_MINDGATE_INTENT_TPV_TERMINAL   = 'UPIMGTEIntTpvl';
 
     protected static $shared = array(

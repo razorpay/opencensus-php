@@ -250,6 +250,15 @@ class RefundController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function bulkUpdateRefundsReference1()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->bulkUpdateRefundsReference1($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function scroogeRefundVerifyBulk()
     {
         $input = Request::all();
