@@ -93,6 +93,7 @@ class Entity extends Base\PublicEntity
         self::EMI_SUBVENTION,
         self::CURRENCY,
         self::RECURRING_TYPE,
+        self::CAPABILITY,
     ];
 
     const AUTHENTICATION_COMPARISION_ATTRIBUTES = [
