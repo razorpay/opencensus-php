@@ -11,6 +11,7 @@ use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Rule;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as Constants;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;

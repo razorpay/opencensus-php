@@ -888,7 +888,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_PAYOUT_RETRY_FAILED              = 'MERCHANT_PAYOUT_RETRY_FAILED';
     const MERCHANT_PAYOUT_RETRIED_IDS               = 'MERCHANT_PAYOUT_RETRIED_IDS';
     const MERCHANT_ONBOARD_REQUEST                  = 'MERCHANT_ONBOARD_REQUEST';
+    const MERCHANT_ONBOARD_CREATE_TERMINAL          = 'MERCHANT_ONBOARD_CREATE_TERMINAL';
     const MERCHANT_ONBOARD_REQUEST_FAILED           = 'MERCHANT_ONBOARD_REQUEST_FAILED';
+    const MERCHANT_ONBOARD_REQUEST_DATA             = 'MERCHANT_ONBOARD_REQUEST_DATA';
     const MERCHANT_ONBOARD_GATEWAY_NOT_FOUND_ERROR  = 'MERCHANT_ONBOARD_GATEWAY_NOT_FOUND_ERROR';
     const MERCHANT_ONBOARD_INDEX_OUT_OF_BOUND       = 'MERCHANT_ONBOARD_INDEX_OUT_OF_BOUND';
     const MERCHANT_ONBOARD_INDEX_ABOVE_THRESHOLD    = 'MERCHANT_ONBOARD_INDEX_ABOVE_THRESHOLD';
@@ -1732,6 +1734,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::MERCHANT_ONBOARD_REQUEST_FAILED           => 'Merchant onboarding request failed',
         self::MERCHANT_ONBOARD_INDEX_ABOVE_THRESHOLD    => 'Merchant onboarding index above the set threshold',
         self::MERCHANT_ONBOARD_INDEX_OUT_OF_BOUND       => 'Merchant onboarding index above the limit',
+        self::PAYMENT_TERMINAL_CREATION_ERROR           => 'Payments terminal creation error',
         self::SUBSCRIPTION_PAYMENT_AUTHORIZE_FAILED     => 'Subscription payment authorization failed',
         self::SUBSCRIPTION_STATE_UNEXPECTED             => 'Unexpected state of subscription',
         self::SUBSCRIPTION_LATE_AUTH_NO_AUTO_CAPTURE    => 'Not capturing late auth subscription payment',
