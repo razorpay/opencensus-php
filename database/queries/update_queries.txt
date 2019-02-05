@@ -2290,3 +2290,6 @@ UPDATE virtual_accounts SET status = 'active' WHERE id = 'BikuFWAIzbn1Hb' LIMIT 
 # Missed to update updated_at in above queries ^
 # The virtual account has already received new payments and updated_at is touched.
 UPDATE bank_accounts SET updated_at = UNIX_TIMESTAMP() WHERE id = 'BikuFg4LjWPaRc' LIMIT 1;
+
+# Populating type data in schedule table from schedule_task
+UPDATE schedules as s INNER JOIN schedule_tasks as st ON s.id = st.schedule_id SET s.type = st.type;

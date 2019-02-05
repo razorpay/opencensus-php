@@ -19,6 +19,8 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::SCHEDULE_CREATE_REQUEST, $input);
 
+        // By default we are creating schedule with type settlement if it's not in payload.
+        // Once frontend change is done it will be mandatory
         $input[Schedule\Entity::TYPE] = $input[Schedule\Entity::TYPE] ?? Schedule\Type::SETTLEMENT;
 
         $schedule = (new Core)->createSchedule($input);

@@ -73,7 +73,8 @@ class Validator extends Base\Validator
     {
         foreach ($networks as $network => $value)
         {
-            if (is_bool($value) === false)
+            if (($value !== 1) and
+                ($value !== 0))
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Not a boolean value'. $network .' '. $value);

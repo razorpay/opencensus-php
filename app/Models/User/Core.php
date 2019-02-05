@@ -412,7 +412,7 @@ class Core extends Base\Core
 
         $payload = [
             'receiver' => $user->getContactMobile(),
-            'source'   => 'api',
+            'source'   => "api.user.{$input['action']}",
             'template' => 'sms.user.' . $input[Entity::ACTION],
             'params'   => [
                 'otp'      => $otp['otp'],
@@ -518,7 +518,8 @@ class Core extends Base\Core
         $token    = $input['token'] ?? Entity::generateUniqueId();
         $context  = sprintf('%s:%s:%s:%s', $merchant->getId(), $user->getId(), $input[Entity::ACTION], $token);
         $receiver = $user->getContactMobile();
-        $source   = 'api';
+        // Should have used api.user.{action} similar to post sms request to Raven. But in Raven otp.source is 10 char.
+        $source   = "api";
 
         return compact(
             'token',

@@ -28,6 +28,7 @@ use RZP\Models\FundTransfer\Yesbank\NodalAccount;
  * @property Merchant\Entity    $merchant
  * @property User\Entity        $user
  * @property FundAccount\Entity $fundAccount
+ * @property Transaction\Entity $transaction
  */
 class Entity extends Base\PublicEntity
 {
@@ -371,6 +372,11 @@ class Entity extends Base\PublicEntity
     public function hasFundAccount()
     {
         return ($this->isAttributeNotNull(self::FUND_ACCOUNT_ID) === true);
+    }
+
+    public function isOfMerchantTransaction(): bool
+    {
+        return $this->getAttribute(self::TRANSACTION_TYPE) === Constants\Entity::TRANSACTION;
     }
 
     /**

@@ -14,6 +14,7 @@ class AuthType
     const PIN          = 'pin';
     const _3DS         = '3ds';
     const OTP          = 'otp';
+    const IVR          = 'ivr';
     const HEADLESS_OTP = 'headless_otp';
 
     public static $types = [

@@ -182,7 +182,9 @@ class RefundController extends Controller
 
     public function postGatewayVerifyRefundCall(string $id)
     {
-        $response = $this->service()->makeGatewayVerifyRefundCall($id);
+        $input = Request::all();
+
+        $response = $this->service()->makeGatewayVerifyRefundCall($id, $input);
 
         return ApiResponse::json($response);
     }
@@ -244,6 +246,15 @@ class RefundController extends Controller
         $input = Request::all();
 
         $data = $this->service()->backfillUpiMindgateReference1($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function bulkUpdateRefundsReference1()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->bulkUpdateRefundsReference1($input);
 
         return ApiResponse::json($data);
     }

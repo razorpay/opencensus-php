@@ -21,7 +21,7 @@ class RecurringChargeTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['charge_at_will']);
 
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $this->fixtures->create('terminal:shared_cybersource_hdfc_recurring_terminals');
 

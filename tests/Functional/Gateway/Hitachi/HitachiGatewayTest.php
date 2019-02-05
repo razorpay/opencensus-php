@@ -49,7 +49,7 @@ class HitachiGatewayTest extends TestCase
 
         $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
 
-        $this->mockTokenex();
+        $this->mockCardVault();
     }
 
     public function testSuccessful13DigitPanForEnrolledCard()

@@ -28,7 +28,7 @@ return [
                 'gateway_acquirer'    => 'hdfc',
                 'gateway_merchant_id' => '12345',
                 'gateway_terminal_id' => '12345678',
-                'category'            => 4567,
+                'category'            => '4567',
                 'enabled'             => true
             ]
         ]
@@ -80,7 +80,7 @@ return [
                 'gateway_acquirer'    => 'ratn',
                 'gateway_merchant_id' => '12345',
                 'gateway_terminal_id' => '12345678',
-                'category'            => 4567,
+                'category'            => '4567',
                 'enabled'             => true
             ]
         ]
@@ -113,7 +113,7 @@ return [
                 'gateway_acquirer'    => 'ratn',
                 'gateway_merchant_id' => '12345',
                 'gateway_terminal_id' => '12345678',
-                'category'            => 4567,
+                'category'            => '4567',
                 'enabled'             => true
             ]
         ]
@@ -402,7 +402,7 @@ return [
                 'gateway_merchant_id' => '12345',
                 'gateway_terminal_id' => '12345678',
                 'emi_subvention'      => 'customer',
-                'category'            => 4567,
+                'category'            => '4567',
                 'enabled'             => true
             ]
         ]
@@ -435,7 +435,7 @@ return [
                 'mc_mpan'             => '1234567880123456',
                 'visa_mpan'           => '1234567890123456',
                 'rupay_mpan'          => '1234567890123456',
-                'category'            => 4567,
+                'category'            => '4567',
                 'enabled'             => true
             ]
         ]
@@ -651,7 +651,7 @@ return [
             'content' => [
                 'gateway_merchant_id' => '12345',
                 'gateway_terminal_id' => '12345678',
-                'category'            => 4567,
+                'category'            => '4567',
                 'enabled'             => true,
                 'enabled_banks'       => ['KKBK'],
             ]
@@ -1311,7 +1311,6 @@ return [
                     'CNRB'   => "Canara Bank",
                     'CBIN'   => "Central Bank of India",
                     'CIUB'   => "City Union Bank",
-                    'CORP'   => "Corporation Bank",
                     'DCBL'   =>"DCB Bank",
                     'DEUT'   => "Deutsche Bank",
                     'DLXB'   => "Dhanlaxmi Bank",
@@ -1428,7 +1427,6 @@ return [
                     'CNRB'   => "Canara Bank",
                     'CBIN'   => "Central Bank of India",
                     'CIUB'   => "City Union Bank",
-                    'CORP'   => "Corporation Bank",
                     'DCBL'   =>"DCB Bank",
                     'DEUT'   => "Deutsche Bank",
                     'DLXB'   => "Dhanlaxmi Bank",
@@ -1648,19 +1646,16 @@ return [
         'response' => [
             'content' => [
                 '100000EbsTrmnl' =>  [
-                    'UTIB'   => 'Axis Bank',
                     'BKID'   => 'Bank of India',
                     'MAHB'   => 'Bank of Maharashtra',
                     'CNRB'   => 'Canara Bank',
                     'CBIN'   => 'Central Bank of India',
                     'CIUB'   => 'City Union Bank',
-                    'CORP'   => 'Corporation Bank',
                     'DLXB'   => 'Dhanlaxmi Bank',
                     'IDIB'   => 'Indian Bank',
                     'IOBA'   => 'Indian Overseas Bank',
                     'JAKA'   => 'Jammu and Kashmir Bank',
                     'KARB'   => 'Karnataka Bank',
-                    'KKBK'   => 'Kotak Mahindra Bank',
                     'LAVB_R' => 'Lakshmi Vilas Bank - Retail Banking',
                     'PSIB'   => 'Punjab & Sind Bank',
                     'PUNB_R' => 'Punjab National Bank - Retail Banking',
@@ -1677,7 +1672,6 @@ return [
                     'CNRB'   => 'Canara Bank',
                     'CBIN'   => 'Central Bank of India',
                     'CIUB'   => 'City Union Bank',
-                    'CORP'   => 'Corporation Bank',
                     'DCBL'   => 'DCB Bank',
                     'DEUT'   => "Deutsche Bank",
                     'DLXB'   => 'Dhanlaxmi Bank',

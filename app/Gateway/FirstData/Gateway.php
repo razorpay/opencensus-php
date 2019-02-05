@@ -660,13 +660,15 @@ class Gateway extends Base\Gateway
             // Cryptic error messages that First Data keeps sending us
             $this->checkSpecialCases($errorCode, $gatewayEntity, $gatewayErrorDesc);
 
+            $responseKey = ($this->action === Action::VERIFY_REFUND) ? Payment\Gateway::GATEWAY_VERIFY_RESPONSE : Payment\Gateway::GATEWAY_RESPONSE;
+
             throw new Exception\GatewayErrorException(
                 $mappedErrorCode,
                 $errorCode,
                 $gatewayErrorDesc,
                 [
-                    Payment\Gateway::GATEWAY_RESPONSE  => json_encode($response),
-                    Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($refundFields)
+                    $responseKey                    => json_encode($response),
+                    Payment\Gateway::GATEWAY_KEYS   => $this->getGatewayData($refundFields)
                 ]);
         }
     }

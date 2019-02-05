@@ -6,6 +6,7 @@ use Mail;
 use Config;
 use ApiResponse;
 use Carbon\Carbon;
+use Monolog\Logger;
 use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Models\Emi;
@@ -194,6 +195,73 @@ class Core extends Base\Core
         (new ScheduleTask\Core)->createDefaultSettlementSchedule($merchant);
     }
 
+    /**
+     * Resets merchants settlements to default settlement schedule for linked accounts
+     *
+     * Schedule will be same as its parent settlement schedule
+     *
+     * @param array $merchantIds
+     * @return array
+     * @throws \Throwable
+     */
+    public function resetSettlementSchedule(array $merchantIds): array
+    {
+        $failed = $invalid = $processed = [];
+
+        $merchants = $this->repo->merchant->findManyByPublicIds($merchantIds);
+
+        foreach ($merchants as $merchant)
+        {
+            if ($merchant->isLinkedAccount() === false)
+            {
+                $invalid[] = $merchant->getId();
+
+                continue;
+            }
+
+            try
+            {
+                (new ScheduleTask\Core)->createDefaultSettlementSchedule($merchant);
+
+                $this->trace->info(
+                    TraceCode::MERCHANT_SCHEDULE_UPDATED,
+                    [
+                        'merchant_id' => $merchant->getId()
+                    ]);
+
+                $processed[] = $merchant->getId();
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Logger::ERROR,
+                    TraceCode::FAILED_TO_ASSIGN_SCHEDULE,
+                    [
+                        'merchant_id' => $merchant->getId()
+                    ]);
+
+                $failed[] = $merchant->getId();
+            }
+        }
+
+        $summary = [
+            'invalid_count'   => count($invalid),
+            'failed_count'    => count($failed),
+            'processed_count' => count($processed),
+            'invalid'         => $invalid,
+            'failed'          => $failed,
+            'processed'       => $processed,
+        ];
+
+        $this->trace->info(
+            TraceCode::RESET_SCHEDULES_SUMMARY,
+            $summary
+        );
+
+        return $summary;
+    }
+
     public function syncHeimdallRelatedEntities(Entity $merchant, array $input, $create = false)
     {
         if (isset($input[Entity::GROUPS]) === true)
@@ -246,6 +314,8 @@ class Core extends Base\Core
     {
         $merchant->setAuditAction(Action::EDIT_MERCHANT);
 
+        $input = $this->modifyEditInput($input);
+
         $merchant->edit($input);
 
         $plan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($merchant->getPricingPlanId());
@@ -277,6 +347,16 @@ class Core extends Base\Core
         }
 
         return $merchant;
+    }
+
+    public function modifyEditInput(array $input): array
+    {
+        if (array_key_exists('category', $input))
+
+        {
+            $input['category'] = (string) $input['category'];
+        }
+        return $input;
     }
 
     /**

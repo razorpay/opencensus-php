@@ -18,6 +18,7 @@ use RZP\Models\Transaction;
 use RZP\Jobs\ScroogeRefund;
 use RZP\Models\BankTransfer;
 use RZP\Jobs\ScroogeRefundRetry;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Gateway\Base\ScroogeResponse;
 use RZP\Models\Feature\Constants as Feature;
@@ -215,27 +216,7 @@ trait Refund
         {
             $refundValidator->validateScroogeGatewayRefund($payment);
 
-            $refund->setAttempts($input['attempts'] ?? 0);
-
-            $verifyResponse = $scroogeResponse = $this->verifyRefund($refund);
-
-            //
-            // `verifyRefund` always returns back the response in the key
-            // `success`. For scrooge, this key contains much more data
-            // than just the value of success. It's an object.
-            // For non-scrooge gateways, this is just a boolean value.
-            // But since this function is called only for scrooge gateways,
-            // we take the verifyRefundResponse['success'] and then go ahead
-            // with the normal flow; i.e., reading the "actual" success flag
-            //
-            $callRefund = ($verifyResponse[Payment\Gateway::SUCCESS] !== true);
-
-            if ($callRefund === true)
-            {
-                $scroogeResponse = $this->callRefundFunctionForScroogeWithData($refund, $input);
-
-                $scroogeResponse[Payment\Gateway::GATEWAY_VERIFY_RESPONSE] = $verifyResponse[Payment\Gateway::GATEWAY_VERIFY_RESPONSE] ?? '';
-            }
+            $scroogeResponse = $this->callRefundFunctionForScroogeWithData($refund, $input);
         }
         catch (\Exception $ex)
         {
@@ -303,7 +284,7 @@ trait Refund
         return $gatewayRefundResponse;
     }
 
-    public function scroogeGatewayVerifyRefund(RefundEntity $refund)
+    public function scroogeGatewayVerifyRefund(RefundEntity $refund, array $input)
     {
         $payment = $refund->payment;
 
@@ -319,7 +300,7 @@ trait Refund
         if ($refund->isProcessed() === true)
         {
             return $this->prepareScroogeRefundResponse(
-                [Payment\Gateway::GATEWAY_RESPONSE => 'Refund has already been processed'],
+                [Payment\Gateway::GATEWAY_VERIFY_RESPONSE => 'Refund has already been processed'],
                 true);
         }
 
@@ -335,11 +316,27 @@ trait Refund
         {
             $refundValidator->validateScroogeGatewayRefund($payment);
 
+            //
+            // Doing +1 here, because at gateway side, we decrement attempts with -1,
+            // doing this to keep backward compatibility of older refunds as well as scrooge refunds.
+            // For scrooge refunds, attempts will be the exact attempt on which verify should be called,
+            // and for old refunds, it will be the refund attempt, so we need to verify on previous refund
+            //
+            $refund->setAttempts(($input['attempts'] ?? -1) + 1) ;
+
             $gatewayVerifyRefundResponse = $this->verifyRefund($refund);
         }
         catch (\Exception $ex)
         {
-            $gatewayVerifyRefundResponse = $this->prepareScroogeRefundResponse([], false, $ex);
+            $gatewayResponse = [];
+
+            // Only BaseException would have `getData` function
+            if ($ex instanceof Exception\BaseException)
+            {
+                $gatewayResponse = $ex->getData();
+            }
+
+            $gatewayVerifyRefundResponse = $this->prepareScroogeRefundResponse($gatewayResponse, false, $ex, Payment\Action::VERIFY);
         }
 
         $this->traceScroogeResponse(TraceCode::REFUND_SCROOGE_VERIFY_RESPONSE,
@@ -941,7 +938,7 @@ trait Refund
        return $this->prepareScroogeRefundResponse($gatewayResponse, $gatewayRefunded, $e);
     }
 
-    protected function prepareScroogeRefundResponse($gatewayResponse, $gatewayRefunded, $exception = null)
+    protected function prepareScroogeRefundResponse($gatewayResponse, $gatewayRefunded, $exception = null, $action = Payment\Action::REFUND)
     {
         $scroogeResponse = new ScroogeResponse();
 
@@ -952,22 +949,28 @@ trait Refund
                                         (
                                             (empty($exception) === false) ?
                                             (string) $exception->getCode() :
-                                            ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED
+                                            ErrorCode::GATEWAY_ERROR_FATAL_ERROR
                                         ));
 
-        $scroogeResponse->setGatewayResponse($gatewayResponse[Payment\Gateway::GATEWAY_RESPONSE] ??
-                                                (
-                                                empty($exception) === false ?
-                                                    $exception->getMessage() :
-                                                    ''
-                                                ));
+        $gatewayRefundResponse = $gatewayResponse[Payment\Gateway::GATEWAY_RESPONSE] ?? '';
 
-        $scroogeResponse->setGatewayVerifyResponse($gatewayResponse[Payment\Gateway::GATEWAY_VERIFY_RESPONSE] ??
-                                                    (
-                                                    empty($exception) === false ?
-                                                        $exception->getMessage() :
-                                                        ''
-                                                    ));
+        $gatewayVerifyResponse = $gatewayResponse[Payment\Gateway::GATEWAY_VERIFY_RESPONSE] ?? '';
+
+        $scroogeResponse->setGatewayResponse($gatewayRefundResponse);
+
+        $scroogeResponse->setGatewayVerifyResponse($gatewayVerifyResponse);
+
+        if (empty($exception) === false)
+        {
+            if (($action === Payment\Action::VERIFY) and (empty($gatewayVerifyResponse) === true))
+            {
+                $scroogeResponse->setGatewayVerifyResponse($exception->getMessage());
+            }
+            else if (($action !== Payment\Action::VERIFY) and (empty($gatewayRefundResponse) === true))
+            {
+                $scroogeResponse->setGatewayResponse($exception->getMessage());
+            }
+        }
 
         $scroogeResponse->setGatewayKeys($gatewayResponse[Payment\Gateway::GATEWAY_KEYS] ?? []);
 
@@ -1180,7 +1183,19 @@ trait Refund
             $data
         );
 
-        ScroogeRefund::dispatch($data);
+        try
+        {
+            ScroogeRefund::dispatch($data);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::REFUND_QUEUE_SCROOGE_DISPATCH_FAILED,
+                $data
+            );
+        }
     }
 
     protected function callRefundFunctionOnApi($payment, $data)
@@ -1334,7 +1349,19 @@ trait Refund
             $data
         );
 
-        ScroogeRefundRetry::dispatch($data);
+        try
+        {
+            ScroogeRefundRetry::dispatch($data);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::REFUND_RETRY_QUEUE_SCROOGE_DISPATCH_FAILED,
+                $data
+            );
+        }
     }
 
     public function callRefundRetryFunctionOnApi($refund, $data)

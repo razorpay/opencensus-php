@@ -181,7 +181,7 @@ class Network
             $bitPosition = self::$cardNetworkMap[strtoupper($network)];
 
             // Set the bit
-            if ($value === true)
+            if ($value === 1)
             {
                 $cardNetwork = $cardNetwork | $bitPosition;
             }
@@ -203,11 +203,11 @@ class Network
         {
             if (($networks & $value) > 0)
             {
-                $cardNetworks[$cardNetwork] = true;
+                $cardNetworks[$cardNetwork] = 1;
             }
             else
             {
-                $cardNetworks[$cardNetwork] = false;
+                $cardNetworks[$cardNetwork] = 0;
             }
         }
 
