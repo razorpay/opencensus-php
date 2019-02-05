@@ -2476,6 +2476,7 @@ final class Route
             'payment_fetch_multiple',
             'invoice_create',
             'invoice_fetch',
+            'invoice_fetch_multiple',
             'customer_fetch_by_id',
             'payment_create_subscriptions',
             'payment_capture',
