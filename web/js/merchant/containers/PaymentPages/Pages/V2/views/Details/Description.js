@@ -1,5 +1,7 @@
+import { connect } from 'react-redux';
 import { classList } from 'common/util';
 import debounce from 'rzp/utils/debounce';
+import { showNotification } from 'rzp/modules/notifications';
 
 const COLORS_LIST = [
   '#00BB55',
@@ -32,8 +34,11 @@ const infoTxt = `Give your customers more information about this page.
 Note:
 All URLs will convert to links.`;
 
+@connect(null, { showNotification })
 export default class extends React.PureComponent {
   state = { isScriptLoaded: null };
+  imagesRangeIndex = {};
+
   componentDidMount() {
     window.onQuillLoad = () => {
       customizeIcons();
@@ -43,10 +48,27 @@ export default class extends React.PureComponent {
         this.QUILL.setContents(JSON.parse(this.props.description));
 
       this.QUILL.on('text-change', (delta, oldDelta, source) => {
+        console.log('DELTA...', delta);
         if (source == 'user') {
+          if (delta.ops) {
+            const isDeleteOp =
+              delta.ops[1] && delta.ops[1].hasOwnProperty('delete');
+            const opOnIndex = delta.ops[0].retain;
+
+            if (isDeleteOp && this.imagesRangeIndex.hasOwnProperty(opOnIndex)) {
+              delete this.imagesRangeIndex[opOnIndex];
+            }
+          }
+        }
+
+        if (['user', 'api_img'].indexOf(source) > -1) {
           this.updateDescription();
         }
       });
+
+      this.QUILL.getModule('toolbar').addHandler('image', () =>
+        this.handleImageInsert()
+      );
     };
   }
 
@@ -60,10 +82,43 @@ export default class extends React.PureComponent {
     }
   }
 
+  handleImageInsert(f) {
+    const self = this;
+    const range = self.QUILL.getSelection();
+
+    // Listen upload local image and save to server
+    const input = document.createElement('input');
+    input.setAttribute('type', 'file');
+    input.click();
+
+    input.onchange = () => {
+      const file = input.files[0];
+      const isImageType = /^image\//.test(file.type);
+
+      if (isImageType) {
+        self.imagesRangeIndex[range.index] = file;
+
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+          const base64Img = e.target.result;
+          self.QUILL.insertEmbed(range.index, 'image', base64Img, 'api_img');
+        };
+
+        reader.readAsDataURL(file);
+      } else {
+        self.props.showNotification({
+          type: 'error',
+          message: 'Select a valid Image',
+        });
+      }
+    };
+  }
+
   updateDescription() {
     const desc = this.QUILL.getContents();
     this.props.updateData({
-      target: { name: 'description', value: JSON.stringify(desc.ops) },
+      target: { name: 'description', value: desc.ops },
     });
   }
 
@@ -81,7 +136,6 @@ export default class extends React.PureComponent {
 function customizeIcons() {
   const icons = window.Quill.import('ui/icons');
 
-  icons['color'] = '<i class="i i-text-color" />';
   icons['bold'] = '<i class="i i-bold" />';
   icons['italic'] = '<i class="i i-italics" />';
   icons['underline'] = '<i class="i i-underline" />';

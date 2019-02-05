@@ -327,6 +327,17 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       return;
     }
 
+    if (description) {
+      description.forEach(d => {
+        if (d.insert && d.insert.hasOwnProperty('image')) {
+          // Adding file with name = new Date().getTime(), as name has to be overriden in cdn
+          const file = dataURLtoFile(d.insert.image, new Date().getTime());
+          d.insert.image = file;
+          console.log(file);
+        }
+      });
+    }
+
     const reqPayload = {
       amount: amount || null,
       title,
@@ -543,3 +554,15 @@ const Header = ({ title, actionBtns, handleClose, isPageReady }) => {
     </div>
   );
 };
+
+function dataURLtoFile(dataurl, filename) {
+  var arr = dataurl.split(','),
+    mime = arr[0].match(/:(.*?);/)[1],
+    bstr = atob(arr[1]),
+    n = bstr.length,
+    u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new File([u8arr], filename, { type: mime });
+}

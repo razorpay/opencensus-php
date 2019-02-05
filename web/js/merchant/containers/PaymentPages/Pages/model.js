@@ -16,10 +16,6 @@ function pruneReqPayload(reqPayload) {
     // It is required field. Safe check.
     reqPayload.title = reqPayload.title.trim();
   }
-
-  if (reqPayload.description) {
-    reqPayload.description = reqPayload.description.trim();
-  }
 }
 
 export function createPaymentPage(data) {
@@ -27,10 +23,13 @@ export function createPaymentPage(data) {
 
   pruneReqPayload(reqPayload);
 
+  const formData = new FormData();
+  appendFormdata(formData, reqPayload);
+
   return merchantFetch({
     url: 'payment_links',
     method: 'post',
-    data: reqPayload,
+    data: formData,
     headers: {
       'content-Type': 'application/json',
     },
@@ -43,10 +42,13 @@ export function editPaymentPage(id, data) {
   // In paymentpages v2, following 4 fields can also be edited via this API.
   pruneReqPayload(reqPayload);
 
+  const formData = new FormData();
+  appendFormdata(formData, reqPayload);
+
   return merchantFetch({
     url: `payment_links/${id}`,
     method: 'patch',
-    data: reqPayload,
+    data: formData,
     headers: {
       'content-type': 'application/json',
     },
@@ -109,4 +111,23 @@ export function sendLink(id, data) {
     method: 'post',
     data: reqPayload,
   });
+}
+
+function appendFormdata(FormData, data, name) {
+  name = name || '';
+
+  if (typeof data === 'object' && !(data instanceof File)) {
+    data &&
+      Object.keys(data).forEach(index => {
+        const value = data[index];
+
+        if (name == '') {
+          appendFormdata(FormData, value, index);
+        } else {
+          appendFormdata(FormData, value, name + '[' + index + ']');
+        }
+      });
+  } else {
+    FormData.append(name, data);
+  }
 }
