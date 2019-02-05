@@ -38,8 +38,6 @@ class Fetch extends BaseFetch
             Entity::RECEIPT,
             Entity::CUSTOMER_ID,
             Entity::ENTITY_TYPE,
-            Entity::SUBSCRIPTION_ID,
-            Entity::STATUS,
         ],
         AuthType::PROXY_AUTH => [
             Entity::BATCH_ID,
