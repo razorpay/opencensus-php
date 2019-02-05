@@ -2,6 +2,8 @@
 
 namespace RZP\Jobs;
 
+use RZP\Trace\TraceCode;
+
 class SubscriptionPaymentHandler extends Job
 {
     protected $paymentData;
