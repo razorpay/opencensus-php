@@ -1945,13 +1945,6 @@ trait PaymentTrait
         });
     }
 
-    protected function mockTokenex()
-    {
-        $this->mockCardVault();
-
-        return;
-    }
-
     protected function mockCardVault()
     {
         $cardVault = Mockery::mock('RZP\Services\CardVault')->makePartial();

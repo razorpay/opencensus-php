@@ -1,5 +1,6 @@
 <?php
 
+use RZP\Models\Emi;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Method;
 
@@ -455,6 +456,7 @@ return [
                 'emi' => [
                     'duration' => '9',
                     'bank' => 'HDFC',
+                    'subvention' => Emi\Subvention::CUSTOMER,
                 ],
                 'card' => [
                     'number'       => '41476700000006',
@@ -536,6 +538,40 @@ return [
                 '100UPIICICITml',
             ]
         ],
+        [
+            'payment_options' => [
+                'method' => Method::EMI,
+                'amount' => '300000',
+                'emi' => [
+                    'duration' => '9',
+                    'bank' => 'SBIN',
+                ],
+                'card' => [
+                    'number'       => '4726426811111117',
+                    'name'         => 'Harshil',
+                    'expiry_month' => '12',
+                    'expiry_year'  => '2017',
+                    'cvv'          => '566',
+                    'network'      => 'Visa',
+                    'issuer'       => 'SBIN',
+                ],
+                'bank' => 'SBIN',
+            ],
+            'fixtures' => [
+                [
+                    'method'         => 'emi',
+                    'merchant_id'    => Merchant\Account::SHARED_ACCOUNT,
+                    'gateway'        => 'hitachi',
+                    'type'           => 'filter',
+                    'filter_type'    => 'select',
+                    'group'          => 'routing_filter',
+                    'issuer'         => 'SBIN',
+                ],
+            ],
+            'expected_terminal_ids' => [
+                '100HitachiTmnl',
+            ]
+        ]
     ],
 
     'testMethodFilterWithMerchantEmiSubvention' => [
@@ -545,6 +581,7 @@ return [
                 'emi' => [
                     'duration' => '9',
                     'bank' => 'HDFC',
+                    'subvention' => Emi\Subvention::MERCHANT,
                 ],
                 'card' => [
                     'number'       => '41476700000006',

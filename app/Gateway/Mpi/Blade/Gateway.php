@@ -51,7 +51,6 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'mpi_blade';
 
-
     /**
      * Authenticate the payment
      * As we cannot authorize payment using MPI only
@@ -118,7 +117,7 @@ class Gateway extends Base\Gateway
                         (empty($response[VERes::MESSAGE][VERes::VERES][VERes::EXTENSION][VERes::IVR_AUTH_DATA_ENCRYPT_TYPE]) === false))
                     {
                         throw new Exception\GatewayErrorException(
-                            ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
+                            ErrorCode::GATEWAY_ERROR_IVR_AUTHENTICATION_NOT_AVAILABLE,
                             null,
                             null,
                             [

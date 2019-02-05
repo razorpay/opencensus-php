@@ -263,6 +263,7 @@ final class Route
         'bank_transfer_payment_terminal_backfill'  => ['post',     'payment/bank_transfer_terminal_backfill',        'PaymentController@updateBankTransferTerminal'                      ],
         'refund_processed_at_backfill'             => ['post',     'refunds/processed_at_backfill',                  'RefundController@updateProcessedAt'                                ],
         'refund_reference1_backfill'               => ['post',     'refunds/reference1_backfill',                    'RefundController@backfillUpiMindgateReference1'                    ],
+        'refund_reference1_bulk_update'            => ['post',     'refunds/reference1_bulk_update',                 'RefundController@bulkUpdateRefundsReference1'                      ],
         'fund_transfer_attempt_bulk_update'        => ['patch',    'fund_transfer_attempts',                         'FundTransferAttemptController@bulkUpdate'                          ],
         'fund_transfer_attempt_recon_report'       => ['get',      'fund_transfer_attempts/recon_report',            'FundTransferAttemptController@sendFTAReconReport'                  ],
         'fund_transfer_attempt_reconcile'          => ['post',     'fund_transfer_attempts/reconcile/{channel}',     'FundTransferAttemptController@reconcileFundTransfers',             ],
@@ -937,6 +938,11 @@ final class Route
         // Partner routes
         'merchants_access_map_create'              => ['post',     'merchants/{id}/access_maps',                     'MerchantController@createPartnerAccessMap'                         ],
         'merchants_access_map_delete'              => ['delete',   'merchants/{id}/access_maps',                     'MerchantController@deletePartnerAccessMap'                         ],
+
+        'partner_config_create'                    => ['post',     'partner_configs',                                'PartnerConfigController@create'                                    ],
+        'partner_config_fetch'                     => ['get',      'partner_configs',                                'PartnerConfigController@getConfig'                                 ],
+        'partner_config_edit'                      => ['put',      'partner_configs/{id}',                           'PartnerConfigController@update'                                    ],
+
         'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
         'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
         'merchant_associated_accounts_fetch'       => ['get',      'merchant/{id}/associated_accounts',              'MerchantController@getAssociatedAccounts'                          ],
@@ -1338,6 +1344,7 @@ final class Route
         'bank_transfer_payment_terminal_backfill',
         'refund_processed_at_backfill',
         'refund_reference1_backfill',
+        'refund_reference1_bulk_update',
         'admin_mdr_update',
         'merchant_post_beneficiary_api',
         'setl_verify',
@@ -1880,6 +1887,9 @@ final class Route
         'merchant_balance_bulk_backfill_ids',
         //Bulk Add/Remove bank for terminal
         'terminal_bank_bulk',
+        'partner_config_create',
+        'partner_config_fetch',
+        'partner_config_edit',
     ];
 
     public static $routePermission = [
@@ -2257,6 +2267,11 @@ final class Route
         'entity_balance_id_update'                 => '*',
         'merchant_balance_bulk_backfill_ids'       => '*',
         'terminal_bank_bulk'                       => Permission::EDIT_TERMINAL,
+
+        // TODO fix the permissions later after discussing
+        'partner_config_create'                    => '*',
+        'partner_config_fetch'                     => '*',
+        'partner_config_edit'                      => '*',
     ];
 
     public static $direct = [
@@ -2444,6 +2459,7 @@ final class Route
             'bank_transfer_payment_terminal_backfill',
             'refund_processed_at_backfill',
             'refund_reference1_backfill',
+            'refund_reference1_bulk_update',
             // Not actually a cron, but added in this list
             // so the cron app has access to the route.
             'setcronjob_webhook',

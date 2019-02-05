@@ -110,7 +110,7 @@ class FraudDetectionTest extends TestCase
     public function testFraudNotDetectedForSecondRecurring()
     {
         $this->mockMaxmind();
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $this->fixtures->merchant->enableInternational();
         $this->fixtures->merchant->addFeatures([Feature\Constants::CHARGE_AT_WILL]);

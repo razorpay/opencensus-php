@@ -466,6 +466,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'contact'                   => Contact\Entity::class,
 
             'entity_origin'             => EntityOrigin\Entity::class,
+
             'application'               => Application\Entity::class,
         ]);
     }

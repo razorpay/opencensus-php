@@ -23,6 +23,7 @@ class Repository extends Base\Repository
     public function getDailySettlementScheduleByDelay($delay)
     {
         return $this->newQuery()
+                    ->where(Entity::TYPE,   '=', Type::SETTLEMENT)
                     ->where(Entity::PERIOD, '=', Period::DAILY)
                     ->where(Entity::DELAY,  '=', $delay)
                     ->first();
@@ -30,16 +31,8 @@ class Repository extends Base\Repository
 
     public function fetchSettlementSchedules()
     {
-        // TODO: It looks ugly because it must. There is
-        // no type in schedules, but we name them all pretty
-        // consistently. Will think of a cleaner solution later.
-
         return $this->newQuery()
-                    ->whereRaw(
-                        Entity::NAME . " LIKE 'Hourly%' OR " .
-                        Entity::NAME . " LIKE 'Basic%' OR " .
-                        Entity::NAME . " LIKE '%PM' OR " .
-                        Entity::NAME . " LIKE '%AM'")
+                    ->where(Entity::TYPE, '=', Type::SETTLEMENT)
                     ->orderBy(Entity::NAME)
                     ->get();
     }
@@ -52,12 +45,13 @@ class Repository extends Base\Repository
         }
     }
 
-    public function getScheduleByPeriodIntervalAnchor(string $period, int $interval, $anchor)
+    public function getScheduleByPeriodIntervalAnchorAndType(string $period, int $interval, $anchor, string $type)
     {
          return $this->newQuery()
                      ->where(Entity::PERIOD, '=', $period)
                      ->where(Entity::INTERVAL, '=', $interval)
                      ->where(Entity::ANCHOR, '=', $anchor)
+                     ->where(Entity::TYPE, '=', $type)
                      ->first();
     }
 }

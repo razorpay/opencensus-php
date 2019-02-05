@@ -302,7 +302,7 @@ class FirstDataS2sGatewayTest extends TestCase
 
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $payment = $this->getDefaultRecurringPaymentArray();
 
@@ -376,7 +376,7 @@ class FirstDataS2sGatewayTest extends TestCase
 
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $payment = $this->getDefaultRecurringPaymentArray();
 
@@ -452,7 +452,7 @@ class FirstDataS2sGatewayTest extends TestCase
 
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $payment = $this->getDefaultRecurringPaymentArray();
 
