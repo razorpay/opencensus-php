@@ -4236,7 +4236,8 @@ trait Authorize
                 // Also, the order of the checks matter here since the second
                 // condition covers a superset.
                 //
-                if (($payment->getGateway() === Payment\Gateway::HITACHI) and
+                if (((Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true) or
+             ($payment->terminal->getCapability() === Terminal\Capability::AUTHORIZE)) and
                     ($this->isAuthTypeOtp($payment) === true))
                 {
                     if ($this->canRunAxisExpressPay($payment) === true)
