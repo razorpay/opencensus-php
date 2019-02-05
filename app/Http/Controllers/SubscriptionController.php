@@ -198,13 +198,4 @@ class SubscriptionController extends Controller
 
         return ApiResponse::json($summary);
     }
-
-    public function getInvoicesForSubscription(string $subscriptionId)
-    {
-        $input = Request::all();
-
-        $response = $this->service(E::INVOICE)->fetchInvoicesForSubscriptionId($subscriptionId, $input);
-
-        return ApiResponse::json($response);
-    }
 }

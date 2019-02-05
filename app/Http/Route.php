@@ -553,7 +553,6 @@ final class Route
         'plan_fetch_multiple'                      => ['get',      'plans',                                          'SubscriptionController@getPlans'                                   ],
         'subscription_create'                      => ['post',     'subscriptions',                                  'SubscriptionController@postCreateSubscription'                     ],
         'subscription_fetch'                       => ['get',      'subscriptions/{id}',                             'SubscriptionController@getSubscription'                            ],
-        'subscription_fetch_invoices'              => ['get',      'subscriptions/{id}/invoices',                    'SubscriptionController@getInvoicesForSubscription'                 ],
         'subscription_fetch_multiple'              => ['get',      'subscriptions',                                  'SubscriptionController@getSubscriptions'                           ],
         'subscriptions_charge_invoices'            => ['post',     'subscriptions/charge/invoices',                  'SubscriptionController@postCreateAndChargeSubscriptionInvoices'    ],
         'subscription_test_charge'                 => ['post',     'subscriptions/{id}/charge',                      'SubscriptionController@postTestChargeSubscription'                 ],
@@ -1166,7 +1165,6 @@ final class Route
         'plan_fetch_multiple',
         'subscription_create',
         'subscription_fetch',
-        'subscription_fetch_invoices',
         'subscription_fetch_multiple',
         'subscription_cancel',
         'subscription_create_addon',
@@ -2466,7 +2464,6 @@ final class Route
             'merchant_fetch_config_internal',
             'subscription_manual_retry',
             'token_fetch_card',
-            'subscription_fetch_invoices'
         ],
 
         'kotak' => [
@@ -2588,7 +2585,6 @@ final class Route
         'plan_fetch_multiple'                  => [Feature::SUBSCRIPTIONS],
         'subscription_create'                  => [Feature::SUBSCRIPTIONS],
         'subscription_fetch'                   => [Feature::SUBSCRIPTIONS],
-        'subscription_fetch_invoices'          => [Feature::SUBSCRIPTIONS],
         'subscription_fetch_multiple'          => [Feature::SUBSCRIPTIONS],
         'subscription_manual_retry_old'        => [Feature::SUBSCRIPTIONS],
         'subscription_manual_retry'            => [Feature::SUBSCRIPTIONS],

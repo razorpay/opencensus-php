@@ -48,15 +48,6 @@ class Service extends Base\Service
         return $invoice->toArrayPublic();
     }
 
-    public function fetchInvoicesForSubscriptionId(string $subscriptionId, array $input): array
-    {
-        $id = \RZP\Models\Plan\Subscription\Entity::verifyIdAndStripSign($subscriptionId);
-
-        $invoices = $this->repo->invoice->fetchInvoicesForSubscriptionId($id, $input);
-
-        return $invoices->toArrayPublic();
-    }
-
     public function fetchMultiple(array $input): array
     {
         // Appends USER_ID in query input if userId available in headers via
