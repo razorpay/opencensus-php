@@ -156,6 +156,11 @@ class Constants
      */
     const INVOICE_RECEIPT_MANDATORY     = 'invoice_receipt_mandatory';
 
+    /**
+     * Do no send email on expiring/expired
+     */
+    const INVOICE_NO_EXPIRY_EMAIL       = 'invoice_no_expiry_email';
+
     // Different actions for feature activation flow
     const CREATE           = 'create';
     const UPDATE           = 'update';
@@ -299,6 +304,7 @@ class Constants
         self::DISABLE_REFUNDS                 => true,
         self::TOKEN_BANK_DETAILS              => true,
         self::INVOICE_RECEIPT_MANDATORY       => true,
+        self::INVOICE_NO_EXPIRY_EMAIL         => true,
     ];
 
     // Entity type constants
