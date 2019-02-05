@@ -181,6 +181,23 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchInvoicesForSubscriptionId(string $subscriptionId, array $input)
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::SUBSCRIPTION_ID, '=', $subscriptionId)
+                      ->with(Entity::ORDER);
+
+        if ((isset($input[Entity::STATUS]) === true) and
+            defined(__NAMESPACE__ . '\\Status::'. strtoupper($input[Entity::STATUS])))
+        {
+            $query = $query->where(Entity::STATUS, '=', strtolower($input[Entity::STATUS]));
+        }
+
+        $invoices = $query->get();
+
+        return $invoices;
+    }
+
     public function fetchIssuedAndNotHaltedInvoiceForSubscription(Subscription\Entity $subscription)
     {
         $invoices = $this->newQuery()
