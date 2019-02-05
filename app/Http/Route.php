@@ -938,6 +938,11 @@ final class Route
         // Partner routes
         'merchants_access_map_create'              => ['post',     'merchants/{id}/access_maps',                     'MerchantController@createPartnerAccessMap'                         ],
         'merchants_access_map_delete'              => ['delete',   'merchants/{id}/access_maps',                     'MerchantController@deletePartnerAccessMap'                         ],
+
+        'partner_config_create'                    => ['post',     'partner_configs',                                'PartnerConfigController@create'                                    ],
+        'partner_config_fetch'                     => ['get',      'partner_configs',                                'PartnerConfigController@getConfig'                                 ],
+        'partner_config_edit'                      => ['put',      'partner_configs/{id}',                           'PartnerConfigController@update'                                    ],
+
         'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
         'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
         'merchant_associated_accounts_fetch'       => ['get',      'merchant/{id}/associated_accounts',              'MerchantController@getAssociatedAccounts'                          ],
@@ -1882,6 +1887,9 @@ final class Route
         'merchant_balance_bulk_backfill_ids',
         //Bulk Add/Remove bank for terminal
         'terminal_bank_bulk',
+        'partner_config_create',
+        'partner_config_fetch',
+        'partner_config_edit',
     ];
 
     public static $routePermission = [
@@ -2259,6 +2267,11 @@ final class Route
         'entity_balance_id_update'                 => '*',
         'merchant_balance_bulk_backfill_ids'       => '*',
         'terminal_bank_bulk'                       => Permission::EDIT_TERMINAL,
+
+        // TODO fix the permissions later after discussing
+        'partner_config_create'                    => '*',
+        'partner_config_fetch'                     => '*',
+        'partner_config_edit'                      => '*',
     ];
 
     public static $direct = [
