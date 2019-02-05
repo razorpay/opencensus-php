@@ -95,6 +95,16 @@ class Entity extends PublicEntity
         return $this->getAttribute(self::ENTITY_TYPE);
     }
 
+    public function isCommissionEnabled() : bool
+    {
+        return ($this->getAttribute(self::COMMISSIONS_ENABLED) === true);
+    }
+
+    public function getDefaultPlanId()
+    {
+        return $this->getAttribute(self::DEFAULT_PLAN_ID);
+    }
+
     // --------------------- SETTERS ---------------------
     public function setEntityType($entityType)
     {
