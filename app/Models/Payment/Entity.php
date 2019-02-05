@@ -358,6 +358,22 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::CREATED_AT,
     ];
 
+    protected $adminRestricted = [
+        self::ID,
+        self::ACQUIRER_DATA,
+        self::AMOUNT,
+        self::CURRENCY,
+        self::STATUS,
+        self::ORDER_ID,
+        self::AMOUNT_REFUNDED,
+        self::REFUND_AT,
+        self::CREATED_AT,
+        self::AUTHORIZED_AT,
+        self::UPDATED_AT,
+        self::ERROR_DESCRIPTION,
+        Terminal\Entity::GATEWAY_TERMINAL_ID,
+    ];
+
     protected $publicCustomer = [
         self::ID,
         self::STATUS,
@@ -2364,6 +2380,25 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $data['card'] = $cardData;
 
         return $data;
+    }
+
+    public function toArrayAdminRestricted(array $attributes)
+    {
+        $attributes = parent::toArrayAdminRestricted($attributes);
+
+        /** @var Terminal\Entity $terminal */
+        $terminal = $this->terminal()->first();
+
+        if ($terminal === null)
+        {
+            return $attributes;
+        }
+
+        $gatewayTerminalId = $terminal->getGatewayTerminalId();
+
+        $attributes[Terminal\Entity::GATEWAY_TERMINAL_ID] = $gatewayTerminalId;
+
+        return $attributes;
     }
 
     public function toArrayDashboard()

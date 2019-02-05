@@ -4,30 +4,43 @@ namespace RZP\Models\Admin;
 
 use Cache;
 use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
 
 use RZP\Jobs;
 use RZP\Exception;
-use RZP\Models\Base;
-use RZP\Models\Batch;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Constants\AdminFetch;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\GeoIP\Service as GeoIP;
-use RZP\Models\Base\QueryCache\Constants as QueryCacheConstants;
+use RZP\Models\{Base, Batch, Admin\Org};
 use RZP\Reconciliator\ReconSummary\DailyReconStatusSummary;
+use RZP\Models\Base\QueryCache\Constants as QueryCacheConstants;
 
 class Service extends Base\Service
 {
     public function getAllEntities($input)
     {
         $fields = AdminFetch::fields();
+
         $entities = AdminFetch::entities();
-        $externalEntities = AdminFetch::externalEntities();
 
         // Fetching all entities and fill them with null
         $allEntities = array_fill_keys(Entity::getAllEntities(), null);
+
+        $externalEntities = [];
+
+        if ($this->app['basicauth']->getOrgType() === Org\Entity::RESTRICTED)
+        {
+            $entities = $this->getRestrictedEntities($entities);
+
+            $allEntities = array_only($allEntities, AdminFetch::$restrictedEntities);
+        }
+        else
+        {
+            $externalEntities = AdminFetch::externalEntities();
+        }
 
         $mergedEntities = array_merge($allEntities, $entities, $externalEntities);
 
@@ -38,20 +51,80 @@ class Service extends Base\Service
         ];
     }
 
+    /**
+     * Filter through the entities and return only the allowed entities
+     * and their allowed attributes for restricted orgs
+     *
+     * @param  array $entities
+     * @return array
+     */
+    protected function getRestrictedEntities(array $entities): array
+    {
+        // Only allow entities that are open to restricted orgs
+        $entities = array_only($entities, AdminFetch::$restrictedEntities);
+
+        // Filter select entity attributes open to restricted orgs
+        array_walk($entities, function (&$entity, $name)
+        {
+            // Get allowed attributes from respective Fetch class
+            $fetchClass = Entity::getEntityNamespace($name) . '\\' . 'Fetch';
+
+            $accesses = constant($fetchClass . '::ADMIN_RESTRICTED_ACCESSES');
+
+            $entity = array_only($entity, $accesses);
+        });
+
+        return $entities;
+    }
+
     public function fetchEntityById(string $entity, string $id, array $input = []): array
     {
-        if (Entity::validateExternalServiceEntity($entity) === true)
+        $this->validateEntityTypeForRestrictedOrg($entity);
+
+        $retEntity = $this->handleExternalEntity($entity, $input, $id);
+
+        if (empty($retEntity) === false)
         {
-            $class = Entity::getExternalServiceClass($entity);
-
-            $entityName = Entity::getExternalEntityName($entity);
-
-            return $class->fetch($entityName, $id, $input);
+            return $retEntity;
         }
 
         $entity = $this->fetchEntityByNameAndId($entity, $id, $input);
 
         return $entity->toArrayAdmin();
+    }
+
+    /**
+     * Handle external entity fetch post validating for non-restricted org
+     *
+     * @param  string $entity
+     * @param  array $input
+     * @param  string|null $id
+     *
+     * @return null
+     */
+    protected function handleExternalEntity(string $entity, array $input, string $id = null)
+    {
+        // Check and handle external entities if non-restricted orgs
+        if ($this->app['basicauth']->getOrgType() !== Org\Entity::RESTRICTED)
+        {
+            if (Entity::validateExternalServiceEntity($entity) === true)
+            {
+                $class = Entity::getExternalServiceClass($entity);
+
+                $entityName = Entity::getExternalEntityName($entity);
+
+                if (empty($id) === true)
+                {
+                    return $class->fetchMultiple($entityName, $input);
+                }
+                else
+                {
+                    return $class->fetch($entityName, $id, $input);
+                }
+            }
+        }
+
+        return null;
     }
 
     public function fetchTerminalEntityByIdWithFlag($entity, $id, $subMerchantFlag = false)
@@ -84,13 +157,13 @@ class Service extends Base\Service
 
     public function fetchMultipleEntities($entity, $input)
     {
-        if (Entity::validateExternalServiceEntity($entity) === true)
+        $this->validateEntityTypeForRestrictedOrg($entity);
+
+        $entities = $this->handleExternalEntity($entity, $input);
+
+        if (empty($entities) === false)
         {
-            $class = Entity::getExternalServiceClass($entity);
-
-            $entityName = Entity::getExternalEntityName($entity);
-
-            return $class->fetchMultiple($entityName, $input);
+            return $entities;
         }
 
         Entity::validateEntityOrFailPublic($entity);
@@ -98,6 +171,18 @@ class Service extends Base\Service
         $entities = $this->repo->$entity->fetch($input);
 
         return $entities->toArrayAdmin();
+    }
+
+    protected function validateEntityTypeForRestrictedOrg(string $entity)
+    {
+        if ($this->app['basicauth']->getOrgType() === Org\Entity::RESTRICTED)
+        {
+            // Only allow entities that are open to restricted orgs
+            if (in_array($entity, AdminFetch::$restrictedEntities, true) === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+            }
+        }
     }
 
     public function sendTestNewsletter($input)

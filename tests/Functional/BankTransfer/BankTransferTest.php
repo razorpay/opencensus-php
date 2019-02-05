@@ -1184,7 +1184,7 @@ class BankTransferTest extends TestCase
 
         $payment = $this->getLastPayment();
 
-        $this->ba->privateAuth();
+        $this->ba->proxyAuth();
 
         $request = [
             'url'     => '/payments',

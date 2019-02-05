@@ -390,6 +390,17 @@ class PaymentRetrieveTest extends TestCase
         $this->startTest();
     }
 
+    public function testSearchEsForNotesOnAdminAuthRestricted()
+    {
+        $this->fixtures->edit('org', '100000razorpay', ['type' => 'restricted']);
+
+        $this->fixtures->create('payment:authorized', ['notes' => ['order_id' => 'es_random_1']]);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testSearchEsWithoutQueryParams()
     {
         $this->ba->proxyAuth();

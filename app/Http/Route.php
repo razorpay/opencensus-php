@@ -1965,7 +1965,7 @@ final class Route
         'merchant_actions'                         => '*',
         'merchant_live_enable'                     => Permission::EDIT_MERCHANT_ENABLE_LIVE,
         'merchant_live_disable'                    => Permission::EDIT_MERCHANT_DISABLE_LIVE,
-        'admin_fetch_entity_by_id'                 => '*',
+        'admin_fetch_entity_by_id'                 => Permission::VIEW_ALL_ENTITY,
         'merchant_activation_update'               => '*', // permission handled in code
         'merchant_assign_pricing'                  => Permission::EDIT_MERCHANT_PRICING,
         'merchant_get_banks'                       => Permission::VIEW_MERCHANT_BANKS,
@@ -1980,8 +1980,8 @@ final class Route
         'merchants_update_channel'                 => Permission::EDIT_BULK_MERCHANT_CHANNEL,
         'schedule_fetch_multiple'                  => Permission::SCHEDULE_FETCH_MULTIPLE,
         'setl_fetch_schedule'                      => Permission::SCHEDULE_FETCH_MULTIPLE,
-        'admin_fetch_all_entities'                 => '*',
-        'admin_fetch_entity_multiple'              => '*',
+        'admin_fetch_all_entities'                 => Permission::VIEW_ALL_ENTITY,
+        'admin_fetch_entity_multiple'              => Permission::VIEW_ALL_ENTITY,
         'admin_fetch_report_types'                 => '*',
         'admin_fetch_report'                       => '*',
         'payment_fix_attempted_orders'             => '*',
@@ -2108,7 +2108,7 @@ final class Route
         'feature_bulk_remove'                      => '*',
         'fund_transfer_attempt_bulk_update'        => Permission::SETTLEMENT_BULK_UPDATE,
         'gateway_add_priorities'                   => '*',
-        'gateway_fetch_downtimes'                  => '*',
+        'gateway_fetch_downtimes'                  => Permission::VIEW_GATEWAY_DOWNTIME,
         'gateway_create_downtime'                  => Permission::CREATE_GATEWAY_DOWNTIME,
         'gateway_fetch_priorities'                 => '*',
         'gateway_file_acknowledge'                 => '*',
@@ -2660,6 +2660,15 @@ final class Route
         'pricing_delete_plan_rule',
         'pricing_delete_plan_rule_force',
         'pricing_update_plan_rule'
+    ];
+
+    /**
+     * Routes with Wildcard permission allowed for restricted orgs
+     * @var array
+     */
+    public static $restrictedOrgWildCardRoutes = [
+        'admin_logout',
+        'admin_get_app_auth',
     ];
 
     // Sets TRACE level to CRITICAL for these routes

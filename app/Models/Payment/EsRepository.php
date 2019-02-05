@@ -12,8 +12,4 @@ class EsRepository extends Base\EsRepository
         Entity::NOTES,
         Entity::CREATED_AT,
     ];
-
-    protected $esFetchParams = [
-        Entity::NOTES,
-    ];
 }

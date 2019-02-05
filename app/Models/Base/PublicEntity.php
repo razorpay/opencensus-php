@@ -3,10 +3,12 @@
 namespace RZP\Models\Base;
 
 use App;
+
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-
 use RZP\Models\Currency;
+use RZP\Models\Admin\Org;
+use RZP\Http\BasicAuth\BasicAuth;
 
 class PublicEntity extends UniqueIdEntity
 {
@@ -85,6 +87,16 @@ class PublicEntity extends UniqueIdEntity
      */
     protected $publicCustomer      = [];
 
+    /**
+     * This is used for displaying payments for certain
+     * heimdall orgs' admins that use heimdall internally
+     * in a restricted fashion. They see a limited subset
+     * of admin attributes.
+     *
+     * @var array
+     */
+    protected $adminRestricted     = [];
+
     protected $publicSetters    = [
         self::ID,
         self::ENTITY,
@@ -122,13 +134,33 @@ class PublicEntity extends UniqueIdEntity
 
     public function toArrayAdmin()
     {
-        $array = $this->toArray();
+        $app = App::getFacadeRoot();
+
+        /** @var BasicAuth $ba */
+        $ba = $app['basicauth'];
+
+        $attributes = $this->attributesToArray();
+
+        $relations = $this->relationsToArrayAdmin();
+
+        $array = array_merge($attributes, $relations);
 
         $this->setPublicAttributes($array);
 
+        // TODO: Check if this is needed for restricted orgs
         $array[static::ADMIN] = true;
 
+        if ($ba->getOrgType() === Org\Entity::RESTRICTED)
+        {
+            return $this->toArrayAdminRestricted($array);
+        }
+
         return $array;
+    }
+
+    public function toArrayAdminRestricted(array $array)
+    {
+        return array_only($array, $this->adminRestricted);
     }
 
     /**
@@ -300,6 +332,41 @@ class PublicEntity extends UniqueIdEntity
             else if (static::isPublicEntity($value) === true)
             {
                 $array[$key] = $value->toArrayPublic();
+            }
+            else
+            {
+                $array[$key] = $value;
+            }
+        }
+
+        return $array;
+    }
+
+    public function relationsToArrayAdmin()
+    {
+        $relations = $this->getArrayableRelations();
+
+        // Snake case relation's keys
+
+        foreach ($relations as $key => $value)
+        {
+            $snakeCaseKey = snake_case($key);
+
+            if ($snakeCaseKey !== $key)
+            {
+                $relations[$snakeCaseKey] = $value;
+
+                unset($relations[$key]);
+            }
+        }
+
+        $array = [];
+
+        foreach ($relations as $key => $value)
+        {
+            if ((PublicCollection::isPublicCollection($value) === true) or (static::isPublicEntity($value) === true))
+            {
+                $array[$key] = $value->toArrayAdmin();
             }
             else
             {

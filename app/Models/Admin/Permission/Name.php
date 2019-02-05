@@ -199,6 +199,7 @@ class Name
     const CREATE_VIRTUAL_ACCOUNTS             = 'create_virtual_accounts';
     const CREATE_SELF_SERVE_REPORT            = 'create_self_serve_report';
     const CREATE_GATEWAY_DOWNTIME             = 'create_gateway_downtime';
+    const VIEW_GATEWAY_DOWNTIME               = 'view_gateway_downtime';
     const UPDATE_GATEWAY_DOWNTIME             = 'update_gateway_downtime';
     const CREATE_PROMOTION_COUPON             = 'create_promotion_coupon';
     const RAZORX_APPROVERS                    = 'razorx_approvers';

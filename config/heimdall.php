@@ -563,6 +563,9 @@ return [
             Permission::UPDATE_GATEWAY_DOWNTIME => [
                 'description' => 'Update Gateway Downtime',
             ],
+            Permission::VIEW_GATEWAY_DOWNTIME => [
+                'description' => 'View Gateway Downtime',
+            ],
         ],
 
         // RZP White label wallet config

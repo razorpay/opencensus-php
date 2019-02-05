@@ -5,21 +5,21 @@ namespace RZP\Models\Payment;
 use DB;
 use Carbon\Carbon;
 
-use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Order;
 use RZP\Gateway\Enach;
+use RZP\Constants\Mode;
 use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
-use RZP\Models\Transfer;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
@@ -36,72 +36,6 @@ use RZP\Models\Merchant\Invoice\Type as InvoiceType;
 class Repository extends Base\Repository
 {
     protected $entity = 'payment';
-
-    // These are merchant allowed params to search on. These also act as default params.
-    protected $entityFetchParamRules = [
-        Entity::EMAIL              => 'sometimes|email',
-        Entity::ORDER_ID           => 'sometimes|string|size:20',
-        Entity::INVOICE_ID         => 'sometimes|public_id|size:18',
-        Entity::TRANSFERRED        => 'sometimes|boolean|in:0,1',
-        Entity::CUSTOMER_ID        => 'sometimes|size:19|custom',
-        Entity::RECURRING          => 'sometimes|boolean|in:0,1',
-        self::EXPAND . '.*'        => 'filled|string|in:card',
-    ];
-
-    // These are proxy allowed params to search on.
-    protected $proxyFetchParamRules = [
-        Entity::EMAIL           => 'sometimes',
-        Entity::STATUS          => 'sometimes|string',
-        Entity::NOTES           => 'sometimes|string|max:500',
-        Entity::PAYMENT_LINK_ID => 'filled|public_id|size:17',
-        Entity::SUBSCRIPTION_ID => 'sometimes|string|min:14|max:18',
-        Entity::BANK_REFERENCE  => 'sometimes|alpha_num|max:22',
-        Entity::TRANSFER_ID     => 'filled|public_id|size:18',
-        Entity::CAPTURED        => 'sometimes|boolean',
-        Entity::BATCH_ID        => 'sometimes|string|size:20',
-        Entity::RECURRING       => 'sometimes|boolean',
-        // @codingStandardsIgnoreLine
-        self::EXPAND . '.*'     => 'filled|string|in:card,emi_plan,disputes,transfer,transfer.recipient_settlement|custom:expand',
-    ];
-
-    // These are admin allowed params to search on.
-    protected $appFetchParamRules = [
-        Entity::STATUS                  => 'sometimes|string',
-        Entity::VERIFIED                => 'sometimes|in:null,0,1,2',
-        Entity::REFUND_STATUS           => 'sometimes|in:null,partial,full',
-        Entity::TWO_FACTOR_AUTH         => 'sometimes|string',
-        Entity::BANK                    => 'sometimes',
-        Entity::METHOD                  => 'sometimes',
-        Entity::GATEWAY                 => 'sometimes',
-        Entity::EMAIL                   => 'sometimes|email',
-        Entity::MERCHANT_ID             => 'sometimes|alpha_num',
-        Entity::TRANSFER_ID             => 'sometimes|alpha_num|size:14',
-        Entity::CARD_ID                 => 'sometimes|alpha_num|size:14',
-        Entity::WALLET                  => 'sometimes|custom',
-        Entity::NOTES                   => 'sometimes|notes_fetch',
-        Card\Entity::IIN                => 'sometimes|integer|digits:6',
-        Card\Entity::LAST4              => 'sometimes|string|digits:4',
-        Entity::INTERNATIONAL           => 'sometimes|in:0,1',
-        Entity::CUSTOMER_ID             => 'sometimes|alpha_num|size:14',
-        Entity::TOKEN_ID                => 'sometimes|alpha_num|size:14',
-        Entity::GLOBAL_TOKEN_ID         => 'sometimes|alpha_num|size:14',
-        Entity::SAVE                    => 'sometimes|in:0,1',
-        Entity::LATE_AUTHORIZED         => 'sometimes|in:0,1',
-        Entity::AMOUNT                  => 'sometimes|integer',
-        Entity::TERMINAL_ID             => 'sometimes|alpha_num|size:14',
-        Token\Entity::RECURRING_STATUS  => 'sometimes|string|max:15',
-        Entity::VPA                     => 'sometimes|string|max:100',
-    ];
-
-    protected $signedIds = [
-        Entity::ORDER_ID,
-        Entity::INVOICE_ID,
-        Entity::SUBSCRIPTION_ID,
-        Entity::CUSTOMER_ID,
-        Entity::PAYMENT_LINK_ID,
-        Entity::TRANSFER_ID,
-        Entity::BATCH_ID,
-    ];
 
     protected $cardQueryKeys = [
         Card\Entity::IIN,
@@ -894,6 +828,15 @@ class Repository extends Base\Repository
         $query->select($this->getTableName() . '.*');
     }
 
+    protected function addQueryParamGatewayTerminalId($query, $params)
+    {
+        $this->joinQueryTerminal($query);
+
+        $query->where(Terminal\Entity::GATEWAY_TERMINAL_ID, $params[Terminal\Entity::GATEWAY_TERMINAL_ID]);
+
+        $query->select($this->getTableName() . '.*');
+    }
+
     /**
      * Param to filter payments that have been transferred (amount_transferred > 0)
      *
@@ -1269,11 +1212,6 @@ class Repository extends Base\Repository
         return $vol;
     }
 
-    protected function validateWallet($attribute, $value)
-    {
-        Processor\Wallet::validateExists($value);
-    }
-
     public function getTotalUsedCountForTerminal($terminalId)
     {
         return $this->newQuery()
@@ -1471,6 +1409,21 @@ class Repository extends Base\Repository
         $query->select($this->getTableName() . '.*');
     }
 
+    protected function addQueryParamAcquirerData($query, $params)
+    {
+        $cardAcqDataSql = "IF(" . Entity::METHOD . " = '" . METHOD::CARD . "', " . Entity::REFERENCE2 . "=?, '')";
+        $bankAcqDataSql = "IF(" . Entity::METHOD . " = '" . METHOD::NETBANKING . "', " . Entity::REFERENCE1 . "=?, '')";
+
+        // Acquirer data column is picked based on method
+        $query->where(function ($q) use ($cardAcqDataSql, $bankAcqDataSql, $params)
+        {
+            $q->whereRaw($cardAcqDataSql, $params[Entity::ACQUIRER_DATA])
+              ->orWhereRaw($bankAcqDataSql, $params[Entity::ACQUIRER_DATA]);
+        });
+
+        $query->select($this->getTableName() . '.*');
+    }
+
     protected function joinQueryBankTransfer($query)
     {
         $joins = $query->getQuery()->joins;
@@ -1491,6 +1444,21 @@ class Repository extends Base\Repository
         $bankTransferPaymentId = $this->repo->bank_transfer->dbColumn(BankTransfer\Entity::PAYMENT_ID);
 
         $query->join($bankTransferTable, $paymentId, '=', $bankTransferPaymentId);
+    }
+
+    protected function joinQueryTerminal(BuilderEx $query)
+    {
+        $terminalTable = Table::getTableNameForEntity(Constants\Entity::TERMINAL);
+
+        if ($query->hasJoin($terminalTable) === true)
+        {
+            return;
+        }
+
+        $paymentTerminalId = $this->dbColumn(Entity::TERMINAL_ID);
+        $terminalId = $this->repo->terminal->dbColumn(Terminal\Entity::ID);
+
+        $query->join($terminalTable, $paymentTerminalId, $terminalId);
     }
 
     public function getAliasesForPaymentsDbColumns($params): array
@@ -1683,5 +1651,36 @@ class Repository extends Base\Repository
         $this->connection(null);
 
         return null;
+    }
+
+    /**
+     * Overriding newQuery to always have conditions for payment method
+     * and bank in case of restricted orgs like SBI. For now this is a
+     * very specific customization as we don't know how this may grow
+     * further but once we have more clarity this can be made more generic
+     * by having custom required conditions per restricted org defined
+     * in Fetch.php file just like we do for search rules and accesses
+     *
+     * @return mixed
+     */
+    protected function newQuery()
+    {
+        $app = \App::getFacadeRoot();
+
+        $orgId = $app['basicauth']->getOrgId();
+
+        /** @var Org\Entity $org */
+        $org = $this->repo->org->findOrFailPublic(Org\Entity::stripSignWithoutValidation($orgId));
+
+        $isRestricted = ($org->getType() === Org\Entity::RESTRICTED);
+
+        if ($isRestricted === false)
+        {
+            return parent::newQuery();
+        }
+
+        return parent::newQuery()
+            ->where(Entity::METHOD, Method::NETBANKING)
+            ->where(Entity::BANK, $org->getCustomCode());
     }
 }
