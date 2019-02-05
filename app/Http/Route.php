@@ -2465,7 +2465,8 @@ final class Route
             'webhook_fire',
             'merchant_fetch_config_internal',
             'subscription_manual_retry',
-            'token_fetch_card'
+            'token_fetch_card',
+            'subscription_fetch_invoices'
         ],
 
         'kotak' => [
