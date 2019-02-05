@@ -94,6 +94,7 @@ class Gateway
     const ACQUIRER_AMEX         = 'amex';
     const ACQUIRER_FSS          = 'fss';
     const ACQUIRER_RATN         = 'ratn';
+    const ACQUIRER_YESB         = 'yesb';
     const ACQUIRER_BARB         = 'barb';
 
     const NOT_SUPPORTED      = 'not_supported';
@@ -1106,6 +1107,7 @@ class Gateway
         Gateway::NETBANKING_HDFC,
         Gateway::NETBANKING_AXIS,
         Gateway::ENACH_RBL,
+        Gateway::ENACH_NPCI_NETBANKING,
     ];
 
     /**

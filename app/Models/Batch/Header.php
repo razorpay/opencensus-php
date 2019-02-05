@@ -277,6 +277,58 @@ class Header
     const ENACH_DEBIT_REASON_DESCRIPTION    = EnachRblDebitHeadings::REASON_DESCRIPTION;
 
     //
+    //enach npci netbanking register headers
+    //
+    const ENACH_NPCI_NETBANKING_REGISTER_UMRN              = 'UMRN';
+    const ENACH_NPCI_NETBANKING_REGISTER_STATUS            = 'STATUS';
+    const ENACH_NPCI_NETBANKING_REGISTER_PAYMENT_ID        = 'MESSAGE ID';
+    const ENACH_NPCI_NETBANKING_REGISTER_MANDATE_DATE      = 'MANDATE DATE';
+    const ENACH_NPCI_NETBANKING_REGISTER_MANDATE_ID        = 'MANDATE ID';
+    const ENACH_NPCI_NETBANKING_REGISTER_CUST_REF_NO       = 'CUST REF NO';
+    const ENACH_NPCI_NETBANKING_REGISTER_SCH_REF_NO        = 'SCH REF NO';
+    const ENACH_NPCI_NETBANKING_REGISTER_CUST_NAME         = 'CUST NAME';
+    const ENACH_NPCI_NETBANKING_REGISTER_BANK              = 'BANK';
+    const ENACH_NPCI_NETBANKING_REGISTER_BRANCH            = 'BRANCH';
+    const ENACH_NPCI_NETBANKING_REGISTER_BANK_CODE         = 'BANK CODE';
+    const ENACH_NPCI_NETBANKING_REGISTER_AC_TYPE           = 'AC TYPE';
+    const ENACH_NPCI_NETBANKING_REGISTER_AC_NO             = 'AC NO';
+    const ENACH_NPCI_NETBANKING_REGISTER_AMOUNT            = 'AMOUNT';
+    const ENACH_NPCI_NETBANKING_REGISTER_FREQUENCY         = 'FREQUENCY';
+    const ENACH_NPCI_NETBANKING_REGISTER_DEBIT_TYPE        = 'DEBIT TYPE';
+    const ENACH_NPCI_NETBANKING_REGISTER_START_DATE        = 'START DATE';
+    const ENACH_NPCI_NETBANKING_REGISTER_END_DATE          = 'END DATE';
+    const ENACH_NPCI_NETBANKING_REGISTER_UNTIL_CANCEL      = 'UNTIL CANCEL';
+    const ENACH_NPCI_NETBANKING_REGISTER_TEL_NO            = 'TEL NO';
+    const ENACH_NPCI_NETBANKING_REGISTER_MOBILE_NO         = 'MOBILE NO';
+    const ENACH_NPCI_NETBANKING_REGISTER_MAIL_ID           = 'MAIL ID';
+    const ENACH_NPCI_NETBANKING_REGISTER_UPLOAD_DATE       = 'UPLOAD DATE';
+    const ENACH_NPCI_NETBANKING_REGISTER_RESPONSE_DATE     = 'RESPONSE DATE';
+    const ENACH_NPCI_NETBANKING_REGISTER_UTILITY_CODE      = 'UTILITY CODE';
+    const ENACH_NPCI_NETBANKING_REGISTER_UTILITY_NAME      = 'UTILITY NAME';
+    const ENACH_NPCI_NETBANKING_REGISTER_STATUS_CODE       = 'STATUS CODE';
+    const ENACH_NPCI_NETBANKING_REGISTER_REASON            = 'REASON';
+    const ENACH_NPCI_NETBANKING_REGISTER_MANDATE_REQID     = 'MANDATE REQID';
+
+    //
+    // enach npci netbanking debit headers
+    //
+    const ENACH_NPCI_NETBANKING_DEBIT_PRESENTATION_DATE = 'Presentation Date';
+    const ENACH_NPCI_NETBANKING_DEBIT_UMRN              = 'UMRN';
+    const ENACH_NPCI_NETBANKING_DEBIT_PAYMENT_ID        = 'Transaction Ref No';
+    const ENACH_NPCI_NETBANKING_DEBIT_UTILITY_CODE      = 'Utility Code';
+    const ENACH_NPCI_NETBANKING_DEBIT_BANK_ACC          = 'Bank A/c Number';
+    const ENACH_NPCI_NETBANKING_DEBIT_ACCOUNT_NAME      = 'Account Holder Name';
+    const ENACH_NPCI_NETBANKING_DEBIT_BANK              = 'Bank';
+    const ENACH_NPCI_NETBANKING_DEBIT__IFSC             = 'IFSC/MICR';
+    const ENACH_NPCI_NETBANKING_DEBIT_AMOUNT            = 'Amount';
+    const ENACH_NPCI_NETBANKING_DEBIT_REF_ONE           = 'Reference 1';
+    const ENACH_NPCI_NETBANKING_DEBIT_REF_TWO           = 'Reference 2';
+    const ENACH_NPCI_NETBANKING_DEBIT_STATUS            = 'Status';
+    const ENACH_NPCI_NETBANKING_DEBIT_ERROR_CODE        = 'Reason Code';
+    const ENACH_NPCI_NETBANKING_DEBIT_ERROR_DESCRIPTION = 'Reason Discription';
+    const ENACH_NPCI_NETBANKING_DEBIT_USER_REF          = 'User Reference';
+
+    //
     // Payout headers
     //
     const PAYOUT_CUSTOMER_ID         = 'customer_id';
@@ -682,6 +734,114 @@ class Header
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ]
+        ],
+
+        'emandate_register_enach_npci_netbanking' => [
+            self::INPUT => [
+                self::ENACH_NPCI_NETBANKING_REGISTER_MANDATE_DATE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_MANDATE_ID,
+                self::ENACH_NPCI_NETBANKING_REGISTER_UMRN,
+                self::ENACH_NPCI_NETBANKING_REGISTER_CUST_REF_NO,
+                self::ENACH_NPCI_NETBANKING_REGISTER_SCH_REF_NO,
+                self::ENACH_NPCI_NETBANKING_REGISTER_CUST_NAME,
+                self::ENACH_NPCI_NETBANKING_REGISTER_BANK,
+                self::ENACH_NPCI_NETBANKING_REGISTER_BRANCH,
+                self::ENACH_NPCI_NETBANKING_REGISTER_BANK_CODE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_AC_TYPE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_AC_NO,
+                self::ENACH_NPCI_NETBANKING_REGISTER_AMOUNT,
+                self::ENACH_NPCI_NETBANKING_REGISTER_FREQUENCY,
+                self::ENACH_NPCI_NETBANKING_REGISTER_DEBIT_TYPE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_START_DATE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_END_DATE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_UNTIL_CANCEL,
+                self::ENACH_NPCI_NETBANKING_REGISTER_TEL_NO,
+                self::ENACH_NPCI_NETBANKING_REGISTER_MOBILE_NO,
+                self::ENACH_NPCI_NETBANKING_REGISTER_MAIL_ID,
+                self::ENACH_NPCI_NETBANKING_REGISTER_UPLOAD_DATE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_RESPONSE_DATE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_UTILITY_CODE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_UTILITY_NAME,
+                self::ENACH_NPCI_NETBANKING_REGISTER_STATUS,
+                self::ENACH_NPCI_NETBANKING_REGISTER_STATUS_CODE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_REASON,
+                self::ENACH_NPCI_NETBANKING_REGISTER_MANDATE_REQID,
+                self::ENACH_NPCI_NETBANKING_REGISTER_PAYMENT_ID,
+            ],
+            self::OUTPUT => [
+                self::ENACH_NPCI_NETBANKING_REGISTER_MANDATE_DATE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_MANDATE_ID,
+                self::ENACH_NPCI_NETBANKING_REGISTER_UMRN,
+                self::ENACH_NPCI_NETBANKING_REGISTER_CUST_REF_NO,
+                self::ENACH_NPCI_NETBANKING_REGISTER_SCH_REF_NO,
+                self::ENACH_NPCI_NETBANKING_REGISTER_CUST_NAME,
+                self::ENACH_NPCI_NETBANKING_REGISTER_BANK,
+                self::ENACH_NPCI_NETBANKING_REGISTER_BRANCH,
+                self::ENACH_NPCI_NETBANKING_REGISTER_BANK_CODE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_AC_TYPE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_AC_NO,
+                self::ENACH_NPCI_NETBANKING_REGISTER_AMOUNT,
+                self::ENACH_NPCI_NETBANKING_REGISTER_FREQUENCY,
+                self::ENACH_NPCI_NETBANKING_REGISTER_DEBIT_TYPE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_START_DATE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_END_DATE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_UNTIL_CANCEL,
+                self::ENACH_NPCI_NETBANKING_REGISTER_TEL_NO,
+                self::ENACH_NPCI_NETBANKING_REGISTER_MOBILE_NO,
+                self::ENACH_NPCI_NETBANKING_REGISTER_MAIL_ID,
+                self::ENACH_NPCI_NETBANKING_REGISTER_UPLOAD_DATE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_RESPONSE_DATE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_UTILITY_CODE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_UTILITY_NAME,
+                self::ENACH_NPCI_NETBANKING_REGISTER_STATUS,
+                self::ENACH_NPCI_NETBANKING_REGISTER_STATUS_CODE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_REASON,
+                self::ENACH_NPCI_NETBANKING_REGISTER_MANDATE_REQID,
+                self::ENACH_NPCI_NETBANKING_REGISTER_PAYMENT_ID,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        'emandate_debit_enach_npci_netbanking' => [
+            self::INPUT => [
+                self::ENACH_NPCI_NETBANKING_DEBIT_PRESENTATION_DATE,
+                self::ENACH_NPCI_NETBANKING_DEBIT_UMRN,
+                self::ENACH_NPCI_NETBANKING_DEBIT_PAYMENT_ID,
+                self::ENACH_NPCI_NETBANKING_DEBIT_UTILITY_CODE,
+                self::ENACH_NPCI_NETBANKING_DEBIT_BANK_ACC,
+                self::ENACH_NPCI_NETBANKING_DEBIT_ACCOUNT_NAME,
+                self::ENACH_NPCI_NETBANKING_DEBIT_BANK,
+                self::ENACH_NPCI_NETBANKING_DEBIT__IFSC,
+                self::ENACH_NPCI_NETBANKING_DEBIT_AMOUNT,
+                self::ENACH_NPCI_NETBANKING_DEBIT_REF_ONE,
+                self::ENACH_NPCI_NETBANKING_DEBIT_REF_TWO,
+                self::ENACH_NPCI_NETBANKING_DEBIT_STATUS,
+                self::ENACH_NPCI_NETBANKING_DEBIT_ERROR_CODE,
+                self::ENACH_NPCI_NETBANKING_DEBIT_ERROR_DESCRIPTION,
+                self::ENACH_NPCI_NETBANKING_DEBIT_USER_REF,
+            ],
+            self::OUTPUT => [
+                self::ENACH_NPCI_NETBANKING_DEBIT_PRESENTATION_DATE,
+                self::ENACH_NPCI_NETBANKING_DEBIT_UMRN,
+                self::ENACH_NPCI_NETBANKING_DEBIT_PAYMENT_ID,
+                self::ENACH_NPCI_NETBANKING_DEBIT_UTILITY_CODE,
+                self::ENACH_NPCI_NETBANKING_DEBIT_BANK_ACC,
+                self::ENACH_NPCI_NETBANKING_DEBIT_ACCOUNT_NAME,
+                self::ENACH_NPCI_NETBANKING_DEBIT_BANK,
+                self::ENACH_NPCI_NETBANKING_DEBIT__IFSC,
+                self::ENACH_NPCI_NETBANKING_DEBIT_AMOUNT,
+                self::ENACH_NPCI_NETBANKING_DEBIT_REF_ONE,
+                self::ENACH_NPCI_NETBANKING_DEBIT_REF_TWO,
+                self::ENACH_NPCI_NETBANKING_DEBIT_STATUS,
+                self::ENACH_NPCI_NETBANKING_DEBIT_ERROR_CODE,
+                self::ENACH_NPCI_NETBANKING_DEBIT_ERROR_DESCRIPTION,
+                self::ENACH_NPCI_NETBANKING_DEBIT_USER_REF,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
         ],
 
         Type::BANK_TRANSFER => [

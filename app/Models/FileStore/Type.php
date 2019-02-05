@@ -21,6 +21,8 @@ class Type
     const RBL_ENACH_DEBIT                   = 'rbl_enach_debit';
     const RBL_ENACH_REGISTER                = 'rbl_enach_register';
 
+    const ENACH_NPCI_NB_DEBIT               = 'enach_npci_nb_debit';
+
     const CORPORATION_NETBANKING_REFUND     = 'corporation_netbanking_refund';
 
 
@@ -163,6 +165,7 @@ class Type
             self::HDFC_EMANDATE_DEBIT,
             self::RBL_ENACH_DEBIT,
             self::RBL_ENACH_REGISTER,
+            self::ENACH_NPCI_NB_DEBIT,
             self::ICICI_NETBANKING_REFUND,
             self::AXIS_NETBANKING_REFUND,
             self::AXIS_EMANDATE_DEBIT,
@@ -281,6 +284,7 @@ class Type
         self::HDFC_EMANDATE_DEBIT,
         self::RBL_ENACH_DEBIT,
         self::RBL_ENACH_REGISTER,
+        self::ENACH_NPCI_NB_DEBIT,
         self::BOB_NETBANKING_REFUND,
         self::BOB_NETBANKING_CLAIMS,
         self::CANARA_NETBANKING_REFUND,

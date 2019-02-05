@@ -36,6 +36,7 @@ class Constants
     const SBI              = 'sbi';
     const CORPORATION      = 'corporation';
 
+    const ENACH_NPCI_NETBANKING = 'enach_npci_netbanking';
 
     /**
      * Stores a mapping of valid banks for each file type
@@ -83,6 +84,7 @@ class Constants
             self::HDFC,
             self::AXIS,
             self::ENACH_RBL,
+            self::ENACH_NPCI_NETBANKING,
         ],
         Type::REFUND_FAILED => [
             'All',
@@ -139,9 +141,11 @@ class Constants
         ],
 
         Type::EMANDATE_DEBIT => [
-            self::HDFC      => ['hdfc.emandate@razorpay.com', 'amit.salvi@hdfcbank.com'],
-            self::AXIS      => ['axis.emandate@razorpay.com'],
-            self::ENACH_RBL => ['rbl.emandate@razorpay.com'],
+            self::HDFC                  => ['hdfc.emandate@razorpay.com', 'amit.salvi@hdfcbank.com'],
+            self::AXIS                  => ['axis.emandate@razorpay.com'],
+            self::ENACH_RBL             => ['rbl.emandate@razorpay.com'],
+            //TODO
+            self::ENACH_NPCI_NETBANKING => [''],
         ],
 
         Type::EMI => [
