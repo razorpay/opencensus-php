@@ -24,6 +24,19 @@ class BatchTest extends TestCase
 
     public function testCreateBatchOfContactType()
     {
+        // Creates a in-active contact to assert that it is not used in the flow.
+        $this->fixtures->create(
+            'contact',
+            [
+                'id'           => '100TestContact',
+                'active'       => false,
+                'type'         => 'vendor',
+                'name'         => 'Another Example',
+                'email'        => 'another@example.com',
+                'contact'      => '9988998899',
+                'reference_id' => null,
+            ]);
+
         $entries = $this->getFileEntries(__FUNCTION__);
 
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
@@ -32,7 +45,8 @@ class BatchTest extends TestCase
 
         $contacts = $this->getDbEntities('contact');
 
-        $this->assertCount(2, $contacts);
+        $this->assertCount(3 + 1, $contacts);
+        $this->assertCount(2, $contacts->where('name', 'Another Example'));
     }
 
     protected function getFileEntries(string $callee): array

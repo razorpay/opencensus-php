@@ -211,7 +211,7 @@ class FirstDataGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund['gateway'], '10000000000000') === true)
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund['gateway']) === true)
         {
             $this->assertEquals('created', $refund['status']);
         }
@@ -251,7 +251,7 @@ class FirstDataGatewayTest extends TestCase
 
         $this->assertEquals($actualRefund['id'], 'rfnd_'.$firstData['refund_id']);
 
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund['gateway'], '10000000000000') === false)
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund['gateway']) === false)
         {
             $this->assertEquals('CAPTURED', $firstData['status']);
         }
@@ -267,7 +267,7 @@ class FirstDataGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund['gateway'], '10000000000000') === true)
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund['gateway']) === true)
         {
             $this->assertEquals('created', $refund['status']);
         }
@@ -315,7 +315,7 @@ class FirstDataGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund['gateway'], '10000000000000') === true)
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund['gateway']) === true)
         {
             $this->assertEquals('created', $refund['status']);
         }

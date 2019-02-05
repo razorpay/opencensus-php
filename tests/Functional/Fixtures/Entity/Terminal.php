@@ -1966,6 +1966,27 @@ class Terminal extends Base
     }
 
 
+    public function createIdfcTpvTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::IDFB_TPV_TERMINAL;
+
+        $defaultValues = [
+            'id'                    => $termId,
+            'merchant_id'           => '100000Razorpay',
+            'gateway'               => 'netbanking_idfc',
+            'card'                  => 0,
+            'netbanking'            => 1,
+            'tpv'                   => 1,
+            'gateway_merchant_id'   => 'netbanking_idfb_merchant_id',
+            'gateway_secure_secret' => 'random_secret',
+            'network_category'      => 'ecommerce',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
     public function createAllahabadTpvTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::ALLA_TPV_TERMINAL;

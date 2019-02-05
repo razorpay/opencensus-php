@@ -118,11 +118,21 @@ class Gateway extends Base\Gateway
             Fields::TRANSACTION_CURRENCY    => $input['payment']['currency'],
         ];
 
+        // Change Content for Merchants with TPV Required
+        if ($input['merchant']->isTPVRequired())
+        {
+            $data[Fields::ACCOUNT_NUMBER] = $input['order']['account_number'];
+        }
+
         $checksum = $this->generateHash($data);
 
         $data[Fields::CHECKSUM] = $checksum;
 
-        unset($data[Fields::ACCOUNT_NUMBER]);
+        // Account number is sent only in case if merchant has tpv enabled
+        if ($input['merchant']->isTPVRequired() === false)
+        {
+            unset($data[Fields::ACCOUNT_NUMBER]);
+        }
 
         return $data;
     }
