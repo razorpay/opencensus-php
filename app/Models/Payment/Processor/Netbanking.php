@@ -100,6 +100,7 @@ class Netbanking
         IFSC::INDB,
         IFSC::CSBK,
         IFSC::ALLA,
+        IFSC::IDFB,
     ];
 
     protected static $gatewaySupportedBanks = [
@@ -330,6 +331,9 @@ class Netbanking
         ],
         Gateway::NETBANKING_IDFC => [
             'retail' => [
+                IFSC::IDFB
+            ],
+            'tpv' => [
                 IFSC::IDFB
             ]
         ],
