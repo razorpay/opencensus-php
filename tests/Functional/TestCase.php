@@ -180,4 +180,13 @@ class TestCase extends ParentTestCase
             $mockObj->willReturn($expectedSearchRes);
         }
     }
+
+    protected function createAndSetEsMockSearchExpectations(string $callee, string $method = 'search')
+    {
+        $mock = $this->createEsMock([$method]);
+
+        $this->setEsMockSearchExpectations($callee, $mock, $method);
+
+        return $mock;
+    }
 }
