@@ -915,6 +915,16 @@ class Repository extends Base\Repository
         return $count;
     }
 
+    public function updateRefundReference1(array $refund)
+    {
+        return $this->newQueryWithoutTimestamps()
+                    ->where(Table::REFUND . '.' . Refund\Entity::ID, $refund[Refund\Entity::ID])
+                    ->where(Table::REFUND . '.' . Refund\Entity::STATUS, Refund\Status::PROCESSED)
+                    ->update([
+                        Refund\Entity::REFERENCE1 => $refund[Refund\Entity::REFERENCE1],
+                    ]);
+    }
+
     public function findByReceiptAndMerchant(string $receipt, string $merchantId)
     {
         return $this->newQuery()

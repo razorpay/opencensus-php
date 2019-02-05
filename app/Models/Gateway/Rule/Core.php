@@ -192,7 +192,7 @@ class Core extends Base\Core
                 // we set the method sa card both while fetching applicable rules
                 if (in_array($bank, Payment\Gateway::$emiBanksUsingCardTerminals, true) === true)
                 {
-                    $params[Entity::METHOD] = Payment\Method::CARD;
+                    $params[Entity::METHOD] = [Payment\Method::CARD, Payment\Method::EMI];
                 }
 
                 $params[Entity::METHOD_TYPE]    = $card->getType();

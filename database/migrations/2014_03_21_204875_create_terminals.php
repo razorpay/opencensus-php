@@ -33,8 +33,7 @@ class CreateTerminals extends Migration
             $table->tinyInteger(Terminal::USED)
                   ->default(0);
 
-            $table->integer(Terminal::CATEGORY)
-                  ->unsigned()
+            $table->char(Terminal::CATEGORY, Terminal::CATEGORY_LENGTH)
                   ->nullable();
 
             $table->string(Terminal::GATEWAY);

@@ -28,7 +28,7 @@ class HdfcGatewayTest extends TestCase
 
         $this->setMockGatewayTrue();
 
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $this->fixtures->merchant->enableInternational();
 

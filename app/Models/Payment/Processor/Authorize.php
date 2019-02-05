@@ -159,7 +159,6 @@ trait Authorize
 
         $request = $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
 
-
         $this->runShieldCheck($payment);
 
         //
@@ -273,6 +272,8 @@ trait Authorize
                 $internalErrorCode = $payment->getInternalErrorCode();
 
                 $this->logRiskFailureForGateway($payment, $internalErrorCode);
+
+                $this->disableIinFlowIfApplicable($payment, $internalErrorCode);
 
                 throw $e;
             }

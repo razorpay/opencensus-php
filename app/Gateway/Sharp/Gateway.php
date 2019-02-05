@@ -352,8 +352,7 @@ class Gateway extends Base\Gateway
         parent::refund($input);
 
         if ((isset($input['payment'][Payment\Entity::GATEWAY]) === true) and
-            (Payment\Gateway::isScroogeGatewayAndMerchant($input['payment'][Payment\Entity::GATEWAY],
-                                                          $input['payment'][Payment\Entity::MERCHANT_ID]) === true))
+            (Payment\Gateway::isScroogeGatewayAndMerchant($input['payment'][Payment\Entity::GATEWAY]) === true))
         {
             return $this->getScroogeResponse($input, 'refund');
         }
@@ -497,8 +496,7 @@ class Gateway extends Base\Gateway
         parent::verify($input);
 
         if ((isset($input['payment'][Payment\Entity::GATEWAY]) === true) and
-            (Payment\Gateway::isScroogeGatewayAndMerchant($input['payment'][Payment\Entity::GATEWAY],
-                                                          $input['payment'][Payment\Entity::MERCHANT_ID]) === true))
+            (Payment\Gateway::isScroogeGatewayAndMerchant($input['payment'][Payment\Entity::GATEWAY]) === true))
         {
             return $this->getScroogeResponse($input, 'verify');
         }
@@ -574,6 +572,14 @@ class Gateway extends Base\Gateway
             'gateway_refund_id'     => '',
             'gateway_merchant_id'   => '10000000000000'
         ];
+
+        if (empty($amount) === true)
+        {
+            $response['result']         = 'Refund Failed';
+            $response['status_code']    = ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT;
+
+            return $response;
+        }
 
         switch ($amount)
         {

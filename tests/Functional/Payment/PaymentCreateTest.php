@@ -796,7 +796,7 @@ class PaymentCreateTest extends TestCase
 
     public function testPreferredRecurringPaymentCard()
     {
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $this->ba->publicAuth();
 
@@ -846,7 +846,7 @@ class PaymentCreateTest extends TestCase
     {
         $this->ba->privateAuth();
 
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
@@ -879,7 +879,7 @@ class PaymentCreateTest extends TestCase
     {
         $this->ba->privateAuth();
 
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
@@ -932,7 +932,7 @@ class PaymentCreateTest extends TestCase
 
     protected function setupEmandateAndGetPaymentRequest($bank = 'HDFC', $amount = 2000)
     {
-        $this->mockTokenex();
+        $this->mockCardVault();
         $this->fixtures->create('terminal:shared_emandate_icici_terminal');
         $this->fixtures->create('terminal:shared_emandate_axis_terminal');
         $this->fixtures->merchant->addFeatures(['charge_at_will']);

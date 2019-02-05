@@ -34,7 +34,7 @@ class CybersourceGatewayTest extends TestCase
 
         $this->gateway = 'cybersource';
 
-        $this->mockTokenex();
+        $this->mockCardVault();
     }
 
     public function testPayment()

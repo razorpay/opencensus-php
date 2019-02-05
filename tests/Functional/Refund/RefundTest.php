@@ -133,7 +133,7 @@ class RefundTest extends TestCase
 
         $this->gateway = 'hitachi';
 
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $this->fixtures->merchant->addFeatures('void_refunds');
 

@@ -35,7 +35,7 @@ class EMIPaymentTest extends TestCase
 
         $this->emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
 
-        $this->mockTokenex();
+        $this->mockCardVault();
     }
 
     public function testEmiPaymentCreate()

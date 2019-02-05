@@ -740,6 +740,7 @@ final class FactoryData
             'interval'          => 1,
             'delay'             => 3,
             'hour'              => 5,
+            'type'              => 'settlement',
             'org_id'            => \RZP\Tests\Functional\Fixtures\Entity\Org::RZP_ORG,
         ]);
 
@@ -905,6 +906,13 @@ final class FactoryData
             'updated_at'      => Carbon::now()->getTimestamp(),
         ]);
 
+        $factory(\RZP\Models\Partner\Config\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'entity_type' => 'application',
+            'entity_id'   => '10000000000App',
+            'revisit_at'  => Carbon::now()->addYear(1)->getTimestamp(),
+        ]);
+
         $factory(\RZP\Models\Merchant\Request\Entity::class, [
             'id'         => $faker->uniqueid,
             'created_at' => $faker->timestamp,
@@ -912,14 +920,14 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\VirtualAccount\Entity::class, [
-            'id'         => $faker->uniqueid,
-            'merchant_id'=> '10000000000000',
-            'status'     => 'active',
-            'name'       => 'Test Merchant',
-            'balance_id' => '10000000000000',
-            'notes'      => null,
-            'created_at' => $faker->timestamp,
-            'updated_at' => $faker->timestamp,
+            'id'          => $faker->uniqueid,
+            'merchant_id' => '10000000000000',
+            'status'      => 'active',
+            'name'        => 'Test Merchant',
+            'balance_id'  => '10000000000000',
+            'notes'       => null,
+            'created_at'  => $faker->timestamp,
+            'updated_at'  => $faker->timestamp,
         ]);
 
         $factory(\RZP\Models\QrCode\Entity::class, [
@@ -953,6 +961,7 @@ final class FactoryData
 
         $factory(\RZP\Models\Contact\Entity::class, [
             'id'           => $faker->uniqueid,
+            'active'       => true,
             'name'         => $faker->word,
             'email'        => $faker->email,
             'contact'      => '9123456789',

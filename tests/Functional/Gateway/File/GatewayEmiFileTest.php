@@ -32,7 +32,7 @@ class GatewayEmiFileTest extends TestCase
 
         $this->emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
 
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $this->fixtures->merchant->enableEmi();
     }

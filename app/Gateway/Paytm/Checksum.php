@@ -15,90 +15,109 @@ class Checksum
     const REFUND = 'REFUND';
     const STR_NULL = 'null';
 
-    public static function encrypt_e($input, $ky)
-    {
-        $iv   = self::IV;
-        $data = openssl_encrypt($input, self::AES_128_CBC, $ky, 0, $iv);
+    public static function encrypt_e($input, $ky) {
+        $key   = html_entity_decode($ky);
+        $iv = "@@@@&&&&####$$$$";
+        $data = openssl_encrypt ( $input , "AES-128-CBC" , $key, 0, $iv );
         return $data;
     }
 
-    public static function decrypt_e($crypt, $ky)
-    {
-        $iv   = self::IV;
-        $data = openssl_decrypt($crypt, self::AES_128_CBC, $ky, 0, $iv);
+
+    public static function decrypt_e($crypt, $ky) {
+        $key   = html_entity_decode($ky);
+        $iv = "@@@@&&&&####$$$$";
+        $data = openssl_decrypt ( $crypt , "AES-128-CBC" , $key, 0, $iv );
         return $data;
     }
 
     public static function generateSalt_e($length)
     {
         $random = "";
-
         srand((double) microtime() * 1000000);
-        $charset = "AbcDE123IJKLMN67QRSTUVWXYZ";
-        $charset .= "aBCdefghijklmn123opq45rs67tuv89wxyz";
-        $charset .= "0FGH45OP89";
-
-        for ($i = 0; $i < $length; $i++)
-        {
-            $random .= substr($charset, (rand() % (strlen($charset))), 1);
+        $data = "AbcDE123IJKLMN67QRSTUVWXYZ";
+        $data .= "aBCdefghijklmn123opq45rs67tuv89wxyz";
+        $data .= "0FGH45OP89";
+        for ($i = 0; $i < $length; $i++) {
+            $random .= substr($data, (rand() % (strlen($data))), 1);
         }
         return $random;
     }
 
     public static function checkString_e($value)
     {
-        if ($value === self::STR_NULL)
-        {
+        if ($value == 'null')
             $value = '';
-        }
         return $value;
     }
 
-    public static function getChecksumFromArray($arrayList, $key, $sort = 1)
+    public  static function getChecksumFromArray($arrayList, $key, $sort = 1)
     {
-        if ($sort != 0)
-        {
+        if ($sort != 0) {
             ksort($arrayList);
         }
-
-        $str         = self::getArray2Str($arrayList);
-        $salt        = self::generateSalt_e(4);
+        $str = self::getArray2Str($arrayList);
+        $salt = self::generateSalt_e(4);
         $finalString = $str . "|" . $salt;
-        $hash        = hash(HashAlgo::SHA256, $finalString);
-        $hashString  = $hash . $salt;
-        $checksum    = self::encrypt_e($hashString, $key);
+        $hash = hash("sha256", $finalString);
+        $hashString = $hash . $salt;
+        $checksum = self::encrypt_e($hashString, $key);
         return $checksum;
     }
 
+    public static function getChecksumFromString($str, $key) {
+
+        $salt = self::generateSalt_e(4);
+        $finalString = $str . "|" . $salt;
+        $hash = hash("sha256", $finalString);
+        $hashString = $hash . $salt;
+        $checksum = self::encrypt_e($hashString, $key);
+        return $checksum;
+    }
+
+
     public static function verifychecksum_e($arrayList, $key, $checksumvalue)
     {
-        $arrayList = self::removeCheckSumParam($arrayList);
         ksort($arrayList);
-        $str          = self::getArray2Str($arrayList);
-        $paytm_hash   = self::decrypt_e($checksumvalue, $key);
-        $salt         = substr($paytm_hash, -4);
-        $finalString  = $str . "|" . $salt;
-        $website_hash = hash(HashAlgo::SHA256, $finalString);
+        $str = self::getArray2StrForVerify($arrayList);
+        $paytm_hash = self::decrypt_e($checksumvalue, $key);
+        $salt = substr($paytm_hash, -4);
+        $finalString = $str . "|" . $salt;
+        $website_hash = hash("sha256", $finalString);
         $website_hash .= $salt;
-        $validFlag = self::FALSE;
+        $validFlag = "FALSE";
         if ($website_hash == $paytm_hash) {
-            $validFlag = self::TRUE;
+            $validFlag = "TRUE";
         } else {
-            $validFlag = self::FALSE;
+            $validFlag = "FALSE";
         }
         return $validFlag;
     }
 
-    public static function getArray2Str($arrayList)
-    {
-        $findme     = self::REFUND;
+    public static function verifychecksum_eFromStr($str, $key, $checksumvalue) {
+        $paytm_hash = self::decrypt_e($checksumvalue, $key);
+        $salt = substr($paytm_hash, -4);
+        $finalString = $str . "|" . $salt;
+        $website_hash = hash("sha256", $finalString);
+        $website_hash .= $salt;
+        $validFlag = "FALSE";
+        if ($website_hash == $paytm_hash) {
+            $validFlag = "TRUE";
+        } else {
+            $validFlag = "FALSE";
+        }
+        return $validFlag;
+    }
+
+    public static function getArray2Str($arrayList) {
+        $findme   = 'REFUND';
         $findmepipe = '|';
-        $paramStr   = "";
-        $flag       = 1;
+        $paramStr = "";
+        $flag = 1;
         foreach ($arrayList as $key => $value) {
-            $pos     = strpos($value, $findme);
+            $pos = strpos($value, $findme);
             $pospipe = strpos($value, $findmepipe);
-            if ($pos !== false || $pospipe !== false) {
+            if ($pos !== false || $pospipe !== false)
+            {
                 continue;
             }
 
@@ -106,18 +125,25 @@ class Checksum
                 $paramStr .= self::checkString_e($value);
                 $flag = 0;
             } else {
-                $paramStr .= " | " . self::checkString_e($value);
+                $paramStr .= "|" .self::checkString_e($value);
             }
         }
         return $paramStr;
     }
 
-    protected static function removeCheckSumParam($arrayList)
-    {
-        if (isset($arrayList[self::CHECKSUMHASH]))
-        {
-            unset($arrayList[self::CHECKSUMHASH]);
+    public static function getArray2StrForVerify($arrayList) {
+        $paramStr = "";
+        $flag = 1;
+        foreach ($arrayList as $key => $value) {
+            if ($flag) {
+                $paramStr .= self::checkString_e($value);
+                $flag = 0;
+            } else {
+                $paramStr .= "|" . self::checkString_e($value);
+            }
         }
-        return $arrayList;
+        return $paramStr;
     }
+
+
 }
