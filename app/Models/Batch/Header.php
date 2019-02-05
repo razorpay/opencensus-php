@@ -409,9 +409,9 @@ class Header
     const FUND_ACCOUNT_ID             = 'Fund Account Id';
     const FUND_ACCOUNT_USE_EXISTING   = 'Fund Account Use Existing';
     const FUND_ACCOUNT_TYPE           = 'Fund Account Type';
-    const FUND_ACCOUNT_CONTACT_NAME   = 'Fund Account Contact Name';
+    const FUND_ACCOUNT_NAME           = 'Fund Account Name';
     const FUND_ACCOUNT_IFSC           = 'Fund Account Ifsc';
-    const FUND_ACCOUNT_ACCOUNT_NUMBER = 'Fund Account Account Number';
+    const FUND_ACCOUNT_NUMBER         = 'Fund Account Number';
     const FUND_ACCOUNT_VPA            = 'Fund Account Vpa';
 
     /**
@@ -1246,9 +1246,9 @@ class Header
             self::INPUT => [
                 self::FUND_ACCOUNT_USE_EXISTING,
                 self::FUND_ACCOUNT_TYPE,
-                self::FUND_ACCOUNT_CONTACT_NAME,
+                self::FUND_ACCOUNT_NAME,
                 self::FUND_ACCOUNT_IFSC,
-                self::FUND_ACCOUNT_ACCOUNT_NUMBER,
+                self::FUND_ACCOUNT_NUMBER,
                 self::FUND_ACCOUNT_VPA,
                 self::CONTACT_ID,
                 self::CONTACT_TYPE,
@@ -1262,9 +1262,9 @@ class Header
             self::OUTPUT => [
                 self::FUND_ACCOUNT_USE_EXISTING,
                 self::FUND_ACCOUNT_TYPE,
-                self::FUND_ACCOUNT_CONTACT_NAME,
+                self::FUND_ACCOUNT_NAME,
                 self::FUND_ACCOUNT_IFSC,
-                self::FUND_ACCOUNT_ACCOUNT_NUMBER,
+                self::FUND_ACCOUNT_NUMBER,
                 self::FUND_ACCOUNT_VPA,
                 self::CONTACT_ID,
                 self::CONTACT_TYPE,

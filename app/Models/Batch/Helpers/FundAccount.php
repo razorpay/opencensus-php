@@ -24,8 +24,8 @@ class FundAccount
             case FundAccountModel\Type::BANK_ACCOUNT:
                 $input[FundAccountModel\Entity::DETAILS] = [
                     BankAccount\Entity::IFSC           => $entry[Header::FUND_ACCOUNT_IFSC],
-                    BankAccount\Entity::ACCOUNT_NUMBER => $entry[Header::FUND_ACCOUNT_ACCOUNT_NUMBER],
-                    BankAccount\Entity::NAME           => $entry[Header::FUND_ACCOUNT_CONTACT_NAME],
+                    BankAccount\Entity::ACCOUNT_NUMBER => $entry[Header::FUND_ACCOUNT_NUMBER],
+                    BankAccount\Entity::NAME           => $entry[Header::FUND_ACCOUNT_NAME],
                 ];
                 break;
 

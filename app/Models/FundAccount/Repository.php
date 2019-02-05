@@ -9,7 +9,6 @@ use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Constants\Entity as E;
 
-
 /**
  * Class Repository
  *

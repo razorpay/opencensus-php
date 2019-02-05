@@ -9,6 +9,6 @@ class FundAccount extends Base
 {
     protected static $mailTag     = MailTags::BATCH_FUND_ACCOUNT_FILE;
     protected static $sender      = Constants::NOREPLY;
-    protected static $subjectLine = "Processed fund accounts file for %s";
+    protected static $subjectLine = 'Processed fund accounts file for %s';
     protected static $body        = 'Please find attached processed fund accounts file.';
 }

@@ -26,8 +26,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->address($address)
                     ->merchantId($merchantId)
-                    ->orderByDesc(Entity::CREATED_AT)
-                    ->orderByDesc(Entity::ID)
+                    ->latest()
                     ->first();
     }
 }

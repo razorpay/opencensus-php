@@ -297,8 +297,7 @@ class Repository extends Base\Repository
                     ->where(Entity::IFSC_CODE, $ifscCode)
                     ->where(Entity::TYPE, $type)
                     ->merchantId($merchantId)
-                    ->orderByDesc(Entity::CREATED_AT)
-                    ->orderByDesc(Entity::ID)
+                    ->latest()
                     ->first();
     }
 }
