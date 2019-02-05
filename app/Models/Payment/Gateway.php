@@ -179,6 +179,7 @@ class Gateway
         self::NETBANKING_ICICI  => self::ICICI,
         self::NETBANKING_RBL    => self::RBL,
         self::NETBANKING_AXIS   => self::AXIS,
+        self::PAYTM             => self::PAYTM,
     ];
 
     /**

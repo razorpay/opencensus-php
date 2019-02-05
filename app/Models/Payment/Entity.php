@@ -3011,8 +3011,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function isDirectSettlement()
     {
-        if (($this->isNetbanking() === true) and
-            ($this->hasTerminal() === true) and
+        if (($this->hasTerminal() === true) and
             ($this->terminal->isDirectSettlement() === true))
         {
             return true;

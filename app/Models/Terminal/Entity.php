@@ -220,6 +220,7 @@ class Entity extends Base\PublicEntity
         'inputRemoveBlanks',
         self::INTERNATIONAL,
         self::EMI_SUBVENTION,
+        self::TYPE,
     ];
 
     protected $defaults = [
@@ -783,6 +784,15 @@ class Entity extends Base\PublicEntity
             {
                 $input[self::INTERNATIONAL] = 1;
             }
+        }
+    }
+
+    protected function modifyType(& $input)
+    {
+        if ((empty($input[self::GATEWAY]) === false) and
+            ($input[self::GATEWAY] === Payment\Gateway::PAYTM))
+        {
+            $input[self::TYPE][Type::DIRECT_SETTLEMENT] = '1';
         }
     }
 
