@@ -15,7 +15,8 @@ class Contact
             ContactModel\Entity::EMAIL        => $entry[Header::CONTACT_EMAIL_2],
             ContactModel\Entity::CONTACT      => $entry[Header::CONTACT_MOBILE_2],
             ContactModel\Entity::REFERENCE_ID => $entry[Header::CONTACT_REFERENCE_ID],
-            ContactModel\Entity::NOTES        => $entry[Header::NOTES],
+            // Notes is optional.
+            ContactModel\Entity::NOTES        => $entry[Header::NOTES] ?? [],
         ];
 
         // Returns removing attributes with empty values.

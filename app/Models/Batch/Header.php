@@ -405,6 +405,15 @@ class Header
     const CONTACT_MOBILE_2            = 'Contact Mobile';
     const CONTACT_REFERENCE_ID        = 'Contact Reference Id';
 
+    // Fund Account Headers
+    const FUND_ACCOUNT_ID             = 'Fund Account Id';
+    const FUND_ACCOUNT_USE_EXISTING   = 'Fund Account Use Existing';
+    const FUND_ACCOUNT_TYPE           = 'Fund Account Type';
+    const FUND_ACCOUNT_NAME           = 'Fund Account Name';
+    const FUND_ACCOUNT_IFSC           = 'Fund Account Ifsc';
+    const FUND_ACCOUNT_NUMBER         = 'Fund Account Number';
+    const FUND_ACCOUNT_VPA            = 'Fund Account Vpa';
+
     /**
      * Input and output file headers
      * The keys need to be like <type>_<sub-type>_<gateway>.
@@ -1227,6 +1236,45 @@ class Header
                 self::CONTACT_REFERENCE_ID,
                 self::NOTES,
                 self::CONTACT_ID,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::FUND_ACCOUNT => [
+            self::INPUT => [
+                self::FUND_ACCOUNT_USE_EXISTING,
+                self::FUND_ACCOUNT_TYPE,
+                self::FUND_ACCOUNT_NAME,
+                self::FUND_ACCOUNT_IFSC,
+                self::FUND_ACCOUNT_NUMBER,
+                self::FUND_ACCOUNT_VPA,
+                self::CONTACT_ID,
+                self::CONTACT_TYPE,
+                self::CONTACT_NAME_2,
+                self::CONTACT_EMAIL_2,
+                self::CONTACT_MOBILE_2,
+                self::CONTACT_REFERENCE_ID,
+                // Contact's notes.
+                self::NOTES,
+            ],
+            self::OUTPUT => [
+                self::FUND_ACCOUNT_USE_EXISTING,
+                self::FUND_ACCOUNT_TYPE,
+                self::FUND_ACCOUNT_NAME,
+                self::FUND_ACCOUNT_IFSC,
+                self::FUND_ACCOUNT_NUMBER,
+                self::FUND_ACCOUNT_VPA,
+                self::CONTACT_ID,
+                self::CONTACT_TYPE,
+                self::CONTACT_NAME_2,
+                self::CONTACT_EMAIL_2,
+                self::CONTACT_MOBILE_2,
+                self::CONTACT_REFERENCE_ID,
+                // Contact's notes.
+                self::NOTES,
+                self::FUND_ACCOUNT_ID,
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,

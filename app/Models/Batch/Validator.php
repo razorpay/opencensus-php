@@ -199,6 +199,22 @@ class Validator extends Base\Validator
         OMHelper::REDIRECT_URI => 'required|url',
     ];
 
+    protected static $fundAccountTypeRowRules = [
+        Header::FUND_ACCOUNT_USE_EXISTING => 'required|string|in:1,0',
+        Header::FUND_ACCOUNT_TYPE         => 'required|string|in:bank_account,vpa',
+        Header::FUND_ACCOUNT_NAME         => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
+        Header::FUND_ACCOUNT_IFSC         => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
+        Header::FUND_ACCOUNT_NUMBER       => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
+        Header::FUND_ACCOUNT_VPA          => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',vpa|nullable|string',
+        Header::CONTACT_ID                => 'sometimes|nullable|public_id|size:19',
+        Header::CONTACT_TYPE              => 'required_without:Contact Id|nullable|string',
+        Header::CONTACT_NAME_2            => 'required_without:Contact Id|nullable|string',
+        Header::CONTACT_EMAIL_2           => 'sometimes|nullable|string',
+        Header::CONTACT_MOBILE_2          => 'sometimes|nullable|string',
+        Header::CONTACT_REFERENCE_ID      => 'sometimes|nullable|string',
+        Header::NOTES                     => 'sometimes|nullable|notes',
+    ];
+
     protected function validateType($attribute, $value)
     {
         Type::validateType($value);
@@ -688,6 +704,14 @@ class Validator extends Base\Validator
             $input = Helpers\Contact::getContactInput($entry);
 
             $validator->validateInput('create', $input);
+        });
+    }
+
+    protected function validateFundAccountEntries(array & $entries, array $params, ME $merchant)
+    {
+        $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
+        {
+            $this->validateInput('fundAccountTypeRow', $entry);
         });
     }
 
