@@ -482,6 +482,9 @@ return [
             Permission::ES_WRITE_OPERATION           => [
                 'description' => 'Perform write operations on Elasticsearch',
             ],
+            Permission::ADMIN_FILE_UPLOAD            => [
+                'description' => 'Upload a bank file',
+            ],
         ],
 
         // Permissions

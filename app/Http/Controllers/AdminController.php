@@ -232,6 +232,15 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function uploadFileAdmin(string $type)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->uploadFile($type, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getOpsReportTypes()
     {
         $report = new Report\Types\OpsReport;

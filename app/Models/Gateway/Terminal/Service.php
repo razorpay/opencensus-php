@@ -74,6 +74,14 @@ class Service extends Base\Service
 
                 $gatewayInput = $gatewayProcessor->getInputValue($gatewayInput, $merchant);
 
+                $this->trace->info(
+                    TraceCode::MERCHANT_ONBOARD_REQUEST_DATA,
+                    [
+                        'merchant_id'   => $merchant->getId(),
+                        'gateway'       => $gateway,
+                        'gateway_input' => $gatewayInput,
+                    ]);
+
                 $gatewayData = [
                     'merchant'         => $merchant,
                     'merchant_details' => $merchantDetail,
@@ -136,6 +144,11 @@ class Service extends Base\Service
             }
         }
 
+        $this->trace->info(
+            TraceCode::MERCHANT_ONBOARD_CREATE_TERMINAL,
+            [
+                'merchant_id'   => $merchantId,
+            ]);
         return true;
     }
 

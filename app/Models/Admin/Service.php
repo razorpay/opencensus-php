@@ -507,6 +507,17 @@ class Service extends Base\Service
         return $batch->toArrayPublic();
     }
 
+    public function uploadFile(string $type, array $input)
+    {
+        $fileCore = new File\Core;
+
+        $admin = $this->auth->getAdmin();
+
+        $fileCore->uploadFile($admin, $type, $input);
+
+        return ['success' => true];
+    }
+
     public function updateEntityBalanceIdInBulk(string $entity, array $input): array
     {
         assertTrue(
