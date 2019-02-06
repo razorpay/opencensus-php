@@ -166,12 +166,12 @@ class CorePaymentService
 
     protected function throwServiceErrorException(\Throwable $e)
     {
-        $errorCode = ErrorCode::SERVER_ERROR_SUBSCRIPTION_SERVICE_FAILURE;
+        $errorCode = ErrorCode::SERVER_ERROR_CORE_PAYMENT_SERVICE_FAILURE;
 
         if ((empty($e->getData()) === false) and
             (curl_errno($e->getData()) === CURLE_OPERATION_TIMEDOUT))
         {
-            $errorCode = ErrorCode::SERVER_ERROR_SUBSCRIPTION_SERVICE_TIMEOUT;
+            $errorCode = ErrorCode::SERVER_ERROR_CORE_PAYMENT_SERVICE_TIMEOUT;
         }
 
         throw new Exception\ServerErrorException($e->getMessage(), $errorCode);
@@ -186,7 +186,7 @@ class CorePaymentService
 
         if ($response->success === true)
         {
-            return $this->createSubscriptionEntity($responseBody);
+            return $this->checkAndFormatResponse($responseBody);
         }
         elseif ($code >= 400 and $code < 500)
         {
@@ -219,5 +219,10 @@ class CorePaymentService
             $message,
             ErrorCode::SERVER_ERROR_SUBSCRIPTION_SERVICE_FAILURE,
             $error);
+    }
+
+    protected function checkAndFormatResponse($response)
+    {
+        // TODO. Need to confirm response format before implementing it.
     }
 }
