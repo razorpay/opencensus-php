@@ -286,10 +286,20 @@ class Base extends BaseModel\Core
 
     protected function saveSettings(array $input)
     {
-        if (isset($input[Batch\Entity::CONFIG]) === true)
-        {
-            $config = $input[Batch\Entity::CONFIG];
+        $config = $input[Batch\Entity::CONFIG] ?? [];
 
+        // Temporary: For payout type batch captures user email to be used later to send processed file to.
+        if ($this->batch->isPayoutType() === true)
+        {
+            $user = $this->app->basicauth->getUser();
+            $config['user'] = [
+                'name'  => $user->getName(),
+                'email' => $user->getEmail(),
+            ];
+        }
+
+        if (empty($config) === false)
+        {
             $this->settingsAccessor->upsert($config)->save();
         }
     }
@@ -722,7 +732,8 @@ class Base extends BaseModel\Core
         $mail = new $mailerClass(
                         $this->batch->toArray(),
                         $this->merchant->toArray(),
-                        $this->outputFileLocalPath);
+                        $this->outputFileLocalPath,
+                        $this->settingsAccessor->all()->toArray());
 
         Mail::send($mail);
     }

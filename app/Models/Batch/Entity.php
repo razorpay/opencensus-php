@@ -390,6 +390,11 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::RECONCILIATION);
     }
 
+    public function isPayoutType(): bool
+    {
+        return ($this->getType() === Type::PAYOUT);
+    }
+
     /**
      * Returns headers based on status of batch.
      *
