@@ -5,10 +5,10 @@ namespace RZP\Models\FundTransfer\Yesbank\Request;
 final class Constants
 {
     // Bank Response code for successful operation
-    const SUCCESS                       = 'SUCCESS';
+    const SUCCESS                             = 'SUCCESS';
 
     // Bank Response code for failed operation
-    const FAILURE                       = 'FAILURE';
+    const FAILURE                             = 'FAILURE';
 
     //
     // Using this payment type while registering the bene
@@ -20,7 +20,7 @@ final class Constants
     // UPI  - UPI
     // IMPS - IMPS
     //
-    const BENE_PAYMENT_TYPE             = 'OTHR';
+    const BENE_PAYMENT_TYPE                   = 'OTHR';
 
     //
     // Flag to be sent for adding beneficiary
@@ -28,11 +28,11 @@ final class Constants
     // MODIFY: modify beneficiary data
     // DELETE: remove a beneficiary
     //
-    const BENE_FLAG                     = 'ADD';
+    const BENE_FLAG                           = 'ADD';
 
-    const BENE_RESPONSE_IDENTIFIER      = 'NS1maintainBeneResponse';
+    const BENE_RESPONSE_IDENTIFIER            = 'NS1maintainBeneResponse';
 
-    const BENE_RESPONSE_BODY_IDENTIFIER = 'soapenvBody';
+    const BENE_RESPONSE_BODY_IDENTIFIER       = 'soapenvBody';
 
     //
     // Beneficiary type to be used while registering the beneficiary
@@ -41,108 +41,119 @@ final class Constants
     // D: dealer
     // O: other
     //
-    const BENE_TYPE                     = 'V';
+    const BENE_TYPE                           = 'V';
 
-    // this should be used as value for `TransactionLimit` in verify request
-    const MAX_TRANSACTION_LIMIT         = 999999999;
+    // this should be used as value for       `TransactionLimit` in verify request
+    const MAX_TRANSACTION_LIMIT               = 999999999;
 
-    const CURRENCY                      = 'INR';
+    const CURRENCY                            = 'INR';
 
     // ******* Constants used in beneficiary registration ******* //
-    const REQUEST_STATUS                = 'RequestStatus';
+    const REQUEST_STATUS                      = 'RequestStatus';
 
-    const ERROR                         = 'Error';
+    const ERROR                               = 'Error';
 
-    const BENEFICIARY_CD                = 'BeneficiaryCd';
+    const BENEFICIARY_CD                      = 'BeneficiaryCd';
 
-    const ITEM                          = 'Item';
+    const ITEM                                = 'Item';
 
-    const REASON                        = 'Reason';
+    const REASON                              = 'Reason';
 
-    const GENERAL_MESSAGE               = 'GeneralMsg';
+    const GENERAL_MESSAGE                     = 'GeneralMsg';
 
-    const ERROR_SUB_CODE                = 'ErrorSubCode';
+    const ERROR_SUB_CODE                      = 'ErrorSubCode';
 
-    const FAULT_RESPONSE_IDENTIFIER     = 'Fault';
+    const FAULT_RESPONSE_IDENTIFIER           = 'Fault';
 
-    const VERSION                       = 'version';
+    const VERSION                             = 'version';
 
-    const REQUEST_REFERENCE_NO          = 'requestReferenceNo';
+    const REQUEST_REFERENCE_NO                = 'requestReferenceNo';
 
-    const CUSTOMER_ID                   = 'customerID';
+    const CUSTOMER_ID                         = 'customerID';
 
-    const TRANSFER_REQUEST_IDENTIFIER   = 'startTransfer';
+    const ASYNC_TRANSFER_REQUEST_IDENTIFIER   = 'startTransfer';
 
-    const TRANSFER_RESPONSE_IDENTIFIER  = 'startTransferResponse';
+    const ASYNC_TRANSFER_RESPONSE_IDENTIFIER  = 'startTransferResponse';
 
-    const UNIQUE_REQUEST_NO             = 'uniqueRequestNo';
+    const SYNC_TRANSFER_REQUEST_IDENTIFIER    = 'transfer';
 
-    const APP_ID                        = 'appID';
+    const SYNC_TRANSFER_RESPONSE_IDENTIFIER   = 'transferResponse';
 
-    const PURPOSE_CODE                  = 'purposeCode';
+    const UNIQUE_REQUEST_NO                   = 'uniqueRequestNo';
 
-    const DEBIT_ACCOUNT_NUMBER          = 'debitAccountNo';
+    const APP_ID                              = 'appID';
 
-    const BENEFICIARY                   = 'beneficiary';
+    const PURPOSE_CODE                        = 'purposeCode';
 
-    const BENEFICIARY_CODE              = 'beneficiaryCode';
+    const DEBIT_ACCOUNT_NUMBER                = 'debitAccountNo';
 
-    const BENEFICIARY_DETAILS           = 'beneficiaryDetail';
+    const BENEFICIARY                         = 'beneficiary';
 
-    const BENEFICIARY_ACCOUNT_NO        = 'beneficiaryAccountNo';
+    const BENEFICIARY_CODE                    = 'beneficiaryCode';
 
-    const BENEFICIARY_CONTACT           = 'beneficiaryContact';
+    const BENEFICIARY_DETAILS                 = 'beneficiaryDetail';
 
-    const BENEFICIARY_IFSC              = 'beneficiaryIFSC';
+    const BENEFICIARY_ACCOUNT_NO              = 'beneficiaryAccountNo';
 
-    const FULL_NAME                     = 'fullName';
+    const BENEFICIARY_CONTACT                 = 'beneficiaryContact';
 
-    const BENEFICIARY_NAME              = 'beneficiaryName';
+    const BENEFICIARY_IFSC                    = 'beneficiaryIFSC';
 
-    const TRANSFER_TYPE                 = 'transferType';
+    const FULL_NAME                           = 'fullName';
 
-    const TRANSFER_CURRENCY_CODE        = 'transferCurrencyCode';
+    const BENEFICIARY_NAME                    = 'beneficiaryName';
 
-    const TRANSFER_AMOUNT               = 'transferAmount';
+    const TRANSFER_TYPE                       = 'transferType';
 
-    const REMITTER_TO_BENEFICIARY_INFO  = 'remitterToBeneficiaryInfo';
+    const ATTEMPT_NO                          = 'attemptNo';
 
-    const UNIQUE_RESPONSE_NO            = 'uniqueResponseNo';
+    const TRANSFER_CURRENCY_CODE              = 'transferCurrencyCode';
 
-    const STATUS_CODE                   = 'statusCode';
+    const TRANSFER_AMOUNT                     = 'transferAmount';
 
-    const SUB_STATUS_CODE               = 'subStatusCode';
+    const REMITTER_TO_BENEFICIARY_INFO        = 'remitterToBeneficiaryInfo';
 
-    const SUB_STATUS_TEXT               = 'subStatusText';
+    const UNIQUE_RESPONSE_NO                  = 'uniqueResponseNo';
 
-    const RRN                           = 'rrn';
+    const STATUS_CODE                         = 'statusCode';
 
-    const REQ_TRANSFER_TYPE             = 'reqTransferType';
+    const SUB_STATUS_CODE                     = 'subStatusCode';
 
-    const DEFAULT_TRANSFER_TYPE         = 'ANY';
+    const SUB_STATUS_TEXT                     = 'subStatusText';
 
-    const DEFAULT_CURRENCY              = 'INR';
+    const RRN                                 = 'rrn';
 
-    const STATUS_REQUEST_IDENTIFIER     = 'getStatus';
+    const REQ_TRANSFER_TYPE                   = 'reqTransferType';
 
-    const STATUS_RESPONSE_IDENTIFIER    = 'getStatusResponse';
+    // Used only in generating mock responses
+    const DEFAULT_TRANSFER_TYPE               = 'IMPS';
 
-    const TRANSACTION_DATE              = 'transactionDate';
+    const DEFAULT_CURRENCY                    = 'INR';
 
-    const TRANSACTION_STATUS            = 'transactionStatus';
+    const STATUS_REQUEST_IDENTIFIER           = 'getStatus';
 
-    const BANK_REFERENCE_NO             = 'bankReferenceNo';
+    const STATUS_RESPONSE_IDENTIFIER          = 'getStatusResponse';
 
-    const BENEFICIARY_REFERENCE_NO      = 'beneficiaryReferenceNo';
+    const TRANSACTION_DATE                    = 'transactionDate';
+
+    const TRANSACTION_STATUS                  = 'transactionStatus';
+
+    const BANK_REFERENCE_NO                   = 'bankReferenceNo';
+
+    const BENEFICIARY_REFERENCE_NO            = 'beneficiaryReferenceNo';
+
+    const NAME_WITH_BENEFICIARY_BANK          = 'nameWithBeneficiaryBank';
+
+    const LOW_BALANCE_ALERT                   = 'lowBalanceAlert';
 
     // ****** Attribute specific to fault response ****** //
-    const TEXT                          = 'Text';
+    const TEXT                                = 'Text';
 
-    const CODE                          = 'Code';
+    const CODE                                = 'Code';
 
-    const SUB_CODE                      = 'Subcode';
+    const SUB_CODE                            = 'Subcode';
 
-    const VALUE                         = 'Value';
+    const VALUE                               = 'Value';
 
     // ============= UPI RESPONSE KEYS ===============-
 

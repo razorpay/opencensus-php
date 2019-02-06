@@ -335,6 +335,8 @@ trait RequestResponseFlowTrait
 
     protected function makeRequestAndGetContent($request, &$callback = null)
     {
+        $this->resetSingletons();
+
         $response = $this->sendRequest($request, $callback);
 
         return $this->getJsonContentFromResponse($response, $callback);

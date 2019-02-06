@@ -4705,3 +4705,6 @@ ALTER TABLE paytm
 
 ALTER TABLE paytm
     MODIFY `request_type` varchar(255) COLLATE utf8_bin NULL;
+
+ALTER TABLE contacts
+    ADD INDEX contacts_merchant_id_active_index (merchant_id, active);

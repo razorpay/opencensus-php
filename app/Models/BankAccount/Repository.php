@@ -278,4 +278,26 @@ class Repository extends Base\Repository
                     ->where(Entity::ID, $bankAccountId)
                     ->first();
     }
+
+    /**
+     * @param  string $accountNumber
+     * @param  string $ifscCode
+     * @param  string $type
+     * @param  string $merchantId
+     * @return Entity|null
+     */
+    public function findLatestBankAccountByAccountNumber(
+        string $accountNumber,
+        string $ifscCode,
+        string $type,
+        string $merchantId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+                    ->where(Entity::IFSC_CODE, $ifscCode)
+                    ->where(Entity::TYPE, $type)
+                    ->merchantId($merchantId)
+                    ->latest()
+                    ->first();
+    }
 }

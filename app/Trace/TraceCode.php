@@ -298,6 +298,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const NODAL_PAYMENT_STATUS_RESPONSE                 = 'NODAL_PAYMENT_STATUS_RESPONSE';
     const NODAL_REQUEST_FAILED                          = 'NODAL_REQUEST_FAILED';
     const NODAL_TRANSFER_STATUS_UPDATE_FAILED           = 'NODAL_TRANSFER_STATUS_UPDATE_FAILED';
+    const FTA_SOURCE_PROCESSING_FAILED                  = 'FTA_SOURCE_PROCESSING_FAILED';
+    const FTA_SOURCE_PROCESSING_DATA                    = 'FTA_SOURCE_PROCESSING_DATA';
     const SETTLEMENT_API_RESPONSE                       = 'NODAL_SETTLEMENT_API_RESPONSE';
     const SETTLEMENT_API_REQUEST                        = 'NODAL_SETTLEMENT_API_REQUEST';
 
@@ -886,6 +888,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_PAYOUT_RETRY_FAILED              = 'MERCHANT_PAYOUT_RETRY_FAILED';
     const MERCHANT_PAYOUT_RETRIED_IDS               = 'MERCHANT_PAYOUT_RETRIED_IDS';
     const MERCHANT_ONBOARD_REQUEST                  = 'MERCHANT_ONBOARD_REQUEST';
+    const MERCHANT_ONBOARD_CREATE_TERMINAL          = 'MERCHANT_ONBOARD_CREATE_TERMINAL';
+    const MERCHANT_ONBOARD_REQUEST_FAILED           = 'MERCHANT_ONBOARD_REQUEST_FAILED';
+    const MERCHANT_ONBOARD_REQUEST_DATA             = 'MERCHANT_ONBOARD_REQUEST_DATA';
+    const MERCHANT_ONBOARD_GATEWAY_NOT_FOUND_ERROR  = 'MERCHANT_ONBOARD_GATEWAY_NOT_FOUND_ERROR';
+    const MERCHANT_ONBOARD_INDEX_OUT_OF_BOUND       = 'MERCHANT_ONBOARD_INDEX_OUT_OF_BOUND';
+    const MERCHANT_ONBOARD_INDEX_ABOVE_THRESHOLD    = 'MERCHANT_ONBOARD_INDEX_ABOVE_THRESHOLD';
     const MERCHANT_BALANCE_DEBIT_FAILURE            = 'MERCHANT_BALANCE_DEBIT_FAILURE';
     const MERCHANT_PROCESS_WHITELIST_ACTIVATION     = 'MERCHANT_PROCESS_WHITELIST_ACTIVATION';
     const MERCHANT_PROCESS_BLACKLIST_ACTIVATION     = 'MERCHANT_PROCESS_BLACKLIST_ACTIVATION';
@@ -953,6 +961,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ES_PRICING_KEY_SET                        = 'ES_PRICING_KEY_SET';
     const ES_PRICING_MERCHANT_KEY_SET               = 'ES_PRICING_MERCHANT_KEY_SET';
     const TERMINAL_CONFIG_FETCH_ERROR               = 'TERMINAL_CONFIG_FETCH_ERROR';
+    const PAYMENT_TERMINAL_CREATION_ERROR           = 'PAYMENT_TERMINAL_CREATION_ERROR';
     const PRICING_RULE_CONFIG_FETCH_ERROR           = 'PRICING_RULE_CONFIG_FETCH_ERROR';
 
     const MISC_TOSTRING_ERROR                       = 'MISC_TOSTRING_ERROR';
@@ -1073,6 +1082,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FRAUD_DETECTION_SKIPPED                       = 'FRAUD_DETECTION_SKIPPED';
 
     const BATCH_FILE_DELETE_ERROR                       = 'BATCH_FILE_DELETE_ERROR';
+
+    const ADMIN_FILE_DELETE_ERROR                       = 'ADMIN_FILE_DELETE_ERROR';
 
     const MUTEX_LOCK_ALREADY_RELEASED                   = 'MUTEX_LOCK_ALREADY_RELEASED';
     const MUTEX_UNABLE_TO_ACQUIRE                       = 'MUTEX_UNABLE_TO_ACQUIRE';
@@ -1264,6 +1275,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DISPUTE_FILE_CREATE                           = 'DISPUTE_FILE_CREATE';
     const DISPUTE_FILES_UPLOAD                          = 'DISPUTE_FILES_UPLOAD';
 
+    const ADMIN_FILES_UPLOAD                            = 'ADMIN_FILES_UPLOAD';
+
     const ACCESS_MAP_UPDATE_REQUEST                     = 'ACCESS_MAP_UPDATE_REQUEST';
     const ACCESS_MAP_UPDATE_ERROR                       = 'ACCESS_MAP_UPDATE_ERROR';
 
@@ -1286,8 +1299,15 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_ACCOUNT_UPDATE_REQUEST                   = 'FUND_ACCOUNT_UPDATE_REQUEST';
     const FUND_ACCOUNT_DELETE_REQUEST                   = 'FUND_ACCOUNT_DELETE_REQUEST';
     // Trace codes for Fund Account Validation
-    const FUND_ACCOUNT_VALIDATION_CREATE_TRANSACTION    = 'FUND_ACCOUNT_VALIDATION_CREATE_TRANSACTION';
     const FUND_ACCOUNT_VALIDATION_REQUEST               = 'FUND_ACCOUNT_VALIDATION_REQUEST';
+    const BENEFICIARY_NAME_NOT_PRESENT                  = 'BENEFICIARY_NAME_NOT_PRESENT';
+    const FUND_ACCOUNT_VALIDATION_CREATE_TRANSACTION    = 'FUND_ACCOUNT_VALIDATION_CREATE_TRANSACTION';
+    const FUND_ACCOUNT_VALIDATION_TRANSACTION_FAILED    = 'FUND_ACCOUNT_VALIDATION_TRANSACTION_FAILED';
+
+    // Trace codes for Post FTA Processing
+    const UPDATE_STATUS_AFTER_FTA_RECON                 = 'UPDATE_STATUS_AFTER_FTA_RECON';
+    const UPDATE_STATUS_AFTER_FTA_INITIATED             = 'UPDATE_STATUS_AFTER_FTA_INITIATED';
+    const UPDATE_WITH_DETAILS_BEFORE_FTA_RECON          = 'UPDATE_WITH_DETAILS_BEFORE_FTA_RECON';
 
     // Trace code for Merchant Invoices
     const MERCHANT_INVOICE_ENTITY_CREATION_FAILED       = 'MERCHANT_INVOICE_ENTITY_CREATION_FAILED';
@@ -1690,6 +1710,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::REFUND_RETRY_INITIATED                    => 'Retry of failed refunds initiated',
         self::REFUND_RETRY_RESULT                       => 'Result of failed refunds retry.',
 
+        //Fund Account Validation Messages
+        self::FUND_ACCOUNT_VALIDATION_TRANSACTION_FAILED    => 'Transaction failed to create for Fund Account validation',
+
         self::TRANSACTION_MIGRATION_TAX_MISTMATCH       => 'Mismatch in the tax calculation during migration',
         self::TRANSACTION_MIGRATION_FEE_MISTMATCH       => 'Mismatch in the fees calculation during migration',
         self::PRICING_RULE_MISTMATCH                    => 'Mismatch in the pricing rule during migration',
@@ -1708,6 +1731,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::PAYMENT_TRANSFER_VALIDATION_FAILED        => 'Transfer failed while validating transfer amount',
         self::CREATE_MERCHANT_DETAIL_FAILED             => 'Merchant Detail creation failed',
         self::MERCHANT_ONBOARD_REQUEST                  => 'Merchant onboarding request initiated',
+        self::MERCHANT_ONBOARD_REQUEST_FAILED           => 'Merchant onboarding request failed',
+        self::MERCHANT_ONBOARD_INDEX_ABOVE_THRESHOLD    => 'Merchant onboarding index above the set threshold',
+        self::MERCHANT_ONBOARD_INDEX_OUT_OF_BOUND       => 'Merchant onboarding index above the limit',
+        self::PAYMENT_TERMINAL_CREATION_ERROR           => 'Payments terminal creation error',
         self::SUBSCRIPTION_PAYMENT_AUTHORIZE_FAILED     => 'Subscription payment authorization failed',
         self::SUBSCRIPTION_STATE_UNEXPECTED             => 'Unexpected state of subscription',
         self::SUBSCRIPTION_LATE_AUTH_NO_AUTO_CAPTURE    => 'Not capturing late auth subscription payment',

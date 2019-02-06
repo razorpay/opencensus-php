@@ -250,7 +250,8 @@ return [
     ],
 
     'beam' => [
-        'url' => env('BEAM_URL')
+        'url'  => env('BEAM_URL'),
+        'mock' => env('BEAM_MOCK', false),
     ],
 
     'subscriptions' => [

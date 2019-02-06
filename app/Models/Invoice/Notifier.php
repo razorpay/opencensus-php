@@ -7,6 +7,7 @@ use Config;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Mail\Invoice as InvoiceMail;
@@ -146,6 +147,13 @@ class Notifier extends Base\Core
 
     public function emailInvoiceExpiredToCustomer(): bool
     {
+        $merchant = $this->invoice->merchant;
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::INVOICE_NO_EXPIRY_EMAIL) === true)
+        {
+            return false;
+        }
+
         $customerEmail = $this->invoice->getCustomerEmail();
 
         $this->trace->info(

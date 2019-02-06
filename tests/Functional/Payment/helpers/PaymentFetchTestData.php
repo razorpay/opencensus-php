@@ -20,6 +20,48 @@ return [
         ],
     ],
 
+    'testFetchRuleCascadingForAdminAuthRestricted' => [
+        'request' => [
+            'url'     => '/admin/payment',
+            'method'  => 'get',
+            'content' => [
+                'status' => 'created',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+            ],
+        ],
+    ],
+
+    'testFetchForAdminAuthRestrictedFilterAcquirerData' => [
+        'request' => [
+            'url'     => '/admin/payment',
+            'method'  => 'get',
+            'content' => [
+                'acquirer_data' => '1234',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'amount' => 1000000,
+                        'currency' => "INR",
+                        'status' => "created",
+                        'acquirer_data' => [
+                            'bank_transaction_id' => "1234"
+                        ],
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testFetchRuleVPAFilterForAdminAuth' => [
         'request' => [
             'url'     => '/admin/payment',

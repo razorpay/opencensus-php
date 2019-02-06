@@ -15,6 +15,7 @@ use RZP\Models\Reversal;
 use RZP\Models\Transaction;
 use RZP\Models\Base\Traits\NotesTrait;
 use Razorpay\Spine\DataTypes\Dictionary;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Payment\Refund\Metric as RefundMetric;
 
 /**

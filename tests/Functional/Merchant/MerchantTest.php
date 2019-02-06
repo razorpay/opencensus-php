@@ -3721,9 +3721,7 @@ class MerchantTest extends TestCase
 
     public function testSearchWithDateFilter()
     {
-        $esMock = $this->createEsMock(['search']);
-
-        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
 
         $this->ba->adminAuth();
 
@@ -3752,9 +3750,7 @@ class MerchantTest extends TestCase
      */
     public function testESQueryAfterSync()
     {
-        $esMock = $this->createEsMock(['bulkUpdate']);
-
-        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock, 'bulkUpdate');
+        $this->createEsMockAndSetExpectations(__FUNCTION__, 'bulkUpdate');
 
         $this->CreateBalanceEntities();
 

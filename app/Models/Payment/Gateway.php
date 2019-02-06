@@ -94,6 +94,7 @@ class Gateway
     const ACQUIRER_AMEX         = 'amex';
     const ACQUIRER_FSS          = 'fss';
     const ACQUIRER_RATN         = 'ratn';
+    const ACQUIRER_YESB         = 'yesb';
     const ACQUIRER_BARB         = 'barb';
 
     const NOT_SUPPORTED      = 'not_supported';
@@ -179,6 +180,7 @@ class Gateway
         self::NETBANKING_ICICI  => self::ICICI,
         self::NETBANKING_RBL    => self::RBL,
         self::NETBANKING_AXIS   => self::AXIS,
+        self::PAYTM             => self::PAYTM,
     ];
 
     /**
@@ -538,6 +540,7 @@ class Gateway
         '9ncOh0EZ8sC9z9',
         '9hefgkvGhT18Q9',
         'BbaYzzPW541Aut',
+        '80oXBj51MHGmwH',
     ];
 
     public static $channels = [
@@ -1104,6 +1107,7 @@ class Gateway
         Gateway::NETBANKING_HDFC,
         Gateway::NETBANKING_AXIS,
         Gateway::ENACH_RBL,
+        Gateway::ENACH_NPCI_NETBANKING,
     ];
 
     /**

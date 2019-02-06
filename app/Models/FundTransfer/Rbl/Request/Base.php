@@ -30,7 +30,7 @@ abstract class Base extends ApiProcessor
     const PAYMENT_DATE          = 'payment_date';
     const RRN                   = 'rrn';
     const REFERENCE_NUMBER      = 'reference_number';
-    const REMARK                = 'remark';
+    const REMARKS               = 'remarks';
     const PUBLIC_FAILURE_REASON = 'public_failure_reason';
 
     protected $baseUrl;

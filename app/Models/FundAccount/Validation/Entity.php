@@ -9,6 +9,10 @@ use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\FundAccount\Entity as FundAccount;
 use RZP\Models\Transaction\Entity as Transaction;
 
+/**
+ * @property FundAccount fundAccount
+ * @property mixed merchant
+ */
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;
@@ -70,8 +74,6 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::FUND_ACCOUNT,
         self::STATUS,
-        self::FEES,
-        self::TAX,
         self::AMOUNT,
         self::CURRENCY,
         self::NOTES,
@@ -137,6 +139,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT, $amount);
     }
 
+    public function setCurrency(string $currency)
+    {
+        $this->setAttribute(self::CURRENCY, $currency);
+    }
+
     public function setTax(int $tax)
     {
         $this->setAttribute(self::TAX, $tax);
@@ -196,6 +203,26 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT);
     }
 
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
+    }
+
+    public function getTax()
+    {
+        return $this->getAttribute(self::TAX);
+    }
+
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
+    public function getFees()
+    {
+        return $this->getAttribute(self::FEES);
+    }
+
     public function getAccountStatus()
     {
         return $this->getAttribute(self::ACCOUNT_STATUS);
@@ -209,6 +236,11 @@ class Entity extends Base\PublicEntity
     public function getBatchFundTransferId()
     {
         return $this->getAttribute(self::BATCH_FUND_TRANSFER_ID);
+    }
+
+    public function getFundAccountType()
+    {
+        return $this->getAttribute(self::FUND_ACCOUNT_TYPE);
     }
 
     // ------------ Mocked Setters ---------
@@ -240,23 +272,8 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FUND_ACCOUNT_TYPE);
     }
 
-    public function getTax()
-    {
-        $this->getAttribute(self::TAX);
-    }
-
-    public function getStatus()
-    {
-        $this->getAttribute(self::STATUS);
-    }
-
-    public function getFees()
-    {
-        $this->getAttribute(self::FEES);
-    }
-
     public function isStatusFailed()
     {
-        return ($this->getAccountStatus() === Status::INVALID);
+        return ($this->getAccountStatus() === AccountStatus::INVALID);
     }
 }

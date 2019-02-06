@@ -199,6 +199,22 @@ class Validator extends Base\Validator
         OMHelper::REDIRECT_URI => 'required|url',
     ];
 
+    protected static $fundAccountTypeRowRules = [
+        Header::FUND_ACCOUNT_USE_EXISTING => 'required|string|in:1,0',
+        Header::FUND_ACCOUNT_TYPE         => 'required|string|in:bank_account,vpa',
+        Header::FUND_ACCOUNT_NAME         => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
+        Header::FUND_ACCOUNT_IFSC         => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
+        Header::FUND_ACCOUNT_NUMBER       => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
+        Header::FUND_ACCOUNT_VPA          => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',vpa|nullable|string',
+        Header::CONTACT_ID                => 'sometimes|nullable|public_id|size:19',
+        Header::CONTACT_TYPE              => 'required_without:'.Header::CONTACT_ID.'|nullable|string',
+        Header::CONTACT_NAME_2            => 'required_without:'.Header::CONTACT_ID.'|nullable|string',
+        Header::CONTACT_EMAIL_2           => 'sometimes|nullable|string',
+        Header::CONTACT_MOBILE_2          => 'sometimes|nullable|string',
+        Header::CONTACT_REFERENCE_ID      => 'sometimes|nullable|string',
+        Header::NOTES                     => 'sometimes|nullable|notes',
+    ];
+
     protected function validateType($attribute, $value)
     {
         Type::validateType($value);
@@ -465,89 +481,35 @@ class Validator extends Base\Validator
      *
      * @throws BadRequestException
      */
-    protected function validatePaymentLinkEntries(
-        array & $entries,
-        array $params,
-        ME $merchant)
+    protected function validatePaymentLinkEntries(array & $entries, array $params, ME $merchant)
     {
-        // Skip the pre validation for payment links to reduce the execution time
-        // to support large files
-        // TODO:
-        // move this to async
+        // Skip the pre validation for payment links to reduce the execution time to support large files.
+        // TODO: Move this to async!
         if (count($entries) > Constants::ROW_LEVEL_VALIDATION_THRESHOLD)
         {
             return;
         }
 
-        // TODO: Use validateEntriesWithPublicExceptionHandled() method.
+        //
+        // Instead of new Validator instance, we get validator out of a dummy invoice entity having
+        // Merchant\Entity associated. This is required for custom validations run in create rules
+        // which uses merchant's max payment amount configurations etc.
+        //
+        $validator = (new Invoice\Entity)
+                        ->merchant()
+                        ->associate($merchant)
+                        ->getValidator();
 
-        // Associative array with index as input file's row index and values
-        // as the error message.
-
-        $errorCount = 0;
-
-        foreach ($entries as $idx => $entry)
+        $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry) use ($validator)
         {
-            //
-            // This whole block needs to be in try..catch as following line may
-            // also throw bad request exception per row while parsing human readable
-            // date time values as epoch.
-            //
-            try
-            {
-                $input = Helpers\PaymentLink::getEntityInput($entry, $params);
+            $input = Helpers\PaymentLink::getEntityInput($entry);
 
-                $rule = Invoice\Validator::CREATE_DRAFT;
+            $rule = $input[Invoice\Entity::DRAFT] === '0' ?
+                Invoice\Validator::CREATE_ISSUED :
+                Invoice\Validator::CREATE_DRAFT;
 
-                if ($input[Invoice\Entity::DRAFT] === '0')
-                {
-                    $rule = Invoice\Validator::CREATE_ISSUED;
-                }
-
-                //
-                // Need to create dummy entity and associate merchant for
-                // the validation around max allowed payment to happen.
-                //
-                $invoice = new Invoice\Entity;
-
-                $invoice->merchant()->associate($merchant);
-
-                $invoice->getValidator()->validateInput($rule, $input);
-
-                $error = [
-                    Header::ERROR_CODE          => null,
-                    Header::ERROR_DESCRIPTION   => null,
-                ];
-
-                $entries[$idx] = ($entry + $error);
-            }
-            catch (BaseException $e)
-            {
-                $errorCount++;
-
-                $error = [
-                    Header::ERROR_CODE          => $e->getError()->getPublicErrorCode(),
-                    Header::ERROR_DESCRIPTION   => $e->getError()->getDescription(),
-                ];
-
-                $entries[$idx] = ($entry + $error);
-            }
-            finally
-            {
-                unset($invoice);
-            }
-
-            if (($errorCount > 0) and ($this->entity->isCreatedByFileUpload() === true))
-            {
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_BATCH_PAYMENT_LINK_FILE_ERRORS,
-                    Entity::FILE,
-                    [
-                        'count'         => $errorCount,
-                        'merchant_id'   => $merchant->getId(),
-                    ]);
-            }
-        }
+            $validator->validateInput($rule, $input);
+        });
     }
 
     protected function validateVirtualBankAccountEntries(array & $entries, array $params, ME $merchant)
@@ -691,6 +653,14 @@ class Validator extends Base\Validator
         });
     }
 
+    protected function validateFundAccountEntries(array & $entries, array $params, ME $merchant)
+    {
+        $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
+        {
+            $this->validateInput('fundAccountTypeRow', $entry);
+        });
+    }
+
     protected function validateEntriesWithPublicExceptionHandled(array & $entries, \Closure $validator)
     {
         // Indexed errors map against row number.
@@ -716,11 +686,16 @@ class Validator extends Base\Validator
             $entries[$seq] += $error;
         }
 
+        $errorsCount = count($errors);
+
         // If request done via earlier direct upload flow (instead of validation flow), throw 4XX.
-        if ((count($errors) > 0) and ($this->entity->isCreatedByFileUpload() === true))
+        if (($errorsCount > 0) and ($this->entity->isCreatedByFileUpload() === true))
         {
             throw new BadRequestValidationFailureException(
-                sprintf('There are validation errors in %s number of rows in file', count($errors)),
+                sprintf(
+                    'There are validation errors in %s %s of the file',
+                    $errorsCount,
+                    $errorsCount === 1 ? 'row' : 'rows'),
                 Entity::FILE,
                 array_slice($errors, 0, 15, true));
         }

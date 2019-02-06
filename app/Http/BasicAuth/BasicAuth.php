@@ -7,7 +7,6 @@ use Config;
 use ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
-use Razorpay\OAuth\Client as OAuthClient;
 
 use RZP\Exception;
 use RZP\Http\Route;
@@ -25,6 +24,8 @@ use RZP\Exception\LogicException;
 use RZP\Models\User\Entity as User;
 use RZP\Models\User\Service as UserService;
 use RZP\Models\Merchant\Account\Entity as Account;
+
+use Razorpay\OAuth\Client as OAuthClient;
 
 /**
  * Class BasicAuth

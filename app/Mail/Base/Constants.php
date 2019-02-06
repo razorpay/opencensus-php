@@ -30,6 +30,7 @@ class Constants
     const FRESHDESK         = 'freshdesk';
     const PARTNERSHIPS      = 'partnerships';
     const APPROVALS_OAUTH   = 'approvals_oauth';
+    const BANK_DISPUTE_FILE = 'dispute_file_upload';
 
     const MAIL_ADDRESSES = [
         self::SUPPORT           => 'support@razorpay.com',
@@ -57,6 +58,7 @@ class Constants
         self::FRESHDESK         => 'rzr05py08emsp@razorpay.com',
         self::PARTNERSHIPS      => 'partnerships@razorpay.com',
         self::APPROVALS_OAUTH   => 'approvals.oauth@razorpay.com',
+        self::BANK_DISPUTE_FILE => 'chargebacks@razorpay.com',
     ];
 
     const HEADERS = [
@@ -78,5 +80,6 @@ class Constants
         self::FRESHDESK         => 'Team Razorpay',
         self::PARTNERSHIPS      => 'Partnerships',
         self::APPROVALS_OAUTH   => 'Approvals OAuth',
+        self::BANK_DISPUTE_FILE => 'Bank Dispute File',
     ];
 }

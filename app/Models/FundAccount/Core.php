@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundAccount;
 
+use RZP\Exception;
 use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -16,6 +17,13 @@ use RZP\Exception\LogicException;
  */
 class Core extends Base\Core
 {
+    /**
+     * @param array $input
+     * @param Merchant\Entity $merchant
+     * @param Base\PublicEntity|null $source
+     * @return Entity
+     * @throws Exception\BaseException
+     */
     public function create(array $input, Merchant\Entity $merchant, Base\PublicEntity $source = null): Entity
     {
         $fundAccount = (new Entity)->build($input);
@@ -84,5 +92,16 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::FUND_ACCOUNT_DELETE_REQUEST, ['id' => $fundAccount->getId()]);
 
         return $this->repo->deleteOrFail($fundAccount);
+    }
+
+    /**
+     * @param string $id
+     * @param Merchant\Entity $merchant
+     * @return Entity
+     * @throws Exception\BaseException, if id is not found
+     */
+    public function findByPublicIdAndMerchant(string $id, Merchant\Entity $merchant): Entity
+    {
+        return $this->repo->fund_account->findByPublicIdAndMerchant($id, $merchant);
     }
 }

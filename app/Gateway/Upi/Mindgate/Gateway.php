@@ -221,7 +221,7 @@ class Gateway extends Base\Gateway
      * @param array $response
      * @throws Exception\GatewayErrorException
      */
-    private function checkRefundResponseStatus(string $status, string $successStatus = Status::SUCCESS, array $response = [])
+    private function checkRefundResponseStatus(string $status, string $successStatus = Status::REFUND_SUCCESS, array $response = [])
     {
         if ($status !== $successStatus)
         {
@@ -1003,6 +1003,12 @@ class Gateway extends Base\Gateway
                                    ->toArray();
         }
 
+        if (($content[ResponseFields::RESPCODE] === '00') and
+            ($content[ResponseFields::STATUS] !== Status::REFUND_SUCCESS))
+        {
+            $this->checkRefundResponseStatus($content[ResponseFields::STATUS], Status::REFUND_SUCCESS, $content);
+        }
+
         if (($content[ResponseFields::STATUS] === Status::FAILURE) or
             ($content[ResponseFields::STATUS] === Status::REFUND_FAILED))
         {
@@ -1011,7 +1017,7 @@ class Gateway extends Base\Gateway
                                    ->toArray();
         }
 
-        $this->checkRefundResponseStatus($content[ResponseFields::STATUS], Status::SUCCESS, $content);
+        $this->checkRefundResponseStatus($content[ResponseFields::STATUS], Status::REFUND_SUCCESS, $content);
     }
 
     private function checkGatewaySuccess(Verify $verify)
