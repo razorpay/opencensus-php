@@ -72,23 +72,15 @@ class Service extends Base\Service
             $lockResource,
             function () use ($gatewayProcessor, $merchant, $merchantDetail, $gatewayInput, $gateway) {
 
-                $gatewayInput = $gatewayProcessor->getInputValue($gatewayInput, $merchant);
+                $gatewayProcessor->checkDbConstraints($gatewayInput, $merchant);
 
-                $this->trace->info(
-                    TraceCode::MERCHANT_ONBOARD_REQUEST_DATA,
-                    [
-                        'merchant_id'   => $merchant->getId(),
-                        'gateway'       => $gateway,
-                        'gateway_input' => $gatewayInput,
-                    ]);
+                $gatewayInput = $gatewayProcessor->getInputValue($gatewayInput, $merchant);
 
                 $gatewayData = [
                     'merchant'         => $merchant,
                     'merchant_details' => $merchantDetail,
                     'gateway_input'    => $gatewayInput,
                 ];
-
-                $gatewayProcessor->checkDbConstraints($gatewayInput, $merchant);
 
                 try
                 {
@@ -144,11 +136,6 @@ class Service extends Base\Service
             }
         }
 
-        $this->trace->info(
-            TraceCode::MERCHANT_ONBOARD_CREATE_TERMINAL,
-            [
-                'merchant_id'   => $merchantId,
-            ]);
         return true;
     }
 

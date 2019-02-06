@@ -34,21 +34,7 @@ class GatewayProcessor extends BaseGatewayProcessor
     {
         $newIndex = $this->redis->incr(self::HITACHI_INDEX_KEY);
 
-        if ($newIndex > 99999)
-        {
-            $this->trace->info(
-                TraceCode::MERCHANT_ONBOARD_INDEX_OUT_OF_BOUND,
-                [
-                    'gateway'   => Constants::HITACHI,
-                ]);
-
-            throw new Exception\RuntimeException('Index value out of bound for hitachi terminal creation');
-        }
-
-        if ($newIndex > 80000)
-        {
-            $this->trace->critical(TraceCode::MERCHANT_ONBOARD_INDEX_ABOVE_THRESHOLD, ['gateway' => Constants::HITACHI]);
-        }
+        $this->checkValue($newIndex, $merchant);
 
         $newId = self::HITACHI_TID_OFFSET + $newIndex;
 
@@ -102,16 +88,37 @@ class GatewayProcessor extends BaseGatewayProcessor
         $terminalData[Entity::TYPE] = $type;
     }
 
+    private function checkValue($index, $merchant)
+    {
+        if ($index > 80000)
+        {
+            $this->trace->critical(TraceCode::MERCHANT_ONBOARD_INDEX_ABOVE_THRESHOLD, ['gateway' => Constants::HITACHI]);
+
+            $this->app['slack']->queue(
+                TraceCode::MERCHANT_ONBOARD_INDEX_ABOVE_THRESHOLD,
+                [
+                    'merchant_id'           => $merchant->getId(),
+                    'merchant_name'         => $merchant->getName(),
+                    'channel'               => Config::get('slack.channels.tech_alerts'),
+                    'username'              => 'alerts',
+                    'icon'                  => ':x:'
+                ]
+            );
+        }
+    }
+
     public function checkDbConstraints($input, $merchant)
     {
         $this->repo->beginTransactionAndRollback(
             function() use ($input, $merchant)
             {
+                $mcc = $input['mcc'] ?? $merchant->getCategory();
+
                 $terminalData = [
-                    'category'            => $input['mcc'],
+                    'category'            => $mcc,
                     'gateway'             => 'hitachi',
-                    'gateway_merchant_id' => $input['mid'],
-                    'gateway_terminal_id' => $input['tid'],
+                    'gateway_merchant_id' => '38RRR1000000000',
+                    'gateway_terminal_id' => '38RR1001',
                     'gateway_acquirer'    => 'ratn',
                     'currency'            => $input['currency_code'],
                 ];

@@ -79,7 +79,16 @@ class RazorXClient
 
         $this->callRazorXService($id, $featureFlag, $mode, $input);
 
-        return $this->getVariant();
+        $variant = $this->getVariant();
+        /*
+         * temp fix
+         * Issue : if razorx is used more than once in same request cycle,
+         * it will cache first request response and returns the same result in
+         * subsequent requests
+         */
+        $this->setVariant('');
+
+        return $variant;
     }
 
     protected function callRazorXService(string $id, string $featureFlag, string $mode, array $input = null)
