@@ -1,0 +1,100 @@
+#paymentpage-container #description
+  border-radius: 2px
+  border: 1px solid #e2e2e2
+
+  &.is-focused
+    border-color: $primary-color
+
+  .ql-toolbar
+    border: none
+    padding: 5px
+    border-bottom: 1px solid #e2e2e2
+
+    .ql-formats:last-of-type
+      margin-right: 0
+
+  .ql-header.ql-picker
+    .ql-picker-label, &.ql-expanded .ql-picker-label
+      border-radius: 2px
+      border: 1px solid #e2e2e2
+
+  .ql-color
+    &.ql-expanded
+      .ql-picker-label
+        border: none
+
+      .ql-picker-options::after
+        content: ''
+        position: absolute
+        border-left: 6px solid transparent
+        border-right: 6px solid transparent
+        border-bottom: 8px solid #fff
+        top: -5px
+        left: 7px
+
+    .ql-picker-options
+      width: 130px
+      padding: 4px 2px
+      margin: 4px 4px 4px 0
+      border: none
+      box-shadow: 6px 3px 24px 0 rgba(23,31,37,0.12)
+
+      .ql-picker-item
+        margin: 4px
+        border-radius: 50%
+        transition: 0.15s linear
+        border: none
+
+        &:hover
+          border: none
+          transform: scale(1.1)
+
+  .ql-tooltip
+    color: #fff
+    border: none
+    border-radius: 2px
+    background-color: #58666E
+    box-shadow: 3px -2px 8px 0 rgba(151,151,151,0.19)
+    padding: 8px
+    left: 50% !important
+    transform: translateX(-50%) !important
+
+    &::before
+      content: 'Enter Video URL'
+      display: block
+      font-size: 12px
+      font-weight: 600
+      line-height: 16px
+
+    &::after
+      content: ''
+      position: absolute
+      border-left: 6px solid transparent
+      border-right: 6px solid transparent
+      border-bottom: 8px solid #58666E
+      top: -5px
+      left: 50%
+      transform: translateX(-50%)
+
+    input
+      border-radius: 2px
+      border: none
+      height: 24px
+      color: #58666E
+      vertical-align: middle
+
+    .ql-action
+      background: $primary-color
+      color: #fff
+      border-radius: 2px
+      margin-left: 4px
+      padding: 0 12px
+      height: 24px
+      vertical-align: middle
+      font-size: 12px
+
+      &:after
+        margin: 0
+
+  #description-quill
+    border: none

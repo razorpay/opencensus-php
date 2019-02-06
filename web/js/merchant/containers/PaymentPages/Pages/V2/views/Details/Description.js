@@ -60,6 +60,14 @@ export default class extends React.PureComponent {
         }
       });
 
+      this.QUILL.on('selection-change', range => {
+        if (!range) {
+          this.setState({ isFocused: false });
+        } else {
+          this.setState({ isFocused: true });
+        }
+      });
+
       this.QUILL.getModule('toolbar').addHandler('image', () =>
         this.handleImageInsert()
       );
@@ -137,7 +145,10 @@ export default class extends React.PureComponent {
 
   render() {
     return (
-      <div id="description">
+      <div
+        id="description"
+        class={classList(this.state.isFocused && 'is-focused')}
+      >
         <div id="description-quill" />
       </div>
     );
