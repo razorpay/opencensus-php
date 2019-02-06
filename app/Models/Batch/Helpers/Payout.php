@@ -16,9 +16,9 @@ class Payout
     {
 
         // Call to validateAndTranslateAccountNumberForBanking() expect the key in snake case.
-        $entry['account_number'] = $entry[Batch\Header::ACCOUNT_NUMBER];
+        $entry['account_number'] = $entry[Header::ACCOUNT_NUMBER];
         // Optimization: Have a map of account number to balance id to avoid multiple read calls.
-        $this->merchant->getValidator()->validateAndTranslateAccountNumberForBanking($entry);
+        $merchant->getValidator()->validateAndTranslateAccountNumberForBanking($entry);
 
         $input = [
             PayoutModel\Entity::PURPOSE         => $entry[Header::PAYOUT_PURPOSE],

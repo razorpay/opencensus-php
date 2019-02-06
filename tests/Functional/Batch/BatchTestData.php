@@ -41,6 +41,24 @@ return [
         ],
     ],
 
+    'testCreateBatchOfPayoutType' => [
+        'request' => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'payout',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'batch',
+                'type'        => 'payout',
+                'status'      => 'created',
+                'total_count' => 2,
+            ],
+        ],
+    ],
+
     'testCreateBatchOfContactTypeRequestFileEntries' => [
         // Expected a new contact to be created.
         [
@@ -186,6 +204,53 @@ return [
             'Contact Reference Id'      => '',
             'notes[place]'              => 'Bangalore',
             'notes[code]'               => 'Xyz123',
+        ],
+    ],
+
+    'testCreateBatchOfPayoutTypeRequestFileEntries' => [
+        [
+            'Account Number'            => '2224440041626905',
+            'Payout Amount'             => 100,
+            'Payout Currency'           => 'INR',
+            'Payout Mode'               => 'NEFT',
+            'Payout Purpose'            => 'refund',
+            'Payout Reference Id'       => '',
+            'Fund Account Id'           => '',
+            'Fund Account Use Existing' => '1',
+            'Fund Account Type'         => 'bank_account',
+            'Fund Account Name'         => 'Jitendra',
+            'Fund Account Ifsc'         => 'SBIN0007105',
+            'Fund Account Number'       => '1234567890',
+            'Fund Account Vpa'          => '',
+            'Contact Type'              => 'vendor',
+            'Contact Name'              => 'Jitendra',
+            'Contact Email'             => 'jitendra@example.com',
+            'Contact Mobile'            => '9988998899',
+            'Contact Reference Id'      => '',
+            'notes[place]'              => 'Bangalore',
+            'notes[code]'               => 'Xyz123',
+        ],
+        [
+            'Account Number'            => '2224440041626905',
+            'Payout Amount'             => 1000,
+            'Payout Currency'           => 'INR',
+            'Payout Mode'               => 'NEFT',
+            'Payout Purpose'            => 'refund',
+            'Payout Reference Id'       => '',
+            'Fund Account Id'           => 'fa_000000000test1',
+            'Fund Account Use Existing' => '1',
+            'Fund Account Type'         => '',
+            'Fund Account Name'         => '',
+            'Fund Account Ifsc'         => '',
+            'Fund Account Number'       => '',
+            'Fund Account Vpa'          => '',
+            'Contact Type'              => '',
+            'Contact Name'              => '',
+            'Contact Email'             => '',
+            'Contact Mobile'            => '',
+            'Contact Reference Id'      => '',
+            'notes[place]'              => '',
+            'notes[code]'               => '',
         ],
     ],
 ];

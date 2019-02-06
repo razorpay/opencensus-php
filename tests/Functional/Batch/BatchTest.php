@@ -3,8 +3,10 @@
 namespace RZP\Tests\Functional\Batch;
 
 use RZP\Models\Vpa;
+use RZP\Models\Payout;
 use RZP\Models\BankAccount;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 
 /**
  * Class: BatchTest
@@ -14,6 +16,7 @@ use RZP\Tests\Functional\TestCase;
 class BatchTest extends TestCase
 {
     use BatchTestTrait;
+    use TestsBusinessBanking;
 
     public function setUp()
     {
@@ -83,6 +86,35 @@ class BatchTest extends TestCase
         // 2 + 1 (Existing)
         $this->assertCount(2 + 1, $vpas);
         $this->assertCount(2, $vpas->where(Vpa\Entity::ADDRESS, 'jitendrakkkk@upi'));
+    }
+
+    public function testCreateBatchOfPayoutType()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 5000);
+
+        $this->createContact();
+
+        $this->fixtures
+             ->fund_account
+             ->createBankAccount(
+                [
+                    'id'          => '000000000test1',
+                    'source_id'   => '1000010contact',
+                    'source_type' => 'contact',
+                ]);
+
+        $entries = $this->getFileEntries(__FUNCTION__);
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $this->startTest();
+
+        $payouts = $this->getDbEntities('payout');
+        $this->assertCount(2, $payouts);
+        $this->assertEquals(1100, $payouts->sum(Payout\Entity::AMOUNT));
+        $this->assertEquals('1234567890', $payouts->first()->fundAccount->account->getAccountNumber());
+        $this->assertEquals('Jitendra', $payouts->first()->fundAccount->contact->getName());
+        $this->assertEquals('fa_000000000test1', $payouts->last()->fundAccount->getPublicId());
+        $this->assertEquals('test user', $payouts->last()->fundAccount->contact->getName());
     }
 
     protected function getFileEntries(string $callee): array
