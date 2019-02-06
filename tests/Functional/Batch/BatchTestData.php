@@ -73,7 +73,7 @@ return [
         // Expected a new contact to be created.
         [
             'Contact Type'         => 'vendor',
-            'Contact Name'         => ' Mayur',
+            'Contact Name'         => 'Mayur',
             'Contact Email'        => 'mayur@example.com',
             'Contact Mobile'       => '9988998899',
             'Contact Reference Id' => '',

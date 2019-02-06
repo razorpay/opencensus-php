@@ -121,6 +121,7 @@ class Type
      * @var array
      */
     public static $kubernetesJobGroup = [
+        // Do not include PAYOUT, FUND_ACCOUNT & CONTACT because their implementation is not parallel execution ready.
         self::PAYMENT_LINK,
         self::CONTACT,
         self::FUND_ACCOUNT,
