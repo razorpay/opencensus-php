@@ -13,6 +13,7 @@ class RowProcessor extends BaseRowProcessor
     const REMARKS               = 'remarks';
     const SETTLEMENT_DATE       = 'settlement_date';
     const CMS_REFERENCE_NO      = 'cms_reference_no';
+    const NAME_WITH_BENE_BANK   = 'name_with_bene_bank';
 
     protected function processRow()
     {
@@ -25,6 +26,7 @@ class RowProcessor extends BaseRowProcessor
             self::REMARKS               => $this->getNullOnEmpty(Headings::STATUS_DESCRIPTION),
             self::SETTLEMENT_DATE       => $this->getNullOnEmpty(Headings::PAYMENT_RUN_DATE),
             self::CMS_REFERENCE_NO      => $this->getNullOnEmpty(Headings::BANK_REFERENCE_NUMBER),
+            self::NAME_WITH_BENE_BANK   => null,
         ];
 
         $this->reconEntityId = $this->parsedData[self::ATTEMPT_REFERENCE];

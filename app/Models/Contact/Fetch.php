@@ -49,13 +49,14 @@ class Fetch extends Base\Fetch
     const ES_FIELDS = [
         Entity::NAME,
         Entity::EMAIL,
+        Entity::CONTACT,
         EsRepository::QUERY,
         EsRepository::SEARCH_HITS,
     ];
 
     const COMMON_FIELDS = [
-        Entity::NAME,
-        Entity::EMAIL,
+        Entity::ACTIVE,
+        Entity::TYPE,
     ];
 
     const SIGNED_IDS = [

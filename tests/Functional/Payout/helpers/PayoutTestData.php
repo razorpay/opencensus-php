@@ -419,19 +419,16 @@ return [
     'testPayoutAttemptSuccess' => [
         'channel'        => 'yesbank',
         'version'        => 'V3',
-        'status'         => FundTransferAttemptStatus::INITIATED,
-        'utr'            => null,
+        'status'         => FundTransferAttemptStatus::PROCESSED,
         'remarks'        => '',
         'failure_reason' => null,
     ],
 
     'testPayoutEntitySuccess' => [
         'channel'        => 'yesbank',
-        'status'         => PayoutStatus::PROCESSING,
-        'utr'            => null,
+        'status'         => PayoutStatus::PROCESSED,
         'remarks'        => '',
         'failure_reason' => null,
-        'processed_at'   => null,
         'settled_on'     => null,
     ],
 

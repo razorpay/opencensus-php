@@ -1100,6 +1100,26 @@ return [
         ],
     ],
 
+    'testDisputeFetchForAdminRestricted'    => [
+        'request'   => [
+            'method'        => 'get',
+            'url'           => '/admin/dispute?expand[]=payment',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_ACCESS_DENIED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\BadRequestException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
+
     'testFetchMerchantDetails' => [
         'request' => [
             'method'  => 'get',

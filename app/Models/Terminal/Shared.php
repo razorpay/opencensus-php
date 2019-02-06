@@ -60,6 +60,7 @@ class Shared
     const CYBERSOURCE_HDFC_TERMINAL          = '1000CybrsTrmnl';
     const CYBERSOURCE_AXIS_TERMINAL          = '1000CybAxTrmnl';
     const HITACHI_TERMINAL                   = '100HitachiTmnl';
+    const HITACHI_DIRECT_TERMINAL            = '100HitaDirTmnl';
     const FIRST_DATA_RAZORPAY_TERMINAL       = '1000FrstDataTl';
     const UPI_MINDGATE_RAZORPAY_TERMINAL     = '100UPIMindgate';
     const UPI_MINDGATE_BQR_TERMINAL          = '100UPIMndgBqrT';

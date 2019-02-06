@@ -2,12 +2,16 @@
 
 namespace RZP\Services;
 
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\Entity;
+use RZP\Base\RepositoryManager;
+use RZP\Http\BasicAuth\BasicAuth;
+
 use Razorpay\Ufh\Client as UfhClient;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class UfhService
 {
@@ -42,7 +46,17 @@ class UfhService
 
     protected $env;
 
+    /** @var UfhClient  */
     protected $ufhClient;
+
+    /** @var  BasicAuth */
+    protected $ba;
+
+    /**
+     * Repository manager instance
+     * @var RepositoryManager
+     */
+    protected $repo;
 
     public function __construct($app)
     {
@@ -52,16 +66,25 @@ class UfhService
 
         $this->ba        = $app['basicauth'];
 
+        $this->repo      = $app['repo'];
+
         $this->config    = $app['config']['applications.ufh'];
+
+        $merchantId      = $this->ba->getMerchantId();
+
+        if (($this->ba->isAdminAuth() === true) && (empty($merchantId) === true))
+        {
+            $merchantId = $this->repo->merchant->getSharedAccount()->getId();
+        }
 
         $config = [
             'base_uri'      => $this->config['url'],
             'username'      => $this->config['auth']['username'],
             'password'      => $this->config['auth']['password'],
             'headers'       => [
-                'X-Merchant-Id' => $this->ba->getMerchantId(),
+                'X-Merchant-Id' => $merchantId,
             ],
-            'X-Merchant-Id' => $this->ba->getMerchantId(),
+            'X-Merchant-Id' => $merchantId,
         ];
 
         $this->ufhClient = new UfhClient($config);
@@ -167,6 +190,11 @@ class UfhService
                 ErrorCode::SERVER_ERROR_UFH_DELETE_SERVICE_FAILURE
             );
         }
+    }
+
+    public function getSignedUrl(string $fileId, array $params = [])
+    {
+        return $this->ufhClient->getSignedUrl($fileId, $params);
     }
 
     protected function validateResponse(array $res = null)

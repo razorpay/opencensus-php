@@ -7,11 +7,19 @@ use RZP\Constants;
 
 class Type
 {
-    const SETTLEMENT = Constants\Entity::SETTLEMENT;
-    const PAYOUT     = Constants\Entity::PAYOUT;
-    const REFUND     = Constants\Entity::REFUND;
+    const SETTLEMENT              = Constants\Entity::SETTLEMENT;
+    const PAYOUT                  = Constants\Entity::PAYOUT;
+    const REFUND                  = Constants\Entity::REFUND;
+    const FUND_ACCOUNT_VALIDATION = Constants\Entity::FUND_ACCOUNT_VALIDATION;
+
+    // Request Types to the bank
+    // based on these type interaction with nodal account may differ
+    const PRIMARY       = 'primary';
+    const BANKIING      = 'banking';
+    const SYNC          = 'sync';
 
     protected static $validTypes = [
+        self::FUND_ACCOUNT_VALIDATION,
         self::SETTLEMENT,
         self::PAYOUT,
         self::REFUND,

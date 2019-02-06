@@ -483,7 +483,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_ALREADY_REFUND_INITIATED                          = 'Refund already initiated';
     const BAD_REQUEST_PAYMENT_PROBLEM_IN_UPDATING                               = 'Problem in updating payment';
     const BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                          = 'The fees calculated for payment is greater than the payment amount. Please provide a higher amount';
-    const BAD_REQUEST_FUND_ACCOUNT_VALIDATION_FEES_GREATER_THAN_FEE_CREDITS     = 'The fees calculated for fund account validation is greater than the fee credits available.';
+    const BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INSUFFICIENT_BALANCE              = 'The fees calculated for fund account validation is greater than available fee credits or balance.';
     const BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED                               = 'Payment created long back and cannot be cancelled now';
     const BAD_REQUEST_PAYMENT_ALREADY_UNDER_DISPUTE                             = 'Payment already has an open dispute';
     const BAD_REQUEST_DISPUTE_AMOUNT_GREATER_THAN_PAYMENT_AMOUNT                = 'Disputed amount cannot be greater than payment amount';
@@ -498,7 +498,6 @@ class PublicErrorDescription
     const BAD_REQUEST_BATCH_FILE_INVALID_HEADERS                                = 'The uploaded file has invalid headers';
     const BAD_REQUEST_BATCH_FILE_EMPTY                                          = 'The uploaded file does not have any entries';
     const BAD_REQUEST_BATCH_FILE_DUPLICATE_PAYMENT_ID                           = 'The file should not have multiple entries for the same Payment Id';
-    const BAD_REQUEST_BATCH_PAYMENT_LINK_FILE_ERRORS                            = 'The uploaded batch payment link file does not contain proper values';
     const BAD_REQUEST_BATCH_FILE_ALREADY_PROCESSED                              = 'The uploaded file is already processed';
     const BAD_REQUEST_BATCH_FILE_UNDER_PROCESSING                               = 'The uploaded file is being processed';
     const BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS                       = 'Request failed because another operation on the batch is in progress';

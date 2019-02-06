@@ -31,9 +31,7 @@ class HitachiOnboardTest extends TestCase
         return [
             'gateway'                   => 'hitachi',
             'gateway_input'             => [
-                'mid'                           => '38RR00000000012',
-                'tid'                           => '38R00012',
-                'mcc'                           => '2345',
+                'mcc'                           => '1345',
                 'currency_code'                 => 'INR',
                 'trans_mode'                    => 'CARDS',
             ],
@@ -83,6 +81,42 @@ class HitachiOnboardTest extends TestCase
         $response = $this->onboard(null, $data);
 
         $this->assertEquals($response['error']['code'], 'BAD_REQUEST_ERROR');
+    }
+
+    public function testGatewayDoesntExist()
+    {
+        $this->createMerchants();
+
+        $data = $this->getDefaultInput();
+
+        $data['gateway'] = 'rzp';
+
+        $merchant = $this->merchantId;
+
+        $this->makeRequestAndCatchException(
+            function() use ($merchant, $data)
+            {
+                $this->onboard($merchant, $data);
+            },
+            \RZP\Exception\BadRequestValidationFailureException::class);
+    }
+
+    public function testGatewayImplementationDoesntExist()
+    {
+        $this->createMerchants();
+
+        $data = $this->getDefaultInput();
+
+        $data['gateway'] = 'upi_hulk';
+
+        $merchant = $this->merchantId;
+
+        $this->makeRequestAndCatchException(
+            function() use ($merchant, $data)
+            {
+                $this->onboard($merchant, $data);
+            },
+            \RZP\Exception\RuntimeException::class);
     }
 
     protected function onboard($id, $input)

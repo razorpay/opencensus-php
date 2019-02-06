@@ -163,6 +163,7 @@ abstract class Base extends BaseModel\Core
             return;
         }
 
+
         list($amountCredits, $feeCredits) = $this->getAvailableAmountOrFeeCredits();
 
         if (($totalFees > $amount) and

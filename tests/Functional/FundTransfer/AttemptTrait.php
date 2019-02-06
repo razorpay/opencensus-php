@@ -153,15 +153,18 @@ trait AttemptTrait
     protected function assertEntitiesAfterInitiateTransfer(
         string $channel, string $purpose, string $sourceType, int $sourceCount)
     {
+        $isFileBased = in_array($channel, Channel::getFileBasedChannels(), true);
         // Verify Batch
         $batch = $this->getLastEntity(Entity::BATCH_FUND_TRANSFER, true);
 
-        $batchTestData = 'testFileCreation' . ucfirst($sourceType);
+        $suffix = ($isFileBased === true) ? '' : 'Api';
+
+        $batchTestData = 'testFileCreation' . ucfirst($sourceType). $suffix;
         $this->assertTestResponse($batch, $batchTestData);
 
         $this->assertEquals($channel, $batch[Batch\Entity::CHANNEL]);
 
-        if (in_array($channel, Channel::getFileBasedChannels(), true) === true)
+        if ($isFileBased === true)
         {
             $this->assertNotNull($batch['urls']['file']);
             $this->assertNotNull($batch[Batch\Entity::TXT_FILE_ID]);
@@ -182,20 +185,25 @@ trait AttemptTrait
 
             if ($sourceType === Entity::PAYOUT)
             {
-                $expectedStatus = (empty($attempt['vpa_id']) === false) ?
-                    Payout\Status::PROCESSED :
-                    Payout\Status::PROCESSING;
+                $expectedStatus = ($isFileBased === false) ? Payout\Status::PROCESSED : Payout\Status::PROCESSING;
             }
 
             $this->assertEquals($expectedStatus, $source['status']);
         }
 
+
+        $expectedStatus = Attempt\Status::INITIATED;
+
+        if (in_array($channel, Channel::getApiBasedChannels(), true) === true)
+        {
+            $expectedStatus = Attempt\Status::PROCESSED;
+        }
         // Verify FTA
         $ftas = $this->getEntities('fund_transfer_attempt', ['count' => $sourceCount], true);
         foreach ($ftas['items'] as $fta)
         {
             $this->assertEquals($batch['id'], $fta['batch_fund_transfer_id']);
-            $this->assertEquals(Attempt\Status::INITIATED, $fta[Attempt\Entity::STATUS]);
+            $this->assertEquals($expectedStatus, $fta[Attempt\Entity::STATUS]);
         }
     }
 

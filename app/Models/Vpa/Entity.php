@@ -3,6 +3,7 @@
 namespace RZP\Models\Vpa;
 
 use RZP\Models\Base;
+use RZP\Base\BuilderEx;
 use RZP\Models\Merchant;
 
 class Entity extends Base\PublicEntity
@@ -110,5 +111,13 @@ class Entity extends Base\PublicEntity
     public function entity()
     {
         return $this->morphTo();
+    }
+
+    public function scopeAddress(BuilderEx $query, string $address)
+    {
+        list($username, $handle) = explode(self::AROBASE, $address);
+
+        $query->where(Entity::USERNAME, $username)
+              ->where(Entity::HANDLE, $handle);
     }
 }

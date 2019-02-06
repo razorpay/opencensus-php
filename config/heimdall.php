@@ -482,6 +482,9 @@ return [
             Permission::ES_WRITE_OPERATION           => [
                 'description' => 'Perform write operations on Elasticsearch',
             ],
+            Permission::ADMIN_FILE_UPLOAD            => [
+                'description' => 'Upload a bank file',
+            ],
         ],
 
         // Permissions
@@ -562,6 +565,9 @@ return [
             ],
             Permission::UPDATE_GATEWAY_DOWNTIME => [
                 'description' => 'Update Gateway Downtime',
+            ],
+            Permission::VIEW_GATEWAY_DOWNTIME => [
+                'description' => 'View Gateway Downtime',
             ],
         ],
 

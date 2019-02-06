@@ -182,15 +182,15 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The uploaded batch payment link file does not contain proper values',
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'There are validation errors in 1 row of the file',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_BATCH_PAYMENT_LINK_FILE_ERRORS,
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
