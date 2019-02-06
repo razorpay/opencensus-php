@@ -189,6 +189,27 @@ return [
         ],
     ],
 
+    'testFetchContactsByNameActiveAndType' => [
+        'request'  => [
+            'url'    => '/contacts',
+            'method' => 'GET',
+            'content' => [
+                'name'   => 'Test Contact',
+                'active' => 1,
+                'type'   => 'vendor',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [
+                ],
+            ]
+        ],
+    ],
+
+
     'testUpdateContact' => [
         'request'  => [
             'content' => [
@@ -221,46 +242,6 @@ return [
                 ],
             ],
             'status_code' => 400,
-        ],
-    ],
-
-    'testFetchContactsByPhone' => [
-        'request'  => [
-            'url'    => '/contacts?contact=8888888888',
-            'method' => 'GET'
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'collection',
-                'count'  => 1,
-                'items'  => [
-                    [
-                        'id'     => 'cont_1000004contact',
-                        'entity' => 'contact',
-                        'email'  => 'test@test4.com',
-                    ],
-                ],
-            ]
-        ],
-    ],
-
-    'testFetchContactsByName' => [
-        'request'  => [
-            'url'    => '/contacts?name=testContact',
-            'method' => 'GET'
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'collection',
-                'count'  => 1,
-                'items'  => [
-                    [
-                        'id'     => 'cont_1000005contact',
-                        'entity' => 'contact',
-                        'email'  => 'test@test4.com',
-                    ],
-                ],
-            ]
         ],
     ],
 
@@ -361,6 +342,129 @@ return [
                     ],
                 ],
             ]
+        ],
+    ],
+
+    'testFetchContactsByEmailExpectedSearchParams' => [
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'contact_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'contact_test',
+        'body'  => [
+            '_source' => false,
+            'from'    => 0,
+            'size'    => 10,
+            'query'   => [
+                'bool' => [
+                    'must' => [
+                        [
+                            'match' => [
+                                'email' => [
+                                    'query'                =>'random@test.com',
+                                    'boost'                => 2,
+                                    'minimum_should_match' => '75%',
+                                ],
+                            ],
+                        ],
+                    ],
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'term' => [
+                                        'merchant_id' => [
+                                            'value' => '10000000000000',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchContactsByEmailExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [
+                [
+                    '_id' => '1000002contact',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchContactsByNameActiveAndTypeExpectedSearchParams' => [
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'contact_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'contact_test',
+        'body'  => [
+            '_source' => false,
+            'from'    => 0,
+            'size'    => 10,
+            'query'   => [
+                'bool' => [
+                    'must' => [
+                        [
+                            'match' => [
+                                'name' => [
+                                    'query'                =>'test contact',
+                                    'boost'                => 2,
+                                    'minimum_should_match' => '75%',
+                                ],
+                            ],
+                        ],
+                    ],
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'term' => [
+                                        'active' => [
+                                            'value' => true,
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'term' => [
+                                        'type' => [
+                                            'value' => 'vendor',
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'term' => [
+                                        'merchant_id' => [
+                                            'value' => '10000000000000',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchContactsByNameActiveAndTypeExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [
+            ],
         ],
     ],
 ];

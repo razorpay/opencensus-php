@@ -392,6 +392,9 @@ return [
                 'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
             ],
+            'type' => [
+                'type' => 'keyword',
+            ],
             'created_at' => [
                 'type'   => 'date',
                 'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',

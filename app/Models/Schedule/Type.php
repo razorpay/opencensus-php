@@ -19,10 +19,8 @@ class Type
         self::SUBSCRIPTION,
     ];
 
-
     public static function isTypeValid(string $type):bool
     {
         return (in_array($type, self::TYPE_LIST, true) === true);
     }
-
 }

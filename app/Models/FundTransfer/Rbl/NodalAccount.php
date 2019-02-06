@@ -56,7 +56,7 @@ class NodalAccount extends NodalBase\NodalAccount
 
                 $this->repo->saveOrFail($entity);
 
-                $this->repo->saveOrFail($entity->source);
+                $this->postFtaInitiateProcess($entity);
 
                 $this->trackAttemptsInitiatedSuccess($this->channel, $this->purpose, $entity->getSourceType());
             }

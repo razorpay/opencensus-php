@@ -361,7 +361,7 @@ class Entity extends Base\PublicEntity
         self::HOLD_FUNDS             => 'bool',
         self::LINKED_ACCOUNT_KYC     => 'bool',
         self::HAS_KEY_ACCESS         => 'bool',
-        self::CATEGORY               => 'int',
+        self::CATEGORY               => 'string',
         self::RISK_THRESHOLD         => 'int',
         self::CONVERT_CURRENCY       => 'bool',
         self::AUTO_CAPTURE_LATE_AUTH => 'bool',
@@ -967,7 +967,7 @@ class Entity extends Base\PublicEntity
 
     protected function getCategoryAttribute()
     {
-        return (int) $this->attributes[self::CATEGORY];
+        return $this->attributes[self::CATEGORY];
     }
 
     protected function getBillingLabelAttribute()
@@ -1161,6 +1161,17 @@ class Entity extends Base\PublicEntity
     public function getRefundSource()
     {
         return $this->getAttribute(self::REFUND_SOURCE);
+    }
+
+    public function getContrastOfBrandColor()
+    {
+        $brandColor = $this->getBrandColorOrDefault();
+
+        $relativeLuminance = get_contrast_with_white(str_replace('#', '', $brandColor));
+
+        // similar as in checkout (instead of #000000 checkout has rgba(0, 0, 0, 0.85)),
+        return $relativeLuminance < 0.5 ? '#FFFFFF' : '#000000';
+
     }
 
     public function getFullLogoUrlWithSize($size = self::ORIGINAL_SIZE)

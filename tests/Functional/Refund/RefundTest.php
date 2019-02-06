@@ -118,6 +118,20 @@ class RefundTest extends TestCase
         $refund = $this->startTest($payment['id'], (string) $payment['amount']);
     }
 
+    public function testSuccessfulRefundOnCapturedPaymentWithVoidRefund()
+    {
+        $this->fixtures->merchant->addFeatures('void_refunds');
+
+        // With gateway that doesn't support reversal
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment');
+
+        $refund = $this->startTest($payment['id'], (string) $payment['amount']);
+    }
+
     public function testSuccessfulVoidRefund()
     {
         $this->fixtures->create('terminal:shared_hitachi_terminal', [
@@ -133,7 +147,7 @@ class RefundTest extends TestCase
 
         $this->gateway = 'hitachi';
 
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $this->fixtures->merchant->addFeatures('void_refunds');
 
@@ -1097,7 +1111,7 @@ class RefundTest extends TestCase
 
     public function testVerifyRefund()
     {
-        $this->markTestSkipped('HDFC on scrooge - verify Refund is called before first refund call - 
+        $this->markTestSkipped('HDFC on scrooge - verify Refund is called before first refund call -
         so verify refund related transaction is already created');
 
         // Case 1

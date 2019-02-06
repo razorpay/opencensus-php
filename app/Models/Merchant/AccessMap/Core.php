@@ -4,13 +4,16 @@ namespace RZP\Models\Merchant\AccessMap;
 
 use DB;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+
 use Razorpay\OAuth\Token;
+use Razorpay\OAuth\Application;
 use Razorpay\Trace\Logger as Trace;
-use Razorpay\OAuth\Application as OAuthApp;
 
 class Core extends Base\Core
 {
@@ -213,6 +216,50 @@ class Core extends Base\Core
                     Entity::UPDATED_AT      => $createdAt
                 ]
             );
+        }
+    }
+
+    public function getMerchantAppMapping(Merchant\Entity $merchant, Application\Entity $app)
+    {
+        $accessMap = $this->repo
+                          ->merchant_access_map
+                          ->findMerchantAccessMapOnEntityId($merchant->getId(), $app->getId(), Entity::APPLICATION);
+
+        return $accessMap;
+    }
+
+    /**
+     * @param Merchant\Entity    $merchant
+     * @param Application\Entity $app
+     *
+     * @return bool
+     */
+    public function isMerchantMappedToApplication(Merchant\Entity $merchant, Application\Entity $app) : bool
+    {
+        $accessMap = $this->getMerchantAppMapping($merchant, $app);
+
+        return (empty($accessMap) === false);
+    }
+
+    /**
+     * @param Merchant\Entity    $merchant
+     * @param Application\Entity $app
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateMerchantMappedToApplication(Merchant\Entity $merchant, Application\Entity $app)
+    {
+        $isMapped = $this->isMerchantMappedToApplication($merchant, $app);
+
+        if ($isMapped === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER,
+                null,
+                [
+                    'submerchant_id' => $merchant->getId(),
+                    'application_id' => $app->getId(),
+                ]);
         }
     }
 }

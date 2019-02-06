@@ -25,7 +25,7 @@ class EnstageGatewayTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['axis_express_pay']);
 
-        $this->mockTokenex();
+        $this->mockCardVault();
     }
 
     public function testSuccessfullyEnrolledCard()

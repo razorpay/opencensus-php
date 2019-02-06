@@ -21,6 +21,7 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\FundTransfer\Yesbank\NodalAccount;
 
 /**

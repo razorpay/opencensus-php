@@ -800,7 +800,7 @@ class OrderTest extends TestCase
 
     public function testPaymentWithOfferAppliedOnOrder()
     {
-        $this->mockTokenex();
+        $this->mockCardVault();
         $this->testCreateOrderWithOffer();
 
         $order = $this->getLastEntity('order', true);
@@ -900,7 +900,7 @@ class OrderTest extends TestCase
 
     public function testPaymentOnOfferWithNullMethod()
     {
-        $this->mockTokenex();
+        $this->mockCardVault();
         $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
 
         $offer = $this->fixtures->create('offer', [
@@ -995,7 +995,7 @@ class OrderTest extends TestCase
             'force_offer' => true,
         ]);
 
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $payment = $this->getDefaultPaymentArray();
         $payment['order_id'] = $order->getPublicId();
@@ -1069,7 +1069,7 @@ class OrderTest extends TestCase
     {
         $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
 
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $offer = $this->fixtures->create('offer', [
             'starts_at'     => Carbon::now(Timezone::IST)->subMonth()->timestamp,
@@ -1557,7 +1557,7 @@ class OrderTest extends TestCase
     {
         $this->fixtures->create('terminal:all_shared_terminals');
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-        $this->mockTokenex();
+        $this->mockCardVault();
     }
 
     protected function createOrderWithOfferAppliedAndGetPaymentArray($offer, array $additionalPaymentAttributes = [])

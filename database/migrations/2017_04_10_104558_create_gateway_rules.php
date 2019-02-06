@@ -91,6 +91,14 @@ class CreateGatewayRules extends Migration
             $table->string(Rule::CATEGORY2)
                   ->nullable();
 
+            $table->string(Rule::AUTHENTICATION_GATEWAY)
+                  ->nullable();
+
+            $table->string(Rule::AUTH_TYPE, 14)
+                  ->nullable();
+
+            $table->string(Rule::STEP);
+
             $table->text(Rule::COMMENTS)
                   ->nullable();
 

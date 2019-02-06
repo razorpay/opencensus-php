@@ -65,6 +65,18 @@ return [
         ],
     ],
 
+    'testSuccessfulRefundOnCapturedPaymentWithVoidRefund' => [
+        'request' => [
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'amount' => 50000,
+                'currency' => 'INR',
+            ],
+        ],
+    ],
+
     'testVoidRefundFeatureDeactivated' => [
         'request' => [
         ],

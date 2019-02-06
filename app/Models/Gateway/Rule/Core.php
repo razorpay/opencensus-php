@@ -160,7 +160,8 @@ class Core extends Base\Core
             // Here min_amount and max_amount are both set to payment_amount
             // as the final query will be min_amount <= payment_amount <= max_amount
             Entity::MIN_AMOUNT    => $payment->getAmount(),
-            Entity::MAX_AMOUNT    => $payment->getAmount()
+            Entity::MAX_AMOUNT    => $payment->getAmount(),
+            Entity::STEP          => Entity::AUTHORIZATION,
         ];
 
         $this->fillMethodSpecificDetails($params, $payment);
@@ -192,7 +193,7 @@ class Core extends Base\Core
                 // we set the method sa card both while fetching applicable rules
                 if (in_array($bank, Payment\Gateway::$emiBanksUsingCardTerminals, true) === true)
                 {
-                    $params[Entity::METHOD] = Payment\Method::CARD;
+                    $params[Entity::METHOD] = [Payment\Method::CARD, Payment\Method::EMI];
                 }
 
                 $params[Entity::METHOD_TYPE]    = $card->getType();

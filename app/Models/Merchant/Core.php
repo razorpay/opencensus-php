@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Monolog\Logger;
 use Razorpay\OAuth\Application as OAuthApp;
 
+use RZP\Exception;
 use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\User;
@@ -38,8 +39,8 @@ use RZP\Mail\Payout\Payout as PayoutMail;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use Razorpay\OAuth\Exception\DBQueryException;
+use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Models\Merchant\Request as MerchantRequest;
-use RZP\Models\Merchant\Balance\Core as BalanceCore;
 use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData;
 
 class Core extends Base\Core
@@ -110,12 +111,13 @@ class Core extends Base\Core
     }
 
     /**
-     * @param array     $input
-     * @param Entity    $aggregatorMerchant
-     * @param bool      $linkedAccount
-     * @param bool      $accountEntity
+     * @param array  $input
+     * @param Entity $aggregatorMerchant
+     * @param bool   $linkedAccount
+     * @param bool   $accountEntity
      *
-     * @return Entity|Account\Entity
+     * @return Account\Entity|Entity
+     * @throws BadRequestException
      */
     public function createSubMerchant(
         array $input,
@@ -148,16 +150,12 @@ class Core extends Base\Core
 
         $subMerchant->setAuditAction(Action::CREATE_SUBMERCHANT);
 
-        $subMerchant->setPricingPlan($aggregatorMerchant->getPricingPlanId());
+        $this->assignSubMerchantPricingPlan($aggregatorMerchant, $subMerchant, $linkedAccount);
 
         // The parent Id has to be linked only when it's a marketplace
         // If both market place and referral are present when creating a referral account we should not link parentId.
         if ($aggregatorMerchant->isMarketplace() === true and $linkedAccount === true)
         {
-            // Use Startup Plan as the default for linked accounts
-            // where transfer method pricing is 0
-            $subMerchant->setPricingPlan(Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID);
-
             $subMerchant->setMaxPaymentAmount($aggregatorMerchant->getMaxPaymentAmount());
 
             $subMerchant->parent()->associate($aggregatorMerchant);
@@ -180,6 +178,37 @@ class Core extends Base\Core
         $this->syncHeimdallRelatedEntities($subMerchant, $input);
 
         return $subMerchant;
+    }
+
+    /**
+     * @param Entity $merchant
+     * @param Entity $subMerchant
+     * @param bool   $linkedAccount
+     *
+     * @throws BadRequestException
+     * @throws Exception\LogicException
+     */
+    protected function assignSubMerchantPricingPlan(Entity $merchant, Entity $subMerchant, bool $linkedAccount = false)
+    {
+        // assign parent pricing plan by default
+        $pricingPlan = $merchant->getPricingPlanId();
+
+        // Use Startup Plan as the default for linked accounts where transfer method pricing is 0
+        if (($merchant->isMarketplace() === true) and ($linkedAccount === true))
+        {
+            $pricingPlan = Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID;
+        }
+        elseif ($merchant->isPartner() === true)
+        {
+            // for partner, assign based on config defined on partner, if available
+            $application = $this->getInternalPartnerApp($merchant);
+
+            $config      = (new PartnerConfig\Core)->fetch($application);
+
+            $pricingPlan = optional($config)->getDefaultPlanId() ? :  $pricingPlan;
+        }
+
+        $subMerchant->setPricingPlan($pricingPlan);
     }
 
     protected function addMerchantSupportingEntities(Entity $merchant)
@@ -314,6 +343,8 @@ class Core extends Base\Core
     {
         $merchant->setAuditAction(Action::EDIT_MERCHANT);
 
+        $input = $this->modifyEditInput($input);
+
         $merchant->edit($input);
 
         $plan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($merchant->getPricingPlanId());
@@ -345,6 +376,16 @@ class Core extends Base\Core
         }
 
         return $merchant;
+    }
+
+    public function modifyEditInput(array $input): array
+    {
+        if (array_key_exists('category', $input))
+
+        {
+            $input['category'] = (string) $input['category'];
+        }
+        return $input;
     }
 
     /**
@@ -914,8 +955,9 @@ class Core extends Base\Core
      *
      * @param Entity $merchant
      *
-     * @return mixed
+     * @return OAuthApp\Entity
      * @throws BadRequestException
+     * @throws Exception\LogicException
      */
     public function getInternalPartnerApp(Entity $merchant)
     {
@@ -928,9 +970,9 @@ class Core extends Base\Core
         }
         catch (DBQueryException $ex)
         {
-            throw new BadRequestException(
+            throw new Exception\LogicException(
+                'Server error app not found',
                 ErrorCode::SERVER_ERROR_PARTNER_APP_NOT_FOUND,
-                null,
                 [
                     Entity::MERCHANT_ID => $merchant->getId(),
                 ]);
@@ -949,6 +991,8 @@ class Core extends Base\Core
      * @param Entity $merchant
      *
      * @return array
+     * @throws BadRequestException
+     * @throws Exception\LogicException
      */
     public function getPartnerApplicationIds(Entity $merchant): array
     {
@@ -1039,6 +1083,7 @@ class Core extends Base\Core
      *
      * @return array
      * @throws BadRequestException
+     * @throws Exception\LogicException
      */
     public function createPartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant): array
     {
@@ -1054,6 +1099,23 @@ class Core extends Base\Core
         $accessMap = $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant)
         {
             $partnerApp = $this->getInternalPartnerApp($partner);
+
+            $config     = (new PartnerConfig\Core)->fetch($partnerApp);
+
+            if (($config !== null) and
+                ($config->getDefaultPlanId() !== null) and
+                ($config->getDefaultPlanId() !== $submerchant->getPricingPlanId()))
+            {
+                // TODO: currently just logging, will have to send mail later to ops team
+                $this->trace->info(
+                    TraceCode::SUBMERCHANT_PLAN_DEFAULT_PLAN_NOT_EQUAL,
+                    [
+                        'partner_id'       => $partner->getId(),
+                        'submerchant_id'   => $submerchant->getId(),
+                        'submerchant_plan' => $submerchant->getPricingPlanId(),
+                        'default_plan'     => $config->getDefaultPlanId(),
+                    ]);
+            }
 
             // Maintained for backward compatibility
             $this->addSubMerchantReferral($partner, $submerchant);
@@ -1134,7 +1196,9 @@ class Core extends Base\Core
     /**
      * @param Entity $merchant
      *
-     * @return array
+     * @return OAuthApp\Entity|void
+     * @throws BadRequestException
+     * @throws Exception\LogicException
      */
     public function deletePartnerApp(Entity $merchant)
     {
@@ -1478,6 +1542,9 @@ class Core extends Base\Core
      * 3. All the mappings (merchant_users) that is currently allowing the partner user to access a submerchant.
      *
      * @param Entity $partner
+     *
+     * @throws BadRequestException
+     * @throws Exception\LogicException
      */
     protected function deleteSupportingEntities(Entity $partner)
     {

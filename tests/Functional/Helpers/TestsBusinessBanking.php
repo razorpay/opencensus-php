@@ -112,7 +112,10 @@ trait TestsBusinessBanking
     protected function reversePayout(Payout\Entity $payout)
     {
         // TODO: Fix this shit with proper fixtures
-        (new Payout\Core)->updateStatusAfterFtaRecon($payout, 'failed');
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status'     => 'failed',
+            'failure_reason' => '',
+        ]);
     }
 
     protected function createContact()

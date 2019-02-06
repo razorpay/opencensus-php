@@ -12,21 +12,24 @@ use Razorpay\OAuth\Application;
 use RZP\Mail\User\MappedToAccount;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
+use Functional\Partner\PartnerTrait;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Mail\User\LinkedAccountUserAccess;
-use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
+use RZP\Models\Partner\Config as PartnerConfig;
+use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use Razorpay\OAuth\Application\Entity as OAuthApp;
 use RZP\Mail\User\PasswordReset as PasswordResetMail;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use \RZP\Tests\Functional\Fixtures\Entity\Pricing as TestPricing;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 use RZP\Mail\Merchant\CreateSubMerchantPartner as CreateSubMerchantPartnerMail;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateMail;
 
 class MerchantCreateTest extends TestCase
 {
-    use OAuthTrait;
+    use PartnerTrait;
     use BatchTestTrait;
 
     public function setUp()
@@ -198,6 +201,7 @@ class MerchantCreateTest extends TestCase
         Mail::fake();
 
         $this->fixtures->merchant->addFeatures(['aggregator']);
+        $this->fixtures->merchant->editPricingPlanId(TestPricing::DEFAULT_PRICING_PLAN_ID);
 
         $user = $this->createUserMerchantMapping('10000000000000', 'owner');
 
@@ -224,6 +228,7 @@ class MerchantCreateTest extends TestCase
         $this->fixtures->merchant->addFeatures([
             FeatureConstants::AGGREGATOR,
             FeatureConstants::SETTLEMENT_24X7]);
+        $this->fixtures->merchant->editPricingPlanId(TestPricing::DEFAULT_PRICING_PLAN_ID);
 
         $user = $this->createUserMerchantMapping('10000000000000', 'owner');
 
@@ -281,6 +286,7 @@ class MerchantCreateTest extends TestCase
     public function testCreateSubMerchantWithEmail()
     {
         $this->fixtures->merchant->addFeatures(['aggregator']);
+        $this->fixtures->merchant->editPricingPlanId(TestPricing::DEFAULT_PRICING_PLAN_ID);
 
         $user = $this->createUserMerchantMapping('10000000000000', 'owner');
 
@@ -355,6 +361,12 @@ class MerchantCreateTest extends TestCase
 
         $app = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
 
+        $configAttributes = [
+            PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
+
         $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $this->startTest();
@@ -382,6 +394,14 @@ class MerchantCreateTest extends TestCase
         Mail::fake();
 
         $app = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
+
+        $configAttributes = [
+            PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
+
+        $config = $this->createConfigForPartnerApp($app->getId());
 
         $this->ba->proxyAuth('rzp_test_10000000000000');
 
@@ -417,6 +437,12 @@ class MerchantCreateTest extends TestCase
         Mail::fake();
 
         $app = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
+
+        $configAttributes = [
+            PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
 
         $user2 = $this->fixtures->create('user', ['email' => 'testsub@razorpay.com']);
 
@@ -456,6 +482,12 @@ class MerchantCreateTest extends TestCase
         Mail::fake();
 
         $app = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
+
+        $configAttributes = [
+            PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
 
         $this->ba->proxyAuth('rzp_test_10000000000000');
 
@@ -536,6 +568,12 @@ class MerchantCreateTest extends TestCase
 
         $app = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
 
+        $configAttributes = [
+            PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
+
         // TODO: Move to partner app post discussion on features in proxy auth
         $this->fixtures->merchant->addFeatures(['allow_sub_without_email']);
 
@@ -606,6 +644,8 @@ class MerchantCreateTest extends TestCase
 
         $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
 
+        $account = $this->fixtures->edit('merchant', $account->getId(), ['category' => '1100']);
+
         $this->ba->proxyAuth();
 
         $account = $account->toArrayPublic();
@@ -639,6 +679,8 @@ class MerchantCreateTest extends TestCase
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
+
+        $account = $this->fixtures->edit('merchant', $account->getId(), ['category' => '1100']);
 
         $user = $this->fixtures->create('user', ['email' => 'testing1@testing.com']);
 
@@ -781,6 +823,12 @@ class MerchantCreateTest extends TestCase
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $app = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
+
+        $configAttributes = [
+            PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
 
         $this->ba->proxyAuth('rzp_test_10000000000000');
 
@@ -998,16 +1046,6 @@ class MerchantCreateTest extends TestCase
         $this->testData[__FUNCTION__]['response']['content']['success'] = 0;
 
         $this->startTest();
-    }
-
-    protected function startTest($testDataToReplace = [])
-    {
-        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-        $name = $trace[1]['function'];
-
-        $testData = $this->testData[$name];
-
-        return $this->runRequestResponseFlow($testData);
     }
 
     protected function getLinkedAccountBatchFileEntries(): array

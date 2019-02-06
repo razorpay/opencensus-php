@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Enach\Npci\Netbanking;
+namespace RZP\Gateway\Enach\Npci\Netbanking\ErrorCodes;
 
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;

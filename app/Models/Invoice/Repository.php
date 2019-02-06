@@ -162,7 +162,7 @@ class Repository extends Base\Repository
      * @param  int $limit
      * @return Base\PublicCollection
      */
-    public function getIssuedAndPastExpiredByInvoices(int $limit = 10000): Base\PublicCollection
+    public function getIssuedAndPastExpiredByInvoices(int $limit = 5000): Base\PublicCollection
     {
         $now = Carbon::now(Timezone::IST)->getTimestamp();
 

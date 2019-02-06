@@ -15,6 +15,15 @@ use RZP\Models\Settlement\Channel;
  */
 class AdminFetch
 {
+    /**
+     * Entities allowed to restricted orgs' admins
+     *
+     * @var array
+     */
+    public static $restrictedEntities = [
+        Entity::PAYMENT,
+    ];
+
     public static function fields()
     {
         return Fetch::getCommonFields();
@@ -1257,6 +1266,10 @@ class AdminFetch
                     Fetch::LABEL  => 'App Token',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
+                'acquirer_data' => [
+                    Fetch::LABEL  => 'Bank Transaction Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
                 'amount' => [
                     Fetch::LABEL  => 'Amount',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
@@ -1282,6 +1295,10 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
                 'gateway' => Fetch::FIELD_GATEWAY,
+                'gateway_terminal_id' => [
+                    Fetch::LABEL  => 'Gateway Terminal Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
                 'global_token_id' => [
                     Fetch::LABEL  => 'Global Token Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,

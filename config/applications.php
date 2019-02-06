@@ -67,14 +67,6 @@ return [
         'password'  => env('MOZART_PASSWORD'),
     ],
 
-    'card_tokenex' => [
-        'mock'      => env('TOKENEX_MOCK', false),
-        'id'        => env('TOKENEX_ID'),
-        'key'       => env('TOKENEX_API_KEY'),
-        'url'       => env('TOKENEX_API_URL'),
-        'scheme'    => env('TOKENEX_TOKEN_SCHEME'),
-    ],
-
     'raven' => [
         'mock'      => env('RAVEN_MOCK', false),
         'url'       => env('RAVEN_URL'),
@@ -258,7 +250,8 @@ return [
     ],
 
     'beam' => [
-        'url' => env('BEAM_URL')
+        'url'  => env('BEAM_URL'),
+        'mock' => env('BEAM_MOCK', false),
     ],
 
     'subscriptions' => [

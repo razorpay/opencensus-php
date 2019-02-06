@@ -110,6 +110,12 @@ class Constants
     const S2S_OTP_JSON                    = 's2s_otp_json';
 
     /**
+     * This will control if the bank details will be returned in the fetch token response.
+     * Bank details will contain beneficiary_name, account_number, ifsc and account_type
+     */
+    const TOKEN_BANK_DETAILS              = 'token_bank_details';
+
+    /**
      * Skips uniqueness checks on the `receipt` attribute on invoice and payment links
      */
     const INVOICE_NO_RECEIPT_UNIQUE       = 'invoice_no_receipt_unique';
@@ -149,6 +155,11 @@ class Constants
      * Makes `receipt` a mandatory field for invoice creation
      */
     const INVOICE_RECEIPT_MANDATORY     = 'invoice_receipt_mandatory';
+
+    /**
+     * Do no send email on expiring/expired
+     */
+    const INVOICE_NO_EXPIRY_EMAIL       = 'invoice_no_expiry_email';
 
     // Different actions for feature activation flow
     const CREATE           = 'create';
@@ -291,7 +302,9 @@ class Constants
         self::S2S_OTP_JSON                    => true,
         self::FUND_ACCOUNT_VALIDATIONS        => true,
         self::DISABLE_REFUNDS                 => true,
+        self::TOKEN_BANK_DETAILS              => true,
         self::INVOICE_RECEIPT_MANDATORY       => true,
+        self::INVOICE_NO_EXPIRY_EMAIL         => true,
     ];
 
     // Entity type constants

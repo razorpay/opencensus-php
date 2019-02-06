@@ -6,6 +6,7 @@ use Config;
 use Requests_Hooks;
 use RZP\Exception\LogicException;
 use RZP\Models\Base as BaseModel;
+use RZP\Models\FundTransfer\Attempt\Type;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Base\Initiator\ApiProcessor;
 
@@ -19,19 +20,6 @@ abstract class Base extends ApiProcessor
     const BENE_BANK_MAX_LEN      = 128;
     const BENE_DEFAULT_NAME      = 'Not Available';
     const BENE_DEFAULT_BANK_NAME = 'bank';
-
-    // Identifiers used store the response data
-    const PAYMENT_REF_NO        = 'payment_ref_no';
-    const UTR                   = 'utr';
-    const BANK_STATUS_CODE      = 'bank_status_code';
-    const STATUS_CODE           = 'status_code';
-    const PAYMENT_DATE          = 'payment_date';
-    const BANK_SUB_STATUS_CODE  = 'sub_status_code';
-    const REFERENCE_NUMBER      = 'reference_number';
-    const REMARK                = 'remark';
-    const TRANSFER_TYPE         = 'transfer_type';
-    const MODE                  = 'mode';
-    const PUBLIC_FAILURE_REASON = 'public_failure_reason';
 
     protected $appId;
 
@@ -47,19 +35,19 @@ abstract class Base extends ApiProcessor
 
     protected $entity = null;
 
-    public function __construct(bool $banking = false)
+    protected $requestIdentifier;
+
+    protected $responseIdentifier;
+
+    protected $isRequestFailure = false;
+
+    public function __construct(string $type = null)
     {
         parent::__construct();
 
         $this->channel = Channel::YESBANK;
 
-        $this->config = Config::get('nodal.yesbank.primary');
-
-        if ($banking === true)
-        {
-            $this->config = Config::get('nodal.yesbank.banking');
-        }
-
+        $this->config = $this->loadNodalConfig($type);
 
         $this->appId = $this->config['app_id'];
 
@@ -76,6 +64,32 @@ abstract class Base extends ApiProcessor
         $this->version = '1';
 
         $this->init();
+    }
+
+    /**
+     * Loads config based on the type specified.
+     * If no type is provided then it load default configuration
+     * which is async nodal config
+     *
+     * @param string $type
+     * @return array
+     */
+    protected function loadNodalConfig(string $type): array
+    {
+        switch ($type)
+        {
+            case Type::PRIMARY:
+                return Config::get('nodal.yesbank.primary');
+
+            case Type::BANKIING:
+                return Config::get('nodal.yesbank.banking');
+
+            case Type::SYNC:
+                return Config::get('nodal.yesbank.sync');
+
+            default:
+                return Config::get('nodal.yesbank.primary');
+        }
     }
 
     protected function init()
@@ -124,7 +138,7 @@ abstract class Base extends ApiProcessor
 
         $options = [
             'hooks'     => $hooks,
-            'timeout'   => self::TIMEOUT,
+            'timeout'   => $this->config['timeout'] ?? self::TIMEOUT,
             'auth'      => [
                 $this->config['username'],
                 $this->config['password'],
@@ -157,11 +171,20 @@ abstract class Base extends ApiProcessor
 
         if ($response->status_code !== 200)
         {
-            throw new LogicException('Invalid response from api', null, $response + $additionalInfo);
+            $this->isRequestFailure = true;
+
+            throw new LogicException(
+                'Invalid response from api',
+                null,
+                [
+                    'response' => $response
+                ] + $additionalInfo);
         }
 
         if (isset($responseBody[Constants::FAULT_RESPONSE_IDENTIFIER]) === true)
         {
+            $this->isRequestFailure = true;
+
             return $this->extractFailedData($responseBody[Constants::FAULT_RESPONSE_IDENTIFIER]);
         }
         else if (isset($responseBody[$this->responseIdentifier]) === true)
@@ -169,7 +192,14 @@ abstract class Base extends ApiProcessor
             return $this->extractSuccessfulData($responseBody[$this->responseIdentifier]);
         }
 
-        throw new LogicException('Invalid response from api', null, $response + $additionalInfo);
+        $this->isRequestFailure = true;
+
+        throw new LogicException(
+            'Invalid response from api',
+            null,
+            [
+                'response' => $response
+            ] + $additionalInfo);
     }
 
     public function processGatewayResponse(array $response): array

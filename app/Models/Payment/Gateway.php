@@ -94,6 +94,7 @@ class Gateway
     const ACQUIRER_AMEX         = 'amex';
     const ACQUIRER_FSS          = 'fss';
     const ACQUIRER_RATN         = 'ratn';
+    const ACQUIRER_YESB         = 'yesb';
     const ACQUIRER_BARB         = 'barb';
 
     const NOT_SUPPORTED      = 'not_supported';
@@ -179,6 +180,7 @@ class Gateway
         self::NETBANKING_ICICI  => self::ICICI,
         self::NETBANKING_RBL    => self::RBL,
         self::NETBANKING_AXIS   => self::AXIS,
+        self::PAYTM             => self::PAYTM,
     ];
 
     /**
@@ -537,6 +539,8 @@ class Gateway
         '9DZkE60krEG4wq',
         '9ncOh0EZ8sC9z9',
         '9hefgkvGhT18Q9',
+        'BbaYzzPW541Aut',
+        '80oXBj51MHGmwH',
     ];
 
     public static $channels = [
@@ -769,9 +773,27 @@ class Gateway
     ];
 
     public static $headless = [
-        self::CYBERSOURCE,
-        self::HITACHI,
-        self::HDFC,
+       self::CYBERSOURCE => [
+            Network::VISA,
+            Network::MC,
+        ],
+        self::HITACHI => [
+            Network::MC,
+            Network::VISA,
+            Network::MAES,
+        ],
+        self::HDFC => [
+            Network::MC,
+            Network::VISA,
+            Network::MAES,
+            Network::DICL,
+            Network::RUPAY,
+        ],
+        self::FIRST_DATA => [
+            Network::MC,
+            Network::VISA,
+            Network::MAES,
+        ],
     ];
 
     /**
@@ -1085,6 +1107,7 @@ class Gateway
         Gateway::NETBANKING_HDFC,
         Gateway::NETBANKING_AXIS,
         Gateway::ENACH_RBL,
+        Gateway::ENACH_NPCI_NETBANKING,
     ];
 
     /**
@@ -1370,6 +1393,11 @@ class Gateway
         return array_keys(self::$scroogeGateways);
     }
 
+    public static function getScroogeMerchants(): array
+    {
+        return self::$scroogeMerchants;
+    }
+
     public static function isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer)
     {
         $pinAuthGateways = self::$gatewayAcquirerIfscMapping;
@@ -1394,9 +1422,14 @@ class Gateway
      */
     public static function isScroogeGatewayAndMerchant(string $gateway = null, string $merchantId = null): bool
     {
+        if (empty($merchantId) === false)
+        {
+            return ((in_array($gateway, self::getScroogeGateways(), true) === true) and
+                (in_array($merchantId, self::getScroogeMerchants(), true) === true));
+        }
+
         return (in_array($gateway, self::getScroogeGateways(), true) === true);
     }
-
 
     /**
      * This function checks if the gateway was live at a particular timestamp
@@ -1629,9 +1662,15 @@ class Gateway
         return in_array($gateway, self::$asynchronous, true);
     }
 
-    public static function supportsHeadlessBrowser($gateway)
+    public static function supportsHeadlessBrowser($gateway, $networkCode)
     {
-        return in_array($gateway, self::$headless, true);
+        if ((isset(self::$headless[$gateway]) === true) and
+            (in_array($networkCode, self::$headless[$gateway], true) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public static function supportsAuthAndCaptureForNetwork($gateway, $networkCode)

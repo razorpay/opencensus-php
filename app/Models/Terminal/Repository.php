@@ -148,6 +148,18 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    public function getAllDirectTerminalsForMerchantAndGateway(Merchant\Entity $merchant, string $gateway)
+    {
+        $merchantIds = [$merchant->getId()];
+
+        $query = $this->newQuery()
+                        ->where(Entity::GATEWAY, $gateway);
+
+        $this->addMerchantWhereCondition($query, $merchantIds);
+
+        return $query->get();
+    }
+
     public function getEmandateTerminalsForMerchantAndSharedMerchant(
         Merchant\Entity $merchant, string $authType): PublicCollection
     {

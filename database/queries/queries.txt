@@ -4693,6 +4693,23 @@ ALTER TABLE promotions
 ALTER TABLE orgs
     ADD COLUMN type varchar(255) DEFAULT NULL AFTER email;
 
+ALTER TABLE terminals
+    MODIFY COLUMN category CHAR(4);
+
 ALTER TABLE gateway_downtimes
     ADD COLUMN acquirer VARCHAR(32) NOT NULL DEFAULT 'UNKNOWN' AFTER issuer,
     ADD INDEX gateway_downtimes_acquirer_index (acquirer);
+
+ALTER TABLE paytm
+    MODIFY `txnid` varchar(255) DEFAULT NULL;
+
+ALTER TABLE paytm
+    MODIFY `request_type` varchar(255) COLLATE utf8_bin NULL;
+
+ALTER TABLE gateway_rules
+    ADD COLUMN authentication_gateway varchar(255) DEFAULT NULL AFTER category2,
+    ADD COLUMN auth_type varchar(14) DEFAULT NULL AFTER authentication_gateway,
+    ADD COLUMN step varchar(255) NOT NULL DEFAULT 'authorization' AFTER auth_type;
+
+ALTER TABLE contacts
+    ADD INDEX contacts_merchant_id_active_index (merchant_id, active);
