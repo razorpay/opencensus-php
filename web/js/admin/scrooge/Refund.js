@@ -149,7 +149,6 @@ const fields = [
   item => ['Status', item.status],
   item => ['Refund Created At', formatDate(item.created_at)],
   item => ['Refund Updated At', formatDate(item.updated_at)],
-  item => ['Last Attempted', formatDate(item.last_attempted_at)],
   item => ['Payment ID', <b>{item.payment_id}</b>],
   item => ['Payment Created At', formatDate(item.payment_created_at)],
   item => [
@@ -157,7 +156,10 @@ const fields = [
     item.currency + ' ' + getFormattedAmount(item.payment_amount),
   ],
   item => ['Payment Gateway Captured', item.payment_gateway_captured],
+  item => ['Reconciled At', formatDate(item.reconciled_at)],
   item => ['ARN', item.arn],
+  item => ['Last Attempted At', formatDate(item.last_attempted_at)],
+  item => ['Next Attempt At', formatDate(item.next_attempt_at)],
   item => [
     'Attempts',
     <React.Fragment>
@@ -169,7 +171,6 @@ const fields = [
     </React.Fragment>,
   ],
   item => ['Bank', item.bank],
-  item => ['Is Reconciled', item.is_reconciled],
   item => ['On Hold Reason', item.on_hold_reason],
 ];
 
