@@ -892,7 +892,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_ONBOARD_REQUEST_FAILED           = 'MERCHANT_ONBOARD_REQUEST_FAILED';
     const MERCHANT_ONBOARD_REQUEST_DATA             = 'MERCHANT_ONBOARD_REQUEST_DATA';
     const MERCHANT_ONBOARD_GATEWAY_NOT_FOUND_ERROR  = 'MERCHANT_ONBOARD_GATEWAY_NOT_FOUND_ERROR';
-    const MERCHANT_ONBOARD_INDEX_OUT_OF_BOUND       = 'MERCHANT_ONBOARD_INDEX_OUT_OF_BOUND';
     const MERCHANT_ONBOARD_INDEX_ABOVE_THRESHOLD    = 'MERCHANT_ONBOARD_INDEX_ABOVE_THRESHOLD';
     const MERCHANT_BALANCE_DEBIT_FAILURE            = 'MERCHANT_BALANCE_DEBIT_FAILURE';
     const MERCHANT_PROCESS_WHITELIST_ACTIVATION     = 'MERCHANT_PROCESS_WHITELIST_ACTIVATION';
@@ -1733,7 +1732,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::MERCHANT_ONBOARD_REQUEST                  => 'Merchant onboarding request initiated',
         self::MERCHANT_ONBOARD_REQUEST_FAILED           => 'Merchant onboarding request failed',
         self::MERCHANT_ONBOARD_INDEX_ABOVE_THRESHOLD    => 'Merchant onboarding index above the set threshold',
-        self::MERCHANT_ONBOARD_INDEX_OUT_OF_BOUND       => 'Merchant onboarding index above the limit',
         self::PAYMENT_TERMINAL_CREATION_ERROR           => 'Payments terminal creation error',
         self::SUBSCRIPTION_PAYMENT_AUTHORIZE_FAILED     => 'Subscription payment authorization failed',
         self::SUBSCRIPTION_STATE_UNEXPECTED             => 'Unexpected state of subscription',
