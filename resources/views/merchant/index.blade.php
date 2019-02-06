@@ -26,6 +26,10 @@
 
     window.RZP.appHost = "{{ config('app.banking_service_url') }}";
     window.RZP.appName = "businessbanking";
+
+    window.rzpTicketSystem = {
+      hostname: window.RZP.appHost
+    };
   }
 </script>
 
