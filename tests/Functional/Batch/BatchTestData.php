@@ -203,7 +203,7 @@ return [
 
     'testCreateBatchOfPayoutTypeRequestFileEntries' => [
         [
-            'Account Number'            => '2224440041626905',
+            'RazorpayX Account Number'  => '2224440041626905',
             'Payout Amount'             => 100,
             'Payout Currency'           => 'INR',
             'Payout Mode'               => 'NEFT',
@@ -224,7 +224,7 @@ return [
             'notes[code]'               => 'Xyz123',
         ],
         [
-            'Account Number'            => '2224440041626905',
+            'RazorpayX Account Number'  => '2224440041626905',
             'Payout Amount'             => 1000,
             'Payout Currency'           => 'INR',
             'Payout Mode'               => 'NEFT',

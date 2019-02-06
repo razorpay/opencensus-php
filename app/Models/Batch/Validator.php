@@ -239,7 +239,7 @@ class Validator extends Base\Validator
 
     // This is not a copy paste of above ^ rules!
     protected static $payoutTypeRowRules = [
-        Header::ACCOUNT_NUMBER              => 'required|string',
+        Header::RAZORPAYX_ACCOUNT_NUMBER    => 'required|string',
         Header::PAYOUT_PURPOSE              => 'required|string|max:30|alpha_dash',
         Header::PAYOUT_AMOUNT               => 'required|integer|min:100|max:500000000',
         Header::PAYOUT_CURRENCY             => 'required|size:3|in:INR',
@@ -753,7 +753,6 @@ class Validator extends Base\Validator
     /**
      * Validates otp while creating a batch.
      * E.g. for creating payout type batch otp confirmation by logged in user is required.
-     *
      * @param array $input
      */
     public function validateOtp(array $input)

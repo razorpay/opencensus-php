@@ -451,13 +451,13 @@ class Header
     const FUND_ACCOUNT_VPA            = 'Fund Account Vpa';
 
     // Payout Headers, refer HEADER_MAP for full list of input & output headers.
-    const ACCOUNT_NUMBER      = 'Account Number';
-    const PAYOUT_AMOUNT       = 'Payout Amount';
-    const PAYOUT_CURRENCY     = 'Payout Currency';
-    const PAYOUT_MODE         = 'Payout Mode';
-    const PAYOUT_PURPOSE      = 'Payout Purpose';
-    const PAYOUT_REFERENCE_ID = 'Payout Reference Id';
-    const PAYOUT_ID           = 'Payout Id';
+    const RAZORPAYX_ACCOUNT_NUMBER = 'RazorpayX Account Number';
+    const PAYOUT_AMOUNT            = 'Payout Amount';
+    const PAYOUT_CURRENCY          = 'Payout Currency';
+    const PAYOUT_MODE              = 'Payout Mode';
+    const PAYOUT_PURPOSE           = 'Payout Purpose';
+    const PAYOUT_REFERENCE_ID      = 'Payout Reference Id';
+    const PAYOUT_ID                = 'Payout Id';
 
     /**
      * Input and output file headers
@@ -1404,7 +1404,7 @@ class Header
 
         Type::PAYOUT => [
             self::INPUT => [
-                self::ACCOUNT_NUMBER,
+                self::RAZORPAYX_ACCOUNT_NUMBER,
                 self::PAYOUT_AMOUNT,
                 self::PAYOUT_CURRENCY,
                 self::PAYOUT_MODE,
@@ -1425,7 +1425,7 @@ class Header
                 self::NOTES,
             ],
             self::OUTPUT => [
-                self::ACCOUNT_NUMBER,
+                self::RAZORPAYX_ACCOUNT_NUMBER,
                 self::PAYOUT_AMOUNT,
                 self::PAYOUT_CURRENCY,
                 self::PAYOUT_MODE,

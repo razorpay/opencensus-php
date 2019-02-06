@@ -17,6 +17,7 @@ class Payout extends Base
      */
     protected function addRecipients()
     {
+        // Processed file should be sent to user who uploaded batch file.
         $email = $this->batchSettings['user']['email'] ?? $this->merchant['transaction_report_email'];
         $name  = $this->batchSettings['user']['name'] ?? $this->merchant['name'];
 
