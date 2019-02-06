@@ -105,7 +105,6 @@ return [
     'testCreateBatchOfFundAccountTypeRequestFileEntries' => [
         // Expected to create new bank account & new contact.
         [
-            'Fund Account Use Existing' => '1',
             'Fund Account Type'         => 'bank_account',
             'Fund Account Name'         => 'Jitendra',
             'Fund Account Ifsc'         => 'SBIN0007105',
@@ -122,7 +121,6 @@ return [
         ],
         // Expected to create new bank account & new contact.
         [
-            'Fund Account Use Existing' => '1',
             'Fund Account Type'         => 'bank_account',
             'Fund Account Name'         => 'Jitendra',
             'Fund Account Ifsc'         => 'SBIN0007105',
@@ -139,7 +137,6 @@ return [
         ],
         // Expected to use existing bank account.
         [
-            'Fund Account Use Existing' => '1',
             'Fund Account Type'         => 'bank_account',
             'Fund Account Name'         => 'Jitendra',
             'Fund Account Ifsc'         => 'SBIN0007105',
@@ -156,7 +153,6 @@ return [
         ],
         // Expected to create new bank account with same details as above as first flat is '0'.
         [
-            'Fund Account Use Existing' => '0',
             'Fund Account Type'         => 'bank_account',
             'Fund Account Name'         => 'Jitendra',
             'Fund Account Ifsc'         => 'SBIN0007105',
@@ -173,7 +169,6 @@ return [
         ],
         // Expected to create a vpa and use existing contact.
         [
-            'Fund Account Use Existing' => '1',
             'Fund Account Type'         => 'vpa',
             'Fund Account Name'         => '',
             'Fund Account Ifsc'         => '',
@@ -190,7 +185,6 @@ return [
         ],
         // Expected to create a vpa and new contact.
         [
-            'Fund Account Use Existing' => '1',
             'Fund Account Type'         => 'vpa',
             'Fund Account Name'         => '',
             'Fund Account Ifsc'         => '',
@@ -216,7 +210,6 @@ return [
             'Payout Purpose'            => 'refund',
             'Payout Reference Id'       => '',
             'Fund Account Id'           => '',
-            'Fund Account Use Existing' => '1',
             'Fund Account Type'         => 'bank_account',
             'Fund Account Name'         => 'Jitendra',
             'Fund Account Ifsc'         => 'SBIN0007105',
@@ -238,7 +231,6 @@ return [
             'Payout Purpose'            => 'refund',
             'Payout Reference Id'       => '',
             'Fund Account Id'           => 'fa_000000000test1',
-            'Fund Account Use Existing' => '1',
             'Fund Account Type'         => '',
             'Fund Account Name'         => '',
             'Fund Account Ifsc'         => '',

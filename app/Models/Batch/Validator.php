@@ -223,7 +223,6 @@ class Validator extends Base\Validator
     ];
 
     protected static $fundAccountTypeRowRules = [
-        Header::FUND_ACCOUNT_USE_EXISTING => 'required|string|in:1,0',
         Header::FUND_ACCOUNT_TYPE         => 'required|string|in:bank_account,vpa',
         Header::FUND_ACCOUNT_NAME         => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
         Header::FUND_ACCOUNT_IFSC         => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
@@ -247,7 +246,6 @@ class Validator extends Base\Validator
         Header::PAYOUT_MODE                 => 'sometimes|nullable|string',
         Header::PAYOUT_REFERENCE_ID         => 'sometimes|nullable|string|max:40',
         Header::FUND_ACCOUNT_ID             => 'sometimes|nullable|public_id|size:17',
-        Header::FUND_ACCOUNT_USE_EXISTING   => 'required_without:'.Header::FUND_ACCOUNT_ID.'|nullable|string|in:1,0',
         Header::FUND_ACCOUNT_TYPE           => 'required_without:'.Header::FUND_ACCOUNT_ID.'|nullable|string|in:bank_account,vpa',
         Header::FUND_ACCOUNT_NAME           => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
         Header::FUND_ACCOUNT_IFSC           => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',

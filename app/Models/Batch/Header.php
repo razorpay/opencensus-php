@@ -444,7 +444,6 @@ class Header
 
     // Fund Account Headers, refer HEADER_MAP for full list of input & output headers.
     const FUND_ACCOUNT_ID             = 'Fund Account Id';
-    const FUND_ACCOUNT_USE_EXISTING   = 'Fund Account Use Existing';
     const FUND_ACCOUNT_TYPE           = 'Fund Account Type';
     const FUND_ACCOUNT_NAME           = 'Fund Account Name';
     const FUND_ACCOUNT_IFSC           = 'Fund Account Ifsc';
@@ -1370,7 +1369,6 @@ class Header
 
         Type::FUND_ACCOUNT => [
             self::INPUT => [
-                self::FUND_ACCOUNT_USE_EXISTING,
                 self::FUND_ACCOUNT_TYPE,
                 self::FUND_ACCOUNT_NAME,
                 self::FUND_ACCOUNT_IFSC,
@@ -1386,7 +1384,6 @@ class Header
                 self::NOTES,
             ],
             self::OUTPUT => [
-                self::FUND_ACCOUNT_USE_EXISTING,
                 self::FUND_ACCOUNT_TYPE,
                 self::FUND_ACCOUNT_NAME,
                 self::FUND_ACCOUNT_IFSC,
@@ -1416,7 +1413,6 @@ class Header
                 self::PAYOUT_PURPOSE,
                 self::PAYOUT_REFERENCE_ID,
                 self::FUND_ACCOUNT_ID,
-                self::FUND_ACCOUNT_USE_EXISTING,
                 self::FUND_ACCOUNT_TYPE,
                 self::FUND_ACCOUNT_NAME,
                 self::FUND_ACCOUNT_IFSC,
@@ -1438,7 +1434,6 @@ class Header
                 self::PAYOUT_PURPOSE,
                 self::PAYOUT_REFERENCE_ID,
                 self::FUND_ACCOUNT_ID,
-                self::FUND_ACCOUNT_USE_EXISTING,
                 self::FUND_ACCOUNT_TYPE,
                 self::FUND_ACCOUNT_NAME,
                 self::FUND_ACCOUNT_IFSC,
