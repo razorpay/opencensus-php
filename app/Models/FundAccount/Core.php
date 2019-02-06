@@ -26,6 +26,8 @@ class Core extends Base\Core
      */
     public function create(array $input, Merchant\Entity $merchant, Base\PublicEntity $source = null): Entity
     {
+        $this->modifyValidationRequestToOldFormat($input);
+
         $fundAccount = (new Entity)->build($input);
 
         $this->repo->transaction(function() use ($input, $merchant, $source, $fundAccount) {
@@ -41,6 +43,16 @@ class Core extends Base\Core
         });
 
         return $fundAccount;
+    }
+
+    protected function modifyValidationRequestToOldFormat(array & $input)
+    {
+        if (isset($input[Validation\FundAccountType::BANK_ACCOUNT]))
+        {
+            $input[Entity::DETAILS] = $input[Validation\FundAccountType::BANK_ACCOUNT];
+
+            unset($input[Validation\FundAccountType::BANK_ACCOUNT]);
+        }
     }
 
     protected function createAccount(array $input,
