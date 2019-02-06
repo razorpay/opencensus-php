@@ -3,7 +3,9 @@ import { classList } from 'common/util';
 import debounce from 'rzp/utils/debounce';
 import { showNotification } from 'rzp/modules/notifications';
 
-const FILE_SIZE_LIMIT = 10;
+import { uploadImageInDescription } from '../../../model';
+
+const FILE_SIZE_LIMIT = 2; // 2MB limit
 const COLORS_LIST = [
   '#00BB55',
   '#528FF0',
@@ -38,8 +40,6 @@ All URLs will convert to links.`;
 @connect(null, { showNotification })
 export default class extends React.PureComponent {
   state = { isScriptLoaded: null };
-  imagesRangeIndex = {};
-
   componentDidMount() {
     window.onQuillLoad = () => {
       customizeIcons();
@@ -51,18 +51,6 @@ export default class extends React.PureComponent {
       this.QUILL.on('text-change', (delta, oldDelta, source) => {
         console.log('DELTA...', delta);
         if (source == 'user') {
-          if (delta.ops) {
-            const isDeleteOp =
-              delta.ops[1] && delta.ops[1].hasOwnProperty('delete');
-            const opOnIndex = delta.ops[0].retain;
-
-            if (isDeleteOp && this.imagesRangeIndex.hasOwnProperty(opOnIndex)) {
-              delete this.imagesRangeIndex[opOnIndex];
-            }
-          }
-        }
-
-        if (['user', 'api_img'].indexOf(source) > -1) {
           this.updateDescription();
         }
       });
@@ -108,16 +96,20 @@ export default class extends React.PureComponent {
       const isImageType = /^image\//.test(file.type);
 
       if (isImageType) {
-        self.imagesRangeIndex[range.index] = file;
-
-        const reader = new FileReader();
-
-        reader.onload = function(e) {
-          const base64Img = e.target.result;
-          self.QUILL.insertEmbed(range.index, 'image', base64Img, 'api_img');
-        };
-
-        reader.readAsDataURL(file);
+        uploadImageInDescription(file)
+          .then(res => {
+            if (res) {
+              self.QUILL.insertEmbed(range.index, 'image', res.url, 'user');
+            } else {
+              throw { errors: ['Some network error occurred'] };
+            }
+          })
+          .catch(({ errors }) => {
+            self.props.showNotification({
+              type: 'error',
+              message: errors[0],
+            });
+          });
       } else {
         self.props.showNotification({
           type: 'error',
@@ -132,7 +124,7 @@ export default class extends React.PureComponent {
   updateDescription() {
     const desc = this.QUILL.getContents();
     this.props.updateData({
-      target: { name: 'description', value: desc.ops },
+      target: { name: 'description', value: JSON.stringify(desc.ops) },
     });
   }
 

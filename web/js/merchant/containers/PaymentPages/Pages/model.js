@@ -23,13 +23,10 @@ export function createPaymentPage(data) {
 
   pruneReqPayload(reqPayload);
 
-  const formData = new FormData();
-  appendFormdata(formData, reqPayload);
-
   return merchantFetch({
     url: 'payment_links',
     method: 'post',
-    data: formData,
+    data: reqPayload,
     headers: {
       'content-Type': 'application/json',
     },
@@ -42,13 +39,35 @@ export function editPaymentPage(id, data) {
   // In paymentpages v2, following 4 fields can also be edited via this API.
   pruneReqPayload(reqPayload);
 
-  const formData = new FormData();
-  appendFormdata(formData, reqPayload);
-
   return merchantFetch({
     url: `payment_links/${id}`,
     method: 'patch',
-    data: formData,
+    data: reqPayload,
+    headers: {
+      'content-type': 'application/json',
+    },
+  });
+}
+
+export function uploadImageInDescription(file) {
+  const fd = new FormData();
+  fd.append('image', file);
+
+  return new Promise((resolve, reject) => {
+    setTimeout(function() {
+      const isSuccess = Math.round(Math.random());
+
+      resolve({
+        url: 'https://cdn.razorpay.com/logos/BU3aIBQGfPxCTd_medium.png',
+      });
+      reject(null);
+    }, 1500);
+  });
+
+  return merchantFetch({
+    url: ``,
+    method: 'patch',
+    data: fd,
     headers: {
       'content-type': 'application/json',
     },
@@ -111,23 +130,4 @@ export function sendLink(id, data) {
     method: 'post',
     data: reqPayload,
   });
-}
-
-function appendFormdata(FormData, data, name) {
-  name = name || '';
-
-  if (typeof data === 'object' && !(data instanceof File)) {
-    data &&
-      Object.keys(data).forEach(index => {
-        const value = data[index];
-
-        if (name == '') {
-          appendFormdata(FormData, value, index);
-        } else {
-          appendFormdata(FormData, value, name + '[' + index + ']');
-        }
-      });
-  } else {
-    FormData.append(name, data);
-  }
 }

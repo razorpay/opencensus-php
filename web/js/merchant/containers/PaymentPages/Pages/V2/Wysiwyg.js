@@ -327,17 +327,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       return;
     }
 
-    if (description) {
-      description.forEach(d => {
-        if (d.insert && d.insert.hasOwnProperty('image')) {
-          // Adding file with name = new Date().getTime(), as name has to be overriden in cdn
-          const file = dataURLtoFile(d.insert.image, new Date().getTime());
-          d.insert.image = file;
-          console.log(file);
-        }
-      });
-    }
-
     const reqPayload = {
       amount: amount || null,
       title,
