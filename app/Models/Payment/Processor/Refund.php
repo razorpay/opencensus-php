@@ -1633,7 +1633,8 @@ trait Refund
 
         if ($this->merchant->isFeatureEnabled(Feature::VOID_REFUNDS) === true)
         {
-            if ($this->gatewaySupportsReversal($payment) === false)
+            if (($this->gatewaySupportsReversal($payment) === false) and
+                ($payment->isCaptured() === false))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_REVERSAL_NOT_SUPPORTED);
