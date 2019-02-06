@@ -516,6 +516,7 @@ final class Route
         'pages_view'                               => ['get,post', 'pages/{x_entity_id}/view',                       'PaymentLinkController@view'                                        ],
         'pages_view_by_slug'                       => ['get,post', 'pages/{slug}',                                   'PaymentLinkController@viewBySlug'                                  ],
         'payment_link_view_get'                    => ['get,post', 'payment_links/{x_entity_id}/view',               'PaymentLinkController@view'                                        ],
+        'payment_link_images'                      => ['post',     'payment_links/images',                           'PaymentLinkController@upload'                                      ],
         'payment_link_get'                         => ['get',      'payment_links/{id}',                             'PaymentLinkController@get'                                         ],
         'payment_link_get_details'                 => ['get',      'payment_links/{id}/details',                     'PaymentLinkController@getWithDetailsForDashboard'                  ],
         'payment_link_list'                        => ['get',      'payment_links',                                  'PaymentLinkController@list'                                        ],
@@ -1068,6 +1069,7 @@ final class Route
         'merchant_methods_downtime',
         'virtual_account_order_create',
         'payment_redirect_3ds',
+        'payment_link_images',
     ];
 
     public static $device = [

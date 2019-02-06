@@ -119,4 +119,18 @@ class PaymentLinkController extends Controller
 
         return $this->view($slugMetadata['id']);
     }
+
+    /**
+     * It uploads a given array of images into s3 bucket and returns the array of url for the images.
+     *
+     * @return mixed
+     */
+    public function upload()
+    {
+        $input = Request::file("image");
+
+        $data = $this->service()->upload($input);
+
+        return ApiResponse::json($data);
+    }
 }

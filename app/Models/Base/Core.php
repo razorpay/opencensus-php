@@ -63,6 +63,8 @@ class Core
 
         $this->trace = $this->app['trace'];
 
+        $this->config = $this->app['config'];
+
         $this->repo = $this->app['repo'];
 
         $this->merchant = $this->app['basicauth']->getMerchant();

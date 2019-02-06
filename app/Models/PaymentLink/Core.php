@@ -8,15 +8,19 @@ use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Services\UfhService;
 use Razorpay\Trace\Logger;
 use RZP\Constants\Entity as E;
 use RZP\Exception\BaseException;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PaymentLink\Template\UdfSchema;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Models\PaymentLink\Template\Hosted as HostedTemplate;
 
 class Core extends Base\Core
 {
+    const RELATIVE_LOCATION = "relative_location";
     /**
      * Elfin: Url shortening service
      */
@@ -393,6 +397,7 @@ class Core extends Base\Core
      *
      * @param  Entity  $paymentLink
      * @param  integer $paymentUnits
+     *
      * @return boolean
      */
     protected function hasPaymentSlots(Entity $paymentLink, int $paymentUnits): bool
@@ -581,6 +586,38 @@ class Core extends Base\Core
     }
 
     /**
+     * It uploads the images in S3 bucket and returns the image urls.
+     *
+     * @param array $input images to be uploaded in s3 bucket.
+     *
+     * @return array image urls.
+     * @throws BadRequestException
+     * @throws \RZP\Exception\ServerErrorException
+     */
+    public function upload(array $input): array
+    {
+        $hostName = 'url.cdn.' . $this->env;
+
+        $imageURLS = [];
+
+        foreach ($input as $key => $image)
+        {
+            (new Validator)->validateImage($image);
+
+            $file = (new UfhService($this->app))->uploadFileAndGetUrl(
+                $image,
+                $this->getStorageFileName($image),
+                'payment_link_description',
+                $this->merchant);
+
+            $imageURLS[] = $this->config->get($hostName) . '/' . $file[self::RELATIVE_LOCATION];
+
+        }
+
+        return $imageURLS;
+    }
+
+    /**
      * Updates the status to INACTIVE, status_reason to EXPIRED of an individual expired payment link by locking it.
      *
      * @param Entity $paymentLink
@@ -678,5 +715,14 @@ class Core extends Base\Core
         {
             $paymentLink->getSettingsAccessor()->upsert($settings)->save();
         }
+    }
+
+    protected function getStorageFileName(UploadedFile $file): string
+    {
+        $nameWithoutExtension = str_replace('.' . $file->getClientOriginalExtension(),
+                                            '',
+                                            $file->getClientOriginalName());
+
+        return 'description' . '/' . $nameWithoutExtension . '_' . UniqueIdEntity::generateUniqueId();
     }
 }

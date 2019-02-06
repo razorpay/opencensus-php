@@ -97,4 +97,16 @@ class Service extends Base\Service
 
         return [$view, $viewPayload];
     }
+
+    /**
+     * It uploads the images in S3 bucket and returns their location urls.
+     *
+     * @param array $input images to be uploaded.
+     *
+     * @return array image urls.
+     */
+    public function upload(array $input): array
+    {
+        return $this->core->upload($input);
+    }
 }
