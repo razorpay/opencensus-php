@@ -433,6 +433,9 @@ final class Route
         'get_config_keys'                          => ['get',      'config/keys',                                    'AdminController@getConfigKeys'                                     ],
         'get_cache_counts'                         => ['get',      'cache/counts',                                   'AdminController@getQueryCacheCounts'                               ],
         'set_es_pricing_keys'                      => ['post',     'cache/es_pricing',                               'AdminController@setEarlySettlementPricingKeys'                     ],
+        'set_redis_keys'                           => ['put',      'redis/keys',                                     'AdminController@setRedisKeys'                                      ],
+        'get_redis_key'                            => ['get',      'redis/key',                                      'AdminController@getRedisKey'                                       ],
+        'update_redis_keys'                        => ['patch',    'redis/keys',                                     'AdminController@updateRedisKeys'                                   ],
         'get_es_pricing_merchant'                  => ['get',      'cache/es_pricing',                               'MerchantController@getEarlySettlementPricingForMerchant'           ],
         'dummy_route'                              => ['post',     'dummy/route',                                    'PaymentController@postDummyRoute'                                  ],
         'transparent_redirect_get'                 => ['get',      'redirect',                                       'AdminController@getTransparentRedirect'                            ],
@@ -1355,7 +1358,7 @@ final class Route
         'entity_balance_id_update',
         'merchant_es_sync_cron',
         'gateway_downtime_vajra_webhook',
-        'scrooge_refund_verify_bulk'
+        'scrooge_refund_verify_bulk',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1889,6 +1892,10 @@ final class Route
         'merchant_balance_bulk_backfill_ids',
         //Bulk Add/Remove bank for terminal
         'terminal_bank_bulk',
+        'set_redis_keys',
+        'get_redis_key',
+        'update_redis_keys',
+
         'partner_config_create',
         'partner_config_fetch',
         'partner_config_edit',
@@ -2270,7 +2277,9 @@ final class Route
         'entity_balance_id_update'                 => '*',
         'merchant_balance_bulk_backfill_ids'       => '*',
         'terminal_bank_bulk'                       => Permission::EDIT_TERMINAL,
-
+        'set_redis_keys'                           => '*',
+        'get_redis_key'                            => '*',
+        'update_redis_keys'                        => '*',
         // TODO fix the permissions later after discussing
         'partner_config_create'                    => '*',
         'partner_config_fetch'                     => '*',

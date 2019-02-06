@@ -585,4 +585,96 @@ class Service extends Base\Service
             'totalUpdatedRowCounts',
             'perMerchantUpdatedRowCounts');
     }
+
+    public function setRedisKeys(array $input): array
+    {
+        (new Validator)->validateInput('set_redis_keys', $input);
+
+        $redis = $this->app['redis']->connection('redis_labs');
+
+        $result = [];
+
+        foreach ($input as $key => $value)
+        {
+            $values = array_map(function($val) {
+                return strtolower($val);
+            }, $value);
+
+            $result[] = $this->setRedisKey($redis, $key, $values);
+        }
+
+        return $result;
+    }
+
+    public function setRedisKey($redis, string $key, array $values): array
+    {
+        if(empty($values) === false)
+        {
+            $redis->SADD($key, $values);
+        }
+
+        $data = [
+            'key'   => $key,
+            'value' => $values,
+        ];
+
+        $this->trace->info(TraceCode::REDIS_KEY_SET, $data);
+
+        return $data;
+    }
+
+    public function getRedisKey(array $input): array
+    {
+        (new Validator)->validateInput('get_redis_key', $input);
+
+        $key = $input['key'];
+
+        $redis = $this->app['redis']->connection('redis_labs');
+
+        $values = $redis->SMEMBERS($key);
+
+        $this->trace->info(TraceCode::REDIS_KEY_FETCH, $values);
+
+        return $values;
+    }
+
+    public function updateRedisKeys($input): array
+    {
+        (new Validator)->validateInput('update_redis_keys', $input);
+
+        $redis = $this->app['redis']->connection('redis_labs');
+
+        $key = $input['key'];
+
+        $values = array_map(function($val) {
+            return strtolower($val);
+        }, $input['value']);
+
+        $existingValues = $redis->SMEMBERS($key);
+
+        $keysToDelete = array_diff($existingValues, $values);
+
+        $keysToInsert = array_diff($values, $existingValues);
+
+        if(empty($keysToDelete) === false)
+        {
+            //Also takes array as input
+            $redis->SREM($key, $keysToDelete);
+        }
+
+        if(empty($keysToInsert) === false)
+        {
+            $redis->SADD($key, $keysToInsert);
+        }
+
+        $data = [
+            'key'       => $key,
+            'old_value' => $existingValues,
+            'new_value' => $values,
+        ];
+
+        $this->trace->info(TraceCode::REDIS_KEY_UPDATE, $data);
+
+        return $data;
+    }
 }
