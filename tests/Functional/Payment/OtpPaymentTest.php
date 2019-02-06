@@ -1462,7 +1462,8 @@ class OtpPaymentTest extends TestCase
             'min_amount'    => 0,
             'load'          => 100,
             'group'         => null,
-            'currency'      => 'INR'
+            'currency'      => 'INR',
+            'step'          => 'authorization',
         ]);
 
         $this->fixtures->create('terminal:shared_hitachi_terminal', [
