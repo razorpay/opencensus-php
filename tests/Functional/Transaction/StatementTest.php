@@ -130,7 +130,7 @@ class StatementTest extends TestCase
         // Sets ES fetch expected retunr values.
         $this->testData[__FUNCTION__ . 'ExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][0]['term']['balance_id']['value'] = $this->bankingBalance->getId();
         $this->testData[__FUNCTION__ . 'ExpectedSearchResponse']['hits']['hits'][0]['_id'] = str_after($this->transaction['id'], 'txn_');
-        $this->createAndSetEsMockSearchExpectations(__FUNCTION__);
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
 
         $this->ba->privateAuth();
         $response = $this->startTest();
@@ -152,7 +152,7 @@ class StatementTest extends TestCase
 
         // Sets ES fetch expected retunr values.
         $this->testData[__FUNCTION__ . 'ExpectedSearchResponse']['hits']['hits'][0]['_id'] = str_after($this->transaction['id'], 'txn_');
-        $this->createAndSetEsMockSearchExpectations(__FUNCTION__);
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
 
         $this->ba->privateAuth();
         $response = $this->startTest();

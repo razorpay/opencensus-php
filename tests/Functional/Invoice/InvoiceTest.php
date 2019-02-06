@@ -1506,9 +1506,7 @@ class InvoiceTest extends TestCase
                                 'item_id' => null,
                             ]);
 
-        $esMock = $this->createEsMock(['search']);
-
-        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
 
         $this->startTest();
     }
@@ -1678,9 +1676,7 @@ class InvoiceTest extends TestCase
 
         $this->createManyInvoicesForFetchTests();
 
-        $esMock = $this->createEsMock(['search']);
-
-        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
 
         $this->startTest();
     }
@@ -1691,27 +1687,21 @@ class InvoiceTest extends TestCase
 
         $this->createManyInvoicesForFetchTests();
 
-        $esMock = $this->createEsMock(['search']);
-
-        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
 
         $this->startTest();
     }
 
     public function testGetMultipleInvoicesByEsFeildAndFrom()
     {
-        $esMock = $this->createEsMock(['search']);
-
-        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
 
         $this->startTest();
     }
 
     public function testGetMultipleInvoicesByEsFeildFromAndTo()
     {
-        $esMock = $this->createEsMock(['search']);
-
-        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
 
         $this->startTest();
     }
@@ -1771,9 +1761,7 @@ class InvoiceTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $esMock = $this->createEsMock(['search']);
-
-        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
 
         $this->startTest();
     }
@@ -1791,9 +1779,7 @@ class InvoiceTest extends TestCase
             'Temporarily disabled, waiting for one other pr
             which handles eager loading of relations to go out.');
 
-        $esMock = $this->createEsMock(['search']);
-
-        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
 
         $this->startTest();
     }

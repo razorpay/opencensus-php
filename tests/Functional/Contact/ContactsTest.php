@@ -38,7 +38,7 @@ class ContactsTest extends TestCase
         $this->fixtures->create('contact', ['id' => '1000001contact', 'email' => 'test@test1.com']);
         $this->fixtures->create('contact', ['id' => '1000002contact', 'email' => 'random@test.com']);
 
-        $this->createAndSetEsMockSearchExpectations(__FUNCTION__);
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
 
         $this->startTest();
     }
@@ -72,7 +72,7 @@ class ContactsTest extends TestCase
     {
         $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@test4.com', 'contact' => '8888888888', 'name' => 'Test Contact']);
 
-        $this->createAndSetEsMockSearchExpectations(__FUNCTION__);
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
 
         $this->startTest();
     }
