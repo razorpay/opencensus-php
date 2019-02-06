@@ -53,6 +53,18 @@ return [
         ],
     ],
 
+    'testSuccessfulPartialRefundOnCapturedPaymentWithVoidRefund' => [
+        'request' => [
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'amount' => 25000,
+                'currency' => 'INR',
+            ],
+        ],
+    ],
+
     'testSuccessfulVoidRefund' => [
         'request' => [
         ],
@@ -65,7 +77,25 @@ return [
         ],
     ],
 
-    'testSuccessfulRefundOnCapturedPaymentWithVoidRefund' => [
+  'testFailVoidPartialRefund' => [
+        'request' => [
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_REFUND_PARTIAL_VOID_NOT_SUPPORTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_REFUND_PARTIAL_VOID_NOT_SUPPORTED,
+        ],
+    ],
+
+  'testSuccessfulRefundOnCapturedPaymentWithVoidRefund' => [
         'request' => [
         ],
         'response' => [

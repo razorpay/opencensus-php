@@ -1601,7 +1601,7 @@ trait Refund
 
     public function refundCapturedPayment($payment, array $input = [], Batch\Entity $batch = null)
     {
-        $this->validatePaymentForRefund($payment);
+        $this->validatePaymentForRefund($payment, $input);
 
         // Captured payments of transfer cannot be refunded via direct API requests
         if ($payment->isTransfer() === true)
@@ -1623,7 +1623,7 @@ trait Refund
         return $this->refund($payment, $input, $batch);
     }
 
-    protected function validatePaymentForRefund(Payment\Entity $payment)
+    protected function validatePaymentForRefund(Payment\Entity $payment, array $input = null)
     {
         if ($payment->isFullyRefunded() === true)
         {
@@ -1631,19 +1631,28 @@ trait Refund
                 ErrorCode::BAD_REQUEST_PAYMENT_FULLY_REFUNDED);
         }
 
-        if ($this->merchant->isFeatureEnabled(Feature::VOID_REFUNDS) === true)
+        if ($payment->isCaptured() === false)
         {
-            if (($this->gatewaySupportsReversal($payment) === false) and
-                ($payment->isCaptured() === false))
+            if ($this->merchant->isFeatureEnabled(Feature::VOID_REFUNDS) === true)
+            {
+                if ($this->getPaymentRefundType($input) === Payment\RefundStatus::PARTIAL)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_REFUND_PARTIAL_VOID_NOT_SUPPORTED);
+                }
+
+                if ($this->gatewaySupportsReversal($payment) === false)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_REVERSAL_NOT_SUPPORTED);
+                }
+
+            }
+            else
             {
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_REVERSAL_NOT_SUPPORTED);
+                    ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
             }
-        }
-        else if ($payment->isCaptured() === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
         }
 
         // Some bank transfer payments cannot be refunded.

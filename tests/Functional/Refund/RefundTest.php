@@ -132,6 +132,42 @@ class RefundTest extends TestCase
         $refund = $this->startTest($payment['id'], (string) $payment['amount']);
     }
 
+    public function testSuccessfulPartialRefundOnCapturedPaymentWithVoidRefund()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' =>
+                [
+                    'non_recurring' => '1',
+                    'recurring_3ds' => '1',
+                    'recurring_non_3ds' => '1'
+                ]
+            ]);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->gateway = 'hitachi';
+
+        $this->mockCardVault();
+
+        $this->fixtures->merchant->addFeatures('void_refunds');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card'] = [
+            'number'       => CardNumber::VALID_ENROLL_NUMBER,
+            'expiry_month' => '02',
+            'expiry_year'  => '21',
+            'cvv'          => 123,
+            'name'         => 'Test Card'
+        ];
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment');
+
+        $refund = $this->startTest($payment['id'], (string) ($payment['amount'] / 2));
+    }
+
     public function testSuccessfulVoidRefund()
     {
         $this->fixtures->create('terminal:shared_hitachi_terminal', [
@@ -164,6 +200,40 @@ class RefundTest extends TestCase
         $payment = $this->getLastEntity('payment');
 
         $refund = $this->startTest($payment['id'], (string) $payment['amount']);
+    }
+
+    public function testFailVoidPartialRefund()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' =>
+                [
+                    'non_recurring' => '1',
+                    'recurring_3ds' => '1',
+                    'recurring_non_3ds' => '1'
+                ]
+            ]);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->gateway = 'hitachi';
+
+        $this->mockCardVault();
+
+        $this->fixtures->merchant->addFeatures('void_refunds');
+
+        $payment = $this->defaultAuthPayment([
+            'card' => [
+                'number'       => CardNumber::VALID_ENROLL_NUMBER,
+                'expiry_month' => '02',
+                'expiry_year'  => '21',
+                'cvv'          => 123,
+                'name'         => 'Test Card'
+            ]
+        ]);
+
+        $payment = $this->getLastEntity('payment');
+
+        $refund = $this->startTest($payment['id'], (string) ($payment['amount']/2));
     }
 
     public function testRefundEditStatus()
