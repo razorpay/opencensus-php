@@ -974,6 +974,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARD_VAULT_REQUEST                        = 'CARD_VAULT_REQUEST';
     const CARD_VAULT_RESPONSE                       = 'CARD_VAULT_RESPONSE';
     const CARD_VAULT_RETRY                          = 'CARD_VAULT_RETRY';
+    const CORE_PAYMENT_SERVICE_REQUEST              = 'CORE_PAYMENT_SERVICE_REQUEST';
+    const CORE_PAYMENT_SERVICE_RESPONSE             = 'CORE_PAYMENT_SERVICE_RESPONSE';
+    const CORE_PAYMENT_SERVICE_RETRY                = 'CORE_PAYMENT_SERVICE_RETRY';
     const RAVEN_REQUEST                             = 'RAVEN_REQUEST';
     const RAVEN_RESPONSE                            = 'RAVEN_RESPONSE';
     const RAVEN_CALLBACK_REQUEST                    = 'RAVEN_CALLBACK_REQUEST';

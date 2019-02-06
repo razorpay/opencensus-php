@@ -134,6 +134,18 @@ class ApiServiceProvider extends BaseServiceProvider
             return new CardVault($app);
         });
 
+        $this->app->singleton('cps', function($app)
+        {
+            $cpsMock = $app['config']->get('applications.cps');
+
+            if ($cpsMock === true)
+            {
+                // return new Mock\CorePaymentService($app);
+            }
+
+            return new CorePaymentService($app);
+        });
+
         $this->app->singleton('card.otpelf', function($app)
         {
             $mock = $app['config']->get('applications.otpelf.mock');
