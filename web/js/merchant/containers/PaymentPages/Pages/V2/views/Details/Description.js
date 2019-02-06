@@ -4,6 +4,7 @@ import debounce from 'rzp/utils/debounce';
 import { showNotification } from 'rzp/modules/notifications';
 
 import { uploadImageInDescription } from '../../../model';
+import { isJSONString } from 'rzp/utils/validators';
 
 const FILE_SIZE_LIMIT = 2; // 2MB limit
 const COLORS_LIST = [
@@ -45,11 +46,15 @@ export default class extends React.PureComponent {
       customizeIcons();
       this.QUILL = new window.Quill('#description-quill', QUILL_OPTIONS);
 
-      this.props.description &&
-        this.QUILL.setContents(JSON.parse(this.props.description));
+      if (this.props.description) {
+        if (isJSONString(this.props.description)) {
+          this.QUILL.setContents(JSON.parse(this.props.description));
+        } else {
+          this.QUILL.setText(this.props.description);
+        }
+      }
 
       this.QUILL.on('text-change', (delta, oldDelta, source) => {
-        console.log('DELTA...', delta);
         if (source == 'user') {
           this.updateDescription();
         }

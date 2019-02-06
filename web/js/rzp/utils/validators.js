@@ -172,3 +172,14 @@ export function validateSlug(val) {
 
   return slugRegex.test(val);
 }
+
+export function isJSONString(str) {
+  const JSON_START = /^\[|^\{(?!\{)/;
+  const JSON_ENDS = {
+    '[': /]$/,
+    '{': /}$/,
+  };
+
+  const jsonStart = str.match(JSON_START);
+  return jsonStart && JSON_ENDS[jsonStart[0]].test(str);
+}
