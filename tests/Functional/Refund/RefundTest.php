@@ -1547,6 +1547,12 @@ class RefundTest extends TestCase
         $refund = $this->getLastEntity('refund', true);
 
         $this->assertEquals('hdfc', $refund['settled_by']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($refund['id'], $transaction['entity_id']);
+        $this->assertEquals(0, $transaction['debit']);
+        $this->assertEquals(0, $transaction['credit']);
     }
 
     public function startTest($paymentId = null, $amount = null)
