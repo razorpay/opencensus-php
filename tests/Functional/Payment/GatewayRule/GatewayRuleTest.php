@@ -56,7 +56,9 @@ class GatewayRuleTest extends TestCase
         //
         foreach ($testCases as $test)
         {
-             $this->runTestCase($test);
+            $test['step'] = 'authorization';
+
+            $this->runTestCase($test);
         }
     }
 
@@ -69,7 +71,8 @@ class GatewayRuleTest extends TestCase
                 'merchant_id' => '10000000000000',
                 'gateway'     => 'hdfc',
                 'min_amount'  => 0,
-                'load'        => 50
+                'load'        => 50,
+                'step'        => 'authorization',
             ]);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/gateway/rules/' . $rule->getId();
@@ -96,6 +99,8 @@ class GatewayRuleTest extends TestCase
 
         if (empty($testData['to_update']) === false)
         {
+            $testData['to_update']['step'] = 'authorization';
+
             $ruleToUpdate = $this->fixtures->create('gateway_rule', $testData['to_update']);
 
             $rules[] = $ruleToUpdate->getId();
@@ -120,6 +125,8 @@ class GatewayRuleTest extends TestCase
 
         foreach ($ruleParams as $params)
         {
+            $params['step'] = 'authorization';
+
             $rule = $this->fixtures->create('gateway_rule', $params);
 
             $ruleIds[] = $rule->getId();

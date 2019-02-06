@@ -279,6 +279,7 @@ class TerminalSelectionTest extends TestCase
             'filter_type'   => 'select',
             'group'         => 'prepaid_iin_filter',
             'iins'          => ['457392'],
+            'step'          => 'authorization',
         ]);
 
         $this->mockCardVault();
@@ -416,6 +417,7 @@ class TerminalSelectionTest extends TestCase
             'type'             => 'filter',
             'filter_type'      => 'select',
             'group'            => 'category_filter',
+            'step'             => 'authorization',
         ]);
 
         $payment = $this->getDefaultPaymentArray();
@@ -456,6 +458,7 @@ class TerminalSelectionTest extends TestCase
             'type'             => 'filter',
             'filter_type'      => 'select',
             'group'            => 'category_filter',
+            'step'             => 'authorization',
         ]);
 
         $this->fixtures->create('gateway_rule', [
@@ -466,6 +469,7 @@ class TerminalSelectionTest extends TestCase
             'type'             => 'filter',
             'filter_type'      => 'select',
             'group'            => 'category_filter',
+            'step'             => 'authorization',
         ]);
 
         $payment = $this->getDefaultPaymentArray();
@@ -678,6 +682,7 @@ class TerminalSelectionTest extends TestCase
             'type'        => 'filter',
             'filter_type' => 'select',
             'group'       => 'method_filter',
+            'step'        => 'authorization',
         ]);
 
         // Rule to reject corporate network_category terminals for KOTAK
@@ -693,6 +698,7 @@ class TerminalSelectionTest extends TestCase
             'max_amount'       => 200000,
             'network_category' => 'corporate',
             'group'            => 'min_amount_filter',
+            'step'             => 'authorization',
         ]);
 
         $payment = $this->getDefaultNetbankingPaymentArray();
@@ -779,6 +785,7 @@ class TerminalSelectionTest extends TestCase
             'category2'        => 'securities',
             'network_category' => 'securities',
             'group'            => 'tpv_filter',
+            'step'             => 'authorization',
         ]);
 
         $payment = $this->getPaymentForTPV(['bank' => 'ICIC']);
@@ -853,6 +860,7 @@ class TerminalSelectionTest extends TestCase
             'category2'        => 'securities',
             'network_category' => 'securities',
             'group'            => 'tpv_filter',
+            'step'             => 'authorization',
         ]);
 
         $payment = $this->getPaymentForTPV(['bank' => 'KKBK']);
@@ -896,6 +904,7 @@ class TerminalSelectionTest extends TestCase
             'network_category' => 'corporate',
             'shared_terminal'  => 1,
             'group'            => 'billdesk_category_filter',
+            'step'             => 'authorization',
         ]);
 
         $payment = $this->getDefaultNetbankingPaymentArray();
@@ -1041,6 +1050,7 @@ class TerminalSelectionTest extends TestCase
             'filter_type'      => 'reject',
             'shared_terminal'  => '0',
             'group'            => 'billdesk_category_filter',
+            'step'             => 'authorization',
         ]);
 
         $payment = $this->getDefaultNetbankingPaymentArray();
@@ -1085,6 +1095,7 @@ class TerminalSelectionTest extends TestCase
             'type'             => 'filter',
             'filter_type'      => 'reject',
             'group'            => 'billdesk_category_filter',
+            'step'             => 'authorization',
         ]);
 
         $payment = $this->getDefaultNetbankingPaymentArray();
@@ -1123,6 +1134,7 @@ class TerminalSelectionTest extends TestCase
             'network_category' => 'insurance',
             'shared_terminal'  => '1',
             'group'            => 'billdesk_category_filter',
+            'step'             => 'authorization',
         ]);
 
         $payment = $this->getDefaultNetbankingPaymentArray();
@@ -1166,6 +1178,7 @@ class TerminalSelectionTest extends TestCase
             'max_amount'       => 200000,
             'network_category' => 'forex',
             'group'            => 'min_amount_filter',
+            'step'             => 'authorization',
         ]);
 
         $this->fixtures->create('gateway_rule', [
@@ -1178,6 +1191,7 @@ class TerminalSelectionTest extends TestCase
             'max_amount'       => 150000,
             'network_category' => 'housing',
             'group'            => 'min_amount_filter',
+            'step'             => 'authorization',
         ]);
 
         $payment = $this->getDefaultNetbankingPaymentArray();

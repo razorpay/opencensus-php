@@ -250,6 +250,7 @@ class GatewayEmiFileTest extends TestCase
             'min_amount'    => 0,
             'load'          => 100,
             'group'         => 'sbi_emi_filter',
+            'step'          => 'authorization',
         ]);
 
         $this->fixtures->edit('merchant_detail', $merchantId,[
