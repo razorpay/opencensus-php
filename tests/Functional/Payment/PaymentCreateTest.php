@@ -578,12 +578,24 @@ class PaymentCreateTest extends TestCase
      */
     public function testPaymentS2SOnPartnerAuth()
     {
+         $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('On');
+
         $client = $this->createPartnerApplicationAndGetClientByEnv(
             'dev',
             [
                 'type' => 'partner',
                 'id'   => 'AwtIC8XQqM0Wet'
             ]);
+
+        $this->mockCardVault();
 
         $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
 

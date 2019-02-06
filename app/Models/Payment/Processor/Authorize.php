@@ -5019,6 +5019,7 @@ trait Authorize
             'payment_id' => $payment->getPublicId(),
             'mode'  => $this->mode,
             'public_key' => $this->app['basicauth']->getPublicKey(),
+            'account_id' => $this->app['basicauth']->authCreds->creds['account_id'],
         ];
 
         // encrypt with key
