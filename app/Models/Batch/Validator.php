@@ -4,6 +4,7 @@ namespace RZP\Models\Batch;
 
 use App;
 use RZP\Base;
+use RZP\Models\User;
 use RZP\Models\Payout;
 use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
@@ -28,36 +29,41 @@ use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHe
  */
 class Validator extends Base\Validator
 {
-    /**
-     * Default rule for file validation. Per type a different file rule can be
-     * written. We validate both mime_types and mimes(basically extension).
-     */
-    const DEFAULT_MIME_RULE = '|mime_types:'
-                                    . 'application/zip,'
-                                    . 'application/vnd.ms-excel,'
-                                    . 'application/vnd.oasis.opendocument.spreadsheet,'
-                                    . 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,'
-                                    . 'application/octet-stream,'
-                                    . 'application/xml,'
-                                    . 'text/csv,'
-                                    . 'text/plain,'
-                                    . 'application/cdfv2-unknown,'
-                                    . 'application/vnd.ms-office,'
-                                    . 'application/excel,'
-                                    . 'application/msexcel'
-                                . '|mimes:'
-                                    . 'zip,'
-                                    . 'xlsx,'
-                                    . 'xls,'
-                                    . 'xml,'
-                                    . 'csv,'
-                                    . 'txt';
+    // Default rule for file validation. Per type a different file rule can be written.
+    const DEFAULT_MIME_RULE = ''
+        // Allowed mime types.
+        . '|mime_types:'
+        . 'application/zip,'
+        . 'application/vnd.ms-excel,'
+        . 'application/vnd.oasis.opendocument.spreadsheet,'
+        . 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,'
+        . 'application/octet-stream,'
+        . 'application/xml,'
+        . 'text/csv,'
+        . 'text/plain,'
+        . 'application/cdfv2-unknown,'
+        . 'application/vnd.ms-office,'
+        . 'application/excel,'
+        . 'application/msexcel,'
+        // Allowed mimes/extensions.
+        . '|mimes:'
+        . 'zip,'
+        . 'xlsx,'
+        . 'xls,'
+        . 'xml,'
+        . 'csv,'
+        . 'txt,';
 
-    //
-    // TODO:
-    // - csv files doesn't expect headers, it throws error in that case.
-    // - Should not keep csv, txt in default rules.
-    //
+    // Rule for allowing only csv or plain text file.
+    const CSV_MIME_RULE = ''
+        // Allowed mime types.
+        . '|mime_types:'
+        . 'text/csv,'
+        . 'text/plain,'
+        // Allowed mimes/extensions.
+        . '|mimes:'
+        . 'csv,'
+        . 'txt,';
 
     protected static $defaultCreateRules = [
         Entity::TYPE                 => 'required|custom',
@@ -198,6 +204,22 @@ class Validator extends Base\Validator
         OMHelper::CLIENT_ID    => 'required|string|size:14',
         OMHelper::USER_ID      => 'required|string|size:14',
         OMHelper::REDIRECT_URI => 'required|url',
+    ];
+
+    protected static $fundAccountCreateRules = [
+        Entity::TYPE    => 'required|in:fund_account',
+        Entity::NAME    => 'filled|string|max:255',
+        Entity::FILE    => 'required_without:file_id|file|max:10240' . self::CSV_MIME_RULE,
+        Entity::FILE_ID => 'required_without:file|public_id',
+    ];
+
+    protected static $payoutCreateRules = [
+        Entity::TYPE    => 'required|in:payout',
+        Entity::NAME    => 'filled|string|max:255',
+        Entity::FILE    => 'required_without:file_id|file|max:10240' . self::CSV_MIME_RULE,
+        Entity::FILE_ID => 'required_without:file|public_id',
+        Entity::OTP     => 'required|filled|min:4',
+        Entity::TOKEN   => 'required|unsigned_id',
     ];
 
     protected static $fundAccountTypeRowRules = [
@@ -728,5 +750,29 @@ class Validator extends Base\Validator
                 Entity::FILE,
                 array_slice($errors, 0, 15, true));
         }
+    }
+
+    /**
+     * Validates otp while creating a batch.
+     * E.g. for creating payout type batch otp confirmation by logged in user is required.
+     *
+     * @param array $input
+     */
+    public function validateOtp(array $input)
+    {
+        if (isset($input[Entity::OTP], $input[Entity::TOKEN]) === false)
+        {
+            return;
+        }
+
+        $auth = app()->basicauth;
+
+        $params   = [
+            Entity::OTP         => $input[Entity::OTP],
+            Entity::TOKEN       => $input[Entity::TOKEN],
+            User\Entity::ACTION => "create_{$input[Entity::TYPE]}_batch",
+        ];
+
+        (new User\Core)->verifyOtp($params, $auth->getMerchant(), $auth->getUser());
     }
 }
