@@ -66,6 +66,22 @@ class Refund extends Base
         return true;
     }
 
+    protected function getNetAmount()
+    {
+        $refund = $this->source;
+
+        $settledBy = $refund->payment->getSettledBy();
+
+        $netAmount = $refund->getBaseAmount();
+
+        if ($settledBy !== 'Razorpay')
+        {
+            $netAmount = 0;
+        }
+
+        return $netAmount;
+    }
+
     public function calculateFees()
     {
         $refund = $this->source;
@@ -74,7 +90,9 @@ class Refund extends Base
 
         if ($payment->isCaptured() === true)
         {
-            $this->debit = $refund->getBaseAmount();
+            $netAmount = $this->getNetAmount();
+
+            $this->debit = $netAmount;
 
             $merchant = $refund->merchant;
 
@@ -82,7 +100,7 @@ class Refund extends Base
             {
                 $this->debit = 0;
 
-                $this->txn->setCredits($refund->getBaseAmount());
+                $this->txn->setCredits($netAmount);
 
                 $this->txn->setCreditType(Transaction\CreditType::REFUND);
             }
