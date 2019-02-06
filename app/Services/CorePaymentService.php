@@ -30,6 +30,8 @@ class CorePaymentService
 
     public function __construct($app)
     {
+        $this->app = $app;
+
         $this->trace = $app['trace'];
 
         $this->config = $app['config']->get('applications.core_payment_service');
@@ -43,10 +45,6 @@ class CorePaymentService
     protected function initRequestObject()
     {
         $baseUrl = $this->config['url'];
-
-        $username = $this->config['username'];
-
-        $password = $this->config['secret'];
 
         $defaultHeaders = $this->getDefaultHeaders();
 
@@ -71,7 +69,7 @@ class CorePaymentService
             'method'  => $method,
             'content' => $data,
             'headers' => [
-                self::X_RAZORPAY_TASKID_HEADER => $this->request->getTaskId(),
+                self::X_RAZORPAY_TASKID_HEADER => $this->app['request']->getTaskId(),
             ],
         ];
 
@@ -135,8 +133,8 @@ class CorePaymentService
         $options = [
             'timeout' => self::REQUEST_TIMEOUT,
             'auth' => [
-                $this->key,
-                $this->secret
+                $this->config['username'],
+                $this->config['password']
             ],
         ];
 
@@ -170,7 +168,8 @@ class CorePaymentService
     {
         $errorCode = ErrorCode::SERVER_ERROR_SUBSCRIPTION_SERVICE_FAILURE;
 
-        if (curl_errno($e->getData()) === CURLE_OPERATION_TIMEDOUT)
+        if ((empty($e->getData()) === false) and
+            (curl_errno($e->getData()) === CURLE_OPERATION_TIMEDOUT))
         {
             $errorCode = ErrorCode::SERVER_ERROR_SUBSCRIPTION_SERVICE_TIMEOUT;
         }
