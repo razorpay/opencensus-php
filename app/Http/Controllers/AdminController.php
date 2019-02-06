@@ -265,4 +265,31 @@ class AdminController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function setRedisKeys()
+    {
+        $input  = Request::all();
+
+        $data = $this->service()->setRedisKeys($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getRedisKey()
+    {
+        $input  = Request::all();
+
+        $data = $this->service()->getRedisKey($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateRedisKeys()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateRedisKeys($input);
+
+        return ApiResponse::json($data);
+    }
 }
