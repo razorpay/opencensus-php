@@ -907,10 +907,11 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Partner\Config\Entity::class, [
-            'id'          => $faker->uniqueid,
-            'entity_type' => 'application',
-            'entity_id'   => '10000000000App',
-            'revisit_at'  => Carbon::now()->addYear(1)->getTimestamp(),
+            'id'                  => $faker->uniqueid,
+            'entity_type'         => 'application',
+            'entity_id'           => '10000000000App',
+            'revisit_at'          => Carbon::now()->addYear(1)->getTimestamp(),
+            'commissions_enabled' => 0,
         ]);
 
         $factory(\RZP\Models\Merchant\Request\Entity::class, [

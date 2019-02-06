@@ -11,7 +11,6 @@ use Razorpay\OAuth\Application as OAuthApp;
 
 class Service extends Base\Service
 {
-
     /**
      * @var OAuthApp\Repository
      */
@@ -56,7 +55,7 @@ class Service extends Base\Service
         {
             $application = $this->applicationRepo->findOrFailPublic($input[Constants::APPLICATION_ID]);
         }
-        elseif (empty($input[Constants::PARTNER_ID]) === false)
+        else if (empty($input[Constants::PARTNER_ID]) === false)
         {
             $partnerMerchant = $this->repo->merchant->findOrFailPublic($input[Constants::PARTNER_ID]);
 
@@ -115,15 +114,12 @@ class Service extends Base\Service
 
         $config      = (new Core)->fetch($application, $subMerchant);
 
-        if (empty($config) === false)
-        {
-            return $config->toArrayPublic();
-        }
+        $configArray = optional($config)->toArrayPublic();
 
-        return null;
+        return $configArray;
     }
 
-    public function update(string $id, array $input)
+    public function update(string $id, array $input) : array
     {
         $config = (new Core)->edit($id, $input);
 
@@ -149,10 +145,12 @@ class Service extends Base\Service
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_APPLICATION_ID_PARTNER_ID_BOTH_PRESENT,
-                null, [
-                Constants::APPLICATION_ID => $input[Constants::PARTNER_ID],
-                Constants::PARTNER_ID     => $input[Constants::APPLICATION_ID],
-            ]);
+                null,
+                [
+                    Constants::APPLICATION_ID => $input[Constants::PARTNER_ID],
+                    Constants::PARTNER_ID     => $input[Constants::APPLICATION_ID],
+                ]
+            );
         }
     }
 }

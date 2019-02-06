@@ -17,6 +17,7 @@ class Validator extends Base\Validator
         Entity::IMPLICIT_PLAN_ID       => 'filled|alpha_num|size:14',
         Entity::EXPLICIT_PLAN_ID       => 'filled|alpha_num|size:14',
         Entity::IMPLICIT_EXPIRY_AT     => 'sometimes|integer',
+        Entity::COMMISSIONS_ENABLED    => 'required|boolean',
         Entity::EXPLICIT_REFUND_FEES   => 'required_with:'.Entity::EXPLICIT_PLAN_ID.'|boolean',
         Entity::EXPLICIT_SHOULD_CHARGE => 'required_with:'.Entity::EXPLICIT_PLAN_ID.'|boolean',
     ];
@@ -27,6 +28,7 @@ class Validator extends Base\Validator
         Entity::IMPLICIT_PLAN_ID       => 'filled|alpha_num|size:14',
         Entity::EXPLICIT_PLAN_ID       => 'filled|alpha_num|size:14',
         Entity::IMPLICIT_EXPIRY_AT     => 'sometimes|integer',
+        Entity::COMMISSIONS_ENABLED    => 'required|boolean',
         Entity::EXPLICIT_REFUND_FEES   => 'required_with:'.Entity::EXPLICIT_PLAN_ID.'|boolean',
         Entity::EXPLICIT_SHOULD_CHARGE => 'required_with:'.Entity::EXPLICIT_PLAN_ID.'|boolean',
     ];
