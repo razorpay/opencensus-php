@@ -36,7 +36,6 @@ class FundAccount extends Base
         {
             $fundAccount = $this->processEntryAndGetEntity($entry);
 
-            $entry[Batch\Header::STATUS]          = Batch\Status::PROCESSED;
             $entry[Batch\Header::FUND_ACCOUNT_ID] = $fundAccount->getPublicId();
         });
     }

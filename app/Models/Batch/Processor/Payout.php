@@ -69,21 +69,4 @@ class Payout extends Base
 
         return $this->payoutCore->createPayoutToFundAccount($input, $this->merchant);
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function postProcessEntries(array & $entries)
-    {
-        parent::postProcessEntries($entries);
-
-        // Each row's status for this batch type must be either processed or failed.
-        foreach ($entries as & $entry)
-        {
-            if ($entry[Batch\Header::STATUS] === Batch\Status::FAILURE)
-            {
-                $entry[Batch\Header::STATUS] = 'failed';
-            }
-        }
-    }
 }

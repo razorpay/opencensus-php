@@ -26,7 +26,6 @@ class Contact extends Base
     {
         $contact = $this->processEntryAndGetEntity($entry);
 
-        $entry[Batch\Header::STATUS]     = Batch\Status::PROCESSED;
         $entry[Batch\Header::CONTACT_ID] = $contact->getPublicId();
     }
 

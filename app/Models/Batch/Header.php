@@ -1361,7 +1361,6 @@ class Header
                 self::CONTACT_REFERENCE_ID,
                 self::NOTES,
                 self::CONTACT_ID,
-                self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ],
@@ -1398,7 +1397,6 @@ class Header
                 // Contact's notes.
                 self::NOTES,
                 self::FUND_ACCOUNT_ID,
-                self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ],
@@ -1446,7 +1444,6 @@ class Header
                 self::CONTACT_REFERENCE_ID,
                 // Payout's notes.
                 self::NOTES,
-                self::STATUS,
                 self::PAYOUT_ID,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
