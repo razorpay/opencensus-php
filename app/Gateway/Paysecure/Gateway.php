@@ -476,8 +476,6 @@ class Gateway extends Base\Gateway
                 ]
             );
         }
-
-        return false;
     }
 
     protected function getRepository()
