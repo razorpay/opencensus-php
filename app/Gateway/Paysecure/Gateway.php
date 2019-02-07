@@ -2,13 +2,13 @@
 
 namespace RZP\Gateway\Paysecure;
 
-use RZP\Error\Error;
-use RZP\Error\ErrorCode;
 use View;
+use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Base\Action;
@@ -108,7 +108,7 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $now = time();
+        $now = Carbon::now()->getTimestamp();
 
         // Timeout if callback received after 6 minutes
         if ($now - $input['payment']['updated_at'] > 360)
@@ -119,8 +119,8 @@ class Gateway extends Base\Gateway
                 null,
                 [
                     'response' => $input['gateway'],
-                    'payment' => $input['payment']['id'],
-                    'gateway' => $this->gateway,
+                    'payment'  => $input['payment']['id'],
+                    'gateway'  => $this->gateway,
                 ]
             );
         }

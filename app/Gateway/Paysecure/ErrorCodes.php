@@ -116,9 +116,9 @@ class ErrorCodes
 
         // Authorize error code mappings
         self::EC_13   => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_AMOUNT_OR_CURRENCY,
-        self::EC_41   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
+        self::EC_41   => ErrorCode::BAD_REQUEST_CARD_STOLEN_OR_LOST,
         self::EC_42   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
-        self::EC_43   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_DECLINED,
+        self::EC_43   => ErrorCode::BAD_REQUEST_CARD_STOLEN_OR_LOST,
         self::EC_51   => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,
         self::EC_54   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_EXPIRED,
         self::EC_55   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_PIN,

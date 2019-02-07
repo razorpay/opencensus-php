@@ -106,7 +106,7 @@ trait RequestHandlerTrait
         $systemTraceAuditNumber = sprintf('%06d', mt_rand(1, 999999));
 
         // In UAT they want us to pass 6012
-        $mcc = $this->mode == Mode::TEST ? '6012' : $this->input['merchant']['category'];
+        $mcc = (($this->mode === Mode::TEST) ? '6012' : ($this->input['merchant']['category']));
 
         $rrn = $this->generateRrn($systemTraceAuditNumber);
 
@@ -141,7 +141,7 @@ trait RequestHandlerTrait
 
     protected function generateRrn($stan)
     {
-        $dt = Carbon::now('Asia/Kolkata');
+        $dt = Carbon::now(Timezone::IST);
 
         $jd = str_pad($dt->format('z') + 1, 3, 0, STR_PAD_LEFT);
 
@@ -275,6 +275,8 @@ trait RequestHandlerTrait
                 throw $sf;
             }
         }
+
+        ini_restore('default_socket_timeout');
 
         $arrayResponse = $this->convertToArray($response);
 

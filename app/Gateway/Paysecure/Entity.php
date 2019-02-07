@@ -2,8 +2,9 @@
 
 namespace RZP\Gateway\Paysecure;
 
-use RZP\Gateway\Base;
+use Crypt;
 use RZP\Constants;
+use RZP\Gateway\Base;
 
 class Entity extends Base\Entity
 {
@@ -34,6 +35,10 @@ class Entity extends Base\Entity
         self::RRN,
     ];
 
+    protected $hidden = [
+        self::HKEY,
+    ];
+
     protected $primaryKey = self::ID;
 
     protected $entity = Constants\Entity::PAYSECURE;
@@ -43,5 +48,27 @@ class Entity extends Base\Entity
     public function setFlow(string $flow)
     {
         $this->setAttribute(self::FLOW, $flow);
+    }
+
+    protected function getHkeyAttribute()
+    {
+        $hkey = $this->attributes[self::HKEY];
+
+        if ($hkey === null)
+        {
+            return $hkey;
+        }
+
+        return Crypt::decrypt($hkey);
+    }
+
+    protected function setHkeyAttribute($hkey)
+    {
+        if ($hkey === null)
+        {
+            $hkey = '';
+        }
+
+        $this->attributes[self::HKEY] = Crypt::encrypt($hkey);
     }
 }

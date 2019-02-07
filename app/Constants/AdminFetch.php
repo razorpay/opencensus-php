@@ -269,7 +269,7 @@ class AdminFetch
                         'iframe',
                     ],
                 ],
-                'rrm' => [
+                'rrn' => [
                     Fetch::LABEL => 'RRN',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
