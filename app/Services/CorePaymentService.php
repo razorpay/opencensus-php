@@ -8,6 +8,7 @@ use Requests_Session;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Error\ErrorClass;
 
 class CorePaymentService
 {
@@ -77,11 +78,9 @@ class CorePaymentService
 
         $response = $this->sendRawRequest($request);
 
-        $response = json_decode($response->body, true);
-
         $this->traceResponse($response);
 
-        $this->checkErrors($response);
+        $response = $this->processResponse($response);
 
         return $response;
     }
@@ -125,7 +124,7 @@ class CorePaymentService
             }
         }
 
-        return $this->parseResponse($response);
+        return $response;
     }
 
     protected function getDefaultOptions(): array
@@ -155,6 +154,7 @@ class CorePaymentService
     protected function traceRequest(array $request)
     {
         unset($request['options']['auth']);
+        unset($request['content']['card']);
 
         $this->trace->info(TraceCode::CORE_PAYMENT_SERVICE_REQUEST, $request);
     }
@@ -177,24 +177,19 @@ class CorePaymentService
         throw new Exception\ServerErrorException($e->getMessage(), $errorCode);
     }
 
-    protected function parseResponse($response)
+    protected function processResponse($response)
     {
         $code = $response->status_code;
 
-        // TODO: handle json decode errors here
-        $responseBody = json_decode($response->body, true);
+        $responseBody = $this->jsonToArray($response->body);
 
-        if ($response->success === true)
+        if ($code === 200)
         {
-            return $this->checkAndFormatResponse($responseBody);
-        }
-        elseif ($code >= 400 and $code < 500)
-        {
-            $this->handleBadRequestErrors($responseBody['error']);
+            return $responseBody['data'];
         }
         else
         {
-            $this->handleInternalServerErrors($responseBody['error']);
+            $this->checkForErrors($responseBody);
         }
     }
 
@@ -217,12 +212,89 @@ class CorePaymentService
 
         throw new Exception\ServerErrorException(
             $message,
-            ErrorCode::SERVER_ERROR_SUBSCRIPTION_SERVICE_FAILURE,
+            ErrorCode::SERVER_ERROR_CORE_PAYMENT_SERVICE_FAILURE,
             $error);
     }
 
-    protected function checkAndFormatResponse($response)
+    protected function handleGatewayErrors(array $error)
     {
-        // TODO. Need to confirm response format before implementing it.
+        $errorCode = $error['internal_error_code'];
+
+        switch ($errorCode)
+        {
+            case ErrorCode::GATEWAY_ERROR_REQUEST_ERROR:
+                throw new Exception\GatewayRequestException($errorCode);
+
+            case ErrorCode::GATEWAY_ERROR_TIMED_OUT:
+                throw new Exception\GatewayTimeoutException($errorCode);
+
+            default:
+                throw new Exception\GatewayErrorException($error['internal_error_code']);
+        }
+    }
+
+    protected function checkForErrors($response)
+    {
+        $errorCode = $response['internal_error_code'];
+
+        $class = $this->getErrorClassFromErrorCode($errorCode);
+
+        switch ($class)
+        {
+            case ErrorClass::GATEWAY:
+                $this->handleGatewayErrors($response['error']);
+                break;
+
+            case ErrorClass::BAD_REQUEST:
+                $this->handleBadRequestErrors($response['error']);
+                break;
+
+            case ErrorClass::SERVER:
+                $this->handleInternalServerErrors($response['error']);
+                break;
+
+            default:
+                throw new Exception\InvalidArgumentException('Not a valid error code class');
+        }
+    }
+
+    protected function jsonToArray($json)
+    {
+        $decodeJson = json_decode($json, true);
+
+        switch (json_last_error())
+        {
+            case JSON_ERROR_NONE:
+                return $decodeJson;
+
+            case JSON_ERROR_DEPTH:
+            case JSON_ERROR_STATE_MISMATCH:
+            case JSON_ERROR_CTRL_CHAR:
+            case JSON_ERROR_SYNTAX:
+            case JSON_ERROR_UTF8:
+            default:
+
+                $this->trace->error(
+                    TraceCode::CORE_PAYMENT_SERVICE_ERROR,
+                    ['json' => $json]);
+
+                throw new Exception\RuntimeException(
+                    'Failed to convert json to array',
+                    ['json' => $json]);
+        }
+    }
+
+    protected function getErrorClassFromErrorCode($code)
+    {
+        $pos = strpos($code, '_');
+
+        $class = substr($code, 0, $pos);
+
+        if ($class === 'BAD')
+        {
+            $class = ErrorClass::BAD_REQUEST;
+        }
+
+        return $class;
     }
 }
