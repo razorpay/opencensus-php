@@ -599,6 +599,19 @@ class Validator extends Base\Validator
         {
             $this->validateInput('payoutTypeRow', $entry);
         });
+
+        // After validating contents per row only should do following aggregate validations.
+
+        $totalPayoutAmount = array_sum(array_column($entries, Header::PAYOUT_AMOUNT));
+        $bankingBalance = $merchant->bankingBalance->getBalance();
+
+        if ($totalPayoutAmount > $bankingBalance)
+        {
+            throw new BadRequestValidationFailureException(
+                'Total payout amount in uploaded file exceeds available account balance',
+                Entity::FILE,
+                compact('totalPayoutAmount', 'bankingBalance'));
+        }
     }
 
     protected function validateLinkedAccountEntries(array & $entries, array $params, ME $merchant)
