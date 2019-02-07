@@ -4683,6 +4683,10 @@ ALTER TABLE terminals
 ALTER VIEW qubole_terminals_view AS
     SELECT id, merchant_id, category, network_category, enabled, gateway, gateway_merchant_id, gateway_terminal_id, gateway_acquirer, card, netbanking, upi, emandate, aeps, emi, recurring, capability, international, type, created_at, updated_at, deleted_at FROM terminal;
 
+
+ALTER TABLE balance
+    ADD INDEX balance_merchant_id_type_updated_at_index (merchant_id, type, updated_at);
+
 ALTER TABLE payouts
     ADD COLUMN reference_id VARCHAR(255) DEFAULT NULL AFTER id,
     ADD INDEX payouts_reference_id_index (reference_id(25));

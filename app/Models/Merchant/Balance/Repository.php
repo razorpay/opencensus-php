@@ -196,8 +196,8 @@ class Repository extends Base\Repository
     public function getMerchantsIdsForEsSync(int $minUpdatedAtTimeStamp): array
     {
         $merchantIds = $this->newQuery()
-                            ->where(Entity::UPDATED_AT, '>=', $minUpdatedAtTimeStamp)
                             ->where(Entity::TYPE, '=', Type::PRIMARY)
+                            ->where(Entity::UPDATED_AT, '>=', $minUpdatedAtTimeStamp)
                             ->groupBy(Entity::MERCHANT_ID)
                             ->select(Entity::MERCHANT_ID)
                             ->get();
