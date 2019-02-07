@@ -41,8 +41,7 @@ class Payout extends Base
 
             $payout = $this->processEntryForPayoutForFundAccount($entry, $fundAccount);
 
-            // Each row's status for this batch type must be either processed or failed.
-            $entry[Batch\Header::STATUS]    = 'processed';
+            $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
             $entry[Batch\Header::PAYOUT_ID] = $payout->getPublicId();
         });
     }

@@ -5,24 +5,6 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
-    'testCreateBatchOfContactType' => [
-        'request' => [
-            'url'     => '/batches',
-            'method'  => 'post',
-            'content' => [
-                'type' => 'contact',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'entity'      => 'batch',
-                'type'        => 'contact',
-                'status'      => 'created',
-                'total_count' => 4,
-            ],
-        ],
-    ],
-
     'testCreateBatchOfFundAccountType' => [
         'request' => [
             'url'     => '/batches',
@@ -36,7 +18,7 @@ return [
                 'entity'      => 'batch',
                 'type'        => 'fund_account',
                 'status'      => 'created',
-                'total_count' => 6,
+                'total_count' => 5,
             ],
         ],
     ],
@@ -46,7 +28,9 @@ return [
             'url'     => '/batches',
             'method'  => 'post',
             'content' => [
-                'type' => 'payout',
+                'type'  => 'payout',
+                'otp'   => '0007',
+                'token' => '12345678900000',
             ],
         ],
         'response' => [
@@ -56,49 +40,6 @@ return [
                 'status'      => 'created',
                 'total_count' => 2,
             ],
-        ],
-    ],
-
-    'testCreateBatchOfContactTypeRequestFileEntries' => [
-        // Expected a new contact to be created.
-        [
-            'Contact Type'         => 'vendor',
-            'Contact Name'         => 'Jitendra',
-            'Contact Email'        => 'jitendra@example.com',
-            'Contact Mobile'       => '9988998899',
-            'Contact Reference Id' => '',
-            'notes[\'place\']'     => 'Bangalore',
-            'notes[\'code\']'      => 'ABC-123',
-        ],
-        // Expected a new contact to be created.
-        [
-            'Contact Type'         => 'vendor',
-            'Contact Name'         => 'Mayur',
-            'Contact Email'        => 'mayur@example.com',
-            'Contact Mobile'       => '9988998899',
-            'Contact Reference Id' => '',
-            'notes[\'place\']'     => 'Bangalore',
-            'notes[\'code\']'      => 'ABC-123',
-        ],
-        // Expected 1st ^^ contact to be used as has same details.
-        [
-            'Contact Type'         => 'vendor',
-            'Contact Name'         => 'Jitendra',
-            'Contact Email'        => 'jitendra@example.com',
-            'Contact Mobile'       => '9988998899',
-            'Contact Reference Id' => '',
-            'notes[\'place\']'     => 'Bangalore',
-            'notes[\'code\']'      => 'ABC-123',
-        ],
-        // Expected a new contact to be created, though a contact exists with following details but is inactive.
-        [
-            'Contact Type'         => 'vendor',
-            'Contact Name'         => 'Another Example',
-            'Contact Email'        => 'another@example.com',
-            'Contact Mobile'       => '9988998899',
-            'Contact Reference Id' => '',
-            'notes[\'place\']'     => 'Bangalore',
-            'notes[\'code\']'      => 'ABC-123',
         ],
     ],
 
@@ -136,22 +77,6 @@ return [
             'notes[code]'               => 'Xyz123',
         ],
         // Expected to use existing bank account.
-        [
-            'Fund Account Type'         => 'bank_account',
-            'Fund Account Name'         => 'Jitendra',
-            'Fund Account Ifsc'         => 'SBIN0007105',
-            'Fund Account Number'       => '1234567890',
-            'Fund Account Vpa'          => '',
-            'Contact Id'                => '',
-            'Contact Type'              => 'vendor',
-            'Contact Name'              => 'Jitendra',
-            'Contact Email'             => 'jitendra@example.com',
-            'Contact Mobile'            => '9988998899',
-            'Contact Reference Id'      => '',
-            'notes[place]'              => 'Bangalore',
-            'notes[code]'               => 'Xyz123',
-        ],
-        // Expected to create new bank account with same details as above as first flat is '0'.
         [
             'Fund Account Type'         => 'bank_account',
             'Fund Account Name'         => 'Jitendra',

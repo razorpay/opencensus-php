@@ -1090,7 +1090,7 @@ class Base extends BaseModel\Core
     protected function parseFirstRowAndGetHeadings(array & $rows, string $delimiter)
     {
         $headings = $this->getHeadings();
-        $firstRow = explode($delimiter, current($rows));
+        $firstRow = str_getcsv(current($rows), $delimiter);
         $diff     = array_values(array_diff($headings, $firstRow));
 
         //

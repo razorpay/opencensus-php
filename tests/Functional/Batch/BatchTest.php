@@ -27,33 +27,6 @@ class BatchTest extends TestCase
         $this->ba->proxyAuth();
     }
 
-    public function testCreateBatchOfContactType()
-    {
-        // Creates a in-active contact to assert that it is not used in the flow.
-        $this->fixtures->create(
-            'contact',
-            [
-                'id'           => '100TestContact',
-                'active'       => false,
-                'type'         => 'vendor',
-                'name'         => 'Another Example',
-                'email'        => 'another@example.com',
-                'contact'      => '9988998899',
-                'reference_id' => null,
-            ]);
-
-        $entries = $this->getFileEntries(__FUNCTION__);
-
-        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
-
-        $this->startTest();
-
-        $contacts = $this->getDbEntities('contact');
-
-        $this->assertCount(3 + 1, $contacts);
-        $this->assertCount(2, $contacts->where('name', 'Another Example'));
-    }
-
     public function testCreateBatchOfFundAccountType()
     {
         $this->fixtures->create(
@@ -68,7 +41,7 @@ class BatchTest extends TestCase
 
         $entries = $this->getFileEntries(__FUNCTION__);
 
-        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+        $this->createAndPutCsvFileInRequest($entries, __FUNCTION__);
 
         $this->startTest();
 
@@ -77,9 +50,9 @@ class BatchTest extends TestCase
         $this->assertCount(3, $contacts);
 
         $bankAccounts = $this->getDbEntities('bank_account');
-        // 3 + 2 (Existing)
-        $this->assertCount(3 + 2, $bankAccounts);
-        $this->assertCount(2, $bankAccounts->where(BankAccount\Entity::ACCOUNT_NUMBER, '1234567890'));
+        // 2 + 2 (Existing)
+        $this->assertCount(2 + 2, $bankAccounts);
+        $this->assertCount(1, $bankAccounts->where(BankAccount\Entity::ACCOUNT_NUMBER, '1234567890'));
         $this->assertCount(1, $bankAccounts->where(BankAccount\Entity::ACCOUNT_NUMBER, '1234567891'));
 
         $vpas = $this->getDbEntities('vpa');
@@ -104,7 +77,7 @@ class BatchTest extends TestCase
                 ]);
 
         $entries = $this->getFileEntries(__FUNCTION__);
-        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+        $this->createAndPutCsvFileInRequest($entries, __FUNCTION__);
 
         $this->startTest();
 
