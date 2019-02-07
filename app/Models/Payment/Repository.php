@@ -1669,8 +1669,19 @@ class Repository extends Base\Repository
 
         $orgId = $app['basicauth']->getOrgId();
 
+        //
+        // Skip further checks in case of auths/routes where this is not set.
+        // This happens with routes like invoice_view_live/invoice_view_test.
+        // We also need to revisit the checks later if restricted orgs ever onboard
+        // merchants as we do not know if same restrictions will apply to them.
+        //
+        if (empty($orgId) === true)
+        {
+            return parent::newQuery();
+        }
+
         /** @var Org\Entity $org */
-        $org = $this->repo->org->findOrFailPublic(Org\Entity::stripSignWithoutValidation($orgId));
+        $org = $this->repo->org->findOrFailPublic(Org\Entity::verifyIdAndSilentlyStripSign($orgId));
 
         $isRestricted = ($org->getType() === Org\Entity::RESTRICTED);
 
@@ -1680,7 +1691,7 @@ class Repository extends Base\Repository
         }
 
         return parent::newQuery()
-            ->where(Entity::METHOD, Method::NETBANKING)
-            ->where(Entity::BANK, $org->getCustomCode());
+                        ->where(Entity::METHOD, Method::NETBANKING)
+                        ->where(Entity::BANK, $org->getCustomCode());
     }
 }
