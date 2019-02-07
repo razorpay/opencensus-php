@@ -203,7 +203,7 @@ class AdminFetch
 
     public static function entities()
     {
-        return [
+        $entities = [
             Entity::ADDON => [
                 'deleted' => [
                     Fetch::LABEL    => 'Deleted',
@@ -1925,6 +1925,29 @@ class AdminFetch
                 ],
             ],
         ];
+
+        //
+        // Ensures default type and label against each attribute's config exists.
+        //
+        // Todos:
+        // - Remove at least hundred unnecessary lines from this file
+        // - Move this logic to dashbaord to reduce payload size of this request
+        //
+        foreach ($entities as $entity => & $attributes)
+        {
+            foreach ($attributes as $attribute => & $config)
+            {
+                if (is_array($config) === true)
+                {
+                    $config += [
+                        Fetch::LABEL => ucwords(str_replace('_', ' ', $attribute)),
+                        Fetch::TYPE  => Fetch::TYPE_STRING,
+                    ];
+                }
+            }
+        }
+
+        return $entities;
     }
 
 }
