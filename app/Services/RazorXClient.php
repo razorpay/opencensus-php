@@ -49,6 +49,19 @@ class RazorXClient
      */
     protected $variant;
 
+    /**
+     * @var string
+     * localUniqueId will be a combination of the id, feature_flag and the mode.
+     */
+    protected $localUniqueId;
+
+    /**
+     * It will map the localUniqueId to a treatment. So, in the same request
+     * we will store the treatment against the localUniqueId. So for further request
+     * for exactly same razorx request, we return from the stored value.
+     */
+    protected $localUniqueIdToTreatment = [];
+
     public function __construct($app)
     {
         $this->trace   = $app['trace'];
@@ -59,39 +72,26 @@ class RazorXClient
         $this->env     = $app['env'];
     }
 
-    public function getTreatment(string $id, string $featureFlag, string $mode, array $input = null): string
+    public function getTreatment(string $id, string $featureFlag, string $mode): string
     {
-        $variant = $this->getVariant();
+        $this->constructLocalUniqueId($id, $featureFlag, $mode);
 
-        if (empty($variant) === false)
+        if ($this->getStoredVariant() !== null)
         {
-            return $variant;
+            return $this->getStoredVariant();
         }
 
-        $this->getVariantFromCookieIfSet($id, $featureFlag, $mode);
+        $this->storeVariantFromCookieIfSet($id, $featureFlag, $mode);
 
-        $variant = $this->getVariant();
-
-        if (empty($variant) === false)
+        if ($this->getStoredVariant() !== null)
         {
-            return $variant;
+            return $this->getStoredVariant();
         }
 
-        $this->callRazorXService($id, $featureFlag, $mode, $input);
-
-        $variant = $this->getVariant();
-        /*
-         * temp fix
-         * Issue : if razorx is used more than once in same request cycle,
-         * it will cache first request response and returns the same result in
-         * subsequent requests
-         */
-        $this->setVariant('');
-
-        return $variant;
+        return $this->getVariantFromRazorXService($id, $featureFlag, $mode);
     }
 
-    protected function callRazorXService(string $id, string $featureFlag, string $mode, array $input = null)
+    protected function getVariantFromRazorXService(string $id, string $featureFlag, string $mode)
     {
         $data = [
             self::ID           => $id,
@@ -100,17 +100,14 @@ class RazorXClient
             self::MODE         => $mode
         ];
 
-        if ($input !== null)
-        {
-            $data = array_merge($data, $input);
-        }
-
-        $variant = $this->sendRequest(self::EVALUATE_URI, Requests::GET, $data);
+        $variant = $this->sendRequest(self::EVALUATE_URI, Requests::GET);
 
         $this->setVariant($variant);
+
+        return $variant;
     }
 
-    protected function getVariantFromCookieIfSet(string $id, string $featureFlag, string $mode)
+    protected function storeVariantFromCookieIfSet(string $id, string $featureFlag, string $mode)
     {
         // Check in the cookie first, in case the request is coming from a browser.
         $variantKey = 'razorx';
@@ -129,16 +126,6 @@ class RazorXClient
                 $this->setVariant($variantResult);
             }
         }
-    }
-
-    protected function getVariant()
-    {
-        return $this->variant;
-    }
-
-    protected function setVariant(string $variant)
-    {
-        $this->variant = $variant;
     }
 
     protected function sendRequest(
@@ -226,5 +213,20 @@ class RazorXClient
         unset($request['options']['auth']);
 
         $this->trace->info(TraceCode::RAZORX_REQUEST, $request);
+    }
+
+    protected function constructLocalUniqueId(string $id, string $featureFlag, string $mode)
+    {
+        $this->localUniqueId = 'I: ' . $id . '_F:' . $featureFlag . '_M:' . $mode;
+    }
+
+    protected function storeVariant($variant)
+    {
+        $this->localUniqueIdToTreatment[$this->localUniqueId] = $variant;
+    }
+
+    protected function getStoredVariant()
+    {
+        return $this->localUniqueIdToTreatment[$this->localUniqueId];
     }
 }
