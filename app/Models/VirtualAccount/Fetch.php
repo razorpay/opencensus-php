@@ -45,5 +45,6 @@ class Fetch extends BaseFetch
 
     const COMMON_FIELDS = [
         Entity::MERCHANT_ID,
+        Entity::BALANCE_ID,
     ];
 }
