@@ -1069,7 +1069,6 @@ final class Route
         'merchant_methods_downtime',
         'virtual_account_order_create',
         'payment_redirect_3ds',
-        'payment_link_images',
     ];
 
     public static $device = [
@@ -1567,6 +1566,7 @@ final class Route
         'user_otp_create',
         'user_verify_contact',
         'payout_create_with_otp',
+        'payment_link_images',
     ];
 
     // These will run on internal auth with the assurance

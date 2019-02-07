@@ -21,15 +21,6 @@ use RZP\Exception\BadRequestValidationFailureException;
  */
 class Validator extends Base\Validator
 {
-    // Maximum image size - 2MB.
-    const MAXIMAGESIZE = 2 * 1024 * 1024;
-
-    const EXTENSIONMIMEMAP = [
-        'jpeg' => 'image/jpeg',
-        'jpg'  => 'image/jpeg',
-        'png'  => 'image/png',
-    ];
-
     protected static $createRules = [
         Entity::AMOUNT          => 'required_with:currency|nullable|mysql_unsigned_int|min:100|custom',
         Entity::CURRENCY        => 'required_with:amount|nullable|in:INR',
@@ -94,6 +85,11 @@ class Validator extends Base\Validator
         'udf_schema.*.title' => 'required|string|max:255',
         // Additional optional parameters are left intentionally, for now at least.
         // This is because there are keys conditioned to type.
+    ];
+
+    protected static $uploadImagesRules = [
+        'images'     => 'required|array|min:1|max:5',
+        'images.*'   => 'required|image|max:2048',
     ];
 
     protected static $createValidators = [
@@ -353,38 +349,6 @@ class Validator extends Base\Validator
                 $errorMsg,
                 Entity::AMOUNT,
                 compact('paymentAmount', 'paymentLinkAmount', 'allowMultipleUnits'));
-        }
-    }
-
-    public function validateImage($image)
-    {
-        $extension = $image->getClientOriginalExtension();
-
-        $mimeType = $image->getMimeType();
-
-        $acceptedMimeArray = self::EXTENSIONMIMEMAP;
-
-        $imageSize = $image->getClientSize();
-
-        // Checks if extension is defined in the array and if the extension and mime type match.
-        if ((!isset($acceptedMimeArray[$extension])) or
-            ($acceptedMimeArray[$extension] !== $mimeType))
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_LINK__DESCRIPTION_IMAGE_NOT_IMAGE,
-                Entity::DESCRIPTION,
-                "Image uploaded in payment page description is not a valid image"
-            );
-        }
-
-        // File size should not be more than 2MB.
-        if ($imageSize > self::MAXIMAGESIZE)
-        {
-            throw new BadRequestException(
-                ErrorCode::PAYMENT_LINK_DESCRIPTION_IMAGE_TOO_BIG,
-                Entity::DESCRIPTION,
-                "Image uploaded in payment page description is greater than 2 MB"
-            );
         }
     }
 }

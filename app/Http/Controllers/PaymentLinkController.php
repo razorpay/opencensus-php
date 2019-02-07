@@ -64,7 +64,7 @@ class PaymentLinkController extends Controller
     /**
      * Checks for existence of a given slug string in gimli.
      * @param  string $slug
-     * @return Illuminate\Http\Response
+     * @return \Illuminate\Http\Response
      */
     public function slugExists(string $slug)
     {
@@ -121,15 +121,13 @@ class PaymentLinkController extends Controller
     }
 
     /**
-     * It uploads a given array of images into s3 bucket and returns the array of url for the images.
+     * It uploads a given array of images into s3 bucket and returns the array of cdn url for the images.
      *
-     * @return mixed
+     * @return \Illuminate\Http\Response
      */
     public function upload()
     {
-        $input = Request::file("image");
-
-        $data = $this->service()->upload($input);
+        $data = $this->service()->upload($this->input);
 
         return ApiResponse::json($data);
     }

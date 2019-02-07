@@ -8,8 +8,8 @@ use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Services\UfhService;
 use Razorpay\Trace\Logger;
+use RZP\Services\UfhService;
 use RZP\Constants\Entity as E;
 use RZP\Exception\BaseException;
 use RZP\Models\Base\UniqueIdEntity;
@@ -20,7 +20,6 @@ use RZP\Models\PaymentLink\Template\Hosted as HostedTemplate;
 
 class Core extends Base\Core
 {
-    const RELATIVE_LOCATION = "relative_location";
     /**
      * Elfin: Url shortening service
      */
@@ -586,35 +585,35 @@ class Core extends Base\Core
     }
 
     /**
-     * It uploads the images in S3 bucket and returns the image urls.
+     * It uploads the images in S3 bucket and returns the image cdn urls.
      *
-     * @param array $input images to be uploaded in s3 bucket.
+     * @param array           $input Includes images to be uploaded in s3 bucket.
+     * @param Merchant\Entity $merchant
      *
-     * @return array image urls.
-     * @throws BadRequestException
+     * @return array Image cdn urls
      * @throws \RZP\Exception\ServerErrorException
      */
-    public function upload(array $input): array
+    public function upload(array $input, Merchant\Entity $merchant): array
     {
-        $hostName = 'url.cdn.' . $this->env;
+        $urls = [];
+        $cdn  = $this->config->get('url.cdn.' . $this->env);
 
-        $imageURLS = [];
-
-        foreach ($input as $key => $image)
+        foreach ($input['images'] as $image)
         {
-            (new Validator)->validateImage($image);
+            $filenameWithoutExt = str_before($image->getClientOriginalName(), '.' . $image->getClientOriginalExtension());
+
+            $uploadFilename = 'description/payment-link/' . $filenameWithoutExt . '_' . UniqueIdEntity::generateUniqueId();
 
             $file = (new UfhService($this->app))->uploadFileAndGetUrl(
                 $image,
-                $this->getStorageFileName($image),
-                'payment_link_description',
-                $this->merchant);
+                $uploadFilename,
+                Constants::PAYMENT_LINK_DESCRIPTION,
+                $merchant);
 
-            $imageURLS[] = $this->config->get($hostName) . '/' . $file[self::RELATIVE_LOCATION];
-
+            $urls[] = $cdn . '/' . $file[Constants::RELATIVE_LOCATION];
         }
 
-        return $imageURLS;
+        return $urls;
     }
 
     /**
@@ -715,14 +714,5 @@ class Core extends Base\Core
         {
             $paymentLink->getSettingsAccessor()->upsert($settings)->save();
         }
-    }
-
-    protected function getStorageFileName(UploadedFile $file): string
-    {
-        $nameWithoutExtension = str_replace('.' . $file->getClientOriginalExtension(),
-                                            '',
-                                            $file->getClientOriginalName());
-
-        return 'description' . '/' . $nameWithoutExtension . '_' . UniqueIdEntity::generateUniqueId();
     }
 }

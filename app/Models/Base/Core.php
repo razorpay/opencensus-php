@@ -50,6 +50,11 @@ class Core
      */
     protected $merchant;
 
+    /**
+     * @var \Config
+     */
+    protected $config;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
