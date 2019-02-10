@@ -73,15 +73,15 @@ class RazorXTest extends TestCase
                      ->willReturn('control');
 
         $variant = $this->razorX->getTreatment('10000000000000', 'reportsV3', 'test');
-
+        
         $this->assertEquals('control', $variant);
     }
 
     public function testGetTreatmentWithCookies()
     {
         $testData = & $this->testData[__FUNCTION__];
-
-        $testData['request']['cookies'] = ['razorx' => '{"dummy":"new_cookie_flow"}'];
+        $uniqueLocalId = RazorXClient::getLocalUniqueId('123','dummy','mode');
+        $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => '{"' . $uniqueLocalId . '":"new_cookie_flow"}'];
 
         $this->startTest();
     }

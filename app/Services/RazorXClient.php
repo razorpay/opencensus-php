@@ -25,7 +25,7 @@ class RazorXClient
      * the variant will be picked up from the cookie. Razorx cookie will be mapped
      * to a json which can contain multiple variants.
      */
-    const RAZORX_COOKIE_KEY = 'Razorx';
+    const RAZORX_COOKIE_KEY = 'razorx';
 
     /**
      * The default case to be returned so that the old flow is taken
@@ -49,14 +49,6 @@ class RazorXClient
     protected $trace;
 
     protected $env;
-
-    /**
-     * @var string
-     *
-     * Value used for subsequent calls in the same request
-     * to avoid cookie processing or calling RazorX service again
-     */
-    protected $variant;
 
     /**
      * @var string
@@ -85,16 +77,20 @@ class RazorXClient
     {
         $this->localUniqueId = self::getLocalUniqueId($id, $featureFlag, $mode);
 
-        if ($this->getStoredVariant() !== null)
+        $storedVariant = $this->getStoredVariant();
+        
+        if ($storedVariant !== null)
         {
-            return $this->getStoredVariant();
+            return $storedVariant;
         }
 
         $this->setVariantFromCookie($id, $featureFlag, $mode);
 
-        if ($this->getStoredVariant() !== null)
+        $storedVariant = $this->getStoredVariant();
+        
+        if ($storedVariant !== null)
         {
-            return $this->getStoredVariant();
+            return $storedVariant;
         }
 
         return $this->getVariantFromRazorXService($id, $featureFlag, $mode);
@@ -143,17 +139,17 @@ class RazorXClient
             self::ENVIRONMENT  => $this->env,
             self::MODE         => $mode
         ];
+        
+        $variant = $this->sendRequest(self::EVALUATE_URI, Requests::GET, $data);
 
-        $variant = $this->sendRequest(self::EVALUATE_URI, Requests::GET);
-
-        $this->setVariant($variant);
+        $this->storeVariant($variant);
 
         return $variant;
     }
 
     protected function setVariantFromCookie(string $id, string $featureFlag, string $mode)
     {
-        $variant = Request::cookie($this->razorxCookieKey);
+        $variant = Request::cookie(self::RAZORX_COOKIE_KEY);
 
         // Check headers if not found in cookie.
         if (empty($variant) === false)
@@ -164,7 +160,7 @@ class RazorXClient
 
             if (empty($variantResult) === false)
             {
-                $this->setVariant($variantResult);
+                $this->storeVariant($variantResult);
             }
         }
     }
@@ -263,6 +259,11 @@ class RazorXClient
 
     protected function getStoredVariant()
     {
-        return $this->localUniqueIdToTreatment[$this->localUniqueId];
+        if (array_key_exists($this->localUniqueId, $this->localUniqueIdToTreatment) === true)
+        {
+            return $this->localUniqueIdToTreatment[$this->localUniqueId];
+        }
+
+        return null;
     }
 }

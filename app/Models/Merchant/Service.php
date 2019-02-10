@@ -2231,7 +2231,7 @@ class Service extends Base\Service
 
     public function getDummyRazorX()
     {
-        $variant = $this->app->razorx->getTreatment($this->merchant->getId(), 'dummy', $this->mode);
+        $variant = $this->app->razorx->getTreatment('123', 'dummy', 'mode');
 
         return ['variant' => $variant];
     }
