@@ -30,7 +30,7 @@ class RazorXTest extends TestCase
     {
         $newCookieValue  = RazorXClient::appendVariantToCurrRazorxCookieValue('localUniqueId', 'variant');
 
-        $newCookieValArr = json_decode($newCookieValArr, true);
+        $newCookieValArr = json_decode($newCookieValue, true);
 
         $this->assertEquals(1, count($newCookieValArr));
 
@@ -48,12 +48,12 @@ class RazorXTest extends TestCase
                                                                              'variant',
                                                                              $currCookieValStr);
 
-        $newCookieValArr = json_decode($newCookieValArr, true);
+        $newCookieValArr = json_decode($newCookieValue, true);
 
         $this->assertEquals(2, count($newCookieValArr));
 
-        $this->assertEquals('currKey',$newCookieValArr['currValue']);
-        $this->assertEquals('variant',$newCookieValArr['localUniqueId']);
+        $this->assertEquals('currValue', $newCookieValArr['currKey']);
+        $this->assertEquals('variant', $newCookieValArr['localUniqueId']);
     }
 
     public function testGetTreatment()
