@@ -26,6 +26,17 @@ class RazorXTest extends TestCase
                              ->getMock();
     }
 
+    public function testGetVariantCookieValue()
+    {
+        $newCookieValue  = RazorXClient::appendVariantToCurrRazorxCookieValue('localUniqueId', 'variant');
+
+        $newCookieValArr = json_decode($newCookieValArr, true);
+
+        $this->assertEquals(1, count($newCookieValArr));
+
+        $this->assertEquals('variant',$newCookieValArr['localUniqueId']);
+    }
+
     public function testGetTreatment()
     {
         $route = 'evaluate';
