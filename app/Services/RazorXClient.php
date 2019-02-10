@@ -107,7 +107,7 @@ class RazorXClient
     */
     public static function getLocalUniqueId(string $id, string $featureFlag, string $mode): string
     {
-        $localUniqueId = 'I: ' . $id . '_F:' . $featureFlag . '_M:' . $mode;
+        $localUniqueId = 'I:' . $id . '_F:' . $featureFlag . '_M:' . $mode;
         return $localUniqueId;
     }
 
@@ -123,7 +123,7 @@ class RazorXClient
             $currRazorxCookieValue = '{}';
         }
 
-        $currCookieArr = json_decode($currRazorxCookieValue);
+        $currCookieArr = json_decode($currRazorxCookieValue, true);
 
         if (is_null($currCookieArr))
         {
