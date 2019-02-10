@@ -8,7 +8,6 @@ use Request;
 use RZP\Http\Route;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
-use RZP\Models\Payment;
 
 class Response
 {

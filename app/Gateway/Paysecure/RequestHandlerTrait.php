@@ -50,10 +50,9 @@ trait RequestHandlerTrait
 
         $content = [
             Entity::RRN  => $rrn,
-            Entity::FLOW => 'iframe',
         ];
 
-        $gatewayPayment = $this->createGatewayPaymentEntity($content);
+        $gatewayPayment = $this->createGatewayPaymentEntity($content, 'iframe');
 
         $contents = $this->getRequestContents($requestArray);
 

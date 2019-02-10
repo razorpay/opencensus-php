@@ -13,7 +13,6 @@ use RZP\Models\Feature\Constants as Feature;
 use RZP\Constants\Entity as E;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
-use RZP\Gateway\Base\Action;
 
 class PaymentCreateController extends Controller
 {

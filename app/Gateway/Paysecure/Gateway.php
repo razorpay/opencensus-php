@@ -29,6 +29,7 @@ class Gateway extends Base\Gateway
         Fields::STATUS        => Entity::STATUS,
         Fields::APPRCODE      => Entity::APPRCODE,
         Fields::TRAN_ID       => Entity::GATEWAY_TRANSACTION_ID,
+        Entity::FLOW          => Entity::FLOW,
     ];
 
     public function __construct()
@@ -86,9 +87,7 @@ class Gateway extends Base\Gateway
 
             $this->handleFailure($response, 'initiate');
 
-            $attributes = $this->getMappedAttributes($response);
-
-            $this->updateGatewayPaymentEntity($gatewayPayment, $attributes, false);
+            $this->updateGatewayPaymentEntity($gatewayPayment, $response);
 
             $request = [
                 'method' => 'direct',

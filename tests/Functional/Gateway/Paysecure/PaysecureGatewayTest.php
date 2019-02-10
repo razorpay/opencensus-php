@@ -114,7 +114,7 @@ class PaysecureGatewayTest extends TestCase
 
         $gatewayPayment = $this->getDbLastEntityToArray('paysecure');
 
-        $this->assertEmpty($gatewayPayment);
+        $this->assertNotEmpty($gatewayPayment);
     }
 
     public function testCallbackFailure()
@@ -226,7 +226,7 @@ class PaysecureGatewayTest extends TestCase
 
         $gatewayPayment = $this->getDbLastEntityToArray('paysecure');
 
-        $this->assertEmpty($gatewayPayment);
+        $this->assertNotEmpty($gatewayPayment);
     }
 
     public function testPaymentAuthViaPinPad()
