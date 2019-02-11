@@ -130,6 +130,8 @@ class EntityOriginTest extends TestCase
      */
     public function testCreatePaymentOriginPrivateAuth()
     {
+        $this->mockCardVault();
+
         $merchantId = '10000000000000';
 
         $this->ba->privateAuth();
