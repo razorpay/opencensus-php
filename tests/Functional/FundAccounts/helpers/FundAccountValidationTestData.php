@@ -18,11 +18,33 @@ return [
                 'count'  => 1,
                 'items'  => [
                     [
-                        'entity'  => 'fund_account.validation',
-                        'status'  => 'created',
-                        'results' => [
+                        'entity' => 'fund_account.validation',
+                        'fund_account' => [
+                            'entity' => 'fund_account',
+                            'account_type' => 'bank_account',
+                            'details' => [
+                                'ifsc' => 'SBIN0010411',
+                                'bank_name' => 'State Bank of India',
+                                'name' => 'Rohit Keshwani',
+                                'account_number' => '123456789',
+                            ],
+                            'bank_account' => [
+                                'ifsc' => 'SBIN0010411',
+                                'bank_name' => 'State Bank of India',
+                                'name' => 'Rohit Keshwani',
+                                'account_number' => '123456789',
+                            ],
+                            'active' => true,
                         ],
-                    ]
+                        'status' => 'created',
+                        'amount' => 100,
+                        'currency' => 'INR',
+                        'notes' => [],
+                        'results' => [
+                            'account_status' => NULL,
+                            'registered_name' => NULL,
+                        ],
+                    ],
                 ],
             ],
         ],
