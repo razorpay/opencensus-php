@@ -8,9 +8,9 @@ import META from './meta';
 export default class extends React.Component {
   state = { isIntroOpened: false };
 
-  selectTemplate = (label, meta) => {
+  selectTemplate = (label, quillPrefill) => {
     return () => {
-      this.props.selectTemplate(meta);
+      this.props.selectTemplate(quillPrefill);
 
       this.setState({
         templateLabel: label,
@@ -63,12 +63,12 @@ export default class extends React.Component {
                   return (
                     <TemplateCard
                       key={k}
-                      title={META[m].title}
-                      description={META[m].description}
+                      title={META[m].card_title}
+                      description={META[m].card_description}
                       img=""
                       selectTemplate={this.selectTemplate(
                         META[m].label,
-                        META[m].meta
+                        META[m].quillPrefill
                       )}
                     />
                   );

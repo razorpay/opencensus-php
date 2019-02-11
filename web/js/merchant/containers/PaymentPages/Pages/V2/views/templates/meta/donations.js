@@ -1,11 +1,74 @@
 export default {
   label: 'Donation',
-  title: 'Accepting Donations',
-  description:
-    'Choose this template if you want to collect money for Donations, campaigns, social causes, etc.',
-  meta: [
-    { insert: 'Title Donation' },
-    { attributes: { header: 2 }, insert: '\n' },
-    { insert: '#Some content over here\n' },
+  card_title: 'Accepting Donations',
+  card_description:
+    'Raising money for a good cause? Our online Donations template saves you valuable time so you can focus on your cause.',
+  quillPrefill: [
+    {
+      insert: 'Donation Cause',
+    },
+    {
+      attributes: {
+        header: 2,
+      },
+      insert: '\n',
+    },
+    {
+      insert:
+        '# Provide information about your fundraising drive\n\nCampaign starts on ',
+    },
+    {
+      attributes: {
+        header: 2,
+      },
+      insert: '\n',
+    },
+    {
+      insert: '# Date and time of the start of the drive\n\nCampaign ends on ',
+    },
+    {
+      attributes: {
+        header: 2,
+      },
+      insert: '\n',
+    },
+    {
+      insert: '# Date and time of the end of the drive\n\nOrganiser details ',
+    },
+    {
+      attributes: {
+        header: 2,
+      },
+      insert: '\n',
+    },
+    {
+      insert:
+        '# Organisation / Organiser description with address and contact information\n\nTax exemption details ',
+    },
+    {
+      attributes: {
+        header: 2,
+      },
+      insert: '\n',
+    },
+    {
+      insert:
+        '# Details of tax exemption eligibility for donors\n\nCampaign images',
+    },
+    {
+      attributes: {
+        header: 2,
+      },
+      insert: '\n',
+    },
+    {
+      insert: '# Select and upload up to 4 images for fundraising drive\n',
+    },
+    {
+      attributes: {
+        header: 2,
+      },
+      insert: '\n',
+    },
   ],
 };

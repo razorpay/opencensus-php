@@ -14,7 +14,12 @@
   .ql-toolbar
     border: none
     padding: 5px
-    border-bottom: 1px solid #e2e2e2
+    border-top: 1px solid #e2e2e2
+    position: absolute
+    bottom: 1px
+    left: -5px
+    right: -5px
+    z-index: 2
 
     .ql-formats:last-of-type
       margin-right: 0
@@ -84,6 +89,7 @@
     padding: 8px
     left: 50% !important
     transform: translateX(-50%) !important
+    z-index: 3
 
     &::before
       content: 'Enter Video URL'
@@ -149,7 +155,7 @@
     border: none
 
     .ql-editor
-      padding: 12px 8px
+      padding: 12px 8px 48px
 
 .ql-picker-options
   .ql-picker-item:not(:last-of-type)
@@ -159,15 +165,15 @@
 .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="2"]::before, .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="2"]::before
   content: 'Heading'
   font-weight: 600
-  font-size: 18px
+  font-size: 16px
 
 
 .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="3"]::before, .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="3"]::before
   content: 'Subheading'
   font-weight: 600
-  font-size: 16px
+  font-size: 14px
 
 .ql-snow .ql-picker.ql-header .ql-picker-label::before, .ql-snow .ql-picker.ql-header .ql-picker-item::before
   content: 'Normal Text'
   font-weight: 400
-  font-size: 14px
+  font-size: 13px

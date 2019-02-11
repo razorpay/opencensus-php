@@ -1,8 +1,8 @@
 export default {
-  label: 'Product Sale',
-  card_title: 'Product Sale',
+  label: 'Fees Collection',
+  card_title: 'Fees Collection',
   card_description:
-    'Selling products online? Take orders around the clock with our Online Order template.',
+    'Collect fees and accept payments in seconds with our online form, no paperwork involved.',
   quillPrefill: [
     {
       insert: 'Product Image(s)',
@@ -45,12 +45,6 @@ export default {
     },
     {
       insert: '# Average time required for delivery after shipment\n',
-    },
-    {
-      attributes: {
-        header: 2,
-      },
-      insert: '\n',
     },
   ],
 };
