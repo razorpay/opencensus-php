@@ -16,6 +16,7 @@ class CorePaymentService
     const ACCEPT_HEADER            = 'Accept';
     const X_RAZORPAY_APP_HEADER    = 'X-Razorpay-App';
     const X_RAZORPAY_TASKID_HEADER = 'X-Razorpay-TaskId';
+    const X_RAZORPAY_MODE_HEADER   = 'X-Razorpay-Mode';
     const APPLICATION_JSON         = 'application/json';
 
     const REQUEST_TIMEOUT = 20;
@@ -71,6 +72,7 @@ class CorePaymentService
             'content' => $data,
             'headers' => [
                 self::X_RAZORPAY_TASKID_HEADER => $this->app['request']->getTaskId(),
+                self::X_RAZORPAY_MODE_HEADER   => $this->app['basicauth']->getMode(),
             ],
         ];
 
