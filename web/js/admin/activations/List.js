@@ -91,10 +91,9 @@ export default class MerchantList extends Component {
   _updateMerchateReviewerMap = (reviewers, merchants) => {
     let merchantReviewerMap = {};
     merchants.forEach(
-      // merchants api doesn't return the reviewer_id with `admin_` prefix, adding it for consistency
       merchant =>
         (merchantReviewerMap[merchant.id] = this._getReviewer(
-          'admin_' + merchant.merchant_detail.reviewer_id
+          merchant.merchant_detail.reviewer_id
         ))
     );
     this.setState({ pending: false, merchantReviewerMap });
@@ -120,17 +119,19 @@ export default class MerchantList extends Component {
       ],
       [
         'Reviewer',
-        item => (
-          <SearchableSelectField
-            name="reviewer_id"
-            options={this.reviewers}
-            trackBy="id"
-            selected={merchantReviewerMap[item.id] || ''}
-            onChange={({ option }) =>
-              this.handleSingleReviewerAssignment(item.id, option)
-            }
-          />
-        ),
+        item => {
+          return (
+            <SearchableSelectField
+              name="reviewer_id"
+              options={this.reviewers}
+              trackBy="id"
+              selected={merchantReviewerMap[item.id] || ''}
+              onChange={({ option }) =>
+                this.handleSingleReviewerAssignment(item.id, option)
+              }
+            />
+          );
+        },
       ],
       [
         'Merchant ID',
