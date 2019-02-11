@@ -163,8 +163,8 @@ class Reporting implements ExternalService
             // The below if condition check is not for admins of RZP organisation. Here, Admin should not be able to
             // access the consumer(org id here) which is not same as his organisation. Admin auth will be used here.
             //
-            if ($this->ba->getAdmin()->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID &&
-                $this->ba->getAdmin()->getOrgId() !== $consumer)
+            if (($this->ba->getAdmin()->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID) and
+                ($this->ba->getAdmin()->getOrgId() !== $consumer))
             {
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REPORTING_INTEGRATION);
             }
@@ -632,7 +632,10 @@ class Reporting implements ExternalService
         $hasSubscriptionsTag           = in_array(Feature::SUBSCRIPTIONS, $features, true);
         $hasGenericNotesTag            = in_array(Feature::REPORTING_GENRERIC_NOTES, $features, true);
 
-        $merchantInvoiceExperimentValue = $this->app->razorx->getTreatment($merchant, 'reporting_merchant_invoice', $this->mode);
+        $merchantInvoiceExperimentValue = $this->app->razorx->getTreatment(
+            $merchant,
+            'reporting_merchant_invoice',
+            $this->mode);
 
         $items = $items->filter(function ($value, $key) use (
             $hasPlTag,
@@ -667,7 +670,10 @@ class Reporting implements ExternalService
             }
         });
 
-        $items = $items->filter(function ($value) use ($hasOfferTag, $hasGenericNotesTag)
+        $items = $items->filter(function ($value) use (
+            $hasOfferTag,
+            $hasGenericNotesTag,
+            $merchantInvoiceExperimentValue)
         {
             if (($value['name'] === 'Offer Payments') and
                 ($value['type'] === Table::PAYMENT) and
@@ -685,7 +691,7 @@ class Reporting implements ExternalService
                      ($value['type'] === null) and
                      ($value['consumer'] === Account::SHARED_ACCOUNT))
             {
-                return $merchantInvoiceExperimentValue;
+                return ($merchantInvoiceExperimentValue === 'on');
             }
 
             return true;

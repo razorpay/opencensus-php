@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Rule;
+use RZP\Models\Payment\Method;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
@@ -378,25 +379,28 @@ class Selector extends Base\Core
     {
         try
         {
-            $merchant = $this->input['merchant'];
-
-            $payment = $this->input['payment'];
-
-            $currency = ($payment->getConvertCurrency() === true) ? Currency::INR : $payment->getCurrency();
-
-            $hasHitachiDirectTerminal = (new TerminalService)->checkDirectTerminalForGateway(
-                $filteredTerminals, 
-                Constants::HITACHI,
-                $merchant, 
-                $currency);
-
-            if ($hasHitachiDirectTerminal === false) 
+            if ($this->input['payment']->isMethod(Method::CARD)=== true)
             {
-                $newTerminal = $this->createDirectTerminal(Constants::HITACHI);
+                $merchant = $this->input['merchant'];
 
-                if ($newTerminal !== null)
+                $payment = $this->input['payment'];
+
+                $currency = ($payment->getConvertCurrency() === true) ? Currency::INR : $payment->getCurrency();
+
+                $hasHitachiDirectTerminal = (new TerminalService)->checkDirectTerminalForGateway(
+                    $filteredTerminals,
+                    Constants::HITACHI,
+                    $merchant,
+                    $currency);
+
+                if ($hasHitachiDirectTerminal === false)
                 {
-                    array_push($filteredTerminals, $newTerminal);
+                    $newTerminal = $this->createDirectTerminal(Constants::HITACHI);
+
+                    if ($newTerminal !== null)
+                    {
+                        array_push($filteredTerminals, $newTerminal);
+                    }
                 }
             }
         }
@@ -404,5 +408,6 @@ class Selector extends Base\Core
         {
             $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENT_TERMINAL_CREATION_ERROR);
         }
+
     }
 }
