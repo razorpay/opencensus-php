@@ -51,7 +51,7 @@ class Vijaya extends Base
                 $merchant = $this->repo->merchant->fetchMerchantFromEntity($row['payment']);
 
                 $merchant_data[$merchant_id] = [
-                    'name'    => $merchant->getBillingLabelNotName(),
+                    'name'    => $merchant->getFilteredDba(),
                     'amount'  => $row['payment']['amount']
                 ];
             }
