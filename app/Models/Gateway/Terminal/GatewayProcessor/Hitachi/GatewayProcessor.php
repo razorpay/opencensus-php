@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: shivamyuvraj
- * Date: 2019-01-28
- * Time: 19:29
- */
 
 namespace RZP\Models\Gateway\Terminal\GatewayProcessor\Hitachi;
 
@@ -17,9 +11,10 @@ use RZP\Models\Gateway\Terminal\GatewayProcessor\BaseGatewayProcessor;
 class GatewayProcessor extends BaseGatewayProcessor
 {
 
-    const GATEWAY_INPUT   = 'gateway_input';
-    const HITACHI_TID_OFFSET = 10000;
-    const HITACHI_INDEX_KEY = 'hitachi_gateway_terminal_creation_index';
+    const GATEWAY_INPUT         = 'gateway_input';
+    const MERCHANT_DETAIL_INPUT = 'merchant_detail_input';
+    const HITACHI_TID_OFFSET    = 10000;
+    const HITACHI_INDEX_KEY     = 'hitachi_gateway_terminal_creation_index';
     const HITACHI_TERMINAL_TID_PREFIX = '38R';
     const HITACHI_TERMINAL_MID_PREFIX = '38RR000000';
 
@@ -68,9 +63,15 @@ class GatewayProcessor extends BaseGatewayProcessor
 
     public function validateGatewayInput($gatewayInput, $merchant)
     {
-        (new Validator)->validateInput(self::GATEWAY_INPUT, $gatewayInput);
+        $gatewayProcessorValidator = new Validator();
 
-        // any check specific to merchants
+        $gatewayProcessorValidator->validateInput(self::GATEWAY_INPUT, $gatewayInput);
+
+        $merchantDetail = $merchant->merchantDetail->toArray();
+
+        $gatewayProcessorValidator->setStrictFalse();
+
+        $gatewayProcessorValidator->validateInput(self::MERCHANT_DETAIL_INPUT, $merchantDetail);
     }
 
     private function setTerminalType(&$terminalData, $type = null)
