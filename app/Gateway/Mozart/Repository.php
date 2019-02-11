@@ -12,11 +12,12 @@ class Repository extends Base\Repository
         Entity::PAYMENT_ID          => 'sometimes|string|size:14',
     );
 
-    public function findByGatewayPaymentIdAndAction($gatewayPaymentId, $action)
+    public function findByPaymentIdAndMapByAction($paymentId, $actions = [])
     {
         return $this->newQuery()
-                    ->where(Entity::BANK_PAYMENT_ID, '=', $gatewayPaymentId)
-                    ->where(Entity::ACTION, '=', $action)
-                    ->firstOrFail();
+                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                    ->whereIn(Entity::ACTION, $actions)
+                    ->get()
+                    ->keyBy(Entity::ACTION);
     }
 }

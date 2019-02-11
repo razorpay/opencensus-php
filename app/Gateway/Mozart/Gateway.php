@@ -29,7 +29,7 @@ class Gateway extends Base\Gateway
         parent::action($input, Action::PAY_VERIFY);
 
         $gateway = $input['gateway'];
-        unset($gateway);
+        unset($input['gateway']);
 
         $input['gateway']['redirect'] = $gateway;
 
