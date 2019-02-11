@@ -203,7 +203,13 @@ return [
 
     'transfer_mapping'        => [],
 
-    'virtual_account_mapping' => [],
+    'virtual_account_mapping' => [
+        'properties' => [
+            'balance_id' => [
+                'type'  => 'keyword',
+            ],
+        ],
+    ],
 
     'merchant_mapping'        => [
         '_all' => [

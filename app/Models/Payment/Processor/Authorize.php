@@ -4993,7 +4993,8 @@ trait Authorize
         }
 
         if (($payment->isMethodCardOrEmi() === false) or
-            ($payment->isRecurring() === true))
+            ($payment->isRecurring() === true) or
+            ($payment->isPushPaymentMethod() === true))
         {
             return null;
         }
@@ -5002,14 +5003,6 @@ trait Authorize
 
         if (($authType !== null) and
             ($authType !== Payment\AuthType::_3DS))
-        {
-            return null;
-        }
-
-        $response = $this->app->razorx->getTreatment($merchant->getId(), 'redirect_to_authorize', $this->mode);
-
-        if (($response === 'control') or
-            ($response === 'off'))
         {
             return null;
         }

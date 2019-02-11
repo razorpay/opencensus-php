@@ -94,10 +94,9 @@ class Entity extends Transaction\Entity
                 break;
 
             default:
-                throw new LogicException(
-                    'Transaction of unexpected type is being exposed to public!',
-                    null,
-                    array_only($array[self::SOURCE], [self::ID, self::ENTITY]));
+                // By default do not expose any source attributes
+                $array[self::SOURCE] = [];
+                break;
         }
     }
 

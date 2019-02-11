@@ -86,4 +86,15 @@ class Mode
     {
         return static::$modeMap[$internalMode] ?? $internalMode;
     }
+
+    public static function getAll(): array
+    {
+        return [
+            self::RTGS,
+            self::IMPS,
+            self::NEFT,
+            self::IFT,
+            self::UPI,
+        ];
+    }
 }

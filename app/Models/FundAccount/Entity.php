@@ -37,6 +37,12 @@ class Entity extends Base\PublicEntity
     const CUSTOMER      = 'customer';
     // Details is basically publicly exposed underlying account
     const DETAILS       = 'details';
+    // Bank Account is basically publicly exposed underlying account
+    // when account type is bank account
+    const BANK_ACCOUNT  = 'bank_account';
+    // VPA is basically publicly exposed underlying account
+    // when account type is VPA
+    const VPA           = 'vpa';
 
     protected $generateIdOnCreate = true;
 
@@ -53,6 +59,8 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER,
         self::ACCOUNT_TYPE,
         self::DETAILS,
+        self::BANK_ACCOUNT,
+        self::VPA,
         self::ACTIVE,
         self::CREATED_AT,
     ];
@@ -195,6 +203,10 @@ class Entity extends Base\PublicEntity
         array_forget($publicAttributes, [Base\PublicEntity::ID, Base\PublicEntity::ENTITY]);
 
         $array[self::DETAILS] = $publicAttributes;
+
+        $accountType = array_get($array, self::ACCOUNT_TYPE);
+
+        $array[$accountType] = $publicAttributes;
     }
 
     // ------------- End Setters -------------
