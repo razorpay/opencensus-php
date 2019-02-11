@@ -266,6 +266,9 @@ return [
             Header::BANK_BRANCH_IFSC         => 'HDFC0000077',
             Header::BANK_ACCOUNT_NAME        => 'Mr merch',
             Header::REFERENCE1               => 'service id',
+            Header::COMPANY_CIN              => 'qwer1234',
+            Header::COMPANY_PAN              => 'JFKDU3829K',
+            Header::COMPANY_PAN_NAME         => 'dsfdfsd',
         ],
         [
             Header::MERCHANT_NAME            => 'SubMerchanttwo',
@@ -299,6 +302,9 @@ return [
             Header::BANK_BRANCH_IFSC         => 'HDFC0000056',
             Header::BANK_ACCOUNT_NAME        => 'Mr merch',
             Header::REFERENCE1               => 'service id',
+            Header::COMPANY_CIN              => 'qwer1234',
+            Header::COMPANY_PAN              => 'JFKDU3829K',
+            Header::COMPANY_PAN_NAME         => 'dsfdfsd',
         ],
         [
             Header::MERCHANT_NAME            => 'SubMerchantthree',
@@ -332,6 +338,9 @@ return [
             Header::BANK_BRANCH_IFSC         => 'HDFC0000011',
             Header::BANK_ACCOUNT_NAME        => 'Mr merch',
             Header::REFERENCE1               => 'service id',
+            Header::COMPANY_CIN              => 'qwer1234',
+            Header::COMPANY_PAN              => 'JFKDU3829K',
+            Header::COMPANY_PAN_NAME         => 'dsfdfsd',
         ],
     ]
 ];

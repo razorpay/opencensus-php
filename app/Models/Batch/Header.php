@@ -102,6 +102,9 @@ class Header
     const PROMOTER_PAN             = 'promoter_pan';
     const PROMOTER_PAN_NAME        = 'promoter_pan_name';
     const WEBSITE_URL              = 'website';
+    const COMPANY_PAN_NAME         = 'company_pan_name';
+    const COMPANY_CIN              = 'company_cin';
+    const COMPANY_PAN              = 'company_pan';
 
     //
     // Virtual Account Bulk Creation Headers
@@ -1132,6 +1135,9 @@ class Header
                 self::BANK_ACCOUNT_NAME,
                 self::BANK_BRANCH_IFSC,
                 self::BANK_ACCOUNT_NUMBER,
+                self::COMPANY_CIN,
+                self::COMPANY_PAN,
+                self::COMPANY_PAN_NAME,
             ],
 
             self::OUTPUT => [
