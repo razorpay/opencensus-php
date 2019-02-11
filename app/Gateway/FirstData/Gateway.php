@@ -1776,7 +1776,7 @@ class Gateway extends Base\Gateway
 
         if ($this->mode === Mode::TEST)
         {
-            $storeId = $this->input['gateway_config']['test_store_id'];
+            $storeId = $this->config['test_store_id'];
         }
 
         return $storeId;
@@ -1811,7 +1811,7 @@ class Gateway extends Base\Gateway
 
     protected function getLiveSecret()
     {
-        $liveSecret = $this->input['gateway_config']['live_hash_secret'];
+        $liveSecret = $this->config['live_hash_secret'];
 
         if ($this->isOldStoreId() === true)
         {
@@ -1823,8 +1823,8 @@ class Gateway extends Base\Gateway
 
     protected function getCredentials()
     {
-        $username = $this->input['gateway_config']['live_user_id'];
-        $password = $this->input['gateway_config']['live_password'];
+        $username = $this->config['live_user_id'];
+        $password = $this->config['live_password'];
 
         if ($this->isOldStoreId() === true)
         {
@@ -1834,8 +1834,8 @@ class Gateway extends Base\Gateway
 
         if ($this->mode === Mode::TEST)
         {
-            $username = $this->input['gateway_config']['test_user_id'];
-            $password = $this->input['gateway_config']['test_password'];
+            $username = $this->config['test_user_id'];
+            $password = $this->config['test_password'];
         }
 
         return [$username, $password];
@@ -1857,19 +1857,19 @@ class Gateway extends Base\Gateway
 
     protected function getGatewayCertDirName()
     {
-        return $this->input['gateway_config'][self::CERTIFICATE_DIRECTORY_NAME];
+        return $this->config[self::CERTIFICATE_DIRECTORY_NAME];
     }
 
     protected function getServerCertificate()
     {
         $gatewayCertPath = $this->getGatewayCertDirPath();
 
-        return $gatewayCertPath . '/' . $this->input['gateway_config']['server_certificate'];
+        return $gatewayCertPath . '/' . $this->config['server_certificate'];
     }
 
     public function getClientCertificateName()
     {
-        $certName = $this->input['gateway_config']['client_certificate'];
+        $certName = $this->config['client_certificate'];
 
         if ($this->isOldStoreId() === true)
         {
@@ -1890,7 +1890,7 @@ class Gateway extends Base\Gateway
         {
             $clientCertFile = fopen($clientCertPath, 'w');
 
-            $encodedCert = $this->input['gateway_config']['live_client_certificate'];
+            $encodedCert = $this->config['live_client_certificate'];
 
             if ($this->isOldStoreId() === true)
             {
@@ -1899,7 +1899,7 @@ class Gateway extends Base\Gateway
 
             if ($this->mode === Mode::TEST)
             {
-                $encodedCert = $this->input['gateway_config']['test_client_certificate'];
+                $encodedCert = $this->config['test_client_certificate'];
             }
 
             $key = base64_decode($encodedCert);
@@ -1918,7 +1918,7 @@ class Gateway extends Base\Gateway
 
     protected function getClientCertificatePassword()
     {
-        $password = $this->input['gateway_config']['live_client_certificate_password'];
+        $password = $this->config['live_client_certificate_password'];
 
         if ($this->isOldStoreId() === true)
         {
@@ -1927,7 +1927,7 @@ class Gateway extends Base\Gateway
 
         if ($this->mode === Mode::TEST)
         {
-            $password = $this->input['gateway_config']['test_client_certificate_password'];
+            $password = $this->config['test_client_certificate_password'];
         }
 
         return $password;

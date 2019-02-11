@@ -182,10 +182,6 @@ class Gateway extends Base\Gateway
      */
     protected function callAuthenticationGateway(array $input, $authenticationGateway)
     {
-        // This makes no sense, but need to do this now as API as no way of figuring
-        // out which gateway config needs to be sent to gateway at callback time
-        $input['gateway_config'] = $this->app['config']->get('gateway')[$authenticationGateway];
-
         $esignerGatewayResponse = $this->app['gateway']->call(
             $authenticationGateway,
             $this->action,

@@ -241,7 +241,7 @@ class Gateway extends Base\Gateway
 
     public function getStringToHashForBharatQr($content)
     {
-        $salt = $this->input['gateway_config']['bharatqr_salt'];
+        $salt = $this->config['bharatqr_salt'];
 
         $stringToHash =  urldecode(http_build_query($content));
 
@@ -323,10 +323,6 @@ class Gateway extends Base\Gateway
      */
     protected function callAuthenticationGateway(array $input, $authenticationGateway)
     {
-        // This makes no sense, but need to do this now as API as no way of figuring
-        // out which gateway config needs to be sent to gateway at callback time
-        $input['gateway_config'] = $this->app['config']->get('gateway')[$authenticationGateway];
-
         return $this->app['gateway']->call(
             $authenticationGateway,
             $this->action,
@@ -1189,7 +1185,7 @@ class Gateway extends Base\Gateway
 
         if ($this->mode === Mode::TEST)
         {
-            $merchantId = $this->getTestMerchantIdFromInput();
+            $merchantId = $this->getTestMerchantId();
         }
 
         return $merchantId;
@@ -1201,7 +1197,7 @@ class Gateway extends Base\Gateway
 
         if ($this->mode === Mode::TEST)
         {
-            $terminalId = $this->input['gateway_config']['test_terminal_id'];
+            $terminalId = $this->config['test_terminal_id'];
         }
 
         return $terminalId;
@@ -1209,16 +1205,16 @@ class Gateway extends Base\Gateway
 
     protected function getLiveSecret()
     {
-        return $this->input['gateway_config']['gateway_salt'];
+        return $this->config['gateway_salt'];
     }
 
     protected function getSecret2()
     {
-        $secret2 = $this->input['gateway_config']['gateway_salt2'];
+        $secret2 = $this->config['gateway_salt2'];
 
         if ($this->mode === Mode::TEST)
         {
-            $secret2 = $this->input['gateway_config']['test_hash_secret2'];
+            $secret2 = $this->config['test_hash_secret2'];
         }
 
         return $secret2;

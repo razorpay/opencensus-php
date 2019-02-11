@@ -176,15 +176,6 @@ class Server extends Base\Core
         return $gateway;
     }
 
-    protected function getGatewayConfig($key)
-    {
-        $gateway = $this->gatewayName;
-
-        $configKeyName = 'gateway.' . $gateway . '.' . $key;
-
-        return $this->app['config']->get($configKeyName);
-    }
-
     protected function getGatewayNamespace()
     {
         $namespace = $this->getNamespace();

@@ -951,8 +951,8 @@ class Gateway extends Base\Gateway
         if ($this->mode === Mode::TEST)
         {
             $auth = [
-                'username' => $this->input['gateway_config'][self::TEST_USERNAME],
-                'password' => $this->input['gateway_config'][self::TEST_PASSWORD]
+                'username' => $this->config[self::TEST_USERNAME],
+                'password' => $this->config[self::TEST_PASSWORD]
             ];
         }
 
@@ -965,7 +965,7 @@ class Gateway extends Base\Gateway
 
         if ($this->mode === Mode::TEST)
         {
-            $mid = $this->input['gateway_config'][self::TEST_USERNAME];
+            $mid = $this->config[self::TEST_USERNAME];
         }
 
         return $mid;
@@ -1039,8 +1039,8 @@ class Gateway extends Base\Gateway
         if ($this->mode === Mode::TEST)
         {
             $auth = array(
-                'username' => $this->input['gateway_config'][self::TEST_MERCHANT_ID],
-                'password' => $this->input['gateway_config'][self::TEST_MERCHANT_SECRET]
+                'username' => $this->config[self::TEST_MERCHANT_ID],
+                'password' => $this->config[self::TEST_MERCHANT_SECRET]
             );
         }
 

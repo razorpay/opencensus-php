@@ -17,8 +17,6 @@ use RZP\Gateway\FirstData\ApiResponseFields;
 
 class Server extends Base\Mock\Server
 {
-    protected $gatewayName = Payment\Gateway::FIRST_DATA;
-
     public function __construct()
     {
         parent::__construct();
@@ -497,7 +495,7 @@ class Server extends Base\Mock\Server
 
     protected function getHash($approvalCode, $chargeTotal, $currencyCode, $txnDateTime, $storeId)
     {
-        $sharedSecret = $this->getGatewayConfig('test_hash_secret');
+        $sharedSecret = $this->getGatewayInstance()->getSecret();
 
         $stringToHash = $sharedSecret . $approvalCode . $chargeTotal . $currencyCode . $txnDateTime . $storeId;
 

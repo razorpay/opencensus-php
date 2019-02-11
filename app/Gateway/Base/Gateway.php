@@ -983,28 +983,11 @@ class Gateway
         return $this->getLiveSecret();
     }
 
-    public function getSecretFromInput()
-    {
-        if ($this->mode === Mode::TEST)
-        {
-            return $this->getTestSecretFromInput();
-        }
-
-        return $this->getLiveSecret();
-    }
-
     protected function getTestSecret()
     {
         assert($this->mode === Mode::TEST);
 
         return $this->config['test_hash_secret'];
-    }
-
-    protected function getTestSecretFromInput()
-    {
-        assert($this->mode === Mode::TEST);
-
-        return $this->input['gateway_config']['test_hash_secret'];
     }
 
     protected function getLiveSecret()
@@ -1020,23 +1003,6 @@ class Gateway
         }
 
         return $this->getLiveTerminalPassword();
-    }
-
-    public function getTerminalPasswordFromInput()
-    {
-        if ($this->mode === Mode::TEST)
-        {
-            return $this->getTestTerminalPassword();
-        }
-
-        return $this->getLiveTerminalPassword();
-    }
-
-    protected function getTestTerminalPasswordFromInput()
-    {
-        assert($this->mode === Mode::TEST);
-
-        return $this->input['gateway_config']['test_terminal_password'];
     }
 
     protected function getTestTerminalPassword()
@@ -1157,18 +1123,6 @@ class Gateway
         return $code;
     }
 
-    protected function getTestAccessCodeFromInput()
-    {
-        $code = null;
-
-        if (isset($this->input['gateway_config']['test_access_code']))
-        {
-            $code = $this->input['gateway_config']['test_access_code'];
-        }
-
-        return $code;
-    }
-
     protected function getTestMerchantId()
     {
         $code = null;
@@ -1176,18 +1130,6 @@ class Gateway
         if (isset($this->config['test_merchant_id']))
         {
             $code = $this->config['test_merchant_id'];
-        }
-
-        return $code;
-    }
-
-    protected function getTestMerchantIdFromInput()
-    {
-        $code = null;
-
-        if (isset($this->input['gateway_config']['test_merchant_id']))
-        {
-            $code = $this->input['gateway_config']['test_merchant_id'];
         }
 
         return $code;
@@ -1201,11 +1143,6 @@ class Gateway
     protected function getTestMerchantId2()
     {
         return $this->config['test_merchant_id2'];
-    }
-
-    protected function getTestMerchantId2FromInput()
-    {
-        return $this->input['gateway_config']['test_merchant_id2'];
     }
 
     protected function getLiveMerchantId2()
