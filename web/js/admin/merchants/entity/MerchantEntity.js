@@ -394,11 +394,12 @@ const ActionsList = ({ model, merchantId, actions }) => {
           <div onClick={actions.ViewTeam}>See Team Details</div>
         </ShowWhen>
         <ShowWhen permission="view_merchant_analytics">
-          {!isDetailsLoading && merchant.details.activated && (
-            <Link to={`/merchants/${merchantId}/stats`}>
-              See Merchant Analytics Stats
-            </Link>
-          )}
+          {!isDetailsLoading &&
+            merchant.details.activated && (
+              <Link to={`/merchants/${merchantId}/stats`}>
+                See Merchant Analytics Stats
+              </Link>
+            )}
         </ShowWhen>
         <ShowWhen permission="edit_merchant_comments">
           <div onClick={actions.EditComment}>
@@ -762,16 +763,24 @@ const ActionsList = ({ model, merchantId, actions }) => {
           );
         })()}
 
-        {!isDetailsLoading && !!merchant.details.partner_type && (
-          <ShowWhen permission="edit_partners">
-            <div
-              onClick={isSubmerchantsLoading ? null : actions.LinkSubmerchant}
-            >
-              Link Submerchant
-              {isSubmerchantsLoading && <div class="dot-loader" />}
-              <i class="pull-right i-user-plus" />
-            </div>
-          </ShowWhen>
+        {!isDetailsLoading &&
+          !!merchant.details.partner_type && (
+            <ShowWhen permission="edit_partners">
+              <div
+                onClick={isSubmerchantsLoading ? null : actions.LinkSubmerchant}
+              >
+                Link Submerchant
+                {isSubmerchantsLoading && <div class="dot-loader" />}
+                <i class="pull-right i-user-plus" />
+              </div>
+            </ShowWhen>
+          )}
+
+        {!!merchant.details.partner_type && (
+          <Link to={`/merchants/${merchantId}/partner_config`}>
+            Partner Config
+            <i class="pull-right i-partner" />
+          </Link>
         )}
 
         <ShowWhen permission="edit_merchant_screenshot">
