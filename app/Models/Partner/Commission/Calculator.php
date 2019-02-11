@@ -4,7 +4,6 @@ namespace RZP\Models\Partner\Commission;
 
 use App;
 use Razorpay\Trace\Logger as Trace;
-use Illuminate\Foundation\Application;
 
 use RZP\Models\Base;
 use RZP\Models\Pricing;
@@ -12,7 +11,6 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\EntityOrigin;
 use RZP\Models\Pricing\Plan;
-use RZP\Base\RepositoryManager;
 use RZP\Exception\LogicException;
 use RZP\Models\Partner\Commission;
 use Razorpay\OAuth\Application as OAuthApp;
@@ -23,41 +21,8 @@ use RZP\Models\Partner\Config as PartnerConfig;
  *
  * @package RZP\Models\Partner\Commission
  */
-class Calculator
+class Calculator extends Base\Core
 {
-    /**
-     * The application instance.
-     *
-     * @var Application
-     */
-    protected $app;
-
-    /**
-     * Repository manager instance
-     * @var RepositoryManager
-     */
-    protected $repo;
-
-    /**
-     * Trace instance used for tracing
-     * @var Trace
-     */
-    protected $trace;
-
-    /**
-     * Test/Live mode
-     *
-     * @var string
-     */
-    protected $mode;
-
-    /**
-     * Environment - production/testing/beta
-     *
-     * @var String
-     */
-    protected $env;
-
     /**
      * @var Merchant\Entity
      */
@@ -130,19 +95,6 @@ class Calculator
      */
     public function __construct(Base\PublicEntity $sourceEntity)
     {
-        $this->app = App::getFacadeRoot();
-
-        if (isset($this->app['rzp.mode']))
-        {
-            $this->mode = $this->app['rzp.mode'];
-        }
-
-        $this->env = $this->app['env'];
-
-        $this->trace = $this->app['trace'];
-
-        $this->repo = $this->app['repo'];
-
         if (Constants::isValidCommissionSource($sourceEntity) === false)
         {
             return;
