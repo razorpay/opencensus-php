@@ -19,6 +19,17 @@ const COLORS_LIST = [
 ];
 
 const QUILL_OPTIONS = {
+  formats: [
+    'header',
+    'color',
+    'bold',
+    'italic',
+    'underline',
+    'list',
+    'link',
+    'image',
+    'video',
+  ],
   modules: {
     toolbar: [
       [{ header: [2, 3, false] }],
