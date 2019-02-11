@@ -141,7 +141,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       });
     };
 
-    script.src = 'https://cdn.razorpay.com/static/hosted/wysiwyg.js';
+    script.src = 'http://127.0.0.1:7999/static/hosted/wysiwyg.js';
 
     document.head.appendChild(script);
 
