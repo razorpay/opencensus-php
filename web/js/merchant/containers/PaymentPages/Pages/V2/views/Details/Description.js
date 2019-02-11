@@ -40,67 +40,15 @@ All URLs will convert to links.`;
 @connect(null, { showNotification })
 export default class extends React.PureComponent {
   state = { isScriptLoaded: null };
+
   componentDidMount() {
-    window.onQuillLoad = () => {
-      customizeIcons();
-      this.QUILL = new window.Quill('#description-quill', QUILL_OPTIONS);
-
-      /* Pre-fill description */
-      this.props.description &&
-        this.QUILL.setContents(JSON.parse(this.props.description));
-
-      /* Update description via debounce */
-      this.QUILL.on('text-change', (delta, oldDelta, source) => {
-        if (source == 'user') {
-          this.updateDescription();
-        }
-      });
-
-      /* For style handling */
-      this.QUILL.on('selection-change', range => {
-        if (!range) {
-          this.setState({ isFocused: false });
-        } else {
-          this.setState({ isFocused: true });
-        }
-      });
-
-      /* Custom Image handling */
-      this.QUILL.getModule('toolbar').addHandler('image', () =>
-        this.handleImageInsert()
-      );
-
-      /* Fix keyboard bindings */
-      const keyboard = this.QUILL.getModule('keyboard');
-      for (let key in keyboard.hotkeys) {
-        delete keyboard.hotkeys[key];
-      }
-
-      const bodyEditor = document.getElementById('description-quill');
-
-      // Allow only certain hotkeys. Quilljs is adding hotkeys for unused modules, hence explicit handling.
-      bodyEditor.addEventListener('keydown', function(e) {
-        let ret = true;
-
-        if (e.ctrlKey || e.metaKey) {
-          switch (e.keyCode) {
-            case 66: // ctrl+B or ctrl+b
-            case 98:
-              ret = false;
-              break;
-            case 73: // ctrl+I or ctrl+i
-            case 105:
-              ret = false;
-              break;
-            case 85: // ctrl+U or ctrl+u
-            case 117:
-              ret = false;
-              break;
-          }
-        }
-        return ret;
-      });
-    };
+    if (window.Quill) {
+      this.initDescription();
+    } else {
+      window.onQuillLoad = () => {
+        this.initDescription();
+      };
+    }
   }
 
   componentWillUpdate(nextProps) {
@@ -111,6 +59,67 @@ export default class extends React.PureComponent {
       this.templateInitDone = true;
       this.QUILL && this.QUILL.setContents(JSON.parse(nextProps.description));
     }
+  }
+
+  initDescription() {
+    customizeIcons();
+    this.QUILL = new window.Quill('#description-quill', QUILL_OPTIONS);
+
+    /* Pre-fill description */
+    this.props.description &&
+      this.QUILL.setContents(JSON.parse(this.props.description));
+
+    /* Update description via debounce */
+    this.QUILL.on('text-change', (delta, oldDelta, source) => {
+      if (source == 'user') {
+        this.updateDescription();
+      }
+    });
+
+    /* For style handling */
+    this.QUILL.on('selection-change', range => {
+      if (!range) {
+        this.setState({ isFocused: false });
+      } else {
+        this.setState({ isFocused: true });
+      }
+    });
+
+    /* Custom Image handling */
+    this.QUILL.getModule('toolbar').addHandler('image', () =>
+      this.handleImageInsert()
+    );
+
+    /* Fix keyboard bindings */
+    const keyboard = this.QUILL.getModule('keyboard');
+    for (let key in keyboard.hotkeys) {
+      delete keyboard.hotkeys[key];
+    }
+
+    const bodyEditor = document.getElementById('description-quill');
+
+    // Allow only certain hotkeys. Quilljs is adding hotkeys for unused modules, hence explicit handling.
+    bodyEditor.addEventListener('keydown', function(e) {
+      let ret = true;
+
+      if (e.ctrlKey || e.metaKey) {
+        switch (e.keyCode) {
+          case 66: // ctrl+B or ctrl+b
+          case 98:
+            ret = false;
+            break;
+          case 73: // ctrl+I or ctrl+i
+          case 105:
+            ret = false;
+            break;
+          case 85: // ctrl+U or ctrl+u
+          case 117:
+            ret = false;
+            break;
+        }
+      }
+      return ret;
+    });
   }
 
   handleImageInsert(f) {
