@@ -4,19 +4,18 @@ import debounce from 'rzp/utils/debounce';
 import { showNotification } from 'rzp/modules/notifications';
 
 import { uploadImageInDescription } from '../../../model';
-import { isJSONString } from 'rzp/utils/validators';
 
 const FILE_SIZE_LIMIT = 2; // 2MB limit
 const COLORS_LIST = [
-  '#00BB55',
-  '#528FF0',
-  '#F05150',
-  '#FF9800',
-  '#BA68C8',
-  '#F06292',
-  '#A1887F',
-  '#58666E',
-  '#B4BABD',
+  '#00bb55',
+  '#528ff0',
+  '#f05150',
+  '#ff9800',
+  '#ba68c8',
+  '#f06292',
+  '#a1887f',
+  '#58666e',
+  '#b4babd',
 ];
 
 const QUILL_OPTIONS = {
@@ -46,20 +45,18 @@ export default class extends React.PureComponent {
       customizeIcons();
       this.QUILL = new window.Quill('#description-quill', QUILL_OPTIONS);
 
-      if (this.props.description) {
-        if (isJSONString(this.props.description)) {
-          this.QUILL.setContents(JSON.parse(this.props.description));
-        } else {
-          this.QUILL.setText(this.props.description);
-        }
-      }
+      /* Pre-fill description */
+      this.props.description &&
+        this.QUILL.setContents(JSON.parse(this.props.description));
 
+      /* Update description via debounce */
       this.QUILL.on('text-change', (delta, oldDelta, source) => {
         if (source == 'user') {
           this.updateDescription();
         }
       });
 
+      /* For style handling */
       this.QUILL.on('selection-change', range => {
         if (!range) {
           this.setState({ isFocused: false });
@@ -68,9 +65,41 @@ export default class extends React.PureComponent {
         }
       });
 
+      /* Custom Image handling */
       this.QUILL.getModule('toolbar').addHandler('image', () =>
         this.handleImageInsert()
       );
+
+      /* Fix keyboard bindings */
+      const keyboard = this.QUILL.getModule('keyboard');
+      for (let key in keyboard.hotkeys) {
+        delete keyboard.hotkeys[key];
+      }
+
+      const bodyEditor = document.getElementById('description-quill');
+
+      // Allow only certain hotkeys. Quilljs is adding hotkeys for unused modules, hence explicit handling.
+      bodyEditor.addEventListener('keydown', function(e) {
+        let ret = true;
+
+        if (e.ctrlKey || e.metaKey) {
+          switch (e.keyCode) {
+            case 66: // ctrl+B or ctrl+b
+            case 98:
+              ret = false;
+              break;
+            case 73: // ctrl+I or ctrl+i
+            case 105:
+              ret = false;
+              break;
+            case 85: // ctrl+U or ctrl+u
+            case 117:
+              ret = false;
+              break;
+          }
+        }
+        return ret;
+      });
     };
   }
 
