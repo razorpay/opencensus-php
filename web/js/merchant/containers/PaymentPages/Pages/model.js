@@ -51,26 +51,12 @@ export function editPaymentPage(id, data) {
 
 export function uploadImageInDescription(file) {
   const fd = new FormData();
-  fd.append('image', file);
-
-  return new Promise((resolve, reject) => {
-    setTimeout(function() {
-      const isSuccess = Math.round(Math.random());
-
-      resolve({
-        url: 'https://cdn.razorpay.com/logos/BU3aIBQGfPxCTd_medium.png',
-      });
-      reject(null);
-    }, 1500);
-  });
+  fd.append('images[0]', file);
 
   return merchantFetch({
-    url: ``,
-    method: 'patch',
+    url: `payment_links/images`,
+    method: 'post',
     data: fd,
-    headers: {
-      'content-type': 'application/json',
-    },
   });
 }
 

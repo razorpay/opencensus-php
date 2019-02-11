@@ -160,8 +160,10 @@ export default class extends React.PureComponent {
       if (isImageType) {
         uploadImageInDescription(file)
           .then(res => {
-            if (res) {
-              self.QUILL.insertEmbed(range.index, 'image', res.url, 'user');
+            if (res && res.success) {
+              const url = res.data[0];
+
+              self.QUILL.insertEmbed(range.index, 'image', url, 'user');
             } else {
               throw { errors: ['Some network error occurred'] };
             }
