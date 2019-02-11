@@ -147,7 +147,7 @@ class Gateway
     const POWER_WALLETS = [
         Wallet::MOBIKWIK,
         Wallet::PAYUMONEY,
-        Wallet::OLAMONEY,
+        // Wallet::OLAMONEY,
         Wallet::FREECHARGE,
         // Wallet::MPESA,
     ];
