@@ -15,6 +15,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Partner\Commission;
 use Razorpay\OAuth\Application as OAuthApp;
 use RZP\Models\Partner\Config as PartnerConfig;
+use RZP\Models\Pricing\Calculator as FeeCalculator;
 
 /**
  * Class Calculator
@@ -89,16 +90,30 @@ class Calculator extends Base\Core
     protected $implicitPricingPlan = null;
 
     /**
+     * @var
+     */
+    protected $partnerConfigCore;
+
+    /**
+     * @var null|FeeCalculator\Base
+     */
+    protected $feeCalculator = null;
+
+    /**
      * Calculator constructor.
      *
      * @param Base\PublicEntity $sourceEntity
      */
     public function __construct(Base\PublicEntity $sourceEntity)
     {
+        parent::__construct();
+
         if (Constants::isValidCommissionSource($sourceEntity) === false)
         {
             return;
         }
+
+        $this->partnerConfigCore = new PartnerConfig\Core;
 
         $this->setBaseContext($sourceEntity);
     }
@@ -217,6 +232,21 @@ class Calculator extends Base\Core
     public function getPartnerTax(): int
     {
         return $this->partnerTax;
+    }
+
+    public function getFeeCalculator(): FeeCalculator\Base
+    {
+        if ($this->feeCalculator === null)
+        {
+            $pricingFee = new Pricing\Fee;
+
+            // primary or banking
+            $product = $pricingFee->getProductForEntity($this->getSource());
+
+            $this->feeCalculator = FeeCalculator\Base::make($this->getSource(), $product);
+        }
+
+        return $this->feeCalculator;
     }
 
     // ==================================== SETTERS ====================================
@@ -362,7 +392,7 @@ class Calculator extends Base\Core
             return false;
         }
 
-        if ($this->isCommissionEnabled() === false)
+        if ($this->isCommissionsEnabled() === false)
         {
             $this->traceContext(TraceCode::COMMISSION_NOT_ENABLED);
 
@@ -429,19 +459,13 @@ class Calculator extends Base\Core
      */
     protected function isCustomerFeeBearer(): bool
     {
-        $submerchant = $this->getSubMerchant();
-
-        // Eg: 'payment', 'refund'
-        $sourceEntityName = $this->getSource()->getEntity();
-
-        return ((Pricing\Feature::isCustomerFeeBearerSupported($sourceEntityName) === true) and
-                    ($submerchant->isFeeBearerCustomer() === true));
+        return ($this->getSubMerchant()->isFeeBearerCustomer() === true);
     }
 
     /**
      * @return bool
      */
-    public function isCommissionEnabled(): bool
+    public function isCommissionsEnabled(): bool
     {
         return ($this->getPartnerConfig()->isCommissionsEnabled() === true);
     }
@@ -604,7 +628,6 @@ class Calculator extends Base\Core
             Entity::TAX      => $this->getCommissionTax(),
             Entity::DEBIT    => 0,
             Entity::CREDIT   => $this->getCommissionFee(),
-            Entity::STATUS   => Status::CREATED,
             Entity::CURRENCY => $this->getSource()->getCurrency(),
         ];
     }
@@ -634,12 +657,7 @@ class Calculator extends Base\Core
      */
     protected function getPartnerPricing(): array
     {
-        $pricingFee = new Pricing\Fee;
-
-        // primary or banking
-        $product = $pricingFee->getProductForEntity($this->getSource());
-
-        $calculator = new Pricing\FeeCalculator($this->getSource(), $product);
+        $calculator = $this->getFeeCalculator();
 
         $pricingPlanId = $this->getPartnerConfig()->getImplicitPricingPlanId();
 
@@ -656,67 +674,27 @@ class Calculator extends Base\Core
      */
     protected function setImplicitPricingPlanContext()
     {
-        if ($this->getPartnerConfig() === null)
+        $pricingPlan = $this->partnerConfigCore->getImplicitPlanFromConfig($this->getPartnerConfig());
+
+        if ($pricingPlan === null)
         {
             return;
         }
-
-        $partnerConfig = $this->getPartnerConfig();
-
-        $pricingPlanId = $partnerConfig->getImplicitPricingPlanId();
-
-        if ($pricingPlanId === null)
-        {
-            return;
-        }
-
-        $pricingPlan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($pricingPlanId);
 
         $this->setImplicitPricingPlan($pricingPlan);
     }
 
     protected function setPartnerAppContext()
     {
-        $entityOrigin = $this->getSource()->entityOrigin;
+        $sourceEntity = $this->getSource(); // payment, refund, etc
 
-        //
-        // If the origin (merchant / application) is defined for the source entity (payment, refund etc),
-        // fetch the origin, else, return null.
-        //
-        $origin     = optional($entityOrigin)->origin;
-        $originType = optional($origin)->getEntityName();
+        $submerchant = $this->getSubMerchant();
 
-        // If an application had initiated the source entity then
-        // fetch the partner configurations defined for the application-submerchant.
-        $accessMap = null;
-
-        if ($originType == EntityOrigin\Constants::APPLICATION)
-        {
-            $partnerApp = $origin;
-        }
-        else
-        {
-            //
-            // If $origin is null or $originType is 'merchant',
-            // check if a reseller / aggregator / bank / fully managed partner exists for the submerchant
-            // and fetch the internal OAuth application linked to the partner merchant account.
-            //
-            $accessMap = $this->repo
-                              ->merchant_access_map
-                              ->getNonPurePlatformPartnerMapping($this->subMerchant->getId());
-
-            $partnerApp = optional($accessMap)->entity;
-        }
+        $partnerApp = (new EntityOrigin\Core)->getPartnerAppFromEntityOrigin($sourceEntity, $submerchant);
 
         if ($partnerApp === null)
         {
-            $this->traceContext(
-                TraceCode::COMMISSION_PARTNER_APP_DOES_NOT_EXIST,
-                [
-                    'access_map'  => optional($accessMap)->getId(),
-                    'partner_app' => optional($partnerApp)->getId(),
-                    'origin_type' => $originType,
-                ]);
+            $this->traceContext(TraceCode::COMMISSION_PARTNER_APP_DOES_NOT_EXIST);
 
             return;
         }
@@ -729,14 +707,14 @@ class Calculator extends Base\Core
      */
     protected function setPartnerContext()
     {
-        if ($this->getPartnerApp() === null)
+        $partnerApp = $this->getPartnerApp();
+
+        if ($partnerApp === null)
         {
             return;
         }
 
-        $partnerId = $this->getPartnerApp()->getMerchantId();
-
-        $partner = $this->repo->merchant->find($partnerId);
+        $partner = (new Merchant\Core)->getPartnerFromApp($partnerApp);
 
         if ($partner === null)
         {
@@ -761,7 +739,14 @@ class Calculator extends Base\Core
             return;
         }
 
-        $partnerConfig = (new PartnerConfig\Core)->fetch($this->getPartnerApp(), $this->getSubMerchant());
+        $partnerConfig = $this->partnerConfigCore->fetch($this->getPartnerApp(), $this->getSubMerchant());
+
+        if ($partnerConfig === null)
+        {
+            // @todo - add logs
+
+            return;
+        }
 
         $this->setPartnerConfig($partnerConfig);
     }
