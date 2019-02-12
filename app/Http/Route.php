@@ -83,6 +83,7 @@ final class Route
         'batch_retry_output_file'                  => ['post',     'batches/{id}/retry_output_file',                 'BatchController@retryBatchOutputFile'                              ],
         'batch_download_file'                      => ['get',      'batches/{id}/download',                          'BatchController@downloadBatch'                                     ],
         'batch_stats'                              => ['get',      'batches/{id}/stats',                             'BatchController@getStats'                                          ],
+        'file_upload_admin'                        => ['post',     'admin/files/{type}',                             'AdminController@uploadFileAdmin'                                   ],
         'payment_capture'                          => ['post',     'payments/{id}/capture',                          'PaymentController@postCapture'                                     ],
         'payment_bulk_capture'                     => ['post',     'payments/capture/bulk',                          'PaymentController@postBulkCapture'                                 ],
         'payment_fetch_transfers'                  => ['get',      'payments/{id}/transfers',                        'PaymentController@getTransfers'                                    ],
@@ -432,6 +433,9 @@ final class Route
         'get_config_keys'                          => ['get',      'config/keys',                                    'AdminController@getConfigKeys'                                     ],
         'get_cache_counts'                         => ['get',      'cache/counts',                                   'AdminController@getQueryCacheCounts'                               ],
         'set_es_pricing_keys'                      => ['post',     'cache/es_pricing',                               'AdminController@setEarlySettlementPricingKeys'                     ],
+        'set_redis_keys'                           => ['put',      'redis/keys',                                     'AdminController@setRedisKeys'                                      ],
+        'get_redis_key'                            => ['get',      'redis/key',                                      'AdminController@getRedisKey'                                       ],
+        'update_redis_keys'                        => ['patch',    'redis/keys',                                     'AdminController@updateRedisKeys'                                   ],
         'get_es_pricing_merchant'                  => ['get',      'cache/es_pricing',                               'MerchantController@getEarlySettlementPricingForMerchant'           ],
         'dummy_route'                              => ['post',     'dummy/route',                                    'PaymentController@postDummyRoute'                                  ],
         'transparent_redirect_get'                 => ['get',      'redirect',                                       'AdminController@getTransparentRedirect'                            ],
@@ -983,16 +987,16 @@ final class Route
         'contact_types_get'                        => ['get',      'contacts/types',                                 'ContactController@getTypes'                                        ],
         'contact_types_post'                       => ['post',     'contacts/types',                                 'ContactController@postType'                                        ],
 
+        // Fund Account Validation
+        'fund_account_validate'                    => ['post',     'fund_accounts/validations',                      'FundAccountValidationController@create'                            ],
+        'fund_account_validate_fetch'              => ['get',      'fund_accounts/validations',                      'FundAccountValidationController@list'                              ],
+        'fund_account_validate_fetch_by_id'        => ['get',      'fund_accounts/validations/{id}',                 'FundAccountValidationController@get'                               ],
+
         'fund_account_get'                         => ['get',      'fund_accounts/{id}',                             'FundAccountController@get'                                         ],
         'fund_account_list'                        => ['get',      'fund_accounts',                                  'FundAccountController@list'                                        ],
         'fund_account_create'                      => ['post',     'fund_accounts',                                  'FundAccountController@create'                                      ],
         'fund_account_update'                      => ['patch',    'fund_accounts/{id}',                             'FundAccountController@update'                                      ],
         'fund_account_delete'                      => ['delete',   'fund_accounts/{id}',                             'FundAccountController@delete'                                      ],
-
-        // Fund Account Validation
-        'fund_account_validate'                    => ['post',     'fund_accounts_validations',                      'FundAccountValidationController@create'                            ],
-        'fund_account_validate_fetch'              => ['get',      'fund_accounts_validations',                      'FundAccountValidationController@list'                              ],
-        'fund_account_validate_fetch_by_id'        => ['get',      'fund_accounts_validations/{id}',                 'FundAccountValidationController@get'                               ],
 
         // Banking statement routes
         'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
@@ -1228,6 +1232,9 @@ final class Route
         'contact_create',
         'contact_update',
         //'contact_delete',
+        'fund_account_validate',
+        'fund_account_validate_fetch',
+        'fund_account_validate_fetch_by_id',
         'fund_account_get',
         'fund_account_list',
         'fund_account_create',
@@ -1238,9 +1245,6 @@ final class Route
         //'fund_account_delete',
         'transaction_statement_fetch',
         'transaction_statement_fetch_multiple',
-        'fund_account_validate',
-        'fund_account_validate_fetch',
-        'fund_account_validate_fetch_by_id',
     ];
 
     // Only routes defined in internalApps go here
@@ -1354,7 +1358,7 @@ final class Route
         'entity_balance_id_update',
         'merchant_es_sync_cron',
         'gateway_downtime_vajra_webhook',
-        'scrooge_refund_verify_bulk'
+        'scrooge_refund_verify_bulk',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1616,6 +1620,7 @@ final class Route
         'feature_delete_entity',
         'feature_get',
         'batch_create_admin',
+        'file_upload_admin',
         'admin_dummy_account_test',
         'admin_get_file',
         // workflows
@@ -1887,6 +1892,10 @@ final class Route
         'merchant_balance_bulk_backfill_ids',
         //Bulk Add/Remove bank for terminal
         'terminal_bank_bulk',
+        'set_redis_keys',
+        'get_redis_key',
+        'update_redis_keys',
+
         'partner_config_create',
         'partner_config_fetch',
         'partner_config_edit',
@@ -1965,7 +1974,7 @@ final class Route
         'merchant_actions'                         => '*',
         'merchant_live_enable'                     => Permission::EDIT_MERCHANT_ENABLE_LIVE,
         'merchant_live_disable'                    => Permission::EDIT_MERCHANT_DISABLE_LIVE,
-        'admin_fetch_entity_by_id'                 => '*',
+        'admin_fetch_entity_by_id'                 => Permission::VIEW_ALL_ENTITY,
         'merchant_activation_update'               => '*', // permission handled in code
         'merchant_assign_pricing'                  => Permission::EDIT_MERCHANT_PRICING,
         'merchant_get_banks'                       => Permission::VIEW_MERCHANT_BANKS,
@@ -1980,8 +1989,8 @@ final class Route
         'merchants_update_channel'                 => Permission::EDIT_BULK_MERCHANT_CHANNEL,
         'schedule_fetch_multiple'                  => Permission::SCHEDULE_FETCH_MULTIPLE,
         'setl_fetch_schedule'                      => Permission::SCHEDULE_FETCH_MULTIPLE,
-        'admin_fetch_all_entities'                 => '*',
-        'admin_fetch_entity_multiple'              => '*',
+        'admin_fetch_all_entities'                 => Permission::VIEW_ALL_ENTITY,
+        'admin_fetch_entity_multiple'              => Permission::VIEW_ALL_ENTITY,
         'admin_fetch_report_types'                 => '*',
         'admin_fetch_report'                       => '*',
         'payment_fix_attempted_orders'             => '*',
@@ -2108,7 +2117,7 @@ final class Route
         'feature_bulk_remove'                      => '*',
         'fund_transfer_attempt_bulk_update'        => Permission::SETTLEMENT_BULK_UPDATE,
         'gateway_add_priorities'                   => '*',
-        'gateway_fetch_downtimes'                  => '*',
+        'gateway_fetch_downtimes'                  => Permission::VIEW_GATEWAY_DOWNTIME,
         'gateway_create_downtime'                  => Permission::CREATE_GATEWAY_DOWNTIME,
         'gateway_fetch_priorities'                 => '*',
         'gateway_file_acknowledge'                 => '*',
@@ -2208,6 +2217,7 @@ final class Route
         'refund_mark_processed_bulk'               => Permission::EDIT_REFUND,
         'batch_create'                             => '*',
         'batch_create_admin'                       => Permission::ADMIN_BATCH_CREATE,
+        'file_upload_admin'                        => Permission::ADMIN_FILE_UPLOAD,
         'reporting_config_get'                     => '*',
         'reporting_config_list'                    => '*',
         'reporting_config_create'                  => Permission::CREATE_SELF_SERVE_REPORT,
@@ -2267,7 +2277,9 @@ final class Route
         'entity_balance_id_update'                 => '*',
         'merchant_balance_bulk_backfill_ids'       => '*',
         'terminal_bank_bulk'                       => Permission::EDIT_TERMINAL,
-
+        'set_redis_keys'                           => '*',
+        'get_redis_key'                            => '*',
+        'update_redis_keys'                        => '*',
         // TODO fix the permissions later after discussing
         'partner_config_create'                    => '*',
         'partner_config_fetch'                     => '*',
@@ -2476,6 +2488,7 @@ final class Route
             'payment_fetch_multiple',
             'invoice_create',
             'invoice_fetch',
+            'invoice_fetch_multiple',
             'customer_fetch_by_id',
             'payment_create_subscriptions',
             'payment_capture',
@@ -2660,6 +2673,15 @@ final class Route
         'pricing_delete_plan_rule',
         'pricing_delete_plan_rule_force',
         'pricing_update_plan_rule'
+    ];
+
+    /**
+     * Routes with Wildcard permission allowed for restricted orgs
+     * @var array
+     */
+    public static $restrictedOrgWildCardRoutes = [
+        'admin_logout',
+        'admin_get_app_auth',
     ];
 
     // Sets TRACE level to CRITICAL for these routes

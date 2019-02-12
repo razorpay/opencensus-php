@@ -199,9 +199,10 @@ class PartnerConfigTest extends OAuthTestCase
         $this->allowAdminToAccessMerchant(self::DEFAULT_NON_PLATFORM_MERCHANT_ID);
 
         $this->fixtures->create('partner_config', [
-            'id'              => self::DEFAULT_PARTNER_CONFIGS_ID,
-            'entity_id'       => self::DEFAULT_NON_PLATFORM_APP_ID,
-            'default_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
+            'id'                  => self::DEFAULT_PARTNER_CONFIGS_ID,
+            'entity_id'           => self::DEFAULT_NON_PLATFORM_APP_ID,
+            'default_plan_id'     => Pricing::DEFAULT_PRICING_PLAN_ID,
+            'commissions_enabled' => 1,
         ]);
 
         $testData = $this->testData[__FUNCTION__];

@@ -612,6 +612,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
     ];
 
+    protected static $netbankingIdfcEditTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:' . Gateway::NETBANKING_IDFC,
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::TPV                         => 'sometimes|in:0,2',
+    ];
+
     protected static $cardFssTerminalRules = [
         Entity::GATEWAY                     => 'required|in:card_fss',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
@@ -683,6 +689,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::GATEWAY_ACCESS_CODE         => 'required|string',
         Entity::TYPE                        => 'required|array',
+        Entity::GATEWAY_ACQUIRER            => 'required|string'
     ];
 
     protected static $editWalletAirtelmoneyTerminalRules = [

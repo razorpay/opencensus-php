@@ -38,7 +38,7 @@ class Service
     {
         $this->trace  = $app['trace'];
 
-        $this->config = $app['config'];
+        $this->config = $app['config']->get('applications.beam');
 
         $this->mode   = $app['rzp.mode'];
     }
@@ -94,7 +94,7 @@ class Service
             ]
         );
 
-        BeamJob::dispatch($request, $intervalInfo, $mailInfo);
+        BeamJob::dispatch($request, $intervalInfo, $mailInfo, $this->config['mock']);
     }
 
     /**
@@ -104,6 +104,6 @@ class Service
      */
     protected function getUrl($route)
     {
-        return trim($this->config->get('applications.beam')['url']) . '/' . $route;
+        return trim($this->config['url']) . '/' . $route;
     }
 }

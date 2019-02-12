@@ -27,12 +27,24 @@ class Repository extends Base\Repository
      */
     public function getContactWithSimilarDetails(array $input, Merchant\Entity $merchant)
     {
+        //
+        // If all of following attributes are empty then do not continue with query.
+        // This is because other attributes do not tell if it is similar i.e. multiple people can have same name etc.
+        //
+        if ((empty($input[Entity::CONTACT]) === true) and
+            (empty($input[Entity::EMAIL]) === true) and
+            (empty($input[Entity::REFERENCE_ID]) === true))
+        {
+            return;
+        }
+
         return $this->newQuery()
                     ->where(Entity::CONTACT, $input[Entity::CONTACT] ?? null)
                     ->where(Entity::EMAIL, $input[Entity::EMAIL] ?? null)
                     ->where(Entity::REFERENCE_ID, $input[Entity::REFERENCE_ID] ?? null)
                     ->merchantId($merchant->getId())
                     ->where(Entity::TYPE, $input[Entity::TYPE] ?? null)
+                    ->where(Entity::ACTIVE, true)
                     ->where(Entity::NAME, $input[Entity::NAME] ?? null)
                     ->orderBy(Entity::CREATED_AT, 'desc')
                     ->orderBy(Entity::ID, 'desc')

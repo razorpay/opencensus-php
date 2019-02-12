@@ -988,9 +988,8 @@ class Service extends Base\Service
             $refund = $this->repo->refund->findOrFailPublic($refundId);
 
             $gateway = $refund->getGateway();
-            $merchantId = $refund->merchant->getId();
 
-            if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway, $merchantId) === true)
+            if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway) === true)
             {
                 $refund->getValidator()->validateMarkProcessed();
 
@@ -1009,7 +1008,7 @@ class Service extends Base\Service
                     TraceCode::REFUND_MARK_PROCESSED_NON_SCROOGE_GATEWAY,
                     [
                         'refund_id' => $refund->getId(),
-                        'status' => $refund->getStatus(),
+                        'status'    => $refund->getStatus(),
                     ]);
             }
         }
@@ -1251,44 +1250,6 @@ class Service extends Base\Service
             (empty($refund->getReference1()) === true))
         {
             $refund->setReference1($input[RefundEntity::BANK_REFERENCE_NO]);
-        }
-    }
-
-    /**
-     * Updates refund entity status after FTA recon
-     *
-     * @param Entity $refund
-     * @param string $ftaStatus
-     * @param string|null $ftaFailureReason
-     */
-    public function updateStatusAfterFtaRecon(Entity $refund, string $ftaStatus, string $ftaFailureReason = null)
-    {
-        switch ($ftaStatus)
-        {
-            case Status::PROCESSED:
-                $refund->setStatusProcessed();
-                $this->repo->saveOrFail($refund);
-                break;
-
-            case Status::FAILED:
-                $refund->setStatus(Status::FAILED);
-                $this->repo->saveOrFail($refund);
-                break;
-
-            case Status::CREATED:
-                break;
-
-            case Status::INITIATED:
-                break;
-
-            default:
-                $this->trace->error(
-                    TraceCode::UNKNOWN_FTA_STATUS_SENT_TO_REFUND,
-                    [
-                        'refund_id'             => $refund->getId(),
-                        'fta_status'            => $ftaStatus,
-                        'fta_failure_reason'    => $ftaFailureReason,
-                    ]);
         }
     }
 

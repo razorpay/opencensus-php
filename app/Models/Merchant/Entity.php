@@ -1163,6 +1163,17 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REFUND_SOURCE);
     }
 
+    public function getContrastOfBrandColor()
+    {
+        $brandColor = $this->getBrandColorOrDefault();
+
+        $relativeLuminance = get_contrast_with_white(str_replace('#', '', $brandColor));
+
+        // similar as in checkout (instead of #000000 checkout has rgba(0, 0, 0, 0.85)),
+        return $relativeLuminance < 0.5 ? '#FFFFFF' : '#000000';
+
+    }
+
     public function getFullLogoUrlWithSize($size = self::ORIGINAL_SIZE)
     {
         $relativeLogoUrl = $this->getLogoUrl();

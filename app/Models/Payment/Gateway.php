@@ -94,6 +94,7 @@ class Gateway
     const ACQUIRER_AMEX         = 'amex';
     const ACQUIRER_FSS          = 'fss';
     const ACQUIRER_RATN         = 'ratn';
+    const ACQUIRER_YESB         = 'yesb';
     const ACQUIRER_BARB         = 'barb';
 
     const NOT_SUPPORTED      = 'not_supported';
@@ -146,7 +147,7 @@ class Gateway
     const POWER_WALLETS = [
         Wallet::MOBIKWIK,
         Wallet::PAYUMONEY,
-        Wallet::OLAMONEY,
+        // Wallet::OLAMONEY,
         Wallet::FREECHARGE,
         // Wallet::MPESA,
     ];
@@ -179,6 +180,7 @@ class Gateway
         self::NETBANKING_ICICI  => self::ICICI,
         self::NETBANKING_RBL    => self::RBL,
         self::NETBANKING_AXIS   => self::AXIS,
+        self::PAYTM             => self::PAYTM,
     ];
 
     /**
@@ -540,6 +542,8 @@ class Gateway
         '9DZkE60krEG4wq',
         '9ncOh0EZ8sC9z9',
         '9hefgkvGhT18Q9',
+        'BbaYzzPW541Aut',
+        '80oXBj51MHGmwH',
     ];
 
     public static $channels = [
@@ -1106,6 +1110,7 @@ class Gateway
         Gateway::NETBANKING_HDFC,
         Gateway::NETBANKING_AXIS,
         Gateway::ENACH_RBL,
+        Gateway::ENACH_NPCI_NETBANKING,
     ];
 
     /**
@@ -1264,6 +1269,7 @@ class Gateway
         IFSC::SCBL,
         IFSC::UTIB,
         IFSC::YESB,
+        IFSC::CITI,
     ];
 
     public static $emiBanksUsingCardTerminals = [
@@ -1275,6 +1281,7 @@ class Gateway
         IFSC::ICIC,
         IFSC::YESB,
         IFSC::SBIN,
+        IFSC::CITI,
     ];
 
     public static $emiBankToGatewayMap = [
@@ -1391,6 +1398,11 @@ class Gateway
         return array_keys(self::$scroogeGateways);
     }
 
+    public static function getScroogeMerchants(): array
+    {
+        return self::$scroogeMerchants;
+    }
+
     public static function isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer)
     {
         $pinAuthGateways = self::$gatewayAcquirerIfscMapping;
@@ -1415,9 +1427,14 @@ class Gateway
      */
     public static function isScroogeGatewayAndMerchant(string $gateway = null, string $merchantId = null): bool
     {
+        if (empty($merchantId) === false)
+        {
+            return ((in_array($gateway, self::getScroogeGateways(), true) === true) and
+                (in_array($merchantId, self::getScroogeMerchants(), true) === true));
+        }
+
         return (in_array($gateway, self::getScroogeGateways(), true) === true);
     }
-
 
     /**
      * This function checks if the gateway was live at a particular timestamp

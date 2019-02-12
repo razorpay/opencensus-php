@@ -18,9 +18,12 @@ class Server extends Base\Mock\Server
 
         $this->validateAuthorizeInput($input);
 
-        $input = array_merge(array_slice($input, 0, 5, true),
-                             [Fields::ACCOUNT_NUMBER => ''],
-                             array_slice($input, 5, 5, true));
+        if (isset($input[Fields::ACCOUNT_NUMBER]) === false)
+        {
+            $input = array_merge(array_slice($input, 0, 5, true),
+                [Fields::ACCOUNT_NUMBER => ''],
+                array_slice($input, 5, 5, true));
+        }
 
         $responseCode = $this->validateChecksum($input);
 

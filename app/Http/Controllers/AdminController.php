@@ -232,6 +232,15 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function uploadFileAdmin(string $type)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->uploadFile($type, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getOpsReportTypes()
     {
         $report = new Report\Types\OpsReport;
@@ -255,5 +264,32 @@ class AdminController extends Controller
         $response = $this->service()->updateEntityBalanceIdInBulk($entity, Request::all());
 
         return ApiResponse::json($response);
+    }
+
+    public function setRedisKeys()
+    {
+        $input  = Request::all();
+
+        $data = $this->service()->setRedisKeys($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getRedisKey()
+    {
+        $input  = Request::all();
+
+        $data = $this->service()->getRedisKey($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateRedisKeys()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateRedisKeys($input);
+
+        return ApiResponse::json($data);
     }
 }

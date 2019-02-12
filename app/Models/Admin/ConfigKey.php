@@ -26,6 +26,7 @@ class ConfigKey
     const BLOCK_YESBANK                         = 'block_yesbank';
     const BLOCK_AADHAAR_REG                     = 'block_aadhaar_reg';
     const HITACHI_DYNAMIC_DESCR_ENABLED         = 'hitachi_dynamic_descr_enabled';
+    const FTS_CHANNELS                          = 'fts_channels';
 
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,

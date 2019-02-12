@@ -14,7 +14,8 @@ class GatewayRule extends Base
             'gateway'       => 'hdfc',
             'network'       => 'VISA',
             'min_amount'    => 0,
-            'load'          => 50
+            'load'          => 50,
+            'step'          => 'authorization',
         ];
 
         $attributes = array_merge($ruleAttributes, $attributes);
@@ -32,6 +33,7 @@ class GatewayRule extends Base
             'merchant_id' => Merchant\Account::TEST_ACCOUNT,
             'min_amount'  => 0,
             'load'        => 50,
+            'step'        => 'authorization',
         ];
 
         $attributes = array_merge($ruleAttributes, $attributes);
@@ -49,6 +51,7 @@ class GatewayRule extends Base
             'min_amount'  => 0,
             'merchant_id' => Merchant\Account::TEST_ACCOUNT,
             'load'        => 50,
+            'step'        => 'authorization',
         ];
 
         $attributes = array_merge($ruleAttributes, $attributes);

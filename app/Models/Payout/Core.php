@@ -260,55 +260,53 @@ class Core extends Base\Core
         }
     }
 
-    public function updateStatusAfterFtaRecon(Entity $payout, string $ftaStatus, string $ftaFailureReason = null)
+    public function updateStatusAfterFtaRecon(Entity $payout, array $ftaData)
     {
-        switch ($ftaStatus)
+        switch ($ftaData[Attempt\Constants::FTA_STATUS])
         {
             case Attempt\Status::PROCESSED:
                 $this->handleFtaProcessed($payout);
                 break;
 
             case Attempt\Status::FAILED:
-                $this->handleFtaFailed($payout, $ftaFailureReason);
+                $this->handleFtaFailed($payout, $ftaData[Attempt\Constants::FAILURE_REASON]);
                 break;
 
             case Attempt\Status::CREATED:
-                break;
-
             case Attempt\Status::INITIATED:
+                $this->handleFtaProcessing($payout);
                 break;
 
             default:
                 $this->trace->warning(
                     TraceCode::UNKNOWN_FTA_STATUS_SENT_TO_PAYOUT,
-                    [
-                        'payout_id'             => $payout->getId(),
-                        'fta_status'            => $ftaStatus,
-                        'fta_failure_reason'    => $ftaFailureReason,
-                    ]);
+                    $ftaData);
         }
     }
 
-    public function updateWithDetailsBeforeFtaRecon(Entity $payout, Attempt\Entity $attempt, array $responseData = [])
+    public function updateStatusAfterFtaInitiated(Entity $entity, Attempt\Entity $fta)
     {
-        $utr = $attempt->getUtr();
+        $entity->batchFundTransfer()->associate($fta->batchFundTransfer);
 
-        $remarks = $attempt->getRemarks();
+        $entity->setStatus(Status::INITIATED);
 
-        $mode = $attempt->getMode();
+        $this->repo->saveOrFail($entity);
+    }
 
+    public function updateWithDetailsBeforeFtaRecon(Entity $payout, array $ftaData = [])
+    {
         // For non-Yesbank, we will not get public_failure_reason
-        $failureReason = $responseData['public_failure_reason'] ?? null;
+        $failureReason = $responseData[Attempt\Constants::FAILURE_REASON] ?? null;
 
-        $payout->setUtr($utr);
+        $payout->setUtr($ftaData[Attempt\Constants::UTR]);
 
-        $payout->setRemarks($remarks);
+        $payout->setRemarks($ftaData[Attempt\Constants::REMARKS]);
 
         // For VPA type, we always set it to UPI only
         // at build and we don't take the mode from FTA.
-        if ($attempt->hasVpa() === false)
+        if (empty($ftaData[Attempt\Constants::VPA_ID]) === true)
         {
-            $payout->setMode($mode);
+            $payout->setMode($ftaData[Attempt\Constants::MODE]);
         }
 
         $payout->setFailureReason($failureReason);
@@ -362,6 +360,13 @@ class Core extends Base\Core
         $this->repo->saveOrFail($payout);
 
         $this->app->events->fire('api.payout.processed', [$payout]);
+    }
+
+    protected function handleFtaProcessing(Entity $payout)
+    {
+        $payout->setStatus(Status::PROCESSING);
+
+        $this->repo->saveOrFail($payout);
     }
 
     protected function handleFtaFailed(Entity $payout, string $ftaFailureReason = null)

@@ -160,7 +160,7 @@ class TestCase extends ParentTestCase
         return $esMock;
     }
 
-    protected function setEsMockSearchExpectations($callee, $esMock, $method = 'search')
+    protected function setEsMockExpectations($callee, $esMock, $method = 'search')
     {
         $esParams   = "{$callee}ExpectedSearchParams";
         $esResponse = "{$callee}ExpectedSearchResponse";
@@ -179,5 +179,14 @@ class TestCase extends ParentTestCase
             $expectedSearchRes = $this->testData[$esResponse];
             $mockObj->willReturn($expectedSearchRes);
         }
+    }
+
+    protected function createEsMockAndSetExpectations(string $callee, string $method = 'search')
+    {
+        $mock = $this->createEsMock([$method]);
+
+        $this->setEsMockExpectations($callee, $mock, $method);
+
+        return $mock;
     }
 }

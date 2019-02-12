@@ -160,7 +160,8 @@ class Core extends Base\Core
             // Here min_amount and max_amount are both set to payment_amount
             // as the final query will be min_amount <= payment_amount <= max_amount
             Entity::MIN_AMOUNT    => $payment->getAmount(),
-            Entity::MAX_AMOUNT    => $payment->getAmount()
+            Entity::MAX_AMOUNT    => $payment->getAmount(),
+            Entity::STEP          => Entity::AUTHORIZATION,
         ];
 
         $this->fillMethodSpecificDetails($params, $payment);

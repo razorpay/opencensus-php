@@ -513,7 +513,7 @@ class Server extends Base\Mock\Server
     {
         $xml = $this->arrayToXml($content);
 
-        $response = FirstData\SoapWrapper::defaultWrapper($xml,Constants::IPGAPI_ORDER_RESPONSE);
+        $response = FirstData\SoapWrapper::defaultWrapper($xml, Constants::IPGAPI_ORDER_RESPONSE);
 
         return $response;
     }

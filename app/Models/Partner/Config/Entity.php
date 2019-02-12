@@ -32,24 +32,25 @@ class Entity extends PublicEntity
     protected $fillable = [
         self::DEFAULT_PLAN_ID,
         self::IMPLICIT_PLAN_ID,
-        self::IMPLICIT_EXPIRY_AT,
         self::EXPLICIT_PLAN_ID,
-        self::EXPLICIT_SHOULD_CHARGE,
+        self::IMPLICIT_EXPIRY_AT,
+        self::COMMISSIONS_ENABLED,
         self::EXPLICIT_REFUND_FEES,
+        self::EXPLICIT_SHOULD_CHARGE,
         self::REVISIT_AT,
     ];
 
     protected $public = [
         self::ID,
-        self::ENTITY_TYPE,
+        self::ORIGIN_ID,
         self::ENTITY_ID,
         self::ORIGIN_TYPE,
-        self::ORIGIN_ID,
-        self::COMMISSIONS_ENABLED,
+        self::ENTITY_TYPE,
         self::DEFAULT_PLAN_ID,
         self::IMPLICIT_PLAN_ID,
-        self::IMPLICIT_EXPIRY_AT,
         self::EXPLICIT_PLAN_ID,
+        self::IMPLICIT_EXPIRY_AT,
+        self::COMMISSIONS_ENABLED,
         self::EXPLICIT_REFUND_FEES,
         self::EXPLICIT_SHOULD_CHARGE,
         self::REVISIT_AT,
@@ -86,13 +87,23 @@ class Entity extends PublicEntity
 
     public function origin()
     {
-        return $this->morphTo('origin', self::ORIGIN_TYPE, self::ORIGIN_ID);
+        return $this->morphTo();
     }
 
     // --------------------- GETTERS ---------------------
     public function getEntityType()
     {
         return $this->getAttribute(self::ENTITY_TYPE);
+    }
+
+    public function isCommissionEnabled() : bool
+    {
+        return ($this->getAttribute(self::COMMISSIONS_ENABLED) === true);
+    }
+
+    public function getDefaultPlanId()
+    {
+        return $this->getAttribute(self::DEFAULT_PLAN_ID);
     }
 
     // --------------------- SETTERS ---------------------

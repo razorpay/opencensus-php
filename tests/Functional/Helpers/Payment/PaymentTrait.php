@@ -924,7 +924,7 @@ trait PaymentTrait
         }
 
         //TODO: remove merchant id check
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway, '10000000000000') === true)
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway) === true)
         {
             $this->scroogeRefund($refund);
         }
@@ -1085,8 +1085,7 @@ trait PaymentTrait
 
         $response = $this->makeRequestAndGetContent($request);
 
-        //TODO: remove merchant id check
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway, '10000000000000') === true)
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway) === true)
         {
             $response['id'] = $response['refund_id'];
             $response['payment_id'] = $paymentId;
@@ -1111,8 +1110,7 @@ trait PaymentTrait
 
         $this->assertEquals('refund', $refund['entity']);
 
-        //TODO: remove merchant id check
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway, '10000000000000') === true)
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway) === true)
         {
             $this->scroogeRefund($refund);
         }
@@ -1131,8 +1129,7 @@ trait PaymentTrait
 
         $data = $this->makeRequestAndGetContent($request);
 
-        //TODO: remove merchant id check
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway, '10000000000000'))
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway) === true)
         {
             $this->scroogeRefund($this->getLastEntity('refund'));
         }

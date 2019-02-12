@@ -5,9 +5,13 @@ namespace RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Base;
 use RZP\Constants\Entity as E;
 use RZP\Models\FundTransfer\Mode;
+use RZP\Models\FundTransfer\Attempt\Type;
 use RZP\Models\FundTransfer\Yesbank\NodalAccount;
 use RZP\Models\Settlement\Channel;
 
+/**
+ * @property mixed batchFundTransfer
+ */
 class Entity extends Base\PublicEntity
 {
     const SOURCE                 = 'source';
@@ -160,6 +164,16 @@ class Entity extends Base\PublicEntity
 
     // ------------------------------- getters ---------------------------------
 
+    public function getVpaId()
+    {
+        return $this->getAttribute(self::VPA_ID);
+    }
+
+    public function getBankAccountId()
+    {
+        return $this->getAttribute(self::BANK_ACCOUNT_ID);
+    }
+
     public function getChannel()
     {
         return $this->getAttribute(self::CHANNEL);
@@ -240,6 +254,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CMS_REF_NO);
     }
 
+    public function getDateTime()
+    {
+        return $this->getAttribute(self::DATE_TIME);
+    }
+
     public function isRefund()
     {
         return ($this->getAttribute(self::PURPOSE) === Purpose::REFUND);
@@ -248,11 +267,6 @@ class Entity extends Base\PublicEntity
     public function isSettlement()
     {
         return ($this->getAttribute(self::PURPOSE) === Purpose::SETTLEMENT);
-    }
-
-    public function getDateTime()
-    {
-        return $this->getAttribute(self::DATE_TIME);
     }
 
     public function getDestinationType()
@@ -426,6 +440,11 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
+    public function isPennyTesting(): bool
+    {
+        return ($this->getSourceType() === Type::FUND_ACCOUNT_VALIDATION);
+    }
+
     // ---------------------------- public setters -----------------------------
 
     public function setPublicSourceAttribute(array & $attributes)
@@ -447,7 +466,8 @@ class Entity extends Base\PublicEntity
     public function isBeneRegistrationRequired(): bool
     {
         if (($this->isRefund() === true) or
-            ($this->hasVpa() === true))
+            ($this->hasVpa() === true) or
+            ($this->isPennyTesting() === true))
         {
             return false;
         }

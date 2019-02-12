@@ -730,11 +730,6 @@ class TransactionFilter extends Terminal\Filter
 
     public function directSettlementFilter($terminal, $applicableTerminals)
     {
-       if ($this->input['payment']->isNetbanking() === false)
-       {
-            return true;
-       }
-
        $directSettlementTerminals = array_filter(
                                     $applicableTerminals,
                                     function ($terminal)

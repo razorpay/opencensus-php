@@ -102,6 +102,7 @@ class NetbankingKotakGatewayTest extends TestCase
             'category2'        => 'securities',
             'network_category' => 'securities',
             'group'            => 'tpv_filter',
+            'step'             => 'authorization',
         ]);
 
         $order = $this->createTpvOrderForBank('KKBK');

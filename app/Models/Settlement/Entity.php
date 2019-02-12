@@ -8,6 +8,7 @@ use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
+use RZP\Constants\Entity as EntityConstants;
 
 class Entity extends Base\PublicEntity
 {

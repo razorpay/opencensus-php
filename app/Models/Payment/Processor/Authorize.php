@@ -4993,7 +4993,8 @@ trait Authorize
         }
 
         if (($payment->isMethodCardOrEmi() === false) or
-            ($payment->isRecurring() === true))
+            ($payment->isRecurring() === true) or
+            ($payment->isPushPaymentMethod() === true))
         {
             return null;
         }
@@ -5006,19 +5007,12 @@ trait Authorize
             return null;
         }
 
-        $response = $this->app->razorx->getTreatment($merchant->getId(), 'redirect_to_authorize', $this->mode);
-
-        if (($response === 'control') or
-            ($response === 'off'))
-        {
-            return null;
-        }
-
         $payload = [
             'merchant_id' => $payment->getMerchantId(),
             'payment_id' => $payment->getPublicId(),
             'mode'  => $this->mode,
             'public_key' => $this->app['basicauth']->getPublicKey(),
+            'account_id' => $this->app['basicauth']->authCreds->creds['account_id'],
         ];
 
         // encrypt with key

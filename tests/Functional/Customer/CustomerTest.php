@@ -487,10 +487,12 @@ class CustomerTest extends TestCase
 
         $this->assertEquals(1, $result['yesbank']['success']);
 
-        $result = $this->reconcileEntitiesForChannel('yesbank');
-
-        $this->assertEquals(1, $result['total_count']);
-        $this->assertEquals('yesbank', $result['channel']);
+        // This is not required as the job is dispatched to mark the payout status
+        // in sync this will be done as part of `initiateTransfers`
+//        $result = $this->reconcileEntitiesForChannel('yesbank');
+//
+//        $this->assertEquals(1, $result['total_count']);
+//        $this->assertEquals('yesbank', $result['channel']);
 
         $customerTransaction->reload();
 

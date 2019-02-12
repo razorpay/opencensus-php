@@ -1136,6 +1136,37 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createDirectHitachiTerminal(array $attributes = [])
+    {
+        $terminalId = \RZP\Models\Terminal\Shared::HITACHI_DIRECT_TERMINAL;
+
+        $defaultValues = [
+            TerminalEntity::ID                        => $terminalId,
+            TerminalEntity::MERCHANT_ID               => '10000000000000',
+            TerminalEntity::GATEWAY                   => 'hitachi',
+            TerminalEntity::CARD                      => 1,
+            TerminalEntity::NETBANKING                => 0,
+            TerminalEntity::SHARED                    => 0,
+            TerminalEntity::GATEWAY_ACQUIRER          => 'ratn',
+            TerminalEntity::GATEWAY_MERCHANT_ID       => 'hitachiDirectMerchantId',
+            TerminalEntity::GATEWAY_TERMINAL_ID       => 'hitachiDirectTerminalId',
+            TerminalEntity::GATEWAY_TERMINAL_PASSWORD => 'hitachi',
+            TerminalEntity::GATEWAY_SECURE_SECRET     => 'secret',
+            TerminalEntity::CATEGORY                  => '1240',
+            TerminalEntity::CAPABILITY                => '2',
+            TerminalEntity::TYPE                      => [
+                                                            Type::NON_RECURRING         => '1',
+                                                            Type::RECURRING_3DS         => '1',
+                                                            Type::RECURRING_NON_3DS     => '1',
+                                                            Type::DEBIT_RECURRING       => '1',
+                                                        ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedEbsTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::EBS_RAZORPAY_TERMINAL;
@@ -1966,6 +1997,27 @@ class Terminal extends Base
     }
 
 
+    public function createIdfcTpvTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::IDFB_TPV_TERMINAL;
+
+        $defaultValues = [
+            'id'                    => $termId,
+            'merchant_id'           => '100000Razorpay',
+            'gateway'               => 'netbanking_idfc',
+            'card'                  => 0,
+            'netbanking'            => 1,
+            'tpv'                   => 1,
+            'gateway_merchant_id'   => 'netbanking_idfb_merchant_id',
+            'gateway_secure_secret' => 'random_secret',
+            'network_category'      => 'ecommerce',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
     public function createAllahabadTpvTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::ALLA_TPV_TERMINAL;
@@ -2495,4 +2547,5 @@ class Terminal extends Base
 
         return $this->create($attributes);
     }
+
 }
