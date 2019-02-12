@@ -2,6 +2,7 @@
 
 namespace RZP\Mail\Batch;
 
+use RZP\Models\Merchant;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
 
@@ -18,8 +19,8 @@ class Payout extends Base
     protected function addRecipients()
     {
         // Processed file should be sent to user who uploaded batch file.
-        $email = $this->batchSettings['user']['email'] ?? $this->merchant['transaction_report_email'];
-        $name  = $this->batchSettings['user']['name'] ?? $this->merchant['name'];
+        $email = $this->batchSettings['user']['email'] ?? $this->merchant[Merchant\Entity::TRANSACTION_REPORT_EMAIL];
+        $name  = $this->batchSettings['user']['name'] ?? $this->merchant[Merchant\Entity::NAME];
 
         return $this->to($email, $name);
     }
