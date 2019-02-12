@@ -3,6 +3,7 @@ export default {
   card_title: 'Product Sale',
   card_description:
     'Selling products online? Take orders around the clock with our Online Order template.',
+  img: '/img/payment_pages/product_sale.jpg',
   quillPrefill: [
     {
       insert: 'Product Image(s)',

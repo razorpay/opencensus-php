@@ -53,8 +53,8 @@ export default class extends React.Component {
 
             <div class="TemplateCard-list">
               <TemplateCard
-                title="Start from Scratch"
-                description="Starting from scratch is fun"
+                title="Build your Payment Page"
+                description="Create your own Payment Page with custom fields and page settings."
                 img=""
                 selectTemplate={this.selectTemplate(null)}
               />
@@ -65,7 +65,7 @@ export default class extends React.Component {
                       key={k}
                       title={META[m].card_title}
                       description={META[m].card_description}
-                      img=""
+                      img={META[m].img}
                       selectTemplate={this.selectTemplate(
                         META[m].label,
                         META[m].quillPrefill
