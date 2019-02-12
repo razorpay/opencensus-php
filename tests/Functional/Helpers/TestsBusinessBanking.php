@@ -75,7 +75,7 @@ trait TestsBusinessBanking
         // Enables required features on merchant
         if ($skipFeatureAddition === false)
         {
-            $this->fixtures->merchant->addFeatures(['virtual_accounts']);
+            $this->fixtures->merchant->addFeatures(['virtual_accounts', 'payout']);
         }
 
         // Additionally, creates a terminal for bank transfer on banking balance.
@@ -118,7 +118,7 @@ trait TestsBusinessBanking
         ]);
     }
 
-    protected function createContact()
+    public function createContact()
     {
         $this->contact = $this->fixtures->create(
             'contact',
