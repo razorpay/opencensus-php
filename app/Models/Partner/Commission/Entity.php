@@ -129,6 +129,6 @@ class Entity extends Base\PublicEntity
 
     public function getStatus(): string
     {
-        $this->getAttribute(self::STATUS);
+        return $this->getAttribute(self::STATUS);
     }
 }
