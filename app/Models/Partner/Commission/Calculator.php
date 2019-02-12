@@ -40,6 +40,8 @@ class Calculator extends Base\Core
     protected $partnerApp = null;
 
     /**
+     * An entity that implemnents the CommissionSourceInterface - payment, refund etc
+     *
      * @var Base\PublicEntity
      */
     protected $source;
@@ -376,7 +378,7 @@ class Calculator extends Base\Core
     /**
      * @return bool
      */
-    public function shouldCreateCommission(): bool
+    protected function shouldCreateCommission(): bool
     {
         if (Constants::isValidCommissionSource($this->getSource()) === false)
         {
@@ -405,7 +407,7 @@ class Calculator extends Base\Core
     /**
      * @return bool
      */
-    public function isCommissionApplicable(): bool
+    protected function isCommissionApplicable(): bool
     {
         if ($this->getPartner() === null)
         {
@@ -465,7 +467,7 @@ class Calculator extends Base\Core
     /**
      * @return bool
      */
-    public function isCommissionsEnabled(): bool
+    protected function isCommissionsEnabled(): bool
     {
         return ($this->getPartnerConfig()->isCommissionsEnabled() === true);
     }
@@ -760,7 +762,7 @@ class Calculator extends Base\Core
      *
      * @return Plan
      */
-    public function addFallbackPricingRulesForCommissions(Pricing\Plan $pricing)
+    protected function addFallbackPricingRulesForCommissions(Pricing\Plan $pricing)
     {
         return $pricing;
     }
@@ -784,12 +786,12 @@ class Calculator extends Base\Core
                             $this->getCommissions());
 
         return [
-            'source_type'    => optional($this->getSource())->getId()         ?? null,
-            'source_id'      => optional($this->getSource())->getEntityName() ?? null,
-            'submerchant'    => optional($this->getSubMerchant())->getId()    ?? null,
-            'partner'        => optional($this->getPartner())->getId()        ?? null,
-            'partner_app'    => optional($this->getPartnerApp())->getId()     ?? null,
-            'partner_config' => optional($this->getPartnerConfig())->getId()  ?? null,
+            'source_type'    => optional($this->getSource())->getId(),
+            'source_id'      => optional($this->getSource())->getEntityName(),
+            'submerchant'    => optional($this->getSubMerchant())->getId(),
+            'partner'        => optional($this->getPartner())->getId(),
+            'partner_app'    => optional($this->getPartnerApp())->getId(),
+            'partner_config' => optional($this->getPartnerConfig())->getId(),
             'commissions'    => $commissionIds,
         ];
     }

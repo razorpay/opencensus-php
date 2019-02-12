@@ -37,12 +37,14 @@ class Core extends Base\Core
      *
      * @param Payment\Entity $payment
      *
-     * @return bool
+     * @return array
      */
-    public function createFromCapturedPayment(Payment\Entity $payment)
+    public function createFromCapturedPayment(Payment\Entity $payment): array
     {
         $calculator = new Calculator($payment);
 
         $calculator->calculateAndSaveCommission();
+
+        return $calculator->getCommissions();
     }
 }
