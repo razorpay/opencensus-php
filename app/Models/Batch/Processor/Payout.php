@@ -41,8 +41,7 @@ class Payout extends Base
 
             $payout = $this->processEntryForPayoutForFundAccount($entry, $fundAccount);
 
-            // Each row's status for this batch type must be either processed or failed.
-            $entry[Batch\Header::STATUS]    = 'processed';
+            $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
             $entry[Batch\Header::PAYOUT_ID] = $payout->getPublicId();
         });
     }
@@ -68,22 +67,5 @@ class Payout extends Base
         $input = Batch\Helpers\Payout::getPayoutInput($entry, $fundAccount, $this->merchant);
 
         return $this->payoutCore->createPayoutToFundAccount($input, $this->merchant);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function postProcessEntries(array & $entries)
-    {
-        parent::postProcessEntries($entries);
-
-        // Each row's status for this batch type must be either processed or failed.
-        foreach ($entries as & $entry)
-        {
-            if ($entry[Batch\Header::STATUS] === Batch\Status::FAILURE)
-            {
-                $entry[Batch\Header::STATUS] = 'failed';
-            }
-        }
     }
 }

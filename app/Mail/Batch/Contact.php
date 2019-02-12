@@ -9,6 +9,6 @@ class Contact extends Base
 {
     protected static $mailTag     = MailTags::BATCH_CONTACT_FILE;
     protected static $sender      = Constants::NOREPLY;
-    protected static $subjectLine = "Razorpay | Processed contacts file for %s";
+    protected static $subjectLine = 'Processed contacts file for %s';
     protected static $body        = 'Please find attached processed contacts file.';
 }

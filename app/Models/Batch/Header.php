@@ -444,7 +444,6 @@ class Header
 
     // Fund Account Headers, refer HEADER_MAP for full list of input & output headers.
     const FUND_ACCOUNT_ID             = 'Fund Account Id';
-    const FUND_ACCOUNT_USE_EXISTING   = 'Fund Account Use Existing';
     const FUND_ACCOUNT_TYPE           = 'Fund Account Type';
     const FUND_ACCOUNT_NAME           = 'Fund Account Name';
     const FUND_ACCOUNT_IFSC           = 'Fund Account Ifsc';
@@ -452,13 +451,13 @@ class Header
     const FUND_ACCOUNT_VPA            = 'Fund Account Vpa';
 
     // Payout Headers, refer HEADER_MAP for full list of input & output headers.
-    const ACCOUNT_NUMBER      = 'Account Number';
-    const PAYOUT_AMOUNT       = 'Payout Amount';
-    const PAYOUT_CURRENCY     = 'Payout Currency';
-    const PAYOUT_MODE         = 'Payout Mode';
-    const PAYOUT_PURPOSE      = 'Payout Purpose';
-    const PAYOUT_REFERENCE_ID = 'Payout Reference Id';
-    const PAYOUT_ID           = 'Payout Id';
+    const RAZORPAYX_ACCOUNT_NUMBER = 'RazorpayX Account Number';
+    const PAYOUT_AMOUNT            = 'Payout Amount';
+    const PAYOUT_CURRENCY          = 'Payout Currency';
+    const PAYOUT_MODE              = 'Payout Mode';
+    const PAYOUT_PURPOSE           = 'Payout Purpose';
+    const PAYOUT_REFERENCE_ID      = 'Payout Reference Id';
+    const PAYOUT_ID                = 'Payout Id';
 
     /**
      * Input and output file headers
@@ -1362,7 +1361,6 @@ class Header
                 self::CONTACT_REFERENCE_ID,
                 self::NOTES,
                 self::CONTACT_ID,
-                self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ],
@@ -1370,7 +1368,6 @@ class Header
 
         Type::FUND_ACCOUNT => [
             self::INPUT => [
-                self::FUND_ACCOUNT_USE_EXISTING,
                 self::FUND_ACCOUNT_TYPE,
                 self::FUND_ACCOUNT_NAME,
                 self::FUND_ACCOUNT_IFSC,
@@ -1386,7 +1383,6 @@ class Header
                 self::NOTES,
             ],
             self::OUTPUT => [
-                self::FUND_ACCOUNT_USE_EXISTING,
                 self::FUND_ACCOUNT_TYPE,
                 self::FUND_ACCOUNT_NAME,
                 self::FUND_ACCOUNT_IFSC,
@@ -1401,7 +1397,6 @@ class Header
                 // Contact's notes.
                 self::NOTES,
                 self::FUND_ACCOUNT_ID,
-                self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ],
@@ -1409,14 +1404,13 @@ class Header
 
         Type::PAYOUT => [
             self::INPUT => [
-                self::ACCOUNT_NUMBER,
+                self::RAZORPAYX_ACCOUNT_NUMBER,
                 self::PAYOUT_AMOUNT,
                 self::PAYOUT_CURRENCY,
                 self::PAYOUT_MODE,
                 self::PAYOUT_PURPOSE,
                 self::PAYOUT_REFERENCE_ID,
                 self::FUND_ACCOUNT_ID,
-                self::FUND_ACCOUNT_USE_EXISTING,
                 self::FUND_ACCOUNT_TYPE,
                 self::FUND_ACCOUNT_NAME,
                 self::FUND_ACCOUNT_IFSC,
@@ -1431,14 +1425,13 @@ class Header
                 self::NOTES,
             ],
             self::OUTPUT => [
-                self::ACCOUNT_NUMBER,
+                self::RAZORPAYX_ACCOUNT_NUMBER,
                 self::PAYOUT_AMOUNT,
                 self::PAYOUT_CURRENCY,
                 self::PAYOUT_MODE,
                 self::PAYOUT_PURPOSE,
                 self::PAYOUT_REFERENCE_ID,
                 self::FUND_ACCOUNT_ID,
-                self::FUND_ACCOUNT_USE_EXISTING,
                 self::FUND_ACCOUNT_TYPE,
                 self::FUND_ACCOUNT_NAME,
                 self::FUND_ACCOUNT_IFSC,
@@ -1451,7 +1444,6 @@ class Header
                 self::CONTACT_REFERENCE_ID,
                 // Payout's notes.
                 self::NOTES,
-                self::STATUS,
                 self::PAYOUT_ID,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
