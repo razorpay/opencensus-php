@@ -123,6 +123,45 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('fee', $txn['credit_type']);
     }
 
+    public function testFundAccValidationWhenFailedDuringRecon()
+    {
+        $this->addFeeCredits(['value' => 10000, 'campaign' => 'silent-ads']);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $this->createValidationWithFundAccountEntity();
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        // Right now we are charging even though failure reason could be internal.TODO: fix
+        $this->fixtures->merchant->editEntity('fund_transfer_attempt', $fta['id'], ['status' => 'initiated', 'bank_status_code' => 'FAILED']);
+
+        $this->reconcileEntitiesForChannel('yesbank');
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+        $this->assertEquals('completed', $fav['status']);
+        $this->assertEquals('invalid', $fav['results']['account_status']);
+        $this->assertEquals(354, $fav['fees']);
+        $this->assertEquals(54, $fav['tax']);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals($fav['id'], $txn['entity_id']);
+        $this->assertEquals('fund_account_validation', $txn['type']);
+        $this->assertEquals('platform', $txn['fee_bearer']);
+        $this->assertEquals('prepaid', $txn['fee_model']);
+        $this->assertEquals(true, $txn['settled']);
+        $this->assertEquals(354, $txn['fee']);
+        $this->assertEquals(354, $txn['mdr']);
+        $this->assertEquals(54, $txn['tax']);
+        $this->assertEquals(0, $txn['debit']);
+        $this->assertEquals($fav['amount'], $txn['amount']);
+
+        $this->assertEquals(354, $txn['fee_credits']);
+        $this->assertEquals('fee', $txn['credit_type']);
+    }
+
     public function testFundAccValidationWithReconOnPostpaidModelWithFeeCredits()
     {
         $this->addFeeCredits(['value' => 10000, 'campaign' => 'silent-ads']);
