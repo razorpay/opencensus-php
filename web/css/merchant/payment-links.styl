@@ -248,12 +248,17 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
   display: flex
   flex-direction: column
   margin: 12px
+  transform-origin: center
+  transition: 0.19s cubic-bezier(0.42, 0, 0.35, 1)
 
   &:hover
+    transform: translateY(-16px)
+
     .link
       border-top: 1px solid rgba(0,0,0,0.08)
       padding: 8px 0 0
-      height: unset
+      max-height: 33px
+      opacity: 1
 
   img
     width: 100%
@@ -266,9 +271,12 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
     width: 100vw
     justify-content: center
     flex-wrap: wrap
+    opacity: 0
+    transform: translateX(40%)
+    animation: 0.35s 0.2s slide-in cubic-bezier(0.16, 1.13, 1, 1) forwards
 
   &-details
-    padding: 12px 8px
+    padding: 12px 16px
     height: 100%
     display: flex
     flex-direction: column
@@ -276,12 +284,14 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
     font-size: 16px
     font-weight: 600
     line-height: 24px
+    text-align: left
 
   &-desc
     font-weight: normal
     margin: 8px 0 24px 0
     font-size: 13px
     line-height: 20px
+    min-height: 80px
 
 
   .link
@@ -293,11 +303,20 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
     display: flex
     align-items: center
     justify-content: center
-    transition: 0.12s cubic-bezier(0.42, 0, 0.35, 1)
-    height: 0
+    max-height: 0
     overflow: hidden
     padding: 0
+    opacity: 0
+    transition: 0.19s cubic-bezier(0.42, 0, 0.35, 1)
 
     i
       position: absolute
       right: 8px
+
+  @keyframes slide-in
+    50%
+      opacity: 0
+
+    100%
+      transform: translateX(0)
+      opacity: 1
