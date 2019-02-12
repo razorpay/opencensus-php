@@ -52,9 +52,10 @@ class Repository extends Base\Repository
         $merchantsId             = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
 
         return $this->newQuery()
+                    ->select($this->getTableName() . '.*')
                     ->merchantId($subMerchantId)
                     ->join(Table::MERCHANT, $accessMapsEntityOwnerId, $merchantsId)
-                    ->where(Table::MERCHANT . '.' . Merchant\Entity::PARTNER_TYPE, '!=', Merchant\Constants::PURE_PLATFORM)
+                    ->whereNot(Table::MERCHANT . '.' . Merchant\Entity::PARTNER_TYPE, Merchant\Constants::PURE_PLATFORM)
                     ->first();
     }
 
