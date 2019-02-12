@@ -1,9 +1,11 @@
 export default {
   label: 'Fees Collection',
-  card_title: 'Fees Collection',
-  card_description:
-    'Collect fees and accept payments in seconds with our online form, no paperwork involved.',
-  img: '/img/payment_pages/fee_collection.jpg',
+  card: {
+    title: 'Fees Collection',
+    description:
+      'Collect fees and accept payments in seconds with our online form, no paperwork involved.',
+    img: '/img/payment_pages/fee_collection.jpg',
+  },
   quillPrefill: [
     {
       insert: 'Product Image(s)',

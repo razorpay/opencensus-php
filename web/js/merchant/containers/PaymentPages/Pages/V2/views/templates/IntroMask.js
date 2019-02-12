@@ -15,17 +15,19 @@ export default ({ templateLabel, onClose, backToTemplate }) => {
       </Button.Transparent>
       <Modal showCloseBtn={false}>
         <ModalContent>
-          <div class="heading">
-            Create New {templateLabel || 'Payment'} Page
+          <div class="slide-in">
+            <div class="heading">
+              Create New {templateLabel || 'Payment'} Page
+            </div>
+            <p>
+              This is how the page will appear to your customers.
+              <br />
+              You can preview and edit the page at the same time!
+            </p>
+            <Button.Primary onClick={onClose} autoFocus>
+              Let's Go!
+            </Button.Primary>
           </div>
-          <p>
-            This is how the page will appear to your customers.
-            <br />
-            You can preview and edit the page at the same time!
-          </p>
-          <Button.Primary onClick={onClose} autoFocus>
-            Let's Go!
-          </Button.Primary>
         </ModalContent>
       </Modal>
     </ModalMask>

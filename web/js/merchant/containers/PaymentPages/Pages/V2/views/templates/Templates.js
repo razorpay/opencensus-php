@@ -48,8 +48,10 @@ export default class extends React.Component {
         </Link>
         <Modal showCloseBtn={false}>
           <ModalContent>
-            <div class="heading">Choose from the templates</div>
-            <p>You can choose one of the templates from below</p>
+            <div class="slide-in">
+              <div class="heading">Choose from the templates</div>
+              <p>You can choose one of the templates from below</p>
+            </div>
 
             <div class="TemplateCard-list">
               <TemplateCard
@@ -63,9 +65,9 @@ export default class extends React.Component {
                   return (
                     <TemplateCard
                       key={k}
-                      title={META[m].card_title}
-                      description={META[m].card_description}
-                      img={META[m].img}
+                      title={META[m].card.title}
+                      description={META[m].card.description}
+                      img={META[m].card.img}
                       selectTemplate={this.selectTemplate(
                         META[m].label,
                         META[m].quillPrefill

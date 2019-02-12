@@ -1,8 +1,99 @@
+.TemplateCard
+  border-radius: 4px
+  background: #fff
+  width: 220px
+  overflow: hidden
+  cursor: pointer
+  display: flex
+  flex-direction: column
+  margin: 12px
+  transform-origin: center
+  transition: 0.19s cubic-bezier(0.42, 0, 0.35, 1)
+
+  &:hover
+    transform: translateY(-16px)
+
+    .link
+      border-top: 1px solid rgba(0,0,0,0.08)
+      padding: 8px 0 0
+      max-height: 33px
+      opacity: 1
+
+  img
+    width: 100%
+    height: 132px
+
+  &-list
+    display: flex
+    align-items: baseline
+    margin-top: 80px
+    width: 100vw
+    justify-content: center
+    flex-wrap: wrap
+    opacity: 0
+    transform: translateX(40%)
+    animation: 0.35s 0.24s slide-in cubic-bezier(0.16, 1.13, 1, 1) forwards
+
+  &-details
+    padding: 12px 16px
+    height: 100%
+    display: flex
+    flex-direction: column
+    position: relative
+    font-size: 15px
+    font-weight: 700
+    line-height: 24px
+    text-align: left
+
+  &-desc
+    font-weight: normal
+    margin: 8px 0 24px 0
+    font-size: 13px
+    line-height: 20px
+    min-height: 80px
+
+
+  .link
+    position: relative
+    margin: auto 0 -4px 0
+    font-size: 14px;
+    font-weight: 600
+    color: $primary-color
+    display: flex
+    align-items: center
+    justify-content: center
+    max-height: 0
+    overflow: hidden
+    padding: 0
+    opacity: 0
+    transition: 0.19s cubic-bezier(0.42, 0, 0.35, 1)
+
+    i
+      position: absolute
+      right: 8px
+
+@keyframes slide-in
+  50%
+    opacity: 0
+
+  100%
+    transform: translateX(0)
+    opacity: 1
+
+.Modal-mask.Modal-mask--payment-pages-v2-intro
+  .Modal-container
+    overflow: visible
+
 .Modal-mask.Modal-mask--payment-pages-v2-intro,
 .Modal-mask.Modal-mask--payment-pages-v2-templates
-  background-color: rgba(17,30,60,0.8)
+  background-color: rgba(0,0,0,0.8)
   text-align: center
   z-index: 999999 // Has to be highest
+
+  .slide-in
+    animation: 0.35s 0.1s slide-in cubic-bezier(0.16, 1.13, 1, 1) forwards
+    transform: translateX(240px)
+    opacity: 0
 
   .back-btn
     position: absolute

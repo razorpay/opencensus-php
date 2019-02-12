@@ -1,9 +1,11 @@
 export default {
   label: 'Events and Tickets',
-  card_title: 'Events and Tickets',
-  card_description:
-    'Preparation is everything! Our Event Registration template is a quick and easy way to register event attendees online.',
-  img: '/img/payment_pages/events_and_tickets.jpg',
+  card: {
+    title: 'Events and Tickets',
+    description:
+      'Preparation is everything! Our Event Registration template is a quick and easy way to register event attendees online.',
+    img: '/img/payment_pages/events_and_tickets.jpg',
+  },
   quillPrefill: [
     {
       insert: 'About the event ',

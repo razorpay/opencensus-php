@@ -1,9 +1,11 @@
 export default {
   label: 'Donation',
-  card_title: 'Accepting Donations',
-  card_description:
-    'Raising money for a good cause? Our online Donations template saves you valuable time so you can focus on your cause.',
-  img: '/img/payment_pages/donation.jpg',
+  card: {
+    title: 'Accepting Donations',
+    description:
+      'Raising money for a good cause? Our online Donations template saves you valuable time so you can focus on your cause.',
+    img: '/img/payment_pages/donation.jpg',
+  },
   quillPrefill: [
     {
       insert: 'Donation Cause',
