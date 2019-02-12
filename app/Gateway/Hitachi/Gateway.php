@@ -1127,12 +1127,6 @@ class Gateway extends Base\Gateway
 
         $message = ErrorCodes\ErrorCodeDescriptions::getGatewayErrorDescription($response);
 
-        // The following checks are being made to avoid the case where an array is returned
-        // because $code should be a string there are multiple levels of mapping
-        // so if one of the index is missing in the message the $code and $msg will be an array instead of a string
-        $errorCode = (is_string ($errorCode) === true) ? $errorCode : ErrorCode::BAD_REQUEST_REFUND_FAILED;
-        $message = (is_string($message) === true) ? $message : ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR;
-
         if ($respCode !== Status::SUCCESS_CODE)
         {
             throw new Exception\GatewayErrorException(
