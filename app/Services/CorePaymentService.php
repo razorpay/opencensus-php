@@ -72,6 +72,8 @@ class CorePaymentService
             'content' => $data,
             'headers' => [
                 self::X_RAZORPAY_TASKID_HEADER => $this->app['request']->getTaskId(),
+                // below will work in case of only merchant auth, for cases like verify, refund-retry
+                // we need to think of something else
                 self::X_RAZORPAY_MODE_HEADER   => $this->app['basicauth']->getMode(),
             ],
         ];
