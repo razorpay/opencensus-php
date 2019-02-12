@@ -96,7 +96,7 @@ class Entity extends PublicEntity
         return $this->getAttribute(self::ENTITY_TYPE);
     }
 
-    public function isCommissionEnabled() : bool
+    public function isCommissionsEnabled() : bool
     {
         return ($this->getAttribute(self::COMMISSIONS_ENABLED) === true);
     }
