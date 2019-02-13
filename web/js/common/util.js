@@ -261,9 +261,10 @@ export function intersect(a, b) {
  *
  * @param {String} path - path of data member with dots as string type
  * @param {String} value - value of variable
- * @param {Object} obj - object where value needs to be inserted
+ * @param {Object} srcObj - object where value needs to be inserted
  */
-export function dotStringToObj(path, value, obj) {
+export function stringToObj(path, value, srcObj) {
+  const newObj = srcObj ? deepClone(srcObj) : srcObj;
   // for supporting sample[0][sampleKey]
   const squareBracketPattern = /\[|\]/;
   if (squareBracketPattern.test(path)) {
@@ -276,6 +277,7 @@ export function dotStringToObj(path, value, obj) {
 
   // converts if numeric for array
   last = isNaN(last) ? last : Number(last);
+  let obj = newObj;
 
   while ((part = parts.shift())) {
     // converts if numeric for array
@@ -289,6 +291,7 @@ export function dotStringToObj(path, value, obj) {
   }
   obj[last] = value;
   var parts, part;
+  return newObj;
 }
 /**
  * @param {String}

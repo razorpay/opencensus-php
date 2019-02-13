@@ -12,7 +12,7 @@ import { Modal, ModalContent } from 'component/Modal';
 import Form from 'component/Form';
 import Button, { AsyncBtn } from 'component/Button';
 
-import { dotStringToObj } from 'common/util';
+import { stringToObj } from 'common/util';
 import { isPresent } from 'rzp/utils/rzp-utils';
 
 import AddOnDetails from './AddOnDetails';
@@ -53,7 +53,7 @@ export default class NewSubscriptionLink extends Component {
     let value = target.value;
     const name = target.name || target.dataset.name;
     const stateKey = target.name ? 'fields' : 'internals';
-    const values = { ...this.state[stateKey] };
+    let values = { ...this.state[stateKey] };
 
     if (name.match(/_time/)) {
       return;
@@ -63,7 +63,7 @@ export default class NewSubscriptionLink extends Component {
       value = target.checked;
     }
 
-    dotStringToObj(name, value, values);
+    values = stringToObj(name, value, values);
 
     this.setState({ [stateKey]: values }, () => {
       if (name === '_addOnPresent') {
