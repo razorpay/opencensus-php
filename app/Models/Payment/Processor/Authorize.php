@@ -1442,6 +1442,8 @@ trait Authorize
 
         $this->setAuthTypeInPayment($payment);
 
+        $this->setPaymentRoutedThroughCpsIfApplicable($payment);
+
         $this->repo->saveOrFail($payment);
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);

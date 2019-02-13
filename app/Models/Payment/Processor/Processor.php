@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use RZP\Base\RepositoryManager;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin;
 use RZP\Exception;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\BankAccount;
@@ -123,6 +124,11 @@ class Processor
     const REDIRECT_CACHE_TTL = 5;
 
     const CACHE_KEY = 'fallback_%s_card_details';
+
+    /**
+     * Core payment service feature flag
+     */
+    const CPS_FEATURE_FLAG_PREFIX = 'cps_gateway_routing';
 
     /**
      * @var Merchant\Entity
@@ -760,6 +766,25 @@ class Processor
         else
         {
             $input[Payment\Entity::METHOD] = Payment\Method::CARD;
+        }
+    }
+
+    /**
+     * This method sets the flag that this payment should be processed via
+     * Core payment service
+     */
+    protected function setPaymentRoutedThroughCpsIfApplicable(Payment\Entity $payment)
+    {
+        if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::CPS_SERVICE_ENABLED, false) === true)
+        {
+            $featureFlag = self::CPS_FEATURE_FLAG_PREFIX. '_' .$payment->getGateway();
+
+            $variant = $this->app->razorx->getTreatment($payment->getId(), $featureFlag, $this->mode);
+
+            if (strtolower($variant) === 'cps')
+            {
+                $payment->setCpsRoute();
+            }
         }
     }
 

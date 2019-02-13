@@ -4717,3 +4717,5 @@ ALTER TABLE gateway_rules
 
 ALTER TABLE contacts
     ADD INDEX contacts_merchant_id_active_index (merchant_id, active);
+
+ALTER TABLE payments CHANGE `reference4` `cps_route` TINYINT(1);
