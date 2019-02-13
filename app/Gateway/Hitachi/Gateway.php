@@ -502,26 +502,33 @@ class Gateway extends Base\Gateway
             ]);
 
         if ((isset($verifyRefundResponse[ResponseFields::STATUS]) === true) and
-            ($verifyRefundResponse[ResponseFields::STATUS] === Status::SUCCESS) and
-            ($verifyRefundResponse[ResponseFields::RESPONSE_CODE] === Status::SUCCESS_CODE))
+            (isset($verifyRefundResponse[ResponseFields::RESPONSE_CODE]) === true))
         {
-            $gatewayEntity = $this->repo->findByRefundId($input['refund']['id']);
-
-            $attributes = $this->getAttributesFromVerifyRefundResponse($verifyRefundResponse);
-
-            if ($gatewayEntity !== null)
+            if (($verifyRefundResponse[ResponseFields::STATUS] === Status::SUCCESS) and
+               ($verifyRefundResponse[ResponseFields::RESPONSE_CODE] === Status::SUCCESS_CODE))
             {
-                $gatewayEntity->fill($attributes);
+                $gatewayEntity = $this->repo->findByRefundId($input['refund']['id']);
 
-                $this->repo->saveOrFail($gatewayEntity);
-            }
-            else
-            {
-                $this->createGatewayRefundEntity($input, $attributes, 'refund');
-            }
+                $attributes = $this->getAttributesFromVerifyRefundResponse($verifyRefundResponse);
 
-            return $scroogeResponse->setSuccess(true)
-                                   ->toArray();
+                if ($gatewayEntity !== null)
+                {
+                    $gatewayEntity->fill($attributes);
+
+                    $this->repo->saveOrFail($gatewayEntity);
+                }
+                else
+                {
+                    $this->createGatewayRefundEntity($input, $attributes, 'refund');
+                }
+
+                return $scroogeResponse->setSuccess(true)
+                                       ->toArray();
+            }
+        }
+        else
+        {
+            $this->checkErrorsAndThrowException($verifyRefundResponse);
         }
 
         return $scroogeResponse->setSuccess(false)
@@ -1123,6 +1130,8 @@ class Gateway extends Base\Gateway
             $respCode = $response['response_code'];
         }
 
+        $responseKey = ($this->action === Base\Action::VERIFY) ? Payment\Gateway::GATEWAY_VERIFY_RESPONSE : Payment\Gateway::GATEWAY_RESPONSE;
+
         $errorCode = ErrorCodes\ErrorCodes::getInternalErrorCode($response);
 
         $message = ErrorCodes\ErrorCodeDescriptions::getGatewayErrorDescription($response);
@@ -1134,8 +1143,8 @@ class Gateway extends Base\Gateway
                 $respCode,
                 $message,
                 [
-                    Payment\Gateway::GATEWAY_RESPONSE  => json_encode($response),
-                    Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($response)
+                    $responseKey                  => json_encode($response),
+                    Payment\Gateway::GATEWAY_KEYS => $this->getGatewayData($response)
                 ]);
         }
     }
