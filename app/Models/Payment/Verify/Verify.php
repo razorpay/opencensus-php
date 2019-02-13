@@ -404,6 +404,11 @@ class Verify extends Base\Core
                 $filter = ($payment->isCreated() === true) ? Filter::PAYMENTS_CREATED : Filter::PAYMENTS_FAILED;
 
                 $verifyResult = $this->verifyPayment($payment, $filter);
+            }
+
+            if ($verifyResult !== null)
+            {
+                $resultSet[$verifyResult] += 1;
 
                 if ($verifyResult === Result::AUTHORIZED)
                 {
@@ -411,11 +416,6 @@ class Verify extends Base\Core
 
                     $avgAuthTime = $totalAuthTimeDiff/$resultSet[Result::AUTHORIZED];
                 }
-            }
-
-            if ($verifyResult !== null)
-            {
-                $resultSet[$verifyResult] += 1;
             }
             else
             {
