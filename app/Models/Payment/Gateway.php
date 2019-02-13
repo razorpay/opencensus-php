@@ -965,6 +965,10 @@ class Gateway
         self::NETBANKING_VIJAYA,
     ];
 
+    public static $captureVerifyEnabled = [
+        self::HITACHI,
+    ];
+
     /**
      * List of gateways that support recurring payments
      *
