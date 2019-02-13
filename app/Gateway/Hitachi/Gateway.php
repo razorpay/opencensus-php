@@ -1283,8 +1283,6 @@ class Gateway extends Base\Gateway
             ResponseFields::RESPONSE_CODE        => $refundFields[ResponseFields::RESPONSE_CODE] ?? null,
             ResponseFields::TRANSACTION_TYPE     => $refundFields[ResponseFields::TRANSACTION_TYPE] ?? null,
             ResponseFields::RETRIEVAL_REF_NUM    => $refundFields[ResponseFields::RETRIEVAL_REF_NUM] ?? null,
-            ResponseFields::TRANSACTION_AMOUNT   => $refundFields[ResponseFields::TRANSACTION_AMOUNT] ?? null,
-            ResponseFields::MERCHANT_REF_NUMBER  => $refundFields[ResponseFields::MERCHANT_REF_NUMBER] ?? null,
         ];
     }
 }
