@@ -428,17 +428,6 @@ class OtpPaymentTest extends TestCase
         $this->mockCardVault();
         $this->mockOtpElf();
 
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('On');
-
-
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->fixtures->iin->create([
@@ -454,7 +443,6 @@ class OtpPaymentTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '5567630000002004';
-        // $payment['auth_type'] = 'otp';
 
         $request = [
             'method'  => 'POST',
@@ -1916,8 +1904,6 @@ class OtpPaymentTest extends TestCase
                 'non_recurring' => '1',
             ]
         ]);
-
-        // $this->fixtures->create('terminal:shared_hdfc_recurring_terminals');
 
         $this->fixtures->merchant->addFeatures(['headless']);
         $this->mockCardVault();
