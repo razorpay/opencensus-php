@@ -80,6 +80,29 @@ class Validator extends Base\Validator
         Gateway::validateGateway($gateway);
     }
 
+    protected function validateAuthenticationGateway(string $attribute, string $gateway)
+    {
+        Gateway::validateGateway($gateway);
+    }
+
+    protected function validateAuthType(string $attribute, string $authType)
+    {
+        // TODO move it to constants
+        $authTypes = [
+            'ivr',
+            'otp',
+            'headless_otp',
+            '3ds',
+        ];
+
+        if (($authType !== null) and
+            (in_array($authType, $authTypes, true) === false))
+        {
+           throw new Exception\BadRequestValidationFailureException(
+                'Invalide auth type for authentication gateway');
+        }
+    }
+
     protected function validateRecurringType(array $input)
     {
         if ((isset($input['recurring']) === false) or

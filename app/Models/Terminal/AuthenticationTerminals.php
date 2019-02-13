@@ -21,7 +21,6 @@ class AuthenticationTerminals
     const GATEWAY_ACQUIRERS      = 'gateway_acquirers';
 
     const AUTHENTICATION_TERMINALS = [
-        // hitachi
         [
             self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
             self::GATEWAY                   => Gateway::HITACHI,
@@ -57,7 +56,6 @@ class AuthenticationTerminals
             self::AUTH_TYPE                 => AuthType::SKIP,
             self::GATEWAY_AUTH_TYPE         => null,
         ],
-        // hdfc
         [
             self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
             self::GATEWAY                   => Gateway::HDFC,
@@ -72,7 +70,6 @@ class AuthenticationTerminals
             self::AUTH_TYPE                 => AuthType::HEADLESS_OTP,
             self::GATEWAY_AUTH_TYPE         => null,
         ],
-        // cybersource
         [
             self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
             self::GATEWAY                   => Gateway::CYBERSOURCE,
@@ -87,7 +84,6 @@ class AuthenticationTerminals
             self::AUTH_TYPE                 => AuthType::HEADLESS_OTP,
             self::GATEWAY_AUTH_TYPE         => null,
         ],
-        // first data
         [
             self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
             self::GATEWAY                   => Gateway::FIRST_DATA,
@@ -102,7 +98,6 @@ class AuthenticationTerminals
             self::AUTH_TYPE                 => AuthType::HEADLESS_OTP,
             self::GATEWAY_AUTH_TYPE         => null,
         ],
-        // axis_migs
         [
             self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
             self::GATEWAY                   => Gateway::AXIS_MIGS,
@@ -110,7 +105,6 @@ class AuthenticationTerminals
             self::AUTH_TYPE                 => AuthType::_3DS,
             self::GATEWAY_AUTH_TYPE         => null,
         ],
-        // card_fss
         [
             self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
             self::GATEWAY                   => Gateway::CARD_FSS,
@@ -125,7 +119,6 @@ class AuthenticationTerminals
             self::AUTH_TYPE                 => AuthType::PIN,
             self::GATEWAY_AUTH_TYPE         => null,
         ],
-        // amex
         [
             self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
             self::GATEWAY                   => Gateway::AMEX,

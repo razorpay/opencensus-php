@@ -81,6 +81,36 @@ class Core extends Base\Core
         return $applicableRules;
     }
 
+    public function fetchAuthenticationRules(array $input, string $type = Entity::FILTER):Base\PublicCollection
+    {
+        $payment = $input['payment'];
+
+        $merchant = $input['merchant'];
+
+        $validAuths = $input['auths'];
+
+        $card = $payment->card;
+
+        $searchCriteria = [
+            Entity::METHOD        => $payment->getMethod(),
+            Entity::MERCHANT_ID   => $merchant->getId(),
+            Entity::GATEWAY       => $payment->terminal->getGateway(),
+            Entity::AUTH_TYPE     => $validAuths,
+            Entity::NETWORK       => $card->getNetworkCode(),
+            Entity::ISSUER        => $card->getIssuer(),
+            Entity::TYPE          => $type,
+            Entity::STEP          => Entity::AUTHENTICATION,
+        ];
+
+        $this->trace->info(TraceCode::AUTH_RULES_SEARCH_CRITERIA, $searchCriteria);
+
+        $applicableRules = $this->repo
+                                ->gateway_rule
+                                ->fetchAuthenitcationRulesForSearchCriteria($searchCriteria);
+
+        return $applicableRules;
+    }
+
     /**
      * For filter rules checks if there is any rule which satisfies same criteria
      * as new rule, and same gateway but opposite filter type in the same group

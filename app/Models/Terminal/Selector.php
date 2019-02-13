@@ -134,6 +134,7 @@ class Selector extends Base\Core
             return (new Rule\Core)->fetchApplicableRulesForPayment($this->input);
         });
 
+
         $filteredTerminals = $this->filterTerminals($allTerminals, $applicableRules, $verbose);
 
         $this->processHitachiOnboarding($filteredTerminals);

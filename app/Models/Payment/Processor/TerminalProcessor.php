@@ -53,6 +53,35 @@ class TerminalProcessor extends Base\Core
         return $terminalsSelected;
     }
 
+    public function setAuthenticationGateway(Payment\Entity $payment, array & $gatewayInput)
+    {
+        $this->payment = $payment;
+
+        $input = [
+            'payment'   => $this->payment,
+            'merchant'  => $this->payment->merchant,
+        ];
+
+        $paymentAuthSelect = new Terminal\AuthSelector($input);
+
+        $terminal = $paymentAuthSelect->selectAuth();
+
+        $this->trace->info(
+                TraceCode::AUTH_SELECTION_FINAL_TERMINAL,
+                ['terminal' => $terminal]
+            );
+
+        $gatewayInput['auth_type'] = $terminal['auth_type'];
+
+        if (empty($terminal['authentication_gateway'] === false))
+        {
+            $gatewayInput['authenticate'] = [
+              'gateway'   => $terminal['authentication_gateway'],
+              'auth_type' => $terminal['gateway_auth_type']
+            ];
+        }
+    }
+
     public function getTerminalFromGatewayData(array $gatewayData = []): Terminal\Entity
     {
         $terminalId = $gatewayData[Payment\Entity::TERMINAL_ID];
