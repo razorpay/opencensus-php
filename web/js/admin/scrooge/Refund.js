@@ -67,7 +67,7 @@ export default class RefundsList extends Component {
                 <div class="header">
                   <b>ACTIONS</b>
                 </div>
-                {this.data.status !== 'processed' && (
+                {this.data.status === 'file_init' && (
                   <AsyncButton
                     confirm="Perform this action?"
                     class="btn btn-default"
