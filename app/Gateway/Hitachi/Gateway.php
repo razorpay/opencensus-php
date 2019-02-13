@@ -501,34 +501,29 @@ class Gateway extends Base\Gateway
                 'terminal_id' => $input['terminal']['id'],
             ]);
 
+        $this->checkErrorsAndThrowException($verifyRefundResponse);
+        
         if ((isset($verifyRefundResponse[ResponseFields::STATUS]) === true) and
-            (isset($verifyRefundResponse[ResponseFields::RESPONSE_CODE]) === true))
+            ($verifyRefundResponse[ResponseFields::STATUS] === Status::SUCCESS) and
+            ($verifyRefundResponse[ResponseFields::RESPONSE_CODE] === Status::SUCCESS_CODE))
         {
-            if (($verifyRefundResponse[ResponseFields::STATUS] === Status::SUCCESS) and
-               ($verifyRefundResponse[ResponseFields::RESPONSE_CODE] === Status::SUCCESS_CODE))
+            $gatewayEntity = $this->repo->findByRefundId($input['refund']['id']);
+
+            $attributes = $this->getAttributesFromVerifyRefundResponse($verifyRefundResponse);
+
+            if ($gatewayEntity !== null)
             {
-                $gatewayEntity = $this->repo->findByRefundId($input['refund']['id']);
+                $gatewayEntity->fill($attributes);
 
-                $attributes = $this->getAttributesFromVerifyRefundResponse($verifyRefundResponse);
-
-                if ($gatewayEntity !== null)
-                {
-                    $gatewayEntity->fill($attributes);
-
-                    $this->repo->saveOrFail($gatewayEntity);
-                }
-                else
-                {
-                    $this->createGatewayRefundEntity($input, $attributes, 'refund');
-                }
-
-                return $scroogeResponse->setSuccess(true)
-                                       ->toArray();
+                $this->repo->saveOrFail($gatewayEntity);
             }
-        }
-        else
-        {
-            $this->checkErrorsAndThrowException($verifyRefundResponse);
+            else
+            {
+                $this->createGatewayRefundEntity($input, $attributes, 'refund');
+            }
+
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
         }
 
         return $scroogeResponse->setSuccess(false)
