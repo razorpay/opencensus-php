@@ -773,7 +773,8 @@ class AdminFetch
                     Fetch::VALUES => [
                         'settlement',
                         'payout',
-                        'refund'
+                        'refund',
+                        'fund_account_validation'
                     ],
                 ],
                 'source_id' => [

@@ -200,6 +200,11 @@ abstract class EntityProcessor extends Base\Core
 
     protected function updateTransactionEntity($reconciledType = ReconciledType::MIS)
     {
+        // Source entity might update the transaction but because we would have already fetched
+        // the transaction from source earlier. Then if we try to access $this->source->transaction now,
+        // It will return an old copy. Not the updated transaction. Hence, we reload the relation.
+        $this->source->load(Entity::TRANSACTION);
+
         $this->source->transaction->setReconciledAt($this->reconciledAt);
 
         $this->source->transaction->setReconciledType($reconciledType);

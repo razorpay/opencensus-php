@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Base;
 
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Refund\Status;
 
 class ScroogeResponse
 {
@@ -15,6 +16,11 @@ class ScroogeResponse
      * @var string
      */
     protected $statusCode = '';
+
+    /**
+     * @var string
+     */
+    protected $refundGateway = '';
 
     /**
      * @var string
@@ -72,6 +78,25 @@ class ScroogeResponse
     /**
      * @return string
      */
+    public function getRefundGateway(): string
+    {
+        return $this->refundGateway;
+    }
+
+    /**
+     * @param string $refundGateway
+     * @return ScroogeResponse
+     */
+    public function setRefundGateway(string $refundGateway): self
+    {
+        $this->refundGateway = $refundGateway;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
     public function getGatewayResponse(): string
     {
         return $this->gatewayResponse;
@@ -110,22 +135,6 @@ class ScroogeResponse
     }
 
     /**
-     * @return array
-     */
-    public function toArray()
-    {
-        $statusCode = ($this->isSuccess() === true) ? 'REFUND_SUCCESSFUL' : $this->getStatusCode();
-
-        return [
-            Gateway::SUCCESS                    => $this->isSuccess(),
-            Gateway::STATUS_CODE                => $statusCode,
-            Gateway::GATEWAY_VERIFY_RESPONSE    => $this->getGatewayVerifyResponse(),
-            Gateway::GATEWAY_RESPONSE           => $this->getGatewayResponse(),
-            Gateway::GATEWAY_KEYS               => $this->getGatewayKeys()
-        ];
-    }
-
-    /**
      * @return string
      */
     public function getGatewayVerifyResponse(): string
@@ -144,5 +153,22 @@ class ScroogeResponse
                                         $gatewayVerifyResponse;
 
         return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function toArray()
+    {
+        $statusCode = ($this->isSuccess() === true) ? 'REFUND_SUCCESSFUL' : $this->getStatusCode();
+
+        return [
+            Gateway::SUCCESS                    => $this->isSuccess(),
+            Gateway::STATUS_CODE                => $statusCode,
+            Gateway::REFUND_GATEWAY             => $this->getRefundGateway(),
+            Gateway::GATEWAY_VERIFY_RESPONSE    => $this->getGatewayVerifyResponse(),
+            Gateway::GATEWAY_RESPONSE           => $this->getGatewayResponse(),
+            Gateway::GATEWAY_KEYS               => $this->getGatewayKeys()
+        ];
     }
 }

@@ -324,6 +324,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) === Status::CREATED);
     }
 
+    public function isInitiated()
+    {
+        return ($this->getAttribute(self::STATUS) === Status::INITIATED);
+    }
+
     public function isBatch(): bool
     {
         return ($this->getBatchId() !== null);

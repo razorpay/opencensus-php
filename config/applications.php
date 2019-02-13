@@ -90,6 +90,13 @@ return [
         'url'       => env('CARD_VAULT_URL'),
     ],
 
+    'cps' => [
+        'mock'      => env('CORE_PAYMENT_SERVICE_MOCK', false),
+        'username'  => env('CORE_PAYMENT_SERVICE_KEY'),
+        'password'  => env('CORE_PAYMENT_SERVICE_SECRET'),
+        'url'       => env('CORE_PAYMENT_SERVICE_URL'),
+    ],
+
     'redisdualwrite' => [
         'elastic_cache_read'        => env('ELASTIC_CACHE_READ'),
         'skip_dual_write'           => env('SKIP_DUAL_WRITE'),

@@ -118,6 +118,8 @@ class Gateway
     const SUCCESS                   = 'success';
     // Stores error code if refund is failed at gateway side
     const STATUS_CODE               = 'status_code';
+    // Stores gateway through which refund is processed. Say for FTA refunds, it will be yesbank
+    const REFUND_GATEWAY            = 'refund_gateway';
     // Stores array of gateway related keys such as refund_id, auth_code
     const GATEWAY_KEYS              = 'gateway_keys';
     // Stores raw gateway response in string format.
