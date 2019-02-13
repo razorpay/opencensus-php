@@ -633,7 +633,7 @@ class Reporting implements ExternalService
         $hasGenericNotesTag            = in_array(Feature::REPORTING_GENRERIC_NOTES, $features, true);
 
         $merchantInvoiceExperimentValue = $this->app->razorx->getTreatment(
-            $merchant,
+            $merchant->getId(),
             'reporting_merchant_invoice',
             $this->mode);
 

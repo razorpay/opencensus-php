@@ -11,7 +11,6 @@ class CardVaultTest extends TestCase
 {
     use PaymentTrait;
 
-
     public function setUp()
     {
         parent::setUp();

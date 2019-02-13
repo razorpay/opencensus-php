@@ -696,6 +696,57 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertEquals($refund['status'], 'processed');
     }
 
+    public function testRetryRefundWithBankAccount()
+    {
+        $this->payment['vpa'] = 'failedrefund@hdfcbank';
+
+        $this->getFailureInVerifyRefund();
+
+        $payment = $this->testPayment();
+
+        $refund = $this->refundPayment($payment['id'], 10000);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->mockServerContentFunction(function (& $content, $action = null) use($refund)
+        {
+            if ($action === 'verify')
+            {
+                $content['status'] = 'FAILURE';
+            }
+
+            if ($action === 'refund')
+            {
+                $refundId = substr($refund['id'], 5);
+
+                $content[4] = 'SUCCESS';
+
+                $this->assertEquals($refundId . 1, $content[1]);
+            }
+        });
+
+        $bankAccountData =
+            [
+                'bank_account' => [
+                    'ifsc_code'         => '12345678911',
+                    'account_number'    => '123456789',
+                    'beneficiary_name'  => 'test'
+                ]
+            ];
+
+        $this->retryFailedRefund($refund['id'], $refund['payment_id'], $bankAccountData);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        // Assert for fta created for given refund
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fta['source'], $refund['id']);
+
+        // Refund will be in created state
+        $this->assertEquals($refund['status'], 'created');
+    }
+
     public function testBankDetailsAreSaved()
     {
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);

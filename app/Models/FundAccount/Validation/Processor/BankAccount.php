@@ -135,7 +135,7 @@ class BankAccount extends Base
                 break;
 
             default:
-                new Exception\LogicException(
+                throw new Exception\LogicException(
                     'Unknown FTA status after recon. Should be either Processed or Failed',
                     null,
                     [
