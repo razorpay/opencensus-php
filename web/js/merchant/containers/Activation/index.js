@@ -41,6 +41,13 @@ export default class ActivationContainer extends Component {
               };
             },
           },
+          {
+            name: 'notifyUnmount',
+            hasReply: true,
+            callback: reply => {
+              this.handleUnmount = reply;
+            },
+          },
         ],
         iaActivationMethods = [
           {
@@ -120,6 +127,10 @@ export default class ActivationContainer extends Component {
 
   setOnCloseCb(cb) {
     this.onCloseCB = cb;
+  }
+
+  componentWillUnmount() {
+    this.handleUnmount && this.handleUnmount();
   }
 
   render() {
