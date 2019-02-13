@@ -12,11 +12,13 @@ use RZP\Gateway\Mpi\Enstage\Field;
 use RZP\Gateway\Hitachi\ResponseFields;
 use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 use RZP\Exception\PaymentVerificationException;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class HitachiGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -1015,9 +1017,11 @@ class HitachiGatewayTest extends TestCase
 
         $response = $this->retryFailedRefund($refund['id'], $payment['id']);
 
+        $refund = $this->getLastEntity('refund', true);
+
         $this->assertEquals($refund['id'], $response['refund_id']);
 
-        $this->assertEquals('created', $response['status']);
+        $this->assertEquals('processed', $refund['status']);
 
         $this->assertEquals(1, $refund['attempts']);
     }
@@ -1065,7 +1069,7 @@ class HitachiGatewayTest extends TestCase
 
         $this->assertEquals($refund['id'], $response['refund_id']);
 
-        $this->assertEquals('created', $response['status']);
+        $this->assertEquals('processed', $refund['status']);
 
         $this->assertEquals(1, $refund['attempts']);
     }
@@ -1121,7 +1125,7 @@ class HitachiGatewayTest extends TestCase
 
         $this->assertEquals($refund['id'], $response['refund_id']);
 
-        $this->assertEquals('created', $response['status']);
+        $this->assertEquals('processed', $refund['status']);
 
         $this->assertEquals(1, $refund['attempts']);
     }
