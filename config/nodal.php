@@ -83,7 +83,7 @@ return [
             'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
             'certificate_key_name'        => env('YESBANK_SYNC_CERTIFICATE_KEY_NAME'),
             'fund_transfer_url_suffix'    => env('YESBANK_SYNC_FUND_TRANSFER_SUFFIX'),
-            'payment_status_url_suffix'   => env('YESBANK_PAYMENT_STATUS_URL_SUFFIX')
+            'payment_status_url_suffix'   => env('YESBANK_SYNC_STATUS_URL_SUFFIX')
         ],
     ],
 

@@ -46,7 +46,7 @@ class Initiator extends Base\Core
      */
     public function initiateFundTransfers(array $input, string $channel): array
     {
-        list($shouldProcessBankTransfers, $message) = $this->shouldProcessBankTransfers($channel);
+        list($shouldProcessBankTransfers, $message) = $this->shouldProcessBankTransfers($input, $channel);
 
         if ($shouldProcessBankTransfers === false)
         {
@@ -397,8 +397,13 @@ class Initiator extends Base\Core
      * @param string $channel
      * @return array
      */
-    protected function shouldProcessBankTransfers(string $channel = null): array
+    protected function shouldProcessBankTransfers(array $input, string $channel = null): array
     {
+        if (isset($input[Entity::PURPOSE]) === true and $input[Entity::PURPOSE] === Purpose::PENNY_TESTING)
+        {
+            return [true, null];
+        }
+
         if (($this->env === Environment::PRODUCTION) and ($this->mode === Mode::TEST))
         {
             return [false, 'Invalid mode to initiate transfer'];

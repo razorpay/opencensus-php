@@ -156,7 +156,7 @@ trait HeadlessOtp
                 throw new Exception\GatewayTimeoutException(
                     ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
                     null,
-                    true);
+                    false);
             }
         }
 
@@ -169,7 +169,7 @@ trait HeadlessOtp
             throw new Exception\GatewayRequestException(
                 'Failed to open Headless Browser',
                 null,
-                true);
+                false);
         }
 
         /*

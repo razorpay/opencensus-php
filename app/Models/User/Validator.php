@@ -92,7 +92,7 @@ class Validator extends Base\Validator
     protected static $createOtpRules = [
         // When medium is not sent otp is sent to both mediums.
         Entity::MEDIUM => 'sometimes|filled|in:sms,email',
-        Entity::ACTION => 'required|filled|in:verify_contact,create_payout',
+        Entity::ACTION => 'required|filled|in:verify_contact,create_payout,create_payout_batch',
 
         // Temporary: Need to send these payloads for raven's sms content.
         'amount'          => 'sometimes|integer|min:100|required_if:action,create_payout',

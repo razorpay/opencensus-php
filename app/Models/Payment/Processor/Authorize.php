@@ -4974,8 +4974,17 @@ trait Authorize
 
         if (empty($input[Payment\Entity::TOKEN]) === true)
         {
+            /*
+             * In Maestro card sometimes cvv will be null and
+             * persistCardDetailsTemporarily will fail if we use $input
+             * Card\Entity::modifyMaestro will add dummy cvv and save it in
+             * gatewayInput, so we are using gateway input to persist card details
+             */
+            $gatewayInput['payment']['id'] = $payment->getId();
+
             // storing card details for fallback/redirect purpose
-            $this->persistCardDetailsTemporarily($input);
+            $this->persistCardDetailsTemporarily($gatewayInput);
+
             unset($input['card']['number']);
             unset($input['card']['cvv']);
         }

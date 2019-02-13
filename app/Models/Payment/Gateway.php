@@ -1266,6 +1266,7 @@ class Gateway
         IFSC::SCBL,
         IFSC::UTIB,
         IFSC::YESB,
+        IFSC::CITI,
     ];
 
     public static $emiBanksUsingCardTerminals = [
@@ -1277,6 +1278,7 @@ class Gateway
         IFSC::ICIC,
         IFSC::YESB,
         IFSC::SBIN,
+        IFSC::CITI,
     ];
 
     public static $emiBankToGatewayMap = [

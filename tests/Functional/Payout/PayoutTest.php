@@ -34,8 +34,6 @@ class PayoutTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $this->fixtures->merchant->addFeatures(['payout']);
-
         $this->fixtures->create(
             'fund_account',
             [

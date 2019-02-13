@@ -869,6 +869,33 @@ class PaymentCreateTest extends TestCase
         $this->assertTrue($this->redirectToAuthorize);
     }
 
+    public function testPaymentS2SRedirectPrivateAuthMaestro()
+    {
+        $this->ba->privateAuth();
+
+        $this->mockCardVault();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '5081597022059105';
+
+        unset($payment['card']['cvv']);
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $response = $this->doS2SPrivateAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['id'], $response['razorpay_payment_id']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertTrue($this->redirectToAuthorize);
+    }
+
     public function testPaymentS2SRedirectPrivateAuthRazorx()
     {
         $this->ba->privateAuth();
