@@ -653,7 +653,8 @@ class Gateway extends Base\Gateway
                     'gateway_keys'          => [
                         'gateway_refund_id'     => $gatewayResponse['gateway_response']['gateway_refund_id'],
                         'gateway_merchant_id'   => $gatewayResponse['gateway_response']['gateway_merchant_id']
-                    ]
+                    ],
+                    'refund_gateway'        => 'sharp',
                 ]);
         }
 
@@ -668,7 +669,8 @@ class Gateway extends Base\Gateway
             'gateway_keys'              => [
                     'gateway_refund_id'     => $gatewayResponseFinal['gateway_refund_id'],
                     'gateway_merchant_id'   => $gatewayResponseFinal['gateway_merchant_id']
-            ]
+            ],
+            'refund_gateway'            => 'sharp',
         ];
 
         if ($action === 'verify')
