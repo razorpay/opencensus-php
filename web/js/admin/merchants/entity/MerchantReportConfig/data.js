@@ -9,6 +9,7 @@ export const types = [
   { label: 'Reversals', value: 'reversals' },
   { label: 'Tokens', value: 'tokens' },
   { label: 'Subscriptions', value: 'subscriptions' },
+  { label: 'Disputes', value: 'disputes' },
 ];
 
 export const availableDateFormats = [
