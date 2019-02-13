@@ -12,13 +12,11 @@ use RZP\Gateway\Mpi\Enstage\Field;
 use RZP\Gateway\Hitachi\ResponseFields;
 use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 use RZP\Exception\PaymentVerificationException;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class HitachiGatewayTest extends TestCase
 {
     use PaymentTrait;
-    use DbEntityFetchTrait;
 
     public function setUp()
     {
