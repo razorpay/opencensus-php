@@ -4694,6 +4694,10 @@ ALTER TABLE payouts
 ALTER TABLE promotions
     MODIFY COLUMN credit_amount int(11) NOT NULL DEFAULT 0;
 
+ALTER TABLE gateway_rule
+    ADD COLUMN authentication_gateway varchar(255) DEFAULT NULL AFTER category2,
+    ADD COLUMN auth_type varchar(14) DEFAULT NULL AFTER authentication_gateway;
+
 ALTER TABLE orgs
     ADD COLUMN type varchar(255) DEFAULT NULL AFTER email;
 
@@ -4717,3 +4721,5 @@ ALTER TABLE gateway_rules
 
 ALTER TABLE contacts
     ADD INDEX contacts_merchant_id_active_index (merchant_id, active);
+
+ALTER TABLE payments CHANGE `reference4` `cps_route` TINYINT(1);

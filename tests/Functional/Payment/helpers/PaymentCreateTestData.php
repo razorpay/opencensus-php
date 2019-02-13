@@ -130,6 +130,16 @@ return [
         ],
     ],
 
+    'testPaymentRoutedThroughCps' => [
+        'request' => [
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                'cps_service_enabled'        => '1',
+            ],
+        ]
+    ],
+
     'testPaymentCreateCallingCallbackRouteTwiceForError' => [
         'response' => [
             'content' => [

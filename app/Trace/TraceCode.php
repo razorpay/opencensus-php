@@ -1610,6 +1610,20 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ORIGIN_SET_FAILED                   = 'ORIGIN_SET_FAILED';
     const ORIGIN_INVALID_TYPE                 = 'ORIGIN_INVALID_TYPE';
 
+    // auth selector
+    const AUTH_SELECTION                      = 'AUTH_SELECTION';
+    const AUTH_FILTER_RULES                   = 'AUTH_FILTER_RULES';
+    const AUTH_SORTER_RULES                   = 'AUTH_SORTER_RULES';
+    const AUTH_SELECTION_AFTER_FILTER_RULE    = 'AUTH_SELECTION_AFTER_FILTER_RULE';
+    const AUTH_SELECTION_VIA_GATEWAY_RULES    = 'AUTH_SELECTION_VIA_GATEWAY_RULES';
+    const AUTH_SELECTION_FAILURE              = 'AUTH_SELECTION_FAILURE';
+    const AUTH_SELECTION_FINAL_TERMINAL       = 'AUTH_SELECTION_FINAL_TERMINAL';
+    const AUTH_SELECTION_VALID_AUTHS          = 'AUTH_SELECTION_VALID_AUTHS';
+    const AUTH_SELECTION_GATEWAY_RULES        = 'AUTH_SELECTION_GATEWAY_RULES';
+    const AUTH_LOAD_SORTING_BOOSTED_TERMINALS = 'AUTH_LOAD_SORTING_BOOSTED_TERMINALS';
+    const AUTH_RULES_SEARCH_CRITERIA          = 'AUTH_RULES_SEARCH_CRITERIA';
+    const AUTH_TERMINAL_SELECTION_FOR_RULE_GROUP   = 'AUTH_TERMINAL_SELECTION_FOR_RULE_GROUP';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',

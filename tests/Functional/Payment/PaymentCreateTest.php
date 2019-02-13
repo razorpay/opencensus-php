@@ -521,6 +521,47 @@ class PaymentCreateTest extends TestCase
         $this->doAuthPaymentViaCheckoutRoute($this->payment);
     }
 
+    public function testPaymentRoutedThroughCps()
+    {
+        $this->ba->adminAuth();
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $data = $this->makeRequestAndGetContent($request);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('cps');
+
+        $this->ba->publicAuth();
+
+        $payment = $this->doAuthPayment();
+
+        $pay = $this->getLastEntity('payment', true);
+
+        $this->assertTrue($pay['cps_route']);
+
+        $this->ba->adminAuth();
+
+        $request['content']['cps_service_enabled'] = 0;
+
+        $data = $this->makeRequestAndGetContent($request);
+
+        $this->ba->publicAuth();
+
+        $payment = $this->doAuthPayment();
+
+        $pay = $this->getLastEntity('payment', true);
+
+        $this->assertFalse($pay['cps_route']);
+    }
+
     public function testPaymentCreateCallingCallbackRouteTwiceForSuccess()
     {
         $payment = $this->doAuthPayment();
