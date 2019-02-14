@@ -25,10 +25,17 @@ class EmiSbi extends BaseProcessor
         $createTerminalInput = [
             Terminal\Entity::GATEWAY_MERCHANT_ID => $gatewayMid,
             Terminal\Entity::GATEWAY_TERMINAL_ID => $gatewayTid,
+            Terminal\Entity::GATEWAY             => Gateway::EMI_SBI,
+            Terminal\Entity::ENABLED             => '1',
         ];
 
         (new Terminal\Core)->create($createTerminalInput, $merchant);
 
         $entry[Header::STATUS] = Batch\Status::SUCCESS;
+    }
+
+    protected function sendProcessedMail()
+    {
+        return;
     }
 }
