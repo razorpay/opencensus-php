@@ -25,6 +25,15 @@ class Assertions extends TestCase
         $this->assertEquals(144, $commissions[0]->tax);
     }
 
+    public function testPartnerConfigDoesNotExist(array $data)
+    {
+        $postAction = $data['post_action'];
+
+        $calculator = $postAction['calculator'];
+
+        $this->assertShouldNotCreateCommission($calculator);
+    }
+
     protected function assertBasicCalculatorRules(Calculator $calculator)
     {
         $this->assertTrue($calculator->shouldCreateCommission());
@@ -51,5 +60,10 @@ class Assertions extends TestCase
         $this->assertTrue($commissionTax < $merchantTax);
 
         $this->assertNotEmpty($calculator->getCommissions());
+    }
+
+    protected function assertShouldNotCreateCommission(Calculator $calculator)
+    {
+        $this->assertFalse($calculator->shouldCreateCommission());
     }
 }
