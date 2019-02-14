@@ -2,6 +2,9 @@
   border-radius: 2px
   border: 1px solid #eee
 
+  display: flex
+  flex-direction: column-reverse
+
   &.is-focused
     border-color: $primary-color
 
@@ -12,14 +15,15 @@
     opacity: 0.8
 
   .ql-toolbar
-    border: none
-    padding: 5px
-    border-top: 1px solid #eee
-    position: absolute
-    bottom: 1px
+    position: sticky
+    bottom: 0
     left: -5px
     right: -5px
-    z-index: 2
+    padding: 5px
+    z-index: 1
+    border-top: 1px solid #eee
+    border: none
+    background: #fff
 
     .ql-formats:last-of-type
       margin-right: 0
@@ -153,7 +157,7 @@
     border: none
 
     .ql-editor
-      padding: 12px 8px 48px
+      padding: 12px 8px
 
 .ql-picker-options
   .ql-picker-item:not(:last-of-type)
