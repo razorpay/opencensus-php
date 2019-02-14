@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Payment;
 use Carbon\Carbon;
 
 use RZP\Exception;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\MockHttpResponseTrait;
@@ -82,8 +83,10 @@ class GatewayDowntimeTest extends TestCase
                 'begin'        => Carbon::now()->subMinutes(60)->timestamp
             ],
             'method' => 'POST',
-            'url' => '/gateway/downtimes'
+            'url' => '/gateway/downtimes/dummy/webhook'
         ];
+
+        $this->ba->directAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -109,8 +112,10 @@ class GatewayDowntimeTest extends TestCase
                 'begin'       => Carbon::now()->subMinutes(60)->timestamp,
             ],
             'method' => 'POST',
-            'url' => '/gateway/downtimes'
+            'url' => '/gateway/downtimes/dummy/webhook'
         ];
+
+        $this->ba->directAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -153,8 +158,10 @@ class GatewayDowntimeTest extends TestCase
                 'end'         => Carbon::now()->addMinutes(60)->timestamp
             ],
             'method' => 'POST',
-            'url' => '/gateway/downtimes'
+            'url' => '/gateway/downtimes/dummy/webhook'
         ];
+
+        $this->ba->directAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -191,8 +198,10 @@ class GatewayDowntimeTest extends TestCase
                 'acquirer'    => 'axis',
             ],
             'method' => 'POST',
-            'url' => '/gateway/downtimes'
+            'url' => '/gateway/downtimes/dummy/webhook'
         ];
+
+        $this->ba->directAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -211,7 +220,6 @@ class GatewayDowntimeTest extends TestCase
         $this->assertEquals('OTHER', $response2['reason_code']);
 
         $this->assertEquals('VISA', $response2['network']);
-
     }
 
     public function testCreateDowntimeInvalidGateway()
@@ -671,7 +679,7 @@ class GatewayDowntimeTest extends TestCase
 
     protected function createGatewayDowntimeForOneHour($gatewayName = 'netbanking_hdfc', $from)
     {
-        $to = $from + 60*60;
+        $to = $from + 60 * 60;
 
         return $this->__createGatewayDowntime($gatewayName, $from, $to, null);
     }
@@ -825,7 +833,7 @@ class GatewayDowntimeTest extends TestCase
     {
         $this->ba->appAuth();
 
-        $this->fixtures->create("terminal:shared_upi_mindgate_terminal");
+        $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
 
         // Create another upi mindgate terminal for merchant 100000Razorpay
         $upiMindgateTerm2Attributes = [

@@ -1096,6 +1096,8 @@ class ErrorCode
     const GATEWAY_ERROR_USER_MERCHANT_LIMIT_BREACHED                                = 'GATEWAY_ERROR_USER_MERCHANT_LIMIT_BREACHED';
     const GATEWAY_ERROR_OUTSTANDING_LIMIT_BREACHED                                  = 'GATEWAY_ERROR_OUTSTANDING_LIMIT_BREACHED';
 
+    const BAD_REQUEST_GATEWAY_DOWNTIME_CONFLICT                                     = 'BAD_REQUEST_GATEWAY_DOWNTIME_CONFLICT';
+
     // Scrooge error codes
     const GATEWAY_VERIFY_REFUND_ABSENT                                              = 'GATEWAY_VERIFY_REFUND_ABSENT';
     const GATEWAY_VERIFY_OLDER_REFUNDS_DISABLED                                     = 'GATEWAY_VERIFY_OLDER_REFUNDS_DISABLED';
