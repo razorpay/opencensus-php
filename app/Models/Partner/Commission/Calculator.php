@@ -379,7 +379,7 @@ class Calculator extends Base\Core
     /**
      * @return bool
      */
-    protected function shouldCreateCommission(): bool
+    public function shouldCreateCommission(): bool
     {
         if (Constants::isValidCommissionSource($this->getSource()) === false)
         {
