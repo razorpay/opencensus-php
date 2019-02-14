@@ -2,11 +2,10 @@
 
 namespace RZP\Tests\Functional\Partner\Commission\Base;
 
-use RZP\Tests\Functional\TestCase;
 use Functional\Partner\Commission\Action;
-use Functional\Partner\Commission\Rules;
+use Functional\Partner\Commission\Assertions;
 
-class Engine extends TestCase
+class Engine
 {
     private $context;
 
@@ -24,7 +23,7 @@ class Engine extends TestCase
 
         $this->loadAction(__DIR__ . '/../Action.php');
 
-        $this->loadRules(__DIR__ . '/../Rules.php');
+        $this->loadAssertions(__DIR__ . '/../Assertions.php');
     }
 
     protected function loadContext($path)
@@ -48,11 +47,11 @@ class Engine extends TestCase
         $this->action = new Action;
     }
 
-    protected function loadRules($path)
+    protected function loadAssertions($path)
     {
         require $path;
 
-        $this->rules = new Rules;
+        $this->rules = new Assertions;
     }
 
     /**

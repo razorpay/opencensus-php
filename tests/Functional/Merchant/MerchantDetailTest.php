@@ -38,7 +38,6 @@ class MerchantDetailTest extends TestCase
 
     public function testGetMerchantDetails()
     {
-        $app = $this->fixtures->merchant->createDummyPartnerApp();
         $merchant = $this->fixtures->create('merchant:with_keys');
 
         $user = $this->fixtures->user->createUserForMerchant($merchant['id']);

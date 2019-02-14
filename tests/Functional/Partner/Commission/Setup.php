@@ -92,10 +92,12 @@ class Setup
 
     public function createPayment(array $data, array & $output)
     {
-        $payment = $this->fixtures->create('payment:authorized', [
-            'merchant_id' => $output['merchant_id'],
-            'amount'      => $data['amount'],
-        ]);
+        $payment = $this->fixtures->create(
+                        'payment:authorized',
+                        [
+                            'merchant_id' => $output['merchant_id'],
+                            'amount'      => $data['amount'],
+                        ]);
         unset($data['amount']);
 
         if (isset($data['auth']))

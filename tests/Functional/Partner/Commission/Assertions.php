@@ -2,11 +2,11 @@
 
 namespace Functional\Partner\Commission;
 
-use RZP\Models\Partner\Commission\Calculator;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Partner\Commission\Calculator;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
-class Rules extends TestCase
+class Assertions extends TestCase
 {
     use DbEntityFetchTrait;
 
