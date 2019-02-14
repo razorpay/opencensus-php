@@ -19,4 +19,10 @@ final class Constants
     const UTR               = 'utr';
 
     const FTA_ID            = 'fta_id';
+
+    const IMPS_STATUS_CHECK_DISPATCH_TIME = 10;
+
+    const MAX_AGE_ATTEMPT_STATUS_DISPATCH_AGE = 1800;
+
+    const DEFAULT_STATUS_CHECK_DISPATCH_TIME = 180;
 }
