@@ -148,6 +148,7 @@ class Type
     const RECON_BUCKET_CONFIG                   = 'recon_bucket_config';
     const MOCK_RECONCILIATION_FILE              = 'mock_reconciliation_file';
     const CUSTOMER_BUCKET_CONFIG                = 'customer_bucket_config';
+    const H2H_DEFAULT_BUCKET_CONFIG             = 'h2h_default_bucket_config';
 
     // File contants required for merchant feature onboarding
     const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
@@ -351,7 +352,6 @@ class Type
             self::ICICI_UPI_REFUND,
             self::MINDGATE_UPI_REFUND,
             self::SBI_UPI_REFUND,
-            self::FUND_TRANSFER_DEFAULT,
             self::REPORT,
             self::BENEFICIARY_FILE,
             self::EMI_FILE,
@@ -411,6 +411,10 @@ class Type
 
         self::RECON_BUCKET_CONFIG => [
             self::RECONCILIATION_BATCH_INPUT,
+        ],
+
+        self::H2H_DEFAULT_BUCKET_CONFIG => [
+            self::FUND_TRANSFER_DEFAULT
         ],
     ];
 

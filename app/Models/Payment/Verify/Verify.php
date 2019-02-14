@@ -305,8 +305,6 @@ class Verify extends Base\Core
 
         $this->trace->info(TraceCode::VERIFY_PROCESSED_SUMMARY, $summary);
 
-        $this->notifyInSlack($resultSet, $summary);
-
         return $summary;
     }
 
@@ -348,8 +346,10 @@ class Verify extends Base\Core
 
             $this->repo->reload($payment);
 
-            // for now dont verify authorized/captured/refunded payments via cron
-            if ($payment->hasBeenAuthorized() === true)
+            // We ignore all the payments which has been authorized
+            // but not captured
+            if (($payment->hasBeenAuthorized() === true) and
+                ($payment->hasBeenCaptured() === false))
             {
                 $payment->setNonVerifiable();
 
@@ -362,7 +362,7 @@ class Verify extends Base\Core
                 continue;
             }
 
-            // there could be case where payment is already verified by some other thread,
+            // There could be case where payment is already verified by some other thread,
             // hence check the verify_at after reload
             if ($verifyStart < $payment->getVerifyAt())
             {
@@ -373,24 +373,53 @@ class Verify extends Base\Core
                 continue;
             }
 
-            $filter = ($payment->isCreated() === true) ? Filter::PAYMENTS_CREATED : Filter::PAYMENTS_FAILED;
+            $verifyResult = null;
 
-            $verifyResult = $this->verifyPayment($payment, $filter);
+            // For verification of captured payment
+            if ($payment->hasBeenCaptured() === true)
+            {
+                $filter = Filter::PAYMENTS_CAPTURED;
+
+                $verifyResult = (new CaptureVerify())->verifyPayment($payment, $filter);
+
+                // On hold is removed once transaction is verified successfully
+                if ($verifyResult === Result::SUCCESS)
+                {
+                    // TODO: Un-comment this after test
+                    // if ($payment->isOnHold() === true)
+                    // {
+                    //     $payment->setOnHold(false);
+                    // }
+
+                    // Make the payment non-verifiable to prevent
+                    // it from getting processed again
+                    $payment->setNonVerifiable();
+
+                    $this->repo->saveOrFail($payment);
+                }
+            }
+            // For verification of created and failed payments
+            else
+            {
+                $filter = ($payment->isCreated() === true) ? Filter::PAYMENTS_CREATED : Filter::PAYMENTS_FAILED;
+
+                $verifyResult = $this->verifyPayment($payment, $filter);
+            }
 
             if ($verifyResult !== null)
             {
                 $resultSet[$verifyResult] += 1;
+
+                if ($verifyResult === Result::AUTHORIZED)
+                {
+                    $totalAuthTimeDiff += (time() - $payment->getCreatedAt());
+
+                    $avgAuthTime = $totalAuthTimeDiff/$resultSet[Result::AUTHORIZED];
+                }
             }
             else
             {
                 $notApplicable++;
-            }
-
-            if ($verifyResult === Result::AUTHORIZED)
-            {
-                $totalAuthTimeDiff += (time() - $payment->getCreatedAt());
-
-                $avgAuthTime = $totalAuthTimeDiff/$resultSet[Result::AUTHORIZED];
             }
 
             $this->releasePaymentAfterVerify($payment);
@@ -1174,6 +1203,7 @@ class Verify extends Base\Core
             case Filter::VERIFY_FAILED:
             case Filter::PAYMENTS_FAILED:
             case Filter::PAYMENTS_CREATED:
+            case Filter::PAYMENTS_CAPTURED:
                 $boundaries = self::$failureStartBoundary;
                 break;
 

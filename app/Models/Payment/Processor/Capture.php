@@ -668,6 +668,8 @@ trait Capture
 
         $payment->setAutoCaptured($autoCaptured);
 
+        $this->setVerifyPaymentIfApplicable($payment);
+
         $this->trace->info(
             TraceCode::PAYMENT_STATUS_CAPTURED,
             [
@@ -699,6 +701,18 @@ trait Capture
         $this->repo->saveOrFail($payment);
 
         $txnCore->saveFeeDetails($txn, $feesSplit);
+    }
+
+    protected function setVerifyPaymentIfApplicable(Payment\Entity & $payment)
+    {
+        $gateway = $payment->getGateway();
+
+        if (in_array($gateway, Payment\Gateway::$captureVerifyEnabled, true) === true)
+        {
+            $payment->setVerifyBucket(0);
+
+            $payment->setVerifyAt(time());
+        }
     }
 
     protected function verifyOrderUnpaid(Payment\Entity $payment)

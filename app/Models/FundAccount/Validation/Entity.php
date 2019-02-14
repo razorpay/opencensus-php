@@ -42,6 +42,8 @@ class Entity extends Base\PublicEntity
 
     protected $entity = Constants\Entity::FUND_ACCOUNT_VALIDATION;
 
+    const PUBLIC_ENTITY_NAME = 'fund_account.validation';
+
     protected static $sign = 'fav';
 
     protected $generateIdOnCreate = true;
@@ -185,7 +187,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicEntityAttribute(array & $array)
     {
-        $array[self::ENTITY] = 'fund_account.validation';
+        $array[self::ENTITY] = self::PUBLIC_ENTITY_NAME;
     }
 
     public function setPublicResultsAttribute(array & $array)
