@@ -18,6 +18,7 @@ class Entity extends Base\Entity
     const AUTH_NOT_REQUIRED       = 'auth_not_required';
     const APPRCODE                = 'apprcode';
     const RRN                     = 'rrn';
+    const SETTLED                 = 'settled';
 
     protected $fillable = [
         self::PAYMENT_ID,
@@ -33,6 +34,7 @@ class Entity extends Base\Entity
         self::AUTH_NOT_REQUIRED,
         self::APPRCODE,
         self::RRN,
+        self::SETTLED
     ];
 
     protected $hidden = [

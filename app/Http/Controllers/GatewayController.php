@@ -15,8 +15,8 @@ use RZP\Models\Gateway\Rule;
 use RZP\Models\Payment\Gateway;
 use Exception as BaseException;
 use RZP\Models\Gateway\Downtime;
+use RZP\Models\Gateway\Settlement;
 use RZP\Gateway\Upi\Base\ProviderCode;
-use RZP\Gateway\Netbanking\Corporation;
 use RZP\Jobs\DynamicNetBankingUrlUpdater;
 use RZP\Models\Gateway\Priority as GatewayPriority;
 use RZP\Gateway\Wallet\Amazonpay\ResponseFields as AmazonResponse;
@@ -673,5 +673,12 @@ class GatewayController extends Controller
                 'exception' => $exc->getMessage(),
             ]);
         }
+    }
+
+    public function initiatePaysecureSettlements()
+    {
+        $input = Request::all();
+
+        return (new Settlement\Service)->processPaysecureSettlements($input);
     }
 }

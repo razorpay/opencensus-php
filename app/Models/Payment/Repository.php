@@ -20,6 +20,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Transfer;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
+use RZP\Gateway\Paysecure;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
@@ -1643,6 +1644,33 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->betweenTime($from, $to)
                     ->where(Payment\Entity::GATEWAY, '=', $gateway)
+                    ->get();
+    }
+
+    public function fetchPaysecureAuthorizedAndCapturedPaymentsBetweenTimestampsToSettle($from, $to)
+    {
+        $paymentIdColumn = $this->repo->paysecure->dbColumn(Paysecure\Entity::PAYMENT_ID);
+
+        $pid = $this->dbColumn(Entity::ID);
+
+        $paysecureTable = $this->repo->paysecure->getTableName();
+
+        $actionColumn = $this->repo->paysecure->dbColumn(Paysecure\Entity::ACTION);
+
+        $settleColumn = $this->repo->paysecure->dbColumn(Paysecure\Entity::SETTLED);
+
+        $statusColumn = $this->dbColumn(Entity::STATUS);
+
+        return $this->newQuery()
+                    ->join($paysecureTable, $paymentIdColumn, '=', $pid)
+                    ->whereIn($statusColumn, [Status::AUTHORIZED, Status::CAPTURED])
+                    ->where(Entity::GATEWAY, Gateway::PAYSECURE)
+                    ->whereBetween(Entity::AUTHORIZED_AT, [$from, $to])
+                    ->where($actionColumn, Action::AUTHORIZE)
+                    ->where($settleColumn, 0)
+                    ->with('card.globalCard')
+                    ->with('emiPlan')
+                    ->with('merchant')
                     ->get();
     }
 }

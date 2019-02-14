@@ -101,6 +101,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_METADATA                              = 'PAYMENT_METADATA';
     const PAYMENT_CREATE_ON_PUBLIC                      = 'PAYMENT_CREATE_ON_PUBLIC';
     const PAYMENT_CARD_NOT_ENROLLED                     = 'PAYMENT_CARD_NOT_ENROLLED';
+    const PAYMENT_CARD_NOT_SAVED                        = 'PAYMENT_CARD_NOT_SAVED';
     const PAYMENT_INVALID_CONTACT_NUMBER                = 'PAYMENT_INVALID_CONTACT_NUMBER';
     const PAYMENT_CAPTURE_CREATE_TRANSACTION            = 'PAYMENT_CAPTURE_CREATE_TRANSACTION';
     const PAYMENT_TRANSFER_CREATE_TRANSACTION           = 'PAYMENT_TRANSFER_CREATE_TRANSACTION';
