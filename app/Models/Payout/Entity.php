@@ -239,6 +239,7 @@ class Entity extends Base\PublicEntity
         self::UTR               => null,
         self::FAILURE_REASON    => null,
         self::REFERENCE_ID      => null,
+        self::NARRATION         => null,
     ];
 
     protected $amounts = [
@@ -872,7 +873,7 @@ class Entity extends Base\PublicEntity
 
         if (empty($narration) === false)
         {
-            return $narration;
+            return;
         }
 
         $merchant = $this->merchant;
@@ -885,7 +886,7 @@ class Entity extends Base\PublicEntity
 
         $narration = $formattedLabel . ' Fund Transfer';
 
-        return $narration;
+        $input[self::NARRATION] = $narration;
     }
 
     public function shouldNotifyTxnViaSms(): bool
