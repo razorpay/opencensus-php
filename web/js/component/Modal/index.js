@@ -21,8 +21,10 @@ export class ModalMask extends React.PureComponent {
 
   toggleBlur(toAdd) {
     const body = document.body;
-    if (toAdd && !body.classList.contains('blur')) {
-      body.classList.add('blur');
+    if (toAdd) {
+      if (!body.classList.contains('blur')) {
+        body.classList.add('blur');
+      }
     } else {
       body.classList.remove('blur');
       body.classList.remove('noscroll');

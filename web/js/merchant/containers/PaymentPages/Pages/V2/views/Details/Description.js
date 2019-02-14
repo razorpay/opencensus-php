@@ -66,9 +66,12 @@ export default class extends React.PureComponent {
   componentWillUpdate(nextProps) {
     if (
       this.props.description !== nextProps.description &&
-      !this.props.isPageDirty
+      !this.props.isPageDirty &&
+      this.QUILL
     ) {
-      this.QUILL && this.QUILL.setContents(JSON.parse(nextProps.description));
+      nextProps.description
+        ? this.QUILL.setContents(JSON.parse(nextProps.description))
+        : this.QUILL.setText('');
     }
   }
 
