@@ -61,7 +61,6 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
                     'info_code'             => Base\InfoCode::REFUND_ABSENT,
                     'refund_reference_id'   => $gatewayPaymentId,
                     'payment_id'            => $paymentId,
-                    'row'                   => $row,
                     'gateway'               => $this->gateway,
                 ]);
         }
@@ -81,7 +80,6 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
                     'expected_amount'   => $this->refund->getBaseAmount(),
                     'recon_amount'      => $this->getReconRefundAmount($row),
                     'currency'          => $this->refund->getCurrency(),
-                    'row'               => $row,
                     'gateway'           => $this->refund->getGateway(),
                 ]);
 

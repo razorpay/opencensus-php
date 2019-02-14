@@ -42,7 +42,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     'trace_code'            => TraceCode::RECON_INFO_ALERT,
                     'info_code'             => Base\InfoCode::PAYMENT_ABSENT ,
                     'payment_reference_id'  => $gatewayPaymentId2,
-                    'row'                   => $row,
                     'gateway'               => $this->gateway,
                 ]
             );
@@ -113,7 +112,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     'expected_amount' => $this->payment->getBaseAmount(),
                     'recon_amount'    => $this->getReconPaymentAmount($row),
                     'currency'        => $this->payment->getCurrency(),
-                    'row'             => $row,
                     'gateway'         => $this->payment->getGateway(),
                 ]);
 

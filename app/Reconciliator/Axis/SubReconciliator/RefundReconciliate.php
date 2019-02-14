@@ -85,7 +85,6 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
                     'trace_code'                => TraceCode::RECON_MISMATCH,
                     'info_code'                 => Base\InfoCode::REFUND_ABSENT,
                     'refund_reference_id'       => $rrn,
-                    'row'                       => $row,
                     'gateway'                   => $this->gateway
                 ]);
         }
@@ -113,7 +112,6 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
                 [
                     'info_code'             => Base\InfoCode::REFUND_ABSENT,
                     'refund_reference_id'   => $orderId,
-                    'row'                   => $row,
                     'gateway'               => $this->gateway
                 ]);
         }

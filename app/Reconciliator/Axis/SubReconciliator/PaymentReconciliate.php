@@ -117,7 +117,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 [
                     'info_code'             => Base\InfoCode::PAYMENT_ABSENT,
                     'payment_reference_id'  => $orderId,
-                    'row'                   => $row,
                     'gateway'               => $this->gateway
                 ]);
         }
