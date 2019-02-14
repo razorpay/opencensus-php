@@ -8,7 +8,7 @@ export default {
   },
   quillPrefill: [
     {
-      insert: 'Product Image(s)',
+      insert: 'Program name ',
     },
     {
       attributes: {
@@ -18,7 +18,7 @@ export default {
     },
     {
       insert:
-        '# Select and upload some images of your product / service\n\nProduct Description ',
+        '# Name of the course / workshop / membership\n\nProgram Description ',
     },
     {
       attributes: {
@@ -28,7 +28,7 @@ export default {
     },
     {
       insert:
-        '# Add product description with features and benefits\n\nShips in X days ( if physical product )',
+        '# Course description with highlights and benefits to attendees\n\nFee breakup ',
     },
     {
       attributes: {
@@ -38,7 +38,7 @@ export default {
     },
     {
       insert:
-        '# Time required to prepare order for shipment in days\n\nAverage delivery time ',
+        '# Fee structure for activites of the course / workshop / membership\n\nName of the organiser ',
     },
     {
       attributes: {
@@ -47,7 +47,8 @@ export default {
       insert: '\n',
     },
     {
-      insert: '# Average time required for delivery after shipment\n',
+      insert:
+        '# Organisation / Organiser description with address and contact information\n',
     },
   ],
 };

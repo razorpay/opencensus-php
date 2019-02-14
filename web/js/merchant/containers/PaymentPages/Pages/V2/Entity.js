@@ -91,7 +91,6 @@ export default class PaymentPagesV2Entity extends React.Component {
           description={paymentPageEntity.description}
           trackerFn={trackShareActions}
           openEmbedButton={this.openEmbedButtonView}
-          showEmbedButton
         />
       ),
     });

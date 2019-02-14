@@ -25,7 +25,6 @@ if (isMobileAndTablet()) {
 
 export default ({
   isNew,
-  showEmbedButton,
   isPaymentPagesV2,
   isEditExistingId,
   handleClose,
@@ -213,36 +212,38 @@ export default ({
             </div>
           )}
 
-          {showEmbedButton && (
-            <div class="Share-section">
-              <span class="label--faded">
-                <i class="i i-embed-btn" />
-                Embed Payment button
-              </span>
-              <div style={{ display: 'inline-block' }}>
-                <span class="help-content">
-                  <i class="i i-info-outline" style={{ marginLeft: 4 }} />
-                  <Popover
-                    align="top"
-                    theme="light"
-                    parentQuerySelector=".ReactModal__Content"
-                  >
-                    <PopoverBody>
-                      You can embed this custom button on your website
-                    </PopoverBody>
-                  </Popover>
+          {isPaymentPagesV2 &&
+            isNew && (
+              <div class="Share-section">
+                <span class="label--faded">
+                  <i class="i i-embed-btn" />
+                  Embed Payment Button
                 </span>
+                <div style={{ display: 'inline-block' }}>
+                  <span class="help-content">
+                    <i class="i i-info-outline" style={{ marginLeft: 4 }} />
+                    <Popover
+                      align="top"
+                      theme="dark"
+                      parentQuerySelector=".ReactModal__Content"
+                    >
+                      <PopoverBody>
+                        Your customers can pay from your website by clicking on
+                        this Payment Button
+                      </PopoverBody>
+                    </Popover>
+                  </span>
+                </div>
+                <Button.Transparent
+                  type="button"
+                  class="Button--Link"
+                  onClick={openEmbedButtonView}
+                  style={{ float: 'right' }}
+                >
+                  <b>Create</b>
+                </Button.Transparent>
               </div>
-              <Button.Transparent
-                type="button"
-                class="Button--Link"
-                onClick={openEmbedButtonView}
-                style={{ float: 'right' }}
-              >
-                <b>Create</b>
-              </Button.Transparent>
-            </div>
-          )}
+            )}
 
           <div class="Share-section">
             <span class="label--faded">

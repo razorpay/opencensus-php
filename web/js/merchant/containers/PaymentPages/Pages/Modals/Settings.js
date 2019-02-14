@@ -111,7 +111,7 @@ export default class extends React.Component {
                 />
                 {isTestMode && (
                   <div style={{ marginTop: 4, fontSize: 13 }}>
-                    Custom slug is only available in Live Mode
+                    Custom slug is only available in <b>Live Mode</b>
                   </div>
                 )}
               </div>
@@ -205,7 +205,7 @@ export default class extends React.Component {
               </div>
 
               <div class="settings-section">
-                <b>Payment Button</b>
+                <b>Embed Payment Button</b>
                 <div>
                   Put a payment button on your website
                   <span class="help-content">
@@ -216,7 +216,8 @@ export default class extends React.Component {
                       parentQuerySelector={`.Modal-mask--paymentpages-settings .Modal-body`}
                     >
                       <PopoverBody>
-                        You can embed this custom button on your website
+                        Your customers can pay from your website by clicking on
+                        this Payment Button
                       </PopoverBody>
                     </Popover>
                   </span>
@@ -238,7 +239,7 @@ export default class extends React.Component {
                       </Popover>
                     </span>
                   ) : (
-                    <span style={{ float: 'right' }}>EmbedBtn</span>
+                    <span style={{ float: 'right' }}>{EmbedBtn}</span>
                   )}
                 </div>
               </div>
