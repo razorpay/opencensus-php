@@ -415,14 +415,16 @@ export default class extends React.Component {
       );
     }
 
-    <PaymentPagesV2Entity
-      {...this.props}
-      {...this.state}
-      fetchEntity={this.fetchEntity}
-      fetchEntityPayments={this.fetchEntityPayments}
-      editPaymentPage={this.editPaymentPage}
-      toggleManualActivation={this.toggleManualActivation}
-      reActivateLink={this.reActivateLink}
-    />;
+    return (
+      <PaymentPagesV2Entity
+        {...this.props}
+        {...this.state}
+        fetchEntity={this.fetchEntity}
+        fetchEntityPayments={this.fetchEntityPayments}
+        editPaymentPage={this.editPaymentPage}
+        toggleManualActivation={this.toggleManualActivation}
+        reActivateLink={this.reActivateLink}
+      />
+    );
   }
 }
