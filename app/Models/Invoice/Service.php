@@ -67,6 +67,11 @@ class Service extends Base\Service
         return $invoices->toArrayPublic();
     }
 
+    public function getInvoicesCount(array $input)
+    {
+        return $this->repo->invoice->getInvoicesCount($input);
+    }
+
     public function update(string $id, array $input): array
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
