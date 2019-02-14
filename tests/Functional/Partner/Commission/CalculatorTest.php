@@ -29,6 +29,6 @@ class CalculatorTest extends OAuthTestCase
 
     public function testImplicitVariable()
     {
-        $this->ruleEngine->execute('BptVjGnFv6ITBm');
+        $this->ruleEngine->execute(__FUNCTION__);
     }
 }

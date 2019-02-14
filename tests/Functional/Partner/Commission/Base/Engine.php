@@ -13,7 +13,7 @@ class Engine
 
     private $action;
 
-    private $rules;
+    private $assertions;
 
     public function __construct($fixtures)
     {
@@ -51,7 +51,7 @@ class Engine
     {
         require $path;
 
-        $this->rules = new Assertions;
+        $this->assertions = new Assertions;
     }
 
     /**
@@ -87,7 +87,7 @@ class Engine
 
         $this->action->$contextName($testContext['post_setup'], $testContext['post_action']);
 
-        $this->rules->$contextName($testContext);
+        $this->assertions->$contextName($testContext);
     }
 
     public function setupFixtures(array $setupRequests, array & $output)

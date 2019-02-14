@@ -6,7 +6,7 @@ use RZP\Models\Partner\Commission\Calculator;
 
 class Action
 {
-    public function BptVjGnFv6ITBm(array $postSetupData, array & $postActionData)
+    public function testImplicitVariable(array $postSetupData, array & $postActionData)
     {
         $calculator = new Calculator($postSetupData['source_entity']);
 

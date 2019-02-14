@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'BptVjGnFv6ITBm' => [
+    'testImplicitVariable' => [
         'setup' => [
             'create_partner'     => [
                 'id'   => 'BptVjGnFv6ITBm',

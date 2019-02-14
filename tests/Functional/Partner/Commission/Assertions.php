@@ -10,7 +10,7 @@ class Assertions extends TestCase
 {
     use DbEntityFetchTrait;
 
-    public function BptVjGnFv6ITBm(array $data)
+    public function testImplicitVariable(array $data)
     {
         $postAction = $data['post_action'];
 
