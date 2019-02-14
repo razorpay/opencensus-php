@@ -32,6 +32,11 @@ class Factory
         Batch\Type::TERMINAL => [
             Batch\Entity::TYPE,
             Batch\Entity::SUB_TYPE
+        ],
+
+        Batch\Type::MERCHANT_ONBOARDING => [
+            Batch\Entity::TYPE,
+            Batch\Entity::GATEWAY,
         ]
     ];
 
