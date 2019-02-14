@@ -24,7 +24,7 @@ function fetchFn() {
 
 export default class PlanList extends Component {
   state = {
-    selectedOrg: null,
+    selectedOrg: undefined,
     orgs: [], //default as we fetch all orgs
   };
 
@@ -124,24 +124,23 @@ export default class PlanList extends Component {
               Add New
             </div>
           </header>
-          {isOrgRazorpay() &&
-            !isBlank(orgs) && (
-              <div class="filters">
-                <SelectField
-                  label="Organisation"
-                  name="org_id"
-                  value={this.state.selectedOrg}
-                  onChange={this.handleOrgChange}
-                >
-                  <option value="">All</option>
-                  {Object.keys(orgs).map(orgId => (
-                    <option key={orgId} value={orgId}>
-                      {orgs[orgId]}
-                    </option>
-                  ))}
-                </SelectField>
-              </div>
-            )}
+          {isOrgRazorpay() && !isBlank(orgs) && (
+            <div class="filters">
+              <SelectField
+                label="Organisation"
+                name="org_id"
+                value={this.state.selectedOrg}
+                onChange={this.handleOrgChange}
+              >
+                <option value="">All</option>
+                {Object.keys(orgs).map(orgId => (
+                  <option key={orgId} value={orgId}>
+                    {orgs[orgId]}
+                  </option>
+                ))}
+              </SelectField>
+            </div>
+          )}
         </div>
         <PageTable
           model={this.collection}

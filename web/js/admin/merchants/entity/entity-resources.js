@@ -389,14 +389,13 @@ export function getDetailsViewMap(model) {
                   value={() => <Amount value={balanceDetails.test.balance} />}
                 />
               )}
-              {balanceDetails.live &&
-                details.activated && (
-                  <EntityRow
-                    className="separate"
-                    label="Live:"
-                    value={() => <Amount value={balanceDetails.live.balance} />}
-                  />
-                )}
+              {balanceDetails.live && details.activated && (
+                <EntityRow
+                  className="separate"
+                  label="Live:"
+                  value={() => <Amount value={balanceDetails.live.balance} />}
+                />
+              )}
             </div>
           )
         : null,
@@ -413,14 +412,13 @@ export function getDetailsViewMap(model) {
                   value={() => <Amount value={balanceDetails.test.credits} />}
                 />
               )}
-              {balanceDetails.live &&
-                details.activated && (
-                  <EntityRow
-                    className="separate"
-                    label="Live:"
-                    value={() => <Amount value={balanceDetails.live.credits} />}
-                  />
-                )}
+              {balanceDetails.live && details.activated && (
+                <EntityRow
+                  className="separate"
+                  label="Live:"
+                  value={() => <Amount value={balanceDetails.live.credits} />}
+                />
+              )}
             </div>
           )
         : null,
@@ -439,18 +437,24 @@ export function getDetailsViewMap(model) {
                   )}
                 />
               )}
-              {balanceDetails.live &&
-                details.activated && (
-                  <EntityRow
-                    className="separate"
-                    label="Live:"
-                    value={() => (
-                      <Amount value={balanceDetails.live.fee_credits} />
-                    )}
-                  />
-                )}
+              {balanceDetails.live && details.activated && (
+                <EntityRow
+                  className="separate"
+                  label="Live:"
+                  value={() => (
+                    <Amount value={balanceDetails.live.fee_credits} />
+                  )}
+                />
+              )}
             </div>
           )
+        : null,
+    },
+
+    {
+      label: 'Banking Balance',
+      value: details.merchant_details
+        ? (details.merchant_details.banking_balance || {}).balance
         : null,
     },
 
