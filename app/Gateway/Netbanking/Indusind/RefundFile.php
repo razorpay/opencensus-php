@@ -15,7 +15,7 @@ use RZP\Models\Payment\Gateway;
 
 class RefundFile extends Base\RefundFile
 {
-    protected static $fileToWriteName = 'PGReconRAZORPAY';
+    protected static $fileToWriteName = 'PGRefundRAZORPAY';
 
     const EMAIL_BODY = 'Please forward the Indusind Netbanking refunds file to UBPS operations team';
 
