@@ -9,7 +9,7 @@ import Svelte from './Svelte';
 import DetailsView from './views/Details/index';
 import FormView from './views/Form/index';
 
-import TemplatesMask from './views/templates/Templates';
+import TemplatesMask from './views/Templates';
 import PPSettingsView from '../Modals/Settings';
 import PPShareView from '../Modals/Share';
 import { createPaymentPage, editPaymentPage, sendLink } from '../model';
@@ -141,7 +141,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       });
     };
 
-    script.src = 'http://127.0.0.1:7999/static/hosted/wysiwyg.js';
+    script.src = 'https://cdn.razorpay.com/static/hosted/wysiwyg.js';
 
     document.head.appendChild(script);
 
