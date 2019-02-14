@@ -57,7 +57,7 @@ export default class extends React.Component {
               <TemplateCard
                 title="Build your Payment Page"
                 description="Create your own Payment Page with custom fields and page settings."
-                img=""
+                img="/img/payment_pages/start_from_scratch.jpg"
                 selectTemplate={this.selectTemplate(null)}
               />
               {Object.keys(META).map((m, k) => {

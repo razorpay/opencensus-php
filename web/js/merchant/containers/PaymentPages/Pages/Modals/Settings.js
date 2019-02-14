@@ -61,6 +61,22 @@ export default class extends React.Component {
 
     const { slug, theme, expire_by, disableSubmit } = this.state;
 
+    const EmbedBtn = (
+      <Button.Transparent
+        type="button"
+        class="Button--Link"
+        disabled={
+          !(
+            paymentPageEntity.id &&
+            typeof paymentPageEntity.title !== 'undefined'
+          )
+        }
+        onClick={this.openEmbedButtonView}
+      >
+        <b>Create</b>
+      </Button.Transparent>
+    );
+
     return (
       <ModalMask maskClosable={false} class="paymentpages-settings">
         <Modal showCloseBtn={false}>
@@ -196,33 +212,34 @@ export default class extends React.Component {
                     <i class="i i-info-outline" style={{ marginLeft: 4 }} />
                     <Popover
                       align="top"
-                      theme="light"
+                      theme="dark"
                       parentQuerySelector={`.Modal-mask--paymentpages-settings .Modal-body`}
                     >
                       <PopoverBody>
-                        {!(
-                          paymentPageEntity.id &&
-                          typeof paymentPageEntity.title !== 'undefined'
-                        )
-                          ? 'You can customize Embed Button after creating Payment Page'
-                          : 'You can embed this custom button on your website'}
+                        You can embed this custom button on your website
                       </PopoverBody>
                     </Popover>
                   </span>
-                  <Button.Transparent
-                    type="button"
-                    class="Button--Link"
-                    disabled={
-                      !(
-                        paymentPageEntity.id &&
-                        typeof paymentPageEntity.title !== 'undefined'
-                      )
-                    }
-                    onClick={this.openEmbedButtonView}
-                    style={{ float: 'right' }}
-                  >
-                    <b>Create</b>
-                  </Button.Transparent>
+                  {!(
+                    paymentPageEntity.id &&
+                    typeof paymentPageEntity.title !== 'undefined'
+                  ) ? (
+                    <span class="help-content" style={{ float: 'right' }}>
+                      <span>{EmbedBtn}</span>
+                      <Popover
+                        align="top"
+                        theme="dark"
+                        parentQuerySelector={`.Modal-mask--paymentpages-settings .Modal-body`}
+                      >
+                        <PopoverBody>
+                          You can customize Embed Button after creating Payment
+                          Page
+                        </PopoverBody>
+                      </Popover>
+                    </span>
+                  ) : (
+                    <span style={{ float: 'right' }}>EmbedBtn</span>
+                  )}
                 </div>
               </div>
               <footer>

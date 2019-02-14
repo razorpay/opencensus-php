@@ -40,6 +40,7 @@ const QUILL_OPTIONS = {
   },
   placeholder: 'Enter page description',
   theme: 'snow',
+  scrollingContainer: 'body',
 };
 
 // BEWARE: Don't remove whitespaces from infoTxt.
@@ -65,9 +66,8 @@ export default class extends React.PureComponent {
   componentWillUpdate(nextProps) {
     if (
       this.props.description !== nextProps.description &&
-      !this.templateInitDone
+      !this.props.isPageDirty
     ) {
-      this.templateInitDone = true;
       this.QUILL && this.QUILL.setContents(JSON.parse(nextProps.description));
     }
   }
