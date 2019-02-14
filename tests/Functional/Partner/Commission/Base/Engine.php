@@ -28,28 +28,28 @@ class Engine
 
     protected function loadContext($path)
     {
-        $contextData = require $path;
+        $contextData = include $path;
 
         $this->setContext($contextData);
     }
 
     protected function loadSetup(string $path, $fixtures)
     {
-        require $path;
+        include_once $path;
 
         $this->setup = new Setup($fixtures);
     }
 
     protected function loadAction($path)
     {
-        require $path;
+        include_once $path;
 
         $this->action = new Action;
     }
 
     protected function loadAssertions($path)
     {
-        require $path;
+        include_once $path;
 
         $this->assertions = new Assertions;
     }
@@ -85,7 +85,14 @@ class Engine
 
         $this->setupFixtures($testContext['setup'], $testContext['post_setup']);
 
-        $this->action->$contextName($testContext['post_setup'], $testContext['post_action']);
+        if (method_exists($this->action, $contextName) === true)
+        {
+            $this->action->$contextName($testContext['post_setup'], $testContext['post_action']);
+        }
+        else
+        {
+            $this->action->defaultAction($testContext['post_setup'], $testContext['post_action']);
+        }
 
         $this->assertions->$contextName($testContext);
     }

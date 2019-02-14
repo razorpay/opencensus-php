@@ -6,7 +6,13 @@ use RZP\Models\Partner\Commission\Calculator;
 
 class Action
 {
-    public function testImplicitVariable(array $postSetupData, array & $postActionData)
+    /**
+     * Gets triggered if the test's action function is not defined here explictly. Calculates commission.
+     *
+     * @param array $postSetupData
+     * @param array $postActionData
+     */
+    public function defaultAction(array $postSetupData, array & $postActionData)
     {
         $calculator = new Calculator($postSetupData['source_entity']);
 

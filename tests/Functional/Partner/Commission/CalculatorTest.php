@@ -18,7 +18,7 @@ class CalculatorTest extends OAuthTestCase
     {
         parent::setUp();
 
-        require __DIR__ . "/Base/Engine.php";
+        include_once __DIR__ . "/Base/Engine.php";
 
         $this->ruleEngine = new Base\Engine($this->fixtures);
 
