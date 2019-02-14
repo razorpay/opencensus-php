@@ -1001,6 +1001,9 @@ final class Route
         // Banking statement routes
         'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
         'transaction_statement_fetch_multiple'     => ['get',      'transactions',                                   'StatementController@list'                                          ],
+
+        //API Routes for FTS
+        'update_fts_nodal_beneficiary'             => ['post',     'update_fts_nodal_beneficiary',                   'NodalBeneficiaryController@createOrUpdateNodalBeneficiary'         ],
     ];
 
     public static $public = [
@@ -1359,6 +1362,7 @@ final class Route
         'merchant_es_sync_cron',
         'gateway_downtime_vajra_webhook',
         'scrooge_refund_verify_bulk',
+        'update_fts_nodal_beneficiary',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2562,6 +2566,10 @@ final class Route
 
         'vajra' => [
             'gateway_downtime_vajra_webhook',
+        ],
+
+        'fts'  => [
+            'update_fts_nodal_beneficiary',
         ],
     ];
 
