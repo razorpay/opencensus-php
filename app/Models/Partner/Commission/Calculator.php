@@ -389,7 +389,13 @@ class Calculator extends Base\Core
 
         if ($this->isCommissionApplicable() === false)
         {
-            $this->traceContext(TraceCode::COMMISSION_NOT_APPLICABLE);
+            $this->traceContext(
+                TraceCode::COMMISSION_NOT_APPLICABLE,
+                [
+                    'customer_fee_bearer' => $this->isCustomerFeeBearer(),
+                    'implicit_plan_type'  => optional($this->getImplicitPricingPlan())->getType(),
+                    'fee_model_prepaid'   => $this->getSubMerchant()->isPrepaid(),
+                ]);
 
             return false;
         }
@@ -411,22 +417,16 @@ class Calculator extends Base\Core
     {
         if ($this->getPartner() === null)
         {
-            $this->traceContext(TraceCode::COMMISSION_PARTNER_DOES_NOT_EXIST);
-
             return false;
         }
 
         if ($this->getPartnerConfig() === null)
         {
-            $this->traceContext(TraceCode::COMMISSION_PARTNER_CONFIG_NOT_DEFINED);
-
             return false;
         }
 
         if ($this->getImplicitPricingPlan() === null)
         {
-            $this->traceContext(TraceCode::COMMISSION_IMPLICIT_PRICING_PLAN_NOT_SET);
-
             return false;
         }
 
@@ -434,22 +434,16 @@ class Calculator extends Base\Core
 
         if ($this->getImplicitPricingPlan()->isTypePricing() === false)
         {
-            $this->traceContext(TraceCode::COMMISSION_PARTNER_PRICING_TYPE_NOT_SUPPORTED);
-
             return false;
         }
 
         if ($this->isCustomerFeeBearer() === true)
         {
-            $this->traceContext(TraceCode::COMMISSION_CUSTOMER_FEE_BEARER_NOT_SUPPORTED);
-
             return false;
         }
 
         if ($this->getSubMerchant()->isPrepaid() === false)
         {
-            $this->traceContext(TraceCode::COMMISSION_CUSTOMER_FEE_MODEL_NOT_SUPPORTED);
-
             return false;
         }
 
@@ -515,6 +509,11 @@ class Calculator extends Base\Core
      */
     protected function saveCommission()
     {
+        if (empty($this->commissions) === true)
+        {
+            return;
+        }
+
         foreach ($this->commissions as $commission)
         {
             $this->updateStatus($commission);
