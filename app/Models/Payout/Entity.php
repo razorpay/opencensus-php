@@ -880,8 +880,10 @@ class Entity extends Base\PublicEntity
 
         $merchantBillingLabel = $merchant->getBillingLabel();
 
+        // Remove all characters other than a-z, A-Z, 0-9 and space
         $formattedLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $merchantBillingLabel);
 
+        // If formattedLabel is non-empty, pick the first 30 chars, else fallback to 'Razorpay'
         $formattedLabel = ($formattedLabel ? str_limit($formattedLabel, 30) : 'Razorpay');
 
         $narration = $formattedLabel . ' Fund Transfer';
