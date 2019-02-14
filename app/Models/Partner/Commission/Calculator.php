@@ -494,6 +494,8 @@ class Calculator extends Base\Core
      */
     public function calculateAndSaveCommission()
     {
+        assertTrue ($this->repo->commission->isTransactionActive());
+
         if ($this->shouldCreateCommission() === false)
         {
             return;

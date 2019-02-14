@@ -557,7 +557,7 @@ trait Capture
         {
             (new Commission\Core)->createFromCapturedPayment($payment);
         }
-        catch (Exception\BaseException $e)
+        catch (\Throwable $e)
         {
             $this->trace->critical(
                 TraceCode::COMMISSION_CREATE_FAILED,
