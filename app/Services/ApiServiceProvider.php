@@ -263,6 +263,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerKubernetesClient();
 
         $this->registerFTSCreateAccount();
+
+        $this->registerFTSRegisterAccount();
     }
 
     /**
@@ -299,6 +301,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'shield.service',
             'beam',
             'fts_create_account',
+            'fts_register_account',
         ];
     }
 
@@ -650,6 +653,18 @@ class ApiServiceProvider extends BaseServiceProvider
             $mock = $app['config']->get('applications.fts.mock');
 
             $implementation = $mock ? Mock\FTS\CreateAccount::class : FTS\CreateAccount::class;
+
+            return new $implementation($app);
+        });
+    }
+
+    protected function registerFTSRegisterAccount()
+    {
+        $this->app->bind('fts_register_account', function($app)
+        {
+            $mock = $app['config']->get('applications.fts.mock');
+
+            $implementation = $mock ? Mock\FTS\RegisterAccount::class : FTS\RegisterAccount::class;
 
             return new $implementation($app);
         });
