@@ -809,6 +809,12 @@ trait Refund
         //
         if (is_bool($verifyRefundResult) === false)
         {
+            //
+            // Adding refund gateway here, as this will be common to all verify responses.
+            // Other attributes are being set in individual verify refund functions of each gateway.
+            //
+            $verifyRefundResult[Payment\Gateway::REFUND_GATEWAY] = $this->refund->getGateway();
+
             return $verifyRefundResult;
         }
 
@@ -1199,7 +1205,7 @@ trait Refund
         return $this->refund;
     }
 
-    public function callRefundFunctionOnScrooge($refund, $data)
+    public function callRefundFunctionOnScrooge($refund, $data = [])
     {
         $data = $this->getGatewayDataForScroogeRefund($refund, $refund->payment, $data);
 
@@ -1573,7 +1579,7 @@ trait Refund
         return $data;
     }
 
-    protected function getGatewayDataForScroogeRefund(Payment\Refund\Entity $refund, Payment\Entity $payment, array $input)
+    protected function getGatewayDataForScroogeRefund(Payment\Refund\Entity $refund, Payment\Entity $payment, array $input = [])
     {
         $refundData = $refund->toArray();
 
