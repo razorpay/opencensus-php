@@ -21,7 +21,6 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
-use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\FundTransfer\Yesbank\NodalAccount;
 
 /**
@@ -69,6 +68,7 @@ class Entity extends Base\PublicEntity
     const TYPE                   = 'type';
     const MODE                   = 'mode';
     const REFERENCE_ID           = 'reference_id';
+    const NARRATION              = 'narration';
 
     // Public attribute
     const DESTINATION            = 'destination';
@@ -132,6 +132,7 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::MODE,
         self::REFERENCE_ID,
+        self::NARRATION,
     ];
 
     protected $visible = [
@@ -166,6 +167,7 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::MODE,
         self::REFERENCE_ID,
+        self::NARRATION,
         self::INTERNAL_STATUS,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -191,6 +193,7 @@ class Entity extends Base\PublicEntity
         self::USER,
         self::MODE,
         self::REFERENCE_ID,
+        self::NARRATION,
         self::REVERSAL,
         self::FAILURE_REASON,
         self::CREATED_AT,
@@ -198,6 +201,7 @@ class Entity extends Base\PublicEntity
 
     protected static $modifiers = [
         self::MODE,
+        self::NARRATION,
     ];
 
     protected $publicSetters = [
@@ -353,6 +357,11 @@ class Entity extends Base\PublicEntity
     public function getReferenceId()
     {
         return $this->getAttribute(self::REFERENCE_ID);
+    }
+
+    public function getNarration()
+    {
+        return $this->getAttribute(self::NARRATION);
     }
 
     public function getCustomerId()
@@ -855,6 +864,28 @@ class Entity extends Base\PublicEntity
                 $input[self::MODE] = Mode::IFT;
             }
         }
+    }
+
+    protected function modifyNarration(& $input)
+    {
+        $narration = $input[self::NARRATION] ?? null;
+
+        if (empty($narration) === false)
+        {
+            return $narration;
+        }
+
+        $merchant = $this->merchant;
+
+        $merchantBillingLabel = $merchant->getBillingLabel();
+
+        $formattedLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $merchantBillingLabel);
+
+        $formattedLabel = ($formattedLabel ? str_limit($formattedLabel, 30) : 'Razorpay');
+
+        $narration = $formattedLabel . ' Fund Transfer';
+
+        return $narration;
     }
 
     public function shouldNotifyTxnViaSms(): bool
