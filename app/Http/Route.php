@@ -2803,11 +2803,6 @@ final class Route
         'reports_refund_irctc'                 => [Feature::IRCTC_REPORT],
         'payment_validate_vpa'                 => [Feature::ENABLE_VPA_VALIDATE],
 
-        // Fund Account Validation APIs
-        'fund_account_validate'               => [Feature::FUND_ACCOUNT_VALIDATIONS],
-        'fund_account_validate_fetch'         => [Feature::FUND_ACCOUNT_VALIDATIONS],
-        'fund_account_validate_fetch_by_id'   => [Feature::FUND_ACCOUNT_VALIDATIONS],
-
         // Account APIs
         'beta_account_create'                  => [Feature::MARKETPLACE],
         'beta_account_fetch'                   => [Feature::MARKETPLACE],
