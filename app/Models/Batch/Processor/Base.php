@@ -907,7 +907,7 @@ class Base extends BaseModel\Core
             foreach ($entry as $key => $value)
             {
                 // Excel: Empty trailing columns comes as sequentially indexed key and null values
-                if (($key === $index++) and ($value === null))
+                if ((($key === $index++) or ($key === '')) and ($value === null))
                 {
                     unset($entry[$key]);
                 }
