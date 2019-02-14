@@ -13,6 +13,7 @@ use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\MySqlConnection as IlluminateMySqlConnection;
 
 use RZP\Models\Vpa;
+use RZP\Services\FTS;
 use RZP\Models\Batch;
 use RZP\Models\Order;
 use RZP\Models\Payout;
@@ -260,6 +261,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerMyOperator();
 
         $this->registerKubernetesClient();
+
+        $this->registerFTSCreateAccount();
     }
 
     /**
@@ -295,6 +298,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'pincodesearch',
             'shield.service',
             'beam',
+            'fts_create_account',
         ];
     }
 
@@ -636,6 +640,18 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('k8s_client', function($app)
         {
             return new KubernetesClient($app);
+        });
+    }
+
+    protected function registerFTSCreateAccount()
+    {
+        $this->app->bind('fts_create_account', function($app)
+        {
+            $mock = $app['config']->get('applications.fts.mock');
+
+            $implementation = $mock ? Mock\FTS\CreateAccount::class : FTS\CreateAccount::class;
+
+            return new $implementation($app);
         });
     }
 }

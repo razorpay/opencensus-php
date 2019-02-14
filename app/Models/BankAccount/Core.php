@@ -3,15 +3,18 @@
 namespace RZP\Models\BankAccount;
 
 use Mail;
+use Razorpay\Trace\Logger as Trace;
 
-use Razorpay\Trace\Logger;
 use RZP\Exception;
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Detail;
+use RZP\Jobs\FTS\CreateAccount;
+use RZP\Models\FundAccount\Type;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 
@@ -285,6 +288,8 @@ class Core extends Base\Core
 
         (new Beneficiary)->enqueueForBeneficiaryRegistration($ba);
 
+        $this->callFtsCreateAccount($ba);
+
         return $ba;
     }
 
@@ -308,6 +313,8 @@ class Core extends Base\Core
         $this->repo->saveOrFail($ba);
 
         (new Beneficiary)->enqueueForBeneficiaryRegistration($ba);
+
+        $this->callFtsCreateAccount($ba);
 
         return $ba;
     }
@@ -405,5 +412,65 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+
+    protected function callFtsCreateAccount(Entity $ba)
+    {
+        try
+        {
+            $id = $ba->getId();
+
+            $sourceType = $ba->getType();
+
+            if (in_array($sourceType, [Constants\Entity::MERCHANT, Constants\Entity::CONTACT], true) === false)
+            {
+                return;
+            }
+
+            switch ($sourceType)
+            {
+                case Constants\Entity::MERCHANT:
+                    CreateAccount::dispatch($this->mode, $id, Type::BANK_ACCOUNT, Constants\Entity::PAYOUT);
+
+                    CreateAccount::dispatch($this->mode, $id, Type::BANK_ACCOUNT, Constants\Entity::SETTLEMENT);
+
+                    break;
+
+                case Constants\Entity::CONTACT:
+                    CreateAccount::dispatch($this->mode, $id, Type::BANK_ACCOUNT, Constants\Entity::PAYOUT);
+
+                    break;
+            }
+
+            $this->trace->info(
+                TraceCode::FTS_CREATE_ACCOUNT_JOB_DISPATCHED,
+                [
+                    'source_type'     => $sourceType,
+                    'bank_account_id' => $id,
+                ]);
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FTS_CREATE_ACCOUNT_DISPATCH_FAILED,
+                [
+                    'source_type'     => $ba->getType(),
+                    'bank_account_id' => $ba->getId(),
+                ]);
+        }
+    }
+
+    public function getBankAccountEntity(string $id)
+    {
+        return $this->repo->bank_account->findOrFailPublic($id);
+    }
+
+    public function updateBankAccountWithFtsId(Entity $entity, $ftsFundAccountId)
+    {
+        $entity->setFtsFundAccountId($ftsFundAccountId);
+
+        $this->repo->saveOrFail($entity);
     }
 }
