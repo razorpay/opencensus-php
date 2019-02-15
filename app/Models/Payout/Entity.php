@@ -884,9 +884,11 @@ class Entity extends Base\PublicEntity
         $formattedLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $merchantBillingLabel);
 
         // If formattedLabel is non-empty, pick the first 30 chars, else fallback to 'Razorpay'
-        $formattedLabel = ($formattedLabel ? str_limit($formattedLabel, 30) : 'Razorpay');
+        $formattedLabel = ($formattedLabel ? $formattedLabel : 'Razorpay');
 
         $narration = $formattedLabel . ' Fund Transfer';
+
+        $narration = str_limit($narration, 30, '');
 
         $input[self::NARRATION] = $narration;
     }
