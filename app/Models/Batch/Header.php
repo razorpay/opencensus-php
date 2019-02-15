@@ -331,9 +331,9 @@ class Header
     const ENACH_NPCI_NETBANKING_DEBIT_ERROR_DESCRIPTION = 'Reason Discription';
     const ENACH_NPCI_NETBANKING_DEBIT_USER_REF          = 'User Reference';
 
-    const MERCHANT_0NBOARDING_EMI_SBI_MID         = 'MerchantID';
-    const MERCHANT_0NBOARDING_EMI_SBI_GATEWAY_MID = 'GatewayMID';
-    const MERCHANT_0NBOARDING_EMI_SBI_GATEWAY_TID = 'GatewayTID';
+    const MERCHANT_ONBOARDING_EMI_SBI_MID         = 'MerchantID';
+    const MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_MID = 'GatewayMID';
+    const MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_TID = 'GatewayTID';
 
     const DIRECT_DEBIT_EMAIL           = 'email';
     const DIRECT_DEBIT_CONTACT         = 'contact';
@@ -843,14 +843,14 @@ class Header
 
         'merchant_onboarding_emi_sbi' => [
             self::INPUT => [
-                self::MERCHANT_0NBOARDING_EMI_SBI_MID,
-                self::MERCHANT_0NBOARDING_EMI_SBI_GATEWAY_MID,
-                self::MERCHANT_0NBOARDING_EMI_SBI_GATEWAY_TID,
+                self::MERCHANT_ONBOARDING_EMI_SBI_MID,
+                self::MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_MID,
+                self::MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_TID,
             ],
             self::OUTPUT => [
-                self::MERCHANT_0NBOARDING_EMI_SBI_MID,
-                self::MERCHANT_0NBOARDING_EMI_SBI_GATEWAY_MID,
-                self::MERCHANT_0NBOARDING_EMI_SBI_GATEWAY_TID,
+                self::MERCHANT_ONBOARDING_EMI_SBI_MID,
+                self::MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_MID,
+                self::MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_TID,
             ],
         ],
 

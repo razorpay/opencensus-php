@@ -22,9 +22,9 @@ class MerchantOnboardingTest extends TestCase
 
         $entries = [
             [
-                Header::MERCHANT_0NBOARDING_EMI_SBI_MID         => $sampleMerchantId,
-                Header::MERCHANT_0NBOARDING_EMI_SBI_GATEWAY_MID => '250000185',
-                Header::MERCHANT_0NBOARDING_EMI_SBI_GATEWAY_TID => '38R00001',
+                Header::MERCHANT_ONBOARDING_EMI_SBI_MID         => $sampleMerchantId,
+                Header::MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_MID => '250000185',
+                Header::MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_TID => '38R00001',
             ],
         ];
 

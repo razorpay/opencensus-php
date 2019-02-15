@@ -16,9 +16,9 @@ class EmiSbi extends BaseProcessor
     {
         $entry[Header::STATUS] = Batch\Status::FAILURE;
 
-        $merchantId = $entry[Header::MERCHANT_0NBOARDING_EMI_SBI_MID];
-        $gatewayMid = $entry[Header::MERCHANT_0NBOARDING_EMI_SBI_GATEWAY_MID];
-        $gatewayTid = $entry[Header::MERCHANT_0NBOARDING_EMI_SBI_GATEWAY_TID];
+        $merchantId = $entry[Header::MERCHANT_ONBOARDING_EMI_SBI_MID];
+        $gatewayMid = $entry[Header::MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_MID];
+        $gatewayTid = $entry[Header::MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_TID];
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
