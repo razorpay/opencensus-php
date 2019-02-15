@@ -51,4 +51,9 @@ class CalculatorTest extends OAuthTestCase
     {
         $this->ruleEngine->execute(__FUNCTION__);
     }
+
+    public function testCustomerFeeBearer()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
 }

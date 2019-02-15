@@ -58,13 +58,16 @@ class Setup
 
     public function attachSubmerchant(array $data, array & $output)
     {
-        $merchant = $this->fixtures->create('merchant:with_balance', ['pricing_plan_id' => $data['plan_id']]);
+        $partnerId = $data['partner_id'];
+        unset($data['partner_id']);
+
+        $merchant = $this->fixtures->create('merchant:with_balance', $data);
 
         $accessMapArray = [
             'entity_type'     => 'application',
             'entity_id'       => $output['application_id'],
             'merchant_id'     => $merchant->getId(),
-            'entity_owner_id' => $data['partner_id'],
+            'entity_owner_id' => $partnerId,
         ];
 
         $this->fixtures->create('merchant_access_map', $accessMapArray);
