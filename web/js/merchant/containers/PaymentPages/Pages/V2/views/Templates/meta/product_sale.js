@@ -49,11 +49,5 @@ export default {
     {
       insert: '# Average time required for delivery after shipment\n',
     },
-    {
-      attributes: {
-        header: 2,
-      },
-      insert: '\n',
-    },
   ],
 };

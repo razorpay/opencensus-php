@@ -67,11 +67,5 @@ export default {
     {
       insert: '# Select and upload up to 4 images for fundraising drive\n',
     },
-    {
-      attributes: {
-        header: 2,
-      },
-      insert: '\n',
-    },
   ],
 };

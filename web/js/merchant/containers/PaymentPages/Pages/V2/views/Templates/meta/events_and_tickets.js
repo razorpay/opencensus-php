@@ -66,11 +66,5 @@ export default {
       insert:
         '# Organisation / organiser  description with address and contact information\n\nRegistration Details?',
     },
-    {
-      attributes: {
-        header: 2,
-      },
-      insert: '\n',
-    },
   ],
 };
