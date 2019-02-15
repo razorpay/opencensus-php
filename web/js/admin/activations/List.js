@@ -4,11 +4,9 @@ import { Link } from 'react-router-dom';
 import user from 'admin/user';
 
 import { notifySuccess, notifyError, closeModal } from 'common/modal';
-import { statusPill } from 'common/data';
 import { formatDate, prevent } from 'common/util';
 import { openModal } from 'common/modal';
 import { adminFetch, adminPost } from 'common/fetch';
-import AsyncButton from 'ui/AsyncButton';
 import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
 import Field, {
@@ -16,7 +14,7 @@ import Field, {
   CheckField,
   SearchableSelectField,
   FromField,
-  ToField,
+  DateField,
 } from 'ui/Field';
 import Collection from 'model/collection';
 
@@ -30,14 +28,20 @@ const defaultFilters = {
 
 function fetchMerchants(pms) {
   let { params } = arguments[0];
-  // date unix time
+
   if (params.from) {
-    params.from = new Date(moment(params.from, 'DD-MM-YYYY')).getTime() / 1000;
+    params.from = moment(params.from, 'DD/MM/YYYY').format('X');
   }
 
-  if (params.to) {
-    params.to = new Date(moment(params.to, 'DD-MM-YYYY')).getTime() / 1000;
+  if (params.to_date) {
+    params.to = moment(
+      `${params.to_date} ${params.to_time || ''}`,
+      `'DD/MM/YYYY ${params.to_time ? 'HH:mm' : ''}'`
+    ).format('X');
   }
+
+  delete params.to_date;
+  delete params.to_time;
 
   return adminFetch(...arguments).then(response => {
     if (response) {
@@ -80,7 +84,7 @@ export default class MerchantList extends Component {
         });
 
         //assign init value for unassigned merchants
-        this.reviewers = [{ id: 'none', name: 'Not Assigned' }, ...reviewers];
+        this.reviewers = [...reviewers];
 
         this._updateMerchateReviewerMap(this.reviewers, merchants.items);
       }
@@ -248,6 +252,7 @@ export default class MerchantList extends Component {
 
   handleReviewerAssignment = (body, isSingleAssignment = false) => {
     let merchantReviewerMap = { ...this.state.merchantReviewerMap };
+
     return adminPost({
       url: 'live/merchant/activation/bulk_assign_reviewer',
       data: body,
@@ -288,7 +293,7 @@ export default class MerchantList extends Component {
     let filterReviewers = [{ name: 'All', id: '' }, ...this.reviewers];
 
     return (
-      <div class="list-container activations">
+      <div class="list-container activations-list">
         <div class="box">
           <header>Merchant List</header>
           <Form onSubmit={this.onSubmit} class="filters">
@@ -309,15 +314,28 @@ export default class MerchantList extends Component {
                 Needs Clarification
               </option>
             </SelectField>
+            <FromField allowToday={true} />
+            <DateField
+              name="to_date"
+              label="To"
+              defaultValue={moment()}
+              fieldClass="activation-end-date"
+              component={
+                <input
+                  type="time"
+                  name="to_time"
+                  defaultValue={moment().format('HH:mm')}
+                />
+              }
+              allowToday={true}
+            />
             <Field name="sub_accounts" label="Linked-accounts for ID" />
             <CheckField
               label="Linked Accounts Only"
               name="sub_accounts"
               defaultChecked={''}
             />
-            <FromField allowToday={true} />
-            <ToField allowToday={true} />
-            <div style={{ width: '172px' }}>
+            <div style={{ width: '200px' }}>
               <SearchableSelectField
                 label="Reviewer"
                 name="reviewer_id"

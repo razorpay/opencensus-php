@@ -3,11 +3,9 @@ import React, { Component } from 'react';
 import Form from 'ui/Form';
 import { ModalContent } from 'component/Modal';
 import AsyncButton from 'ui/AsyncButton';
-import Field, { SearchableSelectField } from 'ui/Field';
-import { openModal } from 'common/modal';
+import { SearchableSelectField } from 'ui/Field';
 
-import { adminPost } from 'common/fetch';
-import { notifySuccess, notifyError, closeModal } from 'common/modal';
+import { notifyError } from 'common/modal';
 
 export default class BulkAssign extends Component {
   render() {
@@ -16,7 +14,7 @@ export default class BulkAssign extends Component {
 
     return (
       <ModalContent header="Assign Reviewers">
-        <Form>
+        <Form class="full-span full-elements">
           <p>
             <strong>
               {totalForms} form{totalForms > 1 ? 's' : ''} selected.
@@ -33,9 +31,12 @@ export default class BulkAssign extends Component {
             class="btn pull-right"
             pendingClass="pull-right small spinner"
             onSubmit={body => {
-              body.merchants = selectedMerchants;
-
-              return onReviewerAssignment(body);
+              if (body.reviewer_id) {
+                body.merchants = selectedMerchants;
+                return onReviewerAssignment(body);
+              } else {
+                notifyError('Please select a reviewer to proceed.');
+              }
             }}
           />
         </Form>
