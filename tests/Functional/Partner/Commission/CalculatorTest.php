@@ -56,4 +56,9 @@ class CalculatorTest extends OAuthTestCase
     {
         $this->ruleEngine->execute(__FUNCTION__);
     }
+
+    public function testCommissionDisabled()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
 }

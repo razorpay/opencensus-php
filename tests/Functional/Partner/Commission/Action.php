@@ -36,6 +36,11 @@ class Action
         $this->instantiateCalculator($postSetupData, $postActionData);
     }
 
+    public function testCommissionDisabled(array $postSetupData, array & $postActionData)
+    {
+        $this->instantiateCalculator($postSetupData, $postActionData);
+    }
+
     public function instantiateCalculator(array $postSetupData, array & $postActionData)
     {
         $calculator = new Calculator($postSetupData['source_entity']);
