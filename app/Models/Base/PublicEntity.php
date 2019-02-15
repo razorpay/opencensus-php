@@ -738,9 +738,9 @@ class PublicEntity extends UniqueIdEntity
 
         $amount = $this->getAmount();
 
-        $rupeesInAmount = (integer)($amount / $denominationFactor);
+        $rupeesInAmount = money_format_IN((integer)($amount / $denominationFactor));
 
-        $paiseInAmount = $amount % $denominationFactor;
+        $paiseInAmount = str_pad($amount % $denominationFactor, 2, 0);
 
         return [$currencySymbol, $rupeesInAmount, $paiseInAmount];
     }
