@@ -22,6 +22,12 @@ class CorePaymentService
     const REQUEST_TIMEOUT = 20;
     const MAX_RETRY_COUNT = 1;
 
+    // request and response fields
+    const GATEWAY   = 'gateway';
+    const ACTION    = 'action';
+    const INPUT     = 'input';
+    const DATA      = 'data';
+
     protected $baseUrl;
 
     protected $config;
@@ -36,7 +42,7 @@ class CorePaymentService
 
         $this->trace = $app['trace'];
 
-        $this->config = $app['config']->get('applications.core_payment_service');
+        $this->config = $app['config']->get('applications.cps');
 
         if ($this->request === null)
         {
@@ -46,7 +52,7 @@ class CorePaymentService
 
     protected function initRequestObject()
     {
-        $baseUrl = $this->config['url'];
+        $baseUrl = $this->getBaseUrl();
 
         $defaultHeaders = $this->getDefaultHeaders();
 
@@ -57,24 +63,28 @@ class CorePaymentService
         return $request;
     }
 
-    public function action(string $action, array $input)
+    public function action(string $gateway, string $action, array $input)
     {
-        $response = $this->sendRequest($action, 'post', $input);
+        $content = [
+            self::ACTION  => $action,
+            self::GATEWAY => $gateway,
+            self::INPUT   => $input
+        ];
+
+        $response = $this->sendRequest('post', 'action', $content);
 
         return $response;
     }
 
-    public function sendRequest(string $action, string $method, array $data = [])
+    public function sendRequest(string $method, string $url, array $data = [])
     {
         $request = [
-            'url'     => $action,
+            'url'     => $url,
             'method'  => $method,
             'content' => $data,
             'headers' => [
                 self::X_RAZORPAY_TASKID_HEADER => $this->app['request']->getTaskId(),
-                // below will work in case of only merchant auth, for cases like verify, refund-retry
-                // we need to think of something else
-                self::X_RAZORPAY_MODE_HEADER   => $this->app['basicauth']->getMode(),
+                self::X_RAZORPAY_MODE_HEADER   => $this->app['rzp.mode'],
             ],
         ];
 
@@ -129,6 +139,15 @@ class CorePaymentService
         }
 
         return $response;
+    }
+
+    protected function getBaseUrl(): string
+    {
+        $mode = $this->app['rzp.mode'];
+
+        $url = $this->config['url'][$mode];
+
+        return $url;
     }
 
     protected function getDefaultOptions(): array
@@ -189,7 +208,7 @@ class CorePaymentService
 
         if ($code === 200)
         {
-            return $responseBody['data'];
+            return $responseBody[self::DATA];
         }
         else
         {
