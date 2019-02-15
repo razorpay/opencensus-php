@@ -4723,3 +4723,11 @@ ALTER TABLE contacts
     ADD INDEX contacts_merchant_id_active_index (merchant_id, active);
 
 ALTER TABLE payments CHANGE `reference4` `cps_route` TINYINT(1);
+
+ALTER TABLE bank_accounts
+    ADD COLUMN fts_fund_account_id INTEGER DEFAULT NULL AFTER beneficiary_mobile,
+    ADD INDEX `bank_accounts_fts_fund_account_id_index` (`fts_fund_account_id`);
+
+ALTER TABLE vpas
+    ADD COLUMN fts_fund_account_id INTEGER DEFAULT NULL AFTER merchant_id,
+    ADD INDEX `vpas_fts_fund_account_id_index` (`fts_fund_account_id`);

@@ -17,11 +17,12 @@ use RZP\Models\Settlement\Holidays;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Jobs\AttemptsRecon as AttemptsReconJob;
+use \RZP\Models\FundTransfer\Mode as TransferMode;
 use RZP\Jobs\AttemptStatusCheck as AttemptStatusCheckJob;
 
 class Initiator extends Base\Core
 {
-    const MUTEX_RESOURCE        = 'FUND_TRANSFER_PROCESSING_%s';
+    const MUTEX_RESOURCE        = 'FUND_TRANSFER_PROCESSING_%s_%s';
     const MUTEX_LOCK_TIMEOUT    = 900;
 
     const FTA_PURPOSE = 'settlement';
@@ -57,7 +58,7 @@ class Initiator extends Base\Core
             ];
         }
 
-        $mutexResource = sprintf(self::MUTEX_RESOURCE, $channel);
+        $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode, $channel);
 
         return $this->mutex->acquireAndRelease(
             $mutexResource,
@@ -169,12 +170,20 @@ class Initiator extends Base\Core
     {
         try
         {
+            // Default delay for status dispatch.
+            $delay = Constants::DEFAULT_STATUS_CHECK_DISPATCH_TIME;
+
+            if ($attempt->getMode() === TransferMode::IMPS)
+            {
+                // For IMPS we receive the status in 10 sec. (Observed for YESBANK)
+                $delay = Constants::IMPS_STATUS_CHECK_DISPATCH_TIME;
+            }
             //
             // Dispatching in 180 sec as all the operation are happening in queue
             // and bank generally update the status in 2 min
             // TODO: observe the response time from bank and update the wait time accordingly
             //
-            AttemptStatusCheckJob::dispatch($this->mode, $attempt->getId())->delay(180);
+            AttemptStatusCheckJob::dispatch($this->mode, $attempt->getId())->delay($delay);
 
             $this->trace->info(
                 TraceCode::FTA_STATUS_CHECK_JOB_DISPATCHED,

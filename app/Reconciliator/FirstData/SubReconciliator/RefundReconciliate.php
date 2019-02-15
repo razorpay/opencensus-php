@@ -44,10 +44,9 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
             $this->trace->info(
                 TraceCode::RECON_MISMATCH,
                 [
-                    'info_code'     => Base\InfoCode::REFUND_ABSENT,
-                    'payment_id'    => $row[self::COLUMN_CAPS_PAYMENT_ID] ?? null,
-                    'row'           => $row,
-                    'gateway'       => $this->gateway
+                    'info_code'             => Base\InfoCode::REFUND_ABSENT,
+                    'payment_reference_id'  => $row[self::COLUMN_CAPS_PAYMENT_ID] ?? null,
+                    'gateway'               => $this->gateway
                 ]);
 
             $this->setFailUnprocessedRow(false);
@@ -222,7 +221,6 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
                     'expected_amount'   => $this->refund->getBaseAmount(),
                     'recon_amount'      => $this->getReconRefundAmount($row),
                     'currency'          => $this->refund->getCurrency(),
-                    'row'               => $row,
                     'gateway'           => $this->gateway
                 ]);
 

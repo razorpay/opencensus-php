@@ -80,6 +80,9 @@ class CreateBankAccounts extends Migration
             $table->char(BankAccount::BENEFICIARY_MOBILE, 32)
                   ->nullable();
 
+            $table->integer(BankAccount::FTS_FUND_ACCOUNT_ID)
+                  ->nullable();
+
             $table->integer(BankAccount::CREATED_AT);
             $table->integer(BankAccount::UPDATED_AT);
             $table->integer(BankAccount::DELETED_AT)
@@ -94,6 +97,8 @@ class CreateBankAccounts extends Migration
             $table->index(BankAccount::CREATED_AT);
 
             $table->index(BankAccount::UPDATED_AT);
+
+            $table->index(BankAccount::FTS_FUND_ACCOUNT_ID);
 
             $table->foreign(BankAccount::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
