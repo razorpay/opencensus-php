@@ -52,15 +52,10 @@ All URLs will convert to links.`;
 @connect(null, { showNotification })
 export default class extends React.PureComponent {
   state = { isScriptLoaded: null };
-
   componentDidMount() {
-    if (window.Quill) {
+    window.onQuillLoad = () => {
       this.initDescription();
-    } else {
-      window.onQuillLoad = () => {
-        this.initDescription();
-      };
-    }
+    };
   }
 
   componentWillUpdate(nextProps) {

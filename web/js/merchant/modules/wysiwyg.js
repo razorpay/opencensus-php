@@ -30,13 +30,13 @@ export const fetchPaymentPage = id => {
         id: null, // To handle case where intial UI schema to be shown
       },
     };
-  } else {
-    return {
-      type: FETCH_ENTITY,
-      payload: fetchPaymentPageEntity(id),
-      id,
-    };
   }
+
+  return {
+    type: FETCH_ENTITY,
+    payload: fetchPaymentPageEntity(id),
+    id,
+  };
 };
 
 export const updateData = (field, isPageDirty) => ({

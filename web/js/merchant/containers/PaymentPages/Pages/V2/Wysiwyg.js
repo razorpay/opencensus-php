@@ -80,14 +80,18 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
   componentWillUpdate(nextProps) {
     const nextTheme =
+      nextProps.paymentPageEntity &&
       nextProps.paymentPageEntity.settings &&
       nextProps.paymentPageEntity.settings.theme;
     const curTheme =
+      this.props.paymentPageEntity &&
       this.props.paymentPageEntity.settings &&
       this.props.paymentPageEntity.settings.theme;
 
     if (!nextTheme || nextTheme !== curTheme) {
-      this.changeFETheme(nextTheme);
+      if (nextProps.paymentPageEntity && nextProps.paymentPageEntity.id) {
+        this.changeFETheme(nextTheme);
+      }
     }
   }
 
@@ -141,17 +145,13 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       });
     };
 
-    script.src = 'https://betacdn.razorpay.com/static/hosted/wysiwyg.js';
+    script.src = 'https://cdn.razorpay.com/static/hosted/wysiwyg.js';
 
     document.head.appendChild(script);
 
     document
       .getElementById('paymentpage-container')
       .classList.add('theme-desktop');
-
-    if (!this.props.id) {
-      this.changeFETheme('light');
-    }
   }
 
   componentWillUnmount() {
@@ -414,6 +414,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   render() {
     const { isPageReady, isPageLoadError } = this.state;
     const { paymentPageEntity, id: payment_page_id } = this.props;
+    let isAllowedToSubmit, actionBtns, themeColor;
 
     const merchantData = {
       name: this.props.user.name,
@@ -421,47 +422,78 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       image: this.props.user.logo_url,
     };
 
-    const isAllowedToSubmit =
-      paymentPageEntity &&
-      paymentPageEntity.hasOwnProperty('amount') &&
-      paymentPageEntity.title;
-    const actionBtns = (
-      <React.Fragment>
-        <Button.Transparent
-          type="button"
-          style={{ color: '#fff' }}
-          disabled={
-            paymentPageEntity.id &&
-            typeof paymentPageEntity.title === 'undefined'
-          }
-          onClick={this.togglePageSettings}
-        >
-          Page Settings
-        </Button.Transparent>
-        <AsyncBtn.Primary
-          onClick={this.handleSavePublish}
-          disabled={!isAllowedToSubmit}
-          pendingState="Publishing"
-        >
-          {payment_page_id
-            ? 'Save and Publish Page'
-            : 'Create and Publish Page'}
-        </AsyncBtn.Primary>
-      </React.Fragment>
-    );
+    if (paymentPageEntity) {
+      isAllowedToSubmit =
+        paymentPageEntity &&
+        paymentPageEntity.hasOwnProperty('amount') &&
+        paymentPageEntity.title;
+
+      actionBtns = (
+        <React.Fragment>
+          <Button.Transparent
+            type="button"
+            style={{ color: '#fff' }}
+            disabled={
+              paymentPageEntity.id &&
+              typeof paymentPageEntity.title === 'undefined'
+            }
+            onClick={this.togglePageSettings}
+          >
+            Page Settings
+          </Button.Transparent>
+          <AsyncBtn.Primary
+            onClick={this.handleSavePublish}
+            disabled={!isAllowedToSubmit}
+            pendingState="Publishing"
+          >
+            {payment_page_id
+              ? 'Save and Publish Page'
+              : 'Create and Publish Page'}
+          </AsyncBtn.Primary>
+        </React.Fragment>
+      );
+
+      if (paymentPageEntity.settings) {
+        themeColor =
+          paymentPageEntity.settings.theme === 'dark' ? '#383838' : '#efefef';
+      }
+    }
 
     const pageNavTitle = payment_page_id ? (
-      <>
+      <React.Fragment>
         Edit Payment Page <span> - {payment_page_id}</span>
-      </>
+      </React.Fragment>
     ) : (
       'Create New Payment Page'
     );
 
-    let themeColor;
-    if (paymentPageEntity.settings) {
-      themeColor =
-        paymentPageEntity.settings.theme === 'dark' ? '#383838' : '#efefef';
+    let content;
+
+    if (isPageLoadError) {
+      if (isPageLoadError === ERROR.SCRIPT) {
+        content = (
+          <div class="page-center">
+            Some network error has occurred. Please reload the page.
+          </div>
+        );
+      } else if (isPageLoadError === ERROR.INVALID_ENTITY) {
+        content = (
+          <div class="page-center">
+            Payment page with id <b>{payment_page_id}</b> doesn't exist.
+            <br />
+            Go to <Link to="/paymentpages/">Payment Pages list</Link>{' '}
+          </div>
+        );
+      }
+    } else if (isPageReady) {
+      content = (
+        <Svelte
+          payment_page_id={payment_page_id}
+          isTestMode={this.props.mode.toLowerCase() === 'test'}
+          merchantData={merchantData}
+          onMount={this.initSubApps}
+        />
+      );
     }
 
     return (
@@ -494,30 +526,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           isPageReady={isPageReady}
           handleClose={this.handleClose}
         />
-        {!isPageLoadError &&
-          isPageReady && (
-            <Svelte
-              payment_page_id={payment_page_id}
-              isTestMode={this.props.mode.toLowerCase() === 'test'}
-              merchantData={merchantData}
-              onMount={this.initSubApps}
-            />
-          )}
-        {do {
-          if (isPageLoadError) {
-            if (isPageLoadError === ERROR.SCRIPT) {
-              <div class="page-center">
-                Some network error has occurred. Please reload the page.
-              </div>;
-            } else if (isPageLoadError === ERROR.INVALID_ENTITY) {
-              <div class="page-center">
-                Payment page with id <b>{payment_page_id}</b> doesn't exist.
-                <br />
-                Go to <Link to="/paymentpages/">Payment Pages list</Link>{' '}
-              </div>;
-            }
-          }
-        }}
+        {content}
       </div>
     );
   }
