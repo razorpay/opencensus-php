@@ -3,7 +3,7 @@ export default {
   card: {
     title: 'Fees Collection',
     description:
-      'Collect fees and accept payments in seconds with our online form, no paperwork involved.',
+      'Collect fees online by adding program details, fee breakup and T&C.',
     img: '/img/payment_pages/fee_collection.jpg',
   },
   quillPrefill: [

@@ -3,7 +3,7 @@ export default {
   card: {
     title: 'Accepting Donations',
     description:
-      'Raising money for a good cause? Our online Donations template saves you valuable time so you can focus on your cause.',
+      'Start collecting online donations by adding cause information, images and campaign duration.',
     img: '/img/payment_pages/donation.jpg',
   },
   quillPrefill: [

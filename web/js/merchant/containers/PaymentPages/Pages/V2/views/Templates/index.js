@@ -43,8 +43,8 @@ export default class extends React.PureComponent {
 
               <div class="TemplateCard-list">
                 <TemplateCard
-                  title="Build your Payment Page"
-                  description="Create your own Payment Page with custom fields and page settings."
+                  title="Create your Own"
+                  description="Got your own idea? Start with a clean slate."
                   img="/img/payment_pages/start_from_scratch.jpg"
                   selectTemplate={this.selectTemplate(null)}
                 />
