@@ -10,17 +10,26 @@ import { validateSlug } from 'rzp/utils/validators';
 import PPEmbedButtonView from '../Modals/EmbedButton';
 
 export default class extends React.Component {
-  state = {
-    expire_by: this.props.paymentPageEntity.expire_by
-      ? moment(Number(this.props.paymentPageEntity.expire_by))
-      : undefined,
-    theme:
-      this.props.paymentPageEntity.settings &&
-      this.props.paymentPageEntity.settings.theme === 'dark'
-        ? '0'
-        : '1',
-    slug: this.props.paymentPageEntity.slug || '',
-  };
+  state = this.initState();
+
+  initState() {
+    const paymentPageEntity = this.props.paymentPageEntity;
+    const settings = paymentPageEntity.settings;
+
+    return {
+      expire_by: paymentPageEntity.expire_by
+        ? moment(Number(paymentPageEntity.expire_by))
+        : undefined,
+      theme: settings && settings.theme === 'dark' ? '0' : '1',
+      slug: paymentPageEntity.slug || '',
+      payment_success_message: settings ? settings.payment_success_message : '',
+      payment_success_redirect_url: settings
+        ? settings.payment_success_redirect_url
+        : '',
+      _hasSuccessMsg: settings && settings.payment_success_message,
+      _hasRedirectUrl: settings && settings.payment_success_redirect_url,
+    };
+  }
 
   updateDate = newDate => {
     this.setState({ expire_by: newDate });
@@ -46,7 +55,7 @@ export default class extends React.Component {
 
   onSuccessMsgChange = e => {
     this.setState({
-      custom_success_message: e.target.value,
+      payment_success_message: e.target.value.replace(/(\r\n|\n|\r)/gm, ''),
     });
   };
 
@@ -59,7 +68,16 @@ export default class extends React.Component {
       paymentPageEntity,
     } = this.props;
 
-    const { slug, theme, expire_by, disableSubmit } = this.state;
+    const {
+      slug,
+      payment_success_message,
+      payment_success_redirect_url,
+      _hasSuccessMsg,
+      _hasRedirectUrl,
+      theme,
+      expire_by,
+      disableSubmit,
+    } = this.state;
 
     const EmbedBtn = (
       <Button.Transparent
@@ -149,11 +167,12 @@ export default class extends React.Component {
                   <div class="Input-content">
                     <Input.Check
                       fieldLabel="Show custom message"
+                      defaultValue={_hasSuccessMsg ? '1' : '0'}
                       onChange={e => {
                         const isChecked = e.target.value == '1';
 
-                        this.setState({ _hasCustomMessage: isChecked }, () => {
-                          if (this.state._hasCustomMessage) {
+                        this.setState({ _hasSuccessMsg: isChecked }, () => {
+                          if (isChecked) {
                             document
                               .getElementsByName('payment_success_message')[0]
                               .focus();
@@ -162,28 +181,30 @@ export default class extends React.Component {
                       }}
                     />
 
-                    {this.state._hasCustomMessage && (
+                    {_hasSuccessMsg && (
                       <div class="custom-success-msg">
                         <Input.Textarea
                           name="payment_success_message"
                           maxLength="80"
+                          value={payment_success_message}
                           onChange={this.onSuccessMsgChange}
                         />
                         <span class="chars-pressed">
-                          {(this.state.custom_success_message
-                            ? this.state.custom_success_message.length
-                            : '0') + ' /80'}
+                          {(payment_success_message
+                            ? payment_success_message.length
+                            : '0') + ' / 80'}
                         </span>
                       </div>
                     )}
 
                     <Input.Check
                       fieldLabel="Redirect to your website"
+                      defaultValue={_hasRedirectUrl ? '1' : '0'}
                       onChange={e => {
                         const isChecked = e.target.value == '1';
 
                         this.setState({ _hasRedirectUrl: isChecked }, () => {
-                          if (this.state._hasRedirectUrl) {
+                          if (isChecked) {
                             document
                               .getElementsByName(
                                 'payment_success_redirect_url'
@@ -194,10 +215,11 @@ export default class extends React.Component {
                       }}
                     />
 
-                    {this.state._hasRedirectUrl && (
+                    {_hasRedirectUrl && (
                       <Input
                         name="payment_success_redirect_url"
                         validator={lenientUrl('Please enter a valid URL')}
+                        defaultValue={payment_success_redirect_url}
                       />
                     )}
                   </div>
