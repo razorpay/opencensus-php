@@ -27,20 +27,17 @@ class Assertions extends TestCase
 
     public function testPartnerDoesNotExist(array $data)
     {
-        $postAction = $data['post_action'];
-
-        $calculator = $postAction['calculator'];
-
-        $this->assertShouldNotCreateCommission($calculator);
+        $this->assertShouldNotCreateCommission($data);
     }
 
     public function testPartnerConfigDoesNotExist(array $data)
     {
-        $postAction = $data['post_action'];
+        $this->assertShouldNotCreateCommission($data);
+    }
 
-        $calculator = $postAction['calculator'];
-
-        $this->assertShouldNotCreateCommission($calculator);
+    public function testInvalidSource(array $data)
+    {
+        $this->assertShouldNotCreateCommission($data);
     }
 
     protected function assertBasicCalculatorRules(Calculator $calculator)
@@ -71,8 +68,12 @@ class Assertions extends TestCase
         $this->assertNotEmpty($calculator->getCommissions());
     }
 
-    protected function assertShouldNotCreateCommission(Calculator $calculator)
+    protected function assertShouldNotCreateCommission(array $data)
     {
+        $postAction = $data['post_action'];
+
+        $calculator = $postAction['calculator'];
+
         $this->assertFalse($calculator->shouldCreateCommission());
     }
 }

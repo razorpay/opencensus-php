@@ -41,4 +41,9 @@ class CalculatorTest extends OAuthTestCase
     {
         $this->ruleEngine->execute(__FUNCTION__);
     }
+
+    public function testInvalidSource()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
 }

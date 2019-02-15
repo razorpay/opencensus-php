@@ -69,4 +69,10 @@ return [
             ],
         ],
     ],
+
+    'testInvalidSource' => [
+        'setup' => [
+            'create_transfer'     => [],
+        ],
+    ],
 ];

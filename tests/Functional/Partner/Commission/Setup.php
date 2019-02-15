@@ -2,8 +2,12 @@
 
 namespace RZP\Tests\Functional\Partner\Commission\Base;
 
+use RZP\Tests\Functional\Settlement\SettlementTrait;
+
 class Setup
 {
+    use SettlementTrait;
+
     protected $fixtures;
 
     public function __construct($fixtures)
@@ -121,6 +125,29 @@ class Setup
         }
 
         $output['source_entity'] = $payment;
+    }
+
+    public function createTransfer(array $data, array & $output)
+    {
+        $this->fixtures->merchant->edit('10000000000000');
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $payment = $this->createPaymentEntities(1);
+
+        $account = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
+
+        $transfer = $this->fixtures->create(
+                        'transfer:to_account',
+                        [
+                            'account'       => $account,
+                            'source_id'     => $payment->getId(),
+                            'source_type'   => 'payment',
+                            'amount'        => 2500,
+                            'currency'      => 'INR',
+                            'on_hold'       => '0',
+                        ]);
+
+        $output['source_entity'] = $transfer;
     }
 
     protected function getDefaultCreatePartnerData(): array
