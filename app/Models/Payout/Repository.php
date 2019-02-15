@@ -291,11 +291,4 @@ class Repository extends Base\Repository
                  (optional($entity->fundAccount)->getSourceType() === E::CONTACT)) and
                 (parent::isEsSyncNeeded($action, $dirty, $entity) === true));
     }
-
-    public function getPayoutById(string $id)
-    {
-        return $this->newQuery()
-                    ->where(Entity::ID, $id)
-                    ->first();
-    }
 }

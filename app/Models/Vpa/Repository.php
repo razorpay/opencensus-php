@@ -29,17 +29,4 @@ class Repository extends Base\Repository
                     ->latest()
                     ->first();
     }
-
-    /**
-     * Fetches the details of vpa for the given id
-     *
-     * @param $vpaId
-     * @return mixed
-     */
-    public function getVPAById(string $vpaId)
-    {
-        return $this->newQuery()
-                    ->where(Entity::ID, $vpaId)
-                    ->first();
-    }
 }

@@ -396,7 +396,7 @@ class Merchant
 
     protected function saveSettlementEntitiesToDb()
     {
-        $this->repo->saveOrFail($this->setsl);
+        $this->repo->saveOrFail($this->setl);
 
         $this->repo->saveOrFailCollection($this->setlDetails);
 
