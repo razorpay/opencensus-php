@@ -4731,3 +4731,6 @@ ALTER TABLE bank_accounts
 ALTER TABLE vpas
     ADD COLUMN fts_fund_account_id INTEGER DEFAULT NULL AFTER merchant_id,
     ADD INDEX `vpas_fts_fund_account_id_index` (`fts_fund_account_id`);
+
+ALTER TABLE payouts
+    ADD COLUMN narration VARCHAR(255) DEFAULT NULL AFTER reference_id;
