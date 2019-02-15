@@ -40,6 +40,11 @@ class Assertions extends TestCase
         $this->assertShouldNotCreateCommission($data);
     }
 
+    public function testImplicitPricingDoesNotExist(array $data)
+    {
+        $this->assertShouldNotCreateCommission($data);
+    }
+
     protected function assertBasicCalculatorRules(Calculator $calculator)
     {
         $this->assertTrue($calculator->shouldCreateCommission());

@@ -32,6 +32,11 @@ class CalculatorTest extends OAuthTestCase
         $this->ruleEngine->execute(__FUNCTION__);
     }
 
+    public function testInvalidSource()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
     public function testPartnerDoesNotExist()
     {
         $this->ruleEngine->execute(__FUNCTION__);
@@ -42,7 +47,7 @@ class CalculatorTest extends OAuthTestCase
         $this->ruleEngine->execute(__FUNCTION__);
     }
 
-    public function testInvalidSource()
+    public function testImplicitPricingDoesNotExist()
     {
         $this->ruleEngine->execute(__FUNCTION__);
     }
