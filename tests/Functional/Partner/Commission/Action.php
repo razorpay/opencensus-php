@@ -21,6 +21,11 @@ class Action
         $postActionData['calculator'] = $calculator;
     }
 
+    public function testInvalidSource(array $postSetupData, array & $postActionData)
+    {
+        $this->instantiateCalculator($postSetupData, $postActionData);
+    }
+
     public function testPartnerDoesNotExist(array $postSetupData, array & $postActionData)
     {
         $this->instantiateCalculator($postSetupData, $postActionData);
@@ -31,7 +36,7 @@ class Action
         $this->instantiateCalculator($postSetupData, $postActionData);
     }
 
-    public function testInvalidSource(array $postSetupData, array & $postActionData)
+    public function testPostpaidFeeModel(array $postSetupData, array & $postActionData)
     {
         $this->instantiateCalculator($postSetupData, $postActionData);
     }

@@ -25,6 +25,11 @@ class Assertions extends TestCase
         $this->assertEquals(144, $commissions[0]->tax);
     }
 
+    public function testInvalidSource(array $data)
+    {
+        $this->assertShouldNotCreateCommission($data);
+    }
+
     public function testPartnerDoesNotExist(array $data)
     {
         $this->assertShouldNotCreateCommission($data);
@@ -35,17 +40,17 @@ class Assertions extends TestCase
         $this->assertShouldNotCreateCommission($data);
     }
 
-    public function testInvalidSource(array $data)
-    {
-        $this->assertShouldNotCreateCommission($data);
-    }
-
     public function testImplicitPricingDoesNotExist(array $data)
     {
         $this->assertShouldNotCreateCommission($data);
     }
 
     public function testCustomerFeeBearer(array $data)
+    {
+        $this->assertShouldNotCreateCommission($data);
+    }
+
+    public function testPostpaidFeeModel(array $data)
     {
         $this->assertShouldNotCreateCommission($data);
     }
