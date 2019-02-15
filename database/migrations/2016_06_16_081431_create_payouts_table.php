@@ -154,6 +154,8 @@ class CreatePayoutsTable extends Migration
 
             $table->index(Payout::USER_ID);
 
+            $table->index(Payout::FTS_TRANSFER_ID);
+
             $table->foreign(Payout::BALANCE_ID)
                   ->references(Balance\Entity::ID)
                   ->on(Table::BALANCE)

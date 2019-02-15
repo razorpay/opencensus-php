@@ -307,6 +307,13 @@ class Core extends Base\Core
 
     public function getSettlementEntityById(string $setlId)
     {
-        return $this->repo->getSettlementById($setlId);
+        return $this->repo->settlement->findOrFailPublic($setlId);
+    }
+
+    public function updateSettlementWithFtsTransferId(Entity $entity, $ftsTransferId)
+    {
+        $entity->setFTSTransferId($ftsTransferId);
+
+        return $this->repo->saveOrFail($entity);
     }
 }

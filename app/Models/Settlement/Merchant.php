@@ -15,7 +15,6 @@ use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
-use RZP\Jobs\FTS\FundTransfer;
 use RZP\Models\Settlement\Details as SetlDetails;
 use RZP\Models\Schedule\Task\Type as ScheduleTaskType;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
@@ -392,12 +391,12 @@ class Merchant
 
         $this->bankTransferAtpt = $fundTransferAttempt;
 
-        $this->sendFTSFundTransferRequest($fundTransferAttempt, 'FTS_FUND_ACCOUNT');
+        (new FundTransferAttempt\Core())->sendFTSFundTransferRequest($fundTransferAttempt, 'fts_fund_account');
     }
 
     protected function saveSettlementEntitiesToDb()
     {
-        $this->repo->saveOrFail($this->setl);
+        $this->repo->saveOrFail($this->setsl);
 
         $this->repo->saveOrFailCollection($this->setlDetails);
 
@@ -476,10 +475,5 @@ class Merchant
         $this->repo->saveOrFail($ba);
 
         return $ba;
-    }
-
-    public function sendFTSFundTransferRequest($fta, string $type)
-    {
-        FundTransfer::dispatch($fta->getId(), $type);
     }
 }

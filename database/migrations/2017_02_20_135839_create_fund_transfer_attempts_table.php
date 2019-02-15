@@ -96,6 +96,8 @@ class CreateFundTransferAttemptsTable extends Migration
 
             $table->index(FundTransferAttempt::CREATED_AT);
 
+            $table->index(FundTransferAttempt::FTS_TRANSFER_ID);
+
             $table->foreign(FundTransferAttempt::MERCHANT_ID)
                   ->references(Merchant::ID)
                   ->on(Table::MERCHANT)

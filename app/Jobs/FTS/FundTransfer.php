@@ -15,17 +15,25 @@ class FundTransfer extends Job
     /**
      * @var string
      */
+    protected $ftaId;
+
+    /**
+     * @var string
+     */
+    protected $accountType;
+
+    /**
+     * @var string
+     */
     protected $queueConfigKey = 'fts_fund_transfer';
 
-    protected $id;
-
-    protected $type;
-
-    public function __construct(string $id, string $type)
+    public function __construct(string $mode, string $id, string $type)
     {
-        $this->id  = $id;
+        parent::__construct($mode);
 
-        $this->type = $type;
+        $this->ftaId  = $id;
+
+        $this->accountType = $type;
     }
 
     /**
@@ -35,39 +43,40 @@ class FundTransfer extends Job
     {
         try
         {
-            if ($this->attempts() > self::MAX_ALLOWED_ATTEMPTS)
-            {
-                $this->delete();
-
-                return;
-            }
-
             parent::handle();
 
-            $this->trace->info(TraceCode::FTS_FUND_TRANSFER,
+            $this->trace->info(TraceCode::FTS_FUND_TRANSFER_INIT,
                 [
-                    'id'    => $this->id ,
-                    "type"  => $this->type,
+                    'fta_id'       => $this->ftaId ,
+                    'account_type' => $this->accountType,
                 ]);
 
-            $ftsResponse = App::getFacadeRoot()['fts_fund_transfer']->requestFundTransfer($this->id, $this->type);
+            $ftsResponse = App::getFacadeRoot()['fts_fund_transfer']->requestFundTransfer(
+                $this->ftaId,
+                $this->accountType);
 
             $this->trace->info(
-                TraceCode::FTS_FUND_TRANSFER_SENT,
+                TraceCode::FTS_FUND_TRANSFER_COMPLETE,
                 $ftsResponse);
         }
         catch (\Throwable $e)
         {
-
             $data = [
-                'id'                => $this->id ,
-                'type'              => $this->type,
+                'fta_id'       => $this->ftaId ,
+                'account_type' => $this->accountType,
             ];
 
             $this->trace->traceException($e,
                 Trace::ERROR,
                 TraceCode::FTS_FUND_TRANSFER_FAILED,
                 $data);
+
+            if ($this->attempts() > self::MAX_ALLOWED_ATTEMPTS)
+            {
+                $this->delete();
+
+                return;
+            }
         }
     }
 }

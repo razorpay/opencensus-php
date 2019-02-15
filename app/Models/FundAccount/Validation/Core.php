@@ -217,6 +217,13 @@ class Core extends Base\Core
 
     public function getFundAccountValidationEntityById(string $id)
     {
-        return $this->repo->getFundAccountValidationById($id);
+        return $this->repo->fund_account_validation->findOrFailPublic($id);
+    }
+
+    public function updateFundAccountValidationWithFtsTransferId(Entity $entity, $ftsTransferId)
+    {
+        $entity->setFTSTransferId($ftsTransferId);
+
+        $this->repo->saveOrFail($entity);
     }
 }

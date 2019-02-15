@@ -80,6 +80,7 @@ class CreateFundAccountValidations extends Migration
             $table->index(E::MERCHANT_ID);
             $table->index([E::FUND_ACCOUNT_ID, E::MERCHANT_ID]);
             $table->index([E::CREATED_AT, E::MERCHANT_ID]);
+            $table->index(E::FTS_TRANSFER_ID);
         });
     }
 

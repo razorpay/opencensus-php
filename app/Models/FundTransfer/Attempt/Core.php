@@ -3,12 +3,15 @@
 namespace RZP\Models\FundTransfer\Attempt;
 
 use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
 
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use RZP\Models\FundAccount;
 use RZP\Constants\Timezone;
+use RZP\Jobs\FTS\FundTransfer;
 use RZP\Services\Beam\Service;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
@@ -226,14 +229,35 @@ class Core extends Base\Core
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
     }
 
-    public function sendFTSFundTransferRequest($fta, string $type)
+    public function sendFTSFundTransferRequest($fta, string $accountType)
     {
-        FundTransfer::dispatch($fta->getId(), $type);
+        try
+        {
+            FundTransfer::dispatch($fta->getId(), $accountType);
+
+            $this->trace->info(
+                TraceCode::FTS_FUND_TRANSFER_JOB_DISPATCHED,
+                [
+                    'fta_id'      => $fta->getId(),
+                    'source_type' => $fta->getSourceType(),
+                ]);
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FTS_FUND_TRANSFER_DISPATCH_FAILED,
+                [
+                    'fta_id'      => $fta->getId(),
+                    'source_type' => $fta->getSourceType(),
+                ]);
+        }
     }
 
-    public function getFTAEntityById(string $ftaId)
+    public function getFTAEntity(string $ftaId)
     {
-        return $this->repo->getAttemptById($ftaId);
+        return $this->repo->fund_transfer_attempt->findOrFailPublic($ftaId);
     }
 
     public function updateFTA(Entity $fta)

@@ -529,6 +529,13 @@ class Core extends Base\Core
 
     public function getPayoutEntityById(string $payoutId)
     {
-        return $this->repo->getPayoutById($payoutId);
+        return $this->repo->payout->findOrFailPublic($payoutId);
+    }
+
+    public function updatePayoutWithFtsTransferId(Entity $entity, $ftsTransferId)
+    {
+        $entity->setFTSTransferId($ftsTransferId);
+
+        $this->repo->saveOrFail($entity);
     }
 }

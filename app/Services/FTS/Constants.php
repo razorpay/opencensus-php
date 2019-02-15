@@ -10,6 +10,8 @@ final class Constants
 
     const TYPE                          = 'type';
 
+    const MODE                          = 'mode';
+
     const HANDLE                        = 'handle';
 
     const AMOUNT                        = 'amount';
@@ -21,6 +23,8 @@ final class Constants
     const ACCOUNT                       = 'account';
 
     const CHANNEL                       = 'channel';
+
+    const TRANSFER                      = 'transfer';
 
     const PRODUCT                       = 'product';
 
@@ -52,7 +56,7 @@ final class Constants
 
     const BENEFICIARY_NAME              = 'beneficiary_name';
 
-    const FTS_FUND_ACCOUNT              = 'FTS_FUND_ACCOUNT';
+    const FTS_FUND_ACCOUNT              = 'fts_fund_account';
 
     const BENEFICIARY_CODE              = 'beneficiary_code';
 

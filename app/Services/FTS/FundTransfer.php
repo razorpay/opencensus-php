@@ -6,6 +6,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Vpa\Core as VPACore;
 use RZP\Models\Payout\Core as PayoutCore;
 use RZP\Models\Payment\Core as PaymentCore;
+use RZP\Models\Payment\Refund\Core as RefundCore;
 use RZP\Models\Settlement\Core as SettlementCore;
 use RZP\Models\BankAccount\Core as BankAccountCore;
 use RZP\Models\FundTransfer\Attempt\Core as FundTransferAttemptCore;
@@ -26,20 +27,22 @@ class FundTransfer extends Base
         $this->FTACore = new FundTransferAttemptCore;
     }
 
-    public function requestFundTransfer(string $ftaId, string $type):array
+    public function requestFundTransfer(string $ftaId, string $accountType):array
     {
-        $input = $this->makeRequestUsingType($ftaId, $type);
+        $input = $this->makeRequestUsingType($ftaId, $accountType);
 
-        $response = $this->createAndSendRequest(parent::FundTransferBaseURL . '/' . parent::URLS['request'], 'POST', $input);
+        $response = $this->createAndSendRequest(
+            parent::FUND_TRANSFER_BASE_URL . '/' . parent::URLS['request'],
+            'POST', $input);
 
-        $this->handleResponse($response['body'], $type);
+        $this->handleResponse($response['body'], $accountType);
 
         return $response;
     }
 
     public function makeRequestUsingType(string $ftaId, string $type):array
     {
-        $this->fta = $this->FTACore->getFTAEntityById($ftaId);
+        $this->fta = $this->FTACore->getFTAEntity($ftaId);
 
         parent::validateChannel($this->fta->getChannel());
 
@@ -58,7 +61,7 @@ class FundTransfer extends Base
         switch ($type)
         {
             case Constants::FTS_FUND_ACCOUNT:
-                $request = $this->addFTSAccountId($request);
+                $request = $this->addFTSFundAccountId($request);
 
                 break;
 
@@ -91,7 +94,6 @@ class FundTransfer extends Base
             Constants::MODE              => $this->fta->getMode(),
             Constants::AMOUNT            => $this->source->getAmount(),
             Constants::CHANNEL           => $this->fta->getChannel(),
-            Constants::ENTITY_ID         => $this->fta->getId(),
             Constants::NARRATION         => $this->fta->getNarration(),
             Constants::INITIATE_AT       => $this->fta->getInitiateAt(),
         ];
@@ -99,7 +101,7 @@ class FundTransfer extends Base
         return $request;
     }
 
-    public function addFTSAccountId(array $request):array
+    public function addFTSFundAccountId(array $request):array
     {
         $request[Constants::ACCOUNT] = array(
             Constants::FUND_ACCOUNT_ID   => $this->fta->bankAccount->getFTSAccountId(),
@@ -113,20 +115,17 @@ class FundTransfer extends Base
         $request[Constants::ACCOUNT] = [
 
                 Constants::BANK_ACCOUNT => [
-                        Constants::TYPE                       => $this->fta->bankAccount->getType(),
-                        Constants::BENEFICIARY_PIN            => $this->fta->bankAccount->getBeneficiaryPin(),
+                        Constants::IFSC_CODE                  => $this->fta->bankAccount->getIfscCode(),
+                        Constants::ACCOUNT_TYPE               => $this->fta->bankAccount->getAccountType(),
+                        Constants::ACCOUNT_NUMBER             => $this->fta->bankAccount->getAccountNumber(),
                         Constants::BENEFICIARY_NAME           => $this->fta->bankAccount->getBeneficiaryName(),
-                        Constants::BENEFICIARY_CODE           => $this->fta->bankAccount->getBeneficiaryCode(),
                         Constants::BENEFICIARY_CITY           => $this->fta->bankAccount->getBeneficiaryCity(),
+                        Constants::BENEFICIARY_EMAIL          => $this->fta->bankAccount->getBeneficiaryEMail(),
                         Constants::BENEFICIARY_STATE          => $this->fta->bankAccount->getBeneficiaryState(),
                         Constants::BENEFICIARY_MOBILE         => $this->fta->bankAccount->getBeneficiaryMobile(),
+                        Constants::IS_VIRTUAL_ACCOUNT         => $this->fta->bankAccount->isVirtual(),
                         Constants::BENEFICIARY_ADDRESS        => $this->fta->bankAccount->getBeneficiaryAddress1(),
                         Constants::BENEFICIARY_COUNTRY        => $this->fta->bankAccount->getBeneficiaryCountry(),
-                        Constants::BENEFICIARY_EMAIL_ID       => $this->fta->bankAccount->getBeneficiaryEMail(),
-                        Constants::BENEFICIARY_IFSC_CODE      => $this->fta->bankAccount->getIfscCode(),
-                        Constants::BENEFICIARY_BANK_NAME      => $this->fta->bankAccount->getBankName(),
-                        Constants::BENEFICIARY_ACCOUNT_TYPE   => $this->fta->bankAccount->getAccountType(),
-                        Constants::BENEFICIARY_ACCOUNT_NUMBER => $this->fta->bankAccount->getAccountNumber(),
                 ],
         ];
 
@@ -171,11 +170,18 @@ class FundTransfer extends Base
                 break;
 
             default:
-                throw new LogicException('Source Type is not supported ' . $sourceType);
+                throw new LogicException('Source Type is not supported : ' . $sourceType);
 
         }
     }
 
+    /**
+     * Method to update entities using
+     * received response.
+     *
+     * @param array $responseBody
+     * @param string $type
+     */
     protected function handleResponse(array $responseBody, string $type)
     {
         $this->updateFTA($responseBody);
@@ -185,33 +191,67 @@ class FundTransfer extends Base
 
     protected function updateFTA(array $responseBody)
     {
-        $this->fta->setFTSTransferId($responseBody['transfer_id']);
+        $ftsTransferId = $responseBody['transfer_id'];
+
+        $this->fta->setFTSTransferId($ftsTransferId);
 
         $this->fta->setStatus($responseBody['status']);
 
         $this->FTACore->updateFTA($this->fta);
+
+        $this->updateSource($ftsTransferId);
     }
 
     protected function updatePaymentInstrument(array $responseBody, string $type)
     {
         switch ($type)
         {
-            case Constants::BANK_ACCOUNT:
-                $this->fta->bankAccount->setFTSAccountId($responseBody['fa_id']);
+            case Constants::FTS_FUND_ACCOUNT:
+                break;
 
-                (new BankAccountCore)->updateBankAccountEntity($this->fta->bankAccount);
+            case Constants::BANK_ACCOUNT:
+                (new BankAccountCore)->updateBankAccountWithFtsId(
+                    $this->fta->bankAccount,
+                    $responseBody[Constants::FUND_ACCOUNT_ID]);
 
                 break;
 
             case Constants::VPA:
-                $this->fta->vpa->setFTSAccountId($responseBody['fa_id']);
+                (new VPACore)->updateVpaWithFtsId($this->fta->vpa, $responseBody[Constants::FUND_ACCOUNT_ID]);
 
-                (new VPACore)->updateVPAEntity($this->fa->vpa);
+                break;
+        }
+    }
+
+    protected function updateSource($ftsTransferId)
+    {
+        switch ($this->fta->getSourceType())
+        {
+            case Constants::SETTLEMENT:
+                (new SettlementCore)->updateSettlementWithFtsTransferId($this->source, $ftsTransferId);
+
+                break;
+
+            case Constants::REFUND:
+                (new RefundCore)->updateRefundWithFtsTransferId($this->source, $ftsTransferId);
+
+                break;
+
+            case Constants::PAYOUT:
+                (new PayoutCore)->updatePayoutWithFtsTransferId($this->source, $ftsTransferId);
+
+                break;
+
+            case Constants::FUND_ACCOUNT_VALIDATION:
+                (new FundAccountValidationCore)->updateFundAccountValidationWithFtsTransferId(
+                    $this->source,
+                    $ftsTransferId);
 
                 break;
 
             default:
-                throw new LogicException('Account Type is not supported ' . $type);
+                throw new LogicException('Source Type is not supported : ' . $this->fta->getSourceType());
+
         }
     }
 }
