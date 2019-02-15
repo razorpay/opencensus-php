@@ -41,6 +41,15 @@ class InvoiceController extends Controller
         return ApiResponse::json($invoices);
     }
 
+    public function getInvoicesCount()
+    {
+        $input = Request::all();
+
+        $invoiceCount = $this->service()->getInvoicesCount($input);
+
+        return ApiResponse::json($invoiceCount);
+    }
+
     public function updateInvoice(string $id)
     {
         $input = Request::all();

@@ -29,6 +29,8 @@ class OAuthBearerAuthTest extends OAuthTestCase
         $this->setupMockDns();
 
         parent::setUp();
+
+        $this->mockCardVault();
     }
 
     public function testBearerAuth()
@@ -197,6 +199,8 @@ class OAuthBearerAuthTest extends OAuthTestCase
     {
         $client = factory(Client\Entity::class)->create();
 
+        $this->mockCardVault();
+
         $accessToken = $this->generateOAuthAccessToken(
             [
                 'scopes'    => ['read_write'],
@@ -251,7 +255,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
             ]
         ]);
 
-        $this->mockTokenEx();
+        $this->mockCardVault();
         $this->mockOtpElf();
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
@@ -293,6 +297,8 @@ class OAuthBearerAuthTest extends OAuthTestCase
     public function testAppBlacklistedFeatureEnabledOnAppAndMerchant()
     {
         $client = factory(Client\Entity::class)->create();
+
+        $this->mockCardVault();
 
         $accessToken = $this->generateOAuthAccessToken(
             [

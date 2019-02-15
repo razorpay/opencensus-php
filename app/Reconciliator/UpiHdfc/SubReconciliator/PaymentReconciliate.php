@@ -79,7 +79,17 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         $paymentId = null;
 
-        // check if payment already created in our system
+        //
+        // Check if payment already created in our system.
+        //
+        // Note : Here we have the valid RRN but we do not have
+        // razorpay's payment_id in the ORDER_ID column of mis,
+        // So we are fetching our payment_id using RRN.
+        // Such cases happen when we are not able to create payment
+        // during callback for some payments and thus we don't get
+        // our payment id for these rows in mis.
+        //
+
         $upiEntity = $this->repo->upi->fetchByNpciReferenceId($rrn);
 
         if (empty($upiEntity) === false)
@@ -98,90 +108,99 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
         else
         {
-            //
-            // Check if we have CALLBACK_KEY field added in the row.
-            // If it is there, we will use it to create the payment
-            //
-            // Note: This field is manually added in MIS file by FinOps
-            // team in rare cases when some payments could not be created
-            // due to issues with callback, though these payments were
-            // successfully created at upi_hdfc side. During MIS processing
-            // these payments were marked as 'Unexpected_payment'
-            //
-            // FinOps manually adds this column for these unexpected payments
-            // and uploads the file for reconciliation and we create the payment with the
-            // help of this CALLBACK_KEY.
-            //
+            $paymentId = $this->createPayment($rrn, $gatewayPaymentId, $row);
+        }
 
-            if (empty($row[self::CALLBACK_KEY]) === false)
+        return $paymentId;
+    }
+
+    protected function createPayment($rrn, $gatewayPaymentId, $row)
+    {
+        $paymentId = null;
+
+        //
+        // Check if we have CALLBACK_KEY field added in the row.
+        // If it is there, we will use it to create the payment
+        //
+        // Note: This field is manually added in MIS file by FinOps
+        // team in rare cases when some payments could not be created
+        // due to issues with callback, though these payments were
+        // successfully created at upi_hdfc side. During MIS processing
+        // these payments were marked as 'Unexpected_payment'
+        //
+        // FinOps manually adds this column for these unexpected payments
+        // and uploads the file for reconciliation and we create the payment with the
+        // help of this CALLBACK_KEY.
+        //
+
+        if (empty($row[self::CALLBACK_KEY]) === false)
+        {
+            $input = [
+                ResponseFields::CALLBACK_RESPONSE_KEY   => $row[self::CALLBACK_KEY],
+                ResponseFields::CALLBACK_RESPONSE_PGMID => $row[self::UPI_MERCHANT_ID],
+            ];
+
+            try
             {
-                $input = [
-                    ResponseFields::CALLBACK_RESPONSE_KEY   => $row[self::CALLBACK_KEY],
-                    ResponseFields::CALLBACK_RESPONSE_PGMID => $row[self::UPI_MERCHANT_ID],
-                ];
+                $response = $this->processUnexpectedPayment($input, Gateway::UPI_MINDGATE);
 
-                try
+                if (empty($response['payment_id']) === false)
                 {
-                    $response = $this->processUnexpectedPayment($input, Gateway::UPI_MINDGATE);
+                    $paymentId = $response['payment_id'];
 
-                    if (empty($response['payment_id']) === false)
-                    {
-                        $paymentId = $response['payment_id'];
-
-                        $this->trace->info(
-                            TraceCode::RECON_INFO,
-                            [
-                                'infoCode'           => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATED,
-                                'payment_id'         => $paymentId,
-                                'rrn'                => $rrn,
-                                'gateway_payment_id' => $gatewayPaymentId,
-                                'gateway'            => $this->gateway,
-                            ]);
-                    }
-                    else
-                    {
-                        $this->trace->info(
-                            TraceCode::RECON_INFO_ALERT,
-                            [
-                                'infoCode'   => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATION_FAILED,
-                                'rrn'        => $rrn,
-                                'payment_id' => $gatewayPaymentId,
-                                'gateway'    => $this->gateway,
-                            ]);
-                    }
-                }
-                catch (\Exception $ex)
-                {
-                    $this->trace->traceException(
-                        $ex,
-                        Trace::ERROR,
-                        Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATION_FAILED,
+                    $this->trace->info(
+                        TraceCode::RECON_INFO,
                         [
+                            'infoCode'           => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATED,
+                            'payment_id'         => $paymentId,
+                            'rrn'                => $rrn,
+                            'gateway_payment_id' => $gatewayPaymentId,
+                            'gateway'            => $this->gateway,
+                        ]);
+                }
+                else
+                {
+                    $this->trace->info(
+                        TraceCode::RECON_INFO_ALERT,
+                        [
+                            'infoCode'   => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATION_FAILED,
                             'rrn'        => $rrn,
                             'payment_id' => $gatewayPaymentId,
                             'gateway'    => $this->gateway,
-                        ]
-                    );
+                        ]);
                 }
             }
-            else
+            catch (\Exception $ex)
             {
-                $this->trace->info(
-                    TraceCode::RECON_INFO_ALERT,
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATION_FAILED,
                     [
-                        'info_code'  => Base\InfoCode::UNEXPECTED_PAYMENT,
                         'rrn'        => $rrn,
                         'payment_id' => $gatewayPaymentId,
-                        'row'        => $row,
-                        'gateway'    => $this->gateway
-                    ]);
-
-                //
-                // Setting this unprocessed row as success as we receive such direct settlements daily.
-                // And as these payments are expected, not counting them as failure.
-                //
-                $this->setFailUnprocessedRow(false);
+                        'gateway'    => $this->gateway,
+                    ]
+                );
             }
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'  => Base\InfoCode::UNEXPECTED_PAYMENT,
+                    'rrn'        => $rrn,
+                    'payment_id' => $gatewayPaymentId,
+                    'row'        => $row,
+                    'gateway'    => $this->gateway
+                ]);
+
+            //
+            // Setting this unprocessed row as success as we receive such direct settlements daily.
+            // And as these payments are expected, not counting them as failure.
+            //
+            $this->setFailUnprocessedRow(false);
         }
 
         return $paymentId;
@@ -204,15 +223,20 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
         {
-            $this->messenger->raiseReconAlert(
+            //
+            // As we are getting more than 100s of amount_mismatch alerts (of just 1 paisa),
+            // so temporarily removing slack alert for UpiHdfc. FinOps will continue to get
+            // daily report for amount mismatch from Sumologic and take action as usual.
+            // This is just to reduce noise on recon slack channel
+            //
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
                 [
-                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
                     'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
                     'payment_id'      => $this->payment->getId(),
                     'expected_amount' => $this->payment->getBaseAmount(),
                     'recon_amount'    => $this->getReconPaymentAmount($row),
                     'currency'        => $this->payment->getCurrency(),
-                    'row'             => $row,
                     'gateway'         => $this->gateway
                 ]);
 
@@ -249,7 +273,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         $dbReferenceNumber = trim($gatewayPayment->getNpciReferenceId());
 
         if ((empty($dbReferenceNumber) === false) and
-            ($dbReferenceNumber !== $referenceNumber))
+            ($dbReferenceNumber !== $referenceNumber) and
+            ($dbReferenceNumber !== 'NA'))
         {
             $this->messenger->raiseReconAlert(
                 [

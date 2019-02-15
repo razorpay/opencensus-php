@@ -67,14 +67,6 @@ return [
         'password'  => env('MOZART_PASSWORD'),
     ],
 
-    'card_tokenex' => [
-        'mock'      => env('TOKENEX_MOCK', false),
-        'id'        => env('TOKENEX_ID'),
-        'key'       => env('TOKENEX_API_KEY'),
-        'url'       => env('TOKENEX_API_URL'),
-        'scheme'    => env('TOKENEX_TOKEN_SCHEME'),
-    ],
-
     'raven' => [
         'mock'      => env('RAVEN_MOCK', false),
         'url'       => env('RAVEN_URL'),
@@ -96,6 +88,13 @@ return [
         'key'       => env('CARD_VAULT_KEY'),
         'secret'    => env('CARD_VAULT_SECRET'),
         'url'       => env('CARD_VAULT_URL'),
+    ],
+
+    'cps' => [
+        'mock'      => env('CORE_PAYMENT_SERVICE_MOCK', false),
+        'username'  => env('CORE_PAYMENT_SERVICE_KEY'),
+        'password'  => env('CORE_PAYMENT_SERVICE_SECRET'),
+        'url'       => env('CORE_PAYMENT_SERVICE_URL'),
     ],
 
     'redisdualwrite' => [
@@ -258,7 +257,8 @@ return [
     ],
 
     'beam' => [
-        'url' => env('BEAM_URL')
+        'url'  => env('BEAM_URL'),
+        'mock' => env('BEAM_MOCK', false),
     ],
 
     'subscriptions' => [

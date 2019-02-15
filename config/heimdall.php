@@ -28,6 +28,10 @@ return [
             Permission::VIEW_HOMEPAGE => 'View Dashboard Home',
         ],
 
+        PermissionCategory::RAZORX => [
+            Permission::RAZORX_APPROVERS => 'Approve workflows for activation of razorx experiments',
+        ],
+
         PermissionCategory::MERCHANT => [
             Permission::VIEW_ALL_MERCHANTS            => [
                 'description' => 'View all merchants in merchant lists',
@@ -478,6 +482,9 @@ return [
             Permission::ES_WRITE_OPERATION           => [
                 'description' => 'Perform write operations on Elasticsearch',
             ],
+            Permission::ADMIN_FILE_UPLOAD            => [
+                'description' => 'Upload a bank file',
+            ],
         ],
 
         // Permissions
@@ -558,6 +565,9 @@ return [
             ],
             Permission::UPDATE_GATEWAY_DOWNTIME => [
                 'description' => 'Update Gateway Downtime',
+            ],
+            Permission::VIEW_GATEWAY_DOWNTIME => [
+                'description' => 'View Gateway Downtime',
             ],
         ],
 

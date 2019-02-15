@@ -1,32 +1,32 @@
 <?php
 
-namespace RZP\Models\Pricing;
+namespace RZP\Models\Pricing\Calculator;
 
 use Cache;
 
 use RZP\Exception;
 use RZP\Constants;
-use RZP\Models\Base;
-use RZP\Models\Card;
-use RZP\Models\Payout;
 use RZP\Models\Payment;
+use RZP\Models\Payout;
 use RZP\Models\Pricing;
 use RZP\Models\Merchant;
-use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\FundAccount;
-use RZP\Models\Transaction;
+use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
+use RZP\Models\Pricing\Fee;
+use RZP\Models\Transaction;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Base as BaseModel;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 
 use Razorpay\Trace\Logger as Trace;
 
-class FeeCalculator
+abstract class Base extends BaseModel\Core
 {
-    const IGST_PERCENTAGE   = 1800; // Integrated GST
-    const CGST_PERCENTAGE   = 900;  // Central GST
-    const SGST_PERCENTAGE   = 900;  // State GST
+    const IGST_PERCENTAGE = 1800; // Integrated GST
+    const CGST_PERCENTAGE = 900; // Central GST
+    const SGST_PERCENTAGE = 900; // State GST
 
     // 1st July 2017 00:00:00 IST - Timestamp at which GST will begin to be levied on transactions
     const GST_START_TIMESTAMP = 1498847400;
@@ -50,32 +50,25 @@ class FeeCalculator
      */
     protected $product;
 
-    protected $defaultPricingPlan = '1hDYlICobzOCYt';
+    protected $feesSplit;
 
-    protected $feesSplit = null;
-
-    protected $pricingRules = null;
+    protected $pricingRules;
 
     protected $amount = null;
 
-    /**
-     * @var Trace
-     */
-    protected $trace;
+    protected $taxComponents;
 
-    protected $taxComponents = null;
-
-    public function __construct($entity, string $product)
+    public function __construct(BaseModel\PublicEntity $entity, string $product)
     {
+        parent::__construct();
+
         $this->entity = $entity;
 
         $this->product = $product;
 
-        $this->feesSplit = new Base\PublicCollection;
+        $this->feesSplit = new BaseModel\PublicCollection;
 
-        $this->pricingRules = new Base\PublicCollection;
-
-        $this->trace = \Trace::getFacadeRoot();
+        $this->pricingRules = new BaseModel\PublicCollection;
 
         $this->taxComponents = self::getTaxComponents($this->entity->merchant);
     }
@@ -84,24 +77,37 @@ class FeeCalculator
     {
         $entity = $this->entity;
 
-        $entityName = $entity->getEntity();
-
-        return ((Feature::isCustomerFeeBearerSupported($entityName) === true) and
-                ($entity->merchant->isFeeBearerCustomer() === true));
+        return ($entity->merchant->isFeeBearerCustomer() === true);
     }
+
+    /**
+     * Gets pricing calculator for entity
+     */
+
+    public static function make(BaseModel\PublicEntity $entity, string $product): Base
+    {
+        $entityType = $entity->getEntity();
+
+        $calculator = __NAMESPACE__. '\\' .studly_case($entityType);
+
+        return new $calculator($entity, $product);
+    }
+
+    /**
+     * Calculate by pricing plan according to pricing rule
+     *
+     */
 
     public function calculate(Pricing\Plan $pricing): array
     {
-        $entity = $this->entity;
-
-        $amount = $entity->getBaseAmount();
+        $amount = $this->entity->getBaseAmount();
 
         if ($this->isFeeBearerCustomer() === true)
         {
             // 1. The first call will have the fee = 0,
             //    hence fees will be calculated on the original amount
             // 2. On validation/capture call, the fee will be set
-            $amount = $amount - $entity->getFee();
+            $amount = $amount - $this->entity->getFee();
         }
 
         $this->amount = $amount;
@@ -142,13 +148,6 @@ class FeeCalculator
             return;
         }
 
-        // For payout, we don't have to check for fees > amount, since
-        // the balance check and balance deduction happens almost together.
-        if ($this->entity->getEntity() === Constants\Entity::PAYOUT)
-        {
-            return;
-        }
-
         // In case the merchant is fee bearer but on postpaid model,
         // we shouldn't check $amount <= $totalFees.
         if ($this->entity->merchant->getFeeModel() === Merchant\FeeModel::POSTPAID)
@@ -164,11 +163,6 @@ class FeeCalculator
             return;
         }
 
-        // Can't use fee credits for fund account validation, so only balance matters
-        if ($this->isEntityFundAccountValidation() === true)
-        {
-            return;
-        }
 
         list($amountCredits, $feeCredits) = $this->getAvailableAmountOrFeeCredits();
 
@@ -208,13 +202,15 @@ class FeeCalculator
         return ($fromTimestamp >= self::GST_START_TIMESTAMP);
     }
 
-    protected function getRelevantPricingRule(Pricing\Plan $pricing)
+    /**
+     * Filter Pricing rule
+     *
+     */
+    public function getRelevantPricingRule(Pricing\Plan $pricing)
     {
-        $entity = $this->entity;
+        $entityName = $this->entity->getEntity();
 
-        $entityName = $entity->getEntity();
-
-        $features = $entity->getPricingFeatures();
+        $features = $this->entity->getPricingFeatures();
 
         $this->getBasicPricingRule($pricing, $entityName);
 
@@ -225,27 +221,7 @@ class FeeCalculator
 
     protected function getAddOnPricingRule(Pricing\Plan $pricing, array $features, $entityName)
     {
-        $method  = $this->entity->getMethod();
-        $product = $this->product;
-
-        foreach ($features as $feature)
-        {
-            $filters = [
-                [Pricing\Entity::PRODUCT,        $product, false, null],
-                [Pricing\Entity::FEATURE,        $feature, false, null],
-                [Pricing\Entity::PAYMENT_METHOD, $method,  false, null],
-            ];
-
-            $rules = $this->applyFiltersOnRules($pricing, $filters);
-
-            if ((count($rules) > 0) and
-                ($entityName === Pricing\Feature::PAYMENT))
-            {
-                $rule = $this->getRelevantPaymentPricingRule($rules, $method);
-
-                $this->pricingRules->push($rule);
-            }
-        }
+        return;
     }
 
     protected function getBasicPricingRule(Pricing\Plan $pricing, $feature)
@@ -255,9 +231,9 @@ class FeeCalculator
         $product = $this->product;
 
         $filters = [
-            [Pricing\Entity::PRODUCT,         $product, false, null  ],
-            [Pricing\Entity::FEATURE,         $feature, false, null  ],
-            [Pricing\Entity::PAYMENT_METHOD,  $method,  false, null  ],
+            [Pricing\Entity::PRODUCT,        $product, false, null],
+            [Pricing\Entity::FEATURE,        $feature, false, null],
+            [Pricing\Entity::PAYMENT_METHOD, $method,  false, null],
         ];
 
         $rules = $this->applyFiltersOnRules($pricing, $filters);
@@ -269,7 +245,7 @@ class FeeCalculator
         // In this case, we add the zero pricing rule and return
         //
         if (($rulesCount === 0) and
-            (Feature::isFeaturePricingOptional($feature) === true) and
+            (Pricing\Feature::isFeaturePricingOptional($feature) === true) and
             ($orgId === Org\Entity::RAZORPAY_ORG_ID))
         {
             $zeroPricingRule = (new Fee)->getZeroPricingPlanRule($this->entity);
@@ -279,17 +255,7 @@ class FeeCalculator
             return;
         }
 
-        //
-        // `$feature` is among those defined in Pricing/Feature
-        //
-        $ruleFunction = 'getRelevant' . studly_case($feature) . 'PricingRule';
-
-        $rule = null;
-
-        if (method_exists($this, $ruleFunction) === true)
-        {
-            $rule = $this->$ruleFunction($rules, $method);
-        }
+        $rule = $this->getPricingRule($rules, $method);
 
         if ($rule === null)
         {
@@ -300,143 +266,6 @@ class FeeCalculator
         }
 
         $this->pricingRules->push($rule);
-    }
-
-    protected function getRelevantPaymentPricingRule($rules, $method)
-    {
-        $rule = null;
-
-        if ($method === Payment\Method::CARD)
-        {
-            $rule = $this->getRelevantPricingRuleForCardPayment($rules);
-        }
-        else if ($method === Payment\Method::WALLET)
-        {
-            $rule = $this->getRelevantPricingRuleForWalletPayment($rules);
-        }
-        else if ($method === Payment\Method::NETBANKING)
-        {
-            $rule = $this->getRelevantPricingRuleForNBPayment($rules);
-        }
-        else if ($method === Payment\Method::UPI)
-        {
-            $rule = $this->getRelevantPricingRuleForUPI($rules);
-        }
-        else if ($method === Payment\Method::AEPS)
-        {
-            $rule = $this->getRelevantPricingRuleForAeps($rules);
-        }
-        else if ($method === Payment\Method::EMANDATE)
-        {
-            $rule = $this->getRelevantPricingRuleForEmandate($rules);
-        }
-        else if ($method === Payment\Method::EMI)
-        {
-            $rule = $this->getRelevantPricingRuleForEmi($rules);
-        }
-        else if ($method === Payment\Method::BANK_TRANSFER)
-        {
-            $rule = $this->getRelevantPricingRuleForBankTransfer($rules);
-        }
-        else if ($method === Payment\Method::CARDLESS_EMI)
-        {
-            $rule = $this->getRelevantPricingRuleForCardlessEmi($rules);
-        }
-        // else if ($method === Payment\Method::TRANSFER)
-        // {
-        //     $rule = $this->getRelevantPricingRuleForTransfer($rules);
-        // }
-        else
-        {
-            $rule = $this->getRelevantPricingRuleForMethod($rules);
-        }
-
-        return $rule;
-    }
-
-    protected function getRelevantPayoutPricingRule($rules, $method)
-    {
-        $rule = $this->applyAmountRangeFilterAndReturnOneRule($rules);
-
-        return $rule;
-    }
-
-    protected function getRelevantTransferPricingRule($rules, $method)
-    {
-        //
-        // Transfer pricing rules are optional -
-        // However, if a rule exists, we validate that only one
-        // rule is applied per transfer
-        //
-        $rule = $this->getRelevantPricingRuleForMethod($rules);
-
-        return $rule;
-    }
-
-    protected function getRelevantFundAccountValidationPricingRule($rules, $method)
-    {
-        return $this->applyAmountRangeFilterAndReturnOneRule($rules);
-    }
-
-    protected function getRelevantPricingRuleForMethod($rules)
-    {
-        return $this->validateAndGetOnePricingRule($rules);
-    }
-
-    protected function getRelevantPricingRuleForAeps($rules)
-    {
-        return $this->applyAmountRangeFilterAndReturnOneRule($rules);
-    }
-
-    protected function getRelevantPricingRuleForEmandate($rules)
-    {
-        // All the rules for the current pricing plan will be put
-        // through various filters till the right pricing rule
-        // for the current case remains.
-
-        $payment = $this->entity;
-
-        $bank = $payment->getBank();
-
-        $authType = $payment->getGlobalOrLocalTokenEntity()->getAuthType();
-
-        $recurringType = $payment->getRecurringType();
-
-        // Current Implementation
-        // * Filter based on AmountRange
-        // * Choose based on Amount
-        // * Choose based on Authentication type
-        // * Choose based on Recurring type
-
-        $filters = [
-            [Pricing\Entity::PAYMENT_NETWORK,     $bank,          true, null],
-            [Pricing\Entity::PAYMENT_METHOD_TYPE, $authType,      true, null],
-            [Pricing\Entity::PAYMENT_ISSUER,      $recurringType, true, null],
-        ];
-
-        $rules = $this->applyFiltersOnRules($rules, $filters);
-
-        return $this->applyAmountRangeFilterAndReturnOneRule($rules);
-    }
-
-    protected function getRelevantPricingRuleForUPI($rules)
-    {
-        $payment = $this->entity;
-
-        $receiverType = $payment->getReceiverType();
-
-        $filters1 = [
-            [Pricing\Entity::RECEIVER_TYPE, $receiverType, true, null],
-        ];
-
-        $rules = $this->applyFiltersOnRules($rules, $filters1);
-
-        return $this->applyAmountRangeFilterAndReturnOneRule($rules);
-    }
-
-    protected function getRelevantPricingRuleForBankTransfer($rules)
-    {
-        return $this->applyAmountRangeFilterAndReturnOneRule($rules);
     }
 
     protected function applyAmountRangeFilterAndReturnOneRule($rules)
@@ -478,153 +307,6 @@ class FeeCalculator
         }
 
         return $rule;
-    }
-
-    protected function getRelevantPricingRuleForNBPayment($rules)
-    {
-        // All the rules for the current pricing plan will be put
-        // through various filters till the right pricing rule
-        // for the current case remains.
-
-        $payment = $this->entity;
-
-        $bank = $payment->getBank();
-
-        // Current Implementation
-        // * Filter based on AmountRange
-        // * Choose based on Amount
-
-        $filters = [
-            [Pricing\Entity::PAYMENT_NETWORK, $bank, true, null],
-        ];
-
-        $rules = $this->applyFiltersOnRules($rules, $filters);
-
-        return $this->applyAmountRangeFilterAndReturnOneRule($rules);
-    }
-
-    protected function getRelevantPricingRuleForWalletPayment($rules)
-    {
-        // All the rules for the current pricing plan will be put
-        // through various filters till the right pricing rule
-        // for the current case remains.
-
-        $payment = $this->entity;
-
-        $wallet = $payment->getWallet();
-
-        // Current Implementation
-        // * Filter based on wallet
-
-        // Structure is as follows:
-        // Field name, Field value, Choose default (true/false), default value
-        $filter = array(
-            [Pricing\Entity::PAYMENT_NETWORK, $wallet, true, null]
-        );
-
-        $rules = $this->applyFiltersOnRules($rules, $filter);
-
-        return $this->validateAndGetOnePricingRule($rules);
-    }
-
-    protected function getRelevantPricingRuleForEmi($rules)
-    {
-        $payment = $this->entity;
-        $emiPlan = $payment->emiPlan;
-
-        $network = Card\Network::getCode($payment->card->getNetwork());
-
-        $emiDuration = $emiPlan->getDuration();
-
-        $issuer = $emiPlan->getIssuer();
-
-        //Emi duration and issuer filter is for merchant subvented model
-        //in normal emi it will be null where feature is payment
-        $filters1 = array(
-            [Pricing\Entity::PAYMENT_NETWORK, $network,     true, null ],
-            [Pricing\Entity::PAYMENT_ISSUER,  $issuer,      true, null ],
-            [Pricing\Entity::EMI_DURATION,    $emiDuration, true, null ]
-        );
-
-        $rules = $this->applyFiltersOnRules($rules, $filters1);
-
-        return $this->validateAndGetOnePricingRule($rules);
-    }
-
-    protected function getRelevantPricingRuleForCardlessEmi($rules)
-    {
-        $payment = $this->entity;
-
-        $provider = $payment->getWallet();
-
-        // @todo: Pricing structure to do discussed with product
-        $filters = [
-            [Pricing\Entity::PAYMENT_ISSUER, $provider, true, null],
-        ];
-
-        $rules = $this->applyFiltersOnRules($rules, $filters);
-
-        return $this->validateAndGetOnePricingRule($rules);
-    }
-
-    protected function getRelevantPricingRuleForCardPayment($rules)
-    {
-        // All the rules for the current pricing plan will be put
-        // through various filters till the right pricing rule
-        // for the current case remains.
-
-        // Fee based on the method type
-        $payment = $this->entity;
-
-        $cardType = $payment->card->getTypeElseDefault();
-
-        $international = $payment->isInternational();
-
-        $receiverType = $payment->getReceiverType();
-
-        $authType = $payment->getAuthType();
-
-        $network = Card\Network::getCode($payment->card->getNetwork());
-
-        // Current Implementation
-        // * Filter based on receiver type
-        // * Filter based on international
-        // * Filter based on Network
-        // * Filter based on Auth Type
-        // * If its amex, then stop
-        // * Filter based on Card Type
-        // * Filter based on AmountRange
-        // * Choose based on Amount
-
-        // Structure is as follows:
-        // Field name, Field value, Choose default (true/false), default value
-
-        // The sequence should not be changed as it changes the behaviour.
-        // Right now if the receiver_type is present it needs to be selected no
-        // matter what otherwise default type is used
-        $filters1 = [
-            [Pricing\Entity::RECEIVER_TYPE,         $receiverType,  false,  null    ],
-            [Pricing\Entity::INTERNATIONAL,         $international, false,  false   ],
-            [Pricing\Entity::PAYMENT_NETWORK,       $network,       true,   null    ],
-        ];
-
-        $rules = $this->applyFiltersOnRules($rules, $filters1);
-
-        if ($network === Card\Network::AMEX)
-        {
-            return $this->validateAndGetOnePricingRule($rules);
-        }
-
-        // If network is not amex, we can check for AMOUNT RANGE FILTERS
-
-        $filters2 = [
-            [Pricing\Entity::PAYMENT_METHOD_TYPE,   $cardType,      true,   null    ],
-            [Pricing\Entity::AUTH_TYPE,             $authType,      true,   null    ],
-        ];
-
-        $rules = $this->applyFiltersOnRules($rules, $filters2);
-
-        return $this->applyAmountRangeFilterAndReturnOneRule($rules);
     }
 
     protected function applyFiltersOnRules($rules, $filters)
@@ -670,7 +352,7 @@ class FeeCalculator
                 $matchRules[] = $rule;
             }
             else if (($chooseDefault === true) and
-                     ($value === $defaultValue))
+                ($value === $defaultValue))
             {
                 $defaultMatchRules[] = $rule;
             }
@@ -785,25 +467,25 @@ class FeeCalculator
 
     protected function traceAllRules($rules)
     {
-         $verbose = $this->isVerboseLogEnabled();
+        $verbose = $this->isVerboseLogEnabled();
 
-         if ($verbose === false)
-         {
-             return;
-         }
+        if ($verbose === false)
+        {
+            return;
+        }
 
-         // This is sending a lot of traces and so for
-         // this tracing is not required.
-         $array = [];
+        // This is sending a lot of traces and so for
+        // this tracing is not required.
+        $array = [];
 
-         foreach ($rules as $rule)
-         {
-             $array[] = $rule->toArray();
-         }
+        foreach ($rules as $rule)
+        {
+            $array[] = $rule->toArray();
+        }
 
-         $this->trace->info(
-             TraceCode::PAYMENT_PRICING_RULE_SELECTION,
-             ['rules' => $array]);
+        $this->trace->info(
+            TraceCode::PAYMENT_PRICING_RULE_SELECTION,
+            ['rules' => $array]);
     }
 
     /**
@@ -842,7 +524,7 @@ class FeeCalculator
         return $feeBreakup;
     }
 
-    public function calculateRzpFee(Pricing\Entity $rule, $amount)
+    protected function calculateRzpFee(Pricing\Entity $rule, $amount)
     {
         list($percent, $fixed) = $rule->getRates();
 
@@ -857,10 +539,10 @@ class FeeCalculator
         $fee = $this->compareBoundsAndGetFee($fee, $min, $max);
 
         $rzpFee = $this->createFeeBreakup(
-                                $rule->getFeature(),
-                                null,
-                                $fee,
-                                $rule);
+            $rule->getFeature(),
+            null,
+            $fee,
+            $rule);
 
         $this->feesSplit->push($rzpFee);
 
@@ -971,35 +653,17 @@ class FeeCalculator
         ];
     }
 
-    protected function calculateTaxFromFees($fee, $taxPercentage)
-    {
-        // Solving these
-        // rzpFee + servTax = totFee;
-        // servTax = ST_PERC * rzpFee;
-        //         = ST_PERC * (totFee - servTax);
-
-        // servTax = ( ST_PERC * totFee ) / ( 10000 + ST_PERC ) ;
-
-        //10000 as percentage is 1400 instead of 14
-
-        $numerator = $fee * $taxPercentage;
-
-        $denominator = 10000 + $taxPercentage;
-
-        return ceil($numerator / $denominator);
-    }
-
     /**
-      * Checks for the min_fee and max_fee against fee.
-      * If fee is less than min_fee, then min_fee will be charged.
-      * If max_fee is available and fee is above max_fee,
-      *  then max_fee will be charged.
-      *
-      * @param int $fee
-      * @param int $min
-      * @param int $max
-      * @return int
-      */
+     * Checks for the min_fee and max_fee against fee.
+     * If fee is less than min_fee, then min_fee will be charged.
+     * If max_fee is available and fee is above max_fee,
+     *  then max_fee will be charged.
+     *
+     * @param int $fee
+     * @param int $min
+     * @param int $max
+     * @return int
+     */
     protected function compareBoundsAndGetFee($fee, $min, $max)
     {
         if ($fee < $min)
@@ -1014,8 +678,5 @@ class FeeCalculator
         return $fee;
     }
 
-    protected function isEntityFundAccountValidation(): bool
-    {
-        return (($this->entity instanceof FundAccount\Validation\Entity) === true);
-    }
+    abstract protected function getPricingRule($rules, $method);
 }

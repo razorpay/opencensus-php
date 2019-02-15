@@ -119,8 +119,8 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Gateway\Terminal\Service)->onboardMerchant($id, $input);
-
+        $data = (new Gateway\Terminal\Service)->onboardMerchant($id, $input, false)->toArrayPublic();
+        
         return ApiResponse::json($data);
     }
 
@@ -1258,5 +1258,14 @@ class MerchantController extends Controller
         $data = $this->service()->sendSubmerchantPasswordResetLink($id);
 
         return ApiResponse::json($data);
+    }
+
+    public function resetSettlementSchedule()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->resetSettlementSchedule($input);
+
+        return ApiResponse::json($response);
     }
 }

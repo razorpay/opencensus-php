@@ -7,6 +7,7 @@ use Config;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Mail\Invoice as InvoiceMail;
@@ -146,6 +147,13 @@ class Notifier extends Base\Core
 
     public function emailInvoiceExpiredToCustomer(): bool
     {
+        $merchant = $this->invoice->merchant;
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::INVOICE_NO_EXPIRY_EMAIL) === true)
+        {
+            return false;
+        }
+
         $customerEmail = $this->invoice->getCustomerEmail();
 
         $this->trace->info(
@@ -379,6 +387,8 @@ class Notifier extends Base\Core
 
         $receipt = $this->invoice->getReceipt();
 
+        $invoiceLink = $this->invoice->getShortUrl();
+
         switch ($merchant->getId())
         {
             case Preferences::MID_RBLCARD:
@@ -388,7 +398,7 @@ class Notifier extends Base\Core
                 $sender   = 'RBLCRD';
                 $params   = [
                     'receipt'      => $receipt,
-                    'invoice_link' => $this->invoice->getShortUrl(),
+                    'invoice_link' => $invoiceLink,
                     'amount'       => $this->invoice->getAmount() / 100,
                 ];
 
@@ -401,7 +411,7 @@ class Notifier extends Base\Core
                 $sender   = 'RBLBNK';
                 $params   = [
                     'receipt'      => $receipt,
-                    'invoice_link' => $this->invoice->getShortUrl(),
+                    'invoice_link' => $invoiceLink,
                     'amount'       => $this->invoice->getAmount() / 100,
                 ];
 
@@ -412,7 +422,16 @@ class Notifier extends Base\Core
                 $template = 'sms.custom_invoice.dmi_finance';
                 $params   = [
                     'receipt'      => $receipt,
-                    'invoice_link' => $this->invoice->getShortUrl(),
+                    'invoice_link' => $invoiceLink,
+                ];
+
+                break;
+
+            case Preferences::MID_VARTHANA_FINANCE:
+
+                $template = 'sms.custom_invoice.varthana_finance';
+                $params = [
+                    'invoice_link' => $invoiceLink,
                 ];
         }
 

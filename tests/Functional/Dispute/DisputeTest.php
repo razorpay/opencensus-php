@@ -699,6 +699,19 @@ class DisputeTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testDisputeFetchForAdminRestricted()
+    {
+        $this->fixtures->edit('org', '100000razorpay', ['type' => 'restricted']);
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->create('dispute');
+
+        $testData = $this->updateFetchTestData();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     protected function checkDisputeFetchForMerchant(array $disputes, array $content)
     {
         $this->assertEquals(2, $content['count']);

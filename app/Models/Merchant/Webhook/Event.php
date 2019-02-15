@@ -6,6 +6,7 @@ use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Constants\Entity;
 use RZP\Constants\Product;
+use RZP\Models\FundAccount;
 
 /**
  * The events whether they are enabled or disabled are store in bit format.
@@ -222,7 +223,7 @@ class Event
         self::PAYOUT_CREATED                    => Entity::PAYOUT,
         self::PAYOUT_PROCESSED                  => Entity::PAYOUT,
         self::PAYOUT_REVERSED                   => Entity::PAYOUT,
-        self::FUND_ACCOUNT_VALIDATION_COMPLETED => Entity::FUND_ACCOUNT_VALIDATION,
+        self::FUND_ACCOUNT_VALIDATION_COMPLETED => FundAccount\Validation\Entity::PUBLIC_ENTITY_NAME,
     ];
 
     public static $eventsToFeatureMap = [

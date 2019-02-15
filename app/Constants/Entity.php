@@ -172,6 +172,7 @@ class Entity
     const ENACH_RBL              = 'enach_rbl';
     const ESIGNER_DIGIO          = 'esigner_digio';
     const ESIGNER_LEGALDESK      = 'esigner_legaldesk';
+    const ENACH_NPCI_NETBANKING  = 'enach_npci_netbanking';
     const NETBANKING_AXIS        = 'netbanking_axis';
     const NETBANKING_IDFC        = 'netbanking_idfc';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
@@ -322,6 +323,7 @@ class Entity
         self::SUBSCRIPTION              => \RZP\Models\Plan\Subscription::class,
         self::PAYMENT_LINK              => \RZP\Models\PaymentLink::class,
         self::GATEWAY_TOKEN             => \RZP\Models\Customer\GatewayToken::class,
+        self::ENTITY_ORIGIN             => \RZP\Models\EntityOrigin::class,
         self::SCHEDULE_TASK             => \RZP\Models\Schedule\Task::class,
         self::DISPUTE_REASON            => \RZP\Models\Dispute\Reason::class,
         self::MERCHANT_DETAIL           => \RZP\Models\Merchant\Detail::class,
@@ -381,6 +383,7 @@ class Entity
         self::ENACH_RBL              => \RZP\Gateway\Enach\Rbl::class,
         self::ESIGNER_DIGIO          => \RZP\Gateway\Esigner\Digio::class,
         self::ESIGNER_LEGALDESK      => \RZP\Gateway\Esigner\Legaldesk::class,
+        self::ENACH_NPCI_NETBANKING  => \RZP\Gateway\Enach\Npci\Netbanking::class,
         self::WALLET_PAYZAPP         => \RZP\Gateway\Wallet\Payzapp::class,
         self::WALLET_OLAMONEY        => \RZP\Gateway\Wallet\Olamoney::class,
         self::WALLET_JIOMONEY        => \RZP\Gateway\Wallet\Jiomoney::class,
@@ -520,13 +523,14 @@ class Entity
     protected static $syncedInLiveAndTest = [
         self::ORG,
         self::IIN,
+        self::USER,
         self::FEATURE,
         self::METHODS,
         self::PRICING,
         self::EMI_PLAN,
         self::MERCHANT,
-        self::USER,
         self::SCHEDULE,
+        self::PARTNER_CONFIG,
         self::MERCHANT_ACCESS_MAP,
     ];
 

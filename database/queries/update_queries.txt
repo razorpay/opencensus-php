@@ -2280,6 +2280,120 @@ WHERE id IN ('BbmXWhXSCu2p1d',
 #Settled at value changes in refund for report fixes
 UPDATE transactions set settled_at = created_at WHERE  type='refund' and settled_at=1
 
+#Sync amex column in merchant_banks with the new card_networks column
+UPDATE merchant_banks SET card_networks=127 WHERE amex=1;
+
 # Fixes merchant's entities state introduced because of an issue which is fixed separately.
 UPDATE bank_accounts SET deleted_at = NULL WHERE id = 'BikuFg4LjWPaRc' LIMIT 1;
 UPDATE virtual_accounts SET status = 'active' WHERE id = 'BikuFWAIzbn1Hb' LIMIT 1;
+
+# Missed to update updated_at in above queries ^
+# The virtual account has already received new payments and updated_at is touched.
+UPDATE bank_accounts SET updated_at = UNIX_TIMESTAMP() WHERE id = 'BikuFg4LjWPaRc' LIMIT 1;
+
+# Populating type data in schedule table from schedule_task
+UPDATE schedules as s INNER JOIN schedule_tasks as st ON s.id = st.schedule_id SET s.type = st.type;
+
+
+# authentication filters
+# 3ds
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type) VALUES ('BuyiCsLnZY8JW5', 0, 'card', '100000Razorpay', 'filter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'hitachi', '3ds');
+
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type) VALUES ('Buz2M2ueTu0Baf', 0, 'card', '100000Razorpay', 'filter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'hdfc', '3ds');
+
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type) VALUES ('Buz6ox9mAqbxUN', 0, 'card', '100000Razorpay', 'filter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'cybersource', '3ds');
+
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type) VALUES ('Buz704r8eGlO3W', 0, 'card', '100000Razorpay', 'filter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'first_data', '3ds');
+
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type) VALUES ('Buz7Dbxc5uKqvb', 0, 'card', '100000Razorpay', 'filter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'axis_migs', '3ds');
+
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type) VALUES ('Buz7IaD2lcsORV', 0, 'card', '100000Razorpay', 'filter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'card_fss', '3ds');
+
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type) VALUES ('Buz7O6tFbyXfK2', 0, 'card', '100000Razorpay', 'filter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'amex', '3ds');
+
+# pin
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type) VALUES ('BuzrSUzofmUhH0', 0, 'card', '100000Razorpay', 'filter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'card_fss', 'pin');
+
+# ivr
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type) VALUES ('BuzsCOItIefyyK', 0, 'card', '100000Razorpay', 'filter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'hitachi', 'ivr');
+
+# otp issuer UTIB
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, issuer) VALUES ('BuzskCmdfMRDd1', 0, 'card', '100000Razorpay', 'filter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'hitachi', 'otp', 'UTIB');
+
+# skip
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type) VALUES ('Bv0cPomnWgPNs9', 0, 'card', '100000Razorpay', 'filter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'hitachi', 'skip');
+
+# headless hitachi - MC, VISA, MAES
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, network) VALUES ('BuzxhgujsOGQxN', 0, 'card', '100000Razorpay', 'filter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'hitachi', 'headless_otp', 'VISA');
+
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, network) VALUES ('BuzxiA9KD2S4O5', 0, 'card', '100000Razorpay', 'filter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'hitachi', 'headless_otp', 'MC');
+
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, network) VALUES ('BuzxiiiOfmuztA', 0, 'card', '100000Razorpay', 'filter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'hitachi', 'headless_otp', 'MAES');
+
+# headless cyber source - MC, VISA
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, network) VALUES ('Bv0d3dkbp21ug3', 0, 'card', '100000Razorpay', 'filter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'cybersource', 'headless_otp', 'VISA');
+
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, network) VALUES ('Bv0d8Z7FRYR6zK', 0, 'card', '100000Razorpay', 'filter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'cybersource', 'headless_otp', 'MC');
+
+# headless cyber source - MC, VISA
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, network) VALUES ('Bv04IhUAzYjZ9Z', 0, 'card', '100000Razorpay', 'filter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'cybersource', 'headless_otp', 'VISA');
+
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, network) VALUES ('Bv04JKzOSsgnfY', 0, 'card', '100000Razorpay', 'filter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'cybersource', 'headless_otp', 'MC');
+
+# headless hdfc - MC, VISA, MAES, DICL, RUPAY
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, network) VALUES ('BvKr3zEZwO6ZWA', 0, 'card', '100000Razorpay', 'filter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'hdfc', 'headless_otp', 'VISA');
+
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, network) VALUES ('Bv06Df5HyqpXYI', 0, 'card', '100000Razorpay', 'filter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'hdfc', 'headless_otp', 'MC');
+
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, network) VALUES ('Bv06EDI07yndMP', 0, 'card', '100000Razorpay', 'filter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'hdfc', 'headless_otp', 'MAES');
+
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, network) VALUES ('Bv06EjDVYmvO3T', 0, 'card', '100000Razorpay', 'filter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'hdfc', 'headless_otp', 'DICL');
+
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, network) VALUES ('Bv06FntKuGA9a0', 0, 'card', '100000Razorpay', 'filter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'hdfc', 'headless_otp', 'RUPAY');
+
+# headless first data - MC, VISA, MAES
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, network) VALUES ('Bv09UfGDAOqIl2', 0, 'card', '100000Razorpay', 'filter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'first_data', 'headless_otp', 'MC');
+
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, network) VALUES ('Bv09V7S7sGkqfT', 0, 'card', '100000Razorpay', 'filter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'first_data', 'headless_otp', 'VISA');
+
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, network) VALUES ('Bv09Vclt3IB79n', 0, 'card', '100000Razorpay', 'filter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'first_data', 'headless_otp', 'MAES');
+
+# authentication sorters
+# 3ds
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, authentication_gateway, `load`) VALUES ('Bv0F7QePLEAxxO', 0, 'card', '100000Razorpay', 'sorter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'hitachi', '3ds', 'mpi_blade', 0);
+
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, `load`) VALUES ('Bv0FIfpxDE7qfb', 0, 'card', '100000Razorpay', 'sorter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'hdfc', '3ds', 0);
+
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, `load`) VALUES ('Bv0FMuCFMGioRJ', 0, 'card', '100000Razorpay', 'sorter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'cybersource', '3ds', 0);
+
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, `load`) VALUES ('Bv0FbUAIyeENsy', 0, 'card', '100000Razorpay', 'sorter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'first_data', '3ds', 0);
+
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, `load`) VALUES ('Bv0Fnv51RIFrZZ', 0, 'card', '100000Razorpay', 'sorter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'axis_migs', '3ds', 0);
+
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, `load`) VALUES ('Bv0Fwiv7NQh7TL', 0, 'card', '100000Razorpay', 'sorter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'card_fss', '3ds', 0);
+
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, `load`) VALUES ('Bv0G2K8m0sVQ6b', 0, 'card', '100000Razorpay', 'sorter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'amex', '3ds', 0);
+
+# pin
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, `load`) VALUES ('Bv0Rq0T4VEERLr', 0, 'card', '100000Razorpay', 'sorter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'card_fss', 'pin', 0);
+
+# ivr
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, `load`, `authentication_gateway`) VALUES ('Bv0UJ5VHbc6s3X', 0, 'card', '100000Razorpay', 'sorter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'hitachi', 'ivr', 0, 'mpi_blade');
+
+# otp issuer UTIB
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, issuer, `load`, `authentication_gateway`) VALUES ('Bv0UJqdgTI3APl', 0, 'card', '100000Razorpay', 'sorter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'hitachi', 'otp', 'UTIB', 0, 'mpi_enstage');
+
+# skip
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, `load`) VALUES ('Bv0UKR0xjcqpJg', 0, 'card', '100000Razorpay', 'sorter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'hitachi', 'skip', 0);
+
+# headless hitachi - MC, VISA, MAES
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, network, `load`, `authentication_gateway`) VALUES ('Bv0W5jd0HgZhO7', 0, 'card', '100000Razorpay', 'sorter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'hitachi', 'headless_otp', null, 0, 'mpi_blade');
+
+# headless cyber source - MC, VISA
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, network, `load`) VALUES ('Bv0YjkJxHMZm2C', 0, 'card', '100000Razorpay', 'sorted', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'cybersource', 'headless_otp', null, 0);
+
+# headless hdfc - MC, VISA, MAES, DICL, RUPAY
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, network, `load`) VALUES ('Bv0ZYTUslsZIpr', 0, 'card', '100000Razorpay', 'sorter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'hdfc', 'headless_otp', null, 0);
+
+# headless first data - MC, VISA, MAES
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, network, `load`) VALUES ('Bv0ajCybtgk8yH', 0, 'card', '100000Razorpay', 'sorter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'first_data', 'headless_otp', null, 0);

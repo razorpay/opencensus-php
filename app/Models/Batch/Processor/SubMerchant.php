@@ -103,7 +103,7 @@ class SubMerchant extends Base
         //
         if (isset($this->params[ME::USE_EMAIL_AS_DUMMY]) === true)
         {
-            $this->useMerchantEmailAsDummy = $this->params[ME::USE_EMAIL_AS_DUMMY];
+            $this->useMerchantEmailAsDummy = (bool) $this->params[ME::USE_EMAIL_AS_DUMMY];
         }
 
         $this->userId = $this->merchant->primaryOwner()->getId();

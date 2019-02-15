@@ -203,7 +203,13 @@ return [
 
     'transfer_mapping'        => [],
 
-    'virtual_account_mapping' => [],
+    'virtual_account_mapping' => [
+        'properties' => [
+            'balance_id' => [
+                'type'  => 'keyword',
+            ],
+        ],
+    ],
 
     'merchant_mapping'        => [
         '_all' => [
@@ -391,6 +397,9 @@ return [
                 'analyzer'        => 'edge_ngram_analyzer',
                 'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
+            ],
+            'type' => [
+                'type' => 'keyword',
             ],
             'created_at' => [
                 'type'   => 'date',

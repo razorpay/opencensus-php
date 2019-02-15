@@ -40,7 +40,8 @@ class Entity extends Base\PublicEntity
     const MOBILE_BANKING_ENABLED        = 'mobile_banking_enabled';
     const ACCOUNT_TYPE                  = 'account_type';
     const MPIN                          = 'mpin';
-    const FTS_ACCOUNT_ID                = 'fts_account_id';
+    const VIRTUAL                       = 'virtual';
+    const FTS_FUND_ACCOUNT_ID           = 'fts_fund_account_id';
 
     const NAME                          = 'name';
     const IFSC                          = 'ifsc';
@@ -211,6 +212,11 @@ class Entity extends Base\PublicEntity
         return $this->morphMany('RZP\Models\Payout\Entity', 'destination');
     }
 
+    public function isVirtual()
+    {
+        return ($this->getAttribute(self::VIRTUAL) === 1);
+    }
+
     public function getMpinSetAttribute()
     {
         return ($this->getAttribute(self::MPIN) !== null);
@@ -345,14 +351,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BENEFICIARY_COUNTRY);
     }
 
-    public function getBeneficiaryPin()
+    public function getFtsFundAccountId()
     {
-        return $this->getAttribute(self::BENEFICIARY_PIN);
-    }
-
-    public function getFTSAccountId()
-    {
-        return $this->getAttribute(self::FTS_ACCOUNT_ID);
+        return $this->getAttribute(self::FTS_FUND_ACCOUNT_ID);
     }
 
     public function setMobileBankingEnabled($mobileBankingEnabled)
@@ -385,9 +386,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::REGISTERED_BENEFICIARY_NAME, $name);
     }
 
-    public function setFTSAccountId($ftsAccountId)
+    public function setFtsFundAccountId($ftsFundAccountId)
     {
-        return $this->setAttribute(self::FTS_ACCOUNT_ID, $ftsAccountId);
+        return $this->setAttribute(self::FTS_FUND_ACCOUNT_ID, $ftsFundAccountId);
     }
 
     protected function setIfscAttribute($code)

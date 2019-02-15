@@ -118,6 +118,56 @@ class RefundTest extends TestCase
         $refund = $this->startTest($payment['id'], (string) $payment['amount']);
     }
 
+    public function testSuccessfulRefundOnCapturedPaymentWithVoidRefund()
+    {
+        $this->fixtures->merchant->addFeatures('void_refunds');
+
+        // With gateway that doesn't support reversal
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment');
+
+        $refund = $this->startTest($payment['id'], (string) $payment['amount']);
+    }
+
+    public function testSuccessfulPartialRefundOnCapturedPaymentWithVoidRefund()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' =>
+                [
+                    'non_recurring' => '1',
+                    'recurring_3ds' => '1',
+                    'recurring_non_3ds' => '1'
+                ]
+            ]);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->gateway = 'hitachi';
+
+        $this->mockCardVault();
+
+        $this->fixtures->merchant->addFeatures('void_refunds');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card'] = [
+            'number'       => CardNumber::VALID_ENROLL_NUMBER,
+            'expiry_month' => '02',
+            'expiry_year'  => '21',
+            'cvv'          => 123,
+            'name'         => 'Test Card'
+        ];
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment');
+
+        $refund = $this->startTest($payment['id'], (string) ($payment['amount'] / 2));
+    }
+
     public function testSuccessfulVoidRefund()
     {
         $this->fixtures->create('terminal:shared_hitachi_terminal', [
@@ -133,7 +183,7 @@ class RefundTest extends TestCase
 
         $this->gateway = 'hitachi';
 
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $this->fixtures->merchant->addFeatures('void_refunds');
 
@@ -150,6 +200,40 @@ class RefundTest extends TestCase
         $payment = $this->getLastEntity('payment');
 
         $refund = $this->startTest($payment['id'], (string) $payment['amount']);
+    }
+
+    public function testFailVoidPartialRefund()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' =>
+                [
+                    'non_recurring' => '1',
+                    'recurring_3ds' => '1',
+                    'recurring_non_3ds' => '1'
+                ]
+            ]);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->gateway = 'hitachi';
+
+        $this->mockCardVault();
+
+        $this->fixtures->merchant->addFeatures('void_refunds');
+
+        $payment = $this->defaultAuthPayment([
+            'card' => [
+                'number'       => CardNumber::VALID_ENROLL_NUMBER,
+                'expiry_month' => '02',
+                'expiry_year'  => '21',
+                'cvv'          => 123,
+                'name'         => 'Test Card'
+            ]
+        ]);
+
+        $payment = $this->getLastEntity('payment');
+
+        $refund = $this->startTest($payment['id'], (string) ($payment['amount']/2));
     }
 
     public function testRefundEditStatus()
@@ -1097,7 +1181,7 @@ class RefundTest extends TestCase
 
     public function testVerifyRefund()
     {
-        $this->markTestSkipped('HDFC on scrooge - verify Refund is called before first refund call - 
+        $this->markTestSkipped('HDFC on scrooge - verify Refund is called before first refund call -
         so verify refund related transaction is already created');
 
         // Case 1
@@ -1533,6 +1617,12 @@ class RefundTest extends TestCase
         $refund = $this->getLastEntity('refund', true);
 
         $this->assertEquals('hdfc', $refund['settled_by']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($refund['id'], $transaction['entity_id']);
+        $this->assertEquals(0, $transaction['debit']);
+        $this->assertEquals(0, $transaction['credit']);
     }
 
     public function startTest($paymentId = null, $amount = null)

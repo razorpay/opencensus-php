@@ -6,14 +6,14 @@ use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
-use RZP\Models\Adjustment;
 use RZP\Models\Base;
 use RZP\Models\Payment;
-use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
+use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
-use RZP\Trace\TraceCode;
+use RZP\Models\FundTransfer\Attempt;
 use RZP\Listeners\ApiEventSubscriber;
 
 class Core extends Base\Core
@@ -147,9 +147,81 @@ class Core extends Base\Core
         return $response;
     }
 
+    /**
+     * @param Entity $entity
+     * @param array  $ftaData
+     * @throws Exception\LogicException
+     */
+    public function updateStatusAfterFtaRecon(Entity $entity, array $ftaData)
+    {
+        $attemptStatus = $ftaData[Attempt\Constants::FTA_STATUS];
+
+        $attemptFailureReason = $ftaData[Attempt\Constants::FAILURE_REASON];
+
+        $status = $this->getDerivedStatus($entity, $attemptStatus);
+
+        $entity->setStatus($status);
+
+        $entity->setFailureReason($attemptFailureReason);
+
+        $this->repo->saveOrFail($entity);
+    }
+
+    public function updateStatusAfterFtaInitiated(Entity $entity, Attempt\Entity $fta)
+    {
+        $entity->batchFundTransfer()->associate($fta->batchFundTransfer);
+
+        $entity->setStatus(Status::INITIATED);
+
+        $this->repo->saveOrFail($entity);
+    }
+
+    public function updateWithDetailsBeforeFtaRecon(Entity $entity, array $ftaData)
+    {
+        $entity->setUtr($ftaData[Attempt\Constants::UTR]);
+
+        $entity->setRemarks($ftaData[Attempt\Constants::REMARKS]);
+
+        $this->trace->info(
+            TraceCode::FTA_RECON_SOURCE_UPDATED,
+            [
+                'source_id'         => $entity->getId(),
+                'fta_id'            => $ftaData[Attempt\Constants::FTA_ID],
+                'source_original'   => $entity->getOriginalAttributesAgainstDirty(),
+                'source_dirty'      => $entity->getDirty(),
+            ]);
+
+        $this->repo->saveOrFail($entity);
+    }
+
     public function getAccountBalance(string $channel): array
     {
         return $this->getNodalAccount($channel)->getAccountBalance();
+    }
+
+    /**
+     * @param Entity $entity
+     * @param string $ftaStatus
+     * @return mixed|string
+     * @throws Exception\LogicException
+     */
+    protected function getDerivedStatus(Entity $entity, string $ftaStatus)
+    {
+        switch ($ftaStatus)
+        {
+            case Attempt\Status::CREATED:
+            case Attempt\Status::INITIATED:
+                return $entity->getStatus();
+
+            case Attempt\Status::FAILED:
+                return Status::FAILED;
+
+            case Attempt\Status::PROCESSED:
+                return Status::PROCESSED;
+
+            default:
+                throw new Exception\LogicException('Unrecognized attempt status: ' . $ftaStatus);
+        }
     }
 
     protected function getAmountFromPaymentsForLastDay(string $gateway) : int

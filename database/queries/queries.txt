@@ -803,7 +803,7 @@ UPDATE bank_accounts SET type = "merchant", entity_id = merchant_id;
 
 ALTER TABLE orders
     DROP INDEX orders_receipt_index,
-    ADD INDEX orders_receipt_index (receipt(10)),
+    ADD INDEX orders_receipt_index (receipt(25)),
     ADD COLUMN payment_capture TINYINT(1) DEFAULT 0 AFTER receipt;
 
 ALTER TABLE pricing
@@ -4346,6 +4346,11 @@ ALTER TABLE payments
 ALTER TABLE axis
     ADD INDEX axis_refund_id_index (refund_id);
 
+# Bene name udpate for IRCTC refund (VA)
+UPDATE bank_accounts
+    SET beneficiary_name = 'MAA SHERAVALI SAMITI SEVA', updated_at = UNIX_TIMESTAMP(now())
+    WHERE id = 'AotxkoHq2buSM8' LIMIT 1
+
 #Changes for payout on demand
 ALTER TABLE payouts ADD COLUMN `type` char(30) not null default 'default' AFTER settled_on;
 
@@ -4643,6 +4648,10 @@ ALTER TABLE pricing
 ALTER TABLE fund_transfer_attempts
     MODIFY COLUMN source_type VARCHAR(255) DEFAULT NULL;
 
+ALTER TABLE merchant_banks
+    ADD COLUMN card_networks SMALLINT UNSIGNED DEFAULT 126 AFTER card
+    ADD INDEX card_networks_index (card_networks);
+
 # Shivam | 3-1-2019 | PAY-589 | Add column type to schedules table
 ALTER TABLE schedules
     ADD COLUMN type VARCHAR(255) DEFAULT NULL AFTER MERCHANT_ID,
@@ -4674,16 +4683,58 @@ ALTER TABLE terminals
 ALTER VIEW qubole_terminals_view AS
     SELECT id, merchant_id, category, network_category, enabled, gateway, gateway_merchant_id, gateway_terminal_id, gateway_acquirer, card, netbanking, upi, emandate, aeps, emi, recurring, capability, international, type, created_at, updated_at, deleted_at FROM terminal;
 
-ALTER TABLE vpas
-    ADD COLUMN fts_account_id INTEGER DEFAULT NULL AFTER merchant_id;
+
+ALTER TABLE balance
+    ADD INDEX balance_merchant_id_type_updated_at_index (merchant_id, type, updated_at);
+
+ALTER TABLE payouts
+    ADD COLUMN reference_id VARCHAR(255) DEFAULT NULL AFTER id,
+    ADD INDEX payouts_reference_id_index (reference_id(25));
+
+ALTER TABLE promotions
+    MODIFY COLUMN credit_amount int(11) NOT NULL DEFAULT 0;
+
+ALTER TABLE gateway_rule
+    ADD COLUMN authentication_gateway varchar(255) DEFAULT NULL AFTER category2,
+    ADD COLUMN auth_type varchar(14) DEFAULT NULL AFTER authentication_gateway;
+
+ALTER TABLE orgs
+    ADD COLUMN type varchar(255) DEFAULT NULL AFTER email;
+
+ALTER TABLE terminals
+    MODIFY COLUMN category CHAR(4);
+
+ALTER TABLE gateway_downtimes
+    ADD COLUMN acquirer VARCHAR(32) NOT NULL DEFAULT 'UNKNOWN' AFTER issuer,
+    ADD INDEX gateway_downtimes_acquirer_index (acquirer);
+
+ALTER TABLE paytm
+    MODIFY `txnid` varchar(255) DEFAULT NULL;
+
+ALTER TABLE paytm
+    MODIFY `request_type` varchar(255) COLLATE utf8_bin NULL;
+
+ALTER TABLE gateway_rules
+    ADD COLUMN authentication_gateway varchar(255) DEFAULT NULL AFTER category2,
+    ADD COLUMN auth_type varchar(14) DEFAULT NULL AFTER authentication_gateway,
+    ADD COLUMN step varchar(255) NOT NULL DEFAULT 'authorization' AFTER auth_type;
+
+ALTER TABLE contacts
+    ADD INDEX contacts_merchant_id_active_index (merchant_id, active);
+
+ALTER TABLE payments CHANGE `reference4` `cps_route` TINYINT(1);
 
 ALTER TABLE bank_accounts
-    ADD COLUMN fts_account_id INTEGER DEFAULT NULL AFTER beneficiary_mobile;
+    ADD COLUMN fts_fund_account_id INTEGER DEFAULT NULL AFTER beneficiary_mobile,
+    ADD INDEX `bank_accounts_fts_fund_account_id_index` (`fts_fund_account_id`);
+
+ALTER TABLE vpas
+    ADD COLUMN fts_fund_account_id INTEGER DEFAULT NULL AFTER merchant_id,
+    ADD INDEX `vpas_fts_fund_account_id_index` (`fts_fund_account_id`);
 
 ALTER TABLE fund_transfer_attempts
     ADD COLUMN fts_transfer_id INTEGER DEFAULT NULL AFTER status;
 
-#TODO::Adding fts_transfer_id in source table (need to add for refunds and penny testing as well)
 ALTER TABLE settlements
     ADD COLUMN fts_transfer_id INTEGER DEFAULT NULL AFTER status;
 

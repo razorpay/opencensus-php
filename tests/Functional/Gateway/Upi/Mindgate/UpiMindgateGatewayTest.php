@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\Upi\Mindgate;
 
 use RZP\Constants\Mode;
+use RZP\Gateway\Base\Metric;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
 use RZP\Models\Payment\Gateway;
@@ -14,6 +15,7 @@ use RZP\Exception\GatewayErrorException;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Tests\Functional\Fixtures\Entity\Terminal;
+use RZP\Tests\Functional\Helpers\MocksMetricTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -21,6 +23,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 class UpiMindgateGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use MocksMetricTrait;
     use DbEntityFetchTrait;
 
     /**
@@ -69,6 +72,8 @@ class UpiMindgateGatewayTest extends TestCase
      */
     public function testPayment($status = 'created')
     {
+        $metricDriver = $this->mockMetricDriver(Metric::DOGSTATSD_DRIVER);
+
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
 
         $paymentId = $response['payment_id'];
@@ -98,6 +103,20 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertNotNull($upiEntity['gateway_payment_id']);
         $this->assertSame('00', $upiEntity['status_code']);
 
+        // Here we are asserting for all both records i.e. authorize and callback
+        $this->assertArraySelectiveEquals([
+            [
+                Metric::DIMENSION_ACTION            => 'authorize',
+                Metric::DIMENSION_STATUS            => 'success',
+                Metric::DIMENSION_INSTRUMENT_TYPE   => 'collect',
+            ],
+            [
+                Metric::DIMENSION_ACTION            => 'callback',
+                Metric::DIMENSION_STATUS            => 'success',
+                Metric::DIMENSION_INSTRUMENT_TYPE   => 'collect',
+            ],
+        ], $metricDriver->metric(Metric::GATEWAY_REQUEST_COUNT));
+
         // Add a capture as well, just for completeness sake
         $this->capturePayment($paymentId, $payment['amount']);
 
@@ -106,6 +125,8 @@ class UpiMindgateGatewayTest extends TestCase
 
     public function testIntentPayment()
     {
+        $metricDriver = $this->mockMetricDriver(Metric::DOGSTATSD_DRIVER);
+
         $this->fixtures->create('terminal:shared_upi_mindgate_intent_terminal');
 
         unset($this->payment['description']);
@@ -148,6 +169,21 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertEquals('HDFC', $upi['bank']);
         $this->assertEquals('hdfc', $upi['acquirer']);
         $this->assertEquals('hdfcbank', $upi['provider']);
+
+        // Here we are asserting for all both records i.e. authorize and callback
+        $this->assertArraySelectiveEquals([
+            [
+                Metric::DIMENSION_ACTION            => 'authorize',
+                Metric::DIMENSION_STATUS            => 'success',
+                Metric::DIMENSION_INSTRUMENT_TYPE   => 'intent',
+            ],
+            [
+                Metric::DIMENSION_ACTION            => 'callback',
+                Metric::DIMENSION_STATUS            => 'success',
+                //TODO: This should be intent, fix this.
+                Metric::DIMENSION_INSTRUMENT_TYPE   => 'collect',
+            ],
+        ], $metricDriver->metric(Metric::GATEWAY_REQUEST_COUNT));
     }
 
     public function testIntentAuthorizeFailed()
@@ -658,6 +694,57 @@ class UpiMindgateGatewayTest extends TestCase
         $refund = $this->getLastEntity('refund', true);
 
         $this->assertEquals($refund['status'], 'processed');
+    }
+
+    public function testRetryRefundWithBankAccount()
+    {
+        $this->payment['vpa'] = 'failedrefund@hdfcbank';
+
+        $this->getFailureInVerifyRefund();
+
+        $payment = $this->testPayment();
+
+        $refund = $this->refundPayment($payment['id'], 10000);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->mockServerContentFunction(function (& $content, $action = null) use($refund)
+        {
+            if ($action === 'verify')
+            {
+                $content['status'] = 'FAILURE';
+            }
+
+            if ($action === 'refund')
+            {
+                $refundId = substr($refund['id'], 5);
+
+                $content[4] = 'SUCCESS';
+
+                $this->assertEquals($refundId . 1, $content[1]);
+            }
+        });
+
+        $bankAccountData =
+            [
+                'bank_account' => [
+                    'ifsc_code'         => '12345678911',
+                    'account_number'    => '123456789',
+                    'beneficiary_name'  => 'test'
+                ]
+            ];
+
+        $this->retryFailedRefund($refund['id'], $refund['payment_id'], $bankAccountData);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        // Assert for fta created for given refund
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fta['source'], $refund['id']);
+
+        // Refund will be in created state
+        $this->assertEquals($refund['status'], 'created');
     }
 
     public function testBankDetailsAreSaved()

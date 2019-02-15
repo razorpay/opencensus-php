@@ -36,23 +36,32 @@ class Vijaya extends Base
     {
         $merchant_data = [];
 
-        $date = Carbon::createFromTimestamp($data[0]['payment']['created_at'], Timezone::IST)->format('d-M-y');
-
         foreach ($data as $row)
         {
             $merchant_id = $row['payment']->getMerchantId();
 
+            $date = Carbon::createFromTimestamp($row['payment']['created_at'], Timezone::IST)->format('d-M-y');
+
             if (array_key_exists($merchant_id, $merchant_data) === true)
             {
-                $merchant_data[$merchant_id]['amount'] = $merchant_data[$merchant_id]['amount'] + $row['payment']['amount'];
+                if (array_key_exists($date, $merchant_data[$merchant_id]['amount']) === true)
+                {
+                    $merchant_data[$merchant_id]['amount'][$date] = $merchant_data[$merchant_id]['amount'][$date] + $row['payment']['amount'];
+                }
+                else
+                {
+                    $merchant_data[$merchant_id]['amount'][$date] = $row['payment']['amount'];
+                }
             }
             else
             {
                 $merchant = $this->repo->merchant->fetchMerchantFromEntity($row['payment']);
 
                 $merchant_data[$merchant_id] = [
-                    'name'    => $merchant->getBillingLabelNotName(),
-                    'amount'  => $row['payment']['amount']
+                    'name' => $merchant->getFilteredDba(),
+                    'amount' => [
+                        $date => $row['payment']['amount']
+                    ]
                 ];
             }
         }
@@ -62,20 +71,23 @@ class Vijaya extends Base
 
         foreach ($merchant_data as $merchant)
         {
-            $formattedData[] = [
-                self::SL_NO               => ++$index,
-                self::MERCHANT_NAME       => $merchant['name'],
-                self::COMPANY_PROFILE     => self::SERVICE,
-                self::STATUS              => self::LIVE,
-                self::BANK_SELECTION      => self::MERCHANT,
-                self::TARIFF_DETAILS      => 0,
-                self::TARIFF_TYPE         => '-',
-                self::TRANSACTION_DATE    => $date,
-                self::AMOUNT              => $this->getFormattedAmountString($merchant['amount'] / 100),
-                self::TOTAL_COMMISSION    => 0,
-                self::BANK_COMMISSION     => 0,
-                self::RAZORPAY_COMMISSION => 0,
-            ];
+            foreach ($merchant['amount'] as $date => $amount)
+            {
+                $formattedData[] = [
+                    self::SL_NO               => ++$index,
+                    self::MERCHANT_NAME       => $merchant['name'],
+                    self::COMPANY_PROFILE     => self::SERVICE,
+                    self::STATUS              => self::LIVE,
+                    self::BANK_SELECTION      => self::MERCHANT,
+                    self::TARIFF_DETAILS      => 0,
+                    self::TARIFF_TYPE         => '-',
+                    self::TRANSACTION_DATE    => $date,
+                    self::AMOUNT              => $this->getFormattedAmountString($amount / 100),
+                    self::TOTAL_COMMISSION    => 0,
+                    self::BANK_COMMISSION     => 0,
+                    self::RAZORPAY_COMMISSION => 0,
+                ];
+            }
         }
 
         $formattedData[] = $this->getFinalRow($formattedData);

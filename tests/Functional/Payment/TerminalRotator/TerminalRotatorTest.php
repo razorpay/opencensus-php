@@ -46,7 +46,7 @@ class TerminalRotatorTest extends TestCase
 
     public function testCheckoutMultipleAttempts()
     {
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $this->fixtures->times(5)->create('terminal:dynamic_shared_hdfc_terminal');
 

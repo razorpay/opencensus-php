@@ -268,7 +268,7 @@
           form.action = req.url;
           form.method = req.method;
           form.innerHTML = Object.keys(content)
-            .map(name => '<input name="' + name + '" value="' + content[name] + '">')
+            .map(function (name) { return '<input name="' + name + '" value="' + content[name] + '">' })
             .join('')
         } else {
           form.action = callback_url;

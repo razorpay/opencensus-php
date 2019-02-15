@@ -56,12 +56,18 @@ class Type
 
     const PARTNER_SUBMERCHANTS  = 'partner_submerchants';
 
+    const CONTACT               = 'contact';
+
+    const FUND_ACCOUNT          = 'fund_account';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
         // removed, since this may be necessary for the YesBank integration as well.
         //
         self::BANK_TRANSFER,
+        // Not exposed for direct use via api/dashbaord. Its processor is internally used by other batch types.
+        self::CONTACT,
     ];
 
     public static $appTypes = [
@@ -105,7 +111,9 @@ class Type
         self::ENTITY_MAPPING,
         self::AUTH_LINK,
         self::INSTANT_ACTIVATION,
-        self::TERMINAL
+        self::TERMINAL,
+        self::CONTACT,
+        self::FUND_ACCOUNT,
     ];
 
     /**
@@ -115,6 +123,7 @@ class Type
      * @var array
      */
     public static $kubernetesJobGroup = [
+        // Do not include PAYOUT, FUND_ACCOUNT & CONTACT because their implementation is not parallel execution ready.
         self::PAYMENT_LINK,
     ];
 

@@ -6,11 +6,10 @@ use RZP\Services\FTS\CreateAccount as BaseCreateAccount;
 
 class CreateAccount extends BaseCreateAccount
 {
-    public function createFundAccount(string $id, string $type): array
+    public function createFundAccount(string $id, string $type, string $product): array
     {
-        return
-            [
-                "message" => "fts created account successfully."
+        return [
+                'message' => 'fts created account successfully.'
             ];
     }
 }

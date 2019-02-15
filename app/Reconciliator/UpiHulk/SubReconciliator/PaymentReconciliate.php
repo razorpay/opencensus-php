@@ -53,12 +53,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         {
             $this->messenger->raiseReconAlert(
                 [
-                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
-                    'info_code'       => Base\InfoCode::PAYMENT_ABSENT,
-                    'payment_id'      => $npciTxnId,
-                    'row'             => $row,
-                    'gateway'         => $this->gateway,
-                    'message'         => $message,
+                    'trace_code'            => TraceCode::RECON_INFO_ALERT,
+                    'info_code'             => Base\InfoCode::PAYMENT_ABSENT,
+                    'payment_reference_id'  => $npciTxnId,
+                    'gateway'               => $this->gateway,
+                    'message'               => $message,
                 ]);
 
             return null;
@@ -96,7 +95,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     'expected_amount' => $this->payment->getBaseAmount(),
                     'recon_amount'    => $this->getReconPaymentAmount($row),
                     'currency'        => $this->payment->getCurrency(),
-                    'row'             => $row,
                     'gateway'         => $this->gateway
                 ]);
 

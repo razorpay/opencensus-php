@@ -121,6 +121,17 @@ trait Authorize
         }
     }
 
+    protected function setAuthenticationGatewayViaGatewayRules(Payment\Entity $payment, array & $gatewayInput)
+    {
+        $this->trace->info(
+            TraceCode::AUTH_SELECTION_VIA_GATEWAY_RULES,
+            [
+                'payment_id'        => $payment->getId(),
+            ]);
+
+        (new TerminalProcessor)->setAuthenticationGateway($payment, $gatewayInput);
+    }
+
     protected function hitGatewayIfRequired(Payment\Entity $payment, array $input, array $gatewayInput)
     {
         //
@@ -158,7 +169,6 @@ trait Authorize
         }
 
         $request = $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
-
 
         $this->runShieldCheck($payment);
 
@@ -225,7 +235,7 @@ trait Authorize
 
             try
             {
-                if ($this->canRunOtpPaymentFlow($payment) === true)
+                if ($this->canRunOtpPaymentFlow($payment, $terminalGatewayInput) === true)
                 {
                     $request = $this->callGatewayFunction(Action::OTP_GENERATE, $terminalGatewayInput);
                 }
@@ -273,6 +283,8 @@ trait Authorize
                 $internalErrorCode = $payment->getInternalErrorCode();
 
                 $this->logRiskFailureForGateway($payment, $internalErrorCode);
+
+                $this->disableIinFlowIfApplicable($payment, $internalErrorCode);
 
                 throw $e;
             }
@@ -1437,9 +1449,9 @@ trait Authorize
 
     protected function runPostGatewaySelectionPreProcessing(Payment\Entity $payment, array & $gatewayInput)
     {
-        $this->setAuthenticationGateway($payment, $gatewayInput);
+        $this->setAuthAndAuthenticationGateway($payment, $gatewayInput);
 
-        $this->setAuthTypeInPayment($payment);
+        $this->setPaymentRoutedThroughCpsIfApplicable($payment);
 
         $this->repo->saveOrFail($payment);
 
@@ -1478,9 +1490,38 @@ trait Authorize
      * @param Payment\Entity $payment
      * @param array $gatewayInput
      */
-    protected function setAuthenticationGateway(Payment\Entity $payment, array & $gatewayInput)
+    protected function setAuthAndAuthenticationGateway(Payment\Entity $payment, array & $gatewayInput)
     {
-        //
+        try
+        {
+            if (($payment->isMethodCardOrEmi()   === true) and
+                ($payment->isSecondRecurring()   === false) and
+                ($payment->isPushPaymentMethod() === false))
+            {
+                $response = $this->app->razorx->getTreatment($payment->merchant->getId(), 'authentication_via_gateway_rules', $this->mode);
+
+                if (strtolower($response) === 'on')
+                {
+                   $this->setAuthenticationGatewayViaGatewayRules($payment, $gatewayInput);
+
+                    $this->setAuthInPaymentViaGatewayRules($payment, $gatewayInput);
+
+                    return;
+                }
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::CRITICAL,
+                TraceCode::AUTH_SELECTION_FAILURE,
+                [
+                    'payment_id'  => $payment->getId(),
+                ]
+            );
+        }
+
         // Keeping this condition for backward compatibility
         // @todo: Remove the authorization gateway check once it's live
         //
@@ -1564,6 +1605,33 @@ trait Authorize
                     }
                     break;
             }
+        }
+
+        $this->setAuthTypeInPayment($payment);
+    }
+
+    protected function setAuthInPaymentViaGatewayRules(Payment\Entity $payment, array $gatewayInput)
+    {
+        $payment->setAuthType(null);
+
+        if (empty($gatewayInput['auth_type']) === true)
+        {
+            return;
+        }
+
+        if ($gatewayInput['auth_type'] === Payment\AuthType::PIN)
+        {
+            $payment->setAuthType(Payment\AuthType::PIN);
+        }
+
+        $otpAuth = [
+            Payment\AuthType::IVR,
+            Payment\AuthType::OTP,
+        ];
+
+        if (in_array($gatewayInput['auth_type'], $otpAuth, true) === true)
+        {
+            $payment->setAuthType(Payment\AuthType::OTP);
         }
     }
 
@@ -4104,7 +4172,7 @@ trait Authorize
      *
      * @return bool
      */
-    protected function canRunOtpPaymentFlow(Payment\Entity $payment): bool
+    protected function canRunOtpPaymentFlow(Payment\Entity $payment, array $gatewayInput = []): bool
     {
         // All the IVR terminal use Otp payment flow regardless of their method
         if ($payment->terminal->isIvr() === true)
@@ -4118,6 +4186,23 @@ trait Authorize
         {
             if ($payment->card->iinRelation !== null)
             {
+                $authType = $payment->getAuthType();
+
+                if (empty($gatewayInput['auth_type']) === false)
+                {
+                    if ($gatewayInput['auth_type'] === Payment\AuthType::OTP)
+                    {
+                        return true;
+                    }
+
+                    if ($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP)
+                    {
+                        return true;
+                    }
+
+                    return false;
+                }
+
                 //
                 // This check is specifically for Hitachi Axis Expresspay
                 // Also, the order of the checks matter here since the second
@@ -4203,7 +4288,7 @@ trait Authorize
         return false;
     }
 
-    protected function canRunIvrFlow(Payment\Entity $payment)
+    protected function  canRunIvrFlow(Payment\Entity $payment)
     {
         if (($payment->merchant->isFeatureEnabled(Feature\Constants::IVR) === true) and
             ($payment->card->iinRelation !== null) and
@@ -4973,8 +5058,17 @@ trait Authorize
 
         if (empty($input[Payment\Entity::TOKEN]) === true)
         {
+            /*
+             * In Maestro card sometimes cvv will be null and
+             * persistCardDetailsTemporarily will fail if we use $input
+             * Card\Entity::modifyMaestro will add dummy cvv and save it in
+             * gatewayInput, so we are using gateway input to persist card details
+             */
+            $gatewayInput['payment']['id'] = $payment->getId();
+
             // storing card details for fallback/redirect purpose
-            $this->persistCardDetailsTemporarily($input);
+            $this->persistCardDetailsTemporarily($gatewayInput);
+
             unset($input['card']['number']);
             unset($input['card']['cvv']);
         }
@@ -4986,14 +5080,14 @@ trait Authorize
     {
         $merchant = $payment->merchant;
 
-        if (($this->app['basicauth']->isPrivateAuth() === false) or
-            ($merchant->isFeatureEnabled(Feature\Constants::REDIRECT_S2S_AUTHORIZE) === false))
+        if ($this->app['basicauth']->isPrivateAuth() === false)
         {
             return null;
         }
 
         if (($payment->isMethodCardOrEmi() === false) or
-            ($payment->isRecurring() === true))
+            ($payment->isRecurring() === true) or
+            ($payment->isPushPaymentMethod() === true))
         {
             return null;
         }
@@ -5006,19 +5100,12 @@ trait Authorize
             return null;
         }
 
-        $response = $this->app->razorx->getTreatment($merchant->getId(), 'redirect_to_authorize', $this->mode);
-
-        if (($response === 'control') or
-            ($response === 'off'))
-        {
-            return null;
-        }
-
         $payload = [
             'merchant_id' => $payment->getMerchantId(),
             'payment_id' => $payment->getPublicId(),
             'mode'  => $this->mode,
             'public_key' => $this->app['basicauth']->getPublicKey(),
+            'account_id' => $this->app['basicauth']->authCreds->creds['account_id'],
         ];
 
         // encrypt with key
@@ -5030,7 +5117,7 @@ trait Authorize
 
         $this->cache->put($key, $encryptedPayload, self::REDIRECT_CACHE_TTL);
 
-        $redirectUrl = $this->route->getUrl('payment_redirect_to_authoize', ['id' => $trackId]);
+        $redirectUrl = $this->route->getUrl('payment_redirect_to_authorize_get', ['id' => $trackId]);
 
         $data['type'] = 'first';
 

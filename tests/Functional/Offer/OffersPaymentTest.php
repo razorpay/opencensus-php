@@ -19,7 +19,7 @@ class OffersPaymentTest extends TestCase
 
         $this->ba->proxyAuth();
 
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         // This is set to 1 March 2018. Because in test
         // cases offers start date is set to Feb 2018

@@ -10,10 +10,6 @@ final class Constants
 
     const TYPE                          = 'type';
 
-    const MODE                          = 'mode';
-
-    const FA_ID                         = 'fa_id';
-
     const HANDLE                        = 'handle';
 
     const AMOUNT                        = 'amount';
@@ -28,8 +24,6 @@ final class Constants
 
     const PRODUCT                       = 'product';
 
-    const TRANSFER                      = 'transfer';
-
     const USERNAME                      = 'username';
 
     const NARRATION                     = 'narration';
@@ -40,9 +34,15 @@ final class Constants
 
     const INITIATE_AT                   = 'initiate_at';
 
+    const IFSC_CODE                     = 'ifsc_code';
+
     const MERCHANT_ID                   = 'merchant_id';
 
     const BANK_ACCOUNT                  = 'bank_account';
+
+    const ACCOUNT_TYPE                  = 'account_type';
+
+    const ACCOUNT_NUMBER                = 'account_number';
 
     const FUND_ACCOUNT_ID               = 'fund_account_id';
 
@@ -58,23 +58,19 @@ final class Constants
 
     const BENEFICIARY_CITY              = 'beneficiary_city';
 
+    const BENEFICIARY_EMAIL             = 'beneficiary_email';
+
     const BENEFICIARY_STATE             = 'beneficiary_state';
 
     const BENEFICIARY_MOBILE            = 'beneficiary_mobile';
+
+    const IS_VIRTUAL_ACCOUNT            = 'is_virtual_account';
 
     const BENEFICIARY_ADDRESS           = 'beneficiary_address';
 
     const BENEFICIARY_COUNTRY           = 'beneficiary_country';
 
-    const BENEFICIARY_EMAIL_ID          = 'beneficiary_email_id';
-
-    const BENEFICIARY_IFSC_CODE         = 'beneficiary_ifsc_code';
-
     const BENEFICIARY_BANK_NAME         = 'beneficiary_bank_name';
 
     const FUND_ACCOUNT_VALIDATION       = 'fund_account_validation';
-
-    const BENEFICIARY_ACCOUNT_TYPE      = 'beneficiary_account_type';
-
-    const BENEFICIARY_ACCOUNT_NUMBER    = 'beneficiary_account_number';
 }

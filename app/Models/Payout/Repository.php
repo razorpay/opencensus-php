@@ -287,7 +287,8 @@ class Repository extends Base\Repository
         // Additionally checks if payout's contact exists.
         // Because otherwise there is nothing required to be indexed, rest are just common assisting attributes.
         //
-        return ((($entity === null) or (optional($entity->fundAccount)->getSourceType() === E::CONTACT)) and
+        return ((($entity === null) or
+                 (optional($entity->fundAccount)->getSourceType() === E::CONTACT)) and
                 (parent::isEsSyncNeeded($action, $dirty, $entity) === true));
     }
 

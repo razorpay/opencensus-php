@@ -135,6 +135,18 @@ class ApiServiceProvider extends BaseServiceProvider
             return new CardVault($app);
         });
 
+        $this->app->singleton('cps', function($app)
+        {
+            $cpsMock = $app['config']->get('applications.cps.mock');
+
+            if ($cpsMock === true)
+            {
+                return new Mock\CorePaymentService($app);
+            }
+
+            return new CorePaymentService($app);
+        });
+
         $this->app->singleton('card.otpelf', function($app)
         {
             $mock = $app['config']->get('applications.otpelf.mock');
@@ -250,9 +262,9 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerKubernetesClient();
 
-        $this->registerCustomSessionProvider();
-
         $this->registerFTSCreateAccount();
+
+        $this->registerFTSRegisterAccount();
 
         $this->registerFTSFundTransfer();
     }
@@ -291,6 +303,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'shield.service',
             'beam',
             'fts_create_account',
+            'fts_register_account',
             'fts_fund_transfer',
         ];
     }
@@ -475,6 +488,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'contact'                   => Contact\Entity::class,
 
             'entity_origin'             => EntityOrigin\Entity::class,
+
             'application'               => Application\Entity::class,
         ]);
     }
@@ -635,15 +649,6 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
-    protected function registerCustomSessionProvider()
-    {
-        $manager = $this->app['session'];
-
-        $manager->extend('custom', function($app) {
-            return new CustomSessionHandler($app);
-        });
-    }
-
     protected function registerFTSCreateAccount()
     {
         $this->app->bind('fts_create_account', function($app)
@@ -651,6 +656,18 @@ class ApiServiceProvider extends BaseServiceProvider
             $mock = $app['config']->get('applications.fts.mock');
 
             $implementation = $mock ? Mock\FTS\CreateAccount::class : FTS\CreateAccount::class;
+
+            return new $implementation($app);
+        });
+    }
+
+    protected function registerFTSRegisterAccount()
+    {
+        $this->app->bind('fts_register_account', function($app)
+        {
+            $mock = $app['config']->get('applications.fts.mock');
+
+            $implementation = $mock ? Mock\FTS\RegisterAccount::class : FTS\RegisterAccount::class;
 
             return new $implementation($app);
         });

@@ -191,6 +191,7 @@ class Name
     const ES_WRITE_OPERATION                  = 'es_write_operation';
     const OAUTH_SYNC_MERCHANT_MAP             = 'oauth_sync_merchant_map';
     const ADMIN_BATCH_CREATE                  = 'admin_batch_create';
+    const ADMIN_FILE_UPLOAD                   = 'admin_bank_file_upload';
     const EDIT_PARTNERS                       = 'edit_partners';
     const VIEW_PARTNERS                       = 'view_partners';
     const EDIT_REFUND                         = 'edit_refund';
@@ -199,8 +200,10 @@ class Name
     const CREATE_VIRTUAL_ACCOUNTS             = 'create_virtual_accounts';
     const CREATE_SELF_SERVE_REPORT            = 'create_self_serve_report';
     const CREATE_GATEWAY_DOWNTIME             = 'create_gateway_downtime';
+    const VIEW_GATEWAY_DOWNTIME               = 'view_gateway_downtime';
     const UPDATE_GATEWAY_DOWNTIME             = 'update_gateway_downtime';
     const CREATE_PROMOTION_COUPON             = 'create_promotion_coupon';
+    const RAZORX_APPROVERS                    = 'razorx_approvers';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,

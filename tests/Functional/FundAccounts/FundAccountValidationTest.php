@@ -7,6 +7,7 @@ use Mockery;
 
 use RZP\Models\Merchant\Webhook;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\FundAccount\Validation\Constants;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
@@ -27,7 +28,7 @@ class FundAccountValidationTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['fund_account_validations']);
 
-        $this->addFeeCredits(['value' => 10000, 'campaign' => 'silent-ads']);
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'postpaid']);
 
         $this->ba->privateAuth();
     }
@@ -52,8 +53,7 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals($fav['id'], $fta['source']);
         $this->assertEquals($bankAccount['id'], 'ba_'.$fta['bank_account_id']);
 
-        $msg = \RZP\Models\FundAccount\Validation\Processor\BankAccount::PENNY_TESTING_NARRATION;
-        $this->assertEquals($msg, $fta['narration']);
+        $this->assertNotNull($fta['narration']);
 
         return $response;
     }
@@ -78,38 +78,6 @@ class FundAccountValidationTest extends TestCase
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_bearer' => 'customer']);
 
         $this->createValidationWithFundAccountEntity();
-
-        $fav = $this->getLastEntity('fund_account_validation', true);
-
-        $txn = $this->getLastEntity('transaction', true);
-        $this->assertEquals($fav['id'], $txn['entity_id']);
-        $this->assertEquals('fund_account_validation', $txn['type']);
-        $this->assertEquals('platform', $txn['fee_bearer']);
-    }
-
-    public function testFeeForFundAccountValidation()
-    {
-        $this->createValidationWithFundAccountEntity();
-
-        $fav = $this->getLastEntity('fund_account_validation', true);
-        // Default pricing has rule 1zE31zbybacab4 with fixed rate 300
-        $this->assertEquals(354, $fav['fees']);
-        $this->assertEquals(54, $fav['tax']);
-    }
-
-    public function testTransactionForFundAccountValidation()
-    {
-        $this->createValidationWithFundAccountEntity();
-
-        $fav = $this->getLastEntity('fund_account_validation', true);
-
-        $txn = $this->getLastEntity('transaction', true);
-        $this->assertEquals($fav['id'], $txn['entity_id']);
-        $this->assertEquals('fund_account_validation', $txn['type']);
-        $this->assertEquals('platform', $txn['fee_bearer']);
-        $this->assertEquals(354, $txn['fee']);
-        $this->assertEquals(354, $txn['mdr']);
-        $this->assertEquals(54, $txn['tax']);
     }
 
     public function testGetValidations()
@@ -121,7 +89,140 @@ class FundAccountValidationTest extends TestCase
         $this->startTest();
     }
 
-    public function testFundAccValidationReconUpdate()
+    public function testFundAccValidationWithReconOnPrepaidModelWithFeeCredits()
+    {
+        $this->addFeeCredits(['value' => 10000, 'campaign' => 'silent-ads']);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $this->createValidationWithFundAccountEntity();
+
+        $this->initiateTransferAndReconcile();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+        $this->assertEquals('completed', $fav['status']);
+        $this->assertEquals('active', $fav['results']['account_status']);
+        $this->assertEquals(354, $fav['fees']);
+        $this->assertEquals(54, $fav['tax']);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals($fav['id'], $txn['entity_id']);
+        $this->assertEquals('fund_account_validation', $txn['type']);
+        $this->assertEquals('platform', $txn['fee_bearer']);
+        $this->assertEquals('prepaid', $txn['fee_model']);
+        $this->assertEquals(true, $txn['settled']);
+        $this->assertEquals(354, $txn['fee']);
+        $this->assertEquals(354, $txn['mdr']);
+        $this->assertEquals(54, $txn['tax']);
+        $this->assertEquals(0, $txn['debit']);
+        $this->assertEquals($fav['amount'], $txn['amount']);
+
+        $this->assertEquals(354, $txn['fee_credits']);
+        $this->assertEquals('fee', $txn['credit_type']);
+    }
+
+    public function testFundAccValidationWhenFailedDuringRecon()
+    {
+        $this->addFeeCredits(['value' => 10000, 'campaign' => 'silent-ads']);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $this->createValidationWithFundAccountEntity();
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        // Right now we are charging even though failure reason could be internal.TODO: fix
+        $this->fixtures->merchant->editEntity('fund_transfer_attempt', $fta['id'], ['status' => 'initiated', 'bank_status_code' => 'FAILED']);
+
+        $this->reconcileEntitiesForChannel('yesbank');
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+        $this->assertEquals('completed', $fav['status']);
+        $this->assertEquals('invalid', $fav['results']['account_status']);
+        $this->assertEquals(354, $fav['fees']);
+        $this->assertEquals(54, $fav['tax']);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals($fav['id'], $txn['entity_id']);
+        $this->assertEquals('fund_account_validation', $txn['type']);
+        $this->assertEquals('platform', $txn['fee_bearer']);
+        $this->assertEquals('prepaid', $txn['fee_model']);
+        $this->assertEquals(true, $txn['settled']);
+        $this->assertEquals(354, $txn['fee']);
+        $this->assertEquals(354, $txn['mdr']);
+        $this->assertEquals(54, $txn['tax']);
+        $this->assertEquals(0, $txn['debit']);
+        $this->assertEquals($fav['amount'], $txn['amount']);
+
+        $this->assertEquals(354, $txn['fee_credits']);
+        $this->assertEquals('fee', $txn['credit_type']);
+    }
+
+    public function testFundAccValidationWithReconOnPostpaidModelWithFeeCredits()
+    {
+        $this->addFeeCredits(['value' => 10000, 'campaign' => 'silent-ads']);
+
+        $this->ba->privateAuth();
+
+        $this->createValidationWithFundAccountEntity();
+
+        $this->initiateTransferAndReconcile();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+        $this->assertEquals('completed', $fav['status']);
+        $this->assertEquals('active', $fav['results']['account_status']);
+        $this->assertEquals(354, $fav['fees']);
+        $this->assertEquals(54, $fav['tax']);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals($fav['id'], $txn['entity_id']);
+        $this->assertEquals('fund_account_validation', $txn['type']);
+        $this->assertEquals('platform', $txn['fee_bearer']);
+        $this->assertEquals('postpaid', $txn['fee_model']);
+        $this->assertEquals(true, $txn['settled']);
+        $this->assertEquals(354, $txn['fee']);
+        $this->assertEquals(354, $txn['mdr']);
+        $this->assertEquals(54, $txn['tax']);
+        $this->assertEquals(0, $txn['debit']);
+        $this->assertEquals($fav['amount'], $txn['amount']);
+
+        $this->assertEquals(354, $txn['fee_credits']);
+        $this->assertEquals('fee', $txn['credit_type']);
+    }
+
+    public function testFundAccValidationWithCustomerFeeBearer()
+    {
+        $this->testCreateValidationForCustomerFeeBearer();
+
+        $this->initiateTransferAndReconcile();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+        $this->assertEquals('completed', $fav['status']);
+        $this->assertEquals('active', $fav['results']['account_status']);
+        $this->assertEquals(354, $fav['fees']);
+        $this->assertEquals(54, $fav['tax']);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals($fav['id'], $txn['entity_id']);
+        $this->assertEquals('fund_account_validation', $txn['type']);
+        $this->assertEquals('platform', $txn['fee_bearer']);
+        $this->assertEquals('postpaid', $txn['fee_model']);
+        $this->assertEquals(true, $txn['settled']);
+        $this->assertEquals(354, $txn['fee']);
+        $this->assertEquals(354, $txn['mdr']);
+        $this->assertEquals(54, $txn['tax']);
+        $this->assertEquals($fav['amount'], $txn['amount']);
+        $this->assertEquals(0, $txn['debit']);
+
+        $this->assertEquals(0, $txn['fee_credits']);
+        $this->assertEquals('default', $txn['credit_type']);
+    }
+
+    public function testFundAccValidationWithReconOnPostpaidModelWithNoFeeCredits()
     {
         $this->createValidationWithFundAccountEntity();
 
@@ -130,6 +231,64 @@ class FundAccountValidationTest extends TestCase
         $fav = $this->getLastEntity('fund_account_validation', true);
         $this->assertEquals('completed', $fav['status']);
         $this->assertEquals('active', $fav['results']['account_status']);
+        $this->assertEquals(354, $fav['fees']);
+        $this->assertEquals(54, $fav['tax']);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals($fav['id'], $txn['entity_id']);
+        $this->assertEquals('fund_account_validation', $txn['type']);
+        $this->assertEquals('platform', $txn['fee_bearer']);
+        $this->assertEquals('postpaid', $txn['fee_model']);
+        $this->assertEquals(true, $txn['settled']);
+        $this->assertEquals(354, $txn['fee']);
+        $this->assertEquals(354, $txn['mdr']);
+        $this->assertEquals(54, $txn['tax']);
+        $this->assertEquals($fav['amount'], $txn['amount']);
+        $this->assertEquals(0, $txn['debit']);
+        $this->assertEquals(1000000, $txn['balance']);
+
+        $this->assertEquals(0, $txn['fee_credits']);
+        $this->assertEquals('default', $txn['credit_type']);
+    }
+
+    public function testFundAccValidationWithReconOnPrepaidModelWithNoFeeCredits()
+    {
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $this->createValidationWithFundAccountEntity();
+
+        $this->initiateTransferAndReconcile();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+        $this->assertEquals('completed', $fav['status']);
+        $this->assertEquals('active', $fav['results']['account_status']);
+        $this->assertEquals(354, $fav['fees']);
+        $this->assertEquals(54, $fav['tax']);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals($fav['id'], $txn['entity_id']);
+        $this->assertEquals('fund_account_validation', $txn['type']);
+        $this->assertEquals('platform', $txn['fee_bearer']);
+        $this->assertEquals('prepaid', $txn['fee_model']);
+        $this->assertEquals(true, $txn['settled']);
+        $this->assertEquals(354, $txn['fee']);
+        $this->assertEquals(354, $txn['mdr']);
+        $this->assertEquals(54, $txn['tax']);
+        $this->assertEquals($fav['amount'], $txn['amount']);
+        $this->assertEquals(354, $txn['debit']);
+        $this->assertEquals(1000000 - 354, $txn['balance']);
+
+        $this->assertEquals(0, $txn['fee_credits']);
+        $this->assertEquals('default', $txn['credit_type']);
+    }
+
+    public function testFundAccValidationOnPrepaidModelWithNoFeeCreditsAndNoBalance()
+    {
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $this->fixtures->merchant->editBalance('0');
+
+        $this->startTest();
     }
 
     public function testWebhookFundAccountValidationCompleted()
@@ -183,8 +342,7 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals($fav['id'], $fta['source']);
         $this->assertEquals($bankAccount['id'], 'ba_'.$fta['bank_account_id']);
 
-        $msg = \RZP\Models\FundAccount\Validation\Processor\BankAccount::PENNY_TESTING_NARRATION;
-        $this->assertEquals($msg, $fta['narration']);
+        $this->assertNotNull($fta['narration']);
 
         return $response;
     }

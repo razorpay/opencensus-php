@@ -47,7 +47,7 @@ class ReconciliationFileTest extends TestCase
 
         $this->recurringPayment = $this->getDefaultRecurringPaymentArray();
 
-        $this->mockTokenex();
+        $this->mockCardVault();
     }
 
     public function testFirstDataReconPaymentFile()
@@ -1684,6 +1684,8 @@ class ReconciliationFileTest extends TestCase
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
 
+        $this->fixtures->merchant->enableCardNetwork('10000000000000', 'amex');
+
         $this->payment = $this->getDefaultPaymentArray();
 
         $this->payment['card']['number'] = '341111111111111';
@@ -1742,6 +1744,8 @@ class ReconciliationFileTest extends TestCase
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
+
+        $this->fixtures->merchant->enableCardNetwork('10000000000000', 'amex');
 
         $this->payment = $this->getDefaultPaymentArray();
 

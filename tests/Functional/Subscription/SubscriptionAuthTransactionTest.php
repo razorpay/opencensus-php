@@ -36,7 +36,7 @@ class SubscriptionAuthTransactionTest extends TestCase
 
         $this->fixtures->create('terminal:shared_cybersource_hdfc_recurring_terminals');
 
-        $this->mockTokenex();
+        $this->mockCardVault();
     }
 
     public function testSubscriptionAuthTxnNormalWithStartAt()

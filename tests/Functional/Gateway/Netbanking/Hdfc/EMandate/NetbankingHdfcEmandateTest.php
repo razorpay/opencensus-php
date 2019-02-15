@@ -50,7 +50,7 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $this->gateway = 'netbanking_hdfc';
 
-        $this->mockTokenex();
+        $this->mockCardVault();
     }
 
     /**

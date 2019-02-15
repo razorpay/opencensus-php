@@ -100,12 +100,13 @@ class Netbanking
         IFSC::INDB,
         IFSC::CSBK,
         IFSC::ALLA,
+        IFSC::IDFB,
     ];
 
     protected static $gatewaySupportedBanks = [
         Gateway::BILLDESK => [
             'retail' => [
-                IFSC::ALLA,
+                IFSC::ABPB,
                 IFSC::ANDB,
                 IFSC::BBKM,
                 IFSC::BKDN,
@@ -113,14 +114,12 @@ class Netbanking
                 IFSC::CBIN,
                 IFSC::CIUB,
                 IFSC::CNRB,
-                IFSC::CORP,
                 IFSC::COSB,
                 IFSC::DCBL,
                 IFSC::DCBL,
                 IFSC::DEUT,
                 IFSC::DLXB,
                 IFSC::DBSS,
-                IFSC::IDFB,
                 // IFSC::FDRL,
                 IFSC::IBKL,
                 IFSC::IDIB,
@@ -129,7 +128,6 @@ class Netbanking
                 IFSC::JAKA,
                 IFSC::JSBP,
                 IFSC::KARB,
-                IFSC::KKBK,
                 IFSC::KVBL,
                 IFSC::MAHB,
                 IFSC::NKGS,
@@ -153,7 +151,6 @@ class Netbanking
                 IFSC::UBIN,
                 IFSC::UCBA,
                 IFSC::UTBI,
-                IFSC::UTIB,
                 IFSC::VIJB,
                 IFSC::YESB,
                 // self::BARB_R,
@@ -189,7 +186,6 @@ class Netbanking
                 IFSC::CNRB,
                 IFSC::CBIN,
                 IFSC::CIUB,
-                IFSC::CORP,
                 IFSC::DCBL,
                 IFSC::DEUT,
                 IFSC::DLXB,
@@ -249,7 +245,6 @@ class Netbanking
                 IFSC::ANDB,
                 IFSC::CBIN,
                 IFSC::CNRB,
-                IFSC::CORP,
                 IFSC::DLXB,
                 // IFSC::FDRL,
                 IFSC::IDIB,
@@ -257,7 +252,6 @@ class Netbanking
                 // IFSC::INDB,
                 IFSC::JAKA,
                 IFSC::KARB,
-                IFSC::KKBK,
                 IFSC::MAHB,
                 // IFSC::ORBC,
                 IFSC::PSIB,
@@ -269,7 +263,6 @@ class Netbanking
                 IFSC::YESB,
                 self::LAVB_R,
                 self::PUNB_R,
-                IFSC::UTIB,
                 IFSC::BKID,
                 IFSC::CIUB,
 
@@ -338,6 +331,9 @@ class Netbanking
         ],
         Gateway::NETBANKING_IDFC => [
             'retail' => [
+                IFSC::IDFB
+            ],
+            'tpv' => [
                 IFSC::IDFB
             ]
         ],

@@ -2,25 +2,27 @@
 
 namespace RZP\Services\FTS;
 
+use RZP\Models\Vpa;
+use RZP\Models\BankAccount;
 use RZP\Exception\LogicException;
-use RZP\Models\Vpa\Core as VPACore;
-use RZP\Models\BankAccount\Core as BankAccountCore;
 
 class CreateAccount extends Base
 {
     protected $account;
 
+    protected $vpaCore;
+
     protected $bankAccountCore;
 
-    protected $vpaCore;
+    protected $product;
 
     public function __construct($app)
     {
         parent::__construct($app);
 
-        $this->bankAccountCore = new BankAccountCore;
+        $this->vpaCore = new Vpa\Core;
 
-        $this->vpaCore = new VPACore;
+        $this->bankAccountCore = new BankAccount\Core;
     }
 
     /**
@@ -29,22 +31,26 @@ class CreateAccount extends Base
      *
      * @param string $id
      * @param string $type
-     * @param bool $throwExceptionOnFailure
+     * @param string $product
      * @return array
      * @throws LogicException
      * @throws \RZP\Exception\RuntimeException
+     * @throws \Throwable
      */
-    public function createFundAccount(string $id, string $type): array
+    public function createFundAccount(string $id, string $type, string $product): array
     {
+        $this->product = $product;
+
         $input = $this->makeRequestUsingType($id, $type);
 
-        $response = $this->createAndSendRequest(parent::FundAccountBaseURL, 'POST', $input);
+        $response = $this->createAndSendRequest(parent::FUND_ACCOUNT_BASE_URL, 'POST', $input);
 
-        $ftsAccountId = array_key_exists(Constants::FA_ID, $response['body']) ? $response['body'][Constants::FA_ID] : null;
+        $ftsFundAccountId = array_key_exists(Constants::FUND_ACCOUNT_ID, $response['body']) ?
+            $response['body'][Constants::FUND_ACCOUNT_ID] : null;
 
-        if(empty(trim($ftsAccountId)) === false)
+        if(empty(trim($ftsFundAccountId)) === false)
         {
-            $this->saveFTSAccountId($ftsAccountId, $type);
+            $this->saveFtsAccountId($ftsFundAccountId, $type);
         }
 
         return $response;
@@ -56,6 +62,8 @@ class CreateAccount extends Base
      *
      * @param string $id
      * @param string $type
+     * @return mixed
+     * @throws LogicException
      */
     public function makeRequestUsingType(string $id, string $type)
     {
@@ -71,15 +79,17 @@ class CreateAccount extends Base
                 break;
 
             case Constants::VPA:
-                $this->account = $this->vpaCore->getVPAEntity($id);
+                $this->account = $this->vpaCore->getVpaEntity($id);
 
-                $request[Constants::VPA] = $this->getVPADetails($this->account);
+                $request[Constants::VPA] = $this->getVpaDetails($this->account);
 
                 break;
 
             default:
-                throw new LogicException('Type is not supported ' . $type);
+                throw new LogicException('Account Type is not supported ' . $type);
         }
+
+        return $request;
     }
 
     /**
@@ -89,26 +99,23 @@ class CreateAccount extends Base
      * @param $ba
      * @return array
      */
-    public function getAccountDetails($ba):array
+    public function getAccountDetails(BankAccount\Entity $ba):array
     {
-        //TODO:: Logic to Add Product
         return [
-            Constants::ID                         => $ba->getId(),
-            Constants::TYPE                       => $ba->getType(),
+            Constants::PRODUCT                    => $this->product,
+            Constants::IFSC_CODE                  => $ba->getIfscCode(),
             Constants::MERCHANT_ID                => $ba->merchant->getId(),
-            Constants::BENEFICIARY_PIN            => $ba->getBeneficiaryPin(),
+            Constants::ACCOUNT_TYPE               => $ba->getAccountType(),
+            Constants::ACCOUNT_NUMBER             => $ba->getAccountNumber(),
             Constants::BENEFICIARY_NAME           => $ba->getBeneficiaryName(),
-            Constants::BENEFICIARY_CODE           => $ba->getBeneficiaryCode(),
             Constants::BENEFICIARY_CITY           => $ba->getBeneficiaryCity(),
+            Constants::BENEFICIARY_EMAIL          => $ba->getBeneficiaryEMail(),
             Constants::BENEFICIARY_STATE          => $ba->getBeneficiaryState(),
             Constants::BENEFICIARY_MOBILE         => $ba->getBeneficiaryMobile(),
+            Constants::IS_VIRTUAL_ACCOUNT         => $ba->isVirtual(),
             Constants::BENEFICIARY_ADDRESS        => $ba->getBeneficiaryAddress1(),
             Constants::BENEFICIARY_COUNTRY        => $ba->getBeneficiaryCountry(),
-            Constants::BENEFICIARY_EMAIL_ID       => $ba->getBeneficiaryEMail(),
-            Constants::BENEFICIARY_IFSC_CODE      => $ba->getIfscCode(),
             Constants::BENEFICIARY_BANK_NAME      => $ba->getBankName(),
-            Constants::BENEFICIARY_ACCOUNT_TYPE   => $ba->getAccountType(),
-            Constants::BENEFICIARY_ACCOUNT_NUMBER => $ba->getAccountNumber(),
         ];
     }
 
@@ -119,36 +126,35 @@ class CreateAccount extends Base
      * @param $vpa
      * @return array
      */
-    public function getVPADetails($vpa):array
+    public function getVpaDetails(Vpa\Entity $vpa):array
     {
-        //TODO:: Logic to Add Product
         return [
             Constants::HANDLE       => $vpa->getHandle(),
+            Constants::PRODUCT      => $this->product,
             Constants::USERNAME     => $vpa->getUsername(),
             Constants::MERCHANT_ID  => $vpa->merchant->getId(),
         ];
     }
 
     /**
-     * Method to persist fts_account_id returned in response
+     * Method to persist fts_fund_account_id returned in response
      * to account entities of specific types
      *
      * @param $ftsAccountId
      * @param $type
+     * @throws LogicException
      */
-    public function saveFTSAccountId($ftsAccountId, $type)
+    public function saveFtsAccountId($ftsAccountId, $type)
     {
-        $this->account->setFTSAccountId($ftsAccountId);
-
         switch ($type)
         {
             case Constants::BANK_ACCOUNT:
-                $this->bankAccountCore->updateBankAccountEntity($this->account);
+                $this->bankAccountCore->updateBankAccountWithFtsId($this->account, $ftsAccountId);
 
                 break;
 
             case Constants::VPA:
-                $this->vpaCore->updateVPAEntity($this->account);
+                $this->vpaCore->updateVpaWithFtsId($this->account, $ftsAccountId);
 
                 break;
 

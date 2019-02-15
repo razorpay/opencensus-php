@@ -74,8 +74,6 @@ class Activate extends Base\Core
 
         $merchant->getValidator()->validateHasBankAccount();
 
-        $this->activateMerchantPromotions($merchant);
-
         $merchant->enableReceiptEmails();
 
         $merchant->activate();
@@ -104,6 +102,12 @@ class Activate extends Base\Core
             $this->activateBusinessBankingIfApplicable($merchant);
         });
 
+        //
+        // Activate Promotions/Coupons for Merchant if applicable.
+        // Balance need to be created before applying promotion/coupon as credits are associated with it.
+        //
+        $this->activateMerchantPromotions($merchant);
+
         $this->trace->info(TraceCode::MERCHANT_ACCOUNT_ACTIVATED);
 
         $this->sendMerchantActivatedEvents($merchant);
@@ -126,9 +130,6 @@ class Activate extends Base\Core
         $merchant->getValidator()->validateBeforeInstantlyActivate();
 
         $this->validateMethodsAndPricing($merchant);
-
-        // @todo: Enable sometime later after instant activations is launched
-        // $this->activateMerchantPromotions($merchant);
 
         $merchant->enableReceiptEmails();
 
@@ -172,6 +173,8 @@ class Activate extends Base\Core
 
         // @todo: Add support for multiple channels here - Drip, Zapier, Slack, Emails (merchant and admins)
         // $this->fireInstantActivationTrigger($merchantDetails, $merchant);
+
+        $this->activateMerchantPromotions($merchant);
 
         $this->notifyMerchantForInstantActivation($merchant);
 

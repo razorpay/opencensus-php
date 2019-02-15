@@ -6,6 +6,7 @@ use App;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 
 class Service extends Base\Service
 {
@@ -63,6 +64,8 @@ class Service extends Base\Service
     public function validateCouponAndGetDetails(array $input): array
     {
         $this->trace->info(TraceCode::COUPON_VALIDATE_REQUEST, $input);
+
+        $this->trace->count(Merchant\Metric::COUPON_VALIDATE_TOTAL);
 
         (new Validator)->validateInput('apply', $input);
 

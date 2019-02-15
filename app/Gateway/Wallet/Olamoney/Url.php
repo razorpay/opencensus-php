@@ -14,8 +14,8 @@ class Url
     const TOPUP_REDIRECT    = '/olamoney/v1/verifyloadmoney';
     const AUTHORIZE         = '/olamoney/webview/index.html';
     const DEBIT_WALLET      = '/olamoney/v1/autoDebit';
-    //const REFUND          = '/olamoney/v2/refund';
+    const REFUND            = '/olamoney/v2/refund';
     const VERIFY            = '/olamoney/v2/query';
     const AUTHORIZE_V2      = '/credit-app/postpaid';
-    const REFUND            = '/olamoney/v3/refund';
+    const REFUND_V3         = '/olamoney/v3/refund';
 }

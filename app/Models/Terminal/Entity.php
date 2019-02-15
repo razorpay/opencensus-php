@@ -109,6 +109,8 @@ class Entity extends Base\PublicEntity
 
     const BANK                          = 'bank';
 
+    const CATEGORY_LENGTH               = 4;
+
     protected $fillable = [
         self::GATEWAY,
         self::CARD,
@@ -218,6 +220,7 @@ class Entity extends Base\PublicEntity
         'inputRemoveBlanks',
         self::INTERNATIONAL,
         self::EMI_SUBVENTION,
+        self::TYPE,
     ];
 
     protected $defaults = [
@@ -264,7 +267,7 @@ class Entity extends Base\PublicEntity
         self::TPV                       => 'int',
         self::TYPE                      => 'int',
         self::MODE                      => 'int',
-        self::CATEGORY                  => 'int',
+        self::CATEGORY                  => 'string',
         self::CORPORATE                 => 'int',
         self::EXPECTED                  => 'boolean',
         self::USED                      => 'boolean',
@@ -631,14 +634,7 @@ class Entity extends Base\PublicEntity
 
     protected function getCategoryAttribute()
     {
-        $category = $this->attributes[self::CATEGORY];
-
-        if ($category !== null)
-        {
-            $category = (int) $category;
-        }
-
-        return $category;
+        return $this->attributes[self::CATEGORY];
     }
 
     protected function getEmiDurationAttribute()
@@ -660,7 +656,14 @@ class Entity extends Base\PublicEntity
 
     protected function getBankingTypesAttribute()
     {
-        return BankingType::getBankingTypes($this->getAttribute(self::CORPORATE));
+        $corporate = $this->getAttribute(self::CORPORATE);
+
+        if ($corporate === null)
+        {
+            return;
+        }
+
+        return BankingType::getBankingTypes($corporate);
     }
 
     // ---------------------- END ACCESSORS ----------------------
@@ -731,7 +734,6 @@ class Entity extends Base\PublicEntity
         {
             $hex = $this->attributes[self::TYPE];
         }
-
         $this->attributes[self::TYPE] = Type::getHexValue($type, $hex);
     }
 
@@ -782,6 +784,15 @@ class Entity extends Base\PublicEntity
             {
                 $input[self::INTERNATIONAL] = 1;
             }
+        }
+    }
+
+    protected function modifyType(& $input)
+    {
+        if ((empty($input[self::GATEWAY]) === false) and
+            ($input[self::GATEWAY] === Payment\Gateway::PAYTM))
+        {
+            $input[self::TYPE][Type::DIRECT_SETTLEMENT] = '1';
         }
     }
 
@@ -1037,7 +1048,7 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(Type::RECURRING_NON_3DS) === true);
     }
 
-    public function isAuthTypeEnabled($authType)
+    public function isAuthTypeEnabled($authType, $networkCode)
     {
         switch ($authType)
         {
@@ -1049,7 +1060,7 @@ class Entity extends Base\PublicEntity
                 $gateway = $this->getGateway();
 
                 $isEnabled = (($this->isIvr() === true) or
-                              (Payment\Gateway::supportsHeadlessBrowser($gateway) === true));
+                              (Payment\Gateway::supportsHeadlessBrowser($gateway, $networkCode) === true));
 
                 break;
 

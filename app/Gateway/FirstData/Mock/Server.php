@@ -285,8 +285,18 @@ class Server extends Base\Mock\Server
 
         $oid = $inquiryOrder[FirstData\ApiRequestFields::ORDER_ID];
 
-        $soapContent = FirstData\SoapWrapper::verifyResponseWrapper($oid);
+        $this->content($content, 'verify_action');
 
+        // to ensure backward compatibility we will be setting the content to true in s2s flow test cases and to false
+        // for old flow and rupay flow..
+        if ($content === true)
+        {
+            $soapContent = FirstData\SoapWrapper::s2sVerifyResponseWrapper($oid);
+        }
+        else
+        {
+            $soapContent = FirstData\SoapWrapper::verifyResponseWrapper($oid);
+        }
         $this->content($soapContent, $this->action);
 
         return $this->prepareResponse($soapContent);
@@ -503,7 +513,7 @@ class Server extends Base\Mock\Server
     {
         $xml = $this->arrayToXml($content);
 
-        $response = FirstData\SoapWrapper::defaultWrapper($xml,Constants::IPGAPI_ORDER_RESPONSE);
+        $response = FirstData\SoapWrapper::defaultWrapper($xml, Constants::IPGAPI_ORDER_RESPONSE);
 
         return $response;
     }

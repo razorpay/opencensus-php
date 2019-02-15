@@ -2,13 +2,13 @@
 
 namespace RZP\Tests\Functional\Gateway\FirstData;
 
+use RZP\Gateway\FirstData\Mock;
 use RZP\Gateway\FirstData\Action;
 use RZP\Gateway\FirstData\Status;
 use RZP\Models\Feature\Constants;
-use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Tests\Functional\TestCase;
-use RZP\Gateway\FirstData\Mock;
 use RZP\Gateway\FirstData\SoapWrapper;
+use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class FirstDataS2sGatewayTest extends TestCase
@@ -202,9 +202,12 @@ class FirstDataS2sGatewayTest extends TestCase
 
         $this->assertEquals('CAPTURED', $gatewayEntity['status']);
 
-        $this->mockServerContentFunction(function(& $content, $action) use ($payment)
+        $this->mockServerContentFunction(function(& $content, $action)
         {
-            $content = SoapWrapper::s2sVerifyResponseWrapper($payment['razorpay_payment_id']);
+            if ($action === 'verify_action')
+            {
+                $content = true;
+            }
         });
 
         $this->verifyPayment($payment['razorpay_payment_id']);
@@ -299,7 +302,7 @@ class FirstDataS2sGatewayTest extends TestCase
 
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $payment = $this->getDefaultRecurringPaymentArray();
 
@@ -373,7 +376,7 @@ class FirstDataS2sGatewayTest extends TestCase
 
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $payment = $this->getDefaultRecurringPaymentArray();
 
@@ -449,7 +452,7 @@ class FirstDataS2sGatewayTest extends TestCase
 
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $payment = $this->getDefaultRecurringPaymentArray();
 

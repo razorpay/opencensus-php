@@ -4,32 +4,62 @@ namespace RZP\Models\FundAccount\Validation;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Models\Transaction;
 use RZP\Models\FundAccount;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\FundTransfer\Attempt;
-use RZP\Listeners\ApiEventSubscriber;
 
 class Core extends Base\Core
 {
+
+    protected $fundAccountCore;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->fundAccountCore = new FundAccount\Core();
+    }
+
+    /**
+     * @param array $input
+     * @param Merchant\Entity $merchant
+     * @return Entity
+     * @throws \Throwable
+     */
     public function create(array $input, Merchant\Entity $merchant): Entity
     {
         $this->trace->info(TraceCode::FUND_ACCOUNT_VALIDATION_REQUEST, [
             'input' => $input
         ]);
 
-        //TODO: Add Metrics
-        $validation = $this->createValidationEntity($input, $merchant, function ($fundAccountValidation) {
-            $processor = Processor\Factory::get($fundAccountValidation);
+        try
+        {
+            $validation = $this->createValidationEntity($input, $merchant, function ($fundAccountValidation) {
+                $processor = Processor\Factory::get($fundAccountValidation);
 
-            $processor->preProcessValidation();
-        });
+                $processor->preProcessValidation();
+
+                (new Metric)->pushCreatedMetrics();
+            });
+        }
+        catch (\Throwable $e)
+        {
+            (new Metric)->pushExceptionMetrics($e, Metric::FUND_ACCOUNT_VALIDATION_FAILED);
+
+            throw $e;
+        }
 
         return $validation;
     }
 
+    /**
+     * @param array $input
+     * @param Merchant\Entity $merchant
+     * @return Entity
+     */
     protected function buildValidationEntity(array $input, Merchant\Entity $merchant): Entity
     {
         $validation = new Entity;
@@ -38,27 +68,27 @@ class Core extends Base\Core
 
         $validation->merchant()->associate($merchant);
 
-        //TODO: Move this to factory when new account types are added.
-        if ($validation->getAmount() === null)
-        {
-            $validation->setAmount(100);
-        }
-
-        $validation->generateId();
-
         return $validation;
     }
 
+    /**
+     * @param array $input
+     * @param Merchant\Entity $merchant
+     * @return FundAccount\Entity
+     * @throws Exception\BaseException
+     */
     protected function createOrGetFundAccount(array $input, Merchant\Entity $merchant): FundAccount\Entity
     {
+        assertTrue(isset($input['fund_account']) === true);
+
         try
         {
-            if (isset($input['fund_account']['id']) === true)
+            if (empty($input['fund_account']['id']) === false)
             {
-                return $this->repo->fund_account->findByPublicIdAndMerchant($input['fund_account']['id'], $merchant);
+                return $this->fundAccountCore->findByPublicIdAndMerchant($input['fund_account']['id'], $merchant);
             }
 
-            return (new FundAccount\Core())->create($input['fund_account'], $merchant);
+            return $this->fundAccountCore->create($input['fund_account'], $merchant);
         }
         catch (Exception\BaseException $e)
         {
@@ -68,9 +98,14 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     * @param array $input
+     * @param Merchant\Entity $merchant
+     * @param callable $callback
+     * @return Entity
+     */
     protected function createValidationEntity(array $input, Merchant\Entity $merchant, callable $callback): Entity
     {
-        //TODO: Add Metrics
         $validation = $this->buildValidationEntity($input, $merchant);
 
         return $this->repo->transaction(function () use ($input, $validation, $callback, $merchant)
@@ -79,16 +114,11 @@ class Core extends Base\Core
 
             $validation->associateFundAccount($fundAccount);
 
-            $fundAccValidationTxnProcessor = (new Transaction\Processor\FundAccountValidation($validation));
+            $processor = Processor\Factory::get($validation);
 
-            list ($txn, $feeSplit) = $fundAccValidationTxnProcessor->createTransaction();
+            $processor->setDefaultValuesForValidation();
 
-            (new Transaction\Core)->saveFeeDetails($txn, $feeSplit);
-
-            $this->repo->saveOrFail($txn);
-
-            $validation->setFees($txn->getFee());
-            $validation->setTax($txn->getTax());
+            $this->verifyFeesLessThanApplicableBalance($validation, $merchant);
 
             $this->repo->saveOrFail($validation);
 
@@ -99,54 +129,90 @@ class Core extends Base\Core
     }
 
     /**
+     * @param Entity $validation
+     * @param Attempt\Entity $fta
+     * @throws Exception\LogicException, If account Type not supported
+     */
+    public function updateStatusAfterFtaInitiated(Entity $validation, Attempt\Entity $fta)
+    {
+        $this->trace->info(TraceCode::UPDATE_STATUS_AFTER_FTA_INITIATED, [
+            'validation_id' => $validation->getId(),
+            'fta_id'        => $fta->getId(),
+        ]);
+
+        $processor = Processor\Factory::get($validation);
+
+        $processor->updateStatusAfterFtaInitiated($fta);
+    }
+
+    /**
+     * Updates validation entity status before FTA recon
+     *
+     * @param Entity $validation
+     * @param array $input
+     * @throws Exception\LogicException, If account Type not supported
+     */
+    public function updateWithDetailsBeforeFtaRecon(Entity $validation, array $input)
+    {
+        $this->trace->info(TraceCode::UPDATE_WITH_DETAILS_BEFORE_FTA_RECON, [
+            'input' => $input,
+            'validation_status' => $validation->getStatus(),
+        ]);
+
+        assertTrue(Attempt\Status::INITIATED === $input['fta_status']);
+
+        $processor = Processor\Factory::get($validation);
+
+        $processor->updateWithDetailsBeforeFtaRecon($input);
+    }
+
+    /**
      * Updates validation entity status after FTA recon
      *
      * @param Entity $validation
-     * @param string $ftaStatus
-     * @param string|null $ftaFailureReason
+     * @param array $input
+     * @throws Exception\LogicException
      */
-    public function updateStatusAfterFtaRecon(Entity $validation, string $ftaStatus, string $ftaFailureReason = null)
+    public function updateStatusAfterFtaRecon(Entity $validation, array $input)
     {
-        $validation->setStatus(Status::COMPLETED);
+        $this->trace->info(TraceCode::UPDATE_STATUS_AFTER_FTA_RECON, [
+            'input' => $input,
+            'validation_status' => $validation->getStatus(),
+        ]);
 
-        switch ($ftaStatus)
-        {
-            case Attempt\Status::PROCESSED:
-                $validation->setAccountStatus(Status::ACTIVE);
-                $this->repo->saveOrFail($validation);
-                break;
+        $processor = Processor\Factory::get($validation);
 
-            case Attempt\Status::FAILED:
-                $validation->setAccountStatus(Status::INVALID);
-                $this->repo->saveOrFail($validation);
-                break;
-
-            case Attempt\Status::CREATED:
-                break;
-
-            case Attempt\Status::INITIATED:
-                break;
-
-            default:
-                $this->trace->error(
-                    TraceCode::UNKNOWN_FTA_STATUS_SENT_TO_REFUND,
-                    [
-                        'validation_id'      => $validation->getId(),
-                        'fta_status'         => $ftaStatus,
-                        'fta_failure_reason' => $ftaFailureReason,
-                    ]);
-        }
-
-        $this->triggerValidationCompletedWebhook($validation);
+        $processor->updateStatusAfterFtaRecon($input);
     }
 
-    protected function triggerValidationCompletedWebhook(Entity $validation)
+    private function verifyFeesLessThanApplicableBalance(Entity $validation, Merchant\Entity $merchant)
     {
-        $eventPayload = [
-            ApiEventSubscriber::MAIN => $validation
-        ];
+        if ($merchant->getFeeModel() === Merchant\FeeModel::POSTPAID)
+        {
+            return;
+        }
 
-        $this->app['events']->fire('api.fund_account.validation.completed', $eventPayload);
+        list($fee, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($validation);
+
+        $balance = $this->repo->balance->getMerchantBalance($merchant);
+
+        if ($balance->getFeeCredits() >= $fee)
+        {
+            return;
+        }
+
+        if ($balance->getBalance() >= $fee)
+        {
+            return;
+        }
+        throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INSUFFICIENT_BALANCE,
+                null,
+                [
+                    'fees'      => $fee,
+                    'fee_credits'    =>  $balance->getFeeCredits(),
+                    'balance'    =>  $balance->getBalance(),
+                ]);
     }
 
     public function getFundAccountValidationEntityById(string $id)

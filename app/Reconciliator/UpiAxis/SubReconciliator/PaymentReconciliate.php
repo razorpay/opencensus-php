@@ -35,6 +35,17 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getPaymentId(array $row)
     {
+        //
+        // check if the recon status is failed. Return refund
+        // Id as null so that such rows don't get processed.
+        //
+        if ($this->getReconPaymentStatus($row) === Payment\Status::FAILED)
+        {
+            $this->setFailUnprocessedRow(false);
+
+            return null;
+        }
+
         $paymentId = array_first(self::COLUMN_PAYMENT_ID, function ($pid) use ($row)
         {
             return (isset($row[$pid]) === true);
@@ -102,7 +113,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     'expected_amount' => $this->payment->getBaseAmount(),
                     'recon_amount'    => $this->getReconPaymentAmount($row),
                     'currency'        => $this->payment->getCurrency(),
-                    'row'             => $row,
                     'gateway'         => $this->gateway
                 ]);
 

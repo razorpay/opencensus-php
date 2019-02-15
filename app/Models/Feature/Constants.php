@@ -107,8 +107,13 @@ class Constants
     const IIN_LISTING                     = 'iin_listing';
     const CALLBACK_URL_VALIDATION         = 'callback_url_validation';
     const REPORTING_GENRERIC_NOTES        = 'report_notes_to_column';
-    const REDIRECT_S2S_AUTHORIZE          = 'redirect_s2s_authorize';
     const S2S_OTP_JSON                    = 's2s_otp_json';
+
+    /**
+     * This will control if the bank details will be returned in the fetch token response.
+     * Bank details will contain beneficiary_name, account_number, ifsc and account_type
+     */
+    const TOKEN_BANK_DETAILS              = 'token_bank_details';
 
     /**
      * Skips uniqueness checks on the `receipt` attribute on invoice and payment links
@@ -145,6 +150,16 @@ class Constants
      * If set, disables all refund operations on the merchant's account
      */
     const DISABLE_REFUNDS               = 'disable_refunds';
+
+    /**
+     * Makes `receipt` a mandatory field for invoice creation
+     */
+    const INVOICE_RECEIPT_MANDATORY     = 'invoice_receipt_mandatory';
+
+    /**
+     * Do no send email on expiring/expired
+     */
+    const INVOICE_NO_EXPIRY_EMAIL       = 'invoice_no_expiry_email';
 
     // Different actions for feature activation flow
     const CREATE           = 'create';
@@ -283,11 +298,13 @@ class Constants
         self::CALLBACK_URL_VALIDATION         => true,
         self::PL_FIRST_MIN_AMOUNT             => true,
         self::REPORTING_GENRERIC_NOTES        => true,
-        self::REDIRECT_S2S_AUTHORIZE          => true,
         self::IVR                             => true,
         self::S2S_OTP_JSON                    => true,
         self::FUND_ACCOUNT_VALIDATIONS        => true,
         self::DISABLE_REFUNDS                 => true,
+        self::TOKEN_BANK_DETAILS              => true,
+        self::INVOICE_RECEIPT_MANDATORY       => true,
+        self::INVOICE_NO_EXPIRY_EMAIL         => true,
     ];
 
     // Entity type constants
@@ -357,19 +374,24 @@ class Constants
             'display_name'  => 'Report V2',
             'documentation' => '',
         ],
-        self::ES_ON_DEMAND => [
+        self::ES_ON_DEMAND              => [
             'feature'       => self::ES_ON_DEMAND,
             'display_name'  => 'On demand Payout',
             'documentation' => '',
         ],
-        self::PL_FIRST_MIN_AMOUNT => [
+        self::PL_FIRST_MIN_AMOUNT       => [
             'feature'       => self::PL_FIRST_MIN_AMOUNT,
             'display_name'  => 'Partial payments: minimum first amount',
             'documentation' => '',
         ],
-        self::DISABLE_REFUNDS => [
+        self::DISABLE_REFUNDS           => [
             'feature'       => self::DISABLE_REFUNDS,
             'display_name'  => 'Disable Refund Operations',
+            'documentation' => '',
+        ],
+        self::INVOICE_RECEIPT_MANDATORY => [
+            'feature'       => self::INVOICE_RECEIPT_MANDATORY,
+            'display_name'  => 'Mandatory invoice receipt field',
             'documentation' => '',
         ],
     ];

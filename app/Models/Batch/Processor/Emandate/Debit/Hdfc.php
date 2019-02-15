@@ -3,7 +3,9 @@
 namespace RZP\Models\Batch\Processor\Emandate\Debit;
 
 use RZP\Exception;
-use RZP\Error\ErrorCode;
+use RZP\Models\Batch;
+use RZP\Trace\TraceCode;
+use RZP\Models\FileStore;
 use RZP\Gateway\Netbanking;
 use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Netbanking\Base as NetbankingBase;

@@ -14,6 +14,8 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
+use RZP\Models\Admin\ConfigKey;
+use RZP\Jobs\FTS\RegisterAccount;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Holidays;
@@ -194,7 +196,18 @@ class Beneficiary extends Base\Core
             return ['message' => 'No Beneficiary added since last report.'];
         }
 
-        $result = $this->registerBeneficiary($bankAccounts, $channel, $input);
+        $redis = $this->app['redis']->connection('redis_labs');
+
+        $ftsChannels = $redis->SMEMBERS(ConfigKey::FTS_CHANNELS);
+
+        if(in_array($channel, $ftsChannels, true) === true)
+        {
+            $result = $this->registerBeneficiaryThroughFTS($bankAccounts, $channel);
+        }
+        else
+        {
+            $result = $this->registerBeneficiary($bankAccounts, $channel, $input);
+        }
 
         $beneficiaryCount = $bankAccounts->count();
 
@@ -326,5 +339,48 @@ class Beneficiary extends Base\Core
         }
 
         return false;
+    }
+
+    /**
+     * Method to call FTS for Beneficiary Registration
+     *
+     * @param $bankAccounts
+     * @param $channel
+     * @return response from FTS
+     */
+    public function registerBeneficiaryThroughFTS(PublicCollection $bankAccounts, $channel):array
+    {
+        $ftsAccountIds = [];
+
+        try
+        {
+            foreach ($bankAccounts as $ba) {
+                $ftsAccountIds[] = $ba->getFtsFundAccountId();
+            }
+
+            RegisterAccount::dispatch($this->mode, $channel, $ftsAccountIds);
+
+            $this->trace->info(
+                TraceCode::FTS_REGISTER_ACCOUNT_JOB_DISPATCHED,
+                [
+                    'channel'         => $channel,
+                    'fts_account_ids' => $ftsAccountIds,
+                ]);
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FTS_REGISTER_ACCOUNT_DISPATCH_FAILED,
+                [
+                    'channel'         => $channel,
+                    'fts_account_ids' => $ftsAccountIds,
+                ]);
+        }
+
+        return [
+            'status' => 'Request dispatched to fts',
+        ];
     }
 }

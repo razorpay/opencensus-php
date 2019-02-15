@@ -30,7 +30,9 @@ trait CardCacheTrait
         }
         else
         {
-            $vaultToken = (new Card\CardVault)->getVaultToken($input['card']['number']);
+            $tempInput['card'] = $input['card']['number'];
+
+            $vaultToken = (new Card\CardVault)->getVaultToken($tempInput);
         }
 
         $key = $this->getCacheKey($input['payment']['id']);

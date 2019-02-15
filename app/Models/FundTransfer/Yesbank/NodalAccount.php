@@ -7,7 +7,6 @@ use Config;
 use Carbon\Carbon;
 
 
-use RZP\Models\Base\Entity;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
@@ -16,8 +15,6 @@ use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\FundTransfer\Attempt\Lock;
-use RZP\Jobs\AttemptsRecon as AttemptsReconJob;
 use RZP\Models\FundTransfer\Yesbank\Request\Transfer;
 use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\StatusProcessor;
@@ -42,6 +39,7 @@ class NodalAccount extends NodalBase\NodalAccount
      *
      * @param PublicCollection $attempts
      * @return array
+     * @throws LogicException
      */
     public function process(PublicCollection $attempts): array
     {
@@ -71,26 +69,25 @@ class NodalAccount extends NodalBase\NodalAccount
 
             $this->doRequiredChecks($gateway);
 
-            $banking = $attempt->isOfBanking();
+            $type = $this->getRequestType($attempt);
 
-            $transfer = new Transfer($this->purpose, $banking);
+            $transfer = new Transfer($this->purpose, $type);
 
             try
             {
                 // Calling init will reset all the data of previous request
-                $response = $transfer->init()
-                                     ->setEntity($attempt)
+                $response = $transfer->setEntity($attempt)
                                      ->makeRequest($gateway);
 
+                // will be true if there is any low balance alert
+                $lowBalanceAlert = $response[self::LOW_BALANCE_ALERT] ?? false;
                 $attempt->setMode($transfer->transferType);
-
-                $this->repo->save($attempt);
 
                 // We set attempt's status to `initiated` before calling this function, `process`.
                 // Only if the request is executed successfully, we want to save the attempt's status.
                 $this->repo->saveOrFail($attempt);
 
-                $this->repo->saveOrFail($attempt->source);
+                $this->postFtaInitiateProcess($attempt);
 
                 $this->trackAttemptsInitiatedSuccess($this->channel, $this->purpose, $attempt->getSourceType());
             }
@@ -129,6 +126,14 @@ class NodalAccount extends NodalBase\NodalAccount
                     TraceCode::NODAL_TRANSFER_STATUS_UPDATE_FAILED,
                     $response
                 );
+            }
+
+            if ($lowBalanceAlert === true)
+            {
+                $this->sendLowBalanceAlert([
+                    'channel'        => $this->channel,
+                    'account_number' => $transfer->getMaskedAccountNumber(),
+                ]);
             }
         }
 

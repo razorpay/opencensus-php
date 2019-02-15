@@ -34,8 +34,6 @@ class PayoutTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $this->fixtures->merchant->addFeatures(['payout']);
-
         $this->fixtures->create(
             'fund_account',
             [
@@ -189,8 +187,8 @@ class PayoutTest extends TestCase
 
         $newPayoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
-        $this->assertEquals(Payout\Status::PROCESSING, $newPayout['status']);
-        $this->assertEquals(Attempt\Status::INITIATED, $payoutAttempt['status']);
+        $this->assertEquals(Payout\Status::PROCESSED, $newPayout['status']);
+        $this->assertEquals(Attempt\Status::PROCESSED, $payoutAttempt['status']);
 
         // Verify attempt entity
         $this->assertEquals($newPayout['attempts'], 1);
@@ -407,6 +405,8 @@ class PayoutTest extends TestCase
         {
             $this->assertTestResponse($attempt, 'testPayoutAttemptSuccess');
 
+            $this->assertNotNull($attempt['utr']);
+
             $this->assertNotNull($attempt['batch_fund_transfer_id']);
         }
 
@@ -422,6 +422,10 @@ class PayoutTest extends TestCase
             $this->assertTestResponse($payout, 'testPayoutEntitySuccess');
 
             $this->assertNotNull($payout['batch_fund_transfer_id']);
+
+            $this->assertNotNull($payout['utr']);
+
+            $this->assertNotNull($payout['processed_at']);
         }
 
         Carbon::setTestNow();

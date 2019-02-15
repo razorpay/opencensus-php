@@ -37,6 +37,12 @@ class Entity extends Base\PublicEntity
     const CUSTOMER      = 'customer';
     // Details is basically publicly exposed underlying account
     const DETAILS       = 'details';
+    // Bank Account is basically publicly exposed underlying account
+    // when account type is bank account
+    const BANK_ACCOUNT  = 'bank_account';
+    // VPA is basically publicly exposed underlying account
+    // when account type is VPA
+    const VPA           = 'vpa';
 
     protected $generateIdOnCreate = true;
 
@@ -53,6 +59,8 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER,
         self::ACCOUNT_TYPE,
         self::DETAILS,
+        self::BANK_ACCOUNT,
+        self::VPA,
         self::ACTIVE,
         self::CREATED_AT,
     ];
@@ -108,6 +116,31 @@ class Entity extends Base\PublicEntity
     public function getActive(): bool
     {
         return $this->getAttribute(self::ACTIVE);
+    }
+
+    public function getAccountDestinationAsText(): string
+    {
+        switch ($this->getAccountType())
+        {
+            case Type::BANK_ACCOUNT:
+                return mask_except_last4($this->account->getAccountNumber());
+
+            case Type::VPA:
+                return $this->account->getAddress();
+        }
+    }
+
+    public function getAccountTypeAsText(): string
+    {
+        switch ($this->getAccountType())
+        {
+            case Type::VPA:
+                return 'VPA';
+
+            // Generic format for all other types, but be explicit.
+            case Type::BANK_ACCOUNT:
+                return ucfirst(str_replace('_', ' ', $this->getAccountType()));
+        }
     }
 
     // ------------- End Getters -------------
@@ -170,6 +203,10 @@ class Entity extends Base\PublicEntity
         array_forget($publicAttributes, [Base\PublicEntity::ID, Base\PublicEntity::ENTITY]);
 
         $array[self::DETAILS] = $publicAttributes;
+
+        $accountType = array_get($array, self::ACCOUNT_TYPE);
+
+        $array[$accountType] = $publicAttributes;
     }
 
     // ------------- End Setters -------------

@@ -139,12 +139,12 @@ class Status extends Base
             Timezone::IST)->getTimestamp();
 
         return [
-            self::UTR               => $this->getNullOnEmpty($utr),
-            self::REMARK            => $this->getNullOnEmpty($remark),
-            self::PAYMENT_DATE      => $this->getNullOnEmpty($paymentDate),
-            self::PAYMENT_REF_NO    => $this->getNullOnEmpty($transactionID),
-            self::BANK_STATUS_CODE  => $this->getNullOnEmpty($bankStatus),
-            self::REFERENCE_NUMBER  => $this->getNullOnEmpty($referenceNo),
+            self::UTR              => $this->getNullOnEmpty($utr),
+            self::REMARKS          => $this->getNullOnEmpty($remark),
+            self::PAYMENT_DATE     => $this->getNullOnEmpty($paymentDate),
+            self::PAYMENT_REF_NO   => $this->getNullOnEmpty($transactionID),
+            self::BANK_STATUS_CODE => $this->getNullOnEmpty($bankStatus),
+            self::REFERENCE_NUMBER => $this->getNullOnEmpty($referenceNo),
         ];
     }
 
@@ -163,12 +163,12 @@ class Status extends Base
         // Using the same data FTA when we get the failed responses
         //
         return [
-            self::PAYMENT_REF_NO    => $this->entity->getId(),
-            self::BANK_STATUS_CODE  => $this->entity->getBankStatusCode(),
-            self::PAYMENT_DATE      => $this->entity->getDateTime(),
-            self::REFERENCE_NUMBER  => $this->entity->getCmsRefNo(),
-            self::UTR               => $this->entity->getUtr(),
-            self::REMARK            => $remark,
+            self::PAYMENT_REF_NO   => $this->entity->getId(),
+            self::BANK_STATUS_CODE => $this->entity->getBankStatusCode(),
+            self::PAYMENT_DATE     => $this->entity->getDateTime(),
+            self::REFERENCE_NUMBER => $this->entity->getCmsRefNo(),
+            self::UTR              => $this->entity->getUtr(),
+            self::REMARKS          => $remark,
         ];
     }
 

@@ -11,7 +11,6 @@ class CardVaultTest extends TestCase
 {
     use PaymentTrait;
 
-
     public function setUp()
     {
         parent::setUp();
@@ -25,7 +24,7 @@ class CardVaultTest extends TestCase
     {
         $cardNumber = '4012001038443335';
 
-        $token = $this->cardVault->tokenize('4012001038443335');
+        $token = $this->cardVault->tokenize(['card' => '4012001038443335']);
 
         $this->assertEquals('NDAxMjAwMTAzODQ0MzMzNQ==', $token);
 

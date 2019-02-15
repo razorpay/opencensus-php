@@ -28,14 +28,13 @@ class Base
 
     protected $auth;
 
-    const FundAccountBaseURL  = '/accounts';
-    const FundTransferBaseURL = '/transfer';
+    const FUND_ACCOUNT_BASE_URL  = '/accounts';
+
+    const FUND_TRANSFER_BASE_URL = '/transfer';
 
     const URLS = [
         'register'              => 'registration',
-        'status'                => 'status',
         'request'               => 'request',
-        'attempt'               => 'attempt',
     ];
 
     // Headers
@@ -44,7 +43,7 @@ class Base
     const CONTENT_TYPE  = 'Content-Type';
     const X_REQUEST_ID  = 'X-Request-ID';
 
-    const REQUEST_TIMEOUT = 60;
+    const REQUEST_TIMEOUT = 30;
 
     /**
      * FTS Base constructor.
@@ -55,17 +54,17 @@ class Base
     {
         $this->trace = $app['trace'];
 
+        $this->auth = $app['basicauth'];
+
+        $this->request = $app['request'];
+
         $this->config = $app['config']->get('applications.fts');
 
         $this->baseUrl = $this->config['url'];
 
-        $this->request = $app['request'];
-
         $this->key = $this->config['fts_key'];
 
         $this->secret = $this->config['fts_secret'];
-
-        $this->auth = $app['basicauth'];
 
         $this->setHeaders();
     }
@@ -86,9 +85,9 @@ class Base
         string $method,
         array $data = []): array
     {
-        $request = $this->generateRequest($endpoint, $method, $data);
+        $request = $this->generateRequest($method, $endpoint, $data);
 
-        $response = $this->sendFTSRequest($request);
+        $response = $this->sendFtsRequest($request);
 
         $this->trace->info(TraceCode::FTS_RESPONSE, [
             'response' => $response->body
@@ -106,7 +105,7 @@ class Base
      *
      * @return array
      */
-    protected function generateRequest(string $endpoint, string $method, array $data): array
+    protected function generateRequest(string $method, string $endpoint, array $data): array
     {
         $url = $this->baseUrl . $endpoint;
 
@@ -120,7 +119,7 @@ class Base
             'timeout' => self::REQUEST_TIMEOUT,
             'auth'    => [
                 $this->key,
-                $this->secret
+                $this->secret,
             ],
         ];
 
@@ -153,7 +152,7 @@ class Base
      * @return \Requests_Response
      * @throws \Throwable
      */
-    protected function sendFTSRequest(array $request): \Requests_Response
+    protected function sendFtsRequest(array $request): \Requests_Response
     {
         $this->traceRequest($request);
 
@@ -174,7 +173,8 @@ class Base
                 Trace::ERROR,
                 TraceCode::FTS_FAILURE_EXCEPTION,
                 [
-                    'data' => $e->getMessage()
+                    'message'      => $e->getMessage(),
+                    'request_body' => $request['content'],
                 ]);
 
             throw $e;
@@ -205,34 +205,24 @@ class Base
     {
         $code = null;
 
-        if(!($response === null))
+        if($response !== null)
         {
             $code = $response->status_code;
         }
 
-
         if (in_array($code, [200, 201, 204], true) === false)
         {
-
             throw new Exception\RuntimeException(
                 'Unexpected response code received from FTS.',
                 [
-                    'status_code' => $code,
+                    'status_code'   => $code,
                     'response_body' => json_decode($response->body),
                 ]);
         }
 
         return [
-            'body' => json_decode($response->body),
+            'body' => json_decode($response->body, true),
             'code' => $code,
         ];
-    }
-
-    public function validateChannel(string $channel)
-    {
-        if(strcasecmp($channel , 'icici2') !== 0)
-        {
-            throw new Exception\BadRequestValidationFailureException('Channel is not live on fts.', $attribute);
-        }
     }
 }

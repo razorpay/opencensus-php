@@ -50,11 +50,10 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
              */
             $this->messenger->raiseReconAlert(
                 [
-                    'trace_code'      => TraceCode::RECON_MISMATCH,
-                    'info_code'       => Base\InfoCode::REFUND_ABSENT,
-                    'refund_id'       => $gatewayRefundId,
-                    'row'             => $row,
-                    'gateway'         => $this->gateway
+                    'trace_code'            => TraceCode::RECON_MISMATCH,
+                    'info_code'             => Base\InfoCode::REFUND_ABSENT,
+                    'refund_reference_id'   => $gatewayRefundId,
+                    'gateway'               => $this->gateway
                 ]);
 
             $this->setFailUnprocessedRow(true);

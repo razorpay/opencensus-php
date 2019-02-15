@@ -72,6 +72,22 @@ class CreateQuboleMerchantDetailsView extends Migration
             MerchantDetail::WEBSITE_TERMS,
         ];
 
+        $sha2_columns = [
+            MerchantDetail::COMPANY_PAN,
+            MerchantDetail::COMPANY_PAN_NAME,
+            MerchantDetail::PROMOTER_PAN,
+            MerchantDetail::BANK_NAME,
+            MerchantDetail::BANK_ACCOUNT_NUMBER,
+        ];
+        
+        $sha2_columns = array_map(function ($v)
+        {
+            return "sha2({$v}, 256) as {$v}";
+        },
+        $sha2_columns);
+
+        $columns = array_merge($columns, $sha2_columns);
+
         $columnStr = implode(',', $columns);
 
         $statement = 'CREATE ALGORITHM=MERGE VIEW qubole_merchant_details_view AS 

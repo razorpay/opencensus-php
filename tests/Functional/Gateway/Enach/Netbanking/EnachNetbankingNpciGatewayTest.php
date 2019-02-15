@@ -1,0 +1,629 @@
+<?php
+
+namespace RZP\Tests\Functional\Gateway\Enach\Netbanking;
+
+use Mail;
+use Excel;
+use Queue;
+Use Carbon\Carbon;
+
+use RZP\Models\Feature;
+use RZP\Constants\Entity;
+use RZP\Constants\Timezone;
+use RZP\Jobs\BeamJob;
+use RZP\Models\Customer\Token;
+use RZP\Tests\Functional\TestCase;
+use RZP\Models\Payment\Entity as Payment;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use Illuminate\Http\Testing\File as TestingFile;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+
+class EnachNetbankingNpciGatewayTest extends TestCase
+{
+    use PaymentTrait;
+    use FileHandlerTrait;
+    use DbEntityFetchTrait;
+
+    public function setUp()
+    {
+        $this->testDataFilePath = __DIR__ . '/EnachNetbankingNpciGatewayTestData.php';
+
+        parent::setUp();
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_enach_npci_netbanking_terminal');
+        $this->fixtures->create(Entity::CUSTOMER);
+
+        $this->fixtures->merchant->enableEmandate();
+        $this->fixtures->merchant->addFeatures([Feature\Constants::CHARGE_AT_WILL]);
+
+        $this->gateway = 'enach_npci_netbanking';
+
+        //$this->setupMockDns();
+    }
+
+    public function testPayment()
+    {
+        $payment                 = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'yesb0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(0, $payment['amount']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals('initial', $payment['recurring_type']);
+
+        $enach = $this->getLastEntity('enach', true);
+
+        $this->assertNotNull($enach['gateway_reference_id']);
+
+        $this->assertEquals('true', $enach['status']);
+
+        $this->assertEquals('true' ,$enach['acknowledge_status']);
+
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertEquals('netbanking', $token['auth_type']);
+
+        $this->assertEquals('initiated', $token['recurring_status']);
+    }
+
+    public function testPaymentRejectResponse()
+    {
+        $payment                 = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'yesb0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->mockRejectCallbackResponse();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(0, $payment['amount']);
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $this->assertEquals('initial', $payment['recurring_type']);
+
+        $enach = $this->getLastEntity('enach', true);
+
+        $this->assertEquals('false', $enach['status']);
+
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertEquals('netbanking', $token['auth_type']);
+
+        $this->assertEquals(null , $token['recurring_status']);
+    }
+
+    public function testPaymentErrorResponse()
+    {
+        $payment                 = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'yesb0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->mockFailedCallbackResponse();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $this->assertEquals(0, $payment['amount']);
+
+        $this->assertEquals('initial', $payment['recurring_type']);
+
+        $enach = $this->getLastEntity('enach', true);
+
+        $this->assertEquals('false', $enach['status']);
+
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertEquals('netbanking', $token['auth_type']);
+
+        $this->assertEquals(null, $token['recurring_status']);
+    }
+
+    public function testRegisterReconSuccess()
+    {
+        $payment                 = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
+
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'yesb0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $batchFile = $this->getBatchFileToUpload($payment, 'Active');
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('created', $batch['status']);
+
+        $enach = $this->getDbLastEntityToArray('enach');
+
+        $this->assertNotNull($enach['umrn']);
+        $this->assertEquals('Active', $enach['registration_status']);
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertNotNull($token['gateway_token']);
+        $this->assertEquals('confirmed', $token['recurring_status']);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $transaction = $this->getDbLastEntityToArray('transaction');
+
+        $this->assertNotNull($transaction['reconciled_at']);
+    }
+
+    public function testRegisterReconRejected()
+    {
+        $payment                 = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
+
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'yesb0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $batchFile = $this->getBatchFileToUpload($payment, 'cancel', 'M032', 'Rejected as per customer confirmation');
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('created', $batch['status']);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('refunded', $payment['status']);
+
+        $transaction = $this->getDbLastEntityToArray('transaction');
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        $enach = $this->getDbLastEntityToArray('enach');
+
+        $this->assertEquals('M032', $enach['error_code']);
+        $this->assertEquals('Rejected as per customer confirmation', $enach['error_message']);
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertEquals('rejected', $token['recurring_status']);
+        $this->assertEquals('E-Mandate registration cancelled by the customer', $token['recurring_failure_reason']);
+    }
+
+    public function testDebitFileGeneration()
+    {
+        $response = $this->makeDebitPayment();
+
+        $lastDebitPayment = $this->getLastEntity('payment', true);
+
+        // setting created at to 8am. Payments are picked from 9 to 9 cycle.
+        $createdAt = Carbon::today(Timezone::IST)->addHours(8)->getTimestamp();
+
+        $this->fixtures->edit(
+            'payment',
+            $lastDebitPayment['id'],
+            [
+                'created_at' => $createdAt,
+            ]);
+
+        $paymentId = substr($response['razorpay_payment_id'], 4);
+
+        $this->ba->adminAuth();
+
+        Queue::fake();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $expectedFileContent = [
+            'type'        => 'enach_npci_nb_debit',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'csv',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
+        $enach = $this->getLastEntity('enach', true);
+
+        $this->assertArraySelectiveEquals(
+            [
+                'payment_id' => $paymentId,
+                'action'     => 'authorize',
+                'bank'       => 'UTIB',
+                'status'     => null,
+            ],
+            $enach
+        );
+
+        Queue::assertPushed(BeamJob::class, 1);
+
+        Queue::assertPushedOn('general_test', BeamJob::class);
+    }
+
+    public function testDebitFileReconciliation()
+    {
+        $this->makeDebitPayment();
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $fileStatuses = [
+            'status'     => 'ACCEPTED',
+            'error_code' => '',
+            'error_desc' => '',
+        ];
+
+        Carbon::setTestNow(Carbon::now()->addDays(10));
+
+        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('processed', $batch['status']);
+
+        $payment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $transaction = $payment->transaction;
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        $enach = $this->getDbEntities('enach', ['payment_id' => $payment['id']])->first()->toArray();
+
+        $this->assertArraySelectiveEquals(
+            [
+                'status' => 'ACCEPTED',
+            ],
+            $enach
+        );
+    }
+
+    public function testDebitFileRejectResponse()
+    {
+        $this->makeDebitPayment();
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $fileStatuses = [
+            'status'     => 'REJECTED',
+            'error_code' => '04',
+            'error_desc' => 'Balance insufficient',
+        ];
+
+        Carbon::setTestNow(Carbon::now()->addDays(10));
+
+        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('processed', $batch['status']);
+
+        $payment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('failed', $payment['status']);
+        $this->assertEquals('BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE', $payment['internal_error_code']);
+
+        $enach = $this->getDbEntities('enach', ['payment_id' => $payment['id']])->first()->toArray();
+
+        $this->assertEquals('04', $enach['error_code']);
+        $this->assertEquals('Balance insufficient', $enach['error_message']);
+
+        $this->assertEquals('REJECTED', $enach['status']);
+    }
+
+    protected function makeDebitPayment()
+    {
+        $payment                 = $this->getEmandatePaymentArray('UTIB', 'netbanking', 0);
+
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'UTIB0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $tokenId = $paymentEntity[Payment::TOKEN_ID];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 3000]);
+
+        $this->fixtures->edit(
+            'token',
+            $tokenId,
+            [
+                Token\Entity::GATEWAY_TOKEN    => 'UTIB6000000005844847',
+                Token\Entity::RECURRING        => 1,
+                Token\Entity::RECURRING_STATUS => Token\RecurringStatus::CONFIRMED,
+            ]);
+
+        $payment             = $this->getEmandatePaymentArray('UTIB', null, 3000);
+
+        $payment['token']    = $tokenId;
+
+        $payment['order_id'] = $order->getPublicId();
+
+        unset($payment['auth_type']);
+
+        return $this->doS2SRecurringPayment($payment);
+    }
+
+    protected function mockRejectCallbackResponse()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'authorize_get_secure_data')
+            {
+                $content['Accptd'] = 'false';
+                $content['ReasonCode'] = '1022';
+                $content['ReasonDesc'] = 'Invalid Authentication';
+                $content['RejectBy'] = 'Bank';
+            }
+        });
+    }
+
+    protected function mockFailedCallbackResponse()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content = 'ErrorXML';
+            }
+        });
+    }
+
+    protected function runPaymentCallbackFlowNetbanking($response, &$callback = null)
+    {
+        $mock = $this->isGatewayMocked();
+
+        list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
+
+        if ($mock)
+        {
+            $request = $this->makeFirstGatewayPaymentMockRequest(
+                $url, $method, $content);
+        }
+
+        $response = $this->sendRequest($request);
+
+        $this->assertEquals($response->getStatusCode(), '302');
+
+        $data = array(
+            'url' => $response->headers->get('location'),
+            'method' => 'post');
+
+        if (filter_var($data['url'], FILTER_VALIDATE_URL))
+        {
+            return $this->submitPaymentCallbackRedirect($data['url']);
+        }
+
+        return $this->submitPaymentCallbackRequest($request);
+    }
+
+    protected function getBatchFileToUpload($payment, $status = 'Active', $errorCode = '', $errorDesc = '')
+    {
+        $this->fixtures->stripSign($payment['id']);
+
+        $sheets = [
+            'sheet1' => [
+                'config' => [
+                    'start_cell' => 'A1',
+                ],
+                'items'  => [
+                    [
+                        'MANDATE DATE'    => Carbon::today(Timezone::IST)->format('m/d/Y'),
+                        'MANDATE ID'      => 'NEW',
+                        'UMRN'            => 'UTIB6000000005844847',
+                        'CUST REF NO'     => '',
+                        'SCH REF NO'      => '',
+                        'CUST NAME'       => 'User name',
+                        'BANK'            => '',
+                        'BRANCH'          => '',
+                        'BANK CODE'       => 'UTIB0000123',
+                        'AC TYPE'         => 'SAVINGS',
+                        'AC NO'            => '914010009305862',
+                        'AMOUNT'          => '99999',
+                        'FREQUENCY'       => 'ADHO',
+                        'DEBIT TYPE'      => 'MAXIMUM AMOUNT',
+                        'START DATE'      => Carbon::now(Timezone::IST)->format('m/d/Y'),
+                        'END DATE'        => Carbon::now(Timezone::IST)->addYears(10)->format('m/d/Y'),
+                        'UNTIL CANCEL'    => 'N',
+                        'TEL NO'          => '',
+                        'MOBILE NO'       => '9999999999',
+                        'MAIL ID'         => '',
+                        'UPLOAD DATE'     => Carbon::now(Timezone::IST)->format('m/d/Y'),
+                        'RESPONSE DATE'   => Carbon::now(Timezone::IST)->addDays(2)->format('m/d/Y'),
+                        'UTILITY CODE'    => 'NACH00000000012323',
+                        'UTILITY NAME'    => 'RAZORPAY',
+                        'STATUS'          => $status,
+                        'STATUS CODE'     => $errorCode,
+                        'REASON'          => $errorDesc,
+                        'MANDATE REQID'   => $payment['id'],
+                        'MESSAGE ID'      => $payment['id'],
+                    ],
+                ],
+            ],
+        ];
+
+        $name = 'RAZORPAYPVTLTD_OutwardMandateMISReport' . Carbon::now(Timezone::IST)->format('dmY');
+
+        $excel = Excel::create(
+            $name,
+            function($excel) use ($sheets) {
+                foreach ($sheets as $sheetName => $data)
+                {
+                    $excel->sheet(
+                        $sheetName,
+                        function($sheet) use ($data) {
+                            $sheet->fromArray($data['items'], null, $data['config']['start_cell'], true);
+                        }
+                    );
+                }
+            }
+        );
+
+        $data = $excel->string('xlsx');
+
+        $handle = tmpfile();
+        fwrite($handle, $data);
+        fseek($handle, 0);
+
+        $file = (new TestingFile('Register MIS.xlsx', $handle));
+
+        return $file;
+    }
+
+    protected function makeBatchDebitPayment($payment, $fileStatuses)
+    {
+        $this->fixtures->create(
+            'enach',
+            [
+                'payment_id' => $payment['id'],
+                'action'     => 'authorize',
+                'bank'       => 'UTIB',
+                'amount'     => $payment['amount'],
+            ]
+        );
+
+        $data = [
+            [
+                'Presentation Date' => Carbon::now(Timezone::IST)->format('m/d/Y'),
+                'UMRN' => 'UTIB6000000005844847',
+                'Transaction Ref No' => $payment['id'],
+                'Utility Code' => '',
+                'Bank A/c Number' => '',
+                'Account Holder Name' => '',
+                'Bank' => '',
+                'IFSC/MICR' => '',
+                'Amount' => $payment['amount'] / 100,
+                'Reference 1' => '',
+                'Reference 2' => '',
+                'Status' => $fileStatuses['status'],
+                'Reason Code' => $fileStatuses['error_code'],
+                'Reason Discription' => $fileStatuses['error_desc'],
+                'User Reference' => '',
+            ]
+        ];
+
+        $handle = tmpfile();
+
+        $first = true;
+
+        foreach ($data as $row)
+        {
+            if ($first === true)
+            {
+                $headers = array_keys($row);
+
+                fputs($handle, implode(',', $headers) . "\n");
+
+                $first = false;
+            }
+
+            $row = $this->flatten($row);
+
+            fputs($handle, implode(',', $row) . "\n");
+        }
+
+        fseek($handle, 0);
+
+        $file = (new TestingFile('Debit MIS.csv', $handle));
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $batch = $this->makeRequestWithGivenUrlAndFile($url, $file, 'debit');
+
+        return $this->getDbEntityById('batch', $batch['id']);
+    }
+
+    protected function makeRequestWithGivenUrlAndFile($url, $file, $type = 'register')
+    {
+        $request = [
+            'url'     => $url,
+            'method'  => 'POST',
+            'content' => [
+                'type'     => 'emandate',
+                'sub_type' => $type,
+                'gateway'  => 'enach_npci_netbanking',
+            ],
+            'files'   => [
+                'file' => $file,
+            ],
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+}
