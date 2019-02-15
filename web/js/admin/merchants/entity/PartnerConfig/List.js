@@ -5,10 +5,14 @@ import Collection from 'model/collection';
 import Form from 'ui/Form';
 import Field, { SelectField } from 'ui/Field';
 import { PageTable } from 'ui/Table';
-import { isPresent } from 'rzp/utils/rzp-utils';
+import { ModalContent } from 'component/Modal';
 
-import { adminFetch } from 'common/fetch';
+import { isPresent, pickProps } from 'rzp/utils/rzp-utils';
 
+import { adminFetch, adminPost, adminPut } from 'common/fetch';
+import { openModal } from 'common/modal';
+
+import Write from './Write';
 export default class PartnerConfigList extends Component {
   constructor(props) {
     super();
@@ -31,6 +35,29 @@ export default class PartnerConfigList extends Component {
     this.fetchConfigAndSubs({
       application_id: this.applicationId,
     });
+  };
+
+  onWriteConfig = ({ submerchant, config }) => () => {
+    const values = {
+      partner_id: !this.applicationId ? this.merchantId : undefined,
+      application_id: this.applicationId,
+      submerchant_id: (submerchant || {}).id,
+    };
+
+    openModal(
+      <div style={{ width: '1050px' }}>
+        <ModalContent header="Partner Config">
+          <Write
+            values={{
+              ...values,
+              ...sanitizeConfig(config),
+            }}
+            submit={!!config ? adminPut : adminPost}
+            buttonText={!!config ? 'Update' : 'Create'}
+          />
+        </ModalContent>
+      </div>
+    );
   };
 
   fetchApps = () => {
@@ -90,7 +117,7 @@ export default class PartnerConfigList extends Component {
           config => config.entity_id === submerchant.id
         );
         return {
-          ...submerchant,
+          submerchant,
           config: overriddenConfig,
         };
       });
@@ -148,7 +175,12 @@ export default class PartnerConfigList extends Component {
               <div className="box">
                 <header>
                   Default Config
-                  <button class="btn pull-right">
+                  <button
+                    class="btn pull-right"
+                    onClick={this.onWriteConfig({
+                      config: this.defaultConfigs[0],
+                    })}
+                  >
                     {isPresent(this.defaultConfigs) ? 'Update' : 'Create'}
                   </button>
                 </header>
@@ -156,7 +188,9 @@ export default class PartnerConfigList extends Component {
               <PageTable
                 model={this.submerchants}
                 animateRow={false}
-                fields={submerchantFields}
+                fields={getSubmerchantFields({
+                  write: this.onWriteConfig,
+                })}
               />
             </>
           ) : (
@@ -173,16 +207,32 @@ function isPurePlatform(merchant = {}) {
   return merchant.partner_type === 'pure_platform';
 }
 
-var submerchantFields = [
-  ['Submerchant ID', item => <span className="link">{item.id}</span>],
-  ['Submerchant Name', item => item.name],
+var getSubmerchantFields = ({ write }) => [
+  [
+    'Submerchant ID',
+    item => <span className="link">{item.submerchant.id}</span>,
+  ],
+  ['Submerchant Name', item => item.submerchant.name],
   [
     'Config',
-    item =>
-      item.config ? (
-        <button class="button">Update</button>
-      ) : (
-        <button class="button">Create</button>
-      ),
+    item => (
+      <button class="button" onClick={write(item)}>
+        {item.config ? 'Update' : 'Create'}
+      </button>
+    ),
   ],
 ];
+
+function sanitizeConfig(data = {}) {
+  return pickProps(data, [
+    'commissions_enabled',
+    'implicit_expiry_at',
+    'revisit_at',
+    'explicit_refund_fees',
+    'explicit_should_charge',
+    'default_plan_id',
+    'implicit_plan_id',
+    'explicit_plan_id',
+    'id',
+  ]);
+}
