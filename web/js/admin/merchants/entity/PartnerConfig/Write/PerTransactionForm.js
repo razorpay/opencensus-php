@@ -1,4 +1,4 @@
-import { SelectField, SearchableSelectField } from 'ui/Field';
+import Field, { SelectField, SearchableSelectField } from 'ui/Field';
 
 export default function PerTransactionForm({ plans, values, internals }) {
   const { comission, pricing } = plans;

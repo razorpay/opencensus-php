@@ -1,7 +1,7 @@
 import { Component } from 'react';
 
-import { adminFetch, adminPost, adminPut } from 'common/fetch';
-import { notifySuccess } from 'common/modal';
+import { adminFetch } from 'common/fetch';
+import { closeModal, notifySuccess } from 'common/modal';
 import { stringToObj } from 'common/util';
 import { isPresent, pickProps, without } from 'rzp/utils/rzp-utils';
 
@@ -16,11 +16,7 @@ export default class WritePartnerConfig extends Component {
     super();
     this.state = {
       internals: {},
-      applications: {
-        pending: false,
-        data: [],
-      },
-      merchantDetails: {},
+      values: props.values,
       plans: {
         pricing: {
           pending: true,
@@ -35,7 +31,6 @@ export default class WritePartnerConfig extends Component {
   }
 
   componentWillMount() {
-    this.fetchMerchantDetails();
     this.fetchPricingPlans({ type: 'comission' });
     this.fetchPricingPlans({ type: 'pricing' });
   }
@@ -51,73 +46,6 @@ export default class WritePartnerConfig extends Component {
       };
       const plans = stringToObj(params.type, fetchedPlans, this.state.plans);
       this.setState({ plans });
-    });
-  };
-
-  fetchMerchantDetails = () => {
-    return adminFetch({
-      url: 'live/merchants/details',
-      headers: {
-        'X-Razorpay-Account': this.props.match.params.id,
-      },
-    }).then(data => {
-      this.setState(
-        {
-          merchantDetails: {
-            pending: false,
-            data,
-          },
-        },
-        this.fetchConfigOrApps
-      );
-    });
-  };
-
-  fetchConfigOrApps = () => {
-    const { merchantDetails } = this.state;
-    if (isPurePlatformPartner(merchantDetails.data)) {
-      return this.fetchApps();
-    }
-    return this.fetchConfig({ partner_id: merchantDetails.data.id });
-  };
-
-  fetchApps = () => {
-    if (!this.state.applications.pending) {
-      this.setState({ applications: { pending: true, data: [] } });
-    }
-    return adminFetch({
-      url: `live_${this.props.match.params.id}/oauth/applications`,
-    }).then(response => {
-      if (response)
-        this.setState({
-          applications: {
-            pending: false,
-            data: response.items,
-          },
-          values: undefined,
-        });
-    });
-  };
-
-  fetchConfig = params => {
-    if (!this.state.loadingValues) {
-      this.setState({ loadingValues: true, values: undefined });
-    }
-    return adminFetch({
-      url: 'live/partner_configs',
-      params,
-    }).then(response => {
-      if (response) {
-        const data = response.success ? response.data : response;
-        this.setState({
-          values: {
-            application_id: params.application_id,
-            ...sanitizeConfig(data),
-          },
-          loadingValues: false,
-          internals: { _update: !!data },
-        });
-      }
     });
   };
 
@@ -150,14 +78,9 @@ export default class WritePartnerConfig extends Component {
     });
   };
 
-  handleAppChange = ({ target }) => {
-    const application_id = target.value;
-    this.fetchConfig({ application_id });
-  };
-
   handleSubmitClick = body => {
-    let { merchantDetails, values, internals } = this.state;
-    const submit = internals._update ? adminPut : adminPost;
+    let { values, internals } = this.state;
+    const { submit, config_id } = this.props;
     values = {
       ...values,
       ...pickProps(body, [
@@ -167,19 +90,13 @@ export default class WritePartnerConfig extends Component {
       ]),
     };
 
-    if (!isPurePlatformPartner(merchantDetails.data) && !internals._update) {
-      values.partner_id = this.props.match.params.id;
-    }
-
     return submit({
-      url: 'live/partner_configs' + (values.id ? `/${values.id}` : ''),
+      url: 'live/partner_configs' + (config_id ? `/${config_id}` : ''),
       data: without(values, 'id'),
     }).then(partnerConfig => {
       if (partnerConfig) {
-        this.setState({
-          values: partnerConfig,
-        });
         notifySuccess('Partner Config updated successfully');
+        closeModal();
       }
     });
   };
@@ -255,7 +172,7 @@ export default class WritePartnerConfig extends Component {
           </div>
 
           <AsyncButton
-            text={internals._update ? 'Update' : 'Create'}
+            text={this.props.buttonText}
             class="btn"
             pendingClass="small spinner"
             onSubmit={this.handleSubmitClick}
@@ -266,41 +183,12 @@ export default class WritePartnerConfig extends Component {
   };
 
   render() {
-    const { loadingValues, applications, merchantDetails } = this.state;
     return (
       <div class="box">
         <header>Comission Settings</header>
         <div class="row-item">
           <Form class="full-span full-elements" onChange={this.handleChange}>
-            {applications.pending ? (
-              <Field
-                label="Application"
-                value="Fetching applications..."
-                disabled
-              />
-            ) : (
-              isPurePlatformPartner(merchantDetails.data) && (
-                <SelectField
-                  name="application_id"
-                  label="Application"
-                  onChange={this.handleAppChange}
-                >
-                  <option value="">Select Application...</option>
-                  {applications.data.map(app => (
-                    <option key={app.id} value={app.id}>
-                      {app.name}
-                    </option>
-                  ))}
-                </SelectField>
-              )
-            )}
-            {loadingValues ? (
-              <div class="box">
-                <div class="spinner center" />
-              </div>
-            ) : (
-              this.renderForm()
-            )}
+            {this.renderForm()}
           </Form>
         </div>
       </div>
@@ -318,22 +206,4 @@ function formatPlanData(data) {
 
 function getDefaultDateVal(unixTime) {
   return unixTime ? moment(unixTime, 'X') : undefined;
-}
-
-function isPurePlatformPartner(merchant = {}) {
-  return merchant.partner_type === 'pure_platform';
-}
-
-function sanitizeConfig(data = {}) {
-  return pickProps(data, [
-    'commissions_enabled',
-    'implicit_expiry_at',
-    'revisit_at',
-    'explicit_refund_fees',
-    'explicit_should_charge',
-    'default_plan_id',
-    'implicit_plan_id',
-    'explicit_plan_id',
-    'id',
-  ]);
 }
