@@ -25,6 +25,15 @@ class Assertions extends TestCase
         $this->assertEquals(144, $commissions[0]->tax);
     }
 
+    public function testPartnerDoesNotExist(array $data)
+    {
+        $postAction = $data['post_action'];
+
+        $calculator = $postAction['calculator'];
+
+        $this->assertShouldNotCreateCommission($calculator);
+    }
+
     public function testPartnerConfigDoesNotExist(array $data)
     {
         $postAction = $data['post_action'];

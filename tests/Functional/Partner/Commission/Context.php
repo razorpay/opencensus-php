@@ -32,6 +32,21 @@ return [
         ],
     ],
 
+    'testPartnerDoesNotExist' => [
+        'setup' => [
+            'create_plans'       => [
+                [
+                    'plan_id'      => '200MerchantPln',
+                    'percent_rate' => '200',
+                ],
+            ],
+            'create_payment' => [
+                'merchant_id' => '10000000000000',
+                'amount'      => 4000 * 100, // paise
+            ],
+        ],
+    ],
+
     'testPartnerConfigDoesNotExist' => [
         'setup' => [
             'create_partner'     => [
