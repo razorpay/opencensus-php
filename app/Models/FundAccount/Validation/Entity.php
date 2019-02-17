@@ -41,9 +41,9 @@ class Entity extends Base\PublicEntity
     // Key for the response
     const FUND_ACCOUNT          = 'fund_account';
 
-    const PUBLIC_ENTITY_NAME = 'fund_account.validation';
-
     protected $entity = Constants\Entity::FUND_ACCOUNT_VALIDATION;
+
+    const PUBLIC_ENTITY_NAME = 'fund_account.validation';
 
     protected static $sign = 'fav';
 
@@ -61,6 +61,8 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::FUND_ACCOUNT_ID,
         self::STATUS,
+        self::FEES,
+        self::TAX,
         self::AMOUNT,
         self::CURRENCY,
         self::NOTES,
@@ -75,8 +77,6 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::FUND_ACCOUNT,
         self::STATUS,
-        self::FEES,
-        self::TAX,
         self::AMOUNT,
         self::CURRENCY,
         self::NOTES,

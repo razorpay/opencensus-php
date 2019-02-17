@@ -237,6 +237,10 @@ class Base
 
         if(in_array($channel, $ftsChannels, true) === false)
         {
+            $this->trace->info(
+                TraceCode::FTS_INVALID_CHANNEL,
+                $channel);
+
             throw new LogicException('Channel is not live on FTS : '. $channel);
         }
     }

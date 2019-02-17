@@ -62,6 +62,8 @@ final class Constants
 
     const BENEFICIARY_CITY              = 'beneficiary_city';
 
+    const FUND_TRANSFER_ID              = 'fund_transfer_id';
+
     const BENEFICIARY_EMAIL             = 'beneficiary_email';
 
     const BENEFICIARY_STATE             = 'beneficiary_state';

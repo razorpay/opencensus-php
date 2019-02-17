@@ -233,7 +233,7 @@ class Core extends Base\Core
     {
         try
         {
-            FundTransfer::dispatch($fta->getId(), $accountType);
+            FundTransfer::dispatch($this->mode, $fta->getId(), $accountType);
 
             $this->trace->info(
                 TraceCode::FTS_FUND_TRANSFER_JOB_DISPATCHED,

@@ -104,7 +104,7 @@ class FundTransfer extends Base
     public function addFTSFundAccountId(array $request):array
     {
         $request[Constants::ACCOUNT] = array(
-            Constants::FUND_ACCOUNT_ID   => $this->fta->bankAccount->getFTSAccountId(),
+            Constants::FUND_ACCOUNT_ID   => $this->fta->bankAccount->getFtsFundAccountId(),
         );
 
         return $request;
@@ -191,7 +191,7 @@ class FundTransfer extends Base
 
     protected function updateFTA(array $responseBody)
     {
-        $ftsTransferId = $responseBody['transfer_id'];
+        $ftsTransferId = $responseBody[Constants::FUND_TRANSFER_ID];
 
         $this->fta->setFTSTransferId($ftsTransferId);
 
@@ -202,7 +202,7 @@ class FundTransfer extends Base
         $this->updateSource($ftsTransferId);
     }
 
-    protected function updatePaymentInstrument(array $responseBody, string $type)
+    protected function updatePaymentInstrumentByType(array $responseBody, string $type)
     {
         switch ($type)
         {
