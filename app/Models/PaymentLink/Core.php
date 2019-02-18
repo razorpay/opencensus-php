@@ -602,7 +602,7 @@ class Core extends Base\Core
         {
             $filenameWithoutExt = str_before($image->getClientOriginalName(), '.' . $image->getClientOriginalExtension());
 
-            $uploadFilename = 'description/payment-link/' . $filenameWithoutExt . '_' . UniqueIdEntity::generateUniqueId();
+            $uploadFilename = 'payment-link/description/' . $filenameWithoutExt . '_' . UniqueIdEntity::generateUniqueId();
 
             $file = (new UfhService($this->app))->uploadFileAndGetUrl(
                 $image,

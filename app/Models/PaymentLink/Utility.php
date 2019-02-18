@@ -51,11 +51,7 @@ class Utility
             }
         }
 
-        $quillJSObj[] = [
-            'insert' => '\n',
-        ];
-
-        return json_encode($quillJSObj);
+        return json_encode(['value' => $quillJSObj, 'metaText' => $text]);
     }
 
     /**
