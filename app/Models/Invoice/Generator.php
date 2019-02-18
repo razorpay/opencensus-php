@@ -78,6 +78,7 @@ class Generator extends Base\Core
     const ORDER_CURRENCY = 'INR';
     const SHORT_MODE_LIVE = 'l';
     const SHORT_MODE_TEST = 't';
+    const USER            = 'user';
 
     public function __construct(Merchant\Entity $merchant, Entity $invoice = null)
     {
@@ -329,6 +330,11 @@ class Generator extends Base\Core
         // Saves merchant specific details in invoice as copy e.g. merchant label & gstin to use
         $invoice->setMerchantGstin($this->merchant->getGstin());
         $invoice->setMerchantLabel($this->merchant->getLabelForInvoice());
+
+        if ($this->batch !== null && $this->batch->getCreatorType() === self::USER)
+        {
+            $invoice->setUserId($this->batch->getCreatorId());
+        }
 
         $this->invoice = $invoice;
     }

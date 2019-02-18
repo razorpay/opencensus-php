@@ -28,6 +28,8 @@ class Entity extends Base\PublicEntity
     const PROCESSED_AMOUNT          = 'processed_amount';
 
     const COMMENT                   = 'comment';
+    const CREATOR_ID                = 'creator_id';
+    const CREATOR_TYPE              = 'creator_type';
     const PROCESSED_AT              = 'processed_at';
     const TYPE                      = 'type';
 
@@ -127,6 +129,8 @@ class Entity extends Base\PublicEntity
         self::PROCESSED_PERCENTAGE,
         self::ATTEMPTS,
         self::AMOUNT,
+        self::CREATOR_ID,
+        self::CREATOR_TYPE,
         self::PROCESSED_AMOUNT,
         self::PROCESSED_AT,
         self::CREATED_AT,
@@ -146,6 +150,8 @@ class Entity extends Base\PublicEntity
         self::FAILURE_REASON      => null,
         self::SUB_TYPE            => null,
         self::NAME                => null,
+        self::CREATOR_ID          => null,
+        self::CREATOR_TYPE        => null,
         self::COMMENT             => null,
         self::PROCESSED_AT        => null,
     ];
@@ -454,6 +460,16 @@ class Entity extends Base\PublicEntity
         return $this->getLocalSaveDir($prefix) . $this->getFileKeyWithExt();
     }
 
+    public function getCreatorId()
+    {
+        return $this->getAttribute(self::CREATOR_ID);
+    }
+
+    public function getCreatorType()
+    {
+        return $this->getAttribute(self::CREATOR_TYPE);
+    }
+
     public function isCreatedByFileUpload(): bool
     {
         return $this->createdByFileUpload;
@@ -541,6 +557,16 @@ class Entity extends Base\PublicEntity
     public function setTotalCount($totalCount)
     {
         $this->setAttribute(self::TOTAL_COUNT, $totalCount);
+    }
+
+    public function setCreatorId(string $creatorId)
+    {
+        $this->setAttribute(self::CREATOR_ID, $creatorId);
+    }
+
+    public function setCreatorType(string $creatorType)
+    {
+        $this->setAttribute(self::CREATOR_TYPE, $creatorType);
     }
 
     public function incrementAttempts()

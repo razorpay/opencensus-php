@@ -3034,6 +3034,10 @@ ALTER TABLE `merchant_details`
 ALTER TABLE batches
     ADD COLUMN name varchar(255) AFTER sub_type;
 
+ALTER TABLE batches
+    ADD COLUMN `creator_id` char(14) DEFAULT NULL AFTER `comment`,
+    ADD COLUMN `creator_type` varchar(255) DEFAULT NULL AFTER `creator_id`;
+
 # Airtel aggregator accounts breakup -- start
 
 UPDATE merchant_users

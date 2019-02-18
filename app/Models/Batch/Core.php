@@ -15,6 +15,10 @@ use RZP\Exception\BadRequestException;
 
 class Core extends Base\Core
 {
+    const USER_ID = 'user_id';
+
+    const USER    = 'user';
+
     /**
      * Create flow: Creates new batch entity against given file id or against
      * given file(by first storing it).
@@ -28,6 +32,8 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, $input);
 
         $batch = (new Entity)->build($input);
+
+        $this->fillBatchCreatorDetailsFromDashboardHeadersIfAvailable($batch);
 
         $batch->merchant()->associate($merchant);
 
@@ -227,6 +233,23 @@ class Core extends Base\Core
             unset($input[Entity::FILE]);
 
             BatchJob::dispatch($this->mode, $batch->getId(), $input);
+        }
+    }
+
+    /**
+     * It sets the batch creator_type and creator_id by fetching from dashboard headers.
+     *
+     * @param Entity $batch
+     */
+    protected function fillBatchCreatorDetailsFromDashboardHeadersIfAvailable(Entity $batch)
+    {
+        $headers = $this->app['basicauth']->getDashboardHeaders();
+
+        if (array_key_exists(self::USER_ID, $headers) === true)
+        {
+            $batch->setCreatorId($headers[self::USER_ID]);
+
+            $batch->setCreatorType(self::USER);
         }
     }
 }
