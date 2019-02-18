@@ -774,13 +774,19 @@ class GatewayDowntimeTest extends TestCase
         return $content;
     }
 
-    protected function commonAlertUPIWebHookTestHandler()
+    protected function commonAlertUPIWebHookTestHandler($testName)
     {
+        $this->ba->appAuth();
+
         // create downtime
 
-        $this->testData[__FUNCTION__]['response'] = $this->testData[__FUNCTION__]['downtimeResponse'];
+        $testData = $this->testData[$testName];
 
-        $responseDataArray = $this->startTest();
+        $responseDataArray = $this->startTest($testData);
+
+        $expectedDowntimeCreatedResponse = $this->testData[$testName]['downtimeCreatedResponse'];
+
+        $this->assertArraySelectiveEquals($expectedDowntimeCreatedResponse, $responseDataArray);
 
         foreach ($responseDataArray as $responseData)
         {
@@ -795,19 +801,17 @@ class GatewayDowntimeTest extends TestCase
 
         // duplicate create downtime
 
-        $this->testData[__FUNCTION__]['response'] = $this->testData[__FUNCTION__]['duplicateRequestResponse'];
-
-        $responseDataArray = $this->startTest();
+        $responseDataArray = $this->startTest($testData);
 
         $this->assertEmpty($responseDataArray);
 
         // resolve downtime
 
-        $this->testData[__FUNCTION__]['request']['content']['state'] = 'ok';
+        $testData['request']['content']['state'] = 'ok';
 
-        $this->testData[__FUNCTION__]['response'] = $this->testData[__FUNCTION__]['downtimeResponse'];
+        $responseDataArray = $this->startTest($testData);
 
-        $responseDataArray = $this->startTest();
+        $this->assertArraySelectiveEquals($expectedDowntimeCreatedResponse, $responseDataArray);
 
         foreach ($responseDataArray as $responseData)
         {
@@ -822,17 +826,13 @@ class GatewayDowntimeTest extends TestCase
 
         // duplicate resolve downtime
 
-        $this->testData[__FUNCTION__]['response'] = $this->testData[__FUNCTION__]['duplicateRequestResponse'];
-
-        $responseDataArray = $this->startTest();
+        $responseDataArray = $this->startTest($testData);
 
         $this->assertEmpty($responseDataArray);
     }
 
-    public function testVajraAlertUPIWebHook()
+    protected function createUpiTerminals()
     {
-        $this->ba->appAuth();
-
         $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
 
         // Create another upi mindgate terminal for merchant 100000Razorpay
@@ -848,31 +848,35 @@ class GatewayDowntimeTest extends TestCase
             'gateway_acquirer'          => 'hdfc',
         ];
 
-        $this->fixtures->create("terminal", $upiMindgateTerm2Attributes);
+        $this->fixtures->create('terminal', $upiMindgateTerm2Attributes);
+    }
 
-        $testData = $this->testData[__FUNCTION__];
+    public function testVajraAlertUPIWebhookMerchantId()
+    {
+        $this->createUpiTerminals();
 
-        $testRunConfigs = ['terminal_ids', 'terminal_id', 'merchant_ids', 'merchant_id'];
+        $this->commonAlertUPIWebHookTestHandler(__FUNCTION__);
+    }
 
-        foreach ($testRunConfigs as $testRunConfig)
-        {
-            array_set(
-                $this->testData[__FUNCTION__],
-                'request.content.message',
-                $testData['messageFor'][$testRunConfig]
-            );
+    public function testVajraAlertUPIWebhookMerchantIds()
+    {
+        $this->createUpiTerminals();
 
-            $this->testData['commonAlertUPIWebHookTestHandler'] = $this->testData[__FUNCTION__];
+        $this->commonAlertUPIWebHookTestHandler(__FUNCTION__);
+    }
 
-            if ($testRunConfig === 'terminal_id')
-            {
-                array_pop(
-                    $this->testData['commonAlertUPIWebHookTestHandler']['downtimeResponse']['content']
-                );
-            }
+    public function testVajraAlertUPIWebhookTerminalId()
+    {
+        $this->createUpiTerminals();
 
-            $this->commonAlertUPIWebHookTestHandler();
-        }
+        $this->commonAlertUPIWebHookTestHandler(__FUNCTION__);
+    }
+
+    public function testVajraAlertUPIWebhookTerminalIds()
+    {
+        $this->createUpiTerminals();
+
+        $this->commonAlertUPIWebHookTestHandler(__FUNCTION__);
     }
 
     public function testVajraAlertUPIWebhookWithoutTerminalDowntime()
