@@ -206,15 +206,15 @@ export default class extends React.PureComponent {
         id="description"
         class={classList(this.state.isFocused && 'is-focused')}
       >
-        <span id="description-container">
-          <span class="help-content">
-            <div id="description-quill" />
-            <Popover align="right" theme="dark">
-              <PopoverBody>
-                Give your customers more information about this page
-              </PopoverBody>
-            </Popover>
-          </span>
+        <span class="help-content">
+          <div id="description-container">
+            <span id="description-quill" />
+          </div>
+          <Popover align="right" theme="dark">
+            <PopoverBody>
+              Give your customers more information about this page
+            </PopoverBody>
+          </Popover>
         </span>
       </div>
     );
