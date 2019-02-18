@@ -23,7 +23,7 @@ class TerminalProperties
 
     const MERCHANT_STATUS   = 'E';
 
-    const BANK              = 'RBL';
+    const BANK              = 'RAZORPAY RBL';
 
     const INTERNATIONAL     = 'Y';
 
