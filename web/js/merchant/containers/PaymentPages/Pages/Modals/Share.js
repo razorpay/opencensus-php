@@ -147,7 +147,7 @@ export default class extends React.PureComponent {
   openEmbedButtonView = () => {
     this.props.openModal({
       size: 'small',
-      component: <PPEmbedButtonView shortUrl={url} />,
+      component: <PPEmbedButtonView shortUrl={this.props.url} />,
     });
   };
 
