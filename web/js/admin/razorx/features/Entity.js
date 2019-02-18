@@ -80,24 +80,32 @@ export default class extends React.Component {
         count: 1,
         skip: 0,
         feature_id: id,
-        mode: 'live',
       },
     };
 
-    const liveTotal = rexFetch(experimentsParams);
+    let liveTotal = { ...experimentsParams };
+    liveTotal.params.mode = 'live';
+    liveTotal = rexFetch(liveTotal);
 
-    experimentsParams.mode = 'test';
-    const testTotal = rexFetch(experimentsParams);
+    let testTotal = { ...experimentsParams };
+    testTotal.params.mode = 'test';
+    testTotal = rexFetch(testTotal);
 
-    experimentsParams.status = 'created';
-    const testCreated = rexFetch(experimentsParams);
+    let testCreated = { ...experimentsParams };
+    testCreated.params.mode = 'test';
+    testCreated.params.status = 'created';
+    testCreated = rexFetch(testCreated);
 
-    experimentsParams.mode = 'live';
-    const liveCreated = rexFetch(experimentsParams);
+    let liveCreated = { ...experimentsParams };
+    liveCreated.params.mode = 'live';
+    liveCreated.params.status = 'created';
+    liveCreated = rexFetch(liveCreated);
 
-    delete experimentsParams.mode;
     experimentsParams.status = 'activated';
-    const activeExperiment = rexFetch(experimentsParams);
+    const activeExperiment = rexFetch(
+      { ...experimentsParams },
+      { status: 'activated' }
+    );
 
     return [liveTotal, testTotal, liveCreated, testCreated, activeExperiment];
   }
@@ -125,7 +133,6 @@ export default class extends React.Component {
 
   goToExperiment = (mode, url) => {
     return () => {
-      console.log('....', mode);
       AppStore.updateMode(mode);
 
       setTimeout(() => {

@@ -50,42 +50,44 @@ export default class RazorXApp extends React.Component {
                 classNames="slide"
                 timeout={420}
               >
-                <Switch location={this.props.location}>
-                  <Route path="/experiments" component={Experiments} exact />
-                  <Route
-                    path="/experiments/:id"
-                    component={Experiments}
-                    exact
-                  />
+                <div>
+                  <Switch location={this.props.location}>
+                    <Route path="/experiments" component={Experiments} exact />
+                    <Route
+                      path="/experiments/:id"
+                      component={Experiments}
+                      exact
+                    />
 
-                  <ShowWhenRoute
-                    path="/features_flags"
-                    component={Features}
-                    exact
-                  />
-                  <Route
-                    path="/features_flags/:id"
-                    component={Features}
-                    exact
-                  />
+                    <ShowWhenRoute
+                      path="/features_flags"
+                      component={Features}
+                      exact
+                    />
+                    <Route
+                      path="/features_flags/:id"
+                      component={Features}
+                      exact
+                    />
 
-                  <Route
-                    path="/requests"
-                    component={WorkflowRequestsList}
-                    exact
-                  />
-                  <Route
-                    path="/requests/:id(w_action_.+)"
-                    component={WorkflowRequestsEntity(getEntityIdNugget)}
-                    exact
-                  />
+                    <Route
+                      path="/requests"
+                      component={WorkflowRequestsList}
+                      exact
+                    />
+                    <Route
+                      path="/requests/:id(w_action_.+)"
+                      component={WorkflowRequestsEntity(getEntityIdNugget)}
+                      exact
+                    />
 
-                  <Route
-                    path="/merchant-evaluation"
-                    component={MerchantEvaluation}
-                  />
-                  <Redirect to="/experiments" />
-                </Switch>
+                    <Route
+                      path="/merchant-evaluation"
+                      component={MerchantEvaluation}
+                    />
+                    <Redirect to="/experiments" />
+                  </Switch>
+                </div>
               </CSSTransition>
             </TransitionGroup>
           </ErrorBoundary>

@@ -62,19 +62,29 @@ const required = {
         return false;
       }
 
-      const isIdInvalid = !s.ids || !(s.ids instanceof Array);
-      if (isIdInvalid) {
-        errorMsg = 'Invalid Array of ids';
+      if (['whitelist', 'blacklist', 'context-ramp'].indexOf(s.type) !== -1) {
+        const isIdInvalid = !s.ids || !(s.ids instanceof Array);
+        if (isIdInvalid) {
+          errorMsg = 'Invalid Array of ids';
+          return false;
+        }
+      } else if (s.ids !== void 0) {
+        errorMsg = 'ids not required for ' + s.type;
         return false;
       }
 
-      const isWeightInvalid =
-        !s.weight ||
-        typeof s.weight !== 'number' ||
-        s.weight < 1 ||
-        s.weight > 100000;
-      if (isWeightInvalid) {
-        errorMsg = 'weight must be a valid Number between [1-100000]';
+      if (['ramp', 'context-ramp'].indexOf(s.type) !== -1) {
+        const isWeightInvalid =
+          !s.weight ||
+          typeof s.weight !== 'number' ||
+          s.weight < 1 ||
+          s.weight > 100000;
+        if (isWeightInvalid) {
+          errorMsg = 'weight must be a valid Number between [1-100000]';
+          return false;
+        }
+      } else if (s.weight !== void 0) {
+        errorMsg = 'weight not required for ' + s.type;
         return false;
       }
     });

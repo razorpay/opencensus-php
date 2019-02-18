@@ -38,6 +38,10 @@ export default class extends React.PureComponent {
     });
 
     const initialJSON = this.props.initialJSON;
+    this.setState({
+      jsonValu: initialJSON,
+    });
+
     initialJSON && this.flask.updateCode(JSON.stringify(initialJSON, null, 2));
   }
 
@@ -83,6 +87,10 @@ export default class extends React.PureComponent {
       }
     }
 
+    this.setState({
+      jsonValue: code,
+    });
+
     if (isInValid !== this.state.isInValid) {
       this.setState({ isInValid });
     }
@@ -113,9 +121,7 @@ export default class extends React.PureComponent {
       >
         <input
           name="json-value"
-          value={
-            !this.state.isInValid && this.flask ? this.flask.getCode() : ''
-          }
+          value={this.flask ? this.state.jsonValue : ''}
           class="hide"
         />
         <div id="json-edit-view" />

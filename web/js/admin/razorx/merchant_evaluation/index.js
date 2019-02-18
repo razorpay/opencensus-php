@@ -54,7 +54,7 @@ export default class MerchantEvaluation extends React.Component {
         </span>
       );
     } else if (evaluationResult === null) {
-      result = <span>Search Something!</span>;
+      result = <span>Evaluate Something!</span>;
     } else if (evaluationResult) {
       result = <span class="highlight">{evaluationResult}</span>;
     }
@@ -86,7 +86,7 @@ export default class MerchantEvaluation extends React.Component {
                   </option>
                 ))}
               </SelectField>
-              <button class="btn btn--primary field">Search</button>
+              <button class="btn btn--primary field">Evaluate</button>
             </Form>
             <div class="evaluation-result">
               <div>

@@ -26,9 +26,14 @@ export default class extends React.Component {
       return;
     }
 
+    let data = form;
+    if (form['json-value']) {
+      data = JSON.parse(form['json-value']);
+    }
+
     const isEdit = !!(this.props.data && this.props.data.id);
     const reqPayload = {
-      ...form,
+      ...data,
       variants: this.state.variants.map(v => v.trim()),
     };
 
@@ -164,7 +169,7 @@ export default class extends React.Component {
           )}
           <div class="footer">
             <button class="btn btn--primary">
-              Create
+              {isEdit ? 'Update' : 'Create'}
               <span class="spin-btn" />
             </button>
           </div>
