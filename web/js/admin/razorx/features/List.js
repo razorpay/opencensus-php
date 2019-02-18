@@ -54,8 +54,9 @@ export default class extends React.Component {
           <DateField
             label="Activated On"
             name="activated_at"
-            placeholder="YYYY-MM-DD"
-            format="YYYY-MM-DD"
+            format="X"
+            placeholder="Unix (1549737000)"
+            postSelectionValue={val => val.startOf('day')}
           />
 
           <button class="btn btn--primary field">Search</button>
