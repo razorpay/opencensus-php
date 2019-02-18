@@ -173,7 +173,7 @@ class Beneficiary extends FileProcessor
     {
         $timeNow   = Carbon::now(Timezone::IST);
 
-        $date      = $timeNow->format('Y_m_d_h_m_s');
+        $date      = $timeNow->format('Y_m_d_h_i_s');
 
         return Constants::CORP_CODE . '_BENEREG_' . $date;
     }

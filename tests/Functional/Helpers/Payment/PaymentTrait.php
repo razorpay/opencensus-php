@@ -932,7 +932,7 @@ trait PaymentTrait
         return $refund;
     }
 
-    protected function scroogeRefund(array $refund)
+    protected function scroogeRefund(array $refund, array $data = [])
     {
         $input = $this->getDefaultScroogeInputArray();
 
@@ -942,6 +942,11 @@ trait PaymentTrait
         $input['attempts'] = $refund['attempts'] ?? 0;
         $input['amount'] = $refund['amount'] ?? $input['amount'];
         $input['base_amount'] = $refund['amount'] ?? $input['base_amount'];
+
+        if (isset($data['bank_account']) === true)
+        {
+            $input['fta_data'] = $data;
+        }
 
         $this->ba->scroogeAuth();
 
@@ -1091,7 +1096,7 @@ trait PaymentTrait
             $response['payment_id'] = $paymentId;
             $response['attempts'] = 1;
 
-            $this->scroogeRefund($response);
+            $this->scroogeRefund($response, $content);
         }
 
         return $response;

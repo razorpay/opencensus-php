@@ -33,10 +33,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             //
             $this->messenger->setSkipSlack(true)->raiseReconAlert(
                 [
-                    'trace_code'    => TraceCode::RECON_MISMATCH,
-                    'info_code'     => Base\InfoCode::PAYMENT_ABSENT,
-                    'payment_id'    => $intPaymentId,
-                    'gateway'       => $this->gateway
+                    'trace_code'            => TraceCode::RECON_MISMATCH,
+                    'info_code'             => Base\InfoCode::PAYMENT_ABSENT,
+                    'payment_reference_id'  => $intPaymentId,
+                    'gateway'               => $this->gateway
                 ]);
         }
 

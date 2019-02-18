@@ -12,6 +12,7 @@ class IIN
         Bank\IFSC::UTIB,
         Bank\IFSC::INDB,
         Bank\IFSC::SBIN,
+        Bank\IFSC::CITI,
     );
 
     protected static $emiIins = array(
@@ -140,6 +141,9 @@ class IIN
         Bank\IFSC::SBIN => [
             '47264268',
             '55676300', // TODO: fix bin range
+        ],
+        Bank\IFSC::CITI => [
+            '55463700',
         ],
     );
 

@@ -106,7 +106,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const REFERENCE1            = 'reference1';
     const REFERENCE2            = 'reference2';
     const REFERENCE3            = 'reference3';
-    const REFERENCE4            = 'reference4';
+    const CPS_ROUTE             = 'cps_route';
     const REFERENCE5            = 'reference5';
     const REFERENCE6            = 'reference6';
     const REFERENCE9            = 'reference9';
@@ -220,6 +220,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::APPROVAL_CODE,
         self::REFERENCE1,
         self::REFERENCE2,
+        self::CPS_ROUTE,
         self::DISPUTED,
         self::AUTH_TYPE,
         self::RECURRING_TYPE,
@@ -271,6 +272,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::BATCH_ID,
         self::REFERENCE1,
         self::REFERENCE2,
+        self::CPS_ROUTE,
         self::ACQUIRER_DATA,
         self::TRANSFER_ID,
         self::PAYMENT_LINK_ID,
@@ -461,6 +463,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::AUTH_TYPE            => null,
         self::ACKNOWLEDGED_AT      => null,
         self::REFUND_AT            => null,
+        self::CPS_ROUTE            => false,
     ];
 
     protected $amounts = [
@@ -497,6 +500,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::CONVERT_CURRENCY     => 'bool',
         self::DISPUTED             => 'bool',
         self::VERIFY_BUCKET        => 'int',
+        self::CPS_ROUTE            => 'bool',
     ];
 
     // window in secs, used to fetch payments with same checkout id
@@ -1062,6 +1066,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function setReference2(string $reference2)
     {
         $this->setAttribute(self::REFERENCE2, $reference2);
+    }
+
+    public function setCpsRoute()
+    {
+        $this->setAttribute(self::CPS_ROUTE, 1);
     }
 
     public function setMethod(string $method)

@@ -41,6 +41,16 @@ trait HeadlessOtp
 
     protected function canRunHeadlessOtpFlow($payment, $gatewayInput)
     {
+        if (empty($gatewayInput['auth_type']) === false)
+        {
+            if ($gatewayInput['auth_type'] === Payment\AuthType::HEADLESS_OTP)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         if (($payment->isMethodCardOrEmi() === true) and
             ($this->isAuthTypeOtp($payment) === true) and
             ($this->merchant->isFeatureEnabled(Feature\Constants::HEADLESS) === true))
@@ -156,7 +166,7 @@ trait HeadlessOtp
                 throw new Exception\GatewayTimeoutException(
                     ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
                     null,
-                    true);
+                    false);
             }
         }
 
@@ -169,7 +179,7 @@ trait HeadlessOtp
             throw new Exception\GatewayRequestException(
                 'Failed to open Headless Browser',
                 null,
-                true);
+                false);
         }
 
         /*
@@ -259,29 +269,19 @@ trait HeadlessOtp
 
     protected function disableIinFlowIfApplicable($payment, $code)
     {
-        if (($payment->isMethodCardOrEmi() === false) or
-            ($payment->getAuthType() !== Payment\AuthType::OTP))
+        if ($code !== TraceCode::HEADLESS_OTP_ELF_FAILURE)
         {
             return;
         }
 
-        $errorCodeToFlow = [
-            TraceCode::HEADLESS_OTP_ELF_FAILURE                       => 'headless_otp',
-            ErrorCode::GATEWAY_ERROR_IVR_AUTHENTICATION_NOT_AVAILABLE => 'ivr',
-        ];
+        $iin = $payment->card->getIin();
 
-        if (isset($errorCodeToFlow[$code]) === true)
-        {
-            $iin = $payment->card->getIin();
-            $flow = $errorCodeToFlow[$code];
+        $this->trace->info(TraceCode::IIN_FLOW_DISABLE, [
+            'iin' => $iin,
+            'flow'  => 'headless_otp',
+        ]);
 
-            $this->trace->info(TraceCode::IIN_FLOW_DISABLE, [
-                'iin'  => $iin,
-                'flow' => $flow,
-            ]);
-
-            (new IIN\Service)->disableIinFlow($iin, $flow);
-        }
+        (new IIN\Service)->disableIinFlow($iin, 'headless_otp');
     }
 
     protected function isRupayNetwork($payment)

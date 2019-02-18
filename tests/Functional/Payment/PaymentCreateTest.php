@@ -521,6 +521,47 @@ class PaymentCreateTest extends TestCase
         $this->doAuthPaymentViaCheckoutRoute($this->payment);
     }
 
+    public function testPaymentRoutedThroughCps()
+    {
+        $this->ba->adminAuth();
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $data = $this->makeRequestAndGetContent($request);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('cps');
+
+        $this->ba->publicAuth();
+
+        $payment = $this->doAuthPayment();
+
+        $pay = $this->getLastEntity('payment', true);
+
+        $this->assertTrue($pay['cps_route']);
+
+        $this->ba->adminAuth();
+
+        $request['content']['cps_service_enabled'] = 0;
+
+        $data = $this->makeRequestAndGetContent($request);
+
+        $this->ba->publicAuth();
+
+        $payment = $this->doAuthPayment();
+
+        $pay = $this->getLastEntity('payment', true);
+
+        $this->assertFalse($pay['cps_route']);
+    }
+
     public function testPaymentCreateCallingCallbackRouteTwiceForSuccess()
     {
         $payment = $this->doAuthPayment();
@@ -578,16 +619,6 @@ class PaymentCreateTest extends TestCase
      */
     public function testPaymentS2SOnPartnerAuth()
     {
-         $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('On');
-
         $client = $this->createPartnerApplicationAndGetClientByEnv(
             'dev',
             [
@@ -667,6 +698,8 @@ class PaymentCreateTest extends TestCase
 
     public function testNotEnrolledCardPaymentS2SOnPrivateAuth()
     {
+        $this->mockCardVault();
+
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '555555555555558';
         $payment['callback_url'] = $this->getLocalMerchantCallbackUrl();
@@ -860,17 +893,34 @@ class PaymentCreateTest extends TestCase
 
         $this->mockCardVault();
 
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
+        $payment = $this->getDefaultPaymentArray();
 
-        $this->app->instance('razorx', $razorxMock);
+        $this->fixtures->merchant->addFeatures(['s2s']);
 
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('On');
+        $response = $this->doS2SPrivateAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['id'], $response['razorpay_payment_id']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertTrue($this->redirectToAuthorize);
+    }
+
+    public function testPaymentS2SRedirectPrivateAuthMaestro()
+    {
+        $this->ba->privateAuth();
+
+        $this->mockCardVault();
 
         $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '5081597022059105';
+
+        unset($payment['card']['cvv']);
 
         $this->fixtures->merchant->addFeatures(['s2s']);
 
@@ -893,16 +943,6 @@ class PaymentCreateTest extends TestCase
 
         $this->mockCardVault();
 
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('off');
-
         $payment = $this->getDefaultPaymentArray();
 
         $this->fixtures->merchant->addFeatures(['s2s']);
@@ -917,7 +957,7 @@ class PaymentCreateTest extends TestCase
 
         $this->assertEquals('authorized', $payment['status']);
 
-        $this->assertFalse($this->redirectToAuthorize);
+        $this->assertTrue($this->redirectToAuthorize);
     }
 
     public function testPaymentS2SRedirectPrivateAuthInvalidTrackId()

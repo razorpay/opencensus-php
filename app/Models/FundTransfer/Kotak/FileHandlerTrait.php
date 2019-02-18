@@ -755,7 +755,7 @@ trait FileHandlerTrait
     {
         $headings = $headings ?: $this->getHeadings();
 
-        $values = explode($delimiter, $row);
+        $values = str_getcsv($row, $delimiter);
 
         if (count($headings) !== count($values))
         {

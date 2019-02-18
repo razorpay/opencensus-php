@@ -173,6 +173,7 @@ class NetbankingAxisEMandateTest extends TestCase
         $refund = $this->getLastEntity(Entity::REFUND, true);
 
         $this->assertEquals('processed', $refund['status']);
+        $this->assertNotNull($refund['processed_at']);
 
         $this->assertEquals(0, $payment['amount_refunded']);
         $this->assertEquals('refunded', $payment['status']);

@@ -4683,12 +4683,20 @@ ALTER TABLE terminals
 ALTER VIEW qubole_terminals_view AS
     SELECT id, merchant_id, category, network_category, enabled, gateway, gateway_merchant_id, gateway_terminal_id, gateway_acquirer, card, netbanking, upi, emandate, aeps, emi, recurring, capability, international, type, created_at, updated_at, deleted_at FROM terminal;
 
+
+ALTER TABLE balance
+    ADD INDEX balance_merchant_id_type_updated_at_index (merchant_id, type, updated_at);
+
 ALTER TABLE payouts
     ADD COLUMN reference_id VARCHAR(255) DEFAULT NULL AFTER id,
     ADD INDEX payouts_reference_id_index (reference_id(25));
 
 ALTER TABLE promotions
     MODIFY COLUMN credit_amount int(11) NOT NULL DEFAULT 0;
+
+ALTER TABLE gateway_rule
+    ADD COLUMN authentication_gateway varchar(255) DEFAULT NULL AFTER category2,
+    ADD COLUMN auth_type varchar(14) DEFAULT NULL AFTER authentication_gateway;
 
 ALTER TABLE orgs
     ADD COLUMN type varchar(255) DEFAULT NULL AFTER email;
@@ -4713,3 +4721,16 @@ ALTER TABLE gateway_rules
 
 ALTER TABLE contacts
     ADD INDEX contacts_merchant_id_active_index (merchant_id, active);
+
+ALTER TABLE payments CHANGE `reference4` `cps_route` TINYINT(1);
+
+ALTER TABLE bank_accounts
+    ADD COLUMN fts_fund_account_id INTEGER DEFAULT NULL AFTER beneficiary_mobile,
+    ADD INDEX `bank_accounts_fts_fund_account_id_index` (`fts_fund_account_id`);
+
+ALTER TABLE vpas
+    ADD COLUMN fts_fund_account_id INTEGER DEFAULT NULL AFTER merchant_id,
+    ADD INDEX `vpas_fts_fund_account_id_index` (`fts_fund_account_id`);
+
+ALTER TABLE payouts
+    ADD COLUMN narration VARCHAR(255) DEFAULT NULL AFTER reference_id;

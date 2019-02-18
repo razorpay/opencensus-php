@@ -3,7 +3,9 @@
 namespace RZP\Constants;
 
 use RZP\Base\Fetch;
+use RZP\Models\Payout;
 use RZP\Models\Dispute;
+use RZP\Models\FundTransfer;
 use RZP\Models\NodalBeneficiary;
 use RZP\Models\Settlement\Channel;
 /**
@@ -201,7 +203,7 @@ class AdminFetch
 
     public static function entities()
     {
-        return [
+        $entities = [
             Entity::ADDON => [
                 'deleted' => [
                     Fetch::LABEL    => 'Deleted',
@@ -530,6 +532,19 @@ class AdminFetch
                 ],
             ],
 
+            Entity::CONTACT => [
+                'email'           => [],
+                'name'            => [],
+                'contact'         => [],
+                'reference_id'    => [],
+                'fund_account_id' => [],
+                'account_number'  => [],
+                'active'          => [
+                    Fetch::TYPE => Fetch::TYPE_BOOLEAN
+                ],
+                'type'            => [],
+            ],
+
             Entity::CREDITS => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'type' => [
@@ -742,6 +757,11 @@ class AdminFetch
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
 
+            Entity::FUND_ACCOUNT => [
+                'source_id'    => [],
+                'account_type' => [],
+            ],
+
             Entity::FUND_TRANSFER_ATTEMPT => [
                 'batch_fund_transfer_id' => [
                     Fetch::LABEL  => 'Batch Fund Transfer Id',
@@ -753,7 +773,8 @@ class AdminFetch
                     Fetch::VALUES => [
                         'settlement',
                         'payout',
-                        'refund'
+                        'refund',
+                        'fund_account_validation'
                     ],
                 ],
                 'source_id' => [
@@ -1431,10 +1452,25 @@ class AdminFetch
                 'method' => [
                     Fetch::LABEL  => 'Method',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
-                    Fetch::VALUES => [
-                        'fund_transfer',
-                    ],
+                    Fetch::VALUES => Payout\Method::getAll(),
                 ],
+                'mode'            => [
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => FundTransfer\Mode::getAll(),
+                ],
+                'transaction_id'  => [],
+                'utr'             => [],
+                'contact_name'    => [],
+                'contact_phone'   => [],
+                'contact_id'      => [],
+                'contact_email'   => [],
+                'contact_type'    => [],
+                'fund_account_id' => [],
+                'status'          => [
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => array_keys(Payout\Status::$internalToPublicStatusMapping),
+                ],
+                'reference_id'    => [],
             ],
 
             Entity::PAYTM => [
@@ -1587,6 +1623,22 @@ class AdminFetch
                 'settlement_id' => [
                     Fetch::LABEL  => 'Settlement Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+            ],
+
+            Entity::STATEMENT => [
+                'balance_id'      => [],
+                'contact_id'      => [],
+                'payout_id'       => [],
+                'contact_name'    => [],
+                'contact_phone'   => [],
+                'contact_email'   => [],
+                'contact_type'    => [],
+                'fund_account_id' => [],
+                'utr'             => [],
+                'mode'            => [
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => FundTransfer\Mode::getAll(),
                 ],
             ],
 
@@ -1801,6 +1853,13 @@ class AdminFetch
                     Fetch::LABEL  => 'Customer ID',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
+                'receiver_type' => [
+                    Fetch::TYPE => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'bank_account',
+                        'qr_code',
+                    ],
+                ],
             ],
 
             Entity::WALLET => [
@@ -1867,6 +1926,29 @@ class AdminFetch
                 ],
             ],
         ];
+
+        //
+        // Ensures default type and label against each attribute's config exists.
+        //
+        // Todos:
+        // - Remove at least hundred unnecessary lines from this file
+        // - Move this logic to dashbaord to reduce payload size of this request
+        //
+        foreach ($entities as $entity => & $attributes)
+        {
+            foreach ($attributes as $attribute => & $config)
+            {
+                if (is_array($config) === true)
+                {
+                    $config += [
+                        Fetch::LABEL => ucwords(str_replace('_', ' ', $attribute)),
+                        Fetch::TYPE  => Fetch::TYPE_STRING,
+                    ];
+                }
+            }
+        }
+
+        return $entities;
     }
 
 }

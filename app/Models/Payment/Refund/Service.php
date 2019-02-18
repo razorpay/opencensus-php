@@ -963,7 +963,7 @@ class Service extends Base\Service
         if (Payment\Gateway::isScroogeGatewayLiveAtGivenTimestamp($refund->getGateway(),
                                                                   $refund->getCreatedAt()) === true)
         {
-            $this->makeScroogeMarkRefundProcessedRequest($refund, $input);
+            $this->makeScroogeEditRefundRequest($refund, $input);
         }
         else
         {
@@ -993,7 +993,7 @@ class Service extends Base\Service
             {
                 $refund->getValidator()->validateMarkProcessed();
 
-                $this->UpdateRefund($refund, $input);
+                $this->updateRefund($refund, $input);
 
                 $refund->setStatusProcessed();
                 $refund->setGatewayRefunded(true);
@@ -1053,7 +1053,7 @@ class Service extends Base\Service
                         Payment\Entity::STATUS => Status::PROCESSED
                     ];
 
-                    $this->makeScroogeMarkRefundProcessedRequest($refund, $data);
+                    $this->makeScroogeEditRefundRequest($refund, $data);
                 }
                 else
                 {
@@ -1088,8 +1088,9 @@ class Service extends Base\Service
     /**
      * @param Entity $refund
      * @param array $input
+     * @param string $event
      */
-    protected function makeScroogeMarkRefundProcessedRequest(Entity $refund, array $input)
+    public function makeScroogeEditRefundRequest(Entity $refund, array $input, string $event = 'processed_event')
     {
         $refund->getValidator()->validateScroogeEditRefund($input);
 
@@ -1097,7 +1098,7 @@ class Service extends Base\Service
             'refunds' => [
                 [
                     'refund_id'     => $refund->getId(),
-                    'event'         => 'processed_event',
+                    'event'         => $event,
                     'gateway_keys'  =>
                     [
                         Entity::REFERENCE1 => $input[Entity::REFERENCE1] ?? ''

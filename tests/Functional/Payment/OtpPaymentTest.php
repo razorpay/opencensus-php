@@ -428,17 +428,6 @@ class OtpPaymentTest extends TestCase
         $this->mockCardVault();
         $this->mockOtpElf();
 
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('On');
-
-
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->fixtures->iin->create([
@@ -454,7 +443,6 @@ class OtpPaymentTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '5567630000002004';
-        // $payment['auth_type'] = 'otp';
 
         $request = [
             'method'  => 'POST',
@@ -1917,8 +1905,6 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
-        // $this->fixtures->create('terminal:shared_hdfc_recurring_terminals');
-
         $this->fixtures->merchant->addFeatures(['headless']);
         $this->mockCardVault();
         $this->mockOtpElfForRupay();
@@ -2198,6 +2184,63 @@ class OtpPaymentTest extends TestCase
         self::assertEquals('headless_otp', $payment['auth_type']);
         self::assertEquals('hdfc', $payment['gateway']);
         self::assertEquals('1n25f6uN5S1Z5a', $payment['terminal_id']);
+    }
+
+    public function testHeadlessOtpAuthenticationPaymentFailedDisableIinPreferredAuth()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['headless']);
+
+        $this->mockCardVault();
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+        ]);
+
+        $flows = [
+            'pin'          => '1',
+            'headless_otp' => '1',
+            'otp'          => '1',
+            'magic'        => '1',
+            'iframe'       => '1',
+        ];
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        foreach (OtpElf::$otpElfErrors as $otpElfError)
+        {
+            $otpelf = \Mockery::mock('RZP\Services\Mock\OtpElf')->makePartial();
+
+            $this->app->instance('card.otpelf', $otpelf);
+
+            $otpelf->shouldReceive('otpSend')
+                   ->with(\Mockery::type('array'))
+                   ->andReturnUsing(function () use ($otpElfError)
+                    {
+                        return [
+                            'success' => false,
+                            'error'   => [
+                                'reason' => $otpElfError
+                            ],
+                        ];
+                    });
+            $this->fixtures->edit('iin', 556763, ['flows' => $flows]);
+            $payment = $this->getDefaultPaymentArray();
+            $payment['card']['number'] = '5567630000002004';
+            $payment['preferred_auth'] = ['otp'];
+            $this->setOtp('213433');
+            $this->doAuthPayment($payment);
+            $iin = $this->getEntityById('iin', 556763, true);
+            self::assertNotContains('headless_otp', $iin['flows']);
+        }
     }
 
     // @codingStandardsIgnoreLine

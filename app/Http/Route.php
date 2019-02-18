@@ -484,6 +484,7 @@ final class Route
         'customer_get_wallet_statement'            => ['get',      'customers/{id}/statement',                       'CustomerController@getCustomerWalletStatement'                     ],
         'invoice_create'                           => ['post',     'invoices',                                       'InvoiceController@createInvoice'                                   ],
         'invoice_fetch'                            => ['get',      'invoices/{id}',                                  'InvoiceController@getInvoice'                                      ],
+        'invoice_get_count'                        => ['get',      'invoices-count',                                 'InvoiceController@getInvoicesCount'                                      ],
         'invoice_fetch_multiple'                   => ['get',      'invoices',                                       'InvoiceController@getInvoices'                                     ],
         'invoice_update'                           => ['patch',    'invoices/{id}',                                  'InvoiceController@updateInvoice'                                   ],
         'invoice_issue'                            => ['post',     'invoices/{id}/issue',                            'InvoiceController@issueInvoice'                                    ],
@@ -1001,6 +1002,9 @@ final class Route
         // Banking statement routes
         'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
         'transaction_statement_fetch_multiple'     => ['get',      'transactions',                                   'StatementController@list'                                          ],
+
+        //API Routes for FTS
+        'update_fts_nodal_beneficiary'             => ['post',     'update_fts_nodal_beneficiary',                   'NodalBeneficiaryController@createOrUpdateNodalBeneficiary'         ],
     ];
 
     public static $public = [
@@ -1158,6 +1162,7 @@ final class Route
         'customer_wallet_payout',
         'invoice_create',
         'invoice_fetch',
+        'invoice_get_count',
         'invoice_fetch_multiple',
         'invoice_update',
         'invoice_issue',
@@ -1359,6 +1364,7 @@ final class Route
         'merchant_es_sync_cron',
         'gateway_downtime_vajra_webhook',
         'scrooge_refund_verify_bulk',
+        'update_fts_nodal_beneficiary',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2489,6 +2495,7 @@ final class Route
             'invoice_create',
             'invoice_fetch',
             'invoice_fetch_multiple',
+            'invoice_get_count',
             'customer_fetch_by_id',
             'payment_create_subscriptions',
             'payment_capture',
@@ -2562,6 +2569,10 @@ final class Route
 
         'vajra' => [
             'gateway_downtime_vajra_webhook',
+        ],
+
+        'fts'  => [
+            'update_fts_nodal_beneficiary',
         ],
     ];
 
@@ -2750,18 +2761,18 @@ final class Route
     // These routes are redirected after a feature check
     // Others in SUBSCRIPTION_PROXY_ROUTES are redirected blindly
     const SUBSCRIPTION_FEATURE_PROXY_ROUTES = [
-        'plan_create',
-        'plan_fetch',
-        'plan_fetch_multiple',
-        'subscription_create',
-        'subscription_fetch',
-        'subscription_fetch_multiple',
-        'subscription_cancel',
-        'addon_fetch',
-        'addon_fetch_multiple',
-        'addon_delete',
-        'subscription_create_addon',
-        'subscription_fetch_due_addons',
+        //'plan_create',
+        //'plan_fetch',
+        //'plan_fetch_multiple',
+        //'subscription_create',
+        //'subscription_fetch',
+        //'subscription_fetch_multiple',
+        //'subscription_cancel',
+        //'addon_fetch',
+        //'addon_fetch_multiple',
+        //'addon_delete',
+        //'subscription_create_addon',
+        //'subscription_fetch_due_addons',
         //'subscription_test_charge',
         //'subscription_manual_retry',
     ];

@@ -20,6 +20,8 @@ class InfoCode
 
     const UNKNOWN_RECON_TYPE                = 'UNKNOWN_RECON_TYPE';
 
+    const RECON_TYPE_NOT_FOUND              = 'RECON_TYPE_NOT_FOUND';
+
     const DATA_MISMATCH                     = 'DATA_MISMATCH';
 
     const UNEXPECTED_PAYMENT                = 'UNEXPECTED_PAYMENT';

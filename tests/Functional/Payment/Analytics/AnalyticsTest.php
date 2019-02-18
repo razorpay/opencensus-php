@@ -135,6 +135,8 @@ class AnalyticsTest extends TestCase
 
     public function testHttpRequestDataForS2sPayments()
     {
+        $this->mockCardVault();
+
         $payment = $this->getDefaultPaymentArray();
 
         $requestServer = [
@@ -156,6 +158,8 @@ class AnalyticsTest extends TestCase
 
     public function testAnalyticsForS2sPayments()
     {
+        $this->mockCardVault();
+
         $payment = $this->getDefaultPaymentArray();
 
         $payment['ip']         = '52.34.123.23';

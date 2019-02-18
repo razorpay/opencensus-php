@@ -56,6 +56,9 @@ class CreatePayoutsTable extends Migration
 
             $table->char(Payout::PURPOSE, 30);
 
+            $table->string(Payout::NARRATION, 255)
+                  ->nullable();
+
             $table->string(Payout::PURPOSE_TYPE, 255)
                   ->nullable();
 

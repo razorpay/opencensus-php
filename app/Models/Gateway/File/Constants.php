@@ -35,6 +35,7 @@ class Constants
     const ISG              = 'isg';
     const SBI              = 'sbi';
     const CORPORATION      = 'corporation';
+    const CITI             = 'citi';
 
     const ENACH_NPCI_NETBANKING = 'enach_npci_netbanking';
 
@@ -59,6 +60,7 @@ class Constants
             self::RBL,
             self::SCBL,
             self::SBI,
+            self::CITI,
         ],
         Type::COMBINED => [
             self::KOTAK,
@@ -155,6 +157,8 @@ class Constants
             self::RBL      => ['Rblcards.emi@razorpay.com'],
             self::SCBL     => ['scbl.emi@razorpay.com'],
             self::SBI      => [''],
+            // todo: Add the recepients to the bank group
+            self::CITI     => ['citibank.emi@razorpay.com'],
         ],
 
         Type::REFUND_FAILED => [

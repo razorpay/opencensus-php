@@ -3,6 +3,7 @@
 .env
 .env.*
 .idea/*
+.vscode/*
 !environment/.env.wercker
 !environment/.env.drone
 !environment/.env.defaults

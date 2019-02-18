@@ -61,7 +61,7 @@ class NetbankingIndusindCombinedFileTest extends TestCase
                 ],
                 [
                     'type' => 'indusind_netbanking_refund',
-                    'location' => 'PGReconRAZORPAY' . $time . 'test.txt',
+                    'location' => 'PGRefundRAZORPAY' . $time . 'test.txt',
                 ],
             ]
         ];

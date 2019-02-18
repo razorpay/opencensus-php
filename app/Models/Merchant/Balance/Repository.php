@@ -196,8 +196,8 @@ class Repository extends Base\Repository
     public function getMerchantsIdsForEsSync(int $minUpdatedAtTimeStamp): array
     {
         $merchantIds = $this->newQuery()
-                            ->where(Entity::UPDATED_AT, '>=', $minUpdatedAtTimeStamp)
                             ->where(Entity::TYPE, '=', Type::PRIMARY)
+                            ->where(Entity::UPDATED_AT, '>=', $minUpdatedAtTimeStamp)
                             ->groupBy(Entity::MERCHANT_ID)
                             ->select(Entity::MERCHANT_ID)
                             ->get();
@@ -238,9 +238,16 @@ class Repository extends Base\Repository
 
     public function getBalanceByAccountNumberOrFail(string $accountNumber): Entity
     {
+        //
+        // Gets merchant identifier from current auth context.
+        // Must not use $this->merchantId because when auth's merchant is set/reset it does not affect
+        // singleton repository objects which are already resolved.
+        //
+        $merchantId = $this->auth->getMerchantId();
+
         return $this->newQuery()
                     ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
-                    ->merchantIdAndType($this->merchant->getId(), Type::BANKING)
+                    ->merchantIdAndType($merchantId, Type::BANKING)
                     ->firstOrFailPublic();
     }
 }

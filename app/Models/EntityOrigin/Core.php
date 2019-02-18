@@ -102,20 +102,25 @@ class Core extends Base\Core
                 break;
 
             default:
-                $this->trace->critical(TraceCode::ORIGIN_INVALID_TYPE,
-                                       [
-                                           Entity::ORIGIN_TYPE => $originType,
-                                           Entity::ORIGIN_ID   => $originId,
-                                       ]);
+                break;
         }
 
         if ($originEntity === null)
         {
-            $this->trace->critical(TraceCode::ORIGIN_INVALID_TYPE,
-                                   [
-                                       Entity::ORIGIN_TYPE => $originType,
-                                       Entity::ORIGIN_ID   => $originId,
-                                   ]);
+            $authType                  = app('basicauth')->getAuthType();
+            $hasPartnerAuthCallbackKey = app('basicauth')->hasPartnerAuthCallbackKey();
+            $routeName                 = app('router')->currentRouteName();
+
+            $this->trace->critical(
+                TraceCode::ORIGIN_INVALID_TYPE,
+                [
+                    Entity::ORIGIN_TYPE             => $originType,
+                    Entity::ORIGIN_ID               => $originId,
+                    'auth_type'                     => $authType,
+                    'has_partner_auth_callback_key' => $hasPartnerAuthCallbackKey,
+                    'route_name'                    => $routeName,
+                ]
+            );
         }
 
         return $originEntity;

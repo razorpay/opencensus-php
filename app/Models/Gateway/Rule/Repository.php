@@ -50,6 +50,58 @@ class Repository extends Base\Repository
         return $rules;
     }
 
+    public function fetchAuthenitcationRulesForSearchCriteria(array $criteria): base\PublicCollection
+    {
+        $query = $this->newQuery();
+
+        $this->buildAuthenitcationSelectionQuery($query, $criteria);
+
+        $rules = $query->get();
+
+        return $rules;
+
+    }
+
+    public function buildAuthenitcationSelectionQuery($query, $params)
+    {
+        foreach ($params as $key => $value)
+        {
+            if ($params[$key] !== null)
+            {
+                $query->where(function ($query) use ($key, $params)
+                {
+                    $func = 'addQueryFor' . studly_case($key);
+
+                    if (method_exists($this, $func) === true)
+                    {
+                        $this->$func($query, $params);
+                    }
+                    else if (is_array($params[$key]) === true)
+                    {
+                        $query->whereIn($key, $params[$key]);
+                    }
+                    else
+                    {
+                        $query->where($key, '=', $params[$key]);
+                    }
+                    // For some attributes in which null satisfies the selection
+                    // criteria add a clause like IR WHERE <key> IS NULL
+                    if (in_array($key, Entity::AUTHENTICATION_NULLABLE_ATTRIBUTES, true) === true)
+                    {
+                        $query->orWhereNull($key);
+                    }
+                });
+            }
+            else
+            {
+                if (in_array($key, Entity::AUTHENTICATION_NULLABLE_ATTRIBUTES, true) === true)
+                {
+                    $query->whereNull($key);
+                }
+            }
+        }
+    }
+
     /**
      * Adds where clauses to the select query depending on the type of values
      * - If the key has a custom function defined use that for getting the clause
@@ -181,5 +233,10 @@ class Repository extends Base\Repository
     protected function addQueryForMaxAmount(QueryBuilder $query, array $params)
     {
         $query->where(Entity::MAX_AMOUNT, '>=', $params[Entity::MIN_AMOUNT]);
+    }
+
+    protected function addQueryAuthType(Querybuilder $query, array $params)
+    {
+        $query->whereIn(Entity::AUTH_TYPE, $paras[Entity::AUTH_TYPE]);
     }
 }

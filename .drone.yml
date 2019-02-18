@@ -604,7 +604,6 @@ pipeline:
       - ${DRONE_COMMIT_SHA}
     when:
       environment: stage-delta
-      branch: hdfc_vas
       event:
         exclude: [push]
         include: [deployment]

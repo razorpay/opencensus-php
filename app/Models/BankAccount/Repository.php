@@ -300,4 +300,18 @@ class Repository extends Base\Repository
                     ->latest()
                     ->first();
     }
+
+    /**
+     * Fetches the details of bank account for the given
+     * fts_fund_account_id
+     *
+     * @param string $ftsFundAccountId
+     * @return mixed
+     */
+    public function getBankAccountByFtsFundAccountId(string $ftsFundAccountId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::FTS_FUND_ACCOUNT_ID, $ftsFundAccountId)
+                    ->first();
+    }
 }

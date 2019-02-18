@@ -319,10 +319,10 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
                 [
                     'trace_code'        => TraceCode::RECON_INFO_ALERT,
                     'info_code'         => Base\InfoCode::AMOUNT_MISMATCH,
-                    'message'           => 'Refund amount mismatch',
+                    'refund_id'         => $this->refund->getId(),
                     'expected_amount'   => $this->refund->getBaseAmount(),
+                    'recon_amount'      => $this->getReconRefundAmount($row),
                     'currency'          => $this->refund->getCurrency(),
-                    'row'               => $row,
                     'gateway'           => $this->gateway
                 ]);
 
@@ -350,7 +350,7 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'                => TraceCode::RECON_MISMATCH,
-                    'info_code'                 => 'DATA_MISMATCH',
+                    'info_code'                 => Base\InfoCode::DATA_MISMATCH,
                     'message'                   => 'Reference number in db is not same as in recon',
                     'refund_id'                 => $this->refund->getId(),
                     'payment_id'                => $this->payment->getId(),

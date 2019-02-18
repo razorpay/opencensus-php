@@ -45,7 +45,6 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
                     'expected_amount'   => $this->refund->getBaseAmount(),
                     'recon_amount'      => $this->getReconRefundAmount($row),
                     'currency'          => $this->refund->getCurrency(),
-                    'row'               => $row,
                     'gateway'           => $this->refund->getGateway(),
                 ]);
 

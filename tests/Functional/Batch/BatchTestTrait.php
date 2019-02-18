@@ -26,6 +26,15 @@ trait BatchTestTrait
         $this->testData[$callee]['request']['files']['file'] = $uploadedFile;
     }
 
+    public function createAndPutCsvFileInRequest(array $entries, string $callee)
+    {
+        $url = $this->writeToCsvFile($entries, 'file', null, 'files/batch');
+
+        $uploadedFile = $this->createUploadedFileCsv($url);
+
+        $this->testData[$callee]['request']['files']['file'] = $uploadedFile;
+    }
+
     public function createUploadedFile(string $url): UploadedFile
     {
         $mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';

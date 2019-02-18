@@ -3,8 +3,10 @@
 namespace RZP\Tests\Functional\Batch;
 
 use RZP\Models\Vpa;
+use RZP\Models\Payout;
 use RZP\Models\BankAccount;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 
 /**
  * Class: BatchTest
@@ -14,6 +16,7 @@ use RZP\Tests\Functional\TestCase;
 class BatchTest extends TestCase
 {
     use BatchTestTrait;
+    use TestsBusinessBanking;
 
     public function setUp()
     {
@@ -22,33 +25,6 @@ class BatchTest extends TestCase
         parent::setUp();
 
         $this->ba->proxyAuth();
-    }
-
-    public function testCreateBatchOfContactType()
-    {
-        // Creates a in-active contact to assert that it is not used in the flow.
-        $this->fixtures->create(
-            'contact',
-            [
-                'id'           => '100TestContact',
-                'active'       => false,
-                'type'         => 'vendor',
-                'name'         => 'Another Example',
-                'email'        => 'another@example.com',
-                'contact'      => '9988998899',
-                'reference_id' => null,
-            ]);
-
-        $entries = $this->getFileEntries(__FUNCTION__);
-
-        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
-
-        $this->startTest();
-
-        $contacts = $this->getDbEntities('contact');
-
-        $this->assertCount(3 + 1, $contacts);
-        $this->assertCount(2, $contacts->where('name', 'Another Example'));
     }
 
     public function testCreateBatchOfFundAccountType()
@@ -65,7 +41,7 @@ class BatchTest extends TestCase
 
         $entries = $this->getFileEntries(__FUNCTION__);
 
-        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+        $this->createAndPutCsvFileInRequest($entries, __FUNCTION__);
 
         $this->startTest();
 
@@ -74,15 +50,44 @@ class BatchTest extends TestCase
         $this->assertCount(3, $contacts);
 
         $bankAccounts = $this->getDbEntities('bank_account');
-        // 3 + 2 (Existing)
-        $this->assertCount(3 + 2, $bankAccounts);
-        $this->assertCount(2, $bankAccounts->where(BankAccount\Entity::ACCOUNT_NUMBER, '1234567890'));
+        // 2 + 2 (Existing)
+        $this->assertCount(2 + 2, $bankAccounts);
+        $this->assertCount(1, $bankAccounts->where(BankAccount\Entity::ACCOUNT_NUMBER, '1234567890'));
         $this->assertCount(1, $bankAccounts->where(BankAccount\Entity::ACCOUNT_NUMBER, '1234567891'));
 
         $vpas = $this->getDbEntities('vpa');
         // 2 + 1 (Existing)
         $this->assertCount(2 + 1, $vpas);
         $this->assertCount(2, $vpas->where(Vpa\Entity::ADDRESS, 'jitendrakkkk@upi'));
+    }
+
+    public function testCreateBatchOfPayoutType()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 5000);
+
+        $this->createContact();
+
+        $this->fixtures
+             ->fund_account
+             ->createBankAccount(
+                [
+                    'id'          => '000000000test1',
+                    'source_id'   => '1000010contact',
+                    'source_type' => 'contact',
+                ]);
+
+        $entries = $this->getFileEntries(__FUNCTION__);
+        $this->createAndPutCsvFileInRequest($entries, __FUNCTION__);
+
+        $this->startTest();
+
+        $payouts = $this->getDbEntities('payout');
+        $this->assertCount(2, $payouts);
+        $this->assertEquals(1100, $payouts->sum(Payout\Entity::AMOUNT));
+        $this->assertEquals('1234567890', $payouts->first()->fundAccount->account->getAccountNumber());
+        $this->assertEquals('Jitendra', $payouts->first()->fundAccount->contact->getName());
+        $this->assertEquals('fa_000000000test1', $payouts->last()->fundAccount->getPublicId());
+        $this->assertEquals('test user', $payouts->last()->fundAccount->contact->getName());
     }
 
     protected function getFileEntries(string $callee): array

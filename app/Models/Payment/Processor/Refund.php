@@ -250,20 +250,11 @@ trait Refund
     {
         $payment = $refund->payment;
 
-        $data = $this->getGatewayDataForRefund($refund, $payment);
-
-        //
-        // This is required for upi mindgate refunds. Second request on gateway with same refund id fails with duplicate.
-        // Attempts will come from scrooge but still handling here to keep default value 0. Can't use API's attempts as
-        // for scrooge refunds API attempts will always be 1
-        //
-        $input['attempts'] = $input['attempts'] ?? 0;
-
-        $data['refund']['attempts'] = $input['attempts'];
+        $data = $this->getScroogeRefundCallData($refund, $payment, $input);
 
         $gatewayRefundResponse = $this->mutex->acquireAndRelease(
             $payment->getId(),
-            function() use ($data, $payment)
+            function () use ($data, $payment)
             {
                 return $this->callRefundFunction($payment, $data);
             });
@@ -282,6 +273,35 @@ trait Refund
         //
 
         return $gatewayRefundResponse;
+    }
+
+    /**
+     * This returns the data required to perform refund via fta or gateway
+     *
+     * @param RefundEntity $refund
+     * @param $payment
+     * @param array $input
+     * @return array
+     */
+    protected function getScroogeRefundCallData(RefundEntity $refund, $payment, array $input)
+    {
+        $data = $this->getGatewayDataForRefund($refund, $payment);
+
+        //
+        // This is required for upi mindgate refunds. Second request on gateway with same refund id fails with duplicate.
+        // Attempts will come from scrooge but still handling here to keep default value 0. Can't use API's attempts as
+        // for scrooge refunds API attempts will always be 1
+        //
+        $input['attempts'] = $input['attempts'] ?? 0;
+
+        $data['refund']['attempts'] = $input['attempts'];
+
+        if (isset($input['fta_data']) === true)
+        {
+            $data = array_merge($data, $input['fta_data']);
+        }
+
+        return $data;
     }
 
     public function scroogeGatewayVerifyRefund(RefundEntity $refund, array $input)
@@ -324,7 +344,9 @@ trait Refund
             //
             $refund->setAttempts(($input['attempts'] ?? -1) + 1) ;
 
-            $gatewayVerifyRefundResponse = $this->verifyRefund($refund);
+            $ftaInput = $input['fta_data'] ?? [];
+
+            $gatewayVerifyRefundResponse = $this->verifyRefund($refund, $ftaInput);
         }
         catch (\Exception $ex)
         {
@@ -500,16 +522,22 @@ trait Refund
      * by the gateway.
      *
      * @param RefundEntity $refund
-     *
+     * @param array $ftaInput
      * @return array
+     * @throws Exception\BadRequestException
      */
-    public function verifyRefund(Payment\Refund\Entity $refund)
+    public function verifyRefund(Payment\Refund\Entity $refund, array $ftaInput = [])
     {
         $payment = $refund->payment;
 
-        if ($this->isFundTransferAttemptRefund($payment) === true)
+        if ($this->isFundTransferAttemptRefund($payment, $ftaInput) === true)
         {
-            $verifyRefundResult = $this->prepareScroogeRefundResponse([], false);
+            $verifyRefundResult = $this->prepareScroogeRefundResponse([],
+                                                      false,
+                                                                      null,
+                                                                      Payment\Action::VERIFY,
+                                                                      ErrorCode::REFUND_FTA_MANUALLY_CONFIRMED_UNPROCESSED);
+
         }
         else
         {
@@ -781,6 +809,12 @@ trait Refund
         //
         if (is_bool($verifyRefundResult) === false)
         {
+            //
+            // Adding refund gateway here, as this will be common to all verify responses.
+            // Other attributes are being set in individual verify refund functions of each gateway.
+            //
+            $verifyRefundResult[Payment\Gateway::REFUND_GATEWAY] = $this->refund->getGateway();
+
             return $verifyRefundResult;
         }
 
@@ -937,7 +971,11 @@ trait Refund
        return $this->prepareScroogeRefundResponse($gatewayResponse, $gatewayRefunded, $e);
     }
 
-    protected function prepareScroogeRefundResponse($gatewayResponse, $gatewayRefunded, $exception = null, $action = Payment\Action::REFUND)
+    protected function prepareScroogeRefundResponse($gatewayResponse,
+                                                    $gatewayRefunded,
+                                                    $exception = null,
+                                                    $action = Payment\Action::REFUND,
+                                                    $statusCode = ErrorCode::GATEWAY_ERROR_FATAL_ERROR)
     {
         $scroogeResponse = new ScroogeResponse();
 
@@ -948,7 +986,7 @@ trait Refund
                                         (
                                             (empty($exception) === false) ?
                                             (string) $exception->getCode() :
-                                            ErrorCode::GATEWAY_ERROR_FATAL_ERROR
+                                            $statusCode
                                         ));
 
         $gatewayRefundResponse = $gatewayResponse[Payment\Gateway::GATEWAY_RESPONSE] ?? '';
@@ -972,6 +1010,8 @@ trait Refund
         }
 
         $scroogeResponse->setGatewayKeys($gatewayResponse[Payment\Gateway::GATEWAY_KEYS] ?? []);
+
+        $scroogeResponse->setRefundGateway($gatewayResponse[Payment\Gateway::REFUND_GATEWAY] ?? $this->refund->getGateway());
 
         return $scroogeResponse->toArray();
     }
@@ -1143,7 +1183,7 @@ trait Refund
             // TODO: Remove for Scrooge
             if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway) === true)
             {
-                $this->callRefundFunctionOnScrooge($this->refund);
+                $this->callRefundFunctionOnScrooge($this->refund, $data);
             }
             else
             {
@@ -1165,9 +1205,9 @@ trait Refund
         return $this->refund;
     }
 
-    public function callRefundFunctionOnScrooge($refund)
+    public function callRefundFunctionOnScrooge($refund, $data = [])
     {
-        $data = $this->getGatewayDataForScroogeRefund($refund, $refund->payment);
+        $data = $this->getGatewayDataForScroogeRefund($refund, $refund->payment, $data);
 
         $refund->incrementAttempts();
 
@@ -1212,14 +1252,7 @@ trait Refund
 
     protected function callRefundFunction($payment, $data, $retry = false)
     {
-        // TODO: Handle FTAs, Bank Transfers in Scrooge enabled gateways
-
-        $gateway = $payment->getGateway();
-
-        $isScroogeGateway = Payment\Gateway::isScroogeGatewayAndMerchant($gateway);
-
-        if ((($isScroogeGateway === false) or ($retry === true)) and
-            ($this->isFundTransferAttemptRefund($payment, $data) === true))
+        if ($this->isFundTransferAttemptRefund($payment, $data) === true)
         {
             return $this->refundViaFundTransfer($payment, $data);
         }
@@ -1325,7 +1358,7 @@ trait Refund
         if ((Payment\Gateway::isScroogeGatewayAndMerchant($refund->getGateway()) === true) and
             ($refund->isCreated() === true))
         {
-            $this->callRefundRetryFunctionOnScrooge($refund);
+            $this->callRefundRetryFunctionOnScrooge($refund, $data);
         }
         else if ($refund->isStatusFailed() === true)
         {
@@ -1335,9 +1368,9 @@ trait Refund
         return $refund->getStatus();
     }
 
-    public function callRefundRetryFunctionOnScrooge($refund)
+    public function callRefundRetryFunctionOnScrooge($refund, $input)
     {
-        $data = $this->getGatewayDataForScroogeRefund($refund, $refund->payment);
+        $data = $this->getGatewayDataForScroogeRefund($refund, $refund->payment, $input);
 
         $data['mode'] = $this->mode;
 
@@ -1546,7 +1579,7 @@ trait Refund
         return $data;
     }
 
-    protected function getGatewayDataForScroogeRefund(Payment\Refund\Entity $refund, Payment\Entity $payment)
+    protected function getGatewayDataForScroogeRefund(Payment\Refund\Entity $refund, Payment\Entity $payment, array $input = [])
     {
         $refundData = $refund->toArray();
 
@@ -1563,6 +1596,20 @@ trait Refund
         if ($payment->isNetbanking() === true)
         {
             $scroogeData['bank'] = $payment->getBank();
+        }
+
+        if (isset($input['vpa']) === true)
+        {
+            $scroogeData['fta_data']['vpa'] = $input['vpa'];
+        }
+        else
+        {
+            $bankAccountInput = $this->getBankAccountInput($payment, $input);
+
+            if (empty($bankAccountInput) === false)
+            {
+                $scroogeData['fta_data']['bank_account'] = $bankAccountInput;
+            }
         }
 
         //
@@ -1769,11 +1816,15 @@ trait Refund
 
     protected function refundViaFundTransfer(Payment\Entity $payment, $data = []): array
     {
+        $scroogeResponse  = new ScroogeResponse();
+
         if ($this->refund->getAmount() === 0)
         {
             $this->refund->setStatusProcessed();
 
-            return [Payment\Gateway::SUCCESS => true];
+            $scroogeResponse->setSuccess(true);
+
+            return $scroogeResponse->toArray();
         }
 
         $refunded = false;
@@ -1799,7 +1850,11 @@ trait Refund
 
             $this->refund->setGateway($refundGateway);
 
-            $refunded = true;
+            $scroogeResponse->setStatusCode(Payment\Refund\Status::INITIATED)
+                            ->setRefundGateway($refundGateway)
+                            ->setGatewayResponse(json_encode($fta->attributesToArray()));
+
+            // todo : do we need to store in gateway keys also?
         }
         catch (Exception\BaseException $e)
         {
@@ -1810,9 +1865,9 @@ trait Refund
             $this->refund->setStatus(Payment\Refund\Status::FAILED);
         }
 
-        return [
-            Payment\Gateway::SUCCESS => $refunded
-        ];
+        $scroogeResponse->setSuccess($refunded);
+
+        return $scroogeResponse->toArray();
     }
 
     protected function refundViaFundTransferToVpa(array $data,
