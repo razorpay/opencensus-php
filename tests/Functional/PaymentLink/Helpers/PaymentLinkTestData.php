@@ -16,7 +16,7 @@ return [
                 'amount'        => 100000,
                 'currency'      => 'INR',
                 'title'         => 'Sample title',
-                'description'   => 'Sample description',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
                 'notes'         => [
                     'sample_key' => 'Sample notes',
                 ],
@@ -29,7 +29,7 @@ return [
                 'amount'        => 100000,
                 'currency'      => 'INR',
                 'title'         => 'Sample title',
-                'description'   => 'Sample description',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
                 'notes'         => [
                     'sample_key' => 'Sample notes',
                 ],
@@ -68,7 +68,7 @@ return [
             'content' => [
                 'receipt'       => '00000000000001',
                 'title'         => 'Sample title',
-                'description'   => 'Sample description'
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]'
             ],
         ],
         'response' => [
@@ -78,7 +78,7 @@ return [
                 'amount'        => null,
                 'currency'      => null,
                 'title'         => 'Sample title',
-                'description'   => 'Sample description',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
             ],
         ],
     ],
@@ -152,14 +152,14 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'            => 'pl_100000000000pl',
-                'user_id'       => User::MERCHANT_USER_ID,
-                'receipt'       => '00000000000001',
-                'amount'        => 100000,
-                'currency'      => 'INR',
-                'title'         => 'Sample title',
-                'description'   => 'Sample description',
-                'notes'         => [],
+                'id'          => 'pl_100000000000pl',
+                'user_id'     => User::MERCHANT_USER_ID,
+                'receipt'     => '00000000000001',
+                'amount'      => 100000,
+                'currency'    => 'INR',
+                'title'       => 'Sample title',
+                'description' => '{"value":[{"insert":"Sample description"}],"metaText":"Sample description"}',
+                'notes'       => [],
             ],
         ],
     ],
@@ -175,14 +175,14 @@ return [
                 'count' => 1,
                 'items' => [
                     [
-                        'id'            => 'pl_100000000000pl',
-                        'user_id'       => User::MERCHANT_USER_ID,
-                        'receipt'       => '00000000000001',
-                        'amount'        => 100000,
-                        'currency'      => 'INR',
-                        'title'         => 'Sample title',
-                        'description'   => 'Sample description',
-                        'notes'         => [],
+                        'id'          => 'pl_100000000000pl',
+                        'user_id'     => User::MERCHANT_USER_ID,
+                        'receipt'     => '00000000000001',
+                        'amount'      => 100000,
+                        'currency'    => 'INR',
+                        'title'       => 'Sample title',
+                        'description' => '{"value":[{"insert":"Sample description"}],"metaText":"Sample description"}',
+                        'notes'       => [],
                     ],
                 ],
             ],
@@ -198,7 +198,7 @@ return [
                 'amount'        => 4000,
                 'currency'      => 'INR',
                 'title'         => 'Sample test title',
-                'description'   => 'Sample test description',
+                'description'   => '[{"insert":"Sample test description"},{"insert":"\\n"}]',
                 'notes'         => [
                     'sample_key' => 'Sample test notes',
                 ],
@@ -210,7 +210,7 @@ return [
                 'receipt'       => '00000000000002',
                 'amount'        => 4000,
                 'title'         => 'Sample test title',
-                'description'   => 'Sample test description',
+                'description'   => '[{"insert":"Sample test description"},{"insert":"\\n"}]',
                 'notes'         => [
                     'sample_key' => 'Sample test notes',
                 ],
@@ -250,7 +250,7 @@ return [
                 'receipt'       => '00000000000002',
                 'expire_by'     => 1400000000,
                 'title'         => 'Sample test title',
-                'description'   => 'Sample test description',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
                 'notes'         => [
                     'sample_key' => 'Sample test notes',
                 ],

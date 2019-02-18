@@ -97,4 +97,19 @@ class Service extends Base\Service
 
         return [$view, $viewPayload];
     }
+
+    /**
+     * It uploads the images in S3 bucket and returns their location urls.
+     *
+     * @param array $input Includes images to be uploaded.
+     *
+     * @return array Image urls.
+     * @throws \RZP\Exception\ServerErrorException
+     */
+    public function upload(array $input): array
+    {
+        (new Validator)->validateInput('uploadImages', $input);
+
+        return $this->core->upload($input, $this->merchant);
+    }
 }
