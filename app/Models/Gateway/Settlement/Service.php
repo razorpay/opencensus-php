@@ -5,8 +5,6 @@ namespace RZP\Models\Gateway\Settlement;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Card;
-use RZP\Models\Payment\Action;
-use RZP\Models\Payment\Gateway;
 use RZP\Constants\Timezone;
 
 class Service extends Base\Service
@@ -22,22 +20,11 @@ class Service extends Base\Service
 
         $this->setInput($input);
 
-        sd($this->getProcessor($gateway));
-
         $payments = $this->getProcessor($gateway)->getPayments($input);
 
         foreach ($payments as $payment)
         {
             $this->getProcessor($gateway)->process($payment);
-
-            sd($gatewayInput);
-
-            $this->app['gateway']->call(
-                Gateway::HITACHI,
-                Action::AUTHORIZE,
-                $gatewayInput,
-                $this->mode
-            );
         }
     }
 
@@ -57,7 +44,7 @@ class Service extends Base\Service
         return $this->processors[$driver];
     }
 
-    protected function getProcessorDrive($gateway)
+    protected function getProcessorDriver($gateway)
     {
         $baseNamespace = 'RZP\\Models\\Gateway\\Settlement\\Processor\\';
 

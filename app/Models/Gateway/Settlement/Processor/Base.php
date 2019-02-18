@@ -15,6 +15,8 @@ abstract class Base extends BaseModel\Core
      */
     public abstract function getPayments(array $input): PublicCollection;
 
+    public abstract function sendGatewayRequest(array $input);
+
     public function process(Payment\Entity $payment)
     {
         $gatewayInput = [
@@ -23,6 +25,8 @@ abstract class Base extends BaseModel\Core
         ];
 
         $this->preProcessGatewayInput($gatewayInput);
+
+        $this->sendGatewayRequest($gatewayInput);
     }
 
     protected function preProcessGatewayInput(&$input)

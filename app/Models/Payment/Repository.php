@@ -1661,8 +1661,11 @@ class Repository extends Base\Repository
 
         $statusColumn = $this->dbColumn(Entity::STATUS);
 
+        $paymentColumns = $this->dbColumn('*');
+
         return $this->newQuery()
-                    ->join($paysecureTable, $paymentIdColumn, '=', $pid)
+                    ->select($paymentColumns)
+                    ->join($paysecureTable, $pid, '=', $paymentIdColumn)
                     ->whereIn($statusColumn, [Status::AUTHORIZED, Status::CAPTURED])
                     ->where(Entity::GATEWAY, Gateway::PAYSECURE)
                     ->whereBetween(Entity::AUTHORIZED_AT, [$from, $to])
