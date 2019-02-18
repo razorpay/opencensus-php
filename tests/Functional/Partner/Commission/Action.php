@@ -16,7 +16,7 @@ class Action
     {
         $calculator = new Calculator($postSetupData['source_entity']);
 
-        $calculator->calculate();
+        self::invokePrivateMethod($calculator, Calculator::class, 'calculate');
 
         $postActionData['calculator'] = $calculator;
     }
@@ -51,5 +51,33 @@ class Action
         $calculator = new Calculator($postSetupData['source_entity']);
 
         $postActionData['calculator'] = $calculator;
+    }
+
+    /**
+     * A wrapper to invoke the private or protected methods of a class
+     *
+     * @param       $classObj
+     * @param       $className
+     * @param       $methodName
+     * @param array $args
+     *
+     * @return mixed
+     */
+    protected static function invokePrivateMethod($classObj, $className, $methodName, $args = [])
+    {
+        $privateMethod = self::getPrivateMethod($className, $methodName);
+
+        return $privateMethod->invokeArgs($classObj, $args);
+    }
+
+    protected static function getPrivateMethod($class, $methodName)
+    {
+        $class = new \ReflectionClass($class);
+
+        $method = $class->getMethod($methodName);
+
+        $method->setAccessible(true);
+
+        return $method;
     }
 }
