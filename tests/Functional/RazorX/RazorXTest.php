@@ -26,6 +26,36 @@ class RazorXTest extends TestCase
                              ->getMock();
     }
 
+    public function testGetVariantCookieValue()
+    {
+        $newCookieValue  = RazorXClient::appendVariantToCurrRazorxCookieValue('localUniqueId', 'variant');
+
+        $newCookieValArr = json_decode($newCookieValue, true);
+
+        $this->assertEquals(1, count($newCookieValArr));
+
+        $this->assertEquals('variant',$newCookieValArr['localUniqueId']);
+    }
+
+    public function testAppendVariantToCurrRazorxCookieValue()
+    {
+        $currCookieValArr = [];
+        $currCookieValArr['currKey'] = 'currValue';
+
+        $currCookieValStr = json_encode($currCookieValArr);
+
+        $newCookieValue  = RazorXClient::appendVariantToCurrRazorxCookieValue('localUniqueId',
+                                                                             'variant',
+                                                                             $currCookieValStr);
+
+        $newCookieValArr = json_decode($newCookieValue, true);
+
+        $this->assertEquals(2, count($newCookieValArr));
+
+        $this->assertEquals('currValue', $newCookieValArr['currKey']);
+        $this->assertEquals('variant', $newCookieValArr['localUniqueId']);
+    }
+
     public function testGetTreatment()
     {
         $route = 'evaluate';
@@ -43,15 +73,15 @@ class RazorXTest extends TestCase
                      ->willReturn('control');
 
         $variant = $this->razorX->getTreatment('10000000000000', 'reportsV3', 'test');
-
+        
         $this->assertEquals('control', $variant);
     }
 
     public function testGetTreatmentWithCookies()
     {
         $testData = & $this->testData[__FUNCTION__];
-
-        $testData['request']['cookies'] = ['razorx' => '{"dummy":"new_cookie_flow"}'];
+        $uniqueLocalId = RazorXClient::getLocalUniqueId('123','dummy','mode');
+        $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => '{"' . $uniqueLocalId . '":"new_cookie_flow"}'];
 
         $this->startTest();
     }
