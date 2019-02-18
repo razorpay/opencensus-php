@@ -122,28 +122,57 @@ return [
         ],
     ],
 
+    'testEditIinFailedInvalidMessageType' => [
+        'request'     => [
+            'url'     => '/iins/112333',
+            'method'  => 'put',
+            'content' => [
+                'country'        => 'IN',
+                'emi'            => 1,
+                'network'        => 'RuPay',
+                'type'           => 'credit',
+                'message_type'   => 'ABC'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid Message type given',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testEditIin' => [
         'request' => [
             'url' => '/iins/112333',
             'method' => 'put',
             'content' => [
-                'country' => 'IN',
-                'issuer' => 'HDFC',
-                'issuer_name' => 'HDFC',
-                'emi' => 1,
-                'network' => 'RuPay',
-                'type' => 'credit'
+                'country'        => 'IN',
+                'issuer'         => 'HDFC',
+                'issuer_name'    => 'HDFC',
+                'emi'            => 1,
+                'network'        => 'RuPay',
+                'type'           => 'credit',
+                'message_type'   => 'SMS',
             ],
         ],
         'response' => [
             'content' => [
-                'iin' => 112333,
-                'network' => 'RuPay',
-                'type' => 'credit',
-                'country' => 'IN',
-                'issuer' => 'HDFC',
-                'issuer_name' => 'HDFC',
-                'emi' => true,
+                'iin'            => 112333,
+                'network'        => 'RuPay',
+                'type'           => 'credit',
+                'country'        => 'IN',
+                'issuer'         => 'HDFC',
+                'issuer_name'    => 'HDFC',
+                'emi'            => true,
+                'message_type'   => 'SMS',
             ],
         ],
     ],
