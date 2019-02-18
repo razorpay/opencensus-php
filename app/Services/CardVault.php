@@ -52,6 +52,12 @@ class CardVault
 
         $response = $this->sendRequest('tokenize', 'post', $input);
 
+        if (empty($response[self::TOKEN]) === true)
+        {
+            throw new Exception\RuntimeException(
+                'card vault request failed', ['data' => $response]);
+        }
+
         return $response[self::TOKEN];
     }
 
