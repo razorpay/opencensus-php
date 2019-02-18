@@ -272,7 +272,7 @@ $custom_labels                  = $data['custom_labels'];
                                     </div>
                                 @endif
 
-                                @if($invoice_expire_by and $invoice_status !== 'paid')
+                                @if($invoice_expire_by and in_array($invoice_status, array('paid', 'partially_paid')) === false)
                                     <div class="info">
                                         {{$invoice_status === 'expired' ? 'EXPIRED ON' : 'EXPIRES ON'}}
                                         <div class="val">
@@ -454,7 +454,7 @@ $custom_labels                  = $data['custom_labels'];
                             </div>
                         @endif
 
-                        @if($invoice_expire_by and $invoice_status !== 'paid')
+                        @if($invoice_expire_by and in_array($invoice_status, array('paid', 'partially_paid')) === false)
                             <div class="info">
                                 {{$invoice_status === 'expired' ? 'EXPIRED ON' : 'EXPIRES ON'}}
                                 <div class="val">{{epoch_format($invoice_expire_by)}} </div>

@@ -252,7 +252,8 @@ class Repository extends Base\Repository
      */
     protected function modifyQueryForIndexing(BuilderEx $query)
     {
-        // Optimization: Eager load fund_account.contact. If not possible here then somewhere else.
+        // Eager loading relation is optimal during bulk indexing.
+        $query->with('fundAccount.contact');
     }
 
     /**

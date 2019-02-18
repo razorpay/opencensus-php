@@ -94,4 +94,14 @@ class IndianStates
     {
         return array_flip(self::$stateCodeMap)[$code] ?? null;
     }
+
+    public static function stateValueExist(string $value):bool
+    {
+        if (in_array($value, self::$stateCodeMap, true) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
 }
