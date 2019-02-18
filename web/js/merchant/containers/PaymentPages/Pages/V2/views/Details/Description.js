@@ -2,6 +2,7 @@ import { connect } from 'react-redux';
 import { classList } from 'common/util';
 import debounce from 'rzp/utils/debounce';
 import { showNotification } from 'rzp/modules/notifications';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
 
 import { uploadImageInDescription } from '../../../model';
 
@@ -42,12 +43,6 @@ const QUILL_OPTIONS = {
   theme: 'snow',
   scrollingContainer: 'body',
 };
-
-// BEWARE: Don't remove whitespaces from infoTxt.
-const infoTxt = `Give your customers more information about this page.
-
-Note:
-All URLs will convert to links.`;
 
 @connect(null, { showNotification })
 export default class extends React.PureComponent {
@@ -211,7 +206,16 @@ export default class extends React.PureComponent {
         id="description"
         class={classList(this.state.isFocused && 'is-focused')}
       >
-        <span id="description-quill" />
+        <span id="description-container">
+          <span class="help-content">
+            <div id="description-quill" />
+            <Popover align="right" theme="dark">
+              <PopoverBody>
+                Give your customers more information about this page
+              </PopoverBody>
+            </Popover>
+          </span>
+        </span>
       </div>
     );
   }
