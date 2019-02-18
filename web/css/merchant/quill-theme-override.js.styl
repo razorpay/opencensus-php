@@ -2,9 +2,6 @@
   border-radius: 2px
   border: 1px solid #eee
 
-  display: flex
-  flex-direction: column-reverse
-
   &.is-focused
     border-color: $primary-color
 
@@ -160,9 +157,11 @@
     display: none
 
   #description-container
-    display: block
+    display: flex
+    flex-direction: column-reverse
 
   #description-quill
+    display: block
     border: none
 
     .ql-editor
