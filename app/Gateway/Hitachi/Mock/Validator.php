@@ -9,7 +9,7 @@ use RZP\Gateway\Hitachi\TerminalFields;
 class Validator extends Base\Validator
 {
     protected static $authRules = [
-        RequestFields::TRANSACTION_TYPE    => 'required|in:00,SI,MT|string',
+        RequestFields::TRANSACTION_TYPE    => 'required|in:00,SI,MT,RU|string',
         RequestFields::TRANSACTION_AMOUNT  => 'required|numeric',
         RequestFields::TRANSACTION_TIME    => 'required|string|date_format:His',
         RequestFields::TRANSACTION_DATE    => 'required|string|date_format:md',

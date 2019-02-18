@@ -22,6 +22,8 @@ abstract class Base extends BaseModel\Core
         $gatewayInput = [
             'payment'  => $payment->toArray(),
             'merchant' => $payment->merchant,
+            'card'     => $payment->card->toArray(),
+            'terminal' => $payment->terminal,
         ];
 
         $this->preProcessGatewayInput($gatewayInput);

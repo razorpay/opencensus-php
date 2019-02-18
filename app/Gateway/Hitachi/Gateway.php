@@ -101,6 +101,11 @@ class Gateway extends Base\Gateway
             return $this->authorizeMoto($input);
         }
 
+        if ($this->isPaysecureTransactionRequest($input) === true)
+        {
+            return $this->authorizePaysecure($input);
+        }
+
         $authenticationGateway = $this->decideAuthenticationGateway($input);
 
         $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
@@ -336,6 +341,21 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request);
 
         $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_MOTO_AUTH_RESPONSE);
+
+        $attributes = $this->getAttributesFromAuthResponse($response);
+
+        $this->createGatewayPaymentEntity($input, $attributes, Base\Action::AUTHORIZE);
+
+        $this->checkErrorsAndThrowException($response);
+    }
+
+    protected function authorizePaysecure(array $input)
+    {
+        $request = $this->getAuthorizeRequestArrayForPaysecure($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_PAYSECURE_AUTH_RESPONSE);
 
         $attributes = $this->getAttributesFromAuthResponse($response);
 
@@ -615,6 +635,35 @@ class Gateway extends Base\Gateway
         $traceRequest['content'] = $traceContent;
 
         $this->trace->info(TraceCode::GATEWAY_MOTO_AUTH_REQUEST,
+            [
+                'request'     => $traceRequest,
+                'gateway'     => 'hitachi',
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
+            ]);
+
+        return $request;
+    }
+
+    protected function getAuthorizeRequestArrayForPaysecure(array $input)
+    {
+        $content = $this->getDefaultAuthorizeRequestArray($input);
+
+        $content[RequestFields::TRANSACTION_TYPE] = TransactionType::RUPAY;
+
+        $content[RequestFields::ECI] = '07';
+
+//        $content
+
+        $traceContent = $content;
+
+        $content += $this->getCardDataForAuthorizeRequestArray($input);
+
+        $request = $traceRequest = $this->getStandardRequestArray($content);
+
+        $traceRequest['content'] = $traceContent;
+
+        $this->trace->info(TraceCode::GATEWAY_PAYSECURE_AUTH_REQUEST,
             [
                 'request'     => $traceRequest,
                 'gateway'     => 'hitachi',
@@ -1048,6 +1097,11 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantId()
     {
+        if ($this->input['payment']['gateway'] === Payment\Gateway::PAYSECURE)
+        {
+            return $this->config['paysecure_merchant_id'];
+        }
+
         $merchantId = $this->getLiveMerchantId();
 
         if ($this->mode === Mode::TEST)

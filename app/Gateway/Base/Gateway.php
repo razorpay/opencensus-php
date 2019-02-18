@@ -538,6 +538,16 @@ class Gateway
         return false;
     }
 
+    protected function isPaysecureTransactionRequest($input)
+    {
+        if ($input['payment']['gateway'] === Payment\Gateway::PAYSECURE)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function generateRefunds($input)
     {
         $paymentIds = array_map(function($row)

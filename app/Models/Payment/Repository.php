@@ -1674,6 +1674,7 @@ class Repository extends Base\Repository
                     ->with('card.globalCard')
                     ->with('emiPlan')
                     ->with('merchant')
+                    ->with('terminal')
                     ->get();
     }
 }

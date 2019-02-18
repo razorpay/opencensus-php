@@ -1,6 +1,8 @@
 <?php
 namespace RZP\Models\Gateway\Settlement\Processor;
 
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Base\PublicCollection;
@@ -36,22 +38,18 @@ class Paysecure extends Base
     {
         try
         {
-            sd($gatewayInput);
             $this->app['gateway']->call(
                 Gateway::HITACHI,
                 Action::AUTHORIZE,
                 $gatewayInput,
                 $this->mode
             );
+
+            // TODO: Set settled = 1 in the paysecure entity
         }
         catch (\Exception $e)
         {
-            $this->trace->critical(
-                TraceCode::GATEWAY_SETTLEMENT_FAILURE,
-                [
-                    'payment_id' => $gatewayInput['payment']['id'],
-                ]
-            );
+            $this->trace->traceException($e, Trace::INFO, TraceCode::GATEWAY_SETTLEMENT_FAILURE);
         }
     }
 }
