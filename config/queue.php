@@ -197,6 +197,14 @@ return [
         'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
         'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
     ],
+    'fts_create_account' => [
+        'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
+        'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
+    ],
+    'fts_register_account' => [
+        'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
+        'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
+    ],
     /*
      | Lists various queues to be used per mailable
      */

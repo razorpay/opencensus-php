@@ -223,15 +223,20 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
         {
-            $this->messenger->raiseReconAlert(
+            //
+            // As we are getting more than 100s of amount_mismatch alerts (of just 1 paisa),
+            // so temporarily removing slack alert for UpiHdfc. FinOps will continue to get
+            // daily report for amount mismatch from Sumologic and take action as usual.
+            // This is just to reduce noise on recon slack channel
+            //
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
                 [
-                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
                     'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
                     'payment_id'      => $this->payment->getId(),
                     'expected_amount' => $this->payment->getBaseAmount(),
                     'recon_amount'    => $this->getReconPaymentAmount($row),
                     'currency'        => $this->payment->getCurrency(),
-                    'row'             => $row,
                     'gateway'         => $this->gateway
                 ]);
 
@@ -268,7 +273,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         $dbReferenceNumber = trim($gatewayPayment->getNpciReferenceId());
 
         if ((empty($dbReferenceNumber) === false) and
-            ($dbReferenceNumber !== $referenceNumber))
+            ($dbReferenceNumber !== $referenceNumber) and
+            ($dbReferenceNumber !== 'NA'))
         {
             $this->messenger->raiseReconAlert(
                 [

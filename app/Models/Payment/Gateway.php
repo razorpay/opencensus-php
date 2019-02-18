@@ -118,6 +118,8 @@ class Gateway
     const SUCCESS                   = 'success';
     // Stores error code if refund is failed at gateway side
     const STATUS_CODE               = 'status_code';
+    // Stores gateway through which refund is processed. Say for FTA refunds, it will be yesbank
+    const REFUND_GATEWAY            = 'refund_gateway';
     // Stores array of gateway related keys such as refund_id, auth_code
     const GATEWAY_KEYS              = 'gateway_keys';
     // Stores raw gateway response in string format.
@@ -663,6 +665,7 @@ class Gateway
         ],
 
         Method::EMI => [
+            self::HITACHI,
             self::AMEX,
             self::HDFC,
             self::FIRST_DATA,
@@ -961,6 +964,10 @@ class Gateway
         self::NETBANKING_CORPORATION,
         self::NETBANKING_IDFC,
         self::NETBANKING_VIJAYA,
+    ];
+
+    public static $captureVerifyEnabled = [
+        self::HITACHI,
     ];
 
     /**
@@ -1266,6 +1273,7 @@ class Gateway
         IFSC::SCBL,
         IFSC::UTIB,
         IFSC::YESB,
+        IFSC::CITI,
     ];
 
     public static $emiBanksUsingCardTerminals = [
@@ -1277,6 +1285,7 @@ class Gateway
         IFSC::ICIC,
         IFSC::YESB,
         IFSC::SBIN,
+        IFSC::CITI,
     ];
 
     public static $emiBankToGatewayMap = [

@@ -101,16 +101,16 @@ class Activation extends Mailable
         {
             if ($this->isWhitelistActivationFlow() === true)
             {
-                $subject = "KYC verification for " . $this->data['merchant']['org']['business_name'] . " is complete";
+                $subject = 'KYC verification for ' . $this->data['merchant']['org']['business_name'] . ' is complete';
             }
             else
             {
-                $subject = $this->data['merchant']['org']['business_name'] . " | Account activated for " . $this->data['merchant']['billing_label'];
+                $subject = $this->data['merchant']['org']['business_name'] . ' | Account activated for ' . $this->data['merchant']['billing_label'];
             }
         }
         else
         {
-            $subject = 'Settlements & Payouts enabled for your Razorpay account';
+            $subject = 'Settlements enabled for your Razorpay account';
         }
 
         $this->subject($subject);

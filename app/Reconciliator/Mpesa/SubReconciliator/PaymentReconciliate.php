@@ -66,7 +66,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     'expected_amount' => $this->payment->getBaseAmount(),
                     'recon_amount'    => $this->getReconPaymentAmount($row),
                     'currency'        => $this->payment->getCurrency(),
-                    'row'             => $row,
                     'gateway'         => $this->payment->getGateway(),
                 ]);
 

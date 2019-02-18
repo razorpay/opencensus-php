@@ -4,8 +4,9 @@ namespace RZP\Models\Gateway\Terminal\GatewayProcessor\Hitachi;
 
 use RZP\Base;
 use RZP\Exception;
-use RZP\Gateway\Hitachi\TerminalFields;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Merchant\Detail;
+use RZP\Gateway\Hitachi\TerminalFields;
 
 class Validator extends Base\Validator
 {
@@ -19,6 +20,15 @@ class Validator extends Base\Validator
         TerminalFields::TRANS_MODE => 'required|string|custom',
         TerminalFields::CURRENCY   => 'required|string|custom',
         TerminalFields::MCC        => 'sometimes|string|numeric|digits:4'
+    ];
+
+    protected static $merchantDetailInputRules = [
+            Detail\Entity::BUSINESS_OPERATION_ADDRESS       => 'required|string',
+            Detail\Entity::BUSINESS_OPERATION_STATE         => 'required|string',
+            Detail\Entity::BUSINESS_OPERATION_PIN           => 'required|numeric|digits:6',
+            Detail\Entity::BUSINESS_DBA                     => 'required|string',
+            Detail\Entity::BUSINESS_NAME                    => 'required|string',
+            Detail\Entity::BUSINESS_OPERATION_CITY          => 'required|string',
     ];
 
     protected function validateTransMode($attribute, $value)

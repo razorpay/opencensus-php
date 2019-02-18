@@ -90,6 +90,16 @@ return [
         'url'       => env('CARD_VAULT_URL'),
     ],
 
+    'cps' => [
+        'mock'      => env('CORE_PAYMENT_SERVICE_MOCK', false),
+        'username'  => env('CORE_PAYMENT_SERVICE_KEY'),
+        'password'  => env('CORE_PAYMENT_SERVICE_SECRET'),
+        'url'       => [
+            'live' => env('CORE_PAYMENT_SERVICE_LIVE_URL'),
+            'test' => env('CORE_PAYMENT_SERVICE_TEST_URL'),
+        ],
+    ],
+
     'redisdualwrite' => [
         'elastic_cache_read'        => env('ELASTIC_CACHE_READ'),
         'skip_dual_write'           => env('SKIP_DUAL_WRITE'),
@@ -269,5 +279,15 @@ return [
 
     'vajra' => [
         'secret'   => env('APP_VAJRA_SECRET'),
+    ],
+
+    'fts' => [
+        'mock'              => env('FTS_MOCK', false),
+        'url'               => env('FTS_URL'),
+        'secret'            => env('APP_FTS_SECRET'),
+
+        // Key and secret through which api will call fts
+        'fts_key'           => env('FTS_KEY'),
+        'fts_secret'        => env('FTS_SECRET'),
     ],
 ];

@@ -94,6 +94,11 @@ class Entity extends Base\PublicEntity
         self::RECURRING_TYPE,
     ];
 
+    const AUTHENTICATION_COMPARISION_ATTRIBUTES = [
+        self::AUTHENTICATION_GATEWAY,
+        self::AUTH_TYPE,
+    ];
+
     /**
      * Attributes for which the value can be null, signifying any/all values
      * are acceptable for comparison
@@ -118,6 +123,17 @@ class Entity extends Base\PublicEntity
         self::RECURRING_TYPE,
         self::AUTHENTICATION_GATEWAY,
         self::AUTH_TYPE,
+    ];
+
+    /**
+     * Attributes for which the value can be null, signifying any/all values
+     * are acceptable for comparison for authentication rules
+     */
+    const AUTHENTICATION_NULLABLE_ATTRIBUTES = [
+        self::GROUP,
+        self::NETWORK,
+        self::ISSUER,
+        self::AUTHENTICATION_GATEWAY,
     ];
 
     /**
@@ -167,6 +183,20 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_RANGE  => 64,
         self::CATEGORY2     => 128,
         self::MERCHANT_ID   => 256,
+    ];
+
+    /**
+     * Defines the attribute scores used for calculating
+     * specificity score for a rule. Each attribute is given
+     * a score in power of 2 and two attributes cant have the same score.
+     */
+    const AUTHENTICATION_ATTRIBUTE_SCORES = [
+        self::METHOD_TYPE            => 1,
+        self::NETWORK                => 2,
+        self::ISSUER                 => 4,
+        self::AUTHENTICATION_GATEWAY => 8,
+        self::AUTH_TYPE              => 16,
+        self::MERCHANT_ID            => 32,
     ];
 
     protected $entity = 'gateway_rule';
@@ -238,6 +268,8 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::RECURRING,
         self::RECURRING_TYPE,
+        self::AUTHENTICATION_GATEWAY,
+        self::AUTH_TYPE,
         self::COMMENTS,
         self::AUTHENTICATION_GATEWAY,
         self::AUTH_TYPE,
@@ -349,26 +381,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STEP);
     }
 
-    public function getAuthenticationGateway()
-    {
-        return $this->getAttribute(self::AUTHENTICATION_GATEWAY);
-    }
-
-    public function getAuthType()
-    {
-        return $this->getAttribute(self::AUTH_TYPE);
-    }
-
-    public function shouldSelectAuth(): bool
-    {
-        return ($this->getAttribute(self::FILTER_TYPE) === self::SELECT);
-    }
-
-    public function shouldRejectAuth(): bool
-    {
-        return ($this->getAttribute(self::FILTER_TYPE) === self::REJECT);
-    }
-
     public function isInternational()
     {
         return $this->getAttribute(self::INTERNATIONAL);
@@ -387,6 +399,16 @@ class Entity extends Base\PublicEntity
     public function shouldSelectTerminal(): bool
     {
         return ($this->getAttribute(self::FILTER_TYPE) === self::SELECT);
+    }
+
+    public function shouldSelectAuth(): bool
+    {
+        return ($this->getAttribute(self::FILTER_TYPE) === self::SELECT);
+    }
+
+    public function shouldRejectAuth(): bool
+    {
+        return ($this->getAttribute(self::FILTER_TYPE) === self::REJECT);
     }
 
     public function shouldRejectTerminal(): bool
@@ -418,6 +440,17 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::CURRENCY);
     }
+
+    public function getAuthenticationGateway()
+    {
+        return $this->getAttribute(self::AUTHENTICATION_GATEWAY);
+    }
+
+    public function getAuthType()
+    {
+        return $this->getAttribute(self::AUTH_TYPE);
+    }
+
     //----------------- Public Setters------------------------------------------
 
     public function setPublicLoadAttribute(array & $array)
@@ -575,6 +608,36 @@ class Entity extends Base\PublicEntity
         return $totalScore;
     }
 
+    public function calculateSpecificityScoreForAuthTerminals() : int
+    {
+       $totalScore = 0;
+
+       foreach (self::AUTHENTICATION_ATTRIBUTE_SCORES as $attr => $score)
+        {
+            //
+            // For certain attributes (iins, min / max amount) we need to do some
+            // special handling to get the score. In such cases we call the special
+            // method if defined.
+            //
+            $func = 'getScoreFor' . studly_case($attr);
+
+            if (method_exists($this, $func) === true)
+            {
+                $totalScore += $this->$func();
+            }
+            //
+            // If the attribute value is not null, we add up the score of that
+            // attribute to the total score.
+            //
+            else if ($this->isAttributeNotNull($attr) === true)
+            {
+                $totalScore += $score;
+            }
+        }
+
+        return $totalScore;
+    }
+
     /**
      * Evaluates if a rule's terminal related attributes match those of
      * given terminal
@@ -609,6 +672,54 @@ class Entity extends Base\PublicEntity
         }
 
         return true;
+    }
+
+    public function matchesAuthTerminal($terminal, $payment)
+    {
+        foreach (self::AUTHENTICATION_COMPARISION_ATTRIBUTES as $key)
+        {
+           if ((in_array($key, self::AUTHENTICATION_NULLABLE_ATTRIBUTES, true) === true) and
+                ($this->isAttributeNull($key) === true))
+            {
+                continue;
+            }
+
+            if ($this->comapreAuthTerminal($key, $terminal, $payment) === false)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    protected function comapreAuthTerminal($key, $terminal, $payment)
+    {
+        if (empty($terminal[$key]) === true)
+        {
+            return true;
+        }
+
+        return ($this->getAttribute($key) === $terminal[$key]);
+    }
+
+    protected function compareAuthIssuer($terminal, $payment)
+    {
+        $issuer = $payment->getIssuer();
+
+        return $this->getIssuer() === $issuer;
+    }
+
+    protected function compareNetwork($terminal, $payment)
+    {
+        $iin = $payment->card->iinRelation;
+
+        if ($iin === null)
+        {
+            return false;
+        }
+
+        return $this->getNetwork() === $iin->getNetworkCode();
     }
 
     protected function compare(

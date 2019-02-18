@@ -14,7 +14,7 @@ class Indusind extends Base
 {
     use FileHandler;
 
-    const FILE_NAME              = 'PGReconRAZORPAY';
+    const FILE_NAME              = 'PGRefundRAZORPAY';
     const EXTENSION              = FileStore\Format::TXT;
     const FILE_TYPE              = FileStore\Type::INDUSIND_NETBANKING_REFUND;
     const GATEWAY                = Payment\Gateway::NETBANKING_INDUSIND;

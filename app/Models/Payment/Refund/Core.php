@@ -4,8 +4,8 @@ namespace RZP\Models\Payment\Refund;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\FundTransfer\Attempt;
-use RZP\Models\Payment\Refund\Status;
 
 class Core extends Base\Core
 {
@@ -17,15 +17,44 @@ class Core extends Base\Core
      */
     public function updateStatusAfterFtaRecon(Entity $refund, array $ftaData)
     {
-        switch ($ftaData[Attempt\Constants::FTA_STATUS]) {
+        switch ($ftaData[Attempt\Constants::FTA_STATUS])
+        {
             case Attempt\Status::PROCESSED:
-                $refund->setStatusProcessed();
-                $this->repo->saveOrFail($refund);
+                if (Gateway::isScroogeGatewayLiveAtGivenTimestamp($refund->getGateway(),
+                        $refund->getCreatedAt()) === true)
+                {
+                    $data = [
+                        Entity::STATUS      => Status::PROCESSED,
+                        Entity::REFERENCE1  => $refund->getReference1(),
+                    ];
+
+                    (new Service)->makeScroogeEditRefundRequest($refund, $data);
+                }
+                else
+                {
+                    $refund->setStatusProcessed();
+                    $refund->setGatewayRefunded(true);
+                    $this->repo->saveOrFail($refund);
+                }
                 break;
 
             case Attempt\Status::FAILED:
-                $refund->setStatus(Status::FAILED);
-                $this->repo->saveOrFail($refund);
+                if (Gateway::isScroogeGatewayLiveAtGivenTimestamp($refund->getGateway(),
+                        $refund->getCreatedAt()) === true)
+                {
+                    $data = [
+                        Entity::STATUS      => Status::FAILED,
+                        // Reference1 is set as part of FTA row processor (status cron)
+                        Entity::REFERENCE1  => $refund->getReference1(),
+                    ];
+
+                    (new Service)->makeScroogeEditRefundRequest($refund, $data, 'file_init_event');
+                }
+                else
+                {
+                    $refund->setStatus(Status::FAILED);
+                    $this->repo->saveOrFail($refund);
+                }
                 break;
 
             case Attempt\Status::CREATED:

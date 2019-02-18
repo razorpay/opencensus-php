@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Base\BuilderEx;
+use RZP\Base\JitValidator;
 use RZP\Models\Merchant;
 use RZP\Models\LineItem;
 use RZP\Error\ErrorCode;
@@ -26,6 +27,10 @@ class Repository extends Base\Repository
         // followed by taxes of it.
 
         Entity::LINE_ITEMS . '.' . LineItem\Entity::TAXES,
+    ];
+
+    protected $invoiceCountRules = [
+        Entity::SUBSCRIPTION_ID   => 'sometimes|string|min:14|max:18'
     ];
 
     protected $entityFetchParamRules = [
@@ -133,6 +138,31 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::SUBSCRIPTION_ID, '=', $subscription->getId())
                     ->findOrFailPublic($invoiceId);
+    }
+
+
+
+    protected function validateInvoicesCountParams(array $params)
+    {
+        $invoiceCountRules = $this->invoiceCountRules;
+
+        (new JitValidator)->rules($invoiceCountRules)
+                          ->caller($this)
+                          ->input($params)
+                          ->validate();
+    }
+
+    public function getInvoicesCount(array $params)
+    {
+        $this->validateInvoicesCountParams($params);
+
+        $query = $this->newQuery();
+
+        $this->buildQueryWithParams($query, $params);
+
+        $invoiceCount = $query->count();
+
+        return ['count' => $invoiceCount];
     }
 
     public function getInvoicesForIssuedNotificationToCustomer($medium)

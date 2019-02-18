@@ -52,6 +52,7 @@ class Validator extends Base\Validator
         ConfigKey::HEARTBEAT_TIME_THRESHOLD           => 'filled|integer',
         ConfigKey::HEARTBEAT_TRAFFIC_PERCENTAGE       => 'filled|integer',
         ConfigKey::HITACHI_DYNAMIC_DESCR_ENABLED      => 'filled|boolean',
+        ConfigKey::CPS_SERVICE_ENABLED                => 'filled|boolean',
     ];
 
     protected static $setRedisKeysRules = [

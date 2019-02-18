@@ -36,7 +36,7 @@ class FundAccount extends Base
         {
             $fundAccount = $this->processEntryAndGetEntity($entry);
 
-            $entry[Batch\Header::STATUS]          = Batch\Status::PROCESSED;
+            $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
             $entry[Batch\Header::FUND_ACCOUNT_ID] = $fundAccount->getPublicId();
         });
     }
@@ -64,13 +64,9 @@ class FundAccount extends Base
         array & $entry,
         ContactModel\Entity $contact): FundAccountModel\Entity
     {
-        $useExisting = boolval($entry[Batch\Header::FUND_ACCOUNT_USE_EXISTING]);
-
         $input = Batch\Helpers\FundAccount::getFundAccountInput($entry, $contact);
 
-        $fundAccount = $useExisting ?
-            $this->repo->fund_account->getFundAccountWithSimilarDetails($input, $this->merchant, $contact) :
-            null;
+        $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetails($input, $this->merchant, $contact);
 
         return $fundAccount ?: $this->fundAccountCore->create($input, $this->merchant, $contact);
     }

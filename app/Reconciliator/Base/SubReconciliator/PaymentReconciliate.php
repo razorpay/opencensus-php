@@ -730,7 +730,6 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                     'trace_code' => TraceCode::RECON_MISMATCH,
                     'info_code'  => Base\InfoCode::PAYMENT_ABSENT,
                     'message'    => 'Payment not found in DB. -> ' . $ex->getMessage(),
-                    'row'        => $row,
                     'payment_id' => $paymentId,
                     'gateway'    => $this->gateway
                 ]);
@@ -1926,7 +1925,14 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
     {
         $dbReferenceNumber = trim($gatewayPayment->getBankPaymentId());
 
+        //
+        // Sometimes we have db reference number saved as string 'null'.
+        // (we encountered few cases in Atom). We don't want to raise data
+        // mismatch alert in such cases. so adding a check to compare
+        // string 'null'
+        //
         if ((empty($dbReferenceNumber) === false) and
+            ($dbReferenceNumber !== 'null') and
             ($dbReferenceNumber !== $referenceNumber))
         {
             $this->messenger->raiseReconAlert(

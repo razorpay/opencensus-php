@@ -4,8 +4,10 @@ namespace RZP\Models\FundTransfer\Attempt;
 
 use Mail;
 use Carbon\Carbon;
+use Monolog\Logger;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Jobs\AttemptStatusCheck;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -14,6 +16,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Settlement\Channel;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Settlement\SlackNotification;
+use RZP\Models\FundTransfer\Mode as TransferMode;
 use RZP\Models\FundTransfer\Mode as FundTransferMode;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Mail\Settlement\Reconciliation as ReconciliationEmail;
@@ -148,6 +151,8 @@ class BulkRecon extends Base\Core
                         $this->updateBatchFundTransferStats($entity);
 
                         $this->updateCriticalErrorsSummary($fta);
+
+                        $this->dispatchForStatusCheck($fta);
                     }
                 }
 
@@ -161,6 +166,47 @@ class BulkRecon extends Base\Core
                 throw $e;
             }
         });
+    }
+
+    // This will dispatch the fta id for status check if the recon dint derive the final status for the attempt
+    // It will only dispatch for status check only if the transfer mode is IMPS and status is initiated
+    protected function dispatchForStatusCheck(Entity $attempt)
+    {
+        try
+        {
+            if (($attempt->getMode() !== TransferMode::IMPS) or ($attempt->getStatus() !== Status::INITIATED))
+            {
+                return;
+            }
+
+            $ageOfAttempt = Carbon::now(Timezone::IST)->getTimestamp() - $attempt->getCreatedAt();
+
+            // If the attempt is more then 30 min old then don't dispatch for status check
+            if ($ageOfAttempt >= Constants::MAX_AGE_ATTEMPT_STATUS_DISPATCH_AGE)
+            {
+                return;
+            }
+
+            AttemptStatusCheck::dispatch($this->mode, $attempt->getId())->delay(Constants::IMPS_STATUS_CHECK_DISPATCH_TIME);
+
+            $this->trace->info(
+                TraceCode::FTA_STATUS_CHECK_JOB_DISPATCHED,
+                [
+                    'mode'   => $this->mode,
+                    'fta_id' => $attempt->getId(),
+                ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::FTA_STATUS_CHECK_DISPATCH_FAILED,
+                [
+                    'mode'   => $this->mode,
+                    'fta_id' => $attempt->getId(),
+                ]);
+        }
     }
 
     protected function fireSettlementWebhook()

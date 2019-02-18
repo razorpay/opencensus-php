@@ -31,13 +31,6 @@ class Service extends Base\Service
 
     public function onboardMerchant(string $merchantId, array $input, bool $checkFeatureEnabled)
     {
-        $this->trace->info(
-            TraceCode::MERCHANT_ONBOARD_REQUEST,
-            [
-                'merchant_id' => $merchantId,
-                'input'       => $input,
-            ]);
-
         (new Validator)->validateInput(self::MERCHANT_ONBOARD, $input);
 
         $gateway = $input['gateway'];
@@ -52,6 +45,13 @@ class Service extends Base\Service
         {
             return null;
         }
+
+        $this->trace->info(
+            TraceCode::MERCHANT_ONBOARD_REQUEST,
+            [
+                'merchant_id' => $merchantId,
+                'input'       => $input,
+            ]);
 
         $merchant = $this->repo->merchant->findByPublicId($merchantId);
 

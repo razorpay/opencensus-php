@@ -102,6 +102,9 @@ class Header
     const PROMOTER_PAN             = 'promoter_pan';
     const PROMOTER_PAN_NAME        = 'promoter_pan_name';
     const WEBSITE_URL              = 'website';
+    const COMPANY_PAN_NAME         = 'company_pan_name';
+    const COMPANY_CIN              = 'company_cin';
+    const COMPANY_PAN              = 'company_pan';
 
     //
     // Virtual Account Bulk Creation Headers
@@ -328,24 +331,6 @@ class Header
     const ENACH_NPCI_NETBANKING_DEBIT_ERROR_DESCRIPTION = 'Reason Discription';
     const ENACH_NPCI_NETBANKING_DEBIT_USER_REF          = 'User Reference';
 
-    //
-    // Payout headers
-    //
-    const PAYOUT_CUSTOMER_ID         = 'customer_id';
-    const PAYOUT_CUSTOMER_NAME       = 'customer_name';
-    const PAYOUT_CUSTOMER_CONTACT    = 'customer_contact';
-    const PAYOUT_CUSTOMER_EMAIL      = 'customer_email';
-    const PAYOUT_BANK_ACCOUNT_ID     = 'bank_account_id';
-    const PAYOUT_BANK_ACCOUNT_NUMBER = 'bank_account_number';
-    const PAYOUT_BANK_IFSC           = 'bank_ifsc';
-    const PAYOUT_ID                  = 'payout_id';
-    const PAYOUT_METHOD              = 'payout_method';
-    const PAYOUT_AMOUNT              = 'payout_amount';
-    const PAYOUT_CURRENCY            = 'payout_currency';
-    const PAYOUT_NOTES               = 'payout_notes';
-    const PAYOUT_FEE                 = 'payout_fee';
-    const PAYOUT_TAX                 = 'payout_tax';
-
     const DIRECT_DEBIT_EMAIL           = 'email';
     const DIRECT_DEBIT_CONTACT         = 'contact';
     const DIRECT_DEBIT_CARD_NUMBER     = 'card_number';
@@ -457,14 +442,22 @@ class Header
     const CONTACT_MOBILE_2            = 'Contact Mobile';
     const CONTACT_REFERENCE_ID        = 'Contact Reference Id';
 
-    // Fund Account Headers
+    // Fund Account Headers, refer HEADER_MAP for full list of input & output headers.
     const FUND_ACCOUNT_ID             = 'Fund Account Id';
-    const FUND_ACCOUNT_USE_EXISTING   = 'Fund Account Use Existing';
     const FUND_ACCOUNT_TYPE           = 'Fund Account Type';
     const FUND_ACCOUNT_NAME           = 'Fund Account Name';
     const FUND_ACCOUNT_IFSC           = 'Fund Account Ifsc';
     const FUND_ACCOUNT_NUMBER         = 'Fund Account Number';
     const FUND_ACCOUNT_VPA            = 'Fund Account Vpa';
+
+    // Payout Headers, refer HEADER_MAP for full list of input & output headers.
+    const RAZORPAYX_ACCOUNT_NUMBER = 'RazorpayX Account Number';
+    const PAYOUT_AMOUNT            = 'Payout Amount';
+    const PAYOUT_CURRENCY          = 'Payout Currency';
+    const PAYOUT_MODE              = 'Payout Mode';
+    const PAYOUT_PURPOSE           = 'Payout Purpose';
+    const PAYOUT_REFERENCE_ID      = 'Payout Reference Id';
+    const PAYOUT_ID                = 'Payout Id';
 
     /**
      * Input and output file headers
@@ -1067,37 +1060,6 @@ class Header
             ],
         ],
 
-        Type::PAYOUT => [
-            self::INPUT => [
-                self::PAYOUT_CUSTOMER_NAME,
-                self::PAYOUT_CUSTOMER_CONTACT,
-                self::PAYOUT_CUSTOMER_EMAIL,
-                self::PAYOUT_BANK_ACCOUNT_NUMBER,
-                self::PAYOUT_BANK_IFSC,
-                self::PAYOUT_METHOD,
-                self::PAYOUT_AMOUNT,
-                self::PAYOUT_CURRENCY,
-                self::PAYOUT_NOTES,
-            ],
-
-            self::OUTPUT => [
-                self::PAYOUT_CUSTOMER_ID,
-                self::PAYOUT_CUSTOMER_NAME,
-                self::PAYOUT_CUSTOMER_CONTACT,
-                self::PAYOUT_CUSTOMER_EMAIL,
-                self::PAYOUT_BANK_ACCOUNT_ID,
-                self::PAYOUT_BANK_ACCOUNT_NUMBER,
-                self::PAYOUT_BANK_IFSC,
-                self::PAYOUT_ID,
-                self::PAYOUT_METHOD,
-                self::PAYOUT_AMOUNT,
-                self::PAYOUT_CURRENCY,
-                self::PAYOUT_NOTES,
-                self::PAYOUT_FEE,
-                self::PAYOUT_TAX,
-            ],
-        ],
-
         Type::SUB_MERCHANT => [
 
             self::INPUT  => [
@@ -1132,6 +1094,9 @@ class Header
                 self::BANK_ACCOUNT_NAME,
                 self::BANK_BRANCH_IFSC,
                 self::BANK_ACCOUNT_NUMBER,
+                self::COMPANY_CIN,
+                self::COMPANY_PAN,
+                self::COMPANY_PAN_NAME,
             ],
 
             self::OUTPUT => [
@@ -1396,7 +1361,6 @@ class Header
                 self::CONTACT_REFERENCE_ID,
                 self::NOTES,
                 self::CONTACT_ID,
-                self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ],
@@ -1404,7 +1368,6 @@ class Header
 
         Type::FUND_ACCOUNT => [
             self::INPUT => [
-                self::FUND_ACCOUNT_USE_EXISTING,
                 self::FUND_ACCOUNT_TYPE,
                 self::FUND_ACCOUNT_NAME,
                 self::FUND_ACCOUNT_IFSC,
@@ -1420,7 +1383,6 @@ class Header
                 self::NOTES,
             ],
             self::OUTPUT => [
-                self::FUND_ACCOUNT_USE_EXISTING,
                 self::FUND_ACCOUNT_TYPE,
                 self::FUND_ACCOUNT_NAME,
                 self::FUND_ACCOUNT_IFSC,
@@ -1435,7 +1397,54 @@ class Header
                 // Contact's notes.
                 self::NOTES,
                 self::FUND_ACCOUNT_ID,
-                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::PAYOUT => [
+            self::INPUT => [
+                self::RAZORPAYX_ACCOUNT_NUMBER,
+                self::PAYOUT_AMOUNT,
+                self::PAYOUT_CURRENCY,
+                self::PAYOUT_MODE,
+                self::PAYOUT_PURPOSE,
+                self::PAYOUT_REFERENCE_ID,
+                self::FUND_ACCOUNT_ID,
+                self::FUND_ACCOUNT_TYPE,
+                self::FUND_ACCOUNT_NAME,
+                self::FUND_ACCOUNT_IFSC,
+                self::FUND_ACCOUNT_NUMBER,
+                self::FUND_ACCOUNT_VPA,
+                self::CONTACT_TYPE,
+                self::CONTACT_NAME_2,
+                self::CONTACT_EMAIL_2,
+                self::CONTACT_MOBILE_2,
+                self::CONTACT_REFERENCE_ID,
+                // Payout's notes.
+                self::NOTES,
+            ],
+            self::OUTPUT => [
+                self::RAZORPAYX_ACCOUNT_NUMBER,
+                self::PAYOUT_AMOUNT,
+                self::PAYOUT_CURRENCY,
+                self::PAYOUT_MODE,
+                self::PAYOUT_PURPOSE,
+                self::PAYOUT_REFERENCE_ID,
+                self::FUND_ACCOUNT_ID,
+                self::FUND_ACCOUNT_TYPE,
+                self::FUND_ACCOUNT_NAME,
+                self::FUND_ACCOUNT_IFSC,
+                self::FUND_ACCOUNT_NUMBER,
+                self::FUND_ACCOUNT_VPA,
+                self::CONTACT_TYPE,
+                self::CONTACT_NAME_2,
+                self::CONTACT_EMAIL_2,
+                self::CONTACT_MOBILE_2,
+                self::CONTACT_REFERENCE_ID,
+                // Payout's notes.
+                self::NOTES,
+                self::PAYOUT_ID,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ],

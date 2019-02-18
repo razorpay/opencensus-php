@@ -109,7 +109,11 @@ add_cron "31 3 * * *"       "gateway_file_axis_ncorp_prod"        POST "$BASE_UR
 add_cron "32 3 * * *"       "gateway_file_combined_prod"          POST "$BASE_URL/gateway/files"              "type=combined&targets[]=indusind&targets[]=federal&targets[]=allahabad"                                $LIVE_AUTH
 add_cron "00 9 * * *"       "gateway_file_combined_csb_prod"      POST "$BASE_URL/gateway/files"              "type=combined&targets[]=csb"                                                                           $LIVE_AUTH
 add_cron "00 9 * * *"       "gateway_file_emandate_register_hdfc" POST "$BASE_URL/gateway/files"              "type=emandate_register&targets[]=hdfc"                                                                 $LIVE_AUTH
-add_cron "00 9 * * *"       "gateway_file_emandate_debit_hdfc"    POST "$BASE_URL/gateway/files"              "type=emandate_debit&targets[]=hdfc"                                                                    $LIVE_AUTH
+
+add_cron "10 9 * * *"       "gateway_file_emandate_debit_axis"    POST "$BASE_URL/gateway/files"              "type=emandate_debit&targets[]=axis"                                                                    $LIVE_AUTH
+add_cron "15 9 * * *"       "gateway_file_emandate_debit_hdfc"    POST "$BASE_URL/gateway/files"              "type=emandate_debit&targets[]=hdfc"                                                                    $LIVE_AUTH
+add_cron "20 9 * * *"       "gateway_file_emandate_debit_enach"   POST "$BASE_URL/gateway/files"              "type=emandate_debit&targets[]=enach_rbl"                                                               $LIVE_AUTH
+
 
 # Invoice
 add_cron "*/10 * * * *"     "invoice_expire_bulk_test"       POST "$BASE_URL/invoices/expire"                            ""                              $TEST_AUTH

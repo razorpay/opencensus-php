@@ -14,10 +14,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'not_applicable' => 1,
+                'not_applicable' => 0,
                 'locked_count'   => 0,
                 'authorized'     => 0,
-                'success'        => 2,
+                'success'        => 3,
                 'timeout'        => 0,
                 'error'          => 0,
                 'unknown'        => 0

@@ -128,6 +128,7 @@ class Type
     const ICICI_EMI_FILE_SFTP               = 'icici_emi_file_sftp';
     const ICICI_EMI_FILE_MAIL               = 'icici_emi_file_mail';
     const SBI_EMI_FILE                      = 'sbi_emi_file';
+    const CITI_EMI_FILE                      = 'citi_emi_file';
 
     const MERCHANT_BUSINESS_PROOF_URL           = 'business_proof_url';
     const MERCHANT_BUSINESS_OPERATION_PROOF_URL = 'business_operation_proof_url';
@@ -147,6 +148,7 @@ class Type
     const RECON_BUCKET_CONFIG                   = 'recon_bucket_config';
     const MOCK_RECONCILIATION_FILE              = 'mock_reconciliation_file';
     const CUSTOMER_BUCKET_CONFIG                = 'customer_bucket_config';
+    const H2H_DEFAULT_BUCKET_CONFIG             = 'h2h_default_bucket_config';
 
     // File contants required for merchant feature onboarding
     const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
@@ -200,6 +202,7 @@ class Type
             self::KOTAK_EMI_FILE,
             self::RBL_EMI_FILE,
             self::SBI_EMI_FILE,
+            self::CITI_EMI_FILE,
             self::SCBL_EMI_FILE,
             self::YES_EMI_FILE_MAIL,
             self::YES_EMI_FILE_SFTP,
@@ -270,6 +273,7 @@ class Type
         self::KOTAK_EMI_FILE,
         self::RBL_EMI_FILE,
         self::SBI_EMI_FILE,
+        self::CITI_EMI_FILE,
         self::SCBL_EMI_FILE,
         self::YES_EMI_FILE_MAIL,
         self::YES_EMI_FILE_SFTP,
@@ -348,7 +352,6 @@ class Type
             self::ICICI_UPI_REFUND,
             self::MINDGATE_UPI_REFUND,
             self::SBI_UPI_REFUND,
-            self::FUND_TRANSFER_DEFAULT,
             self::REPORT,
             self::BENEFICIARY_FILE,
             self::EMI_FILE,
@@ -357,6 +360,7 @@ class Type
             self::KOTAK_EMI_FILE,
             self::RBL_EMI_FILE,
             self::SBI_EMI_FILE,
+            self::CITI_EMI_FILE,
             self::SCBL_EMI_FILE,
             self::YES_EMI_FILE_MAIL,
             self::ICICI_EMI_FILE_MAIL,
@@ -399,6 +403,7 @@ class Type
             self::FUND_TRANSFER_H2H,
             self::ICICI_EMI_FILE_SFTP,
             self::SBI_EMI_FILE,
+            self::CITI_EMI_FILE,
             self::YES_EMI_FILE_SFTP,
             self::RBL_ENACH_DEBIT,
             self::RBL_ENACH_REGISTER,
@@ -406,6 +411,10 @@ class Type
 
         self::RECON_BUCKET_CONFIG => [
             self::RECONCILIATION_BATCH_INPUT,
+        ],
+
+        self::H2H_DEFAULT_BUCKET_CONFIG => [
+            self::FUND_TRANSFER_DEFAULT
         ],
     ];
 
