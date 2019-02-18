@@ -362,6 +362,12 @@ class Initiator extends Base\Core
             ]);
     }
 
+    /**
+     * This will be called for individual fta processing
+     *
+     * @param Entity $fta
+     * @param        $channel
+     */
     public function initFundTransferOnChannel(Entity $fta, $channel)
     {
         $data = [
@@ -374,7 +380,7 @@ class Initiator extends Base\Core
 
         $attempts = (new PublicCollection)->push($fta);
 
-        $response = $this->processFundTransferAttempts(self::FTA_PURPOSE, $channel, $attempts);
+        $response = $this->processFundTransferAttempts($fta->getPurpose(), $channel, $attempts);
 
         $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_COMPLETE,  $data + $response);
     }

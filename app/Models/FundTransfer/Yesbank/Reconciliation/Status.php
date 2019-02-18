@@ -79,6 +79,8 @@ class Status extends BaseStatus
 
     const ACQUIRING_BANK_CBS_OFFLINE    = 'ACQUIRING_BANK_CBS_OFFLINE';
 
+    const INVALID_REQUEST               = 'INVALID_REQUEST';
+
     // Map to the derived state
     const STATUS_MAP = [
         self::SENT_TO_BENEFICIARY => [
@@ -99,6 +101,7 @@ class Status extends BaseStatus
             'sfms:E18'   => self::BAD_GATEWAY,
             'ns:E6001'   => self::BENE_NOT_REGISTERED,
             'ns:E2005'   => self::BENE_NOT_REGISTERED,
+            'ns:E400'    => self::INVALID_REQUEST,
 
             // Merchant Errors
             'ns:E406'    => self::BENEFICIARY_NOT_ACCEPTED,
@@ -136,6 +139,7 @@ class Status extends BaseStatus
     // So this mapping will give the corresponding remark based on the sub status code
     //
     const FAILURE_CODE_INTERNAL_MAPPING = [
+        'ns:E400'    => 'Invalid request sent to bank',
         'ns:E402'    => 'Insufficient Balance in debit account, payment required',
         'ns:E405'    => 'Invalid Transfer Type',
         'ns:E429'    => '(Limit Daily/transaction/rate) exceeded',
@@ -185,6 +189,7 @@ class Status extends BaseStatus
     ];
 
     const FAILURE_CODE_PUBLIC_MAPPING = [
+        'ns:E400'    => 'Payout failed. Contact support for help.',
         'ns:E402'    => 'Payout failed. Contact support for help.',
         'ns:E405'    => 'Payout failed. Contact support for help.',
         'ns:E429'    => 'Payout failed. Contact support for help.',
@@ -263,6 +268,7 @@ class Status extends BaseStatus
             self::BAD_GATEWAY,
             self::ACQUIRING_BANK_CBS_OFFLINE,
             self::TRANSFER_TIMEOUT,
+            self::INVALID_REQUEST,
         ];
     }
 
@@ -281,7 +287,8 @@ class Status extends BaseStatus
             self::BENE_NOT_REGISTERED,
             self::INVALID_ACCOUNT_DETAILS,
             self::IMPS_NOT_ENABLED_FOR_REMITTER,
-            self::ACQUIRING_BANK_CBS_OFFLINE
+            self::ACQUIRING_BANK_CBS_OFFLINE,
+            self::INVALID_REQUEST,
         ];
     }
 
