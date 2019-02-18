@@ -164,7 +164,7 @@ export default class extends React.Component {
           )}
           <div class="footer">
             <button class="btn btn--primary">
-              Create
+              {isEdit ? 'Update' : 'Create'}
               <span class="spin-btn" />
             </button>
           </div>
