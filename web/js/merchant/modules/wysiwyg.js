@@ -11,6 +11,17 @@ import { FIELD_CONST } from 'merchant/containers/PaymentPages/Pages/V2/views/For
 
 const FETCH_ENTITY = 'FETCH_ENTITY';
 
+export const updateTemplateType = data => {
+  const isPageDirty = false;
+
+  return updateData(
+    {
+      description: data ? JSON.stringify({ value: data, metaText: '' }) : null, // No meta text if nothing updated by user
+    },
+    isPageDirty
+  );
+};
+
 export const fetchPaymentPage = id => {
   if (!id) {
     return {
@@ -19,18 +30,19 @@ export const fetchPaymentPage = id => {
         id: null, // To handle case where intial UI schema to be shown
       },
     };
-  } else {
-    return {
-      type: FETCH_ENTITY,
-      payload: fetchPaymentPageEntity(id),
-      id,
-    };
   }
+
+  return {
+    type: FETCH_ENTITY,
+    payload: fetchPaymentPageEntity(id),
+    id,
+  };
 };
 
-export const updateData = field => ({
+export const updateData = (field, isPageDirty) => ({
   type: 'UPDATE_DATA',
   fields: field,
+  isPageDirty,
 });
 
 export const deleteInSchema = index => ({
@@ -116,7 +128,8 @@ export default function(state = initialState, action) {
       } else {
         return {
           ...state,
-          isPageDirty: true,
+          isPageDirty:
+            action.isPageDirty !== void 0 ? action.isPageDirty : true,
           paymentPageEntity: deepMerge(
             // Needed for settings
             state.paymentPageEntity,

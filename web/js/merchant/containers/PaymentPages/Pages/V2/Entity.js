@@ -22,6 +22,7 @@ import EditQuantity from '../Edit/EditQuantity';
 
 import { EditExpiry, EditNotes } from '../../../PaymentLinks/Edit/index';
 import ShareView from '../Modals/Share';
+import PPEmbedButtonView from '../Modals/EmbedButton';
 
 import Button from 'component/Button';
 
@@ -60,6 +61,20 @@ export default class PaymentPagesV2Entity extends React.Component {
     ];
   }
 
+  openEmbedButtonView = () => {
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <PPEmbedButtonView
+          handleClose={this.props.closeModal}
+          trackerFn={function() {}}
+          url={this.props.paymentPageEntity.short_url}
+          color={this.props.merchantColor}
+        />
+      ),
+    });
+  };
+
   openShareView = () => {
     const { paymentPageEntity } = this.props;
     trackDetailViewEdits('Click Share');
@@ -68,12 +83,14 @@ export default class PaymentPagesV2Entity extends React.Component {
       component: (
         <ShareView
           handleClose={this.props.closeModal}
+          openModal={this.props.openModal}
           handleAction={sendLink.bind(null, paymentPageEntity.id)}
           showNotification={this.props.showNotification}
           url={paymentPageEntity.short_url}
           title={paymentPageEntity.title}
           description={paymentPageEntity.description}
           trackerFn={trackShareActions}
+          openEmbedButton={this.openEmbedButtonView}
         />
       ),
     });

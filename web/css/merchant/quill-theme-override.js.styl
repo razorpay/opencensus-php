@@ -1,0 +1,184 @@
+#paymentpage-container #description
+  border-radius: 2px
+  border: 1px solid #eee
+
+  display: flex
+  flex-direction: column-reverse
+
+  &.is-focused
+    border-color: $primary-color
+
+  .ql-blank::before
+    font-style: normal
+    line-height: 20px
+    left: 8px
+    opacity: 0.8
+
+  .ql-toolbar
+    position: sticky
+    bottom: 0
+    left: -5px
+    right: -5px
+    padding: 5px
+    z-index: 1
+    border: none
+    border-top: 1px solid #eee
+    box-shadow: 0 -4px 12px -4px rgba(0,0,0,0.065)
+    background: #fefefe
+
+    .ql-formats:last-of-type
+      margin-right: 0
+
+  .ql-header.ql-picker
+    width: 106px
+
+    .ql-picker-label, &.ql-expanded .ql-picker-label
+      border-radius: 2px
+      border: 1px solid #eee
+
+  .ql-color
+    .ql-color-label.ql-stroke
+      stroke: #0d2366
+
+    .ql-picker-label
+      svg
+        width: 15px
+        vertical-align: sub
+        .ql-stroke
+          stroke: #6f7691
+
+      &:hover, &.ql-active
+        .ql-stroke
+          stroke: #06c
+
+    &.ql-expanded
+      svg
+        margin-left: 1px
+        margin-top: 4px
+
+      .ql-picker-label
+        border: none
+
+      .ql-picker-options::after
+        content: ''
+        position: absolute
+        border-left: 6px solid transparent
+        border-right: 6px solid transparent
+        border-top: 8px solid #fff
+        bottom: -5px
+        left: 7px
+
+    .ql-picker-options
+      width: 130px
+      padding: 4px 2px
+      margin: 4px 4px 4px 0
+      border: none
+      box-shadow: 6px 3px 24px 0 rgba(23,31,37,0.12)
+      top: unset
+      bottom: 100%
+
+      .ql-picker-item
+        margin: 4px
+        border-radius: 50%
+        transition: 0.15s linear
+        border: none
+
+        &:hover
+          border: none
+          transform: scale(1.1)
+
+  .ql-tooltip
+    color: #fff
+    border: none
+    border-radius: 2px
+    background-color: #58666E
+    box-shadow: 3px -2px 8px 0 rgba(151,151,151,0.19)
+    padding: 8px
+    z-index: 3
+
+    &::before
+      content: 'Enter Video URL'
+      display: block
+      font-size: 12px
+      font-weight: 600
+      line-height: 16px
+      margin-bottom: 4px
+
+    &::after
+      content: ''
+      position: absolute
+      border-left: 7px solid transparent
+      border-right: 7px solid transparent
+      border-bottom: 7px solid #58666E
+      top: -6px
+      left: 50%
+      transform: translateX(-50%)
+
+    input
+      border-radius: 2px
+      border: none
+      height: 24px
+      color: #58666E
+      vertical-align: middle
+
+    .ql-action, .ql-remove
+      background: $primary-color
+      color: #fff
+      border-radius: 2px
+      padding: 0 12px
+      height: 24px
+      vertical-align: middle
+      font-size: 12px
+
+    .ql-action
+      margin-left: 0
+      &::after
+        margin: 0
+        border-right: none
+        padding-right: 0
+
+    .ql-remove
+      margin-left: 8px
+
+    .ql-remove::before
+      margin-left: 0
+
+    .ql-preview
+      color: #fff
+      font-size: 12px
+      display: block
+      margin-bottom: 8px
+
+    &.ql-editing
+      .ql-action
+        margin-left: 4px
+
+      .ql-preview
+        margin-bottom: 0
+
+  #description-quill
+    border: none
+
+    .ql-editor
+      padding: 12px 8px
+
+.ql-picker-options
+  .ql-picker-item:not(:last-of-type)
+    border-bottom: 1px solid #eee
+
+
+.ql-snow .ql-picker.ql-header .ql-picker-label[data-value="2"]::before, .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="2"]::before
+  content: 'Heading'
+  font-weight: 600
+  font-size: 16px
+
+
+.ql-snow .ql-picker.ql-header .ql-picker-label[data-value="3"]::before, .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="3"]::before
+  content: 'Subheading'
+  font-weight: 600
+  font-size: 14px
+
+.ql-snow .ql-picker.ql-header .ql-picker-label::before, .ql-snow .ql-picker.ql-header .ql-picker-item::before
+  content: 'Normal Text'
+  font-weight: 400
+  font-size: 13px

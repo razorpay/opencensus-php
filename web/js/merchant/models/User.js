@@ -3,8 +3,8 @@ import { filterBy } from 'rzp/utils/rzp-utils';
 
 import { fetchFeaturesAjax } from 'merchant/modules/config';
 import LocalStorageService from 'rzp/utils/localStorage';
-
 import { getOrg } from 'merchant/store';
+import { getExperiment } from 'common/util';
 
 import {
   roleEditPermissions,
@@ -270,7 +270,7 @@ export default class User {
   }
 
   get isPaymentPagesV2Enabled() {
-    return this.findTag('paymentpagesv2');
+    return getExperiment('paymentpagesv2') === 'on';
   }
 
   get isDiwaliPromoEnabled() {

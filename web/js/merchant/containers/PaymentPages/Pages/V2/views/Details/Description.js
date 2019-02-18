@@ -1,69 +1,231 @@
+import { connect } from 'react-redux';
 import { classList } from 'common/util';
-import Input from 'component/Input';
+import debounce from 'rzp/utils/debounce';
+import { showNotification } from 'rzp/modules/notifications';
 
-const DESC_LIMIT = {
-  DESKTOP: 720,
-  MOBILE: 125,
+import { uploadImageInDescription } from '../../../model';
+
+const FILE_SIZE_LIMIT = 2; // 2MB limit
+const COLORS_LIST = [
+  '#00bb55',
+  '#528ff0',
+  '#f05150',
+  '#ff9800',
+  '#ba68c8',
+  '#f06292',
+  '#a1887f',
+  '#58666e',
+  '#b4babd',
+];
+
+const QUILL_OPTIONS = {
+  formats: [
+    'header',
+    'color',
+    'bold',
+    'italic',
+    'underline',
+    'list',
+    'link',
+    'image',
+    'video',
+  ],
+  modules: {
+    toolbar: [
+      [{ header: [2, 3, false] }],
+      [{ color: COLORS_LIST }, 'bold', 'italic', 'underline'],
+      [{ list: 'bullet' }, { list: 'ordered' }],
+      ['link', 'image', 'video'],
+    ],
+  },
+  placeholder: 'Enter page description',
+  theme: 'snow',
+  scrollingContainer: 'body',
 };
 
+// BEWARE: Don't remove whitespaces from infoTxt.
 const infoTxt = `Give your customers more information about this page.
 
 Note:
 All URLs will convert to links.`;
 
+@connect(null, { showNotification })
 export default class extends React.PureComponent {
-  handleOnInput = ({ target }) => {
-    this.autoAdjustHeight(target);
-  };
-
-  autoAdjustHeight(target) {
-    if (!target) {
-      return;
-    }
-
-    const content = target.value;
-    const fakeEle = window.document.querySelector(
-      '#description .fake-textarea'
-    );
-
-    let newLineChars = 0;
-    for (let i = 0; i < content.length; i++) {
-      if (content[i] === '\n') {
-        newLineChars++;
-      }
-    }
-
-    let fakeLinesHeight = newLineChars * 22; // 22 is line-height
-
-    fakeEle.innerHTML = content;
-    this.elHeight = fakeEle.scrollHeight + fakeLinesHeight + 10 + 'px'; // 10 is combination of vertical padding and line height of the textarea in css
-    target.style.height = this.elHeight;
-  }
-
+  state = { isScriptLoaded: null };
   componentDidMount() {
-    this.autoAdjustHeight(
-      document.body.querySelector('#description textarea[name="description"]')
-    );
+    if (window.Quill) {
+      this.QUILL = null;
+      setTimeout(() => this.initDescription(), 50);
+    } else {
+      window.onQuillLoad = () => {
+        customizeIcons();
+        this.initDescription();
+      };
+    }
   }
+
+  componentWillUpdate(nextProps) {
+    if (
+      this.props.description !== nextProps.description &&
+      !this.props.isPageDirty &&
+      this.QUILL
+    ) {
+      nextProps.description
+        ? this.QUILL.setContents(JSON.parse(nextProps.description).value)
+        : this.QUILL.setText('');
+    }
+  }
+
+  initDescription() {
+    this.QUILL = new window.Quill('#description-quill', QUILL_OPTIONS);
+
+    /* Pre-fill description */
+    this.props.description &&
+      this.QUILL.setContents(JSON.parse(this.props.description).value);
+
+    /* Update description via debounce */
+    this.QUILL.on('text-change', (delta, oldDelta, source) => {
+      if (source == 'user') {
+        this.updateDescription();
+      }
+    });
+
+    /* For style handling */
+    this.QUILL.on('selection-change', range => {
+      if (!range) {
+        this.setState({ isFocused: false });
+      } else {
+        this.setState({ isFocused: true });
+      }
+    });
+
+    /* Custom Image handling */
+    this.QUILL.getModule('toolbar').addHandler('image', () =>
+      this.handleImageInsert()
+    );
+
+    /* Fix keyboard bindings */
+    const keyboard = this.QUILL.getModule('keyboard');
+    for (let key in keyboard.hotkeys) {
+      delete keyboard.hotkeys[key];
+    }
+
+    const bodyEditor = document.getElementById('description-quill');
+
+    // Allow only certain hotkeys. Quilljs is adding hotkeys for unused modules, hence explicit handling.
+    bodyEditor.addEventListener('keydown', function(e) {
+      let ret = true;
+
+      if (e.ctrlKey || e.metaKey) {
+        switch (e.keyCode) {
+          case 66: // ctrl+B or ctrl+b
+          case 98:
+            ret = false;
+            break;
+          case 73: // ctrl+I or ctrl+i
+          case 105:
+            ret = false;
+            break;
+          case 85: // ctrl+U or ctrl+u
+          case 117:
+            ret = false;
+            break;
+        }
+      }
+      return ret;
+    });
+  }
+
+  handleImageInsert(f) {
+    const self = this;
+    const range = self.QUILL.getSelection();
+
+    // Listen upload local image and save to server
+    const input = document.createElement('input');
+    input.setAttribute('type', 'file');
+    input.click();
+
+    input.onchange = () => {
+      const file = input.files[0];
+      const fileSizeMB = file.size / 1024 / 1024;
+
+      if (fileSizeMB > FILE_SIZE_LIMIT) {
+        self.props.showNotification({
+          type: 'error',
+          message: `Image too large. Max limit ${FILE_SIZE_LIMIT}MB`,
+        });
+
+        return;
+      }
+
+      const isImageType = /^image\//.test(file.type);
+
+      if (isImageType) {
+        uploadImageInDescription(file)
+          .then(res => {
+            if (res && res.success) {
+              const url = res.data[0];
+
+              self.QUILL.insertEmbed(range.index, 'image', url, 'user');
+            } else {
+              throw { errors: ['Some network error occurred'] };
+            }
+          })
+          .catch(({ errors }) => {
+            self.props.showNotification({
+              type: 'error',
+              message: errors[0],
+            });
+          });
+      } else {
+        self.props.showNotification({
+          type: 'error',
+          message: 'Select a valid Image',
+        });
+
+        return;
+      }
+    };
+  }
+
+  updateDescription() {
+    const desc = this.QUILL.getContents();
+    let descMetaText = this.QUILL.getText(); // To consume for SEO
+    descMetaText = descMetaText
+      .replace(/(#)/gm, '')
+      .replace(/(\r\n|\n|\r)/gm, '. ');
+
+    this.props.updateData({
+      target: {
+        name: 'description',
+        value: JSON.stringify({ value: desc.ops, metaText: descMetaText }),
+      },
+    });
+  }
+
+  updateDescription = debounce(::this.updateDescription, 200);
 
   render() {
-    const ele = document.body.querySelector(
-      '#description textarea[name="description"]'
-    );
-    const hasVal = ele ? ele.value : this.props.description;
-
     return (
-      <div id="description" class={classList(!hasVal && 'Input-highlight')}>
-        <div class="fake-textarea" />
-        <Input.Textarea
-          name="description"
-          placeholder="Enter page description"
-          info={infoTxt}
-          defaultValue={this.props.description}
-          onInput={this.handleOnInput}
-          onBlur={this.props.updateData}
-        />
+      <div
+        id="description"
+        class={classList(this.state.isFocused && 'is-focused')}
+      >
+        <div id="description-quill" />
       </div>
     );
   }
+}
+
+function customizeIcons() {
+  const icons = window.Quill.import('ui/icons');
+
+  icons['bold'] = '<i class="i i-bold" />';
+  icons['italic'] = '<i class="i i-italics" />';
+  icons['underline'] = '<i class="i i-underline" />';
+  icons['link'] = '<i class="i i-link" />';
+  icons['image'] = '<i class="i i-image" />';
+  icons['video'] = '<i class="i i-video" />';
+  icons['list']['bullet'] = '<i class="i i-ul-list" />';
+  icons['list']['ordered'] = '<i class="i i-ol-list" />';
 }

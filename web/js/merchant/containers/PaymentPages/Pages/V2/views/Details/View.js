@@ -6,9 +6,15 @@ import Share from './Share';
 import Support from './Support';
 import Terms from './Terms';
 
-@connect(state => ({ paymentPageEntity: state.wysiwyg.paymentPageEntity }), {
-  updateData,
-})
+@connect(
+  state => ({
+    paymentPageEntity: state.wysiwyg.paymentPageEntity,
+    isPageDirty: state.wysiwyg.isPageDirty,
+  }),
+  {
+    updateData,
+  }
+)
 export default class View extends React.PureComponent {
   updateData({ target }) {
     let { name, value } = target;
@@ -33,7 +39,7 @@ export default class View extends React.PureComponent {
   updateData = this.updateData.bind(this);
 
   render() {
-    const { paymentPageEntity } = this.props;
+    const { paymentPageEntity, isPageDirty } = this.props;
     const self = this;
 
     if (!paymentPageEntity) {
@@ -65,6 +71,7 @@ export default class View extends React.PureComponent {
           />
           <Description
             description={paymentPageEntity.description}
+            isPageDirty={isPageDirty}
             key={
               paymentPageEntity.id
                 ? paymentPageEntity.id + '-description'

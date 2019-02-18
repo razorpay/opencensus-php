@@ -56,306 +56,11 @@ const inActiveStatusReasonMap = {
 };
 
 @connect(state => ({ user: state.session.user }), {
-  showNotification,
-  openModal,
-  closeModal,
-})
-export class PaymentPagesEntity extends React.Component {
-  getStatsTable(paymentPageEntity) {
-    return [
-      [
-        { title: 'Payments Made', value: paymentPageEntity.times_paid },
-        {
-          title: 'Total Sales',
-          value: (
-            <Amount
-              value={paymentPageEntity.total_amount_paid}
-              currency={paymentPageEntity.currency}
-            />
-          ),
-        },
-      ],
-    ];
-  }
-  openShareView = () => {
-    const { paymentPageEntity } = this.props;
-
-    trackDetailViewEdits('Click Share');
-    this.props.openModal({
-      size: 'small',
-      component: (
-        <ShareView
-          handleClose={this.props.closeModal}
-          handleAction={sendLink.bind(null, paymentPageEntity.id)}
-          showNotification={this.props.showNotification}
-          url={paymentPageEntity.short_url}
-          title={paymentPageEntity.title}
-          description={paymentPageEntity.description}
-          trackerFn={trackShareActions}
-        />
-      ),
-    });
-  };
-
-  render() {
-    let {
-      createdByUser,
-      paymentPageEntity,
-      paymentPagePayments,
-      paymentsListLoading,
-      editPaymentPage,
-      toggleManualActivation,
-      reActivateLink,
-    } = this.props;
-
-    const isRoleAllowedEdit = this.props.user.isAllowedEdit('payment_pages');
-
-    let status = paymentPageEntity.status;
-    let statusReason = paymentPageEntity.status_reason;
-
-    const isActive = status === 'active';
-    const isExpired = !isActive && statusReason.toLowerCase() === 'expired';
-
-    const isCompleted = !isActive && statusReason.toLowerCase() === 'completed';
-
-    const isSmsOrEmailSent =
-      paymentPageEntity.sms_status === 'sent' ||
-      paymentPageEntity.email_status === 'sent';
-
-    return (
-      <div class="content-wrapper content-sm txn-details Entity--paymentpage">
-        <div class="panel panel-default SliderPanel">
-          <div class="panel-heading">
-            <i class="i i-payment-pages text-primary icon--formal" />{' '}
-            <div class="text">{paymentPageEntity.title}</div>
-            <div class="btn-toolbar pull-right">
-              {isRoleAllowedEdit &&
-                isActive && (
-                  <button
-                    class="btn btn-primary btn-sm"
-                    onClick={this.openShareView}
-                  >
-                    Share URL
-                  </button>
-                )}
-            </div>
-          </div>
-
-          <div class="SliderPanel__Body">
-            <div class="panel-body">
-              <div class="list-group details-row-container">
-                <StatsInfo stats={this.getStatsTable(paymentPageEntity)} />
-                <EntityDetailRow
-                  label="Payment Page Id"
-                  value={paymentPageEntity.id}
-                />
-                <EntityDetailRow
-                  label="Amount"
-                  value={() => (
-                    <Amount
-                      value={paymentPageEntity.amount}
-                      currency={paymentPageEntity.currency}
-                    />
-                  )}
-                />
-                <EntityDetailRow
-                  label="Page URL"
-                  value={() => (
-                    <CopyLink
-                      url={paymentPageEntity.short_url}
-                      onCopy={() => {
-                        trackDetailViewEdits('Click Copy');
-                      }}
-                    />
-                  )}
-                />
-                <EntityDetailRow
-                  label="Status"
-                  value={() => (
-                    <div>
-                      <PaymentPagesStatusLabel status={status} />
-                      {isRoleAllowedEdit && (
-                        <Button.Transparent
-                          class="Button--Link"
-                          style={{ marginLeft: 12 }}
-                          onClick={
-                            isActive ? toggleManualActivation : reActivateLink
-                          }
-                        >
-                          {isActive ? 'Deactivate' : 'Activate'}
-                        </Button.Transparent>
-                      )}
-                      <div style={{ marginTop: 4, color: '#8991ae' }}>
-                        {inActiveStatusReasonMap[statusReason]}
-                      </div>
-                    </div>
-                  )}
-                />
-                <EntityDetailRow
-                  label="Payment For"
-                  pairClass="description"
-                  value={() => (
-                    <EditPaymentFor
-                      value={{
-                        title: paymentPageEntity.title,
-                        description: paymentPageEntity.description,
-                      }}
-                      entityId={paymentPageEntity.id}
-                      editFn={editPaymentPage}
-                      trackerFn={trackDetailViewEdits}
-                      isRoleAllowedEdit={isRoleAllowedEdit}
-                    />
-                  )}
-                />
-
-                <EntityDetailRow
-                  label="Receipt No."
-                  value={() => (
-                    <EditReceipt
-                      value={paymentPageEntity.receipt}
-                      entityId={paymentPageEntity.id}
-                      editFn={editPaymentPage}
-                      trackerFn={trackDetailViewEdits}
-                      isRoleAllowedEdit={isRoleAllowedEdit}
-                    />
-                  )}
-                />
-
-                <EntityDetailRow label="Created by">
-                  {!!createdByUser ? (
-                    <Definition>
-                      {createdByUser.name}
-                      {createdByUser.email}
-                    </Definition>
-                  ) : (
-                    'API'
-                  )}
-                </EntityDetailRow>
-
-                <EntityDetailRow
-                  label="Created At"
-                  value={() => <Time value={paymentPageEntity.created_at} />}
-                />
-
-                <EntityDetailRow
-                  label={isExpired ? 'Expired On' : 'Expires On'}
-                  value={() => (
-                    <EditExpiry
-                      value={paymentPageEntity.expire_by}
-                      editFn={editPaymentPage}
-                      entityId={paymentPageEntity.id}
-                      isRoleAllowedEdit={isRoleAllowedEdit}
-                    />
-                  )}
-                />
-
-                <EntityDetailRow
-                  label="Times Payable"
-                  value={() => (
-                    <EditTimesPayable
-                      value={paymentPageEntity.times_payable}
-                      editFn={editPaymentPage}
-                      entityId={paymentPageEntity.id}
-                      trackerFn={trackDetailViewEdits}
-                      isRoleAllowedEdit={isRoleAllowedEdit}
-                    />
-                  )}
-                />
-
-                <EntityDetailRow
-                  label="Notes"
-                  value={() => (
-                    <EditNotes
-                      value={paymentPageEntity.notes}
-                      editFn={editPaymentPage}
-                      entityId={paymentPageEntity.id}
-                      trackerFn={trackDetailViewEdits}
-                      isRoleAllowedEdit={isRoleAllowedEdit}
-                    />
-                  )}
-                />
-
-                <GroupDetailsTable
-                  title="Successful Payments"
-                  subTitle={
-                    <React.Fragment>
-                      <Amount
-                        value={paymentPageEntity.total_amount_paid}
-                        currency={paymentPageEntity.currency}
-                      />{' '}
-                      total sales
-                    </React.Fragment>
-                  }
-                  class="paymentpage-link-payments-table"
-                  loading={paymentsListLoading}
-                  items={paymentPagePayments}
-                  footer={
-                    paymentPagePayments.length <
-                    paymentPageEntity.times_paid ? (
-                      <NavLink
-                        target="_blank"
-                        to={`/payments?payment_link_id=${
-                          paymentPageEntity.id
-                        }&count=${
-                          paymentPageEntity.times_paid > MAX_API_COUNT
-                            ? MAX_API_COUNT
-                            : paymentPageEntity.times_paid
-                        }&ref=paymentpages`}
-                      >
-                        View all {paymentPageEntity.times_paid} payments
-                      </NavLink>
-                    ) : null
-                  }
-                  rowConfig={[
-                    [
-                      data => (
-                        <span class="label--primary">{data.contact}</span>
-                      ),
-                      data => (
-                        <NavLink
-                          class="btn-link no-padding"
-                          to={`/payments/${data.id}`}
-                          target="_blank"
-                        >
-                          {data.id}
-                        </NavLink>
-                      ),
-                    ],
-                    [
-                      data => (
-                        <span class="label--secondary">{data.email}</span>
-                      ),
-                      data => (
-                        <span class="label--secondary">
-                          <Time
-                            value={data.created_at}
-                            format="DD MMM YYYY, hh:mm:ss a"
-                          />
-                        </span>
-                      ),
-                    ],
-                  ]}
-                  loaderConfig={[
-                    [{ width: '70%' }, { width: '45%' }],
-                    [{ width: '60%', height: '10px' }, { width: '30%' }],
-                  ]}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-}
-
-@connect(state => ({ user: state.session.user }), {
   updatePPInReduxList,
   showNotification,
   closeModal,
   openModal,
 })
-@connect(state => ({ user: state.session.user }))
 export default class extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -443,10 +148,7 @@ export default class extends React.Component {
           this.props.updatePPInReduxList(resp.data, false);
 
           const keys = { ...data };
-          if (
-            this.props.user.isPaymentPagesV2Enabled &&
-            keys.hasOwnProperty('times_payable')
-          ) {
+          if (keys.hasOwnProperty('times_payable')) {
             keys.quantity = keys.times_payable;
             delete keys.times_payable;
           }
@@ -620,7 +322,6 @@ export default class extends React.Component {
       size: 'medium',
       component: (
         <ActivateAgain
-          isPaymentPagesV2Enabled={this.props.user.isPaymentPagesV2Enabled}
           reactivationTimeGap={reactivationTimeGap}
           expireBy={
             isExpired || hasExpiredInCompletedState
@@ -714,18 +415,8 @@ export default class extends React.Component {
       );
     }
 
-    return this.props.user.isPaymentPagesV2Enabled ? (
+    return (
       <PaymentPagesV2Entity
-        {...this.props}
-        {...this.state}
-        fetchEntity={this.fetchEntity}
-        fetchEntityPayments={this.fetchEntityPayments}
-        editPaymentPage={this.editPaymentPage}
-        toggleManualActivation={this.toggleManualActivation}
-        reActivateLink={this.reActivateLink}
-      />
-    ) : (
-      <PaymentPagesEntity
         {...this.props}
         {...this.state}
         fetchEntity={this.fetchEntity}

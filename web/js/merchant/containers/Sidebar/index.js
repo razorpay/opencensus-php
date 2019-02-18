@@ -312,11 +312,10 @@ export default class Sidebar extends Component {
                     label="Payment Pages"
                     icon="i i-payment-pages text-warm temp-icon-style"
                     to={routes.paymentpages}
-                    featureEnabled="paymentpages"
                     additionalCondition={user =>
-                      user.isAllowedView('payment_pages')
+                      user.isAllowedView('payment_pages') &&
+                      user.isPaymentPagesV2Enabled
                     }
-                    isNew
                   />
                   <MainNavLink
                     label="Route"

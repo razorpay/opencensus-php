@@ -16,10 +16,6 @@ function pruneReqPayload(reqPayload) {
     // It is required field. Safe check.
     reqPayload.title = reqPayload.title.trim();
   }
-
-  if (reqPayload.description) {
-    reqPayload.description = reqPayload.description.trim();
-  }
 }
 
 export function createPaymentPage(data) {
@@ -50,6 +46,17 @@ export function editPaymentPage(id, data) {
     headers: {
       'content-type': 'application/json',
     },
+  });
+}
+
+export function uploadImageInDescription(file) {
+  const fd = new FormData();
+  fd.append('images[0]', file);
+
+  return merchantFetch({
+    url: `payment_links/images`,
+    method: 'post',
+    data: fd,
   });
 }
 
