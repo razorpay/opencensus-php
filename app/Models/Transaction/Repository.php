@@ -1286,7 +1286,9 @@ class Repository extends Base\Repository
      */
     protected function modifyQueryForIndexing(BuilderEx $query)
     {
-        // Optimization
+        // Eager loading relation is optimal during bulk indexing, also filters for specific type.
+        $query->where(Entity::TYPE, ConstantEntity::PAYOUT)
+              ->with('source');
     }
 
     /**

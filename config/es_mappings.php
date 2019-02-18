@@ -398,6 +398,9 @@ return [
                 'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
             ],
+            'contact' => [
+                'type' => 'keyword',
+            ],
             'type' => [
                 'type' => 'keyword',
             ],
