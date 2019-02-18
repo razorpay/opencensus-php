@@ -26,9 +26,14 @@ export default class extends React.Component {
       return;
     }
 
+    let data = form;
+    if (form['json-value']) {
+      data = JSON.parse(form['json-value']);
+    }
+
     const isEdit = !!(this.props.data && this.props.data.id);
     const reqPayload = {
-      ...form,
+      ...data,
       variants: this.state.variants.map(v => v.trim()),
     };
 

@@ -80,17 +80,26 @@ export default class extends React.Component {
 
   onSubmit = form => {
     const isEdit = this.props.data && this.props.data.id;
-    const { description, environment, mode } = form;
+    let data = form,
+      segments;
+
+    const isJSONView = this.props.JSONView;
+    if (isJSONView) {
+      data = JSON.parse(form['json-value']);
+      segments = data.segments;
+    } else {
+      if (!this.state.selectedFeature) {
+        return notifyError('Select a Feature');
+      }
+
+      segments = this.state.segments.map(s => ({ ...s }));
+    }
+
+    const { description, environment, mode } = data;
 
     if (!description) {
       return notifyError('Description is required');
     }
-
-    if (!this.state.selectedFeature) {
-      return notifyError('Select a Feature');
-    }
-
-    const segments = this.state.segments.map(s => ({ ...s }));
 
     let msg = '';
     for (let i = 0; i < segments.length; i++) {
@@ -143,7 +152,9 @@ export default class extends React.Component {
 
     // Feature id cannot be edited once tied with experiment
     if (!isEdit) {
-      reqPayload.feature_id = Number(this.state.selectedFeature.id);
+      reqPayload.feature_id = isJSONView
+        ? Number(data.feature_id)
+        : Number(this.state.selectedFeature.id);
     }
 
     let requestFn = rexPost,
