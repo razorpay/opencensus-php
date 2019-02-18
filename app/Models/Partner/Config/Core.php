@@ -104,6 +104,18 @@ class Core extends Base\Core
     }
 
     /**
+     * Fetch all default and overridden configs of an application
+     *
+     * @param Application\Entity $application
+     *
+     * @return mixed
+     */
+    public function fetchAllConfigForApp(Application\Entity $application)
+    {
+        return $this->repo->partner_config->fetchAllConfigForApp($application->getId());
+    }
+
+    /**
      * @param string $id
      * @param array  $input
      *
