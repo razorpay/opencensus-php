@@ -407,7 +407,7 @@ final class Route
         'gateway_payment_callback_canara_get'      => ['get',      'gateway/netbanking_canara/callback',             'GatewayController@callbackCanara'                                  ],
         'gateway_payment_callback_amazonpay'       => ['get',      'gateway/wallet_amazonpay/callback/{ajax?}',      'GatewayController@callbackAmazonpay'                               ],
         'gateway_payment_callback_amazonpay_post'  => ['post',     'gateway/wallet_amazonpay/callback/{ajax?}',      'GatewayController@callbackAmazonpay'                               ],
-        'gateway_payment_settlement_paysecure'     => ['post',     'gateway/settlement/paysecure',                   'GatewayController@initiatePaysecureSettlements'                    ],
+        'gateway_payment_settlement'               => ['post',     'gateway/settlement/{gateway}',                   'GatewayController@initiateSettlements'                             ],
         'geoip_update'                             => ['post',     'geoip/update',                                   'AdminController@updateGeoIps'                                      ],
 
         // File-based Emandate Routes
@@ -1313,7 +1313,7 @@ final class Route
         'billdesk_reconcile_cancelled',
         'setl_notify_h2h',
         'entity_balance_id_update',
-        'gateway_payment_settlement_paysecure',
+        'gateway_payment_settlement',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2200,7 +2200,7 @@ final class Route
         'merchant_schedule_bulk'                   => Permission::SCHEDULE_ASSIGN_BULK,
         'virtual_account_create'                   => Permission::CREATE_VIRTUAL_ACCOUNTS,
         'entity_balance_id_update'                 => '*',
-        'gateway_payment_settlement_paysecure'     => '*',
+        'gateway_payment_settlement'               => '*',
         'merchant_balance_bulk_backfill_ids'       => '*',
     ];
 
@@ -2389,7 +2389,7 @@ final class Route
             'setl_verify',
             'billdesk_reconcile_cancelled',
             'entity_balance_id_update',
-            'gateway_payment_settlement_paysecure',
+            'gateway_payment_settlement',
         ],
 
         'subscriptions' => [

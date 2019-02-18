@@ -6,7 +6,7 @@ use RZP\Base;
 
 class Validator extends Base\Validator
 {
-    protected static $paysecureSettlementRules = [
+    protected static $settlementRules = [
         Service::FROM => 'sometimes',
         Service::TO => 'sometimes',
     ];

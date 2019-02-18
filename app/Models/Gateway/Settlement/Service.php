@@ -14,24 +14,22 @@ class Service extends Base\Service
     const FROM = 'from';
     const TO   = 'to';
 
-    public function processPaysecureSettlements(array $input)
+    protected $processors = [];
+
+    public function processSettlements(string $gateway, array $input)
     {
-        (new Validator)->validateInput('paysecure_settlement', $input);
+        (new Validator)->validateInput('settlement', $input);
 
         $this->setInput($input);
 
-        $payments = $this->repo->payment->fetchPaysecureAuthorizedAndCapturedPaymentsBetweenTimestampsToSettle(
-            $input[self::FROM],
-            $input[self::TO]
-        );
+        sd($this->getProcessor($gateway));
+
+        $payments = $this->getProcessor($gateway)->getPayments($input);
 
         foreach ($payments as $payment)
         {
-            $gatewayInput = [
-                'payment'  => $payment->toArray(),
-                'merchant' => $payment->merchant,
-                'card'     => $this->getCardDetails($payment),
-            ];
+            $this->getProcessor($gateway)->process($payment);
+
             sd($gatewayInput);
 
             $this->app['gateway']->call(
@@ -41,6 +39,29 @@ class Service extends Base\Service
                 $this->mode
             );
         }
+    }
+
+    protected function getProcessor($gateway)
+    {
+        $driver = $this->getProcessorDriver($gateway);
+
+        if (isset($this->processors[$driver]) === true)
+        {
+            return $this->processors[$driver];
+        }
+
+        $processor = new $driver;
+
+        $this->processors[$driver] = $processor;
+
+        return $this->processors[$driver];
+    }
+
+    protected function getProcessorDrive($gateway)
+    {
+        $baseNamespace = 'RZP\\Models\\Gateway\\Settlement\\Processor\\';
+
+        return $baseNamespace . studly_case($gateway);
     }
 
     protected function getCardDetails($payment)

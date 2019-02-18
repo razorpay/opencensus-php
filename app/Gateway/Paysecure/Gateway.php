@@ -16,10 +16,16 @@ use RZP\Gateway\Base\VerifyResult;
 
 class Gateway extends Base\Gateway
 {
-    use Base\AuthorizeFailed;
+    use Base\CardCacheTrait;
     use RequestHandlerTrait;
+    use Base\AuthorizeFailed;
 
     protected $gateway = 'paysecure';
+
+    protected $secureCacheDriver;
+
+    const CACHE_KEY = 'paysecure_%s_card_details';
+    const CACHE_TTL = 180;
 
     protected $gatewayPayment = null;
 
@@ -50,6 +56,13 @@ class Gateway extends Base\Gateway
         $this->wsdlDetails['wsdl_file'] = dirname(__FILE__) . '/rupay.wsdl.test';
     }
 
+    public function setGatewayParams($input, $mode, $terminal)
+    {
+        parent::setGatewayParams($input, $mode, $terminal);
+
+        $this->secureCacheDriver = $this->getDriver($input);
+    }
+
     /**
      * @param array $input
      * @return array
@@ -78,6 +91,9 @@ class Gateway extends Base\Gateway
 
             $this->traceGatewayPaymentRequest($request, $input);
 
+            // We fetch these details in the cron which initiates settlement from Hitachi
+            $this->persistCardDetailsTemporarily($input);
+
             return $request;
         }
         // Iframe flow
@@ -94,6 +110,9 @@ class Gateway extends Base\Gateway
             ];
 
             $this->traceGatewayPaymentRequest($request, $input);
+
+            // We fetch these details in the cron which initiates settlement from Hitachi
+            $this->persistCardDetailsTemporarily($input);
 
             $request['content'] = View::make('gateway.paysecurePinpadForm')
                                       ->with('data', $this->getPinpadData($response))

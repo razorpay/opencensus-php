@@ -675,10 +675,10 @@ class GatewayController extends Controller
         }
     }
 
-    public function initiatePaysecureSettlements()
+    public function initiateSettlements($gateway)
     {
         $input = Request::all();
 
-        return (new Settlement\Service)->processPaysecureSettlements($input);
+        return (new Settlement\Service)->processSettlements($gateway, $input);
     }
 }
