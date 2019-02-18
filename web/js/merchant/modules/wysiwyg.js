@@ -16,7 +16,7 @@ export const updateTemplateType = data => {
 
   return updateData(
     {
-      description: JSON.stringify(data),
+      description: data ? JSON.stringify({ value: data, metaText: '' }) : null, // No meta text if nothing updated by user
     },
     isPageDirty
   );

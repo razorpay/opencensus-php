@@ -53,9 +53,15 @@ All URLs will convert to links.`;
 export default class extends React.PureComponent {
   state = { isScriptLoaded: null };
   componentDidMount() {
-    window.onQuillLoad = () => {
-      this.initDescription();
-    };
+    if (window.Quill) {
+      this.QUILL = null;
+      setTimeout(() => this.initDescription(), 50);
+    } else {
+      window.onQuillLoad = () => {
+        customizeIcons();
+        this.initDescription();
+      };
+    }
   }
 
   componentWillUpdate(nextProps) {
@@ -65,18 +71,17 @@ export default class extends React.PureComponent {
       this.QUILL
     ) {
       nextProps.description
-        ? this.QUILL.setContents(JSON.parse(nextProps.description))
+        ? this.QUILL.setContents(JSON.parse(nextProps.description).value)
         : this.QUILL.setText('');
     }
   }
 
   initDescription() {
-    customizeIcons();
     this.QUILL = new window.Quill('#description-quill', QUILL_OPTIONS);
 
     /* Pre-fill description */
     this.props.description &&
-      this.QUILL.setContents(JSON.parse(this.props.description));
+      this.QUILL.setContents(JSON.parse(this.props.description).value);
 
     /* Update description via debounce */
     this.QUILL.on('text-change', (delta, oldDelta, source) => {
@@ -185,8 +190,16 @@ export default class extends React.PureComponent {
 
   updateDescription() {
     const desc = this.QUILL.getContents();
+    let descMetaText = this.QUILL.getText(); // To consume for SEO
+    descMetaText = descMetaText
+      .replace(/(#)/gm, '')
+      .replace(/(\r\n|\n|\r)/gm, '. ');
+
     this.props.updateData({
-      target: { name: 'description', value: JSON.stringify(desc.ops) },
+      target: {
+        name: 'description',
+        value: JSON.stringify({ value: desc.ops, metaText: descMetaText }),
+      },
     });
   }
 
