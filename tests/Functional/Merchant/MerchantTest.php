@@ -461,6 +461,36 @@ class MerchantTest extends TestCase
         $this->assertEquals('shake@razorpay.com', $merchant->primaryOwner()->getEmail());
     }
 
+    public function testEditMerchantEmailUserExists()
+    {
+        $content = $this->createMerchant();
+
+        $this->fixtures->user->createUserForMerchant($content['id'], ['email' => $content['email']]);
+
+        $existingUser = $this->fixtures->user->create(['email' => 'newemail@razorpay.com']);
+
+        $this->ba->adminAuth();
+
+        Event::fake(false);
+
+        $this->startTest();
+
+        Event::assertDispatched(KeyForgotten::class, function ($e) use ($content)
+        {
+            $expectedTags = [
+                'merchant_' . $content['id'],
+            ];
+
+            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+
+            return true;
+        });
+
+        $merchant = (new Merchant\Repository)->findOrFail($content['id']);
+
+        $this->assertEquals('newemail@razorpay.com', $merchant->primaryOwner()->getEmail());
+    }
+
     public function testEditMerchantWhitelistedIpsLive()
     {
         $this->createMerchant();
