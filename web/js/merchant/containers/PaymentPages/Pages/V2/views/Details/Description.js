@@ -35,7 +35,7 @@ const QUILL_OPTIONS = {
       [{ header: [2, 3, false] }],
       [{ color: COLORS_LIST }, 'bold', 'italic', 'underline'],
       [{ list: 'bullet' }, { list: 'ordered' }],
-      ['link', 'image', 'video'],
+      ['link', 'video'],
     ],
   },
   placeholder: 'Enter page description',
@@ -58,7 +58,6 @@ export default class extends React.PureComponent {
       setTimeout(() => this.initDescription(), 50);
     } else {
       window.onQuillLoad = () => {
-        customizeIcons();
         this.initDescription();
       };
     }
@@ -77,6 +76,7 @@ export default class extends React.PureComponent {
   }
 
   initDescription() {
+    customizeIcons();
     this.QUILL = new window.Quill('#description-quill', QUILL_OPTIONS);
 
     /* Pre-fill description */
@@ -211,7 +211,7 @@ export default class extends React.PureComponent {
         id="description"
         class={classList(this.state.isFocused && 'is-focused')}
       >
-        <div id="description-quill" />
+        <span id="description-quill" />
       </div>
     );
   }
