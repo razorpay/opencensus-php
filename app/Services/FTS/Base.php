@@ -7,7 +7,6 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
 use RZP\Trace\TraceCode;
-use RZP\Models\Admin\ConfigKey;
 
 class Base
 {
@@ -28,8 +27,6 @@ class Base
     protected $headers;
 
     protected $auth;
-
-    protected $redis;
 
     const FUND_ACCOUNT_BASE_URL  = '/accounts';
 
@@ -68,8 +65,6 @@ class Base
         $this->key = $this->config['fts_key'];
 
         $this->secret = $this->config['fts_secret'];
-
-        $this->redis = $app['redis']->connection('redis_labs');
 
         $this->setHeaders();
     }
@@ -229,19 +224,5 @@ class Base
             'body' => json_decode($response->body, true),
             'code' => $code,
         ];
-    }
-
-    public function validateChannel(string $channel)
-    {
-        $ftsChannels = $this->redis->SMEMBERS(ConfigKey::FTS_CHANNELS);
-
-        if(in_array($channel, $ftsChannels, true) === false)
-        {
-            $this->trace->info(
-                TraceCode::FTS_INVALID_CHANNEL,
-                $channel);
-
-            throw new LogicException('Channel is not live on FTS : '. $channel);
-        }
     }
 }

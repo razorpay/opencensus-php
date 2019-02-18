@@ -27,9 +27,9 @@ class FundTransfer extends Base
         $this->FTACore = new FundTransferAttemptCore;
     }
 
-    public function requestFundTransfer(string $ftaId, string $accountType):array
+    public function requestFundTransfer(string $ftaId, string $accountType, bool $isRegistered):array
     {
-        $input = $this->makeRequestUsingType($ftaId, $accountType);
+        $input = $this->makeRequestUsingType($ftaId, $accountType, $isRegistered);
 
         $response = $this->createAndSendRequest(
             parent::FUND_TRANSFER_BASE_URL . '/' . parent::URLS['request'],
@@ -40,11 +40,9 @@ class FundTransfer extends Base
         return $response;
     }
 
-    public function makeRequestUsingType(string $ftaId, string $type):array
+    public function makeRequestUsingType(string $ftaId, string $type, bool $isRegistered):array
     {
         $this->fta = $this->FTACore->getFTAEntity($ftaId);
-
-        parent::validateChannel($this->fta->getChannel());
 
         $sourceId   = $this->fta->getSourceId();
 
@@ -58,26 +56,28 @@ class FundTransfer extends Base
 
         $request = $this->addTransferBlock($request, $sourceId, $sourceType);
 
-        switch ($type)
+        if($isRegistered === true)
         {
-            case Constants::FTS_FUND_ACCOUNT:
-                $request = $this->addFTSFundAccountId($request);
+            $request = $this->addFTSFundAccountId($request);
+        }
+        else
+        {
+                switch ($type)
+                {
+                    case Constants::BANK_ACCOUNT:
+                        $request = $this->addBankAccountDetails($request);
 
-                break;
+                        break;
 
-            case Constants::BANK_ACCOUNT:
-                $request = $this->addBankAccountDetails($request);
+                    case Constants::VPA:
+                        $request = $this->addVpaDetails($request);
 
-                break;
+                        break;
 
-            case Constants::VPA:
-                $request = $this->addVpaDetails($request);
+                    default:
+                        throw new LogicException('Account Type is not supported ' . $type);
 
-                break;
-
-            default:
-                throw new LogicException('Account Type is not supported ' . $type);
-
+                }
         }
 
         return $request;
@@ -193,11 +193,7 @@ class FundTransfer extends Base
     {
         $ftsTransferId = $responseBody[Constants::FUND_TRANSFER_ID];
 
-        $this->fta->setFTSTransferId($ftsTransferId);
-
-        $this->fta->setStatus($responseBody['status']);
-
-        $this->FTACore->updateFTA($this->fta);
+        $this->FTACore->updateFTA($this->fta, $ftsTransferId, $responseBody['status']);
 
         $this->updateSource($ftsTransferId);
     }
@@ -206,9 +202,6 @@ class FundTransfer extends Base
     {
         switch ($type)
         {
-            case Constants::FTS_FUND_ACCOUNT:
-                break;
-
             case Constants::BANK_ACCOUNT:
                 (new BankAccountCore)->updateBankAccountWithFtsId(
                     $this->fta->bankAccount,

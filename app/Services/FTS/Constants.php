@@ -56,8 +56,6 @@ final class Constants
 
     const BENEFICIARY_NAME              = 'beneficiary_name';
 
-    const FTS_FUND_ACCOUNT              = 'fts_fund_account';
-
     const BENEFICIARY_CODE              = 'beneficiary_code';
 
     const BENEFICIARY_CITY              = 'beneficiary_city';

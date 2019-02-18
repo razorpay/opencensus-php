@@ -13,6 +13,7 @@ use RZP\Models\FundAccount;
 use RZP\Constants\Timezone;
 use RZP\Jobs\FTS\FundTransfer;
 use RZP\Services\Beam\Service;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Vpa\Entity as VpaEntity;
@@ -229,11 +230,22 @@ class Core extends Base\Core
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
     }
 
-    public function sendFTSFundTransferRequest($fta, string $accountType)
+    public function sendFTSFundTransferRequest(Entity $fta, string $accountType, bool $isRegistered = false)
     {
         try
         {
-            FundTransfer::dispatch($this->mode, $fta->getId(), $accountType);
+            $redis = $this->app['redis']->connection('redis_labs');
+
+            $ftsChannels = $redis->SMEMBERS(ConfigKey::FTS_CHANNELS);
+
+            if(in_array($fta->getChannel(), $ftsChannels, true) === false)
+            {
+                $this->trace->info(
+                    TraceCode::FTS_INVALID_CHANNEL,
+                    $fta->getChannel());
+            }
+
+            FundTransfer::dispatch($this->mode, $fta->getId(), $accountType, $isRegistered);
 
             $this->trace->info(
                 TraceCode::FTS_FUND_TRANSFER_JOB_DISPATCHED,
@@ -260,8 +272,12 @@ class Core extends Base\Core
         return $this->repo->fund_transfer_attempt->findOrFailPublic($ftaId);
     }
 
-    public function updateFTA(Entity $fta)
+    public function updateFTA(Entity $fta, string $status, $ftsTransferId)
     {
+        $fta->setFTSTransferId($ftsTransferId);
+
+        $fta->setStatus($status);
+
         $this->repo->saveOrFail($fta);
     }
 }

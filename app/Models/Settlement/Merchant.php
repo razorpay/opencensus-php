@@ -391,7 +391,7 @@ class Merchant
 
         $this->bankTransferAtpt = $fundTransferAttempt;
 
-        (new FundTransferAttempt\Core())->sendFTSFundTransferRequest($fundTransferAttempt, 'fts_fund_account');
+        (new FundTransferAttempt\Core())->sendFTSFundTransferRequest($fundTransferAttempt, '', true);
     }
 
     protected function saveSettlementEntitiesToDb()
