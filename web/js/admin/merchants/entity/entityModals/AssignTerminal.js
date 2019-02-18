@@ -68,6 +68,7 @@ const gatewayMapping = {
   bt_yesbank: 'Bank Transfer - Yes Bank',
   bt_kotak: 'Bank Transfer - Kotak',
   bt_dashboard: 'Bank Transfer - Dashboard (Test)',
+  emi_sbi: 'SBI EMI',
 };
 
 const HDFC_gatewayMapping = {

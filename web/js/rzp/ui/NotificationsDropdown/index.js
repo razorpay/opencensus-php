@@ -234,6 +234,7 @@ const NotificationCard = ({
   buttons,
   lastReadTS,
   trackAnnouncement,
+  ga,
 }) => {
   const isUnread = _isUnreadNotification(start_ts, end_ts, lastReadTS);
   return (
@@ -281,7 +282,7 @@ const NotificationCard = ({
                 )}
                 onClick={e => {
                   trackAnnouncement(
-                    title,
+                    ga ? ga.action : title,
                     `CTA Click - ${btn.label} - ${isUnread ? 'unread' : 'read'}`
                   );
                 }}

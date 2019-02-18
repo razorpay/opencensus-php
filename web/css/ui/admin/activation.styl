@@ -37,7 +37,7 @@
     border-bottom: none
 
 // activation merchant list styles
-.list-container.activations
+.list-container.activations-list
   .merchants-list
     .tr 
       //checkbox in table 1st row
@@ -50,7 +50,15 @@
         vertical-align: top
     .link
       word-break: normal
-  .PowerSelect__Trigger, .PowerSelect__TriggerInput
-    width: 150px
-    max-height: 32px
-    
+    .PowerSelect
+      width: 200px
+      .PowerSelect__TriggerInputContainer
+        display: inline-block
+        width: 80%
+      .PowerSelect__Clear, .PowerSelect__TriggerStatus
+        display: inline-block
+        width: 10%
+  .filters
+    .activation-end-date
+      .post-field-icon
+        right: 45%

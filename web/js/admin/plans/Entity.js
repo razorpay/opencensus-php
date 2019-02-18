@@ -68,27 +68,26 @@ export default class PlanEntity extends Component {
                 defaultValue={props.name}
                 required
               />
-              {isOrgRazorpay() &&
-                !isBlank(orgs) && (
-                  <SelectField
-                    label="Organisation"
-                    name="org_id"
-                    defaultValue={
-                      this.props.plan.collection.extraFields.selectedOrg ||
-                      'org_100000razorpay'
-                    }
-                    onChange={e => {
-                      updateOrg(e);
-                      this.props.plan.collection.data.handleOrgChange(e);
-                    }}
-                  >
-                    {Object.keys(orgs).map(orgId => (
-                      <option key={orgId} value={orgId}>
-                        {orgs[orgId]}
-                      </option>
-                    ))}
-                  </SelectField>
-                )}
+              {isOrgRazorpay() && !isBlank(orgs) && (
+                <SelectField
+                  label="Organisation"
+                  name="org_id"
+                  defaultValue={
+                    this.props.plan.collection.extraFields.selectedOrg ||
+                    'org_100000razorpay'
+                  }
+                  onChange={e => {
+                    updateOrg(e);
+                    this.props.plan.collection.data.handleOrgChange(e);
+                  }}
+                >
+                  {Object.keys(orgs).map(orgId => (
+                    <option key={orgId} value={orgId}>
+                      {orgs[orgId]}
+                    </option>
+                  ))}
+                </SelectField>
+              )}
               {items.length > 1 && (
                 <AsyncButton
                   class="btn"
@@ -225,7 +224,6 @@ export function copyPricingEntity(rules, orgs = {}) {
       deleted_at,
       expired_at,
       payment_network_name,
-      product,
       ...data
     } = rule;
 
