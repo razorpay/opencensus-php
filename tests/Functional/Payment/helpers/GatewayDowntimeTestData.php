@@ -964,6 +964,22 @@ return [
         ],
     ],
 
+    'testExternalApiWithGatewayResponse500' => [
+        'request' => [
+            'content' => [
+                'url' => 'http://www.ping-giving-500.com',
+            ],
+            'method' => 'POST',
+            'url'   => '/externalapi/health/',
+        ],
+        'response' => [
+            'content' => [
+                'http_status' => 500,
+            ],
+            'status_code' => 500,
+        ],
+    ],
+
     'testVajraAlertUPIWebHook' => [
         'request' => [
             'content' => [

@@ -70,6 +70,11 @@ class GatewayDowntimeTest extends TestCase
         $this->startTest();
     }
 
+    public function testExternalApiWithGatewayResponse500()
+    {
+        $this->startTest();
+    }
+
     public function testGatewayCreateDowntimeDuplicate()
     {
         $request = [
