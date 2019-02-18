@@ -133,7 +133,6 @@ export default class extends React.Component {
 
   goToExperiment = (mode, url) => {
     return () => {
-      console.log('....', mode);
       AppStore.updateMode(mode);
 
       setTimeout(() => {

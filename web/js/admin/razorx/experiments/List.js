@@ -13,6 +13,8 @@ import { AppStore } from 'admin/razorx/store';
 
 @observer
 export default class extends React.Component {
+  state = { queryParams: this.props.queryParams || {} };
+
   collection = new Collection({
     fetchFn: rexFetch,
     data: {
@@ -21,23 +23,29 @@ export default class extends React.Component {
     filters: this.props.queryParams,
   });
 
-  componentDidUpdate(prevProps) {
-    if (prevProps.mode !== this.props.mode) {
+  componentWillUpdate(nextProps) {
+    if (nextProps.mode !== this.props.mode) {
       this.collection.fetch(); // Automatically fetches as per current mode
     } else {
-      const lastQP = Object.keys(prevProps.queryParams);
       const curQP = Object.keys(this.props.queryParams);
+      const nextQP = Object.keys(nextProps.queryParams);
 
       let isDiff = false;
-      for (let i = 0; i < lastQP.length; i++) {
-        if (lastQP[i] !== curQP[i]) {
+      for (let i = 0; i < curQP.length; i++) {
+        if (
+          nextProps.queryParams[curQP[i]] !== this.props.queryParams[nextQP[i]]
+        ) {
           isDiff = true;
           break;
         }
       }
 
       if (isDiff) {
-        this.collection.applyFilters(this.props.queryParams);
+        this.collection.applyFilters(nextProps.queryParams);
+
+        this.setState({
+          queryParams: nextProps.queryParams,
+        });
       }
     }
   }
@@ -63,7 +71,7 @@ export default class extends React.Component {
   };
 
   render() {
-    const { queryParams = {} } = this.props;
+    const { queryParams = {} } = this.state;
 
     return (
       <div class="list-container">
@@ -71,14 +79,24 @@ export default class extends React.Component {
           <Field
             label="Feature Id"
             name="feature_id"
-            defaultValue={queryParams.feature_id}
+            value={queryParams.feature_id || ''}
+            onChange={e => {
+              this.setState({
+                queryParams: { ...queryParams, feature_id: e.target.value },
+              });
+            }}
           />
           <Field label="Created By" name="created_by" />
 
           <SelectField
             name="status"
             label="Status"
-            defaultValue={queryParams.status}
+            value={queryParams.status || ''}
+            onChange={e => {
+              this.setState({
+                queryParams: { ...queryParams, status: e.target.value },
+              });
+            }}
           >
             <option value="">All</option>
             <option value="created">Created</option>
