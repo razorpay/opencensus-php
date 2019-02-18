@@ -7,7 +7,7 @@ use RZP\Services\CorePaymentService as BaseCorePaymentService;
 
 class CorePaymentService extends BaseCorePaymentService
 {
-    public function action(string $action, array $input): array
+    public function action(string $gateway, string $action, array $input): array
     {
         if ($action === 'fail')
         {

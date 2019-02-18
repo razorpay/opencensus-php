@@ -60,10 +60,10 @@ class PayoutTest extends TestCase
 
         // Verify attempt entity
         $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals('Batman', $payoutAttempt['narration']);
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
         $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
         $this->assertEquals($payout['channel'], 'yesbank');
-        $this->assertEquals('Test Merchant Fund Transfer', $payoutAttempt['narration']);
 
         // Verify transaction entity
         $txn = $this->getLastEntity('transaction', true);
@@ -127,7 +127,7 @@ class PayoutTest extends TestCase
 
     public function testCreatePayoutWithOtp()
     {
-        $testData = $this->testData['testCreatePayout'];
+        $testData = $this->testData['testCreatePayoutWithOtp'];
         $testData['request']['url']              = '/payouts_with_otp';
         $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
         $testData['request']['content']['otp']   = '0007';
@@ -139,6 +139,10 @@ class PayoutTest extends TestCase
         $payout = $this->getLastEntity('payout', true);
 
         $this->assertEquals("MerchantUser01", $payout['user_id']);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals('Test Merchant Fund Transfer', $payoutAttempt['narration']);
     }
 
     public function testCreatePayoutWithInvalidOtp()

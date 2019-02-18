@@ -789,11 +789,14 @@ class Entity extends Base\PublicEntity
     {
         $refundStatus = $this->getStatus();
 
-        if ($refundStatus === Status::PROCESSED)
-        {
-            $response[self::STATUS] = $refundStatus;
-        }
-        else
+        $publicStatusMap = [
+            Status::PROCESSED => Status::PROCESSED,
+            Status::REVERSED  => Status::FAILED,
+        ];
+
+        $response[self::STATUS] = $publicStatusMap[$refundStatus] ?? Status::PENDING;
+
+        if ($response[self::STATUS] === Status::PENDING)
         {
             $app   = App::getFacadeRoot();
             $trace = $app['trace'];
@@ -802,7 +805,9 @@ class Entity extends Base\PublicEntity
             {
                 $scroogeResponse = $app['scrooge']->getPublicRefund($response[self::ID]);
 
-                if ($scroogeResponse[self::RESPONSE_CODE] === 200)
+                $scroogeResponseCode = $scroogeResponse[self::RESPONSE_CODE];
+
+                if (in_array($scroogeResponseCode, [200, 201, 204], true) === true)
                 {
                     $scroogeStatus = $scroogeResponse[self::RESPONSE_BODY]->status;
 
@@ -843,7 +848,9 @@ class Entity extends Base\PublicEntity
 
         if ($isScrooge === true)
         {
-            return $this->getPublicStatusFromScrooge($response);
+            $scroogeResponse = $this->getPublicStatusFromScrooge($response);
+
+            return $scroogeResponse;
         }
 
         return $response;

@@ -2,14 +2,21 @@
 
 namespace RZP\Tests\Unit\Services;
 
-use RZP\Exception\ServerErrorException;
 use RZP\Tests\TestCase;
+use RZP\Constants\Mode;
+use RZP\Exception\ServerErrorException;
 
 class CorePaymentServiceTest extends TestCase
 {
     public function setUp()
     {
         parent::setUp();
+
+        // This is normally set in BasicAuth. Since this is a unit test and not
+        // a functional one, there is no actual request being made, so basic
+        // auth is not called and rzp.mode is never set. Setting manually here
+        // because mode is required to decide the base URL in CPS initialization.
+        $this->app['rzp.mode'] = Mode::TEST;
 
         $this->cps = $this->app['cps'];
     }
@@ -18,7 +25,7 @@ class CorePaymentServiceTest extends TestCase
     {
         $array = ['key' => 'value'];
 
-        $response = $this->cps->action('auth', $array);
+        $response = $this->cps->action('gateway', 'auth', $array);
 
         $this->assertEquals($array, $response);
 
@@ -26,6 +33,6 @@ class CorePaymentServiceTest extends TestCase
 
         $this->expectExceptionMessage('timed out or something');
 
-        $response = $this->cps->action('fail', $array);
+        $response = $this->cps->action('gateway', 'fail', $array);
     }
 }
