@@ -36,7 +36,7 @@ const QUILL_OPTIONS = {
       [{ header: [2, 3, false] }],
       [{ color: COLORS_LIST }, 'bold', 'italic', 'underline'],
       [{ list: 'bullet' }, { list: 'ordered' }],
-      ['link', 'video'],
+      ['link', 'image', 'video'],
     ],
   },
   placeholder: 'Enter page description',
@@ -47,15 +47,38 @@ const QUILL_OPTIONS = {
 @connect(null, { showNotification })
 export default class extends React.PureComponent {
   state = { isScriptLoaded: null };
+
+  constructor(props) {
+    super(props);
+
+    this.loadStep = 0;
+
+    // Quill is default loaded from external script wysiwyg.js
+    window.onQuillLoad = () => {
+      this.loadStep++;
+      this.safeInitDescription();
+    };
+  }
+
   componentDidMount() {
+    this.loadStep++;
+
     if (window.Quill) {
-      this.QUILL = null;
-      setTimeout(() => this.initDescription(), 50);
-    } else {
-      window.onQuillLoad = () => {
-        this.initDescription();
-      };
+      this.loadStep++;
     }
+
+    this.safeInitDescription();
+  }
+
+  safeInitDescription() {
+    // If Quill not present, then initDescription, only after both DOM and quill are loaded.
+    if (this.loadStep === 2) {
+      setTimeout(() => this.initDescription(), 50);
+    }
+  }
+
+  componentWillUnmount() {
+    this.QUILL = null;
   }
 
   componentWillUpdate(nextProps) {
