@@ -378,6 +378,19 @@ class Verify extends Base\Core
             // For verification of captured payment
             if ($payment->hasBeenCaptured() === true)
             {
+                if (in_array($gateway, Payment\Gateway::$captureVerifyEnabled, true) === false)
+                {
+                    $payment->setNonVerifiable();
+
+                    $this->repo->saveOrFail($payment);
+
+                    $notApplicable++;
+
+                    $this->releasePaymentAfterVerify($payment);
+
+                    continue;
+                }
+
                 $filter = Filter::PAYMENTS_CAPTURED;
 
                 $verifyResult = (new CaptureVerify())->verifyPayment($payment, $filter);
