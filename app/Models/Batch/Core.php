@@ -15,10 +15,6 @@ use RZP\Exception\BadRequestException;
 
 class Core extends Base\Core
 {
-    const USER_ID = 'user_id';
-
-    const USER    = 'user';
-
     /**
      * Create flow: Creates new batch entity against given file id or against
      * given file(by first storing it).
@@ -33,7 +29,7 @@ class Core extends Base\Core
 
         $batch = (new Entity)->build($input);
 
-        $this->fillBatchCreatorDetailsFromDashboardHeadersIfAvailable($batch);
+        $this->associateCreatorDetails($batch);
 
         $batch->merchant()->associate($merchant);
 
@@ -241,15 +237,26 @@ class Core extends Base\Core
      *
      * @param Entity $batch
      */
-    protected function fillBatchCreatorDetailsFromDashboardHeadersIfAvailable(Entity $batch)
+    protected function associateCreatorDetails(Entity $batch)
     {
-        $headers = $this->app['basicauth']->getDashboardHeaders();
+        $creator = null;
 
-        if (array_key_exists(self::USER_ID, $headers) === true)
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $user = $this->app['basicauth']->getUser();
+
+        if (empty($admin) === false)
         {
-            $batch->setCreatorId($headers[self::USER_ID]);
+            $creator = $admin;
+        }
+        else if(empty($user) === false)
+        {
+            $creator = $user;
+        }
 
-            $batch->setCreatorType(self::USER);
+        if (empty($creator) === false)
+        {
+            $batch->creator()->associate($creator);
         }
     }
 }

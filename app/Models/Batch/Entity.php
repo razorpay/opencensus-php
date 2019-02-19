@@ -302,6 +302,16 @@ class Entity extends Base\PublicEntity
         return $this->files()->latest()->first();
     }
 
+    /**
+     * Defines a polymorphic relation with entities
+     * implementing a morphMany association on the
+     * 'source' key
+     */
+    public function creator()
+    {
+        return $this->morphTo('creator', self::CREATOR_TYPE, self::CREATOR_ID);
+    }
+
     // ----------------------- Getters -------------------------------
 
     public function getName()
