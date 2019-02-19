@@ -572,13 +572,9 @@ class Core extends Base\Core
             $templateAccessor = new HostedTemplate($templateId);
             $view = 'hostedpage.' . $templateAccessor->getViewName();
         }
-        else if ($paymentLink->merchant->isTagAdded(Entity::TAG_PAYMENT_PAGE_V2) === true)
-        {
-            $view = 'payment_link.hosted_with_udf';
-        }
         else
         {
-            $view = 'payment_link.hosted';
+            $view = 'payment_link.hosted_with_udf';
         }
 
         return $view;
