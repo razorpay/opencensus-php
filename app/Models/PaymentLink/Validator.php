@@ -28,7 +28,7 @@ class Validator extends Base\Validator
         Entity::TIMES_PAYABLE   => 'sometimes|mysql_unsigned_int|min:1|nullable',
         Entity::RECEIPT         => 'string|min:3|max:40|nullable',
         Entity::TITLE           => 'required|string|min:3|max:40',
-        Entity::DESCRIPTION     => 'string|min:3|max:2048|nullable',
+        Entity::DESCRIPTION     => 'string|max:65535|nullable', // 65535 bytes is size of mysql's text data type.
         Entity::NOTES           => 'sometimes|notes',
         Entity::SLUG            => 'filled|min:4|max:30|custom',
         Entity::SUPPORT_CONTACT => 'nullable|string|min:8|max:255',
@@ -51,7 +51,7 @@ class Validator extends Base\Validator
         Entity::TIMES_PAYABLE   => 'sometimes|mysql_unsigned_int|min:1|nullable|custom',
         Entity::RECEIPT         => 'string|min:3|max:40|nullable',
         Entity::TITLE           => 'string|min:3|max:40',
-        Entity::DESCRIPTION     => 'string|min:3|max:2048|nullable',
+        Entity::DESCRIPTION     => 'string|max:65535|nullable', // 65535 bytes is size of mysql's text data type.
         Entity::NOTES           => 'sometimes|notes',
         Entity::SLUG            => 'filled|min:4|max:30|custom',
         Entity::SUPPORT_CONTACT => 'nullable|string|min:8|max:255',

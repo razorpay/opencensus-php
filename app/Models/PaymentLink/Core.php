@@ -612,7 +612,8 @@ class Core extends Base\Core
                 $image,
                 $uploadFilename,
                 Constants::PAYMENT_LINK_DESCRIPTION,
-                $merchant);
+                $merchant,
+                ['Content-Disposition' => 'inline']);
 
             $urls[] = $cdn . '/' . $file[Constants::RELATIVE_LOCATION];
         }
