@@ -9,15 +9,8 @@ class EsRepository extends Base\EsRepository
     protected $indexedFields = [
         Entity::ID,
         Entity::MERCHANT_ID,
+        Entity::BALANCE_ID,
         Entity::NOTES,
         Entity::CREATED_AT,
-    ];
-
-    protected $esFetchParams = [
-        Entity::NOTES,
-    ];
-
-    protected $commonFetchParams = [
-        Entity::MERCHANT_ID,
     ];
 }

@@ -363,6 +363,13 @@ class PaymentCreateController extends Controller
         return $this->processCoprotoData($data);
     }
 
+    public function postRedirectToAuthorize($id)
+    {
+        $data = $this->service(E::PAYMENT)->redirectToAuthorize($id);
+
+        return $this->processCoprotoData($data);
+    }
+
     protected function returnCallbackResponse($data)
     {
         if (isset($data['type']))
@@ -375,7 +382,7 @@ class PaymentCreateController extends Controller
             }
         }
 
-        assert ($data !== null);
+        assertTrue ($data !== null);
 
         return $this->returnCheckoutCallbackView($data);
     }
@@ -387,6 +394,11 @@ class PaymentCreateController extends Controller
         //
         if (isset($data['request']))
         {
+            if (empty($data['request']['method']) === false)
+            {
+                $data['request']['method'] = strtolower($data['request']['method']);
+            }
+
             if ($data['type'] === 'first')
             {
                 if ($data['request']['method'] === 'post')
@@ -407,16 +419,25 @@ class PaymentCreateController extends Controller
 
                     return $response;
                 }
+                else if ($data['request']['method'] === 'redirect')
+                {
+                    $response = \Redirect::away($data['request']['url']);
+                    $response->headers->set('X-Razorpay-TaskId', $data['request']['task_id']);
+
+                    return $response;
+                }
             }
             else if ($data['type'] === 'otp')
             {
                 if ($data['request']['method'] === 'direct')
                 {
+                    $merchant = $this->app['basicauth']->getMerchant();
                     //
                     // For S2S headless_otp payments we return the JSON data
                     // instead of the normal view
                     //
-                    if ($this->app['basicauth']->isStrictPrivateAuth() === true)
+                    if (($this->app['basicauth']->isStrictPrivateAuth() === true) and
+                        ($merchant->isFeatureEnabled(Feature::S2S_OTP_JSON) === true))
                     {
                         $response = [
                             'next'                => $data['next'],
@@ -509,7 +530,7 @@ class PaymentCreateController extends Controller
 
                 if (is_array($ret) === true)
                 {
-                    $dataToTrace = $ret;
+                    $dataToTrace = json_encode($ret);
                 }
                 else
                 {

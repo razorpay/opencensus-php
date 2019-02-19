@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\P2p\Service\Base;
 
+use RZP\Tests\P2p\Service\Base\Fixtures\Fixtures;
+
 class TransactionHelper extends P2pHelper
 {
     public function initiatePay(array $content = [])
@@ -14,8 +16,8 @@ class TransactionHelper extends P2pHelper
             'amount'        => 100,
             'currency'      => 'INR',
             'description'   => 'Initiate Pay Test',
-            'payer_id'      => 'vpa_PayerVpa000001',
-            'payee_id'      => 'vpa_PayeeVpa000001',
+            'payer_id'      => 'vpa_' . Fixtures::CUSTOMER_1_VPA_1,
+            'payee_id'      => 'vpa_' . Fixtures::CUSTOMER_2_VPA_1,
         ];
 
         $this->content($request, $default, $content);
@@ -34,8 +36,8 @@ class TransactionHelper extends P2pHelper
             'currency'      => 'INR',
             'description'   => 'Initiate Pay Test',
             'expire_at'     => time() + 1000,
-            'payer_id'      => 'vpa_PayerVpa000001',
-            'payee_id'      => 'vpa_PayeeVpa000001',
+            'payer_id'      => 'vpa_' . Fixtures::CUSTOMER_2_VPA_1,
+            'payee_id'      => 'vpa_' . Fixtures::CUSTOMER_1_VPA_1,
         ];
 
         $this->content($request, $default, $content);
@@ -59,13 +61,15 @@ class TransactionHelper extends P2pHelper
         $request = $this->request('transactions/%s/authorize', [$id]);
 
         $default = [
-            'cl.creds' => [
-                [
-                    'code'     => 'NPCI',
-                    'ki'       => '20150806',
-                    'string'   => 'SomeVerySercetString',
-                    'sub_type' => 'UPIPIN',
-                    'type'     => 'PIN',
+            'cl' => [
+                'creds' => [
+                    [
+                        'code'     => 'NPCI',
+                        'ki'       => '20150806',
+                        'string'   => 'SomeVerySercetString',
+                        'sub_type' => 'UPIPIN',
+                        'type'     => 'PIN',
+                    ]
                 ],
             ],
         ];

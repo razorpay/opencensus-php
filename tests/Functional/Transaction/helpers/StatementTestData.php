@@ -16,36 +16,50 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count'  => 2,
+                'count'  => 4,
                 'items'  => [
                     [
-                        // 'id'         => '',
-                        'entity'     => 'statement',
-                        'amount'     => 2500,
-                        'credit'     => 2500,
-                        'debit'      => 0,
-                        'balance'    => 5000,
-                        'source'     => [
+                        // 'id'             => '',
+                        'entity'         => 'transaction',
+                        'account_number' => '2224440041626905',
+                        'amount'         => 1590,
+                        'currency'       => 'INR',
+                        'credit'         => 1590,
+                        'debit'          => 0,
+                        'balance'        => 105000,
+                        'source'         => [
                             // 'id'             => '',
-                            'entity'         => 'bank_transfer',
-                            'mode'           => 'NEFT',
-                            // 'bank_reference' => '',
-                            'amount'         => 2500,
-                            'payer_name'     => null,
-                            'payer_account'  => '7654321234567',
-                            'payer_ifsc'     => 'HDFC0000001',
+                            'entity'         => 'reversal',
+                            'amount'         => 1590,
+                            'currency'       => 'INR',
                         ],
-                        // 'created_at' => ,
-                        // 'updated_at' => ,
+                        // 'created_at'     => ,
                     ],
                     [
-                        // 'id'         => '',
-                        'entity'     => 'statement',
-                        'amount'     => 2500,
-                        'credit'     => 2500,
-                        'debit'      => 0,
-                        'balance'    => 2500,
-                        'source'     => [
+                        // 'id'             => '',
+                        'entity'         => 'transaction',
+                        'account_number' => '2224440041626905',
+                        'amount'         => 1590,
+                        'currency'       => 'INR',
+                        'credit'         => 0,
+                        'debit'          => 1590,
+                        'balance'        => 103410,
+                        'source'         => [
+                            // 'id'             => '',
+                            'entity'         => 'payout',
+                        ],
+                        // 'created_at'     => ,
+                    ],
+                    [
+                        // 'id'             => '',
+                        'entity'         => 'transaction',
+                        'account_number' => '2224440041626905',
+                        'amount'         => 2500,
+                        'currency'       => 'INR',
+                        'credit'         => 2500,
+                        'debit'          => 0,
+                        'balance'        => 105000,
+                        'source'         => [
                             // 'id'             => '',
                             'entity'         => 'bank_transfer',
                             'mode'           => 'NEFT',
@@ -55,8 +69,28 @@ return [
                             'payer_account'  => '7654321234567',
                             'payer_ifsc'     => 'HDFC0000001',
                         ],
-                        // 'created_at' => ,
-                        // 'updated_at' => ,
+                        // 'created_at'     => ,
+                    ],
+                    [
+                        // 'id'             => '',
+                        'entity'         => 'transaction',
+                        'account_number' => '2224440041626905',
+                        'amount'         => 2500,
+                        'currency'       => 'INR',
+                        'credit'         => 2500,
+                        'debit'          => 0,
+                        'balance'        => 102500,
+                        'source'         => [
+                            // 'id'             => '',
+                            'entity'         => 'bank_transfer',
+                            'mode'           => 'NEFT',
+                            // 'bank_reference' => '',
+                            'amount'         => 2500,
+                            'payer_name'     => null,
+                            'payer_account'  => '7654321234567',
+                            'payer_ifsc'     => 'HDFC0000001',
+                        ],
+                        // 'created_at'     => ,
                     ],
                 ],
             ],
@@ -70,13 +104,15 @@ return [
         ],
         'response' => [
             'content' => [
-                // 'id'         => '',
-                'entity'     => 'statement',
-                'amount'     => 2500,
-                'credit'     => 2500,
-                'debit'      => 0,
-                'balance'    => 2500,
-                'source'     => [
+                // 'id'             => '',
+                'entity'         => 'transaction',
+                'account_number' => '2224440041626905',
+                'amount'         => 2500,
+                'currency'       => 'INR',
+                'credit'         => 2500,
+                'debit'          => 0,
+                'balance'        => 102500,
+                'source'         => [
                     // 'id'             => '',
                     'entity'         => 'bank_transfer',
                     'mode'           => 'NEFT',
@@ -86,8 +122,7 @@ return [
                     'payer_account'  => '7654321234567',
                     'payer_ifsc'     => 'HDFC0000001',
                 ],
-                // 'created_at' => ,
-                // 'updated_at' => ,
+                // 'created_at'     => ,
             ],
         ],
     ],
@@ -132,6 +167,157 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testFetchByContactId' => [
+         'request' => [
+            'method'  => 'GET',
+            'url'     => '/transactions',
+            'content' => [
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testFetchByPayoutId' => [
+         'request' => [
+            'method'  => 'GET',
+            'url'     => '/transactions',
+            'content' => [
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testFetchByContactName' => [
+         'request' => [
+            'method'  => 'GET',
+            'url'     => '/transactions',
+            'content' => [
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testFetchByContactNameExpectedSearchParams' => [
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'transaction_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'transaction_test',
+        'body'  => [
+            '_source' => false,
+            'from'    => 0,
+            'size'    => 10,
+            'query'   => [
+                'bool' => [
+                    'must' => [
+                        [
+                            'match' => [
+                                'contact_name' => [
+                                    'query'                =>'test user',
+                                    'boost'                => 2,
+                                    'minimum_should_match' => '75%',
+                                ],
+                            ],
+                        ],
+                    ],
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'term' => [
+                                        'balance_id' => [
+                                            'value' => 'BfCGvMZswckZl8',
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'term' => [
+                                        'merchant_id' => [
+                                            'value' => '10000000000000',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchByContactNameExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [
+                [
+                    '_id' => '00000000000001',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchByContactEmail' => [
+         'request' => [
+            'method'  => 'GET',
+            'url'     => '/transactions',
+            'content' => [
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testFetchByContactEmailExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [
+                [
+                    '_id' => '00000000000001',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchByContactPhone' => [
+         'request' => [
+            'method'  => 'GET',
+            'url'     => '/transactions',
+            'content' => [
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testFetchByFundAccountId' => [
+         'request' => [
+            'method'  => 'GET',
+            'url'     => '/transactions',
+            'content' => [
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [],
         ],
     ],
 ];

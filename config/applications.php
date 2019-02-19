@@ -62,12 +62,9 @@ return [
         'secret'    => env('APP_HOSTED_SECRET'),
     ],
 
-    'card_tokenex' => [
-        'mock'      => env('TOKENEX_MOCK', false),
-        'id'        => env('TOKENEX_ID'),
-        'key'       => env('TOKENEX_API_KEY'),
-        'url'       => env('TOKENEX_API_URL'),
-        'scheme'    => env('TOKENEX_TOKEN_SCHEME'),
+    'mozart' => [
+        'url'       => env('MOZART_URL'),
+        'password'  => env('MOZART_PASSWORD'),
     ],
 
     'raven' => [
@@ -84,6 +81,23 @@ return [
         // Key and secret through which api will call scrooge
         'scrooge_key'       => env('SCROOGE_KEY'),
         'scrooge_secret'    => env('SCROOGE_SECRET'),
+    ],
+
+    'card_vault' => [
+        'mock'      => env('CARD_VAULT_MOCK', false),
+        'key'       => env('CARD_VAULT_KEY'),
+        'secret'    => env('CARD_VAULT_SECRET'),
+        'url'       => env('CARD_VAULT_URL'),
+    ],
+
+    'cps' => [
+        'mock'      => env('CORE_PAYMENT_SERVICE_MOCK', false),
+        'username'  => env('CORE_PAYMENT_SERVICE_KEY'),
+        'password'  => env('CORE_PAYMENT_SERVICE_SECRET'),
+        'url'       => [
+            'live' => env('CORE_PAYMENT_SERVICE_LIVE_URL'),
+            'test' => env('CORE_PAYMENT_SERVICE_TEST_URL'),
+        ],
     ],
 
     'redisdualwrite' => [
@@ -123,6 +137,10 @@ return [
         'mock'              => env('HARVESTER_MOCK', false),
         'identifier'        => env('HARVESTER_API_IDENTIFIER'),
         'analytics_token'   => env('HARVESTER_ANALYTICS_TOKEN'),
+    ],
+
+    'health_check_client' => [
+        'mock'              => env('HEALTH_CHECK_CLIENT_MOCK', false),
     ],
 
     'elfin' => [
@@ -242,7 +260,8 @@ return [
     ],
 
     'beam' => [
-        'url' => env('BEAM_URL')
+        'url'  => env('BEAM_URL'),
+        'mock' => env('BEAM_MOCK', false),
     ],
 
     'subscriptions' => [
@@ -257,4 +276,18 @@ return [
     ],
 
     'banking_service_url' => env('BANKING_SERVICE_URL', 'https://x.razorpay.com'),
+
+    'vajra' => [
+        'secret'   => env('APP_VAJRA_SECRET'),
+    ],
+
+    'fts' => [
+        'mock'              => env('FTS_MOCK', false),
+        'url'               => env('FTS_URL'),
+        'secret'            => env('APP_FTS_SECRET'),
+
+        // Key and secret through which api will call fts
+        'fts_key'           => env('FTS_KEY'),
+        'fts_secret'        => env('FTS_SECRET'),
+    ],
 ];

@@ -6,6 +6,7 @@
   <meta name="robots" content="noindex">
   <title></title>
   <script>
+    @if (isset($_SERVER['HTTP_HOST']))
     <?php if ($_SERVER['HTTP_HOST'] !== "api.razorpay.com"): ?>
     var Razorpay = {
       config: {
@@ -13,6 +14,7 @@
       }
     };
     <?php endif; ?>
+    @endif
   </script>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
@@ -30,6 +32,11 @@
                 .replace('.00', '')
             );
         };
+        window.o.upfrontAmount = function(addons) {
+          return window.o.amount(addons.reduce(function(subTotal, addon) {
+              return subTotal + (addon.item.amount * addon.quantity);
+          },0));
+        };
         window.o.due_on = o.subscription.charge_at;
         window.o.addons = o.subscription.addons;
     </script>
@@ -38,12 +45,12 @@
 <script src='https://cdn.razorpay.com/static/hosted/subscription.js'></script>
 <script>
 var $ = document.querySelector.bind(document);
-
+ansh = {!! json_encode($data) !!};
 var options = {
     "key": {!! json_encode($data['key_id']) !!},
     "image": {!! json_encode($data['merchant']['image']) !!},
     "subscription_id": {!! json_encode($data['subscription']['id']) !!},
-    "subscription_card_change": 1,
+    "subscription_card_change": {!! json_encode((int)$data['subscription']['card_change_status']) !!},
     "handler": function (response) {
       // success
       if (typeof response.error_code === 'undefined') {
@@ -60,8 +67,10 @@ var options = {
     },
     callback_url: location.href,
     "prefill": {
+        <?php if (empty($data['customer']) === false): ?>
         "name": {!! json_encode($data['customer']['name']) !!},
         "email": {!! json_encode($data['customer']['email']) !!}
+        <?php endif; ?>
     }
 };
 

@@ -164,6 +164,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACTIVE);
     }
 
+    public function isDisableOnFailure(): bool
+    {
+        return $this->getAttribute(self::DISABLE_ON_FAILURE);
+    }
+
     public function getFailureCount()
     {
         return $this->getAttribute(self::FAILURE_COUNT);
@@ -218,7 +223,7 @@ class Entity extends Base\PublicEntity
 
         $enabledEvents = Event::getEnabledEvents($events);
 
-        $names = Event::getLaunchedEventNames();
+        $names = array_keys(Event::getLaunchedEventNames());
 
         $eventsArray = [];
 
@@ -232,9 +237,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicEventsAttribute(array & $array)
     {
-        $array[self::EVENTS] = Event::filterByFeatures(
-                                        $array[self::EVENTS],
-                                        $this->merchant->getEnabledFeatures());
+        $array[self::EVENTS] = Event::filterForPublicApi($this->merchant, $array[self::EVENTS]);
     }
 
     public function setPublicApplicationIdAttribute(array & $array)
@@ -279,7 +282,7 @@ class Entity extends Base\PublicEntity
 
     protected function setFailureCountAttribute($count)
     {
-        assert ($count <= self::MAX_FAILURE_COUNT);
+        assertTrue ($count <= self::MAX_FAILURE_COUNT);
 
         $this->attributes[self::FAILURE_COUNT] = $count;
 

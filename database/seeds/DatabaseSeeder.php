@@ -40,13 +40,13 @@ class DatabaseSeeder extends Seeder
 
         DB::transaction(function() use ($name)
         {
-            $pricingSeedData = Pricing\DefaultPlan::getPricingSeedData();
-
-            $todayTime = strtotime('today');
+            $todayTime   = strtotime('today');
             $currentTime = time();
 
-            DB::table(Table::PRICING)->insert(
-                $pricingSeedData);
+            foreach (Pricing\DefaultPlan::getPricingSeedData() as $pricing)
+            {
+                DB::table(Table::PRICING)->insert($pricing);
+            }
 
             DB::table(Table::ORG)->insert(
                 [
@@ -1169,6 +1169,7 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingFederalTerminal();
         $this->createNetbankingIndusindTerminal();
         $this->createNetbankingPnbTerminal();
+        $this->createNetbankingSbiTerminal();
         $this->createOlamoneyTerminals();
         $this->createUpiTerminals();
         $this->createAirtelmoneyTerminals();
@@ -1182,6 +1183,7 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingCsbTerminal();
         $this->createEbsTerminal();
         $this->createEnachRblTerminal();
+        $this->createEnachNetbankingNpciTerminal();
         $this->createAepsTerminal();
         $this->createHitachiGatewayMotoTerminal();
         $this->createEnstageTerminal();
@@ -1664,6 +1666,23 @@ class DatabaseSeeder extends Seeder
                 'netbanking'            => '1',
                 'gateway_merchant_id'   => 'test_merchant_netbanking_equitas',
                 'gateway_secure_secret' => Crypt::encrypt('test_equitas_terminal_salt'),
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
+    }
+
+    protected function createNetbankingSbiTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_SBI_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_SBI,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'RAZORPAY',
+                'gateway_secure_secret' => Crypt::encrypt('test_secure_secret'),
                 'created_at'            => time(),
                 'updated_at'            => time(),
             ]
@@ -2262,6 +2281,30 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'NACH00000000001981',
                 'gateway_merchant_id2'  => 'Test Merchant',
                 'gateway_terminal_id'   => 'RATNTestr',
+                'category'              => '6012',
+                'type'                  => 6,
+                'created_at'            => time(),
+                'updated_at'            => time()
+            ]
+        );
+    }
+
+    protected function createEnachNetbankingNpciTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::ENACH_NPCI_NETBANKING_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::ENACH_NPCI_NETBANKING,
+                'gateway_acquirer'      => 'yesb',
+                'card'                  => '0',
+                'netbanking'            => '0',
+                'recurring'             => '1',
+                'emandate'              => '1',
+                'gateway_access_code'   => '',
+                'gateway_merchant_id'   => '',
+                'gateway_merchant_id2'  => 'Test Merchant',
+                'gateway_terminal_id'   => '',
                 'category'              => '6012',
                 'type'                  => 6,
                 'created_at'            => time(),

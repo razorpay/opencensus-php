@@ -262,10 +262,7 @@ trait RepositoryFetch
     {
         $response = $this->esRepo->buildQueryAndSearch($params, $merchantId);
 
-        //
-        // Extract results from ES response: If hit has _source get that else
-        // just the document id.
-        //
+        // Extract results from ES response. If hit has _source get that else just the document id.
         $result = array_map(
                     function ($res)
                     {
@@ -278,10 +275,7 @@ trait RepositoryFetch
             return new PublicCollection;
         }
 
-        //
-        // If callee expects only es data (no mysql queries) then hydrate
-        // the es array result into model and return the collection.
-        //
+        // If callee expects only es data (for auto-complete etc) then hydrate the result into model and return.
         $esHitsOnly = boolval(($params[EsRepository::SEARCH_HITS]) ?? false);
 
         if ($esHitsOnly)
@@ -289,17 +283,23 @@ trait RepositoryFetch
             return $this->hydrate($result);
         }
 
-        //
-        // Else extract the matched ids and return collection by making a mysql
-        // query on found ids.
-        //
+        // Else extract the matched ids and return collection by making a MySQL query on found ids.
         $ids = array_column($result, 'id');
+        // This is order of ids from es, sorted by _score first then created_at.
+        $order = array_flip($ids);
 
         $entities = $this->newQuery()
                          ->with($expands)
-                         ->findMany($ids, ['*']);
+                         ->findMany($ids, ['*'])
+                         // MySQL gives results in ascending order of id. Sorting again to keep correct ES's order.
+                         ->sort(
+                            function (PublicEntity $x, PublicEntity $y) use ($order)
+                            {
+                                return $order[$x->getId()] - $order[$y->getId()];
+                            })
+                         ->values();
 
-        // If the not all the ids from es are found in MySQL, just raise an error.
+        // If not all the ids from es are found in MySQL just log an error as this should not happen.
         if (count($ids) !== $entities->count())
         {
             $this->trace->critical(TraceCode::ES_MYSQL_RESULTS_MISMATCH, ['ids' => $ids]);
@@ -698,7 +698,7 @@ trait RepositoryFetch
     {
         // Function name should start from 'validator'
 
-        assert (strpos($func, 'validate') === 0);
+        assertTrue (strpos($func, 'validate') === 0);
 
         $this->$func($attribute, $value, $parameters);
     }

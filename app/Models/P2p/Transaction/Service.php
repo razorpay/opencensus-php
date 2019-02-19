@@ -47,9 +47,9 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function authorize(array $input): array
+    public function authorizeTransaction(array $input): array
     {
-        $response = $this->processor->authorize($input);
+        $response = $this->processor->authorizeTransaction($input);
 
         return $response;
     }

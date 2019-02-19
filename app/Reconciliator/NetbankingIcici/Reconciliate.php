@@ -2,8 +2,8 @@
 
 namespace RZP\Reconciliator\NetbankingIcici;
 
+use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
-use RZP\Reconciliator\FileProcessor;
 
 class Reconciliate extends Base\Reconciliate
 {
@@ -61,6 +61,27 @@ class Reconciliate extends Base\Reconciliate
 
     public function getColumnHeadersForType($type)
     {
+        if (empty($type) === true)
+        {
+            //
+            // We are getting few extra files from NB-icici (file data is blank),
+            // which is not yet defined in SUCCESS const here. As of now we have
+            // not put these files under exclude list.
+            // For such unexpected files, type is returned as NULL in function
+            // getTypeName() above. So we are handling the undefined index error
+            // here, when lookup in done in TYPE_TO_COLUMN_HEADER_MAP array.
+            //
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'infoCode'              => Base\InfoCode::RECON_TYPE_NOT_FOUND,
+                    'gateway'               => $this->gateway,
+                ]
+            );
+
+            return [];
+        }
+
         return self::TYPE_TO_COLUMN_HEADER_MAP[$type];
     }
 

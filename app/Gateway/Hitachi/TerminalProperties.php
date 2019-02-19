@@ -23,7 +23,7 @@ class TerminalProperties
 
     const MERCHANT_STATUS   = 'E';
 
-    const BANK              = 'RBL';
+    const BANK              = 'RAZORPAY RBL';
 
     const INTERNATIONAL     = 'Y';
 
@@ -61,8 +61,10 @@ class TerminalProperties
 
     public function getSno()
     {
-        // TODO: verify this.
+
+        // need to be unique, currently unique per second
         return (string) Carbon::now(Timezone::IST)->timestamp;
+
     }
 
     public function getSuperMid()

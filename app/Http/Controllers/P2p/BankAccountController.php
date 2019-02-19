@@ -3,6 +3,7 @@
 namespace RZP\Http\Controllers\P2p;
 
 use RZP\Models\P2p;
+use RZP\Models\P2p\BankAccount\Entity;
 
 /**
  * @property  P2p\BankAccount\Service $service
@@ -13,14 +14,14 @@ class BankAccountController extends Controller
     {
         $input = $this->request()->all();
 
-        $response = $this->service->fetchBanks($input);
+        $response = (new P2p\BankAccount\Bank\Service)->fetchAll($input);
 
         return $this->response($response);
     }
 
     public function retrieve()
     {
-        $input = $this->request()->all();
+        $input[Entity::BANK] = $this->request()->route('bank_code');
 
         $response = $this->service->retrieve($input);
 
@@ -38,7 +39,7 @@ class BankAccountController extends Controller
 
     public function fetch()
     {
-        $input = $this->request()->all();
+        $input[Entity::ID] = $this->request()->route('ba_id');
 
         $response = $this->service->fetch($input);
 
@@ -47,7 +48,7 @@ class BankAccountController extends Controller
 
     public function initiateSetUpiPin()
     {
-        $input = $this->request()->all();
+        $input[Entity::ID] = $this->request()->route('ba_id');
 
         $response = $this->service->initiateSetUpiPin($input);
 
@@ -58,6 +59,8 @@ class BankAccountController extends Controller
     {
         $input = $this->request()->all();
 
+        $input[Entity::ID] = $this->request()->route('ba_id');
+
         $response = $this->service->setUpiPin($input);
 
         return $this->response($response);
@@ -65,7 +68,7 @@ class BankAccountController extends Controller
 
     public function initiateFetchBalance()
     {
-        $input = $this->request()->all();
+        $input[Entity::ID] = $this->request()->route('ba_id');
 
         $response = $this->service->initiateFetchBalance($input);
 
@@ -75,6 +78,8 @@ class BankAccountController extends Controller
     public function fetchBalance()
     {
         $input = $this->request()->all();
+
+        $input[Entity::ID] = $this->request()->route('ba_id');
 
         $response = $this->service->fetchBalance($input);
 

@@ -358,6 +358,7 @@ return [
         'email'                 => null,
         'contact'               => null,
         'gateway_merchant_id'   => '123456',
+        'npci_reference_id'     => '836416213628',
         'status_code'           => '0',
         'vpa'                   => 'vishnu@icici',
         'provider'              => 'icici',

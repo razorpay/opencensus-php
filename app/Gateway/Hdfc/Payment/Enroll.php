@@ -71,6 +71,8 @@ trait Enroll
             $this->enrollRequest,
             $this->enrollResponse);
 
+        $this->checkAdditionalEnrollError($this->enrollResponse);
+
         //
         // If there is an error then just return
         //
@@ -509,6 +511,37 @@ trait Enroll
         foreach ($map as $keyOld => $keyNew)
         {
             $data[$keyNew] = $array[$keyOld];
+        }
+    }
+
+    /**
+     * In some cases for enroll response we get only error_text in the xml without
+     * the error_code_tag. This checks for this condition. The error_text tag value is of the form
+     * <error_text>!ERROR!-code-description</error_text> . eg : <error_text>!ERROR!-GW00856-Invalid cvv.</error_text>
+     */
+    protected function checkAdditionalEnrollError(array &$response)
+    {
+        if ($this->error === true)
+        {
+            return;
+        }
+
+        $errorText = HDFC\Utility::getFieldFromXML($response['xml'], 'error_text');
+
+        if ($errorText === null)
+        {
+            return;
+        }
+
+        $errorDetails = explode('-', $errorText);
+
+        if ((isset($errorDetails[1]) === true) and (isset($errorDetails[2]) === true))
+        {
+            $response['error']['code']   = $errorDetails[1];
+            $response['error']['text']   = $errorDetails[2];
+            $response['error']['result'] = Hdfc\Utility::getFieldFromXML($response['xml'], 'result');
+
+            $this->error = true;
         }
     }
 }

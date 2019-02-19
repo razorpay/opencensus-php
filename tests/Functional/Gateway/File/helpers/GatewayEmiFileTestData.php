@@ -235,6 +235,39 @@ return [
         ]
     ],
 
+    'testGenerateEmiFileForCiti' => [
+        'request' => [
+            'content' => [
+                'type'    => 'emi',
+                'targets' => ['citi'],
+                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp()
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'file_sent',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'emifiles@razorpay.com',
+                        'type'                => 'emi',
+                        'target'              => 'citi',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ]
+                ]
+            ]
+        ]
+    ],
+
     'testGenerateEmiFileForSbi' => [
         'request' => [
             'content' => [

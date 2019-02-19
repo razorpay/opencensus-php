@@ -137,7 +137,7 @@ class Transfer extends Base
             self::PAYMENT_DATE     => $this->getNullOnEmpty($paymentDate),
             self::REFERENCE_NUMBER => $this->getNullOnEmpty($referenceNo),
             self::UTR              => $utr,
-            self::REMARK           => null,
+            self::REMARKS          => null,
         ];
 
         return $data;
@@ -154,13 +154,16 @@ class Transfer extends Base
 
         $remark = $response['Header']['Error_Desc'] ?? null;
 
+        $publicFailureReason = ValidStatus::getPublicFailureReason($bankStatus);
+
         return [
-            self::PAYMENT_REF_NO    => $this->getNullOnEmpty($transactionID),
-            self::BANK_STATUS_CODE  => $this->getNullOnEmpty($bankStatus),
-            self::PAYMENT_DATE      => null,
-            self::REFERENCE_NUMBER  => null,
-            self::UTR               => null,
-            self::REMARK            => $this->getNullOnEmpty($remark),
+            self::PAYMENT_REF_NO        => $this->getNullOnEmpty($transactionID),
+            self::BANK_STATUS_CODE      => $this->getNullOnEmpty($bankStatus),
+            self::PAYMENT_DATE          => null,
+            self::REFERENCE_NUMBER      => null,
+            self::UTR                   => null,
+            self::REMARKS               => $this->getNullOnEmpty($remark),
+            self::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason)
         ];
     }
 

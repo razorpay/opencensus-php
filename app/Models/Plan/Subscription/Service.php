@@ -12,7 +12,9 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
+use RZP\Base\RuntimeManager;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Feature\Constants as Feature;
 
 class Service extends Base\Service
 {
@@ -66,15 +68,34 @@ class Service extends Base\Service
 
     public function createAndChargeInvoices()
     {
+        RuntimeManager::setTimeLimit(300);
+
         $subscriptionsToCharge = $this->repo->subscription->getSubscriptionsToCharge();
 
         $invoicesCreated = $failed = 0;
+        $skipped = 0;
         $failures = [];
 
         $biller = (new Biller);
 
         foreach ($subscriptionsToCharge as $subscription)
         {
+            // Merchant with this feature enabled will have their
+            // subscriptions charge via the cron on subscriptions service
+            // Currently commented out to enable just the crud flow
+           /* if ($subscription->merchant->isFeatureEnabled(Feature::SUBSCRIPTION_V2) === true)
+            {
+                $this->trace->info(
+                    TraceCode::SUBSCRIPTION_SKIPPED, [
+                        'subscription_id' => $subscription->getId(),
+                    ]
+                );
+
+                $skipped++;
+
+                continue;
+            }*/
+
             try
             {
                 $biller->createInvoiceAndCharge($subscription);
@@ -101,6 +122,7 @@ class Service extends Base\Service
             'invoices_created'  => $invoicesCreated,
             'failed'            => $failed,
             'failures'          => $failures,
+            'skipped'           => $skipped,
         ];
 
         $this->trace->info(
@@ -159,6 +181,8 @@ class Service extends Base\Service
 
     public function retrySubscriptions()
     {
+        RuntimeManager::setTimeLimit(300);
+
         $subscriptionsToRetry = $this->repo->subscription->getSubscriptionsToRetry();
 
         $success = 0;

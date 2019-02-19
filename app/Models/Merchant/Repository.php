@@ -120,7 +120,7 @@ class Repository extends Base\Repository
                 ErrorCode::BAD_REQUEST_PRICING_NOT_DEFINED_FOR_MERCHANT);
         }
 
-        return (new Pricing\Repository)->getPricingPlanById($pricing, true, true);
+        return (new Pricing\Repository)->getPricingPlanByIdOrFailPublic($pricing);
     }
 
     public function fetchMerchantsWithPositiveBalance()
@@ -515,6 +515,21 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->orgId($orgId)
                     ->findOrFailPublic($id);
+    }
+
+    public function fetchByEmailAndOrgId(string $email, string $orgId = Org\Entity::RAZORPAY_ORG_ID)
+    {
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        //
+        // Order by created_at asc so that the partner merchant makes it to
+        // the top of the list followed by submerchants
+        //
+        return $this->newQuery()
+                    ->orgId($orgId)
+                    ->where(Entity::EMAIL, $email)
+                    ->orderBy(Entity::CREATED_AT, 'asc')
+                    ->get();
     }
 
     /**

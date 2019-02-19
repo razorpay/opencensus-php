@@ -29,6 +29,8 @@ final class Constants
     // Time :- 03/05/2018 02:00:00
     const IPAY_MIGRATION_CHECK_HARD = 1525293000;
 
+    const PRE_AUTH_TYPE  = 'VPAS';
+
     // Constants
     const DEBIT_SECOND_RECURRING_PAYMENT_CAVV = 'CAACB3mHZ4IggwVGFYdnAAAAAAA=';
 
@@ -39,5 +41,4 @@ final class Constants
 
     const DEBIT_SECOND_RECURRING_PAYMENT_AUTHENTICATION_FLAG = 'Y';
 
-    const DEBIT_SECOND_RECURRING_PAYMENT_TYPE                = 'VPAS';
 }

@@ -26,6 +26,7 @@ class RecurringCharge
             Payment\Entity::CUSTOMER_ID => $customer->getPublicId(),
             Payment\Entity::ORDER_ID    => $order->getPublicId(),
             Payment\Entity::RECURRING   => '1',
+            Payment\Entity::NOTES       => $entry[HEADER::NOTES] ?? []
         ];
 
         return $request;

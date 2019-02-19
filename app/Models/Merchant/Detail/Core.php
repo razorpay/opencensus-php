@@ -14,12 +14,14 @@ use RZP\Models\State;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\RequestJob;
 use RZP\Models\Merchant;
+use RZP\Constants\Product;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\State\Reason;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Constants;
 use RZP\Models\Merchant\Action as Action;
+use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
@@ -32,7 +34,7 @@ class Core extends Base\Core
     use NotifyTrait;
     use DispatchesJobs;
 
-    public function saveMerchantDetails(array $input, Merchant\Entity $merchant)
+    public function saveMerchantDetails(array $input, Merchant\Entity $merchant, string $originProduct = Product::PRIMARY)
     {
         $this->trace->info(
             TraceCode::MERCHANT_SAVE_ACTIVATION_DETAILS,
@@ -49,7 +51,7 @@ class Core extends Base\Core
 
         $merchantDetails->edit($input);
 
-        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant)
+        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant, $originProduct)
         {
             $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
 
@@ -68,6 +70,8 @@ class Core extends Base\Core
                 $this->checkAndMarkHasKeyAccess($merchantDetails, $merchant);
 
                 $this->markSubmittedAndLock($merchantDetails);
+
+                $this->updateActivationSource($merchantDetails, $originProduct);
 
                 $activationStatusData = [
                     Entity::ACTIVATION_STATUS => Status::UNDER_REVIEW,
@@ -137,12 +141,20 @@ class Core extends Base\Core
         Entity $merchantDetails,
         Merchant\Entity $merchant)
     {
-        $category    = $merchantDetails->getBusinessCategory();
-        $subcategory = $merchantDetails->getBusinessSubcategory();
+        $businessCategory    = $merchantDetails->getBusinessCategory();
+        $businessSubcategory = $merchantDetails->getBusinessSubcategory();
 
-        if ($merchantDetails->isDirty([Entity::BUSINESS_CATEGORY, Entity::BUSINESS_SUBCATEGORY]) === true)
+        $category  = $merchant->getCategory();
+        $category2 = $merchant->getCategory2();
+
+        // for older merchants(non instant activation) where category or category 2 is not set , set details
+        $populateCategoryAndCategory2 = ((empty($businessCategory) === false) and
+                                         (!(empty($category) === false AND empty($category2) === false)));
+
+        if (($populateCategoryAndCategory2 === true) or
+            ($merchantDetails->isDirty([Entity::BUSINESS_CATEGORY, Entity::BUSINESS_SUBCATEGORY]) === true))
         {
-            (new Merchant\Core)->autoUpdateCategoryDetails($merchant, $category, $subcategory);
+            (new Merchant\Core)->autoUpdateCategoryDetails($merchant, $businessCategory, $businessSubcategory);
         }
     }
 
@@ -193,10 +205,32 @@ class Core extends Base\Core
 
             $this->trackActivationProgressEvents($merchant, $activationProgress);
 
+            // Only Linked accounts will have auto Activated set to true.
             $response['auto_activated'] = false;
 
             return $response;
         });
+    }
+
+    /**
+     * Logs for debugging merchant activated =  false issue for some whitelist merchant
+     *
+     * @param Merchant\Entity $merchant
+     * @param Entity          $merchantDetails
+     * @param string          $traceContext
+     */
+    public function addLogForDebugging(Merchant\Entity $merchant, Entity $merchantDetails, string $traceContext)
+    {
+        if (($merchantDetails->getActivationFlow() === ActivationFlow::WHITELIST) and
+            ($merchant->isActivated() === false))
+        {
+            $data = [
+                EntityConstant::MERCHANT        => $merchant->toArrayPublic(),
+                EntityConstant::MERCHANT_DETAIL => $merchantDetails->toArrayPublic()
+            ];
+
+            $this->trace->info($traceContext, $data);
+        }
     }
 
     /**
@@ -496,6 +530,21 @@ class Core extends Base\Core
     }
 
     /**
+     * Updates the product business banking or primary from where the activation form was submitted.
+     *
+     * @param Entity $merchantDetails
+     * @param string $originProduct
+     */
+    public function updateActivationSource(Entity $merchantDetails, string $originProduct)
+    {
+        $merchant = $merchantDetails->merchant;
+
+        $merchant->setActivationSource($originProduct);
+
+        $this->repo->saveOrFail($merchant);
+    }
+
+    /**
      * This submits and locks the form for user.
      *
      * @param Entity $merchantDetails
@@ -693,10 +742,10 @@ class Core extends Base\Core
      * @param Entity $merchantDetails
      * @param array  $input
      *
-     * @return Entity
-     * @throws \Exception
+     * @return array
+     * @throws \Throwable
      */
-    public function updateWebsiteDetails(Entity $merchantDetails, array $input): Entity
+    public function updateWebsiteDetails(Entity $merchantDetails, array $input): array
     {
         $merchantDetails->getValidator()->validateInput('websiteDetails', $input);
 
@@ -706,7 +755,7 @@ class Core extends Base\Core
 
         $merchantDetails->edit($input);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input)
+        return $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input)
         {
             $this->repo->saveOrFail($merchantDetails);
 
@@ -717,9 +766,13 @@ class Core extends Base\Core
 
             $this->checkAndMarkHasKeyAccess($merchantDetails, $merchant);
 
-        });
+            $response = $merchantDetails->toArrayPublic();
 
-        return $merchantDetails;
+            $response[Merchant\Entity::HAS_KEY_ACCESS] = $merchant->getHasKeyAccess();
+
+            return $response;
+
+        });
     }
 
     /**
@@ -887,6 +940,24 @@ class Core extends Base\Core
         $response[Merchant\Entity::ACTIVATED] = (int) $merchant->isActivated();
         $response[Merchant\Entity::LIVE]      = $merchant->isLive();
         $response[Entity::ACTIVATION_FLOW]    = $merchantDetails->getActivationFlow();
+
+        $response = $this->appendBankingSpecificDetails($response, $merchant);
+
+        return $response;
+    }
+
+    private function appendBankingSpecificDetails(array $response, Merchant\Entity $merchant): array
+    {
+        $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), Product::BANKING);
+
+        if (empty($balance) === false)
+        {
+            $bankAccount = $this->repo->bank_account->getMerchantBankAccountsFromAccountNumber($balance->getAccountNumber());
+
+            $response[Merchant\Entity::BANKING_BALANCE] = $balance->only([Merchant\Balance\Entity::BALANCE,
+                                                                          Merchant\Balance\Entity::CURRENCY]);
+            $response[Merchant\Entity::BANKING_ACCOUNT] = $bankAccount->toArrayHosted();
+        }
 
         return $response;
     }

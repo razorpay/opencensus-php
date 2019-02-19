@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment;
 
 use Mail;
+use Crypt;
 use Config;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
@@ -20,6 +21,7 @@ use RZP\Models\Card;
 use RZP\Models\Transaction;
 use RZP\Models\Admin\Org;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Constants;
 use RZP\Constants\MailTags;
 use Razorpay\Trace\Logger as Trace;
@@ -248,6 +250,82 @@ class Service extends Base\Service
     public function redirectTo3ds($id)
     {
         return $this->getNewProcessor()->redirectTo3ds($id);
+    }
+
+    public function redirectToAuthorize($id)
+    {
+        try
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST,
+                ['track_id' => $id]
+            );
+
+            list($merchant, $paymentId) = $this->setRequiredDetailsGetMerchantAndPaymentId($id);
+
+            return $this->getNewProcessor($merchant)->processRedirectToAuthorize($paymentId);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_FAILURE,
+                ['track_id' => $id]
+            );
+            // add metrics
+            throw $e;
+        }
+    }
+
+    //
+    // Since, redirectToAuthorize is a direct auth we don't have any
+    // merchant/auth/mode. We set merchant in basic auth and return
+    // merchant and paymentId
+    //
+    protected function setRequiredDetailsGetMerchantAndPaymentId($id)
+    {
+        $key = Payment\Entity::getRedirectToAuthorizeTrackIdKey($id);
+
+        $encryptedText = $this->app['cache']->get($key);
+
+        if ($encryptedText === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED
+            );
+        }
+
+        $payload = Crypt::decrypt($encryptedText);
+
+        if (empty($payload) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED
+            );
+        }
+
+        $this->app['basicauth']->setModeAndDbConnection($payload['mode']);
+
+        $merchant = $this->repo->merchant->findOrFail($payload['merchant_id']);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_REQUEST_PAYLOAD,
+            $payload
+        );
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $this->app['basicauth']->setPublicKey($payload['public_key']);
+
+        $this->app['basicauth']->authCreds->setPublicKey($payload['public_key']);
+
+        if (empty($payload['account_id']) === false)
+        {
+            $this->app['basicauth']->authCreds->creds['account_id'] = $payload['account_id'];
+        }
+
+        return [$merchant, $payload['payment_id']];
     }
 
     public function forceAuthorizeFailed($id, $input)
@@ -718,7 +796,7 @@ class Service extends Base\Service
     {
         $isProduction = ($this->app->environment('production') === true);
 
-        // set mode for unexpectecd payments
+        // set mode for unexpected payments
         $mode = $isProduction ? Mode::LIVE : Mode::TEST;
 
         $this->app['basicauth']->setModeAndDbConnection($mode);
@@ -758,11 +836,7 @@ class Service extends Base\Service
 
         $iinEntity = $this->repo->iin->find($input['iin']);
 
-        $flows = $merchant->getPaymentFlows($iinEntity);
-
-        $data = $flows;
-
-        $data['flows'] = $data;
+        $data = $merchant->getPaymentFlows($iinEntity);
 
         if (isset($input['order_id']) === true)
         {
@@ -967,7 +1041,7 @@ class Service extends Base\Service
         {
             try
             {
-                assert ($payment->isAuthorized() === true);
+                assertTrue ($payment->isAuthorized() === true);
 
                 $merchant = $payment->merchant;
 
@@ -1209,7 +1283,7 @@ class Service extends Base\Service
 
         $count = $input['count'] ?? 200;
 
-        $timestamp = Carbon::now(Timezone::IST)->subMinutes($delay)->getTimestamp();
+        $timestamp = Carbon::now(Timezone::IST)->subSeconds($delay)->getTimestamp();
 
         return (new Verify)->verifyAllPayments($timestamp, $gateway, $count);
     }
@@ -1557,12 +1631,5 @@ class Service extends Base\Service
         $this->app['cache']->put($key, $data, $cacheTtl);
 
         return $token;
-    }
-
-    public function payoutVpa($input, $type)
-    {
-        $data = $this->getNewProcessor()->payoutVpa($input, $type);
-
-        return $data;
     }
 }

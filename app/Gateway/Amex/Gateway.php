@@ -18,7 +18,7 @@ class Gateway extends AxisMigs\Gateway
 
     protected function addTestCardDetailsInTestMode(array & $content)
     {
-        assert ($this->mode === Mode::TEST);
+        assertTrue ($this->mode === Mode::TEST);
 
         if ($content['vpc_CardNum'] === '4111111111111111')
         {

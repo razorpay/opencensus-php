@@ -10,6 +10,8 @@ class InvoiceUserIdAclTest extends TestCase
     use InvoiceTestTrait;
     use RequestResponseFlowTrait;
 
+    protected $merchantUser = null;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/InvoiceUserIdAclTestData.php';
@@ -19,24 +21,17 @@ class InvoiceUserIdAclTest extends TestCase
         $this->fixtures->create('user', ['id' => '10000000UserId']);
         $this->fixtures->create('user', ['id' => '10000001UserId']);
 
-        $this->ba->proxyAuth('rzp_test_10000000000000', '10000000UserId', 'sellerapp');
+        $this->merchantUser = $this->fixtures->user->createUserForMerchant('10000000000000', [], 'sellerapp');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $this->merchantUser->getId());
     }
 
-    public function testCreateInvoiceWithUserIdHeader()
+    public function testCreateInvoiceWithUserId()
     {
-        $this->startTest();
+        $testData = & $this->testData[__FUNCTION__];
 
-        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
-    }
+        $testData['response']['content']['user_id'] = $this->merchantUser->getId();
 
-    /**
-     * Even if userRole is something other than sellerapp we would want to record
-     * userId in invoices.user_id column.
-     *
-     * @return void
-     */
-    public function testCreateInvoiceWithUserIdAndDiffRoleHeader()
-    {
         $this->startTest();
 
         $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
@@ -44,7 +39,7 @@ class InvoiceUserIdAclTest extends TestCase
 
     public function testGetInvoiceWithUserIdHeaderSuccess()
     {
-        $this->createDraftInvoice(['user_id' => '10000000UserId']);
+        $this->createDraftInvoice(['user_id' => $this->merchantUser->getId()]);
 
         $this->startTest();
     }
@@ -58,21 +53,22 @@ class InvoiceUserIdAclTest extends TestCase
 
     public function testGetInvoiceWithUserIdAndDifferentRoleHeaderSuccess()
     {
-        $this->createDraftInvoice(['user_id' => '10000001UserId']);
+        $merchantUser = $this->fixtures->user->createUserForMerchant('10000000000000', [], 'owner');
 
-        $this->ba->proxyAuth('rzp_test_10000000000000', '10000001UserId', 'owner');
+        $this->createDraftInvoice(['user_id' => $merchantUser->getId()]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $merchantUser->getId());
 
         $this->startTest();
     }
 
     public function testListInvoiceWithUserIdHeader()
     {
-        $this->createDraftInvoice(['user_id' => '10000000UserId']);
-        $this->createDraftInvoice(['user_id' => '10000000UserId', 'id' => '1000001invoice']);
-        $this->createDraftInvoice(['user_id' => '10000001UserId', 'id' => '1000002invoice']);
+        $merchantUserId = $this->merchantUser->getId();
 
-        $expectedSearchParams = $this->testData[__FUNCTION__ . 'EsExpectedSearchParams'];
-        $expectedSearchRes    = $this->testData[__FUNCTION__ . 'EsExpectedSearchResponse'];
+        $this->createDraftInvoice(['user_id' => $merchantUserId]);
+        $this->createDraftInvoice(['user_id' => $merchantUserId, 'id' => '1000001invoice']);
+        $this->createDraftInvoice(['user_id' => '10000001UserId', 'id' => '1000002invoice']);
 
         $this->startTest();
     }
@@ -97,18 +93,20 @@ class InvoiceUserIdAclTest extends TestCase
 
     public function testListInvoiceWithUserIdAndDifferentRoleHeader()
     {
-        $this->createDraftInvoice(['user_id' => '10000000UserId']);
-        $this->createDraftInvoice(['user_id' => '10000000UserId', 'id' => '1000001invoice']);
+        $merchantUser = $this->fixtures->user->createUserForMerchant('10000000000000', [], 'owner');
+
+        $this->createDraftInvoice(['user_id' => $merchantUser->getId()]);
+        $this->createDraftInvoice(['user_id' => $merchantUser->getId(), 'id' => '1000001invoice']);
         $this->createDraftInvoice(['user_id' => '10000001UserId', 'id' => '1000002invoice']);
 
-        $this->ba->proxyAuth('rzp_test_10000000000000', '10000000UserId', 'owner');
+        $this->ba->proxyAuth('rzp_test_10000000000000', $merchantUser->getId());
 
         $this->startTest();
     }
 
     public function testUpdateInvoiceWithUserIdHeaderSuccess()
     {
-        $this->createDraftInvoice(['user_id' => '10000000UserId']);
+        $this->createDraftInvoice(['user_id' => $this->merchantUser->getId()]);
 
         $this->startTest();
 
@@ -124,30 +122,31 @@ class InvoiceUserIdAclTest extends TestCase
 
     public function testUpdateInvoiceWithAgentUserIdHeaderSuccess()
     {
-        $this->fixtures->create('user', ['id' => '100AgentUserId']);
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '100AgentUserId'], 'agent');
 
         $this->createDraftInvoice(['user_id' => '100AgentUserId']);
 
-        $this->ba->proxyAuth('rzp_test_10000000000000', '100AgentUserId', 'agent');
+        $this->ba->proxyAuth('rzp_test_10000000000000', '100AgentUserId');
 
         $this->startTest();
     }
 
     public function testUpdateInvoiceWithAgentUserIdHeaderForbidden()
     {
-        $this->fixtures->create('user', ['id' => '100AgentUserId']);
-        $this->fixtures->create('user', ['id' => '101AgentUserId']);
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '101AgentUserId'], 'agent');
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '100AgentUserId'], 'agent');
 
         $this->createDraftInvoice(['user_id' => '100AgentUserId']);
 
-        $this->ba->proxyAuth('rzp_test_10000000000000', '101AgentUserId', 'agent');
+        $this->ba->proxyAuth('rzp_test_10000000000000', '101AgentUserId');
 
         $this->startTest();
     }
 
     public function testDeleteInvoiceWithUserIdHeaderSuccess()
     {
-        $this->createDraftInvoice(['user_id' => '10000000UserId']);
+        $this->createDraftInvoice(['user_id' => $this->merchantUser->getId()]);
 
         $this->startTest();
 
@@ -165,11 +164,11 @@ class InvoiceUserIdAclTest extends TestCase
 
     public function testDeleteInvoiceWithAgentUserIdHeaderSuccess()
     {
-        $this->fixtures->create('user', ['id' => '100AgentUserId']);
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '100AgentUserId'], 'agent');
 
         $this->createDraftInvoice(['user_id' => '100AgentUserId']);
 
-        $this->ba->proxyAuth('rzp_test_10000000000000', '100AgentUserId', 'agent');
+        $this->ba->proxyAuth('rzp_test_10000000000000', '100AgentUserId');
 
         $this->startTest();
 
@@ -180,8 +179,9 @@ class InvoiceUserIdAclTest extends TestCase
 
     public function testDeleteInvoiceWithAgentUserIdHeaderForbidden()
     {
-        $this->fixtures->create('user', ['id' => '100AgentUserId']);
-        $this->fixtures->create('user', ['id' => '101AgentUserId']);
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '101AgentUserId'], 'agent');
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '100AgentUserId'], 'agent');
 
         $this->createDraftInvoice(['user_id' => '100AgentUserId']);
 
@@ -194,7 +194,7 @@ class InvoiceUserIdAclTest extends TestCase
     {
         $order = $this->fixtures->create('order');
 
-        $this->createIssuedInvoice(['user_id' => '10000000UserId', 'order_id' => $order->getId()]);
+        $this->createIssuedInvoice(['user_id' => $this->merchantUser->getId(), 'order_id' => $order->getId()]);
 
         $this->startTest();
 
@@ -205,14 +205,14 @@ class InvoiceUserIdAclTest extends TestCase
     {
         $order = $this->fixtures->create('order');
 
-        $this->createIssuedInvoice(['user_id' => '10000001UserId', 'order_id' => $order->getId()]);
+        $this->createIssuedInvoice(['user_id' => '10000000UserId', 'order_id' => $order->getId()]);
 
         $this->startTest();
     }
 
     public function testCancelInvoiceWithAgentUserIdHeaderSuccess()
     {
-        $this->fixtures->create('user', ['id' => '100AgentUserId']);
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '100AgentUserId'], 'agent');
 
         $order = $this->fixtures->create('order');
 
@@ -225,14 +225,15 @@ class InvoiceUserIdAclTest extends TestCase
 
     public function testCancelInvoiceWithAgentUserIdHeaderForbidden()
     {
-        $this->fixtures->create('user', ['id' => '100AgentUserId']);
-        $this->fixtures->create('user', ['id' => '101AgentUserId']);
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '101AgentUserId'], 'agent');
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '100AgentUserId'], 'agent');
 
         $order = $this->fixtures->create('order');
 
         $this->createIssuedInvoice(['user_id' => '100AgentUserId', 'order_id' => $order->getId()]);
 
-        $this->ba->proxyAuth('rzp_test_10000000000000', '101AgentUserId', 'agent');
+        $this->ba->proxyAuth('rzp_test_10000000000000', '101AgentUserId');
 
         $this->startTest();
     }

@@ -222,6 +222,28 @@ class Entity extends Base\PublicEntity
         self::TERMS              => null,
     ];
 
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::DESCRIPTION,
+    ];
+
+    /**
+     * Converting description to quill js object format for backward compatibility.
+     *
+     * @param array $array
+     */
+    public function setPublicDescriptionAttribute(array & $array)
+    {
+        $description = $array[Entity::DESCRIPTION];
+
+        // Newer values for description attribute are json encoded quilljs meta object.
+        if (($description !== null) and (json_decode($description) === null))
+        {
+            $array[Entity::DESCRIPTION] = Utility::convertTextToQuillFormat($description);
+        }
+    }
+
     // -------------------------------------- Relations -------------------------------
 
     public function merchant()

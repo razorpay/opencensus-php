@@ -12,6 +12,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Http\BasicAuth\Type as AuthType;
 use Razorpay\Trace\Logger as Trace;
 
 class OAuth
@@ -127,7 +128,7 @@ class OAuth
             return ApiResponse::generateErrorResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED_OAUTH_TOKEN_INVALID);
         }
 
-        return $this->parseOAuthServerResponse($response);
+        return $this->parseOAuthServerResponse($response, AuthType::PRIVATE_AUTH);
     }
 
     /**
@@ -178,7 +179,7 @@ class OAuth
      *
      * @return array
      */
-    protected function parseOAuthServerResponse(array $response)
+    protected function parseOAuthServerResponse(array $response, string $auth = AuthType::PUBLIC_AUTH)
     {
         $tokenScopes = $response[OAuthToken::SCOPES];
 
@@ -195,7 +196,7 @@ class OAuth
         //
         $publicKey = 'rzp_' . $mode . '_oauth_' . $response[OAuthToken::PUBLIC_TOKEN];
 
-        $this->ba->oauthPublicTokenAuth($publicKey);
+        $this->ba->oauthPublicTokenAuth($publicKey, $auth);
 
         // Sets the mode for the request, and database connection
         $this->ba->authCreds->setModeAndDbConnection($mode);

@@ -16,6 +16,14 @@ class Repository extends Base\Repository
         Entity::CODE                => 'sometimes|string',
     ];
 
+    public function findByEntityIdAndEntityType(string $entityId,string $entityType)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_ID, '=', $entityId)
+                    ->where(Entity::ENTITY_TYPE,'=',$entityType)
+                    ->first();
+    }
+
     public function fetchByCodeWithRelations(string $code, string $merchantId)
     {
         $allowedMerchantIds = [Merchant\Account::SHARED_ACCOUNT, $merchantId];
@@ -23,7 +31,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::CODE, '=', $code)
                     ->whereIn(Entity::MERCHANT_ID, $allowedMerchantIds)
-                    ->with('source')
+                    ->with(['source'])
                     ->first();
     }
 }

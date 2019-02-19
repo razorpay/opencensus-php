@@ -92,7 +92,7 @@ abstract class AuthCreds
      * rzp_mode_keyId                          = 3 + 1 + 4 + 1 + 24
      * rzp_mode_merchantId                     = 3 + 1 + 4 + 1 + 14
      * rzp_mode_partner_clientID               = 3 + 1 + 4 + 1 + 7 + 1 + 14
-     * rzp_mode_partner_clientID~acc_accountId = 3 + 1 + 4 + 1 + 7 + 1 + 14 + 1 + 3 + 1 + 14
+     * rzp_mode_partner_clientID-acc_accountId = 3 + 1 + 4 + 1 + 7 + 1 + 14 + 1 + 3 + 1 + 14
      *
      * NOTE: key length 29 is used for OAuth public tokens,
      * hence DO NOT add 29 as a valid length for basicAuth
@@ -101,7 +101,7 @@ abstract class AuthCreds
      * client credentials for BasicAuth. The is something
      * like rzp_test_partner_dummyClientId1
      * The partner auth callback key is of length 50 like
-     * rzp_test_partner_dummyClientId1~acc_accountId
+     * rzp_test_partner_dummyClientId1-acc_accountId
      *
      * @var array
      */

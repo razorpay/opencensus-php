@@ -39,9 +39,10 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
                 [
                     'trace_code'        => TraceCode::RECON_INFO_ALERT,
                     'info_code'         => InfoCode::AMOUNT_MISMATCH,
+                    'payment_id'        => $this->payment->getId(),
                     'expected_amount'   => $paymentAmount,
+                    'recon_amount'      => $this->getReconPaymentAmount($row),
                     'currency'          => $this->payment->getCurrency(),
-                    'row'               => $row,
                     'gateway'           => $this->gateway
                 ]);
 

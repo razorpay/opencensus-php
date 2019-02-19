@@ -155,6 +155,7 @@ class ErrorCodeDescriptions extends Cards\ErrorCodeDescriptions
         '5156' => 'Invalid Card Number Check Digit',
         '5157' => 'Invalid Card Expiry Date',
         '5158' => 'Invalid Card Expiry Date Length',
+        '5159' => 'Invalid Card Type',
         '5162' => 'Invalid Card Initialisation file',
         '5166' => 'Invalid Credit Card: incorrect secure code number length',
         '5170' => 'Unable to delete terminal',
@@ -185,6 +186,7 @@ class ErrorCodeDescriptions extends Cards\ErrorCodeDescriptions
         '5401' => 'Null Parameter',
         '5402' => 'Command Missing',
         '5403' => 'Digital Order is null',
+        '5408' => 'The full amount of the transaction has already been captured or voided',
         '5410' => 'Unknown Field',
         '5411' => 'Unknown Administration Method',
         '5412' => 'Invalid Field',
@@ -330,6 +332,7 @@ class ErrorCodeDescriptions extends Cards\ErrorCodeDescriptions
         '9153' => 'Request contains more than one instance of the same field',
         '9154' => 'General merchant configuration error preventing request from being processed',
         '9200' => 'Missing or Invalid Template Number',
+        '9520' => 'Server is unable to process the request at the moment - please try later',
         'Timed out' => 'Timed Out',
         'Pending' => 'Pending',
     ];
@@ -342,23 +345,7 @@ class ErrorCodeDescriptions extends Cards\ErrorCodeDescriptions
         '4' => 'Expired Card',
         '5' => 'Insufficient Funds',
         '6' => 'Error Communicating with Bank',
-        '7' => [
-            'E5000'   => 'Username and/or password for merchant is invalid.',
-            'E5159'   => 'Invalid Card Type',
-            'E5408'   => 'Not an auth transaction',
-            'E5414'   => [
-                'no payments identified' => 'No payments identified',
-                'requested capture amount exceeds outstanding authorized amount' =>
-                    'Requested capture amount exceeds outstanding authorized amount',
-            ],
-            'E5415'   => 'Excessive refund attempted',
-            'I5154'   => 'Invalid Card Number : Card number is best match for card range in card brand
-                          MS and not expected card brand MC',
-            'I5166'   => 'Invalid credit card: incorrect secure code number length : Invalid Card Security Code length',
-            'I5426'   => 'Invalid Permission : advanceMA',
-            'W9520'   => 'Server is unable to process the request at the moment - please try later',
-            'default' => 'Payment Server System Error',
-        ],
+        '7' => 'Payment Server System Error',
         '8' => 'Transaction Type Not Supported',
         '9' => 'Bank declined transaction (Do not contact Bank)',
         'A' => 'Transaction Aborted',

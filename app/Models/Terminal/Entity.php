@@ -55,6 +55,7 @@ class Entity extends Base\PublicEntity
     const EMI_DURATION                  = 'emi_duration';
     const EMI_SUBVENTION                = 'emi_subvention';
     const RECURRING                     = 'recurring';
+    const CAPABILITY                    = 'capability';
     const INTERNATIONAL                 = 'international';
     const TPV                           = 'tpv';
     const CURRENCY                      = 'currency';
@@ -70,6 +71,7 @@ class Entity extends Base\PublicEntity
     const ENABLED_BANKS                 = 'enabled_banks';
     // used for direct settlements.
     const ACCOUNT_NUMBER                = 'account_number';
+    const IFSC_CODE                     = 'ifsc_code';
 
     //
     // Currenly being used to handle 'unexpected' BharatQR payments.
@@ -100,6 +102,15 @@ class Entity extends Base\PublicEntity
 
     //const PRIORITY                      = 'priority';
 
+    // additional attributes
+    const ACTION                        = 'action';
+
+    const TERMINAL_IDS                  = 'terminal_ids';
+
+    const BANK                          = 'bank';
+
+    const CATEGORY_LENGTH               = 4;
+
     protected $fillable = [
         self::GATEWAY,
         self::CARD,
@@ -116,6 +127,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL,
         self::TPV,
         self::TYPE,
+        self::CAPABILITY,
         self::MODE,
         self::CORPORATE,
         self::EXPECTED,
@@ -138,6 +150,7 @@ class Entity extends Base\PublicEntity
         self::ENABLED,
         self::ENABLED_BANKS,
         self::ACCOUNT_NUMBER,
+        self::IFSC_CODE,
         self::CARDLESS_EMI,
     ];
 
@@ -172,6 +185,7 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::MODE,
         self::CORPORATE,
+        self::CAPABILITY,
         self::EXPECTED,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -180,6 +194,7 @@ class Entity extends Base\PublicEntity
         self::SUB_MERCHANTS,
         self::ENABLED_BANKS,
         self::ACCOUNT_NUMBER,
+        self::IFSC_CODE,
         self::CARDLESS_EMI,
     ];
 
@@ -205,36 +220,38 @@ class Entity extends Base\PublicEntity
         'inputRemoveBlanks',
         self::INTERNATIONAL,
         self::EMI_SUBVENTION,
+        self::TYPE,
     ];
 
     protected $defaults = [
-        self::CATEGORY                    => null,
-        self::NETWORK_CATEGORY            => null,
-        self::GATEWAY_MERCHANT_ID         => null,
-        self::GATEWAY_TERMINAL_ID         => null,
-        self::GATEWAY_TERMINAL_PASSWORD   => null,
-        self::GATEWAY_TERMINAL_PASSWORD2  => null,
-        self::GATEWAY_ACCESS_CODE         => null,
-        self::GATEWAY_SECURE_SECRET       => null,
-        self::GATEWAY_SECURE_SECRET2      => null,
-        self::GATEWAY_RECON_PASSWORD      => null,
-        self::EMI                         => false,
-        self::TPV                         => 0,
-        self::BANK_TRANSFER               => 0,
-        self::TYPE                        => [
+        self::CATEGORY                   => null,
+        self::NETWORK_CATEGORY           => null,
+        self::GATEWAY_MERCHANT_ID        => null,
+        self::GATEWAY_TERMINAL_ID        => null,
+        self::GATEWAY_TERMINAL_PASSWORD  => null,
+        self::GATEWAY_TERMINAL_PASSWORD2 => null,
+        self::GATEWAY_ACCESS_CODE        => null,
+        self::GATEWAY_SECURE_SECRET      => null,
+        self::GATEWAY_SECURE_SECRET2     => null,
+        self::GATEWAY_RECON_PASSWORD     => null,
+        self::EMI                        => false,
+        self::TPV                        => 0,
+        self::BANK_TRANSFER              => 0,
+        self::TYPE                       => [
             Type::NON_RECURRING => '1'
         ],
-        self::MODE                      => Mode::DUAL,
-        self::CORPORATE                 => 0,
-        self::EXPECTED                  => 0,
-        self::CURRENCY                  => self::DEFAULT_CURRENCY,
-        self::EMI_DURATION              => null,
-        self::GATEWAY_ACQUIRER          => null,
-        self::INTERNATIONAL             => 0,
-        self::ENABLED                   => true,
-        self::USED                      => false,
-        self::EMI_SUBVENTION            => null,
-        self::CARDLESS_EMI              => 0,
+        self::CAPABILITY                 => Capability::ALL,
+        self::MODE                       => Mode::DUAL,
+        self::CORPORATE                  => 0,
+        self::EXPECTED                   => 0,
+        self::CURRENCY                   => self::DEFAULT_CURRENCY,
+        self::EMI_DURATION               => null,
+        self::GATEWAY_ACQUIRER           => null,
+        self::INTERNATIONAL              => 0,
+        self::ENABLED                    => true,
+        self::USED                       => false,
+        self::EMI_SUBVENTION             => null,
+        self::CARDLESS_EMI               => 0,
     ];
 
     protected $casts = [
@@ -250,7 +267,7 @@ class Entity extends Base\PublicEntity
         self::TPV                       => 'int',
         self::TYPE                      => 'int',
         self::MODE                      => 'int',
-        self::CATEGORY                  => 'int',
+        self::CATEGORY                  => 'string',
         self::CORPORATE                 => 'int',
         self::EXPECTED                  => 'boolean',
         self::USED                      => 'boolean',
@@ -330,6 +347,11 @@ class Entity extends Base\PublicEntity
     public function getCategory()
     {
         return $this->getAttribute(self::CATEGORY);
+    }
+
+    public function getCapability()
+    {
+        return $this->getAttribute(self::CAPABILITY);
     }
 
     public function getType()
@@ -530,6 +552,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ENABLED_BANKS, $banksToEnable);
     }
 
+    public function setCapability($capability)
+    {
+        $this->setAttribute(self::CAPABILITY, $capability);
+    }
+
     // ---------------------- END SETTERS ----------------------
 
     // -----------------------PUBLIC SETTERS -------------------
@@ -607,14 +634,7 @@ class Entity extends Base\PublicEntity
 
     protected function getCategoryAttribute()
     {
-        $category = $this->attributes[self::CATEGORY];
-
-        if ($category !== null)
-        {
-            $category = (int) $category;
-        }
-
-        return $category;
+        return $this->attributes[self::CATEGORY];
     }
 
     protected function getEmiDurationAttribute()
@@ -636,7 +656,14 @@ class Entity extends Base\PublicEntity
 
     protected function getBankingTypesAttribute()
     {
-        return BankingType::getBankingTypes($this->getAttribute(self::CORPORATE));
+        $corporate = $this->getAttribute(self::CORPORATE);
+
+        if ($corporate === null)
+        {
+            return;
+        }
+
+        return BankingType::getBankingTypes($corporate);
     }
 
     // ---------------------- END ACCESSORS ----------------------
@@ -707,7 +734,6 @@ class Entity extends Base\PublicEntity
         {
             $hex = $this->attributes[self::TYPE];
         }
-
         $this->attributes[self::TYPE] = Type::getHexValue($type, $hex);
     }
 
@@ -733,6 +759,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RUPAY_MPAN);
     }
 
+    public function getAccountNumber()
+    {
+        return $this->getAttribute(self::ACCOUNT_NUMBER);
+    }
+
+    public function getIfscCode()
+    {
+        return $this->getAttribute(self::IFSC_CODE);
+    }
+
     public function getVpa()
     {
         return $this->getAttribute(self::VPA);
@@ -748,6 +784,15 @@ class Entity extends Base\PublicEntity
             {
                 $input[self::INTERNATIONAL] = 1;
             }
+        }
+    }
+
+    protected function modifyType(& $input)
+    {
+        if ((empty($input[self::GATEWAY]) === false) and
+            ($input[self::GATEWAY] === Payment\Gateway::PAYTM))
+        {
+            $input[self::TYPE][Type::DIRECT_SETTLEMENT] = '1';
         }
     }
 
@@ -821,7 +866,7 @@ class Entity extends Base\PublicEntity
 
         $typeColumn = $this->dbColumn(Entity::TYPE);
 
-        return $query->whereRaw($typeColumn . " & " . $bitComparator . " = " . $bitComparator);
+        return $query->whereRaw($typeColumn . ' & ' . $bitComparator . ' = ' . $bitComparator);
     }
 
     // ---------------------- END SCOPES ----------------------
@@ -879,35 +924,7 @@ class Entity extends Base\PublicEntity
 
     public function edit(array $input = [], $operation = 'edit')
     {
-        if ($this->isUsed() === false)
-        {
-            // Essentially we ask for all the input anew and fill it in.
-            // Put the values which are not changing like gateway and merchant_id
-            // by ourselves.
-
-            $input[Entity::GATEWAY] = $this->getGateway();
-            $input[Entity::MERCHANT_ID] = $this->getMerchantId();
-
-            $terminal = parent::edit($input, 'create');
-
-            // This is done here because if we already have a type in DB
-            // which is no longer valid after new Types are added too,
-            // This will throw an error.
-            $terminal->getValidator()->validateType();
-
-            return $terminal;
-        }
-        else
-        {
-            $this->editUsedTerminal($input);
-        }
-    }
-
-    protected function editUsedTerminal(array $input)
-    {
-        assert ($this->isUsed() === true);
-
-        $this->getValidator()->usedTerminalValidator($this, $input);
+        $this->getValidator()->editTerminalValidator($this, $input);
 
         $this->fill($input);
     }
@@ -938,8 +955,9 @@ class Entity extends Base\PublicEntity
     {
         $terminal = $this->toArray();
 
-        $terminal[self::GATEWAY_TERMINAL_PASSWORD]   = $this->getGatewayTerminalPasswordAttribute();
-        $terminal[self::GATEWAY_TERMINAL_PASSWORD2]  = $this->getGatewayTerminalPassword2Attribute();
+        $terminal[self::GATEWAY_TERMINAL_PASSWORD]  = $this->getGatewayTerminalPasswordAttribute();
+        $terminal[self::GATEWAY_TERMINAL_PASSWORD2] = $this->getGatewayTerminalPassword2Attribute();
+        $terminal[self::GATEWAY_SECURE_SECRET]      = $this->getGatewaySecureSecretAttribute();
 
         return $terminal;
     }
@@ -1002,7 +1020,7 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
-    public function isTypeApplicable($type)
+    public function isTypeApplicable(string $type): bool
     {
         $enabledTypes = $this->getType();
 
@@ -1030,7 +1048,7 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(Type::RECURRING_NON_3DS) === true);
     }
 
-    public function isAuthTypeEnabled($authType)
+    public function isAuthTypeEnabled($authType, $networkCode)
     {
         switch ($authType)
         {
@@ -1042,7 +1060,7 @@ class Entity extends Base\PublicEntity
                 $gateway = $this->getGateway();
 
                 $isEnabled = (($this->isIvr() === true) or
-                              (Payment\Gateway::supportsHeadlessBrowser($gateway) === true));
+                              (Payment\Gateway::supportsHeadlessBrowser($gateway, $networkCode) === true));
 
                 break;
 

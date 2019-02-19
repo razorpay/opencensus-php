@@ -13,15 +13,19 @@ class DefaultPlan
     const BOB_PROMOTIONAL_PLAN_ID     = 'BAJvpnuxy4AUq3';
     const DIWALI_PROMOTIONAL_PLAN_ID  = 'BI7O6FmHlzLFZm';
 
+
     public static function getPricingSeedData()
     {
-        $pricing1 = self::getStartupPlanSeedData();
-        $pricing2 = self::getPromotionalPlanSeedData();
-        $pricing3 = self::getZeroPlanSeedData();
+        $startupPlan = self::getStartupPlanSeedData();
+        $promoPlan   = self::getPromotionalPlanSeedData();
+        $zeroPlan    = self::getZeroPlanSeedData();
+        $bankingPlan = self::getBankingPlanData();
 
-        $data = array_merge($pricing1, $pricing2, $pricing3);
-
-        return $data;
+        return array_merge(
+            $startupPlan,
+            $promoPlan,
+            $zeroPlan,
+            $bankingPlan);
     }
 
     public static function getPromotionalPlanSeedData()
@@ -475,6 +479,120 @@ class DefaultPlan
                 'expired_at'     => null,
                 'created_at'     => time(),
                 'updated_at'     => time()
+            ],
+        ];
+    }
+
+    public static function getBankingPlanData(): array
+    {
+        return [
+            // Rs 5 for payout value < Rs 1k for payouts with method = fund_transfer.
+            [
+                'id'                  => 'Bbg7cl6t6I3XA5',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'fund_transfer',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 500,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 0,
+                'amount_range_max'    => 100000,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            ],
+            // Rs 9 for payout value between Rs 1k and 25k for payouts with method = fund_transfer.
+            [
+                'id'                  => 'Bbg7dTcURsOr77',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'fund_transfer',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 900,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 100000,
+                'amount_range_max'    => 2500000,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            ],
+            // Rs 15 for payout value > Rs 25k for payouts with method = fund_transfer.
+            [
+                'id'                  => 'Bbg7e4oKCgaubd',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'fund_transfer',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1500,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 2500000,
+                'amount_range_max'    => \RZP\Models\Base\ExtendedValidations::MYSQL_UNSIGNED_INT_MAX,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            ],
+            // Rs 5 for payout value < Rs 1k for payouts with method = upi.
+            [
+                'id'                  => 'Bbg7eYLkxM7sLP',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'upi',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 500,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 0,
+                'amount_range_max'    => 100000,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            ],
+            // Rs 9 for payout value between Rs 1k and 25k for payouts with method = upi.
+            [
+                'id'                  => 'Bbg7f0FaUJQOvj',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'upi',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 900,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 100000,
+                'amount_range_max'    => 2500000,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
+            ],
+            // Rs 15 for payout value > Rs 25k for payouts with method = upi.
+            [
+                'id'                  => 'Bbg7fgaDwax03u',
+                'plan_id'             => 'BTo98voDY05ueB',
+                'plan_name'           => 'Banking default plan',
+                'product'             => 'banking',
+                'feature'             => 'payout',
+                'payment_method'      => 'upi',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1500,
+                'amount_range_active' => 1,
+                'amount_range_min'    => 2500000,
+                'amount_range_max'    => \RZP\Models\Base\ExtendedValidations::MYSQL_UNSIGNED_INT_MAX,
+                'org_id'              => Org\Entity::RAZORPAY_ORG_ID,
+                'expired_at'          => null,
+                'created_at'          => time(),
+                'updated_at'          => time(),
             ],
         ];
     }

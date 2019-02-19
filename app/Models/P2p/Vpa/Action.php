@@ -7,17 +7,18 @@ use RZP\Models\P2p\Base;
 
 class Action extends Base\Action
 {
-    const FETCH_HANDLES        = 'fetchHandles';
+    const FETCH_HANDLES                 = 'fetchHandles';
+    const FETCH_HANDLES_SUCCESS         = 'fetchHandlesSuccess';
 
-    const ADD                  = 'add';
+    const ADD                           = 'add';
+    const ADD_SUCCESS                   = 'addSuccess';
 
-    const FETCH_ALL            = 'fetchAll';
+    const ASSIGN_BANK_ACCOUNT           = 'assignBankAccount';
+    const ASSIGN_BANK_ACCOUNT_SUCCESS   = 'assignBankAccountSuccess';
 
-    const FETCH                = 'fetch';
+    const CHECK_AVAILABILITY            = 'checkAvailability';
+    const CHECK_AVAILABILITY_SUCCESS    = 'checkAvailabilitySuccess';
 
-    const ASSIGN_BANK_ACCOUNT  = 'assignBankAccount';
-
-    const CHECK_AVAILABILITY   = 'checkAvailability';
-
-    const DELETE               = 'delete';
+    const DELETE                        = 'delete';
+    const DELETE_SUCCESS                = 'deleteSuccess';
 }

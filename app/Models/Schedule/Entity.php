@@ -12,7 +12,6 @@ class Entity extends Base\PublicEntity
     use SoftDeletes;
 
     const NAME        = 'name';
-    const MERCHANT_ID = 'merchant_id';
     const PERIOD      = 'period';
     /**
      * Interval is not used only for hourly schedules.
@@ -26,21 +25,28 @@ class Entity extends Base\PublicEntity
      */
     const DELAY       = 'delay';
 
+    const ORG_ID      = 'org_id';
+
+    const TYPE        = 'type';
+
     const DELETED_AT  = 'deleted_at';
 
     protected $fillable = [
         self::NAME,
+        self::ORG_ID,
         self::PERIOD,
         self::INTERVAL,
         self::ANCHOR,
         self::HOUR,
         self::DELAY,
+        self::TYPE,
     ];
 
     protected $public = [
         self::ID,
         self::NAME,
-        self::MERCHANT_ID,
+        self::ORG_ID,
+        self::TYPE,
         self::PERIOD,
         self::INTERVAL,
         self::ANCHOR,
@@ -60,11 +66,12 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::DELAY     => 0,
-        self::HOUR      => 0,
-        self::ANCHOR    => null,
-        self::INTERVAL  => null,
-        self::NAME      => null,
+        self::DELAY       => 0,
+        self::HOUR        => 0,
+        self::ANCHOR      => null,
+        self::INTERVAL    => null,
+        self::NAME        => null,
+        self::ORG_ID      => null,
     ];
 
     protected $entity = 'schedule';
@@ -85,13 +92,6 @@ class Entity extends Base\PublicEntity
     {
         return (($this->isHourly() === false) and
                 ($this->getHour() !== 0));
-    }
-
-    // ----------------------- Relations -----------------------
-
-    public function merchant()
-    {
-        return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
     // ----------------------- Modifiers -----------------------
@@ -132,11 +132,6 @@ class Entity extends Base\PublicEntity
     public function getName()
     {
         return $this->getAttribute(self::NAME);
-    }
-
-    public function getMerchantId()
-    {
-        return $this->getAttribute(self::MERCHANT_ID);
     }
 
     public function getPeriod()

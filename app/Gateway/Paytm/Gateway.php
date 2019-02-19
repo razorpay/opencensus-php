@@ -26,9 +26,8 @@ class Gateway extends Base\Gateway
         $this->createGatewayPaymentEntity($content);
 
         $content['CHECKSUMHASH'] = $this->generateHash($content);
-
         $request = array(
-            'url' => $this->getUrl('pay'),
+            'url' => $this->getUrl('pay')."?ORDER_ID=".$content['ORDER_ID'],
             'content' => $content,
             'method' => 'post');
 
@@ -309,14 +308,14 @@ class Gateway extends Base\Gateway
             'REQUEST_TYPE'              => $type,
             'MID'                       => $input['terminal']['gateway_merchant_id'],
             'ORDER_ID'                  => $input['payment']['id'],
-            'TXN_AMOUNT'                => $input['payment']['amount'] / 100,
             'CUST_ID'                   => $input['payment']['email'],
-            'CHANNEL_ID'                => 'WEB',
-            'INDUSTRY_TYPE_ID'          => $input['terminal']['gateway_terminal_id'],
-            'WEBSITE'                   => $input['terminal']['gateway_access_code'],
-            'CALLBACK_URL'              => $input['callbackUrl'],
             'MOBILE_NO'                 => $mobileNo,
             'EMAIL'                     => $input['payment']['email'],
+            'CHANNEL_ID'                => 'WEB',
+            'TXN_AMOUNT'                => (string) $input['payment']['amount'] / 100,
+            'WEBSITE'                   => $input['terminal']['gateway_access_code'],
+            'INDUSTRY_TYPE_ID'          => $input['terminal']['gateway_terminal_id'],
+            'CALLBACK_URL'              => $input['callbackUrl'],
         );
 
         return $content;
@@ -393,7 +392,7 @@ class Gateway extends Base\Gateway
         if ($this->mode === Mode::TEST)
         {
             $content['MID'] = $this->config['test_merchant_id'];
-            $content['WEBSITE'] = 'Razorweb';
+            $content['WEBSITE'] = 'WEBSTAGING';
             $content['INDUSTRY_TYPE_ID'] = 'Retail';
         }
     }

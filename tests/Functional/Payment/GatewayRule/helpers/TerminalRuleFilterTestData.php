@@ -1,6 +1,8 @@
 <?php
 
+use RZP\Models\Emi;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Account as MerchantAccount;
 use RZP\Models\Payment\Method;
 
 return [
@@ -12,7 +14,8 @@ return [
             'fixtures' => [
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'hdfc',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -30,7 +33,8 @@ return [
             'fixtures' => [
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'hdfc',
                     'type'        => 'filter',
                     'filter_type' => 'reject',
@@ -49,7 +53,8 @@ return [
             'fixtures' => [
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'hdfc',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -57,7 +62,8 @@ return [
                 ],
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'axis_migs',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -76,7 +82,8 @@ return [
             'fixtures' => [
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'hdfc',
                     'type'        => 'filter',
                     'filter_type' => 'reject',
@@ -84,7 +91,8 @@ return [
                 ],
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'axis_migs',
                     'type'        => 'filter',
                     'filter_type' => 'reject',
@@ -102,7 +110,8 @@ return [
             'fixtures' => [
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'hdfc',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -110,7 +119,8 @@ return [
                 ],
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'axis_migs',
                     'type'        => 'filter',
                     'filter_type' => 'reject',
@@ -128,7 +138,8 @@ return [
             'fixtures' => [
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'hdfc',
                     'type'        => 'filter',
                     'filter_type' => 'reject',
@@ -136,7 +147,8 @@ return [
                 ],
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'axis_migs',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -154,7 +166,8 @@ return [
             'fixtures' => [
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'cybersource',
                     'type'        => 'filter',
                     'filter_type' => 'reject',
@@ -162,7 +175,8 @@ return [
                 ],
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'first_data',
                     'type'        => 'filter',
                     'filter_type' => 'reject',
@@ -185,7 +199,8 @@ return [
             'fixtures' => [
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'hdfc',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -193,7 +208,8 @@ return [
                 ],
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'axis_migs',
                     'type'        => 'filter',
                     'filter_type' => 'reject',
@@ -213,7 +229,8 @@ return [
             'fixtures' => [
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'hdfc',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -221,7 +238,8 @@ return [
                 ],
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'hdfc',
                     'type'        => 'filter',
                     'filter_type' => 'reject',
@@ -241,7 +259,8 @@ return [
             'fixtures' => [
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'hdfc',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -249,7 +268,8 @@ return [
                 ],
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'axis_migs',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -258,7 +278,8 @@ return [
                 ],
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'hdfc',
                     'type'        => 'filter',
                     'filter_type' => 'reject',
@@ -277,7 +298,8 @@ return [
             'fixtures' => [
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'hdfc',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -285,7 +307,8 @@ return [
                 ],
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'axis_migs',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -294,7 +317,8 @@ return [
                 ],
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'hdfc',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -313,7 +337,8 @@ return [
             'fixtures' => [
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'hdfc',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -321,7 +346,8 @@ return [
                 ],
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'axis_migs',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -330,7 +356,8 @@ return [
                 ],
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'cybersource',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -349,7 +376,8 @@ return [
             'fixtures' => [
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'hdfc',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -357,7 +385,8 @@ return [
                 ],
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'axis_migs',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -366,7 +395,8 @@ return [
                 ],
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'cybersource',
                     'type'        => 'filter',
                     'filter_type' => 'reject',
@@ -388,7 +418,8 @@ return [
             'fixtures' => [
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'hdfc',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -407,7 +438,8 @@ return [
             'fixtures' => [
                 [
                     'method'      => 'netbanking',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'billdesk',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -427,7 +459,8 @@ return [
             'fixtures' => [
                 [
                     'method'      => 'wallet',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'wallet_olamoney',
                     'issuer'      => 'olamoney',
                     'type'        => 'filter',
@@ -436,7 +469,8 @@ return [
                 ],
                 [
                     'method'      => 'wallet',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'wallet_jiomoney',
                     'issuer'      => 'jiomoney',
                     'type'        => 'filter',
@@ -455,6 +489,7 @@ return [
                 'emi' => [
                     'duration' => '9',
                     'bank' => 'HDFC',
+                    'subvention' => Emi\Subvention::CUSTOMER,
                 ],
                 'card' => [
                     'number'       => '41476700000006',
@@ -470,7 +505,8 @@ return [
             'fixtures' => [
                 [
                     'method'         => 'emi',
-                    'merchant_id'    => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id'    => MerchantAccount::SHARED_ACCOUNT,
+                    'step'           => 'authorization',
                     'gateway'        => 'hdfc',
                     'type'           => 'filter',
                     'filter_type'    => 'select',
@@ -506,7 +542,8 @@ return [
             'fixtures' => [
                 [
                     'method'      => 'card',
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'hdfc',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -525,7 +562,8 @@ return [
             'fixtures' => [
                 [
                     'method'      => Method::UPI,
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'upi_icici',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -536,6 +574,41 @@ return [
                 '100UPIICICITml',
             ]
         ],
+        [
+            'payment_options' => [
+                'method' => Method::EMI,
+                'amount' => '300000',
+                'emi' => [
+                    'duration' => '9',
+                    'bank' => 'SBIN',
+                ],
+                'card' => [
+                    'number'       => '4726426811111117',
+                    'name'         => 'Harshil',
+                    'expiry_month' => '12',
+                    'expiry_year'  => '2017',
+                    'cvv'          => '566',
+                    'network'      => 'Visa',
+                    'issuer'       => 'SBIN',
+                ],
+                'bank' => 'SBIN',
+            ],
+            'fixtures' => [
+                [
+                    'method'         => 'emi',
+                    'merchant_id'    => MerchantAccount::SHARED_ACCOUNT,
+                    'step'           => 'authorization',
+                    'gateway'        => 'hitachi',
+                    'type'           => 'filter',
+                    'filter_type'    => 'select',
+                    'group'          => 'routing_filter',
+                    'issuer'         => 'SBIN',
+                ],
+            ],
+            'expected_terminal_ids' => [
+                '100HitachiTmnl',
+            ]
+        ]
     ],
 
     'testMethodFilterWithMerchantEmiSubvention' => [
@@ -545,6 +618,7 @@ return [
                 'emi' => [
                     'duration' => '9',
                     'bank' => 'HDFC',
+                    'subvention' => Emi\Subvention::MERCHANT,
                 ],
                 'card' => [
                     'number'       => '41476700000006',
@@ -560,7 +634,8 @@ return [
             'fixtures' => [
                  [
                     'method'         => 'emi',
-                    'merchant_id'    => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id'    => MerchantAccount::SHARED_ACCOUNT,
+                    'step'           => 'authorization',
                     'gateway'        => 'hdfc',
                     'type'           => 'filter',
                     'filter_type'    => 'select',
@@ -571,7 +646,8 @@ return [
                 ],
                 [
                     'method'       => 'emi',
-                    'merchant_id'  => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id'  => MerchantAccount::SHARED_ACCOUNT,
+                    'step'         => 'authorization',
                     'gateway'      => 'hdfc',
                     'type'         => 'filter',
                     'filter_type'  => 'select',
@@ -593,7 +669,8 @@ return [
         'fixtures' => [
             [
                 'method'      => Method::CARD,
-                'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                'step'        => 'authorization',
                 'gateway'     => 'hdfc',
                 'type'        => 'filter',
                 'filter_type' => 'select',
@@ -601,7 +678,8 @@ return [
             ],
             [
                 'method'      => Method::CARD,
-                'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                'step'        => 'authorization',
                 'gateway'     => 'axis_migs',
                 'type'        => 'filter',
                 'filter_type' => 'select',
@@ -609,7 +687,8 @@ return [
             ],
             [
                 'method'      => Method::CARD,
-                'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                'step'        => 'authorization',
                 'gateway'     => 'hdfc',
                 'type'        => 'filter',
                 'filter_type' => 'select',
@@ -630,7 +709,8 @@ return [
         'fixtures' => [
             [
                 'method'      => Method::UPI,
-                'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                'step'        => 'authorization',
                 'gateway'     => 'upi_mindgate',
                 'type'        => 'filter',
                 'filter_type' => 'reject',
@@ -651,7 +731,8 @@ return [
         'fixtures' => [
             [
                 'method'         => Method::CARD,
-                'merchant_id'    => Merchant\Account::SHARED_ACCOUNT,
+                'merchant_id'    => MerchantAccount::SHARED_ACCOUNT,
+                'step'           => 'authorization',
                 'gateway'        => 'hdfc',
                 'type'           => 'filter',
                 'filter_type'    => 'select',
@@ -675,7 +756,8 @@ return [
         'fixtures' => [
             [
                 'method'         => Method::CARD,
-                'merchant_id'    => Merchant\Account::SHARED_ACCOUNT,
+                'merchant_id'    => MerchantAccount::SHARED_ACCOUNT,
+                'step'           => 'authorization',
                 'gateway'        => 'hdfc',
                 'type'           => 'filter',
                 'filter_type'    => 'select',
@@ -699,14 +781,16 @@ return [
             'fixtures' => [
                 [
                     'method'      => Method::CARD,
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'type'        => 'filter',
                     'filter_type' => 'select',
                     'group'       => 'method_filter',
                 ],
                 [
                     'method'        => Method::CARD,
-                    'merchant_id'   => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id'   => MerchantAccount::SHARED_ACCOUNT,
+                    'step'          => 'authorization',
                     'type'          => 'filter',
                     'filter_type'   => 'select',
                     'group'         => 'international_filter',
@@ -724,7 +808,8 @@ return [
             'fixtures' => [
                 [
                     'method'      => Method::CARD,
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'hdfc',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -732,7 +817,8 @@ return [
                 ],
                 [
                     'method'        => Method::CARD,
-                    'merchant_id'   => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id'   => MerchantAccount::SHARED_ACCOUNT,
+                    'step'          => 'authorization',
                     'gateway'       => 'first_data',
                     'type'          => 'filter',
                     'filter_type'   => 'select',
@@ -754,14 +840,16 @@ return [
         'fixtures' => [
             [
                 'method'      => Method::CARD,
-                'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                'step'        => 'authorization',
                 'type'        => 'filter',
                 'filter_type' => 'select',
                 'group'       => 'method_filter',
             ],
             [
                 'method'        => Method::CARD,
-                'merchant_id'   => Merchant\Account::SHARED_ACCOUNT,
+                'merchant_id'   => MerchantAccount::SHARED_ACCOUNT,
+                'step'          => 'authorization',
                 'type'          => 'filter',
                 'filter_type'   => 'select',
                 'group'         => 'domestic_filter',
@@ -783,7 +871,8 @@ return [
         'fixtures' => [
             [
                 'method'      => Method::CARD,
-                'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                 'gateway'     => 'hdfc',
                 'type'        => 'filter',
                 'filter_type' => 'select',
@@ -791,7 +880,8 @@ return [
             ],
             [
                 'method'      => Method::CARD,
-                'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                'step'        => 'authorization',
                 'gateway'     => 'first_data',
                 'type'        => 'filter',
                 'filter_type' => 'select',
@@ -799,7 +889,8 @@ return [
             ],
             [
                 'method'      => Method::CARD,
-                'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                'step'        => 'authorization',
                 'gateway'     => 'first_data',
                 'type'        => 'filter',
                 'filter_type' => 'select',
@@ -821,7 +912,8 @@ return [
             'fixtures' => [
                 [
                     'method'      => Method::CARD,
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'hdfc',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -829,7 +921,8 @@ return [
                 ],
                 [
                     'method'      => Method::CARD,
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'axis_migs',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -837,7 +930,8 @@ return [
                 ],
                 [
                     'method'        => Method::CARD,
-                    'merchant_id'   => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id'   => MerchantAccount::SHARED_ACCOUNT,
+                    'step'          => 'authorization',
                     'gateway'       => 'axis_migs',
                     'type'          => 'filter',
                     'filter_type'   => 'reject',
@@ -857,7 +951,8 @@ return [
             'fixtures' => [
                 [
                     'method'      => Method::CARD,
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'hdfc',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -865,7 +960,8 @@ return [
                 ],
                 [
                     'method'      => Method::CARD,
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'axis_migs',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -873,7 +969,8 @@ return [
                 ],
                 [
                     'method'        => Method::CARD,
-                    'merchant_id'   => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id'   => MerchantAccount::SHARED_ACCOUNT,
+                    'step'          => 'authorization',
                     'gateway'       => 'axis_migs',
                     'type'          => 'filter',
                     'filter_type'   => 'reject',
@@ -893,7 +990,8 @@ return [
             'fixtures' => [
                 [
                     'method'      => Method::CARD,
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'hdfc',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -901,7 +999,8 @@ return [
                 ],
                 [
                     'method'      => Method::CARD,
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'axis_migs',
                     'type'        => 'filter',
                     'filter_type' => 'select',
@@ -909,7 +1008,8 @@ return [
                 ],
                 [
                     'method'        => Method::CARD,
-                    'merchant_id'   => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id'   => MerchantAccount::SHARED_ACCOUNT,
+                    'step'          => 'authorization',
                     'gateway'       => 'axis_migs',
                     'type'          => 'filter',
                     'filter_type'   => 'reject',
@@ -931,7 +1031,8 @@ return [
         'fixtures' => [
             [
                 'method'      => Method::CARD,
-                'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                'step'        => 'authorization',
                 'gateway'     => 'hdfc',
                 'type'        => 'filter',
                 'filter_type' => 'select',
@@ -939,7 +1040,8 @@ return [
             ],
             [
                 'method'      => Method::CARD,
-                'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                'step'        => 'authorization',
                 'gateway'     => 'axis_migs',
                 'type'        => 'filter',
                 'filter_type' => 'select',
@@ -947,7 +1049,8 @@ return [
             ],
             [
                 'method'        => Method::CARD,
-                'merchant_id'   => Merchant\Account::SHARED_ACCOUNT,
+                'merchant_id'   => MerchantAccount::SHARED_ACCOUNT,
+                'step'          => 'authorization',
                 'gateway'       => 'axis_migs',
                 'type'          => 'filter',
                 'filter_type'   => 'reject',
@@ -967,7 +1070,8 @@ return [
         'fixtures' => [
             [
                 'method'      => Method::CARD,
-                'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                'step'        => 'authorization',
                 'gateway'     => 'hdfc',
                 'type'        => 'filter',
                 'filter_type' => 'select',
@@ -975,7 +1079,8 @@ return [
             ],
             [
                 'method'      => Method::CARD,
-                'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                'step'        => 'authorization',
                 'gateway'     => 'axis_migs',
                 'type'        => 'filter',
                 'filter_type' => 'select',
@@ -983,7 +1088,8 @@ return [
             ],
             [
                 'method'        => Method::CARD,
-                'merchant_id'   => Merchant\Account::SHARED_ACCOUNT,
+                'merchant_id'   => MerchantAccount::SHARED_ACCOUNT,
+                'step'          => 'authorization',
                 'gateway'       => 'axis_migs',
                 'type'          => 'filter',
                 'filter_type'   => 'reject',
@@ -1004,7 +1110,8 @@ return [
         'fixtures' => [
             [
                 'method'      => Method::NETBANKING,
-                'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                'step'        => 'authorization',
                 'gateway'     => 'netbanking_kotak',
                 'type'        => 'filter',
                 'filter_type' => 'select',
@@ -1012,7 +1119,8 @@ return [
             ],
             [
                 'method'           => Method::NETBANKING,
-                'merchant_id'      => Merchant\Account::SHARED_ACCOUNT,
+                'merchant_id'      => MerchantAccount::SHARED_ACCOUNT,
+                'step'             => 'authorization',
                 'gateway'          => 'netbanking_kotak',
                 'type'             => 'filter',
                 'filter_type'      => 'select',
@@ -1034,7 +1142,8 @@ return [
         'fixtures' => [
             [
                 'method'      => Method::NETBANKING,
-                'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                'step'        => 'authorization',
                 'gateway'     => 'netbanking_kotak',
                 'type'        => 'filter',
                 'filter_type' => 'select',
@@ -1042,7 +1151,8 @@ return [
             ],
             [
                 'method'          => Method::NETBANKING,
-                'merchant_id'     => Merchant\Account::SHARED_ACCOUNT,
+                'merchant_id'     => MerchantAccount::SHARED_ACCOUNT,
+                'step'            => 'authorization',
                 'gateway'         => 'netbanking_kotak',
                 'type'            => 'filter',
                 'filter_type'     => 'select',
@@ -1062,7 +1172,8 @@ return [
         'fixtures' => [
             [
                 'method'      => Method::CARD,
-                'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                'step'        => 'authorization',
                 'gateway'     => 'hdfc',
                 'type'        => 'filter',
                 'filter_type' => 'select',
@@ -1070,7 +1181,8 @@ return [
             ],
             [
                 'method'      => Method::CARD,
-                'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+                'merchant_id' => MerchantAccount::TEST_ACCOUNT,
+                'step'        => 'authorization',
                 'gateway'     => 'axis_migs',
                 'type'        => 'filter',
                 'filter_type' => 'reject',
@@ -1089,7 +1201,8 @@ return [
         'fixtures' => [
             [
                 'method'          => Method::CARD,
-                'merchant_id'     => Merchant\Account::SHARED_ACCOUNT,
+                'merchant_id'     => MerchantAccount::SHARED_ACCOUNT,
+                'step'            => 'authorization',
                 'gateway'         => 'hdfc',
                 'type'            => 'sorter',
                 'load'            => 100,
@@ -1119,7 +1232,8 @@ return [
             'fixtures' => [
                 [
                     'method'      => Method::CARD,
-                    'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+                    'merchant_id' => MerchantAccount::SHARED_ACCOUNT,
+                    'step'        => 'authorization',
                     'gateway'     => 'hdfc',
                     'type'        => 'filter',
                     'filter_type' => 'select',

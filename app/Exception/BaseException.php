@@ -57,6 +57,18 @@ class BaseException extends Exception
         return $this->error->getPublicError();
     }
 
+    public function appendFieldToError(string $field)
+    {
+        $error = $this->error;
+
+        if ($error === null)
+        {
+            return;
+        }
+
+        $this->error->appendToField($field);
+    }
+
     public function generatePublicJsonResponse()
     {
         $error = $this->error;

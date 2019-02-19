@@ -2,15 +2,16 @@
 
 namespace RZP\Models\P2p\Base\Libraries;
 
+use RZP\Exception\LogicException;
 use Razorpay\Api\ArrayableInterface;
 
 class Rules implements ArrayableInterface
 {
     protected $rules = [];
 
-    public function __construct(array $rules, array $with = [])
+    public function __construct(array $rules)
     {
-        $this->rules = $this->with($rules, $with);
+        $this->rules = $rules;
     }
 
     public function only(array $keys): self
@@ -27,25 +28,62 @@ class Rules implements ArrayableInterface
         return $this;
     }
 
-    public function merge(array $array): self
+    public function merge(Rules $rules): self
     {
-        $this->rules = array_merge($this->rules, $array);
+        $this->rules = array_merge($this->rules, $rules->toArray());
 
         return $this;
     }
 
-    public function arrayRules(string $prepend, array $rules)
+    /**
+     * Make array rules with $prepend string. And append in the existing rules.
+     *
+     * @param string $prepend
+     * @param array $rules
+     * @param bool $nested
+     * @return $this
+     */
+    public function arrayRules(string $prepend, array $rules, bool $nested = false)
     {
         $prepended = [
             $prepend    => 'sometimes|array',
         ];
 
+        $connector = $nested ? '.*.' : '.';
+
         foreach ($rules as $key => $rule)
         {
-            $prepended[$prepend . '.' . $key] = $rule;
+            $prepended[$prepend . $connector . $key] = $rule;
         }
 
-        $this->merge($prepended);
+        $this->merge(new Rules($prepended));
+
+        return $this;
+    }
+
+    /**
+     * Wrap all the rules into given $prepend string. And replace the existing rules
+     *
+     * @param string $prepend
+     * @param bool $nested
+     * @return $this
+     */
+    public function wrapRules(string $prepend, bool $nested = false)
+    {
+        $prepended = [
+            $prepend    => 'sometimes|array',
+        ];
+
+        $connector = $nested ? '.*.' : '.';
+
+        foreach ($this->rules as $key => $rule)
+        {
+            $prepended[$prepend . $connector . $key] = $rule;
+        }
+
+        $this->rules = $prepended;
+
+        return $this;
     }
 
     public function toArray()
@@ -57,20 +95,21 @@ class Rules implements ArrayableInterface
      * If the rule definition is found in base rules,
      * we will prepend it to current rule.
      *
-     * @param array $rules
      * @param array $with
-     * @return array
+     * @return $this
      */
-    protected function with(array $baseRules, array $with)
+    public function with(array $with): self
     {
         foreach ($with as $key => & $rule)
         {
-            if (isset($baseRules[$key]) === true)
+            if (isset($this->rules[$key]) === true)
             {
-                $rule .= '|' . $baseRules[$key];
+                $rule .= '|' . $this->rules[$key];
             }
         }
 
-        return $with;
+        $this->rules = $with;
+
+        return $this;
     }
 }

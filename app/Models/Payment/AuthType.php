@@ -15,6 +15,8 @@ class AuthType
     const _3DS         = '3ds';
     const OTP          = 'otp';
     const HEADLESS_OTP = 'headless_otp';
+    const IVR          = 'ivr';
+    const UNKNOWN      = 'unknown';
 
     public static $types = [
         Method::EMANDATE => [
@@ -35,9 +37,35 @@ class AuthType
         ],
     ];
 
+    const DEFAULT_AUTH_ORDER = [
+        Method::CARD => [
+            self::UNKNOWN => [
+                self::PIN,
+                self::_3DS,
+                self::OTP,
+                self::IVR,
+                self::HEADLESS_OTP,
+            ],
+            self::OTP => [
+                self::IVR,
+                self::OTP,
+                self::HEADLESS_OTP,
+            ],
+            self::PIN => [
+                self::PIN,
+            ],
+            self::SKIP => [
+                self::SKIP,
+            ],
+            self::_3DS => [
+                self::_3DS,
+            ],
+        ]
+    ];
+
     public static $featureToAuthMap = [
         self::PIN  => [Feature\Constants::ATM_PIN_AUTH],
-        self::OTP  => [Feature\Constants::AXIS_EXPRESS_PAY, Feature\Constants::HEADLESS],
+        self::OTP  => [Feature\Constants::IVR, Feature\Constants::AXIS_EXPRESS_PAY, Feature\Constants::HEADLESS],
         self::SKIP => [Feature\Constants::DIRECT_DEBIT],
     ];
 
@@ -74,6 +102,17 @@ class AuthType
     public static function getAuthTypeForMethod($method)
     {
         return self::$types[$method];
+    }
+
+
+    public static function isOtpAuth($authType): bool
+    {
+        if (in_array($authType, self::DEFAULT_AUTH_ORDER[Method::CARD][self::OTP], true) === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public static function validateFeatureBasedAuth($merchant, $type)

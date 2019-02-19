@@ -6,9 +6,10 @@ use RZP\Models\P2p\Vpa\Handle\Entity;
 
 $factory->define(Entity::class, function (Faker $faker) {
     return [
-        Entity::HANDLE          => $faker->randomElement(['rzpsharp', 'razorsharp']),
+        Entity::CODE            => $faker->randomElement(['rzpsharp', 'razorsharp']),
         Entity::MERCHANT_ID     => Account::SHARED_ACCOUNT,
-        Entity::ACQUIRER        => $faker->word,
+        Entity::BANK            => $faker->randomElement(['ARZP', 'BRZP']),
+        Entity::ACQUIRER        => 'p2p_upi_sharp',
         Entity::ACTIVE          => true,
     ];
 });

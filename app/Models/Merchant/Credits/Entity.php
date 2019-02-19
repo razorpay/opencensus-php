@@ -84,7 +84,7 @@ class Entity extends Base\PublicEntity
 
     public function setValue(int $value)
     {
-        assert (($value >= $this->getUsed()) and ($value <= 100000000));
+        assertTrue (($value >= $this->getUsed()) and ($value <= 100000000));
 
         $this->setAttribute(self::VALUE, $value);
     }

@@ -38,6 +38,8 @@ class ContactsTest extends TestCase
         $this->fixtures->create('contact', ['id' => '1000001contact', 'email' => 'test@test1.com']);
         $this->fixtures->create('contact', ['id' => '1000002contact', 'email' => 'random@test.com']);
 
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
+
         $this->startTest();
     }
 
@@ -61,16 +63,16 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
-    public function testFetchContactsByPhone()
+    public function testCreateContactInvalidReferenceId()
     {
-        $this->fixtures->create('contact', ['id' => '1000004contact', 'email' => 'test@test4.com', 'contact' => '8888888888']);
-
         $this->startTest();
     }
 
-    public function testFetchContactsByName()
+    public function testFetchContactsByNameActiveAndType()
     {
-        $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@test4.com', 'contact' => '8888888888', 'name' => 'testContact']);
+        $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@test4.com', 'contact' => '8888888888', 'name' => 'Test Contact']);
+
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
 
         $this->startTest();
     }
@@ -97,9 +99,35 @@ class ContactsTest extends TestCase
         $this->startTest($data);
     }
 
+    public function testFetchContactByActive()
+    {
+        $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@test5.com', 'contact' => '8888888888', 'active' => 1]);
+
+        $fundAccount = $this->createFundAccount($contact->getPublicId());
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['request']['url'] = '/contacts?active=1';
+
+        $this->startTest($data);
+    }
+
+    public function testFetchContactByType()
+    {
+        $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@test5.com', 'contact' => '8888888888', 'active' => 1, 'type' => 'customer']);
+
+        $fundAccount = $this->createFundAccount($contact->getPublicId());
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['request']['url'] = '/contacts?type=customer';
+
+        $this->startTest($data);
+    }
+
     public function testUpdateContact()
     {
-        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'self']);
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'self', 'reference_id' => '213']);
 
         $this->startTest();
     }
@@ -114,15 +142,15 @@ class ContactsTest extends TestCase
     protected function createFundAccount($contactId)
     {
         $testdata = [
-            'request' => [
-                'url' => '/fund_accounts',
-                'method' => 'post',
+            'request'  => [
+                'url'     => '/fund_accounts',
+                'method'  => 'post',
                 'content' => [
                     'account_type' => "bank_account",
                     'contact_id'   => $contactId,
-                    'details' => [
-                        'beneficiary_name' => "test",
-                        'ifsc_code' => 'SBIN0007105',
+                    'details'      => [
+                        'name'           => "test",
+                        'ifsc'           => 'SBIN0007105',
                         'account_number' => '111000',
                     ],
                 ],

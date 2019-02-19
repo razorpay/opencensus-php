@@ -3,109 +3,232 @@
 namespace RZP\Models\P2p\Transaction;
 
 use RZP\Exception;
+use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Base;
+use RZP\Models\P2p\Base\Upi;
+use RZP\Http\Controllers\P2p\Requests;
 
+/**
+ * @property Core $core
+ * @property Validator $validator
+ *
+ * Class Processor
+ */
 class Processor extends Base\Processor
 {
     public function initiatePay(array $input): array
     {
-        $this->initialize(Action::INITIATE_PAY, $input);
+        $this->initialize(Action::INITIATE_PAY, $input, true);
+
+        $properties = new Properties($this->context(), $this->action, $this->input);
+
+        $transaction = $this->core->build($this->input->toArray());
+
+        $properties->attachToTransaction($transaction);
+
+        $this->repo()->saveOrFail($transaction);
+
+        $upi = $this->core->createUpi($transaction, $this->action);
+
+        $this->gatewayInput->putMany([
+            Entity::TRANSACTION     => $transaction,
+            Entity::PAYER           => $transaction->payer,
+            Entity::PAYEE           => $transaction->payee,
+            Entity::BANK_ACCOUNT    => $transaction->bankAccount,
+            Entity::UPI             => $transaction->upi,
+        ]);
+
+        return $this->callGateway();
+    }
+
+    public function initiatePaySuccess(array $input): array
+    {
+        $this->initialize(Action::INITIATE_PAY_SUCCESS, $input, true);
+
+        $transaction = $this->core->fetch($this->input->get(Entity::TRANSACTION)[Entity::ID]);
+
+        if ($transaction->upi->getId() === $this->input->get(Entity::UPI)[UpiTransaction\Entity::TRANSACTION_ID])
+        {
+            $error = '';// throw exception
+        }
+
+        $this->core->updateUpi($transaction, $this->input->get(Entity::UPI));
+
+        $transaction->setInternalStatus(Status::PENDING);
+
+        $this->repo()->saveOrFail($transaction);
+
+        $clientLibrary = new Upi\ClientLibrary();
+
+        $clientLibrary->setDevice($this->context()->getDevice());
+        $clientLibrary->setTransaction($transaction);
 
         return [
-            'request' => [
-                'url' => url('{customer_id}/transactions/{transaction_id}/authorize'),
-                'method' => 'post'
-            ],
-            'cl' => [
-                'txnId' => 'HDF096A6D8A0F184109B08E697435B44484',
-                'txnAmount' => '108.00',
-                'note' => 'Enter UPI PIN',
-                'refurl' => 'https://razorpay.com',
-                'payerAddr' => 'gaurav.kumar@razorhdfc',
-                'payeeAddr' => 'saurav.kumar@razoricici',
-                'payeeName' => 'Saurav Kumar',
-                'mobileNumber' => '9123456780',
-                'appId' => 'com.razorpay',
-                'deviceId' => '5878323242',
-                'account' => '*********1234',
-                'CredAllowed' => [
-                    [
-                        'type' => 'PIN',
-                        'subtype' => 'MPIN',
-                        'dLength' => '6',
-                        'dFormat' => 'NUM'
-                    ]
-                ]
-            ]
+            Entity::REQUEST       => $this->getTransactionRequest($transaction),
+            Upi\ClientLibrary::CL => $clientLibrary->toArrayPublic(),
         ];
     }
 
     public function initiateCollect(array $input): array
     {
-        $this->initialize(Action::INITIATE_COLLECT, $input);
+        $this->initialize(Action::INITIATE_COLLECT, $input, true);
 
-        return [
-            'status' => 'pending',
-            'status_url' => url('RAZC13AAEE5E4B44E5AA464B1E4E39CACBC'),
-            'expire_at' => 1509622306
-        ];
+        $properties = new Properties($this->context(), $this->action, $this->input);
+
+        $transaction = $this->core->build($this->input->toArray());
+
+        $properties->attachToTransaction($transaction);
+
+        $this->repo()->saveOrFail($transaction);
+
+        $upi = $this->core->createUpi($transaction, $this->action);
+
+        $this->gatewayInput->putMany([
+            Entity::TRANSACTION     => $transaction,
+            Entity::PAYER           => $transaction->payer,
+            Entity::PAYEE           => $transaction->payee,
+            Entity::BANK_ACCOUNT    => $transaction->bankAccount,
+            Entity::UPI             => $transaction->upi,
+        ]);
+
+        return $this->callGateway();
     }
 
-    public function fetchAll(array $input): array
+    public function initiateCollectSuccess(array $input): array
     {
-        $this->initialize(Action::FETCH_ALL, $input);
+        $this->initialize(Action::INITIATE_COLLECT_SUCCESS, $input, true);
 
-        return [
-            'entity' => 'collection',
-            'count' => 2,
-            'items' => [
-                $this->fetch($input),
-                $this->fetch($input),
-            ]
-        ];
-    }
+        $transaction = $this->core->fetch($this->input->get(Entity::TRANSACTION)[Entity::ID]);
 
-    public function fetch(array $input): array
-    {
-        $this->initialize(Action::FETCH, $input);
+        if ($transaction->upi->getId() === $this->input->get(Entity::UPI)[UpiTransaction\Entity::TRANSACTION_ID])
+        {
+            $error = '';// throw exception
+        }
 
-        return [
-            'id' => 'ctxn_AzooTd2JN7kfqo',
-            'entity' => 'customer.transaction',
-            'txn_id' => 'HDFE47D3D30DCAD4EDBA58945BF229D6A83',
-            'status' => 'created',
-            'amount' => 100,
-            'description' => 'Pay me now',
-            'type' => 'collect',
-            'currency' => 'INR',
-            'error_description' => null,
-            'error_code' => null,
-            'transaction_type' => 'debit',
-            'rrn' => '826305979008',
-            'created_at' => 1537402959,
-            'completed_at' => null,
-            'expire_at' => 1537406559
-        ];
+        $this->core->updateUpi($transaction, $this->input->get(Entity::UPI));
+
+        $transaction->setInternalStatus(Status::INITIATED);
+
+        $this->repo()->saveOrFail($transaction);
+
+        return $this->getTransactionRequest($transaction);
     }
 
     public function initiateAuthorize(array $input): array
     {
-        $this->initialize(Action::INITIATE_AUTHORIZE, $input);
+        $this->initialize(Action::INITIATE_AUTHORIZE, $input, true);
+
+        $transaction = $this->core->fetch($this->input->get(Entity::ID));
+
+        $clientLibrary = new Upi\ClientLibrary();
+
+        $clientLibrary->setDevice($this->context()->getDevice());
+        $clientLibrary->setTransaction($transaction);
+
+        return [
+            Entity::REQUEST       => $this->getTransactionRequest($transaction),
+            Upi\ClientLibrary::CL => $clientLibrary->toArrayPublic(),
+        ];
 
         return $this->initiatePay($input);
     }
 
-    public function authorize(array $input): array
+    public function initiateAuthorizeSuccess(array $input): array
     {
-        $this->initialize(Action::AUTHORIZE, $input);
+        $this->initialize(Action::INITIATE_AUTHORIZE_SUCCESS, $input);
+    }
 
-        return $this->initiateCollect($input);
+    public function authorizeTransaction(array $input): array
+    {
+        $this->initialize(Action::AUTHORIZE_TRANSACTION, $input, true);
+
+        $transaction = $this->core->fetch($this->input->get(Entity::ID));
+
+        $this->gatewayInput->putMany([
+            Entity::TRANSACTION     => $transaction,
+            Entity::PAYER           => $transaction->payer,
+            Entity::PAYEE           => $transaction->payee,
+            Entity::BANK_ACCOUNT    => $transaction->bankAccount,
+            Entity::UPI             => $transaction->upi,
+            Entity::CL              => $this->input->get(Entity::CL),
+        ]);
+
+        return $this->callGateway();
+    }
+
+    public function authorizeTransactionSuccess(array $input): array
+    {
+        $this->initialize(Action::AUTHORIZE_TRANSACTION_SUCCESS, $input, true);
+
+        $transaction = $this->core->fetch($this->input->get(Entity::TRANSACTION)[Entity::ID]);
+
+        if ($transaction->upi->getId() === $this->input->get(Entity::UPI)[UpiTransaction\Entity::TRANSACTION_ID])
+        {
+            $error = '';// throw exception
+        }
+
+        $this->core->updateUpi($transaction, $this->input->get(Entity::UPI));
+
+        $transaction->setInternalStatus(Status::INITIATED);
+
+        $this->repo()->saveOrFail($transaction);
+
+        return $this->getTransactionRequest($transaction);
     }
 
     public function reject(array $input): array
     {
-        $this->initialize(Action::REJECT, $input);
+        $this->initialize(Action::REJECT, $input, true);
 
-        return $this->initiateCollect($input);
+        $transaction = $this->core->fetch($this->input->get(Entity::ID));
+
+        $transaction->setStatus(Status::FAILED);
+        $transaction->setInternalStatus(Status::REJECTED);
+
+        $this->repo()->saveOrFail($transaction);
+
+        $this->gatewayInput->put(Entity::TRANSACTION, $transaction);
+
+        return $this->callGateway();
+    }
+
+    public function rejectSuccess(array $input): array
+    {
+        $this->initialize(Action::REJECT_SUCCESS, $input, true);
+
+        $transaction = $this->core->fetch($this->input->get(Entity::TRANSACTION)[Entity::ID]);
+
+        $this->core->updateUpi($transaction, [
+            Entity::STATUS  => Status::REJECTED,
+        ]);
+
+        return $this->getTransactionRequest($transaction);
+    }
+
+    private function getTransactionRequest(Entity $transaction): array
+    {
+        $transactionId = $transaction->getPublicId();
+
+        switch ($this->action)
+        {
+            case Action::INITIATE_PAY_SUCCESS:
+            case Action::INITIATE_AUTHORIZE:
+
+                return [
+                    'method'    => 'post',
+                    'url'       => route(Requests::P2P_CUSTOMER_TRANSACTIONS_AUTHORIZE, [$transactionId]),
+                ];
+
+            case Action::INITIATE_COLLECT_SUCCESS:
+            case Action::AUTHORIZE_TRANSACTION_SUCCESS:
+            case Action::REJECT_SUCCESS:
+
+                return [
+                    // TODO: Need to fix this
+                    'status'        => 'pending',//$transaction->getInternalStatus(),
+                    'status_url'    => route(Requests::P2P_CUSTOMER_TRANSACTIONS_FETCH, [$transactionId]),
+                    'expire_at'     => $transaction->getExpireAt(),
+                ];
+        }
     }
 }

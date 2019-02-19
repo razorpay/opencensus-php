@@ -3,12 +3,29 @@
 namespace RZP\Tests\P2p\Service\BankAccount;
 
 use RZP\Tests\P2p\Service\TestCase;
+use RZP\Models\P2p\BankAccount\Entity;
 
 class BankAccountTest extends TestCase
 {
+    public function testFetchBanks()
+    {
+        $helper = $this->getBankAccountHelper();
+
+        $helper->withSchemaValidated();
+
+        $banks = $helper->fetchBanks();
+
+        $this->assertCollection($banks, 3, [
+            ['ifsc' => 'ARZP'],
+            ['ifsc' => 'BRZP'],
+            ['ifsc' => 'CRZP'],
+        ]);
+
+    }
+
     public function testRetrieve()
     {
-        $ifsc = 'ACME000001';
+        $ifsc = 'ARZP';
 
         $helper = $this->getBankAccountHelper();
 
@@ -17,67 +34,71 @@ class BankAccountTest extends TestCase
         $helper->retrieve($ifsc);
     }
 
-    public function testFetchBanks()
+    public function testFetchAll()
     {
         $helper = $this->getBankAccountHelper();
 
         $helper->withSchemaValidated();
 
-        $helper->fetchBanks();
+        $bankAccounts = $helper->fetchAll();
+
+        $this->assertCollection($bankAccounts, 1);
     }
 
     public function testFetch()
     {
-        $bankId = 'ba_AtIZbXUOTDp1ND';
+        $bankAccountId = $this->fixtures->bank_account->getPublicId();
 
         $helper = $this->getBankAccountHelper();
 
         $helper->withSchemaValidated();
 
-        $helper->fetch($bankId);
-    }
+        $bankAccount = $helper->fetch($bankAccountId);
 
-    public function testSetUpiPin()
-    {
-        $bankId = 'ba_AtIZbXUOTDp1ND';
-
-        $helper = $this->getBankAccountHelper();
-
-        $helper->withSchemaValidated();
-
-        $helper->setUpiPin($bankId);
+        $this->assertSame($bankAccount[Entity::ID], $bankAccountId);
     }
 
     public function testInitiateSetUpiPin()
     {
-        $bankId = 'ba_AtIZbXUOTDp1ND';
+        $bankAccountId = $this->fixtures->bank_account->getPublicId();
 
         $helper = $this->getBankAccountHelper();
 
         $helper->withSchemaValidated();
 
-        $helper->initiateSetUpiPin($bankId);
+        $helper->initiateSetUpiPin($bankAccountId);
+    }
+
+    public function testSetUpiPin()
+    {
+        $bankAccountId = $this->fixtures->bank_account->getPublicId();
+
+        $helper = $this->getBankAccountHelper();
+
+        $helper->withSchemaValidated();
+
+        $helper->setUpiPin($bankAccountId);
     }
 
     public function testInitiateFetchBalance()
     {
-        $bankId = 'ba_AtIZbXUOTDp1ND';
+        $bankAccountId = $this->fixtures->bank_account->getPublicId();
 
         $helper = $this->getBankAccountHelper();
 
         $helper->withSchemaValidated();
 
-        $helper->initiateFetchBalance($bankId);
+        $helper->initiateFetchBalance($bankAccountId);
     }
 
     public function testFetchBalance()
     {
-        $bankId = 'ba_AtIZbXUOTDp1ND';
+        $bankAccountId = $this->fixtures->bank_account->getPublicId();
 
         $helper = $this->getBankAccountHelper();
 
         $helper->withSchemaValidated();
 
-        $helper->fetchBalance($bankId);
+        $helper->fetchBalance($bankAccountId);
     }
 }

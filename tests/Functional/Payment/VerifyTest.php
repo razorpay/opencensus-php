@@ -1033,7 +1033,7 @@ class VerifyTest extends TestCase
 
         $this->assertContent($content, $resultData);
 
-        foreach (range(0, 3) as $index)
+        foreach (range(0, 2) as $index)
         {
             $time->addSeconds(150);
 
@@ -1049,7 +1049,7 @@ class VerifyTest extends TestCase
             $this->assertContent($content, $resultData);
         }
 
-        $minutesArray = [15, 30, 60, 6*60, 60*24, 2*60*24, 3*60*24, 4*60*24];
+        $minutesArray = [12, 30, 2*60, 6*60, 60*24, 2*60*24, 3*60*24, 4*60*24];
 
         foreach ($minutesArray as $minutes)
         {
@@ -1101,7 +1101,7 @@ class VerifyTest extends TestCase
             'method' => 'post'
         ];
 
-        $minutesArray = [0, 15, 30, 60, 6*60, 60*24, 2*60*24, 3*60*24, 4*60*24];
+        $minutesArray = [0, 12, 30, 2*60, 6*60, 60*24, 2*60*24, 3*60*24, 4*60*24];
 
         foreach ($minutesArray as $minutes)
         {

@@ -31,10 +31,18 @@ class CreateReversals extends Migration
 
             $table->char(Entity::ENTITY_TYPE, 255);
 
+            // Todo: Remove null-able after code deploy and backfilling
+            $table->string(Entity::BALANCE_ID, Entity::ID_LENGTH)
+                  ->nullable();
+
             $table->integer(Entity::AMOUNT)
                   ->unsigned();
 
             $table->char(Entity::CURRENCY, 3);
+
+            // Todo: Remove null-able after code deploy and backfilling
+            $table->string(Entity::CHANNEL, 255)
+                  ->nullable();
 
             $table->text(Entity::NOTES);
 

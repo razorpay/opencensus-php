@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Pricing;
 
+use App;
 use RZP\Models\Bank;
 use RZP\Models\Base;
 use RZP\Models\Card;
@@ -12,24 +13,28 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    public function createPricingPlan($input)
+    public function createPlan($input)
     {
-        (new Pricing\Core())->createPricing($input);
+        $ruleOrgId = $this->getRuleOrgId();
 
-        $plan = $this->repo->pricing->getPricingPlanByName($input[Entity::PLAN_NAME]);
+        (new Pricing\Core)->create($input, $ruleOrgId);
+
+        $plan = $this->repo->pricing->getPlanByName($input[Entity::PLAN_NAME]);
 
         return $plan->toArrayPublic();
     }
 
-    public function addPricingPlanRule($id, $input)
+    public function addPlanRule($id, $input)
     {
         $this->trace->info(
             TraceCode::PRICING_PLAN_RULE_ADD_ATTEMPT,
             ['id' => $id, $input]);
 
-        $plan = $this->repo->pricing->getPricingPlanByIdOrFailPublic($id);
+        $plan = $this->repo->pricing->getPlanByIdOrFailPublic($id);
 
-        $rule = (new Pricing\Core)->addPlanRule($plan, $input);
+        $ruleOrgId = $plan->getOrgId();
+
+        $rule = (new Pricing\Core)->addPlanRule($plan, $input, $ruleOrgId);
 
         $this->trace->info(
             TraceCode::PRICING_PLAN_RULE_ADD_SUCCESS,
@@ -38,18 +43,22 @@ class Service extends Base\Service
         return $rule->toArray();
     }
 
-    public function getPricingPlanById($id)
+    public function getPlanById($id)
     {
-        $pricingPlan = $this->repo->pricing->getPricingPlanById($id);
+        $plan = $this->repo->pricing->getPlan($id);
 
-        return $pricingPlan->toArrayPublic();
+        return $plan->toArrayPublic();
     }
 
-    public function getPricingPlans()
+    public function getPlans(array $input) : array
     {
-        $pricingPlans = $this->repo->pricing->getPricingPlansOrderedByPlanId();
+        $validator = new Validator;
 
-        return $pricingPlans->toArrayMultiplePlansPublic();
+        $validator->validateInput('fetch', $input);
+
+        $plans = $this->repo->pricing->getPlansOrderedByPlanId($input);
+
+        return $plans->toArrayMultiplePlansPublic();
     }
 
     public function getMerchantPricingPlans()
@@ -73,7 +82,7 @@ class Service extends Base\Service
         return $pricingPlans->toArrayMultiplePlansPublic();
     }
 
-    public function deletePricingPlanRule($planId, $ruleId)
+    public function deletePlanRule($planId, $ruleId)
     {
         $flag = $this->repo->pricing->deletePlanRule($planId, $ruleId);
 
@@ -83,7 +92,7 @@ class Service extends Base\Service
         }
     }
 
-    public function updatePricingPlanRule($planId, $ruleId, $input)
+    public function updatePlanRule($planId, $ruleId, $input)
     {
         $this->trace->info(
             TraceCode::PRICING_PLAN_RULE_UPDATE_ATTEMPT,
@@ -98,9 +107,9 @@ class Service extends Base\Service
         return $rule->toArray();
     }
 
-    public function deletePricingPlanRuleForce($planId, $ruleId)
+    public function deletePlanRuleForce($planId, $ruleId)
     {
-        $rule = $this->repo->pricing->getPricingPlanRule($planId, $ruleId);
+        $rule = $this->repo->pricing->getPlanRule($planId, $ruleId);
 
         $this->app['workflow']
              ->setEntityAndId($rule->getEntity(), $rule->getPlanId())
@@ -112,11 +121,6 @@ class Service extends Base\Service
         {
             return ['message' => 'Pricing successfully deleted'];
         }
-    }
-
-    public function deletePricingPlan($input)
-    {
-        ;
     }
 
     public function getSupportedNetworks()
@@ -141,5 +145,23 @@ class Service extends Base\Service
         ];
 
         return $networks;
+    }
+
+    /**
+     * If crossOrgId is present, rule org Id is same as crossOrgId else it is same as admin org Id.
+     *
+     * @return mixed
+     */
+    private function getRuleOrgId()
+    {
+        $app = App::getFacadeRoot();
+
+        $orgId = $app['basicauth']->getOrgId();
+
+        $crossOrgId = $app['basicauth']->getCrossOrgId();
+
+        $ruleOrgId = $crossOrgId ?: $orgId;
+
+        return $ruleOrgId;
     }
 }

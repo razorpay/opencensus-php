@@ -6,6 +6,7 @@ use Requests;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
 
 class Scrooge
 {
@@ -39,7 +40,8 @@ class Scrooge
         'bulk_status_update'    => 'bulk-status-update',
         'get_refunds'           => 'refunds',
         'status_update'         => 'status-update',
-        'download_refunds'      => 'refunds/download'
+        'download_refunds'      => 'refunds/download',
+        'enqueue'               => 'enqueue',
     ];
 
     // Headers
@@ -86,7 +88,7 @@ class Scrooge
      */
     public function initiateRefund(array $input, bool $throwExceptionOnFailure = false): array
     {
-        return $this->sendRequest(self::RefundBaseURL, 'POST', $input, $throwExceptionOnFailure);
+        return $this->sendRequest(self::RefundBaseURL, Requests::POST, $input, $throwExceptionOnFailure);
     }
 
     /**
@@ -97,7 +99,8 @@ class Scrooge
      */
     public function initiateRefundRetry($input, bool $throwExceptionOnFailure = false): array
     {
-        return $this->sendRequest(self::RefundBaseURL . '/' . $input['id'] . '/' . self::URLS['retry'], 'POST', $input, $throwExceptionOnFailure);
+        return $this->sendRequest(self::RefundBaseURL . '/' . $input['id'] . '/' . self::URLS['retry'],
+            Requests::POST, $input, $throwExceptionOnFailure);
     }
 
     /**
@@ -109,7 +112,7 @@ class Scrooge
      */
     public function getReports(array $input): array
     {
-        return $this->sendRequest(self::ListBaseURL . '/' . self::URLS['get_reports'], 'POST', $input);
+        return $this->sendRequest(self::ListBaseURL . '/' . self::URLS['get_reports'], Requests::POST, $input);
     }
 
     /**
@@ -119,7 +122,8 @@ class Scrooge
      */
     public function updateRefundStatus(string $id, array $input): array
     {
-        return $this->sendRequest(self::RefundBaseURL . '/' . $id . '/' . self::URLS['status_update'], 'POST', $input);
+        return $this->sendRequest(self::RefundBaseURL . '/' . $id . '/' . self::URLS['status_update'],
+            Requests::POST, $input);
     }
 
     /**
@@ -132,7 +136,20 @@ class Scrooge
     public function bulkUpdateRefundStatus(array $input,  bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::RefundsBaseURL . '/' . self::URLS['bulk_status_update'],
-                            'POST', $input, $throwExceptionOnFailure);
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param array $input
+     * @param bool $throwExceptionOnFailure
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Requests_Exception
+     */
+    public function enqueueRefunds(array $input,  bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::RefundsBaseURL . '/' . self::URLS['enqueue'],
+            Requests::POST, $input, $throwExceptionOnFailure);
     }
 
     /**
@@ -144,12 +161,12 @@ class Scrooge
      */
     public function getRefunds(array $input): array
     {
-        return $this->sendRequest(self::ListBaseURL . '/' . self::URLS['get_refunds'], 'POST', $input);
+        return $this->sendRequest(self::ListBaseURL . '/' . self::URLS['get_refunds'], Requests::POST, $input);
     }
 
     public function downloadRefunds(array $input): array
     {
-        return $this->sendRequest(self::ListBaseURL . '/' . self::URLS['download_refunds'], 'POST', $input);
+        return $this->sendRequest(self::ListBaseURL . '/' . self::URLS['download_refunds'], Requests::POST, $input);
     }
 
     /**
@@ -161,7 +178,21 @@ class Scrooge
      */
     public function getRefund(string $id): array
     {
-        return $this->sendRequest(self::RefundBaseURL . '/' . $id, 'GET');
+        return $this->sendRequest(self::RefundBaseURL . '/' . $id, Requests::GET);
+    }
+
+    /**
+     * @param string $id
+     *
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Requests_Exception
+     */
+    public function getPublicRefund(string $id): array
+    {
+        $id = RefundEntity::verifyIdAndStripSign($id);
+
+        return $this->sendRequest(self::RefundBaseURL . '/' . $id, Requests::GET, ['type' => 'public']);
     }
 
     /**
@@ -273,7 +304,7 @@ class Scrooge
             throw new Exception\RuntimeException(
                 'Unexpected response code received from Scrooge service.',
                 [
-                    'status_code' => $code,
+                    'status_code'   => $code,
                     'response_body' => json_decode($response->body),
                 ]);
         }

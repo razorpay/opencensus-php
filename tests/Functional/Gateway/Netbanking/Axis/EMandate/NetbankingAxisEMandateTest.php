@@ -173,6 +173,7 @@ class NetbankingAxisEMandateTest extends TestCase
         $refund = $this->getLastEntity(Entity::REFUND, true);
 
         $this->assertEquals('processed', $refund['status']);
+        $this->assertNotNull($refund['processed_at']);
 
         $this->assertEquals(0, $payment['amount_refunded']);
         $this->assertEquals('refunded', $payment['status']);
@@ -437,6 +438,11 @@ class NetbankingAxisEMandateTest extends TestCase
         $this->doS2SRecurringPayment($payment);
 
         $debitPayment = $this->getLastEntity('payment', true);
+
+        // setting created at to 8am. Payments are picked from 9 to 9 cycle.
+        $createdAt = Carbon::today(Timezone::IST)->addHours(8)->getTimestamp();
+
+        $this->fixtures->edit('payment', $debitPayment['id'], ['created_at' => $createdAt]);
 
         $this->ba->adminAuth();
 

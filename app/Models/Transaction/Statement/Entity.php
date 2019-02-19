@@ -7,6 +7,7 @@ use RZP\Models\Transaction;
 use RZP\Models\BankTransfer;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicEntity;
+use RZP\Exception\LogicException;
 
 /**
  * Class Entity
@@ -15,18 +16,35 @@ use RZP\Models\Base\PublicEntity;
  */
 class Entity extends Transaction\Entity
 {
+    // Derived attributes
+    const ACCOUNT_NUMBER = 'account_number';
+
+    // Additional input/output attributes
+    const CONTACT_ID      = 'contact_id';
+    const PAYOUT_ID       = 'payout_id';
+    const CONTACT_NAME    = 'contact_name';
+    const CONTACT_PHONE   = 'contact_phone';
+    const CONTACT_EMAIL   = 'contact_email';
+    const CONTACT_TYPE    = 'contact_type';
+    const MODE            = 'mode';
+    const FUND_ACCOUNT_ID = 'fund_account_id';
+    const UTR             = 'utr';
+
+    const ACTION = 'action';
+
     protected $entity = 'statement';
 
     protected $public = [
         self::ID,
         self::ENTITY,
+        self::ACCOUNT_NUMBER,
         self::AMOUNT,
+        self::CURRENCY,
         self::CREDIT,
         self::DEBIT,
         self::BALANCE,
         self::SOURCE,
         self::CREATED_AT,
-        self::UPDATED_AT,
     ];
 
     protected $publicSetters = [
@@ -35,25 +53,50 @@ class Entity extends Transaction\Entity
         self::SOURCE,
     ];
 
+    protected $appends = [
+        self::ACCOUNT_NUMBER,
+    ];
+
 
     // Public setters
 
     /**
      * Sets public attributes of source relation.
+     *
      * @param $array
+     *
+     * @throws LogicException
      */
     public function setPublicSourceAttribute(array & $array)
     {
+        //
+        // The assumption is that if source is required to be sent in the response,
+        // it would have been already loaded. If it's not already loaded, we don't
+        // want to do it as part of public setters.
+        //
+        if (isset($array[self::SOURCE]) === false)
+        {
+            return;
+        }
+
         switch ($this->getType())
         {
             case E::PAYOUT:
-                return $this->setPublicSourceAttributeForPayout($array);
+                $this->setPublicSourceAttributeForPayout($array);
+                break;
 
             case E::BANK_TRANSFER:
-                return $this->setPublicSourceAttributeForBankTransfer($array);
+                $this->setPublicSourceAttributeForBankTransfer($array);
+                break;
+
+            case E::REVERSAL:
+                // Do nothing special for reversal transactions
+                break;
 
             default:
-                return $this->setPublicSourceAttributeForDefault($array);
+                // By default do not expose any source attributes
+                $array[self::SOURCE] = [];
+                break;
         }
     }
 
@@ -64,16 +107,18 @@ class Entity extends Transaction\Entity
             [
                 Payout\Entity::ID,
                 Payout\Entity::ENTITY,
-                // Todo: Update these after 'payout-on-fa' branch is merged.
-                // Payout\Entity::CUSTOMER_ID,
-                // Payout\Entity::DESTINATION_ID,
-                Payout\Entity::METHOD,
+                Payout\Entity::FUND_ACCOUNT_ID,
+                Payout\Entity::FUND_ACCOUNT,
+                Payout\Entity::REVERSAL,
+                Payout\Entity::STATUS,
+                Payout\Entity::MODE,
+                Payout\Entity::AMOUNT,
+                Payout\Entity::FEES,
+                Payout\Entity::TAX,
+                Payout\Entity::UTR,
                 Payout\Entity::NOTES,
+                Payout\Entity::CREATED_AT,
             ]);
-
-        // Todo: Update these after 'payout-on-fa' branch is merged.
-        // $array[self::SOURCE][Payout\Entity::CUSTOMER]    = $this->source->customer->toArrayPublic();
-        // $array[self::SOURCE][Payout\Entity::DESTINATION] = $this->source->destination->toArrayPublic();
     }
 
     protected function setPublicSourceAttributeForBankTransfer(array & $array)
@@ -85,6 +130,7 @@ class Entity extends Transaction\Entity
                 BankTransfer\Entity::BANK_REFERENCE,
                 BankTransfer\Entity::AMOUNT,
                 BankTransfer\Entity::PAYER_BANK_ACCOUNT,
+                BankTransfer\Entity::CREATED_AT,
             ]);
 
         /** @var BankTransfer\Entity $bankTransfer */
@@ -92,23 +138,29 @@ class Entity extends Transaction\Entity
 
         // Prepends id & entity as they are not exposed in bank_transfer entity, for now.
         $array[self::SOURCE] = [
-                                   BankTransfer\Entity::ID     => $bankTransfer->getPublicId(),
-                                   BankTransfer\Entity::ENTITY => $bankTransfer->getEntity(),
+                                    BankTransfer\Entity::ID             => $bankTransfer->getPublicId(),
+                                    BankTransfer\Entity::ENTITY         => $bankTransfer->getEntity(),
+                                    BankTransfer\Entity::PAYER_NAME     => $bankTransfer->getPayerName(),
+                                    BankTransfer\Entity::PAYER_ACCOUNT  => $bankTransfer->getPayerAccount(),
+                                    BankTransfer\Entity::PAYER_IFSC     => $bankTransfer->getPayerIfsc(),
                                ] + $array[self::SOURCE];
-
-        $array[self::SOURCE][BankTransfer\Entity::PAYER_NAME]    = $bankTransfer->getPayerName();
-        $array[self::SOURCE][BankTransfer\Entity::PAYER_ACCOUNT] = $bankTransfer->getPayerAccount();
-        $array[self::SOURCE][BankTransfer\Entity::PAYER_IFSC]    = $bankTransfer->getPayerIfsc();
     }
 
-    protected function setPublicSourceAttributeForDefault(array & $array)
+    /**
+     * {@inheritDoc}
+     * Transaction/Statement/* is internal code organization for exposing transaction.
+     * Exposed APIs and entity names etc are 'transaction' only.
+     */
+    public function setPublicEntityAttribute(array & $array)
     {
-        $array[self::SOURCE] = array_only(
-            $array[self::SOURCE],
-            [
-                PublicEntity::ID,
-                PublicEntity::ENTITY,
-            ]);
+        $array[self::ENTITY] = 'transaction';
+    }
+
+    // Appends
+
+    public function getAccountNumberAttribute()
+    {
+        return $this->accountBalance->getAccountNumber();
     }
 
     /**

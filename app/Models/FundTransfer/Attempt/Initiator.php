@@ -4,20 +4,28 @@ namespace RZP\Models\FundTransfer\Attempt;
 
 use Carbon\Carbon;
 
+use Monolog\Logger;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
+use RZP\Constants\Environment;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Holidays;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Settlement\SlackNotification;
+use RZP\Jobs\AttemptsRecon as AttemptsReconJob;
+use \RZP\Models\FundTransfer\Mode as TransferMode;
+use RZP\Jobs\AttemptStatusCheck as AttemptStatusCheckJob;
 
 class Initiator extends Base\Core
 {
-    const MUTEX_RESOURCE        = 'FUND_TRANSFER_PROCESSING_%s';
+    const MUTEX_RESOURCE        = 'FUND_TRANSFER_PROCESSING_%s_%s';
     const MUTEX_LOCK_TIMEOUT    = 900;
+
+    const FTA_PURPOSE = 'settlement';
 
     protected $mutex;
 
@@ -39,18 +47,18 @@ class Initiator extends Base\Core
      */
     public function initiateFundTransfers(array $input, string $channel): array
     {
-        $isValidTime = $this->isValidTime($channel);
+        list($shouldProcessBankTransfers, $message) = $this->shouldProcessBankTransfers($input, $channel);
 
-        if ($isValidTime === false)
+        if ($shouldProcessBankTransfers === false)
         {
             return [
                 'channel'   => $channel,
                 'count'     => 0,
-                'message'   => 'Invalid time to initiate transfer'
+                'message'   => $message
             ];
         }
 
-        $mutexResource = sprintf(self::MUTEX_RESOURCE, $channel);
+        $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode, $channel);
 
         return $this->mutex->acquireAndRelease(
             $mutexResource,
@@ -114,7 +122,7 @@ class Initiator extends Base\Core
         });
     }
 
-    protected function processFundTransferAttempts(
+    public function processFundTransferAttempts(
         string $purpose, string $channel, Base\PublicCollection $attempts): array
     {
         $count = $attempts->count();
@@ -130,9 +138,24 @@ class Initiator extends Base\Core
             return $data;
         }
 
-        $class = "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\NodalAccount";
+        list($response, $attemptedFTAs) = (new Lock($channel))->acquireLockAndProcessAttempts(
+            $attempts,
+            function(PublicCollection $collection) use ($purpose, $channel)
+            {
+                $class = "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\NodalAccount";
 
-        $response = (new $class($purpose))->initiateTransfer($attempts);
+                return [
+                    (new $class($purpose))->initiateTransfer($collection),
+                    $collection
+                ];
+            });
+
+        $allowedChannels = Channel::getApiBasedChannels();
+
+        if (in_array($channel, $allowedChannels, true) === true)
+        {
+            $this->dispatchForReconAndStatusCheck($attemptedFTAs);
+        }
 
         $data += $response;
 
@@ -141,6 +164,77 @@ class Initiator extends Base\Core
         (new SlackNotification)->send('setl_initiate', $slackData);
 
         return $data;
+    }
+
+    protected function dispatchFtaForStatusCheckProcess(Entity $attempt)
+    {
+        try
+        {
+            // Default delay for status dispatch.
+            $delay = Constants::DEFAULT_STATUS_CHECK_DISPATCH_TIME;
+
+            if ($attempt->getMode() === TransferMode::IMPS)
+            {
+                // For IMPS we receive the status in 10 sec. (Observed for YESBANK)
+                $delay = Constants::IMPS_STATUS_CHECK_DISPATCH_TIME;
+            }
+            //
+            // Dispatching in 180 sec as all the operation are happening in queue
+            // and bank generally update the status in 2 min
+            // TODO: observe the response time from bank and update the wait time accordingly
+            //
+            AttemptStatusCheckJob::dispatch($this->mode, $attempt->getId())->delay($delay);
+
+            $this->trace->info(
+                TraceCode::FTA_STATUS_CHECK_JOB_DISPATCHED,
+                [
+                    'mode'   => $this->mode,
+                    'fta_id' => $attempt->getId(),
+                ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::FTA_STATUS_CHECK_DISPATCH_FAILED,
+                [
+                    'mode'   => $this->mode,
+                    'fta_id' => $attempt->getId(),
+                ]);
+        }
+    }
+
+    protected function dispatchFtaForReconProcess(Entity $attempt)
+    {
+        // TODO: Allow for all, after testing payouts.
+        if ($attempt->getSourceType() !== Type::PAYOUT)
+        {
+            return;
+        }
+
+        try
+        {
+            AttemptsReconJob::dispatch($this->mode, $attempt->getId());
+
+            $this->trace->info(
+                TraceCode::FTA_RECON_JOB_DISPATCHED,
+                [
+                    'mode'   => $this->mode,
+                    'fta_id' => $attempt->getId(),
+                ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::FTA_RECONCILE_DISPATCH_FAILED,
+                [
+                    'mode'   => $this->mode,
+                    'fta_id' => $attempt->getId(),
+                ]);
+        }
     }
 
     protected function getTransactionsCount(Entity $attempt): int
@@ -184,6 +278,9 @@ class Initiator extends Base\Core
 
             case Channel::KOTAK:
                 return null;
+
+            case Channel::AXIS2:
+                return 400;
 
             default:
                 return 100;
@@ -263,5 +360,75 @@ class Initiator extends Base\Core
                 'memory_peak_usage'              => $memoryPeakUsage,
                 'memory_peak_usage_allocated'    => $memoryPeakUsageAllocated,
             ]);
+    }
+
+    /**
+     * This will be called for individual fta processing
+     *
+     * @param Entity $fta
+     * @param        $channel
+     */
+    public function initFundTransferOnChannel(Entity $fta, $channel)
+    {
+        $data = [
+            'fta_id'  => $fta->getId(),
+            'source'  => $fta->getSourceId(),
+            'channel' => $channel,
+        ];
+
+        $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_INIT, $data);
+
+        $attempts = (new PublicCollection)->push($fta);
+
+        $response = $this->processFundTransferAttempts($fta->getPurpose(), $channel, $attempts);
+
+        $this->trace->info(TraceCode::FTA_MERCHANT_FUND_TRANSFER_COMPLETE,  $data + $response);
+    }
+
+    protected function dispatchForReconAndStatusCheck($attemptedFTAs)
+    {
+        // Dispatching after lock is released as this should also work in sync mode
+        // This dispatch is will happen only on locked attempts in above step
+        foreach ($attemptedFTAs as $attempt)
+        {
+            // For bank accounts, we anyway don't get the status in initiate. So no use
+            // of dispatching it as part of initiate request. In VPA, we get the status.
+            if ($attempt->hasVpa() === true)
+            {
+                $this->dispatchFtaForReconProcess($attempt);
+            }
+            else
+            {
+                $this->dispatchFtaForStatusCheckProcess($attempt);
+            }
+        }
+
+        return;
+    }
+
+    /**
+     * Restricts transfer in test mode or after invalid time
+     *
+     * @param string $channel
+     * @return array
+     */
+    protected function shouldProcessBankTransfers(array $input, string $channel = null): array
+    {
+        if (isset($input[Entity::PURPOSE]) === true and $input[Entity::PURPOSE] === Purpose::PENNY_TESTING)
+        {
+            return [true, null];
+        }
+
+        if (($this->env === Environment::PRODUCTION) and ($this->mode === Mode::TEST))
+        {
+            return [false, 'Invalid mode to initiate transfer'];
+        }
+
+        if ($this->isValidTime($channel) === false)
+        {
+            return [false, 'Invalid time to initiate transfer'];
+        }
+
+        return [true, null];
     }
 }

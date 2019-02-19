@@ -18,7 +18,7 @@ class RequestFields
     const USER_TYPE            = 'UserType';
     const APP_TYPE             = 'AppType';
     const MERCHANT_CODE        = 'MeCode';
-    const ACCOUNT_NUMBER       = 'Account';
+    const ACCOUNT_NUMBER       = 'AccountNo';
     const STATFLG              = 'STATFLG';
     const BANK_TRANSACTION_ID  = 'BID';
 }

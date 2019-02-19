@@ -2,7 +2,8 @@
     $payment_page_data          = $data['payment_link'];
     $is_test_mode               = $data['is_test_mode'] ?? false;
     $has_udf                    = (empty($udf_schema) === false);
-    $meta_description           = $payment_page_data['description']? $payment_page_data['description'] : 'Payment request by '. $data['merchant']['name'];
+    $description_meta_text      = ($payment_page_data['description'] and json_decode($payment_page_data['description'], true)['metaText']) ? json_decode($payment_page_data['description'], true)['metaText'] : null;
+    $meta_description           = $description_meta_text ? $description_meta_text : 'Payment request by '. $data['merchant']['name'];
     $dark_theme_color           = '#383838';
     $light_theme_color          = '#efefef';
 ?>
@@ -47,6 +48,9 @@
         <script>
             var data = {!!utf8_json_encode($data)!!};
 
+            var paymentPageData = data.payment_link;
+            paymentPageData.description = paymentPageData.description ? JSON.parse(paymentPageData.description).value : null;
+
             var templateData = {
                 is_test_mode: data.is_test_mode,
                 merchant: data.merchant,
@@ -56,19 +60,44 @@
                   form_title: 'Payment Details'
                 },
               };
-
-            function renderPaymentPage() {
-                window.RZP.renderApp('paymentpage-container', templateData);
-            }
         </script>
 
-        <script src="https://cdn.razorpay.com/static/analytics/bundle.js" defer></script>
-        <script src="{{env('AWS_CF_CDN_URL')}}/static/hosted/wysiwyg.js" onload="renderPaymentPage()" async defer></script>
-        <script src="https://checkout.razorpay.com/v1/checkout.js" async defer></script>
+        @if (empty($request_params) === true)
+            <script>
+                function renderPaymentPage() {
+                    window.RZP.renderApp('paymentpage-container', templateData);
+                }
+            </script>
+
+
+            <script src="https://cdn.razorpay.com/static/analytics/bundle.js" defer></script>
+            <script src="https://cdn.razorpay.com/static/assets/color.js"></script>
+            <script src="{{env('AWS_CF_CDN_URL')}}/static/hosted/wysiwyg.js" onload="renderPaymentPage()" async defer></script>
+            <script src="https://checkout.razorpay.com/v1/checkout.js" async defer></script>
+        @else
+            @include('payment_link.partials.post_screen')
+        @endif
     </head>
 
     <body>
         <div id="paymentpage-container">
+            @if (empty($request_params) === false)
+                @if (isset($request_params['razorpay_payment_id']))
+                    @include('hostedpage.partials.success')
+                    <div id="post-msg"><a href="{{{$payment_page_data['short_url']}}}"">Make Another Payment</a></div>
+                @else
+                    @include('hostedpage.partials.success', ['error' => true])
+                    <div id="post-msg">
+                        <div>{{$request_params['description'] ?? 'If any amount is deducted, it will be automatically refunded'}}</div>
+                        <a href="{{{$payment_page_data['short_url']}}}"">Retry Payment</a>
+                    </div>
+                @endif
+
+            @endif
         </div>
+
+        @if (empty($request_params) === false and isset($request_params['razorpay_payment_id']) === true)
+            <script>showSuccessMsg()</script>
+        @endif
     </body>
 </html>

@@ -233,7 +233,7 @@ class UserTest extends TestCase
 
         $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $ownerUser['id'];
 
-        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $ownerUser['id']);
 
         $this->startTest();
 
@@ -277,7 +277,7 @@ class UserTest extends TestCase
 
         $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $ownerUser['id'];
 
-        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $ownerUser['id']);
 
         $this->startTest();
 
@@ -319,7 +319,7 @@ class UserTest extends TestCase
 
         $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $ownerUser['id'];
 
-        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $ownerUser['id']);
 
         $this->startTest();
 
@@ -477,10 +477,10 @@ class UserTest extends TestCase
 
         Mail::assertQueued(Otp::class, function ($mail)
         {
-            $this->assertEquals('create payout', $mail->action);
+            $this->assertEquals('create_payout', $mail->input['action']);
             $this->assertNotEmpty($mail->user);
             $this->assertNotEmpty($mail->otp);
-            $this->assertEquals('emails.user.otp', $mail->view);
+            $this->assertEquals('emails.user.otp_create_payout', $mail->view);
             return true;
         });
     }

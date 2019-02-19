@@ -32,6 +32,41 @@ class PaymentFetchTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchRuleCascadingForAdminAuthRestricted()
+    {
+        $this->fixtures->edit('org', '100000razorpay', ['type' => 'restricted']);
+
+        $this->ba->adminAuth();
+
+        $pay1 = $this->fixtures->create('payment', ['method' => 'netbanking', 'bank' => 'rzp']);
+
+        // Card payment should not be fetched due to forced netbanking method param
+        $this->fixtures->create('payment', ['method' => 'card']);
+
+        // Other bank payment should not be fetched due to forced restricted org bank param
+        $this->fixtures->create('payment', ['method' => 'netbanking', 'bank' => 'rzpnot']);
+
+        $content = $this->startTest();
+
+        $this->assertEquals('pay_' . $pay1['id'], $content['items'][0]['id']);
+    }
+
+    public function testFetchForAdminAuthRestrictedFilterAcquirerData()
+    {
+        $this->fixtures->edit('org', '100000razorpay', ['type' => 'restricted']);
+
+        $this->ba->adminAuth();
+
+        $pay1 = $this->fixtures->create('payment', ['method' => 'netbanking', 'bank' => 'rzp', 'reference1' => '1234']);
+
+        // Card payment should not be fetched due to forced netbanking method param
+        $this->fixtures->create('payment', ['method' => 'card', 'reference2' => '1234']);
+
+        $content = $this->startTest();
+
+        $this->assertEquals('pay_' . $pay1['id'], $content['items'][0]['id']);
+    }
+
     public function testFetchRuleVPAFilterForAdminAuth()
     {
         $this->ba->adminAuth();
@@ -176,7 +211,7 @@ class PaymentFetchTest extends TestCase
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
 

@@ -37,13 +37,12 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         if ($payment === null)
         {
-            $this->app['trace']->info(
+            $this->trace->info(
                 TraceCode::RECON_MISMATCH,
                 [
-                    'message'    => 'Payment not found in DB.',
-                    'info_code'  => 'PAYMENT_ABSENT',
+                    'info_code'  => Base\InfoCode::PAYMENT_ABSENT,
                     'payment_id' => $paymentId,
-                    'gateway'    => get_called_class()
+                    'gateway'    => $this->gateway,
                 ]);
 
             return false;

@@ -32,9 +32,11 @@ class Transfer extends Base
 
         $transfer = $this->build('transfer', $attributes);
 
-        $txn = $this->createTransactionOnTransfer($transfer);
+        list($txn, $feeSplit) = $this->createTransactionOnTransfer($transfer);
 
         $txn->saveOrFail();
+
+        (new Transaction\Core)->saveFeeDetails($txn, $feeSplit);
 
         $transfer->saveOrFail();
 

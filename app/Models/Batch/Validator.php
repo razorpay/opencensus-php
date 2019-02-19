@@ -4,6 +4,8 @@ namespace RZP\Models\Batch;
 
 use App;
 use RZP\Base;
+use RZP\Models\User;
+use RZP\Models\Payout;
 use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -11,6 +13,7 @@ use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Entity as ME;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Contact as ContactModel;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Batch\Helpers\OauthMigration as OMHelper;
@@ -26,36 +29,41 @@ use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHe
  */
 class Validator extends Base\Validator
 {
-    /**
-     * Default rule for file validation. Per type a different file rule can be
-     * written. We validate both mime_types and mimes(basically extension).
-     */
-    const DEFAULT_MIME_RULE = '|mime_types:'
-                                    . 'application/zip,'
-                                    . 'application/vnd.ms-excel,'
-                                    . 'application/vnd.oasis.opendocument.spreadsheet,'
-                                    . 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,'
-                                    . 'application/octet-stream,'
-                                    . 'application/xml,'
-                                    . 'text/csv,'
-                                    . 'text/plain,'
-                                    . 'application/cdfv2-unknown,'
-                                    . 'application/vnd.ms-office,'
-                                    . 'application/excel,'
-                                    . 'application/msexcel'
-                                . '|mimes:'
-                                    . 'zip,'
-                                    . 'xlsx,'
-                                    . 'xls,'
-                                    . 'xml,'
-                                    . 'csv,'
-                                    . 'txt';
+    // Default rule for file validation. Per type a different file rule can be written.
+    const DEFAULT_MIME_RULE = ''
+        // Allowed mime types.
+        . '|mime_types:'
+        . 'application/zip,'
+        . 'application/vnd.ms-excel,'
+        . 'application/vnd.oasis.opendocument.spreadsheet,'
+        . 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,'
+        . 'application/octet-stream,'
+        . 'application/xml,'
+        . 'text/csv,'
+        . 'text/plain,'
+        . 'application/cdfv2-unknown,'
+        . 'application/vnd.ms-office,'
+        . 'application/excel,'
+        . 'application/msexcel,'
+        // Allowed mimes/extensions.
+        . '|mimes:'
+        . 'zip,'
+        . 'xlsx,'
+        . 'xls,'
+        . 'xml,'
+        . 'csv,'
+        . 'txt,';
 
-    //
-    // TODO:
-    // - csv files doesn't expect headers, it throws error in that case.
-    // - Should not keep csv, txt in default rules.
-    //
+    // Rule for allowing only csv or plain text file.
+    const CSV_MIME_RULE = ''
+        // Allowed mime types.
+        . '|mime_types:'
+        . 'text/csv,'
+        . 'text/plain,'
+        // Allowed mimes/extensions.
+        . '|mimes:'
+        . 'csv,'
+        . 'txt,';
 
     protected static $defaultCreateRules = [
         Entity::TYPE                 => 'required|custom',
@@ -105,6 +113,13 @@ class Validator extends Base\Validator
         Entity::TYPE        => 'required|in:emandate',
         Entity::SUB_TYPE    => 'required|string|in:register,debit,acknowledge',
         Entity::GATEWAY     => 'required|string',
+    ];
+
+    protected static $terminalCreateRules = [
+        Entity::TYPE                 => 'required|custom',
+        Entity::SUB_TYPE             => 'required|string|in:hitachi,netbanking_icici',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
     ];
 
     protected static $virtualBankAccountCreateRules = [
@@ -189,6 +204,59 @@ class Validator extends Base\Validator
         OMHelper::CLIENT_ID    => 'required|string|size:14',
         OMHelper::USER_ID      => 'required|string|size:14',
         OMHelper::REDIRECT_URI => 'required|url',
+    ];
+
+    protected static $fundAccountCreateRules = [
+        Entity::TYPE    => 'required|in:fund_account',
+        Entity::NAME    => 'filled|string|max:255',
+        Entity::FILE    => 'required_without:file_id|file|max:10240' . self::CSV_MIME_RULE,
+        Entity::FILE_ID => 'required_without:file|public_id',
+    ];
+
+    protected static $payoutCreateRules = [
+        Entity::TYPE    => 'required|in:payout',
+        Entity::NAME    => 'filled|string|max:255',
+        Entity::FILE    => 'required_without:file_id|file|max:10240' . self::CSV_MIME_RULE,
+        Entity::FILE_ID => 'required_without:file|public_id',
+        Entity::OTP     => 'required|filled|min:4',
+        Entity::TOKEN   => 'required|unsigned_id',
+    ];
+
+    protected static $fundAccountTypeRowRules = [
+        Header::FUND_ACCOUNT_TYPE         => 'required|string|in:bank_account,vpa',
+        Header::FUND_ACCOUNT_NAME         => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
+        Header::FUND_ACCOUNT_IFSC         => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
+        Header::FUND_ACCOUNT_NUMBER       => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
+        Header::FUND_ACCOUNT_VPA          => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',vpa|nullable|string',
+        Header::CONTACT_ID                => 'sometimes|nullable|public_id|size:19',
+        Header::CONTACT_TYPE              => 'required_without:'.Header::CONTACT_ID.'|nullable|string',
+        Header::CONTACT_NAME_2            => 'required_without:'.Header::CONTACT_ID.'|nullable|string',
+        Header::CONTACT_EMAIL_2           => 'sometimes|nullable|string',
+        Header::CONTACT_MOBILE_2          => 'sometimes|nullable|string',
+        Header::CONTACT_REFERENCE_ID      => 'sometimes|nullable|string',
+        Header::NOTES                     => 'sometimes|nullable|notes',
+    ];
+
+    // This is not a copy paste of above ^ rules!
+    protected static $payoutTypeRowRules = [
+        Header::RAZORPAYX_ACCOUNT_NUMBER    => 'required|string',
+        Header::PAYOUT_PURPOSE              => 'required|string|max:30|alpha_dash',
+        Header::PAYOUT_AMOUNT               => 'required|integer|min:100|max:500000000',
+        Header::PAYOUT_CURRENCY             => 'required|size:3|in:INR',
+        Header::PAYOUT_MODE                 => 'sometimes|nullable|string',
+        Header::PAYOUT_REFERENCE_ID         => 'sometimes|nullable|string|max:40',
+        Header::FUND_ACCOUNT_ID             => 'sometimes|nullable|public_id|size:17',
+        Header::FUND_ACCOUNT_TYPE           => 'required_without:'.Header::FUND_ACCOUNT_ID.'|nullable|string|in:bank_account,vpa',
+        Header::FUND_ACCOUNT_NAME           => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
+        Header::FUND_ACCOUNT_IFSC           => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
+        Header::FUND_ACCOUNT_NUMBER         => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
+        Header::FUND_ACCOUNT_VPA            => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',vpa|nullable|string',
+        Header::CONTACT_TYPE                => 'required_without:'.Header::FUND_ACCOUNT_ID.'|nullable|string',
+        Header::CONTACT_NAME_2              => 'required_without:'.Header::FUND_ACCOUNT_ID.'|nullable|string',
+        Header::CONTACT_EMAIL_2             => 'sometimes|nullable|string',
+        Header::CONTACT_MOBILE_2            => 'sometimes|nullable|string',
+        Header::CONTACT_REFERENCE_ID        => 'sometimes|nullable|string',
+        Header::NOTES                       => 'sometimes|nullable|notes',
     ];
 
     protected function validateType($attribute, $value)
@@ -396,12 +464,19 @@ class Validator extends Base\Validator
         ];
     }
 
-    protected function validateRefundEntries(
-        array & $entries,
-        array $params,
-        ME $merchant)
+    protected function validateRefundEntries(array & $entries, array $params, ME $merchant)
     {
         $existingPaymentIds = [];
+
+        if ($merchant->isFeatureEnabled(Feature::DISABLE_REFUNDS) === true)
+        {
+            throw new BadRequestValidationFailureException(
+                'Refunds are not allowed on this account',
+                null,
+                [
+                    Entity::MERCHANT_ID => $merchant->getId(),
+                ]);
+        }
 
         foreach ($entries as $entry)
         {
@@ -450,87 +525,35 @@ class Validator extends Base\Validator
      *
      * @throws BadRequestException
      */
-    protected function validatePaymentLinkEntries(
-        array & $entries,
-        array $params,
-        ME $merchant)
+    protected function validatePaymentLinkEntries(array & $entries, array $params, ME $merchant)
     {
-        // Skip the pre validation for payment links to reduce the execution time
-        // to support large files
-        // TODO:
-        // move this to async
+        // Skip the pre validation for payment links to reduce the execution time to support large files.
+        // TODO: Move this to async!
         if (count($entries) > Constants::ROW_LEVEL_VALIDATION_THRESHOLD)
         {
             return;
         }
 
-        // Associative array with index as input file's row index and values
-        // as the error message.
+        //
+        // Instead of new Validator instance, we get validator out of a dummy invoice entity having
+        // Merchant\Entity associated. This is required for custom validations run in create rules
+        // which uses merchant's max payment amount configurations etc.
+        //
+        $validator = (new Invoice\Entity)
+                        ->merchant()
+                        ->associate($merchant)
+                        ->getValidator();
 
-        $errorCount = 0;
-
-        foreach ($entries as $idx => $entry)
+        $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry) use ($validator)
         {
-            //
-            // This whole block needs to be in try..catch as following line may
-            // also throw bad request exception per row while parsing human readable
-            // date time values as epoch.
-            //
-            try
-            {
-                $input = Helpers\PaymentLink::getEntityInput($entry, $params);
+            $input = Helpers\PaymentLink::getEntityInput($entry);
 
-                $rule = Invoice\Validator::CREATE_DRAFT;
+            $rule = $input[Invoice\Entity::DRAFT] === '0' ?
+                Invoice\Validator::CREATE_ISSUED :
+                Invoice\Validator::CREATE_DRAFT;
 
-                if ($input[Invoice\Entity::DRAFT] === '0')
-                {
-                    $rule = Invoice\Validator::CREATE_ISSUED;
-                }
-
-                //
-                // Need to create dummy entity and associate merchant for
-                // the validation around max allowed payment to happen.
-                //
-                $invoice = new Invoice\Entity;
-
-                $invoice->merchant()->associate($merchant);
-
-                $invoice->getValidator()->validateInput($rule, $input);
-
-                $error = [
-                    Header::ERROR_CODE          => null,
-                    Header::ERROR_DESCRIPTION   => null,
-                ];
-
-                $entries[$idx] = ($entry + $error);
-            }
-            catch (BaseException $e)
-            {
-                $errorCount++;
-
-                $error = [
-                    Header::ERROR_CODE          => $e->getError()->getPublicErrorCode(),
-                    Header::ERROR_DESCRIPTION   => $e->getError()->getDescription(),
-                ];
-
-                $entries[$idx] = ($entry + $error);
-            }
-            finally
-            {
-                unset($invoice);
-            }
-
-            if (($errorCount > 0) and ($this->entity->isCreatedByFileUpload() === true))
-            {
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_BATCH_PAYMENT_LINK_FILE_ERRORS,
-                    Entity::FILE,
-                    [
-                        'count'         => $errorCount,
-                        'merchant_id'   => $merchant->getId(),
-                    ]);
-            }
-        }
+            $validator->validateInput($rule, $input);
+        });
     }
 
     protected function validateVirtualBankAccountEntries(array & $entries, array $params, ME $merchant)
@@ -564,12 +587,30 @@ class Validator extends Base\Validator
     {
         if ($merchant->isFeatureEnabled(Feature::PAYOUT) === false)
         {
+            throw new BadRequestValidationFailureException('Batch type is not enabled for merchant');
+        }
+
+        if (in_array(app()->basicauth->getUserRole(), [User\Role::ADMIN, User\Role::OWNER], true) === false)
+        {
+            throw new BadRequestValidationFailureException('Only admins and owners are allowed to take this action');
+        }
+
+        $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
+        {
+            $this->validateInput('payoutTypeRow', $entry);
+        });
+
+        // After validating contents per row only should do following aggregate validations.
+
+        $totalPayoutAmount = array_sum(array_column($entries, Header::PAYOUT_AMOUNT));
+        $bankingBalance = $merchant->bankingBalance->getBalance();
+
+        if ($totalPayoutAmount > $bankingBalance)
+        {
             throw new BadRequestValidationFailureException(
-                'Batch type is not enabled for merchant',
-                null,
-                [
-                    Entity::MERCHANT_ID => $merchant->getId(),
-                ]);
+                'Total payout amount in uploaded file exceeds available account balance',
+                Entity::FILE,
+                compact('totalPayoutAmount', 'bankingBalance'));
         }
     }
 
@@ -660,5 +701,88 @@ class Validator extends Base\Validator
                 }
             }
         }
+    }
+
+    protected function validateContactEntries(array & $entries, array $params, ME $merchant)
+    {
+        $validator = new ContactModel\Validator;
+
+        $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry) use ($validator)
+        {
+            $input = Helpers\Contact::getContactInput($entry);
+
+            $validator->validateInput('create', $input);
+        });
+    }
+
+    protected function validateFundAccountEntries(array & $entries, array $params, ME $merchant)
+    {
+        $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
+        {
+            $this->validateInput('fundAccountTypeRow', $entry);
+        });
+    }
+
+    protected function validateEntriesWithPublicExceptionHandled(array & $entries, \Closure $validator)
+    {
+        // Indexed errors map against row number.
+        $errors = [];
+
+        foreach ($entries as $seq => $entry)
+        {
+            try
+            {
+                $validator($entry);
+
+                $error[Header::ERROR_CODE] = null;
+                $error[Header::ERROR_DESCRIPTION] = null;
+            }
+            catch (BaseException $e)
+            {
+                $error[Header::ERROR_CODE] = $e->getError()->getPublicErrorCode();
+                $error[Header::ERROR_DESCRIPTION] = $e->getError()->getDescription();
+
+                $errors[$seq] = $error;
+            }
+
+            $entries[$seq] += $error;
+        }
+
+        $errorsCount = count($errors);
+
+        // If request done via earlier direct upload flow (instead of validation flow), throw 4XX.
+        if (($errorsCount > 0) and ($this->entity->isCreatedByFileUpload() === true))
+        {
+            throw new BadRequestValidationFailureException(
+                sprintf(
+                    'There are validation errors in %s %s of the file',
+                    $errorsCount,
+                    $errorsCount === 1 ? 'row' : 'rows'),
+                Entity::FILE,
+                array_slice($errors, 0, 15, true));
+        }
+    }
+
+    /**
+     * Validates otp while creating a batch.
+     * E.g. for creating payout type batch otp confirmation by logged in user is required.
+     * @param array $input
+     */
+    public function validateOtp(array $input)
+    {
+        if (isset($input[Entity::OTP], $input[Entity::TOKEN]) === false)
+        {
+            return;
+        }
+
+        $auth = app()->basicauth;
+
+        $params   = [
+            Entity::OTP         => $input[Entity::OTP],
+            Entity::TOKEN       => $input[Entity::TOKEN],
+            User\Entity::ACTION => "create_{$input[Entity::TYPE]}_batch",
+        ];
+
+        (new User\Core)->verifyOtp($params, $auth->getMerchant(), $auth->getUser());
     }
 }

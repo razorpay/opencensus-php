@@ -56,38 +56,11 @@ class RedisLagChecker implements LagChecker
      */
     public function useReadPdoIfApplicable($readPdo)
     {
-        $skipSlave = true;
+        $useMaster = true;
 
         try
         {
-            $skipSlavePercentage = (int) Cache::get($this->config['flag2']);
-
-            //
-            // If skip_slave config is set to 0 or any non integer character, it will always go to master
-            //
-            // If skip_slave config is set to number between 1 - 100 (inclusive of both),
-            // we can skip slave (route to master) for percentage mentioned.
-            // For example: if skip_slave = 10,
-            // 10% of the traffic will skip slave (request is served by master)
-            // remaining 90% will NOT skip slave (request is served by slave)
-            //
-
-            if ($skipSlavePercentage === 0)
-            {
-                $skipSlave = false;
-            }
-            else
-            {
-                $skipSlave = ($this->weight <= $skipSlavePercentage);
-
-                $connection = ($skipSlave === true) ? self::MASTER : self::SLAVE;
-
-                $this->trace->info(
-                    TraceCode::WEIGHTED_DATABASE_ROUTING,
-                    [
-                        'connection' => $connection,
-                    ]);
-            }
+            $useMaster = $this->canRouteToMaster();
         }
         catch (\Throwable $ex)
         {
@@ -98,6 +71,42 @@ class RedisLagChecker implements LagChecker
         }
 
         // If should skip slave, return null so master connection is used, else resolve $readPdo and return
-        return $skipSlave === true ? null : ($readPdo instanceof Closure ? call_user_func($readPdo) : $readPdo);
+        return $useMaster === true ? null : ($readPdo instanceof Closure ? call_user_func($readPdo) : $readPdo);
+    }
+
+    protected function canRouteToMaster(): bool
+    {
+        $useMaster = true;
+
+        $masterRoutePercentage = (int) Cache::get($this->config['flag']);
+
+        //
+        // If master_percent config is set to 0 or any non integer character, it will always go to master
+        //
+        // If master_percent config is set to number between 1 - 100 (inclusive of both),
+        // we can skip slave (route to master) for percentage mentioned.
+        // For example: if master_percent = 10,
+        // 10% of the traffic will skip slave (request is served by master)
+        // remaining 90% will NOT skip slave (request is served by slave)
+        //
+
+        if ($masterRoutePercentage === 0)
+        {
+            $useMaster = false;
+        }
+        else
+        {
+            $useMaster = ($this->weight <= $masterRoutePercentage);
+
+            $connection = ($useMaster === true) ? self::MASTER : self::SLAVE;
+
+            $this->trace->info(
+                TraceCode::WEIGHTED_DATABASE_ROUTING,
+                [
+                    'connection' => $connection,
+                ]);
+        }
+
+        return $useMaster;
     }
 }

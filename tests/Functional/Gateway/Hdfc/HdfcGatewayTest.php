@@ -28,7 +28,7 @@ class HdfcGatewayTest extends TestCase
 
         $this->setMockGatewayTrue();
 
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $this->fixtures->merchant->enableInternational();
 
@@ -64,7 +64,106 @@ class HdfcGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertNull($payment['verify_at']);
+        // $this->assertNull($payment['verify_at']);
+    }
+
+    public function testPaymentForAuthorizationTerminal()
+    {
+        $this->fixtures->create('terminal:shared_hdfc_terminal', ['capability' => 2]);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = [
+            'card' => [
+                'number'       => '5567630000002004',
+                'expiry_month' => '02',
+                'expiry_year'  => '21',
+                'cvv'          => 123,
+                'name'         => 'Test Card'
+            ]
+        ];
+
+        $payment = $this->defaultAuthPayment($payment);
+
+        $txn = $this->getEntities('transaction', [], true);
+        $this->assertEquals(0, $txn['count']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals($payment['transaction_id'], null);
+
+        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+
+        $txn = $this->getLastTransaction(true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterCapture'], $txn);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment);
+
+        $payment = $this->getLastEntity('hdfc', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testHdfcPaymentEntity'], $payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        // After capture verify_at is set to current_time()
+        // $this->assertNull($payment['verify_at']);
+
+        $mpi = $this->getLastEntity('mpi', true);
+
+        $this->assertNotNull($mpi);
+        $this->assertEquals('mpi_blade', $mpi['gateway']);
+        $this->assertEquals('Y', $mpi['enrolled']);
+    }
+
+    public function testPaymentForAuthorizationTerminalFailure()
+    {
+        $this->fixtures->create('terminal:shared_hdfc_terminal', ['capability' => 2]);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = [
+            'card' => [
+                'number'       => '5567630000002004',
+                'expiry_month' => '02',
+                'expiry_year'  => '21',
+                'cvv'          => 123,
+                'name'         => 'Test Card'
+            ]
+        ];
+
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'authorize')
+            {
+                unset(
+                    $content['auth'], $content['ref'],
+                    $content['avr'], $content['postdate'],
+                    $content['paymentid'], $content['transid']);
+
+                $content['result'] = '!ERROR!-GV10009-Invalid pre authentication status';
+                $content['udf1'] = 'PA';
+                $content['udf2'] = 'test@razorpay.com';
+                $content['udf3'] = ' 919876543210';
+                $content['udf4'] = 'test';
+                $content['udf5'] = 'test';
+            }
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->defaultAuthPayment($payment);
+        });
+
+        $mpi = $this->getLastEntity('mpi', true);
+
+        $this->assertNotNull($mpi);
+        $this->assertEquals('mpi_blade', $mpi['gateway']);
+        $this->assertEquals('Y', $mpi['enrolled']);
     }
 
     public function testTamperedPayment()
@@ -669,7 +768,7 @@ class HdfcGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
 
         $this->clearMockFunction();
@@ -691,11 +790,11 @@ class HdfcGatewayTest extends TestCase
             return $content;
         });
 
-        $response = $this->retryFailedRefund($refund['id']);
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         $refund = $this->getEntityById('refund', $refund['id'], true);
 
-        $this->assertEquals(2, $refund['attempts']);
+        $this->assertEquals(1, $refund['attempts']);
         $this->assertEquals('processed', $refund['status']);
     }
 
@@ -709,7 +808,7 @@ class HdfcGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
 
         $this->clearMockFunction();
@@ -728,11 +827,11 @@ class HdfcGatewayTest extends TestCase
             return $content;
         });
 
-        $response = $this->retryFailedRefund($refund['id']);
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         $refund = $this->getEntityById('refund', $refund['id'], true);
 
-        $this->assertEquals(2, $refund['attempts']);
+        $this->assertEquals(1, $refund['attempts']);
         $this->assertEquals('processed', $refund['status']);
     }
 
@@ -749,7 +848,7 @@ class HdfcGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
 
         $this->clearMockFunction();
@@ -770,12 +869,13 @@ class HdfcGatewayTest extends TestCase
                 $content['payid']    = '8152480571771510';
                 $content['udf2']     = '';
                 $content['udf5']     = 'TrackID';
+                $content['authRespCode'] = 'J';
             }
 
             return $content;
         });
 
-        $response = $this->retryFailedRefund($refund['id']);
+        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         $refund = $this->getEntityById('refund', $refund['id'], true);
 
@@ -832,7 +932,28 @@ class HdfcGatewayTest extends TestCase
     {
         $payment = $this->doAuthAndCapturePayment();
 
-        $this->hdfcPaymentFailedDueToDeniedByRisk();
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']   = 'FAILURE(SUSPECT)';
+                $content['auth']     = '123456';
+                $content['ref']      = '725070182254';
+                $content['postdate'] = '0000';
+                $content['tranid']   = '6996066201872501';
+                $content['payid']    = '8152480571771510';
+                $content['udf2']     = '';
+                $content['udf5']     = 'TrackID';
+                $content['authRespCode'] = 'J';
+            }
+
+            if($action === 'refund')
+            {
+                $content['result'] = 'DENIED BY RISK';
+            }
+
+            return $content;
+        });
 
         $this->refundPayment($payment['id']);
 

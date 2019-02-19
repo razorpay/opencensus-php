@@ -10,6 +10,7 @@ use Symfony\Component\DomCrawler\Crawler;
 
 use RZP\Exception;
 use RZP\Http\Route;
+use Requests_Hooks;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
@@ -36,7 +37,7 @@ class Gateway
      * Default request connect timeout duration in seconds.
      * @var  integer
      */
-    const CONNECT_TIMEOUT = 5;
+    const CONNECT_TIMEOUT = 10;
 
     /**
      * Default payment timeout duration in mins.
@@ -195,10 +196,6 @@ class Gateway
 
     protected $paymentId;
 
-    protected $curlLogPath;
-
-    protected $curlLog;
-
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -237,7 +234,20 @@ class Gateway
         }
         catch (\Throwable $exc)
         {
-            if (property_exists($exc, 'isPropagatedException') === false)
+            $previousExc = $exc->getPrevious();
+
+            if (($previousExc instanceof \Requests_Exception) and
+                ($previousExc->getType() === 'curlerror') and
+                (property_exists($exc, 'isPropagatedException') === false))
+            {
+                $excData = curl_errno($previousExc->getData());
+
+                $this->pushDimensions($action, $input, Metric::CURL_ERROR, $excData);
+
+                $exc->isPropagatedException = true;
+            }
+
+            else if (property_exists($exc, 'isPropagatedException') === false)
             {
                 $this->pushDimensions($action, $input, Metric::FAILED);
 
@@ -362,7 +372,7 @@ class Gateway
 
     public function setMock($mock)
     {
-        assert (is_bool($mock));
+        assertTrue (is_bool($mock));
 
         $this->mock = $mock;
     }
@@ -454,6 +464,7 @@ class Gateway
         switch ($input['payment']['method'])
         {
             case Payment\Method::CARD:
+            case Payment\Method::EMI:
                 $acquirer['acquirer'] = [
                     Payment\Entity::REFERENCE2 => $gatewayPayment->getAuthCode(),
                 ];
@@ -630,6 +641,14 @@ class Gateway
             $request['options']['connect_timeout'] = static::CONNECT_TIMEOUT;
         }
 
+        if ((isset($request['options']['hooks']) === false) or
+            ($request['options']['hooks'] instanceof Requests_Hooks === false))
+        {
+            $request['options']['hooks'] = new Requests_Hooks();
+        }
+
+        $request['options']['hooks']->register('curl.after_request', [$this, 'traceCurlInfo']);
+
         try
         {
             $method = strtoupper($method);
@@ -779,6 +798,28 @@ class Gateway
         }
     }
 
+    public function traceCurlInfo($headers, $info)
+    {
+        $this->trace->info(TraceCode::GATEWAY_REQUEST_CURL_INFO,
+            [
+                'total_time'         => $info['total_time'],
+                'connect_time'       => $info['connect_time'],
+                'redirect_time'      => $info['redirect_time'],
+                'namelookup_time'    => $info['namelookup_time'],
+                'pretransfer_time'   => $info['pretransfer_time'],
+                'starttransfer_time' => $info['starttransfer_time'],
+            ]);
+    }
+
+    /**
+     * verify flow - methods to implement:
+     * 1. sendPaymentVerifyRequest - sends request to gateway, parse the response and set it
+     *  on $verify->verifyResponseContent
+     * 2. checkGatewaySuccess - return true/false after checking gateway status
+     * 3. setVerifyAmountMismatch - assert amount and return true/false
+     * 4. getVerifyAttributesToSave - return gatewayPayment attributes array to save
+     *
+     */
     protected function runPaymentVerifyFlow($verify)
     {
         // This payment is the gateway entity payment.
@@ -859,6 +900,21 @@ class Gateway
                 'request'    => $request,
                 'gateway'    => $this->gateway,
                 'payment_id' => $input['payment']['id'],
+            ]);
+    }
+
+    protected function traceGatewayPaymentResponseForMozart(
+        $response,
+        $input,
+        $traceCode = TraceCode::GATEWAY_RESPONSE)
+    {
+        $this->trace->info(
+            $traceCode,
+            [
+                'action'     => $this->action,
+                'response'   => $response,
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['entities']['payment']['id'],
             ]);
     }
 
@@ -947,6 +1003,28 @@ class Gateway
     protected function getLiveSecret()
     {
         return $this->input['terminal']['gateway_secure_secret'];
+    }
+
+    public function getTerminalPassword()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->getTestTerminalPassword();
+        }
+
+        return $this->getLiveTerminalPassword();
+    }
+
+    protected function getTestTerminalPassword()
+    {
+        assert($this->mode === Mode::TEST);
+
+        return $this->config['test_terminal_password'];
+    }
+
+    protected function getLiveTerminalPassword()
+    {
+        return $this->input['terminal']['gateway_terminal_password'];
     }
 
     protected function isTestMode() : bool
@@ -1080,6 +1158,11 @@ class Gateway
     protected function getLiveMerchantId2()
     {
         return $this->input['terminal']['gateway_merchant_id2'];
+    }
+
+    protected function getLiveGatewayAccessCode()
+    {
+        return $this->input['terminal']['gateway_access_code'];
     }
 
     protected function getDataWithFieldsInOrder($content, $orderedFields)
@@ -1350,43 +1433,16 @@ class Gateway
         return $this->externalMockDomain . '/' . $this->gateway . $this->getRelativeUrl($type);
     }
 
-    protected function pushDimensions($action, $input, $status)
+    protected function pushDimensions($action, $input, $status, $excData = null)
     {
         $gatewayMetric = new Metric;
 
-        $gatewayMetric->pushGatewayDimensions($action, $input, $status, $this->gateway);
+        $gatewayMetric->pushGatewayDimensions($action, $input, $status, $this->gateway, $excData);
     }
 
     //
     // This is a temporary function for debugging the curl issue
     //
-    protected function traceCurlErrorIfApplicable()
-    {
-        try
-        {
-            if ((isset($this->exception) === true) and
-                ($this->exception instanceof \Requests_Exception) and
-                ($this->exception->getType() === 'curlerror'))
-            {
-                $curlData = file_get_contents($this->curlLogPath);
-
-                $dataToTrace = [
-                    'gateway'   => $this->gateway,
-                    'curl_data' => $curlData,
-                ];
-
-                $message = 'Curl error @vv @vivek @viv @kranti';
-
-                // #tech_curl_error
-                $this->app['slack']->queue(
-                    $message, $dataToTrace, ['color' => 'bad', 'channel' => 'GCRJYQEP6']);
-            }
-        }
-        catch (\Throwable $ex)
-        {
-            $this->trace->traceException($ex);
-        }
-    }
 
     protected function isDuplicateUnexpectedPayment($callbackData)
     {
@@ -1450,5 +1506,80 @@ class Gateway
         $cachePrefix = 'gateway';
 
         return sprintf($cachePrefix.':'.'%s_netbanking_url', $bank);
+    }
+
+    protected function sendMozartRequest(array $input)
+    {
+        $baseUrl = $this->app['config']->get('applications.mozart.url');
+
+        $url =  $baseUrl . 'payments/' . $this->gateway. '/v1/' . $this->action;
+
+        $authentication = [
+            'api',
+            $this->app['config']->get('applications.mozart.password')
+        ];
+
+        $input['terminal'] = $input['terminal']->toArrayWithPassword();
+
+        $requestBody['entities'] = $input;
+
+        $request = [
+            'url' => $url,
+            'method' => 'POST',
+            'headers' => [
+                'Content-Type'  => 'application/json',
+                'X-Task-ID'     => $this->app['request']->getTaskId(),
+            ],
+            'content' => json_encode($requestBody),
+            'options' => [
+                'auth' => $authentication
+            ]
+        ];
+
+        $response = $this->sendGatewayRequest($request);
+
+        $responseBody = json_decode($response->body, true);
+
+        $this->traceGatewayPaymentResponseForMozart($responseBody ?? '', $requestBody);
+
+        unset($responseBody['data']['_raw']);
+
+        if (in_array($this->action, ['pay_init', 'authenticate_init', 'authenticate_verify'], true) === true)
+        {
+            $this->action = 'authorize';
+        }
+
+        $attributes = $this->getMappedAttributes($responseBody['data']);
+
+        if ($this->action === Action::VERIFY)
+        {
+            return $responseBody;
+        }
+        if (isset($this->gatewayPayment) === true)
+        {
+            $this->gatewayPayment = $this->updateGatewayPaymentEntity($this->gatewayPayment, $attributes, false);
+        }
+        else
+        {
+            $this->gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input);
+        }
+
+       $this->checkErrorsAndThrowExceptionFromMozartResponse($responseBody);
+
+       return $responseBody['next']['redirect'] ?? null;
+    }
+
+    protected function checkErrorsAndThrowExceptionFromMozartResponse(array $response)
+    {
+        if ($response['success'] !== true)
+        {
+            throw new Exception\GatewayErrorException(
+                $response['error']['internal_error_code'] ?? 'BAD_REQUEST_PAYMENT_FAILED',
+                $response['error']['gateway_error_code'] ?? 'gateway_error_code',
+                $response['error']['gateway_error_description'] ?? 'gateway_error_desc',
+                [],
+                null,
+                $this->action);
+        }
     }
 }

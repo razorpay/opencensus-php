@@ -2,6 +2,11 @@
 
 namespace RZP\Models\Payment\Refund;
 
+use App;
+use ApiResponse;
+use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -10,6 +15,7 @@ use RZP\Models\Reversal;
 use RZP\Models\Transaction;
 use RZP\Models\Base\Traits\NotesTrait;
 use Razorpay\Spine\DataTypes\Dictionary;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Payment\Refund\Metric as RefundMetric;
 
 /**
@@ -58,6 +64,10 @@ class Entity extends Base\PublicEntity
     const ARN                    = 'arn';
     const REVERSAL               = 'reversal';
     const RRN                    = 'rrn';
+    const UTR                    = 'utr';
+
+    const RESPONSE_CODE          = 'code';
+    const RESPONSE_BODY          = 'body';
 
     /**
      * Holds the value of Reference number sent by bank for eg for upi, it contains npci_upi_txn_id
@@ -314,6 +324,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) === Status::CREATED);
     }
 
+    public function isInitiated()
+    {
+        return ($this->getAttribute(self::STATUS) === Status::INITIATED);
+    }
+
     public function isBatch(): bool
     {
         return ($this->getBatchId() !== null);
@@ -426,6 +441,12 @@ class Entity extends Base\PublicEntity
                     self::RRN   => $this->getAttribute(self::REFERENCE1)
                 ];
                 break;
+
+            case Payment\Method::EMANDATE:
+                $acquirerData = [
+                    self::UTR   => $this->getAttribute(self::REFERENCE1)
+                ];
+                break;
         }
 
         return (new Dictionary($acquirerData));
@@ -434,7 +455,7 @@ class Entity extends Base\PublicEntity
     /**
      * Used by FTA reconciliation
      */
-    public function setFailureReason()
+    public function setFailureReason($failureReason)
     {
         return;
     }
@@ -595,9 +616,27 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BATCH_FUND_TRANSFER_ID, $value);
     }
 
+    /**
+     * This is required for the FTA module.
+     * FTA requires the sources to implement `isStatusFailed`
+     * function, to send out summary emails and stuff in bulkRecon.
+     *
+     * @return bool
+     */
     public function isStatusFailed()
     {
         return ($this->getStatus() === Status::FAILED);
+    }
+
+    /**
+     * This is required for the Refund reversal module -
+     * Flipkart changes
+     *
+     * @return bool
+     */
+    public function isStatusReversed()
+    {
+        return ($this->getStatus() === Status::REVERSED);
     }
 
     public function getGateway()
@@ -615,6 +654,11 @@ class Entity extends Base\PublicEntity
     public function getBatchId()
     {
         return $this->getAttribute(self::BATCH_ID);
+    }
+
+    public function setAttempts($value)
+    {
+        $this->setAttribute(self::ATTEMPTS, $value);
     }
 
     // ----------------------- Mutator ---------------------------------------------
@@ -739,5 +783,78 @@ class Entity extends Base\PublicEntity
         );
 
         return $array;
+    }
+
+    protected function getPublicStatusFromScrooge($response)
+    {
+        $refundStatus = $this->getStatus();
+
+        $publicStatusMap = [
+            Status::PROCESSED => Status::PROCESSED,
+            Status::REVERSED  => Status::FAILED,
+        ];
+
+        $response[self::STATUS] = $publicStatusMap[$refundStatus] ?? Status::PENDING;
+
+        if ($response[self::STATUS] === Status::PENDING)
+        {
+            $response[self::STATUS] = Status::PENDING;
+
+            $app   = App::getFacadeRoot();
+            $trace = $app['trace'];
+
+            try
+            {
+                $scroogeResponse = $app['scrooge']->getPublicRefund($response[self::ID]);
+
+                $scroogeResponseCode = $scroogeResponse[self::RESPONSE_CODE];
+
+                if (in_array($scroogeResponseCode, [200, 201, 204], true) === true)
+                {
+                    $scroogeStatus = $scroogeResponse[self::RESPONSE_BODY]->status;
+
+                    if (empty($scroogeStatus) === false)
+                    {
+                        $response[self::STATUS] = $scroogeStatus;
+                    }
+                }
+            }
+            catch(\Throwable $e)
+            {
+                $trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::SCROOGE_GET_REFUND_STATUS_REQUEST_FAILED,
+                    [
+                        'refund_id' => $response[self::ID],
+                    ]);
+            }
+        }
+
+        return $response;
+    }
+
+    /**
+     * Overriding this function to get public refund status from scrooge
+     *
+     * @return array
+     */
+    public function toArrayPublic()
+    {
+        $response = parent::toArrayPublic();
+
+        $isScrooge = Payment\Gateway::isScroogeGatewayAndMerchant(
+            $this->getGateway(),
+            $this->getMerchantId()
+        );
+
+        if ($isScrooge === true)
+        {
+            $scroogeResponse = $this->getPublicStatusFromScrooge($response);
+
+            return $scroogeResponse;
+        }
+
+        return $response;
     }
 }

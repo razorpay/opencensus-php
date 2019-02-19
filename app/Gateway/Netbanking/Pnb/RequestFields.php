@@ -29,4 +29,10 @@ class RequestFields
     // for verify
     const BANK_PAYMENT_ID = 'transaction_id';
     const RESPONSE_CODE   = 'response_code';
+
+    //for refund
+    const MERCHANT_REFUND_ID  = 'merchant_refund_id';
+
+    //for verify refund
+    const MERCHANT_ORDER_ID = 'merchant_order_id';
 }

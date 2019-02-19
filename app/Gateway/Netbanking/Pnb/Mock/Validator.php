@@ -43,10 +43,19 @@ class Validator extends Base\Validator
     ];
 
     protected static $refundRules = [
-        RequestFields::API_KEY         => 'required|string',
-        RequestFields::BANK_PAYMENT_ID => 'sometimes|string',
-        RequestFields::AMOUNT          => 'required|numeric',
-        RequestFields::DESCRIPTION     => 'required|string',
-        RequestFields::CHECKSUM        => 'required|string',
+        RequestFields::API_KEY            => 'required|string',
+        RequestFields::BANK_PAYMENT_ID    => 'sometimes|string',
+        RequestFields::MERCHANT_REFUND_ID => 'sometimes|string',
+        RequestFields::AMOUNT             => 'required|numeric',
+        RequestFields::DESCRIPTION        => 'required|string',
+        RequestFields::CHECKSUM           => 'required|string',
+    ];
+
+    protected static $verifyRefundRules = [
+        RequestFields::API_KEY            => 'required|string',
+        RequestFields::BANK_PAYMENT_ID    => 'sometimes|string',
+        RequestFields::MERCHANT_REFUND_ID => 'sometimes|string',
+        RequestFields::MERCHANT_ORDER_ID  => 'sometimes|string',
+        RequestFields::CHECKSUM           => 'required|string',
     ];
 }

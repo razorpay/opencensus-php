@@ -34,6 +34,15 @@ class Repository extends BaseRepository
                     ->firstOrFailPublic();
     }
 
+    public function findByEntityTypeEntityIdAndName(string $entityType, string $entityId, string $featureName)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_TYPE, $entityType)
+                    ->where(Entity::ENTITY_ID, $entityId)
+                    ->where(Entity::NAME, $featureName)
+                    ->first();
+    }
+
     public function findByEntityIdAndNameOnConnection(string $entityId, string $featureName, string $mode)
     {
         return $this->newQueryWithConnection($mode)

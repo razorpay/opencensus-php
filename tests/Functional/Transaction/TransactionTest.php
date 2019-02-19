@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Models\Transaction;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
@@ -13,6 +14,7 @@ class TransactionTest extends TestCase
 {
     use PaymentTrait;
     use HeimdallTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -396,6 +398,23 @@ class TransactionTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest($testData);
+    }
+
+    public function testReconcilePaymentTransaction()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment = $this->doAuthPayment($payment);
+        $refund = $this->refundAuthorizedPayment($payment['razorpay_payment_id']);
+        $this->assertEquals($refund['payment_id'], $payment['razorpay_payment_id']);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('refunded', $payment->getStatus());
+
+        list($txn, $feeSplit) = $this->fixtures->payment->createTxnForAuthPayment($payment);
+
+        $this->assertEquals($payment->getId(), $txn->getEntityId());
+        $this->assertEquals(0, $txn->getFee());
     }
 
     protected function createMultipleTransactions()

@@ -5,9 +5,12 @@ namespace RZP\Models\P2p\Device;
 use RZP\Models\P2p\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
+use RZP\Models\P2p\Base\Traits;
 
 class Entity extends Base\Entity
 {
+    use Traits\HasMerchant;
+
     const CUSTOMER_ID  = 'customer_id';
     const MERCHANT_ID  = 'merchant_id';
     const CONTACT      = 'contact';
@@ -21,12 +24,17 @@ class Entity extends Base\Entity
     const GEOCODE      = 'geocode';
     const AUTH_TOKEN   = 'auth_token';
 
+    const REGISTER_TOKEN    = 'register_token';
+    const DEVICE_TOKEN      = 'device_token';
+
     /************** Entity Properties ************/
 
     protected $entity             = 'p2p_device';
     protected static $sign        = 'device';
-    protected $generateIdOnCreate = false;
-    protected static $generators  = [];
+    protected $generateIdOnCreate = true;
+    protected static $generators  = [
+        Entity::AUTH_TOKEN,
+    ];
 
     protected $dates = [
         Entity::DELETED_AT,
@@ -36,7 +44,6 @@ class Entity extends Base\Entity
 
     protected $fillable = [
         Entity::CUSTOMER_ID,
-        Entity::MERCHANT_ID,
         Entity::CONTACT,
         Entity::SIMID,
         Entity::UUID,
@@ -85,7 +92,6 @@ class Entity extends Base\Entity
 
     protected $defaults = [
         Entity::CUSTOMER_ID  => null,
-        Entity::MERCHANT_ID  => null,
         Entity::CONTACT      => null,
         Entity::SIMID        => null,
         Entity::UUID         => null,
@@ -95,7 +101,6 @@ class Entity extends Base\Entity
         Entity::APP_NAME     => null,
         Entity::IP           => null,
         Entity::GEOCODE      => null,
-        Entity::AUTH_TOKEN   => null,
     ];
 
     protected $casts = [
@@ -116,6 +121,13 @@ class Entity extends Base\Entity
         Entity::CREATED_AT   => 'int',
         Entity::UPDATED_AT   => 'int',
     ];
+
+    /***************** GENERATORS *****************/
+
+    public function generateAuthToken()
+    {
+        $this->setAuthToken(gen_uuid());
+    }
 
     /***************** SETTERS *****************/
 
@@ -323,5 +335,10 @@ class Entity extends Base\Entity
     public function customer()
     {
         return $this->belongsTo(Customer\Entity::class);
+    }
+
+    public function deviceTokens()
+    {
+        return $this->hasMany(DeviceToken\Entity::class, DeviceToken\Entity::DEVICE_ID);
     }
 }

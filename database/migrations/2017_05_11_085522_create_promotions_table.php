@@ -5,6 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Schedule;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Credits\Entity as Credits;
 use RZP\Models\Promotion\Entity as Promotion;
 
@@ -27,7 +28,8 @@ class CreatePromotionsTable extends Migration
             $table->string(Promotion::NAME, 50);
 
             $table->integer(Promotion::CREDIT_AMOUNT)
-                  ->unsigned();
+                  ->unsigned()
+                  ->default(0);
 
             $table->string(Promotion::CREDIT_TYPE, 20);
 
@@ -40,6 +42,15 @@ class CreatePromotionsTable extends Migration
 
             $table->tinyInteger(Promotion::CREDITS_EXPIRE)
                   ->default(0);
+
+            $table->string(Promotion::PURPOSE,255)
+                  ->nullable();
+
+            $table->string(Promotion::CREATOR_NAME,255)
+                  ->nullable();
+
+            $table->char(Promotion::PRICING_PLAN_ID, PublicEntity::ID_LENGTH)
+                  ->nullable();
 
             $table->integer(Promotion::CREATED_AT);
 

@@ -34,11 +34,11 @@ class Validator extends Base\Validator
         if (($type === Component::FEE) or
             ($type === Component::TAX))
         {
-            assert ($count === null);
+            assertTrue ($count === null);
         }
         else
         {
-            assert (is_int($count));
+            assertTrue (is_int($count));
         }
     }
 }

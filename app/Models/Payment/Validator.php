@@ -120,7 +120,7 @@ class Validator extends Base\Validator
 
     protected static $verifyAllRules = [
         'gateway'                    => 'sometimes|string|max:50',
-        'delay'                      => 'sometimes|integer|max:43200',
+        'delay'                      => 'sometimes|integer|max:2592000',
         'count'                      => 'sometimes|integer|max:10000'
     ];
 
@@ -166,27 +166,8 @@ class Validator extends Base\Validator
         'vpa' => 'required|string|filled|max:100|custom',
     ];
 
-    // TODO: needs to be removed
-    protected static $payoutRules = [
-        'terminal'              => 'required|array',
-        'merchant'              => 'required|array',
-        'fund_transfer_attempt' => 'sometimes|array',
-        'gateway_input'         => 'required|array',
-        'gateway_input.vpa'     => 'required|string|filled|max:100',
-        'gateway_input.amount'  => 'required|integer',
-        'gateway_input.ref_id'  => 'required|string',
-    ];
-
-    // TODO: needs to be removed
-    protected static $payoutVerifyRules = [
-        'terminal'              => 'required|array',
-        'fund_transfer_attempt' => 'sometimes|array',
-        'gateway_input'         => 'required|array',
-        'gateway_input.ref_id'  => 'required|string',
-    ];
-
     protected static $callbackUrlValidationRules = [
-        'callback_url' => 'sometimes|url',
+        'callback_url' => 'sometimes|url|custom',
     ];
 
     protected static $acknowledgeRules = [
@@ -402,6 +383,53 @@ class Validator extends Base\Validator
                 [
                     'vpa' => $vpa
                 ]);
+        }
+    }
+
+    protected function validateCallbackUrl($attribute, $callbackUrl)
+    {
+        if (empty($callbackUrl) === true)
+        {
+            return;
+        }
+
+        $app = App::getFacadeRoot();
+
+        $merchant = $app['basicauth']->getMerchant();
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::CALLBACK_URL_VALIDATION) === true)
+
+        {
+            $merchantUrlArray = explode(".", parse_url($merchant->getWebsite(), PHP_URL_HOST));
+            $callbackUrlArray = explode(".", parse_url($callbackUrl, PHP_URL_HOST));
+
+            // case where https://example.com
+            if (count($merchantUrlArray) === 2)
+            {
+                array_unshift($merchantUrlArray, "");
+            }
+
+            // case where https://example.com
+            if (count($callbackUrlArray) === 2)
+            {
+                array_unshift($callbackUrlArray, "");
+            }
+
+            if ((empty($callbackUrlArray) === true) or
+                ($merchantUrlArray[1] !== $callbackUrlArray[1]) or
+                ($merchantUrlArray[2] !== $callbackUrlArray[2]))
+            {
+                $traceData = [
+                    'merchant_website' => $merchant->getWebsite(),
+                    'callback_url'     => $callbackUrl,
+                ];
+
+                throw new Exception\BadRequestValidationFailureException(
+                    'Invalid callback url',
+                    'callback_url',
+                    $traceData
+                );
+            }
         }
     }
 

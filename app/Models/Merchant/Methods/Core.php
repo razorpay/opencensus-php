@@ -105,12 +105,16 @@ class Core extends Base\Core
         $this->validateInternationalPricingForMerchant($merchant, $plan);
     }
 
-    public function checkMccAndEnableEmi(Merchant\Entity $merchant, Entity $methods)
+    public function checkCategorySubcategoryAndEnableEmi(Merchant\Entity $merchant, Entity $methods)
     {
-        $mcc = $merchant->getCategory();
+        $merchantDetails = (new Merchant\Detail\Core())->getMerchantDetails($merchant);
 
-        if ((empty($mcc) === false) and
-            (in_array($mcc, Emi\Constants::$blackListedMcc, true) === false))
+        $category = $merchantDetails->getBusinessCategory();
+
+        $subcategory = $merchantDetails->getBusinessSubCategory();
+
+        if ((empty($category) === false) and
+            (Emi\Constants::isCategoryOrSubcategoryBlacklisted($category, $subcategory) === false))
         {
             $methods->setMethods([Entity::EMI => true]);
 
@@ -147,6 +151,7 @@ class Core extends Base\Core
             Payment\Method::CARD         => true,
             Entity::DEBIT_CARD           => true,
             Entity::CREDIT_CARD          => true,
+            Entity::CARD_NETWORKS        => [],
             Payment\Gateway::AMEX        => false,
             Payment\Method::NETBANKING   => [],
             Payment\Method::WALLET       => [],
@@ -160,6 +165,7 @@ class Core extends Base\Core
         $data[Payment\Method::CARD]  = $methods->isCardEnabled();
         $data[Entity::DEBIT_CARD]    = $methods->isDebitCardEnabled();
         $data[Entity::CREDIT_CARD]   = $methods->isCreditCardEnabled();
+        $data[Entity::CARD_NETWORKS] = $methods->getCardNetworks();
         $data[Payment\Gateway::AMEX] = $methods->isAmexEnabled();
         $netbankingEnabled           = $methods->isNetbankingEnabled();
 
@@ -174,7 +180,8 @@ class Core extends Base\Core
 
         $data[Payment\Method::WALLET] = $methods->getEnabledWallets();
         $data[Payment\Method::UPI] = $methods->isUpiEnabled();
-        $data[Payment\Method::CARDLESS_EMI] = $this->getCardlessEmiProviders($merchant);
+        $data[Payment\Method::CARDLESS_EMI] =
+                                      $methods->isCardlessEmiEnabled() ? $this->getCardlessEmiProviders($merchant) : [];
         $emi = $methods->isEmiEnabled();
 
         if ($emi === true)

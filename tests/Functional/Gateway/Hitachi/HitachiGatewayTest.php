@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Hitachi;
 
+use RZP\Exception\PaymentVerificationException;
 use RZP\Models\Card;
 use RZP\Gateway\Hitachi;
 use RZP\Models\Payment\Gateway;
@@ -9,6 +10,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Mpi\Enstage\Field;
 use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Gateway\Hitachi\ResponseFields;
 
 class HitachiGatewayTest extends TestCase
 {
@@ -47,7 +49,7 @@ class HitachiGatewayTest extends TestCase
 
         $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
 
-        $this->mockTokenex();
+        $this->mockCardVault();
     }
 
     public function testSuccessful13DigitPanForEnrolledCard()
@@ -529,6 +531,28 @@ class HitachiGatewayTest extends TestCase
         $this->refundReverseFailureTestHelper($payment);
     }
 
+    public function testRefundTimeoutFailure()
+    {
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->mockServerContentFunction(function (& $content)
+        {
+            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT);
+        });
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $hitachi = $this->getLastEntity('hitachi', true);
+
+        $this->assertEquals(explode('_', $refund['id'])[1], $hitachi['refund_id']);
+
+        $this->assertNull($hitachi[Hitachi\Entity::RESPONSE_CODE]);
+    }
+
     public function testPaymentReverse()
     {
         $this->doAuthPayment($this->payment);
@@ -733,7 +757,7 @@ class HitachiGatewayTest extends TestCase
 
     public function testAuthenticationGatewayExpressPayDisabled()
     {
-        $this->fixtures->merchant->addFeatures('otpelf');
+        $this->fixtures->merchant->addFeatures('headless');
 
         $this->fixtures->iin->create([
             'iin'     => '556763',
@@ -958,6 +982,124 @@ class HitachiGatewayTest extends TestCase
         ]);
     }
 
+    public function testVerifyRefundSuccessfulOnGateway()
+    {
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'refund')
+            {
+                $content['pRespCode'] = 'F';
+            }
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $this->clearMockFunction();
+
+        $response = $this->retryFailedRefund($refund['id']);
+
+        $this->assertEquals($refund['id'], $response['refund_id']);
+        $this->assertEquals('processed', $response['status']);
+        $this->assertEquals(1, $refund['attempts']);
+    }
+
+    public function testVerifyRefundFailedOnGateway()
+    {
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'refund')
+            {
+                $content['pRespCode'] = 'F';
+            }
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $this->clearMockFunction();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['pRespCode'] = '01';
+            }
+        });
+
+        $response = $this->retryFailedRefund($refund['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($refund['id'], $response['refund_id']);
+        $this->assertEquals('processed', $response['status']);
+        $this->assertEquals(2, $refund['attempts']);
+    }
+
+    public function testNullResponseInVerifyRefund()
+    {
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'refund')
+            {
+                $content[ResponseFields::RESPONSE_CODE]      = null;
+                $content[ResponseFields::TRANSACTION_TYPE]   = null;
+                $content[ResponseFields::REQUEST_ID]         = null;
+                $content[ResponseFields::TRANSACTION_AMOUNT] = null;
+                $content[ResponseFields::MERCHANT_ID]        = null;
+                $content[ResponseFields::MERCHANT_REFERENCE] = null;
+                $content[ResponseFields::RETRIEVAL_REF_NUM]  = null;
+                $content[ResponseFields::STATUS]             = null;
+                $content[ResponseFields::CURRENCY]           = null;
+            }
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $this->clearMockFunction();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['pRespCode'] = '01';
+            }
+        });
+
+        $response = $this->retryFailedRefund($refund['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($refund['id'], $response['refund_id']);
+        $this->assertEquals('processed', $response['status']);
+        $this->assertEquals(2, $refund['attempts']);
+    }
+
     public function testUnknownEnrolledCard()
     {
         $payment = $this->defaultAuthPayment([
@@ -967,7 +1109,7 @@ class HitachiGatewayTest extends TestCase
                 'expiry_year'  => '21',
                 'cvv'          => 123,
                 'name'         => 'Test Card',
-                'international'=> true
+                'international' => true
             ]
         ]);
         $txn = $this->getEntities('transaction', [], true);
@@ -996,5 +1138,31 @@ class HitachiGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testHitachiCaptureEntity'], $gatewayPayment);
+    }
+
+    public function testDefinitePaymentVerifyFailed()
+    {
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $data = $this->testData['testVerifyMismatch'];
+
+        $this->mockDefiniteVerifyFailed();
+
+        $e = null;
+
+        try
+        {
+            $this->verifyPayment($payment['id']);
+        }
+        catch (PaymentVerificationException $e)
+        {
+            $this->assertEquals($e->getAction(), 'finish');
+        }
+        finally
+        {
+            self::assertNotNull($e);
+        }
     }
 }

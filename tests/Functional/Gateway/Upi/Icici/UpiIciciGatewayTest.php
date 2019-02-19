@@ -2,20 +2,23 @@
 
 namespace RZP\Tests\Functional\Gateway\Upi\Icici;
 
+use Mail;
 use Cache;
-use Closure;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
-use Mail;
+use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\RuntimeException;
+use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 
 class UpiIciciGatewayTest extends TestCase
 {
+    use OAuthTrait;
     use PaymentTrait;
     use DbEntityFetchTrait;
 
@@ -24,6 +27,10 @@ class UpiIciciGatewayTest extends TestCase
         $this->testDataFilePath = __DIR__ . '/UpiIciciGatewayTestData.php';
 
         parent::setUp();
+
+        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->app->make(Factory::class)->load($factoryPath);
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_icici_terminal');
 
@@ -159,6 +166,56 @@ class UpiIciciGatewayTest extends TestCase
         $paymentId = $response['razorpay_payment_id'];
 
         $this->checkPaymentStatus($paymentId, 'created');
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals(10, $upiEntity['expiry_time']);
+    }
+
+    /**
+     * Tests s2s upi on partner auth with application feature(s2s)
+     */
+    public function testPaymentWithExpiryPartnerAuth()
+    {
+        $client = $this->createPartnerApplicationAndGetClientByEnv(
+            'dev',
+            [
+                'type' => 'partner',
+                'id'   => 'AwtIC8XQqM0Wet'
+            ]);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        $sub = $this->fixtures->merchant->createWithBalance();
+
+        $this->fixtures->methods->createDefaultMethods(['merchant_id' => $sub->getId()]);
+
+        $this->fixtures->merchant->enableUpi($sub->getId());
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'application', 'entity_id'  => 'AwtIC8XQqM0Wet', 'name' => 's2s']);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => $sub->getId(),
+            ]
+        );
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['upi']['expiry_time'] = 10;
+
+        $response = $this->doS2sUpiPaymentPartner($client, $sub->getId(), $payment);
+
+        $paymentId = $response['razorpay_payment_id'];
+
+        $pay = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('created', $pay['status']);
+
+        $this->assertEquals($paymentId, $pay['public_id']);
 
         $upiEntity = $this->getLastEntity('upi', true);
 
@@ -422,11 +479,69 @@ EOT;
 
         $this->capturePayment($payment['id'], 50000);
 
+        $this->mockServerContentFunction(function(& $content, $action)
+        {
+            if ($action === 'verify')
+            {
+                $content['status'] = 'FAILURE';
+            }
+
+            if ($action === 'refund')
+            {
+                $content[Fields::ORIGINAL_BANK_RRN_REQ] = '836416213628';
+            }
+        });
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertNotNull($refund['reference1']);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertTestResponse($upiEntity, 'testRefundUpiEntity');
+    }
+
+    public function testFullRefundVerifyRecordNotFound()
+    {
+        $payment = $this->testPaymentWithS2S();
+
+        $this->capturePayment($payment['id'], 50000);
+
+        $this->mockServerContentFunction(function(& $content, $action)
+        {
+            if ($action === 'verify')
+            {
+                $content['status'] = '';
+                $content['message'] = 'original record not found';
+            }
+
+            if ($action === 'refund')
+            {
+                $content[Fields::ORIGINAL_BANK_RRN_REQ] = '836416213628';
+            }
+        });
+
         $this->refundPayment($payment['id']);
 
         $upiEntity = $this->getLastEntity('upi', true);
 
         $this->assertTestResponse($upiEntity, 'testRefundUpiEntity');
+    }
+
+    public function testFullRefundVerifySuccess()
+    {
+        $payment = $this->testPaymentWithS2S();
+
+        $this->capturePayment($payment['id'], 50000);
+
+        $this->refundPayment($payment['id']);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('authorize', $upiEntity['action']);
+        $this->assertEquals(null, $upiEntity['refund_id']);
     }
 
     public function testRetryRefund()
@@ -455,7 +570,7 @@ EOT;
             }
         });
 
-        $refund = $this->retryFailedRefund($refund['id']);
+        $refund = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         $this->assertEquals($refund['status'], 'processed');
     }
@@ -493,7 +608,7 @@ EOT;
             }
         });
 
-        $refund = $this->retryFailedRefund($refund['id']);
+        $refund = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
 
         $this->assertEquals($refund['status'], 'processed');
     }
@@ -515,6 +630,14 @@ EOT;
                 $assertion = ($actualRefundAmount === $refundAmount);
 
                 $this->assertTrue($assertion, 'Actual refund amount different than expected amount');
+            }
+        });
+
+        $this->mockServerContentFunction(function(& $content, $action)
+        {
+            if ($action === 'verify')
+            {
+                $content['status'] = 'FAILURE';
             }
         });
 

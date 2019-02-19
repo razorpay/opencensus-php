@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Card;
 
+use RZP\Models\Card\IIN;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -36,11 +37,29 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditIinFailedInvalidMessageType()
+    {
+        $this->testAddIin();
+
+        $this->startTest();
+    }
+
     public function testEditIin()
     {
         $this->testAddIin();
 
         $this->startTest();
+    }
+
+    public function testLockedIin()
+    {
+        $this->testAddIin();
+
+        $this->startTest();
+
+        $iin = $this->getLastEntity('iin', true);
+
+        $this->assertEquals($iin[IIN\Entity::LOCKED], true);
     }
 
     public function testGetIin()
@@ -171,11 +190,60 @@ class IinTest extends TestCase
 
         $this->fixtures->edit('iin', 401200, ['flows' => $flows]);
 
+
+
         $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'axis_express_pay', 'headless']);
 
         $this->ba->privateAuth();
 
         $this->startTest();
+    }
+
+    public function testGetBulkFlows()
+    {
+        $flows = [
+            'pin' => '1',
+            'otp' => '1',
+        ];
+
+        $this->fixtures->edit('iin', 401200, ['flows' => $flows]);
+
+        $this->fixtures->merchant->addFeatures(['iin_listing']);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $this->assertEquals([401200], $response['iins']);
+
+        $flows = [
+            'pin' => '1',
+            'otp' => '1',
+            'headless_otp' => '1',
+        ];
+
+        $this->fixtures->edit('iin', 401200, ['flows' => $flows]);
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $this->assertEquals([401200], $response['iins']);
+
+         $flows = [
+            'pin' => '1',
+            'headless_otp' => '1',
+        ];
+
+        $this->fixtures->edit('iin', 401200, ['flows' => $flows]);
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $this->assertEquals([401200], $response['iins']);
     }
 
     public function startTest($testDataToReplace = [])

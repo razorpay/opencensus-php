@@ -147,8 +147,7 @@ class Response
 
         $route = $this->getCurrentRouteName();
 
-        if ((isset($app[$key])) and
-            ($app[$key] !== null))
+        if (empty($app[$key]) === false)
         {
             if ($this->isMerchantCallbackRoute($route))
             {
@@ -283,7 +282,9 @@ class Response
             'payment_create_checkout',
             'payment_callback_with_key_post',
             'payment_callback_with_key_get',
-            'payment_redirect_callback'
+            'payment_redirect_callback',
+            'payment_callback_get',
+            'payment_callback_post',
         ];
 
         return (in_array($route, $callbackRoutes));
@@ -341,6 +342,7 @@ class Response
             'merchant_methods_downtime',
             'customer_create_token_public',
             'refund_fetch_for_customer',
+            'get_merchant_partner_status',
         ];
 
         if (in_array($route, $routes, true) === true)

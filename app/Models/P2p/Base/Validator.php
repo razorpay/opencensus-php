@@ -3,10 +3,18 @@
 namespace RZP\Models\P2p\Base;
 
 use RZP\Base;
+use RZP\Models\P2p\Base\Upi;
 use RZP\Models\P2p\Base\Libraries\Rules;
 
 class Validator extends Base\Validator
 {
+    protected static $fetchAllRules;
+    protected static $fetchRules;
+
+    /**
+     * @var \RZP\Models\P2p\Base\Entity
+     */
+    protected $entity;
     /**
      * Overriding this method allows us to register rules for defined action
      *
@@ -29,7 +37,7 @@ class Validator extends Base\Validator
      */
     protected function registerRulesForName(string $ruleName)
     {
-        $method = 'get' . ucfirst($ruleName);
+        $method = 'make' . ucfirst($ruleName);
 
         $rules = $this->{$method}();
 
@@ -51,9 +59,9 @@ class Validator extends Base\Validator
      *
      * @return Rules
      */
-    protected function makeRules(array $with)
+    protected function makeRules(array $with = [])
     {
-        return (new Rules($this->rules(), $with));
+        return (new Rules($this->rules()))->with($with);
     }
 
     protected function arrayRules(string $prepend, array $rules)
@@ -68,5 +76,44 @@ class Validator extends Base\Validator
         }
 
         return $prepended;
+    }
+
+    public function makeEntityIdRules()
+    {
+        return $this->makeRules([
+            Entity::ID => 'required|string'
+        ]);
+    }
+
+    public function makePublicIdRules()
+    {
+        return $this->makeRules([
+            Entity::ID => 'required|string|custom',
+        ]);
+    }
+
+    public function makeFetchAllRules()
+    {
+        $rules = $this->makeRules([]);
+
+        return $rules;
+    }
+
+    public function makeFetchRules()
+    {
+        $rules = $this->makePublicIdRules();
+
+        return $rules;
+    }
+
+    protected function validateId($attribute, $value)
+    {
+        // A work around to validate the public id
+        $this->entity->verifyIdAndStripSign($value);
+    }
+
+    protected function validateTxn()
+    {
+
     }
 }

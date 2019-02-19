@@ -19,6 +19,12 @@ class Network
     // Unidentified
     const UNKNOWN = 'UNKNOWN';
 
+    /**
+     * Amex disabled by default
+     * Bin => 1111110
+     */
+    const DEFAULT_CARD_NETWORKS = 126;
+
     public static $fullName = array(
         self::AMEX    => 'American Express',
         self::DICL    => 'Diners Club',
@@ -53,14 +59,24 @@ class Network
         self::DISC,
     );
 
+    public static $cardNetworkMap = [
+        Network::AMEX  => 1,
+        Network::DICL  => 2,
+        Network::MC    => 4,
+        Network::MAES  => 8,
+        Network::VISA  => 16,
+        Network::JCB   => 32,
+        Network::RUPAY => 64,
+    ];
+
     public static $networkRegexes = array(
         self::MC    => '/^5[1-5][0-9]{4,}$/',
         self::VISA  => '/^4[0-9]{5,}$/',
         self::AMEX  => '/^3[47][0-9]{4,}$/',
-        self::JCB   => '/^(?:2131|1800|35[0-9]{2})[0-9]{2,}$/',
+        self::JCB   => '/^((?!353800)(?:2131|1800|35[0-9]{2}))[0-9]{2,}$/',
         self::DICL  => '/^3(?:0[0-5]|[68][0-9])[0-9]{3,}$/',
         self::UNP   => '/^62[0-9]{4,}$/',
-        self::RUPAY => '/^(508[5-9]|6(069(8[5-9]|9)|07([0-8]|9([0-7]|8[0-4]))|08([0-4]|500)|52([2-9]|1[5-9])|53(0|1[0-4])))/',
+        self::RUPAY => '/^(508[5-9]|6(069(8[5-9]|9)|07([0-8]|9([0-7]|8[0-4]))|08([0-4]|500)|52([2-9]|1[5-9])|53(0|1[0-4]))|353800)/',
         self::MAES  => '/^(50[1-7,9]|508[0-4]|63|66|6[8-9]|600[0-9]|6010|601[2-9]|60[2-5]|6060|609|61|620|621|6220|6221[0-1])[0-9]{1,}$/',
         self::DISC  => '/^6(?:011|5[0-9]{2})[0-9]{2,}$/',
     );
@@ -151,6 +167,51 @@ class Network
     public static function isUnsupportedNetwork($network)
     {
         return (in_array($network, self::$unsupportedNetworks, true));
+    }
+
+    /**
+     * Iterates through cardnetwork and returns the hex value to be stored
+     */
+    public static function getHexValue(array $cardNetworks): int
+    {
+        $cardNetwork = 0;
+
+        foreach ($cardNetworks as $network => $value)
+        {
+            $bitPosition = self::$cardNetworkMap[strtoupper($network)];
+
+            // Set the bit
+            if ($value === 1)
+            {
+                $cardNetwork = $cardNetwork | $bitPosition;
+            }
+            // Reset the bit
+            else
+            {
+                $cardNetwork = $cardNetwork & (~$bitPosition);
+            }
+        }
+
+        return $cardNetwork;
+    }
+
+    public static function getEnabledCardNetworks($networks): array
+    {
+        $cardNetworks = [];
+
+        foreach (self::$cardNetworkMap as $cardNetwork => $value)
+        {
+            if (($networks & $value) > 0)
+            {
+                $cardNetworks[$cardNetwork] = 1;
+            }
+            else
+            {
+                $cardNetworks[$cardNetwork] = 0;
+            }
+        }
+
+        return $cardNetworks;
     }
 
     public static function getFullName($network)

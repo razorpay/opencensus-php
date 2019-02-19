@@ -7,16 +7,14 @@
     "required": [
         "id",
         "entity",
-        "txn_id",
         "status",
         "amount",
         "description",
+        "flow",
         "type",
         "currency",
-        "error_description",
         "error_code",
-        "transaction_type",
-        "rrn",
+        "error_description",
         "created_at",
         "completed_at",
         "expire_at"
@@ -59,15 +57,14 @@
         "error_code": {
             "type": ["string", "null"]
         },
-        "transaction_type": {
+        "flow": {
             "type": "string",
             "pattern": "^(.*)$"
         },
-        "rrn": {
-            "type": ["string", "null"],
-            "pattern": "^(.*)$"
-        },
         "created_at": {
+            "type": ["integer", "null"]
+        },
+        "initiated_at": {
             "type": ["integer", "null"]
         },
         "completed_at": {

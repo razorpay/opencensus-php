@@ -58,7 +58,7 @@ class NetbankingIciciEMandateTest extends TestCase
             'name'              => self::NAME,
         ];
 
-        $this->mockTokenex();
+        $this->mockCardVault();
     }
 
     public function testEMandateInitialPayment()

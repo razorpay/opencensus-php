@@ -92,8 +92,8 @@ return [
             'content' => [
                 'type'    => 'emandate_debit',
                 'targets' => ['enach_rbl'],
-                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
-                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp(),
+                'begin'   => Carbon::yesterday(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::today(Timezone::IST)->getTimestamp() - 1,
             ],
             'url' => '/gateway/files',
             'method' => 'POST'

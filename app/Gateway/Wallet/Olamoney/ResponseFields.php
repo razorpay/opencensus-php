@@ -25,4 +25,9 @@ class ResponseFields
     const VERIFY_FAILED_STATUS      = [Status::INITIATED, Status::FAILED];
 
     const REFUND_SUCCESS_STATUS     = Status::SUCCESS;
+    const SALT                      = 'SALT';
+    const X_TENANT                  = 'xtenant';
+    const X_TENANT_KEY              = 'xtenantKey';
+    const X_AUTH_KEY                = 'xauthKey';
+    const BODY                      = 'body';
 }

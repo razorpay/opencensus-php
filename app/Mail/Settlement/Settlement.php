@@ -63,6 +63,11 @@ class Settlement extends Base
 
         $subject = $this->channel . " Settlement File for $today";
 
+        if (isset($this->data['file_data']) === true)
+        {
+            $subject = $this->channel . " Settlement File::". $this->data['file_data']['file_name'] ." for $today";
+        }
+
         return $subject;
     }
 

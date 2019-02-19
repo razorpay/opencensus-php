@@ -69,9 +69,16 @@ return array(
             'strict'    => true,
             'lag_check' => [
                 'driver' => 'redis',
-                'flag'   => ConfigKey::SKIP_SLAVE,
-                'flag2'  => ConfigKey::MASTER_PERCENT,
-             ]
+                'flag'   => ConfigKey::MASTER_PERCENT,
+             ],
+            'heartbeat_check' => [
+                'driver'                => 'heartbeat',
+                'enabled'               => ConfigKey::HEARTBEAT_ENABLED,
+                'mock'                  => ConfigKey::HEARTBEAT_MOCK,
+                'time_threshold'        => ConfigKey::HEARTBEAT_TIME_THRESHOLD,
+                'routes'                => ConfigKey::HEARTBEAT_ROUTES,
+                'traffic_percentage'    => ConfigKey::HEARTBEAT_TRAFFIC_PERCENTAGE,
+            ],
         ],
 
         'test' => [
@@ -96,9 +103,16 @@ return array(
             'strict'    => true,
             'lag_check' => [
                 'driver' => 'redis',
-                'flag'   => ConfigKey::SKIP_SLAVE,
-                'flag2'  => ConfigKey::MASTER_PERCENT,
-             ]
+                'flag'   => ConfigKey::MASTER_PERCENT,
+             ],
+            'heartbeat_check' => [
+                'driver'                => 'heartbeat',
+                'enabled'               => ConfigKey::HEARTBEAT_ENABLED,
+                'mock'                  => ConfigKey::HEARTBEAT_MOCK,
+                'time_threshold'        => ConfigKey::HEARTBEAT_TIME_THRESHOLD,
+                'routes'                => ConfigKey::HEARTBEAT_ROUTES,
+                'traffic_percentage'    => ConfigKey::HEARTBEAT_TRAFFIC_PERCENTAGE,
+            ],
         ],
 
         'slave-live' => [
@@ -219,6 +233,16 @@ return array(
             'port'     => env('REDIS_LABS_PORT'),
             'timeout'  => 30,
             'options'  => [
+                'parameters' => (empty(env('REDIS_LABS_PASSWORD')) === false) ? ['password' => env('REDIS_LABS_PASSWORD')] : [],
+            ]
+        ],
+
+        'session' => [
+            'host'     => env('REDIS_LABS_HOST'),
+            'port'     => env('REDIS_LABS_PORT'),
+            'timeout'  => 30,
+            'options'  => [
+                'prefix'             => 'session:',
                 'parameters' => (empty(env('REDIS_LABS_PASSWORD')) === false) ? ['password' => env('REDIS_LABS_PASSWORD')] : [],
             ]
         ],

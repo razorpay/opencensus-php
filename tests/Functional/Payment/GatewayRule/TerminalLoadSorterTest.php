@@ -58,7 +58,7 @@ class TerminalLoadSorterTest extends TestCase
         $this->fixtures->create('terminal:shared_hdfc_terminal');
         $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $data = $this->testData[__FUNCTION__];
 
@@ -81,7 +81,7 @@ class TerminalLoadSorterTest extends TestCase
         $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal', ['international' => true]);
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
         $this->fixtures->merchant->enableInternational();
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -143,6 +143,6 @@ class TerminalLoadSorterTest extends TestCase
     {
         $this->fixtures->create('terminal:all_shared_terminals');
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-        $this->mockTokenex();
+        $this->mockCardVault();
     }
 }

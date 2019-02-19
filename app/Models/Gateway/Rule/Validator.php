@@ -18,30 +18,33 @@ class Validator extends Base\Validator
     const AMOUNTS = 'amounts';
 
     protected static $createRules = [
-        Entity::GATEWAY          => 'required_if:type,sorter|string|max:50|custom',
-        Entity::MERCHANT_ID      => 'required|alpha_num|size:14',
-        Entity::TYPE             => 'required|in:sorter,filter',
-        Entity::GROUP            => 'filled|string|max:50',
-        Entity::FILTER_TYPE      => 'required_unless:type,sorter|required_only_if:type,filter|in:select,reject',
-        Entity::LOAD             => 'required_unless:type,filter|required_only_if:type,sorter|numeric|between:0,100',
-        Entity::GATEWAY_ACQUIRER => 'sometimes_if:type,filter|string|max:30',
-        Entity::INTERNATIONAL    => 'filled|boolean',
-        Entity::NETWORK_CATEGORY => 'sometimes_if:type,filter|string|max:30',
-        Entity::CATEGORY2        => 'sometimes_if:type,filter|string|max:30|custom',
-        Entity::SHARED_TERMINAL  => 'filled|boolean',
-        Entity::METHOD           => 'required|string|max:30',
-        Entity::METHOD_TYPE      => 'filled|string|max:10',
-        Entity::ISSUER           => 'filled|string',
-        Entity::NETWORK          => 'filled|string|max:10',
-        Entity::MIN_AMOUNT       => 'filled|integer|min:0',
-        Entity::MAX_AMOUNT       => 'filled|integer|min:1',
-        Entity::EMI_DURATION     => 'required_only_if:method,emi|integer|in:3,6,9,12,18,24',
-        Entity::EMI_SUBVENTION   => 'required_only_if:method,emi|in:customer,merchant',
-        Entity::IINS             => 'filled|array',
-        Entity::CURRENCY         => 'filled|in:INR,USD,EUR,SGD',
-        Entity::COMMENTS         => 'filled|string|max:255',
-        Entity::RECURRING        => 'filled|boolean',
-        Entity::RECURRING_TYPE   => 'sometimes_if:recurring,1|in:auto,initial',
+        Entity::GATEWAY                 => 'required_if:type,sorter|string|max:50|custom',
+        Entity::MERCHANT_ID             => 'required|alpha_num|size:14',
+        Entity::TYPE                    => 'required|in:sorter,filter',
+        Entity::GROUP                   => 'filled|string|max:50',
+        Entity::FILTER_TYPE             => 'required_unless:type,sorter|required_only_if:type,filter|in:select,reject',
+        Entity::LOAD                    => 'required_unless:type,filter|required_only_if:type,sorter|numeric|between:0,100',
+        Entity::GATEWAY_ACQUIRER        => 'sometimes_if:type,filter|string|max:30',
+        Entity::INTERNATIONAL           => 'filled|boolean',
+        Entity::NETWORK_CATEGORY        => 'sometimes_if:type,filter|string|max:30',
+        Entity::CATEGORY2               => 'sometimes_if:type,filter|string|max:30|custom',
+        Entity::SHARED_TERMINAL         => 'filled|boolean',
+        Entity::METHOD                  => 'required|string|max:30',
+        Entity::METHOD_TYPE             => 'filled|string|max:10',
+        Entity::ISSUER                  => 'filled|string',
+        Entity::NETWORK                 => 'filled|string|max:10',
+        Entity::MIN_AMOUNT              => 'filled|integer|min:0',
+        Entity::MAX_AMOUNT              => 'filled|integer|min:1',
+        Entity::EMI_DURATION            => 'required_only_if:method,emi|integer|in:3,6,9,12,18,24',
+        Entity::EMI_SUBVENTION          => 'required_only_if:method,emi|in:customer,merchant',
+        Entity::IINS                    => 'filled|array',
+        Entity::CURRENCY                => 'filled|in:INR,USD,EUR,SGD',
+        Entity::COMMENTS                => 'filled|string|max:255',
+        Entity::RECURRING               => 'filled|boolean',
+        Entity::RECURRING_TYPE          => 'sometimes_if:recurring,1|in:auto,initial',
+        Entity::STEP                    => 'sometimes|in:authorization,authentication',
+        Entity::AUTH_TYPE               => 'sometimes',
+        Entity::AUTHENTICATION_GATEWAY  => 'sometimes',
     ];
 
     protected static $editRules = [
@@ -75,6 +78,29 @@ class Validator extends Base\Validator
     protected function validateGateway(string $attribute, string $gateway)
     {
         Gateway::validateGateway($gateway);
+    }
+
+    protected function validateAuthenticationGateway(string $attribute, string $gateway)
+    {
+        Gateway::validateGateway($gateway);
+    }
+
+    protected function validateAuthType(string $attribute, string $authType)
+    {
+        // TODO move it to constants
+        $authTypes = [
+            'ivr',
+            'otp',
+            'headless_otp',
+            '3ds',
+        ];
+
+        if (($authType !== null) and
+            (in_array($authType, $authTypes, true) === false))
+        {
+           throw new Exception\BadRequestValidationFailureException(
+                'Invalide auth type for authentication gateway');
+        }
     }
 
     protected function validateRecurringType(array $input)

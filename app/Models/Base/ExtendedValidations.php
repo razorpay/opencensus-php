@@ -473,4 +473,24 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         return (($isAlphaNum === true) and
                 (preg_match(self::PAN_NUMBER_REGEX, $value) === 1));
     }
+
+    /**
+     * Validate that an attribute contains only alpha-numeric characters, dashes,
+     * underscores, and spaces (only space, no tabs, returns etc)
+     *
+     * @param  string  $attribute
+     * @param  mixed   $value
+     *
+     * @return bool
+     */
+    public function validateAlphaDashSpace($attribute, $value)
+    {
+        if ((is_string($value) === false) and
+            (is_numeric($value) === false))
+        {
+            return false;
+        }
+
+        return preg_match('/^[ \pL\pM\pN_-]+$/u', $value) > 0;
+    }
 }

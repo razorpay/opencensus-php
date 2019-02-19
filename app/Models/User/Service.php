@@ -12,6 +12,7 @@ use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Constants\Product;
 use RZP\Models\Invitation;
 use RZP\Mail\User as UserMail;
 use RZP\Models\Admin\AdminLead;
@@ -31,6 +32,10 @@ class Service extends Base\Service
         $invitation = null;
 
         $user = null;
+
+        $tokenData = null;
+
+        $this->trace->count(Merchant\Metric::SIGNUP_TOTAL);
 
         /*
          * If we have an invitation token, the user may have created an account
@@ -116,8 +121,13 @@ class Service extends Base\Service
         {
             $merchantInputData = [
                 'email' => $user['email'],
-                'name'  => $businessName,
+                'name'  => $businessName
             ];
+
+            if (empty($tokenData) === false)
+            {
+                $merchantInputData['org_id'] = $tokenData['org_id'];
+            }
 
             $data = $this->createMerchantFromUser($merchantInputData, $user, $referrer);
         }
@@ -181,7 +191,9 @@ class Service extends Base\Service
 
             $org['hostname'] = $this->auth->getOrgHostName();
 
-            $confirmationMail = new UserMail\AccountVerification($user, $org);
+            $requestOriginProduct = $this->auth->getRequestOriginProduct();
+
+            $confirmationMail = new UserMail\AccountVerification($user, $org, $requestOriginProduct);
 
             Mail::queue($confirmationMail);
         }
@@ -294,7 +306,7 @@ class Service extends Base\Service
         }
         else
         {
-            // using user context from header to avoid IDOR.
+            // Using user context from header to avoid IDOR.
             $user = $this->auth->getUser();
         }
 
@@ -376,7 +388,9 @@ class Service extends Base\Service
 
             $org['hostname'] = $this->auth->getOrgHostName();
 
-            $passwordResetMail = new UserMail\PasswordReset($user, $org);
+            $requestOriginProduct = $this->auth->getRequestOriginProduct();
+
+            $passwordResetMail = new UserMail\PasswordReset($user, $org, $requestOriginProduct);
 
             Mail::queue($passwordResetMail);
         }
@@ -552,46 +566,86 @@ class Service extends Base\Service
         }
     }
 
+    public function syncMerchantUserOnProducts(string $merchantId)
+    {
+        $userRole = null;
+
+        $product = $this->auth->getRequestOriginProduct();
+
+        $user = $this->auth->getUser();
+
+        $switchProduct = ($product === Product::BANKING) ? Product::PRIMARY : Product::BANKING;
+
+        $userMapping = $this->repo->merchant->getMerchantUserMapping($merchantId,
+                                                                     $user->getId(),
+                                                                     null,
+                                                                     $switchProduct);
+        if (empty($userMapping) === false)
+        {
+            $currentUserRole = $userMapping->pivot->role;
+
+            if (in_array($currentUserRole, Role::BANKING_ROLES, true) === true)
+            {
+                (new Merchant\Service)->switchProductMerchant($product);
+
+                $userRole = $currentUserRole;
+            }
+        }
+
+        return $userRole;
+    }
+
     /**
      * This will assign applicable role to the product by checking it's origin.
      * PG Owner/Admin role on BB will be Owner/Admin. rest all other roles will be rejected and viceversa.
+     *
+     * @param $product
+     *
      * @return null|\RZP\Models\User\Entity
-     * @throws \RZP\Exception\BadRequestException
      */
-    public function addProductSwitchRole()
+    public function addProductSwitchRole($product)
     {
         $user = $this->auth->getUser();
 
-        $product = $this->auth->getRequestOriginProduct();
+        $product = $product ?? $this->auth->getRequestOriginProduct();
 
         $merchantId = $this->auth->getMerchantId();
 
         // Check if a role for this user already exists with the existing product merchant user mapping.
         $userMapping = $this->repo->merchant->getMerchantUserMapping($merchantId,
-            $user->getId(),
-            null,
-            $product);
+                                                                     $user->getId(),
+                                                                     null,
+                                                                     $product);
 
-        if (empty($userMapping) === false) {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS);
+        if (empty($userMapping) === true)
+        {
+            // Since we have user roles in headers we can get the opposite product easily.
+            // In switch we have to assign the role for merchants with only the opposite product side role.
+            // Like Owner in PG will be Owner in BB and Admin in BB will be Admin in PG.
+
+            $switchProduct = ($product === Product::BANKING) ? Product::PRIMARY : Product::BANKING;
+
+            $userMapping = $this->repo->merchant->getMerchantUserMapping($merchantId,
+                $user->getId(),
+                null,
+                $switchProduct);
+
+            $productRole = null;
+
+            if (empty($userMapping) === false)
+            {
+                $productRole = $userMapping->pivot->role;
+            }
+
+            $userMerchantMappingInputData = [
+                'action'      => 'attach',
+                'role'        => $productRole,
+                'merchant_id' => $merchantId,
+                'product'     => $product,
+            ];
+
+            $user = (new User\Core)->updateUserMerchantMapping($user, $userMerchantMappingInputData);
         }
-
-        // Since we have user roles in headers we can get the opposite product easily.
-        // In switch we have to assign the role for merchants with only the opposite product side role.
-        // Like Owner in PG will be Owner in BB and Admin in BB will be Admin in PG.
-
-        $dashboardHeaders = $this->auth->getDashboardHeaders();
-
-        $productRole = $dashboardHeaders['user_role'] ?? $dashboardHeaders['user_banking_role'];
-
-        $userMerchantMappingInputData = [
-            'action'      => 'attach',
-            'role'        => $productRole,
-            'merchant_id' => $merchantId,
-            'product'     => $product,
-        ];
-
-        $user = (new User\Core())->updateUserMerchantMapping($user, $userMerchantMappingInputData);
 
         return $user;
     }

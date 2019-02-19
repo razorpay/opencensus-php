@@ -2,16 +2,23 @@
 
 namespace RZP\Mail\User;
 
+use Carbon\Carbon;
+
 use RZP\Models\User;
 use RZP\Mail\Base\Mailable;
+use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
+use RZP\Exception\LogicException;
 
 class Otp extends Mailable
 {
     /**
-     * @var string
+     * Holds additional input parameters per action.
+     * E.g. account_number for create_payout action, gets used in blade file.
+     *
+     * @var array
      */
-    public $action;
+    public $input;
 
     /**
      * @var array
@@ -23,13 +30,13 @@ class Otp extends Mailable
      */
     public $otp;
 
-    public function __construct(string $action, User\Entity $user, array $otp)
+    public function __construct(array $input, User\Entity $user, array $otp)
     {
         parent::__construct();
 
-        $this->action = str_replace('_', ' ', $action);
-        $this->user   = $user->toArrayPublic();
-        $this->otp    = $otp;
+        $this->input = $input;
+        $this->user  = $user->toArrayPublic();
+        $this->otp   = $otp;
     }
 
     protected function addRecipients()
@@ -48,7 +55,24 @@ class Otp extends Mailable
 
     protected function addSubject()
     {
-        $this->subject("Razorpay | OTP to {$this->action}");
+        // Generic fall back subject.
+        $subject = "RazorpayX | OTP to {$this->getFormattedAction()}";
+
+        switch ($this->input['action'])
+        {
+            case 'create_payout':
+                if (isset($this->input['contact']) === true)
+                {
+                    $subject = sprintf(
+                        "OTP for payout amount INR %s to %s generated at %s IST",
+                        amount_format_IN($this->input['amount']),
+                        str_limit($this->input['contact']['name'], 10),
+                        Carbon::now(Timezone::IST)->format('m D, Y, H:i A'));
+                }
+                break;
+        }
+
+        $this->subject($subject);
 
         return $this;
     }
@@ -57,9 +81,10 @@ class Otp extends Mailable
     {
         $this->with(
             [
-                'action' => $this->action,
-                'user'   => $this->user,
-                'otp'    => $this->otp,
+                'input'            => $this->input,
+                'user'             => $this->user,
+                'otp'              => $this->otp,
+                'formatted_action' => $this->getFormattedAction(),
             ]);
 
         return $this;
@@ -67,8 +92,26 @@ class Otp extends Mailable
 
     protected function addHtmlView()
     {
-        $this->view('emails.user.otp');
+        switch ($this->input['action'])
+        {
+            case 'create_payout':
+                $view = 'emails.user.otp_create_payout';
+                break;
+
+            // Generic fall back template.
+            default:
+                $view = 'emails.user.otp';
+                break;
+        }
+
+        $this->view($view);
 
         return $this;
+    }
+
+    protected function getFormattedAction(): string
+    {
+        // E.g. 'Verify Contact', 'Create Payout' etc, used in blade file.
+        return ucwords(str_replace('_', ' ', $this->input['action']));
     }
 }

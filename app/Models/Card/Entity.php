@@ -48,6 +48,8 @@ class Entity extends Base\PublicEntity
     const COUNTRY_LENGTH = 2;
 
     const DUMMY_EXPIRY_YEAR      = '2099';
+    const MAESTRO_EXPIRY_YEAR    = '2049';
+
     const DUMMY_EXPIRY_MONTH     = '12';
     const DUMMY_CVV              = '123';
     const DUMMY_CVV_AMEX         = '1234';
@@ -203,7 +205,9 @@ class Entity extends Base\PublicEntity
     {
         if (isset($input[self::VAULT]))
         {
-            $vaultToken = (new Card\Tokenex)->getVaultToken($input['number']);
+            $tempInput['card'] = $input['number'];
+
+            $vaultToken = (new Card\CardVault)->getVaultToken($tempInput);
 
             $this->setAttribute(self::VAULT_TOKEN, $vaultToken);
         }
@@ -218,7 +222,7 @@ class Entity extends Base\PublicEntity
         {
             if (empty($input[Entity::EXPIRY_YEAR]) === true)
             {
-                $input[Entity::EXPIRY_YEAR] = self::DUMMY_EXPIRY_YEAR;
+                $input[Entity::EXPIRY_YEAR] = self::MAESTRO_EXPIRY_YEAR;
             }
 
             if (empty($input[Entity::EXPIRY_MONTH]) === true)

@@ -93,7 +93,7 @@ class Report extends Base\Core
 
         $this->startTime   = Carbon::today(Timezone::IST)->startOfDay()->getTimestamp();
 
-        $this->endTime     = Carbon::now(Timezone::IST)->subHour(1)->getTimestamp();
+        $this->endTime     = Carbon::now(Timezone::IST)->subMinute(30)->getTimestamp();
     }
 
     public function sendFTAReconReport(string $type)

@@ -4,12 +4,16 @@ namespace RZP\Http\Middleware;
 
 use Closure;
 use ApiResponse;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Router;
 use Illuminate\Foundation\Application;
 
-use RZP\Http\Route;
 use RZP\Exception;
+use RZP\Http\Route;
 use RZP\Models\Admin;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org;
+use RZP\Http\BasicAuth\BasicAuth;
 
 class AdminAccess
 {
@@ -17,11 +21,17 @@ class AdminAccess
 
     const ORG_HEADER_KEY = 'X-Org-Id';
 
+    const CROSS_ORG_HEADER_KEY = 'X-Cross-Org-Id';
+
     const ORG_HOSTNAME_HEADER_KEY = 'X-Org-Hostname';
 
     protected $app;
     protected $repo;
+
+    /** @var BasicAuth */
     protected $ba;
+
+    /** @var Router */
     protected $router;
 
     public function __construct(Application $app)
@@ -42,8 +52,11 @@ class AdminAccess
         //setting here so app auth also uses orgId.
         $this->ba->setOrgId($orgId);
 
+        $this->setOrgType($orgId);
+
         if ($this->ba->isAdminAuth() === true)
         {
+            /** @var Admin\Admin\Entity $admin */
             $admin = $this->ba->getAdmin();
 
             if ($admin->isLocked() === true)
@@ -76,6 +89,19 @@ class AdminAccess
         return $next($request);
     }
 
+    private function setOrgType(string $orgId = null)
+    {
+        if (empty($orgId) === false)
+        {
+            Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+            /** @var Org\Entity $org */
+            $org = $this->repo->org->findOrFailPublic($orgId);
+
+            $this->ba->setOrgType($org->getType());
+        }
+    }
+
     private function getRoutePermission(string $routeName)
     {
         $routePermissionList = Route::$routePermission;
@@ -89,7 +115,7 @@ class AdminAccess
         return $routePermissionList[$routeName];
     }
 
-    private function validateAdminBelongsToSameOrg($routeName, $admin, $request)
+    private function validateAdminBelongsToSameOrg(string $routeName, Admin\Admin\Entity $admin, $request)
     {
         if (in_array($routeName, static::getExcludedRoutes(), true) === true)
         {
@@ -100,6 +126,10 @@ class AdminAccess
         if ((in_array($routeName, Route::$crossOrgRoutes, true) === true) and
             ($admin->org->isCrossOrgAccessEnabled() === true))
         {
+            $crossOrgId = $this->getCrossOrgIdForRoute($request);
+
+            $this->ba->setCrossOrgId($crossOrgId);
+
             return true;
         }
 
@@ -109,13 +139,24 @@ class AdminAccess
         // $admin->getPublicOrgId cannot be null here because admin has to be associated with org.
         if ($orgId !== $admin->getPublicOrgId())
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED);
         }
     }
 
     /**
-     * Get the OrgId from different source.
+     * Fetching crossOrgId from the headers of request.
+     *
+     * @param $request
+     *
+     * @return crossOrgId.
+     */
+    private function getCrossOrgIdForRoute(Request $request)
+    {
+        return $request->headers->get(self::CROSS_ORG_HEADER_KEY);
+    }
+
+    /**
+     * Get the OrgId from different source and validate it.
      * Precedence of sources
      * 1. Route
      * 2. Params or PostData
@@ -139,6 +180,13 @@ class AdminAccess
             $orgId = $request->headers->get(self::ORG_HEADER_KEY);
         }
 
+        $validateOrgId = $orgId;
+
+        if(empty($validateOrgId) === false)
+        {
+            $this->repo->org->isValidOrg(Org\Entity::verifyIdAndStripSign($validateOrgId));
+        }
+
         // Resolving OrgId from hostname.
         if ($orgId === null)
         {
@@ -146,6 +194,7 @@ class AdminAccess
 
             if (!empty($orgHostname))
             {
+                /** @var Org\Entity $org */
                 $org = $this->ba->fetchOrgByHostname($orgHostname);
 
                 $orgId = $org->getPublicId();
@@ -221,8 +270,7 @@ class AdminAccess
         // 2. Check if the specified permissions exist in our
         // generated white list
 
-        $policyPassed = $this->checkPermissionAllowed(
-            $permission, $adminPermissions);
+        $policyPassed = $this->checkPermissionAllowed($permission, $adminPermissions, $routeName);
 
         if ($policyPassed === true)
         {
@@ -244,11 +292,29 @@ class AdminAccess
         return $policyPassed;
     }
 
-    private function checkPermissionAllowed(string $toCheck, array $haystack)
+    private function checkPermissionAllowed(string $toCheck, array $haystack, string $routeName)
     {
         // Wildcard check takes precedence for obvious reasons
         if ($toCheck === self::WILDCARD_PERMISSION)
         {
+            //
+            // Don't allow wildcard permission routes for restricted orgs. These orgs are banks like SBI
+            // using heimdall for specific actions and view of transactions from their gateways and do
+            // not onboard/manage merchants like other orgs. Restricting them from routes with wildcard
+            // permission is for added security, if they ever need those routes then we will add proper
+            // permissions and allow those permissions to the orgs that need them. These orgs will
+            // generally have access to a very restricted set of permissions.
+            //
+            // The list in `$restrictedOrgWildCardRoutes` contains all the routes that are basic
+            // to admin logging in and fetching his current session detail and hence does not make
+            // sense to add permissions on those.
+            //
+            if (($this->ba->getOrgType() === Org\Entity::RESTRICTED) and
+                (in_array($routeName, Route::$restrictedOrgWildCardRoutes, true) === false))
+            {
+                return false;
+            }
+
             return true;
         }
 

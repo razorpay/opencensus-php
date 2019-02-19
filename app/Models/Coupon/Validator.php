@@ -2,15 +2,18 @@
 
 namespace RZP\Models\Coupon;
 
+use App;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Promotion;
 use RZP\Constants\Entity as PublicEntity;
 
 class Validator extends Base\Validator
 {
     const COUPON_EXPIRY = 'coupon_expiry';
+    const MULTIPLE_COUPON_PER_PROMOTION = 'multiple_coupon_per_promotion';
 
     protected static $createRules = [
         Entity::ENTITY_ID   => 'required|string',
@@ -23,13 +26,59 @@ class Validator extends Base\Validator
 
     protected static $createValidators = [
         self::COUPON_EXPIRY,
+        self::MULTIPLE_COUPON_PER_PROMOTION,
+    ];
+
+    protected static $editValidators = [
+        self::COUPON_EXPIRY,
     ];
 
     protected static $applyRules = [
         Entity::CODE          => 'required|string',
-        Entity::MERCHANT_ID   => 'required|alpha_num|max:14',
+        Entity::MERCHANT_ID   => 'sometimes|alpha_num|max:14|custom',
     ];
 
+    protected static $editRules = [
+        Entity::START_AT => 'sometimes|epoch',
+        Entity::END_AT  =>  'required|epoch'
+    ];
+
+    /**
+     * Not allowing MerchantId to be present in JSON payload if it is proxyAUTH.
+     *
+     * @param $attribute
+     * @param $value
+     * @throws Exception\BadRequestException
+     */
+    public function validateMerchantId($attribute, $value)
+    {
+        $isAdminAuth = app('basicauth')->isAdminAuth();
+
+        if ($isAdminAuth === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ID_NOT_REQUIRED,
+                null,
+                [$attribute => $value]);
+        }
+    }
+
+    public function validateMultipleCouponPerPromotion(array $input)
+    {
+        $entityIdPromotion =  Promotion\Entity::verifyIdAndStripSign($input['entity_id']);
+
+        $promotion = (new Repository())->findByEntityIdAndEntityType($entityIdPromotion, $input['entity_type']);
+
+        if($promotion !== null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PROMOTION_ALREADY_HAS_COUPON,
+                null,
+                ['input' => $input]);
+        }
+
+        return true;
+    }
 
     public function validateCouponExpiry(array $input)
     {

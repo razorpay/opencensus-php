@@ -3,8 +3,10 @@
 namespace RZP\Models\NodalBeneficiary;
 
 use Config;
+use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Models\Settlement\SlackNotification;
 
 class Core extends Base\Core
@@ -40,9 +42,8 @@ class Core extends Base\Core
 
     /**
      * @param array $input
+     *
      * @return mixed
-     * @throws \RZP\Exception\BadRequestValidationFailureException
-     * @throws \RZP\Exception\LogicException
      */
     public function update(array $input)
     {
@@ -82,7 +83,7 @@ class Core extends Base\Core
 
         $nodalBeneficiary = $nodalBeneficiary->edit($input);
 
-        $this->repo->nodal_beneficiary->saveorFail($nodalBeneficiary);
+        $this->repo->nodal_beneficiary->saveOrFail($nodalBeneficiary);
 
         return $nodalBeneficiary;
     }
@@ -116,5 +117,45 @@ class Core extends Base\Core
                     ' changed from '. $currentStatus . ' to ' . $input[Entity::REGISTRATION_STATUS];
 
         (new SlackNotification)->send($message, $input, null, 1);
+    }
+
+    /**
+     * Creates or Updates the beneficiary using fund_account_id
+     *
+     * @param array $input
+     * @return Entity
+     */
+    public function createOrUpdateBeneficiaryForFTS(array $input)
+    {
+        try
+        {
+            $validator = new Validator;
+
+            $validator->validateInput('update', $input);
+
+            $ftsFundAccountId = $input['fund_account_id'];
+
+            $bankAccount = $this->repo->bank_account->getBankAccountByFtsFundAccountId($ftsFundAccountId);
+
+            $nodalBeneficiary = [
+                Entity::CHANNEL             => $input['channel'],
+                Entity::MERCHANT_ID         => $bankAccount->merchant->getId(),
+                Entity::BANK_ACCOUNT_ID     => $bankAccount->getId(),
+                Entity::BENEFICIARY_CODE    => $bankAccount->getBeneficiaryCode(),
+                Entity::REGISTRATION_STATUS => $input['status'],
+            ];
+
+            return $this->create($nodalBeneficiary);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FTS_BENEFICIARY_CREATE_OR_UPDATE_FAILED,
+                [
+                    'error' => $e->getMessage()
+                ]);
+        }
     }
 }

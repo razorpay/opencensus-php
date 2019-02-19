@@ -32,21 +32,18 @@ class NetbankingVijayaCombinedFileTest extends TestCase
     {
         Mail::fake();
 
-        $payment = $this->getDefaultNetbankingPaymentArray($this->bank);
+        foreach (range(1,3) as $i)
+        {
+            $this->createReconciledPayment();
+        }
 
-        $payment = $this->doAuthAndCapturePayment($payment);
+        $payment = $this->getLastEntity('payment', true);
 
-        $transaction = $this->getLastEntity('transaction', true);
-
-        $this->fixtures->edit('transaction', $transaction['id'], [
-            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
+        $this->fixtures->edit('payment', $payment['id'], [
+            'created_at' => Carbon::tomorrow(Timezone::IST)->addHours(4)->timestamp
         ]);
 
-        $refund = $this->refundPayment($payment['id']);
-
-        $payment = $this->getDefaultNetbankingPaymentArray($this->bank);
-
-        $this->doAuthAndCapturePayment($payment);
+        $this->refundPayment($payment['id']);
 
         $this->ba->adminAuth();
 
@@ -85,14 +82,14 @@ class NetbankingVijayaCombinedFileTest extends TestCase
             $testData = [
                 'subject' => 'Vijaya Netbanking claims and refund files for '.$date,
                 'amount' => [
-                    'claims'  => '500.00',
+                    'claims'  => '1500.00',
                     'refunds' => '500.00',
-                    'total'   => '0.00'
+                    'total'   => '1000.00'
                 ],
                 'count' => [
-                    'claims'  => 1,
+                    'claims'  => 3,
                     'refunds' => 1,
-                    'total'   => 2
+                    'total'   => 4
                 ],
             ];
 
@@ -115,13 +112,13 @@ class NetbankingVijayaCombinedFileTest extends TestCase
 
         $refundsFileLine1 = explode('||', $refundsFileContents[0]);
 
-        $this->assertCount(5, $refundsFileLine1);
+        $this->assertCount(6, $refundsFileLine1);
 
-        $this->assertEquals($refundsFileLine1[1], 'RFND');
+        $this->assertEquals($refundsFileLine1[2], 'RFND');
 
-        $this->assertEquals($refundsFileLine1[2], 'VijayaBank');
+        $this->assertEquals($refundsFileLine1[3], 'VijayaBank');
 
-        $this->assertEquals($refundsFileLine1[3], '500.00');
+        $this->assertEquals($refundsFileLine1[4], '500.00');
     }
 
     protected function checkClaimsFile(array $claimsFileData)
@@ -131,5 +128,20 @@ class NetbankingVijayaCombinedFileTest extends TestCase
         $name = 'RazorPay-MIS-' . $date . '.xls';
 
         $this->assertEquals($claimsFileData['name'], $name);
+    }
+
+    protected function createReconciledPayment()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray($this->bank);
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->fixtures->edit('transaction', $transaction['id'], [
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
+        ]);
+
+        return $payment;
     }
 }

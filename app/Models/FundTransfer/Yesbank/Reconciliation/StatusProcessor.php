@@ -2,26 +2,23 @@
 
 namespace RZP\Models\FundTransfer\Yesbank\Reconciliation;
 
+use RZP\Error\ErrorCode;
+use RZP\Models\FundTransfer\Base\Reconciliation\Constants;
 use RZP\Trace\TraceCode;
+use RZP\Exception\LogicException;
+use RZP\Models\FundTransfer\Yesbank\Mode;
+use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
 use RZP\Models\FundTransfer\Attempt\Status as FundTransferStatus;
 use RZP\Models\FundTransfer\Yesbank\Request\Status as StatusRequest;
 use RZP\Models\FundTransfer\Base\Reconciliation\RowProcessor as BaseRowProcessor;
 
 class StatusProcessor extends BaseRowProcessor
 {
-    const UTR               = 'utr';
-    const BANK_STATUS_CODE  = 'bank_status_code';
-    const PAYMENT_DATE      = 'payment_date';
-    const REMARK            = 'remark';
-    const PAYMENT_REF_NO    = 'payment_ref_no';
-    const RRN               = 'rrn';
-    const REFERENCE_NUMBER  = 'reference_number';
-    const MODE              = 'mode';
-
     /**
      * This will update the status based on the transfer API response
      *
      * @return null
+     * @throws LogicException
      */
     public function updateTransferStatus()
     {
@@ -41,9 +38,26 @@ class StatusProcessor extends BaseRowProcessor
      */
     protected function processRow()
     {
-        $response = (new StatusRequest())->init()
-                                         ->setEntity($this->row)
-                                         ->makeRequest();
+        $gateway = ($this->row->hasVpa() === true);
+
+        $type = $this->getRequestType($this->row);
+
+        $makeRequest = $this->shouldMakeStatusRequestCall($gateway);
+
+        $statusRequestProcessor = (new StatusRequest($type))->init()
+                                                            ->setEntity($this->row);
+
+        if ($makeRequest === true)
+        {
+            $response = $statusRequestProcessor->makeRequest($gateway);
+        }
+        else
+        {
+            // We are doing this only so that we keep the flow consistent
+            // with when we actually make the status request.
+            // Otherwise, ideally, doing this should not be required at all.
+            $response = $statusRequestProcessor->getResponseDataFromFta($this->row);
+        }
 
         if (empty($response) === false)
         {
@@ -51,20 +65,80 @@ class StatusProcessor extends BaseRowProcessor
         }
     }
 
+    protected function shouldMakeStatusRequestCall(bool $gateway): bool
+    {
+        //
+        // We should not make status call only for VPA payouts since
+        // Yesbank's Status API call does not work correctly.
+        //
+        if ($gateway === false)
+        {
+            return true;
+        }
+
+        $fta = $this->row;
+
+        $statusCode = $fta->getBankResponseCode();
+
+        //
+        // Yesbank status call for VPA does not work properly.
+        // Gives the wrong error codes and stuff, which are not documented.
+        // Hence, if we already got a status saying it's success or failed
+        // we don't want to make the status request and mess up the data
+        // that we got from `initiate` call.
+        //
+        // We make the status call only if current state of the FTA is
+        // either pending, timeout or we don't know (empty status_code)
+        //
+        if (($statusCode === GatewayStatus::STATUS_CODE_PENDING) or
+            ($statusCode === GatewayStatus::STATUS_CODE_TIMEOUT) or
+            (empty($statusCode) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array $response
+     * @throws LogicException
+     */
     protected function setParsedData(array $response)
     {
+        $this->reconEntityId = $response[Constants::PAYMENT_REF_NO];
+
+        if ($this->reconEntityId === null)
+        {
+            throw new LogicException(
+                "Recon entity id can not be null",
+                ErrorCode::SERVER_ERROR_INVALID_ATTEMPT_ID,
+                [
+                    'response' => $response,
+                ]);
+        }
+
+        // TODO: Use yesbank/transfer/request.php while reading from the response.
+
         $this->parsedData = [
-            self::UTR              => $response[self::UTR],
-            self::BANK_STATUS_CODE => $response[self::BANK_STATUS_CODE],
-            self::REMARK           => $response[self::REMARK],
-            self::PAYMENT_DATE     => $response[self::PAYMENT_DATE] ?? null,
-            self::REFERENCE_NUMBER => $response[self::REFERENCE_NUMBER],
-            self::MODE             => $response[self::MODE],
+            Constants::UTR                   => $response[Constants::UTR],
+            // `status_code` will be present only for vpa ones. not the normal ones.
+            Constants::STATUS_CODE           => $response[Constants::STATUS_CODE] ?? null,
+            Constants::BANK_STATUS_CODE      => $response[Constants::BANK_STATUS_CODE],
+            Constants::REMARKS               => $response[Constants::REMARKS],
+            Constants::PAYMENT_DATE          => $response[Constants::PAYMENT_DATE],
+            Constants::REFERENCE_NUMBER      => $response[Constants::REFERENCE_NUMBER],
+            Constants::MODE                  => Mode::getInternalModeFromExternalMode($response[Constants::MODE]),
+            // Won't be present in case of a successful response
+            Constants::PUBLIC_FAILURE_REASON => $response[Constants::PUBLIC_FAILURE_REASON] ?? null,
+            Constants::NAME_WITH_BENE_BANK   => $this->row[Constants::NAME_WITH_BENE_BANK] ?? null,
         ];
 
-        $this->reconEntityId = $response[self::PAYMENT_REF_NO];
-
-        $this->trace->info(TraceCode::FTA_RECON_PARSED_DATA, ['parsed_data' => $this->parsedData]);
+        $this->trace->info(
+            TraceCode::FTA_RECON_PARSED_DATA,
+            [
+                'parsed_data' => $this->parsedData
+            ]);
     }
 
     /**
@@ -74,21 +148,30 @@ class StatusProcessor extends BaseRowProcessor
     {
         $this->updateUtrOnReconEntity();
 
-        $this->reconEntity->setBankStatusCode($this->parsedData[self::BANK_STATUS_CODE]);
+        $currentStatus = $this->reconEntity->getBankStatusCode();
 
-        $this->reconEntity->setDateTime($this->parsedData[self::PAYMENT_DATE]);
+        $this->reconEntity->setBankStatusCode($this->parsedData[Constants::BANK_STATUS_CODE]);
 
-        $this->reconEntity->setRemarks($this->parsedData[self::REMARK]);
+        $this->reconEntity->setBankResponseCode($this->parsedData[Constants::STATUS_CODE]);
 
-        $this->reconEntity->setMode($this->parsedData[self::MODE]);
+        $this->reconEntity->setDateTime($this->parsedData[Constants::PAYMENT_DATE]);
+
+        $this->reconEntity->setRemarks($this->parsedData[Constants::REMARKS]);
+
+        $this->reconEntity->setMode($this->parsedData[Constants::MODE]);
+
+        if ($this->parsedData[Constants::BANK_STATUS_CODE] !== $currentStatus)
+        {
+            $this->reconEntity->setStatus(AttemptStatus::INITIATED);
+        }
 
         //
         // Reference number is only available in transfer request's response.
         // It is null in status request's response.
         //
-        if (empty($this->parsedData[self::REFERENCE_NUMBER]) === false)
+        if (empty($this->parsedData[Constants::REFERENCE_NUMBER]) === false)
         {
-            $this->reconEntity->setCmsRefNo($this->parsedData[self::REFERENCE_NUMBER]);
+            $this->reconEntity->setCmsRefNo($this->parsedData[Constants::REFERENCE_NUMBER]);
         }
 
         $this->reconEntity->saveOrFail();
@@ -96,14 +179,14 @@ class StatusProcessor extends BaseRowProcessor
 
     protected function getUtrToUpdate()
     {
-        return $this->parsedData[self::UTR];
+        return $this->parsedData[Constants::UTR];
     }
 
     protected function updateVerifyReconEntity()
     {
         $currentStatus = $this->reconEntity->getBankStatusCode();
 
-        if ($this->parsedData[self::BANK_STATUS_CODE] === $currentStatus)
+        if ($this->parsedData[Constants::BANK_STATUS_CODE] === $currentStatus)
         {
            return;
         }

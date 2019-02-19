@@ -4,18 +4,23 @@ namespace RZP\Models\P2p\Transaction;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;
+use RZP\Models\P2p\Base\Upi\Txn;
+use RZP\Models\P2p\BankAccount\Credentials;
 
 class Validator extends Base\Validator
 {
     protected static $initiatePayRules;
+    protected static $initiatePaySuccessRules;
     protected static $initiateCollectRules;
-    protected static $fetchAllRules;
-    protected static $fetchRules;
+    protected static $initiateCollectSuccessRules;
     protected static $initiateAuthorizeRules;
-    protected static $authorizeRules;
+    protected static $initiateAuthorizeSuccessRules;
+    protected static $authorizeTransactionRules;
+    protected static $authorizeTransactionSuccessRules;
     protected static $rejectRules;
+    protected static $rejectSuccessRules;
 
-    protected function rules()
+    public function rules()
     {
         $rules = [
             Entity::MERCHANT_ID          => 'string',
@@ -29,7 +34,7 @@ class Validator extends Base\Validator
             Entity::TYPE                 => 'string',
             Entity::FLOW                 => 'string',
             Entity::MODE                 => 'string',
-            Entity::AMOUNT               => 'string',
+            Entity::AMOUNT               => 'integer',
             Entity::CURRENCY             => 'string',
             Entity::DESCRIPTION          => 'string',
             Entity::GATEWAY              => 'string',
@@ -40,92 +45,149 @@ class Validator extends Base\Validator
             Entity::INTERNAL_ERROR_CODE  => 'string',
             Entity::PAYER_APPROVAL_CODE  => 'string',
             Entity::PAYEE_APPROVAL_CODE  => 'string',
-            Entity::INITIATED_AT         => 'string',
-            Entity::EXPIRE_AT            => 'string',
-            Entity::COMPLETED_AT         => 'string',
+            Entity::INITIATED_AT         => 'epoch',
+            Entity::EXPIRE_AT            => 'epoch',
+            Entity::COMPLETED_AT         => 'epoch',
+            Entity::SUCCESS              => 'boolean',
         ];
 
         return $rules;
     }
 
-    protected function getCreateRules()
+    public function makeUpiRules()
+    {
+        // Just to make sure validator function does not send any other value
+        $function = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,2)[1]['function'];
+
+        $upiRules = (new UpiTransaction\Validator)->{$function}();
+
+        return $upiRules->wrapRules(Entity::UPI);
+    }
+
+    public function makeCredBlockRules()
+    {
+        $credRules = Credentials::rules()->with([
+            Credentials::TYPE           => 'required',
+            Credentials::SUB_TYPE       => 'required',
+            Credentials::STRING         => 'required',
+            Credentials::CODE           => 'required',
+            Credentials::KI             => 'required',
+        ]);
+
+        return $credRules->wrapRules(Credentials::CREDS, true)
+                         ->wrapRules(Entity::CL);
+    }
+
+    public function makeCreateRules()
     {
         $rules = $this->makeRules([
-            Entity::MERCHANT_ID          => 'sometimes',
-            Entity::CUSTOMER_ID          => 'sometimes',
-            Entity::PAYER_TYPE           => 'sometimes',
-            Entity::PAYER_ID             => 'sometimes',
-            Entity::PAYEE_TYPE           => 'sometimes',
-            Entity::PAYEE_ID             => 'sometimes',
-            Entity::BANK_ACCOUNT_ID      => 'sometimes',
-            Entity::METHOD               => 'sometimes',
-            Entity::TYPE                 => 'sometimes',
-            Entity::FLOW                 => 'sometimes',
-            Entity::MODE                 => 'sometimes',
-            Entity::AMOUNT               => 'sometimes',
-            Entity::CURRENCY             => 'sometimes',
-            Entity::DESCRIPTION          => 'sometimes',
-            Entity::GATEWAY              => 'sometimes',
-            Entity::STATUS               => 'sometimes',
-            Entity::INTERNAL_STATUS      => 'sometimes',
-            Entity::ERROR_CODE           => 'sometimes',
-            Entity::ERROR_DESCRIPTION    => 'sometimes',
-            Entity::INTERNAL_ERROR_CODE  => 'sometimes',
-            Entity::PAYER_APPROVAL_CODE  => 'sometimes',
-            Entity::PAYEE_APPROVAL_CODE  => 'sometimes',
-            Entity::INITIATED_AT         => 'sometimes',
+            Entity::METHOD               => 'required',
+            Entity::TYPE                 => 'required',
+            Entity::FLOW                 => 'required',
+            Entity::MODE                 => 'required',
+            Entity::AMOUNT               => 'required',
+            Entity::CURRENCY             => 'required',
+            Entity::DESCRIPTION          => 'required',
+            Entity::GATEWAY              => 'required',
+            Entity::STATUS               => 'required',
+            Entity::INTERNAL_STATUS      => 'required',
             Entity::EXPIRE_AT            => 'sometimes',
-            Entity::COMPLETED_AT         => 'sometimes',
         ]);
 
         return $rules;
     }
 
-    protected function getInitiatePayRules()
+    public function makeInitiatePayRules()
+    {
+        $rules = $this->makeRules([
+            Entity::PAYER_ID             => 'required',
+            Entity::PAYEE_ID             => 'required',
+            Entity::AMOUNT               => 'required',
+            Entity::CURRENCY             => 'required',
+            Entity::DESCRIPTION          => 'required',
+        ]);
+
+        return $rules;
+    }
+
+    public function makeInitiatePaySuccessRules()
+    {
+        $rules = $this->makeEntityIdRules()->wrapRules(Entity::TRANSACTION);
+
+        $rules->merge($this->makeUpiRules());
+
+        return $rules;
+    }
+
+    public function makeInitiateCollectRules()
+    {
+        $rules = $this->makeRules([
+            Entity::PAYER_ID             => 'required',
+            Entity::PAYEE_ID             => 'required',
+            Entity::AMOUNT               => 'required',
+            Entity::CURRENCY             => 'required',
+            Entity::DESCRIPTION          => 'required',
+            Entity::EXPIRE_AT            => 'sometimes',
+        ]);
+
+        return $rules;
+    }
+
+    public function makeInitiateCollectSuccessRules()
+    {
+        $rules = $this->makeEntityIdRules()->wrapRules(Entity::TRANSACTION);
+
+        $rules->merge($this->makeUpiRules());
+
+        return $rules;
+    }
+
+    public function makeInitiateAuthorizeRules()
+    {
+        $rules = $this->makePublicIdRules();
+
+        return $rules;
+    }
+
+    public function makeInitiateAuthorizeSuccessRules()
     {
         $rules = $this->makeRules([]);
 
         return $rules;
     }
 
-    protected function getInitiateCollectRules()
+    public function makeAuthorizeTransactionRules()
     {
-        $rules = $this->makeRules([]);
+        $rules = $this->makePublicIdRules();
+
+        $rules->merge($this->makeCredBlockRules());
 
         return $rules;
     }
 
-    protected function getFetchAllRules()
+    public function makeAuthorizeTransactionSuccessRules()
     {
-        $rules = $this->makeRules([]);
+        $rules = $this->makeEntityIdRules()->wrapRules(Entity::TRANSACTION);
+
+        $rules->merge($this->makeUpiRules());
 
         return $rules;
     }
 
-    protected function getFetchRules()
+    public function makeRejectRules()
     {
-        $rules = $this->makeRules([]);
+        $rules = $this->makePublicIdRules();
 
         return $rules;
     }
 
-    protected function getInitiateAuthorizeRules()
+    public function makeRejectSuccessRules()
     {
-        $rules = $this->makeRules([]);
+        $rules = $this->makeEntityIdRules()->wrapRules(Entity::TRANSACTION);
 
-        return $rules;
-    }
-
-    protected function getAuthorizeRules()
-    {
-        $rules = $this->makeRules([]);
-
-        return $rules;
-    }
-
-    protected function getRejectRules()
-    {
-        $rules = $this->makeRules([]);
+        $rules->merge($this->makeRules([
+            Entity::SUCCESS => 'required|in:1',
+        ]));
 
         return $rules;
     }

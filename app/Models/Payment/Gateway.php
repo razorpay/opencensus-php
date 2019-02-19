@@ -37,6 +37,7 @@ class Gateway
     const ESIGNER_DIGIO          = 'esigner_digio';
     const ESIGNER_LEGALDESK      = 'esigner_legaldesk';
     const ENACH_RBL              = 'enach_rbl';
+    const ENACH_NPCI_NETBANKING  = 'enach_npci_netbanking';
     const FIRST_DATA             = 'first_data';
     const HDFC                   = 'hdfc';
     const HITACHI                = 'hitachi';
@@ -57,6 +58,7 @@ class Gateway
     const NETBANKING_CSB         = 'netbanking_csb';
     const NETBANKING_PNB         = 'netbanking_pnb';
     const NETBANKING_OBC         = 'netbanking_obc';
+    const NETBANKING_SBI         = 'netbanking_sbi';
     const NETBANKING_ALLAHABAD   = 'netbanking_allahabad';
     const NETBANKING_CANARA      = 'netbanking_canara';
     const PAYTM                  = 'paytm';
@@ -66,6 +68,7 @@ class Gateway
     const UPI_AXIS               = 'upi_axis';
     const UPI_ICICI              = 'upi_icici';
     const UPI_HULK               = 'upi_hulk';
+    const UPI_RBL                = 'upi_rbl';
     const UPI_YESBANK            = 'upi_yesbank';
     const AEPS_ICICI             = 'aeps_icici';
     const ISG                    = 'isg';
@@ -92,6 +95,7 @@ class Gateway
     const ACQUIRER_AMEX         = 'amex';
     const ACQUIRER_FSS          = 'fss';
     const ACQUIRER_RATN         = 'ratn';
+    const ACQUIRER_YESB         = 'yesb';
     const ACQUIRER_BARB         = 'barb';
 
     const NOT_SUPPORTED      = 'not_supported';
@@ -115,6 +119,8 @@ class Gateway
     const SUCCESS                   = 'success';
     // Stores error code if refund is failed at gateway side
     const STATUS_CODE               = 'status_code';
+    // Stores gateway through which refund is processed. Say for FTA refunds, it will be yesbank
+    const REFUND_GATEWAY            = 'refund_gateway';
     // Stores array of gateway related keys such as refund_id, auth_code
     const GATEWAY_KEYS              = 'gateway_keys';
     // Stores raw gateway response in string format.
@@ -144,7 +150,7 @@ class Gateway
     const POWER_WALLETS = [
         Wallet::MOBIKWIK,
         Wallet::PAYUMONEY,
-        Wallet::OLAMONEY,
+        // Wallet::OLAMONEY,
         Wallet::FREECHARGE,
         // Wallet::MPESA,
     ];
@@ -177,6 +183,7 @@ class Gateway
         self::NETBANKING_ICICI  => self::ICICI,
         self::NETBANKING_RBL    => self::RBL,
         self::NETBANKING_AXIS   => self::AXIS,
+        self::PAYTM             => self::PAYTM,
     ];
 
     /**
@@ -207,6 +214,9 @@ class Gateway
         self::NETBANKING_PNB,
         self::NETBANKING_OBC,
         self::NETBANKING_ICICI,
+        self::NETBANKING_AXIS,
+        self::NETBANKING_AIRTEL,
+        self::WALLET_AIRTELMONEY,
         self::WALLET_OPENWALLET,
         self::CARDLESS_EMI,
 
@@ -215,6 +225,7 @@ class Gateway
         self::UPI_HULK,
         self::UPI_ICICI,
         self::UPI_MINDGATE,
+        self::UPI_AXIS,
     ];
 
     /**
@@ -250,12 +261,30 @@ class Gateway
         Payment\Gateway::HITACHI,
         Payment\Gateway::UPI_HULK,
         Payment\Gateway::NETBANKING_AIRTEL,
+        Payment\Gateway::NETBANKING_PNB,
         Payment\Gateway::ATOM,
         Payment\Gateway::SHARP
     ];
 
+    //TODO : Get complete list
+    const ENACH_NPCI_NETBANKING_BANKS = [
+        IFSC::YESB,
+        IFSC::IDFB,
+        IFSC::UTIB,
+        IFSC::CBIN,
+    ];
+
+    const EMANDATE_NB_DIRECT_BANKS = [
+        IFSC::ICIC,
+        IFSC::UTIB,
+        IFSC::HDFC,
+    ];
+
     // The 2 commented banks are mentioned at the bottom
     // with their retail versions
+    // Please keep this list sorted
+    // You can find the latest PDF version
+    // at https://www.npci.org.in/nach-e-mandates
     const EMANDATE_AADHAAR_BANKS = [
         IFSC::ABHY,
         IFSC::ACUX,
@@ -475,8 +504,14 @@ class Gateway
      * @var array
      */
     public static $scroogeGateways = [
+        Payment\Gateway::AMEX => [
+            self::GO_LIVE_TIMESTAMP => 1547183527
+        ],
         Payment\Gateway::SHARP => [
             self::GO_LIVE_TIMESTAMP => 1535712088
+        ],
+        Payment\Gateway::HDFC => [
+            self::GO_LIVE_TIMESTAMP => 1547176106
         ],
         Payment\Gateway::AXIS_MIGS      => [
             self::GO_LIVE_TIMESTAMP => 1542272247
@@ -489,6 +524,9 @@ class Gateway
         ],
         Payment\Gateway::CYBERSOURCE => [
             self::GO_LIVE_TIMESTAMP => 1542649738
+        ],
+        Payment\Gateway::UPI_ICICI   => [
+            self::GO_LIVE_TIMESTAMP => 1546597864
         ],
         Payment\Gateway::UPI_MINDGATE   => [
             self::GO_LIVE_TIMESTAMP => 1540826221
@@ -504,6 +542,9 @@ class Gateway
         '9DZkE60krEG4wq',
         '9ncOh0EZ8sC9z9',
         '9hefgkvGhT18Q9',
+        'BbaYzzPW541Aut',
+        '80oXBj51MHGmwH',
+        '94tLpgbojcR85O',
     ];
 
     public static $channels = [
@@ -591,6 +632,7 @@ class Gateway
             self::NETBANKING_CSB,
             self::NETBANKING_ALLAHABAD,
             self::NETBANKING_EQUITAS,
+            self::NETBANKING_SBI,
             self::NETBANKING_CANARA,
             self::NETBANKING_VIJAYA,
         ],
@@ -627,6 +669,7 @@ class Gateway
         ],
 
         Method::EMI => [
+            self::HITACHI,
             self::AMEX,
             self::HDFC,
             self::FIRST_DATA,
@@ -714,7 +757,6 @@ class Gateway
      */
     public static $reverse = [
         self::CYBERSOURCE,
-        self::FIRST_DATA,
         self::AXIS_MIGS,
         self::AMEX,
         self::WALLET_OPENWALLET,
@@ -735,13 +777,32 @@ class Gateway
         self::UPI_SBI,
         self::SHARP,
         self::UPI_AXIS,
+        self::UPI_RBL,
         self::UPI_YESBANK,
     ];
 
     public static $headless = [
-        self::CYBERSOURCE,
-        self::HITACHI,
-        self::HDFC,
+       self::CYBERSOURCE => [
+            Network::VISA,
+            Network::MC,
+        ],
+        self::HITACHI => [
+            Network::MC,
+            Network::VISA,
+            Network::MAES,
+        ],
+        self::HDFC => [
+            Network::MC,
+            Network::VISA,
+            Network::MAES,
+            Network::DICL,
+            Network::RUPAY,
+        ],
+        self::FIRST_DATA => [
+            Network::MC,
+            Network::VISA,
+            Network::MAES,
+        ],
     ];
 
     /**
@@ -915,6 +976,10 @@ class Gateway
         self::NETBANKING_VIJAYA,
     ];
 
+    public static $captureVerifyEnabled = [
+        self::HITACHI,
+    ];
+
     /**
      * List of gateways that support recurring payments
      *
@@ -932,6 +997,7 @@ class Gateway
         Gateway::ESIGNER_DIGIO,
         Gateway::ESIGNER_LEGALDESK,
         Gateway::ENACH_RBL,
+        Gateway::ENACH_NPCI_NETBANKING,
     ];
 
     public static $recurringCardNetworks = [
@@ -952,30 +1018,12 @@ class Gateway
         Network::MAES,
     ];
 
-    /**
-     * List of ALL auth types and the corresponding
-     * banks supported by that auth type.
-     *
-     * @var array
-     */
-    public static $emandateBanks = [
-        AuthType::NETBANKING => [
-            IFSC::ICIC,
-            IFSC::UTIB,
-            IFSC::HDFC,
-        ],
-        // Please keep this list sorted
-        // You can find the latest PDF version
-        // at https://www.npci.org.in/nach-e-mandates
-        AuthType::AADHAAR     => self::EMANDATE_AADHAAR_BANKS,
-        AuthType::AADHAAR_FP  => self::EMANDATE_AADHAAR_BANKS,
-    ];
-
     public static $bharatQrGateways = [
         self::UPI_ICICI,
         self::HITACHI,
         self::SHARP,
         self::UPI_HULK,
+        self::UPI_MINDGATE,
         self::ISG,
     ];
 
@@ -984,6 +1032,7 @@ class Gateway
             Gateway::NETBANKING_AXIS,
             Gateway::NETBANKING_ICICI,
             Gateway::NETBANKING_HDFC,
+            Gateway::ENACH_NPCI_NETBANKING,
         ],
         AuthType::AADHAAR     => self::EMANDATE_AADHAAR_GATEWAYS,
         AuthType::AADHAAR_FP  => self::EMANDATE_AADHAAR_GATEWAYS,
@@ -1051,16 +1100,17 @@ class Gateway
      * @var array
      */
     public static $gatewaysEmandateBanksMap = [
-        Gateway::NETBANKING_ICICI  => [IFSC::ICIC],
-        Gateway::NETBANKING_AXIS   => [IFSC::UTIB],
-        Gateway::NETBANKING_HDFC   => [IFSC::HDFC],
-        Gateway::ENACH_RBL         => self::EMANDATE_AADHAAR_BANKS,
+        Gateway::NETBANKING_ICICI      => [IFSC::ICIC],
+        Gateway::NETBANKING_AXIS       => [IFSC::UTIB],
+        Gateway::NETBANKING_HDFC       => [IFSC::HDFC],
+        Gateway::ENACH_NPCI_NETBANKING => self::ENACH_NPCI_NETBANKING_BANKS,
+        Gateway::ENACH_RBL             => self::EMANDATE_AADHAAR_BANKS,
         // This is added here just for test cases
         // We are using UTIB in test cases
-        Gateway::ESIGNER_DIGIO     => [
+        Gateway::ESIGNER_DIGIO         => [
             IFSC::UTIB,
         ],
-        Gateway::ESIGNER_LEGALDESK => [
+        Gateway::ESIGNER_LEGALDESK     => [
             IFSC::UTIB,
         ],
     ];
@@ -1074,6 +1124,7 @@ class Gateway
         Gateway::NETBANKING_HDFC,
         Gateway::NETBANKING_AXIS,
         Gateway::ENACH_RBL,
+        Gateway::ENACH_NPCI_NETBANKING,
     ];
 
     /**
@@ -1084,6 +1135,7 @@ class Gateway
     public static $fileBasedEMandateRegistrationGateways = [
         Gateway::NETBANKING_HDFC,
         Gateway::ENACH_RBL,
+        Gateway::ENACH_NPCI_NETBANKING,
     ];
 
     /**
@@ -1106,6 +1158,7 @@ class Gateway
         Gateway::NETBANKING_CORPORATION,
         Gateway::SHARP,
         Gateway::UPI_AXIS,
+        Gateway::UPI_RBL,
         Gateway::UPI_YESBANK,
     ];
 
@@ -1178,6 +1231,7 @@ class Gateway
         IFSC::ALLA         => Gateway::NETBANKING_ALLAHABAD,
         IFSC::CNRB         => Gateway::NETBANKING_CANARA,
         IFSC::ESFB         => Gateway::NETBANKING_EQUITAS,
+        IFSC::SBIN         => Gateway::NETBANKING_SBI,
         IFSC::VIJB         => Gateway::NETBANKING_VIJAYA,
         Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
@@ -1229,6 +1283,7 @@ class Gateway
         IFSC::SCBL,
         IFSC::UTIB,
         IFSC::YESB,
+        IFSC::CITI,
     ];
 
     public static $emiBanksUsingCardTerminals = [
@@ -1240,6 +1295,7 @@ class Gateway
         IFSC::ICIC,
         IFSC::YESB,
         IFSC::SBIN,
+        IFSC::CITI,
     ];
 
     public static $emiBankToGatewayMap = [
@@ -1287,6 +1343,7 @@ class Gateway
         Gateway::UPI_HULK,
         Gateway::UPI_MINDGATE,
         Gateway::UPI_AXIS,
+        Gateway::UPI_RBL,
     ];
 
     public static $upiValidateVpaTerminals = [
@@ -1355,6 +1412,11 @@ class Gateway
         return array_keys(self::$scroogeGateways);
     }
 
+    public static function getScroogeMerchants(): array
+    {
+        return self::$scroogeMerchants;
+    }
+
     public static function isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer)
     {
         $pinAuthGateways = self::$gatewayAcquirerIfscMapping;
@@ -1379,9 +1441,14 @@ class Gateway
      */
     public static function isScroogeGatewayAndMerchant(string $gateway = null, string $merchantId = null): bool
     {
+        if (empty($merchantId) === false)
+        {
+            return ((in_array($gateway, self::getScroogeGateways(), true) === true) and
+                (in_array($merchantId, self::getScroogeMerchants(), true) === true));
+        }
+
         return (in_array($gateway, self::getScroogeGateways(), true) === true);
     }
-
 
     /**
      * This function checks if the gateway was live at a particular timestamp
@@ -1435,7 +1502,7 @@ class Gateway
     {
         $banks = [];
 
-        foreach (self::$emandateBanks as $emandateBanks)
+        foreach (self::getEmandateAuthTypeToBankMap() as $emandateBanks)
         {
             $banks = array_merge($banks, $emandateBanks);
         }
@@ -1464,9 +1531,11 @@ class Gateway
     {
         $banks = [];
 
-        if (isset(self::$emandateBanks[$authType]) === true)
+        $emandateBanks = self::getEmandateAuthTypeToBankMap();
+
+        if (isset($emandateBanks[$authType]) === true)
         {
-            $banks = self::$emandateBanks[$authType];
+            $banks = $emandateBanks[$authType];
         }
 
         return $banks;
@@ -1488,7 +1557,9 @@ class Gateway
     {
         $emandateBanks = [];
 
-        foreach (self::$emandateBanks as $authType => $banks)
+        $emandateBanksMap = self::getEmandateAuthTypeToBankMap();
+
+        foreach ($emandateBanksMap as $authType => $banks)
         {
             $emandateBanks = array_merge($emandateBanks, $banks);
         }
@@ -1610,9 +1681,15 @@ class Gateway
         return in_array($gateway, self::$asynchronous, true);
     }
 
-    public static function supportsHeadlessBrowser($gateway)
+    public static function supportsHeadlessBrowser($gateway, $networkCode)
     {
-        return in_array($gateway, self::$headless, true);
+        if ((isset(self::$headless[$gateway]) === true) and
+            (in_array($networkCode, self::$headless[$gateway], true) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public static function supportsAuthAndCaptureForNetwork($gateway, $networkCode)
@@ -1778,9 +1855,27 @@ class Gateway
         return $gateways;
     }
 
+    public static function getEmandateAuthTypeToBankMap()
+    {
+        $netbankingBanks = array_unique(
+                                         array_merge(
+                                             self::EMANDATE_NB_DIRECT_BANKS,
+                                             self::ENACH_NPCI_NETBANKING_BANKS
+                                          )
+                           );
+
+        $netbankingBanks = array_values($netbankingBanks);
+
+        return [
+            AuthType::NETBANKING  => $netbankingBanks,
+            AuthType::AADHAAR     => self::EMANDATE_AADHAAR_BANKS,
+            AuthType::AADHAAR_FP  => self::EMANDATE_AADHAAR_BANKS,
+        ];
+    }
+
     public static function getTerminalsForValidateVpaForMode(string $mode)
     {
-        // Currently we are only using MindGate for live and Sharp for test, later when
+        // Currently we are only using MindGate and SBI for live and Sharp for test, later when
         // we have more gateways, we can introduce gateway selection logic here.
         return self::$upiValidateVpaTerminals[$mode];
     }

@@ -32,7 +32,7 @@ class GatewayEmiFileTest extends TestCase
 
         $this->emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
 
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $this->fixtures->merchant->enableEmi();
     }
@@ -250,6 +250,7 @@ class GatewayEmiFileTest extends TestCase
             'min_amount'    => 0,
             'load'          => 100,
             'group'         => 'sbi_emi_filter',
+            'step'          => 'authorization',
         ]);
 
         $this->fixtures->edit('merchant_detail', $merchantId,[
@@ -543,6 +544,55 @@ class GatewayEmiFileTest extends TestCase
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'zip',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
+        Mail::assertQueued(EmiMail\Password::class);
+        Mail::assertQueued(EmiMail\File::class);
+    }
+
+    public function testGenerateEmiFileForCiti()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('iin',
+            [
+                'iin'           => '554637',
+                'category'      => 'STANDARD',
+                'network'       => 'Visa',
+                'type'          => 'credit',
+                'country'       => 'IN',
+                'issuer_name'   => 'Citi Bank',
+                'issuer'        => 'CITI',
+                'emi'           => 1,
+                'trivia'        => 'random trivia'
+            ]);
+
+        $this->makeEmiPaymentOnCard('5546370000099413', 12);
+
+        $this->ba->publicAuth();
+
+        $this->makeEmiPaymentOnCard('5546370000099413', 12);
+
+        $this->ba->adminAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $expectedFileContent = [
+            'type'        => 'citi_emi_file',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+//            'extension'   => 'zip',
         ];
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);

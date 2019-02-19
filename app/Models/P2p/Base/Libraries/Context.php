@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Base\Libraries;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\P2p\Base\MorphMap;
 use RZP\Models\P2p\Device;
 use RZP\Base\JitValidator;
 use Illuminate\Http\Request;
@@ -24,6 +25,14 @@ class Context
 
     const REQUEST_ID                = 'request_id';
 
+    const GATEWAY                   = 'gateway';
+
+    const NAME                      = 'name';
+
+    const ACTION                    = 'action';
+
+    const INPUT                     = 'input';
+
     const OPTIONS_RULES = [
         self::REQUEST_ID                            => 'nullable|string|max:50',
         self::HANDLE                                => 'filled|string',
@@ -31,10 +40,6 @@ class Context
         self::DEVICE . '.' . Device\Entity::IP      => 'nullable|ipv4',
         self::DEVICE . '.' . Device\Entity::GEOCODE => 'nullable|string|max:20',
     ];
-    /**
-     * @var Application
-     */
-    protected $app;
 
     /**
      * @var Merchant\Entity
@@ -52,27 +57,59 @@ class Context
     protected $handle;
 
     /**
+     * @var Device\DeviceToken\Entity
+     */
+    protected $deviceToken;
+
+    /**
      * @var array
      */
     protected $options = [];
 
     /**
-     * Any P2P api whether public
-     *
-     * Context constructor.
-     * @param Application $app
+     * @var array
      */
-    public function __construct(Application $app)
-    {
-        $this->app = $app;
-    }
+    protected $gatewayData = [];
 
     public function loadWithRequest(Request $request)
     {
+        MorphMap::boot();
+
+        // Setting the options first as options will be use to resolve the context
         $this->setOptions(ContextMap::resolveRequestHeaders($request));
-        $this->setMerchant($this->app['basicauth']->getMerchant());
-        $this->setDevice($this->app['basicauth']->getDevice());
-        $this->setHandle($this->app['repo']->p2p_handle->findOrFailPublic($this->options[self::HANDLE]));
+
+        // Handle is set in context from the options, each HTTP request will have handle specified
+        $this->setHandle(app('repo')->p2p_handle->findOrFailPublic($this->options[self::HANDLE]));
+
+        // As the context is loaded from HTTP request, we are using the basic auth
+        // for merchant and device, later we will have to change this if we change the auth.
+        // We are only going to set the context entities if the are available in basic auth.
+        $basicAuth = app('basicauth');
+
+        if ($basicAuth->getMerchant() instanceof Merchant\Entity)
+        {
+            $this->setMerchant($basicAuth->getMerchant());
+        }
+
+        if ($basicAuth->getDevice() instanceof Device\Entity)
+        {
+            $this->setDevice($basicAuth->getDevice());
+
+            $deviceToken = $this->device->deviceTokens()
+                                        ->handle($this->handle)
+                                        ->verified()->latest()->first();
+
+            // If there is no device token found, the context will fail
+            if (($deviceToken instanceof Device\DeviceToken\Entity) === false)
+            {
+                $this->throwContextException('Device is not verified on given handle');
+            }
+
+            // Setting the device token with the device
+            $this->setDeviceToken($deviceToken);
+        }
+        // Note:: We are not putting application as instance variable
+        // to ensure that context is independent of application container.
     }
 
     /**
@@ -86,8 +123,13 @@ class Context
     /**
      * @param Merchant\Entity $merchant
      */
-    public function setMerchant($merchant)
+    public function setMerchant(Merchant\Entity $merchant)
     {
+        if ($this->handle->isAllowedToMerchant($merchant->getId()) === false)
+        {
+            throw new LogicException('Merchant is not allowed to use the handle');
+        }
+
         $this->merchant = $merchant;
     }
 
@@ -102,13 +144,9 @@ class Context
     /**
      * @param Device\Entity $device
      */
-    public function setDevice($device)
+    public function setDevice(Device\Entity $device)
     {
-        if (($device instanceof Device\Entity) === false)
-        {
-            return;
-        }
-
+        // Basic auth already takes care of device owner, here we are only enforcing it.
         if ($this->merchant->getId() !== $device->getMerchantId())
         {
             throw new LogicException('Device does not belong to merchant in context');
@@ -128,43 +166,70 @@ class Context
     /**
      * @param Handle\Entity $handle
      */
-    public function setHandle($handle)
+    public function setHandle(Handle\Entity $handle)
     {
-        if (($handle instanceof Handle\Entity) === false)
-        {
-            return;
-        }
-
-        if ($handle->isAllowedToMerchant($this->merchant->getId()) === false)
-        {
-            throw new LogicException('Merchant is not allowed to use the handle');
-        }
-
         $this->handle = $handle;
     }
 
     /**
-     * @return array
+     * @return Device\DeviceToken\Entity
      */
-    public function getOptions(): array
+    public function getDeviceToken()
+    {
+        return $this->deviceToken;
+    }
+
+    public function setDeviceToken(Device\DeviceToken\Entity $deviceToken)
+    {
+        $this->deviceToken = $deviceToken;
+    }
+
+    /**
+     * @return ArrayBag
+     */
+    public function getOptions(): ArrayBag
     {
         return $this->options;
     }
 
     /**
-     * @param array $options
+     * @param ArrayBag $options
      */
-    public function setOptions(array $options)
+    public function setOptions(ArrayBag $options)
     {
         $validator = new JitValidator();
 
         $validator->rules(self::OPTIONS_RULES)
                   ->caller($this)
                   ->setStrictFalse()
-                  ->input($options)
+                  ->input($options->toArray())
                   ->validate();
 
         $this->options = $options;
+    }
+
+    /**
+     * Gateway action and input might be different from actual action,
+     * and input, thus we are wrapping it into Gateway Options
+     *
+     * @param string $name
+     * @param string $action
+     * @param ArrayBag $input
+     */
+    public function setGatewayData(string $name, string $action, ArrayBag $input)
+    {
+        $data = new ArrayBag([
+            self::NAME      => $name,
+            self::ACTION    => $action,
+            self::INPUT     => $input,
+        ]);
+
+        $this->gatewayData = $data;
+    }
+
+    public function getGatewayData(): ArrayBag
+    {
+        return $this->gatewayData;
     }
 
     /**
@@ -202,7 +267,7 @@ class Context
      */
     public function isContextApplication(): bool
     {
-        return ($this->getContextType(true) === self::APPLICATION);
+        return ($this->getContextType(true) === self::APPLICATION) or ($this->isContextMerchant());
     }
 
     /**
@@ -213,7 +278,7 @@ class Context
      */
     public function isContextMerchant(): bool
     {
-        return ($this->getContextType(true) === self::MERCHANT);
+        return ($this->getContextType(true) === self::MERCHANT) or ($this->isContextDevice());
     }
 
     /**
@@ -228,13 +293,13 @@ class Context
     }
 
     /**
-     * Return handleId from the context
+     * Return Code in Handle from the context
      *
      * @return string
      */
-    public function handleId(): string
+    public function handleCode(): string
     {
-        return $this->handle->getHandle();
+        return $this->handle->getCode();
     }
 
     /**

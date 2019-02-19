@@ -2,6 +2,8 @@
 
 namespace RZP\Http\Controllers;
 
+use ApiResponse;
+
 use RZP\Models\FundAccount;
 
 /**
@@ -14,4 +16,11 @@ class FundAccountController extends Controller
     use Traits\HasCrudMethods;
 
     protected $service = FundAccount\Service::class;
+
+    public function get(string $id)
+    {
+        $entity = $this->service()->fetch($id, $this->input);
+
+        return ApiResponse::json($entity);
+    }
 }

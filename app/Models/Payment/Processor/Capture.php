@@ -144,13 +144,13 @@ trait Capture
         $this->setPayment($payment);
 
         // If it has already been captured, we would have a transaction for it.
-        assert ($payment->hasBeenCaptured() === false);
+        assertTrue ($payment->hasBeenCaptured() === false);
 
         // If the transaction is already present for this, we should not be running verifyCapture at all.
-        assert ($payment->getTransactionId() === null);
+        assertTrue ($payment->getTransactionId() === null);
 
         // The payment should be in authorized or refunded state only.
-        assert ($payment->isStatusCreatedOrFailed() === false);
+        assertTrue ($payment->isStatusCreatedOrFailed() === false);
 
         $gatewayCaptured = $payment->isGatewayCaptured();
 
@@ -668,6 +668,8 @@ trait Capture
 
         $payment->setAutoCaptured($autoCaptured);
 
+        $this->setVerifyPaymentIfApplicable($payment);
+
         $this->trace->info(
             TraceCode::PAYMENT_STATUS_CAPTURED,
             [
@@ -698,7 +700,19 @@ trait Capture
 
         $this->repo->saveOrFail($payment);
 
-        $this->saveFeeDetails($txn, $feesSplit);
+        $txnCore->saveFeeDetails($txn, $feesSplit);
+    }
+
+    protected function setVerifyPaymentIfApplicable(Payment\Entity & $payment)
+    {
+        $gateway = $payment->getGateway();
+
+        if (in_array($gateway, Payment\Gateway::$captureVerifyEnabled, true) === true)
+        {
+            $payment->setVerifyBucket(0);
+
+            $payment->setVerifyAt(time());
+        }
     }
 
     protected function verifyOrderUnpaid(Payment\Entity $payment)

@@ -4,17 +4,18 @@ namespace RZP\Models\Terminal;
 
 use App;
 use Cache;
-use Razorpay\Trace\Logger as Trace;
-
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Rule;
+use RZP\Models\Payment\Method;
 use RZP\Models\Admin\ConfigKey;
-use RZP\Models\Terminal\Category;
+use RZP\Models\Currency\Currency;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as Constants;
+use RZP\Models\Gateway\Terminal\Service as TerminalService;
 
 class Selector extends Base\Core
 {
@@ -38,6 +39,9 @@ class Selector extends Base\Core
 
         // Sorts the netbanking terminals based on gateway priorities
         Sorters\NetbankingSorter::class,
+
+        //Sorts emandate terminals based on gateway priorities
+        Sorters\EmandateSorter::class,
 
         // Boost a gateway terminals based on load distribution of probabilities
         Sorters\TerminalLoadSorter::class,
@@ -96,6 +100,27 @@ class Selector extends Base\Core
         }
     }
 
+    public function createDirectTerminal($gateway)
+    {
+        $merchantId = $this->input['merchant']->getId();
+
+        $payment = $this->input['payment'];
+
+        $currency = ($payment->getConvertCurrency() === true) ? Currency::INR : $payment->getCurrency();
+
+        $gatewayInput = [
+            'currency_code'  => $currency,
+            'trans_mode'     => 'CARDS',
+        ];
+
+        $input = [
+            'gateway'        => $gateway,
+            'gateway_input'  => $gatewayInput,
+        ];
+
+        return (new TerminalService)->onboardMerchant($merchantId, $input, true);
+    }
+
     public function select()
     {
         $allTerminals = $this->repo->useSlave(function ()
@@ -112,7 +137,10 @@ class Selector extends Base\Core
             return (new Rule\Core)->fetchApplicableRulesForPayment($this->input);
         });
 
+
         $filteredTerminals = $this->filterTerminals($allTerminals, $applicableRules, $verbose);
+
+        $this->processHitachiOnboarding($filteredTerminals);
 
         $payment = $this->input['payment'];
 
@@ -349,5 +377,41 @@ class Selector extends Base\Core
         $sorterRules = $sorterRules->groupBySpecificityScore();
 
         return $sorterRules;
+    }
+
+    protected function processHitachiOnboarding(&$filteredTerminals)
+    {
+        try
+        {
+            if ($this->input['payment']->isMethod(Method::CARD)=== true)
+            {
+                $merchant = $this->input['merchant'];
+
+                $payment = $this->input['payment'];
+
+                $currency = ($payment->getConvertCurrency() === true) ? Currency::INR : $payment->getCurrency();
+
+                $hasHitachiDirectTerminal = (new TerminalService)->checkDirectTerminalForGateway(
+                    $filteredTerminals,
+                    Constants::HITACHI,
+                    $merchant,
+                    $currency);
+
+                if ($hasHitachiDirectTerminal === false)
+                {
+                    $newTerminal = $this->createDirectTerminal(Constants::HITACHI);
+
+                    if ($newTerminal !== null)
+                    {
+                        array_push($filteredTerminals, $newTerminal);
+                    }
+                }
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENT_TERMINAL_CREATION_ERROR);
+        }
+
     }
 }

@@ -29,16 +29,9 @@ class CreateP2pDeviceTokenTable extends Migration
 
             $table->text(Entity::GATEWAY_DATA);
 
+            $table->text(Entity::CL);
+
             $table->string(Entity::STATUS, 50);
-
-            $table->string(Entity::CL_CAPABILITY, 255)
-                  ->nullable();
-
-            $table->string(Entity::CL_TOKEN, 255)
-                  ->nullable();
-
-            $table->string(Entity::CL_PAYLOAD, 1000)
-                  ->nullable();
 
             $table->integer(Entity::REFRESHED_AT);
 

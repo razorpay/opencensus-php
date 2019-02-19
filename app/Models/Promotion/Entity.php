@@ -4,6 +4,7 @@ namespace RZP\Models\Promotion;
 
 use RZP\Models\Base;
 use RZP\Constants\Table;
+use RZP\Models\Pricing\DefaultPlan;
 use RZP\Models\Transaction\CreditType;
 
 class Entity extends Base\PublicEntity
@@ -14,6 +15,9 @@ class Entity extends Base\PublicEntity
     const SCHEDULE_ID             = 'schedule_id';
     const ITERATIONS              = 'iterations';
     const CREDITS_EXPIRE          = 'credits_expire';
+    const PRICING_PLAN_ID         = 'pricing_plan_id';
+    const PURPOSE                 = 'purpose';
+    const CREATOR_NAME            = 'creator_name';
 
     //These two variables are used to create schedule for promotion
     //in case the credits need to be expired and renewed
@@ -34,6 +38,9 @@ class Entity extends Base\PublicEntity
         self::CREDIT_TYPE,
         self::ITERATIONS,
         self::CREDITS_EXPIRE,
+        self::PRICING_PLAN_ID,
+        self::PURPOSE,
+        self::CREATOR_NAME,
     ];
 
     protected $visible = [
@@ -46,11 +53,16 @@ class Entity extends Base\PublicEntity
         self::CREDITS_EXPIRE,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::PRICING_PLAN_ID,
+        self::PURPOSE,
+        self::CREATOR_NAME,
     ];
 
     protected $defaults = [
         self::CREDIT_TYPE      => CreditType::FEE,
         self::ITERATIONS       => 1,
+        self::PRICING_PLAN_ID  => DefaultPlan::PROMOTIONAL_PLAN_ID,
+        self::CREDIT_AMOUNT    => 0,
     ];
 
     protected $casts = [
@@ -106,5 +118,10 @@ class Entity extends Base\PublicEntity
     public function doCreditsExpire(): bool
     {
         return $this->getAttribute(self::CREDITS_EXPIRE);
+    }
+
+    public function getPricingPlanId()
+    {
+        return $this->getAttribute(self::PRICING_PLAN_ID);
     }
 }

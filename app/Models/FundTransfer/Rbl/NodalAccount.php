@@ -56,7 +56,7 @@ class NodalAccount extends NodalBase\NodalAccount
 
                 $this->repo->saveOrFail($entity);
 
-                $this->repo->saveOrFail($entity->source);
+                $this->postFtaInitiateProcess($entity);
 
                 $this->trackAttemptsInitiatedSuccess($this->channel, $this->purpose, $entity->getSourceType());
             }
@@ -79,6 +79,11 @@ class NodalAccount extends NodalBase\NodalAccount
             $processedCount++;
 
             (new StatusProcessor($response))->updateTransferStatus();
+
+            // The reason we are not dispatching bulk recon job here is because
+            // that is required only for VPA since we get the final status
+            // in sync as part of the initiate request itself.
+            // Hence, we are doing this only for Yesbank now (for VPA only).
         }
 
         $this->updateTransferStatus($processedCount);

@@ -4,13 +4,13 @@ namespace RZP\Models\Pricing;
 
 use App;
 
-use RZP\Constants\Product;
-use RZP\Models\Base;
-use RZP\Models\Payment;
-use RZP\Models\Pricing;
-use RZP\Models\Admin\Org;
 use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Models\Pricing;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org;
+use RZP\Constants\Product;
 use RZP\Models\Admin\Action;
 
 class Repository extends Base\Repository
@@ -37,7 +37,23 @@ class Repository extends Base\Repository
     {
         $app = App::getFacadeRoot();
 
-        $orgId = $app['basicauth']->getOrgId();
+        $rzpOrgId = Org\Entity::getSignedId(Org\Entity::RAZORPAY_ORG_ID);
+
+        $orgId = (empty($app['basicauth']->getOrgId()) === true) ? $rzpOrgId : $app['basicauth']->getOrgId();
+
+        $crossOrgId = $app['basicauth']->getCrossOrgId();
+
+        if (empty($crossOrgId) === false)
+        {
+            $orgId = $crossOrgId;
+        }
+        elseif ($app['basicauth']->adminHasCrossOrgAccess() === true)
+        {
+            //
+            // We don't need to add org filter to query if admin has accesss to other orgs also.
+            //
+            return $query;
+        }
 
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
 
@@ -48,15 +64,47 @@ class Repository extends Base\Repository
 
     public function getPricingPlanById($id, $fail = false, $public = false)
     {
-        $pricing = $this->newQueryWitOrgIdParam()
-                        ->where(Pricing\Entity::PLAN_ID, '=', $id)
-                        ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
-                        ->orderBy(Pricing\Entity::PAYMENT_METHOD, 'desc')
-                        ->orderBy(Pricing\Entity::ID, 'desc')
-                        ->get();
+        $pricing = $this->getPlan($id, Pricing\Type::PRICING, $fail, $public);
 
-        if (($pricing->count() === 0) and
-            ($fail))
+        return $pricing;
+    }
+
+    public function getCommissionPlanById($id, $fail = false, $public = false)
+    {
+        $pricing = $this->getPlan($id, Pricing\Type::COMMISSION, $fail, $public);
+
+        return $pricing;
+    }
+
+    /**
+     * Get plan for a given id and type
+     *
+     * @param string      $id
+     * @param string|null $type
+     * @param bool        $fail
+     * @param bool        $public
+     *
+     * @return mixed
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
+     */
+    public function getPlan(string $id, string $type = null, bool $fail = false, bool $public = false)
+    {
+        $query   = $this->newQueryWitOrgIdParam();
+
+        $query->where(Pricing\Entity::PLAN_ID, $id);
+
+        if (empty($type) === false)
+        {
+            $query->where(Pricing\Entity::TYPE, $type);
+        }
+
+        $pricing = $query->orderBy(Pricing\Entity::PLAN_ID, 'desc')
+                         ->orderBy(Pricing\Entity::PAYMENT_METHOD, 'desc')
+                         ->orderBy(Pricing\Entity::ID, 'desc')
+                         ->get();
+
+        if (($pricing->count() === 0) and ($fail))
         {
             if ($public)
             {
@@ -78,6 +126,7 @@ class Repository extends Base\Repository
         $pricing = $this->newQuery()
                         ->where(Pricing\Entity::PLAN_ID, '=', $id)
                         ->where(Pricing\Entity::ORG_ID, '=', $orgId)
+                        ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
                         ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
                         ->orderBy(Pricing\Entity::PAYMENT_METHOD, 'desc')
                         ->orderBy(Pricing\Entity::ID, 'desc')
@@ -97,6 +146,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Pricing\Entity::PLAN_ID, '=', $id)
+                    ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
                     ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
                     ->orderBy(Pricing\Entity::PAYMENT_METHOD, 'desc')
                     ->orderBy(Pricing\Entity::ID, 'desc')
@@ -115,6 +165,20 @@ class Repository extends Base\Repository
         return $this->getPricingPlanById($id, true, true);
     }
 
+    /**
+     * Fetches both types of pricing plans
+     *
+     * @param $id
+     *
+     * @return mixed
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
+     */
+    public function getPlanByIdOrFailPublic($id)
+    {
+        return $this->getPlan($id, null, true, true);
+    }
+
     public function getZeroPricingPlanRuleForMethod($feature, $method, $merchant, $product = Product::PRIMARY)
     {
         $orgId = $merchant->org->getId();
@@ -125,27 +189,37 @@ class Repository extends Base\Repository
                     ->where(Pricing\Entity::FEATURE, '=', $feature)
                     ->where(Pricing\Entity::ORG_ID, '=', $orgId)
                     ->where(Pricing\Entity::PAYMENT_METHOD, '=', $method)
+                    ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
                     ->firstOrFail();
     }
 
-    public function getPricingPlansOrderedByPlanId()
+    public function getBankingPricingRulesForMethod(string $feature, string $method, Merchant\Entity $merchant)
     {
-        return $this->newQueryWitOrgIdParam()
-                    ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
-                    ->orderBy(Pricing\Entity::PAYMENT_METHOD, 'desc')
-                    ->orderBy(Pricing\Entity::ID, 'desc')
+        $orgId = $merchant->org->getId();
+
+        return $this->newQuery()
+                    ->product(Product::BANKING)
+                    ->planId(Fee::DEFAULT_BANKING_PLAN_ID)
+                    ->where(Pricing\Entity::FEATURE, '=', $feature)
+                    ->where(Pricing\Entity::ORG_ID, '=', $orgId)
+                    ->where(Pricing\Entity::PAYMENT_METHOD, '=', $method)
+                    ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
                     ->get();
     }
 
-    public function getMerchantPricingPlans()
+    public function getPlansOrderedByPlanId(array $input)
     {
-        // For merchant pricing plans, gateway will not be specified
-        return $this->newQueryWitOrgIdParam()
-                    ->whereNull(Pricing\Entity::GATEWAY)
-                    ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
-                    ->orderBy(Pricing\Entity::PAYMENT_METHOD, 'desc')
-                    ->orderBy(Pricing\Entity::ID, 'desc')
-                    ->get();
+        $query = $this->newQueryWitOrgIdParam();
+
+        if (empty($input[Entity::TYPE]) === false)
+        {
+            $query->where(Pricing\Entity::TYPE, $input[Entity::TYPE]);
+        }
+
+        return $query->orderBy(Pricing\Entity::PLAN_ID, 'desc')
+                     ->orderBy(Pricing\Entity::PAYMENT_METHOD, 'desc')
+                     ->orderBy(Pricing\Entity::ID, 'desc')
+                     ->get();
     }
 
     public function getMerchantPricingPlansSummary()
@@ -154,8 +228,10 @@ class Repository extends Base\Repository
                     ->selectRaw(
                        Pricing\Entity::PLAN_ID . ','.
                        Pricing\Entity::PLAN_NAME . ','.
+                       Pricing\Entity::ORG_ID . ','.
                        'COUNT(*) AS rules_count')
-                    ->groupBy(Pricing\Entity::PLAN_ID, Pricing\Entity::PLAN_NAME)
+                    ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
+                    ->groupBy(Pricing\Entity::PLAN_ID, Pricing\Entity::PLAN_NAME, Pricing\Entity::ORG_ID)
                     ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
                     ->get();
     }
@@ -163,11 +239,12 @@ class Repository extends Base\Repository
     public function getGatewayPricingPlans()
     {
         return $this->newQueryWitOrgIdParam()
+                    ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
                     ->whereNotNull(Pricing\Entity::GATEWAY)
                     ->orderBy(Pricing\Entity::ID, 'desc')->get();
     }
 
-    public function getPricingPlanByName($name)
+    public function getPlanByName($name)
     {
         return $this->newQueryWitOrgIdParam()
                     ->where(Pricing\Entity::PLAN_NAME, '=', $name)
@@ -176,7 +253,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getPricingPlanRule($planId, $ruleId)
+    public function getPlanRule($planId, $ruleId)
     {
         return $this->newQueryWitOrgIdParam()
                      ->planId($planId)

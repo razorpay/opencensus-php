@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Schedule;
 use RZP\Models\Schedule\Task as ScheduleTask;
 
 class Service extends Base\Service
@@ -17,6 +18,10 @@ class Service extends Base\Service
     public function createSchedule($input)
     {
         $this->trace->info(TraceCode::SCHEDULE_CREATE_REQUEST, $input);
+
+        // By default we are creating schedule with type settlement if it's not in payload.
+        // Once frontend change is done it will be mandatory
+        $input[Schedule\Entity::TYPE] = $input[Schedule\Entity::TYPE] ?? Schedule\Type::SETTLEMENT;
 
         $schedule = (new Core)->createSchedule($input);
 
@@ -27,7 +32,7 @@ class Service extends Base\Service
 
     public function getScheduleById($id)
     {
-        $schedule = $this->repo->schedule->findByIdAndMerchantId($id, Account::SHARED_ACCOUNT);
+        $schedule = $this->repo->schedule->find($id);
 
         return $schedule->toArrayPublic();
     }
@@ -73,7 +78,7 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::SCHEDULE_EDIT_REQUEST, $input);
 
-        $schedule = $this->repo->schedule->findByIdAndMerchantId($id, Account::SHARED_ACCOUNT);
+        $schedule = $this->repo->schedule->find($id);
 
         $schedule = (new Core)->editSchedule($schedule, $input);
 

@@ -8,6 +8,7 @@ use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Models\FundAccount;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Payout\Entity as Payout;
 use RZP\Models\FundTransfer\Batch as BatchFundTransfer;
@@ -33,19 +34,33 @@ class CreatePayoutsTable extends Migration
             $table->char(Payout::CUSTOMER_ID, Customer\Entity::ID_LENGTH)
                   ->nullable();
 
+            $table->char(Payout::FUND_ACCOUNT_ID, FundAccount\Entity::ID_LENGTH)
+                  ->nullable();
+
             $table->string(Payout::METHOD);
+
+            $table->string(Payout::REFERENCE_ID, 255)
+                  ->nullable();
 
             $table->char(Payout::BALANCE_ID, Balance\Entity::ID_LENGTH)
                   ->nullable();
 
-            $table->char(Payout::DESTINATION_ID, Payout::ID_LENGTH);
+            $table->char(Payout::DESTINATION_ID, Payout::ID_LENGTH)
+                  ->nullable();
 
-            $table->char(Payout::DESTINATION_TYPE, 20);
+            $table->char(Payout::DESTINATION_TYPE, 20)
+                  ->nullable();
 
             $table->char(Payout::USER_ID, User\Entity::ID_LENGTH)
                   ->nullable();
 
             $table->char(Payout::PURPOSE, 30);
+
+            $table->string(Payout::NARRATION, 255)
+                  ->nullable();
+
+            $table->string(Payout::PURPOSE_TYPE, 255)
+                  ->nullable();
 
             $table->integer(Payout::AMOUNT)
                   ->unsigned();
@@ -101,15 +116,25 @@ class CreatePayoutsTable extends Migration
             $table->integer(Payout::PROCESSED_AT)
                   ->nullable();
 
+            $table->integer(Payout::REVERSED_AT)
+                  ->nullable();
+
             $table->integer(Payout::SETTLED_ON)
                   ->nullable();
 
             $table->string(Payout::TYPE, 30)
                   ->default('default');
 
+            $table->string(Payout::MODE, 30)
+                  ->nullable();
+
             $table->integer(Payout::CREATED_AT);
 
             $table->integer(Payout::UPDATED_AT);
+
+            $table->index(Payout::PROCESSED_AT);
+
+            $table->index(Payout::REVERSED_AT);
 
             $table->index(Payout::CREATED_AT);
 
@@ -117,7 +142,13 @@ class CreatePayoutsTable extends Migration
 
             $table->index(Payout::STATUS);
 
+            $table->index(Payout::MODE);
+
+            $table->index(Payout::REFERENCE_ID);
+
             $table->index(Payout::BALANCE_ID, Payout::MERCHANT_ID);
+
+            $table->index(Payout::FUND_ACCOUNT_ID);
 
             $table->index([Payout::MERCHANT_ID, Payout::CREATED_AT]);
 

@@ -84,8 +84,8 @@ class Core extends Base\Core
 
         $anchor = $this->getAnchorForPromotion($period);
 
-        $schedule = $this->repo->schedule->getScheduleByPeriodIntervalAndAnchor(
-            $period, $interval, $anchor);
+        $schedule = $this->repo->schedule->getScheduleByPeriodIntervalAnchorAndType(
+            $period, $interval, $anchor, Schedule\Type::PROMOTION);
 
         if ($schedule === null)
         {
@@ -96,6 +96,7 @@ class Core extends Base\Core
                 Schedule\Entity::INTERVAL => $interval,
                 Schedule\Entity::PERIOD   => $period,
                 Schedule\Entity::ANCHOR   => $anchor,
+                Schedule\Entity::TYPE     => Schedule\Type::PROMOTION
             ];
 
             $schedule = (new Schedule\Core)->createSchedule($scheduleInput);
@@ -107,6 +108,18 @@ class Core extends Base\Core
     protected function getAnchorForPromotion(string $period)
     {
        $anchor = null;
+
+       //For hourly AND daily, anchor is not significant
+
+        $unAnchoredPeriods = [
+            Schedule\Period::HOURLY,
+            Schedule\Period::DAILY
+        ];
+
+        if (in_array($period, $unAnchoredPeriods, true) === true)
+        {
+            return null;
+        }
 
        $currentTime = Carbon::now(Timezone::IST);
 

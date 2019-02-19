@@ -2,59 +2,154 @@
 
 namespace RZP\Models\Gateway\Terminal;
 
-use RZP\Exception;
+use App;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Mode;
 use RZP\Gateway\Base\Terminal;
+use RZP\Constants\Environment;
 
 class Service extends Base\Service
 {
-    const MERCHANT_ONBOARD  = 'merchant_onboard';
-    const GATEWAY_INPUT     = 'gateway_input';
-    const TERMINAL          = 'terminal';
-    const PG_MERCHANT_ID    = 'pg_merchant_id';
+    const MERCHANT_ONBOARD   = 'merchant_onboard';
+    const GATEWAY_INPUT      = 'gateway_input';
+    const TERMINAL           = 'terminal';
+    const MUTEX_LOCK_TIMEOUT = '60';
 
-    public function onboardMerchant(string $merchantId, array $input)
+    protected $mutex;
+
+    public function __construct()
     {
+        parent::__construct();
+
+        $this->mutex = App::getFacadeRoot()['api.mutex'];
+    }
+
+    public function onboardMerchant(string $merchantId, array $input, bool $checkFeatureEnabled)
+    {
+        (new Validator)->validateInput(self::MERCHANT_ONBOARD, $input);
+
+        $gateway = $input['gateway'];
+
+        $gatewayInput = $input['gateway_input'];
+
+        $gatewayProcessor = GatewayFactory::build($gateway);
+
+        $createTerminal = $this->shouldCreateTerminal($checkFeatureEnabled, $merchantId);
+
+        if ($createTerminal === false)
+        {
+            return null;
+        }
+
         $this->trace->info(
             TraceCode::MERCHANT_ONBOARD_REQUEST,
             [
                 'merchant_id' => $merchantId,
-                'input'       => $input
+                'input'       => $input,
             ]);
-
-        (new Validator)->validateInput(self::MERCHANT_ONBOARD, $input);
 
         $merchant = $this->repo->merchant->findByPublicId($merchantId);
 
+        $gatewayProcessor->validateGatewayInput($gatewayInput, $merchant);
+
+        return $this->performOnboarding($merchant, $gatewayProcessor, $gatewayInput);
+    }
+
+    public function performOnboarding($merchant, $gatewayProcessor, $gatewayInput)
+    {
+        $gateway = $gatewayProcessor->getGatewayName();
+
         $merchantDetail = $merchant->merchantDetail->toArray();
 
-        $gateway = $input['gateway'];
+        $lockResource = $gatewayProcessor->getLockResource($merchant, $gateway, $gatewayInput);
 
-        $pgMerchant =$this->repo->merchant->findByPublicId($input['terminal']['pg_merchant_id']);
+        $terminal = $this->mutex->acquireAndRelease(
+            $lockResource,
+            function () use ($gatewayProcessor, $merchant, $merchantDetail, $gatewayInput, $gateway) {
 
-        $gatewayData = [
-            'merchant'          => $pgMerchant,
-            'merchant_details'  => $merchantDetail,
-            'gateway_input'     => $input[self::GATEWAY_INPUT],
-        ];
+                $gatewayProcessor->checkDbConstraints($gatewayInput, $merchant);
 
-        try
+                $gatewayInput = $gatewayProcessor->getInputValue($gatewayInput, $merchant);
+
+                $gatewayData = [
+                    'merchant'         => $merchant,
+                    'merchant_details' => $merchantDetail,
+                    'gateway_input'    => $gatewayInput,
+                ];
+
+                try
+                {
+                    $terminalData = $this->app['gateway']->call($gateway,
+                        Terminal::MERCHANT_ONBOARD,
+                        $gatewayData,
+                        $this->mode);
+
+                    $terminal = $gatewayProcessor->processTerminalData($terminalData, $merchant);
+
+                    return $terminal;
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->info(
+                        TraceCode::MERCHANT_ONBOARD_REQUEST_FAILED,
+                        [
+                            'merchant_id'   => $merchant->getId(),
+                            'gateway'       => $gateway,
+                            'gateway_input' => $gatewayInput,
+                            'error'         => $e->getMessage(),
+                        ]);
+                    throw $e;
+                }
+            },
+            self::MUTEX_LOCK_TIMEOUT);
+
+        return $terminal;
+    }
+
+    protected function shouldCreateTerminal(bool $checkFeatureEnabled, $merchantId)
+    {
+        $isProduction = $this->app->environment(Environment::PRODUCTION);
+
+        if ($isProduction === false)
         {
-            $terminalData = $this->app['gateway']->call($gateway,
-                                                        Terminal::MERCHANT_ONBOARD,
-                                                        $gatewayData,
-                                                        $this->mode);
-
-            $terminal = (new \RZP\Models\Terminal\Core)->create($terminalData, $pgMerchant);
-
-            return $terminal->toArrayPublic();
+            return true;
         }
-        catch (Exception\GatewayErrorException $e)
+
+        if ($this->mode === Mode::TEST)
         {
-            //TODO: Handle error if needed.
-            throw $e;
+            return false;
         }
+
+        if ($checkFeatureEnabled === true)
+        {
+            $response = $this->app->razorx->getTreatment($merchantId, 'merchant_onboard_terminal', $this->mode);
+
+            if (($response === 'control') or 
+                ($response === 'off'))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function checkDirectTerminalForGateway(array $terminals, $gateway, $merchant, $currency):bool
+    {
+        $category = $merchant->getCategory();
+        
+        foreach ($terminals as $terminal)
+        {
+            if (($terminal->getGateway() === $gateway) and
+                ($terminal->getCurrency() === $currency) and 
+                ($terminal->isDirectForMerchant($merchant) === true) and 
+                ($terminal->getCategory() === $category))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

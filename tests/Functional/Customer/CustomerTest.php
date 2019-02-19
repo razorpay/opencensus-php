@@ -396,6 +396,14 @@ class CustomerTest extends TestCase
 
     public function testCustomerWalletPayoutInsufficientWalletBalance()
     {
+        $this->fixtures->create(
+            'fund_account',
+            [
+                'id'           => '100000000000fa',
+                'account_type' => 'bank_account',
+                'account_id'   => '1000000lcustba'
+            ]);
+
         $this->ba->privateAuth();
 
         $this->fixtures->create('customer_balance', ['customer_id' => '100000customer', 'balance' => 200]);
@@ -408,6 +416,14 @@ class CustomerTest extends TestCase
      */
     public function testCustomerWalletPayoutInsufficientMerchantBalance()
     {
+        $this->fixtures->create(
+            'fund_account',
+            [
+                'id'           => '100000000000fa',
+                'account_type' => 'bank_account',
+                'account_id'   => '1000000lcustba'
+            ]);
+
         $this->ba->privateAuth();
 
         $this->fixtures->create('customer_balance', ['customer_id' => '100000customer', 'balance' => 1000]);
@@ -422,6 +438,14 @@ class CustomerTest extends TestCase
 
         $this->fixtures->create('customer_balance', ['customer_id' => '100000customer', 'balance' => 1000]);
         $this->fixtures->edit('balance', '10000000000000', ['balance' => 1000]);
+
+        $this->fixtures->create(
+            'fund_account',
+            [
+                'id'           => '100000000000fa',
+                'account_type' => 'bank_account',
+                'account_id'   => '1000000lcustba'
+            ]);
 
         $payout = $this->startTest();
 
@@ -463,10 +487,12 @@ class CustomerTest extends TestCase
 
         $this->assertEquals(1, $result['yesbank']['success']);
 
-        $result = $this->reconcileEntitiesForChannel('yesbank');
-
-        $this->assertEquals(1, $result['total_count']);
-        $this->assertEquals('yesbank', $result['channel']);
+        // This is not required as the job is dispatched to mark the payout status
+        // in sync this will be done as part of `initiateTransfers`
+//        $result = $this->reconcileEntitiesForChannel('yesbank');
+//
+//        $this->assertEquals(1, $result['total_count']);
+//        $this->assertEquals('yesbank', $result['channel']);
 
         $customerTransaction->reload();
 

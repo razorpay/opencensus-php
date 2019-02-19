@@ -6,9 +6,7 @@
     "title": "The Root Schema",
     "required": [
         "status",
-        "status_url",
-        "auth_token",
-        "expire_at"
+        "auth_token"
     ],
     "properties": {
         "status": {

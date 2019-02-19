@@ -49,6 +49,34 @@ return [
         'entity'            => 'payment',
     ],
 
+    'testPaymentEnrolledCard' => [
+        'merchant_id' => '10000000000000',
+        'amount' => 50000,
+        'method' => 'card',
+        'status' => 'captured',
+        'two_factor_auth' => 'passed',
+        'amount_authorized' => 50000,
+        'amount_refunded'   => 0,
+        'refund_status'     => null,
+        'currency'          => 'INR',
+        'description'       => 'random description',
+        'error_code'        => null,
+        'error_description' => null,
+        'email'             => 'a@b.com',
+        'contact'           => '+919918899029',
+        'notes'             => [
+            'merchant_order_id' => 'random order id',
+        ],
+        'gateway'           => 'cybersource',
+        'terminal_id'       => '1000CybrsTrmnl',
+        'signed'            => false,
+        'verified'          => null,
+        'fee'               => 1000,
+        'tax'               => 0,
+        'entity'            => 'payment',
+    ],
+
+
     'testCybersourceCaptureEntity' => [
         'amount'             => 50000,
         'pares_status'       => null,
@@ -216,11 +244,10 @@ return [
         'refund_id'     => null,
         'auth_data'     => null,
         'amount'        => 50000,
-        'pares_status'  => null,
         'status'        => 'authorized',
-        'xid'           => 'bWJWb1RsYzN1dEpTVUVvQ1NBMDA=',
-        'eci'           => '2',
-        'cavv'          => 'jAt2OkgfBuDnCBAAAJDIBBkAAAA=',
+        'xid'           => 'aFM3NktkemM4OW1sSGNoOERXUzE=',
+        'eci'           => '05',
+        'cavv'          => 'AAABAWFlmQAAAABjRWWZEEFgFz+=',
         'capture_ref'   => null,
         'reason_code'   => 100,
         'entity'        => 'cybersource',
@@ -259,15 +286,31 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::SERVER_ERROR,
-                    'description' => PublicErrorDescription::SERVER_ERROR,
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
                 ],
             ],
-            'status_code' => 500,
+            'status_code' => 400,
         ],
         'exception' => [
             'class' => RZP\Exception\LogicException::class,
-            'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
+        ],
+    ],
+
+    'testGatewayPaymentInvalidEci' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\LogicException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
         ],
     ],
 

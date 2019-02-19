@@ -71,7 +71,9 @@ class Server extends Base\Mock\Server
 
         $this->content($content, Base\Action::VERIFY);
 
-        $content = ['msg' => $this->getGatewayInstance()->getMessageStringWithHash($content)];
+        $content = $this->getGatewayInstance()->getMessageStringWithHash($content);
+
+        $this->content($content, 'verify_action');
 
         return $this->makeResponse($content);
     }

@@ -252,11 +252,6 @@ class OrderTest extends TestCase
         return $order;
     }
 
-    public function testCreateTPVOrderWithInvalidAccountNumber()
-    {
-        $this->startTest();
-    }
-
     public function testGetOrder()
     {
         $order = $this->testCreateOrder();
@@ -278,6 +273,29 @@ class OrderTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetMultiplePaymentsForOrder()
+    {
+        $order = $this->testCreateOrder();
+        $order = $this->getLastEntity('order');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $rzpPayment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment');
+        $this->assertEquals($order['id'], $rzpPayment['razorpay_order_id']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/orders/'. $order['id'] . '/payments';
+
+        $this->ba->privateAuth();
+
+        $payments = $this->startTest();
+
+        $this-> assertEquals($payments['count'], 0);
+    }
+
     public function testRetrieveOrderWithReceipt()
     {
         $order = $this->fixtures->create('order');
@@ -293,6 +311,33 @@ class OrderTest extends TestCase
 
         $this->assertEquals($receipt, $order['items'][0]['receipt']);
     }
+
+    public function testRetrieveOrderPaymentsWithReceipt()
+    {
+        $order = $this->fixtures->create('order');
+
+        $this->ba->privateAuth();
+
+        $orders = $this->retrieveOrdersDefault();
+
+        //GIVEN
+        $receipt = $orders['items'][0]['receipt'];
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = 'order_' . $order['id'];
+        $payment['amount'] = $order['amount'];
+
+        $this->doAuthPayment($payment);
+
+        $this->ba->privateAuth();
+
+        $order = $this->retrieveOrdersDefault(['receipt' => $receipt, 'expand' => ['payments']]);
+
+        $this->assertEquals($receipt, $order['items'][0]['receipt']);
+
+        $this->assertEquals($order['items'][0]['id'], $order['items'][0]['payments']['items'][0]['order_id']);
+    }
+
 
     public function testStatusAfterPayment()
     {
@@ -755,7 +800,7 @@ class OrderTest extends TestCase
 
     public function testPaymentWithOfferAppliedOnOrder()
     {
-        $this->mockTokenex();
+        $this->mockCardVault();
         $this->testCreateOrderWithOffer();
 
         $order = $this->getLastEntity('order', true);
@@ -855,7 +900,7 @@ class OrderTest extends TestCase
 
     public function testPaymentOnOfferWithNullMethod()
     {
-        $this->mockTokenex();
+        $this->mockCardVault();
         $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
 
         $offer = $this->fixtures->create('offer', [
@@ -950,7 +995,7 @@ class OrderTest extends TestCase
             'force_offer' => true,
         ]);
 
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $payment = $this->getDefaultPaymentArray();
         $payment['order_id'] = $order->getPublicId();
@@ -1024,7 +1069,7 @@ class OrderTest extends TestCase
     {
         $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
 
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $offer = $this->fixtures->create('offer', [
             'starts_at'     => Carbon::now(Timezone::IST)->subMonth()->timestamp,
@@ -1512,7 +1557,7 @@ class OrderTest extends TestCase
     {
         $this->fixtures->create('terminal:all_shared_terminals');
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-        $this->mockTokenex();
+        $this->mockCardVault();
     }
 
     protected function createOrderWithOfferAppliedAndGetPaymentArray($offer, array $additionalPaymentAttributes = [])

@@ -14,6 +14,7 @@ class RowProcessor extends BaseRowProcessor
     const BANK_STATUS_CODE      = 'bank_status_code';
     const REMARKS               = 'remarks';
     const SETTLEMENT_DATE       = 'settlement_date';
+    const NAME_WITH_BENE_BANK   = 'name_with_bene_bank';
 
     protected function processRow()
     {
@@ -25,6 +26,7 @@ class RowProcessor extends BaseRowProcessor
             self::BANK_STATUS_CODE      => $this->getNullOnEmpty(Headings::STATUS),
             self::REMARKS               => $this->getNullOnEmpty(Headings::RETURN_REASON),
             self::SETTLEMENT_DATE       => $this->getNullOnEmpty(Headings::SETTLEMENT_DATE),
+            self::NAME_WITH_BENE_BANK   => null,
         ];
 
         $this->trace->info(TraceCode::FTA_RECON_PARSED_DATA, ['parsed_data' => $this->parsedData]);

@@ -7,6 +7,7 @@ use RZP\Tests\P2p\Service\Base\Traits;
 
 class TestCase extends Functional\TestCase
 {
+    use Traits\AssertionTrait;
     use Traits\ExceptionTrait;
     use Traits\DbEntityFetchTrait;
 

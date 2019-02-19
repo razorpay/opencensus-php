@@ -58,7 +58,7 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS,
                 // A process will generally not need to do multiple retries at all,
                 // since the retry times are adequate for the previous process to complete.
-                2,
+                5,
                 // 2x and 4x of avg response time for this entire route (not just the process within the lock)
                 200,
                 400);
@@ -239,7 +239,7 @@ class Core extends Base\Core
         {
             $accountNumber = $virtualAccount->bankAccount->getAccountNumber();
 
-            (new Balance\Core)->updateBalanceAccountNumber($accountNumber);
+            (new Balance\Core)->updateBalanceAccountNumber($virtualAccount->balance, $accountNumber);
         }
     }
 

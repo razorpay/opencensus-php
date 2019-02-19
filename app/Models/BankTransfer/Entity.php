@@ -480,4 +480,14 @@ class Entity extends Base\PublicEntity
 
         return $label . '-' . $utr;
     }
+
+    public function shouldNotifyTxnViaSms(): bool
+    {
+        return false;
+    }
+
+    public function shouldNotifyTxnViaEmail(): bool
+    {
+        return ($this->isBalanceTypeBanking() === true);
+    }
 }

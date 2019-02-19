@@ -5,10 +5,10 @@ namespace RZP\Models\Settlement;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
-use RZP\Models\Transaction;
-use RZP\Exception;
+use RZP\Constants\Entity as EntityConstants;
 
 class Entity extends Base\PublicEntity
 {
@@ -341,6 +341,13 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::CREATED);
     }
 
+    /**
+     * This is required for the FTA module.
+     * FTA requires the sources to implement `isStatusFailed`
+     * function, to send out summary emails and stuff in bulkRecon.
+     *
+     * @return bool
+     */
     public function isStatusFailed()
     {
         return ($this->getStatus() === Status::FAILED);

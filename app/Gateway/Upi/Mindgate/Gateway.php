@@ -8,6 +8,7 @@ use RZP\Models\Payment;
 use phpseclib\Crypt\AES;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\BharatQr;
 use RZP\Gateway\Upi\Base;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base as GatewayBase;
@@ -50,6 +51,7 @@ class Gateway extends Base\Gateway
         Action::REFUND        => 20,
         Action::VERIFY        => 14,
         Action::VALIDATE_PUSH => 14,
+        Action::INTENT_TPV    => 19,
     ];
 
     protected $map = [
@@ -84,9 +86,23 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
+        if ($this->isBharatQrPayment() === true)
+        {
+            $attributes = $this->getBharatqrGatewayAttributes($input);
+
+            $this->createGatewayPaymentEntity($attributes);
+
+            return null;
+        }
+
         if ((isset($input['upi']['flow']) === true) and
             ($input['upi']['flow'] === 'intent'))
         {
+            if ($input['merchant']->isTPVRequired() === true)
+            {
+                $this->initiateIntentTpv($input);
+            }
+
             return $this->authorizeIntent($input);
         }
 
@@ -122,7 +138,7 @@ class Gateway extends Base\Gateway
             Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
         ];
 
-        $payment = $this->createGatewayPaymentEntity($attributes);
+        $payment = $this->createGatewayPaymentEntity($attributes, Action::AUTHORIZE);
 
         $request = $this->getIntentRequest($input);
 
@@ -182,6 +198,8 @@ class Gateway extends Base\Gateway
         $response = $this->parseGatewayResponse($response->body, Action::VALIDATE_VPA);
 
         $this->checkResponseStatus($response[ResponseFields::VPA_STATUS], Status::VPA_AVAILABLE);
+
+        return $this->returnValidateVpaResponse($response);
     }
 
     private function checkResponseStatus(string $status, string $successStatus = Status::SUCCESS)
@@ -203,10 +221,12 @@ class Gateway extends Base\Gateway
      * @param array $response
      * @throws Exception\GatewayErrorException
      */
-    private function checkRefundResponseStatus(string $status, string $successStatus = Status::SUCCESS, array $response = [])
+    private function checkRefundResponseStatus(string $status, string $successStatus = Status::REFUND_SUCCESS, array $response = [])
     {
         if ($status !== $successStatus)
         {
+            $responseKey = ($this->action === Action::VERIFY) ? Payment\Gateway::GATEWAY_VERIFY_RESPONSE : Payment\Gateway::GATEWAY_RESPONSE;
+
             $errorCode = ErrorCodes\ErrorCodes::getErrorCode($response);
 
             $errorMessage = ErrorCodes\ErrorCodeDescriptions::getGatewayErrorDescription($response);
@@ -216,8 +236,8 @@ class Gateway extends Base\Gateway
                 $response[ResponseFields::RESPCODE],
                 $errorMessage,
                 [
-                    Payment\Gateway::GATEWAY_RESPONSE  => json_encode($response),
-                    Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($response)
+                    $responseKey                    => json_encode($response),
+                    Payment\Gateway::GATEWAY_KEYS   => $this->getGatewayData($response)
                 ]);
         }
     }
@@ -259,10 +279,13 @@ class Gateway extends Base\Gateway
     /**
      * Takes in S2S request input array
      * and returns the parsed response as an array
+     *
      * @param  array $input Request Input arrau
+     * @param bool   $isBharatQr
+     *
      * @return array
      */
-    public function preProcessServerCallback($input): array
+    public function preProcessServerCallback($input, $isBharatQr = false): array
     {
         $encryptedResponse = $input[ResponseFields::CALLBACK_RESPONSE_KEY];
 
@@ -272,7 +295,34 @@ class Gateway extends Base\Gateway
 
         $bankDetails = $this->parseBankAccountDetails($response[ResponseFields::BANK_REFERENCE]);
 
-        return array_merge($response, $bankDetails);
+        $response = array_merge($response, $bankDetails);
+
+        if ($isBharatQr === true)
+        {
+            $response = $this->getQrData($response);
+        }
+
+        return $response;
+    }
+
+    protected function getQrData(array $input)
+    {
+        $amount = $this->getIntegerFormattedAmount($input[ResponseFields::AMOUNT]);
+
+        $qrData = [
+            BharatQr\GatewayResponseParams::AMOUNT                => $amount,
+            BharatQr\GatewayResponseParams::VPA                   => $input[ResponseFields::PAYER_VA],
+            BharatQr\GatewayResponseParams::METHOD                => Payment\Method::UPI,
+            BharatQr\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[ResponseFields::CALLBACK_RESPONSE_PGMID],
+            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => substr($input[ResponseFields::PAYMENT_ID],
+                                                                        3, 14),
+            BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::UPI_TXN_ID],
+        ];
+
+        return [
+            'callback_data' => $input,
+            'qr_data'       => $qrData
+        ];
     }
 
     /**
@@ -283,26 +333,44 @@ class Gateway extends Base\Gateway
      */
     protected function parseGatewayResponse($responseBody, $type = Action::COLLECT)
     {
-        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
-            'body'              => $responseBody,
-            'encrypted'         => true,
-            'gateway'           => $this->gateway,
-            'type'              => $type
-        ]);
+        $response = null;
 
-        $response = $this->decrypt($responseBody);
-
-        $type = strtoupper($type);
-
-        $fields = constant(__NAMESPACE__ . "\ResponseFields::$type");
-
-        $values = explode('|', $response);
-
-        $result = [];
-
-        foreach ($fields as $index => $key)
+        try
         {
-            $result[$key]     =   $values[$index];
+            $response = $this->decrypt($responseBody);
+
+            $type = strtoupper($type);
+
+            $fields = constant(__NAMESPACE__ . "\ResponseFields::$type");
+
+            $values = explode('|', $response);
+
+            $result = [];
+
+            foreach ($fields as $index => $key)
+            {
+                $result[$key] = $values[$index];
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
+                'body'              => $responseBody,
+                'decrypted'         => $response,
+                'gateway'           => $this->gateway,
+                'type'              => $type,
+                'error'             => $e->getMessage()
+            ]);
+
+            $responseKey = ($this->action === Action::VERIFY) ? Payment\Gateway::GATEWAY_VERIFY_RESPONSE : Payment\Gateway::GATEWAY_RESPONSE;
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                null,
+                $e->getMessage(),
+                [
+                    $responseKey  => $responseBody,
+                ]);
         }
 
         $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
@@ -548,24 +616,6 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * This is same as the payment description, capped
-     * to 50 characters
-     *
-     * @param array $input
-     *
-     * @return string
-     */
-    protected function getPaymentRemark(array $input)
-    {
-        $paymentDescription = $input['payment']['description'] ?? '';
-        $filteredPaymentDescription = Payment\Entity::getFilteredDescription($paymentDescription);
-
-        $description = $input['merchant']->getFilteredDba() . ' ' . $filteredPaymentDescription;
-
-        return ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
-    }
-
-    /**
      * Returns a refund description, capped to 50 chars
      * @param  array  $input
      * @return string
@@ -794,10 +844,12 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * This is done in order to fix duplicate
-     * merchant transaction id issue in case
-     * refund is retried multiple times
+     * This is done in order to fix duplicate merchant transaction id issue in case refund is retried multiple times.
      *
+     * UPI gateways do not process refund which has been failed, they process new refund everytime. And hence,
+     * we send the refund id appended with attempts to generate new refund id.
+     *
+     * @param array $refund
      * @return string
      */
     protected function getRefundId(array $refund)
@@ -840,9 +892,19 @@ class Gateway extends Base\Gateway
 
     protected function getRefundVerifyRequestArray($input)
     {
+        //
+        // Appending (attempt count - 1)  to refund id for verifying previous refund if that was successful.
+        // For scrooge refunds, attempts are sent from scrooge which signifies the attempts which have been done on this.
+        // As attempts in scrooge starts with 0, For eg. if attempts = 5,
+        // that means we will be requesting refund R5 and we need to verify for R4.
+        //
         $attempts = $input['refund']['attempts'] - 1;
 
-        if ($input['refund']['attempts'] === 1)
+        //
+        // If this is 0th or 1st attempt, verify refund should be called for first refund (exact Refund Id)
+        // Appending empty string to refund if we want to verify refund with 14 digit refund id.
+        //
+        if (((int) $attempts === 0) or ((int) $input['refund']['attempts'] === 0))
         {
             $attempts = '';
         }
@@ -941,15 +1003,21 @@ class Gateway extends Base\Gateway
                                    ->toArray();
         }
 
+        if (($content[ResponseFields::RESPCODE] === '00') and
+            ($content[ResponseFields::STATUS] !== Status::REFUND_SUCCESS))
+        {
+            $this->checkRefundResponseStatus($content[ResponseFields::STATUS], Status::REFUND_SUCCESS, $content);
+        }
+
         if (($content[ResponseFields::STATUS] === Status::FAILURE) or
             ($content[ResponseFields::STATUS] === Status::REFUND_FAILED))
         {
             return $scroogeResponse->setSuccess(false)
-                                   ->setStatusCode(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR)
+                                   ->setStatusCode(ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED)
                                    ->toArray();
         }
 
-        $this->checkRefundResponseStatus($content[ResponseFields::STATUS], Status::SUCCESS, $content);
+        $this->checkRefundResponseStatus($content[ResponseFields::STATUS], Status::REFUND_SUCCESS, $content);
     }
 
     private function checkGatewaySuccess(Verify $verify)
@@ -961,7 +1029,9 @@ class Gateway extends Base\Gateway
 
     /**
      * Returns Payment Id
-     * @param  string $body Request Body
+     *
+     * @param array $response
+     *
      * @return string Payment Id
      */
     public function getPaymentIdFromServerCallback(array $response)
@@ -1017,12 +1087,12 @@ class Gateway extends Base\Gateway
     public function getParsedDataFromUnexptectedCallback($callbackData)
     {
         $payment = [
-            "method"   => 'upi',
-            "amount"   => (int) ($callbackData[ResponseFields::AMOUNT] * 100),
-            "currency" => "INR",
-            "vpa"      => $callbackData[ResponseFields::PAYER_VA],
-            "contact"  => "+919999999999",
-            "email"    => "void@razorpay.com",
+            'method'   => 'upi',
+            'amount'   => (int) ($callbackData[ResponseFields::AMOUNT] * 100),
+            'currency' => 'INR',
+            'vpa'      => $callbackData[ResponseFields::PAYER_VA],
+            'contact'  => '+919999999999',
+            'email'    => 'void@razorpay.com',
         ];
 
         $terminal = [
@@ -1049,13 +1119,13 @@ class Gateway extends Base\Gateway
         list($paymentId , $callbackData) = $input;
 
         $gatewayInput = [
-            "payment" => [
-                "id"     => $paymentId,
-                "vpa"    => $callbackData[ResponseFields::PAYER_VA],
-                "amount" => (int) ($callbackData[ResponseFields::AMOUNT] * 100),
+            'payment' => [
+                'id'     => $paymentId,
+                'vpa'    => $callbackData[ResponseFields::PAYER_VA],
+                'amount' => (int) ($callbackData[ResponseFields::AMOUNT] * 100),
             ],
-            "upi"     => [
-                "expiry_time" => 1, // dummy value
+            'upi'     => [
+                'expiry_time' => 1, // dummy value
             ]
         ];
 
@@ -1113,5 +1183,96 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($gatewayPayment);
 
         return true;
+    }
+
+
+    protected function getBharatQrGatewayAttributes($input)
+    {
+        $attrs = [
+            Entity::TYPE                    => Base\Type::PAY,
+            Entity::RECEIVED                => true,
+            Entity::MERCHANT_REFERENCE      => $input['payment']['receiver_id'],
+            Entity::VPA                     => $input[ResponseFields::PAYER_VA],
+            ResponseFields::UPI_TXN_ID      => $input[ResponseFields::UPI_TXN_ID],
+            ResponseFields::NPCI_UPI_TXN_ID => $input[ResponseFields::NPCI_UPI_TXN_ID],
+            ResponseFields::ACCOUNT_NUMBER  => $input[ResponseFields::ACCOUNT_NUMBER],
+            ResponseFields::IFSC_CODE       => $input[ResponseFields::IFSC_CODE],
+            ResponseFields::RESPCODE        => $input[ResponseFields::RESPCODE],
+        ];
+
+        return $attrs;
+    }
+
+    protected function returnValidateVpaResponse($response)
+    {
+        if (isset($response[ResponseFields::PAYER_NAME]) === true)
+        {
+            return $response[ResponseFields::PAYER_NAME];
+        }
+    }
+
+    protected function initiateIntentTpv($input)
+    {
+        $this->action = Action::INTENT_TPV;
+
+        $data = [
+            $this->getMerchantId(),
+            $input['payment']['id'],
+            $this->getMerchantCategoryCode($input),
+            self::P2M,
+            self::PAY,
+            $this->getPaymentRemark($input),
+            '',
+            '',
+            $this->formatAmount($input['payment']['amount']),
+            '',
+            '',
+            '',
+            '',
+            '',
+            'MEBR',
+            $input['order']['account_number'],
+            'NA',
+            'NA',
+            'NA',
+        ];
+
+        $content = $this->transformRequestArrayToContent($data);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'decrypted_content' => $data,
+                'encrypted'         => $content,
+                'gateway'           => $this->gateway,
+                'payment_id'        => $input['payment']['id'],
+            ]);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $response = $this->parseGatewayResponse($response->body, Action::INTENT_TPV);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            [
+                'decrypted_content' => $data,
+                'encrypted'         => $content,
+                'gateway'           => $this->gateway,
+                'payment_id'        => $input['payment']['id'],
+            ]);
+
+        $status = $response[ResponseFields::STATUS];
+
+        if ($status !== Status::SUCCESS)
+        {
+            $errorCode = ResponseCodeMap::getApiErrorCode($status);
+
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $status,
+                ResponseCode::getResponseMessage($status));
+        }
     }
 }

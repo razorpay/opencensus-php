@@ -17,7 +17,7 @@ class Allahabad extends Base
 {
     use FileHandler;
 
-    const FILE_NAME                   = 'Allahabad_REFUND';
+    const FILE_NAME                   = 'ALB_Refund_RAZOR';
     const EXTENSION                   = FileStore\Format::TXT;
     const FILE_TYPE                   = FileStore\Type::ALLAHABAD_NETBANKING_REFUND;
     const GATEWAY                     = Payment\Gateway::NETBANKING_ALLAHABAD;
@@ -26,8 +26,9 @@ class Allahabad extends Base
 
     protected $config;
 
-    const PAYEE_ID   = 'Razor';
-    const BANK_CODE  = '027';
+    const PAYEE_ID       = 'RAZOR';
+    const BANK_CODE      = 'ALB';
+    const MERCHANT_NAME  = 'Razorpay';
 
     protected function formatDataForFile(array $data)
     {
@@ -44,7 +45,7 @@ class Allahabad extends Base
             $formattedData[] = [
                 'PID'                   => self::PAYEE_ID,
                 'Bank Id'               => self::BANK_CODE,
-                'Merchant Name'         => self::PAYEE_ID,
+                'Merchant Name'         => $this->getMerchantId2($row[ConstantsEntity::TERMINAL]),
                 'Txn Date'              => $txnDate,
                 'Refund Date'           => $refundDate,
                 'Bank Merchant Code'    => $this->getMerchantId($row[ConstantsEntity::TERMINAL]),
@@ -86,7 +87,7 @@ class Allahabad extends Base
 
     protected function getFileToWriteNameWithoutExt()
     {
-        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+        $time = Carbon::now(Timezone::IST)->format('dmY');
 
         return self::FILE_NAME.'_'.$time;
     }
@@ -113,6 +114,18 @@ class Allahabad extends Base
         }
 
         return $merchantId;
+    }
+
+    protected function getMerchantId2($terminal): string
+    {
+        $merchantId2 = $this->config['test_merchant_id2'];
+
+        if ($this->mode === RZPMode::LIVE)
+        {
+            $merchantId2 = $terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
+        }
+
+        return $merchantId2;
     }
 
     protected function createDateFormat($timestamp)

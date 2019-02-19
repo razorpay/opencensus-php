@@ -52,13 +52,94 @@ return [
                 'methods' => [
                     'debit_card' => true,
                     'credit_card' => true,
-                    'netbanking' => true
+                    'netbanking' => true,
+                    'card_networks' => [
+                        'dicl' => 1
+                    ],
                 ],
             ],
         ],
         'response' => [
             'content' => [
             ],
+        ],
+    ],
+
+    'testBulkMethodUpdateInvalidMerchantId' => [
+        'request'  => [
+            'url'     => '/methods/bulkupdate',
+            'method'  => 'put',
+            'content' => [
+                'merchants' => ['10000000000000', '1000000000000x'],
+                'methods'   => [
+                    'debit_card'  => true,
+                    'credit_card' => true,
+                    'netbanking'  => true
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total'     => 2,
+                'failed'    => 1,
+                'success'   => 1,
+                'failedIds' => ['1000000000000x']
+            ],
+        ],
+    ],
+
+    'testBulkMethodUpdateInvalidMethodsInput' => [
+        'request'   => [
+            'url'     => '/methods/bulkupdate',
+            'method'  => 'put',
+            'content' => [
+                'merchants' => ['10000000000000', '10000000000000'],
+                'methods'   => [
+                    'debit_card' => true,
+                    'credit_card',
+                    'netbanking' => true
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => '0 is/are not required and should not be sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\ExtraFieldsException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
+
+    'testBulkMethodUpdateMissingInput' => [
+        'request'   => [
+            'url'     => '/methods/bulkupdate',
+            'method'  => 'put',
+            'content' => [
+                'methods' => [
+                    'debit_card'  => true,
+                    'credit_card' => true,
+                    'netbanking'  => true
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The merchants field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

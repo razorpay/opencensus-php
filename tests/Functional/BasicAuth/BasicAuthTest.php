@@ -6,14 +6,14 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\OAuth\OAuthTrait;
+use Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 
 class BasicAuthTest extends TestCase
 {
-    use OAuthTrait;
+    use PartnerTrait;
     use RequestResponseFlowTrait;
 
     public function setUp()
@@ -280,7 +280,9 @@ class BasicAuthTest extends TestCase
 
     public function testFailedMerchantUserRouteValidation()
     {
-        $this->ba->proxyAuth('rzp_test_10000000000000', null, 'owner1');
+        $merchantUser = $this->fixtures->user->createUserForMerchant('10000000000000', [], 'owner1');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $merchantUser->getId());
 
         $this->startTest();
     }
@@ -488,16 +490,5 @@ class BasicAuthTest extends TestCase
         $this->replaceValuesRecursively($testData, $testDataToReplace);
 
         return $this->runRequestResponseFlow($testData);
-    }
-
-    protected function setUpPartnerMerchantAppAndGetClient(string $env = 'dev', array $attributes = [])
-    {
-        $client = $this->createPartnerApplicationAndGetClientByEnv($env, $attributes);
-
-        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
-
-        $this->fixtures->merchant->addFeatures(['partner']);
-
-        return $client;
     }
 }

@@ -2,10 +2,24 @@
 
 namespace RZP\Models\P2p\Transaction;
 
+use Carbon\Carbon;
 use RZP\Models\P2p\Base;
+use RZP\Models\P2p\Vpa;
 
+/**
+ * @property Vpa\Entity $payer
+ * @property Vpa\Entity $payee
+ * @property UpiTransaction\Entity $upi
+ *
+ * Class Entity
+ * @package RZP\Models\P2p\Transaction
+ */
 class Entity extends Base\Entity
 {
+    use Base\Traits\HasMerchant;
+    use Base\Traits\HasCustomer;
+    use Base\Traits\HasBankAccount;
+
     const MERCHANT_ID          = 'merchant_id';
     const CUSTOMER_ID          = 'customer_id';
     const PAYER_TYPE           = 'payer_type';
@@ -32,11 +46,20 @@ class Entity extends Base\Entity
     const EXPIRE_AT            = 'expire_at';
     const COMPLETED_AT         = 'completed_at';
 
+    /************** Input  Properties ************/
+
+    const TRANSACTION          = 'transaction';
+    const CUSTOMER             = 'customer';
+    const PAYER                = 'payer';
+    const PAYEE                = 'payee';
+    const BANK_ACCOUNT         = 'bank_account';
+    const CL                   = 'cl';
+
     /************** Entity Properties ************/
 
     protected $entity             = 'p2p_transaction';
-    protected static $sign        = 'transaction';
-    protected $generateIdOnCreate = false;
+    protected static $sign        = 'ctxn';
+    protected $generateIdOnCreate = true;
     protected static $generators  = [];
 
     protected $dates = [
@@ -48,13 +71,8 @@ class Entity extends Base\Entity
     ];
 
     protected $fillable = [
-        Entity::MERCHANT_ID,
-        Entity::CUSTOMER_ID,
-        Entity::PAYER_TYPE,
-        Entity::PAYER_ID,
-        Entity::PAYEE_TYPE,
-        Entity::PAYEE_ID,
-        Entity::BANK_ACCOUNT_ID,
+        Entity::PAYER,
+        Entity::PAYEE,
         Entity::METHOD,
         Entity::TYPE,
         Entity::FLOW,
@@ -103,32 +121,24 @@ class Entity extends Base\Entity
         Entity::EXPIRE_AT,
         Entity::COMPLETED_AT,
         Entity::CREATED_AT,
+        Entity::CUSTOMER,
+        Entity::PAYER,
+        Entity::PAYEE,
+        Entity::BANK_ACCOUNT,
+        Entity::UPI,
     ];
 
     protected $public = [
+        Entity::ENTITY,
         Entity::ID,
-        Entity::MERCHANT_ID,
-        Entity::CUSTOMER_ID,
-        Entity::PAYER_TYPE,
-        Entity::PAYER_ID,
-        Entity::PAYEE_TYPE,
-        Entity::PAYEE_ID,
-        Entity::BANK_ACCOUNT_ID,
-        Entity::METHOD,
         Entity::TYPE,
         Entity::FLOW,
-        Entity::MODE,
         Entity::AMOUNT,
         Entity::CURRENCY,
         Entity::DESCRIPTION,
-        Entity::GATEWAY,
         Entity::STATUS,
-        Entity::INTERNAL_STATUS,
         Entity::ERROR_CODE,
         Entity::ERROR_DESCRIPTION,
-        Entity::INTERNAL_ERROR_CODE,
-        Entity::PAYER_APPROVAL_CODE,
-        Entity::PAYEE_APPROVAL_CODE,
         Entity::INITIATED_AT,
         Entity::EXPIRE_AT,
         Entity::COMPLETED_AT,
@@ -136,13 +146,10 @@ class Entity extends Base\Entity
     ];
 
     protected $defaults = [
-        Entity::MERCHANT_ID          => null,
-        Entity::CUSTOMER_ID          => null,
         Entity::PAYER_TYPE           => null,
         Entity::PAYER_ID             => null,
         Entity::PAYEE_TYPE           => null,
         Entity::PAYEE_ID             => null,
-        Entity::BANK_ACCOUNT_ID      => null,
         Entity::METHOD               => null,
         Entity::TYPE                 => null,
         Entity::FLOW                 => null,
@@ -495,6 +502,14 @@ class Entity extends Base\Entity
     }
 
     /**
+     * @return string self::AMOUNT
+     */
+    public function getRupeesAmount()
+    {
+        return number_format(floatval($this->getAmount() / 100), 2, '.', '');
+    }
+
+    /**
      * @return string self::CURRENCY
      */
     public function getCurrency()
@@ -587,7 +602,8 @@ class Entity extends Base\Entity
      */
     public function getExpireAt()
     {
-        return $this->getAttribute(self::EXPIRE_AT);
+        return $this->getAttribute(self::EXPIRE_AT) ??
+               Carbon::now()->addMinutes(5)->getTimestamp();
     }
 
     /**
@@ -596,5 +612,27 @@ class Entity extends Base\Entity
     public function getCompletedAt()
     {
         return $this->getAttribute(self::COMPLETED_AT);
+    }
+
+    /***************** RELATIONS *****************/
+
+    public function payer()
+    {
+        return $this->morphTo(self::PAYER);
+    }
+
+    public function payee()
+    {
+        return $this->morphTo(self::PAYEE);
+    }
+
+    public function upi()
+    {
+        return $this->hasOne(UpiTransaction\Entity::class, UpiTransaction\Entity::TRANSACTION_ID);
+    }
+
+    public function setPublicEntityAttribute(array & $array)
+    {
+        $array[self::ENTITY] = 'customer.transaction';
     }
 }

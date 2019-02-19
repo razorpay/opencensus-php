@@ -164,7 +164,9 @@ return array(
         // operations
         'operations'           => 'C0KUX9WSE',
         // Product (Feature) onboarding requests
-        'activations_prod_log' => 'C76P70Y7K'
+        'activations_prod_log' => 'C76P70Y7K',
+        // Fund Account Validation logs
+        'fav_logs'  =>  'CFQFNH3S7',
     ],
 
     'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true,

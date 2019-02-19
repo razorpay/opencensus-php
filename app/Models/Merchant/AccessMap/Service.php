@@ -24,9 +24,10 @@ class Service extends Base\Service
 
         (new Validator)->validateInput(self::ADD_APP, $input);
 
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        $merchant    = $this->repo->merchant->findOrFailPublic($merchantId);
+        $entityOwner = $this->repo->merchant->findOrFailPublic($input['partner_id']);
 
-        $mapping = (new Core)->addMappingForOAuthApp($merchant, $input);
+        $mapping     = (new Core)->addMappingForOAuthApp($entityOwner, $merchant, $input);
 
         return $mapping->toArrayPublic();
     }

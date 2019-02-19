@@ -133,6 +133,10 @@ class NodalAccount extends NodalBase\FileProcessor
 
             $mode = $this->getPaymentType($ba, $amount);
 
+            $entity->setMode($mode);
+
+            $this->repo->save($entity);
+
             $this->updateSummary($mode, $amount);
 
             $mode = self::MODE_MAPPING[$mode];

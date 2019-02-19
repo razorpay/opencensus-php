@@ -13,25 +13,29 @@ use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
+    use Base\BharatQrTrait;
+
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_PAYMENT_ID         = 'merchant_trackid';
-    const COLUMN_CARD_TYPE          = 'debitcredit_type';
-    const COLUMN_SERVICE_TAX        = ['serv_tax', 'service_tax', 'st_sbces'];
-    const COLUMN_SB_CESS            = 'sb_cess';
-    const COLUMN_KK_CESS            = 'kk_cess';
-    const COLUMN_FEE                = 'msf';
-    const COLUMN_CARD_TRIVIA        = 'card_type';
-    const COLUMN_ISSUER             = 'arn_no';
-    const COLUMN_CGST               = 'cgst_amt';
-    const COLUMN_IGST               = 'igst_amt';
-    const COLUMN_SGST               = 'sgst_amt';
-    const COLUMN_UTGST              = 'utgst_amt';
-    const COLUMN_ARN                = 'arn_no';
-    const COLUMN_AUTH_CODE          = 'approv_code';
+    const COLUMN_PAYMENT_ID                 = 'merchant_trackid';
+    const COLUMN_CARD_TYPE                  = 'debitcredit_type';
+    const COLUMN_SERVICE_TAX                = ['serv_tax', 'service_tax', 'st_sbces'];
+    const COLUMN_SB_CESS                    = 'sb_cess';
+    const COLUMN_KK_CESS                    = 'kk_cess';
+    const COLUMN_FEE                        = 'msf';
+    const COLUMN_CARD_TRIVIA                = 'card_type';
+    const COLUMN_ISSUER                     = 'arn_no';
+    const COLUMN_CGST                       = 'cgst_amt';
+    const COLUMN_IGST                       = 'igst_amt';
+    const COLUMN_SGST                       = 'sgst_amt';
+    const COLUMN_UTGST                      = 'utgst_amt';
+    const COLUMN_ARN                        = 'arn_no';
+    const COLUMN_AUTH_CODE                  = 'approv_code';
 
-    const COLUMN_TERMINAL_NUMBER    = 'terminal_number';
+    const COLUMN_TERMINAL_NUMBER            = 'terminal_number';
+    const COLUMN_GATEWAY_TRANSACTION_ID     = 'tran_id';
+    const COLUMN_DOMESTIC_AMOUNT            = 'domestic_amt';
 
     /**
      * If we are not able to find payment id to reconcile,
@@ -54,6 +58,12 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         if ($this->isCybersource($row) === true)
         {
             $paymentId = $this->getPaymentIdForCybersource($row);
+        }
+        else if ($this->isBharatQrIsg($row))
+        {
+            $transactionId = str_replace('\'', '', $row[self::COLUMN_GATEWAY_TRANSACTION_ID]);
+
+            $paymentId = $this->getPaymentIdFromBharatQr($transactionId, $row);
         }
         else
         {
@@ -116,15 +126,25 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 $this->trace->info(
                     TraceCode::RECON_MISMATCH,
                     [
-                        'info_code' => 'PAYMENT_ABSENT',
-                        'message'   => 'Payment not found. Skipping',
-                        'row'       => $row,
-                        'gateway'   => $this->gateway
+                        'info_code'             => Base\InfoCode::PAYMENT_ABSENT,
+                        'payment_reference_id'  => $ref,
+                        'gateway'               => $this->gateway
                     ]);
             }
         }
 
         return $paymentId;
+    }
+
+    protected function isBharatQrIsg(array $row)
+    {
+        if ((isset($row[self::COLUMN_CARD_TRIVIA]) === true) and
+            ($row[self::COLUMN_CARD_TRIVIA] === Reconciliate::BHARAT_QR_TYPE))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function getColumnPaymentId(array $row)
@@ -531,6 +551,35 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         if ($rowFilledRatio < self::MIN_ROW_FILLED_DATA_RATIO)
         {
             $this->setFailUnprocessedRow(false);
+        }
+    }
+
+    protected function validatePaymentAmountEqualsReconAmount(array $row)
+    {
+        if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                    'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
+                    'payment_id'      => $this->payment->getId(),
+                    'expected_amount' => $this->payment->getBaseAmount(),
+                    'recon_amount'    => $this->getReconPaymentAmount($row),
+                    'currency'        => $this->payment->getCurrency(),
+                    'gateway'         => $this->gateway
+                ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function getReconPaymentAmount(array $row)
+    {
+        if (empty($row[self::COLUMN_DOMESTIC_AMOUNT]) === false)
+        {
+            return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_DOMESTIC_AMOUNT]);
         }
     }
 }

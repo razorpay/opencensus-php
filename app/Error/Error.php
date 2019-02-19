@@ -49,6 +49,20 @@ class Error extends Support\Fluent
         $this->setAttribute(self::INTERNAL_ERROR_DESC, $internalDesc);
     }
 
+    public function appendToField(string $string)
+    {
+        $field = $this->getAttribute(self::FIELD);
+
+        if (empty($field) === true)
+        {
+            $this->setAttribute(self::FIELD, $string);
+        }
+        else
+        {
+            $this->setAttribute(self::FIELD, $string . '.' . $field);
+        }
+    }
+
     public function setGatewayErrorCodeAndDesc($code, $desc)
     {
         $this->attributes[self::GATEWAY_ERROR_CODE] = $code;

@@ -85,6 +85,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::CARD_FSS_HDFC      => ["/^Settlement Report FSSPaY - Razorpay/"],
         RequestProcessor\Base::UPI_HULK           => ["/Razorpay_Transaction_Details_[0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"],
         RequestProcessor\Base::EMANDATE_AXIS      => ["/axis e[\-]?mandate debit file/i"],
+        RequestProcessor\Base::NETBANKING_ALLAHABAD => ["/Recon file for [0-9]{2}.[0-9]{2}.20[0-9]{2}/"],
         ];
 
     const GATEWAY_BODY_REGEX = [
@@ -147,8 +148,8 @@ class Validator extends Base\Core
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
     const SUPPORTED_ZIP_EXTENSIONS = ['zip'];
 
-    // Max allowed file size - 25M (25*1024*1024).
-    const MAX_FILE_SIZE = 26214400;
+    // Max allowed file size - 30M (30*1024*1024).
+    const MAX_FILE_SIZE = 31457280;
 
     const FORCE_UPDATE_ALLOWED = [
         RequestProcessor\Base::REFUND_ARN,
@@ -452,6 +453,15 @@ class Validator extends Base\Core
         return ($validBody);
     }
 
+    public function validateNetbankingAllahabadEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::NETBANKING_ALLAHABAD);
+
+        return ($validSubject);
+    }
+
     public function validateCardFssHdfcEmail(array $emailDetails)
     {
         $validSubject = $this->validateEmailSubject(
@@ -691,7 +701,7 @@ class Validator extends Base\Core
     {
         $message = 'function name should start with validate : ' . $func;
 
-        assert (strpos($func, 'validate') === 0, $message);
+        assertTrue (strpos($func, 'validate') === 0, $message);
 
         $this->$func($attribute, $value, $parameters);
     }

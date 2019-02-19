@@ -67,11 +67,6 @@ class CreatePaysecureTable extends Migration
 
             $table->integer(Paysecure::UPDATED_AT);
 
-            $table->foreign(Paysecure::PAYMENT_ID)
-                  ->references(Paysecure::ID)
-                  ->on(Table::PAYMENT)
-                  ->on_delete('restrict');
-
             $table->index(Paysecure::STATUS);
 
             $table->index(Paysecure::PAYMENT_ID);

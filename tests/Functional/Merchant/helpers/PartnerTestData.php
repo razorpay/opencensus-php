@@ -404,8 +404,9 @@ return [
         ],
         'response'  => [
             'content' => [
-                'merchant_id' => '10000000000009',
-                'entity_type' => 'application',
+                'merchant_id'     => '10000000000009',
+                'entity_type'     => 'application',
+                'entity_owner_id' => '10000000000000',
             ],
         ],
     ],
@@ -1026,5 +1027,57 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER,
         ],
     ],
+  
+    'testSendSubmerchantPasswordResetLinkWhenMerchantIsNotAPartner' => [
+        'request'   => [
+            'url'    => '/submerchants/10000000000009/reset_password',
+            'method' => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER,
+        ],
+    ],
 
+    'testSendSubmerchantPasswordResetLinkWhenSubMerchantUserDoesNotExist' => [
+        'request'  => [
+            'url'    => '/submerchants/10000000000009/reset_password',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testSendSubmerchantPasswordResetLinkWhenSubMerchantUserExistAndPartnerMappingDoesNotExist' => [
+        'request'  => [
+            'url'    => '/submerchants/10000000000009/reset_password',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testSendSubmerchantPasswordResetLinkWhenSubMerchantUserAndPartnerMappingExist' => [
+        'request'  => [
+            'url'    => '/submerchants/10000000000009/reset_password',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ]
 ];

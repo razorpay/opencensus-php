@@ -4,16 +4,20 @@ namespace RZP\Models\Payment\Processor;
 
 use App;
 use Route;
+use Config;
+
 use Carbon\Carbon;
 use RZP\Base\RepositoryManager;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin;
 use RZP\Exception;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\BankAccount;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Card;
 use RZP\Models\Customer;
+use RZP\Models\EntityOrigin;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
@@ -27,7 +31,6 @@ use RZP\Models\Payment\Status;
 use RZP\Models\Pricing;
 use RZP\Models\Risk;
 use RZP\Models\Terminal;
-use RZP\Models\Transaction;
 use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -89,6 +92,12 @@ class Processor
     const PAYMENT_FALLBACK_TIME_DURATION = 600;  // 10 min * 60 sec
 
     /**
+     * We only allow payment to fallback within a certain duration.
+     * A payment can fallback only within few minutes
+     */
+    const PAYMENT_REDIRECT_TO_AUTHORIZE_TIME_DURATION = 300;  // 5min * 60 sec
+
+    /**
      * If a payment is async, it can receive a callback for 5 mins after which it is converted to a
      * failed payment
      */
@@ -109,7 +118,17 @@ class Processor
      */
     const CACHE_TTL = 10;
 
+    /**
+     * Timeout to store card details for redirect to authorize
+     */
+    const REDIRECT_CACHE_TTL = 5;
+
     const CACHE_KEY = 'fallback_%s_card_details';
+
+    /**
+     * Core payment service feature flag
+     */
+    const CPS_FEATURE_FLAG_PREFIX = 'cps_gateway_routing';
 
     /**
      * @var Merchant\Entity
@@ -248,7 +267,12 @@ class Processor
             // This flow is being used for only hosted (Shopify).
             $this->checkSignature($input, $payment);
 
-            return $this->authorize($payment, $input, $gatewayInput);
+            $paymentData = $this->authorize($payment, $input, $gatewayInput);
+
+            // Creates an origin entity for the payment based on the auth used to initiate the payment.
+            (new EntityOrigin\Core)->createEntityOrigin($payment);
+
+            return $paymentData;
         }
         catch (\Throwable $e)
         {
@@ -385,7 +409,10 @@ class Processor
             'type' => 'respawn',
             'method' => 'cardless_emi',
             'request' => [
-                'url'     => $this->route->getUrlWithPublicAuth('otp_verify', ['method' => 'cardless_emi', 'provider' => $input['provider']]),
+                'url'     => $this->route->getUrlWithPublicAuth('otp_verify', [
+                                'method'   => 'cardless_emi',
+                                'provider' => $input['provider']
+                            ]),
                 'method'  => 'POST',
                 'content' => $input,
             ],
@@ -505,6 +532,11 @@ class Processor
     {
         $coproto = null;
 
+        if ($payment->isWallet() === false)
+        {
+            return $coproto;
+        }
+
         //
         // TODO: This needs to be fixed since we use dummy phone and email
         // in subscriptions subsequent charges too. We could be using
@@ -514,37 +546,42 @@ class Processor
         // Actually, this won't even work for S2S since we remove
         // `content` and `missing` attributes completely before returning
         //
-        if (($payment->isWallet() === true) and
-            ((($payment->merchant->isPhoneOptional() === true) and
-              ($payment->getContact() === Payment\Entity::DUMMY_PHONE)) or
-             (($payment->merchant->isEmailOptional() === true) and
-              ($payment->getEmail() === Payment\Entity::DUMMY_EMAIL))))
+        if (($payment->merchant->isPhoneOptional() === true) and
+            ($payment->getContact() === Payment\Entity::DUMMY_PHONE))
         {
-            $coproto = [
-                'type'    => 'respawn',
-                'request' => [
-                    'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
-                    'method'  => 'POST',
-                    'content' => array_assoc_flatten($input, '%s[%s]'),
-                ],
-                'method' => 'wallet',
-                'version' => '1',
-            ];
+            $coproto = $coproto ?: $this->getCoprotoDefaultArrayForWallet($input);
 
-            if ($payment->getContact() === Payment\Entity::DUMMY_PHONE)
-            {
-                $coproto['missing'][] = 'contact';
-                unset($coproto['request']['content']['contact']);
-            }
+            $coproto['missing'][] = 'contact';
 
-            if ($payment->getEmail() === Payment\Entity::DUMMY_EMAIL)
-            {
-                $coproto['missing'][] = 'email';
-                unset($coproto['request']['content']['email']);
-            }
+            unset($coproto['request']['content']['contact']);
+        }
+
+        if (($payment->merchant->isEmailOptional() === true) and
+            (Wallet::isEmailRequired($payment->getWallet()) === true) and
+            ($payment->getEmail() === Payment\Entity::DUMMY_EMAIL))
+        {
+            $coproto = $coproto ?: $this->getCoprotoDefaultArrayForWallet($input);
+
+            $coproto['missing'][] = 'email';
+
+            unset($coproto['request']['content']['email']);
         }
 
         return $coproto;
+    }
+
+    protected function getCoprotoDefaultArrayForWallet(array $input)
+    {
+        return [
+            'type'    => 'respawn',
+            'request' => [
+                'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
+                'method'  => 'POST',
+                'content' => array_assoc_flatten($input, '%s[%s]'),
+            ],
+            'method' => 'wallet',
+            'version' => '1',
+        ];
     }
 
     protected function preProcessPaymentInputsForUpi(array $input, Payment\Entity $payment)
@@ -729,6 +766,25 @@ class Processor
         else
         {
             $input[Payment\Entity::METHOD] = Payment\Method::CARD;
+        }
+    }
+
+    /**
+     * This method sets the flag that this payment should be processed via
+     * Core payment service
+     */
+    protected function setPaymentRoutedThroughCpsIfApplicable(Payment\Entity $payment)
+    {
+        if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::CPS_SERVICE_ENABLED, false) === true)
+        {
+            $featureFlag = self::CPS_FEATURE_FLAG_PREFIX. '_' .$payment->getGateway();
+
+            $variant = $this->app->razorx->getTreatment($payment->getId(), $featureFlag, $this->mode);
+
+            if (strtolower($variant) === 'cps')
+            {
+                $payment->setCpsRoute();
+            }
         }
     }
 
@@ -1397,6 +1453,16 @@ class Processor
 
         $gatewayData['merchant'] = $this->payment->merchant;
 
+        //
+        // This data was earlier picked up from env by gateways themselves.
+        // With the migration to CPS, it will become necessary for API to pick
+        // the values from env and pass them to CPS. As an intermediate step,
+        // we are passing relevant config from API to gateway, and blocking
+        // gateways from accessing env. It will then be easier to use CPS as
+        // a drop-in replacement for Gateway.
+        //
+        $this->addGatewayConfig($gatewayData);
+
         // Wrapping all gateway call, We can take actions on Exception here.
         try
         {
@@ -1417,6 +1483,16 @@ class Processor
             }
 
             throw $ex;
+        }
+    }
+
+    protected function addGatewayConfig(array & $gatewayData)
+    {
+        $commonGatewayConfig = $this->app['config']->get('gateway');
+
+        if (isset($commonGatewayConfig[$this->payment->getGateway()]) === true)
+        {
+            $gatewayData['gateway_config'] = $commonGatewayConfig[$this->payment->getGateway()];
         }
     }
 
@@ -1879,7 +1955,7 @@ class Processor
             return $ba;
         }
 
-        assert ($this->mode === Mode::TEST);
+        assertTrue ($this->mode === Mode::TEST);
 
         $attributes = array(
             'merchant_id'           => $merchant->getId(),
@@ -2251,63 +2327,10 @@ class Processor
         return substr($contact, -10);
     }
 
-    public function saveFeeDetails(Transaction\Entity $txn, PublicCollection $feesSplit)
-    {
-        $this->trace->info(
-            TraceCode::CREATING_FEES_BREAKUP,
-            [
-                'transaction_id'    => $txn->getId(),
-                'payment_id'        => $txn->getEntityId(),
-                'fee_split'         => $feesSplit->toArrayPublic(),
-            ]);
-
-        try
-        {
-            $this->repo->transaction(function() use ($txn, $feesSplit)
-            {
-                foreach ($feesSplit as $feeSplit)
-                {
-                    $feeSplit->transaction()->associate($txn);
-
-                    $this->repo->saveOrFail($feeSplit);
-                }
-
-                $this->trace->info(
-                    TraceCode::FEES_BREAKUP_CREATED,
-                    [
-                        'transaction_id'    => $txn->getId(),
-                        'payment_id'        => $txn->getEntityId(),
-                        'fee_split'         => $feesSplit->toArrayPublic(),
-                    ]);
-            });
-        }
-        catch (Exception\BaseException $ex)
-        {
-            $this->trace->info(
-                TraceCode::FEES_BREAKUP_CREATION_FAILED,
-                [
-                    'transaction_id'    => $txn->getId(),
-                    'payment_id'        => $txn->getEntityId(),
-                    'fee_split'         => $feesSplit->toArrayPublic(),
-                    'message'           => $ex->getMessage(),
-                ]);
-
-            throw new Exception\LogicException(
-                'Error while recording fee breakup',
-                ErrorCode::BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED,
-                [
-                    'transaction_id'    => $txn->getId(),
-                    'payment_id'        => $txn->getEntityId(),
-                    'fee_split'         => $feesSplit->toArrayPublic(),
-                ]);
-        }
-
-    }
-
     protected function shouldHitGatewayForPayment(Payment\Entity $payment, array $gatewayInput = []): bool
     {
-        if ((isset($gatewayInput["skip_gateway_call"]) === true) and
-            ($gatewayInput["skip_gateway_call"] === true))
+        if ((isset($gatewayInput['skip_gateway_call']) === true) and
+            ($gatewayInput['skip_gateway_call'] === true))
         {
             return false;
         }
@@ -2326,6 +2349,19 @@ class Processor
 
     protected function disableTerminal(Terminal\Entity $terminal)
     {
+        $this->app['slack']->queue(
+            TraceCode::TERMINAL_AUTO_DISABLE,
+            [
+                    'merchant_id'           => $terminal->getMerchantId(),
+                    'merchant_name'         => $terminal->merchant->getName(),
+                    'terminal_id'           => $terminal->getId(),
+                    'payment_id'            => $this->payment->getId(),
+                    'channel'               => Config::get('slack.channels.tech_alerts'),
+                    'username'              => 'alerts',
+                    'icon'                  => ':x:'
+            ]
+        );
+
         $this->trace->error(
             TraceCode::TERMINAL_AUTO_DISABLE,
             [

@@ -50,4 +50,9 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         $this->allowForceAuthorization = true;
     }
+
+    protected function getReferenceNumber($row)
+    {
+        return $row[ReconciliationFields::PAYEE_ID] ?? null;
+    }
 }

@@ -28,6 +28,11 @@ class Factory
             Batch\Entity::SUB_TYPE,
             Batch\Entity::GATEWAY,
         ],
+
+        Batch\Type::TERMINAL => [
+            Batch\Entity::TYPE,
+            Batch\Entity::SUB_TYPE
+        ]
     ];
 
     /**
@@ -42,7 +47,7 @@ class Factory
 
         $namespaceKeys = self::$typeToNamespaceKeyMap[$type] ?? self::$typeToNamespaceKeyMap[self::DEFAULT];
 
-        $processor = __NAMESPACE__ ;
+        $processor = __NAMESPACE__;
 
         foreach ($namespaceKeys as $key)
         {

@@ -67,6 +67,17 @@ class Entity extends Base\PublicEntity
     const SELECT = 'select';
     const REJECT = 'reject';
 
+    // Authentication gateway properties
+    const AUTHENTICATION_GATEWAY = 'authentication_gateway';
+    const AUTH_TYPE              = 'auth_type';
+
+    // step authorization/authentication
+    const STEP = 'step';
+
+    // Step types
+    const AUTHORIZATION  = 'authorization';
+    const AUTHENTICATION = 'authentication';
+
     /**
      * Attributes used for comparing terminal to rule
      */
@@ -81,6 +92,11 @@ class Entity extends Base\PublicEntity
         self::EMI_SUBVENTION,
         self::CURRENCY,
         self::RECURRING_TYPE,
+    ];
+
+    const AUTHENTICATION_COMPARISION_ATTRIBUTES = [
+        self::AUTHENTICATION_GATEWAY,
+        self::AUTH_TYPE,
     ];
 
     /**
@@ -105,6 +121,19 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::RECURRING,
         self::RECURRING_TYPE,
+        self::AUTHENTICATION_GATEWAY,
+        self::AUTH_TYPE,
+    ];
+
+    /**
+     * Attributes for which the value can be null, signifying any/all values
+     * are acceptable for comparison for authentication rules
+     */
+    const AUTHENTICATION_NULLABLE_ATTRIBUTES = [
+        self::GROUP,
+        self::NETWORK,
+        self::ISSUER,
+        self::AUTHENTICATION_GATEWAY,
     ];
 
     /**
@@ -156,6 +185,20 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID   => 256,
     ];
 
+    /**
+     * Defines the attribute scores used for calculating
+     * specificity score for a rule. Each attribute is given
+     * a score in power of 2 and two attributes cant have the same score.
+     */
+    const AUTHENTICATION_ATTRIBUTE_SCORES = [
+        self::METHOD_TYPE            => 1,
+        self::NETWORK                => 2,
+        self::ISSUER                 => 4,
+        self::AUTHENTICATION_GATEWAY => 8,
+        self::AUTH_TYPE              => 16,
+        self::MERCHANT_ID            => 32,
+    ];
+
     protected $entity = 'gateway_rule';
 
     protected $generateIdOnCreate = true;
@@ -195,6 +238,9 @@ class Entity extends Base\PublicEntity
         self::RECURRING,
         self::RECURRING_TYPE,
         self::COMMENTS,
+        self::AUTHENTICATION_GATEWAY,
+        self::AUTH_TYPE,
+        self::STEP,
     ];
 
     protected $visible = [
@@ -222,7 +268,12 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::RECURRING,
         self::RECURRING_TYPE,
+        self::AUTHENTICATION_GATEWAY,
+        self::AUTH_TYPE,
         self::COMMENTS,
+        self::AUTHENTICATION_GATEWAY,
+        self::AUTH_TYPE,
+        self::STEP,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
@@ -243,6 +294,7 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::MIN_AMOUNT => 0,
+        self::STEP       => self::AUTHORIZATION,
     ];
 
     public function merchant()
@@ -324,6 +376,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY_ACQUIRER);
     }
 
+    public function getStep()
+    {
+        return $this->getAttribute(self::STEP);
+    }
+
     public function isInternational()
     {
         return $this->getAttribute(self::INTERNATIONAL);
@@ -342,6 +399,16 @@ class Entity extends Base\PublicEntity
     public function shouldSelectTerminal(): bool
     {
         return ($this->getAttribute(self::FILTER_TYPE) === self::SELECT);
+    }
+
+    public function shouldSelectAuth(): bool
+    {
+        return ($this->getAttribute(self::FILTER_TYPE) === self::SELECT);
+    }
+
+    public function shouldRejectAuth(): bool
+    {
+        return ($this->getAttribute(self::FILTER_TYPE) === self::REJECT);
     }
 
     public function shouldRejectTerminal(): bool
@@ -373,6 +440,17 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::CURRENCY);
     }
+
+    public function getAuthenticationGateway()
+    {
+        return $this->getAttribute(self::AUTHENTICATION_GATEWAY);
+    }
+
+    public function getAuthType()
+    {
+        return $this->getAttribute(self::AUTH_TYPE);
+    }
+
     //----------------- Public Setters------------------------------------------
 
     public function setPublicLoadAttribute(array & $array)
@@ -530,6 +608,36 @@ class Entity extends Base\PublicEntity
         return $totalScore;
     }
 
+    public function calculateSpecificityScoreForAuthTerminals() : int
+    {
+       $totalScore = 0;
+
+       foreach (self::AUTHENTICATION_ATTRIBUTE_SCORES as $attr => $score)
+        {
+            //
+            // For certain attributes (iins, min / max amount) we need to do some
+            // special handling to get the score. In such cases we call the special
+            // method if defined.
+            //
+            $func = 'getScoreFor' . studly_case($attr);
+
+            if (method_exists($this, $func) === true)
+            {
+                $totalScore += $this->$func();
+            }
+            //
+            // If the attribute value is not null, we add up the score of that
+            // attribute to the total score.
+            //
+            else if ($this->isAttributeNotNull($attr) === true)
+            {
+                $totalScore += $score;
+            }
+        }
+
+        return $totalScore;
+    }
+
     /**
      * Evaluates if a rule's terminal related attributes match those of
      * given terminal
@@ -566,6 +674,54 @@ class Entity extends Base\PublicEntity
         return true;
     }
 
+    public function matchesAuthTerminal($terminal, $payment)
+    {
+        foreach (self::AUTHENTICATION_COMPARISION_ATTRIBUTES as $key)
+        {
+           if ((in_array($key, self::AUTHENTICATION_NULLABLE_ATTRIBUTES, true) === true) and
+                ($this->isAttributeNull($key) === true))
+            {
+                continue;
+            }
+
+            if ($this->comapreAuthTerminal($key, $terminal, $payment) === false)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    protected function comapreAuthTerminal($key, $terminal, $payment)
+    {
+        if (empty($terminal[$key]) === true)
+        {
+            return true;
+        }
+
+        return ($this->getAttribute($key) === $terminal[$key]);
+    }
+
+    protected function compareAuthIssuer($terminal, $payment)
+    {
+        $issuer = $payment->getIssuer();
+
+        return $this->getIssuer() === $issuer;
+    }
+
+    protected function compareNetwork($terminal, $payment)
+    {
+        $iin = $payment->card->iinRelation;
+
+        if ($iin === null)
+        {
+            return false;
+        }
+
+        return $this->getNetwork() === $iin->getNetworkCode();
+    }
+
     protected function compare(
         string $key,
         Terminal\Entity $terminal,
@@ -583,7 +739,7 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute($key) === $terminal->getAttribute($key));
     }
 
-    protected function compareMethod(Terminal\Entity $terminal): bool
+    protected function compareMethod(Terminal\Entity $terminal, Merchant\Entity $merchant, Payment\Entity $payment = null): bool
     {
         $method = $this->getMethod();
 
@@ -596,6 +752,18 @@ class Entity extends Base\PublicEntity
                 return ($terminal->isNetbankingEnabled() === true);
 
             case Method::EMI:
+                // For certain banks whose EMI payments needs to go through card terminals
+                // And those terminals might not be EMI enabled terminals
+                if (isset($payment) === true)
+                {
+                    $bank = $payment->getBank();
+
+                    if (in_array($bank, Payment\Gateway::$emiBanksUsingCardTerminals, true) === true)
+                    {
+                        return ($terminal->isCardEnabled() === true);
+                    }
+                }
+
                 return ($terminal->isEmiEnabled() === true);
 
             case Method::WALLET:
@@ -665,6 +833,23 @@ class Entity extends Base\PublicEntity
 
             return (new Terminal\Core)->hasApplicableGatewayTokens($terminal, $payment, $gatewayTokens);
         }
+    }
+
+    protected function compareEmiSubvention(Terminal\Entity $terminal, Merchant\Entity $merchant, Payment\Entity $payment = null): bool
+    {
+        if (isset($payment) === true)
+        {
+            $bank = $payment->getBank();
+
+            // We are ignoring emi subvention property here
+            // for banks whose EMI payments needs to go through card terminals
+            if (in_array($bank, Payment\Gateway::$emiBanksUsingCardTerminals, true) === true)
+            {
+                return true;
+            }
+        }
+
+        return ($this->getAttribute(self::EMI_SUBVENTION) === $terminal->getAttribute(self::EMI_SUBVENTION));
     }
 
     /**

@@ -1,0 +1,112 @@
+<?php
+
+namespace RZP\Models\Terminal\Auth\Card;
+
+use App;
+
+use RZP\Exception;
+use RZP\Models\BankAccount\Generator;
+use RZP\Models\Feature;
+use RZP\Models\Terminal;
+use RZP\Models\Payment;
+use RZP\Models\Card\IIN;
+use RZP\Models\Bank\IFSC;
+use RZP\Models\Card\Network;
+use RZP\Models\Card\IIN\Flow;
+use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Terminal\Category;
+use RZP\Models\Merchant\Preferences;
+use RZP\Models\VirtualAccount\Provider;
+use RZP\Models\Payment\Processor\Netbanking;
+
+class AuthFilter extends Terminal\Auth\Base
+{
+    public function isValidAuth($authType) : bool
+    {
+        $payment = $this->payment;
+
+        switch ($authType)
+        {
+            case Payment\AuthType::IVR:
+                return $this->canRunIvrFlow($payment);
+                break;
+
+            case Payment\AuthType::OTP:
+                return $this->canRunAxisExpressPay($payment);
+                break;
+
+            case Payment\AuthType::HEADLESS_OTP:
+                return $this->canRunHeadlessOtpFlow($payment);
+                break;
+
+            case Payment\AuthType::_3DS:
+                return true;
+                break;
+
+            case Payment\AuthType::PIN:
+                return ($payment->terminal->isPin() === true);
+                break;
+
+            case Payment\AuthType::SKIP:
+                return ($payment->terminal->isMoto() === true);
+                break;
+
+            default:
+                return false;
+                break;
+        }
+    }
+
+
+    protected function isAuthTypeOtp(Payment\Entity $payment): bool
+    {
+        if (($payment->getAuthType() === Payment\AuthType::OTP) or
+            (in_array(Payment\AuthType::OTP, $payment->getMetadata(Payment\Entity::PREFERRED_AUTH, []), true) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function canRunIvrFlow(Payment\Entity $payment): bool
+    {
+        if (($payment->merchant->isFeatureEnabled(Feature\Constants::IVR) === true) and
+            ($payment->card->iinRelation !== null) and
+            ($this->isAuthTypeOtp($payment) === true) and
+            ($payment->card->iinRelation->supports(IIN\Flow::IVR) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function canRunAxisExpressPay(Payment\Entity $payment): bool
+    {
+        if (($payment->merchant->isAxisExpressPayEnabled() === true) and
+            ($payment->card->iinRelation !== null) and
+            ($payment->card->iinRelation->getIssuer() === IFSC::UTIB) and
+            ($this->isAuthTypeOtp($payment) === true) and
+            ($payment->card->iinRelation->supports(IIN\Flow::OTP) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function canRunHeadlessOtpFlow(Payment\Entity $payment): bool
+    {
+       if (($this->isAuthTypeOtp($payment) === true) and
+           ($this->merchant->isFeatureEnabled(Feature\Constants::HEADLESS) === true) and
+           ($payment->card->iinRelation !== null) and
+           ($payment->card->iinRelation->supports(IIN\Flow::HEADLESS_OTP) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+}

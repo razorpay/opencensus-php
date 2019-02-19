@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Transaction\Processor;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant\RefundSource;
 
@@ -44,7 +46,9 @@ class Refund extends Base
         {
             $paymentTxn = $payment->transaction;
 
-            return ($paymentTxn->isSettled() ? 1 : $paymentTxn->getSettledAt());
+            $nowTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+            return ($paymentTxn->isSettled() ? $nowTimestamp : $paymentTxn->getSettledAt());
         }
 
         return null;
@@ -62,6 +66,22 @@ class Refund extends Base
         return true;
     }
 
+    protected function getNetAmount()
+    {
+        $refund = $this->source;
+
+        $settledBy = $refund->payment->getSettledBy();
+
+        $netAmount = $refund->getBaseAmount();
+
+        if ($settledBy !== 'Razorpay')
+        {
+            $netAmount = 0;
+        }
+
+        return $netAmount;
+    }
+
     public function calculateFees()
     {
         $refund = $this->source;
@@ -70,7 +90,9 @@ class Refund extends Base
 
         if ($payment->isCaptured() === true)
         {
-            $this->debit = $refund->getBaseAmount();
+            $netAmount = $this->getNetAmount();
+
+            $this->debit = $netAmount;
 
             $merchant = $refund->merchant;
 
@@ -78,7 +100,7 @@ class Refund extends Base
             {
                 $this->debit = 0;
 
-                $this->txn->setCredits($refund->getBaseAmount());
+                $this->txn->setCredits($netAmount);
 
                 $this->txn->setCreditType(Transaction\CreditType::REFUND);
             }

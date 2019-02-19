@@ -5,12 +5,13 @@ namespace RZP\Models\Order;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Offer;
-use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Models\Base\Traits\NotesTrait;
 
 /**
- * @property Offer\Entity $offer
+ * @property Offer\Entity    $offer
+ * @property Merchant\Entity $merchant
  */
 class Entity extends Base\PublicEntity
 {
@@ -46,6 +47,12 @@ class Entity extends Base\PublicEntity
     const STATUS            = 'status';
     const NOTES             = 'notes';
 
+    /**
+     * Can be set along with partial_payment true.
+     * If set, defines the minimum amount that can be made for the first payment
+     * on the order.
+     */
+    const FIRST_PAYMENT_MIN_AMOUNT = 'first_payment_min_amount';
     /**
      * Receipt provided by merchant against the order. Ideally should be
      * unique from the merchant side.
@@ -84,6 +91,11 @@ class Entity extends Base\PublicEntity
     const OFFERS            = 'offers';
 
     /**
+    * Used for expand order payments
+    */
+    const PAYMENTS          = 'payments';
+
+    /**
      * Used in creation request to create and link bank account
      */
     const BANK_ACCOUNT      = 'bank_account';
@@ -107,6 +119,7 @@ class Entity extends Base\PublicEntity
         self::BANK,
         self::FORCE_OFFER,
         self::PARTIAL_PAYMENT,
+        self::FIRST_PAYMENT_MIN_AMOUNT,
         self::PAYER_NAME,
     ];
 
@@ -140,6 +153,7 @@ class Entity extends Base\PublicEntity
         // but still needs to be discussed.
         // See setPublicDiscountAttribute
         // self::DISCOUNT,
+        self::PAYMENTS,
         self::OFFER_ID,
         self::OFFERS,
         self::STATUS,
@@ -149,29 +163,27 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::DISCOUNT        => 'bool',
-        self::PARTIAL_PAYMENT => 'bool',
-        self::AMOUNT          => 'int',
-        self::AMOUNT_PAID     => 'int',
-        self::AMOUNT_DUE      => 'int',
-        self::PAYMENT_CAPTURE => 'bool',
-        self::AUTHORIZED      => 'bool',
-        self::ATTEMPTS        => 'int',
-        self::FORCE_OFFER     => 'bool',
+        self::DISCOUNT                 => 'bool',
+        self::PARTIAL_PAYMENT          => 'bool',
+        self::AMOUNT                   => 'int',
+        self::AMOUNT_PAID              => 'int',
+        self::AMOUNT_DUE               => 'int',
+        self::FIRST_PAYMENT_MIN_AMOUNT => 'int',
+        self::PAYMENT_CAPTURE          => 'bool',
+        self::AUTHORIZED               => 'bool',
+        self::ATTEMPTS                 => 'int',
+        self::FORCE_OFFER              => 'bool',
     ];
 
     protected $amounts = [
         self::AMOUNT,
         self::AMOUNT_PAID,
         self::AMOUNT_DUE,
+        self::FIRST_PAYMENT_MIN_AMOUNT,
     ];
 
     protected $appends = [
         self::AMOUNT_DUE,
-    ];
-
-    protected static $generators = [
-        self::FORCE_OFFER,
     ];
 
     protected $publicSetters = [
@@ -191,6 +203,10 @@ class Entity extends Base\PublicEntity
     protected static $sign = 'order';
 
     protected $entity = 'order';
+
+    protected static $generators = [
+        self::FORCE_OFFER,
+    ];
 
     /** Related Models */
 
@@ -310,6 +326,11 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::METHOD, $method);
     }
 
+    public function setFirstPaymentMinAmount(int $amount = null)
+    {
+        return $this->setAttribute(self::FIRST_PAYMENT_MIN_AMOUNT, $amount);
+    }
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
@@ -333,6 +354,11 @@ class Entity extends Base\PublicEntity
     public function getAmountDue()
     {
         return $this->getAttribute(self::AMOUNT_DUE);
+    }
+
+    public function getFirstPaymentMinAmount()
+    {
+        return $this->getAttribute(self::FIRST_PAYMENT_MIN_AMOUNT);
     }
 
     public function getPaymentCapture()
@@ -389,6 +415,12 @@ class Entity extends Base\PublicEntity
         $value = ($this->isPartialPaymentAllowed() === false);
 
         $this->setPartialPayment($value);
+
+        // If partial payment is set to false, unset first_payment_min_amount
+        if ($value === false)
+        {
+            $this->setAttribute(self::FIRST_PAYMENT_MIN_AMOUNT, null);
+        }
     }
 
     public function incrementAttempts()

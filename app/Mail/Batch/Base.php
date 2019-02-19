@@ -60,16 +60,23 @@ class Base extends Mailable
      */
     protected $outputFileLocalPath;
 
+    /**
+     * @var array
+     */
+    protected $batchSettings;
+
     public function __construct(
         array $batch,
         array $merchant,
-        string $outputFileLocalPath)
+        string $outputFileLocalPath,
+        array $batchSettings = [])
     {
         parent::__construct();
 
         $this->batch               = $batch;
         $this->merchant            = $merchant;
         $this->outputFileLocalPath = $outputFileLocalPath;
+        $this->batchSettings       = $batchSettings;
     }
 
     protected function addSender()

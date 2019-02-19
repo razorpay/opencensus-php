@@ -17,17 +17,19 @@ use RZP\Models\FundTransfer\Base\Reconciliation\RowProcessor as BaseRowProcessor
  */
 class FailedRowProcessor extends BaseRowProcessor
 {
-    const PAYMENT_REF_NO    = 'payment_ref_no';
-    const FAILURE_REASON    = 'failure_reason';
-    const BANK_STATUS_CODE  = 'bank_status_code';
+    const PAYMENT_REF_NO        = 'payment_ref_no';
+    const FAILURE_REASON        = 'failure_reason';
+    const BANK_STATUS_CODE      = 'bank_status_code';
+    const NAME_WITH_BENE_BANK   = 'name_with_bene_bank';
 
     protected function processRow()
     {
         $error = substr($this->row[Headings::ERRORS], 0, 255);
 
         $this->parsedData = [
-            self::PAYMENT_REF_NO    => $this->getNullOnEmpty(Headings::CUSTOMER_REFERENCE_NUMBER),
-            self::FAILURE_REASON    => $error,
+            self::PAYMENT_REF_NO        => $this->getNullOnEmpty(Headings::CUSTOMER_REFERENCE_NUMBER),
+            self::FAILURE_REASON        => $error,
+            self::NAME_WITH_BENE_BANK   => null,
         ];
 
         $this->reconEntityId = $this->parsedData[self::PAYMENT_REF_NO];

@@ -32,6 +32,9 @@ use RZP\Base\Database\MySqlConnection;
  * @property Models\FundAccount\Repository           $fund_account
  * @property Models\Merchant\Balance\Repository      $balance
  * @property Models\Transaction\Statement\Repository $statement
+ * @property Models\FundAccount\Repository           $customer_balance
+ * @property Models\FundTransfer\Attempt\Repository  $fund_transfer_attempt
+ * @property Models\Payout\Repository                $payout
  */
 class RepositoryManager extends Illuminate\Support\Manager
 {
@@ -317,7 +320,7 @@ class RepositoryManager extends Illuminate\Support\Manager
 
     public function assertTransactionActive()
     {
-        assert ($this->isTransactionActive());
+        assertTrue ($this->isTransactionActive());
     }
 
     public function resetConnectionAttributes()

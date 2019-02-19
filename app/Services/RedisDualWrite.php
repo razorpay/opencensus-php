@@ -101,7 +101,6 @@ class RedisDualWrite
         return $response;
     }
 
-
     public function del($key)
     {
         $redis = Redis::Connection();

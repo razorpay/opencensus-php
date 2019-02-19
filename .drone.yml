@@ -58,7 +58,7 @@ pipeline:
       - ES_AUDIT_HOST=elasticsearch
     commands:
       - sleep 10
-      - php -d memory_limit=2048M -d zend.assertions=1 -d assert.exception=1 vendor/phpunit/phpunit/phpunit --testsuite "Application Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Application Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
     when:
       event:
         exclude: [deployment, tag, pull_request]
@@ -83,7 +83,7 @@ pipeline:
       - ES_ENTITY_TYPE_PREFIX=testing_features_1_
     commands:
       - sleep 10
-      - php -d memory_limit=2048M -d zend.assertions=1 -d assert.exception=1 vendor/phpunit/phpunit/phpunit --testsuite "Features-1 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Features-1 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
     when:
       event:
         exclude: [deployment, tag, pull_request]
@@ -108,7 +108,7 @@ pipeline:
       - ES_ENTITY_TYPE_PREFIX=testing_features_2_
     commands:
       - sleep 10
-      - php -d memory_limit=2048M -d zend.assertions=1 -d assert.exception=1 vendor/phpunit/phpunit/phpunit --testsuite "Features-2 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Features-2 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
     when:
       event:
         exclude: [deployment, tag, pull_request]
@@ -133,7 +133,7 @@ pipeline:
       - ES_ENTITY_TYPE_PREFIX=testing_features_3_
     commands:
       - sleep 10
-      - php -d memory_limit=2048M -d zend.assertions=1 -d assert.exception=1 vendor/phpunit/phpunit/phpunit --testsuite "Features-3 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Features-3 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
     when:
       event:
         exclude: [deployment, tag, pull_request]
@@ -158,7 +158,7 @@ pipeline:
       - ES_ENTITY_TYPE_PREFIX=testing_features_4_
     commands:
       - sleep 10
-      - php -d memory_limit=2048M -d zend.assertions=1 -d assert.exception=1 vendor/phpunit/phpunit/phpunit --testsuite "Features-4 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Features-4 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
     when:
       event:
         exclude: [deployment, tag, pull_request]
@@ -183,7 +183,7 @@ pipeline:
       - ES_ENTITY_TYPE_PREFIX=testing_features_5_
     commands:
       - sleep 10
-      - php -d memory_limit=2048M -d zend.assertions=1 -d assert.exception=1 vendor/phpunit/phpunit/phpunit --testsuite "Features-5 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Features-5 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
     when:
       event:
         exclude: [deployment, tag, pull_request]
@@ -208,7 +208,7 @@ pipeline:
       - ES_ENTITY_TYPE_PREFIX=testing_payments_
     commands:
       - sleep 10
-      - php -d memory_limit=2048M -d zend.assertions=1 -d assert.exception=1 vendor/phpunit/phpunit/phpunit --testsuite "Payment Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Payment Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
     when:
       event:
         exclude: [deployment, tag, pull_request]
@@ -233,7 +233,7 @@ pipeline:
       - ES_ENTITY_TYPE_PREFIX=testing_gateway_1_
     commands:
       - sleep 10
-      - php -d memory_limit=2048M -d zend.assertions=1 -d assert.exception=1 vendor/phpunit/phpunit/phpunit --testsuite "Gateway-1 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Gateway-1 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
     when:
       event:
         exclude: [deployment, tag, pull_request]
@@ -258,7 +258,7 @@ pipeline:
       - ES_ENTITY_TYPE_PREFIX=testing_gateway_2_
     commands:
       - sleep 10
-      - php -d memory_limit=2048M -d zend.assertions=1 -d assert.exception=1 vendor/phpunit/phpunit/phpunit --testsuite "Gateway-2 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
+      - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --testsuite "Gateway-2 Test Suite" --printer="Codedungeon\\PHPUnitPrettyResultPrinter\\Printer"
     when:
       event:
         exclude: [deployment, tag, pull_request]
@@ -604,7 +604,6 @@ pipeline:
       - ${DRONE_COMMIT_SHA}
     when:
       environment: stage-delta
-      branch: hdfc_vas
       event:
         exclude: [push]
         include: [deployment]

@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\Detail\Entity;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
@@ -86,6 +87,44 @@ class ActivationTest extends TestCase
         $this->assertEquals($merchantDetails->getWebsite(), 'https://example.com');
     }
 
+    public function testInstantActivationWithBlacklistedCategoryForEmi()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+
+        $merchantMethods = $this->getDbEntityById('merchant', $merchantId)->getMethods();
+
+        $this->assertFalse($merchantMethods->isEmiEnabled());
+    }
+
+    public function testInstantActivationWithWhitelistedCategoryForEmi()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+
+        $merchantMethods = $this->getDbEntityById('merchant', $merchantId)->getMethods();
+
+        $this->assertTrue($merchantMethods->isEmiEnabled());
+    }
+
     public function testPostInstantActivationLinkedAccount()
     {
         $linkedAccount = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
@@ -127,11 +166,11 @@ class ActivationTest extends TestCase
         $this->startTest();
 
         $liveMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'live');
-        $this->assertSame(6211, $liveMerchant->getCategory());
+        $this->assertSame('6211', $liveMerchant->getCategory());
         $this->assertSame('mutual_funds', $liveMerchant->getCategory2());
 
         $testMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'test');
-        $this->assertSame(6211, $testMerchant->getCategory());
+        $this->assertSame('6211', $testMerchant->getCategory());
         $this->assertSame('mutual_funds', $testMerchant->getCategory2());
     }
 
@@ -330,10 +369,57 @@ class ActivationTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $this->startTest();
+    }
 
-        $merchant = $this->getDbEntityById('merchant', $merchantId);
 
-        $this->assertTrue($merchant->isFeatureEnabled('diwali_promotional_plan'));
+    /**
+     * for older merchants (merchants before instant activation) , if merchants had partially filled L2
+     * (business category and business subcategory) , now fills L1 form without changing business category or business
+     * subcategory then category and category 2 should set if not already set
+     */
+    public function testInstantActivationForOlderMerchant()
+    {
+        $merchantId = $this->createWhiteListMerchantFixture();
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
+    /**
+     * creates entities require for whitelist flow L1 submission
+     *
+     * @return string
+     */
+    protected function createWhiteListMerchantFixture(): string
+    {
+        $plan = $this->fixtures->create('pricing');
+
+        // merchant detail internally creates merchant entity
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            Entity::BUSINESS_CATEGORY    => 'ecommerce',
+            Entity::BUSINESS_SUBCATEGORY => 'fashion_and_lifestyle',
+            Entity::PROMOTER_PAN         => 'ABCDE1234E',
+            Entity::BUSINESS_NAME        => 'test',
+            Entity::BUSINESS_WEBSITE     => 'https://www.example.com',
+            Entity::BUSINESS_TYPE        => '1',
+            Entity::BUSINESS_DBA         => 'test',
+        ]);
+
+        $this->fixtures->edit('merchant', $merchantDetail->getMerchantId(), [
+            \RZP\Models\Merchant\Entity::PRICING_PLAN_ID => $plan->getPlanId()
+        ]);
+
+        $this->fixtures->edit('methods', $merchantDetail->getMerchantId(), [
+            Entity::MERCHANT_ID => $merchantDetail->getMerchantId(),
+            'disabled_banks'    => [],
+            'banks'             => '[]',
+            'netbanking'        => 0,
+            'debit_card'        => 0,
+            'credit_card'       => 0,
+        ]);
+
+        return $merchantDetail->getMerchantId();
     }
 
     protected function changeActivationStatus(& $requestContent, & $responseContent, $newStatus)

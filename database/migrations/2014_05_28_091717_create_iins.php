@@ -29,6 +29,9 @@ class CreateIins extends Migration
             $table->string(IIN\Entity::TYPE)
                   ->nullable();
 
+            $table->string(IIN\Entity::MESSAGE_TYPE)
+                  ->nullable();
+
             $table->char(IIN\Entity::COUNTRY, IIN\Entity::COUNTRY_LENGTH)
                   ->nullable();
 

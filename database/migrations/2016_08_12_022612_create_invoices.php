@@ -92,6 +92,10 @@ class CreateInvoices extends Migration
             $table->tinyInteger(Entity::PARTIAL_PAYMENT)
                   ->default(false);
 
+            $table->bigInteger(Entity::FIRST_PAYMENT_MIN_AMOUNT)
+                   ->unsigned()
+                   ->nullable();
+
             $table->integer(Entity::GROSS_AMOUNT)
                   ->unsigned()
                   ->nullable();

@@ -38,6 +38,7 @@ class Constants
     const EXPOSE_DOWNTIMES                = 'expose_downtimes';
     const PAYMENT_FAILURE_EMAIL           = 'payment_failure_email';
     const VIRTUAL_ACCOUNTS                = 'virtual_accounts';
+    const FUND_ACCOUNT_VALIDATIONS        = 'fund_account_validations';
     const INVOICE_PARTIAL_PAYMENTS        = 'invoice_partial_payments';
     const HIDE_DOWNTIMES                  = 'hide_downtimes';
     const OLD_CREDITS_FLOW                = 'old_credits_flow';
@@ -69,6 +70,7 @@ class Constants
     const EXPOSE_CARD_EXPIRY              = 'expose_card_expiry';
     const EXPOSE_CARD_IIN                 = 'expose_card_iin';
     const S2S_OPTIONAL_DATA               = 's2s_optional_data';
+    const VOID_REFUNDS                    = 'void_refunds';
     const PARTNER                         = 'partner';
     const OTPELF                          = 'otpelf';
     const PAYMENT_NOBRANDING              = 'payment_nobranding';
@@ -102,6 +104,16 @@ class Constants
     const BLOCK_SETTLEMENTS               = 'block_settlements';
     const SKIP_INTERNATIONAL_AUTH         = 'skip_international_auth';
     const ES_AUTOMATIC_THREE_PM           = 'es_automatic_three_pm';
+    const IIN_LISTING                     = 'iin_listing';
+    const CALLBACK_URL_VALIDATION         = 'callback_url_validation';
+    const REPORTING_GENRERIC_NOTES        = 'report_notes_to_column';
+    const S2S_OTP_JSON                    = 's2s_otp_json';
+
+    /**
+     * This will control if the bank details will be returned in the fetch token response.
+     * Bank details will contain beneficiary_name, account_number, ifsc and account_type
+     */
+    const TOKEN_BANK_DETAILS              = 'token_bank_details';
 
     /**
      * Skips uniqueness checks on the `receipt` attribute on invoice and payment links
@@ -114,17 +126,40 @@ class Constants
      */
     const PAYMENT_PAGES_NO_CAPTURE        = 'payment_pages_no_capture';
 
+    /**
+     * For Payment links:
+     * With partial payment enabled, allows the merchant to define a min amount
+     * to be paid for the first payment.
+     */
+    const PL_FIRST_MIN_AMOUNT             = 'pl_first_min_amount';
+
     // Orders
     const ORDER_ID_MANDATORY              = 'order_id_mandatory';
     const ORDER_RECEIPT_UNIQUE            = 'order_receipt_unique';
 
     // Payment authentication
     const ATM_PIN_AUTH                    = 'atm_pin_auth';
+    const IVR                             = 'ivr';
 
     // Pre-Auth Shield Integration
     const PRE_AUTH_SHIELD_INTG          = 'pre_auth_shield_intg';
 
     const EDIT_METHODS                  = 'edit_methods';
+
+    /**
+     * If set, disables all refund operations on the merchant's account
+     */
+    const DISABLE_REFUNDS               = 'disable_refunds';
+
+    /**
+     * Makes `receipt` a mandatory field for invoice creation
+     */
+    const INVOICE_RECEIPT_MANDATORY     = 'invoice_receipt_mandatory';
+
+    /**
+     * Do no send email on expiring/expired
+     */
+    const INVOICE_NO_EXPIRY_EMAIL       = 'invoice_no_expiry_email';
 
     // Different actions for feature activation flow
     const CREATE           = 'create';
@@ -221,6 +256,7 @@ class Constants
         self::EXPOSE_CARD_EXPIRY              => true,
         self::EXPOSE_CARD_IIN                 => true,
         self::S2S_OPTIONAL_DATA               => true,
+        self::VOID_REFUNDS                    => true,
         self::PARTNER                         => true,
         self::PAYMENT_NOBRANDING              => true,
         self::OTPELF                          => true,
@@ -258,6 +294,17 @@ class Constants
         self::INVOICE_NO_RECEIPT_UNIQUE       => true,
         self::PAYMENT_PAGES_NO_CAPTURE        => true,
         self::ES_AUTOMATIC_THREE_PM           => true,
+        self::IIN_LISTING                     => true,
+        self::CALLBACK_URL_VALIDATION         => true,
+        self::PL_FIRST_MIN_AMOUNT             => true,
+        self::REPORTING_GENRERIC_NOTES        => true,
+        self::IVR                             => true,
+        self::S2S_OTP_JSON                    => true,
+        self::FUND_ACCOUNT_VALIDATIONS        => true,
+        self::DISABLE_REFUNDS                 => true,
+        self::TOKEN_BANK_DETAILS              => true,
+        self::INVOICE_RECEIPT_MANDATORY       => true,
+        self::INVOICE_NO_EXPIRY_EMAIL         => true,
     ];
 
     // Entity type constants
@@ -310,27 +357,42 @@ class Constants
         self::MARKETPLACE      => [
             'feature'       => self::MARKETPLACE,
             'display_name'  => 'Route',
-            'documentation' => 'route'
+            'documentation' => 'route',
         ],
         self::SUBSCRIPTIONS    => [
             'feature'       => self::SUBSCRIPTIONS,
             'display_name'  => 'Subscriptions',
-            'documentation' => 'subscriptions'
+            'documentation' => 'subscriptions',
         ],
         self::VIRTUAL_ACCOUNTS => [
             'feature'       => self::VIRTUAL_ACCOUNTS,
             'display_name'  => 'Smart Collect',
-            'documentation' => 'smart-collect'
+            'documentation' => 'smart-collect',
         ],
         self::REPORT_V2 => [
             'feature'       => self::REPORT_V2,
             'display_name'  => 'Report V2',
-            'documentation' => ''
+            'documentation' => '',
         ],
-        self::ES_ON_DEMAND => [
+        self::ES_ON_DEMAND              => [
             'feature'       => self::ES_ON_DEMAND,
             'display_name'  => 'On demand Payout',
-            'documentation' => ''
+            'documentation' => '',
+        ],
+        self::PL_FIRST_MIN_AMOUNT       => [
+            'feature'       => self::PL_FIRST_MIN_AMOUNT,
+            'display_name'  => 'Partial payments: minimum first amount',
+            'documentation' => '',
+        ],
+        self::DISABLE_REFUNDS           => [
+            'feature'       => self::DISABLE_REFUNDS,
+            'display_name'  => 'Disable Refund Operations',
+            'documentation' => '',
+        ],
+        self::INVOICE_RECEIPT_MANDATORY => [
+            'feature'       => self::INVOICE_RECEIPT_MANDATORY,
+            'display_name'  => 'Mandatory invoice receipt field',
+            'documentation' => '',
         ],
     ];
 

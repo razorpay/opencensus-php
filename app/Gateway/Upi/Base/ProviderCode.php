@@ -263,7 +263,7 @@ class ProviderCode
 
     public static function validate(string $provider)
     {
-        return (self::getBankCode($provider) !== null);
+        return (self::getBankCode(strtolower($provider)) !== null);
     }
 
     public static function validateBankCode(string $bankCode): bool

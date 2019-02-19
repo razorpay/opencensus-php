@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: albin
- * Date: 12/7/18
- * Time: 2:23 PM
- */
 
 namespace RZP\Gateway\Paysecure;
 

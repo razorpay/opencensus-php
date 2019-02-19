@@ -2,12 +2,13 @@
 
 namespace RZP\Tests\Functional\Helpers;
 
+use RZP\Models\Payout;
+
 /**
  * Consists reusable methods to help with business banking related tests.
  */
 trait TestsBusinessBanking
 {
-
     /**
      * @var \RZP\Models\Merchant\Balance\Entity|null
      */
@@ -24,17 +25,34 @@ trait TestsBusinessBanking
     protected $bankAccount;
 
     /**
-     * Setup merchant for business banking.
-     * @param bool $skipFeatureAddition
+     * @var \RZP\Models\Contact\Entity|null
      */
-    protected function setUpMerchantForBusinessBanking(bool $skipFeatureAddition = false)
+    protected $contact;
+
+    /**
+     * @var \RZP\Models\Transaction\Entity|null
+     */
+    protected $transaction;
+
+    /**
+     * @var \RZP\Models\Payout\Entity|null
+     */
+    protected $payout;
+
+    /**
+     * Setup merchant for business banking.
+     *
+     * @param bool $skipFeatureAddition
+     * @param int  $balance
+     */
+    protected function setUpMerchantForBusinessBanking(bool $skipFeatureAddition = false, int $balance = 0)
     {
         // Activate merchant with business_banking flag set to true.
         $this->fixtures->merchant->edit('10000000000000', ['business_banking' => 1]);
         $this->fixtures->merchant->activate();
 
         // Creates banking balance
-        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType();
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType($balance);
 
         // Creates virtual account, its bank account receiver on new banking balance.
         $virtualAccount = $this->fixtures->create('virtual_account');
@@ -49,6 +67,7 @@ trait TestsBusinessBanking
         $virtualAccount->bankAccount()->associate($bankAccount);
         $virtualAccount->balance()->associate($bankingBalance);
         $virtualAccount->save();
+
         // Updates banking balance's account number after bank account creation.
         $bankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
         $bankingBalance->save();
@@ -56,7 +75,7 @@ trait TestsBusinessBanking
         // Enables required features on merchant
         if ($skipFeatureAddition === false)
         {
-            $this->fixtures->merchant->addFeatures(['virtual_accounts']);
+            $this->fixtures->merchant->addFeatures(['virtual_accounts', 'payout']);
         }
 
         // Additionally, creates a terminal for bank transfer on banking balance.
@@ -66,5 +85,62 @@ trait TestsBusinessBanking
         $this->bankingBalance = $bankingBalance;
         $this->virtualAccount = $virtualAccount;
         $this->bankAccount    = $bankAccount;
+    }
+
+    protected function createPayout()
+    {
+        $this->createContact();
+
+        $this->createFundAccount();
+
+        $this->payout = $this->fixtures->create(
+            'payout',
+            [
+                'purpose'           => 'refund',
+                'fund_account_id'   => $this->fundAccount['id'],
+                'notes'             => [
+                    'abc' => 'xyz',
+                ],
+                'amount'            => 1000,
+                'currency'          => 'INR',
+                'balance_id'        => $this->bankingBalance->getId(),
+            ]);
+
+        $this->transaction = $this->getDbLastEntity('transaction');
+    }
+
+    protected function reversePayout(Payout\Entity $payout)
+    {
+        // TODO: Fix this shit with proper fixtures
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status'     => 'failed',
+            'failure_reason' => '',
+        ]);
+    }
+
+    public function createContact()
+    {
+        $this->contact = $this->fixtures->create(
+            'contact',
+            [
+                'id'      => '1000010contact',
+                'email'   => 'contact@razorpay.com',
+                'contact' => '8888888888',
+                'name'    => 'test user'
+            ]);
+    }
+
+    protected function createFundAccount()
+    {
+        $this->fundAccount = $this->fixtures->fund_account->createBankAccount(
+            [
+                'source_type' => 'contact',
+                'source_id'   => $this->contact->getId(),
+            ],
+            [
+                'name'           => "test",
+                'ifsc'           => 'SBIN0007105',
+                'account_number' => '111000',
+            ]);
     }
 }

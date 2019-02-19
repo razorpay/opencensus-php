@@ -2,10 +2,11 @@
 
 namespace RZP\Models\Coupon;
 
+use App;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 
 class Service extends Base\Service
 {
@@ -17,6 +18,24 @@ class Service extends Base\Service
 
         return $coupon->toArrayAdmin();
     }
+
+
+    /**
+     * @param string $id
+     * @param array $input
+     * @return mixed
+     */
+    public function update(string $id, array $input)
+    {
+        $this->trace->info(TraceCode::COUPON_UPDATE_REQUEST, $input);
+
+        $coupon = $this->repo->coupon->findOrFailPublic($id);
+
+        $coupon = $this->core()->update($coupon, $input);
+
+        return $coupon->toArrayAdmin();
+    }
+
 
     public function delete(string $id): array
     {
@@ -35,25 +54,61 @@ class Service extends Base\Service
         return $coupon->toArrayDeleted();
     }
 
+    /**
+     * Function will validate Coupon and return its respective error message if validation fails.
+     * If all validation passes it returns coupon's expire days and credit amount.
+     * @param array $input
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function validateCouponAndGetDetails(array $input): array
+    {
+        $this->trace->info(TraceCode::COUPON_VALIDATE_REQUEST, $input);
+
+        $this->trace->count(Merchant\Metric::COUPON_VALIDATE_TOTAL);
+
+        (new Validator)->validateInput('apply', $input);
+
+        $merchant = app('basicauth')->getMerchant();
+
+        $coupon = $this->core()->validateAndGetDetails($merchant, $input);
+
+        $promotion = $coupon->source;
+
+        //Here expireDays will return null if Schedule doesn't exist. (Credit will exist indefinitely.)
+        $expireDays = null;
+
+        if ($promotion->schedule !== null)
+        {
+            $expireDays = $promotion->schedule->getInterval();
+        }
+
+        return [
+            'expire_days'   => $expireDays,
+            'credit_amount' => $promotion->getCreditAmount(),
+        ];
+    }
+
     public function apply(array $input): array
     {
         $this->trace->info(TraceCode::COUPON_APPLY_REQUEST, $input);
 
         (new Validator)->validateInput('apply', $input);
 
-        $merchantId = $input[Entity::MERCHANT_ID];
+        $merchant = null;
 
-        $coupon = $this->repo->coupon->fetchByCodeWithRelations($input[Entity::CODE], $merchantId);
-
-        if ($coupon === null)
+        if (app('basicauth')->isAdminAuth() === false )
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_COUPON_CODE, $input);
+            $merchant = app('basicauth')->getMerchant();
+        }
+        else
+        {
+            $merchantId = $input[Entity::MERCHANT_ID] ?? null;
+
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
         }
 
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
-        $result = $this->core()->apply($merchant, $coupon);
+        $result = $this->core()->apply($merchant, $input);
 
         return $result;
     }

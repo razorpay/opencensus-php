@@ -40,7 +40,9 @@ class MerchantDetailTest extends TestCase
     {
         $merchant = $this->fixtures->create('merchant:with_keys');
 
-        $this->ba->proxyAuth('rzp_test_' .$merchant['id']);
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id']);
+
+        $this->ba->proxyAuth('rzp_test_' .$merchant['id'], $user->getId());
 
         $this->startTest();
     }
@@ -509,7 +511,7 @@ class MerchantDetailTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures(['zoho', 'charge_at_will']);
         $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $payment = $this->getDefaultRecurringPaymentArray();
 
@@ -576,6 +578,58 @@ class MerchantDetailTest extends TestCase
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
         $this->ba->proxyAuth('rzp_live_'.$merchantDetail['merchant_id']);
+
+        $this->startTest();
+    }
+
+    public function testPutPreSignupDetailsWithCouponCode()
+    {
+        $this->ba->adminAuth();
+
+        $promotion = $this->fixtures->on('live')->create('promotion:onetime');
+
+        $couponAttributes = [
+            'entity_id'   => $promotion->getId(),
+            'entity_type' => 'promotion',
+            'merchant_id' => '100000Razorpay',
+            'code'        => 'RANDOM',
+        ];
+
+        $coupon = $this->fixtures->on('live')->create('coupon', $couponAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
+
+        $this->startTest();
+
+        $merchantPromotion = $this->getDbEntity('merchant_promotion',
+                                                [
+                                                    'merchant_id' => $merchantDetail[MerchantDetails::MERCHANT_ID]
+                                                ], 'live')
+                                  ->toArray();
+
+        $this->assertSame(1, $merchantPromotion['remaining_iterations']);
+    }
+
+    public function testPutPreSignupDetailsWithInvalidCouponCode()
+    {
+        $this->ba->adminAuth();
+
+        $promotion = $this->fixtures->on('live')->create('promotion:onetime');
+
+        $couponAttributes = [
+            'entity_id'   => $promotion->getId(),
+            'entity_type' => 'promotion',
+            'merchant_id' => '100000Razorpay',
+            'code' => 'RANDOM-123',
+        ];
+
+        $coupon = $this->fixtures->on('live')->create('coupon', $couponAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
 
         $this->startTest();
     }
@@ -660,11 +714,11 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
 
         $liveMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'live');
-        $this->assertSame(6211, $liveMerchant->getCategory());
+        $this->assertSame('6211', $liveMerchant->getCategory());
         $this->assertSame('mutual_funds', $liveMerchant->getCategory2());
 
         $testMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'test');
-        $this->assertSame(6211, $testMerchant->getCategory());
+        $this->assertSame('6211', $testMerchant->getCategory());
         $this->assertSame('mutual_funds', $testMerchant->getCategory2());
     }
 
@@ -684,11 +738,11 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
 
         $liveMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'live');
-        $this->assertSame(5399, $liveMerchant->getCategory());
+        $this->assertSame('5399', $liveMerchant->getCategory());
         $this->assertSame('others', $liveMerchant->getCategory2());
 
         $testMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'test');
-        $this->assertSame(5399, $testMerchant->getCategory());
+        $this->assertSame('5399', $testMerchant->getCategory());
         $this->assertSame('others', $testMerchant->getCategory2());
     }
 
@@ -737,7 +791,7 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
 
         $liveMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'live');
-        $this->assertSame(6211, $liveMerchant->getCategory());
+        $this->assertSame('6211', $liveMerchant->getCategory());
         $this->assertSame('mutual_funds', $liveMerchant->getCategory2());
     }
 

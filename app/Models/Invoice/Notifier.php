@@ -7,9 +7,11 @@ use Config;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
-use RZP\Constants\Mode;
+use RZP\Models\Feature;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Mail\Invoice as InvoiceMail;
+use RZP\Models\Merchant\Preferences;
 use RZP\Models\Invoice\ViewDataSerializer;
 
 class Notifier extends Base\Core
@@ -145,6 +147,13 @@ class Notifier extends Base\Core
 
     public function emailInvoiceExpiredToCustomer(): bool
     {
+        $merchant = $this->invoice->merchant;
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::INVOICE_NO_EXPIRY_EMAIL) === true)
+        {
+            return false;
+        }
+
         $customerEmail = $this->invoice->getCustomerEmail();
 
         $this->trace->info(
@@ -338,24 +347,104 @@ class Notifier extends Base\Core
     {
         $merchant = $this->invoice->merchant;
 
+        $defaultTemplate = 'sms.invoice';
+        $defaultParams   = [
+            'merchant_name' => $merchant->getBillingLabel(),
+            'invoice_link'  => $this->invoice->getShortUrl(),
+            'amount'        => $this->invoice->getAmount() / 100,
+        ];
+
+        $custom         = $this->getCustomRavenTemplateAndParams($merchant);
+        $customTemplate = $custom['template'];
+        $customParams   = $custom['params'];
+        $customSender   = $custom['sender'];
+
         $request = [
             'receiver' => $contact,
             'source'   => "api.{$this->mode}.invoice",
-            'template' => 'sms.invoice',
-            'params'   => [
-                'merchant_name' => $merchant->getBillingLabel(),
-                'invoice_link'  => $this->invoice->getShortUrl(),
-                'amount'        => $this->invoice->getAmount() / 100,
-            ]
+            'template' => $customTemplate ?? $defaultTemplate,
+            'params'   => $customParams ?? $defaultParams,
         ];
+
+        if ($customSender !== null)
+        {
+            $request['sender'] = $customSender;
+        }
 
         $this->trace->info(
             TraceCode::INVOICE_RAVEN_REQUEST,
             [
                 'invoice_id' => $this->invoice->getId(),
-                'request' => $request,
+                'request'    => $request,
             ]);
 
         return $request;
+    }
+
+    protected function getCustomRavenTemplateAndParams(Merchant\Entity $merchant): array
+    {
+        $template = $params = $sender = null;
+
+        $receipt = $this->invoice->getReceipt();
+
+        $invoiceLink = $this->invoice->getShortUrl();
+
+        switch ($merchant->getId())
+        {
+            case Preferences::MID_RBLCARD:
+            case Preferences::MID_AMIT_RBLCARD:
+
+                $template = 'sms.custom_invoice.rbl_card';
+                $sender   = 'RBLCRD';
+                $params   = [
+                    'receipt'      => $receipt,
+                    'invoice_link' => $invoiceLink,
+                    'amount'       => $this->invoice->getAmount() / 100,
+                ];
+
+                break;
+
+            case Preferences::MID_RBLLOAN:
+            case Preferences::MID_AMIT_RBLLOAN:
+
+                $template = 'sms.custom_invoice.rbl_loan';
+                $sender   = 'RBLBNK';
+                $params   = [
+                    'receipt'      => $receipt,
+                    'invoice_link' => $invoiceLink,
+                    'amount'       => $this->invoice->getAmount() / 100,
+                ];
+
+                break;
+
+            case Preferences::MID_DMI_FINANCE:
+
+                $template = 'sms.custom_invoice.dmi_finance';
+                $params   = [
+                    'receipt'      => $receipt,
+                    'invoice_link' => $invoiceLink,
+                ];
+
+                break;
+
+            case Preferences::MID_VARTHANA_FINANCE:
+
+                $template = 'sms.custom_invoice.varthana_finance';
+                $params = [
+                    'invoice_link' => $invoiceLink,
+                ];
+        }
+
+        // TODO: Make this generic later. Keep a list of requiredParams[] and trace/fail if those params are not set
+        if ($params !== null and $receipt === null)
+        {
+            $this->trace->info(
+                TraceCode::INVOICE_SMS_CUSTOM_PARAMETER_NOT_SET,
+                [
+                    'parameter' => Entity::RECEIPT,
+                ]);
+        }
+
+        return ['template' => $template, 'params' => $params, 'sender' => $sender];
     }
 }

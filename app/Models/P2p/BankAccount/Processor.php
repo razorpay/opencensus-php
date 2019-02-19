@@ -4,135 +4,134 @@ namespace RZP\Models\P2p\BankAccount;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;
+use RZP\Models\P2p\Base\Upi;
 
+/**
+ * @property Core $core
+ * @property Validator $validator
+ *
+ * Class Processor
+ */
 class Processor extends Base\Processor
 {
-    public function fetchBanks(array $input): array
-    {
-        $this->initialize(Action::FETCH_BANKS, $input);
-
-        return [
-            'entity' => 'collection',
-            'count'  => 2,
-            'items'  => [
-                [
-                    'entity'  => 'bank',
-                    'ifsc'    => 'HDFC',
-                    'name'    => 'HDFC Bank',
-                    'upi'     => true
-                ],
-                [
-                    'entity'  => 'bank',
-                    'ifsc'    => 'ICICI',
-                    'name'    => 'ICICI Bank',
-                    'upi'     => true
-                ]
-            ]
-        ];
-    }
-
     public function retrieve(array $input): array
     {
-        $this->initialize(Action::RETRIEVE, $input);
+        $this->initialize(Action::RETRIEVE, $input, true);
 
-        return [
-            'entity' => 'collection',
-            'count' => 1,
-            'items' => [
-                $this->bankAccount('ba_AtIZbXUOTDp3ND'),
-            ]
-        ];
+        $bank = (new Bank\Core)->retrieveById($this->input->get(Entity::BANK));
+
+        $this->gatewayInput->put(Entity::BANK, $bank->toArrayBag());
+
+        return $this->callGateway();
     }
 
-    public function fetchAll(array $input): array
+    protected function retrieveSuccess(array $input): array
     {
-        $this->initialize(Action::FETCH_ALL, $input);
+        $this->initialize(Action::RETRIEVE_SUCCESS, $input, true);
 
-        return [
-            'entity' => 'collection',
-            'count' => 2,
-            'items' => [
-                $this->bankAccount('ba_AtIZbXUOTDp1ND'),
-                $this->bankAccount('ba_AtIZbXUOTDp2ND'),
-            ]
-        ];
-    }
+        $bank = (new Bank\Core)->retrieveById($this->input->get(Entity::BANK));
 
-    public function fetch(array $input): array
-    {
-        $this->initialize(Action::FETCH, $input);
+        $bankAccounts = $this->core->createManyForBank($this->input->get(Entity::BANK_ACCOUNTS), $bank);
 
-        return $this->bankAccount('ba_AtIZbXUOTDp1ND');
+        return $bankAccounts->toArrayPublic();
     }
 
     public function initiateSetUpiPin(array $input): array
     {
-        $this->initialize(Action::INITIATE_SET_UPI_PIN, $input);
+        $this->initialize(Action::INITIATE_SET_UPI_PIN, $input, true);
+
+        $bankAccount = $this->core->fetch($this->input->get(Entity::ID));
+
+        $this->gatewayInput->put(Entity::BANK_ACCOUNT, $bankAccount);
+
+        return $this->callGateway();
+    }
+
+    public function initiateSetUpiPinSuccess(array $input)
+    {
+        $this->initialize(Action::INITIATE_SET_UPI_PIN_SUCCESS, $input, true);
+
+        $txn         = new Upi\Txn($this->input->get(Upi\Txn::TXN));
+        $device      = $this->context()->getDevice();
+        $bankAccount = $this->core->fetch($this->input->get(Entity::BANK_ACCOUNT)[Entity::ID]);
+
+        $clientLibrary = new Upi\ClientLibrary($this->context()->getDevice());
+
+        $clientLibrary->setTxn($txn);
+        $clientLibrary->setDevice($device);
+        $clientLibrary->setBankAccount($bankAccount);
 
         return [
-            'cl' => [
-            'registration_format' => 'FORMAT1',
-            'mobileNumber'        => '+919123456780',
-            'appId'               => 'com.razorpay',
-            'deviceId'            => '5878323242',
-            'note'                => 'Set UPI Pin',
-            'txnId'               => 'RAZ18FCE7E4597443C7963B999CCD70C869',
-            'CredAllowed'         => [
-                [
-                    'type'        => 'PIN',
-                    'subtype'     => 'MPIN',
-                    'dLength'     => 6,
-                    'dFormat'     => 'NUM'
-                ],
-                [
-                    'type'        => 'OTP',
-                    'subtype'     => 'ATMPIN',
-                    'dLength'     => 4,
-                    'dFormat'     => 'NUM'
-                ]
-            ]
-            ]
+            Upi\ClientLibrary::CL => $clientLibrary->toArrayPublic(),
         ];
     }
 
     public function setUpiPin(array $input): array
     {
-        $this->initialize(Action::SET_UPI_PIN, $input);
+        $this->initialize(Action::SET_UPI_PIN, $input, true);
+
+        $bankAccount = $this->core->fetch($this->input->get(Entity::ID));
+
+        $this->gatewayInput->put(Entity::BANK_ACCOUNT, $bankAccount);
+        $this->gatewayInput->put(Entity::BANK, $bankAccount->parentBank);
+        $this->gatewayInput->put(Entity::REQUEST, $this->input);
+
+        return $this->callGateway();
+    }
+
+    public function setUpiPinSuccess(array $input): array
+    {
+        $this->initialize(Action::SET_UPI_PIN_SUCCESS, $input, true);
+
+        $bankAccount = $this->core->fetch($this->input->get(Entity::BANK_ACCOUNT)[Entity::ID]);
 
         return [
-            'id'      => 'ba_AtIZbXUOTDp1ND',
-            'success' => true
+            Entity::SUCCESS => true,
+            Entity::ID      => $bankAccount->getPublicId(),
         ];
     }
 
     public function initiateFetchBalance(array $input): array
     {
-        $this->initialize(Action::INITIATE_FETCH_BALANCE, $input);
+        $this->initialize(Action::INITIATE_FETCH_BALANCE, $input, true);
+
+        $bankAccount = $this->core->fetch($this->input->get(Entity::ID));
+
+        $this->gatewayInput->put(Entity::BANK_ACCOUNT, $bankAccount);
+
+        return $this->callGateway();
+    }
+
+    public function initiateFetchBalanceSuccess(array $input)
+    {
+        $this->initialize(Action::INITIATE_FETCH_BALANCE_SUCCESS, $input, true);
+
+        $txn         = new Upi\Txn($this->input->get(Upi\Txn::TXN));
+        $device      = $this->context()->getDevice();
+        $bankAccount = $this->core->fetch($this->input->get(Entity::BANK_ACCOUNT)[Entity::ID]);
+
+        $clientLibrary = new Upi\ClientLibrary($this->context()->getDevice());
+
+        $clientLibrary->setTxn($txn);
+        $clientLibrary->setDevice($device);
+        $clientLibrary->setBankAccount($bankAccount);
 
         return [
-            'cl' => [
-                'account'      => '12*********3456',
-                'mobileNumber' => '987654321',
-                'appId'        => 'com.razorpay',
-                'deviceId'     => '5878323242',
-                'note'         => 'Balance enquiry',
-                'txnId'        => 'RAZ18FCE7E4597443C7963B999CCD70C869',
-                'CredAllowed'  => [
-                [
-                    'type'     => 'PIN',
-                    'subtype'  => 'MPIN',
-                    'dLength'  => 6,
-                    'dType'    => 'NUM',
-                ]
-                ],
-            ]
+            Upi\ClientLibrary::CL => $clientLibrary->toArrayPublic(),
         ];
     }
 
     public function fetchBalance(array $input): array
     {
-        $this->initialize(Action::FETCH_BALANCE, $input);
+        $this->initialize(Action::FETCH_BALANCE, $input, true);
 
+        $bankAccount = $this->core->fetch($this->input->get(Entity::ID));
+
+        $this->gatewayInput->put(Entity::BANK_ACCOUNT, $bankAccount);
+        $this->gatewayInput->put(Entity::BANK, $bankAccount->parentBank);
+        $this->gatewayInput->put(Entity::REQUEST, $this->input);
+
+        return $this->callGateway();
         return [
             'id'       => 'ba_AtIZbXUOTDp1ND',
             'balance'  => 2928200,
@@ -140,48 +139,17 @@ class Processor extends Base\Processor
         ];
     }
 
-    // TODO: To be removed
-    private function bankAccount($id)
+    public function fetchBalanceSuccess(array $input): array
     {
+        $this->initialize(Action::FETCH_BALANCE_SUCCESS, $input, true);
+
+        $bankAccount = $this->core->fetch($this->input->get(Entity::BANK_ACCOUNT)[Entity::ID]);
+
         return [
-            'id' => $id,
-            'entity' => 'bank_account',
-            'ifsc' => 'ACME000001',
-            'bank_name' => 'Acme Bank',
-            'beneficiary_name' => 'Gaurav Kumar',
-            'masked_account_number' => 'XXXX103101',
-            'creds' => [
-                [
-                    'type' => 'upipin',
-                    'set' => true,
-                    'length' => 6,
-                    'format' => 'numeric',
-                    'cl' => [
-                        'format' => 'NUM'
-                    ]
-                ],
-                [
-                    'type' => 'atmpin',
-                    'length' => 6,
-                    'format' => 'numeric',
-                    'cl' => [
-                        'format' => 'NUM'
-                    ]
-                ],
-                [
-                    'type' => 'otp',
-                    'length' => 6,
-                    'format' => 'numeric',
-                    'cl' => [
-                        'format' => 'NUM'
-                    ]
-                ],
-            ],
-            'cl' => [
-                'registration_format' => 'FORMAT1',
-            ],
-            'refreshed_at'  => 1609622306,
-            'created_at' => 1509622306
+            Entity::SUCCESS     => true,
+            Entity::BALANCE     => $this->input->get(Entity::RESPONSE)[Entity::BALANCE],
+            Entity::CURRENCY    => $this->input->get(Entity::RESPONSE)[Entity::CURRENCY],
+            Entity::ID          => $bankAccount->getPublicId(),
         ];
     }
 }

@@ -15,17 +15,20 @@ use Illuminate\Database\Eloquent\Factory;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 use RZP\Models\Key;
+use RZP\Jobs\EsSync;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Mail\User\MappedToAccount;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
+use Illuminate\Support\Facades\Queue;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\BankAccount\Entity as BankAccount;
+use RZP\Models\Merchant\Balance\Entity as Balance;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Mail\User\PasswordReset as PasswordResetMail;
@@ -70,7 +73,9 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
-        $this->ba->proxyAuth('rzp_test_1X4hRFHFx4UiXt');
+        $user = $this->fixtures->user->createUserForMerchant('1X4hRFHFx4UiXt');
+
+        $this->ba->proxyAuth('rzp_test_1X4hRFHFx4UiXt', $user->getId());
 
         $this->startTest();
     }
@@ -81,7 +86,11 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->setHasKeyAccess(true, '1X4hRFHFx4UiXt');
 
-        $this->ba->proxyAuth('rzp_live_1X4hRFHFx4UiXt');
+        $user = $this->fixtures->create('user');
+
+        $this->createUserMerchantMapping($user['id'], '1X4hRFHFx4UiXt', 'owner', 'live');
+
+        $this->ba->proxyAuth('rzp_live_1X4hRFHFx4UiXt', $user['id']);
 
         $this->startTest();
     }
@@ -139,8 +148,12 @@ class MerchantTest extends TestCase
         $this->ba->proxyAuthTest();
         $this->startTest();
 
-        $this->ba->proxyAuthLive();
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], 'owner', 'live');
+
+        $this->ba->proxyAuth('rzp_live_10000000000000', $user->getId());
+
         $this->testData[__FUNCTION__]['response']['content']['balance'] = 0;
+
         $this->startTest();
     }
 
@@ -233,6 +246,19 @@ class MerchantTest extends TestCase
     }
 
     public function testEditMerchantWithNullFeeCreditsThreshold()
+    {
+        $this->createMerchant();
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+
+        $result = $this->startTest();
+
+        $this->assertArrayNotHasKey('groups', $result);
+    }
+
+    public function testEditMerchantWithHighRiskThreshold()
     {
         $this->createMerchant();
 
@@ -411,6 +437,8 @@ class MerchantTest extends TestCase
     {
         $content = $this->createMerchant();
 
+        $this->fixtures->user->createUserForMerchant($content['id'], ['email' => $content['email']]);
+
         $this->ba->adminAuth();
 
         Event::fake(false);
@@ -427,6 +455,40 @@ class MerchantTest extends TestCase
 
             return true;
         });
+
+        $merchant = (new Merchant\Repository)->findOrFail($content['id']);
+
+        $this->assertEquals('shake@razorpay.com', $merchant->primaryOwner()->getEmail());
+    }
+
+    public function testEditMerchantEmailUserExists()
+    {
+        $content = $this->createMerchant();
+
+        $this->fixtures->user->createUserForMerchant($content['id'], ['email' => $content['email']]);
+
+        $existingUser = $this->fixtures->user->create(['email' => 'newemail@razorpay.com']);
+
+        $this->ba->adminAuth();
+
+        Event::fake(false);
+
+        $this->startTest();
+
+        Event::assertDispatched(KeyForgotten::class, function ($e) use ($content)
+        {
+            $expectedTags = [
+                'merchant_' . $content['id'],
+            ];
+
+            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+
+            return true;
+        });
+
+        $merchant = (new Merchant\Repository)->findOrFail($content['id']);
+
+        $this->assertEquals('newemail@razorpay.com', $merchant->primaryOwner()->getEmail());
     }
 
     public function testEditMerchantWhitelistedIpsLive()
@@ -1057,6 +1119,8 @@ class MerchantTest extends TestCase
 
     public function testDiwaliPromotionalPlan()
     {
+        $this->markTestSkipped();
+
         $this->fixtures->pricing->createDiwaliPromotionalPlan();
 
         $payment = $this->getDefaultPaymentArray();
@@ -1098,6 +1162,8 @@ class MerchantTest extends TestCase
 
     public function testDiwaliPromotionalPlanFeatureRemoval()
     {
+        $this->markTestSkipped();
+
         $this->fixtures->merchant->addFeatures(['diwali_promotional_plan']);
         $this->fixtures->pricing->createStandardPlan();
         $this->fixtures->merchant->disableInternational();
@@ -1227,7 +1293,7 @@ class MerchantTest extends TestCase
 
         $banks = $content['methods']['netbanking'];
 
-        $this->assertCount(33, $banks);
+        $this->assertCount(34, $banks);
 
         $this->fixtures->merchant->disableTPV();
     }
@@ -3016,9 +3082,9 @@ class MerchantTest extends TestCase
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function createUserMerchantMapping(string $userId, string $merchantId, string $role)
+    protected function createUserMerchantMapping(string $userId, string $merchantId, string $role, $mode='test')
     {
-        DB::table('merchant_users')
+        DB::connection($mode)->table('merchant_users')
             ->insert([
                 'merchant_id' => $merchantId,
                 'user_id'     => $userId,
@@ -3685,13 +3751,68 @@ class MerchantTest extends TestCase
 
     public function testSearchWithDateFilter()
     {
-        $esMock = $this->createEsMock(['search']);
-
-        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
 
         $this->ba->adminAuth();
 
         $this->startTest();
+    }
+
+    /**
+     * Verifies queue entries merchant_sync_es_balance_bulk call
+     */
+    public function testQueueEntriesAfterBalanceSync()
+    {
+        Queue::fake();
+
+        $this->CreateBalanceEntities();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        // Asserting entries are being pushed on merchant_sync_es_balance_bulk api call .
+        Queue::assertPushed(EsSync::class, 1);
+    }
+
+    /**
+     * Verifies ES bulkupdate method is called during merchant_sync_es_balance_bulk call
+     */
+    public function testESQueryAfterSync()
+    {
+        $this->createEsMockAndSetExpectations(__FUNCTION__, 'bulkUpdate');
+
+        $this->CreateBalanceEntities();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * Creates balance entities
+     *
+     * @return array
+     */
+    private function CreateBalanceEntities(): array
+    {
+        Carbon::setTestNow(Carbon::now()->addHours(25));
+
+        $merchant1  = $this->fixtures->create('merchant');
+        $merchant2  = $this->fixtures->create('merchant');
+        $updated_at = Carbon::now()->subMinutes(10)->getTimestamp();
+
+        $entity1 = $this->fixtures->create('balance', [
+            Balance::MERCHANT_ID => $merchant1[Merchant\Entity::ID],
+            Balance::UPDATED_AT  => $updated_at,
+        ]);
+
+        $entity2 = $this->fixtures->create('balance', [
+            Balance::MERCHANT_ID => $merchant2[Merchant\Entity::ID],
+            Balance::UPDATED_AT  => $updated_at,
+        ]);
+
+        return array($entity1, $entity2);
     }
 
     /**
@@ -3710,18 +3831,77 @@ class MerchantTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_10000000000000', $user['id'], 'owner');
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
 
         $this->startTest();
 
         $merchants = DB::connection('test')->table('merchant_users')
-            ->where('user_id', '=', $user['id'])
-            ->pluck('merchant_id', 'product');
+                                           ->where('user_id', '=', $user['id'])
+                                           ->pluck('merchant_id', 'product');
 
         $this->assertEquals(count($merchants), 2);
 
         $this->assertArrayHasKey('banking', $merchants);
+    }
+
+    public function testBulkAssignPricing()
+    {
+        $this->setAdminForInternalAuth();
+
+        $this->fixtures->methods->createDefaultMethods(['merchant_id' => '10000000000011']);
+        $this->fixtures->methods->createDefaultMethods(['merchant_id' => '10000000000012']);
+        $this->fixtures->methods->createDefaultMethods(['merchant_id' => '10000000000013']);
+        $this->fixtures->methods->createDefaultMethods(['merchant_id' => '10000000000014']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testBulkAssignPricingMissingInput()
+    {
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetMerchantPartnerStatus()
+    {
+        $this->ba->directAuth();
+
+        $this->startTest();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['email'] = 'test@razorpay.com';
+
+        $testData['response']['content']['merchant'] = true;
+
+        $this->startTest();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
+
+        $testData['response']['content']['partner'] = true;
+
+        $this->startTest();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['org_id' => Org::SBIN_ORG]);
+
+        $testData['response']['content']['partner'] = false;
+
+        $testData['response']['content']['merchant'] = false;
+
+        $this->startTest();
+    }
+
+    public function testGetMerchantPartnerStatusExtraInput()
+    {
+        $this->ba->directAuth();
+
+        $this->startTest();
     }
 }

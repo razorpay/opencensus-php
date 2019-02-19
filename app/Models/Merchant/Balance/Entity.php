@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Balance;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Base\BuilderEx;
 use RZP\Models\Currency\Currency;
 
 class Entity extends Base\PublicEntity
@@ -30,7 +31,15 @@ class Entity extends Base\PublicEntity
     const BALANCE_ID     = 'balance_id';
 
     protected $fillable = [
-        self::ID
+        self::ID,
+        self::TYPE,
+        self::CURRENCY,
+    ];
+
+    protected $defaults = [
+        self::TYPE     => Type::PRIMARY,
+        self::CURRENCY => null,
+        self::BALANCE  => 0,
     ];
 
     protected $visible = [
@@ -225,28 +234,28 @@ class Entity extends Base\PublicEntity
 
         $credits -= $amount;
 
-        assert($credits >= 0);
+        assertTrue ($credits >= 0);
 
         $this->setAttribute(self::REFUND_CREDITS, $credits);
     }
 
     public function setAmountCredits($credits)
     {
-        assert ($credits >= 0);
+        assertTrue ($credits >= 0);
 
         $this->setAttribute(self::AMOUNT_CREDITS, $credits);
     }
 
     public function setFeeCredits(int $credits)
     {
-        assert ($credits >= 0);
+        assertTrue ($credits >= 0);
 
         $this->setAttribute(self::FEE_CREDITS, $credits);
     }
 
     public function setRefundCredits(int $credits)
     {
-        assert ($credits >= 0);
+        assertTrue ($credits >= 0);
 
         $this->setAttribute(self::REFUND_CREDITS, $credits);
     }
@@ -272,5 +281,16 @@ class Entity extends Base\PublicEntity
                 null,
                 $this->toArray());
         }
+    }
+
+    /**
+     * Applies where clause on MERCHANT_ID and TYPE. For TYPE defaults to PRIMARY.
+     * @param  BuilderEx $query
+     * @param  string    $merchantId
+     */
+    public function scopeMerchantIdAndType(BuilderEx $query, string $merchantId, string $type = Type::PRIMARY)
+    {
+        $query->where($this->dbColumn(Entity::MERCHANT_ID), $merchantId)
+              ->where($this->dbColumn(Entity::TYPE), $type);
     }
 }

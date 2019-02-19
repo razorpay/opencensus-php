@@ -3,6 +3,7 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 
 return [
     'testCreateKey' => [
@@ -320,7 +321,7 @@ return [
                 'entity' => 'merchant',
                 'international' => true,
                 'linked_account_kyc' => true,
-                'category' => 1111,
+                'category' => '1111',
                 'website' => 'http://abc.com',
                 'transaction_report_email'  => [
                     'test@razorpay.com'
@@ -330,13 +331,50 @@ return [
         ]
     ],
 
+    'testEditMerchantWithHighRiskThreshold' => [
+        'request' => [
+            'raw' => json_encode([
+                'international' => '1',
+                'linked_account_kyc' => '1',
+                'website' => 'http://abc.com',
+                'category' => '1111',
+                'transaction_report_email'  => [
+                    'test@razorpay.com'
+                ],
+                'fee_credits_threshold'     => 1000,
+                'risk_threshold' => 101
+            ]),
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+            'server' => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'CONTENT_TYPE'  => 'application/json',
+                'HTTP_X-Dashboard' => 'true',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The risk threshold may not be greater than 100.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testEditMerchantWithNullFeeCreditsThreshold' => [
         'request' => [
             'raw' => json_encode([
                 'international' => '1',
                 'linked_account_kyc' => '1',
                 'website' => 'https://www.example.com',
-                'category' => '1111',
+                'category' => 1111,
                 'transaction_report_email'  => [
                     'test@razorpay.com'
                 ],
@@ -357,7 +395,7 @@ return [
                 'entity' => 'merchant',
                 'international' => true,
                 'linked_account_kyc' => true,
-                'category' => 1111,
+                'category' => '1111',
                 'website' => 'https://www.example.com',
                 'transaction_report_email'  => [
                     'test@razorpay.com'
@@ -667,6 +705,26 @@ return [
             'content' => [
                 'id' => '1X4hRFHFx4UiXt',
                 'email' => 'shake@razorpay.com'
+            ]
+        ]
+    ],
+
+    'testEditMerchantEmailUserExists' => [
+        'request' => [
+            'content' => [
+                'email' => 'newemail@razorpay.com',
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt/email',
+            'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => '1X4hRFHFx4UiXt',
+                'email' => 'newemail@razorpay.com'
             ]
         ]
     ],
@@ -2097,8 +2155,15 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 12,
+                'count' => 13,
                 'items' => [
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'ABPB',
+                        ],
+                    ],
                     [
                         'method' => 'netbanking',
                         'severity' => 'low',
@@ -2196,13 +2261,20 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 13,
+                'count' => 14,
                 'items' => [
                     [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
                             'issuer'    => 'HDFC'
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'ABPB',
                         ],
                     ],
                     [
@@ -2469,6 +2541,7 @@ return [
                     'netbanking' => [
                         [
                             'issuer'      => [
+                                'ABPB',
                                 'BBKM',
                                 'BKDN',
                                 'COSB',
@@ -3610,6 +3683,36 @@ return [
         ],
     ],
 
+    'testQueueEntriesAfterBalanceSync' => [
+        'request'  => [
+            'url'    => '/merchant/sync_es/bulk',
+            'method' => 'post',
+        ],
+        'response' => [
+            'content'     => [
+                'records_processed' => 2,
+                'interval'          => 15,
+
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testESQueryAfterSync' => [
+        'request'  => [
+            'url'    => '/merchant/sync_es/bulk',
+            'method' => 'post',
+        ],
+        'response' => [
+            'content'     => [
+                'records_processed' => 2,
+                'interval'          => 15,
+
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     // ----------------------------------------------------------------------
     // Expectations for ES
 
@@ -3727,6 +3830,113 @@ return [
         'response' => [
             'content' => [
             ],
+        ],
+    ],
+
+    'testBulkAssignPricing' => [
+        'request'  => [
+            'url'     => '/merchants/pricing/bulk',
+            'method'  => 'post',
+            'content' => [
+                'pricing_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'merchant_ids'    => [
+                    '10000000000000',
+                    '10000000000018',
+                    '10000000000017',
+                    '10000000000016',
+                    '10000000000015',
+                    '10000000000014',
+                    '10000000000013',
+                    '10000000000012',
+                    '10000000000011'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total_count'  => 9,
+                'failed_count' => 4,
+                'failed_ids'   => [
+                    '10000000000018',
+                    '10000000000017',
+                    '10000000000016',
+                    '10000000000015'
+                ],
+            ],
+        ],
+    ],
+
+    'testBulkAssignPricingMissingInput' => [
+        'request'  => [
+            'url'     => '/merchants/pricing/bulk',
+            'method'  => 'post',
+            'content' => [
+                'merchant_ids'    => [
+                    '10000000000000',
+                    '10000000000018',
+                    '10000000000017',
+                    '10000000000016',
+                    '10000000000015',
+                    '10000000000014',
+                    '10000000000013',
+                    '10000000000012',
+                    '10000000000011'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The pricing plan id field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testGetMerchantPartnerStatus' => [
+        'request'  => [
+            'url'     => '/merchant/partner_status',
+            'method'  => 'get',
+            'content' => [
+                'email' => 'testdum@razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant' => false,
+                'partner'  => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetMerchantPartnerStatusExtraInput' => [
+        'request'  => [
+            'url'     => '/merchant/partner_status',
+            'method'  => 'get',
+            'content' => [
+                'email' => 'testdum@razorpay.com',
+                'name' => 'testdum',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'name is/are not required and should not be sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\ExtraFieldsException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
         ],
     ],
 ];

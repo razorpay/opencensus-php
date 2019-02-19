@@ -11,14 +11,12 @@ class Validator extends Base\Validator
 {
     protected $onboardAllowedGateways = [
         Payment\Gateway::HITACHI,
-        Payment\Gateway::UPI_HULK,
+        Payment\Gateway::UPI_HULK
     ];
 
     protected static $merchantOnboardRules = [
         Terminal\Entity::GATEWAY                        => 'required|string|custom',
         Service::GATEWAY_INPUT                          => 'required|array',
-        Service::TERMINAL                               => 'required|array',
-        Service::TERMINAL.'.'.Service::PG_MERCHANT_ID   => 'required|alpha_num|exists:merchants,id',
     ];
 
     protected function validateGateway($attribute, $value)
@@ -26,7 +24,7 @@ class Validator extends Base\Validator
         if (in_array($value, $this->onboardAllowedGateways, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Onboarding not allowed on gateway',
+                'Invalid Gateway',
                 $attribute,
                 [
                     $attribute => $value,

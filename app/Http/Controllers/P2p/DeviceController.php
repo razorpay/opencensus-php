@@ -29,7 +29,7 @@ class DeviceController extends Controller
 
     public function refreshClToken()
     {
-        $input['id'] = 'device_charpanchkhoye';
+        $input = $this->request()->all();
 
         $response = $this->service->refreshClToken($input);
 
@@ -38,7 +38,7 @@ class DeviceController extends Controller
 
     public function deregister()
     {
-        $input['id'] = 'device_charpanchkhoye';
+        $input = $this->request()->all();
 
         $response = $this->service->deregister($input);
 

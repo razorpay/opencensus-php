@@ -39,11 +39,7 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        $data = $this->getBaseRequestData($input, Constants::MODE_OF_TRANSACTION_PAYMENT);
-
-        $data[RequestFields::DESCRIPTION] = $input['merchant']->getFilteredDba();
-
-        $data[RequestFields::RETURN_URL] = $input['callbackUrl'];
+        $data = $this->getAuthRequestData($input);
 
         $data[RequestFields::CHECKSUM] = $this->generateHash($data);
 
@@ -82,18 +78,14 @@ class Gateway extends Base\Gateway
             $content[ResponseFields::AMOUNT]
         );
 
-        $content[RequestFields::RETURN_URL] = $this->getReturnUrlForCallback();
+        $checksumInput = $this->getArrayForChecksum($content);
 
-        $this->checkForErrors($content);
-
-        $content = $this->getArrayForChecksum($content);
-
-        $this->verifySecureHash($content);
+        $this->verifySecureHash($checksumInput);
 
         $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
-        $this->checkCallbackStatus($content[ResponseFields::AUTH_STATUS]);
+        $this->checkCallbackStatus($content);
 
         $this->saveCallbackResponse($content, $gatewayEntity);
 
@@ -111,17 +103,18 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    protected function getBaseRequestData($input, $paymentMode)
+    protected function getAuthRequestData($input)
     {
-        $data = [
+        return [
             RequestFields::MERCHANT_ID                  => $this->getMerchantId(),
             RequestFields::PAYMENT_ID                   => $input['payment']['id'],
             RequestFields::AMOUNT                       => $this->formatAmount($input['payment']['amount']),
+            RequestFields::RETURN_URL                   => $input['callbackUrl'],
             RequestFields::ACCOUNT_NUMBER               => Constants::NOT_APPLICABLE,
-            RequestFields::MODE                         => $paymentMode,
+            RequestFields::MODE                         => Constants::MODE_OF_TRANSACTION_PAYMENT,
+            // TODO : should we send this ?
+            RequestFields::DESCRIPTION                  => $input['merchant']->getFilteredDba(),
         ];
-
-        return $data;
     }
 
     protected function getMerchantId()
@@ -141,18 +134,13 @@ class Gateway extends Base\Gateway
         return $this->app['request']->url();
     }
 
-    public function generateHash($content)
-    {
-        return $this->getHashOfArray($content);
-    }
-
     protected function getArrayForChecksum($content)
     {
         $data = [
             ResponseFields::MERCHANT_ID     => $content[ResponseFields::MERCHANT_ID],
             ResponseFields::PAYMENT_ID      => $content[ResponseFields::PAYMENT_ID],
             ResponseFields::AMOUNT          => $content[ResponseFields::AMOUNT],
-            RequestFields::RETURN_URL       => $content[RequestFields::RETURN_URL],
+            RequestFields::RETURN_URL       => $this->getReturnUrlForCallback(),
             ResponseFields::ACCOUNT_NUMBER  => $content[ResponseFields::ACCOUNT_NUMBER],
             ResponseFields::MODE            => $content[ResponseFields::MODE],
             ResponseFields::DESCRIPTION     => $content[ResponseFields::DESCRIPTION],
@@ -185,11 +173,16 @@ class Gateway extends Base\Gateway
 
     protected function checkForErrors($content)
     {
-        if ($content[ResponseFields::ERROR_MESSAGE] !== Constants::UNDEFINED and
-            $content[ResponseFields::ERROR_CODE] !== Constants::UNDEFINED)
+        if ((isset($content[ResponseFields::ERROR_MESSAGE]) === true) and
+            (isset($content[ResponseFields::ERROR_MESSAGE]) === true) and
+            ($content[ResponseFields::ERROR_MESSAGE] !== Constants::UNDEFINED) and
+            ($content[ResponseFields::ERROR_CODE] !== Constants::UNDEFINED))
         {
+            //TODO : Ask for error code list
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE);
+                ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+                $content[ResponseFields::ERROR_CODE],
+                $content[ResponseFields::ERROR_MESSAGE]);
         }
     }
 
@@ -217,12 +210,16 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($gatewayEntity);
     }
 
-    protected function checkCallbackStatus(string $status)
+    protected function checkCallbackStatus($content)
     {
+        $status = $content[ResponseFields::AUTH_STATUS];
+
         if(in_array($status, Status::VALID_STATUS_LIST))
         {
             if ($status === Status::NO)
             {
+                $this->checkForErrors($content);
+
                 throw new Exception\GatewayErrorException(
                     ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
             }
@@ -260,7 +257,7 @@ class Gateway extends Base\Gateway
 
         $verify->verifyResponseContent = $this->parseVerifyResponse($response->body);
 
-        $this->validateVerifyResponse($verify->verifyResponseContent);
+        //$this->validateVerifyResponse($verify->verifyResponseContent);
     }
 
     protected function getVerifyRequest(Verify $verify)
@@ -269,11 +266,14 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $verify->payment;
 
-        $bankRefNumber = $gatewayPayment[Base\Entity::BANK_PAYMENT_ID];
-
-        $data = $this->getBaseRequestData($input, Constants::MODE_OF_TRANSACTION_VERIFY);
-
-        $data[RequestFields::VERIFY_BANK_PAYMENT_ID] = $bankRefNumber;
+        $data = [
+            RequestFields::MERCHANT_ID                  => $this->getMerchantId(),
+            RequestFields::PAYMENT_ID                   => $input['payment']['id'],
+            RequestFields::AMOUNT                       => $this->formatAmount($input['payment']['amount']),
+            RequestFields::ACCOUNT_NUMBER               => Constants::NOT_APPLICABLE,
+            RequestFields::MODE                         => Constants::MODE_OF_TRANSACTION_VERIFY,
+            RequestFields::VERIFY_BANK_PAYMENT_ID       => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID] ?? '',
+        ];
 
         $data[RequestFields::CHECKSUM] = $this->generateHash($data);
 

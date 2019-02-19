@@ -62,6 +62,8 @@ class Entity extends Base\PublicEntity
     const VALIDATED_FILE_PREFIX     = 'batch/validated/';
     const CONFIG                    = 'config';
     const APPLICATION_ID            = 'application_id';
+    // For payout type batch we verify otp first before proceeding with batch creation.
+    const OTP                       = 'otp';
 
     /**
      * Constants used for batch stats api
@@ -184,6 +186,9 @@ class Entity extends Base\PublicEntity
         $this->modify($input);
 
         $this->validateInputByType($input);
+
+        // Todo: https://github.com/razorpay/spine/issues/25
+        $this->getValidator()->validateOtp($input);
 
         $this->generate($input);
 
@@ -383,6 +388,11 @@ class Entity extends Base\PublicEntity
     public function isReconciliationType(): bool
     {
         return ($this->getType() === Type::RECONCILIATION);
+    }
+
+    public function isPayoutType(): bool
+    {
+        return ($this->getType() === Type::PAYOUT);
     }
 
     /**

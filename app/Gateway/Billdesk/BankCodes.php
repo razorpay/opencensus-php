@@ -8,6 +8,7 @@ use RZP\Models\Payment\Processor\Netbanking;
 class BankCodes
 {
     public static $bankCodeMap = [
+        IFSC::ABPB => 'ABP',
         IFSC::ALLA => 'ALB',                    // Allahabad Bank
         IFSC::BKID => 'BOI',                    // Bank of India
         IFSC::CIUB => 'CUB',                    // City Union Bank

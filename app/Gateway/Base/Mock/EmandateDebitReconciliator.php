@@ -15,13 +15,14 @@ class EmandateDebitReconciliator extends Reconciliator
      */
     protected function getEntitiesToReconcile()
     {
-        $createdAtStart = Carbon::yesterday(Timezone::IST)->getTimestamp();
+        // Payments are from 9 to 9 cycle
+        $createdAtStart = Carbon::yesterday(Timezone::IST)->addHours(9)->getTimestamp();
 
-        $createdAtEnd = Carbon::today(Timezone::IST)->getTimestamp();
+        $createdAtEnd = Carbon::today(Timezone::IST)->addHours(9)->getTimestamp() - 1;
 
         $entities = $this->repo
                          ->payment
-                         ->fetchPaymentsCreatedBetween($this->gateway, $createdAtStart, $createdAtEnd);
+                         ->fetchCreatedPaymentsBetween($this->gateway, $createdAtStart, $createdAtEnd);
 
         return $entities;
     }

@@ -16,29 +16,23 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID     => 'sometimes|alpha_num|size:14',
         self::WITH_TRASHED      => 'sometimes|in:0,1',
+        Entity::ORG_ID          => 'sometimes|alpha_num',
+        Entity::TYPE            => 'sometimes|string'
     ];
 
     public function getDailySettlementScheduleByDelay($delay)
     {
         return $this->newQuery()
+                    ->where(Entity::TYPE,   '=', Type::SETTLEMENT)
                     ->where(Entity::PERIOD, '=', Period::DAILY)
-                    ->where(Entity::MERCHANT_ID, '=', Merchant::SHARED_ACCOUNT)
-                    ->where(Entity::DELAY, '=', $delay)
+                    ->where(Entity::DELAY,  '=', $delay)
                     ->first();
     }
 
     public function fetchSettlementSchedules()
     {
-        // TODO: It looks ugly because it must. There is
-        // no type in schedules, but we name them all pretty
-        // consistently. Will think of a cleaner solution later.
-
         return $this->newQuery()
-                    ->whereRaw(
-                        Entity::NAME . " LIKE 'Hourly%' OR " .
-                        Entity::NAME . " LIKE 'Basic%' OR " .
-                        Entity::NAME . " LIKE '%PM' OR " .
-                        Entity::NAME . " LIKE '%AM'")
+                    ->where(Entity::TYPE, '=', Type::SETTLEMENT)
                     ->orderBy(Entity::NAME)
                     ->get();
     }
@@ -51,13 +45,13 @@ class Repository extends Base\Repository
         }
     }
 
-    public function getScheduleByPeriodIntervalAndAnchor(string $period, int $interval, int $anchor)
+    public function getScheduleByPeriodIntervalAnchorAndType(string $period, int $interval, $anchor, string $type)
     {
          return $this->newQuery()
                      ->where(Entity::PERIOD, '=', $period)
-                     ->merchantId(Merchant::SHARED_ACCOUNT)
                      ->where(Entity::INTERVAL, '=', $interval)
                      ->where(Entity::ANCHOR, '=', $anchor)
+                     ->where(Entity::TYPE, '=', $type)
                      ->first();
     }
 }

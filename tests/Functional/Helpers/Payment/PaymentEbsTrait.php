@@ -25,7 +25,7 @@ trait PaymentEbsTrait
         }
         else
         {
-            assert (false, 'Mock is not enabled');
+            assertTrue (false, 'Mock is not enabled');
         }
 
         return $this->submitPaymentCallbackRequest($request);

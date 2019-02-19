@@ -243,6 +243,14 @@ return [
         ],
     ],
 
+    E::PAYMENT => [
+        Type::PRIVATE_AUTH    => [
+            [
+                'email' => 'test@razorpay.com'
+            ],
+        ],
+    ],
+
     E::PAYOUT => [
         Type::PRIVILEGE_AUTH => [
             [

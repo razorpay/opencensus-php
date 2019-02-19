@@ -273,7 +273,9 @@ class Gateway extends Base\Gateway
     {
         $name = $input[E::CARD][Card\Entity::NAME];
 
-        return preg_replace('/[^a-zA-Z ]/', '', $name);
+        $name = preg_replace('/[^a-zA-Z ]/', '', $name);
+
+        return trim(preg_replace('/\s+/', ' ',$name));
     }
 
     /**
@@ -592,19 +594,18 @@ class Gateway extends Base\Gateway
 
         $scroogeResponse = new Base\ScroogeResponse();
 
+        $scroogeResponse->setGatewayVerifyResponse($verifyResponse)
+                        ->setGatewayKeys($this->getGatewayData($verifyResponse));
+
         if ((empty($verifyResponse[Fields::RESULT]) === false) and
             ($verifyResponse[Fields::RESULT] === Status::SUCCESS))
         {
             return $scroogeResponse->setSuccess(true)
-                                   ->setGatewayResponse($verifyResponse)
-                                   ->setGatewayKeys($this->getGatewayData($verifyResponse))
                                    ->toArray();
         }
 
         return $scroogeResponse->setSuccess(false)
                                ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
-                               ->setGatewayResponse($verifyResponse)
-                               ->setGatewayKeys($this->getGatewayData($verifyResponse))
                                ->toArray();
     }
 
@@ -1031,7 +1032,7 @@ class Gateway extends Base\Gateway
      */
     protected function getTestSecret()
     {
-        assert ($this->mode === Mode::TEST);
+        assertTrue ($this->mode === Mode::TEST);
 
         $gatewayAquirer = $this->getGatewayAcquirer($this->input);
 
@@ -1111,7 +1112,7 @@ class Gateway extends Base\Gateway
     {
         if (empty($refundFields) === false)
         {
-            return[
+            return [
                 Fields::RESULT          => $refundFields[Fields::RESULT] ?? null,
                 Fields::TRAN_ID         => $refundFields[Fields::TRAN_ID] ?? null,
                 Fields::TRACK_ID        => $refundFields[Fields::TRACK_ID] ?? null,

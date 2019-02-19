@@ -24,7 +24,9 @@ class Category
     const INVITATION       = 'invitation';
     const SETTLEMENT       = 'settlement';
     const GATEWAY_RULE     = 'gateway_rule';
+    const GATEWAY_DOWNTIME = 'gateway_downtime';
     const WALLET_CONFIG    = 'wallet_config';
     const MERCHANT_DETAIL  = 'merchant_detail';
     const MERCHANT_REQUEST = 'merchant_request';
+    const RAZORX           = 'razorx';
 }

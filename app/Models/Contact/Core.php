@@ -21,6 +21,8 @@ class Core extends Base\Core
 
         $contact->merchant()->associate($merchant);
 
+        $this->setTypeIfApplicable($contact, $input);
+
         $this->repo->saveOrFail($contact);
 
         return $contact;
@@ -37,6 +39,8 @@ class Core extends Base\Core
 
         $contact->edit($input);
 
+        $this->setTypeIfApplicable($contact, $input);
+
         $this->repo->saveOrFail($contact);
 
         return $contact;
@@ -47,5 +51,17 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::CONTACT_DELETE_REQUEST, ['id' => $contact->getId()]);
 
         return $this->repo->deleteOrFail($contact);
+    }
+
+    protected function setTypeIfApplicable(Entity $contact, array $input)
+    {
+        $type = $input[Entity::TYPE] ?? null;
+
+        if ($type === null)
+        {
+            return;
+        }
+
+        (new Type)->setTypeForContact($contact, $type);
     }
 }

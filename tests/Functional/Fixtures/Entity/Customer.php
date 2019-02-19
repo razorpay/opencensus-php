@@ -1,11 +1,20 @@
 <?php
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
+use RZP\Models\Customer\Token;
 
 class Customer extends Base
 {
+    protected $expiredAtTime;
+
     public function setUp()
     {
+        $this->expiredAtTime = Carbon::now(Timezone::IST)
+                                ->addYears(Token\Entity::DEFAULT_EXPIRY_YEARS)
+                                ->getTimestamp();
+
         $this->fixtures->create('customer:customers');
         $this->fixtures->create('customer:app_tokens');
         $this->fixtures->create('customer:tokens');
@@ -108,6 +117,20 @@ class Customer extends Base
             'used_at'       => 10,
             'created_at'    => 1500000004,
         ],
+        [
+            'id'                => '100000emandate',
+            'token'             => '10001emantoken',
+            'customer_id'       => '100000customer',
+            'method'            => 'emandate',
+            'bank'              => 'HDFC',
+            'beneficiary_name'  => 'BeneficiaryName',
+            'account_number'    => '10000',
+            'IFSC'              => 'ifsc',
+            'account_type'      => 'account_type',
+            'used_at'           => 10,
+            'created_at'        => 1500000005,
+            'max_amount'        => 105,
+        ],
     );
 
     protected $bankAccounts = array(
@@ -149,6 +172,11 @@ class Customer extends Base
 
         foreach ($this->customerTokens as $attributes)
         {
+            if (($attributes['method'] === 'card') or
+                ($attributes['method'] === 'emandate'))
+            {
+                $attributes['expired_at'] = $this->expiredAtTime;
+            }
             $tokens[] = $this->fixtures->create('token', $attributes);
         }
 

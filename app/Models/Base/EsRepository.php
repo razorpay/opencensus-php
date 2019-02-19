@@ -5,6 +5,7 @@ namespace RZP\Models\Base;
 use App;
 
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\ServerErrorException;
@@ -98,7 +99,7 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $app = App::getFacadeRoot();
 
-        $this->mode = $app['rzp.mode'];
+        $this->setMode($app);
 
         $this->entity = $entity;
 
@@ -309,6 +310,13 @@ class EsRepository extends \Razorpay\Spine\Repository
     {
         $params = [];
 
+        $documents = array_values(array_filter($documents));
+
+        if (empty($documents) === true)
+        {
+            return [];
+        }
+
         foreach($documents as $document)
         {
             $params['body'][] = [
@@ -380,5 +388,13 @@ class EsRepository extends \Razorpay\Spine\Repository
                 ErrorCode::SERVER_ERROR_ES_OPERATION_ERRORED,
                 $itemsPerError->all());
         }
+    }
+
+    protected function setMode(\RZP\Foundation\Application $app)
+    {
+        // Only for unit tests use default mode as test, else always expect rzp.mode to be in existence.
+        $this->mode = (($app->runningUnitTests() === true) and (isset($app['rzp.mode']) === false)) ?
+            Mode::TEST :
+            $app['rzp.mode'];
     }
 }

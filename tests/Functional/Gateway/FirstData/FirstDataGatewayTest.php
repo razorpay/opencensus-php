@@ -9,6 +9,8 @@ use RZP\Constants\Timezone;
 use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use \RZP\Error\ErrorCode;
+use RZP\Gateway\FirstData\SoapWrapper;
 
 class FirstDataGatewayTest extends TestCase
 {
@@ -26,6 +28,10 @@ class FirstDataGatewayTest extends TestCase
      */
     protected $payment;
 
+    /**
+     * This file covers testing on the old flow that is supported by firstdata.
+     * Currently rupay cards will go through old flow.
+     */
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/FirstDataGatewayTestData.php';
@@ -39,6 +45,8 @@ class FirstDataGatewayTest extends TestCase
         $this->gateway = 'first_data';
 
         $this->payment = $this->getDefaultPaymentArray();
+
+        $this->payment['card']['number'] = '6522622211727786';
     }
 
     public function testRecurringPayment()
@@ -46,7 +54,7 @@ class FirstDataGatewayTest extends TestCase
         list($terminal1, $terminal2) = $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
 
         $this->fixtures->merchant->addFeatures('charge_at_will');
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $payment = $this->getDefaultRecurringPaymentArray();
 
@@ -64,16 +72,6 @@ class FirstDataGatewayTest extends TestCase
         $this->assertEquals($paymentEntity['token_id'], $token['id']);
         $this->assertEquals(true, $token['recurring']);
         $this->assertEquals('FDRcrgTrmnl3DS', $token['terminal_id']);
-
-        $this->mockServerRequestFunction(function ($body) use ($terminal1)
-        {
-            $hostedDataStoreId = $body['Transaction']['Payment']['HostedDataStoreID'];
-
-            $this->assertEquals(
-                $terminal1->getGatewayMerchantId(),
-                $hostedDataStoreId,
-                'wrong MID sent for recurring payment request');
-        });
 
         // Set payment for second recurring payment
         unset($payment['card']);
@@ -110,6 +108,8 @@ class FirstDataGatewayTest extends TestCase
 
         $firstDataEntity = $this->getLastEntity('first_data', true);
         $this->assertEquals($paymentId, $firstDataEntity['payment_id']);
+        $this->assertNotNull($firstDataEntity['approval_code']);
+        $this->assertNotNull($firstDataEntity['status']);
 
         // Another payment to test auto-refund
         $response = $this->doS2sRecurringPayment($payment);
@@ -133,6 +133,56 @@ class FirstDataGatewayTest extends TestCase
         $refund = $this->getLastEntity('refund', true);
 
         $this->assertEquals('rfnd_' . $gatewayPayment['refund_id'], $refund['id']);
+    }
+
+    public function testFailedSecondRecurringPayment()
+    {
+        list($terminal1, $terminal2) = $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
+
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+        $this->mockCardVault();
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $response = $this->doAuthPayment($payment);
+        $paymentId = $response['razorpay_payment_id'];
+        $this->capturePayment($paymentId, $payment['amount']);
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertNotNull($paymentEntity['token_id']);
+        $this->assertEquals(true, $paymentEntity['recurring']);
+        $this->assertEquals('FDRcrgTrmnl3DS', $paymentEntity['terminal_id']);
+
+        $token = $this->getLastEntity('token', true);
+        $this->assertEquals($paymentEntity['token_id'], $token['id']);
+        $this->assertEquals(true, $token['recurring']);
+        $this->assertEquals('FDRcrgTrmnl3DS', $token['terminal_id']);
+
+        $this->mockServerContentFunction(function (& $content)
+        {
+            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT);
+        });
+
+        // Set payment for second recurring payment
+        unset($payment['card']);
+        $payment['token'] = $paymentEntity['token_id'];
+
+        // Switch to private auth for second recurring payment
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function () use ($payment)
+        {
+            $this->doS2sRecurringPayment($payment);
+        });
+
+        $lastPayment = $this->getLastEntity('Payment', true);
+        $this->assertEquals($lastPayment['status'], 'failed');
+        $this->assertNotNull($lastPayment['amount']);
+
+        $gatewayEntity = $this->getLastEntity('first_data', true);
+        $this->assertNull($gatewayEntity['transaction_result']);
     }
 
     public function testPaymentAuthAndCapture()
@@ -161,7 +211,7 @@ class FirstDataGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund['gateway'], '10000000000000') === true)
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund['gateway']) === true)
         {
             $this->assertEquals('created', $refund['status']);
         }
@@ -201,7 +251,7 @@ class FirstDataGatewayTest extends TestCase
 
         $this->assertEquals($actualRefund['id'], 'rfnd_'.$firstData['refund_id']);
 
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund['gateway'], '10000000000000') === false)
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund['gateway']) === false)
         {
             $this->assertEquals('CAPTURED', $firstData['status']);
         }
@@ -217,7 +267,7 @@ class FirstDataGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund['gateway'], '10000000000000') === true)
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund['gateway']) === true)
         {
             $this->assertEquals('created', $refund['status']);
         }
@@ -265,7 +315,7 @@ class FirstDataGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund['gateway'], '10000000000000') === true)
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($refund['gateway']) === true)
         {
             $this->assertEquals('created', $refund['status']);
         }
@@ -425,7 +475,7 @@ class FirstDataGatewayTest extends TestCase
 
         $this->runRequestResponseFlow($data, function ()
         {
-            $this->doAuthPayment();
+            $this->doAuthPayment($this->payment);
         });
     }
 
@@ -489,6 +539,8 @@ class FirstDataGatewayTest extends TestCase
 
     public function testPaymentReverse()
     {
+        $this->markTestSkipped('reverse has been disabled due to issue on first data');
+
         $features = $this->fixtures->merchant->addFeatures(['reverse']);
 
         $payment = $this->doAuthPayment($this->payment);
@@ -572,7 +624,7 @@ class FirstDataGatewayTest extends TestCase
 
         $gatewayPayment = $this->getLastEntity('first_data', true);
 
-        $this->assertEquals("N:mocked failure approval code", $gatewayPayment['approval_code']);
+        $this->assertEquals('N:mocked failure approval code', $gatewayPayment['approval_code']);
     }
 
     public function testFailedAuthUnknownError()
@@ -601,7 +653,11 @@ class FirstDataGatewayTest extends TestCase
 
     public function testFailedCapture()
     {
-        $this->doAuthPayment($this->payment);
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '4160210902353047';
+
+        $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -655,7 +711,11 @@ class FirstDataGatewayTest extends TestCase
 
     public function testCaptureTimeout()
     {
-        $this->doAuthPayment($this->payment);
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '4160210902353047';
+
+        $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -827,7 +887,7 @@ class FirstDataGatewayTest extends TestCase
             },
             Exception\GatewayErrorException::class,
             // Error code for N:03 is mapped to Invalid Merchant
-            "The payment has been rejected by the gateway." .
+            'The payment has been rejected by the gateway.' .
                 "\nGateway Error Code: N:03\nGateway Error Desc: Invalid merchant");
     }
 
@@ -844,7 +904,7 @@ class FirstDataGatewayTest extends TestCase
             },
             Exception\GatewayErrorException::class,
             // Any invalid code is mapped to General Error
-            "Payment processing failed due to error at bank or wallet gateway" .
+            'Payment processing failed due to error at bank or wallet gateway' .
             "\nGateway Error Code: Invalid code\nGateway Error Desc: General Error");
     }
 
@@ -861,7 +921,7 @@ class FirstDataGatewayTest extends TestCase
             },
             Exception\GatewayErrorException::class,
             // Any invalid code is mapped to General Error
-            "Payment was not completed on time." .
+            'Payment was not completed on time.' .
             "\nGateway Error Code: ?:waiting RUPAY\nGateway Error Desc: Waiting for Rupay");
     }
 }

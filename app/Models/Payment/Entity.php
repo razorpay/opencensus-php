@@ -32,6 +32,7 @@ use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Partner\Commission\CommissionSourceInterface;
 
 /**
  * @property Subscription\Entity    $subscription
@@ -43,7 +44,7 @@ use RZP\Models\Payment\Processor\Netbanking;
  * @property PaymentLink\Entity     $paymentLink
  * @property Transaction\Entity     $transaction
  */
-class Entity extends Base\PublicEntity
+class Entity extends Base\PublicEntity implements CommissionSourceInterface
 {
     use NotesTrait;
 
@@ -105,7 +106,7 @@ class Entity extends Base\PublicEntity
     const REFERENCE1            = 'reference1';
     const REFERENCE2            = 'reference2';
     const REFERENCE3            = 'reference3';
-    const REFERENCE4            = 'reference4';
+    const CPS_ROUTE             = 'cps_route';
     const REFERENCE5            = 'reference5';
     const REFERENCE6            = 'reference6';
     const REFERENCE9            = 'reference9';
@@ -219,6 +220,7 @@ class Entity extends Base\PublicEntity
         self::APPROVAL_CODE,
         self::REFERENCE1,
         self::REFERENCE2,
+        self::CPS_ROUTE,
         self::DISPUTED,
         self::AUTH_TYPE,
         self::RECURRING_TYPE,
@@ -270,6 +272,7 @@ class Entity extends Base\PublicEntity
         self::BATCH_ID,
         self::REFERENCE1,
         self::REFERENCE2,
+        self::CPS_ROUTE,
         self::ACQUIRER_DATA,
         self::TRANSFER_ID,
         self::PAYMENT_LINK_ID,
@@ -355,6 +358,22 @@ class Entity extends Base\PublicEntity
         self::METHOD,
         self::AMOUNT,
         self::CREATED_AT,
+    ];
+
+    protected $adminRestricted = [
+        self::ID,
+        self::ACQUIRER_DATA,
+        self::AMOUNT,
+        self::CURRENCY,
+        self::STATUS,
+        self::ORDER_ID,
+        self::AMOUNT_REFUNDED,
+        self::REFUND_AT,
+        self::CREATED_AT,
+        self::AUTHORIZED_AT,
+        self::UPDATED_AT,
+        self::ERROR_DESCRIPTION,
+        Terminal\Entity::GATEWAY_TERMINAL_ID,
     ];
 
     protected $publicCustomer = [
@@ -443,7 +462,8 @@ class Entity extends Base\PublicEntity
         self::RECURRING_TYPE       => null,
         self::AUTH_TYPE            => null,
         self::ACKNOWLEDGED_AT      => null,
-        self::REFUND_AT            => null
+        self::REFUND_AT            => null,
+        self::CPS_ROUTE            => false,
     ];
 
     protected $amounts = [
@@ -480,6 +500,7 @@ class Entity extends Base\PublicEntity
         self::CONVERT_CURRENCY     => 'bool',
         self::DISPUTED             => 'bool',
         self::VERIFY_BUCKET        => 'int',
+        self::CPS_ROUTE            => 'bool',
     ];
 
     // window in secs, used to fetch payments with same checkout id
@@ -1045,6 +1066,11 @@ class Entity extends Base\PublicEntity
     public function setReference2(string $reference2)
     {
         $this->setAttribute(self::REFERENCE2, $reference2);
+    }
+
+    public function setCpsRoute()
+    {
+        $this->setAttribute(self::CPS_ROUTE, 1);
     }
 
     public function setMethod(string $method)
@@ -1905,7 +1931,7 @@ class Entity extends Base\PublicEntity
 
         if ($settledBy === null)
         {
-            $settledBy = "Razorpay";
+            $settledBy = 'Razorpay';
         }
 
         return $settledBy;
@@ -1988,7 +2014,7 @@ class Entity extends Base\PublicEntity
             case Method::NETBANKING:
                 return [$method, $this->getBankName()];
             case Method::WALLET:
-                return [$method, ucfirst($this->getWallet())];
+                return [$method, Processor\Wallet::getName($this->getWallet())];
             case Method::UPI:
                 return [$method, $this->getVpa()];
             case Method::AEPS:
@@ -2365,6 +2391,25 @@ class Entity extends Base\PublicEntity
         return $data;
     }
 
+    public function toArrayAdminRestricted(array $attributes)
+    {
+        $attributes = parent::toArrayAdminRestricted($attributes);
+
+        /** @var Terminal\Entity $terminal */
+        $terminal = $this->terminal()->first();
+
+        if ($terminal === null)
+        {
+            return $attributes;
+        }
+
+        $gatewayTerminalId = $terminal->getGatewayTerminalId();
+
+        $attributes[Terminal\Entity::GATEWAY_TERMINAL_ID] = $gatewayTerminalId;
+
+        return $attributes;
+    }
+
     public function toArrayDashboard()
     {
         $data = $this->toArray();
@@ -2574,6 +2619,14 @@ class Entity extends Base\PublicEntity
     public function discount()
     {
         return $this->hasOne('RZP\Models\Discount\Entity');
+    }
+
+    /**
+     * Points to the pivot table entity `entityOrigin` for the payment
+     */
+    public function entityOrigin()
+    {
+        return $this->morphOne(\RZP\Models\EntityOrigin\Entity::class, 'entity');
     }
 
     public function offers()
@@ -2938,6 +2991,16 @@ class Entity extends Base\PublicEntity
         return 'payment:fallback.' . $this->getId() . '.card_number';
     }
 
+    public function getCacheRedirectInputKey(): string
+    {
+        return 'payment:redirect.' . $this->getId() . '.input';
+    }
+
+    public static function getRedirectToAuthorizeTrackIdKey(string $trackId): string
+    {
+        return 'payment:redirect.authorize.' . $trackId . '.encrypt';
+    }
+
     public function getTransactionType()
     {
         if ($this->isRecurring() === true)
@@ -2957,8 +3020,7 @@ class Entity extends Base\PublicEntity
 
     public function isDirectSettlement()
     {
-        if (($this->isNetbanking() === true) and
-            ($this->hasTerminal() === true) and
+        if (($this->hasTerminal() === true) and
             ($this->terminal->isDirectSettlement() === true))
         {
             return true;

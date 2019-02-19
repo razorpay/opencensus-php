@@ -9,6 +9,7 @@ use RZP\Models\Emi;
 use RZP\Models\Emi\Banks\Base;
 use RZP\Models\FileStore;
 use RZP\Models\Payment;
+use RZP\Services\Beam\Constants as BeamConstants;
 
 class EmiFile extends Base\EmiFile
 {
@@ -180,6 +181,9 @@ class EmiFile extends Base\EmiFile
 
         if ($this->transferMode === Base\EmiMode::SFTP)
         {
+            // Push this file to Beam
+            $this->pushEmiFileToBeam(BeamConstants::ICIC_EMI_FILE_JOB_NAME);
+
             $fileData = [];
         }
 

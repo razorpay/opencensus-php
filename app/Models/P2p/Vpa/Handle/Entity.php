@@ -2,23 +2,35 @@
 
 namespace RZP\Models\P2p\Vpa\Handle;
 
+use RZP\Base\BuilderEx;
 use RZP\Models\P2p\Base;
 use RZP\Models\Merchant;
 
 class Entity extends Base\Entity
 {
-    const HANDLE       = 'handle';
+    use Base\Traits\HasBank;
+    use Base\Traits\HasMerchant;
+
+    const CODE         = 'code';
     const MERCHANT_ID  = 'merchant_id';
+    const BANK         = 'bank';
     const ACQUIRER     = 'acquirer';
     const ACTIVE       = 'active';
 
+    /****************** Input Keys ***************/
+    const BANK_NAME    = 'bank_name';
+
     /************** Entity Properties ************/
 
-    public $incrementing          = true;
     protected $entity             = 'p2p_handle';
-    protected $primaryKey         = 'handle';
+    protected $primaryKey         = self::CODE;
     protected $generateIdOnCreate = false;
     protected static $generators  = [];
+
+    protected $publicSetters      = [
+        Entity::BANK_NAME,
+        Entity::ENTITY,
+    ];
 
     protected $dates = [
         Entity::CREATED_AT,
@@ -26,52 +38,63 @@ class Entity extends Base\Entity
     ];
 
     protected $fillable = [
-        Entity::HANDLE,
-        Entity::MERCHANT_ID,
         Entity::ACQUIRER,
         Entity::ACTIVE,
     ];
 
     protected $visible = [
-        Entity::HANDLE,
+        Entity::CODE,
         Entity::MERCHANT_ID,
+        Entity::BANK,
         Entity::ACQUIRER,
         Entity::ACTIVE,
         Entity::CREATED_AT,
     ];
 
     protected $public = [
-        Entity::HANDLE,
-        Entity::MERCHANT_ID,
-        Entity::ACQUIRER,
-        Entity::ACTIVE,
-        Entity::CREATED_AT,
+        Entity::ENTITY,
+        Entity::CODE,
+        Entity::BANK,
+        Entity::BANK_NAME,
     ];
 
     protected $defaults = [
-        Entity::HANDLE       => null,
-        Entity::MERCHANT_ID  => null,
-        Entity::ACQUIRER     => null,
-        Entity::ACTIVE       => null,
+        Entity::ACTIVE       => true,
     ];
 
     protected $casts = [
-        Entity::HANDLE       => 'string',
+        Entity::CODE         => 'string',
         Entity::MERCHANT_ID  => 'string',
+        Entity::BANK         => 'string',
         Entity::ACQUIRER     => 'string',
         Entity::ACTIVE       => 'bool',
         Entity::CREATED_AT   => 'int',
         Entity::UPDATED_AT   => 'int',
     ];
 
+    /**************** OVERRIDDEN ****************/
+
+    public static function verifyUniqueId($id, $throw = true)
+    {
+        return false;
+    }
+
     /***************** SETTERS *****************/
 
     /**
      * @return $this
      */
-    public function setHandle(string $handle)
+    public function setCode(string $handle)
     {
-        return $this->setAttribute(self::HANDLE, $handle);
+        return $this->setAttribute(self::CODE, $handle);
+    }
+
+    /**
+     * @return $this
+     */
+    public function setBank(string $bank)
+    {
+        return $this->setAttribute(self::BANK, $bank);
     }
 
     /**
@@ -101,11 +124,11 @@ class Entity extends Base\Entity
     /***************** GETTERS *****************/
 
     /**
-     * @return string self::HANDLE
+     * @return string self::CODE
      */
-    public function getHandle()
+    public function getCode()
     {
-        return $this->getAttribute(self::HANDLE);
+        return $this->getAttribute(self::CODE);
     }
 
     /**
@@ -114,6 +137,14 @@ class Entity extends Base\Entity
     public function getMerchantId()
     {
         return $this->getAttribute(self::MERCHANT_ID);
+    }
+
+    /**
+     * @return string self::BANK
+     */
+    public function getBank()
+    {
+        return $this->getAttribute(self::BANK);
     }
 
     /**
@@ -135,5 +166,10 @@ class Entity extends Base\Entity
     public function isAllowedToMerchant(string $merchantId): bool
     {
         return in_array($this->getMerchantId(), [$merchantId, Merchant\Account::SHARED_ACCOUNT], true);
+    }
+
+    public function scopeMerchant(BuilderEx $query, Merchant\Entity $merchant)
+    {
+        return $query->whereIn(self::MERCHANT_ID, [$merchant->getId(), Merchant\Account::SHARED_ACCOUNT]);
     }
 }

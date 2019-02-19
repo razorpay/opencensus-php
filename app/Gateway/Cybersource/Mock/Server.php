@@ -5,7 +5,6 @@ namespace RZP\Gateway\Cybersource\Mock;
 use Str;
 use RZP\App;
 use Carbon\Carbon;
-use RZP\Models\Card;
 use RZP\Gateway\Base;
 use RZP\Gateway\Cybersource;
 use RZP\Gateway\Cybersource\Fields as F;
@@ -14,19 +13,9 @@ class Server extends Base\Mock\Server
 {
     protected $repo;
 
-    /**
-     * @override
-     * @return string
-     */
     protected function getWsdlFile()
     {
         return dirname(__DIR__) . '/Wsdl/cybstest.wsdl.xml';
-    }
-
-    // Dummy function for mock soap client
-    public function Security($header)
-    {
-        return null;
     }
 
     public function acs(array $input)
@@ -44,6 +33,219 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
+    // Dummy function for mock soap client
+    public function Security($header)
+    {
+        return null;
+    }
+
+    public function authenticateInit($input)
+    {
+        $input = json_decode($input, true);
+        $entities = $input['entities'];
+
+        switch ($entities['card']['number'])
+        {
+            case 4012001038443335:
+            case 4000000000000002:
+                $response = [
+                    'data'  => [
+                        '_raw'                  => '',
+                        'commerce_indicator'    => null,
+                        'eci'                   => null,
+                        'enrollment_status'     => 'Y',
+                        'reason_code'           => 475,
+                        'status'                => 'created',
+                        'xid'                   => 'aFM3NktkemM4OW1sSGNoOERXUzE=',
+                        'attempt_id'            => $entities['payment']['created_at'],
+                        'gateway_reference_id1' => '4661468455432' . random_int(10000000, 99999999),
+                        'payment_id'            => $entities['payment']['created_at'],
+                    ],
+                    'next'    => [
+                        'redirect'   => [
+                            'content' => [
+                                'MD'      => $entities['payment']['id'],
+                                'PaReq'   => 'eNpVUV1vgkAQfL9fQXxuuA8Qi1kvsdVUm2qsNbH1jZ4XpQrocRTtr+8doLY87Qw7tzuzsNgqKQdvUhRKcpjIPI820onXvdbpi0S7F/U5eu+E3isLVmRDWxxm/bk8cviWKo+zlFOXuAzwBSLzhBLbKNUcInF8GE+5H4SMBoAbiCCRajzgnk99xnxG6g9wTSNIo0Tyhcy1s4u14wGuCAQiK1KtzvzeN80XgKBQe77V+tDFuCxLVxuhK7IEsP2BAN/2mRW2yo3NU7zm8ikrP5Z6IpLn8XIg2hM6PE/3Wbn6GfYA2w4E60hLzggNCSWhw0iXsa5nplc8giixW/B5HtwZB6410VAIDnZYv0ZB4/AvZ/wUSslUnLnXNulcEQJ5OmSpND0m12ttnNz2fxzZdIU2eVEatEnHTq5xJY9NMsyjtNLHVUzYanBzPNzc2VT/7v8LOren5w==',
+                                'TermUrl' => $entities['gateway']['payment']['callbackUrl'],
+                            ],
+                            'method'    => 'post',
+                            'url'       => 'https://0eafstag.cardinalcommerce.com/EAFService/jsp/v1/redirect',
+                        ],
+                    ],
+                    'error'             => null,
+                    'success'           => true,
+                    'mozart_id'         => '',
+                    'external_trace_id' => '',
+                ];
+                break;
+
+            default:
+                $response = [
+                    'data'  => [
+                        '_raw'                  => '',
+                        'commerce_indicator'    => 'vbv_attempted',
+                        'eci'                   => '06',
+                        'enrollment_status'     => 'N',
+                        'reason_code'           => 100,
+                        'status'                => 'created',
+                        'xid'                   => null,
+                        'attempt_id'            => $entities['payment']['created_at'],
+                        'gateway_reference_id1' => '4661468455432' . random_int(10000000, 99999999),
+                        'payment_id'            => $entities['payment']['id'],
+                    ],
+                    'error'             => null,
+                    'success'           => true,
+                    'mozart_id'         => '',
+                    'external_trace_id' => '',
+                ];
+
+        }
+
+        $this->content($response, 'auth_init');
+
+        $response = json_encode($response);
+
+        $response = $this->makeResponseJson($response);
+
+        return $response;
+    }
+
+    public function authenticateVerify($input)
+    {
+        $input = json_decode($input, true);
+        $entities = $input['entities'];
+
+        $response = [
+            'data' =>
+                [
+                    '_raw' => '',
+                    'attempt_id' => $entities['payment']['id'],
+                    'authentication_status' => 'Y',
+                    'cavv' => 'AAABAWFlmQAAAABjRWWZEEFgFz+=',
+                    'commerce_indicator' => 'vbv',
+                    'eci' => '05',
+                    'enrollment_status' => null,
+                    'gateway_reference_id1' => '4661468455432' . random_int(10000000, 99999999),
+                    'payment_id' => $entities['payment']['id'],
+                    'received' => true,
+                    'status' => 'authenticated',
+                    'xid' => 'aFM3NktkemM4OW1sSGNoOERXUzE=',
+                ],
+            'error' => null,
+            'success' => true,
+        ];
+
+        $this->content($response, 'auth_verify');
+
+        $response = json_encode($response);
+
+        $response = $this->makeResponseJson($response);
+
+        return $response;
+    }
+
+    public function payInit($input)
+    {
+        $input = json_decode($input, true);
+        $entities = $input['entities'];
+
+        $response = [
+            'data' =>
+                [
+                    '_raw' => '',
+                    'attempt_id' => $entities['payment']['id'],
+                    'avs_code' => 'Y',
+                    'card_category' => null,
+                    'card_group' => null,
+                    'cv_code' => 'M',
+                    'gateway_reference_id1' => '5474993075916772203012',
+                    'gateway_reference_id2' => '016153570198200',
+                    'gateway_reference_id3' => '831000',
+                    'payment_id' => $entities['payment']['id'],
+                    'processorResponse' => '00',
+                    'processor_code' => '01',
+                    'reason_code' => 100,
+                    'received' => true,
+                    'rrn' => '184090',
+                    'status' => 'authorized',
+                ],
+            'error' => null,
+            'success' => true,
+        ];
+
+        $this->content($response, 'pay_init');
+
+        $response = json_encode($response);
+
+        $response = $this->makeResponseJson($response);
+
+        return $response;
+    }
+
+    public function capture($input)
+    {
+        $input = json_decode($input, true);
+        $entities = $input['entities'];
+
+        $response = [
+             'data'  => [
+                    '_raw'                  => '',
+                    'received'              => true,
+                    'attempt_id'            => $entities['payment']['id'],
+                    'payment_id'            => '',
+                    'gateway_reference_id1' => '5470653499446597903009',
+                    'status'                => 'captured',
+                    'decision'              => 'ACCEPT',
+                    'reconciliationID'      => '',
+                    'reason_code'           => 100,
+                ],
+                'error'             => null,
+                'success'           => true,
+                'mozart_id'         => '',
+                'external_trace_id' => '',
+            ];
+
+        $this->content($response, 'capture');
+
+        $response = json_encode($response);
+
+        $response = $this->makeResponseJson($response);
+
+        return $response;
+    }
+
+    public function verify($input)
+    {
+        parent::verify($input);
+
+        $response = [
+             'data'              => [
+                    '_raw'                  => '',
+                    'received'              => true,
+                    'gateway_reference_id1' => '5470653499446597903009',
+                    'gateway_reference_id3' => '5470653499446597903008',
+                    'status'                => 'authorized',
+                    'eci'                   => null,
+                    'avs_code'              => 100,
+                    'cavv'                  => '',
+                    'cvCode'                => '',
+                    'xid'                   => '',
+                ],
+                'error'             => null,
+                'success'           => true,
+                'mozart_id'         => '',
+                'external_trace_id' => '',
+            ];
+
+        $this->content($response, 'verify_content');
+
+        $response = json_encode($response);
+
+        $response = $this->makeResponseJson($response);
+
+        return $response;
+    }
+
     public function runTransaction($request)
     {
         $request = json_decode(json_encode($request), true);
@@ -53,27 +255,21 @@ class Server extends Base\Mock\Server
             case isset($request[F::PA_ENROLL_SERVICE]):
                 $action = 'auth_enroll';
                 break;
-
             case isset($request[F::PA_VALIDATE_SERVICE]):
                 $action = 'auth_validate';
                 break;
-
             case isset($request[F::CC_AUTH_SERVICE]):
                 $action = 'authorize';
                 break;
-
             case isset($request[F::CC_CAPTURE_SERVICE]):
                 $action = 'capture';
                 break;
-
             case isset($request[F::CC_CREDIT_SERVICE]):
                 $action = 'refund';
                 break;
-
             case isset($request[F::CC_AUTH_REVERSAL_SERVICE]):
                 $action = 'auth_reversal';
                 break;
-
             default:
                 assertTrue(false, 'Unrecognized request type');
         }
@@ -83,738 +279,8 @@ class Server extends Base\Mock\Server
         return $this->{$action}($request);
     }
 
-    protected function authorize($input)
+    public function verifyRefund($input)
     {
-        $this->validateAuthorizeInput($input);
-
-        $response = [];
-
-        $response[F::MERCHANT_REFERENCE_CODE] = $input[F::MERCHANT_REFERENCE_CODE];
-        $response[F::REQUEST_ID] = '4661468455432' . random_int(10000000, 99999999);
-        $response[F::REQUEST_TOKEN] = Str::random(40);
-        $response[F::DECISION] = 'ACCEPT';
-        $response[F::REASON_CODE] = 100;
-        $response[F::RECEIPT_NUMBER] = random_int(100000, 999999);
-
-        $response[F::CC_AUTH_REPLY] = $this->getDefaultCcAuthReply($input);
-
-        $this->switchAuthorizeCases($input, $response);
-
-        $this->content($response, 'authorize');
-
-        return $response;
-    }
-
-    protected function authEnroll($input)
-    {
-        $this->validateEnrollInput($input);
-
-        $response = [];
-
-        $response[F::MERCHANT_REFERENCE_CODE] = $input[F::MERCHANT_REFERENCE_CODE];
-        $response[F::REQUEST_ID] = '4661468455432' . random_int(10000000, 99999999);
-        $response[F::REQUEST_TOKEN] = Str::random(40);
-        $response[F::DECISION] = 'ACCEPT';
-        $response[F::REASON_CODE] = 100;
-
-        $response[F::PA_ENROLL_REPLY] = $this->getDefaultPayerAuthEnrollReply($input);
-
-        $response[F::PURCHASE_TOTALS][F::CURRENCY] = 'INR';
-
-        $this->switchEnrollCases($input, $response);
-
-        $this->content($response, 'enrollment');
-
-        return $response;
-    }
-
-    protected function authValidate($input)
-    {
-        $this->validateActionInput($input, 'auth_validate');
-
-        $this->content($input, 'verify_pares');
-
-        $response = [];
-
-        $response[F::MERCHANT_REFERENCE_CODE] = $input[F::MERCHANT_REFERENCE_CODE];
-        $response[F::REQUEST_ID] = '4661468455432' . random_int(10000000, 99999999);
-        $response[F::REQUEST_TOKEN] = Str::random(40);
-        $response[F::DECISION] = 'ACCEPT';
-        $response[F::REASON_CODE] = 100;
-
-        $response[F::PA_VALIDATE_REPLY] = $this->getDefaultPayerAuthValidateReply($input);
-
-        $response[F::PURCHASE_TOTALS][F::CURRENCY] = 'INR';
-
-        $this->switchAuthValidateCases($input, $response);
-
-        $this->content($response, 'auth_validate');
-
-        return $response;
-    }
-
-    protected function capture($input)
-    {
-        parent::capture($input);
-
-        $this->validateActionInput($input);
-
-        $this->content($input, 'validate_capture');
-
-        $response = [];
-
-        $response[F::MERCHANT_REFERENCE_CODE] = $input[F::MERCHANT_REFERENCE_CODE];
-        $response[F::REQUEST_ID] = '4661468455432' . random_int(10000000, 99999999);
-        $response[F::REQUEST_TOKEN] = Str::random(40);
-        $response[F::DECISION] = 'ACCEPT';
-        $response[F::REASON_CODE] = 100;
-
-        $response[F::CC_CAPTURE_REPLY] = [
-            F::REASON_CODE       => 100,
-            F::AMOUNT            => $input[F::PURCHASE_TOTALS][F::GRAND_TOTAL_AMOUNT],
-            F::RECONCILIATION_ID => $response[F::REQUEST_ID],
-        ];
-
-        $response[F::PURCHASE_TOTALS][F::CURRENCY] = 'INR';
-
-        $this->content($response);
-
-        return $response;
-    }
-
-    protected function refund($input)
-    {
-        parent::refund($input);
-
-        $this->validateActionInput($input);
-
-        $this->content($input, 'validate_refund');
-
-        $response = [];
-
-        $response[F::MERCHANT_REFERENCE_CODE] = $input[F::MERCHANT_REFERENCE_CODE];
-        $response[F::REQUEST_ID] = '4661468455432' . random_int(10000000, 99999999);
-        $response[F::REQUEST_TOKEN] = Str::random(40);
-        $response[F::DECISION] = 'ACCEPT';
-        $response[F::REASON_CODE] = 100;
-
-        $response[F::CC_CREDIT_REPLY] = [
-            F::REASON_CODE       => 100,
-            F::AMOUNT            => $input[F::PURCHASE_TOTALS][F::GRAND_TOTAL_AMOUNT],
-            F::RECONCILIATION_ID => $response[F::REQUEST_ID],
-            F::REFUND_DATETIME   => Carbon::now('UTC')->format('Y-m-d\TH:i:s\Z')
-        ];
-
-        $response[F::PURCHASE_TOTALS][F::CURRENCY] = 'INR';
-
-        $this->content($response, 'refund');
-
-        return $response;
-    }
-
-    protected function authReversal($input)
-    {
-        parent::reverse($input);
-
-        $this->validateActionInput($input);
-
-        $this->content($input, 'validate_auth_reversal');
-
-        $response = [];
-
-        $response[F::MERCHANT_REFERENCE_CODE] = $input[F::MERCHANT_REFERENCE_CODE];
-        $response[F::REQUEST_ID] = '4661468455432' . random_int(10000000, 99999999);
-        $response[F::REQUEST_TOKEN] = Str::random(40);
-        $response[F::DECISION] = 'ACCEPT';
-        $response[F::REASON_CODE] = 100;
-
-        $response[F::CC_AUTH_REVERSAL_REPLY] = [
-            F::REASON_CODE        => 100,
-            F::AMOUNT             => $input[F::PURCHASE_TOTALS][F::GRAND_TOTAL_AMOUNT],
-            F::PROCESSOR_RESPONSE => $response[F::REQUEST_ID],
-            F::REQUEST_DATETIME   => Carbon::now('UTC')->format('Y-m-d\TH:i:s\Z')
-        ];
-
-        $response[F::PURCHASE_TOTALS][F::CURRENCY] = 'INR';
-
-        $this->content($response);
-
-        return $response;
-    }
-
-    protected function getDefaultPayerAuthEnrollReply(array $input)
-    {
-        $paEnrollReply = [
-            F::REASON_CODE      => 100,
-            F::VERES_ENROLLED   => 'N'
-        ];
-
-        $network = Card\Network::detectNetwork($input['card']['accountNumber']);
-
-        switch ($network) {
-            case Card\Network::MC:
-                $paEnrollReply[F::COMMERCE_INDICATOR] = 'spa';
-                $paEnrollReply[F::UCAF_COLLECTION_INDICATOR] = '01';
-
-                break;
-
-            case Card\Network::VISA:
-                $paEnrollReply[F::COMMERCE_INDICATOR] = 'vbv_attempted';
-                $paEnrollReply[F::ECI] = '06';
-
-                break;
-        }
-
-        return $paEnrollReply;
-    }
-
-    protected function getDefaultPayerAuthValidateReply(array $input)
-    {
-        $paEnrollReply = [
-            F::REASON_CODE      => 100,
-            F::VERES_ENROLLED   => 'N'
-        ];
-
-        $network = Card\Network::detectNetwork($input['card']['accountNumber']);
-
-        switch ($network) {
-            case Card\Network::MC:
-                $paEnrollReply[F::COMMERCE_INDICATOR] = 'spa';
-                $paEnrollReply[F::UCAF_COLLECTION_INDICATOR] = '01';
-
-                break;
-
-            case Card\Network::VISA:
-                $paEnrollReply[F::COMMERCE_INDICATOR] = 'vbv_attempted';
-                $paEnrollReply[F::ECI] = '06';
-
-                break;
-        }
-
-        return $paEnrollReply;
-    }
-
-    protected function switchEnrollCases(array $input, array &$response)
-    {
-        $cardNumber = $input[F::CARD][F::ACCOUNT_NUMBER];
-
-        $this->acsUrl = $this->route->getUrl('mock_acs', ['gateway' => 'cybersource']);
-        $this->messageId = Str::random(20);
-        $this->proxyPan = (string) random_int(100000, 999999);
-
-        switch ($cardNumber)
-        {
-            // MasterCard SecureCode Card Enrolled: Attempts Processing
-            case 5200000000000106:
-
-            // Verified by Visa Card Enrolled: Attempts Processing
-            case 4000000000000000063:
-                $authenticationPath = 'ATTEMPTS';
-
-            // MasterCard SecureCode Card Enrolled: Incomplete Authentication
-            case 5200000000000031:
-
-            // Verified by Visa Card Enrolled: Incomplete Authentication
-            case 4000000000000036:
-
-            // Verified by Visa Card Enrolled: Authentication Error
-            case 4000000000000093:
-                $authenticationPath = $authenticationPath ?? 'UNKNOWN';
-
-            // MasterCard SecureCode Card Enrolled: Authentication Error
-            case 5200000000000098:
-
-            // MasterCard SecureCode Card Enrolled: Successful Authentication
-            // But Invalid PARes
-            case 5200000000000015:
-
-            // Verified by Visa Card Enrolled: Successful Authentication
-            // But Invalid PARes
-            case 4000000000000000071:
-
-            // MasterCard SecureCode Card Enrolled: Successful Authentication
-            // With authentication window
-            case 5200000000000007:
-
-            // Verified by Visa Card Enrolled: Successful Authentication
-            // With authentication window
-            case 4000000000000002:
-
-            // MasterCard SecureCode Card Enrolled: Unsuccessful Authentication
-            case 5200000000000023:
-
-            // Verified by Visa Card Enrolled: Unsuccessful Authentication
-            case 4000000000000028:
-
-            // Verified bt Visa Card Enrolled for Recurring payment
-            case 4012001038443335:
-
-                $response[F::DECISION] = 'REJECT';
-                $response[F::REASON_CODE] = 475;
-
-                $this->enrolled = 'Y';
-
-                $response[F::PA_ENROLL_REPLY] = [
-                    F::ACS_URL => $this->acsUrl,
-                    F::AUTHENTICATION_PATH => $authenticationPath ?? 'ENROLLED',
-                    F::PA_REQ => $this->getPaReq($input),
-                    F::PROOF_XML => $this->getProofXml($input, $response),
-                    F::PROXY_PAN => $this->proxyPan,
-                    F::REASON_CODE => 475,
-                    F::VERES_ENROLLED => $this->enrolled,
-                    F::XID => base64_encode($this->messageId)
-                ];
-
-                break;
-
-                case 42809500000009:
-                    $response[F::DECISION] = 'REJECT';
-                    $response[F::REASON_CODE] = 476;
-                break;
-
-            // MasterCard SecureCode Card Enrolled: Unavailable Authentication
-            case 5200000000000064:
-                $this->enrolled = 'U';
-
-                $response[F::PA_ENROLL_REPLY] = [
-                    F::REASON_CODE               => 100,
-                    F::COMMERCE_INDICATOR        => 'spa',
-                    F::UCAF_COLLECTION_INDICATOR => '0',
-                    F::PROOF_XML                 => $this->getProofXml($input, $response),
-                    F::VERES_ENROLLED            => $this->enrolled,
-                    F::AUTHENTICATION_PATH       => 'NOREDIRECT'
-                ];
-
-                break;
-
-            // MasterCard SecureCode Enrollment Check Error: Error response
-            case 5200000000000080:
-                $this->enrolled = 'U';
-
-                $response[F::PA_ENROLL_REPLY] = [
-                    F::REASON_CODE               => 100,
-                    F::COMMERCE_INDICATOR        => 'spa',
-                    F::UCAF_COLLECTION_INDICATOR => '1',
-                    F::PROOF_XML                 => $this->getProofXml($input, $response),
-                    F::VERES_ENROLLED            => $this->enrolled
-                ];
-
-                break;
-
-            // Verified by Visa Enrollment Check Error: Error response
-            case 4000000000000085:
-
-            // Verified by Visa Enrollment Check Error:
-            // Incorrect Configuration: Unable to Authenticate
-            case 4000000000000077:
-
-            // Verified by Visa Card Enrolled: Unavailable Authentication
-            case 4000000000000000014:
-
-                $this->enrolled = 'U';
-
-                $response[F::PA_ENROLL_REPLY] = [
-                    F::REASON_CODE        => 100,
-                    F::COMMERCE_INDICATOR => 'internet',
-                    F::PROOF_XML          => $this->getProofXml($input, $response),
-                    F::VERES_ENROLLED     => $this->enrolled
-                ];
-
-                break;
-
-            // Verified by Visa Card Not Enrolled
-            case 4000000000000051:
-                $this->enrolled = 'N';
-
-                $response[F::PA_ENROLL_REPLY][F::AUTHENTICATION_PATH] = 'NOREDIRECT';
-                $response[F::PA_ENROLL_REPLY][F::PROOF_XML] = $this->getProofXml($input, $response);
-
-                break;
-
-        }
-    }
-
-    protected function switchAuthorizeCases(array $input, array &$response)
-    {
-        $cardNumber = $input[F::CARD][F::ACCOUNT_NUMBER];
-
-        $originalCcAuthReply = $response[F::CC_AUTH_REPLY];
-
-        switch ($cardNumber)
-        {
-            // Verified bt Visa Card Enrolled for Recurring payment
-            case 4012001038443335:
-                $commerceIndicator = 'recurring';
-
-            // Verified by Visa Card Enrolled: Successful Authentication
-            // With authentication window
-            case 4000000000000002:
-
-                $response[F::CC_AUTH_REPLY] = array_merge($originalCcAuthReply, [
-                    F::AVS_CODE                      => 'Y',
-                    F::AVS_CODE_RAW                  => 'Y',
-                    F::CV_CODE                       => 'M',
-                    F::CV_CODE_RAW                   => 'M',
-                    F::MERCHANT_ADVICE_CODE          => '01',
-                    F::MERCHANT_ADVICE_CODE_RAW      => 'M001',
-                    F::CAVV_RESPONSE_CODE            => '2',
-                    F::CAVV_RESPONSE_CODE_RAW        => '2',
-                ]);
-
-                $response[F::PURCHASE_TOTALS][F::CURRENCY] = 'INR';
-
-                unset($response[F::CC_AUTH_REPLY][F::CARD_CATEGORY]);
-                unset($response[F::CC_AUTH_REPLY][F::CARD_GROUP]);
-                break;
-
-            // Verified by Visa Card Enrolled: Successful Authentication
-            // With authentication window
-            case 5200000000000007:
-
-                $response[F::CC_AUTH_REPLY] = array_merge($originalCcAuthReply, [
-                    F::AVS_CODE                      => 'Y',
-                    F::AVS_CODE_RAW                  => 'Y',
-                    F::CV_CODE                       => 'M',
-                    F::CV_CODE_RAW                   => 'M',
-                    F::MERCHANT_ADVICE_CODE          => '01',
-                    F::MERCHANT_ADVICE_CODE_RAW      => 'M001',
-                    F::CAVV_RESPONSE_CODE            => '2',
-                    F::CAVV_RESPONSE_CODE_RAW        => '2',
-                ]);
-
-                $response[F::PURCHASE_TOTALS][F::CURRENCY] = 'INR';
-
-                unset($response[F::CC_AUTH_REPLY][F::CARD_CATEGORY]);
-                unset($response[F::CC_AUTH_REPLY][F::CARD_GROUP]);
-
-                break;
-
-            // MasterCard SecureCode Card Enrolled: Incomplete Authentication
-            case 5200000000000031:
-
-                $response[F::CC_AUTH_REPLY] = array_merge($originalCcAuthReply, [
-                    F::AVS_CODE                      => 'Y',
-                    F::AVS_CODE_RAW                  => 'Y',
-                    F::CV_CODE                       => 'M',
-                    F::CV_CODE_RAW                   => 'M',
-                    F::MERCHANT_ADVICE_CODE          => '01',
-                    F::MERCHANT_ADVICE_CODE_RAW      => 'M001',
-                    F::CAVV_RESPONSE_CODE            => '2',
-                    F::CAVV_RESPONSE_CODE_RAW        => '2',
-                ]);
-
-                break;
-
-            // Verified by Visa Card Enrolled: Incomplete Authentication
-            case 4000000000000036:
-
-                $response[F::CC_AUTH_REPLY] = array_merge($originalCcAuthReply, [
-                    F::AVS_CODE                      => 'Y',
-                    F::AVS_CODE_RAW                  => 'Y',
-                    F::CV_CODE                       => 'M',
-                    F::CV_CODE_RAW                   => 'M',
-                    F::MERCHANT_ADVICE_CODE          => '01',
-                    F::MERCHANT_ADVICE_CODE_RAW      => 'M001',
-                    F::CAVV_RESPONSE_CODE            => '2',
-                    F::CAVV_RESPONSE_CODE_RAW        => '2',
-                ]);
-
-                break;
-
-            // MasterCard SecureCode Card Enrolled: Attempts Processing
-            case 5200000000000106:
-
-                $response[F::CC_AUTH_REPLY] = array_merge($originalCcAuthReply, [
-                    F::AVS_CODE                      => 'Y',
-                    F::AVS_CODE_RAW                  => 'Y',
-                    F::CV_CODE                       => 'M',
-                    F::CV_CODE_RAW                   => 'M',
-                    F::MERCHANT_ADVICE_CODE          => '01',
-                    F::MERCHANT_ADVICE_CODE_RAW      => 'M001',
-                    F::CAVV_RESPONSE_CODE            => '2',
-                    F::CAVV_RESPONSE_CODE_RAW        => '2',
-                ]);
-
-                break;
-
-            // Verified by Visa Card Enrolled: Attempts Processing
-            case 4000000000000000063:
-
-                $response[F::CC_AUTH_REPLY] = array_merge($originalCcAuthReply, [
-                    F::AVS_CODE                      => 'Y',
-                    F::AVS_CODE_RAW                  => 'Y',
-                    F::CV_CODE                       => 'M',
-                    F::CV_CODE_RAW                   => 'M',
-                    F::MERCHANT_ADVICE_CODE          => '01',
-                    F::MERCHANT_ADVICE_CODE_RAW      => 'M001',
-                    F::CAVV_RESPONSE_CODE            => '2',
-                    F::CAVV_RESPONSE_CODE_RAW        => '2',
-                ]);
-
-                break;
-
-            // MasterCard SecureCode Enrollment Check Error: Error response
-            case 5200000000000080:
-
-            // Verified by Visa Enrollment Check Error: Error response
-            case 4000000000000085:
-
-            // Verified by Visa Enrollment Check Error:
-            // Incorrect Configuration: Unable to Authenticate
-            case 4000000000000077:
-
-            // MasterCard SecureCode Card Enrolled: Unavailable Authentication
-            case 5200000000000064:
-
-            // Verified by Visa Card Enrolled: Unavailable Authentication
-            case 4000000000000000014:
-
-            // Verified by Visa Card Not Enrolled
-            case 4000000000000051:
-
-                $response[F::CC_AUTH_REPLY] = array_merge($originalCcAuthReply, [
-                    F::AVS_CODE                 => 'Y',
-                    F::AVS_CODE_RAW             => 'Y',
-                    F::MERCHANT_ADVICE_CODE     => '01',
-                    F::MERCHANT_ADVICE_CODE_RAW => 'M001',
-                    F::CAVV_RESPONSE_CODE       => '2',
-                    F::CAVV_RESPONSE_CODE_RAW   => '2',
-                ]);
-
-                unset($response[F::CC_AUTH_REPLY][F::CARD_CATEGORY]);
-                unset($response[F::CC_AUTH_REPLY][F::CARD_GROUP]);
-
-                break;
-        }
-    }
-
-    protected function switchAuthValidateCases(array $input, array &$response)
-    {
-        $cardNumber = $input[F::CARD][F::ACCOUNT_NUMBER];
-
-        $originalAuthValidateReply = $response[F::PA_VALIDATE_REPLY];
-
-        switch ($cardNumber)
-        {
-            // Verified by Visa Card Enrolled: Successful Authentication
-            // With authentication window
-            case 4000000000000002:
-
-                $response[F::PA_VALIDATE_REPLY] = [
-                    F::REASON_CODE                   => 100,
-                    F::AUTHENTICATION_RESULT         => '0',
-                    F::AUTHENTICATION_STATUS_MESSAGE => 'Success',
-                    F::CAVV                          => 'AAABAWFlmQAAAABjRWWZEEFgFz+=',
-                    F::CAVV_ALGORITHM                => '2',
-                    F::COMMERCE_INDICATOR            => $commerceIndicator ?? 'vbv',
-                    F::ECI                           => '05',
-                    F::ECI_RAW                       => '05',
-                    F::XID                           => base64_encode($this->messageId),
-                    F::PARES_STATUS                  => 'Y',
-                ];
-
-                $response[F::PURCHASE_TOTALS][F::CURRENCY] = 'INR';
-
-                break;
-
-            // Verified by Visa Card Enrolled: Successful Authentication
-            // With authentication window
-            case 5200000000000007:
-
-                $response[F::PA_VALIDATE_REPLY] = [
-                    F::REASON_CODE                   => 100,
-                    F::AUTHENTICATION_RESULT         => '0',
-                    F::AUTHENTICATION_STATUS_MESSAGE => 'Success',
-                    F::UCAF_AUTHENTICATION_DATA      => 'jELUbgG+Tfj0AREACMLdCae+oIs=',
-                    F::CAVV_ALGORITHM                => '3',
-                    F::COMMERCE_INDICATOR            => 'spa',
-                    F::UCAF_COLLECTION_INDICATOR     => '02',
-                    F::ECI_RAW                       => '02',
-                    F::XID                           => base64_encode($this->messageId),
-                    F::PARES_STATUS                  => 'Y',
-                ];
-
-                $response[F::PURCHASE_TOTALS][F::CURRENCY] = 'INR';
-
-                break;
-
-            // MasterCard SecureCode Card Enrolled: Successful Authentication
-            // But Invalid PARes
-            case 5200000000000015:
-
-            // Verified by Visa Card Enrolled: Successful Authentication
-            // But Invalid PARes
-            case 4000000000000000071:
-
-                $response[F::DECISION] = 'REJECT';
-                $response[F::REASON_CODE] = 476;
-
-                $response[F::PA_VALIDATE_REPLY] = [
-                    F::REASON_CODE                   => 476,
-                    F::AUTHENTICATION_RESULT         => '-1',
-                    F::AUTHENTICATION_STATUS_MESSAGE => 'PARes signature digest value mismatch. PARes message has been modified',
-                    F::XID                           => base64_encode($this->messageId)
-                ];
-
-                break;
-
-            // MasterCard SecureCode Card Enrolled: Authentication Error
-            case 5200000000000098:
-
-                $response[F::DECISION] = 'REJECT';
-                $response[F::REASON_CODE] = 476;
-
-                $response[F::PA_VALIDATE_REPLY] = [
-                    F::REASON_CODE               => 476,
-                    F::COMMERCE_INDICATOR        => 'internet',
-                    F::UCAF_COLLECTION_INDICATOR => '1'
-                ];
-
-                break;
-
-            // Verified by Visa Card Enrolled: Authentication Error
-            case 4000000000000093:
-
-                $response[F::DECISION] = 'REJECT';
-                $response[F::REASON_CODE] = 476;
-
-                $response[F::PA_VALIDATE_REPLY] = [
-                    F::REASON_CODE         => 476,
-                    F::COMMERCE_INDICATOR  => 'internet',
-                    F::ECI                 => '07'
-                ];
-
-                break;
-
-            case '42809500000009':
-
-                $response['decision'] = 'REJECT';
-                $response['reasonCode'] = 476;
-                $response['payerAuthEnrollReply'] = [
-                    'reasonCode' => 476
-                ];
-                $response['missingField'] = 'c:authRequestID';
-                $response['requestToken'] = 'AhjjLwSR/H2rNiTcqkX45p6D4dUQCsgfIwdIy6SZbpAeLRGAdmIW';
-                break;
-
-            // MasterCard SecureCode Card Enrolled: Unsuccessful Authentication
-            case 5200000000000023:
-
-            // Verified by Visa Card Enrolled: Unsuccessful Authentication
-            case 4000000000000028:
-
-                $response[F::DECISION] = 'REJECT';
-                $response[F::REASON_CODE] = 476;
-
-                $response[F::PA_VALIDATE_REPLY] = [
-                    F::REASON_CODE                   => 476,
-                    F::AUTHENTICATION_RESULT         => '9',
-                    F::AUTHENTICATION_STATUS_MESSAGE => 'User failed authentication',
-                    F::XID                           => base64_encode($this->messageId),
-                    F::PARES_STATUS                  => 'N'
-                ];
-
-                unset($response[F::RECEIPT_NUMBER]);
-
-                break;
-
-            // MasterCard SecureCode Card Enrolled: Incomplete Authentication
-            case 5200000000000031:
-
-                $response[F::PA_VALIDATE_REPLY] = [
-                    F::REASON_CODE                   => 100,
-                    F::AUTHENTICATION_RESULT         => '6',
-                    F::AUTHENTICATION_STATUS_MESSAGE => 'Issuer unable to perform authentication',
-                    F::COMMERCE_INDICATOR            => 'spa',
-                    F::UCAF_COLLECTION_INDICATOR     => '0',
-                    F::XID                           => base64_encode($this->messageId),
-                    F::PARES_STATUS                  => 'U'
-                ];
-
-                break;
-
-            // Verified by Visa Card Enrolled: Incomplete Authentication
-            case 4000000000000036:
-
-                $response[F::PA_VALIDATE_REPLY] = [
-                    F::REASON_CODE                   => 100,
-                    F::AUTHENTICATION_RESULT         => '6',
-                    F::AUTHENTICATION_STATUS_MESSAGE => 'Issuer unable to perform authentication',
-                    F::COMMERCE_INDICATOR            => 'internet',
-                    F::ECI                           => '07',
-                    F::XID                           => base64_encode($this->messageId),
-                    F::PARES_STATUS                  => 'U'
-                ];
-
-                break;
-
-            // MasterCard SecureCode Card Enrolled: Attempts Processing
-            case 5200000000000106:
-
-                $response[F::PA_VALIDATE_REPLY] = [
-                    F::REASON_CODE                   => 100,
-                    F::AUTHENTICATION_RESULT         => '1',
-                    F::AUTHENTICATION_STATUS_MESSAGE => 'Success',
-                    F::CAVV_ALGORITHM                => '3',
-                    F::COMMERCE_INDICATOR            => 'spa',
-                    F::UCAF_AUTHENTICATION_DATA      => 'hsjuQljfI86bAQAFvVQGaWsBPwI=',
-                    F::UCAF_COLLECTION_INDICATOR     => '1',
-                    F::ECI_RAW                       => '01',
-                    F::XID                           => base64_encode($this->messageId),
-                    F::PARES_STATUS                  => 'A'
-                ];
-
-                break;
-
-            // Verified by Visa Card Enrolled: Attempts Processing
-            case 4000000000000000063:
-
-                $response[F::PA_VALIDATE_REPLY] = [
-                    F::REASON_CODE                   => 100,
-                    F::AUTHENTICATION_RESULT         => '1',
-                    F::AUTHENTICATION_STATUS_MESSAGE => 'Success',
-                    F::CAVV                          => 'BwAQAgJ4IAUFBwdik3ggEETHTsU=',
-                    F::CAVV_ALGORITHM                => '2',
-                    F::COMMERCE_INDICATOR            => 'vbv_attempted',
-                    F::ECI                           => '06',
-                    F::ECI_RAW                       => '06',
-                    F::XID                           => base64_encode($this->messageId),
-                    F::PARES_STATUS                  => 'A'
-                ];
-
-                break;
-        }
-    }
-
-    protected function getDefaultCcAuthReply(array $input)
-    {
-        $amount = number_format($input[F::PURCHASE_TOTALS][F::GRAND_TOTAL_AMOUNT], 2, '.', '');
-
-        $ccAuthReply = [
-            F::AMOUNT                 => $amount,
-            F::AUTHORIZATION_CODE     => strtoupper(Str::random(6)),
-            F::AUTHORIZED_DATETIME    => Carbon::now('UTC')->format('Y-m-d\TH:i:s\Z'),
-            F::AVS_CODE               => 'G',
-            F::AVS_CODE_RAW           => 'G',
-            F::CARD_CATEGORY          => 'F',
-            F::CARD_GROUP             => '0',
-            F::CAVV_RESPONSE_CODE     => '3',
-            F::CAVV_RESPONSE_CODE_RAW => '3',
-            F::CV_CODE                => 'M',
-            F::CV_CODE_RAW            => 'M',
-            F::PAYMENT_NETWORK_TXN_ID => '306295780' . random_int(100000, 999999),
-            F::PROCESSOR_RESPONSE     => '00',
-            F::REASON_CODE            => 100,
-            F::RECONCILIATION_ID      => $input[F::MERCHANT_REFERENCE_CODE],
-        ];
-
-        return $ccAuthReply;
-    }
-
-    public function verify($input)
-    {
-        parent::verify($input);
-
         $content = $this->getVerifyContent($input);
 
         $this->content($content, 'verify_content');
@@ -834,7 +300,7 @@ class Server extends Base\Mock\Server
     protected function getVerifyContent(array $input)
     {
         $payment = $this->getRepo()->findByPaymentIdAndAction(
-                        $input[F::MERCHANT_REFERENCE_NUMBER], Cybersource\Action::AUTHORIZE);
+            $input[F::MERCHANT_REFERENCE_NUMBER], Cybersource\Action::AUTHORIZE);
 
         if ($payment === null)
         {
@@ -862,56 +328,81 @@ class Server extends Base\Mock\Server
         ];
     }
 
-    protected function getProofXml($input, $response)
+    protected function refund($input)
     {
-        $replacePair = [
-            ':time:' => Carbon::now()->format('Y M d H:i:s'),
-            ':messageId:' => $this->messageId,
-            ':pan:' => 'xxxxxxxxxxxxxx' . substr($input[F::CARD][F::ACCOUNT_NUMBER], -4),
-            ':acsUrl:' => $this->acsUrl,
-            ':enrolled:' => $this->enrolled
+        parent::refund($input);
+
+        $this->validateActionInput($input);
+
+        $this->content($input, 'validate_refund');
+
+        $response = [];
+
+        $response[F::MERCHANT_REFERENCE_CODE] = $input[F::MERCHANT_REFERENCE_CODE];
+
+        $response[F::REQUEST_ID] = '4661468455432' . random_int(10000000, 99999999);
+
+        $response[F::REQUEST_TOKEN] = Str::random(40);
+
+        $response[F::DECISION] = 'ACCEPT';
+
+        $response[F::REASON_CODE] = 100;
+
+        $response[F::CC_CREDIT_REPLY] = [
+            F::REASON_CODE       => 100,
+            F::AMOUNT            => $input[F::PURCHASE_TOTALS][F::GRAND_TOTAL_AMOUNT],
+            F::RECONCILIATION_ID => $response[F::REQUEST_ID],
+            F::REFUND_DATETIME   => Carbon::now('UTC')->format('Y-m-d\TH:i:s\Z')
         ];
 
-        $proofXmlTemplate = '<AuthProof><Time>:time:</Time><DSUrl>https://api.razorpay.com</DSUrl><VEReqProof><Message id=":messageId:"><VEReq><version>1.0.2</version><pan>:pan:</pan><Merchant><acqBIN>469216</acqBIN><merID>341422420000000</merID><password></password></Merchant><Browser><deviceCategory>0</deviceCategory></Browser></VEReq></Message></VEReqProof><VEResProof><Message id=":messageId:"><VERes><version>1.0.2</version><CH><enrolled>:enrolled:</enrolled><acctID>1064630</acctID></CH><url>:acsUrl:</url><protocol>ThreeDSecure</protocol></VERes></Message></VEResProof></AuthProof>';
+        $response[F::PURCHASE_TOTALS][F::CURRENCY] = 'INR';
 
-        return strtr($proofXmlTemplate, $replacePair);
+        $this->content($response, 'refund');
+
+        return $response;
+    }
+    protected function authReversal($input)
+    {
+        parent::reverse($input);
+
+        $this->validateActionInput($input);
+
+        $this->content($input, 'validate_auth_reversal');
+
+        $response = [];
+
+        $response[F::MERCHANT_REFERENCE_CODE] = $input[F::MERCHANT_REFERENCE_CODE];
+
+        $response[F::REQUEST_ID] = '4661468455432' . random_int(10000000, 99999999);
+
+        $response[F::REQUEST_TOKEN] = Str::random(40);
+
+        $response[F::DECISION] = 'ACCEPT';
+
+        $response[F::REASON_CODE] = 100;
+
+        $response[F::CC_AUTH_REVERSAL_REPLY] = [
+            F::REASON_CODE        => 100,
+            F::AMOUNT             => $input[F::PURCHASE_TOTALS][F::GRAND_TOTAL_AMOUNT],
+            F::PROCESSOR_RESPONSE => $response[F::REQUEST_ID],
+            F::REQUEST_DATETIME   => Carbon::now('UTC')->format('Y-m-d\TH:i:s\Z')
+        ];
+
+        $response[F::PURCHASE_TOTALS][F::CURRENCY] = 'INR';
+
+        $this->content($response);
+
+        return $response;
     }
 
-    protected function getPaReq($input)
+    protected function makeResponseJson($body)
     {
-        $replacePair = [
-            ':date:'          => Carbon::now()->format('Ymd H:i:s'),
-            ':messageId:'     => $this->messageId,
-            ':displayAmount:' => $input[F::PURCHASE_TOTALS][F::GRAND_TOTAL_AMOUNT],
-            ':amount:'        => (int) ($input[F::PURCHASE_TOTALS][F::GRAND_TOTAL_AMOUNT] * 100),
-            ':proxyPan:'      => $this->proxyPan,
-            ':xid:'           => base64_encode($this->messageId)
-        ];
+        $response = \Response::make($body);
 
-        $paReqTemplate = '<ThreeDSecure><Message id=":messageId:"><PAReq><version>1.0.2</version>
-            <Merchant><acqBIN>469216</acqBIN>
-            <merID>341422420000000</merID>
-            <name>RAZORPAY TECHNOLOGIES PVT</name>
-            <country>356</country>
-            <url>http://store.razorpay.com/</url>
-            </Merchant><Purchase><xid>:xid:</xid>
-            <date>:date:</date>
-            <amount>Rs:displayAmount:</amount>
-            <purchAmount>:amount:</purchAmount>
-            <currency>356</currency>
-            <exponent>2</exponent>
-            </Purchase><CH><acctID>:proxyPan:</acctID>
-            <expiry>2011</expiry>
-            </CH></PAReq></Message></ThreeDSecure>';
+        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+        $response->headers->set('Cache-Control', 'no-cache');
 
-        $xml = strtr($paReqTemplate, $replacePair);
-
-        $xml = trim($xml);
-
-        $xml = zlib_encode($xml, 15);
-        $xml = base64_encode($xml);
-
-        return $xml;
+        return $response;
     }
 
     protected function makeResponse($body)

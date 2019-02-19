@@ -7,10 +7,12 @@ use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Hdfc;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Payment\AuthType;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment as PaymentModel;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 trait Inquiry
@@ -21,29 +23,39 @@ trait Inquiry
     {
         parent::verify($input);
 
+        $scroogeResponse = new Base\ScroogeResponse();
+
         $unprocessedRefunds = $this->getUnprocessedRefunds();
 
         $processedRefunds = $this->getProcessedRefunds();
 
         if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
         {
-            return false;
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
+                                   ->toArray();
         }
 
         if (in_array($input['refund']['id'], $processedRefunds) === true)
         {
-            return true;
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
         }
 
         $response = $this->sendRefundVerifyRequest($input);
 
         $data = $response['data'];
 
+        $scroogeResponse->setGatewayVerifyResponse(json_encode($response['xml']))
+                        ->setGatewayKeys($this->getGatewayData($data));
+
         if (isset($response['error']['result']) === true)
         {
             if ($response['error']['code'] === 'GW00201')
             {
-                return false;
+                return $scroogeResponse->setSuccess(false)
+                                       ->setStatusCode(ErrorCode::GATEWAY_ERROR_SUPPORT_AUTH_NOT_FOUND)
+                                       ->toArray();
             }
 
             $data = $response['error'];
@@ -64,15 +76,19 @@ trait Inquiry
 
             $this->repo->saveOrFail($refund);
 
-            return true;
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
         }
+
         else if (($data['result'] === 'FAILURE(SUSPECT)') and
                  ($data['trackid'] === $input['refund']['id']) and
                  ((int) ($data['amt'] * 100) === $input['refund']['amount']) and
                  (empty($data['authRespCode']) === false) and
                  (Hdfc\ErrorCodes\ErrorCodes::shouldRetryRefund($data['authRespCode']) === true))
         {
-            return false;
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
+                                   ->toArray();
         }
 
         $this->trace->critical(
@@ -81,10 +97,14 @@ trait Inquiry
 
         throw new Exception\LogicException(
             'Unexpected refund verify result received',
-            null,
+            ErrorCode::GATEWAY_ERROR_UNEXPECTED_STATUS,
             [
-                'payment_id' => $input['refund']['payment_id'],
-                'refund_id'  => $input['refund']['id'],
+                PaymentModel\Gateway::GATEWAY_VERIFY_RESPONSE  => json_encode($response['xml']),
+                PaymentModel\Gateway::GATEWAY_KEYS             =>
+                    [
+                        'payment_id' => $input['refund']['payment_id'],
+                        'refund_id'  => $input['refund']['id'],
+                    ],
             ]);
     }
 
@@ -181,7 +201,7 @@ trait Inquiry
 
         if (empty($content['trackid']) === false)
         {
-            assert ($content['trackid'] === $input['payment']['id']);
+            assertTrue ($content['trackid'] === $input['payment']['id']);
         }
 
         if ((isset($content['result'])) and

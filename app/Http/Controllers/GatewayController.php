@@ -23,6 +23,19 @@ use RZP\Gateway\Wallet\Amazonpay\ResponseFields as AmazonResponse;
 
 class GatewayController extends Controller
 {
+
+    /**
+     * This is a health Check API for third party url
+     */
+    public function getExternalApiHealth(Downtime\Service $service)
+    {
+        $input = Request::all();
+
+        $response = $service->getExternalApiHealth($input);
+
+        return ApiResponse::json($response, $response['http_status']);
+    }
+
     public function callbackAxis()
     {
         $this->callbackGateway('axis');
@@ -43,8 +56,10 @@ class GatewayController extends Controller
         // used preProcessServerCallback itself to return it in some way
         $paymentId = $gateway->getPaymentIdFromServerCallback($input);
 
+        $paymentRepo = $this->app['repo']->payment;
+
         // This is hackish, we find mode based on searchin in both DB's
-        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+        $mode = $paymentRepo->determineLiveOrTestModeForEntityWithGateway($paymentId, $gatewayDriver);
 
         if ($mode === null)
         {
@@ -68,7 +83,9 @@ class GatewayController extends Controller
 
         $paymentId = $gateway->getPaymentIdFromServerCallback($input);
 
-        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+        $paymentRepo = $this->app['repo']->payment;
+
+        $mode = $paymentRepo->determineLiveOrTestModeForEntityWithGateway($paymentId, $gatewayDriver);
 
         $postInput = [
             'gateway' => $input,
@@ -172,6 +189,11 @@ class GatewayController extends Controller
                 break;
 
             // Special case because we need the raw request body
+            case Gateway::UPI_RBL:
+                $input = Request::getContent();
+                $data = $this->processServerCallbackWithGatewayResponse($input, $gateway);
+                break;
+
             case Gateway::UPI_ICICI:
                 $input = Request::getContent();
 
@@ -363,6 +385,57 @@ class GatewayController extends Controller
         return Redirect::to($url);
     }
 
+    public function callbackEmandateNpciNb()
+    {
+        $input = Request::all();
+
+        $this->app['trace']->info(
+            TraceCode::NETBANKING_PAYMENT_CALLBACK,
+            [
+                'input'   => $input ,
+                'gateway' => 'enach_rbl',
+            ]
+        );
+
+        $responseXml = (array) simplexml_load_string(trim($input['MandateRespDoc']));
+
+        $json = json_encode($responseXml);
+
+        $responseArray = json_decode($json,true);
+
+        if($input['RespType'] === 'RespXML')
+        {
+            $paymentId = $responseArray['MndtAccptResp']['UndrlygAccptncDtls']['OrgnlMsgInf']['MndtReqId'];
+        }
+        else
+        {
+            //TODO : what if payment id is not present : possible
+            $paymentId = $responseArray['MndtRejResp']['OrigReqInfo']['MndtReqId'];
+        }
+
+        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
+
+        $this->app['config']->set('database.default', $mode);
+
+        $this->app['basicauth']->setMode($mode);
+
+        $payment = $this->repo->payment->findOrFailPublic($paymentId);
+
+        $publicPaymentId = $payment->getPublicId();
+
+        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
+
+        $publicKey = $keys->first()->getPublicKey($mode);
+
+        $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
+
+        $inputMsg = http_build_query($input);
+
+        $url = $url . '?' . $inputMsg;
+
+        return Redirect::to($url);
+    }
+
     public function callbackAmazonpay($responseFormat = 'html')
     {
         $input = Request::all();
@@ -493,6 +566,16 @@ class GatewayController extends Controller
         $data = $service->edit($id, $input);
 
         return ApiResponse::json($data);
+    }
+
+    /**
+     * Method to handle webhook from vajra
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function postGatewayDowntimeVajraWebhook(Downtime\Service $service)
+    {
+        return $this->postGatewayDowntimeWebhook($service, Downtime\Source::VAJRA);
     }
 
     /**

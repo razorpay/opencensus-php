@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\QrPayment;
 
 use RZP\Gateway\Base\Action;
+use RZP\Gateway\Isg\Entity;
 use RZP\Gateway\Isg\Field;
 use RZP\Gateway\Isg\Status;
 use RZP\Tests\Functional\TestCase;
@@ -60,6 +61,10 @@ class BharatQrIsgGatewayTest extends TestCase
 
         $this->assertEquals($request['content'][Field::TRANSACTION_ID], $response[Field::TRANSACTION_ID]);
 
+        $gatewayPayment = $this->getLastEntity('isg', true);
+
+        $this->assertEquals($response[Field::NOTIFICATION_REF_NO], $gatewayPayment['payment_id']);
+
         $bharatQr = $this->getLastEntity('bharat_qr', true);
 
         // Payment is automatically captured
@@ -78,11 +83,13 @@ class BharatQrIsgGatewayTest extends TestCase
         $this->assertEquals($bharatQr['payment_id'], $payment['id']);
 
         $this->assertEquals($bharatQr['expected'], true);
+
+        return $payment;
     }
 
     public function testQrPaymentBadVerifyCallback()
     {
-        $request = $this->testData["testQrPaymentProcess"];
+        $request = $this->testData['testQrPaymentProcess'];
 
         $qrCode = $this->createVirtualAccount();
 
@@ -104,6 +111,8 @@ class BharatQrIsgGatewayTest extends TestCase
 
         $this->assertEquals(Status::NO_RECORDS, $response[Field::STATUS_CODE]);
 
+        $this->assertNull($response[Field::NOTIFICATION_REF_NO]);
+
         $this->assertEquals('Amount mismatch in Verify response and callback response', $response[Field::STATUS_DESC]);
 
         $bharatQr = $this->getLastEntity('bharat_qr', true);
@@ -117,7 +126,7 @@ class BharatQrIsgGatewayTest extends TestCase
 
     public function testVerifyQrPayment()
     {
-        $request = $this->testData["testQrPaymentProcess"];
+        $request = $this->testData['testQrPaymentProcess'];
 
         $qrCode = $this->createVirtualAccount();
 
@@ -156,7 +165,7 @@ class BharatQrIsgGatewayTest extends TestCase
 
     public function testBharatQrFailedVerifyCallback()
     {
-        $request = $this->testData["testQrPaymentProcess"];
+        $request = $this->testData['testQrPaymentProcess'];
 
         $qrCode = $this->createVirtualAccount();
 
@@ -215,7 +224,7 @@ class BharatQrIsgGatewayTest extends TestCase
 
     public function testDecryptionFailureInPaymentNotification()
     {
-        $request = $this->testData["testQrPaymentProcess"];
+        $request = $this->testData['testQrPaymentProcess'];
 
         $qrCode = $this->createVirtualAccount();
 
@@ -229,7 +238,7 @@ class BharatQrIsgGatewayTest extends TestCase
 
         $this->assertEquals(Status::NO_RECORDS, $response[Field::STATUS_CODE]);
 
-        $this->assertEquals("Input string cannot be decrypted", $response[Field::STATUS_DESC]);
+        $this->assertEquals('Input string cannot be decrypted', $response[Field::STATUS_DESC]);
 
         $bharatQr = $this->getLastEntity('bharat_qr', true);
 
@@ -238,5 +247,83 @@ class BharatQrIsgGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertNull($payment);
+    }
+
+    public function testPaymentRefund()
+    {
+        $payment = $this->testQrPaymentProcess();
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('processed', $refund['status']);
+
+        $gatewayEntity = $this->getLastEntity('isg', true);
+
+        $this->assertEquals('00', $gatewayEntity[Entity::STATUS_CODE]);
+    }
+
+    public function testPaymentFailedRefund()
+    {
+        $payment = $this->testQrPaymentProcess();
+
+        $this->mockServerContentFunction(function (&$content, $action = null) {
+
+            if ($action === 'refund')
+            {
+                $content[Field::STATUS_DESC] = 'Refund amount more than payment amount';
+                $content[Field::STATUS_CODE] = '01';
+            }
+        });
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+
+        $gatewayEntity = $this->getLastEntity('isg', true);
+
+        $this->assertEquals('01', $gatewayEntity[Entity::STATUS_CODE]);
+    }
+
+    public function testPartialRefund()
+    {
+        $request = $this->testData[__FUNCTION__];
+
+        $qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
+        $this->getMockServer('isg')->fillBharatQrCallback($request['content'], $qrCode);
+
+        $this->mockServerContentFunction(function (&$content, $action = null) {
+
+            $content[Field::TRANSACTION_AMOUNT] = '2.00';
+        });
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(Status::APPROVED, $response[Field::STATUS_CODE]);
+
+        $this->assertEquals($request['content'][Field::TRANSACTION_ID], $response[Field::TRANSACTION_ID]);
+
+        $bharatQr = $this->getLastEntity('bharat_qr', true);
+
+        // Payment is automatically captured
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->refundPayment($payment['id'], '100');
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('processed', $refund['status']);
+
+        $gatewayEntity = $this->getLastEntity('isg', true);
+
+        $this->assertEquals('00', $gatewayEntity[Entity::STATUS_CODE]);
+
+        $this->assertEquals('100', $gatewayEntity['amount']);
     }
 }

@@ -5,18 +5,22 @@ namespace RZP\Tests\Functional\Payment;
 use Mail;
 use Mockery;
 
+use RZP\Exception;
 use RZP\Mail\Payment\CardSaved as CardSavedMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 use RZP\Models\Card\Entity as Card;
+use RZP\Models\Card\Vault;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Customer\Token\Entity as Token;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class SavedCardsPaymentCreateTest extends TestCase
 {
     use InteractsWithSession;
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -32,7 +36,7 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
 
-        $this->mockTokenex();
+        $this->mockCardVault();
     }
 
     /**
@@ -650,6 +654,24 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->assertEquals($payment1['card_id'], $payment2['card_id']);
     }
 
+    public function testCardVaultStripSpacesCheck()
+    {
+        $this->mockCardVaultStripSpaces();
+
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $this->payment['save'] = 1;
+
+        $this->payment[Payment::CARD]['number'] = '40004 000 0000 0004';
+
+        $this->payment[Payment::CARD]['expiry_year'] = '20';
+
+        $this->payment[Payment::CUSTOMER_ID] = 'cust_100000customer';
+
+        // create payment 1
+        $content = $this->doAuthAndCapturePayment($this->payment);
+    }
+
     /**
      * test card multiple payments with save card local, only one card should be saved
      */
@@ -761,6 +783,27 @@ class SavedCardsPaymentCreateTest extends TestCase
 
     }
 
+    public function testCreateCardVaultToken()
+    {
+        // create payment data
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $this->payment['save'] = 1;
+
+        $this->payment[Payment::CARD]['number'] = '4000400000000004';
+
+        $this->payment[Payment::CARD]['expiry_year'] = '20';
+
+        $this->payment[Payment::CUSTOMER_ID] = 'cust_100000customer';
+
+        // create payment 1
+        $content = $this->doAuthAndCapturePayment($this->payment);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals(Vault::RZP_VAULT, $card['vault']);
+    }
+
     protected function mockSession($appToken = 'capp_1000000custapp')
     {
         $data = [ 'test_app_token' => $appToken ];
@@ -813,6 +856,50 @@ class SavedCardsPaymentCreateTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         return $response;
+    }
+
+    protected function mockCardVaultStripSpaces()
+    {
+        $cardVault = Mockery::mock('RZP\Services\CardVault')->makePartial();
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing(function ($route, $method, $input)
+            {
+                $response = [
+                    'error' => '',
+                    'success' => true,
+                ];
+
+                switch ($route)
+                {
+                    case 'tokenize':
+
+                        $this->assertEquals('4000400000000004', $input['secret']);
+
+                        $response['token'] = base64_encode($input['secret']);
+                        break;
+
+                    case 'detokenize':
+                        $response['value'] = base64_decode($input['token']);
+                        break;
+
+                    case 'validate':
+                        if ($input['token'] === 'fail')
+                        {
+                            $response['success'] = false;
+                        }
+                        break;
+
+                    case 'delete':
+                        break;
+                }
+                return $response;
+            });
+
+        $this->app->instance('card.cardVault', $cardVault);
     }
 
     protected function mockRaven()

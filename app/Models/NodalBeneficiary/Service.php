@@ -19,4 +19,13 @@ class Service extends Base\Service
 
         return $nodalBeneficiary->toArrayAdmin();
     }
+
+    public function createOrUpdateNodalBeneficiary(array $input): array
+    {
+        $this->trace->info(TraceCode::FTS_CREATE_OR_UPDATE_NODAL_BENEFICIARY, $input);
+
+        $nodalBeneficiary = $this->core()->createOrUpdateBeneficiaryForFTS($input);
+
+        return $nodalBeneficiary->toArrayAdmin();
+    }
 }

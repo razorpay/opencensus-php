@@ -28,6 +28,9 @@ class CreateGatewayDowntime extends Migration
             $table->string(Downtime::ISSUER, 50)
                   ->default(Downtime::UNKNOWN);
 
+            $table->string(Downtime::ACQUIRER, 30)
+                  ->default(Downtime::UNKNOWN);
+
             $table->string(Downtime::REASON_CODE, 30);
 
             $table->string(Downtime::SOURCE, 30);
@@ -67,6 +70,8 @@ class CreateGatewayDowntime extends Migration
                   ->onDelete('restrict');
 
             $table->index(Downtime::ISSUER);
+
+            $table->index(Downtime::ACQUIRER);
 
             $table->index(Downtime::GATEWAY);
 

@@ -13,6 +13,13 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Settlement;
 use RZP\Error\PublicErrorDescription;
 
+/**
+ * Class Validator
+ *
+ * @package RZP\Models\Merchant
+ *
+ * @property Entity $entity
+ */
 class Validator extends Base\Validator
 {
     // Maximum image size - 1M.
@@ -38,7 +45,7 @@ class Validator extends Base\Validator
         Entity::NAME                        => 'sometimes|string|max:200',
         Entity::HOLD_FUNDS                  => 'sometimes|in:0,1',
         Entity::WEBSITE                     => 'sometimes|url|max:255|nullable',
-        Entity::CATEGORY                    => 'sometimes|numeric|digits:4',
+        Entity::CATEGORY                    => 'sometimes|string|digits:4',
         Entity::CATEGORY2                   => 'sometimes|string|max:30|custom',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::BILLING_LABEL               => 'sometimes|max:255',
@@ -47,7 +54,7 @@ class Validator extends Base\Validator
         Entity::LINKED_ACCOUNT_KYC          => 'sometimes|boolean',
         Entity::CHANNEL                     => 'sometimes|string|max:32|custom',
         Entity::RISK_RATING                 => 'sometimes|min:0|max:5',
-        Entity::RISK_THRESHOLD              => 'sometimes|integer|min:0|max:20',
+        Entity::RISK_THRESHOLD              => 'sometimes|integer|min:0|max:100',
         Entity::FEE_BEARER                  => 'sometimes|in:customer,platform',
         Entity::FEE_MODEL                   => 'sometimes|in:prepaid,postpaid',
         Entity::REFUND_SOURCE               => 'sometimes|string|max:32|in:balance,credits',
@@ -106,13 +113,19 @@ class Validator extends Base\Validator
         'action'         => 'required|string|filled|max:10|in:insert,delete',
         'name'           => 'required|string|filled',
         'merchant_ids'   => 'required|array',
-        'merchant_ids.*' => 'required|string|filled|max:14'
+        'merchant_ids.*' => 'required|string|filled|size:14'
     ];
 
     protected static $bulkAssignScheduleRules = [
         'schedule'       => 'required|array',
         'merchant_ids'   => 'required|array',
-        'merchant_ids.*' => 'required|string|filled|max:14',
+        'merchant_ids.*' => 'required|string|filled|size:14',
+    ];
+
+    protected static $bulkAssignPricingRules = [
+        'pricing_plan_id' => 'required|string|size:14',
+        'merchant_ids'    => 'required|array',
+        'merchant_ids.*'  => 'required|string|filled|size:14',
     ];
 
     protected static $oauthMailRules = [
@@ -178,6 +191,11 @@ class Validator extends Base\Validator
         Methods\Entity::EMI => 'required|bool',
     ];
 
+    protected static $resetSettlementScheduleRules = [
+        'merchant_ids'   => 'required|sequential_array',
+        'merchant_ids.*' => 'required|alpha_num|size:14',
+    ];
+
     protected static $editConfigValidators = [
         'csv_email',
     ];
@@ -209,6 +227,14 @@ class Validator extends Base\Validator
         Constants::TO                    => 'integer',
         Constants::COUNT                 => 'integer|min:1|max:50',
         Constants::SKIP                  => 'integer',
+    ];
+
+    protected static $merchantPartnerStatusRules = [
+        'email' => 'required|email',
+    ];
+
+    protected static $bulkSyncBalanceRules = [
+        Constants::INTERVAL => 'sometimes|integer|min:15|max:120'
     ];
 
     protected static $submitSupportCallRequestRules = [
@@ -1006,7 +1032,14 @@ class Validator extends Base\Validator
 
         if ($merchant->isBusinessBankingEnabled() === false)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_FORBIDDEN_BUSINESS_BANKING_NOT_ENABLED,
+                null,
+                [
+                    'merchant_id'      => $merchant->getId(),
+                    'merchant_name'    => $merchant->getName(),
+                    'business_banking' => $merchant->isBusinessBankingEnabled()
+                ]);
         }
     }
 
@@ -1032,7 +1065,9 @@ class Validator extends Base\Validator
 
         // Replaces ACCOUNT_NUMBER with corresponding BALANCE_ID.
         $accountNumber = array_pull($input, Balance\Entity::ACCOUNT_NUMBER);
+
         $balanceId = app('repo')->balance->getBalanceIdByAccountNumberOrFail($accountNumber);
+
         $input[Balance\Entity::BALANCE_ID] = $balanceId;
     }
 }

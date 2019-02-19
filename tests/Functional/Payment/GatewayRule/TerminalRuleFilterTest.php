@@ -81,6 +81,7 @@ class TerminalRuleFilterTest extends TestCase
         $testCases = $this->testData[__FUNCTION__];
 
         $this->fixtures->create('terminal:shared_billdesk_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal');
         $this->fixtures->create('terminal:shared_hdfc_terminal');
         $this->fixtures->create('terminal:shared_olamoney_terminal');
         $this->fixtures->create('terminal:shared_jiomoney_terminal');

@@ -16,10 +16,15 @@ trait PaymentFirstDataTrait
 
         if ($mock)
         {
-            $url = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
+            $request = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
         }
 
-        return $this->submitPaymentCallbackRedirect($url);
+        if (is_array($request) === true)
+        {
+            return $this->submitPaymentCallbackRequest($request);
+        }
+
+        return $this->submitPaymentCallbackRedirect($request);
     }
 
     protected function getErrorInAuth()

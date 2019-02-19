@@ -20,21 +20,29 @@ class Validator extends Base\Validator
      */
     const NAME_REGEX = '/(^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–]+[a-zA-Z0-9.)]$)/';
 
+    const MAX_TYPES_ALLOWED = 100;
+
     protected static $createRules = [
-        Entity::NAME    => 'required|string|max:50|nullable|custom',
-        Entity::CONTACT => 'sometimes|nullable|contact_syntax',
-        Entity::EMAIL   => 'sometimes|nullable|email',
-        Entity::TYPE    => 'sometimes|nullable|custom',
-        Entity::NOTES   => 'sometimes|notes',
+        Entity::NAME         => 'required|string|max:50|nullable|custom',
+        Entity::CONTACT      => 'sometimes|nullable|contact_syntax',
+        Entity::EMAIL        => 'sometimes|nullable|email',
+        Entity::TYPE         => 'sometimes|nullable|max:40|alpha_dash_space',
+        Entity::REFERENCE_ID => 'sometimes|string|max:40',
+        Entity::NOTES        => 'sometimes|notes',
     ];
 
     protected static $editRules = [
-        Entity::NAME    => 'sometimes|string|max:50|custom',
-        Entity::CONTACT => 'sometimes|nullable|contact_syntax',
-        Entity::EMAIL   => 'sometimes|nullable|email',
-        Entity::TYPE    => 'sometimes|nullable|custom',
-        Entity::ACTIVE  => 'sometimes|boolean',
-        Entity::NOTES   => 'sometimes|notes',
+        Entity::NAME         => 'sometimes|string|max:50|custom',
+        Entity::CONTACT      => 'sometimes|nullable|contact_syntax',
+        Entity::EMAIL        => 'sometimes|nullable|email',
+        Entity::TYPE         => 'sometimes|nullable|max:40|alpha_dash_space',
+        Entity::REFERENCE_ID => 'sometimes|nullable|string|max:40',
+        Entity::ACTIVE       => 'sometimes|boolean',
+        Entity::NOTES        => 'sometimes|notes',
+    ];
+
+    protected static $createTypeRules = [
+        Entity::TYPE => 'required|filled|max:40|alpha_dash_space',
     ];
 
     protected function validateName($attribute, $value)
@@ -47,10 +55,5 @@ class Validator extends Base\Validator
                 'The name field is invalid.',
                 Entity::NAME);
         }
-    }
-
-    protected function validateType($attribute, $value)
-    {
-        Type::validateType($value);
     }
 }

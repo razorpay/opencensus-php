@@ -5,6 +5,7 @@ namespace RZP\Gateway\Hitachi;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Gateway\Mpi;
+use RZP\Models\Admin;
 use RZP\Models\Card;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
@@ -20,6 +21,7 @@ use RZP\Gateway\Mpi\Base\Eci;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Payment\Verify\Action;
 
 class Gateway extends Base\Gateway
 {
@@ -36,6 +38,7 @@ class Gateway extends Base\Gateway
 
     const TIME_FORMAT = 'His';
     const DATE_FORMAT = 'md';
+    const DYNAMIC_DESCRIPTOR_PREFIX = 'RAZ*';
 
     public function setGatewayParams($input, $mode, $terminal)
     {
@@ -180,13 +183,15 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_REFUND_REQUEST);
 
+        $refundEntity = $this->createGatewayRefundEntity($input);
+
         $response = $this->sendGatewayRequest($request);
 
         $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_REFUND_RESPONSE);
 
         $attributes = $this->getAttributesFromRefundReverseResponse($response);
 
-        $this->createGatewayRefundEntity($input, $attributes);
+        $refundEntity = $this->updateGatewayRefundEntity($refundEntity, $attributes, false);
 
         $this->checkErrorsAndThrowException($response);
     }
@@ -264,18 +269,38 @@ class Gateway extends Base\Gateway
         $this->compareHashes($actualChecksum, $expectedChecksum);
 
         $maskedPan = $input[ResponseFields::MASKED_CARD_NUMBER];
+
         $formattedAmount = $this->getIntegerFormattedAmount($input[ResponseFields::AMOUNT]);
+
+        $cardBin = substr($maskedPan, 0, 6);
+
+        $cardNetwork = Network::detectNetwork($cardBin);
 
         $qrData = [
             BharatQr\GatewayResponseParams::AMOUNT                => $formattedAmount,
-            BharatQr\GatewayResponseParams::CARD_FIRST6           => substr($maskedPan, 0, 6),
+            BharatQr\GatewayResponseParams::CARD_FIRST6           => $cardBin,
             BharatQr\GatewayResponseParams::CARD_LAST4            => substr($maskedPan, -4),
             BharatQr\GatewayResponseParams::SENDER_NAME           => $input[ResponseFields::SENDER_NAME],
             BharatQr\GatewayResponseParams::METHOD                => Payment\Method::CARD,
             BharatQr\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[ResponseFields::MID],
-            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => substr($input[ResponseFields::PURCHASE_ID], 0, 14),
             BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::RRN],
         ];
+
+        // The purchase field can come with any number of zeroes prepended to it based on network and issuer.
+        // We are trimming all left zeroes to ensure our exact qr code id is picked up
+        switch ($cardNetwork)
+        {
+            case Network::VISA :
+                $trimmedQrId = ltrim($input[ResponseFields::PURCHASE_ID], '0');
+                $merchantReference = substr($trimmedQrId, 0, 14);
+                break;
+
+            default :
+                $merchantReference = substr($input[ResponseFields::PURCHASE_ID], 0, 14);
+                break;
+        }
+
+        $qrData[BharatQr\GatewayResponseParams::MERCHANT_REFERENCE] = $merchantReference;
 
         return $qrData;
     }
@@ -429,7 +454,7 @@ class Gateway extends Base\Gateway
             return [];
         }
 
-        $request = $this->getVerifyRequestArray($input);
+        $request = $this->getVerifyRequestArray($input, 'payment');
 
         $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST);
 
@@ -442,6 +467,8 @@ class Gateway extends Base\Gateway
 
     public function verifyRefund(array $input)
     {
+        parent::verify($input);
+
         if ($this->isUnprocessedRefund($input) === true)
         {
             return false;
@@ -452,14 +479,83 @@ class Gateway extends Base\Gateway
             return true;
         }
 
-        parent::verifyRefund($input);
+        $verifyRefundRequest = $this->getVerifyRequestArray($input, 'refund');
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
+            [
+                'request'     => $verifyRefundRequest,
+                'gateway'     => $this->gateway,
+                'refund_id'   => $input['refund']['id'],
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
+            ]);
+
+        $verifyRefundResponse = $this->sendGatewayRequest($verifyRefundRequest);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
+            [
+                'response'    => $verifyRefundResponse,
+                'gateway'     => $this->gateway,
+                'refund_id'   => $input['refund']['id'],
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
+            ]);
+
+        if ((isset($verifyRefundResponse[ResponseFields::STATUS]) === true) and
+            ($verifyRefundResponse[ResponseFields::STATUS] === Status::SUCCESS) and
+            ($verifyRefundResponse[ResponseFields::RESPONSE_CODE] === Status::SUCCESS_CODE))
+        {
+            $gatewayEntity = $this->repo->findByRefundId($input['refund']['id']);
+
+            $attributes = $this->getAttributesFromVerifyRefundResponse($verifyRefundResponse);
+
+            if ($gatewayEntity !== null)
+            {
+                $gatewayEntity->fill($attributes);
+
+                $this->repo->saveOrFail($gatewayEntity);
+            }
+            else
+            {
+                $this->createGatewayRefundEntity($input, $attributes, 'refund');
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     protected function verifyPayment(Verify $verify)
     {
+        $this->checkResponseAndThrowExceptionIfRequired($verify);
+
         $this->setVerifyStatus($verify);
 
         $verify->payment = $this->saveVerifyResponseIfNeeded($verify);
+    }
+
+    protected function checkResponseAndThrowExceptionIfRequired($verify)
+    {
+        $content = $verify->verifyResponseContent;
+
+        /**
+         * For response codes 05, 51, N7 , we are confirmed that the payment has failed. So there is no point calling
+         * verify for such payments repeatedly.
+         */
+
+        $definiteErrorCodes = ['05', '51', 'N7'];
+
+        if ((empty($content[ResponseFields::RESPONSE_CODE]) === false) and
+            (in_array($content[ResponseFields::RESPONSE_CODE], $definiteErrorCodes)) === true)
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify,
+                Action::FINISH);
+        }
     }
 
     protected function setVerifyStatus(Verify $verify)
@@ -743,22 +839,28 @@ class Gateway extends Base\Gateway
         $date = Carbon::now(Timezone::IST)->format(self::DATE_FORMAT);
 
         $currencyCode = Currency::getIsoCode($input['payment']['currency']);
+        $dynamicMerchantName = self::DYNAMIC_DESCRIPTOR_PREFIX . $this->getDynamicMerchantName($input['merchant'], 16);
 
         $content = [
-            RequestFields::TRANSACTION_TYPE    => TransactionType::AUTH,
-            RequestFields::TRANSACTION_AMOUNT  => $this->getFormattedAmount($input['payment']['amount']),
-            RequestFields::TRANSACTION_TIME    => $time,
-            RequestFields::TRANSACTION_DATE    => $date,
-            RequestFields::MERCHANT_ID         => $this->getMerchantId(),
-            RequestFields::MERCHANT_REF_NUMBER => $input['payment']['id'],
-            RequestFields::AUTH_STATUS         => '',
-            RequestFields::ECI                 => '',
-            RequestFields::XID                 => '',
-            RequestFields::ALGORITHM           => '',
-            RequestFields::CAVV2               => '',
-            RequestFields::UCAF                => '',
-            RequestFields::CURRENCY_CODE       => $currencyCode,
+            RequestFields::TRANSACTION_TYPE         => TransactionType::AUTH,
+            RequestFields::TRANSACTION_AMOUNT       => $this->getFormattedAmount($input['payment']['amount']),
+            RequestFields::TRANSACTION_TIME         => $time,
+            RequestFields::TRANSACTION_DATE         => $date,
+            RequestFields::MERCHANT_ID              => $this->getMerchantId(),
+            RequestFields::MERCHANT_REF_NUMBER      => $input['payment']['id'],
+            RequestFields::AUTH_STATUS              => '',
+            RequestFields::ECI                      => '',
+            RequestFields::XID                      => '',
+            RequestFields::ALGORITHM                => '',
+            RequestFields::CAVV2                    => '',
+            RequestFields::UCAF                     => '',
+            RequestFields::CURRENCY_CODE            => $currencyCode,
         ];
+
+        if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::HITACHI_DYNAMIC_DESCR_ENABLED, false) === true)
+        {
+            $content[RequestFields::DYNAMIC_MERCHANT_NAME] = $dynamicMerchantName;
+        }
 
         return $content;
     }
@@ -845,15 +947,15 @@ class Gateway extends Base\Gateway
         return $this->getStandardRequestArray($content);
     }
 
-    protected function getVerifyRequestArray(array $input)
+    protected function getVerifyRequestArray(array $input, $entity)
     {
         $content = [
             RequestFields::TRANSACTION_TYPE    => TransactionType::VERIFY,
             RequestFields::REQUEST_ID          => UniqueIdEntity::generateUniqueId(),
-            RequestFields::TRANSACTION_AMOUNT  => $this->getFormattedAmount($input['payment']['amount']),
+            RequestFields::TRANSACTION_AMOUNT  => $this->getFormattedAmount($input[$entity]['amount']),
             RequestFields::MERCHANT_ID         => $this->getMerchantId(),
             RequestFields::TERMINAL_ID         => $this->getTerminalId(),
-            RequestFields::MERCHANT_REF_NUMBER => $input['payment']['id']
+            RequestFields::MERCHANT_REF_NUMBER => $input[$entity]['id']
         ];
 
         return $this->getStandardRequestArray($content);
@@ -948,6 +1050,18 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
+    public function getAttributesFromVerifyRefundResponse($verifyRefundResponse)
+    {
+        $attributes = [
+            Entity::RRN           => $verifyRefundResponse[ResponseFields::RETRIEVAL_REF_NUM],
+            Entity::STATUS        => $verifyRefundResponse[ResponseFields::STATUS],
+            Entity::RESPONSE_CODE => $verifyRefundResponse[ResponseFields::RESPONSE_CODE],
+            Entity::RECEIVED      => true,
+        ];
+
+        return $attributes;
+    }
+
     // ----------------------------------------- Gateway Payment -------------------------------------------------------
 
     protected function createGatewayPaymentEntity(array $input, array $attributes = [], $action = null)
@@ -975,7 +1089,7 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function createGatewayRefundEntity(array $input, array $attributes = [])
+    protected function createGatewayRefundEntity(array $input, array $attributes = [], $action = null)
     {
         $gatewayPayment = $this->getNewGatewayPaymentEntity();
 
@@ -986,7 +1100,9 @@ class Gateway extends Base\Gateway
             $gatewayPayment->setAcquirer($acquirer);
         }
 
-        $gatewayPayment->setAction($this->action);
+        $action = $action ?: $this->action;
+
+        $gatewayPayment->setAction($action);
 
         $gatewayPayment->setPaymentId($input['payment']['id']);
 
@@ -999,6 +1115,23 @@ class Gateway extends Base\Gateway
         $gatewayPayment->fill($attributes);
 
         $this->repo->saveOrFail($gatewayPayment);
+
+        return $gatewayPayment;
+    }
+
+    protected function updateGatewayRefundEntity(
+        Entity $gatewayPayment,
+        array $attributes,
+        bool $mapped = true)
+    {
+        if ($mapped === true)
+        {
+            $attributes = $this->getMappedAttributes($attributes);
+        }
+
+        $gatewayPayment->fill($attributes);
+
+        $this->getRepository()->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
     }
@@ -1054,7 +1187,7 @@ class Gateway extends Base\Gateway
 
         $request['options'] = [
             'timeout'         => 30,
-            'connect_timeout' => 30,
+            'connect_timeout' => 10,
             'verify'          => false,
         ];
 

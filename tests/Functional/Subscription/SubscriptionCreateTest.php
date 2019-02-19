@@ -28,7 +28,7 @@ class SubscriptionCreateTest extends TestCase
         // This is set to 10 Jan 2018
         // Because in test cases subsription start date is set
         // to 20 Jan 2018 and it should always be in future
-        Carbon::setTestNow("10-1-2018 3:00:00");
+        Carbon::setTestNow('10-1-2018 3:00:00');
     }
 
     // TODO: Add test cases for total_count and end_at generation logic.
@@ -328,6 +328,7 @@ class SubscriptionCreateTest extends TestCase
         // The default is set to 1.
         $this->assertEquals(1, $schedule['anchor']);
         $this->assertEquals(0, $schedule['delay']);
+        $this->assertEquals('subscription', $schedule['type']);
 
         $this->assertEquals($subscription['id'], 'sub_' . $scheduleTask['entity_id']);
         $this->assertEquals('subscription', $scheduleTask['entity_type']);
@@ -382,7 +383,7 @@ class SubscriptionCreateTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $response);
 
         $requestWithEmptyStartAt = $requestWithNoStartAt;
-        $requestWithEmptyStartAt['start_at'] = "";
+        $requestWithEmptyStartAt['start_at'] = '';
 
         $response = $this->makeRequestAndGetContent($requestWithEmptyStartAt);
 
@@ -423,6 +424,7 @@ class SubscriptionCreateTest extends TestCase
         // The subscription start is on 20th Jan
         $this->assertEquals(20, $schedule['anchor']);
         $this->assertEquals(0, $schedule['delay']);
+        $this->assertEquals('subscription', $schedule['type']);
 
         $this->assertEquals($subscription['id'], 'sub_' . $scheduleTask['entity_id']);
         $this->assertEquals('subscription', $scheduleTask['entity_type']);
@@ -452,6 +454,7 @@ class SubscriptionCreateTest extends TestCase
         // The subscription start is on 20th Jan
         $this->assertEquals(6, $schedule['anchor']);
         $this->assertEquals(0, $schedule['delay']);
+        $this->assertEquals('subscription', $schedule['type']);
 
         $this->assertEquals($subscription['id'], 'sub_' . $scheduleTask['entity_id']);
         $this->assertEquals('subscription', $scheduleTask['entity_type']);
@@ -725,6 +728,15 @@ class SubscriptionCreateTest extends TestCase
         $subscription = $this->getEntityById('subscription', $subscription['id']);
 
         $this->assertArrayHasKey('type', $subscription);
+    }
+
+    public function testCreateSubscriptionForViewTest()
+    {
+        $this->testCreateSubscriptionWithoutCustomerId();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->callViewUrlAndMakeAssertions($subscription['id']);
     }
 
     protected function getCreateSubscriptionRequestContent($function, $planId = null)

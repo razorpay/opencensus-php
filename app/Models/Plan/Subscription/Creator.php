@@ -180,6 +180,7 @@ class Creator extends Base\Core
             Schedule\Entity::NAME       => $plan->getInterval() . '/' . $plan->getPeriod(),
             Schedule\Entity::INTERVAL   => $plan->getInterval(),
             Schedule\Entity::PERIOD     => $plan->getPeriod(),
+            Schedule\Entity::TYPE       => Schedule\Type::SUBSCRIPTION
         ];
 
         if ($subscription->getStartAt() !== null)

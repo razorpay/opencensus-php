@@ -27,6 +27,13 @@ class ScroogeController extends Controller
         return ApiResponse::json($response['body'], $response['code']);
     }
 
+    public function enqueue()
+    {
+        $response = $this->app['scrooge']->enqueueRefunds($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
     public function statusUpdate(string $id)
     {
         $response = $this->app['scrooge']->updateRefundStatus($id, $this->input);

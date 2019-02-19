@@ -10,6 +10,7 @@ return [
             'method'  => 'POST',
             'content' => [
                 'application_id' => '10000000000App',
+                'partner_id'     => '10000000000000',
             ]
         ],
         'response' => [
@@ -28,6 +29,7 @@ return [
             'method'  => 'POST',
             'content' => [
                 'application_id' => '10000000000Ap',
+                'partner_id'     => '10000000000000',
             ]
         ],
         'response' => [
@@ -51,6 +53,7 @@ return [
             'method'  => 'POST',
             'content' => [
                 'application_id' => '10000000000App',
+                'partner_id'     => '10000000000000',
             ]
         ],
         'response' => [
@@ -69,6 +72,7 @@ return [
             'method'  => 'POST',
             'content' => [
                 'application_id' => '10000000000App',
+                'partner_id'     => '10000000000000',
             ]
         ],
         'response' => [

@@ -19,6 +19,7 @@ class Action
     const VALIDATE_PUSH = 'validate_push';
     const PAYOUT        = 'payout';
     const PAYOUT_VERIFY = 'payout_verify';
+    const VERIFY_REFUND = 'verify_refund';
 
     public static $nonVerifiableActions = [
         self::AUTHENTICATE

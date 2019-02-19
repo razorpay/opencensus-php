@@ -13,6 +13,7 @@ class Fetch extends BaseFetch
             Entity::CUSTOMER_ID => 'sometimes|string|min:14|max:19',
             Entity::MERCHANT_ID => 'sometimes|alpha_num|size:14',
             Entity::NOTES       => 'sometimes|notes_fetch',
+            Entity::BALANCE_ID  => 'sometimes|unsigned_id',
         ],
         AuthType::PROXY_AUTH => [
             Entity::RECEIVER_TYPE => 'sometimes|in:bank_account,qr_code',
@@ -27,6 +28,7 @@ class Fetch extends BaseFetch
             Entity::STATUS,
             Entity::NOTES,
             Entity::CUSTOMER_ID,
+            Entity::BALANCE_ID,
         ],
         AuthType::PROXY_AUTH => [
             Entity::RECEIVER_TYPE,
@@ -43,5 +45,6 @@ class Fetch extends BaseFetch
 
     const COMMON_FIELDS = [
         Entity::MERCHANT_ID,
+        Entity::BALANCE_ID,
     ];
 }

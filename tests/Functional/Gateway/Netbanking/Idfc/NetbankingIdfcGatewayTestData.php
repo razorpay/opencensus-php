@@ -31,6 +31,36 @@ return [
         'terminal_id'       => '100NbIdfcTrmnl',
     ],
 
+    'testTpvPayment' => [
+        'request' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'method'         => 'netbanking',
+                'bank'           => 'IDFB',
+                'account_number' => '14030403040304',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+            ],
+        ],
+    ],
+
+    'testTpvPaymentEntity' => [
+        'amount'          => 500,
+        'action'          => 'authorize',
+        'bank'            => 'IDFB',
+        'bank_payment_id' => '9999999999',
+        'status'          => 'SUC000',
+        'reference1'      => null,
+        'received'        => true,
+    ],
+
     'testPaymentNetbankingEntity' => [
         'bank_payment_id' => '9999999999',
         'received'        => true,

@@ -2,10 +2,16 @@
 
 namespace RZP\Models\P2p\Vpa;
 
+use Illuminate\Support\Str;
+use RZP\Base\BuilderEx;
 use RZP\Models\P2p\Base;
 
 class Entity extends Base\Entity
 {
+    use Base\Traits\HasDevice;
+    use Base\Traits\HasHandle;
+    use Base\Traits\HasBankAccount;
+
     const DEVICE_ID        = 'device_id';
     const HANDLE           = 'handle';
     const GATEWAY_DATA     = 'gateway_data';
@@ -19,12 +25,28 @@ class Entity extends Base\Entity
     const VERIFIED         = 'verified';
     const DEFAULT          = 'default';
 
+    /***************** Input Keys ****************/
+
+    const VPA              = 'vpa';
+    const BANK_ACCOUNT     = 'bank_account';
+    const AEROBASE         = '@';
+    const ADDRESS          = 'address';
+
     /************** Entity Properties ************/
 
     protected $entity             = 'p2p_vpa';
     protected static $sign        = 'vpa';
-    protected $generateIdOnCreate = false;
-    protected static $generators  = [];
+    protected $generateIdOnCreate = true;
+    protected static $generators  = [
+        Entity::PERMISSIONS,
+    ];
+
+    protected $publicSetters      = [
+        self::ENTITY,
+        self::ID,
+        self::BANK_ACCOUNT_ID,
+        self::ADDRESS,
+    ];
 
     protected $dates = [
         Entity::DELETED_AT,
@@ -33,8 +55,6 @@ class Entity extends Base\Entity
     ];
 
     protected $fillable = [
-        Entity::DEVICE_ID,
-        Entity::HANDLE,
         Entity::GATEWAY_DATA,
         Entity::USERNAME,
         Entity::BANK_ACCOUNT_ID,
@@ -59,19 +79,17 @@ class Entity extends Base\Entity
         Entity::ACTIVE,
         Entity::VALIDATED,
         Entity::VERIFIED,
+        Entity::DEFAULT,
         Entity::CREATED_AT,
     ];
 
     protected $public = [
+        Entity::ENTITY,
         Entity::ID,
-        Entity::DEVICE_ID,
+        Entity::ADDRESS,
         Entity::HANDLE,
-        Entity::GATEWAY_DATA,
         Entity::USERNAME,
         Entity::BANK_ACCOUNT_ID,
-        Entity::BENEFICIARY_NAME,
-        Entity::PERMISSIONS,
-        Entity::FREQUENCY,
         Entity::ACTIVE,
         Entity::VALIDATED,
         Entity::VERIFIED,
@@ -79,17 +97,13 @@ class Entity extends Base\Entity
     ];
 
     protected $defaults = [
-        Entity::DEVICE_ID        => null,
-        Entity::HANDLE           => null,
         Entity::GATEWAY_DATA     => null,
-        Entity::USERNAME         => null,
         Entity::BANK_ACCOUNT_ID  => null,
         Entity::BENEFICIARY_NAME => null,
-        Entity::PERMISSIONS      => null,
-        Entity::FREQUENCY        => null,
+        Entity::FREQUENCY        => Frequency::MULTIPLE,
         Entity::ACTIVE           => true,
-        Entity::VALIDATED        => null,
-        Entity::VERIFIED         => null,
+        Entity::VALIDATED        => true,
+        Entity::VERIFIED         => false,
     ];
 
     protected $casts = [
@@ -109,6 +123,14 @@ class Entity extends Base\Entity
         Entity::CREATED_AT       => 'int',
         Entity::UPDATED_AT       => 'int',
     ];
+
+    /**************** GENERATORS ***************/
+
+    public function generatePermissions(array $input)
+    {
+        $this->setAttribute(Entity::PERMISSIONS,
+                            Permissions::getDefaultBitmask(Permissions::CUSTOMER));
+    }
 
     /***************** SETTERS *****************/
 
@@ -243,6 +265,14 @@ class Entity extends Base\Entity
     }
 
     /**
+     * @return string self::ADDRESS
+     */
+    public function getAddress()
+    {
+        return $this->getAttribute(self::ADDRESS);
+    }
+
+    /**
      * @return string self::BANK_ACCOUNT_ID
      */
     public function getBankAccountId()
@@ -301,5 +331,22 @@ class Entity extends Base\Entity
     public function isDefault()
     {
         return $this->getAttribute(self::DEFAULT);
+    }
+
+    /***************** SCOPES *****************/
+
+    public function scopeDefault(BuilderEx $query, bool $value = true)
+    {
+        $query->where(self::DEFAULT, $value);
+    }
+
+    public function getAddressAttribute()
+    {
+        return implode(self::AEROBASE, [$this->getUsername(), $this->getHandle()]);
+    }
+
+    public function setPublicAddressAttribute(array & $array)
+    {
+        $array[self::ADDRESS] = $this->getAddress();
     }
 }
