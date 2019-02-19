@@ -16,6 +16,7 @@ use RZP\Models\Partner\Commission;
 use Razorpay\OAuth\Application as OAuthApp;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Models\Pricing\Calculator as FeeCalculator;
+use RZP\Models\Partner\Commission\CommissionSourceInterface;
 
 /**
  * Class Calculator
@@ -42,7 +43,7 @@ class Calculator extends Base\Core
     /**
      * An entity that implemnents the CommissionSourceInterface - payment, refund etc
      *
-     * @var Base\PublicEntity
+     * @var CommissionSourceInterface
      */
     protected $source;
 
@@ -104,9 +105,9 @@ class Calculator extends Base\Core
     /**
      * Calculator constructor.
      *
-     * @param Base\PublicEntity $sourceEntity
+     * @param CommissionSourceInterface $sourceEntity
      */
-    public function __construct(Base\PublicEntity $sourceEntity)
+    public function __construct(CommissionSourceInterface $sourceEntity)
     {
         parent::__construct();
 
@@ -131,9 +132,9 @@ class Calculator extends Base\Core
     }
 
     /**
-     * @return Base\PublicEntity
+     * @return CommissionSourceInterface
      */
-    public function getSource(): Base\PublicEntity
+    public function getSource(): CommissionSourceInterface
     {
         return $this->source;
     }
@@ -254,9 +255,9 @@ class Calculator extends Base\Core
     // ==================================== SETTERS ====================================
 
     /**
-     * @param Base\PublicEntity $source
+     * @param CommissionSourceInterface $source
      */
-    public function setSource(Base\PublicEntity $source)
+    public function setSource(CommissionSourceInterface $source)
     {
         $this->source = $source;
     }
@@ -352,9 +353,9 @@ class Calculator extends Base\Core
     // ====================================== END ======================================
 
     /**
-     * @param Base\PublicEntity $sourceEntity
+     * @param CommissionSourceInterface $sourceEntity
      */
-    protected function setBaseContext(Base\PublicEntity $sourceEntity)
+    protected function setBaseContext(CommissionSourceInterface $sourceEntity)
     {
         // payment, refund etc
         $this->setSource($sourceEntity);
@@ -478,13 +479,8 @@ class Calculator extends Base\Core
      * Calculates all types of applicable commissions [implicit (fixed and variable), explicit (fixed)]
      * and updates the class property - $this->commissions.
      */
-    public function calculate()
+    protected function calculate()
     {
-        if ($this->shouldCreateCommission() === false)
-        {
-            return;
-        }
-
         $this->buildImplicitVariableCommissionEntities();
     }
 
@@ -518,7 +514,7 @@ class Calculator extends Base\Core
 
         foreach ($this->commissions as $commission)
         {
-            $this->updateStatus($commission);
+            $this->updateCommissionStatus($commission);
 
             $this->repo->saveOrFail($commission);
         }
@@ -526,11 +522,11 @@ class Calculator extends Base\Core
         $this->traceContext(TraceCode::COMMISSION_CREATED);
     }
 
-    protected function updateStatus(Commission\Entity $commission)
+    protected function updateCommissionStatus(Commission\Entity $commission)
     {
         //
         // @todo: Add a check. Implicit commissions must be set processed once picked up, and, the status for the
-        // explicit commissions must be updated based on the explicit_should_charge flag. Also, add fn desctiption.
+        // explicit commissions must be updated based on the explicit_should_charge flag. Also, add fn description.
         //
         $commission->setStatus(Status::RECORDED);
     }

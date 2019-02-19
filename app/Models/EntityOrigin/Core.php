@@ -101,7 +101,7 @@ class Core extends Base\Core
         //
         $accessMap = null;
 
-        if ($originType == Constants::APPLICATION)
+        if ($originType === Constants::APPLICATION)
         {
             $partnerApp = $origin;
         }
