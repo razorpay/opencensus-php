@@ -17,7 +17,9 @@ export default class WorkflowRequestsList extends Component {
 
   componentWillMount() {
     return adminFetch('live/workflows').then(data => {
-      const workflows = data.items.filter(i => i.name.indexOf('razorx_') > -1);
+      const workflows = data.items.filter(
+        i => i.name.toLowerCase().indexOf('razorx') > -1
+      );
 
       this.defaultWorkflowId = workflows[0].id.replace('workflow_', '');
 
