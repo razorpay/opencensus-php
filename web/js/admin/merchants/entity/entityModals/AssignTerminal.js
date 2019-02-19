@@ -30,7 +30,7 @@ const gatewayMapping = {
   upi_icici: 'UPI/ICICI',
   upi_hulk: 'UPI/HULK',
   upi_mindgate: 'UPI/Mindgate',
-  upi_axis:  'UPI/Axis',
+  upi_axis: 'UPI/Axis',
   aeps_icici: 'AEPS/ICICI',
   wallet_airtelmoney: 'Airtelmoney',
   wallet_freecharge: 'Freecharge',

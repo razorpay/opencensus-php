@@ -24,3 +24,7 @@ export function isOrgHDFC() {
 export function isOrgRazorpay() {
   return org.custom_code === 'rzp';
 }
+
+export function getOrgId() {
+  return org.id.replace('org_', '');
+}

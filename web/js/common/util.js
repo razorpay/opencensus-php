@@ -55,9 +55,9 @@ export const formatDate = value => {
   let date;
 
   /*
-  * This is anomaly for shield service, which stored time in format = 2018-06-15T11:04:45Z.
-  * It has to get fixed sometime. For now, it's exception.
-  * */
+   * This is anomaly for shield service, which stored time in format = 2018-06-15T11:04:45Z.
+   * It has to get fixed sometime. For now, it's exception.
+   * */
   if (typeof value === 'string') {
     date = new moment(value);
   } else {
@@ -77,7 +77,7 @@ export const removeLineBreaks = str => str.replace(/[\n|\r]/g, ' ');
 
 /*
  * Check for pending workflow requests
-*/
+ */
 export const isWorkflow = (response, history = null) => {
   if (
     typeof response.id !== 'undefined' &&
@@ -135,8 +135,8 @@ export function subString(str, length) {
 }
 
 /*
-* Helper fn. to fetch IFSC bank details for IFSC code entered in field
-* */
+ * Helper fn. to fetch IFSC bank details for IFSC code entered in field
+ * */
 export function getDetailsForIFSC(ifscCode) {
   if (ifscCode.length !== 11) {
     return null;

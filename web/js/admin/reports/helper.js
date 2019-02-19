@@ -30,22 +30,33 @@ const handleError = e => {
   return reportErrorMsg;
 };
 
-const createLog = (data, merchantId) => {
+const createLog = (data, id, adminHeaders) => {
+  const url = adminHeaders
+    ? `live/admin-reporting/logs`
+    : `live_${id}/reporting/logs`;
+
   return adminPost({
-    url: `live_${merchantId}/reporting/logs`,
+    url,
     data,
+    ...(adminHeaders && { headers: adminHeaders }),
   });
 };
 
-const getLog = (logId, merchantId) => {
+const getLog = (logId, merchantId, headers) => {
+  const url = headers
+    ? `live/admin-reporting/logs/${logId}`
+    : `live_${merchantId}/reporting/logs/${logId}`;
   return adminFetch({
-    url: `live_${merchantId}/reporting/logs/${logId}`,
+    url,
+    headers,
   });
 };
 
-const getFile = (fileId, merchantId) => {
+const getFile = (fileId, merchantId, adminHeaders) => {
   return adminFetch({
-    url: `live_${merchantId}/ufh/file/${fileId}/get-signed-url`,
+    url: `live_${merchantId}/${
+      adminHeaders ? 'admin-' : ''
+    }ufh/file/${fileId}/get-signed-url`,
   });
 };
 
@@ -55,11 +66,14 @@ const pollInterval = 2, // poll interval in SECONDS
 export const generateReportV2 = params => {
   const startTime = new Date();
   const merchantId = params.generated_by;
+  const adminHeaders = params.headers;
+
+  delete params.headers;
 
   let numCallsMade = 0,
     timeElapsed = 0;
 
-  return createLog(params, merchantId)
+  return createLog(params, merchantId, adminHeaders)
     .then(resp => {
       if (!resp || !resp.id) {
         return reportErrorMsg;
@@ -68,7 +82,7 @@ export const generateReportV2 = params => {
       const logId = resp.id;
 
       const logPoll = poll({
-        fetchFunc: () => getLog(resp.id, merchantId),
+        fetchFunc: () => getLog(resp.id, merchantId, adminHeaders),
         validator: resp => {
           numCallsMade++;
           timeElapsed = new Date() - startTime;
@@ -115,7 +129,7 @@ export const generateReportV2 = params => {
             };
           }
 
-          return getFile(fileId, merchantId)
+          return getFile(fileId, merchantId, adminHeaders)
             .then(resp => {
               if (!resp) {
                 return reportErrorMsg;

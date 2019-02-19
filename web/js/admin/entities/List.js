@@ -120,9 +120,9 @@ export default class EntityList extends Component {
   };
 
   /*
-    * Clear the previous values (It doesn't clear WHOLE FORM. it only clears the value to default value.
+   * Clear the previous values (It doesn't clear WHOLE FORM. it only clears the value to default value.
    * But after search, new values becomes default value if defaultValue props is missing)
-  */
+   */
   clearForm(currentEntity) {
     document.getElementById('entity-form').reset();
     // document.getElementsByName("from")[0].value = ''; // TODO: Clear from and to values explicitly
@@ -281,8 +281,8 @@ export default class EntityList extends Component {
     let selectedFilters = sharedData.entities[this.selectedEntity];
     let selectedFiltersArray = [];
     if (selectedFilters) {
-      selectedFiltersArray = Object.keys(selectedFilters).sort(
-        (a, b) => (b.endsWith('_id') ? 1 : -1)
+      selectedFiltersArray = Object.keys(selectedFilters).sort((a, b) =>
+        b.endsWith('_id') ? 1 : -1
       );
     }
 

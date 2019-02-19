@@ -47,6 +47,7 @@ import ScroogeRefunds from 'admin/scrooge/Refunds';
 import ScroogeActions from 'admin/scrooge/Actions';
 import ScroogeRefund from 'admin/scrooge/Refund';
 
+import Reports from 'admin/reports';
 import BankFileUpload from 'admin/banks/file-upload';
 
 const links = [
@@ -79,6 +80,7 @@ const links = [
 
   // user access management
   [
+    ['Reports', '/reports', 'download_non_merchant_report', 'books'],
     ['Invites', '/invites', 'view_merchant_invite', 'user-plus'],
     ['Organisations', '/orgs', 'view_all_org', 'building'],
     ['Users', '/users', 'view_all_admin', 'user'],
@@ -158,6 +160,7 @@ export default ({ location }) => (
       component={ScroogeRefund}
     />
 
+    <Route path="/reports" component={Reports} />
     {user.permissions.indexOf('view_all_merchants') > -1 && (
       <Redirect to="/merchants" />
     )}
