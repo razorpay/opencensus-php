@@ -43,6 +43,21 @@ class Plan extends PublicCollection
     }
 
     /**
+     * Extract and return the plan id from the public collection of pricing rules
+     *
+     * @return null
+     */
+    public function getId()
+    {
+        if ($this->isNotEmpty() === true)
+        {
+            return $this->first()->getPlanId();
+        }
+
+        return null;
+    }
+
+    /**
      * Get the collection of items as a plain array.
      * @return array
      * @throws LogicException

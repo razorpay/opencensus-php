@@ -658,7 +658,7 @@ class Calculator extends Base\Core
     {
         $calculator = $this->getFeeCalculator();
 
-        $pricingPlanId = $this->getPartnerConfig()->getImplicitPricingPlanId();
+        $pricingPlanId = $this->getImplicitPricingPlan()->getId();
 
         $pricing = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($pricingPlanId);
 
