@@ -71,7 +71,7 @@ class CorePaymentService
             self::INPUT   => $input
         ];
 
-        $response = $this->sendRequest('post', 'action', $content);
+        $response = $this->sendRequest('POST', 'action', $content);
 
         return $response;
     }
@@ -92,9 +92,9 @@ class CorePaymentService
 
         $response = $this->sendRawRequest($request);
 
-        $this->traceResponse($response);
-
         $response = $this->processResponse($response);
+
+        $this->traceResponse($response);
 
         return $response;
     }
@@ -110,7 +110,7 @@ class CorePaymentService
                 $response = $this->request->request(
                     $request['url'],
                     $request['headers'],
-                    $request['content'],
+                    json_encode($request['content']),
                     $request['method']);
 
                 break;
@@ -184,7 +184,7 @@ class CorePaymentService
 
     protected function traceResponse(array $response)
     {
-        $this->trace->info(TraceCode::CORE_PAYMENT_SERVICE_RESPONSE, $reponse);
+        $this->trace->info(TraceCode::CORE_PAYMENT_SERVICE_RESPONSE, $response);
     }
 
     protected function throwServiceErrorException(\Throwable $e)
