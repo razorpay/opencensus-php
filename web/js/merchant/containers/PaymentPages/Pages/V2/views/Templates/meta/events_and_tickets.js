@@ -17,7 +17,7 @@ export default {
       insert: '\n',
     },
     {
-      insert: '\nVenue ',
+      insert: '# Add a description and highlights of the event\n\nVenue ',
     },
     {
       attributes: {
@@ -71,6 +71,9 @@ export default {
         header: 2,
       },
       insert: '\n',
+    },
+    {
+      insert: '# Information about passes / packages, website details',
     },
   ],
 };
