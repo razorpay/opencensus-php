@@ -1466,8 +1466,6 @@ trait Authorize
         $gatewayInput['otpSubmitUrl'] = $this->getOtpSubmitUrl();
         $gatewayInput['payment_analytics'] = $payment->getMetadata('payment_analytics');
 
-        $gatewayInput['paymentAnalytics'] = $payment->getMetadata('payment_analytics')->toArray();
-
         if ($payment->hasOrder())
         {
             $gatewayInput['order'] = $payment->order->toArray();

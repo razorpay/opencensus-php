@@ -75,8 +75,8 @@ trait RequestHandlerTrait
         $gatewayPayment = $this->createGatewayPaymentEntity($content);
 
         $extraParameters = [
-            Fields::BROWSER_USERAGENT => $this->input['paymentAnalytics']['user_agent'],
-            Fields::IP_ADDRESS        => $this->input['paymentAnalytics']['ip'],
+            Fields::BROWSER_USERAGENT => $this->input['payment_analytics']['user_agent'],
+            Fields::IP_ADDRESS        => $this->input['payment_analytics']['ip'],
             Fields::HTTP_ACCEPT       => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         ];
 
