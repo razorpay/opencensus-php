@@ -668,6 +668,7 @@ class Gateway
         ],
 
         Method::EMI => [
+            self::HITACHI,
             self::AMEX,
             self::HDFC,
             self::FIRST_DATA,

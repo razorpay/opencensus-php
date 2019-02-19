@@ -9,10 +9,13 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
+use RZP\Services\UfhService;
 use RZP\Constants\Entity as E;
 use RZP\Exception\BaseException;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PaymentLink\Template\UdfSchema;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Models\PaymentLink\Template\Hosted as HostedTemplate;
 
 class Core extends Base\Core
@@ -393,6 +396,7 @@ class Core extends Base\Core
      *
      * @param  Entity  $paymentLink
      * @param  integer $paymentUnits
+     *
      * @return boolean
      */
     protected function hasPaymentSlots(Entity $paymentLink, int $paymentUnits): bool
@@ -578,6 +582,42 @@ class Core extends Base\Core
         }
 
         return $view;
+    }
+
+    /**
+     * It uploads the images in S3 bucket and returns the image cdn urls.
+     *
+     * @param array           $input Includes images to be uploaded in s3 bucket.
+     * @param Merchant\Entity $merchant
+     *
+     * @return array Image cdn urls
+     * @throws \RZP\Exception\ServerErrorException
+     */
+    public function upload(array $input, Merchant\Entity $merchant): array
+    {
+        $urls = [];
+        // Todo: Uncomment below line and remove line below that once devops issue(refer pr desc) fixed.
+        // $cdn  = $this->config->get('url.cdn.' . $this->env);
+        $cdn  = sprintf(
+            'https://s3.ap-south-1.amazonaws.com/rzp-%s-merchant-assets',
+            $this->env === 'production' ? 'prod' : 'nonprod');
+
+        foreach ($input['images'] as $image)
+        {
+            $filenameWithoutExt = str_before($image->getClientOriginalName(), '.' . $image->getClientOriginalExtension());
+
+            $uploadFilename = 'payment-link/description/' . $filenameWithoutExt . '_' . UniqueIdEntity::generateUniqueId();
+
+            $file = (new UfhService($this->app))->uploadFileAndGetUrl(
+                $image,
+                $uploadFilename,
+                Constants::PAYMENT_LINK_DESCRIPTION,
+                $merchant);
+
+            $urls[] = $cdn . '/' . $file[Constants::RELATIVE_LOCATION];
+        }
+
+        return $urls;
     }
 
     /**

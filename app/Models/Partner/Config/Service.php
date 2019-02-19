@@ -102,6 +102,13 @@ class Service extends Base\Service
     }
 
     /**
+     * If only the partner_id or application_id is passed in the input,
+     * an array of configurations are returned which includes the default application config and
+     * all the overridden configs for that partner/application.
+     *
+     * If the submerchant_id is sent along with partner_id or application id,
+     * the relevant submerchant config (overridden config, if available; else default config) is returned.
+     *
      * @param array $input
      *
      * @return array|null
@@ -112,11 +119,21 @@ class Service extends Base\Service
         $application = $this->getApplicationFromInput($input);
         $subMerchant = $this->getSubMerchantFromInput($input);
 
-        $config      = (new Core)->fetch($application, $subMerchant);
+        $core       = new Core;
+        $configData = null;
 
-        $configArray = optional($config)->toArrayPublic();
+        if (empty($subMerchant) === true)
+        {
+            $configs     = $core->fetchAllConfigForApp($application);
+            $configData  = $configs->toArrayPublicEmbedded();
+        }
+        else
+        {
+            $config      = $core->fetch($application, $subMerchant);
+            $configData  = optional($config)->toArrayPublic();
+        }
 
-        return $configArray;
+        return $configData;
     }
 
     public function update(string $id, array $input) : array

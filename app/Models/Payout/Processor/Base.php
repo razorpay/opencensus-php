@@ -188,7 +188,8 @@ abstract class Base extends BaseCore
 
         //
         // Doing this after all the associations since
-        // the modifiers require payout account to be associated.
+        // the modifiers require payout account and
+        // merchant to be associated.
         //
         $payout = $payout->build($input);
 
@@ -218,7 +219,7 @@ abstract class Base extends BaseCore
             FundTransferAttempt\Entity::PURPOSE   => $payout->getPurposeType(),
             FundTransferAttempt\Entity::CHANNEL   => $payout->getChannel(),
             FundTransferAttempt\Entity::MODE      => $payout->getMode(),
-            FundTransferAttempt\Entity::NARRATION => $this->getNarration($payout),
+            FundTransferAttempt\Entity::NARRATION => $payout->getNarration(),
         ];
 
         $ftaAccount = $this->fundTransferDestination;
@@ -239,31 +240,6 @@ abstract class Base extends BaseCore
             default:
                 // Throw exception
         }
-    }
-
-    /**
-     * Rules:
-     * - Min: 2 characters
-     * - Max: 120 characters
-     * - Regex: [\w\s]
-     *
-     * @param Payout\Entity $payout
-     *
-     * @return string
-     */
-    protected function getNarration(Payout\Entity $payout)
-    {
-        $merchant = $payout->merchant;
-
-        $merchantBillingLabel = $merchant->getBillingLabel();
-
-        $formattedLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $merchantBillingLabel);
-
-        $formattedLabel = ($formattedLabel ? str_limit($formattedLabel, 30) : 'Razorpay');
-
-        $narration = $formattedLabel . ' Fund Transfer';
-
-        return $narration;
     }
 
     protected function preValidations()

@@ -34,7 +34,7 @@ class Validator extends Base\Validator
         Entity::FUND_ACCOUNT_ID => 'sometimes|public_id',
         Entity::MODE            => 'sometimes|nullable|string',
         Entity::REFERENCE_ID    => 'sometimes|nullable|string|max:40',
-
+        Entity::NARRATION       => 'sometimes|nullable|string|max:30',
     ];
 
     protected static $fundAccountPayoutRules = [
@@ -46,6 +46,7 @@ class Validator extends Base\Validator
         Entity::FUND_ACCOUNT_ID => 'required|public_id',
         Entity::MODE            => 'sometimes|nullable|string|custom',
         Entity::REFERENCE_ID    => 'sometimes|nullable|string|max:40',
+        Entity::NARRATION       => 'sometimes|nullable|string|max:30|alpha_space_num',
     ];
 
     protected static $customerWalletPayoutRules = [
@@ -56,6 +57,7 @@ class Validator extends Base\Validator
         Entity::BALANCE_ID      => 'sometimes|filled|size:14',
         Entity::FUND_ACCOUNT_ID => 'required|public_id',
         Entity::REFERENCE_ID    => 'sometimes|nullable|string|max:40',
+        Entity::NARRATION       => 'sometimes|nullable|string|max:30|alpha_space_num',
     ];
 
     protected static $merchantPayoutRules = [

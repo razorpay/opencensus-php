@@ -39,7 +39,6 @@ class Repository extends Base\Repository
         Entity::ACQUIRER    => '=',
         Entity::METHOD      => '=',
         Entity::SOURCE      => '=',
-        Entity::BEGIN       => '<=',
         Entity::TERMINAL_ID => '=',
     ];
 
@@ -47,7 +46,6 @@ class Repository extends Base\Repository
         Entity::GATEWAY,
         Entity::ISSUER,
         Entity::METHOD,
-        Entity::BEGIN,
         Entity::SOURCE,
     ];
 
@@ -56,11 +54,11 @@ class Repository extends Base\Repository
         return false;
     }
 
-    public function fetchUnique($input, array $uniqueRecordIdentifiers = [])
+    public function getConflictingDowntime($input, array $uniqueRecordIdentifiers = [])
     {
         $params = [];
 
-        $uniqueKeys = empty($uniqueRecordIdentifiers) === true ? self::UNIQUE_KEYS : $uniqueRecordIdentifiers;
+        $uniqueKeys = $uniqueRecordIdentifiers ?: self::UNIQUE_KEYS;
 
         foreach ($uniqueKeys as $key)
         {
@@ -79,9 +77,33 @@ class Repository extends Base\Repository
             $query->whereNull(Entity::TERMINAL_ID);
         }
 
-        return $query->whereNull(Entity::END)
-                     ->orderBy(Entity::CREATED_AT)
+        $this->addOverlapQuery($query, $input);
+
+        return $query->orderBy(Entity::CREATED_AT)
                      ->first();
+    }
+
+    /**
+     * This looks complicated, but it works.
+     *
+     * If you're not absolutely certain what
+     * you're doing, don't fucking touch it.
+     *
+     * @param [type] $query [description]
+     * @param [type] $input [description]
+     */
+    protected function addOverlapQuery($query, $input)
+    {
+        $query->where(function ($query) use ($input)
+        {
+            $query->whereNull(Entity::END)
+                  ->orWhere(Entity::END, '>=', $input[Entity::BEGIN]);
+        });
+
+        if (isset($input[Entity::END]) === true)
+        {
+            $query->where(Entity::BEGIN, '<=', $input[Entity::END]);
+        }
     }
 
     public function fetchMostRecentActive(array $input, array $fetchByKeys = [])

@@ -3,15 +3,11 @@
 namespace RZP\Models\Gateway\Terminal;
 
 use App;
-
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Mode;
 use RZP\Gateway\Base\Terminal;
 use RZP\Constants\Environment;
-use RZP\Constants\Entity as Constants;
-use RZP\Models\Terminal\Repository as TerminalRepo;
 
 class Service extends Base\Service
 {

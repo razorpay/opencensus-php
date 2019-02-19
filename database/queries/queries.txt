@@ -4722,7 +4722,12 @@ ALTER TABLE gateway_rules
 ALTER TABLE contacts
     ADD INDEX contacts_merchant_id_active_index (merchant_id, active);
 
+ALTER TABLE iins
+    ADD COLUMN type_indicator varchar(255) DEFAULT NULL AFTER type;
+
 ALTER TABLE payments CHANGE `reference4` `cps_route` TINYINT(1);
+
+ALTER TABLE iins change type_indicator message_type varchar(255);
 
 ALTER TABLE bank_accounts
     ADD COLUMN fts_fund_account_id INTEGER DEFAULT NULL AFTER beneficiary_mobile,
@@ -4731,3 +4736,6 @@ ALTER TABLE bank_accounts
 ALTER TABLE vpas
     ADD COLUMN fts_fund_account_id INTEGER DEFAULT NULL AFTER merchant_id,
     ADD INDEX `vpas_fts_fund_account_id_index` (`fts_fund_account_id`);
+
+ALTER TABLE payouts
+    ADD COLUMN narration VARCHAR(255) DEFAULT NULL AFTER reference_id;
