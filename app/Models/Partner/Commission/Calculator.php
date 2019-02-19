@@ -3,8 +3,10 @@
 namespace RZP\Models\Partner\Commission;
 
 use App;
+use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Models\Pricing;
 use RZP\Models\Merchant;
@@ -393,6 +395,7 @@ class Calculator extends Base\Core
             $this->traceContext(
                 TraceCode::COMMISSION_NOT_APPLICABLE,
                 [
+                    'implicit_expiry_at'  => $this->getPartnerConfig()->getImplicitExpiryAt(),
                     'customer_fee_bearer' => $this->isCustomerFeeBearer(),
                     'implicit_plan_type'  => optional($this->getImplicitPricingPlan())->getType(),
                     'fee_model_prepaid'   => $this->getSubMerchant()->isPrepaid(),
@@ -427,6 +430,13 @@ class Calculator extends Base\Core
         }
 
         if ($this->getImplicitPricingPlan() === null)
+        {
+            return false;
+        }
+
+        $now = Carbon::now(Timezone::IST)->getTimestamp();
+
+        if ($this->getPartnerConfig()->getImplicitExpiryAt() < $now)
         {
             return false;
         }
