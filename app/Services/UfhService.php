@@ -39,6 +39,8 @@ class UfhService
 
     const DISPLAY_NAME      = 'display_name';
 
+    const METADATA          = 'metadata';
+
 
     protected $config;
 
@@ -95,6 +97,7 @@ class UfhService
      * @param string $storageFileName
      * @param string $type
      * @param Entity $entity
+     * @param array  $metadata
      *
      * @return array
      *
@@ -104,7 +107,8 @@ class UfhService
                                         UploadedFile $file,
                                         string $storageFileName,
                                         string $type,
-                                        Entity $entity): array
+                                        Entity $entity,
+                                        array $metadata = []): array
     {
         $ext = $file->getClientOriginalExtension();
 
@@ -118,6 +122,7 @@ class UfhService
             self::ENTITY_TYPE   => $entity->getEntityName(),
             self::STORE         => $this->getStoreForEnv(),
             self::DISPLAY_NAME  => pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
+            self::METADATA      => $metadata,
         ];
 
         $this->trace->info(
