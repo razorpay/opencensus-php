@@ -596,7 +596,11 @@ class Core extends Base\Core
     public function upload(array $input, Merchant\Entity $merchant): array
     {
         $urls = [];
-        $cdn  = $this->config->get('url.cdn.' . $this->env);
+        // Todo: Uncomment below line and remove line below that once devops issue(refer pr desc) fixed.
+        // $cdn  = $this->config->get('url.cdn.' . $this->env);
+        $cdn  = sprintf(
+            'https://s3.ap-south-1.amazonaws.com/rzp-%s-merchant-assets',
+            $this->env === 'production' ? 'prod' : 'nonprod');
 
         foreach ($input['images'] as $image)
         {
