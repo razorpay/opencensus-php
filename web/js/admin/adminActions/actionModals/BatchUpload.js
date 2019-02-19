@@ -1,6 +1,11 @@
 import React, { Component } from 'react';
 import Form from 'ui/Form';
-import Field, { SelectField, FileField, TextAreaField } from 'ui/Field';
+import Field, {
+  SelectField,
+  FileField,
+  TextAreaField,
+  SelectMode,
+} from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 
 import { adminFormUpload } from 'common/fetch';
@@ -16,6 +21,10 @@ const options = {
   reconciliation: {
     extraFields: ['name', 'config', 'gateway'],
     gateways: ['enach_rbl', 'hdfc', 'axis'],
+  },
+  merchant_onboarding: {
+    extraFields: ['gateway'],
+    gateways: ['emi_sbi'],
   },
 };
 
@@ -34,7 +43,7 @@ export default class BatchUpload extends Component {
     this.setState({ selectedType });
   };
 
-  handleSave = body => {
+  handleSave = ({ mode, ...body }) => {
     let form = {
       file: document.querySelector('[name=file]').files[0],
     };
@@ -47,7 +56,7 @@ export default class BatchUpload extends Component {
 
     form = { ...body, ...form };
 
-    return adminFormUpload(form, `/admin/api/live/admin/batches`).then(
+    return adminFormUpload(form, `/admin/api/${mode}/admin/batches`).then(
       response => {
         if (response.data.success) {
           notifySuccess('Batch uploaded successfully!');
@@ -66,6 +75,7 @@ export default class BatchUpload extends Component {
 
     return (
       <Form class="full-span full-elements" style={{ width: '650px' }}>
+        <SelectMode defaultValue="live" />
         <FileField label="Batch File" name="file" required={true} />
         <SelectField
           label="Type"
