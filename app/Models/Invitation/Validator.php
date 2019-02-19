@@ -62,9 +62,15 @@ class Validator extends Base\Validator
 
         $product = app('basicauth')->getRequestOriginProduct();
 
+        $userRole = app('basicauth')->getUserRole();
+
         if ($merchant->isLinkedAccount() === true)
         {
             $dashboardRoles = User\Role::LINKED_ACCOUNT_ROLES;
+        }
+        else if($userRole === User\Role::RBL_SUPERVISOR)
+        {
+            $dashboardRoles = User\Role::RBL_ROLES;
         }
         else if ($product === Product::BANKING)
         {
