@@ -9,7 +9,6 @@ import SettlementDetails from 'merchant/containers/Settlements/Details';
 import PaymentLinkEntity from 'merchant/containers/PaymentLinks/Links/Entity';
 import PaymentPages from 'merchant/containers/PaymentPages/Pages/Entity';
 import PaymentLinksCreate from 'merchant/containers/PaymentLinks/Links/Create/index';
-import PaymentPagesCreate from 'merchant/containers/PaymentPages/Pages/Create/index';
 import PaymentPagesWysiwyg from 'merchant/containers/PaymentPages/Pages/V2/Wysiwyg';
 import PaymentsDetails from 'merchant/containers/Payments/Details';
 import RefundDetails from 'merchant/containers/Refunds/Details';
@@ -127,11 +126,6 @@ const entityModalsMap = {
     component: PaymentLinksCreate,
     additionalCondition: user => user.isAllowedEdit('payment_links'),
   },
-  '/paymentpages/new': {
-    component: PaymentPagesCreate,
-    featureEnabled: 'paymentpages',
-    additionalCondition: user => user.isAllowedEdit('payment_pages'),
-  },
   '/authlinks/new': {
     component: NewAuthLink,
     additionalCondition: user => user.isChargeAtWillEnabled,
@@ -154,13 +148,13 @@ export const supportHashMapping = {
 const fullPageViewsMap = {
   '/paymentpages/new': {
     component: PaymentPagesWysiwyg,
-    featureEnabled: 'paymentpagesv2',
-    additionalCondition: user => user.isAllowedEdit('payment_pages'),
+    additionalCondition: user =>
+      user.isPaymentPagesV2Enabled && user.isAllowedEdit('payment_pages'),
   },
   '/paymentpages/:id(pl_.+)/edit': {
     component: PaymentPagesWysiwyg,
-    featureEnabled: 'paymentpagesv2',
-    additionalCondition: user => user.isAllowedEdit('payment_pages'),
+    additionalCondition: user =>
+      user.isPaymentPagesV2Enabled && user.isAllowedEdit('payment_pages'),
   },
 };
 
