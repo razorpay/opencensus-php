@@ -501,31 +501,11 @@ class Gateway extends Base\Gateway
                 'terminal_id' => $input['terminal']['id'],
             ]);
 
-        $emptyArray = true;
-
-        foreach ($verifyRefundResponse as $key => $value)
-        {
-            if ($value !== null)
-            {
-                $emptyArray = false;
-
-                break;
-            }
-        }
-
-        if ($emptyArray === true)
-        {
-            return $scroogeResponse->setSuccess(false)
-                                   ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
-                                   ->toArray();
-        }
-
-        $this->checkErrorsAndThrowException($verifyRefundResponse);
-        
         if ((isset($verifyRefundResponse[ResponseFields::STATUS]) === true) and
-            ($verifyRefundResponse[ResponseFields::STATUS] === Status::SUCCESS) and
-            ($verifyRefundResponse[ResponseFields::RESPONSE_CODE] === Status::SUCCESS_CODE))
+            ($verifyRefundResponse[ResponseFields::STATUS] === Status::SUCCESS))
         {
+            $this->checkErrorsAndThrowException($verifyRefundResponse);
+
             $gatewayEntity = $this->repo->findByRefundId($input['refund']['id']);
 
             $attributes = $this->getAttributesFromVerifyRefundResponse($verifyRefundResponse);
