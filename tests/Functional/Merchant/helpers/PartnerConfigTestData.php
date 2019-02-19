@@ -320,7 +320,14 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity_id'   => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID,
+                [
+                    'entity_id'   => PartnerConfigTest::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                    'entity_type' => 'merchant',
+                ],
+                [
+                    'entity_id'   => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID,
+                    'entity_type' => 'application',
+                ],
             ],
         ],
     ],
@@ -340,6 +347,25 @@ return [
                 'entity_id'   => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID,
                 'origin_id'   => null,
                 'origin_type' => null,
+            ],
+        ],
+    ],
+
+    'testGettingOverriddenConfig' => [
+        'request'  => [
+            'url'     => '/partner_configs',
+            'method'  => 'GET',
+            'content' => [
+                'application_id' => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID,
+                'submerchant_id' => PartnerConfigTest::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity_type' => 'merchant',
+                'entity_id'   => PartnerConfigTest::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'origin_id'   => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID,
+                'origin_type' => 'application',
             ],
         ],
     ],

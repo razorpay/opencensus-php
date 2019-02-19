@@ -40,4 +40,21 @@ class CardVaultTest extends TestCase
 
         $this->assertFalse($response['success']);
     }
+
+    public function testCardVaultFunctionsFailure()
+    {
+        $this->mockCardVault(function ($route, $method, $input)
+            {
+                return null;
+            });
+
+        $this->cardVault = $this->app['card.cardVault'];
+
+        $cardNumber = '4012001038443335';
+
+        $this->makeRequestAndCatchException(function() use ($cardNumber)
+        {
+            $this->cardVault->tokenize(['card' => $cardNumber]);
+        }, \RZP\Exception\RuntimeException::class);
+    }
 }

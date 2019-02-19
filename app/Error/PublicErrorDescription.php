@@ -720,6 +720,8 @@ class PublicErrorDescription
     const BAD_REQUEST_SETTLEMENT_ANOTHER_QUEUE_OPERATION_IN_PROGRESS            = 'Request failed because another settlement queue operation in progress';
     const BAD_REQUEST_NO_DEFAULT_PLAN_IN_ORG                                    = 'No default plan id in org';
 
+    const BAD_REQUEST_GATEWAY_DOWNTIME_CONFLICT                                 = 'A conflicting gateway downtime already exists.';
+
     // ---------------------- UPI (NPCI) Error codes -------------------------------
     const GATEWAY_ERROR_TRANSACTION_PENDING                                         = 'Transaction is in pending state';
     const GATEWAY_ERROR_REMITTER_CBS_OFFLINE                                        = 'Banking system is offline, please try after sometime.';

@@ -4,11 +4,13 @@ namespace RZP\Models\Gateway\Downtime;
 
 use Carbon\Carbon;
 
-use RZP\Models\Base;
-use RZP\Trace\TraceCode;
-use RZP\Models\Merchant;
-use RZP\Models\Payment;
 use RZP\Services;
+use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 
 class Core extends Base\Core
 {
@@ -29,10 +31,18 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::GATEWAY_DOWNTIME_CREATE, $input);
 
-        $downtime = $this->repo->gateway_downtime->fetchUnique($input, $uniqueRecordIdentifiers);
+        $downtime = $this->repo->gateway_downtime->getConflictingDowntime($input, $uniqueRecordIdentifiers);
 
         if ($downtime !== null)
         {
+            if ($this->allowUpdateOfExistingDowntimes() === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_GATEWAY_DOWNTIME_CONFLICT,
+                    null,
+                    $downtime->toArrayPublic());
+            }
+
             $downtime->edit($input, 'edit_duplicate');
         }
         else
@@ -50,6 +60,23 @@ class Core extends Base\Core
         $this->repo->saveOrFail($downtime);
 
         return $downtime;
+    }
+
+    /**
+     * Updates via creation endpoint are not permitted if request is from
+     * dashboard, since manual users can just as well use the edit route.
+     * This functionality exists only to serve automated downtime creation and updates.
+     *
+     * @return bool
+     */
+    protected function allowUpdateOfExistingDowntimes()
+    {
+        if ($this->app['basicauth']->isDashboardApp() === true)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public function edit(string $id, array $input)

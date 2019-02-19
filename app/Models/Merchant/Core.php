@@ -827,9 +827,10 @@ class Core extends Base\Core
      * 3. The new email is unique so far
      *    Here, we just change the email of the original user(owner).
      *
-     * @param $merchant
-     * @param $originalEmail
-     * @param $newEmail
+     * @param Entity $merchant
+     * @param string $originalEmail
+     * @param string $newEmail
+     * @param string $product
      *
      * @return bool
      */
@@ -868,6 +869,7 @@ class Core extends Base\Core
                 'action'      => 'attach',
                 'role'        => 'owner',
                 'merchant_id' => $merchant->getId(),
+                'product'     => $product,
             ];
 
             (new User\Core)->updateUserMerchantMapping($existingUser, $userMerchantMappingInputData);
