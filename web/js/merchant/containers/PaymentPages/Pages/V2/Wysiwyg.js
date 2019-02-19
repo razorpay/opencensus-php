@@ -246,11 +246,11 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     }
 
     payload.settings.payment_success_message =
-      formData.payment_success_message || null;
+      formData.payment_success_message || '';
 
     payload.settings.payment_success_redirect_url = formData.payment_success_redirect_url
       ? autoPrefixUrls(formData.payment_success_redirect_url)
-      : null;
+      : '';
 
     const isEditExistingId = this.props.id;
 
@@ -334,6 +334,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         theme: settings.theme,
         allow_multiple_units: settings.allow_multiple_units ? '1' : '0',
         allow_social_share: settings.allow_social_share ? '1' : '0',
+        payment_success_message: settings.payment_success_message,
+        payment_success_redirect_url: settings.payment_success_redirect_url,
         udf_schema: JSON.stringify(udf_schema.splice(2)),
       },
     };
