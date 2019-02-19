@@ -25,6 +25,10 @@ class HealthCheckClient extends BaseHealthCheckClient
             case 'http://www.invalidUrl.com':
                 throw new \Requests_Exception('some error due to gateway downtime', 'curlerror');
                 break;
+
+            case 'http://www.ping-giving-500.com':
+                $response->status_code = 500;
+                break;
         }
 
         return $response;

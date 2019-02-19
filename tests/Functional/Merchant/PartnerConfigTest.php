@@ -106,10 +106,13 @@ class PartnerConfigTest extends OAuthTestCase
     {
         $this->allowAdminToAccessMerchant(self::DEFAULT_NON_PLATFORM_MERCHANT_ID);
 
-        $this->fixtures->create('partner_config', [
-            'entity_id'       => self::DEFAULT_NON_PLATFORM_APP_ID,
-            'default_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
-        ]);
+        $this->fixtures->create(
+            'partner_config',
+            [
+                'entity_id'       => self::DEFAULT_NON_PLATFORM_APP_ID,
+                'default_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
+            ]
+        );
 
         $this->startTest();
     }
@@ -118,13 +121,16 @@ class PartnerConfigTest extends OAuthTestCase
     {
         $this->allowAdminToAccessMerchant(self::DEFAULT_NON_PLATFORM_MERCHANT_ID);
 
-        $this->fixtures->create('partner_config', [
-            'entity_type'     => 'merchant',
-            'entity_id'       => self::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
-            'origin_type'     => 'application',
-            'origin_id'       => self::DEFAULT_NON_PLATFORM_APP_ID,
-            'default_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
-        ]);
+        $this->fixtures->create(
+            'partner_config',
+            [
+                'entity_type'     => 'merchant',
+                'entity_id'       => self::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'origin_type'     => 'application',
+                'origin_id'       => self::DEFAULT_NON_PLATFORM_APP_ID,
+                'default_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
+            ]
+        );
 
         $this->startTest();
     }
@@ -147,11 +153,14 @@ class PartnerConfigTest extends OAuthTestCase
     {
         $this->allowAdminToAccessMerchant(self::DEFAULT_NON_PLATFORM_MERCHANT_ID);
 
-        $this->fixtures->create('partner_config', [
-            'entity_type'     => 'application',
-            'entity_id'       => self::DEFAULT_NON_PLATFORM_APP_ID,
-            'default_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
-        ]);
+        $this->fixtures->create(
+            'partner_config',
+            [
+                'entity_type'     => 'application',
+                'entity_id'       => self::DEFAULT_NON_PLATFORM_APP_ID,
+                'default_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
+            ]
+        );
 
         $this->startTest();
     }
@@ -167,9 +176,37 @@ class PartnerConfigTest extends OAuthTestCase
     {
         $this->allowAdminToAccessMerchant(self::DEFAULT_NON_PLATFORM_MERCHANT_ID);
 
-        $this->fixtures->create('partner_config', [
-            'entity_id' => self::DEFAULT_NON_PLATFORM_APP_ID,
-        ]);
+        $this->fixtures->create(
+            'partner_config',
+            [
+                'entity_id' => self::DEFAULT_NON_PLATFORM_APP_ID,
+            ]
+        );
+
+        $this->fixtures->create(
+            'partner_config',
+            [
+                'entity_type'     => 'merchant',
+                'entity_id'       => self::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'origin_type'     => 'application',
+                'origin_id'       => self::DEFAULT_NON_PLATFORM_APP_ID,
+                'default_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
+            ]
+        );
+
+        $this->startTest();
+    }
+
+    public function testGettingConfigForAppUsingSubMerchant()
+    {
+        $this->allowAdminToAccessMerchant(self::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->create(
+            'partner_config',
+            [
+                'entity_id' => self::DEFAULT_NON_PLATFORM_APP_ID,
+            ]
+        );
 
         $response = $this->startTest();
 
@@ -183,13 +220,28 @@ class PartnerConfigTest extends OAuthTestCase
         $this->assertEquals($liveEntity->getId(), $response['id']);
     }
 
-    public function testGettingConfigForAppUsingSubMerchant()
+    public function testGettingOverriddenConfig()
     {
         $this->allowAdminToAccessMerchant(self::DEFAULT_NON_PLATFORM_MERCHANT_ID);
 
-        $this->fixtures->create('partner_config', [
-            'entity_id' => self::DEFAULT_NON_PLATFORM_APP_ID,
-        ]);
+        $this->fixtures->create(
+            'partner_config',
+            [
+                'entity_id'   => self::DEFAULT_NON_PLATFORM_APP_ID,
+                'entity_type' => 'application',
+            ]
+        );
+
+        $this->fixtures->create(
+            'partner_config',
+            [
+                'entity_type'     => 'merchant',
+                'entity_id'       => self::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'origin_type'     => 'application',
+                'origin_id'       => self::DEFAULT_NON_PLATFORM_APP_ID,
+                'default_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
+            ]
+        );
 
         $this->startTest();
     }
@@ -198,12 +250,15 @@ class PartnerConfigTest extends OAuthTestCase
     {
         $this->allowAdminToAccessMerchant(self::DEFAULT_NON_PLATFORM_MERCHANT_ID);
 
-        $this->fixtures->create('partner_config', [
-            'id'                  => self::DEFAULT_PARTNER_CONFIGS_ID,
-            'entity_id'           => self::DEFAULT_NON_PLATFORM_APP_ID,
-            'default_plan_id'     => Pricing::DEFAULT_PRICING_PLAN_ID,
-            'commissions_enabled' => 1,
-        ]);
+        $this->fixtures->create(
+            'partner_config',
+            [
+                'id'                  => self::DEFAULT_PARTNER_CONFIGS_ID,
+                'entity_id'           => self::DEFAULT_NON_PLATFORM_APP_ID,
+                'default_plan_id'     => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'commissions_enabled' => 1,
+            ]
+        );
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -217,21 +272,29 @@ class PartnerConfigTest extends OAuthTestCase
         $this->fixtures->merchant->createAccount(self::DEFAULT_PLATFORM_MERCHANT_ID);
         $this->fixtures->merchant->createAccount(self::DEFAULT_PLATFORM_SUBMERCHANT_ID);
 
-        $this->fixtures->merchant->edit(self::DEFAULT_PLATFORM_MERCHANT_ID, [
-            'partner_type' => Merchant\Constants::PURE_PLATFORM,
-            ]);
+        $this->fixtures->merchant->edit(
+            self::DEFAULT_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::PURE_PLATFORM,
+            ]
+        );
 
-        $this->createOAuthApplication([
-            'merchant_id' => self::DEFAULT_PLATFORM_MERCHANT_ID,
-            'id'          => self::DEFAULT_PLATFORM_APP_ID,
-        ]);
+        $this->createOAuthApplication(
+            [
+                'merchant_id' => self::DEFAULT_PLATFORM_MERCHANT_ID,
+                'id'          => self::DEFAULT_PLATFORM_APP_ID,
+            ]
+        );
 
-        $this->fixtures->create('merchant_access_map', [
-            'merchant_id'     => self::DEFAULT_PLATFORM_SUBMERCHANT_ID,
-            'entity_id'       => self::DEFAULT_PLATFORM_APP_ID,
-            'entity_type'     => 'application',
-            'entity_owner_id' => self::DEFAULT_PLATFORM_MERCHANT_ID,
-        ]);
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'merchant_id'     => self::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+                'entity_id'       => self::DEFAULT_PLATFORM_APP_ID,
+                'entity_type'     => 'application',
+                'entity_owner_id' => self::DEFAULT_PLATFORM_MERCHANT_ID,
+            ]
+        );
     }
 
     public function createNonPurePlatFormMerchantAndSubMerchant()
@@ -239,22 +302,29 @@ class PartnerConfigTest extends OAuthTestCase
         $this->fixtures->merchant->createAccount(self::DEFAULT_NON_PLATFORM_MERCHANT_ID);
         $this->fixtures->merchant->createAccount(self::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID);
 
-        $this->fixtures->merchant->edit(self::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+        $this->fixtures->merchant->edit(
+            self::DEFAULT_NON_PLATFORM_MERCHANT_ID,
             [
                 'partner_type' => Merchant\Constants::RESELLER,
-            ]);
+            ]
+        );
 
-        $this->createOAuthApplication([
-            'merchant_id' => self::DEFAULT_NON_PLATFORM_MERCHANT_ID,
-            'type'        => Application\Type::PARTNER,
-            'id'          => self::DEFAULT_NON_PLATFORM_APP_ID,
-        ]);
+        $this->createOAuthApplication(
+            [
+                'merchant_id' => self::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+                'type'        => Application\Type::PARTNER,
+                'id'          => self::DEFAULT_NON_PLATFORM_APP_ID,
+            ]
+        );
 
-        $this->fixtures->create('merchant_access_map', [
-            'merchant_id'     => self::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
-            'entity_id'       => self::DEFAULT_NON_PLATFORM_APP_ID,
-            'entity_type'     => 'application',
-            'entity_owner_id' => self::DEFAULT_NON_PLATFORM_MERCHANT_ID,
-        ]);
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'merchant_id'     => self::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'entity_id'       => self::DEFAULT_NON_PLATFORM_APP_ID,
+                'entity_type'     => 'application',
+                'entity_owner_id' => self::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            ]
+        );
     }
 }

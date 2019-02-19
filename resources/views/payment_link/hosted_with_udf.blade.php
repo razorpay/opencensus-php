@@ -2,7 +2,8 @@
     $payment_page_data          = $data['payment_link'];
     $is_test_mode               = $data['is_test_mode'] ?? false;
     $has_udf                    = (empty($udf_schema) === false);
-    $meta_description           = $payment_page_data['description']? $payment_page_data['description'] : 'Payment request by '. $data['merchant']['name'];
+    $description_meta_text      = ($payment_page_data['description'] and json_decode($payment_page_data['description'], true)['metaText']) ? json_decode($payment_page_data['description'], true)['metaText'] : null;
+    $meta_description           = $description_meta_text ? $description_meta_text : 'Payment request by '. $data['merchant']['name'];
     $dark_theme_color           = '#383838';
     $light_theme_color          = '#efefef';
 ?>
@@ -46,6 +47,9 @@
 
         <script>
             var data = {!!utf8_json_encode($data)!!};
+
+            var paymentPageData = data.payment_link;
+            paymentPageData.description = paymentPageData.description ? JSON.parse(paymentPageData.description).value : null;
 
             var templateData = {
                 is_test_mode: data.is_test_mode,

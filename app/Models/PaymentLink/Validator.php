@@ -87,6 +87,11 @@ class Validator extends Base\Validator
         // This is because there are keys conditioned to type.
     ];
 
+    protected static $uploadImagesRules = [
+        'images'     => 'required|array|min:1|max:5',
+        'images.*'   => 'required|image|max:2048',
+    ];
+
     protected static $createValidators = [
         Entity::SETTINGS,
     ];

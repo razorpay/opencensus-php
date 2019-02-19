@@ -1947,44 +1947,46 @@ trait PaymentTrait
         });
     }
 
-    protected function mockCardVault()
+    protected function mockCardVault($callable = null)
     {
         $cardVault = Mockery::mock('RZP\Services\CardVault')->makePartial();
 
         $this->app->instance('card.cardVault', $cardVault);
 
+        $callable = $callable ?: function ($route, $method, $input)
+        {
+            $response = [
+                'error' => '',
+                'success' => true,
+            ];
+
+            switch ($route)
+            {
+                case 'tokenize':
+                    $response['token'] = base64_encode($input['secret']);
+                    break;
+
+                case 'detokenize':
+                    $response['value'] = base64_decode($input['token']);
+                    break;
+
+                case 'validate':
+                    if ($input['token'] === 'fail')
+                    {
+                        $response['success'] = false;
+                    }
+                    break;
+
+                case 'delete':
+                    break;
+            }
+
+            return $response;
+        };
+
         $cardVault->shouldReceive('sendRequest')
             ->with(Mockery::type('string'), 'post', Mockery::type('array'))
-            ->andReturnUsing(function ($route, $method, $input)
-            {
-
-                $response = [
-                    'error' => '',
-                    'success' => true,
-                ];
-
-                switch ($route)
-                {
-                    case 'tokenize':
-                        $response['token'] = base64_encode($input['secret']);
-                        break;
-
-                    case 'detokenize':
-                        $response['value'] = base64_decode($input['token']);
-                        break;
-
-                    case 'validate':
-                        if ($input['token'] === 'fail')
-                        {
-                            $response['success'] = false;
-                        }
-                        break;
-
-                    case 'delete':
-                        break;
-                }
-                return $response;
-            });
+            ->andReturnUsing($callable);
 
         $this->app->instance('card.cardVault', $cardVault);
     }

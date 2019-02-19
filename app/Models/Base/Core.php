@@ -50,6 +50,11 @@ class Core
      */
     protected $merchant;
 
+    /**
+     * @var \Config
+     */
+    protected $config;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -62,6 +67,8 @@ class Core
         $this->env = $this->app['env'];
 
         $this->trace = $this->app['trace'];
+
+        $this->config = $this->app['config'];
 
         $this->repo = $this->app['repo'];
 

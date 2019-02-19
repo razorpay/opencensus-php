@@ -24,7 +24,9 @@ class Entity extends Base\PublicEntity
     const LOCKED        = 'locked';
     const NUMBER        = 'number';
 
-    const INTERNATIONAL = 'international';
+    const INTERNATIONAL  = 'international';
+    const MESSAGE_TYPE   = 'message_type';
+
 
     const ID_LENGTH = 6;
     const COUNTRY_LENGTH = 2;
@@ -54,6 +56,7 @@ class Entity extends Base\PublicEntity
         self::ENABLED,
         self::FLOWS,
         self::LOCKED,
+        self::MESSAGE_TYPE,
     ];
 
     protected $public = [
@@ -71,6 +74,7 @@ class Entity extends Base\PublicEntity
         self::ENABLED,
         self::FLOWS,
         self::LOCKED,
+        self::MESSAGE_TYPE,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -80,12 +84,13 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::EMI      => false,
-        self::FLOWS    => [
-            '3ds' => '1'
+        self::EMI            => false,
+        self::FLOWS          => [
+                       '3ds' => '1'
         ],
-        self::ENABLED  => true,
-        self::LOCKED   => false
+        self::ENABLED        => true,
+        self::LOCKED         => false,
+        self::MESSAGE_TYPE   => null,
     ];
 
     protected $casts = [
