@@ -134,7 +134,7 @@ final class Route
         'refund_without_verify_bulk'               => ['post',     'refunds/retry/direct/bulk',                      'RefundController@postRefundDirectRetryBulk'                        ],
         'refund_verify'                            => ['get',      'refunds/{id}/verify',                            'RefundController@postRefundVerify'                                 ],
         // We will change this in the future when we want to update more things than just marking it as processed.
-        'refund_mark_processed'                    => ['put',      'refunds/{id}/processed',                         'RefundController@markRefundProcessed'                              ],
+        'refund_update_status'                     => ['put',      'refunds/{id}/update_status',                     'RefundController@updateScroogeRefundStatus'                        ],
         'refund_gateway_call'                      => ['post',     'refunds/{id}/gateway_refund',                    'RefundController@postGatewayRefundCall'                            ],
         'refund_verify_call'                       => ['post',     'refunds/{id}/gateway_verify',                    'RefundController@postGatewayVerifyRefundCall'                      ],
         'scrooge_refund_create'                    => ['post',     'refunds/{id}/scrooge_create',                    'RefundController@scroogeRefundCreate'                              ],
@@ -1319,7 +1319,7 @@ final class Route
         'refund_gateway_refunded_txns',
         'refund_generate_excel',
         'refund_retry_failed',
-        'refund_mark_processed',
+        'refund_update_status',
         'refund_gateway_call',
         'refund_verify_call',
         'schedule_migration',
@@ -2536,7 +2536,7 @@ final class Route
         ],
 
         'scrooge' => [
-            'refund_mark_processed',
+            'refund_update_status',
             'refund_gateway_call',
             'scrooge_refund_create',
             'scrooge_refund_create_bulk',

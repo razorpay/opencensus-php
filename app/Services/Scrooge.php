@@ -304,7 +304,7 @@ class Scrooge
             throw new Exception\RuntimeException(
                 'Unexpected response code received from Scrooge service.',
                 [
-                    'status_code' => $code,
+                    'status_code'   => $code,
                     'response_body' => json_decode($response->body),
                 ]);
         }

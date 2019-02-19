@@ -971,7 +971,13 @@ trait PaymentTrait
 
         if ($response['status_code'] === 'REFUND_SUCCESSFUL')
         {
-            $this->scroogeRefundMarkProcessed($refund);
+            $this->scroogeUpdateRefundStatus($refund, 'processed');
+        }
+        // Adding specific amount check - this is meant to test failed refunds on scrooge -
+        // in which case we have reversal of refund transactions as well
+        else if ((isset($refund['amount']) === true) and ($refund['amount'] === 3459))
+        {
+            $this->scroogeUpdateRefundStatus($refund, 'failed');
         }
 
         return $response;
@@ -995,7 +1001,7 @@ trait PaymentTrait
         return true;
     }
 
-    protected function scroogeRefundMarkProcessed(array $refund)
+    protected function scroogeUpdateRefundStatus(array $refund, $status)
     {
         $input = $this->getDefaultScroogeInputArray();
 
@@ -1006,11 +1012,13 @@ trait PaymentTrait
             $input['reference_no'] = random_integer(12);
         }
 
+        $input['status'] = $status;
+
         $this->ba->scroogeAuth();
 
         $request = array(
             'method'  => 'PUT',
-            'url'     => '/refunds/'.$input['id'].'/processed',
+            'url'     => '/refunds/'.$input['id'].'/update_status',
             'content' => $input);
 
         $response = $this->makeRequestAndGetContent($request);
