@@ -52,6 +52,11 @@ class Entity extends Base\Entity
         $this->setAttribute(self::FLOW, $flow);
     }
 
+    public function setSettled(bool $settled)
+    {
+        $this->setAttribute(self::SETTLED, $settled);
+    }
+
     protected function getHkeyAttribute()
     {
         $hkey = $this->attributes[self::HKEY];

@@ -26,6 +26,8 @@ class PaysecureGatewayTest extends TestCase
 
         $this->setMockGatewayTrue();
 
+        $this->mockTokenex();
+
         $this->payment = $this->getDefaultPaymentArray();
     }
 
@@ -244,6 +246,43 @@ class PaysecureGatewayTest extends TestCase
         $authResponse = $this->doAuthPayment($this->payment);
 
         $this->assertSuccess($authResponse, 'iframe');
+    }
+
+    public function testSettlementCron()
+    {
+        $this->testPaymentAuthViaRedirect();
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'    => '/gateway/settlement/paysecure',
+            'method' => 'post'
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArraySelectiveEquals(
+            [
+                'total'   => 1,
+                'success' => 1,
+            ],
+            $content
+        );
+
+        $paysecure = $this->getDbLastEntityToArray('paysecure');
+
+        $this->assertEquals(1, $paysecure['settled']);
+
+        $hitachi = $this->getDbLastEntityToArray('hitachi');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'payment_id' => $paysecure['payment_id'],
+                'action'     => 'authorize',
+                'pRespCode'  => '00',
+            ],
+            $hitachi
+        );
     }
 
     public function testSoapFault()

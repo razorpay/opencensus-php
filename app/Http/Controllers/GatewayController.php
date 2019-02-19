@@ -679,6 +679,8 @@ class GatewayController extends Controller
     {
         $input = Request::all();
 
-        return (new Settlement\Service)->processSettlements($gateway, $input);
+        $data = (new Settlement\Service)->processSettlements($gateway, $input);
+
+        return ApiResponse::json($data);
     }
 }

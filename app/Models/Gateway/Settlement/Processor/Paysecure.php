@@ -1,13 +1,12 @@
 <?php
 namespace RZP\Models\Gateway\Settlement\Processor;
 
-use Razorpay\Trace\Logger as Trace;
-
+use RZP\Models\Payment;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Gateway;
-use RZP\Models\Base\PublicCollection;
 use RZP\Gateway\Base\CardCacheTrait;
-use RZP\Trace\TraceCode;
+use RZP\Models\Base\PublicCollection;
+
 use RZP\Models\Gateway\Settlement;
 
 class Paysecure extends Base
@@ -34,22 +33,22 @@ class Paysecure extends Base
         $this->setCardNumberAndCvv($input);
     }
 
-    public function sendGatewayRequest(array $gatewayInput)
+    protected function sendGatewayRequest(array $gatewayInput)
     {
-        try
-        {
-            $this->app['gateway']->call(
-                Gateway::HITACHI,
-                Action::AUTHORIZE,
-                $gatewayInput,
-                $this->mode
-            );
+        $this->app['gateway']->call(
+            Gateway::HITACHI,
+            Action::AUTHORIZE,
+            $gatewayInput,
+            $this->mode
+        );
+    }
 
-            // TODO: Set settled = 1 in the paysecure entity
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException($e, Trace::INFO, TraceCode::GATEWAY_SETTLEMENT_FAILURE);
-        }
+    protected function updateGatewayPaymentEntity(Payment\Entity $payment)
+    {
+        $gatewayPayment = $this->repo->paysecure->findByPaymentIdAndActionOrFail($payment['id'], Action::AUTHORIZE);
+
+        $gatewayPayment->setSettled(true);
+
+        $this->repo->saveOrFail($gatewayPayment);
     }
 }

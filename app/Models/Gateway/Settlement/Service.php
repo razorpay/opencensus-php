@@ -3,9 +3,12 @@
 namespace RZP\Models\Gateway\Settlement;
 
 use Carbon\Carbon;
+
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {
@@ -22,10 +25,29 @@ class Service extends Base\Service
 
         $payments = $this->getProcessor($gateway)->getPayments($input);
 
+        $count = sizeof($payments);
+        $processed = $failed = 0;
+
         foreach ($payments as $payment)
         {
-            $this->getProcessor($gateway)->process($payment);
+            try
+            {
+                $this->getProcessor($gateway)->process($payment);
+
+                $processed++;
+            }
+            catch (\Exception $e)
+            {
+                $failed++;
+                $this->trace->traceException($e, Trace::INFO, TraceCode::GATEWAY_SETTLEMENT_FAILURE);
+            }
         }
+
+        return [
+            'total'   => $count,
+            'success' => $processed,
+            'failed'  => $failed,
+        ];
     }
 
     protected function getProcessor($gateway)

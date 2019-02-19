@@ -15,7 +15,9 @@ abstract class Base extends BaseModel\Core
      */
     public abstract function getPayments(array $input): PublicCollection;
 
-    public abstract function sendGatewayRequest(array $input);
+    protected abstract function sendGatewayRequest(array $input);
+
+    protected abstract function updateGatewayPaymentEntity(Payment\Entity $payment);
 
     public function process(Payment\Entity $payment)
     {
@@ -29,6 +31,8 @@ abstract class Base extends BaseModel\Core
         $this->preProcessGatewayInput($gatewayInput);
 
         $this->sendGatewayRequest($gatewayInput);
+
+        $this->updateGatewayPaymentEntity($payment);
     }
 
     protected function preProcessGatewayInput(&$input)
