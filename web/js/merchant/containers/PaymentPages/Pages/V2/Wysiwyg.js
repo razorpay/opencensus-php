@@ -145,7 +145,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       });
     };
 
-    script.src = 'https://betacdn.razorpay.com/static/hosted/wysiwyg.js';
+    script.src = 'https://cdn.razorpay.com/static/hosted/wysiwyg.js';
 
     document.head.appendChild(script);
 
@@ -245,16 +245,12 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       }
     }
 
-    if (typeof formData.payment_success_message !== 'undefined') {
-      payload.settings.payment_success_message =
-        formData.payment_success_message;
-    }
+    payload.settings.payment_success_message =
+      formData.payment_success_message || null;
 
-    if (typeof formData.payment_success_redirect_url !== 'undefined') {
-      payload.settings.payment_success_redirect_url = autoPrefixUrls(
-        formData.payment_success_redirect_url
-      );
-    }
+    payload.settings.payment_success_redirect_url = formData.payment_success_redirect_url
+      ? autoPrefixUrls(formData.payment_success_redirect_url)
+      : null;
 
     const isEditExistingId = this.props.id;
 
