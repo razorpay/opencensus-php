@@ -21,7 +21,7 @@ class Core extends Base\Core
      */
     public function createDefaultSettlementSchedule(Merchant\Entity $merchant)
     {
-        $domesticSchedule = $this->getDefaultMerchantSchedule($merchant);
+        $domesticSchedule = $this->getDefaultMerchantSettlementSchedule($merchant);
 
         $this->createOrUpdate($merchant, $merchant, [
             Entity::METHOD        => null,
@@ -30,7 +30,15 @@ class Core extends Base\Core
             Entity::INTERNATIONAL => 0,
         ]);
 
-        $internationalSchedule = $this->getDefaultMerchantSchedule($merchant, true);
+        $this->trace->info(
+            TraceCode::SCHEDULE_ASSIGNED,
+            [
+                'merchant_id'   => $merchant->getId(),
+                'schedule_id'   => $domesticSchedule->getId(),
+                'international' => 0,
+            ]);
+
+        $internationalSchedule = $this->getDefaultMerchantSettlementSchedule($merchant, true);
 
         $this->createOrUpdate($merchant, $merchant, [
             Entity::METHOD        => null,
@@ -38,6 +46,14 @@ class Core extends Base\Core
             Entity::SCHEDULE_ID   => $internationalSchedule->getId(),
             Entity::INTERNATIONAL => 1,
         ]);
+
+        $this->trace->info(
+            TraceCode::SCHEDULE_ASSIGNED,
+            [
+                'merchant_id'   => $merchant->getId(),
+                'schedule_id'   => $internationalSchedule->getId(),
+                'international' => 1,
+            ]);
     }
 
     /**
@@ -100,9 +116,7 @@ class Core extends Base\Core
 
         $scheduleId = $input[Entity::SCHEDULE_ID];
 
-        $merchantId = Merchant\Account::SHARED_ACCOUNT;
-
-        $schedule = $this->repo->schedule->findByIdAndMerchantId($scheduleId, $merchantId);
+        $schedule = $this->repo->schedule->find($scheduleId);
 
         $scheduleTask->schedule()->associate($schedule);
 
@@ -263,7 +277,7 @@ class Core extends Base\Core
      *
      * @return Schedule\Entity
      */
-    protected function getDefaultMerchantSchedule(Merchant\Entity $merchant, bool $international = false)
+    protected function getDefaultMerchantSettlementSchedule(Merchant\Entity $merchant, bool $international = false)
     {
         $schedule = null;
 
@@ -277,9 +291,12 @@ class Core extends Base\Core
 
             $scheduleTask = $this->repo
                                  ->schedule_task
-                                 ->findByMerchantAndMethod($parentMerchant, null);
+                                 ->findMerchantSettlementSchedule($parentMerchant, null, $international);
 
-            $schedule = $scheduleTask->schedule;
+            if ($scheduleTask !== null)
+            {
+                $schedule = $scheduleTask->schedule;
+            }
         }
 
         if ($schedule === null)

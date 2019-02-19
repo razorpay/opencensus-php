@@ -23,6 +23,7 @@ return [
         'esigner_digio',
         'esigner_legaldesk',
         'enach_rbl',
+        'enach_npci_netbanking',
         'ebs',
         'first_data',
         'hdfc',
@@ -48,6 +49,7 @@ return [
         'netbanking_csb',
         'netbanking_canara',
         'netbanking_equitas',
+        'netbanking_sbi',
         'paytm',
         'sharp',
         'upi_axis',
@@ -56,6 +58,7 @@ return [
         'upi_hulk',
         'upi_sbi',
         'upi_npci',
+        'upi_rbl',
         'upi_yesbank',
         'aeps_icici',
         'wallet_olamoney',
@@ -83,6 +86,7 @@ return [
     'mock_esigner_digio'          => env('ESIGNER_DIGIO_MOCK'),
     'mock_esigner_legaldesk'      => env('ESIGNER_LEGALDESK_MOCK'),
     'mock_enach_rbl'              => env('ENACH_RBL_MOCK'),
+    'mock_enach_npci_netbanking'  => env('ENACH_NPCI_NETBANKING_MOCK'),
     'mock_axis_migs'              => env('AXIS_MIGS_MOCK'),
     'mock_axis_genius'            => env('AXIS_GENIUS_MOCK'),
     'mock_kotak'                  => env('KOTAK_MOCK'),
@@ -100,6 +104,7 @@ return [
     'mock_netbanking_idfc'        => env('NETBANKING_IDFC_MOCK'),
     'mock_netbanking_rbl'         => env('NETBANKING_RBL_MOCK'),
     'mock_netbanking_equitas'     => env('NETBANKING_EQUITAS_MOCK'),
+    'mock_netbanking_sbi'         => env('NETBANKING_SBI_MOCK'),
     'mock_netbanking_indusind'    => env('NETBANKING_INDUSIND_MOCK'),
     'mock_netbanking_pnb'         => env('NETBANKING_PNB_MOCK'),
     'mock_netbanking_obc'         => env('NETBANKING_OBC_MOCK'),
@@ -122,6 +127,7 @@ return [
     'mock_upi_icici'              => env('UPI_ICICI_MOCK'),
     'mock_upi_hulk'               => env('UPI_HULK_MOCK'),
     'mock_upi_npci'               => env('UPI_NPCI_MOCK'),
+    'mock_upi_rbl'                => env('UPI_RBL_MOCK'),
     'mock_upi_yesbank'            => env('UPI_YESBANK_MOCK'),
     'mock_aeps_icici'             => env('AEPS_ICICI_MOCK'),
     'mock_wallet_freecharge'      => env('FREECHARGE_MOCK'),
@@ -274,8 +280,6 @@ return [
         'test_merchant_id2'   => env('LEGALDESK_ESIGNER_GATEWAY_TEST_MERCHANT_ID2'),
     ],
 
-    'enach_rbl' => [],
-
     'card_fss' => [
         'barb' => [
             'test_hash_secret'  => env('FSS_BOB_GATEWAY_TEST_HASH_SECRET', 'secret'),
@@ -311,14 +315,37 @@ return [
     ],
 
     'upi_axis' => [
-        'public_key'            => env('UPI_AXIS_GATEWAY_PUBLIC_KEY'),
-        'mobile_no'             => env('UPI_AXIS_GATEWAY_MOBILE_NUMBER'),
-        'aes_encryption_key'    => env('UPI_AXIS_GATEWAY_AES_KEY'),
-        'test_merchant_id'      => env('UPI_AXIS_GATEWAY_TEST_MERCHANT_ID'),
-        'test_merchant_id2'     => env('UPI_AXIS_GATEWAY_TEST_MERCHANT_CHANNEL_ID'),
-        'test_vpa'              => env('UPI_AXIS_GATEWAY_TEST_PAYEE_VPA'),
+        'public_key'                        => env('UPI_AXIS_GATEWAY_PUBLIC_KEY'),
+        'mobile_no'                         => env('UPI_AXIS_GATEWAY_MOBILE_NUMBER'),
+        'aes_encryption_key'                => env('UPI_AXIS_GATEWAY_AES_KEY'),
+        'test_merchant_id'                  => env('UPI_AXIS_GATEWAY_TEST_MERCHANT_ID'),
+        'test_merchant_id2'                 => env('UPI_AXIS_GATEWAY_TEST_MERCHANT_CHANNEL_ID'),
+        'test_vpa'                          => env('UPI_AXIS_GATEWAY_TEST_PAYEE_VPA'),
+        'live_razorpay_merchant_id'         => env('UPI_LIVE_RAZORPAY_MERCHANT_ID'),
+        'live_razorpay_merchant_channel_id' => env('UPI_LIVE_RAZORPAY_MERCHANT_CHANNEL_ID')
     ],
 
+    'upi_rbl' => [
+        'channel_partner_username'          => env('UPI_RBL_CHANNEL_PARTNER_TEST_USERNAME'),
+        'channel_partner_password'          => env('UPI_RBL_CHANNEL_PARTNER_TEST_PASSWORD'),
+        'channel_partner_bc_agent'          => env('UPI_RBL_CHANNEL_PARTNER_TEST_BC_AGENT'),
+        'aggregator_id'                     => env('UPI_RBL_TEST_AGGREGATOR_ID'),
+        'customer_mobile_number'            => env('UPI_RBL_MOBILE_NUMBER'),
+        'customer_geo_code'                 => env('UPI_RBL_CUSTOMER_GEO_CODE'),
+        'customer_location'                 => env('UPI_RBL_CUSTOMER_LOCATION'),
+        'customer_app'                      => env('UPI_RBL_CUSTOMER_APP'),
+        'customer_os'                       => env('UPI_RBL_CUSTOMER_OS'),
+        'customer_ip'                       => env('UPI_RBL_CUSTOMER_IP'),
+        'aes_encryption_key'                => env('UPI_RBL_AES_ENCRYPTION_KEY'),
+        'client_cert'                       => env('UPI_RBL_CLIENT_CERTIFICATE'),
+        'client_key'                        => env('UPI_RBL_CLIENT_CERTIFICATE_KEY'),
+        'test_client_id'                    => env('UPI_RBL_TEST_CLIENT_ID'),
+        'test_client_secret'                => env('UPI_RBL_TEST_CLIENT_SECRET'),
+        'live_client_id'                    => env('UPI_RBL_LIVE_CLIENT_ID'),
+        'live_client_secret'                => env('UPI_RBL_LIVE_CLIENT_SECRET'),
+        'cert_dir_name'                     => env('UPI_RBL_GATEWAY_CERT_DIR'),
+    ],
+    
     'upi_yesbank' => [
         'test_merchant_id'            => env('UPI_YESBANK_TEST_MERCHANT_ID'),
         'live_merchant_id'            => env('UPI_YESBANK_LIVE_MERCHANT_ID'),
@@ -410,6 +437,17 @@ return [
         'test_merchant_id'      => env('OLAMONEY_WALLET_TEST_MERCHANT_ID'),
         'test_hash_secret'      => env('OLAMONEY_WALLET_TEST_HASH_SECRET'),
         'test_access_code'      => env('OLAMONEY_WALLET_TEST_CLIENT_ID'),
+        'test_public_key'       => env('OLAMONEY_WALLET_TEST_PUBLIC_KEY'),
+        'test_private_key'      => env('OLAMONEY_WALLET_TEST_PRIVATE_KEY'),
+        'test_iv'               => env('OLAMONEY_WALLET_TEST_IV'),
+        'test_ola_public_key'   => env('OLAMONEY_WALLET_TEST_OLA_PUBLIC_KEY'),
+        'live_public_key'       => env('OLAMONEY_WALLET_LIVE_PUBLIC_KEY'),
+        'live_private_key'      => env('OLAMONEY_WALLET_LIVE_PRIVATE_KEY'),
+        'live_iv'               => env('OLAMONEY_WALLET_LIVE_IV'),
+        'live_ola_public_key'   => env('OLAMONEY_WALLET_LIVE_OLA_PUBLIC_KEY'),
+        'test_merchant_id_v2'   => env('OLAMONEY_WALLET_TEST_MERCHANT_ID_V2'),
+        'test_hash_secret_v2'   => env('OLAMONEY_WALLET_TEST_HASH_SECRET_V2'),
+        'test_access_code_v2'   => env('OLAMONEY_WALLET_TEST_CLIENT_ID_V2'),
     ],
 
     'wallet_payumoney' => [
@@ -483,9 +521,22 @@ return [
         'pooling_account_number' => env('KOTAK_NODAL_ACCOUNT_NUMBER'),
     ],
 
+    'enach_rbl' => [],
+
+    'enach_npci_netbanking' => [
+        'test_merchant_id'                          => env('NPCI_EMANDATE_TEST_MERCHANT_ID'),
+        'test_emandate_private_key'                 => env('NPCI_EMANDATE_TEST_PRIVATE_KEY'),
+        'test_emandate_npci_creditor_account'       => env('NPCI_EMANDATE_TEST_CREDITOR_ACCOUNT'),
+        'test_emandate_npci_sponser_ifsc'           => env('NPCI_EMANDATE_TEST_SPONSER_IFSC'),
+        'live_npci_emandate_private_key'            => env('NPCI_EMANDATE_LIVE_PRIVATE_KEY'),
+        'live_npci_emandate_encryption_certificate' => env('NPCI_EMANDATE_LIVE_ENCRYPTION_CERTIFICATE'),
+        'live_npci_emandate_signing_certificate'    => env('NPCI_EMANDATE_LIVE_SIGNING_CERTIFICATE'),
+    ],
+
     'netbanking_allahabad' => [
         'test_merchant_id'       => env('NETBANKING_ALLAHABAD_GATEWAY_TEST_MERCHANT_ID'),
         'test_hash_secret'       => env('NETBANKING_ALLAHABAD_GATEWAY_TEST_HASH_SECRET'),
+        'test_merchant_id2'      => env('NETBANKING_ALLAHABAD_GATEWAY_TEST_MERCHANT_ID2'),
     ],
 
     'netbanking_canara' => [
@@ -621,7 +672,6 @@ return [
         'live_hash_secret'   => env('NETBANKING_EQUITAS_LIVE_HASH_SECRET'),
         'live_merchant_id'   => env('NETBANKING_EQUITAS_LIVE_MERCHANT_ID'),
     ],
-
     'paysecure' => [
         'caller_id'         => env('PAYSECURE_CALLER_ID'),
         'token'             => env('PAYSECURE_TOKEN'),
@@ -631,6 +681,11 @@ return [
         'merchant_password' => env('PAYSECURE_MERCHANT_PASSWORD'),
         'terminal_id'       => env('PAYSECURE_TERMINAL_ID'),
         'merchant_id'       => env('PAYSECURE_MERCHANT_ID'),
+    ],
+    'netbanking_sbi' => [
+        'test_merchant_id'  => env('NETBANKING_SBI_TEST_MERCHANT_ID'),
+        'test_hash_secret'  => env('NETBANKING_SBI_TEST_HASH_SECRET'),
+        'iv'                => env('NETBANKING_SBI_IV'),
     ],
 
     'sharp' => [

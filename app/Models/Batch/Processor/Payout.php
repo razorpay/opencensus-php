@@ -2,27 +2,21 @@
 
 namespace RZP\Models\Batch\Processor;
 
-use RZP\Exception;
 use RZP\Models\Batch;
-use RZP\Models\Customer;
-use RZP\Models\BankAccount;
-use RZP\Models\Batch\Header;
 use RZP\Models\Payout as PayoutModel;
-use RZP\Models\Batch\Helpers\Payout as Helper;
+use RZP\Models\FundAccount as FundAccountModel;
 
 class Payout extends Base
 {
     /**
-     * @var \RZP\Models\Payout\Core
+     * @var PayoutModel\Core
      */
     protected $payoutCore;
 
     /**
-     * @var Customer\Core
+     * @var FundAccount
      */
-    protected $customerCore;
-
-    protected $bankAccountCore;
+    protected $fundAccountProcessor;
 
     public function __construct(Batch\Entity $batch)
     {
@@ -30,69 +24,48 @@ class Payout extends Base
 
         $this->payoutCore = new PayoutModel\Core;
 
-        $this->bankAccountCore = new BankAccount\Core;
+        $this->fundAccountProcessor = new FundAccount($batch);
 
-        $this->customerCore = new Customer\Core;
+        // Repository method at getBalanceByAccountNumberOrFail() uses context's merchant.
+        app()->basicauth->setMerchant($this->merchant);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function processEntry(array & $entry)
     {
-        $customer = $this->createCustomer($entry);
+        $this->repo->transaction(function () use (& $entry)
+        {
+            $fundAccount = $this->processEntryForFundAccount($entry);
 
-        $bankAccount = $this->createBankAccount($entry, $customer);
+            $payout = $this->processEntryForPayoutForFundAccount($entry, $fundAccount);
 
-        $payout = $this->createPayout($entry, $bankAccount, $customer);
-
-        $entry[Header::STATUS] = Batch\Status::SUCCESS;
+            $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
+            $entry[Batch\Header::PAYOUT_ID] = $payout->getPublicId();
+        });
     }
 
-    protected function createCustomer(array & $entry)
+    protected function processEntryForFundAccount(array & $entry): FundAccountModel\Entity
     {
-        $customerCreateInput = Helper::getCustomerCreateInput($entry);
-
-        $customer = $this->customerCore->createLocalCustomer($customerCreateInput, $this->merchant, false);
-
-        $entry[Header::PAYOUT_CUSTOMER_ID] = $customer->getPublicId();
-
-        return $customer;
+        if (empty($entry[Batch\Header::FUND_ACCOUNT_ID]) === false)
+        {
+            return $this->repo->fund_account->findByPublicIdAndMerchant(
+                $entry[Batch\Header::FUND_ACCOUNT_ID],
+                $this->merchant);
+        }
+        else
+        {
+            return $this->fundAccountProcessor->processEntryAndGetEntity($entry);
+        }
     }
 
-    protected function createBankAccount(array & $entry, Customer\Entity $customer)
+    protected function processEntryForPayoutForFundAccount(
+        array & $entry,
+        FundAccountModel\Entity $fundAccount): PayoutModel\Entity
     {
-        $bankAccount = new BankAccount\Entity;
+        $input = Batch\Helpers\Payout::getPayoutInput($entry, $fundAccount, $this->merchant);
 
-        $bankAccountCreateInput = Helper::getBankAccountCreateInput($entry);
-
-        $bankAccount = $bankAccount->build($bankAccountCreateInput, 'addPayoutDestination');
-
-        $bankAccount->merchant()->associate($this->merchant);
-
-        $bankAccount->associateCustomer($customer);
-
-        $this->repo->saveOrFail($bankAccount);
-
-        $entry[Header::PAYOUT_BANK_ACCOUNT_ID] = $bankAccount->getPublicId();
-
-        return $bankAccount;
-    }
-
-    protected function createPayout(array & $entry, BankAccount\Entity $bankAccount, Customer\Entity $customer)
-    {
-        $payoutCreateInput = Helper::getPayoutCreateInput($entry, $bankAccount, $customer);
-
-        $payout = $this->payoutCore->createPayoutToCustomer($payoutCreateInput,
-                                                            $this->merchant);
-
-        $entry[Header::PAYOUT_ID]          = $payout->getPublicId();
-        $entry[Header::PAYOUT_FEE]         = $payout->getFee();
-        $entry[Header::PAYOUT_TAX]         = $payout->getTax();
-
-        return $payout;
-    }
-
-    protected function sendProcessedMail()
-    {
-        // Don't send an email
-        return;
+        return $this->payoutCore->createPayoutToFundAccount($input, $this->merchant);
     }
 }

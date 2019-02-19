@@ -145,6 +145,11 @@ trait QueryBuilder
         $this->addTermFilter($query, Common::MERCHANT_ID, $value);
     }
 
+    public function buildQueryForBalanceId(array & $query, string $value)
+    {
+        $this->addTermFilter($query, Common::BALANCE_ID, $value);
+    }
+
     /**
      * Builds query for 'to' and 'from'. Handling these both in same instead of
      * buildQueryForTo() and buildQueryForFrom() like methods. Reason for that

@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\Upi\Yesbank\Fields;
 use RZP\Gateway\Upi\Base\Entity;
 use Razorpay\Trace\Logger as Trace;
@@ -31,6 +32,8 @@ trait Vpa
 
         $success = false;
 
+        $gatewayResponse = null;
+
         foreach ($terminals as $terminal)
         {
             try
@@ -38,37 +41,27 @@ trait Vpa
                 $gateway = $terminal->getGateway();
 
                 // Invalid vpa on MindGate and SBI thrown back with GatewayError
-                $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
+                $gatewayResponse = $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
 
                 $success = true;
                 break;
             }
             catch (Exception\GatewayErrorException $exception)
             {
+                // As of now, MindGate sends INVALID VPA code when gateway returns code VN.
+                // SBI does not have this check, but we currently do not need that.
+                // Now, If the code is INVALID VPA, we can skip calling next VPA.
+                if ($exception->getCode() === ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA)
+                {
+                    break;
+                }
+
                 $this->trace->traceException($exception, Trace::INFO, TraceCode::RECOVERABLE_EXCEPTION);
             }
         }
 
         $response['success'] = $success;
-
-        return $response;
-    }
-
-    // TODO: needs to be removed
-    public function payoutVpa(array $input, $type)
-    {
-        $action = ($type === 'pay') ? Payment\Action::PAYOUT : Payment\Action::PAYOUT_VERIFY;
-
-        // This will throw bad request validation error
-        (new Payment\Validator)->validateInput($action, $input);
-
-        $terminals = $this->repo->terminal->getAllTerminalsForGateway('upi_yesbank');
-
-        $terminal = $terminals[0];
-
-        $gateway = $terminal->getGateway();
-
-        $response = $this->app['gateway']->call($gateway, $action, $input, $this->mode, $terminal);
+        $response['customer_name'] = $gatewayResponse;
 
         return $response;
     }

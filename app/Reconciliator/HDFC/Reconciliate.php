@@ -19,6 +19,8 @@ class Reconciliate extends Base\Reconciliate
 
     const CORP_FILE_BOTTOM_LINES_SKIP = 3;
 
+    const BHARAT_QR_TYPE = 'BHARAT QR';
+
     /**
      * Figures out what kind of reconciliation is it
      * depending on the file name. It should be either

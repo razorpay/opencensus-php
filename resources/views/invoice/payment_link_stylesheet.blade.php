@@ -197,7 +197,6 @@
     .inv-details .info .val {
         color: #414141;
         font-size: 14px;
-        text-transform: capitalize;
     }
 
     .info .light {

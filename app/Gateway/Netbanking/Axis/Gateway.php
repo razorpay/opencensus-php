@@ -114,7 +114,7 @@ class Gateway extends Base\Gateway
         if ((isset($input['s2s']) === true) and ($input['s2s'] === true))
         {
             // Should occur only in corporate payments.
-            assert($this->isCorporateBanking() === true);
+            assertTrue ($this->isCorporateBanking() === true);
 
             $content = $input['gateway'];
         }
@@ -786,7 +786,7 @@ class Gateway extends Base\Gateway
 
     protected function getLiveSecret()
     {
-        assert ($this->mode === Mode::LIVE);
+        assertTrue ($this->mode === Mode::LIVE);
 
         if ($this->isRetailBanking() === true)
         {
@@ -821,7 +821,7 @@ class Gateway extends Base\Gateway
 
     protected function getTestSecret()
     {
-        assert ($this->mode === Mode::TEST);
+        assertTrue ($this->mode === Mode::TEST);
 
         if ($this->isRetailBanking() === true)
         {
@@ -882,5 +882,28 @@ class Gateway extends Base\Gateway
         $clientCertPath = dirname(__FILE__) . '/cainfo/cainfo.pem';
 
         return $clientCertPath;
+    }
+
+    public function forceAuthorizeFailed($input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+
+        // If it's already authorized on gateway side, We just return.
+        if (($gatewayPayment->getReceived() === true) and
+            ($gatewayPayment->getStatus() === Status::YES))
+        {
+            return true;
+        }
+
+        $attrs = [
+            Base\Entity::STATUS             => Status::YES,
+            Base\Entity::BANK_PAYMENT_ID    => $input['gateway']['gateway_payment_id'],
+        ];
+
+        $gatewayPayment->fill($attrs);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return true;
     }
 }

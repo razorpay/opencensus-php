@@ -26,6 +26,7 @@ class Server extends Base\Mock\Server
         Action::REFUND        => 20,
         Action::VALIDATE_VPA  => 14,
         Action::VALIDATE_PUSH => 14,
+        Action::INTENT_TPV    => 19,
     ];
 
     /**
@@ -39,7 +40,39 @@ class Server extends Base\Mock\Server
         Action::CALLBACK      => 21,
         Action::REFUND        => 21,
         Action::VALIDATE_PUSH => 21,
+        Action::INTENT_TPV    => 17,
     ];
+
+    const DEFAULT_VPA = 'default@hdfc';
+
+    public function intentTpv($input)
+    {
+        $this->input = $input;
+
+        $this->action = Action::INTENT_TPV;
+
+        $input = $this->parseInput($input, Action::INTENT_TPV);
+
+        $content = [
+            $input[1],
+            Status::SUCCESS,
+            'Transaction Initiated Successfully,',
+            null,
+            null,
+            null,
+            null,
+            null,
+            $input[14],
+            $input[15],
+            null,
+            null,
+            'NA',
+        ];
+
+        $this->content($content, Action::INTENT_TPV);
+
+        return $this->makeResponse($content);
+    }
 
     public function authorize($input)
     {
@@ -180,7 +213,7 @@ class Server extends Base\Mock\Server
 
         $content = $this->callbackResponseContent($upiEntity, $payment);
 
-        $this->content($content,'callback');
+        $this->content($content, 'callback');
 
         $response = $this->makeResponse($content);
 
@@ -188,6 +221,48 @@ class Server extends Base\Mock\Server
             'pgMerchantId' => 'HDFC000000000',
             'meRes'        => $response->content()
         ];
+    }
+
+    public function getAsyncCallbackContentForBharatQr($qrCodeId, $amount = 100)
+    {
+        $this->action = Action::CALLBACK;
+
+        $content = [
+            random_integer(10),
+            'RZP' .$qrCodeId,
+            $this->formatAmount($amount),
+            '2017:12:01 00:00:02',
+            Status::SUCCESS,
+            'Transaction success',
+            '00',
+            // Approval Number
+            random_integer(5),
+            'sample@icici',
+            // NPCI Reference Id
+            random_integer(16),
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'PNB!10000000000!PNBI1111111!8966829290'
+        ];
+
+        $this->content($content,'callback');
+
+        $response = $this->makeResponse($content);
+
+        $request = [
+            'url'       => '/payment/callback/bharatqr/upi_hdfc',
+            'method'    => 'post',
+            'content'   => [
+                'pgMerchantId' => 'abcd_bharat_qr',
+                'meRes'        => $response->content()
+            ]
+        ];
+
+        return $request;
     }
 
     protected function callbackResponseContent(array $upiEntity, array $payment)
@@ -218,7 +293,7 @@ class Server extends Base\Mock\Server
             $respCode,
             // Approval Number
             random_integer(5),
-            $payment['vpa'],
+            $payment['vpa'] ?? self::DEFAULT_VPA,
             // NPCI Reference Id
             random_integer(16),
             'NA',

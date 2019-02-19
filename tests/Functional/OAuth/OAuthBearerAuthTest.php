@@ -29,6 +29,8 @@ class OAuthBearerAuthTest extends OAuthTestCase
         $this->setupMockDns();
 
         parent::setUp();
+
+        $this->mockCardVault();
     }
 
     public function testBearerAuth()
@@ -197,6 +199,8 @@ class OAuthBearerAuthTest extends OAuthTestCase
     {
         $client = factory(Client\Entity::class)->create();
 
+        $this->mockCardVault();
+
         $accessToken = $this->generateOAuthAccessToken(
             [
                 'scopes'    => ['read_write'],
@@ -224,6 +228,63 @@ class OAuthBearerAuthTest extends OAuthTestCase
         $this->assertArrayHasKey('razorpay_payment_id', $response);
     }
 
+    public function testAppBlacklistedFeatureEnabledOnAppHeadlessOtp()
+    {
+
+        $client = factory(Client\Entity::class)->create();
+
+        $accessToken = $this->generateOAuthAccessToken(
+            [
+                'scopes' => ['read_write'],
+                'client_id' => $client->getId()
+            ]);
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $client->application_id,
+                'name'        => 's2s'
+            ]);
+
+        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 's2s_otp_json']);
+
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1'
+            ]
+        ]);
+
+        $this->mockCardVault();
+        $this->mockOtpElf();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['auth_type'] = 'otp';
+
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = $payment;
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $response = $this->startTest($testData);
+    }
+
     /**
      * Please refer to the GitHub wiki page on middlewares before making any changes here.
      *
@@ -236,6 +297,8 @@ class OAuthBearerAuthTest extends OAuthTestCase
     public function testAppBlacklistedFeatureEnabledOnAppAndMerchant()
     {
         $client = factory(Client\Entity::class)->create();
+
+        $this->mockCardVault();
 
         $accessToken = $this->generateOAuthAccessToken(
             [

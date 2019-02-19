@@ -7,12 +7,14 @@ class Source
     const STATUSCAKE  = 'STATUSCAKE';
     const BILLDESK    = 'BILLDESK';
     const BANK        = 'BANK';
+    const VAJRA       = 'VAJRA';
     const OTHER       = 'OTHER';
 
     protected static $sources = [
         Source::STATUSCAKE,
         Source::BILLDESK,
         Source::BANK,
+        Source::VAJRA,
         Source::OTHER
     ];
 

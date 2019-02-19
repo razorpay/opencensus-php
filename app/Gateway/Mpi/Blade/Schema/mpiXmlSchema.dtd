@@ -76,6 +76,20 @@ DTD elements for Extension
 -->
 <!ELEMENT adsindicator (#PCDATA)>
 <!ELEMENT authenticationAction (#PCDATA)>
+<!ELEMENT npc356chphoneid (#PCDATA)>
+<!ELEMENT npc356authdata (attribute)>
+<!ELEMENT attribute (#PCDATA)>
+<!ATTLIST attribute name CDATA #REQUIRED
+length CDATA #REQUIRED
+type (A|N) #REQUIRED
+label CDATA #REQUIRED
+prompt CDATA #REQUIRED>
+<!ELEMENT npc356authstatusmessage (#PCDATA)>
+<!ELEMENT npc356authdataencrypt (#PCDATA)>
+<!ATTLIST npc356authdataencrypt mandatory (TRUE|FALSE|true|false) #IMPLIED>
+<!ELEMENT npc356authdataencrypttype (#PCDATA)>
+<!ELEMENT npc356authdataencryptkeyvalue (#PCDATA)>
+<!ELEMENT npc356itpstatus (#PCDATA)>
 <!--
 **********************************************************************
 DTD for XML Signatures

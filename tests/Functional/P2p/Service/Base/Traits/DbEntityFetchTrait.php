@@ -95,5 +95,21 @@ trait DbEntityFetchTrait
         return $this->getDbEntities(Entity::P2P_VPA, $where, $this->dbEntityFetchMode);
     }
 
+    /*********************************** Transaction **********************************/
+
+    public function getDbLastTransaction(): P2p\Transaction\Entity
+    {
+        return $this->getDbLastEntity(Entity::P2P_TRANSACTION, $this->dbEntityFetchMode);
+    }
+
+    public function getDbTransactionById(string $id): P2p\Transaction\Entity
+    {
+        return $this->getDbEntityById(Entity::P2P_TRANSACTION, $id, $this->dbEntityFetchMode);
+    }
+
+    public function getDbTransactions(array $where): PublicCollection
+    {
+        return $this->getDbEntities(Entity::P2P_TRANSACTION, $where, $this->dbEntityFetchMode);
+    }
 
 }

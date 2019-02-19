@@ -19,6 +19,25 @@ use RZP\Models\Schedule\Library;
  */
 class Biller extends Base\Core
 {
+    //
+    // Charging covers invoice creation, payment auth and capture, alongside
+    // some other third party requests like queueing jobs for mails and webhooks.
+    //
+    // 10 minutes is probably overkill (it's the typical duration of the entire cron on API),
+    // but there's no reason this lock should ever be given up to a parallel process at all
+    // (since a parallel process shouldn't exist), so this is effectively a proxy for a lock
+    // that outlives all parallel processes.
+    // Since the processes won't be retrying anyway, 10 minutes is enough.
+    //
+    const CHARGE_LOCK_TTL = 600;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
+
     /**
      * Creates invoice, conditionally charges. Charge is
      * not done for invoices of halted subscriptions.
@@ -34,6 +53,35 @@ class Biller extends Base\Core
      */
     public function createInvoiceAndCharge(Entity $subscription, array $options = [])
     {
+        // Subscription may have been queued and charged by a different process
+        if (($subscription->isChargeable() === false) and
+            ($options['queue'] !== false))
+        {
+            $this->trace->info(
+                TraceCode::SUBSCRIPTION_ALREADY_CHARGED,
+                [
+                    'subscription_id' => $subscription->getId(),
+                ]);
+
+            return;
+        }
+
+        $resource = $subscription->getId();
+
+        if ($this->mutex->acquire($resource, self::CHARGE_LOCK_TTL) === false)
+        {
+            // We don't throw an exception here, since we don't want the charge
+            // job to be retried. Instead we're simply returning to end the job.
+
+            $this->trace->info(
+                TraceCode::SUBSCRIPTION_CHARGE_IN_PROGRESS,
+                [
+                    'subscription_id' => $subscription->getId(),
+                ]);
+
+            return;
+        }
+
         $data = $this->createInvoiceBeforeCharge($subscription);
 
         $core = (new Core);
@@ -52,7 +100,7 @@ class Biller extends Base\Core
 
         if ($this->shouldCharge($subscription, $invoice) === true)
         {
-            return $core->charge($subscription, $invoice, $options);
+            $core->charge($subscription, $invoice, $options);
         }
         else
         {
@@ -61,8 +109,10 @@ class Biller extends Base\Core
             // to be updated, so that the flow continues as it
             // is even if the subscription is in halted state.
             //
-            return $this->handleNoSubscriptionChargeAtInvoiceCreation($subscription, $invoice);
+            $this->handleNoSubscriptionChargeAtInvoiceCreation($subscription, $invoice);
         }
+
+        $this->mutex->release($resource);
     }
 
     public function createInvoiceForSubscription(

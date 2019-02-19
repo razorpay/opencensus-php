@@ -21,6 +21,12 @@ class MySqlConnection extends BaseMySqlConnection
     protected $lagChecker;
 
     /**
+     * LagChecker object to determine which pdo connection to use
+     * @var LagChecker\LagChecker
+     */
+    protected $heartbeatLagChecker;
+
+    /**
      * Flag to force use the read connection overriding the sticky config.
      * @var boolean
      */
@@ -53,6 +59,10 @@ class MySqlConnection extends BaseMySqlConnection
 
         $this->lagChecker = $this->getLagChecker($lagCheckConfig);
 
+        $lagCheckConfig = $config['heartbeat_check'];
+
+        $this->heartbeatLagChecker = $this->getLagChecker($lagCheckConfig);
+
         $this->trace = TraceFacade::getFacadeRoot();
 
         $this->forceCheckReplicaLag = false;
@@ -70,7 +80,6 @@ class MySqlConnection extends BaseMySqlConnection
                 return new LagChecker\RedisLagChecker($config);
 
             case 'heartbeat':
-                // TODO: This needs to be implemented.
                 return new LagChecker\HeartbeatLagChecker($config);
 
             default:
@@ -122,7 +131,7 @@ class MySqlConnection extends BaseMySqlConnection
                     $this->readPdo = $this->previousReadPdo;
                 }
 
-                $result = $this->lagChecker->useReadPdoIfApplicable($this->readPdo);
+                $result = $this->shouldUseSlave($this->readPdo);
 
                 //
                 // If the lag checker returns null, i.e read connection is not to be used,
@@ -173,6 +182,38 @@ class MySqlConnection extends BaseMySqlConnection
     public function forceReadPdo(bool $value)
     {
         $this->forceReadPdo = $value;
+    }
+
+    /**
+     * checks `skip_slave` flag set in redis. if true then returns null.
+     * else checks for heartbeat check and decides on connection
+     *
+     * @param $readPdo
+     *
+     * @return mixed|null|\PDO|LagChecker\Closure
+     */
+    protected function shouldUseSlave($readPdo)
+    {
+        // First check if `skip_slave` flag in Redis is set to true or not.
+        // If true then use write PDO object and move all traffic to master.
+        $result = $this->lagChecker->useReadPdoIfApplicable($readPdo);
+
+        if ($result === null)
+        {
+            return null;
+        }
+
+        // If the Redis lagchecker is not in effect then we'll go ahead with
+        // pt-heartbeat lag checker.
+        $result = $this->heartbeatLagChecker->useReadPdoIfApplicable($readPdo);
+
+        $connection = ($result === null) ? Metric::MASTER : Metric::SLAVE;
+
+        $this->trace->count(Metric::ENFORCE_MASTER_CONNECTION, [
+            Metric::CONNECTION => $connection
+        ], 1);
+
+        return $result;
     }
 
     /**

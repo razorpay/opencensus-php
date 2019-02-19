@@ -27,9 +27,9 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
     const COLUMN_REASON            = 'return_reason';
     const COLUMN_RECORD_IDENTIFIER = 'record_identifier';
 
-    const STATUS_SUCCESS  = 'Success';
-    const STATUS_FAILURE  = 'Failure';
-    const STATUS_REJECTED = 'Rejected';
+    const STATUS_SUCCESS  = 'success';
+    const STATUS_FAILURE  = 'failure';
+    const STATUS_REJECTED = 'rejected';
 
     protected $allowedStatuses = [
         self::STATUS_SUCCESS,
@@ -96,9 +96,11 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
      */
     protected function getReconPaymentStatus(array $row)
     {
-        if (isset($this->paymentStatusMappings[$row[self::COLUMN_STATUS]]) === true)
+        $status = strtolower(trim($row[self::COLUMN_STATUS]));
+
+        if (isset($this->paymentStatusMappings[$status]) === true)
         {
-            return $this->paymentStatusMappings[$row[self::COLUMN_STATUS]];
+            return $this->paymentStatusMappings[$status];
         }
 
         $this->messenger->raiseReconAlert(
@@ -135,8 +137,9 @@ class EmandateDebitReconciliate extends Base\SubReconciliator\EmandateDebitRecon
                 [
                     'trace_code'      => TraceCode::RECON_INFO_ALERT,
                     'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
-                    'message'         => 'Payment amount mismatch',
+                    'payment_id'      => $this->payment->getId(),
                     'expected_amount' => $this->payment->getBaseAmount(),
+                    'recon_amount'    => $this->getReconPaymentAmount($row),
                     'currency'        => $this->payment->getCurrency(),
                     'row'             => $row,
                     'gateway'         => $this->gateway

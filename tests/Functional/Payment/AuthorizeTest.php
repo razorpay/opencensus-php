@@ -7,7 +7,9 @@ use Cache;
 use Redis;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
+use RZP\Services\RazorXClient;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment as PaymentModel;
 use RZP\Exception\GatewayErrorException;
@@ -50,11 +52,25 @@ class AuthorizeTest extends TestCase
     {
         Mail::fake();
 
+        // Mock Razorx
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+             ->willReturn('On');
+
         $content = $this->startTest();
 
         $this->assertArrayHasKey('razorpay_payment_id', $content);
 
-        Mail::assertQueued(AuthorizedMail::class);
+        Mail::assertQueued(AuthorizedMail::class, function ($mail)
+        {
+            $this->assertEquals($mail->view, 'emails.mjml.customer.payment');
+            return true;
+        });
     }
 
     public function testMagicKeyFalseMerchantDisabled()
@@ -112,7 +128,6 @@ class AuthorizeTest extends TestCase
             {
                 return $store;
             });
-
 
         Cache::shouldReceive('store')
             ->withAnyArgs()
@@ -216,6 +231,29 @@ class AuthorizeTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals('authorized', $payment['status']);
+    }
+
+    public function testMaestroCardWithoutCvvAndExpiry()
+    {
+        $payment = $this->payment;
+
+        // Converting to a maestro card number
+        $payment['card']['number'] = '5081597022059105';
+
+        unset($payment['card']['cvv']);
+
+        unset($payment['card']['expiry_month']);
+
+        unset($payment['card']['expiry_year']);
+
+        // Payment goes through fine without any exceptions
+        $this->doAuthPayment($payment);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals('12', $card['expiry_month']);
+
+        $this->assertEquals('2049', $card['expiry_year']);
     }
 
     public function testPaymentCardAsString()
@@ -1083,6 +1121,56 @@ class AuthorizeTest extends TestCase
         $this->runRequestResponseFlow($data, function() use ($payment) {
             $this->doWalletTopupViaAjaxRoute($payment->getPublicId());
         });
+    }
+
+    public function testInvalidUpiGatewayCallback()
+    {
+        $this->fixtures->merchant->createAccount(Account::DEMO_ACCOUNT);
+
+        $this->fixtures->merchant->enableUpi();
+        $this->fixtures->merchant->enableUpi(Account::DEMO_ACCOUNT);
+
+        $sharedTerminal = $this->fixtures->create('terminal:shared_upi_icici_terminal');
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+        $paymentId = $response['payment_id'];
+
+        $this->assertEquals('async', $response['type']);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $sharedTerminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal', ['gateway_merchant_id' => 'HDFC000000000']);
+
+        $server = $this->mockServerContentFunction(function (&$content, $action = '')
+        {
+            if ($action === 'callback')
+            {
+                $content[1] = 'randomid';
+            }
+        }, 'upi_mindgate');
+
+        $content = $server->getAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content, 'upi_mindgate');
+
+        $this->assertTrue($response['success']);
+        $this->assertArrayHasKey('payment_id', $response);
+
+        $newPayment = $this->getEntityById('payment', $response['payment_id'], true);
+
+        $this->assertEquals('upi_mindgate', $newPayment['gateway']);
+        $this->assertNotEquals($newPayment['id'], $payment['id']);
+        $this->assertNull($newPayment['captured_at']);
+
+        $newUpiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('randomid', $newUpiEntity['merchant_reference']);
+
+        $this->assertNotEquals($newUpiEntity['payment_id'], $newUpiEntity['merchant_reference']);
     }
 
     public function startTest($testDataToReplace = [])

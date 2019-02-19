@@ -35,9 +35,13 @@ class Validator extends Base\Validator
     ];
 
     protected static $retryRules = [
-        'bank_account'  => 'sometimes|array',
-        'vpa'           => 'sometimes|associative_array',
-        'vpa.address'   => 'required_with:vpa|filled|string',
+        'bank_account'                      => 'sometimes|array',
+        'bank_account.ifsc_code'            => 'required_with:bank_account|alpha_num|size:11',
+        'bank_account.account_number'       => 'required_with:bank_account|alpha_num|between:5,22',
+        'bank_account.beneficiary_name'     => 'required_with:bank_account|between:4,120|string',
+        'vpa'                               => 'sometimes|associative_array',
+        'vpa.address'                       => 'required_with:vpa|filled|string',
+
     ];
 
     protected static $createValidators = [
@@ -81,18 +85,30 @@ class Validator extends Base\Validator
     ];
 
     protected static $scroogeGatewayRefundRules = [
-        'id'                    => 'required|unsigned_id',
-        'merchant_id'           => 'required|unsigned_id',
-        'payment_id'            => 'required|unsigned_id',
-        'currency'              => 'required|string|size:3',
-        'gateway'               => 'required|string',
-        'amount'                => 'required|integer|min:0',
-        'base_amount'           => 'required|integer|min:0',
-        'method'                => 'required|string',
-        'payment_amount'        => 'required|integer|min:0',
-        'payment_base_amount'   => 'required|integer|min:0',
-        'payment_created_at'    => 'required|epoch',
-        'attempts'              => 'sometimes|integer'
+        'id'                                        => 'required|unsigned_id',
+        'merchant_id'                               => 'required|unsigned_id',
+        'payment_id'                                => 'required|unsigned_id',
+        'currency'                                  => 'required|string|size:3',
+        'gateway'                                   => 'required|string',
+        'amount'                                    => 'required|integer|min:0',
+        'base_amount'                               => 'required|integer|min:0',
+        'method'                                    => 'required|string',
+        'payment_amount'                            => 'required|integer|min:0',
+        'payment_base_amount'                       => 'required|integer|min:0',
+        'payment_created_at'                        => 'required|epoch',
+        'attempts'                                  => 'sometimes|integer',
+        'fta_data'                                  => 'sometimes|associative_array',
+        'fta_data.bank_account'                     => 'sometimes|array',
+        'fta_data.bank_account.ifsc_code'           => 'required_with:bank_account|alpha_num|size:11',
+        'fta_data.bank_account.account_number'      => 'required_with:bank_account|alpha_num|between:5,22',
+        'fta_data.bank_account.beneficiary_name'    => 'required_with:bank_account|between:4,120|string',
+        'fta_data.vpa'                              => 'sometimes|associative_array',
+        'fta_data.vpa.address'                      => 'required_with:vpa|filled|string',
+    ];
+
+    protected static $createScroogeRefundBulkRules = [
+        'refund_ids'    => 'required|sequential_array|max:1000',
+        'refund_ids.*'  => 'required|public_id'
     ];
 
     protected $payment;
@@ -307,15 +323,20 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateMarkProcessed()
+    public function validateUpdateScroogeRefundStatus($input)
     {
         $refund = $this->entity;
 
         //
         // Checking if refund is already processed, as scrooge can call API to mark processed again
         // even if refund has been already updated by some other process (eg. recon)
+        // Refund with initiated status can be marked as processed
+        // after FTA recon calls scrooge and scrooge calls back to API.
         //
-        if (($refund->isCreated() === false) and ($refund->isProcessed() === false))
+        if ((($refund->isCreated() === false) and
+            ($refund->isProcessed() === false) and
+            ($refund->isInitiated() === false)) or
+            (isset($input['status']) === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_REFUND_INVALID_STATE_TO_PROCESSED,
@@ -323,6 +344,7 @@ class Validator extends Base\Validator
                 [
                     'refund_id' => $refund->getId(),
                     'status'    => $refund->getStatus(),
+                    'gateway'   => $refund->getGateway(),
                 ]);
         }
     }
@@ -339,10 +361,10 @@ class Validator extends Base\Validator
 
         //
         // For now, edit refund is supporting only status update.
-        // Checking if refund is moved to another state apart from Processed, throw exception.
-        // For scrooge gateways, refund status can only be updated to `processed`.
+        // Checking if refund is moved to another state apart from Processed or Failed, throw exception.
+        // For scrooge gateways, refund status can only be updated to `processed` or `failed`(in case of fta).
         //
-        if ($input[Payment\Entity::STATUS] !== Status::PROCESSED)
+        if (($input[Entity::STATUS] !== Status::PROCESSED) and ($input[Entity::STATUS] !== Status::FAILED))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_REFUND_INVALID_STATE_UPDATE,
@@ -390,9 +412,8 @@ class Validator extends Base\Validator
         }
 
         $gateway = $refund->getGateway();
-        $merchantId = $refund->merchant->getId();
 
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway, $merchantId) === false)
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_REFUND_NOT_SCROOGE,

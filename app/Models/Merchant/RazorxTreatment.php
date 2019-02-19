@@ -9,4 +9,7 @@ final class RazorxTreatment
 
     // Decide whom to use k8s batch upload job instead of queue worker
     const K8S_BATCH_TREATMENT   = 'k8s-batch-upload';
+
+    // Decide whom to send new design mailers
+    const MJML_BASED_MAILERS = 'mjml_based_mailers';
 }

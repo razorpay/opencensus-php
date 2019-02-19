@@ -12,6 +12,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Transaction;
 use RZP\Models\Merchant\Credits;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Holidays;
@@ -25,6 +26,7 @@ abstract class Base extends BaseCore
 {
     protected $source;
 
+    /** @var Transaction\Entity */
     protected $txn;
 
     protected $merchantBalance;
@@ -186,12 +188,24 @@ abstract class Base extends BaseCore
         list($this->fees, $this->tax, $this->feesSplit) = (new Pricing\Fee)->calculateMerchantFees($this->source);
     }
 
-
     protected function createNewTransaction()
     {
         $txn = new TransactionModel\Entity;
 
         $txn->generateId();
+
+        //
+        // Ideally we should have used build() here but not doing to avoiding unexpected & silent
+        // bugs/issues because we are in hurry to release x.
+        //
+        // Call to build() will set defaults in the entity object and hence are accessible in
+        // toArrayPublic() like methods.  Also, mostly defaults of code are same as of database.
+        //
+        // Needed the following attribute to exist in entity object during creation because immediately
+        // after creatiof of payout's txn we serialize payout with transaction relation. And without this
+        // line former will fail at setPublicSettlementIdAttribute().
+        //
+        $txn->setSettled(false);
 
         $txn->sourceAssociate($this->source);
 
@@ -323,12 +337,14 @@ abstract class Base extends BaseCore
         //    and so we expect it to be set to 0 always.
         // 3. For txn of type other than transfers(where txn.credit = 0) expectation
         //    is that the credit amount is same as txn amount (as fee is 0).
+        // 4. Amount Credits cannot be used for Fund Account Validation.
         //
         assertTrue($this->txn->isGratis() === true);
         assertTrue($this->txn->getFee() === 0);
         assertTrue(
             (($this->txn->isTypePayment() === true) and ($this->txn->getCredit() === $this->txn->getAmount())) or
             (($this->txn->isTypeTransfer() === true) and ($this->txn->getDebit() === $this->txn->getAmount())));
+        assertTrue($this->txn->isTypeFundAccountValidation() === false);
 
         $amount = $this->txn->getAmount();
 
@@ -416,7 +432,7 @@ abstract class Base extends BaseCore
         }
     }
 
-     public function updateFeeCredits()
+    public function updateFeeCredits()
     {
         // While filling the txn fees and amount, we have not used fee credits.
         if (($this->txn->isFeeCredits() === false) or
@@ -460,11 +476,16 @@ abstract class Base extends BaseCore
 
         if ($feeCreditsThreshold !== null)
         {
-            $this->sendFeeCreditAlertIfNeeded($fee, $feeCredits, $feeCreditsThreshold, $this->merchantBalance->merchant);
+            $this->sendFeeCreditAlertIfNeeded(
+                $fee, $feeCredits, $feeCreditsThreshold, $this->merchantBalance->merchant);
         }
     }
 
-    private function sendFeeCreditAlertIfNeeded(int $fee, int $feeCredits, int $feeCreditsThreshold, Merchant\Entity $merchant)
+    private function sendFeeCreditAlertIfNeeded(
+        int $fee,
+        int $feeCredits,
+        int $feeCreditsThreshold,
+        Merchant\Entity $merchant)
     {
         $alertRatios = [1, 0.75, 0.5, 0.25, 0.1];
 
@@ -480,7 +501,7 @@ abstract class Base extends BaseCore
                     'email'        => $merchant->getTransactionReportEmail(),
                     'merchant_id'  => $merchant->getId(),
                     'merchant_dba'  => $merchant->getBillingLabel(),
-                    'fee_credits'  => '₹ '.(($feeCredits - $fee)/100),
+                    'fee_credits'  => '₹ '.(($feeCredits - $fee) / 100),
                     'org_hostname' => $merchant->org->getPrimaryHostName(),
                     'timestamp'    => Carbon::now(Timezone::IST)->format('d-m-Y H:i:s'),
                 ];
@@ -532,7 +553,7 @@ abstract class Base extends BaseCore
 
     public function updateBalances(bool $updateNodalBalance = true)
     {
-        $this->txn->associateBalance($this->merchantBalance);
+        $this->txn->accountBalance()->associate($this->merchantBalance);
 
         $this->updateMerchantBalance();
 

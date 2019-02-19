@@ -12,6 +12,7 @@ use RZP\Models\Card\Type as CardType;
 use RZP\Models\Payment;
 use RZP\Models\Payout;
 use RZP\Models\Transfer;
+use RZP\Models\FundAccount;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Pricing;
@@ -21,7 +22,7 @@ class Validator extends Base\Validator
 {
     protected static $addPlanRuleRules = [
         Entity::PRODUCT             => 'sometimes|string|custom',
-        Entity::FEATURE             => 'sometimes|alpha',
+        Entity::FEATURE             => 'sometimes|alpha_dash',
         Entity::GATEWAY             => 'sometimes',
         Entity::PLAN_NAME           => 'sometimes',
         Entity::PAYMENT_METHOD      => 'required|string',
@@ -33,12 +34,13 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL       => 'sometimes|in:0,1',
         Entity::RECEIVER_TYPE       => 'sometimes_if:payment_method,card,upi|nullable|in:qr_code',
         Entity::AMOUNT_RANGE_ACTIVE => 'sometimes|in:0,1',
-        Entity::AMOUNT_RANGE_MIN    => 'required_only_if:amount_range_active,1|nullable|integer|min:0',
-        Entity::AMOUNT_RANGE_MAX    => 'required_only_if:amount_range_active,1|nullable|integer|max:1000000000',
+        Entity::AMOUNT_RANGE_MIN    => 'required_only_if:amount_range_active,1|nullable|mysql_unsigned_int',
+        Entity::AMOUNT_RANGE_MAX    => 'required_only_if:amount_range_active,1|nullable|mysql_unsigned_int',
         Entity::PERCENT_RATE        => 'sometimes|integer|max:10000',
         Entity::FIXED_RATE          => 'sometimes|integer|max:100000',
         Entity::MIN_FEE             => 'sometimes|integer|max:100000',
         Entity::MAX_FEE             => 'sometimes|nullable|integer|min:1|max:100000',
+        Entity::TYPE                => 'sometimes|string|custom',
     ];
 
     protected static $editPlanRuleRules = [
@@ -52,6 +54,7 @@ class Validator extends Base\Validator
         'addPlanRuleRate',
         'addPlanRuleCard',
         'addPlanRuleNB',
+        'addPlanRuleFundAccountValidation',
         'addPlanRuleEmandate',
         'addPlanRulePaymentNetwork',
         'addPlanRuleInternational',
@@ -59,6 +62,10 @@ class Validator extends Base\Validator
         'addPlanRuleFeature',
         'addPlanRulePricingMethod',
         'addPlanRuleMinAndMaxFee'
+    ];
+
+    protected static $fetchRules = [
+        Entity::TYPE   => 'sometimes|string|custom',
     ];
 
     protected static $editPlanRuleValidators = [
@@ -112,12 +119,33 @@ class Validator extends Base\Validator
                 Transfer\ToType::validateDestination($method);
 
                 break;
+
+            case Pricing\Feature::FUND_ACCOUNT_VALIDATION:
+                FundAccount\Validation\FundAccountType::validate($method);
+
+                break;
+        }
+    }
+
+    protected function validateAddPlanRuleFundAccountValidation($input)
+    {
+        if ((isset($input[Entity::FEATURE]) === true) and
+            $input[Entity::FEATURE] === Pricing\Feature::FUND_ACCOUNT_VALIDATION)
+        {
+            if ((isset($input[Entity::PAYMENT_METHOD]) === true) and
+                ($input[Entity::PAYMENT_METHOD] === FundAccount\Validation\FundAccountType::BANK_ACCOUNT) and
+                (empty($input[Entity::PERCENT_RATE]) === false))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Percentage rate pricing is not allowed for Bank Account Validation');
+            }
         }
     }
 
     protected function validateAddPlanRuleEmandate($input)
     {
-        if ($input[Entity::PAYMENT_METHOD] === Payment\Method::EMANDATE)
+        if ((isset($input[Entity::PAYMENT_METHOD]) === true) and
+            ($input[Entity::PAYMENT_METHOD] === Payment\Method::EMANDATE))
         {
             if (empty($input[Entity::PERCENT_RATE]) === false)
             {
@@ -357,6 +385,30 @@ class Validator extends Base\Validator
     }
 
     /**
+     * Throw error if pricing plan has rules of multiple types
+     *
+     * @param Plan $plan
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateTypeMatch(Plan $plan)
+    {
+        $newRule = $this->entity;
+
+        $types = $plan->pluck(Entity::TYPE);
+        $types = $types->push($newRule[Entity::TYPE])->unique();
+
+        if ($types->count() > 1)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PRICING_PLAN_CANNOT_HAVE_MULTIPLE_TYPES,
+                Entity::TYPE,
+                $types->values()->all()
+            );
+        }
+    }
+
+    /**
      * Check whether this new rule already exists
      *
      * @param Plan $plan
@@ -371,7 +423,8 @@ class Validator extends Base\Validator
 
         foreach ($rules as $rule)
         {
-            if (($rule[Entity::PAYMENT_METHOD] === $newRule[Entity::PAYMENT_METHOD]) and
+            if (($rule[Entity::PRODUCT] === $newRule[Entity::PRODUCT]) and
+                ($rule[Entity::PAYMENT_METHOD] === $newRule[Entity::PAYMENT_METHOD]) and
                 ($rule[Entity::PAYMENT_METHOD_TYPE] === $newRule[Entity::PAYMENT_METHOD_TYPE]) and
                 ($rule[Entity::PAYMENT_NETWORK] === $newRule[Entity::PAYMENT_NETWORK]) and
                 ($rule[Entity::PAYMENT_ISSUER] === $newRule[Entity::PAYMENT_ISSUER]) and
@@ -387,7 +440,8 @@ class Validator extends Base\Validator
                     ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
             }
 
-            if (($rule[Entity::PAYMENT_METHOD] === $newRule[Entity::PAYMENT_METHOD]) and
+            if (($rule[Entity::PRODUCT] === $newRule[Entity::PRODUCT]) and
+                ($rule[Entity::PAYMENT_METHOD] === $newRule[Entity::PAYMENT_METHOD]) and
                 ($rule[Entity::PAYMENT_METHOD_TYPE] === $newRule[Entity::PAYMENT_METHOD_TYPE]) and
                 ($rule[Entity::PAYMENT_NETWORK] === $newRule[Entity::PAYMENT_NETWORK]) and
                 ($rule[Entity::PAYMENT_ISSUER] === $newRule[Entity::PAYMENT_ISSUER]) and
@@ -459,6 +513,11 @@ class Validator extends Base\Validator
     public function validateProduct($attribute, $value)
     {
         Product::validate($value);
+    }
+
+    public function validateType($attribute, $value)
+    {
+        Type::validate($value);
     }
 
     protected function between($n, $min, $max)

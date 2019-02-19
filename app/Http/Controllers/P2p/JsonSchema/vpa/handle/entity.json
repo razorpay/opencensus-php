@@ -5,8 +5,8 @@
     "type": "object",
     "required": [],
     "properties": {
-        "handle": {
-            "$id": "#/properties/handle",
+        "code": {
+            "$id": "#/properties/code",
             "type": "string",
             "maxLength" : 50
         },

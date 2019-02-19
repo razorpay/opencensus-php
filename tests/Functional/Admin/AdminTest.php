@@ -804,9 +804,9 @@ class AdminTest extends TestCase
     {
         $result = $this->startTest();
 
-        $this->assertCount(10, $result['fields']);
+        $this->assertCount(11, $result['fields']);
 
-        $this->assertCount(174, $result['entities']);
+        $this->assertCount(185, $result['entities']);
     }
 
     public function testFetchSoftDeletedEntityForAdmin()

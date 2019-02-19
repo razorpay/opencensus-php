@@ -45,7 +45,7 @@ class ErrorCodeDescriptions extends Cards\ErrorCodeDescriptions
         'GW00856'     => 'Invalid cvv',
         'GW00874'     => 'Transaction denied due to expiration date.',
         'GW00876'     => 'Invalid cvv',
-        'GW02016'     => 'Locale text not found',
+        'GW02016'     => 'PaymentId Expired',
 
         'GV00001'     => 'Unknown VPAS version',
         'GV00002'     => 'Cardholder not enrolled',
@@ -176,6 +176,7 @@ class ErrorCodeDescriptions extends Cards\ErrorCodeDescriptions
         'GW00486'     => 'Invalid Terminal Cutover Minute',
         'GW00399'     => 'Merchant User ID is invalid',
         'GW00550'     => 'Category Code missing or invalid',
+        'GW00555'     => 'Terminal ID is Deactivated, Please contact PG Helpdesk.',
         'GW00400'     => 'Merchant User Password is invalid',
         'GW00600'     => 'Card number required',
         'GW00401'     => 'Merchant New Password is invalid',
@@ -328,10 +329,21 @@ class ErrorCodeDescriptions extends Cards\ErrorCodeDescriptions
         'PY20081'     => 'Invalid Payment Page Header File',
         'PY20082'     => 'Invalid Payment Page Footer File',
         'PY20050'     => 'Card Number Encryption Failure',
+
+        '412' => 'Issuer Authentication Server failure',
+        '410' => 'Failed Initiate CheckBin - BIN not present',
+        '404' => 'SQL Exception',
+        '408' => 'Caught ERROR of type:[ System.Xml.XmlException ] . strXML is not a valid XML string',
+
+        'IPAY0200301' => 'Invalid transaction details',
+        'IPAY0200300' => 'Missing transaction details',
+
+        'FSS00003' => 'Only Debit Card Allowed',
+
+        '03' => 'System error. Could not process transaction',
         );
 
         public static $authRespCodeErrorMessages = array(
-        '00'          => 'Approved or completed successfully',
         '01'          => 'Please call Issuer - Fall back referral',
         '02'          => 'Refer to special conditions Card Issuer',
         '03'          => 'Merchant not on file',

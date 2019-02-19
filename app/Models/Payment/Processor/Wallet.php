@@ -23,7 +23,7 @@ class Wallet
 
     public static $fullName = array(
         self::MOBIKWIK      => 'Mobikwik',
-        self::OLAMONEY      => 'Olamoney',
+        self::OLAMONEY      => 'Olamoney (Postpaid + Wallet)',
         self::PAYTM         => 'Paytm',
         self::PAYUMONEY     => 'Payumoney',
         self::PAYZAPP       => 'Payzapp',
@@ -34,6 +34,20 @@ class Wallet
         self::OPENWALLET    => 'RZP Open Wallet',
         self::MPESA         => 'Vodafone mPesa',
         self::AMAZONPAY     => 'AmazonPay'
+    );
+
+    public static $emailRequiredWallets = array(
+        self::MOBIKWIK,
+        self::OLAMONEY,
+        self::PAYTM,
+        self::PAYUMONEY,
+        self::PAYZAPP,
+        self::AIRTELMONEY,
+        self::FREECHARGE,
+        self::JIOMONEY,
+        self::SBIBUDDY,
+        self::OPENWALLET,
+        self::MPESA,
     );
 
     public static function exists($wallet)
@@ -49,6 +63,11 @@ class Wallet
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED,
                 Payment\Entity::WALLET);
         }
+    }
+
+    public static function isEmailRequired(string $wallet)
+    {
+        return (in_array($wallet, self::$emailRequiredWallets) === true);
     }
 
     public static function getWalletNetworkNamesMap()

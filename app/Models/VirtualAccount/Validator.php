@@ -80,4 +80,17 @@ class Validator extends Base\Validator
                 compact('receivers'));
         }
     }
+
+    public function validateOfPrimaryBalance()
+    {
+        if ($this->entity->isBalanceTypePrimary() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Operation is not allowed for this specific virtual account',
+                null,
+                [
+                    Entity::ID => $this->entity->getId(),
+                ]);
+        }
+    }
 }

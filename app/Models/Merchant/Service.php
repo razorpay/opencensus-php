@@ -8,6 +8,7 @@ use Cache;
 use Config;
 use Request;
 use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
 use Razorpay\OAuth\Token as OAuthToken;
 use Razorpay\OAuth\Client as OAuthClient;
 use Razorpay\OAuth\Application as OAuthApplication;
@@ -17,9 +18,9 @@ use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Offer;
 use RZP\Models\Coupon;
-use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Models\Schedule;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -30,8 +31,10 @@ use RZP\Models\Admin\Group;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Base\RuntimeManager;
+use RZP\Models\Pricing\Plan;
+use RZP\Models\Admin\Org\Hostname;
 use RZP\Error\PublicErrorDescription;
-use Razorpay\Trace\Logger as Trace;
+use RZP\Constants\{Mode, Entity as CE};
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
@@ -127,6 +130,19 @@ class Service extends Base\Service
         }
 
         return $this->createSubMerchantAndSetRelations($merchant, $isLinkedAccount, $input);
+    }
+
+    /**
+     * resets the merchant settlement schedule to default
+     *
+     * @param array $input
+     * @return array
+     */
+    public function resetSettlementSchedule(array $input): array
+    {
+        (new Validator)->validateInput('reset_settlement_schedule', $input);
+
+        return $this->core()->resetSettlementSchedule($input['merchant_ids']);
     }
 
     /**
@@ -266,12 +282,14 @@ class Service extends Base\Service
      * @param Entity      $aggregator
      * @param User\Entity $user
      * @param bool        $createdNewUser
+     * @param bool        $retry
      */
     protected function sendSubMerchantCreationMail(
         Entity $subMerchant,
         Entity $aggregator,
         User\Entity $user = null,
-        bool $createdNewUser = false)
+        bool $createdNewUser = false,
+        bool $retry = false)
     {
         $isPartnerFlow = $aggregator->isPartner();
 
@@ -281,7 +299,7 @@ class Service extends Base\Service
 
         if ($isPartnerFlow === true)
         {
-            $this->sendNewSubMerchantCreationMails($subMerchant, $aggregator, $user, $createdNewUser);
+            $this->sendNewSubMerchantCreationMails($subMerchant, $aggregator, $user, $createdNewUser, $retry);
         }
         else
         {
@@ -296,28 +314,41 @@ class Service extends Base\Service
      * @param array       $aggregator
      * @param User\Entity $user
      * @param bool        $createdNewUser
+     * @param bool        $retry
      */
     protected function sendNewSubMerchantCreationMails(
         array $subMerchant,
         array $aggregator,
         User\Entity $user = null,
-        bool $createdNewUser = false)
+        bool $createdNewUser = false,
+        bool $retry = false)
     {
-        // This mail goes to the partner who has added the sub-merchant
-        $createSubMerchantPartnerMail = new CreateSubMerchantPartner($subMerchant, $aggregator);
+        // This mail goes to the partner who has added the sub-merchant. If the partner is adding the merchant then mail
+        // is sent to both partner and merchant but when partner sends the mail as a reminder to merchant for setting
+        // the password, mail is only sent to merchant and not to the partner. In this case, retry is true and partner
+        // does not get any mail.
+        if ($retry === false)
+        {
+            $createSubMerchantPartnerMail = new CreateSubMerchantPartner($subMerchant, $aggregator);
 
-        Mail::queue($createSubMerchantPartnerMail);
+            Mail::queue($createSubMerchantPartnerMail);
+        }
 
         if ($subMerchant[Entity::EMAIL] === $aggregator[Entity::EMAIL])
         {
             return;
         }
 
-        $orgId = $subMerchant['org']['id'];
+        $orgId = (isset($subMerchant['org_id']) === true) ? $subMerchant['org_id'] : $subMerchant['org']['id'];
 
-        $org = $this->repo->org->find($orgId)->toArrayPublic();
+        /** @var Org\Entity $org */
+        $org = $this->repo->org->find($orgId);
 
-        $org[Org\Hostname\Entity::HOSTNAME] = $this->auth->getOrgHostName();
+        $hostname = $org->getPrimaryHostName();
+
+        $org = $org->toArrayPublic();
+
+        $org[Hostname\Entity::HOSTNAME] = $hostname;
 
         $mailUserData = $createdNewUser ? $user : null;
 
@@ -440,6 +471,34 @@ class Service extends Base\Service
         return $balance->toArray();
     }
 
+    public function fetchAccountBalances(array $input)
+    {
+        $merchantId = $this->merchant->getId();
+
+        //
+        // For non-activated merchants in live mode, simply return 0.
+        // For these merchants, balance entity is not yet created so
+        // we need to create the exception here.
+        //
+        if (($this->mode === Mode::LIVE) and
+            ($this->merchant->isActivated() === false) and
+            (Account::isNodalAccount($merchantId) === false))
+        {
+            $balanceCollection = new Base\PublicCollection();
+
+            $balance[Balance\Entity::ID]      = $merchantId;
+            $balance[Balance\Entity::BALANCE] = 0;
+
+            $balanceCollection->add($balance);
+
+            return $balanceCollection->toArrayPublic();
+        }
+
+        $balance = $this->repo->balance->fetch($input, $merchantId);
+
+        return $balance->toArrayWithItems();
+    }
+
     public function editAmountCredits($merchantId, $input)
     {
         (new Validator)->validateInput('edit_credits', $input);
@@ -462,6 +521,7 @@ class Service extends Base\Service
                 'input'       => $input
             ]);
 
+        /** @var Entity $merchant */
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         if (isset($input['pricing_plan_id']) === false)
@@ -473,6 +533,7 @@ class Service extends Base\Service
 
         $orgId = $merchant->org->getId();
 
+        /** @var Plan $plan */
         $plan = $this->repo->pricing->getPricingPlanByIdAndOrgId($input['pricing_plan_id'], $orgId);
 
         // validate if this plan can be set for this merchant.
@@ -580,6 +641,53 @@ class Service extends Base\Service
         ];
     }
 
+    public function bulkAssignPricing(array $input): array
+    {
+        $this->trace->info(TraceCode::MERCHANT_PRICING_BULK_REQUEST, $input);
+
+        (new Validator)->validateInput('bulk_assign_pricing', $input);
+
+        $merchantIds   = $input['merchant_ids'];
+        unset($input['merchant_ids']);
+
+        $failedIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $this->app['workflow']->skipWorkflows(function() use ($merchantId, $input)
+                {
+                    $this->assignPricingPlan($merchantId, $input);
+                });
+            }
+            catch (\Throwable $t)
+            {
+                $this->trace->traceException(
+                    $t,
+                    Trace::ERROR,
+                    TraceCode::MERCHANT_PRICING_BULK_EXCEPTION,
+                    [
+                        'merchant_id' => $merchantId,
+                        'input'       => $input,
+                    ]);
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        // Tracing all ids together for ease of re-running in case of errors. The dashboard error
+        // display is not that convenient and can be lost. Collecting from the previous logs of
+        // individual failures is more time consuming.
+        $this->trace->error(TraceCode::MERCHANT_PRICING_BULK_ALL_FAILED_IDS, [ 'failed_ids' => $failedIds]);
+
+        return [
+            'total_count'  => count($merchantIds),
+            'failed_count' => count($failedIds),
+            'failed_ids'   => $failedIds
+        ];
+    }
+
     public function migrateMerchantToSettlementSchedules($input)
     {
         $this->trace->info(TraceCode::SCHEDULE_MIGRATION_INITIATED);
@@ -645,7 +753,12 @@ class Service extends Base\Service
 
         $pricingPlanId = $merchant->getPricingPlanId();
 
-        $plan = $this->repo->pricing->getPricingPlanById($pricingPlanId);
+        $plan = new Plan;
+
+        if(empty($pricingPlanId) === false)
+        {
+            $plan = $this->repo->pricing->getPricingPlanById($pricingPlanId);
+        }
 
         return $plan->toArrayPublic();
     }
@@ -1118,6 +1231,8 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::MERCHANT_METHODS_BULK_UPDATE);
 
+        (new Methods\Validator)->validateInput('bulk_assign_methods', $input);
+
         $merchantIds = $input['merchants'];
 
         $successCount = $failedCount = 0;
@@ -1128,12 +1243,24 @@ class Service extends Base\Service
         {
             try
             {
-                $paymentMethod = $this->setPaymentMethods($merchantId, $input['methods']);
+                $this->app['workflow']->skipWorkflows(function() use ($merchantId, $input)
+                {
+                    $this->setPaymentMethods($merchantId, $input['methods']);
+                });
 
                 $successCount++;
             }
-            catch (\Exception $ex)
+            catch (\Throwable $t)
             {
+                $this->trace->traceException(
+                    $t,
+                    Trace::ERROR,
+                    TraceCode::MERCHANT_METHODS_BULK_EXCEPTION,
+                    [
+                        'merchant_id' => $merchantId,
+                        'input'       => $input['methods'],
+                    ]);
+
                 $failedCount++;
 
                 $failedIds[] = $merchantId;
@@ -1559,9 +1686,11 @@ class Service extends Base\Service
     {
         $merchantId = $this->merchant->getId();
 
+        $product = $this->auth->getRequestOriginProduct();
+
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $users = $this->core()->getUsers($merchant);
+        $users = $this->core()->getUsers($merchant, $product);
 
         return $users;
     }
@@ -2107,7 +2236,7 @@ class Service extends Base\Service
 
     public function getDummyRazorX()
     {
-        $variant = $this->app->razorx->getTreatment($this->merchant->getId(), 'dummy', $this->mode);
+        $variant = $this->app->razorx->getTreatment('123', 'dummy', 'mode');
 
         return ['variant' => $variant];
     }
@@ -2236,20 +2365,13 @@ class Service extends Base\Service
             return;
         }
 
-        try
-        {
-            $app = $this->core()->getInternalPartnerApp($merchant);
-        }
-        catch (\Exception $e)
-        {
-            throw new Exception\LogicException(
-                'Server error app not found',
-                ErrorCode::SERVER_ERROR_PARTNER_APP_NOT_FOUND);
-        }
+        $app = $this->core()->getInternalPartnerApp($merchant);
 
         $appId = $app->getId();
 
-        (new AccessMap\Service)->mapOAuthApplication($subMerchant->getId(), ['application_id' => $appId]);
+        (new AccessMap\Service)->mapOAuthApplication(
+                                                $subMerchant->getId(),
+                                                ['application_id' => $appId, 'partner_id' => $merchant->getId()]);
     }
 
     /**
@@ -2452,9 +2574,9 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    public function registerBeneficiaryThroughApi(array $input, string $channel): array
+    public function registerBeneficiariesThroughApi(array $input, string $channel): array
     {
-        $response = (new BankAccount\Beneficiary)->registerBeneficiaryThroughApi($input, $channel);
+        $response = (new BankAccount\Beneficiary)->registerBeneficiariesThroughApi($input, $channel);
 
         return $response;
     }
@@ -2576,6 +2698,11 @@ class Service extends Base\Service
         return $this->app->myoperator->submitSupportCallRequest($input);
     }
 
+    public function syncMerchantsToEs(array $input)
+    {
+        return $this->core()->syncMerchantsToEs($input);
+    }
+
     public function bulkRegenerateBalanceIds(array $input)
     {
         $limit = (int) ($input['limit'] ?? 1000);
@@ -2656,10 +2783,10 @@ class Service extends Base\Service
         return false;
     }
 
-    public function switchProductMerchant()
+    public function switchProductMerchant($product = null)
     {
         // Add Banking Role for the current merchant User.
-        (new User\Service())->addProductSwitchRole();
+        (new User\Service)->addProductSwitchRole($product);
 
         $merchant = $this->auth->getMerchant();
 
@@ -2673,6 +2800,55 @@ class Service extends Base\Service
         });
     }
 
+    /**
+     * Checks if a merchant exists with the input email
+     * and if it is marked as a partner
+     *
+     * @param  array $input
+     * @return array
+     */
+    public function fetchMerchantPartnerStatus(array $input)
+    {
+        $partnerExists = $merchantExists = false;
+
+        (new Validator)->validateInput('merchant_partner_status', $input);
+
+        $this->auth->setModeAndDbConnection(Mode::LIVE);
+
+        /** @var Base\PublicCollection $merchants */
+        $merchants = $this->repo->merchant->fetchByEmailAndOrgId($input[Entity::EMAIL]);
+
+        if ($merchants->count() > 0)
+        {
+            $merchantExists = true;
+
+            //
+            // First entry should be partner if there is a partner
+            // as we order by created_at asc.
+            //
+
+            /** @var Entity $first */
+            $first = $merchants->first();
+
+            if ($first->getPartnerType() !== null)
+            {
+                $partnerExists = true;
+            }
+        }
+
+        $result = [CE::MERCHANT => $merchantExists, Constants::PARTNER => $partnerExists];
+
+        $this->trace->info(
+            TraceCode::MERCHANT_PARTNER_STATUS_RESPONSE,
+            [
+                'input'  => $input,
+                'result' => $result
+            ]
+        );
+
+        return $result;
+    }
+
     protected function enableBusinessBankingIfApplicable(Entity $merchant)
     {
         $isBanking = $this->auth->isProductBanking();
@@ -2681,5 +2857,64 @@ class Service extends Base\Service
         {
             $merchant->setBusinessBanking(true);
         }
+    }
+
+    /**
+     * Used when partner sends a reminder mail to sub merchant for creation of password.
+     * Mail is sent only to sub merchant and partner does not get any mail.
+     *
+     * @param string $id submerchant id.
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function sendSubmerchantPasswordResetLink(string $id)
+    {
+        $merchant = $this->auth->getMerchant();
+
+        (new Validator)->validateIsPartner($merchant);
+
+        /** @var Entity $subMerchant */
+        $subMerchant = $this->repo->merchant->findOrFailPublic($id);
+
+        if ($this->isPartnerMerchantMapped($subMerchant->getId(), $merchant->getId()) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER);
+        }
+
+        if (strtolower($subMerchant->getEmail()) === strtolower($merchant->getEmail()))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUB_MERCHANT_EMAIL_SAME_AS_PARENT_EMAIL,
+                Merchant\Entity::EMAIL,
+                $merchant->getEmail()
+            );
+        }
+
+        $subMerchantUser = $this->repo->user->getUserFromEmail($subMerchant->getEmail());
+
+        $mapping = null;
+
+        if (empty($subMerchantUser) === false)
+        {
+            $mapping = $this->repo->merchant->getMerchantUserMapping($subMerchant->getId(),
+                                                                     $subMerchantUser->getId());
+        }
+
+        if ((empty($subMerchantUser) === true) or (empty($mapping) === true))
+        {
+            list($subMerchantUser, $createdNew) = $this->createAdditionalUserOrFetchIfApplicable($subMerchant,
+                                                                                                 $merchant);
+        }
+
+        //
+        // If user already exists, we do not send mail to the user and createNewUser (4th param in following function)
+        // is false in that case. Here, for resending the mail to the user, we are passing createdNewUser as true always
+        // so that user always get a mail.
+        //
+        $this->sendSubMerchantCreationMail($subMerchant, $merchant, $subMerchantUser, true, true);
+
+        return ['success' => true];
     }
 }

@@ -102,6 +102,7 @@ class NetbankingKotakGatewayTest extends TestCase
             'category2'        => 'securities',
             'network_category' => 'securities',
             'group'            => 'tpv_filter',
+            'step'             => 'authorization',
         ]);
 
         $order = $this->createTpvOrderForBank('KKBK');
@@ -152,6 +153,28 @@ class NetbankingKotakGatewayTest extends TestCase
         $content = $this->verifyPayment($payment['id']);
 
         assert($content['payment']['verified'] === 1);
+    }
+
+    public function testVerifyFailed()
+    {
+        $payment = $this->doNetbankingKotakAuthAndCapturePayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'verify_action')
+            {
+                $content = '0521|21012019133808|OSRAZORECM|154805727845548|1|Y|0074864190|1858831011';
+            }
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function () use ($payment)
+        {
+            $this->verifyPayment($payment['id']);
+        });
     }
 
     public function testRefundsFileGeneration()

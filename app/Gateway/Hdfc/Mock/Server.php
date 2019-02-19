@@ -204,7 +204,7 @@ class Server extends Base\Mock\Server
         else if ($cardNumber === '4000000000000002')
         {
             // mock timeout exception for enroll
-            throw new \Requests_Exception("operation timed out", "operation timed out");
+            throw new \Requests_Exception('operation timed out', 'operation timed out');
         }
         else
         {
@@ -226,6 +226,20 @@ class Server extends Base\Mock\Server
         $this->setAction('authorize');
 
         $res = $this->getAuthResponse($this->data['paymentid']);
+
+        $this->content($res, $this->action);
+
+        $xml = Hdfc\Utility::createXml($res);
+
+        return $this->makeResponse($xml);
+    }
+
+    public function preAuthorization()
+    {
+        $this->processInput('preAuthorize');
+        $this->setAction('authorize');
+
+        $res = $this->getPreAuthResponse();
 
         $this->content($res, $this->action);
 
@@ -275,7 +289,28 @@ class Server extends Base\Mock\Server
         return $res;
     }
 
-    public function debitPinAuth()
+    protected function getPreAuthResponse()
+    {
+        $txnId = $this->getNewPaymentId();
+
+        $res = [
+            'result'    => 'APPROVED',
+            'auth'      => '999999',
+            'ref'       => random_integer(12),
+            'avr'       => 'N',
+            'postdate'  => $this->getPostDateForToday(),
+            'paymentid' => $txnId,
+            'tranid'    => $txnId,
+            'trackid'   => $this->data['trackid'],
+            'amt'       => $this->data['amt'] / 100
+        ];
+
+        $this->content($res, 'preauth_response');
+
+        return $res;
+    }
+
+    public function preAuth()
     {
         $this->processInput('debitPinAuthentication');
 
@@ -581,9 +616,9 @@ class Server extends Base\Mock\Server
             'avr'       => $txn['avr'],
             'postdate'  => $txn['postdate'],
             'tranid'    => $txn['gateway_transaction_id'],
-            'trackid'   => $txn['payment_id'],
+            'trackid'   => $this->data['transid'],
             'payid'     => '-1',
-            'amt'       => $txn['amount'] );
+            'amt'       => $this->data['amt'] );
 
         if ($network === Card\Network::RUPAY)
         {
@@ -716,6 +751,21 @@ class Server extends Base\Mock\Server
         $error['result'] = $code . '-' . $errorText;
 
         return $error;
+    }
+
+    public function debitPinAuth()
+    {
+        $this->processInput('debitPinAuthentication');
+
+        $this->setAction('authorize');
+
+        $res = $this->getDebitPinAuthResponse();
+
+        $this->content($res,$this->action);
+
+        $xml = Hdfc\Utility::createXml($res);
+
+        return $this->makeResponse($xml);
     }
 
     protected function getCardNetwork($number)

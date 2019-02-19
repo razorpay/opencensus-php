@@ -37,6 +37,6 @@ class ContextMap
             }
         }
 
-        return $options;
+        return (new ArrayBag($options));
     }
 }

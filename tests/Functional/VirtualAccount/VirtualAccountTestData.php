@@ -393,4 +393,26 @@ return [
             ],
         ],
     ],
+
+    'testFetchVirtualAccountsMustNotIncludeBankingVAs' => [
+        'entity' => 'collection',
+        'count'  => 1,
+        'items'  => [
+            [
+                'name'        => 'Test virtual account',
+                'entity'      => 'virtual_account',
+                'status'      => 'active',
+                'description' => 'VA for tests',
+                'receivers'   => [
+                    [
+                        'entity'    => 'bank_account',
+                        // This ifsc is for vas on primary balance.
+                        'ifsc'      => 'RAZR0000001',
+                        'bank_name' => null,
+                        'name'      => 'Test virtual account',
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

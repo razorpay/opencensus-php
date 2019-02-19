@@ -195,7 +195,9 @@ class VirtualAccountTest extends TestCase
 
     public function testCreateVirtualAccountWithReference()
     {
-        $this->ba->proxyAuthLive();
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], 'owner', 'live');
+
+        $this->ba->proxyAuth('rzp_live_10000000000000', $user->getId());
 
         $this->fixtures->merchant->activate();
 
@@ -1138,7 +1140,7 @@ class VirtualAccountTest extends TestCase
 
         $this->expectException(\Rzp\Exception\BadRequestException::class);
 
-        $this->expectExceptionMessage('Access forbidden for requested resource');
+        $this->expectExceptionMessage('Access to requested resource not available');
 
         $virtualAccount = (new Core)->createForBankingBalance($merchant);
 
@@ -1156,6 +1158,40 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals(
             $virtualAccount->bankAccount->getAccountNumber(),
             $merchant->bankingBalance->getAccountNumber());
+    }
+
+    public function testUpdateOnVirtualAccountOfBankingBalanceFails()
+    {
+        $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true);
+
+        $this->expectException(\Rzp\Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('Operation is not allowed for this specific virtual account');
+
+        // This method calls the update route.
+        $this->closeVirtualAccountViaEdit($this->virtualAccount->getPublicId());
+    }
+
+    public function testClosingOfVirtualAccountOfBankingBalanceFails()
+    {
+        $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true);
+
+        $this->expectException(\Rzp\Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('Operation is not allowed for this specific virtual account');
+
+        $this->closeVirtualAccount($this->virtualAccount->getPublicId());
+    }
+
+    public function testFetchVirtualAccountsMustNotIncludeBankingVAs()
+    {
+        // Creates virtual account on primary balance.
+        $this->createVirtualAccount();
+
+        // Creates virtual account on banking balance.
+        $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true);
+
+        $this->assertArraySelectiveEquals($this->testData[__FUNCTION__], $this->fetchVirtualAccounts());
     }
 
     protected function mockInfernoFire(Closure $closure)

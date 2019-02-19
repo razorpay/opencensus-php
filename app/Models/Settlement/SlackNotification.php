@@ -29,7 +29,8 @@ class SlackNotification extends Base\Core
         'fta_recon_report'        => 'Settlement Potential Failures',
         'bene_reg_status'         => 'Beneficiaries Registration status',
         'critical_failure'        => 'Critical failure summary',
-        'setl_verify'             => 'Settlement verification complete',);
+        'setl_verify'             => 'Settlement verification complete',
+        'low_balance_alert'       => 'Account balance is below threshold');
 
     /**
      * Used to send slack notifications

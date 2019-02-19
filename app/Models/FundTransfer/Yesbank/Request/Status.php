@@ -6,8 +6,14 @@ use Carbon\Carbon;
 
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Payment\Action;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\FundTransfer\Mode;
+use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\FundTransfer\Yesbank\Reconciliation\GatewayStatus;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\Status as ValidStatus;
+use RZP\Models\FundTransfer\Base\Reconciliation\Constants as ReconConstants;
 
 class Status extends Base
 {
@@ -21,9 +27,9 @@ class Status extends Base
 
     protected $responseIdentifier = Constants::STATUS_RESPONSE_IDENTIFIER;
 
-    public function __construct()
+    public function __construct(string $type = null)
     {
-        parent::__construct();
+        parent::__construct($type);
 
         $this->urlIdentifier = $this->config['payment_status_url_suffix'];
     }
@@ -58,6 +64,30 @@ class Status extends Base
         ]);
     }
 
+    public function getRequestInputForGateway(): array
+    {
+        //
+        // For now, we would be hardcoding the terminal. Later, have to
+        // figure out how to do terminal selection for this, since each
+        // merchant might have a different terminal. Use-case being merchant
+        // wants the payout/refund to happen from their custom vpa handle
+        // instead of from razorpay handle
+        //
+        $terminal = $this->repo->terminal->findByGatewayAndTerminalData(Gateway::UPI_YESBANK);
+
+        return [
+            'terminal' => $terminal->toArray(),
+            'gateway_input' => [
+                'ref_id'    => $this->entity->getId(),
+            ]
+        ];
+    }
+
+    public function getActionForGateway(): string
+    {
+        return Action::PAYOUT_VERIFY;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -80,15 +110,15 @@ class Status extends Base
         $status = ValidStatus::getStatus($statusCode, $transactionType, $bankSubStatus);
 
         return [
-            self::PAYMENT_REF_NO       => $this->entity->getId(),
-            self::UTR                  => $this->getNullOnEmpty($utr),
-            self::BANK_STATUS_CODE     => $status,
-            self::REMARK               => $this->getNullOnEmpty($remark),
-            self::BANK_SUB_STATUS_CODE => $this->getNullOnEmpty($bankSubStatus),
-            self::PAYMENT_DATE         => $this->getNullOnEmpty($paymentDate),
-            self::TRANSFER_TYPE        => $transactionType,
-            self::REFERENCE_NUMBER     => null,
-            self::MODE                 => $mode,
+            ReconConstants::PAYMENT_REF_NO       => $this->entity->getId(),
+            ReconConstants::UTR                  => $this->getNullOnEmpty($utr),
+            ReconConstants::BANK_STATUS_CODE     => $status,
+            ReconConstants::REMARKS              => $this->getNullOnEmpty($remark),
+            ReconConstants::BANK_SUB_STATUS_CODE => $this->getNullOnEmpty($bankSubStatus),
+            ReconConstants::PAYMENT_DATE         => $this->getNullOnEmpty($paymentDate),
+            ReconConstants::TRANSFER_TYPE        => $transactionType,
+            ReconConstants::REFERENCE_NUMBER     => null,
+            ReconConstants::MODE                 => $mode,
         ];
     }
 
@@ -102,18 +132,87 @@ class Status extends Base
         $subCode = $response[Constants::CODE][Constants::SUB_CODE][Constants::VALUE] ?? null;
 
         return [
-            self::PAYMENT_REF_NO       => $this->entity->getId(),
-            self::UTR                  => null,
-            self::BANK_STATUS_CODE     => ValidStatus::FAILED,
-            self::REMARK               => $remark,
-            self::BANK_SUB_STATUS_CODE => $subCode,
-            self::PAYMENT_DATE         => null,
-            self::TRANSFER_TYPE        => null,
-            self::REFERENCE_NUMBER     => null,
-            self::MODE                 => null,
+            ReconConstants::PAYMENT_REF_NO       => $this->entity->getId(),
+            ReconConstants::UTR                  => null,
+            ReconConstants::BANK_STATUS_CODE     => ValidStatus::FAILED,
+            ReconConstants::REMARKS              => $remark,
+            ReconConstants::BANK_SUB_STATUS_CODE => $subCode,
+            ReconConstants::PAYMENT_DATE         => null,
+            ReconConstants::TRANSFER_TYPE        => null,
+            ReconConstants::REFERENCE_NUMBER     => null,
+            ReconConstants::MODE                 => null,
         ];
     }
 
+    protected function extractGatewayData(array $response): array
+    {
+        // Required data:
+        //     self::PAYMENT_REF_NO,
+        //     self::UTR,
+        //     self::BANK_STATUS_CODE,
+        //     self::REMARK,
+        //     self::PAYMENT_DATE,
+        //     self::REFERENCE_NUMBER,
+        //     self::MODE,
+        //     self::PUBLIC_FAILURE_REASON
+
+        //
+        // We have null checks everywhere since it's possible that the
+        // third-party is down and we don't get any data at all.
+        //
+
+        $ftaId = $response[Constants::UPI_REQUEST_REFERENCE_NUMBER] ?? null;
+        $utr = $response[Constants::UPI_UNIQUE_RESPONSE_NUMBER] ?? null;
+        $bankReferenceNumber = $response[Constants::UPI_BANK_REFERENCE_NUMBER] ?? null;
+
+        $statusCode = $response[Constants::UPI_STATUS_CODE] ?? null;
+
+        $responseCode = $response[Constants::UPI_RESPONSE_CODE] ?? null;
+        $errorCode = $response[Constants::UPI_ERROR_CODE] ?? null;
+        $responseErrorCode = $response[Constants::UPI_RESPONSE_ERROR_CODE] ?? null;
+
+        $finalResponseCode = GatewayStatus::getUsableCode($responseCode, $errorCode, $responseErrorCode);
+
+        $remark = $response[Constants::UPI_STATUS_DESCRIPTION] ?? null;
+
+        $publicFailureReason = GatewayStatus::getPublicFailureReason($finalResponseCode);
+
+
+        return [
+            ReconConstants::PAYMENT_REF_NO        => $this->getNullOnEmpty($ftaId),
+            ReconConstants::UTR                   => $this->getNullOnEmpty($utr),
+            ReconConstants::STATUS_CODE           => $this->getNullOnEmpty($statusCode),
+            ReconConstants::BANK_STATUS_CODE      => $this->getNullOnEmpty($finalResponseCode),
+            ReconConstants::REMARKS               => $this->getNullOnEmpty($remark),
+            ReconConstants::BANK_SUB_STATUS_CODE  => null,
+            ReconConstants::PAYMENT_DATE          => null,
+            ReconConstants::TRANSFER_TYPE         => null,
+            ReconConstants::REFERENCE_NUMBER      => $this->getNullOnEmpty($bankReferenceNumber),
+            ReconConstants::MODE                  => Mode::UPI,
+            ReconConstants::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason),
+        ];
+    }
+
+    public function getResponseDataFromFta(Attempt\Entity $fta)
+    {
+        $bankStatusCode = $fta->getBankStatusCode();
+
+        $publicFailureReason = GatewayStatus::getPublicFailureReason($bankStatusCode);
+
+        return [
+            ReconConstants::PAYMENT_REF_NO        => $fta->getId(),
+            ReconConstants::UTR                   => $fta->getUtr(),
+            ReconConstants::STATUS_CODE           => $fta->getBankResponseCode(),
+            ReconConstants::BANK_STATUS_CODE      => $bankStatusCode,
+            ReconConstants::REMARKS               => $fta->getRemarks(),
+            ReconConstants::BANK_SUB_STATUS_CODE  => null,
+            ReconConstants::PAYMENT_DATE          => null,
+            ReconConstants::TRANSFER_TYPE         => null,
+            ReconConstants::REFERENCE_NUMBER      => $fta->getCmsRefNo(),
+            ReconConstants::MODE                  => $fta->getMode(),
+            ReconConstants::PUBLIC_FAILURE_REASON => $this->getNullOnEmpty($publicFailureReason),
+        ];
+    }
 
     /**
      * {@inheritdoc}
@@ -160,5 +259,21 @@ class Status extends Base
                 ],
             ],
         ]);
+    }
+
+    protected function mockGenerateSuccessResponseForGateway(): array
+    {
+        return [
+            Constants::UPI_REQUEST_REFERENCE_NUMBER => $this->entity->getId(),
+            Constants::UPI_UNIQUE_RESPONSE_NUMBER   => PublicEntity::generateUniqueId(),
+            Constants::UPI_RESPONSE_CODE            => GatewayStatus::COMPLETED,
+            Constants::UPI_STATUS_CODE              => GatewayStatus::STATUS_CODE_SUCCESS,
+        ];
+    }
+
+    protected function mockGenerateFailedResponseForGateway(): array
+    {
+        // TODO: return stuff
+        return [];
     }
 }

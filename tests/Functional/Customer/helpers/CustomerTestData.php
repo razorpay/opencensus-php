@@ -362,6 +362,12 @@ return [
             'content' => [
                 'items' => [
                     [
+                        'token'         => '10001emantoken',
+                        'method'        => 'emandate',
+                        'bank'          => 'HDFC',
+                        'max_amount'    =>  105,
+                    ],
+                    [
                         'token'         => '10001cardtoken',
                         'method'        => 'card',
                         'card'          => [
@@ -693,19 +699,19 @@ return [
     ],
 
     'testCustomerWalletPayoutInsufficientWalletBalance' => [
-        'request' => [
-            'url' => '/customers/cust_100000customer/payouts',
+        'request'   => [
+            'url'     => '/customers/cust_100000customer/payouts',
             'method'  => 'post',
             'content' => [
-                'amount'      => 300,
-                'method'      => 'fund_transfer',
-                'purpose'     => 'refund',
-                'destination' => 'ba_1000000lcustba',
-                'currency'    => 'INR',
+                'amount'          => 300,
+                'purpose'         => 'refund',
+                'fund_account_id' => 'fa_100000000000fa',
+
+                'currency' => 'INR',
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Payout failed due to insufficient balance in wallet',
@@ -720,19 +726,19 @@ return [
     ],
 
     'testCustomerWalletPayoutInsufficientMerchantBalance' => [
-        'request' => [
-            'url' => '/customers/cust_100000customer/payouts',
+        'request'   => [
+            'url'     => '/customers/cust_100000customer/payouts',
             'method'  => 'post',
             'content' => [
-                'amount'      => 800,
-                'method'      => 'fund_transfer',
-                'purpose'     => 'refund',
-                'destination' => 'ba_1000000lcustba',
-                'currency'    => 'INR',
+                'amount'          => 800,
+                'purpose'         => 'refund',
+                'fund_account_id' => 'fa_100000000000fa',
+
+                'currency' => 'INR',
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Merchant does not have enough balance for negative adjustment',
@@ -747,27 +753,78 @@ return [
     ],
 
     'testCustomerWalletPayout' => [
-        'request' => [
-            'url' => '/customers/cust_100000customer/payouts',
+        'request'  => [
+            'url'     => '/customers/cust_100000customer/payouts',
             'method'  => 'post',
             'content' => [
-                'amount'      => 800,
-                'method'      => 'fund_transfer',
-                'purpose'     => 'refund',
-                'destination' => 'ba_1000000lcustba',
-                'currency'    => 'INR',
+                'amount'          => 800,
+                'purpose'         => 'refund',
+                'fund_account_id' => 'fa_100000000000fa',
+                'currency'        => 'INR',
             ],
         ],
         'response' => [
             'content' => [
-                'entity'      => 'payout',
-                'customer_id' => 'cust_100000customer',
-                'destination' => 'ba_1000000lcustba',
-                'currency'    => 'INR',
-                'amount'      => 800,
-                'status'      => 'created',
+                'entity'          => 'payout',
+                'customer_id'     => 'cust_100000customer',
+                'fund_account_id' => 'fa_100000000000fa',
+                'currency'        => 'INR',
+                'amount'          => 800,
+                'status'          => 'processing',
             ]
         ],
 
-    ]
+    ],
+
+
+    'testAddCustomerTokenCardCardVault' => [
+        'request' => [
+            'url' => '/customers/cust_100000customer/tokens',
+            'method' => 'post',
+            'content' => [
+                'method'  => 'card',
+                'card'    => [
+                    'number'       => '4012001038443335',
+                    'expiry_month' => '11',
+                    'expiry_year'  => '2020',
+                    'name'         => 'Random',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'method' => 'card',
+                'card'   => [
+                    'last4'   => '3335',
+                    'network' => 'Visa',
+                ],
+                'wallet' => null,
+                'bank'   => null,
+            ],
+        ],
+    ],
+
+    'testGetTokenWithBankDetails' => [
+        'request' => [
+            'url' => '/customers/cust_100000customer/tokens/10001emantoken',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'token'         => '10001emantoken',
+                'method'        => 'emandate',
+                'bank'          => 'HDFC',
+                'bank_details'  => [
+                    'beneficiary_name' => 'BeneficiaryName',
+                    'account_number'   => '10000',
+                    'ifsc'             => 'ifsc',
+                    'account_type'     => 'account_type',
+                ],
+                'max_amount'       =>  105,
+            ],
+        ]
+    ],
+
 ];

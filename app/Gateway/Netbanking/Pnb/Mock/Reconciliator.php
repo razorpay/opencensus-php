@@ -3,105 +3,77 @@
 namespace RZP\Gateway\Netbanking\Pnb\Mock;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 
-use RZP\Gateway\Base;
 use RZP\Models\FileStore;
-use RZP\Models\Payment;
+use RZP\Gateway\Base\Mock;
+use RZP\Constants\Timezone;
+use RZP\Models\Payment\Gateway;
 
-class Reconciliator extends Base\RefundFile
+class Reconciliator extends Mock\Reconciliator
 {
-    const PAYMENT_ENTITY = 'payment';
-
-    const GATEWAY_ENTITY = 'gateway';
-
-    protected static $fileToWriteName = 'Pnb_Netbanking_Reconciliation';
-
-    public function generate($input)
+    public function __construct()
     {
-        list($totalAmount, $data) = $this->getReconciliationData($input);
+        $this->gateway = Gateway::NETBANKING_PNB;
 
-        $fileName = $this->getFileToWriteNameWithoutExt();
+        $this->fileExtension = 'txt';
 
-        $txt = $this->generateText($data, '|');
+        $this->fileToWriteName = 'Recon File_RAZORPAY_PNB';
 
-        $creator = $this->createFile(
-            FileStore\Format::TXT,
-            $txt,
-            $fileName,
-            FileStore\Type::PNB_NETBANKING_REFUND
-        );
-
-        $file = $creator->get();
-
-        return [
-            'local_file_path' => $file['local_file_path'],
-            'count'           => count($data),
-            'file_name'       => basename($file['local_file_path']),
-            'total_amount'    => $totalAmount,
-        ];
+        parent::__construct();
     }
 
-    protected function getReconciliationData($input)
+    protected function getEntitiesToReconcile()
     {
-        $data = [];
+        return $this->repo
+                    ->payment
+                    ->fetch(['gateway' => $this->gateway]);
+    }
 
-        $index = 1;
+    protected function addGatewayEntityIfNeeded(array & $data)
+    {
+        $payment = $data['payment'];
 
-        $totalAmount = 0;
+        $data['netbanking'] = $this->repo
+                                   ->netbanking
+                                   ->findByPaymentIdAndAction($payment['id'], 'authorize')
+                                   ->toArray();
+    }
 
+    protected function getReconciliationData(array $input)
+    {
         foreach ($input as $row)
         {
-            $date = Carbon::createFromTimestamp(
-                        $row[self::PAYMENT_ENTITY][Payment\Entity::CREATED_AT],
-                        Timezone::IST)
-                        ->format('Y-m-d');
+            $payment = $row['payment'];
+
+            $netbanking = $row['netbanking'];
+
             $data[] = [
-                //
-                // We dont know prn So just setting a random data
-                //
-                'prn'            => $row['payment']['reference1'],
-                'payment_id'     => $row['payment']['id'],
-                'bank_reference' => $row['gateway']['bank_payment_id'],
-                'amount'         => $this->getFormattedAmount($row['payment']['amount']),
-                'date'           => $date,
+                $netbanking['bank_payment_id'],
+                number_format($payment['amount'] / 100, 1, '.', ''),
+                Carbon::createFromTimestamp($payment['created_at'], Timezone::IST)->format('d/m/Y'),
+                $payment['id'],
             ];
-            $totalAmount += $row[self::PAYMENT_ENTITY][Payment\Entity::AMOUNT] / 100;
         }
 
-        $this->content($data, 'claims_data');
+        $this->content($data);
 
-        return [$totalAmount, $data];
+        return $this->generateText($data, '^');
     }
 
-    public function content(& $content, $action = '')
+    protected function createFile(
+        $content,
+        string $type = FileStore\Type::MOCK_RECONCILIATION_FILE,
+        string $store = FileStore\Store::S3)
     {
-        return $content;
-    }
+        $creator = new FileStore\Creator;
 
-    public function generateReconciliation($input = null)
-    {
-        $input = [
-            'gateway' => 'netbanking_pnb'
-        ];
+        $creator->extension($this->fileExtension)
+                ->content($content)
+                ->name($this->fileToWriteName)
+                ->store($store)
+                ->type($type)
+                ->save();
 
-        $payments = $this->repo->payment->fetch($input, '10000000000000');
-
-        $inputData = [];
-
-        foreach ($payments as $payment)
-        {
-            $data[self::PAYMENT_ENTITY] = $payment->toArray();
-
-            $gatewayInput['payment_id'] = $payment[Payment\Entity::ID];
-
-            $gatewayPayment = $this->repo->netbanking->fetch($gatewayInput);
-
-            $data[self::GATEWAY_ENTITY] = $gatewayPayment[0]->toArray();
-
-            $inputData[] = $data;
-        }
-
-        return $this->generate($inputData);
+        return $creator;
     }
 }

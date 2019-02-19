@@ -67,6 +67,11 @@ class Service extends Base\Service
         return $invoices->toArrayPublic();
     }
 
+    public function getInvoicesCount(array $input)
+    {
+        return $this->repo->invoice->getInvoicesCount($input);
+    }
+
     public function update(string $id, array $input): array
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
@@ -361,10 +366,11 @@ class Service extends Base\Service
      */
     protected function setUser()
     {
-        $dashboardHeaders = $this->app['basicauth']->getDashboardHeaders();
+        $user = $this->auth->getUser();
 
-        $this->userId   = $dashboardHeaders['user_id'] ?? null;
-        $this->userRole = $dashboardHeaders['user_role'] ?? null;
+        $this->userId   = (empty($user) === false) ? $user->getId() : null;
+
+        $this->userRole = $this->auth->getUserRole();
     }
 
     /**

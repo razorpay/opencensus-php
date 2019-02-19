@@ -2,20 +2,19 @@
 
 namespace RZP\Models\Payout;
 
-use RZP\Models\Base;
+use Illuminate\Database\Query\JoinClause;
+
 use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Models\Payout;
+use RZP\Models\Contact;
+use RZP\Base\BuilderEx;
+use RZP\Models\FundAccount;
+use RZP\Constants\Entity as E;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'payout';
-
-    // These are admin allowed params to search on.
-    protected $appFetchParamRules = [
-        Entity::MERCHANT_ID        => 'sometimes|alpha_num',
-        Entity::CUSTOMER_ID        => 'sometimes|string|max:19',
-        Entity::DESTINATION        => 'sometimes|string|max:20',
-        Entity::METHOD             => 'sometimes|string',
-    ];
 
     public function fetchCreatedPayouts($timestamp, $method)
     {
@@ -42,7 +41,7 @@ class Repository extends Base\Repository
     {
         if ($payouts->count() === 0)
         {
-            return;
+            return 0;
         }
 
         $IdsToUpdate = $payouts->getIds();
@@ -69,7 +68,16 @@ class Repository extends Base\Repository
         return $updatedCount;
     }
 
-    public function addQueryParamDestination($query, $params)
+    protected function addQueryParamId(BuilderEx $query, array $params)
+    {
+        $id = $params[Entity::ID];
+
+        Entity::verifyIdAndStripSign($id);
+
+        $query->where(Entity::ID, $id);
+    }
+
+    public function addQueryParamDestination(BuilderEx $query, array $params)
     {
         $destinationId = $params[Entity::DESTINATION];
 
@@ -78,11 +86,210 @@ class Repository extends Base\Repository
         $query->where(Entity::DESTINATION_ID, $destinationId);
     }
 
-    public function fetchFailedPayouts(array $ids)
+    public function addQueryParamStatus(BuilderEx $query, array $params)
+    {
+        $publicStatus = $params[Entity::STATUS];
+        $statusColumn = $this->dbColumn(Entity::STATUS);
+
+        $mappedStatuses = Status::getInternalStatusFromPublicStatus($publicStatus);
+
+        $query->whereIn($statusColumn, $mappedStatuses);
+    }
+
+    public function fetchReversedPayouts(array $ids)
     {
         return $this->newQuery()
+                    ->with(['destination', 'fundAccount.account'])
                     ->whereIn(Entity::ID, $ids)
-                    ->where(Entity::STATUS, Status::FAILED)
+                    ->where(Entity::STATUS, Status::REVERSED)
                     ->get();
+    }
+
+    /**
+     * SELECT payouts.*
+     * FROM   payouts
+     *        INNER JOIN fund_accounts
+     *                ON fund_accounts.id = payouts.fund_account_id
+     * WHERE  payouts.merchant_id = '10000000000000'
+     *        AND fund_accounts.source_id = 'BXV5GAmaJEcGr1'
+     *        AND fund_accounts.source_type = 'contact'
+     * ORDER  BY created_at DESC,
+     *           id DESC
+     * LIMIT  10
+     *
+     * @param BuilderEx $query
+     * @param array     $params
+     */
+    protected function addQueryParamContactId(BuilderEx $query, array $params)
+    {
+        $contactId          = $params[Entity::CONTACT_ID];
+        $faSourceIdColumn   = $this->repo->fund_account->dbColumn(FundAccount\Entity::SOURCE_ID);
+        $faSourceTypeColumn = $this->repo->fund_account->dbColumn(FundAccount\Entity::SOURCE_TYPE);
+
+        $query->select($this->getTableName() . '.*');
+        $this->joinQueryFundAccount($query);
+
+        $query->where($faSourceIdColumn, $contactId);
+        $query->where($faSourceTypeColumn, E::CONTACT);
+    }
+
+    /**
+     * Refer: addQueryParamContactId()
+     *
+     * @param BuilderEx $query
+     * @param array     $params
+     */
+    protected function addQueryParamContactType(BuilderEx $query, array $params)
+    {
+        $contactType       = $params[Entity::CONTACT_TYPE];
+        $contactTypeColumn = $this->repo->contact->dbColumn(Contact\Entity::TYPE);
+
+        $query->select($this->getTableName() . '.*');
+        $this->joinQueryContact($query);
+
+        $query->where($contactTypeColumn, $contactType);
+    }
+
+
+    /**
+     * Refer: addQueryParamContactId()
+     *
+     * @param BuilderEx $query
+     * @param array     $params
+     */
+    protected function addQueryParamContactName(BuilderEx $query, array $params)
+    {
+        $contactName       = $params[Entity::CONTACT_NAME];
+        $contactNameColumn = $this->repo->contact->dbColumn(Contact\Entity::NAME);
+
+        $query->select($this->getTableName() . '.*');
+        $this->joinQueryContact($query);
+
+        $query->where($contactNameColumn, $contactName);
+    }
+
+    /**
+     * Refer: addQueryParamContactId()
+     *
+     * @param BuilderEx $query
+     * @param array     $params
+     */
+    protected function addQueryParamContactPhone(BuilderEx $query, array $params)
+    {
+        $contactPhone       = $params[Entity::CONTACT_PHONE];
+        $contactPhoneColumn = $this->repo->contact->dbColumn(Contact\Entity::CONTACT);
+
+        $query->select($this->getTableName() . '.*');
+        $this->joinQueryContact($query);
+
+        $query->where($contactPhoneColumn, $contactPhone);
+    }
+
+    /**
+     * Refer: addQueryParamContactId()
+     *
+     * @param BuilderEx $query
+     * @param array     $params
+     */
+    protected function addQueryParamContactEmail(BuilderEx $query, array $params)
+    {
+        $contactEmail       = $params[Entity::CONTACT_EMAIL];
+        $contactEmailColumn = $this->repo->contact->dbColumn(Contact\Entity::EMAIL);
+
+        $query->select($this->getTableName() . '.*');
+        $this->joinQueryContact($query);
+
+        $query->where($contactEmailColumn, $contactEmail);
+    }
+
+    protected function joinQueryFundAccount(BuilderEx $query)
+    {
+        $faTable = $this->repo->fund_account->getTableName();
+
+        if ($query->hasJoin($faTable) === true)
+        {
+            return;
+        }
+
+        $query->join(
+            $faTable,
+            function (JoinClause $join)
+            {
+                $faIdColumn       = $this->repo->fund_account->dbColumn(FundAccount\Entity::ID);
+                $payoutFaIdColumn = $this->repo->payout->dbColumn(Payout\Entity::FUND_ACCOUNT_ID);
+
+                $join->on($faIdColumn, $payoutFaIdColumn);
+            });
+    }
+
+    protected function joinQueryContact(BuilderEx $query)
+    {
+        $contactTable = $this->repo->contact->getTableName();
+
+        if ($query->hasJoin($contactTable) === true)
+        {
+            return;
+        }
+
+        // Must join fund_account to join contact
+        $this->joinQueryFundAccount($query);
+
+        $query->join(
+            $contactTable,
+            function (JoinClause $join)
+            {
+                $contactIdColumn    = $this->repo->contact->dbColumn(Contact\Entity::ID);
+                $faSourceIdColumn   = $this->repo->fund_account->dbColumn(FundAccount\Entity::SOURCE_ID);
+                $faSourceTypeColumn = $this->repo->fund_account->dbColumn(FundAccount\Entity::SOURCE_TYPE);
+
+                $join->on($contactIdColumn, $faSourceIdColumn);
+                $join->where($faSourceTypeColumn, E::CONTACT);
+            });
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function modifyQueryForIndexing(BuilderEx $query)
+    {
+        // Eager loading relation is optimal during bulk indexing.
+        $query->with('fundAccount.contact');
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function serializeForIndexing(Base\PublicEntity $entity): array
+    {
+        $serialized = parent::serializeForIndexing($entity);
+
+        $fa = $entity->fundAccount;
+
+        if (($fa === null) or ($fa->getSourceType() !== E::CONTACT))
+        {
+            // I.e. this documentn will not be indexed.
+            return [];
+        }
+
+        $contact = $fa->source;
+
+        $serialized[Entity::CONTACT_NAME]  = $contact->getName();
+        $serialized[Entity::CONTACT_EMAIL] = $contact->getEmail();
+
+        return $serialized;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isEsSyncNeeded(string $action, array $dirty = null, Base\PublicEntity $entity = null): bool
+    {
+        //
+        // Additionally checks if payout's contact exists.
+        // Because otherwise there is nothing required to be indexed, rest are just common assisting attributes.
+        //
+        return ((($entity === null) or
+                 (optional($entity->fundAccount)->getSourceType() === E::CONTACT)) and
+                (parent::isEsSyncNeeded($action, $dirty, $entity) === true));
     }
 }

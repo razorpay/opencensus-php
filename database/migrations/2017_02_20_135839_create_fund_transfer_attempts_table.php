@@ -26,7 +26,7 @@ class CreateFundTransferAttemptsTable extends Migration
             $table->char(FundTransferAttempt::ID, FundTransferAttempt::ID_LENGTH)
                   ->primary();
 
-            $table->string(FundTransferAttempt::SOURCE_TYPE, 20);
+            $table->string(FundTransferAttempt::SOURCE_TYPE, 255);
 
             $table->string(FundTransferAttempt::SOURCE_ID, FundTransferAttempt::ID_LENGTH);
 
@@ -45,6 +45,9 @@ class CreateFundTransferAttemptsTable extends Migration
             $table->string(FundTransferAttempt::VERSION, 3);
 
             $table->string(FundTransferAttempt::BANK_STATUS_CODE, 30)
+                  ->nullable();
+
+            $table->string(FundTransferAttempt::BANK_RESPONSE_CODE, 30)
                   ->nullable();
 
             $table->char(FundTransferAttempt::MODE, 30)

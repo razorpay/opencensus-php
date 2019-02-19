@@ -10,6 +10,7 @@ use RZP\Models\FundTransfer\Kotak\Reconciliation\Status as KotakStatus;
 use RZP\Models\FundTransfer\Hdfc\Reconciliation\Status as HdfcStatus;
 use RZP\Models\FundTransfer\Axis\Reconciliation\Status as AxisStatus;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\Status as YesbankStatus;
+use RZP\Models\FundTransfer\Yesbank\Reconciliation\GatewayStatus as YesbankGatewayStatus;
 
 return [
     'testFileCreationSettlement' => [
@@ -23,12 +24,45 @@ return [
         'type'              => 'settlement',
     ],
 
-    'testFileCreationPayout' => [
-        'amount'            => 10000000,
-        'fees'              => 118590,
-        'tax'               => 18090,
+    'testFileCreationSettlementApi' => [
+        'amount'            => 1952600,
+        'fees'              => 47200,
+        'tax'               => 7200,
         'processed_amount'  => 0,
         'processed_count'   => 0,
+        'total_count'       => 1,
+        'transaction_count' => 4,
+        'type'              => 'settlement',
+    ],
+
+    'testFileCreationPayoutVpa' => [
+        'amount'            => 1000,
+        'fees'              => 602,
+        'tax'               => 92,
+        'processed_amount'  => 1000,
+        'processed_count'   => 1,
+        'total_count'       => 1,
+        'transaction_count' => 1,
+        'type'              => 'payout',
+    ],
+
+    'testFileCreationPayout' => [
+        'amount'            => 1000,
+        'fees'              => 602,
+        'tax'               => 92,
+        'processed_amount'  => 0,
+        'processed_count'   => 0,
+        'total_count'       => 1,
+        'transaction_count' => 1,
+        'type'              => 'payout',
+    ],
+
+    'testFileCreationPayoutApi' => [
+        'amount'            => 1000,
+        'fees'              => 602,
+        'tax'               => 92,
+        'processed_amount'  => 1000,
+        'processed_count'   => 1,
         'total_count'       => 1,
         'transaction_count' => 1,
         'type'              => 'payout',
@@ -97,6 +131,20 @@ return [
         'failure_reason'    => null,
     ],
 
+    'matchAttemptForReconSuccessYesbankVpa' => [
+        'version'           => 'V3',
+        'bank_status_code'  => YesbankGatewayStatus::COMPLETED,
+        'status'            => AttemptStatus::PROCESSED,
+        'failure_reason'    => null,
+    ],
+
+    'matchAttemptForReconFailureYesbankVpa' => [
+        'version'           => 'V3',
+        'bank_status_code'  => 'FAILED',
+        'status'            => AttemptStatus::FAILED,
+        'failure_reason'    => null,
+    ],
+
     'matchSummaryForReconFile' => [
         'total_count'           => 1,
         'unprocessed_count'     => 0,
@@ -160,7 +208,7 @@ return [
         'amount'            => 1952600,
         'fees'              => 47200,
         'tax'               => 7200,
-        'failure_reason'    => 'Reconciliation',
+        'failure_reason'    => 'transfer not completed',
         'status'            => SettlementStatus::FAILED,
         'attempts'          => 1,
     ],

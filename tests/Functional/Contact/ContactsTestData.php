@@ -66,11 +66,12 @@ return [
     'testCreateContact' => [
         'request'  => [
             'content' => [
-                'name'    => 'Test Contact',
-                'type'    => 'self',
-                'email'   => 'asd@abc.com',
-                'contact' => '9123456789',
-                'notes'   => [
+                'name'         => 'Test Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
                     'test1' => 'One',
                 ],
             ],
@@ -79,12 +80,13 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity'  => 'contact',
-                'name'    => 'Test Contact',
-                'type'    => 'self',
-                'email'   => 'asd@abc.com',
-                'contact' => '9123456789',
-                'notes'   => [
+                'entity'       => 'contact',
+                'name'         => 'Test Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
                     'test1' => 'One',
                 ],
             ]
@@ -143,6 +145,7 @@ return [
         'request'   => [
             'content' => [
                 'type' => 'invalid_type',
+                'name' => 'Test',
             ],
             'url'     => '/contacts',
             'method'  => 'POST'
@@ -151,7 +154,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Not a valid contact type: invalid_type',
+                    'description' => 'Invalid type: invalid_type',
                 ],
             ],
             'status_code' => 400,
@@ -162,19 +165,66 @@ return [
         ],
     ],
 
+    'testCreateContactInvalidReferenceId' => [
+        'request'   => [
+            'content' => [
+                'name'         => 'Test',
+                'reference_id' => '12345678901234567890123456789012345678901234567890',
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The reference id may not be greater than 40 characters.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testFetchContactsByNameActiveAndType' => [
+        'request'  => [
+            'url'    => '/contacts',
+            'method' => 'GET',
+            'content' => [
+                'name'   => 'Test Contact',
+                'active' => 1,
+                'type'   => 'vendor',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [
+                ],
+            ]
+        ],
+    ],
+
+
     'testUpdateContact' => [
         'request'  => [
             'content' => [
-                'type' => 'employee',
+                'type'         => 'employee',
+                'reference_id' => '213',
             ],
             'url'     => '/contacts/cont_1000000contact',
             'method'  => 'PATCH'
         ],
         'response' => [
             'content' => [
-                'id'     => 'cont_1000000contact',
-                'entity' => 'contact',
-                'type'   => 'employee',
+                'id'           => 'cont_1000000contact',
+                'entity'       => 'contact',
+                'type'         => 'employee',
+                'reference_id' => '213',
             ]
         ]
     ],
@@ -192,46 +242,6 @@ return [
                 ],
             ],
             'status_code' => 400,
-        ],
-    ],
-
-    'testFetchContactsByPhone' => [
-        'request'  => [
-            'url'    => '/contacts?contact=8888888888',
-            'method' => 'GET'
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'collection',
-                'count'  => 1,
-                'items'  => [
-                    [
-                        'id'     => 'cont_1000004contact',
-                        'entity' => 'contact',
-                        'email'  => 'test@test4.com',
-                    ],
-                ],
-            ]
-        ],
-    ],
-
-    'testFetchContactsByName' => [
-        'request'  => [
-            'url'    => '/contacts?name=testContact',
-            'method' => 'GET'
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'collection',
-                'count'  => 1,
-                'items'  => [
-                    [
-                        'id'     => 'cont_1000005contact',
-                        'entity' => 'contact',
-                        'email'  => 'test@test4.com',
-                    ],
-                ],
-            ]
         ],
     ],
 
@@ -292,6 +302,169 @@ return [
                     ],
                 ],
             ]
+        ],
+    ],
+
+    'testFetchContactByActive' => [
+        'request'  => [
+            'url'    => '/contacts?account_number=111000',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'     => 'cont_1000005contact',
+                        'entity' => 'contact',
+                        'email'  => 'test@test5.com',
+                    ],
+                ],
+            ]
+        ],
+    ],
+
+    'testFetchContactByType' => [
+        'request'  => [
+            'url'    => '/contacts?account_number=111000',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'     => 'cont_1000005contact',
+                        'entity' => 'contact',
+                        'email'  => 'test@test5.com',
+                    ],
+                ],
+            ]
+        ],
+    ],
+
+    'testFetchContactsByEmailExpectedSearchParams' => [
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'contact_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'contact_test',
+        'body'  => [
+            '_source' => false,
+            'from'    => 0,
+            'size'    => 10,
+            'query'   => [
+                'bool' => [
+                    'must' => [
+                        [
+                            'match' => [
+                                'email' => [
+                                    'query'                =>'random@test.com',
+                                    'boost'                => 2,
+                                    'minimum_should_match' => '75%',
+                                ],
+                            ],
+                        ],
+                    ],
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'term' => [
+                                        'merchant_id' => [
+                                            'value' => '10000000000000',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchContactsByEmailExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [
+                [
+                    '_id' => '1000002contact',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchContactsByNameActiveAndTypeExpectedSearchParams' => [
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'contact_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'contact_test',
+        'body'  => [
+            '_source' => false,
+            'from'    => 0,
+            'size'    => 10,
+            'query'   => [
+                'bool' => [
+                    'must' => [
+                        [
+                            'match' => [
+                                'name' => [
+                                    'query'                =>'test contact',
+                                    'boost'                => 2,
+                                    'minimum_should_match' => '75%',
+                                ],
+                            ],
+                        ],
+                    ],
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'term' => [
+                                        'active' => [
+                                            'value' => true,
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'term' => [
+                                        'type' => [
+                                            'value' => 'vendor',
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'term' => [
+                                        'merchant_id' => [
+                                            'value' => '10000000000000',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchContactsByNameActiveAndTypeExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [
+            ],
         ],
     ],
 ];

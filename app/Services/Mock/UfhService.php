@@ -12,17 +12,14 @@ class UfhService extends BaseUfhClient
     const MOCK_FILE_ID      = 'rzp_file_mock_id_1000000';
 
     /**
-     * @param UploadedFile $file
-     * @param string $storageFileName
-     * @param string $type
-     * @param Entity $entity
-     * @return array
+     * {@inheritDoc}
      */
     public function uploadFileAndGetUrl(
                                         UploadedFile $file,
                                         string $storageFileName,
                                         string $type,
-                                        Entity $entity): array
+                                        Entity $entity,
+                                        array $metadata = []): array
     {
         $ext = $file->getClientOriginalExtension();
 
@@ -35,6 +32,7 @@ class UfhService extends BaseUfhClient
             'entity_id'     => $entity->getPublicId(),
             'entity_type'   => $entity->getEntityName(),
             'store'         => $this->getStoreForEnv(),
+            'metadata'      => $metadata,
         ];
 
         $this->trace->info(

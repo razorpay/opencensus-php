@@ -14,7 +14,7 @@ class Gateway extends FirstData\Gateway
     {
         $this->setS2sFlowFlag($input);
 
-        if ($this->s2sFlowFlag === false)
+        if ($this->isS2sFlowSupported($input) === false)
         {
             return $this->authorizeMock($input);
         }

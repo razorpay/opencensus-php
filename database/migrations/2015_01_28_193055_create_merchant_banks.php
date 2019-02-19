@@ -5,6 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
+use RZP\Models\Card\Network;
 use RZP\Models\Merchant\Methods\Entity as Methods;
 
 class CreateMerchantBanks extends Migration
@@ -94,6 +95,9 @@ class CreateMerchantBanks extends Migration
 
             $table->tinyInteger(Methods::CARDLESS_EMI)
                   ->default(0);
+
+            $table->unsignedSmallInteger(Methods::CARD_NETWORKS)
+                  ->default(Network::DEFAULT_CARD_NETWORKS);
 
             $table->integer(Methods::CREATED_AT);
 

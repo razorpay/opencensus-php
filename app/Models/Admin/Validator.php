@@ -39,7 +39,6 @@ class Validator extends Base\Validator
         ConfigKey::PRICING_RULE_SELECTION_LOG_VERBOSE => 'filled|boolean',
         ConfigKey::GATEWAY_PROCESSED_REFUNDS          => 'filled|array',
         ConfigKey::GATEWAY_UNPROCESSED_REFUNDS        => 'filled|array',
-        ConfigKey::SKIP_SLAVE                         => 'filled|boolean',
         ConfigKey::MASTER_PERCENT                     => 'filled|integer',
         ConfigKey::BLOCK_BANK_TRANSFERS_FOR_CRYPTO    => 'filled|boolean',
         ConfigKey::DISABLE_MAGIC                      => 'filled|boolean',
@@ -48,6 +47,25 @@ class Validator extends Base\Validator
         ConfigKey::BLOCK_AADHAAR_REG                  => 'filled|boolean',
         ConfigKey::NPCI_UPI_DEMO                      => 'filled|array',
         ConfigKey::MERCHANT_ENACH_CONFIGS             => 'filled|array',
+        ConfigKey::HEARTBEAT_ENABLED                  => 'filled|boolean',
+        ConfigKey::HEARTBEAT_MOCK                     => 'filled|boolean',
+        ConfigKey::HEARTBEAT_TIME_THRESHOLD           => 'filled|integer',
+        ConfigKey::HEARTBEAT_TRAFFIC_PERCENTAGE       => 'filled|integer',
+        ConfigKey::HITACHI_DYNAMIC_DESCR_ENABLED      => 'filled|boolean',
+        ConfigKey::CPS_SERVICE_ENABLED                => 'filled|boolean',
+    ];
+
+    protected static $setRedisKeysRules = [
+        ConfigKey::FTS_CHANNELS => 'filled|array',
+    ];
+
+    protected static $updateRedisKeysRules = [
+        'key'   => 'required|in:fts_channels',
+        'value' => 'array',
+    ];
+
+    protected static $getRedisKeyRules = [
+        'key'   => 'required|in:fts_channels'
     ];
 
     protected static $scorecardRules = [
@@ -61,7 +79,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $getConfigKeyRules = [
-        'key'   => 'required|in:merchant_enach_configs'
+        'key'   => 'required|in:merchant_enach_configs,GATEWAY_UNPROCESSED_REFUNDS'
     ];
 
     protected static $deleteConfigKeyRules = [

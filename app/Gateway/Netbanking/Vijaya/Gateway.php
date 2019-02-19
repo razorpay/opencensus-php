@@ -106,7 +106,7 @@ class Gateway extends Base\Gateway
         $payment = $input['payment'];
 
         $content = [
-            RequestFields::MERCHANT_CONSTANT => $this->getMerchantConstant(),
+            RequestFields::MERCHANT_CONSTANT => $this->getMerchantId(),
             RequestFields::AMOUNT            => $this->formatAmount($payment[Payment::AMOUNT]),
             RequestFields::MERCHANT_NAME     => $input['merchant']->getFilteredDba(),
             RequestFields::MERCHANT_ID       => $this->getMerchantId(),
@@ -231,11 +231,11 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $verify->payment;
 
         $content = [
-            RequestFields::MERCHANT_CONSTANT => $this->getMerchantConstant(),
+            RequestFields::MERCHANT_CONSTANT => $this->getMerchantId(),
             RequestFields::PAYMENT_ID        => $payment['id'],
             RequestFields::ITEM_CODE         => Constants::ITEM_CODE,
             RequestFields::AMOUNT            => $this->formatAmount($payment['amount']),
-            RequestFields::RETURN_URL        => ''
+            RequestFields::RETURN_URL        => ''   // This is left empty as verify for us is s2s.
         ];
 
         $content[RequestFields::BANK_REFERENCE_NUMBER] = $gatewayPayment[NetbankingEntity::BANK_PAYMENT_ID] ?? '';
@@ -267,13 +267,13 @@ class Gateway extends Base\Gateway
         return $this->getLiveMerchantId();
     }
 
-    protected function getMerchantConstant()
-    {
-        return $this->config['merchant_constant'];
-    }
-
     public function formatAmount(int $amount): string
     {
         return number_format($amount / 100, 2, '.', '');
+    }
+
+    protected function getActionsToRetry()
+    {
+        return [Action::VERIFY];
     }
 }

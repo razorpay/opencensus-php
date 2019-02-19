@@ -46,4 +46,5 @@ class Status
 
     const CALLBACK_REJECTED         = 'ZA';
 
+    const REFUND_SUCCESS            = '000';
 }

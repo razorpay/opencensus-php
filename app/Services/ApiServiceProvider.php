@@ -5,6 +5,7 @@ namespace RZP\Services;
 use RZP;
 use Redis;
 use Swift_Mailer;
+use Razorpay\OAuth\Application;
 use Illuminate\Database\Connection;
 use Http\Mock\Client as MockHttplug;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -12,6 +13,7 @@ use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\MySqlConnection as IlluminateMySqlConnection;
 
 use RZP\Models\Vpa;
+use RZP\Services\FTS;
 use RZP\Models\Batch;
 use RZP\Models\Order;
 use RZP\Models\Payout;
@@ -27,9 +29,10 @@ use RZP\Models\Promotion;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
+use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
 use RZP\Models\BankTransfer;
-use RZP\Constants\Environment;
+use RZP\Models\EntityOrigin;
 use RZP\Constants\Entity as E;
 use RZP\Models\Admin as Admin;
 use RZP\Models\VirtualAccount;
@@ -115,16 +118,33 @@ class ApiServiceProvider extends BaseServiceProvider
             return new \RZP\Exception\Handler($app);
         });
 
-        $this->app->singleton('card.tokenex', function($app)
+        $this->app->singleton('razorx', function($app)
         {
-            $tokenexMock = $app['config']->get('applications.card_tokenex.mock');
+            return new RazorXClient($app);
+        });
 
-            if ($tokenexMock === true)
+        $this->app->singleton('card.cardVault', function($app)
+        {
+            $cardVaultMock = $app['config']->get('applications.card_vault.mock');
+
+            if ($cardVaultMock === true)
             {
-                return new Mock\TokenEx($app);
+                return new Mock\CardVault($app);
             }
 
-            return new TokenEx($app);
+            return new CardVault($app);
+        });
+
+        $this->app->singleton('cps', function($app)
+        {
+            $cpsMock = $app['config']->get('applications.cps.mock');
+
+            if ($cpsMock === true)
+            {
+                return new Mock\CorePaymentService($app);
+            }
+
+            return new CorePaymentService($app);
         });
 
         $this->app->singleton('card.otpelf', function($app)
@@ -190,11 +210,6 @@ class ApiServiceProvider extends BaseServiceProvider
             return new GatewayFileManager($app);
         });
 
-        $this->app->singleton('razorx', function($app)
-        {
-            return new RazorXClient($app);
-        });
-
         $this->registerShieldClient();
 
         $this->app->singleton('beam', function($app)
@@ -247,7 +262,9 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerKubernetesClient();
 
-        $this->registerCustomSessionProvider();
+        $this->registerFTSCreateAccount();
+
+        $this->registerFTSRegisterAccount();
     }
 
     /**
@@ -260,7 +277,7 @@ class ApiServiceProvider extends BaseServiceProvider
         return [
             'api.mutex',
             'bitly',
-            'card.tokenex',
+            'razorx',
             'es',
             'exception.handler',
             'gateway',
@@ -281,9 +298,10 @@ class ApiServiceProvider extends BaseServiceProvider
             'authservice',
             'sns',
             'pincodesearch',
-            'razorx',
             'shield.service',
             'beam',
+            'fts_create_account',
+            'fts_register_account',
         ];
     }
 
@@ -445,6 +463,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'settlement'                => Settlement\Entity::class,
             'payout'                    => Payout\Entity::class,
             'transaction'               => Transaction\Entity::class,
+            'fund_account_validation'   => FundAccount\Validation\Entity::class,
             'customer_transaction'      => Customer\Transaction\Entity::class,
 
             'bank_account'              => BankAccount\Entity::class,
@@ -464,6 +483,10 @@ class ApiServiceProvider extends BaseServiceProvider
             'subscription_registration' => SubscriptionRegistration\Entity::class,
 
             'contact'                   => Contact\Entity::class,
+
+            'entity_origin'             => EntityOrigin\Entity::class,
+
+            'application'               => Application\Entity::class,
         ]);
     }
 
@@ -623,12 +646,27 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
-    protected function registerCustomSessionProvider()
+    protected function registerFTSCreateAccount()
     {
-        $manager = $this->app['session'];
+        $this->app->bind('fts_create_account', function($app)
+        {
+            $mock = $app['config']->get('applications.fts.mock');
 
-        $manager->extend('custom', function($app) {
-            return new CustomSessionHandler($app);
+            $implementation = $mock ? Mock\FTS\CreateAccount::class : FTS\CreateAccount::class;
+
+            return new $implementation($app);
+        });
+    }
+
+    protected function registerFTSRegisterAccount()
+    {
+        $this->app->bind('fts_register_account', function($app)
+        {
+            $mock = $app['config']->get('applications.fts.mock');
+
+            $implementation = $mock ? Mock\FTS\RegisterAccount::class : FTS\RegisterAccount::class;
+
+            return new $implementation($app);
         });
     }
 }

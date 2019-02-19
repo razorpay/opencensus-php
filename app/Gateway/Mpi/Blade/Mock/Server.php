@@ -25,6 +25,15 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
+    public function callback($input)
+    {
+        $content = $this->acs($input);
+
+        $response = http_build_query($content);
+
+        return $this->makeResponse($response);
+    }
+
     private function getPaResContent($input)
     {
         // Implement
@@ -112,13 +121,14 @@ class Server extends Base\Mock\Server
 
         $content = $input;
 
-        $cardNo = $input['Message']['VEReq']['pan'];
+        $VeReq = $input['Message']['VEReq'];
+        $cardNo = $VeReq['pan'];
 
         $paymentId = $input['Message']['@attributes']['id'];
 
         unset($content['Message']['VEReq']);
 
-        switch($cardNo)
+        switch ($cardNo)
         {
             case CardNumber::INTERNATIONAL_VISA:
             case CardNumber::VALID_ENROLL_NUMBER:
@@ -127,6 +137,37 @@ class Server extends Base\Mock\Server
             case CardNumber::INVALID_ECI:
             case CardNumber::INVALID_PARES:
                 $content['Message']['VERes'] = $responseClass->enrolledValidResponse($paymentId, $cardNo);
+
+                if ((isset($VeReq['Extension']['@attributes']['id']) === true) and
+                    ($VeReq['Extension']['@attributes']['id'] === 'visa.3ds.india_ivr'))
+                {
+                    $content['Message']['VERes']['Extension'] = [
+                        '@attributes' => [
+                            'id' => 'visa.3ds.india_ivr',
+                            'critical' => 'false'
+                        ],
+                        'npc356authdata' => [
+                            'attribute' => [
+                                '@attributes' => [
+                                    'label'  => 'OTP',
+                                    'length' => '6',
+                                    'name'   => 'OTP2',
+                                    'prompt' => 'Please enter OTP sent by your bank to your mobile',
+                                    'type'   => 'N',
+                                ],
+                            ],
+                        ],
+                        'npc356authstatusmessage' => 'OTP has been sent to your mobile',
+                        'npc356authdataencrypt' => [
+                            '@attributes' => [
+                                'mandatory' => 'FALSE'
+                            ]
+                        ],
+                        'npc356authdataencrypttype' => '',
+                        'npc356authdataencryptkeyvalue' => '',
+                        'npc356itpstatus' => '',
+                    ];
+                }
 
                 break;
             case CardNumber::VALID_NOT_ENROLL_NUMBER:

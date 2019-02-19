@@ -377,8 +377,8 @@ class Gateway extends Base\Gateway
 
         $txnNo = $input['gateway']['vpc_TransactionNo'];
         $txnNo = (int) $txnNo;
-        assert (strlen($txnNo) === 10);
-        assert (is_integer($txnNo) === true);
+        assertTrue (strlen($txnNo) === 10);
+        assertTrue (is_integer($txnNo) === true);
 
         $terminalId = $input['terminal']['id'];
 
@@ -445,6 +445,21 @@ class Gateway extends Base\Gateway
 
         $content = $this->sendVerifyRequest($input, 'refund');
 
+        $scroogeResponse->setGatewayVerifyResponse($content)
+                        ->setGatewayKeys($this->getGatewayData($content));
+
+        if ((isset($content['vpc_DRExists']) === false) or (isset($content['vpc_FoundMultipleDRs']) === false))
+        {
+            throw new Exception\LogicException(
+                'Unexpected gateway verify refund response',
+                ErrorCode::GATEWAY_ERROR_UNEXPECTED_STATUS,
+                [
+                    Payment\Gateway::GATEWAY_VERIFY_RESPONSE  => json_encode($content),
+                    Payment\Gateway::GATEWAY_KEYS             => $this->getGatewayData($content)
+                ]
+            );
+        }
+
         // vpc_DRExists can be 'N' in two cases:
         // 1. If refund is older than 5 days (MiGS doesn't allow txn query on txns older than 5 days)
         //    We throw exception in this case as it has to be manually reviewed
@@ -457,8 +472,6 @@ class Gateway extends Base\Gateway
             {
                 return $scroogeResponse->setSuccess(false)
                                        ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
-                                       ->setGatewayResponse($content)
-                                       ->setGatewayKeys($this->getGatewayData($content))
                                        ->toArray();
             }
 
@@ -466,8 +479,8 @@ class Gateway extends Base\Gateway
                 'Cannot verify old MiGS refunds',
                 ErrorCode::GATEWAY_VERIFY_OLDER_REFUNDS_DISABLED,
                 [
-                    Payment\Gateway::GATEWAY_RESPONSE  => json_encode($content),
-                    Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($content)
+                    Payment\Gateway::GATEWAY_VERIFY_RESPONSE  => json_encode($content),
+                    Payment\Gateway::GATEWAY_KEYS             => $this->getGatewayData($content)
                 ]
             );
         }
@@ -476,8 +489,6 @@ class Gateway extends Base\Gateway
             (((int) $content['vpc_RefundedAmount']) === $input['refund']['base_amount']))
         {
             return $scroogeResponse->setSuccess(true)
-                                   ->setGatewayResponse($content)
-                                   ->setGatewayKeys($this->getGatewayData($content))
                                    ->toArray();
         }
         else if ($content['vpc_FoundMultipleDRs'] === 'Y')
@@ -493,14 +504,12 @@ class Gateway extends Base\Gateway
 
         return $scroogeResponse->setSuccess(false)
                                ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
-                               ->setGatewayResponse($content)
-                               ->setGatewayKeys($this->getGatewayData($content))
                                ->toArray();
     }
 
     protected function captureAuthorizedPayment(array $input)
     {
-        assert ($input['payment']['status'] === 'authorized');
+        assertTrue ($input['payment']['status'] === 'authorized');
 
         $gatewayPayment = $this->repo->findByPaymentIdAndCommandOrFail(
             $input['payment']['id'], Command::PAY);
@@ -616,7 +625,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            assert ($content['vpc_DRExists'] === 'Y');
+            assertTrue ($content['vpc_DRExists'] === 'Y');
 
             $this->verifyPaymentReconcileWithGatewayResponse($content, $verify);
         }
@@ -924,44 +933,9 @@ class Gateway extends Base\Gateway
     {
         $options['timeout'] = 60;
 
-        $hooks = new Requests_Hooks();
-
-        $hooks->register('curl.before_send', function ($curl)
-        {
-            $this->curlLogPath = storage_path('logs/curl_' . $this->paymentId . '.log');
-
-            $this->curlLog = fopen($this->curlLogPath, 'w'); // opening a log file for curl logs
-
-            curl_setopt($curl, CURLOPT_VERBOSE, true);
-            curl_setopt($curl, CURLOPT_STDERR, $this->curlLog);
-        });
-
-        $options['hooks'] = $hooks;
-
         $request['options'] = $options;
 
-        try
-        {
-            $this->response = $this->sendGatewayRequest($request);
-        }
-        catch (Exception\GatewayRequestException $e)
-        {
-            $this->traceCurlErrorIfApplicable();
-
-            throw $e;
-        }
-        finally
-        {
-            if (isset($this->curlLog) === true)
-            {
-                fclose($this->curlLog);
-
-                if (file_exists($this->curlLogPath) === true)
-                {
-                    unlink($this->curlLogPath);
-                }
-            }
-        }
+        $this->response = $this->sendGatewayRequest($request);
 
         return $this->response;
     }
@@ -1159,7 +1133,7 @@ class Gateway extends Base\Gateway
 
     protected function addTestCardDetailsInTestMode(array & $content)
     {
-        assert ($this->mode === Mode::TEST);
+        assertTrue ($this->mode === Mode::TEST);
 
         if ($content['vpc_CardNum'] === '4111111111111111')
         {

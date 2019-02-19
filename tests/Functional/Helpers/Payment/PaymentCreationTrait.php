@@ -102,10 +102,16 @@ trait PaymentCreationTrait
         return (preg_match($pattern, $uri) === 1);
     }
 
+    protected function isRedirectToAuthorizeUrl($uri)
+    {
+        $pattern = '/payments\/[\w]+\/authorize/';
+
+        return (preg_match($pattern, $uri) === 1);
+    }
+
     protected function isOtpFallbackUrl($uri)
     {
         $pattern = '/payments\/pay_[\w]+\/authentication\/redirect\/[\w]+/';
-
         return (preg_match($pattern, $uri) === 1);
     }
 
@@ -178,6 +184,16 @@ trait PaymentCreationTrait
 
                 if ($redirect === true)
                 {
+                    $targetUrl = $response->getTargetUrl();
+
+                    $isAuthorizeRedirect = (($targetUrl !== null) and
+                                            ($this->isRedirectToAuthorizeUrl($targetUrl) === true));
+
+                    if (boolval($isAuthorizeRedirect) === true)
+                    {
+                        return $this->makeRedirectToAuthorize($targetUrl);
+                    }
+
                     $gateway = $response->headers->get('X-gateway');
                 }
 
@@ -260,6 +276,33 @@ trait PaymentCreationTrait
         }
 
         return $this->runPaymentCallbackFlowForGateway($response, $gateway, $callback);
+    }
+
+    protected function makeRedirectToAuthorize($targetUrl)
+    {
+        $id = getTextBetweenStrings($targetUrl, '/payments/', '/authorize');
+
+        $this->redirectToAuthorize = true;
+
+        $url = $this->getPaymentRedirectToAuthorizrUrl($id);
+
+        $this->ba->directAuth();
+
+        $request = [
+            'url'   => $url,
+            'method' => 'get',
+            'content' => [],
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        return $this->handlePaymentCreationFlow($response, $request);
+
+        list ($url, $method, $values) = $this->getDataForGatewayRequest($response, $callback);
+
+        $request = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
+
+        return $this->submitPaymentCallbackRequest($request);
     }
 
     protected function handleWalletTopupFlow($response, $request, &$callback = null)

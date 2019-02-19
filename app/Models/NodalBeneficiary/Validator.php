@@ -19,6 +19,12 @@ class Validator extends Base\Validator
         Entity::CHANNEL             => 'required|filled|string|max:8|custom',
     ];
 
+    protected static $updateRules = [
+        'fund_account_id'         => 'required|integer',
+        'status'                  => 'required|filled|string|max:40',
+        Entity::CHANNEL           => 'required|string|max:8|custom',
+    ];
+
     /**
      * @param string $attribute
      * @param string $value
@@ -74,7 +80,7 @@ class Validator extends Base\Validator
      */
     public function validateChannel(string $attribute, string $value)
     {
-        $channels = [Channel::YESBANK];
+        $channels = [Channel::YESBANK, Channel::ICICI2];
 
         if (in_array($value, $channels, true) !== true)
         {

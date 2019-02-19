@@ -37,7 +37,7 @@ class SubscriptionV2CardsTest extends TestCase
 
         $this->gateway = 'cybersource';
 
-        $this->mockTokenex();
+        $this->mockCardVault();
     }
 
     public function testSubscriptionV2PaymentFirst2FaLocalSavedCard()

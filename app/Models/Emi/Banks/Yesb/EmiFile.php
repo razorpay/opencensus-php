@@ -11,6 +11,7 @@ use RZP\Models\FileStore;
 use RZP\Models\Payment;
 use RZP\Models\Emi\Banks\Base;
 use RZP\Encryption\PGPEncryption;
+use RZP\Services\Beam\Constants as BeamConstants;
 
 class EmiFile extends Base\EmiFile
 {
@@ -189,6 +190,8 @@ class EmiFile extends Base\EmiFile
 
         if ($this->transferMode === Base\EmiMode::SFTP)
         {
+            $this->pushEmiFileToBeam(BeamConstants::YESBANK_EMI_FILE_JOB_NAME);
+
             $fileData = [];
         }
 

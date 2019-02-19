@@ -8,12 +8,11 @@ use Carbon\Carbon;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
+use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Mail\Emi as EmiMail;
 use RZP\Models\Gateway\File\Status;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Models\Gateway\File\Processor\Base as BaseProcessor;
@@ -190,18 +189,14 @@ class Base extends BaseProcessor
 
         $cardToken = $card->getVaultToken();
 
-        $cardNumber = (new Card\Tokenex)->getCardNumber($cardToken);
+        $cardNumber = (new Card\CardVault)->getCardNumber($cardToken);
 
         return $cardNumber;
     }
 
     protected function getAuthCode(Payment\Entity $payment)
     {
-        $gateway = $payment->getGateway();
-
-        $gatewayPayment = $this->repo->$gateway->findCapturedPaymentByIdOrFail($payment->getId());
-
-        $authCode = $gatewayPayment->getAuthCode();
+        $authCode = $payment->getReference2();
 
         if (empty($authCode) === true)
         {
@@ -234,12 +229,12 @@ class Base extends BaseProcessor
 
     protected function getEmiAmount($amount, $annualRate, $tenureInMonths)
     {
-        // $annualRate is a
-        // $monthlyRate is a/12 i.e should be treated as 13/1200
+        // $annualRate is rate/100, say .14
+        // $monthlyRate is a/12 i.e should be treated as .14/12
         // E = P x r x (1+r)^n/((1+r)^n – 1)
         // tenure in months
 
-        $monthlyRate = $annualRate / 1200;
+        $monthlyRate = $annualRate / 12;
 
         $expression = pow((1 + $monthlyRate), $tenureInMonths);
 
@@ -247,6 +242,6 @@ class Base extends BaseProcessor
 
         $den = $expression - 1;
 
-        return floor($num / $den);
+        return (floor($num / $den) / 100);
     }
 }

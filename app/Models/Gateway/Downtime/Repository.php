@@ -25,6 +25,7 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = array(
         Entity::GATEWAY     => 'sometimes|string|max:255',
         Entity::ISSUER      => 'sometimes|string|max:50',
+        Entity::ACQUIRER    => 'sometimes|string|max:30',
         Entity::METHOD      => 'sometimes|string|max:30',
         Entity::BEGIN       => 'sometimes|integer',
         Entity::END         => 'required_with:begin|integer',
@@ -33,18 +34,19 @@ class Repository extends Base\Repository
     );
 
     const KEY_OPERATOR_MAP = [
-        Entity::GATEWAY => '=',
-        Entity::ISSUER  => '=',
-        Entity::METHOD  => '=',
-        Entity::SOURCE  => '=',
-        Entity::BEGIN   => '<='
+        Entity::GATEWAY     => '=',
+        Entity::ISSUER      => '=',
+        Entity::ACQUIRER    => '=',
+        Entity::METHOD      => '=',
+        Entity::SOURCE      => '=',
+        Entity::TERMINAL_ID => '=',
     ];
 
     const UNIQUE_KEYS = [
         Entity::GATEWAY,
         Entity::ISSUER,
         Entity::METHOD,
-        Entity::BEGIN,
+        Entity::SOURCE,
     ];
 
     public function isMerchantIdRequiredForFetch()
@@ -52,11 +54,13 @@ class Repository extends Base\Repository
         return false;
     }
 
-    public function fetchUnique($input)
+    public function getConflictingDowntime($input, array $uniqueRecordIdentifiers = [])
     {
         $params = [];
 
-        foreach (self::UNIQUE_KEYS as $key)
+        $uniqueKeys = $uniqueRecordIdentifiers ?: self::UNIQUE_KEYS;
+
+        foreach ($uniqueKeys as $key)
         {
             if (isset($input[$key]) === true)
             {
@@ -68,16 +72,47 @@ class Repository extends Base\Repository
 
         $this->buildQuery(self::KEY_OPERATOR_MAP, $params, $query);
 
-        return $query->whereNull(Entity::END)
-                     ->orderBy(Entity::CREATED_AT)
+        if (isset($params[Entity::TERMINAL_ID]) === false)
+        {
+            $query->whereNull(Entity::TERMINAL_ID);
+        }
+
+        $this->addOverlapQuery($query, $input);
+
+        return $query->orderBy(Entity::CREATED_AT)
                      ->first();
     }
 
-    public function fetchMostRecentActive(array $input)
+    /**
+     * This looks complicated, but it works.
+     *
+     * If you're not absolutely certain what
+     * you're doing, don't fucking touch it.
+     *
+     * @param [type] $query [description]
+     * @param [type] $input [description]
+     */
+    protected function addOverlapQuery($query, $input)
+    {
+        $query->where(function ($query) use ($input)
+        {
+            $query->whereNull(Entity::END)
+                  ->orWhere(Entity::END, '>=', $input[Entity::BEGIN]);
+        });
+
+        if (isset($input[Entity::END]) === true)
+        {
+            $query->where(Entity::BEGIN, '<=', $input[Entity::END]);
+        }
+    }
+
+    public function fetchMostRecentActive(array $input, array $fetchByKeys = [])
     {
         $params = [];
 
-        foreach (self::UNIQUE_KEYS as $key)
+        $uniqueKeys = empty($fetchByKeys) === true ? self::UNIQUE_KEYS : $fetchByKeys;
+
+        foreach ($uniqueKeys as $key)
         {
             if (isset($input[$key]) === true)
             {
@@ -87,7 +122,12 @@ class Repository extends Base\Repository
 
         $query = $this->newQuery();
 
-        $this->buildQuery(self::KEY_OPERATOR_MAP, $input, $query);
+        $this->buildQuery(self::KEY_OPERATOR_MAP, $params, $query);
+
+        if (isset($params[Entity::TERMINAL_ID]) === false)
+        {
+            $query->whereNull(Entity::TERMINAL_ID);
+        }
 
         return $query->whereNull(Entity::END)
                      ->where(Entity::SCHEDULED, '=', false)
@@ -103,7 +143,7 @@ class Repository extends Base\Repository
      *
      */
 
-    public function fetchCurrentAndFutureDowntimesWithoutTerminal(): PublicCollection
+    public function fetchCurrentAndFutureDowntimes(bool $withoutTerminal = false): PublicCollection
     {
         $query = $this->newQuery();
 
@@ -113,10 +153,13 @@ class Repository extends Base\Repository
                 ->orWhere(Entity::END, '>=', Carbon::now()->getTimestamp());
         });
 
-        return $query->whereNull(Entity::TERMINAL_ID)
-            ->get();
-    }
+        if ($withoutTerminal === true)
+        {
+            $query->whereNull(Entity::TERMINAL_ID);
+        }
 
+        return $query->get();
+    }
 
     public function fetchDowntimesWithoutTerminal(array $input, array $methods): PublicCollection
     {

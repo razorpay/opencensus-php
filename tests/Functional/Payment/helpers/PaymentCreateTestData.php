@@ -39,6 +39,22 @@ return [
         ],
     ],
 
+    'testCreatePaymentWithDisabledMethod' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_NETBANKING_NOT_ENABLED_FOR_MERCHANT,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_NETBANKING_NOT_ENABLED_FOR_MERCHANT
+        ],
+    ],
+
     'testCreatePaymentWithoutMethod' => [
        'response' => [
            'content' => [
@@ -114,6 +130,16 @@ return [
         ],
     ],
 
+    'testPaymentRoutedThroughCps' => [
+        'request' => [
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                'cps_service_enabled'        => '1',
+            ],
+        ]
+    ],
+
     'testPaymentCreateCallingCallbackRouteTwiceForError' => [
         'response' => [
             'content' => [
@@ -135,8 +161,8 @@ return [
             'content' => [
                 'type'    => 'emandate_debit',
                 'targets' => ['axis'],
-                'begin'   => Carbon::today(Timezone::IST)->timestamp,
-                'end'     => Carbon::tomorrow(Timezone::IST)->timestamp,
+                'begin'   => Carbon::yesterday(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::today(Timezone::IST)->getTimestamp() - 1,
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -207,6 +233,21 @@ return [
         ],
         'exception' => [
             'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testWalletPostFormEmailNotOptionalForAmazonPay' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],

@@ -27,6 +27,8 @@ class AmexGatewayTest extends TestCase
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
 
+        $this->fixtures->merchant->enableCardNetwork('10000000000000', 'amex');
+
         $this->fixtures->create('merchant:bank_account', ['merchant_id' => '10000000000000']);
 
         $this->payment = $this->getDefaultPaymentArray();
@@ -117,6 +119,7 @@ class AmexGatewayTest extends TestCase
         $this->fixtures->merchant->activate();
         $this->fixtures->merchant->enableCard();
         $this->fixtures->merchant->disableMethod('10000000000000', 'amex');
+        $this->fixtures->merchant->disableCardNetwork('10000000000000', 'amex');
 
         $testData = $this->testData[__FUNCTION__];
         $this->runRequestResponseFlow($testData, function()

@@ -10,6 +10,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Base\Utility;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Payment as PaymentMail;
 use RZP\Models\Invoice\ViewDataSerializer;
@@ -385,22 +386,27 @@ class Notify
                 'billing_label' => $this->merchant->getBillingLabel(),
                 'website'       => $this->merchant->getWebsite(),
                 // This is the reporting email address for the merchant
-                'email'         => $this->merchant->getTransactionReportEmail(),
-                'id'            => $this->merchant->getId(),
+                'email'             => $this->merchant->getTransactionReportEmail(),
+                'id'                => $this->merchant->getId(),
+                'brand_color'       => $this->merchant->getBrandColorOrDefault(),
+                'contrast_color'    => $this->merchant->getContrastOfBrandColor(),
+                'brand_logo'        => $this->merchant->getFullLogoUrlWithSize(),
             ],
             'payment'   => [
-                'id'              => $this->payment->getId(),
-                'public_id'       => $this->payment->getPublicId(),
-                'amount'          => $this->payment->getFormattedAmount(),
-                'raw_amount'      => $this->payment['base_amount'],
-                'adjusted_amount' => $this->payment->getAdjustedAmountWrtCustFeeBearer(),
-                'timestamp'       => $this->payment->getUpdatedAt(),
-                'captured_at'     => $this->payment->getAttribute('captured_at'),
+                'id'                   => $this->payment->getId(),
+                'public_id'            => $this->payment->getPublicId(),
+                'amount'               => $this->payment->getFormattedAmount(),
+                'raw_amount'           => $this->payment['base_amount'],
+                'adjusted_amount'      => $this->payment->getAdjustedAmountWrtCustFeeBearer(),
+                'timestamp'            => $this->payment->getUpdatedAt(),
+                'captured_at'          => $this->payment->getAttribute('captured_at'),
+                'amount_spread'        => $this->payment->getAmountComponents(),
+                'created_at_formatted' => Utility::getTimestampFormatted($this->payment->getCreatedAt(), 'jS M, Y'),
 
                 // note that payment method is unavailable to the merchant
-                'method'    => $this->payment->getMethodWithDetail(),
-                'orderId'   => $this->payment->getOrderId(),
-                'risk'      => $this->merchant->getRiskRating()
+                'method'               => $this->payment->getMethodWithDetail(),
+                'orderId'              => $this->payment->getOrderId(),
+                'risk'                 => $this->merchant->getRiskRating()
             ],
         ];
 
@@ -421,11 +427,13 @@ class Notify
         if ($this->refund)
         {
             $data['refund'] = [
-                'id'         => $this->refund->getId(),
-                'amount'     => $this->refund->getFormattedAmount(),
-                'timestamp'  => $this->refund->getCreatedAt(),
-                'payment_id' => $this->refund->payment->getId(),
-                'public_id'  => $this->refund->getPublicId(),
+                'id'                   => $this->refund->getId(),
+                'amount'               => $this->refund->getFormattedAmount(),
+                'amount_components'    => $this->refund->getAmountComponents(),
+                'timestamp'            => $this->refund->getCreatedAt(),
+                'payment_id'           => $this->refund->payment->getId(),
+                'public_id'            => $this->refund->getPublicId(),
+                'created_at_formatted' => Utility::getTimestampFormatted($this->refund->getCreatedAt(), 'jS M, Y'),
             ];
         }
 

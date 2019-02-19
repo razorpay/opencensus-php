@@ -6,6 +6,8 @@ use RZP\Models\Bank;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
+use RZP\Models\Feature;
+use RZP\Models\Card\Network;
 
 class AuthTypeSorter extends Terminal\Sorter
 {
@@ -31,6 +33,14 @@ class AuthTypeSorter extends Terminal\Sorter
 
         $orderedTerminals = [];
         $unorderedTerminals = $terminals;
+        $iin = $payment->card->iinRelation;
+
+        $networkCode = Network::UNKNOWN;
+
+        if ($iin !== null)
+        {
+            $networkCode = $iin->getNetworkCode();
+        }
 
         foreach ($preferredAuthentications as $authType)
         {
@@ -42,7 +52,8 @@ class AuthTypeSorter extends Terminal\Sorter
 
             foreach ($terminals as $key => $terminal)
             {
-                if (($terminal->isAuthTypeEnabled($authType) === true) and
+
+                if (($terminal->isAuthTypeEnabled($authType, $networkCode) === true) and
                     ($this->filterOtpAuthType($payment, $terminal, $authType) === true))
                 {
                     $orderedTerminals[] = $terminal;
@@ -65,11 +76,18 @@ class AuthTypeSorter extends Terminal\Sorter
     {
         if (($authType === Payment\AuthType::OTP) and
             ($payment->card->iinRelation !== null) and
-            ($payment->card->iinRelation->getIssuer() === Bank\IFSC::UTIB) and
-            ($payment->card->iinRelation->supports(Card\IIN\Flow::OTP) === true) and
-            ($payment->merchant->isAxisExpressPayEnabled() === true))
+            (($payment->card->iinRelation->supports(Card\IIN\Flow::OTP) === true) or
+             ($payment->card->iinRelation->supports(Card\IIN\Flow::IVR) === true)))
         {
             return ($terminal->getGateway() === Payment\Gateway::HITACHI);
+        }
+
+        // headless check
+        if (($authType === Payment\AuthType::OTP) and
+            ($payment->card->iinRelation !== null) and
+            ($payment->card->iinRelation->supports(Card\IIN\Flow::HEADLESS_OTP) === false))
+        {
+            return false;
         }
 
         return true;

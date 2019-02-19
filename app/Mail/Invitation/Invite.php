@@ -41,6 +41,7 @@ class Invite extends Mailable
             'sender_name'   => $this->data['sender_name'],
             'merchant_name' => $this->data['name'],
             'token'         => $this->data['token'],
+            'product'       => $this->data['product'],
         ];
 
         $this->with($emailParams);

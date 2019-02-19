@@ -57,6 +57,10 @@ class Gateway extends Hdfc\Gateway
                 $response = $server->enroll();
                 break;
 
+            case 'pre_authorization':
+                $response = $server->preAuthorization();
+                break;
+
             case 'auth_enrolled':
                 $response = $server->authEnrolled();
                 break;

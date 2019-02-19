@@ -82,4 +82,9 @@ class Utility
             null,
             compact('value'));
     }
+
+    public static function getTimestampFormatted($epoch, $format)
+    {
+        return date($format, $epoch);
+    }
 }

@@ -560,7 +560,7 @@ class AxisGatewayTest extends TestCase
 
     public function testRecurringPaymentAuthenticateCard()
     {
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $this->fixtures->merchant->addFeatures('charge_at_will');
 

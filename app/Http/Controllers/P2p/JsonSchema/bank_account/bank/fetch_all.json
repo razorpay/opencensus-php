@@ -29,16 +29,15 @@
                     "entity",
                     "ifsc",
                     "name",
-                    "upi"
+                    "upi",
+                    "active"
                 ],
                 "properties": {
                     "entity": {
                         "type": "string",
                         "enum": [
                             "bank"
-                        ],
-                        "default": null,
-                        "pattern": "^(.*)$"
+                        ]
                     },
                     "ifsc": {
                         "type": "string",
@@ -49,6 +48,9 @@
                         "pattern": "^(.*)$"
                     },
                     "upi": {
+                        "type": "boolean"
+                    },
+                    "active": {
                         "type": "boolean"
                     }
                 }

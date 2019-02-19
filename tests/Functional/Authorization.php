@@ -17,10 +17,10 @@ class Authorization
     protected $secret;
     protected $account;
     protected $orgId;
-    protected $adminHeaders;
     protected $admin;
     protected $appHeaders;
     protected $bearerHeaders;
+    protected $adminHeaders = [];
     protected $adminProxyHeaders;
     protected $proxyHeaders;
 
@@ -120,16 +120,16 @@ class Authorization
         $this->appAuth('rzp_test', $pwd);
     }
 
-    public function proxyAuth($user = 'rzp_test_10000000000000', $merchantUser = null, $merchantUserRole = 'owner')
+    public function proxyAuth($user = 'rzp_test_10000000000000', $merchantUser = null)
     {
         $this->appAuth($user);
 
         $this->proxy = true;
 
-        $this->addProxyAuthHeaders($merchantUser, $merchantUserRole);
+        $this->addProxyAuthHeaders($merchantUser);
     }
 
-    public function addProxyAuthHeaders($user, $userRole)
+    public function addProxyAuthHeaders($user)
     {
         if ($user === null)
         {
@@ -138,7 +138,6 @@ class Authorization
 
         $this->proxyHeaders = [
             'X-Dashboard-User-Id'   => $user,
-            'X-Dashboard-User-Role' => $userRole,
         ];
     }
 
@@ -242,7 +241,7 @@ class Authorization
         $this->basicAuth($key, $secret);
     }
 
-    public function adminAuth($mode = 'test', $token = null, $orgId = null, $hostName = null)
+    public function adminAuth($mode = 'test', $token = null, $orgId = null, $hostName = null, string $crossOrgId = null)
     {
         $appAuthCaller = 'appAuth' . studly_case($mode);
 
@@ -250,7 +249,7 @@ class Authorization
 
         $this->type = 'admin';
 
-        $this->addAdminAuthHeaders($orgId, $token, $hostName);
+        $this->addAdminAuthHeaders($orgId, $token, $hostName, $crossOrgId);
     }
 
     public function adminProxyAuth($account = '10000000000000',
@@ -346,7 +345,7 @@ class Authorization
     /**
      * Adds admin auth headers to a request
      */
-    public function addAdminAuthHeaders(string $orgId = null, string $adminToken = null, string $orgHostname = null)
+    public function addAdminAuthHeaders(string $orgId = null, string $adminToken = null, string $orgHostname = null, string $crossOrgId = null)
     {
         if ($adminToken === null)
         {
@@ -370,6 +369,7 @@ class Authorization
             'X-Org-Id' => $orgId,
             'X-Admin-Token' => $adminToken,
             'X-Org-Hostname' => $orgHostname,
+            'X-Cross-Org-Id' => $crossOrgId,
         ];
     }
 
@@ -476,6 +476,16 @@ class Authorization
         }
 
         return $headers;
+    }
+
+    /**
+     * Sets admin headers.
+     *
+     * @param array $adminHeaders
+     */
+    public function setAdminHeaders(array $adminHeaders = [])
+    {
+        $this->adminHeaders = array_merge($this->adminHeaders, $adminHeaders);
     }
 
     public function getAppHeaders()

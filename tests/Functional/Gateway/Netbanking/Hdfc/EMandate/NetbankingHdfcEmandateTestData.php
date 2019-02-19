@@ -154,8 +154,8 @@ return [
             'content' => [
                 'type'    => 'emandate_debit',
                 'targets' => ['hdfc'],
-                'begin'   => Carbon::today(Timezone::IST)->timestamp,
-                'end'     => Carbon::tomorrow(Timezone::IST)->timestamp,
+                'begin'   => Carbon::yesterday(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::today(Timezone::IST)->getTimestamp() - 1,
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -199,8 +199,8 @@ return [
             'content' => [
                 'type'    => 'emandate_debit',
                 'targets' => ['hdfc'],
-                'begin'   => Carbon::today(Timezone::IST)->timestamp,
-                'end'     => Carbon::tomorrow(Timezone::IST)->timestamp,
+                'begin'   => Carbon::yesterday(Timezone::IST)->gettimestamp(),
+                'end'     => Carbon::today(Timezone::IST)->getTimestamp() - 1,
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -232,8 +232,8 @@ return [
             'content' => [
                 'type'    => 'emandate_debit',
                 'targets' => ['hdfc'],
-                'begin'   => Carbon::today(Timezone::IST)->timestamp,
-                'end'     => Carbon::tomorrow(Timezone::IST)->timestamp,
+                'begin'   => Carbon::yesterday(Timezone::IST)->gettimestamp(),
+                'end'     => Carbon::today(Timezone::IST)->getTimestamp() - 1,
             ],
             'url' => '/gateway/files',
             'method' => 'POST'

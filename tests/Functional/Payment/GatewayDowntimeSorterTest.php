@@ -211,6 +211,87 @@ class GatewayDowntimeSorterTest extends TestCase
     /**
      * Card/EMI Downtime
      *
+     * card downtime for hdfc for all networks, all cards, all acquirers
+     * payment via MC
+     *
+     * this payment should go through via axis_migs
+     * because hdfc is down for all network & issuer
+     */
+    public function testDowntimeSortingCardHdfcPaymentMastercardAllAcquirers()
+    {
+        // without downtime
+        $payment = $this->makePayment('555555555555558');
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('hdfc', $payment['gateway']);
+
+        // with downtime
+        $hdfcAllNetworkAllIssuerAllAcquirerDowntimeData = $this->testData['hdfcAllNetworkAllIssuerAllAcquirerDowntimeData'];
+        $this->fixtures->create('gateway_downtime:card', $hdfcAllNetworkAllIssuerAllAcquirerDowntimeData);
+
+        $payment = $this->makePayment('555555555555558');
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('axis_migs', $payment['gateway']);
+    }
+
+    /**
+     * Card/EMI Downtime
+     *
+     * card downtime for hdfc for all networks, all cards, hdfc acquirers
+     * payment via MC
+     *
+     * this payment should go through via axis_migs
+     * because acquirer hdfc is down
+     */
+    public function testDowntimeSortingCardHdfcPaymentMastercardHdfcAcquirer()
+    {
+        // without downtime
+        $payment = $this->makePayment('555555555555558');
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('hdfc', $payment['gateway']);
+
+        // with downtime
+        $hdfcAllNetworkAllIssuerHdfcAcquirerDowntimeData = $this->testData['hdfcAllNetworkAllIssuerHdfcAcquirerDowntimeData'];
+        $this->fixtures->create('gateway_downtime:card', $hdfcAllNetworkAllIssuerHdfcAcquirerDowntimeData);
+
+        $payment = $this->makePayment('555555555555558');
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('axis_migs', $payment['gateway']);
+    }
+
+    /**
+     * Card/EMI Downtime
+     *
+     * card downtime for hdfc for all networks, all cards, hdfc acquirers
+     * payment via MC
+     *
+     * this payment should go through via axis_migs
+     * because acquirer hdfc is down
+     */
+    public function testDowntimeSortingCardHdfcPaymentAllIssuerHdfcAcquirer()
+    {
+        // without downtime
+        $payment = $this->makePayment('555555555555558');
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('hdfc', $payment['gateway']);
+
+        // with downtime
+        $allGatewayAllIssuerAllNetworkHdfcAcquirerData = $this->testData['allGatewayAllIssuerAllNetworkHdfcAcquirerData'];
+        $this->fixtures->create('gateway_downtime:card', $allGatewayAllIssuerAllNetworkHdfcAcquirerData);
+
+        $payment = $this->makePayment('555555555555558');
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('axis_migs', $payment['gateway']);
+    }
+
+    /**
+     * Card/EMI Downtime
+     *
      * card downtime for hdfc for MC networks,
      * payment via MC
      *
@@ -367,5 +448,65 @@ class GatewayDowntimeSorterTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('axis_migs', $payment['gateway']);
+    }
+
+    public function testDowntimeSortingForVajraUpiWebHook()
+    {
+        $upiPaymentInput = $this->getDefaultUpiPaymentArray();
+
+        $this->fixtures->merchant->enableUpi();
+
+        $iciciTerminal = $this->fixtures->create("terminal:shared_upi_icici_terminal");
+
+        $mindgateTerminal = $this->fixtures->create("terminal:shared_upi_mindgate_terminal");
+
+        // test selection -> should pick icici
+
+        $this->doAuthPayment($upiPaymentInput);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($iciciTerminal['id'], $payment['terminal_id']);
+
+        // add a downtime for upi_icici (mimicing vajra webhook)
+        $vajraWebhookMessage = [
+            'method'      => 'upi',
+            'gateway'     => $iciciTerminal['gateway'],
+            'terminal_id' => $iciciTerminal['id'],
+        ];
+
+        $this->testData[__FUNCTION__]['request']['content']['message'] = json_encode($vajraWebhookMessage, true);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        // test if upi_mingate is selected
+
+        $this->doAuthPayment($upiPaymentInput);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($mindgateTerminal['id'], $payment['terminal_id']);
+
+        // resolve the downtime
+
+        $this->testData[__FUNCTION__]['request']['content']['state'] = 'ok';
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $downtime = $this->getLastEntity('gateway_downtime', true);
+
+        $this->fixtures->edit('gateway_downtime', $downtime['id'], ['end' => Carbon::now()->subMinutes(60)->timestamp]);
+
+        // test if upi_icici is selected
+
+        $this->doAuthPayment($upiPaymentInput);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($iciciTerminal['id'], $payment['terminal_id']);
     }
 }

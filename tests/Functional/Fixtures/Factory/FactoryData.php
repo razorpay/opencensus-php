@@ -4,11 +4,13 @@ namespace RZP\Tests\Functional\Fixtures\Factory;
 
 use Config;
 use Eloquent;
-use RZP\Models;
 use Carbon\Carbon;
+
+use RZP\Models;
 use RZP\Models\Contact;
 use RZP\Constants\Timezone;
 use RZP\Models\Settlement\Channel;
+use RZP\Models\FundAccount\Validation as FundAccountValidation;
 
 final class FactoryData
 {
@@ -121,7 +123,7 @@ final class FactoryData
             'emi'               => false,
             'international'     => false,
             'vault_token'       => 'NDExMTExMTExMTExMTExMQ==',
-            'vault'             => 'tokenex',
+            'vault'             => 'rzpvault',
             'trivia'            => '',
         ]);
 
@@ -738,6 +740,8 @@ final class FactoryData
             'interval'          => 1,
             'delay'             => 3,
             'hour'              => 5,
+            'type'              => 'settlement',
+            'org_id'            => \RZP\Tests\Functional\Fixtures\Entity\Org::RZP_ORG,
         ]);
 
         $factory(\RZP\Models\Schedule\Task\Entity::class, [
@@ -894,11 +898,20 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Merchant\AccessMap\Entity::class, [
-            'merchant_id' => '10000000000000',
-            'entity_type' => 'application',
-            'entity_id'   => '10000000000App',
-            'created_at'  => Carbon::now()->getTimestamp(),
-            'updated_at'  => Carbon::now()->getTimestamp(),
+            'merchant_id'     => '10000000000000',
+            'entity_type'     => 'application',
+            'entity_id'       => '10000000000App',
+            'entity_owner_id' => '10000000000000',
+            'created_at'      => Carbon::now()->getTimestamp(),
+            'updated_at'      => Carbon::now()->getTimestamp(),
+        ]);
+
+        $factory(\RZP\Models\Partner\Config\Entity::class, [
+            'id'                  => $faker->uniqueid,
+            'entity_type'         => 'application',
+            'entity_id'           => '10000000000App',
+            'revisit_at'          => Carbon::now()->addYear(1)->getTimestamp(),
+            'commissions_enabled' => 0,
         ]);
 
         $factory(\RZP\Models\Merchant\Request\Entity::class, [
@@ -908,14 +921,14 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\VirtualAccount\Entity::class, [
-            'id'         => $faker->uniqueid,
-            'merchant_id'=> '10000000000000',
-            'status'     => 'active',
-            'name'       => 'Test Merchant',
-            'balance_id' => '10000000000000',
-            'notes'      => null,
-            'created_at' => $faker->timestamp,
-            'updated_at' => $faker->timestamp,
+            'id'          => $faker->uniqueid,
+            'merchant_id' => '10000000000000',
+            'status'      => 'active',
+            'name'        => 'Test Merchant',
+            'balance_id'  => '10000000000000',
+            'notes'       => null,
+            'created_at'  => $faker->timestamp,
+            'updated_at'  => $faker->timestamp,
         ]);
 
         $factory(\RZP\Models\QrCode\Entity::class, [
@@ -948,15 +961,36 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Contact\Entity::class, [
+            'id'           => $faker->uniqueid,
+            'active'       => true,
+            'name'         => $faker->word,
+            'email'        => $faker->email,
+            'contact'      => '9123456789',
+            'type'         => $faker->randomElement(Contact\Type::$defaults),
+            'reference_id' => $faker->uniqueid,
+            'notes'        => null,
+            'merchant_id'  => '10000000000000',
+            'created_at'   => $faker->timestamp,
+            'updated_at'   => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\FundAccount\Entity::class, [
             'id'          => $faker->uniqueid,
-            'name'        => $faker->word,
-            'email'       => $faker->email,
-            'contact'     => '9123456789',
-            'type'        => $faker->randomElement(Contact\Type::getAll()),
-            'notes'       => null,
+            'active'      => 1,
             'merchant_id' => '10000000000000',
-            'created_at'  => $faker->timestamp,
-            'updated_at'  => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\FundAccount\Validation\Entity::class, [
+            'id'                => $faker->uniqueid,
+            'fund_account_id'   => $faker->uniqueid,
+            'fund_account_type' => Models\FundAccount\Type::BANK_ACCOUNT,
+            'merchant_id'       => '10000000000000',
+            'amount'            => 100,
+            'currency'          => 'INR',
+            'status'            => 'created',
+            'notes'             => null,
+            'created_at'        => $faker->timestamp,
+            'updated_at'        => $faker->timestamp,
         ]);
     }
 }

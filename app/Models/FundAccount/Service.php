@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Contact;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
+use RZP\Exception\BadRequestValidationFailureException;
 
 /**
  * Class Service
@@ -37,7 +38,9 @@ class Service extends Base\Service
 
     public function create(array $input): array
     {
-        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, ['input' => $input]);
+        $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, [
+            'input' => $input
+        ]);
 
         (new Validator)->setStrictFalse()->validateInput(Validator::BEFORE_CREATE, $input);
 
@@ -54,7 +57,20 @@ class Service extends Base\Service
             $source = $this->repo->customer->findByPublicIdAndMerchant($input[Entity::CUSTOMER_ID], $this->merchant);
         }
 
+        if (optional($source)->isActive() === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Fund accounts cannot be created on an inactive ' . $source->getEntity());
+        }
+
         $entity = $this->core->create($input, $this->merchant, $source);
+
+        return $entity->toArrayPublic();
+    }
+
+    public function fetch(string $id, array $input): array
+    {
+        $entity = $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
         return $entity->toArrayPublic();
     }

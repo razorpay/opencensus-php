@@ -20,4 +20,10 @@ final class Metric
     // General constants used for metrics
     const MARKETPLACE           = 'marketplace';
     const PARTNER               = 'parnter';
+
+    const COUPON_VALIDATE_TOTAL  = 'coupon_validate_total';
+    const SIGNUP_COUPON_TOTAL    = 'signup_coupon_total';
+    const SIGNUP_TOTAL           = 'signup_total';
+    const PRE_EDIT_SIGNUP_TOTAL  = 'pre_edit_signup_total';
+
 }

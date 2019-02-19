@@ -80,7 +80,7 @@ class Beneficiary extends Base
                                 'Monthly'   => '300000000'
                             ]
                         ],
-                        Mode::DD => [
+                        RequestConstants::DD => [
                             'YN'    => 'Y',
                             'Limit' => [
                                 'Daily'     => '100',
@@ -88,7 +88,7 @@ class Beneficiary extends Base
                                 'Monthly'   => '10000'
                             ]
                         ],
-                        Mode::FT => [
+                        RequestConstants::FT => [
                             'YN'    => 'Y',
                             'Limit' => [
                                 'Daily'     => '100',
@@ -196,22 +196,22 @@ class Beneficiary extends Base
     /**
      * Generates successful response for given request
      *
-     * @return array
+     * @return string
      */
-    protected function mockGenerateFailedResponse(): array
+    protected function mockGenerateFailedResponse(): string
     {
         // TODO: Implement mockGenerateFailedResponse() method.
-        return [];
+        return "";
     }
 
     /**
      * Generates failed response for given request
      *
-     * @return array
+     * @return string
      */
-    protected function mockGenerateSuccessResponse(): array
+    protected function mockGenerateSuccessResponse(): string
     {
         // TODO: Implement mockGenerateSuccessResponse() method.
-        return [];
+        return "";
     }
 }

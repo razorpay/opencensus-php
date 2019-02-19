@@ -24,22 +24,23 @@
 
 namespace RZP\Gateway\Hdfc;
 
-use Carbon\Carbon;
-use RZP\Base\JitValidator;
-use RZP\Constants\Mode;
-use RZP\Constants\Timezone;
+use App;
 use RZP\Error;
 use RZP\Exception;
+use RZP\Models\Card;
 use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc;
-use RZP\Gateway\Hdfc\Payment;
-use RZP\Models\Card;
-use RZP\Models\Payment\Entity as PaymentEntity;
-use RZP\Models\Payment\RecurringType;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
-use RZP\Gateway\Base\Action as BaseAction;
-use App;
+use RZP\Base\JitValidator;
+use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Payment\AuthType;
+use RZP\Models\Payment\RecurringType;
+use RZP\Models\Payment as PaymentModel;
+use RZP\Gateway\Base\Action as BaseAction;
+use RZP\Models\Payment\Entity as PaymentEntity;
+use RZP\Models\Terminal\Entity as Terminal;
+use RZP\Models\Terminal\Capability as TerminalCapability;
 
 class Gateway extends Base\Gateway
 {
@@ -47,6 +48,12 @@ class Gateway extends Base\Gateway
     use Payment\Authorize;
     use Payment\Support;
     use Payment\Inquiry;
+    use Base\CardCacheTrait;
+
+    const CACHE_KEY = 'hdfc_fss_%s_card_details';
+    const CACHE_TTL = 20;
+
+    protected $secureCacheDriver;
 
     protected $gateway = 'hdfc';
 
@@ -181,7 +188,6 @@ class Gateway extends Base\Gateway
         'error' => null
     ];
 
-
     protected $authSecondRecurringRequest = [
         'url' => Hdfc\Urls::AUTH_NOT_ENROLLED_URL,
         'type' => 'auth_second_recurring',
@@ -209,8 +215,35 @@ class Gateway extends Base\Gateway
         'error' => null
     ];
 
+    protected $preAuthorizeRequest = [
+        'url' => Hdfc\Urls::PRE_AUTH_URL,
+        'type' => 'pre_authorization',
+        'fields' => [
+            'id', 'password', 'action', 'amt', 'currencycode', 'trackid', 'card', 'expmonth',
+            'expyear', 'cvv2', 'type', 'member', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5',
+        ],
+        'headers' => ['Content-Type:text/xml'],
+        'xml' => '',
+        'data' => []
+    ];
+
+    /**
+     * Response received after sending preAuthorizeRequest
+     * @var array
+     */
+    protected $preAuthorizeResponse = [
+        'fields' => [
+            'result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid',
+             'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'amt',
+            ],
+        'type' => 'pre_authorization',
+        'xml' => '',
+        'data' => [],
+        'error' => null
+    ];
+
     protected $debitPinAuthenticationRequest = [
-        'url' => Hdfc\Urls::DEBIT_PIN_AUTHENTICATION_URL,
+        'url' => Hdfc\Urls::SUPPORT_PAYMENT_URL,
         'type' => 'debit_pin_authentication',
         'fields' => [
             'id', 'password', 'action', 'amt', 'currencycode', 'trackid', 'card', 'expmonth',
@@ -341,6 +374,13 @@ class Gateway extends Base\Gateway
         $this->repo = new Hdfc\Repository;
     }
 
+    public function setGatewayParams($input, $mode, $terminal)
+    {
+        parent::setGatewayParams($input, $mode, $terminal);
+
+        $this->secureCacheDriver = $this->getDriver($input);
+    }
+
 // ---------------------------Gateway operations -------------------------------
 
     /**
@@ -363,6 +403,22 @@ class Gateway extends Base\Gateway
             return $this->authorizeDebitPin($input);
         }
 
+        if ($input['terminal']->getCapability() === TerminalCapability::AUTHORIZE)
+        {
+            $authenticationGateway = $this->decideAuthenticationGateway($input);
+
+            $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
+
+            if ($authResponse !== null)
+            {
+                $this->persistCardDetailsTemporarily($input);
+
+                return $authResponse;
+            }
+
+            return $this->decideAuthStepAfterEnroll(Payment\Result::NOT_ENROLLED);
+        }
+
         $status = $this->enrollCard($input);
 
         return $this->decideAuthStepAfterEnroll($status);
@@ -372,7 +428,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $this->supportPayment($input, 'refund');
+        return $this->supportPayment($input, 'refund');
     }
 
     public function capture(array $input)
@@ -493,7 +549,20 @@ class Gateway extends Base\Gateway
 
             $this->verifyCallback($input);
         }
+        else if ($input['terminal']->getCapability() === TerminalCapability::AUTHORIZE)
+        {
+            $this->setCardNumberAndCvv($input);
 
+            $mpiEntity = $this->app['repo']
+                              ->mpi
+                              ->findByPaymentIdAndActionOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
+
+            $authenticationGateway = $mpiEntity->getGateway() ?: \RZP\Models\Payment\Gateway::MPI_BLADE;
+
+            $input['authentication'] = $this->callAuthenticationGateway($input, $authenticationGateway);
+
+            $this->postPreAuthRequest($input);
+        }
         else
         {
             $this->validateCallbackGatewayFields($input, $network);
@@ -736,6 +805,8 @@ class Gateway extends Base\Gateway
         }
         catch (Exception\GatewayRequestException $e)
         {
+            $this->trace->traceException($e);
+
             // For verify we should throw exception as is.
             if ($this->action === BaseAction::VERIFY)
             {
@@ -945,6 +1016,13 @@ class Gateway extends Base\Gateway
 
         $gatewayErrorCode = $error['code'];
 
+        // We would like to use authRespCode for gateway error code over rzp defined error code from result
+        // error_code_tag and authRespCode will never occur together. Hence this would not override that
+        if ((isset($error['authRespCode']) === true) and ($error['authRespCode'] !== ''))
+        {
+            $gatewayErrorCode = $error['authRespCode'];
+        }
+
         $apiErrorCode = Hdfc\ErrorCodes\ErrorCodes::getInternalErrorCode($error);
 
         $gatewayErrorDesc = Hdfc\ErrorCodes\ErrorCodeDescriptions::getGatewayErrorDescription($error);
@@ -984,6 +1062,14 @@ class Gateway extends Base\Gateway
             ($exception instanceof Exception\GatewayRequestException))
         {
             $exception->markSafeRetryTrue();
+        }
+
+        if ($this->supportPaymentResponse['type'] === 'refund')
+        {
+            $exception->setData([
+                PaymentModel\Gateway::GATEWAY_RESPONSE => json_encode($this->supportPaymentResponse['xml']),
+                PaymentModel\Gateway::GATEWAY_KEYS     => $this->getGatewayData($this->supportPaymentResponse['data'])
+            ]);
         }
 
         throw $exception;
@@ -1090,5 +1176,23 @@ class Gateway extends Base\Gateway
                 null,
                 Base\Action::AUTHENTICATE);
         }
+    }
+
+    protected function getGatewayData(array $refundFields = [])
+    {
+        if (empty($refundFields) === false)
+        {
+            return [
+                Fields::REF            => $refundFields[Fields::REF] ?? null,
+                Fields::AVR            => $refundFields[Fields::AVR] ?? null,
+                Fields::AUTH           => $refundFields[Fields::AUTH] ?? null,
+                Fields::PAYID          => $refundFields[Fields::PAYID] ?? null,
+                Fields::RESULT         => $refundFields[Fields::RESULT] ?? null,
+                Fields::TRANID         => $refundFields[Fields::TRANID] ?? null,
+                Fields::POSTDATE       => $refundFields[Fields::POSTDATE] ?? null,
+                Fields::AUTH_RESP_CODE => $refundFields[Fields::AUTH_RESP_CODE] ?? null,
+            ];
+        }
+        return [];
     }
 }

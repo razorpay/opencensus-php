@@ -55,13 +55,21 @@
                     "type": {
                         "type": "string",
                         "enum": [
-                            "upipin",
-                            "atmpin",
+                            "pin",
                             "otp",
                             "sms"
                         ],
                         "default": null,
                         "pattern": "^(.*)$"
+                    },
+                    "sub_type": {
+                        "type": "string",
+                        "enum": [
+                            "upipin",
+                            "atmpin",
+                            "otp",
+                            "sms"
+                        ]
                     },
                     "set": {
                         "type": "boolean"

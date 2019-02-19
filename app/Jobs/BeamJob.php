@@ -56,13 +56,18 @@ class BeamJob extends Job
     protected $fileList;
 
     /**
+     * @var bool
+     */
+    protected $mock;
+
+    /**
      * BeamJob constructor.
      * Here, mailinfo requires [recipient,subject,body]
      * @param array $request
      * @param array $retryTimeLines
      * @param array $mailInfo
      */
-    public function __construct(array $request, array $retryTimeLines, array $mailInfo)
+    public function __construct(array $request, array $retryTimeLines, array $mailInfo, bool $mock)
     {
         parent::__construct();
 
@@ -71,6 +76,8 @@ class BeamJob extends Job
         $this->mailInfo       = $mailInfo;
 
         $this->retryTimeLines = $retryTimeLines;
+
+        $this->mock           = $mock;
     }
 
     /**
@@ -82,7 +89,10 @@ class BeamJob extends Job
         {
             parent::handle();
 
-            $this->handleRequest();
+            if ($this->mock === false)
+            {
+                $this->handleRequest();
+            }
 
             $this->checkRetryOrDelete();
 

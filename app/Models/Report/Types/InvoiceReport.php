@@ -10,7 +10,7 @@ use RZP\Exception;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Invoice;
 use RZP\Models\Pricing\Feature;
-use RZP\Models\Pricing\FeeCalculator;
+use RZP\Models\Pricing\Calculator;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeName;
 use RZP\Trace\TraceCode;
 
@@ -292,7 +292,7 @@ class InvoiceReport extends BaseReport
 
     protected function getTaxComponents(string $gstin = null): array
     {
-        return FeeCalculator::getTaxComponentsForMerchant($gstin, $this->merchant);
+        return Calculator\Base::getTaxComponentsForMerchant($gstin, $this->merchant);
     }
 
     protected function getInvoiceV2(array $input): array
@@ -315,7 +315,7 @@ class InvoiceReport extends BaseReport
             }
         }
 
-        if (FeeCalculator::isGstApplicable($from) === true)
+        if (Calculator\Base::isGstApplicable($from) === true)
         {
             $taxInfo = $this->getGstTaxes($fees);
         }
@@ -376,7 +376,7 @@ class InvoiceReport extends BaseReport
 
         $merchantBusinessStateCode = $this->merchant->getGstStateCode();
 
-        $intrastateGstApplicable = ($merchantBusinessStateCode === FeeCalculator::RZP_GST_STATE_CODE);
+        $intrastateGstApplicable = ($merchantBusinessStateCode === Calculator\Base::RZP_GST_STATE_CODE);
 
         // all 3 taxes might have been charged to merchant if merchant updated
         // their GSTN number later

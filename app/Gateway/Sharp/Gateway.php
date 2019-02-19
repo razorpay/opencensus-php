@@ -329,6 +329,14 @@ class Gateway extends Base\Gateway
             ];
         }
 
+        if (($input['payment']['method'] === Payment\Method::CARD) or
+            ($input['payment']['method'] === Payment\Method::EMI))
+        {
+            $acquirer = [
+                'reference2' => (string) random_integer(6)
+            ];
+        }
+
         return [
             'acquirer' => $acquirer
         ];
@@ -344,8 +352,7 @@ class Gateway extends Base\Gateway
         parent::refund($input);
 
         if ((isset($input['payment'][Payment\Entity::GATEWAY]) === true) and
-            (Payment\Gateway::isScroogeGatewayAndMerchant($input['payment'][Payment\Entity::GATEWAY],
-                                                          $input['payment'][Payment\Entity::MERCHANT_ID]) === true))
+            (Payment\Gateway::isScroogeGatewayAndMerchant($input['payment'][Payment\Entity::GATEWAY]) === true))
         {
             return $this->getScroogeResponse($input, 'refund');
         }
@@ -398,7 +405,7 @@ class Gateway extends Base\Gateway
 
     public function setMode($mode)
     {
-        assert ($mode === Mode::TEST);
+        assertTrue ($mode === Mode::TEST);
 
         parent::setMode($mode);
     }
@@ -489,8 +496,7 @@ class Gateway extends Base\Gateway
         parent::verify($input);
 
         if ((isset($input['payment'][Payment\Entity::GATEWAY]) === true) and
-            (Payment\Gateway::isScroogeGatewayAndMerchant($input['payment'][Payment\Entity::GATEWAY],
-                                                          $input['payment'][Payment\Entity::MERCHANT_ID]) === true))
+            (Payment\Gateway::isScroogeGatewayAndMerchant($input['payment'][Payment\Entity::GATEWAY]) === true))
         {
             return $this->getScroogeResponse($input, 'verify');
         }
@@ -498,7 +504,7 @@ class Gateway extends Base\Gateway
         return false;
     }
 
-    protected function getGatewayResponse(int $amount)
+    protected function getGatewayResponse(int $amount, int $attempts)
     {
         $response = [
             'amount'                => $amount,
@@ -535,7 +541,7 @@ class Gateway extends Base\Gateway
                 break;
 
              // Request failure
-            case (($amount === 7777) or ($amount === 9999)):
+            case ((($amount === 7777) or ($amount === 9999)) and ((int) $attempts === 0)):
                 $response['result']         = 'Request Timeout. Please try again.';
                 $response['status_code']    = ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT;
                 break;
@@ -556,7 +562,7 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
-    protected function getVerifyGatewayResponse(int $amount, int $amountRefunded)
+    protected function getVerifyGatewayResponse(int $amount, int $amountRefunded, int $attempts)
     {
         $response = [
             'amount'                => $amount,
@@ -567,9 +573,31 @@ class Gateway extends Base\Gateway
             'gateway_merchant_id'   => '10000000000000'
         ];
 
+        if (empty($amount) === true)
+        {
+            $response['result']         = 'Refund Failed';
+            $response['status_code']    = ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT;
+
+            return $response;
+        }
+
         switch ($amount)
         {
-            case ($amount === 8888):
+            // intermediate failure - no retry - waiting for recon
+            case ($amount === 1111):
+                $response['result']         = 'Gateway verify refund unexpected response';
+                $response['status_code']    = ErrorCode::GATEWAY_ERROR_UNEXPECTED_STATUS;
+
+                break;
+
+            // request failure
+            case ($amount === 2222):
+                $response['result']         = 'Request Timeout. Please try again.';
+                $response['status_code']    = ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT;
+
+                break;
+
+            case (($amount === 8888) and ((int) $attempts === 0) and ($amount === $amountRefunded)):
                 $response['result']         = 'Request Timeout. Please try again.';
                 $response['status_code']    = ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT;
 
@@ -621,12 +649,12 @@ class Gateway extends Base\Gateway
     {
         if ($action === 'refund')
         {
-            $gatewayResponse['gateway_response'] = $this->getGatewayResponse($input['refund']['amount']);
+            $gatewayResponse['gateway_response'] = $this->getGatewayResponse($input['refund']['amount'], $input['refund']['attempts']);
         }
         else
         {
             $gatewayResponse['gateway_verify_response'] = $this->getVerifyGatewayResponse($input['refund']['amount'],
-                                                                $input['payment']['amount_refunded']);
+                                                                $input['payment']['amount_refunded'], $input['refund']['attempts']);
         }
 
         if (($action === 'refund') and ($gatewayResponse['gateway_response']['status_code'] !== 'REFUND_SUCCESSFUL'))
@@ -639,7 +667,8 @@ class Gateway extends Base\Gateway
                     'gateway_keys'          => [
                         'gateway_refund_id'     => $gatewayResponse['gateway_response']['gateway_refund_id'],
                         'gateway_merchant_id'   => $gatewayResponse['gateway_response']['gateway_merchant_id']
-                    ]
+                    ],
+                    'refund_gateway'        => 'sharp',
                 ]);
         }
 
@@ -647,13 +676,15 @@ class Gateway extends Base\Gateway
                             $gatewayResponse['gateway_verify_response'] :
                             $gatewayResponse['gateway_response']);
 
+
         $response = [
             'gateway_response'          => json_encode($gatewayResponse['gateway_response'] ?? ''),
             'gateway_verify_response'   => json_encode($gatewayResponse['gateway_verify_response'] ?? ''),
             'gateway_keys'              => [
                     'gateway_refund_id'     => $gatewayResponseFinal['gateway_refund_id'],
                     'gateway_merchant_id'   => $gatewayResponseFinal['gateway_merchant_id']
-            ]
+            ],
+            'refund_gateway'            => 'sharp',
         ];
 
         if ($action === 'verify')

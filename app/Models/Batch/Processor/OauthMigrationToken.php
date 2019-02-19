@@ -70,11 +70,12 @@ class OauthMigrationToken extends Base
             // Getting the merchant here instead of later in the connect call as this
             // would act as a validation for the merchant_id input before even making
             // auth-service call for token.
-            $subMerchant = $this->repo->merchant->findOrFailPublic($entry[Header::MERCHANT_ID]);
+            $subMerchant = $this->repo->merchant->findOrFailPublic($tokenInput[Header::MERCHANT_ID]);
+            $entityOwner = $this->repo->merchant->findOrFailPublic($tokenInput[H::PARTNER_MERCHANT_ID]);
 
             $token = $this->createOAuthToken($tokenInput);
 
-            $this->connectMerchantToPartner($subMerchant);
+            $this->connectMerchantToPartner($entityOwner, $subMerchant);
 
             $this->assignS2SIfApplicable($entry);
 
@@ -144,11 +145,11 @@ class OauthMigrationToken extends Base
         }
     }
 
-    protected function connectMerchantToPartner(Merchant\Entity $subMerchant)
+    protected function connectMerchantToPartner(Merchant\Entity $entityOwner, Merchant\Entity $subMerchant)
     {
         $mapInput = [OAuthClient\Entity::APPLICATION_ID => $this->appId];
 
-        $this->accessMapCore->addMappingForOAuthApp($subMerchant, $mapInput);
+        $this->accessMapCore->addMappingForOAuthApp($entityOwner, $subMerchant, $mapInput);
     }
 
     protected function updateOutputData(array & $entry, array $token)

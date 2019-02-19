@@ -9,6 +9,7 @@ use RZP\Reconciliator\FileProcessor;
 class Reconciliate extends Base\Reconciliate
 {
     const SALE = 'sale';
+
     const ACCEPTED_SHEET_NAMES = [
         'Refund', 'REFUND', 'refund', 'Refunds', 'refunds', 'REFUNDS',
         'Sale', 'SALE', 'sale', 'Sales', 'sales', 'SALES',
@@ -16,9 +17,44 @@ class Reconciliate extends Base\Reconciliate
         'Visa Refund', 'Master Refund'
     ];
 
-    const START_ROW = 3;
+    //
+    // Note about START_ROW :
+    // As of now Axis MIS file data/header stars from 1st row (when filename starts with 'razorpayadd')
+    // or 3rd row (when filename is razorpay.xlsx).
+    //
+    const KEY_COLUMN_NAMES = [
+        //
+        // In Axis MIS file, the headers are exactly
+        // same for payment and refund sheets.
+        //
+        // Keeping two columns here so that even if one column is absent
+        // in MIS file (in future), we will still be able to identify
+        // the header with the other column name.
+        //
+        // Note : In Axis Migs, We are not using the corresponding value
+        // 'combined' anywhere (it is just dummy).
+        //
+        'merchant_trans_ref'    =>  self::COMBINED,
+        'arn'                   =>  self::COMBINED,
+    ];
 
-    const XLSX_START_ROW = 2;
+    /*
+     * In Axis recon file, where we used to set start_row as 3 earlier,
+     * we faced the following issue.
+     *
+     * While taking rows in chunk from excel file, the chunk would take
+     * rows starting from 3rd row.This is desired for the first chunk.
+     * But as a side effect, this was happening for 2nd chunk onwards
+     * as well and after every chunk we were missing out 2 rows (unprocessed).
+     * So now we want to avoid giving start_row due to this issue and thus
+     * will use key_column names to get the header.
+     *
+     * default start row = 1 will be used.
+     */
+    public function getKeyColumnNames(array $fileDetails = [])
+    {
+        return self::KEY_COLUMN_NAMES;
+    }
 
     /**
      * Figures out what kind of reconciliation is it
@@ -86,25 +122,5 @@ class Reconciliate extends Base\Reconciliate
             default:
                 return 'RAZORPAYADD';
         }
-    }
-
-    public function getStartRow($fileDetails)
-    {
-        //
-        // We get two different types of files from Axis. For one of the files,
-        // the start row is different from `1`.
-        //
-        if (($fileDetails[FileProcessor::EXTENSION] === Format::XLS) and
-            (strpos($fileDetails[FileProcessor::FILE_NAME], 'razorpayadd') === false))
-        {
-            return self::START_ROW;
-        }
-        else if (($fileDetails[FileProcessor::EXTENSION] === Format::XLSX) and
-                 ($fileDetails[FileProcessor::FILE_NAME] === 'razorpay.xlsx'))
-        {
-            return self::XLSX_START_ROW;
-        }
-
-        return Base\Reconciliate::DEFAULT_START_ROW;
     }
 }

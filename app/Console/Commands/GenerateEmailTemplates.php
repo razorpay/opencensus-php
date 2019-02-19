@@ -39,7 +39,7 @@ class GenerateEmailTemplates extends Command
         // This is a map of templates and the rendered file names
         // Keep this list sorted
         $templates = [
-            'emails/merchant/activation',
+            'emails/merchant/activation_heimdall',
             'emails/merchant/authorized_reminder',
             'emails/merchant/bankaccount_change',
             'emails/merchant/bankaccount_change_request',

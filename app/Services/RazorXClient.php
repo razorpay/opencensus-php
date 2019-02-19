@@ -8,22 +8,31 @@ use RZP\Trace\TraceCode;
 
 class RazorXClient
 {
-    const REQUEST_TIMEOUT = 1; // In seconds
+    const REQUEST_TIMEOUT   = 1; // In seconds
 
-    const EVALUATE_URI    = 'evaluate';
+    const EVALUATE_URI      = 'evaluate';
 
     // Params required for evaluator API
-    const ID              = 'id';
-    const FEATURE_FLAG    = 'feature_flag';
-    const ENVIRONMENT     = 'environment';
-    const MODE            = 'mode';
+    const ID                = 'id';
+    const FEATURE_FLAG      = 'feature_flag';
+    const ENVIRONMENT       = 'environment';
+    const MODE              = 'mode';
+
+    /**
+     * The cookie of razorx contains the variants that are fetched. Now, if we
+     * want microservices to run on the same variant, we can send a cookie with the
+     * variants. And if the same RazorXClient is used in the microservice, the
+     * the variant will be picked up from the cookie. Razorx cookie will be mapped
+     * to a json which can contain multiple variants.
+     */
+    const RAZORX_COOKIE_KEY = 'razorx';
 
     /**
      * The default case to be returned so that the old flow is taken
      * when the featureFlag is not to be applied to merchant or the
      * response from RazorX server is not return for some reason
      */
-    const DEFAULT_CASE    = 'control';
+    const DEFAULT_CASE      = 'control';
 
     protected $baseUrl;
 
@@ -43,11 +52,16 @@ class RazorXClient
 
     /**
      * @var string
-     *
-     * Value used for subsequent calls in the same request
-     * to avoid cookie processing or calling RazorX service again
+     * localUniqueId will be a combination of the id, feature_flag and the mode.
      */
-    protected $variant;
+    protected $localUniqueId;
+
+    /**
+     * It will map the localUniqueId to a treatment. So, in the same request
+     * we will store the treatment against the localUniqueId. So for further request
+     * for exactly same razorx request, we return from the stored value.
+     */
+    protected $localUniqueIdToTreatment = [];
 
     public function __construct($app)
     {
@@ -59,30 +73,65 @@ class RazorXClient
         $this->env     = $app['env'];
     }
 
-    public function getTreatment(string $id, string $featureFlag, string $mode, array $input = null): string
+    public function getTreatment(string $id, string $featureFlag, string $mode): string
     {
-        $variant = $this->getVariant();
+        $this->localUniqueId = self::getLocalUniqueId($id, $featureFlag, $mode);
 
-        if (empty($variant) === false)
+        $storedVariant = $this->getStoredVariant();
+        
+        if ($storedVariant !== null)
         {
-            return $variant;
+            return $storedVariant;
         }
 
-        $this->getVariantFromCookieIfSet($id, $featureFlag, $mode);
+        $this->setVariantFromCookie($id, $featureFlag, $mode);
 
-        $variant = $this->getVariant();
-
-        if (empty($variant) === false)
+        $storedVariant = $this->getStoredVariant();
+        
+        if ($storedVariant !== null)
         {
-            return $variant;
+            return $storedVariant;
         }
 
-        $this->callRazorXService($id, $featureFlag, $mode, $input);
-
-        return $this->getVariant();
+        return $this->getVariantFromRazorXService($id, $featureFlag, $mode);
     }
 
-    protected function callRazorXService(string $id, string $featureFlag, string $mode, array $input = null)
+    /**
+     * Razorx cookie will be mapped to a json which can contain multiple variants.
+     * Within the json, the string returned from this method should be used to store
+     * the variant.
+    */
+    public static function getLocalUniqueId(string $id, string $featureFlag, string $mode): string
+    {
+        $localUniqueId = 'I:' . $id . '_F:' . $featureFlag . '_M:' . $mode;
+        return $localUniqueId;
+    }
+
+    /**
+     * Razorx cookie will be mapped to a json which can contain multiple variants.
+     * This is a helper method to construct that json string.
+     * Recommended: Construct localUniqueId using the helper function.
+     */
+    public static function appendVariantToCurrRazorxCookieValue(string $localUniqueId, string $variant, string $currRazorxCookieValue = null): string
+    {
+        if ($currRazorxCookieValue === null)
+        {
+            $currRazorxCookieValue = '{}';
+        }
+
+        $currCookieArr = json_decode($currRazorxCookieValue, true);
+
+        if (is_null($currCookieArr))
+        {
+            return '';
+        }
+
+        $currCookieArr[$localUniqueId] = $variant;
+
+        return json_encode($currCookieArr);
+    }
+
+    protected function getVariantFromRazorXService(string $id, string $featureFlag, string $mode)
     {
         $data = [
             self::ID           => $id,
@@ -90,46 +139,30 @@ class RazorXClient
             self::ENVIRONMENT  => $this->env,
             self::MODE         => $mode
         ];
-
-        if ($input !== null)
-        {
-            $data = array_merge($data, $input);
-        }
-
+        
         $variant = $this->sendRequest(self::EVALUATE_URI, Requests::GET, $data);
 
-        $this->setVariant($variant);
+        $this->storeVariant($variant);
+
+        return $variant;
     }
 
-    protected function getVariantFromCookieIfSet(string $id, string $featureFlag, string $mode)
+    protected function setVariantFromCookie(string $id, string $featureFlag, string $mode)
     {
-        // Check in the cookie first, in case the request is coming from a browser.
-        $variantKey = 'razorx';
-
-        $variant = Request::cookie($variantKey);
+        $variant = Request::cookie(self::RAZORX_COOKIE_KEY);
 
         // Check headers if not found in cookie.
         if (empty($variant) === false)
         {
             $variantArray = json_decode($variant, true);
 
-            $variantResult = $variantArray[$featureFlag] ?? null;
+            $variantResult = $variantArray[$this->localUniqueId] ?? null;
 
             if (empty($variantResult) === false)
             {
-                $this->setVariant($variantResult);
+                $this->storeVariant($variantResult);
             }
         }
-    }
-
-    protected function getVariant()
-    {
-        return $this->variant;
-    }
-
-    protected function setVariant(string $variant)
-    {
-        $this->variant = $variant;
     }
 
     protected function sendRequest(
@@ -217,5 +250,20 @@ class RazorXClient
         unset($request['options']['auth']);
 
         $this->trace->info(TraceCode::RAZORX_REQUEST, $request);
+    }
+
+    protected function storeVariant($variant)
+    {
+        $this->localUniqueIdToTreatment[$this->localUniqueId] = $variant;
+    }
+
+    protected function getStoredVariant()
+    {
+        if (array_key_exists($this->localUniqueId, $this->localUniqueIdToTreatment) === true)
+        {
+            return $this->localUniqueIdToTreatment[$this->localUniqueId];
+        }
+
+        return null;
     }
 }

@@ -5,8 +5,10 @@ namespace RZP\Tests\Functional\Helpers\Subscription;
 use Mockery;
 use Closure;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
+
 use RZP\Exception;
+use RZP\Constants\Timezone;
+use RZP\Exception\RuntimeException;
 
 trait SubscriptionTrait
 {
@@ -299,7 +301,7 @@ trait SubscriptionTrait
     {
         $this->mockServerContentFunction(function($input, $action)
         {
-            throw new \SoapFault('HTTP', 'Random SoapFault Exception');
+            throw new RuntimeException('Error occured while sending request to Gateway');
         });
     }
 
@@ -307,7 +309,7 @@ trait SubscriptionTrait
     {
         $this->mockServerContentFunction(function($input, $action)
         {
-            if ($action === 'validate_capture')
+            if ($action === 'capture')
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Invalid Capture');
@@ -615,5 +617,34 @@ trait SubscriptionTrait
         $data = [ 'test_app_token' => $appToken ];
 
         $this->session($data);
+    }
+
+    protected function callViewUrlAndMakeAssertions(
+        string $id,
+        int $code = 200,
+        string $errorMessage = null,
+        string $additionalCheck = null)
+    {
+        $this->ba->publicAuth();
+
+        $response = $this->call('GET', "/v1/t/subscriptions/$id", ['key_id' => $this->ba->getKey()]);
+
+        $response->assertStatus($code);
+
+        if (empty($errorMessage) === false)
+        {
+            $this->assertContains($errorMessage, $response->getContent());
+        }
+        else
+        {
+            $this->assertNotContains('<h2>Error</h2>', $response->getContent());
+
+            $this->assertContains($id, $response->getContent());
+        }
+
+        if ($additionalCheck !== null)
+        {
+            $this->assertContains($additionalCheck, $response->getContent());
+        }
     }
 }

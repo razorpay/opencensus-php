@@ -28,9 +28,12 @@ class Core extends Base\Core
                 'Webhook already created.');
         }
 
-        $webhook = (new Entity)->build($input);
+        $webhook = new Entity;
 
+        // Association must happen before build() because the same is used in validations.
         $webhook->merchant()->associate($merchant);
+
+        $webhook->build($input);
 
         $this->repo->saveOrFail($webhook);
 
@@ -50,9 +53,7 @@ class Core extends Base\Core
 
     public function fetchApplicableWebhookEvents(Merchant\Entity $merchant)
     {
-        return array_keys(Event::filterByFeatures(
-                                    array_flip(Event::getLaunchedEventNames()),
-                                    $merchant->getEnabledFeatures()));
+        return array_keys(Event::filterForPublicApi($merchant));
     }
 
     public function getWebhooks(Merchant\Entity $merchant)
@@ -98,6 +99,7 @@ class Core extends Base\Core
         $data = [
             'mode'       => $this->app['rzp.mode'],
             'event'      => json_encode($event->toArrayPublic()),
+            'event_name' => $event,
             'webhook_id' => $webhook->getId()
         ];
 

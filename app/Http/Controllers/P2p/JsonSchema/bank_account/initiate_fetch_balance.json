@@ -10,8 +10,10 @@
     "properties": {
         "cl": {
             "type": "object",
+            "additionalProperties": false,
             "required": [
                 "account",
+                "registration_format",
                 "mobileNumber",
                 "appId",
                 "deviceId",
@@ -22,6 +24,16 @@
             "properties": {
                 "account": {
                     "type": "string",
+                    "pattern": "^(.*)$"
+                },
+                "registration_format": {
+                    "type": "string",
+                    "enum": [
+                        "FORMAT1",
+                        "FORMAT2",
+                        "FORMAT3"
+                    ],
+                    "default": null,
                     "pattern": "^(.*)$"
                 },
                 "mobileNumber": {
@@ -38,10 +50,6 @@
                 },
                 "note": {
                     "type": "string",
-                    "enum": [
-                        "Balance enquiry"
-                    ],
-                    "default": null,
                     "pattern": "^(.*)$"
                 },
                 "txnId": {
@@ -56,7 +64,7 @@
                             "type",
                             "subtype",
                             "dLength",
-                            "dType"
+                            "dFormat"
                         ],
                         "properties": {
                             "type": {
@@ -71,7 +79,7 @@
                                 "type": "integer",
                                 "pattern": "^(.*)$"
                             },
-                            "dType": {
+                            "dFormat": {
                                 "type": "string",
                                 "pattern": "^(.*)$"
                             }

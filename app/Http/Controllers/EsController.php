@@ -4,11 +4,13 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use Illuminate\Support\Facades\Artisan;
 
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Services\EsClient;
 use RZP\Models\Base\EsDao;
+use RZP\Base\RuntimeManager;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 
@@ -96,6 +98,56 @@ class EsController extends Controller
         return ApiResponse::json($res);
     }
 
+    /**
+     * Creates index with set mappings for the entity. Equivalent of cli `php artisan rzp:index_create`.
+     *
+     * Request parameters -
+     * - mode         : Application mode (test|live)
+     * - entity       : Entity name (e.g. item|merchant)
+     * - index_prefix : ES index prefix (e.g. 20171201_beta_api_)
+     * - type_prefix  : ES type prefix (e.g. beta_api_)
+     * - --pretend    : Whether to run the command in pretend mode?
+     * - --reindex    : Whether to delete existing index?
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function postIndexCreate()
+    {
+        $this->trace->info(TraceCode::ES_INDEX_CREATE_REQUEST, $this->getTracePayload());
+
+        $this->increaseAllowedSystemLimits();
+
+        Artisan::call('rzp:index_create', Request::all());
+
+        return [];
+    }
+
+    /**
+     * Indexes entity into es for search purposes.. Equivalent of cli `php artisan rzp:index`.
+     *
+     * Request parameters -
+     * mode           : Database & application mode the command will run in (test|live)
+     * entity         : Entity name (eg. item|merchant)
+     * --slave        : Whether to use slave or master db connection? (0|1) [default: "0"]
+     * --index_prefix : ES new index prefix (eg. 20171201_beta_api_)
+     * --skip         : Skip offset (eg. skip first 100 rows) [default: "0"]
+     * --take         : Take count (eg. 1000 at a time) [default: "5000"]
+     * --start_at     : Start value(epoch) for time range query
+     * --end_at       : End value(epoch) for time range query
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function postIndex()
+    {
+        $this->trace->info(TraceCode::ES_INDEX_REQUEST, $this->getTracePayload());
+
+        $this->increaseAllowedSystemLimits();
+
+        Artisan::call('rzp:index', Request::all());
+
+        return [];
+    }
+
     // -------------------- Write endpoint ends -------------------------------
 
     // -------------------- Protected methods starts --------------------------
@@ -131,6 +183,12 @@ class EsController extends Controller
         ];
 
         return $data + $with;
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setTimeLimit(3600);
     }
 
     // -------------------- Protected methods ends ----------------------------

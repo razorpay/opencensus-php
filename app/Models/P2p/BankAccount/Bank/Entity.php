@@ -13,10 +13,12 @@ class Entity extends Base\Entity
     const ACTIVE           = 'active';
     const SPOC             = 'spoc';
 
+    const UPI              = 'upi';
+
     /************** Entity Properties ************/
 
     protected $entity             = 'p2p_bank';
-    protected static $sign        = 'bank';
+    protected $primaryKey         = self::IFSC;
     protected $generateIdOnCreate = false;
     protected static $generators  = [];
 
@@ -47,14 +49,11 @@ class Entity extends Base\Entity
     ];
 
     protected $public = [
+        Entity::ENTITY,
         Entity::IFSC,
         Entity::NAME,
-        Entity::UPI_IIN,
-        Entity::UPI_FORMAT,
+        Entity::UPI,
         Entity::ACTIVE,
-        Entity::SPOC,
-        Entity::REFRESHED_AT,
-        Entity::CREATED_AT,
     ];
 
     protected $defaults = [
@@ -77,6 +76,18 @@ class Entity extends Base\Entity
         Entity::CREATED_AT       => 'int',
         Entity::UPDATED_AT       => 'int',
     ];
+
+    protected $publicSetters = [
+        Entity::UPI,
+        Entity::ENTITY,
+    ];
+
+    /***************** SETTERS *****************/
+
+    public static function verifyUniqueId($id, $throw = true)
+    {
+        return false;
+    }
 
     /***************** SETTERS *****************/
 
@@ -176,5 +187,12 @@ class Entity extends Base\Entity
     public function getSpoc()
     {
         return $this->getAttribute(self::SPOC);
+    }
+
+    /***************** MUTATORS *****************/
+
+    public function setPublicUpiAttribute(array & $array)
+    {
+        $array[self::UPI] = true;
     }
 }

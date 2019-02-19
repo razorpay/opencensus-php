@@ -11,10 +11,12 @@ class Filter
     const PAYMENTS_FAILED   = 'payments_failed';
     const VERIFY_ERROR      = 'verify_error';
     const VERIFY_FAILED     = 'verify_failed';
+    const PAYMENTS_CAPTURED = 'payments_captured';
 
     protected static $validFilter = [
         self::PAYMENTS_CREATED,
         self::PAYMENTS_FAILED,
+        self::PAYMENTS_CAPTURED,
         self::VERIFY_ERROR,
         self::VERIFY_FAILED
     ];

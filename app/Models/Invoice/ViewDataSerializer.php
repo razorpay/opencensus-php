@@ -14,8 +14,10 @@ use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Checkout;
+use RZP\Models\Merchant\Preferences;
 use RZP\Exception\BadRequestException;
 use RZP\Models\SubscriptionRegistration;
+
 /**
  * This class is common source of invoice and related data to be sent
  * - to mail templates as payload
@@ -76,6 +78,7 @@ class ViewDataSerializer extends Base\Core
             'key_id'        => $this->getMerchantKeyId(),
             'merchant'      => $this->serializeMerchantForHosted(),
             'invoice'       => $this->serializeInvoiceForHosted(),
+            'custom_labels' => $this->getCustomLabelValues(),
         ];
     }
 
@@ -86,6 +89,42 @@ class ViewDataSerializer extends Base\Core
         $this->addAdditionalAttributesForInternal($serialized);
 
         return $serialized;
+    }
+
+    /**
+     * Get custom view label values, if defined for the merchant
+     * @return array
+     */
+    protected function getCustomLabelValues(): array
+    {
+        $merchantId = $this->merchant->getId();
+
+        $customLabels = [];
+
+        switch ($merchantId)
+        {
+            case Preferences::MID_RBLCARD:
+            case Preferences::MID_AMIT_RBLCARD:
+
+                $customLabels = [
+                    'receipt_number'           => 'Credit Card Number',
+                    'first_payment_min_amount' => 'Minimum Amount Due',
+                ];
+
+                break;
+
+            case Preferences::MID_RBLLOAN:
+            case Preferences::MID_AMIT_RBLLOAN:
+
+                $customLabels = [
+                    'receipt_number'           => 'Loan Account Number',
+                    'first_payment_min_amount' => 'EMI Amount',
+                ];
+
+                break;
+        }
+
+        return $customLabels;
     }
 
     /**

@@ -8,6 +8,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Batch;
 use RZP\Models\Invoice;
+use RZP\Models\Feature;
 use RZP\Encryption\Type;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -285,10 +286,20 @@ class Base extends BaseModel\Core
 
     protected function saveSettings(array $input)
     {
-        if (isset($input[Batch\Entity::CONFIG]) === true)
-        {
-            $config = $input[Batch\Entity::CONFIG];
+        $config = $input[Batch\Entity::CONFIG] ?? [];
 
+        // Temporary: For payout type batch captures user email to be used later to send processed file to.
+        if ($this->batch->isPayoutType() === true)
+        {
+            $user = $this->app->basicauth->getUser();
+            $config['user'] = [
+                'name'  => $user->getName(),
+                'email' => $user->getEmail(),
+            ];
+        }
+
+        if (empty($config) === false)
+        {
             $this->settingsAccessor->upsert($config)->save();
         }
     }
@@ -619,6 +630,13 @@ class Base extends BaseModel\Core
         $formatted = [];
         $headers   = $this->getOutputFileHeadings();
 
+        // Todo: temp
+        if (($this->batch->getType() === Batch\Type::PAYMENT_LINK) and
+            ($this->merchant->isFeatureEnabled(Feature\Constants::PL_FIRST_MIN_AMOUNT) === true))
+        {
+            $headers[] = Batch\Header::FIRST_PAYMENT_MIN_AMOUNT;
+        }
+
         foreach ($entries as $entry)
         {
             // Prepares each entry rows
@@ -628,7 +646,10 @@ class Base extends BaseModel\Core
                 if (array_key_exists($header, $entry) === false)
                 {
                     // Optional fields if not sent, shouldn't be in output file as well
-                    if ($header !== Batch\Header::NOTES)
+                    if (in_array(
+                            $header,
+                            [Batch\Header::NOTES, Batch\Header::FIRST_PAYMENT_MIN_AMOUNT],
+                            true) === false)
                     {
                         $dict[$header] = null;
                     }
@@ -711,7 +732,8 @@ class Base extends BaseModel\Core
         $mail = new $mailerClass(
                         $this->batch->toArray(),
                         $this->merchant->toArray(),
-                        $this->outputFileLocalPath);
+                        $this->outputFileLocalPath,
+                        $this->settingsAccessor->all()->toArray());
 
         Mail::send($mail);
     }
@@ -885,7 +907,7 @@ class Base extends BaseModel\Core
             foreach ($entry as $key => $value)
             {
                 // Excel: Empty trailing columns comes as sequentially indexed key and null values
-                if (($key === $index++) and ($value === null))
+                if ((($key === $index++) or ($key === '')) and ($value === null))
                 {
                     unset($entry[$key]);
                 }
@@ -1068,7 +1090,7 @@ class Base extends BaseModel\Core
     protected function parseFirstRowAndGetHeadings(array & $rows, string $delimiter)
     {
         $headings = $this->getHeadings();
-        $firstRow = explode($delimiter, current($rows));
+        $firstRow = str_getcsv(current($rows), $delimiter);
         $diff     = array_values(array_diff($headings, $firstRow));
 
         //

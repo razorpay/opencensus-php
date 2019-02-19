@@ -15,6 +15,7 @@ use RZP\Models\Item;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Address;
+use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\FileStore;
 use RZP\Http\BasicAuth\BasicAuth;
@@ -25,6 +26,8 @@ use RZP\Models\SubscriptionRegistration;
 
 /**
  * @property Subscription\Entity $subscription
+ * @property Order\Entity        $order
+ * @property Merchant\Entity     $merchant
  */
 class Entity extends Base\PublicEntity
 {
@@ -97,6 +100,8 @@ class Entity extends Base\PublicEntity
     const TAX_AMOUNT               = 'tax_amount';
     const TAXABLE_AMOUNT           = 'taxable_amount';
     const AMOUNT                   = 'amount';
+
+    const FIRST_PAYMENT_MIN_AMOUNT = 'first_payment_min_amount';
 
     /**
      * Following two attributes are looked up from corresponding
@@ -252,6 +257,7 @@ class Entity extends Base\PublicEntity
         self::TYPE                      => Type::INVOICE,
         self::USER_ID                   => null,
         self::PARTIAL_PAYMENT           => false,
+        self::FIRST_PAYMENT_MIN_AMOUNT  => null,
         self::GROSS_AMOUNT              => null,
         self::TAX_AMOUNT                => null,
         self::AMOUNT                    => null,
@@ -284,6 +290,7 @@ class Entity extends Base\PublicEntity
         self::DATE,
         self::TERMS,
         self::PARTIAL_PAYMENT,
+        self::FIRST_PAYMENT_MIN_AMOUNT,
         self::AMOUNT,
         self::DESCRIPTION,
         self::NOTES,
@@ -345,6 +352,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::AMOUNT_PAID,
         self::AMOUNT_DUE,
+        self::FIRST_PAYMENT_MIN_AMOUNT,
         self::BILLING_START,
         self::BILLING_END,
         self::GROSS_AMOUNT,
@@ -386,6 +394,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::AMOUNT_PAID,
         self::AMOUNT_DUE,
+        self::FIRST_PAYMENT_MIN_AMOUNT,
         self::CURRENCY,
         self::DESCRIPTION,
         self::NOTES,
@@ -432,6 +441,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::AMOUNT_PAID,
         self::AMOUNT_DUE,
+        self::FIRST_PAYMENT_MIN_AMOUNT,
         self::CURRENCY,
         self::DESCRIPTION,
         self::COMMENT,
@@ -462,33 +472,34 @@ class Entity extends Base\PublicEntity
         self::SUBSCRIPTION_ID,
         self::SUBSCRIPTION_STATUS,
         self::SUPPLY_STATE_CODE,
+        self::USER_ID,
+        self::FIRST_PAYMENT_MIN_AMOUNT,
     ];
 
     protected $casts = [
-        self::VIEW_LESS             => 'bool',
-        self::PARTIAL_PAYMENT       => 'bool',
-        self::GROSS_AMOUNT          => 'int',
-        self::TAX_AMOUNT            => 'int',
-        self::TAXABLE_AMOUNT        => 'int',
-        self::AMOUNT                => 'int',
-        self::AMOUNT_PAID           => 'int',
-        self::AMOUNT_DUE            => 'int',
-        self::BILLING_START         => 'int',
-        self::BILLING_END           => 'int',
-        self::GROUP_TAXES_DISCOUNTS => 'bool',
+        self::VIEW_LESS                => 'bool',
+        self::PARTIAL_PAYMENT          => 'bool',
+        self::GROSS_AMOUNT             => 'int',
+        self::TAX_AMOUNT               => 'int',
+        self::TAXABLE_AMOUNT           => 'int',
+        self::AMOUNT                   => 'int',
+        self::AMOUNT_PAID              => 'int',
+        self::AMOUNT_DUE               => 'int',
+        self::FIRST_PAYMENT_MIN_AMOUNT => 'int',
+        self::BILLING_START            => 'int',
+        self::BILLING_END              => 'int',
+        self::GROUP_TAXES_DISCOUNTS    => 'bool',
     ];
 
     protected $amounts = [
         self::AMOUNT,
         self::AMOUNT_PAID,
         self::AMOUNT_DUE,
+        self::FIRST_PAYMENT_MIN_AMOUNT,
     ];
 
     /**
-     * Reports currently works for type:link only.
-     *
-     * @todo: Plan and spit link, invoices.
-     *
+     * Note: Reports currently works for type:link only.
      * @var array
      */
     protected $hiddenInReport = [
@@ -507,6 +518,7 @@ class Entity extends Base\PublicEntity
         self::BILLING_END,
         self::TYPE,
         self::GROUP_TAXES_DISCOUNTS,
+        self::FIRST_PAYMENT_MIN_AMOUNT,
     ];
 
     protected $dates = [
@@ -652,6 +664,11 @@ class Entity extends Base\PublicEntity
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
+    }
+
+    public function getFirstPaymentMinAmount()
+    {
+        return $this->getAttribute(self::FIRST_PAYMENT_MIN_AMOUNT);
     }
 
     public function getUserId()
@@ -1116,6 +1133,11 @@ class Entity extends Base\PublicEntity
         $this->setStatus($newStatus);
     }
 
+    public function setFirstPaymentMinAmount(int $amount = null)
+    {
+        return $this->setAttribute(self::FIRST_PAYMENT_MIN_AMOUNT, $amount);
+    }
+
     // -------------------------------------- End Setters ------------
 
     // -------------------------------------- Accessors --------------
@@ -1297,6 +1319,24 @@ class Entity extends Base\PublicEntity
      * TODO: Move to entity serializer
      * @param array $array
      */
+    public function setPublicFirstPaymentMinAmountAttribute(array & $array)
+    {
+        $app = App::getFacadeRoot();
+
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = $app['basicauth'];
+
+        // Unset the attribute, only on strictly private auth
+        if ($basicAuth->isStrictPrivateAuth() === true)
+        {
+            unset($array[self::FIRST_PAYMENT_MIN_AMOUNT]);
+        }
+    }
+
+    /**
+     * TODO: Move to entity serializer
+     * @param array $array
+     */
     public function setPublicSupplyStateCodeAttribute(array & $array)
     {
         $app = App::getFacadeRoot();
@@ -1308,6 +1348,17 @@ class Entity extends Base\PublicEntity
         if ($basicAuth->isStrictPrivateAuth() === true)
         {
             unset($array[self::SUPPLY_STATE_CODE]);
+        }
+    }
+
+    public function setPublicUserIdAttribute(array & $array)
+    {
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        if ($basicAuth->isStrictPrivateAuth() === true)
+        {
+            unset($array[self::USER_ID]);
         }
     }
 
@@ -1331,9 +1382,8 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::EMAIL_STATUS, NotifyStatus::PENDING);
 
-        // Should not use `empty` because the value can be 0
         if ((isset($input[self::EMAIL_NOTIFY]) === true) and
-            ($input[self::EMAIL_NOTIFY] === '0'))
+            (boolval($input[self::EMAIL_NOTIFY]) === false))
         {
             $this->setAttribute(self::EMAIL_STATUS, null);
         }
@@ -1343,9 +1393,8 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::SMS_STATUS, NotifyStatus::PENDING);
 
-        // Should not use `empty` because the value can be 0
         if ((isset($input[self::SMS_NOTIFY]) === true) and
-            ($input[self::SMS_NOTIFY] === '0'))
+            (boolval($input[self::SMS_NOTIFY]) === false))
         {
             $this->setAttribute(self::SMS_STATUS, null);
         }
@@ -1392,7 +1441,7 @@ class Entity extends Base\PublicEntity
      */
     public function generateStatus(array $input)
     {
-        if (isset($input[self::DRAFT]) and ($input[self::DRAFT] === '1'))
+        if (isset($input[self::DRAFT]) and (boolval($input[self::DRAFT]) === true))
         {
             $this->setStatus(Status::DRAFT);
         }

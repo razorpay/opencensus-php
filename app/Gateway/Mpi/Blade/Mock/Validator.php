@@ -9,6 +9,6 @@ class Validator extends Base\Validator
     protected static $authenticateRules = [
         'PaReq'                                => 'required|string',
         'MD'                                   => 'present|string|size:14',
-        'TermUrl'                              => 'required|url'
+        'TermUrl'                              => 'sometimes|url'
     ];
 }

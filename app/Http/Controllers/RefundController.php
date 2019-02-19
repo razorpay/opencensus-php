@@ -162,11 +162,11 @@ class RefundController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function markRefundProcessed(string $id)
+    public function updateScroogeRefundStatus(string $id)
     {
         $input = Request::all();
 
-        $data = $this->service()->markRefundProcessed($id, $input);
+        $data = $this->service()->updateScroogeRefundStatus($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -182,7 +182,9 @@ class RefundController extends Controller
 
     public function postGatewayVerifyRefundCall(string $id)
     {
-        $response = $this->service()->makeGatewayVerifyRefundCall($id);
+        $input = Request::all();
+
+        $response = $this->service()->makeGatewayVerifyRefundCall($id, $input);
 
         return ApiResponse::json($response);
     }
@@ -190,6 +192,15 @@ class RefundController extends Controller
     public function scroogeRefundCreate(string $id)
     {
         $response = $this->service()->createScroogeRefund($id);
+
+        return ApiResponse::json($response);
+    }
+
+    public function scroogeRefundCreateBulk()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createScroogeRefundBulk($input);
 
         return ApiResponse::json($response);
     }
@@ -226,6 +237,33 @@ class RefundController extends Controller
         $input = Request::all();
 
         $data = $this->service()->updateProcessedAt($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function backfillUpiMindgateReference1()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->backfillUpiMindgateReference1($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function bulkUpdateRefundsReference1()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->bulkUpdateRefundsReference1($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function scroogeRefundVerifyBulk()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->verifyScroogeRefundsBulk($input);
 
         return ApiResponse::json($data);
     }

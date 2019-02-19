@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\HDFC\SubReconciliator;
 
 use RZP\Constants\Entity;
+use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Base\PublicEntity;
@@ -19,6 +20,7 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     const COLUMN_GATEWAY_TRANSACTION_ID     = 'tran_id';
 
     const COLUMN_TERMINAL_NUMBER    = 'terminal_number';
+    const COLUMN_CARD_TRIVIA        = 'card_type';
 
     /**
      * If we are not able to find refund id to reconcile,
@@ -43,6 +45,10 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         if ($this->isCybersource($row) === true)
         {
             $refundId = $this->getRefundIdForCybersource($row);
+        }
+        else if ($this->isBharatQrIsg($row))
+        {
+            $refundId = $this->getRefundIdForIsg($row);
         }
         else
         {
@@ -72,6 +78,16 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     }
 
     protected function getRefundIdForCybersource(array $row)
+    {
+        //
+        // Currently, the way to get refundId for a Cybersource
+        // refund is the same as for FSS refund. Keeping two
+        // different functions for clarity sake and easy reading.
+        //
+        return $this->getRefundIdForFss($row);
+    }
+
+    protected function getRefundIdForIsg(array $row)
     {
         //
         // Currently, the way to get refundId for a Cybersource
@@ -138,7 +154,7 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
             $refundAmount = $row[self::COLUMN_REFUND_AMOUNT];
         }
 
-        return floatval($refundAmount) * 100;
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($refundAmount);
     }
 
     protected function getGatewayRefund(string $refundId)
@@ -159,6 +175,11 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         if ($this->refund->getGateway() === Gateway::CYBERSOURCE)
         {
             $gatewayEntities = $this->repo->cybersource->findSuccessfulRefundByRefundId($refundId);
+        }
+
+        if ($this->refund->getGateway() === Gateway::ISG)
+        {
+            $gatewayEntities = $this->repo->isg->findSuccessfulRefundByRefundId($refundId);
         }
 
         if ($gatewayEntities->count() === 0)
@@ -277,5 +298,70 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         }
 
         return $rrn;
+    }
+
+    protected function isBharatQrIsg(array $row)
+    {
+        if ((isset($row[self::COLUMN_CARD_TRIVIA]) === true) and
+            ($row[self::COLUMN_CARD_TRIVIA] === Reconciliate::BHARAT_QR_TYPE))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function validateRefundAmountEqualsReconAmount(array $row)
+    {
+        if ($this->refund->getBaseAmount() !== $this->getReconRefundAmount($row))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
+                    'info_code'         => Base\InfoCode::AMOUNT_MISMATCH,
+                    'refund_id'         => $this->refund->getId(),
+                    'expected_amount'   => $this->refund->getBaseAmount(),
+                    'recon_amount'      => $this->getReconRefundAmount($row),
+                    'currency'          => $this->refund->getCurrency(),
+                    'gateway'           => $this->gateway
+                ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /*
+     * This method needs to be handled specifically for Isg gateway, so needs to be overridden
+     */
+    protected function setGatewayTransactionId(string $gatewayTransactionId, PublicEntity $gatewayRefund)
+    {
+        $dbGatewayTransactionId = (string) $gatewayRefund->getGatewayTransactionId();
+
+        $gateway = $this->payment->getGateway();
+
+        // for Isg gateway we do not receive bank reference number in the case of refunds. So we will persist
+        // the bank_ref_no in the recon flow. So preventing alert from being raised for isg refunds
+        if ((empty($dbGatewayTransactionId) === false) and
+            ($dbGatewayTransactionId !== $gatewayTransactionId) and
+            ($gateway !== Entity::ISG))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'                => TraceCode::RECON_MISMATCH,
+                    'info_code'                 => Base\InfoCode::DATA_MISMATCH,
+                    'message'                   => 'Reference number in db is not same as in recon',
+                    'refund_id'                 => $this->refund->getId(),
+                    'payment_id'                => $this->payment->getId(),
+                    'db_reference_number'       => $dbGatewayTransactionId,
+                    'recon_reference_number'    => $gatewayTransactionId,
+                    'gateway'                   => $this->gateway
+                ]);
+
+            return;
+        }
+
+        $gatewayRefund->setGatewayTransactionId($gatewayTransactionId);
     }
 }

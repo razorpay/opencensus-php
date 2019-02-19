@@ -31,15 +31,10 @@ class HitachiOnboardTest extends TestCase
         return [
             'gateway'                   => 'hitachi',
             'gateway_input'             => [
-                'mid'                           => '38RR00000000012',
-                'tid'                           => '38R00012',
-                'mcc'                           => '2345',
+                'mcc'                           => '1345',
                 'currency_code'                 => 'INR',
                 'trans_mode'                    => 'CARDS',
             ],
-            'terminal'                  => [
-                'pg_merchant_id'                => $this->pgMerchantId,
-            ]
         ];
     }
 
@@ -52,7 +47,10 @@ class HitachiOnboardTest extends TestCase
         $response = $this->onboard($this->merchantId, $data);
 
         $this->assertNotNull($response);
+
         $this->assertEquals($response['gateway'], 'hitachi');
+
+        $this->assertEquals($response['type'], ['non_recurring', 'recurring_3ds', 'recurring_non_3ds', 'debit_recurring']);
     }
 
     public function testOnboardFailure()
@@ -85,11 +83,13 @@ class HitachiOnboardTest extends TestCase
         $this->assertEquals($response['error']['code'], 'BAD_REQUEST_ERROR');
     }
 
-    public function testPgMerchantDoesntExist()
+    public function testGatewayDoesntExist()
     {
+        $this->createMerchants();
+
         $data = $this->getDefaultInput();
 
-        $this->createMerchants();
+        $data['gateway'] = 'rzp';
 
         $merchant = $this->merchantId;
 
@@ -99,6 +99,24 @@ class HitachiOnboardTest extends TestCase
                 $this->onboard($merchant, $data);
             },
             \RZP\Exception\BadRequestValidationFailureException::class);
+    }
+
+    public function testGatewayImplementationDoesntExist()
+    {
+        $this->createMerchants();
+
+        $data = $this->getDefaultInput();
+
+        $data['gateway'] = 'upi_hulk';
+
+        $merchant = $this->merchantId;
+
+        $this->makeRequestAndCatchException(
+            function() use ($merchant, $data)
+            {
+                $this->onboard($merchant, $data);
+            },
+            \RZP\Exception\RuntimeException::class);
     }
 
     protected function onboard($id, $input)

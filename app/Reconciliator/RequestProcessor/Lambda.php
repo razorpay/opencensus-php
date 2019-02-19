@@ -30,7 +30,9 @@ class Lambda extends Base
                 $input);
         }
 
-        $this->setGatewayFromKey($key);
+        $this->setGatewayFromInputOrKey($input, $key);
+
+        $this->setGatewayReconciliatorObject();
 
         $file = $this->downloadFileFromAws($key);
 
@@ -62,21 +64,34 @@ class Lambda extends Base
      * the gateway. For e.g the key will be like below
      * key => FirstData/some_file.xls
      *
+     * @param $input
      * @param string $key
      *
      * @throws Exception\ReconciliationException
      */
-    protected function setGatewayFromKey(string $key)
+    protected function setGatewayFromInputOrKey($input, string $key)
     {
         //
-        // key will be something like : 'icici/recon/NetbankingIcici/Abc.txt'
-        // for stage env              : 'icici/recon/stage/NetbankingIcici/Abc.txt'
+        // In case the file is stored in a way that does not conform to the key format requirements
+        // then it would not be possible to get the gateway from the key.
+        // In such cases retrieving gateway from input
         //
-        $directoryPath = pathinfo($key, PATHINFO_DIRNAME);
+        if (isset($input[self::GATEWAY]) === true)
+        {
+            $this->gateway = $input[self::GATEWAY];
+        }
+        else
+        {
+            //
+            // key will be something like : 'icici/recon/NetbankingIcici/Abc.txt'
+            // for stage env              : 'icici/recon/stage/NetbankingIcici/Abc.txt'
+            //
+            $directoryPath = pathinfo($key, PATHINFO_DIRNAME);
 
-        $explodedArray = explode('/', $directoryPath);
+            $explodedArray = explode('/', $directoryPath);
 
-        $this->gateway = end($explodedArray);
+            $this->gateway = end($explodedArray);
+        }
 
         if (array_key_exists($this->gateway, self::GATEWAY_SENDER_MAPPING) === false)
         {
@@ -87,8 +102,6 @@ class Lambda extends Base
                     'key' => $key
                 ]);
         }
-
-        $this->setGatewayReconciliatorObject();
     }
 
     /**

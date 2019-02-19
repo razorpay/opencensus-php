@@ -19,7 +19,7 @@ class Gateway extends Cybersource\Gateway
         //
         $this->failIfRequired($input);
 
-        return parent::authorize($input);
+        return $this->authorizeMock($input);
     }
 
     protected function getSoapClientObject($request)
@@ -30,5 +30,22 @@ class Gateway extends Cybersource\Gateway
         $soapClient->__setSoapHeaders($headers);
 
         return $soapClient;
+    }
+
+    protected function putMockPaymentGatewayUrl(array & $request, $route)
+    {
+        $url = $this->route->getUrl('mock_acs', ['gateway' => 'cybersource']);
+
+        if ($request['method'] === 'get')
+        {
+            // The key thing now is to replace the url from gateway to our mock one!
+            $parts = parse_url($request['url']);
+
+            $url = $url . '&' .$parts['query'];
+
+            $request['url'] = $url;
+        }
+
+        $request['url'] = $url;
     }
 }

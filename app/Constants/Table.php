@@ -38,8 +38,10 @@ class Table
     const ADDRESS               = 'addresses';
     const DISCOUNT              = 'discounts';
     const MERCHANT              = 'merchants';
+    const COMMISSION            = 'commissions';
     const PAYMENT_LINK          = 'payment_links';
     const FUND_ACCOUNT          = 'fund_accounts';
+    const ENTITY_ORIGIN         = 'entity_origins';
 
     // Account entity is currently pointing to the 'merchants' table.
     // It will be used for basic CRUD operations over regular merchants,
@@ -72,6 +74,7 @@ class Table
     const BANK_TRANSFER             = 'bank_transfers';
     const GATEWAY_TOKEN             = 'gateway_tokens';
     const SCHEDULE_TASK             = 'schedule_tasks';
+    const PARTNER_CONFIG            = 'partner_configs';
     const MERCHANT_USERS            = 'merchant_users';
     const MERCHANT_OFFER            = 'merchant_offer';
     const LINE_ITEM_TAX             = 'line_item_taxes';
@@ -92,6 +95,7 @@ class Table
     const BATCH_FUND_TRANSFER       = 'daily_settlements';
     const CUSTOMER_TRANSACTION      = 'customer_transactions';
     const FUND_TRANSFER_ATTEMPT     = 'fund_transfer_attempts';
+    const FUND_ACCOUNT_VALIDATION   = 'fund_account_validations';
     const SUBSCRIPTION_REGISTRATION = 'subscription_registrations';
 
     // This table does not belong to api service but is stored in api db.

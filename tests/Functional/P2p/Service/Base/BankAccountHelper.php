@@ -17,20 +17,29 @@ class BankAccountHelper extends P2pHelper
         return $this->get($request);
     }
 
-    public function fetch(string $bankId)
-    {
-        $this->validationJsonSchemaPath = 'bank_account/fetch';
-
-        $request = $this->request('bank_accounts/%s', [$bankId]);
-
-        return $this->get($request);
-    }
-
     public function retrieve(string $ifsc)
     {
         $this->validationJsonSchemaPath = 'bank_account/retrieve';
 
         $request = $this->request('bank_accounts/bank/%s', [$ifsc]);
+
+        return $this->get($request);
+    }
+
+    public function fetchAll()
+    {
+        $this->validationJsonSchemaPath = 'bank_account/retrieve';
+
+        $request = $this->request('bank_accounts');
+
+        return $this->get($request);
+    }
+
+    public function fetch(string $bankId)
+    {
+        $this->validationJsonSchemaPath = 'bank_account/fetch';
+
+        $request = $this->request('bank_accounts/%s', [$bankId]);
 
         return $this->get($request);
     }
@@ -42,20 +51,15 @@ class BankAccountHelper extends P2pHelper
         $request = $this->request('bank_accounts/%s/upi_pin', [$bankId]);
 
         $default = [
-            'cl.creds' => [
-                [
-                    'code'     => 'NPCI',
-                    'ki'       => '20150822',
-                    'string'   => '2.0|QNSo1fHj5iTFseh6RlfZh9u/bX5AyYiVYCTUMYXzd+g==',
-                    'sub_type' => 'MPIN',
-                    'type'     => 'PIN'
-                ],
-                [
-                    'code'     => 'NPCI',
-                    'ki'       => '20150822',
-                    'string'   => '2.0|UJ5I2VFkAt0lA0qZ0J0EbXKSprXThhuQqPl5yQlzs3/A==',
-                    'sub_type' => 'SMS',
-                    'type'     => 'OTP'
+            'cl'   => [
+                'creds' => [
+                    [
+                        'code'     => 'NPCI',
+                        'ki'       => '20150822',
+                        'string'   => '2.0|QNSo1fHj5iTFseh6RlfZh9u/bX5AyYiVYCTUMYXzd+g==',
+                        'sub_type' => 'MPIN',
+                        'type'     => 'PIN'
+                    ],
                 ],
             ],
             'card' => [
@@ -63,7 +67,9 @@ class BankAccountHelper extends P2pHelper
                 'expiry_year'  => 19,
                 'last6'        => '123456'
             ],
-            'transaction_id' => 'RAZ18FCE7E4597443C7963B999CCD70C869',
+            'txn' => [
+                'id'    => 'RAZ18FCE7E4597443C7963B999CCD70C869',
+            ],
         ];
 
         $this->content($request, $default, $content);
@@ -96,16 +102,20 @@ class BankAccountHelper extends P2pHelper
         $request = $this->request('bank_accounts/%s/balance', [$bankId]);
 
         $default = [
-            'cl.creds' => [
-                [
-                    'code'     => 'NPCI',
-                    'ki'       => '20150822',
-                    'string'   => '2.0|VgZY8no118pbrVQj5yPI64jLTNHdICiv6fRr7vbBjxSWPg==',
-                    'sub_type' => 'MPIN',
-                    'type'     => 'PIN'
-                ]
+            'cl'   => [
+                'creds' => [
+                    [
+                        'code'     => 'NPCI',
+                        'ki'       => '20150822',
+                        'string'   => '2.0|QNSo1fHj5iTFseh6RlfZh9u/bX5AyYiVYCTUMYXzd+g==',
+                        'sub_type' => 'MPIN',
+                        'type'     => 'PIN'
+                    ],
+                ],
             ],
-            'transaction_id' => 'RAZ18FCE7E4597443C7963B999CCD70C869',
+            'txn' => [
+                'id'    => 'RAZ18FCE7E4597443C7963B999CCD70C869',
+            ],
         ];
 
         $this->content($request, $default, $content);

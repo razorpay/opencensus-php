@@ -15,6 +15,13 @@ return [
                             'payment_method'    => 'netbanking',
                             'percent_rate'      => 1000,
                             'payment_network'   => 'SIBL',
+                            'type'              => 'pricing',
+                        ],
+                        [
+                            'feature'           => 'fund_account_validation',
+                            'payment_method'    => 'bank_account',
+                            'fixed_rate'        => 1000,
+                            'type'              => 'pricing',
                         ],
                         [
                             'payment_method'        => 'card',
@@ -42,7 +49,7 @@ return [
             'content' => [
                 'name'      => 'TestUploadPlan2',
                 'entity'    => 'pricing',
-                'count'     => 3,
+                'count'     => 4,
                 'rules'     => [
                     [
                         'plan_name'             => 'TestUploadPlan2',
@@ -50,7 +57,8 @@ return [
                         'payment_method_type'   => null,
                         'payment_network'       => 'paytm',
                         'payment_issuer'        => null,
-                        'percent_rate'          => 1000
+                        'percent_rate'          => 1000,
+                        'type'                  => 'pricing',
                     ],
                     [
                         'plan_name'             => 'TestUploadPlan2',
@@ -71,10 +79,53 @@ return [
                         'min_fee'               => 10,
                         'max_fee'               => 10000,
                     ],
+                    [
+                        'plan_name'             => 'TestUploadPlan2',
+                        'feature'               => 'fund_account_validation',
+                        'payment_method'        => 'bank_account',
+                        'fixed_rate'            => 1000,
+                    ],
                 ],
             ],
         ],
     ],
+
+    'testBulkPricingPlanOfMultipleTypes' => [
+        'request'  => [
+            'content' => [
+                'plan_name' => 'TestUploadPlan2',
+                'rules'     => [
+                    [
+                        'payment_method'    => 'netbanking',
+                        'percent_rate'      => 1000,
+                        'payment_network'   => 'SIBL',
+                    ],
+                    [
+                        'feature'           => 'fund_account_validation',
+                        'payment_method'    => 'bank_account',
+                        'fixed_rate'        => 1000,
+                        'type'              => 'commission',
+                    ],
+                ],
+            ],
+            'url' => '/pricing',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PRICING_PLAN_CANNOT_HAVE_MULTIPLE_TYPES,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_PLAN_CANNOT_HAVE_MULTIPLE_TYPES,
+        ],
+    ],
+
     'testEmptyBulkPricingPlan' => [
         'request' => [
             'content' => [
@@ -225,6 +276,54 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
+
+    'testCreatePricingPlanByRZPAdmin' => [
+        'request'  => [
+            'content' => [
+                'plan_name' => 'TestPlan1',
+                'rules'     => [
+                    [
+                        'payment_method'      => 'card',
+                        'payment_method_type' => 'credit',
+                        'payment_network'     => 'DICL',
+                        'payment_issuer'      => 'HDFC',
+                        'percent_rate'        => 1000,
+                        'amount_range_active' => false,
+                        'amount_range_min'    => null,
+                        'amount_range_max'    => null,
+                        'min_fee'             => null,
+                        'max_fee'             => null,
+                    ],
+                ],
+            ],
+            'url'     => '/pricing/',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'name'   => 'TestPlan1',
+                'entity' => 'pricing',
+                'count'  => 1,
+                'rules'  => [
+                    [
+                        'payment_method'      => 'card',
+                        'payment_method_type' => 'credit',
+                        'payment_network'     => 'DICL',
+                        'payment_issuer'      => 'HDFC',
+                        'percent_rate'        => 1000,
+                        'international'       => false,
+                        'amount_range_active' => false,
+                        'amount_range_min'    => null,
+                        'amount_range_max'    => null,
+                        //Defaults to 0
+                        'min_fee'             => 0,
+                        'max_fee'             => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testAddPricingPlanRule' => [
         'request' => [
             'content' => [
@@ -256,33 +355,94 @@ return [
         ],
     ],
 
+    'testAddPricingPlanRuleByRZPAdmin' => [
+        'request'  => [
+            'content' => [
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => 0,
+                'amount_range_active' => '0',
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+            ],
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => false,
+                'amount_range_active' => false,
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+            ],
+        ],
+    ],
+
+    'testAddPricingPlanRuleBySBIAdmin' => [
+        'request'   => [
+            'content' => [
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => 0,
+                'amount_range_active' => '0',
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+            ],
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID
+        ],
+    ],
+
     'testOrgIdPricing' => [
         'request' => [
             'content' => [
-                'payment_method' => 'card',
-                'payment_method_type'  => 'credit',
-                'payment_network' => 'MAES',
-                'payment_issuer' => 'HDFC',
-                'percent_rate' => 1000,
-                'international' => 0,
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => 0,
                 'amount_range_active' => '0',
-                'amount_range_min' => null,
-                'amount_range_max' => null,
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
             ],
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'plan_name' => 'TestPlan1',
-                'payment_method' => 'card',
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'card',
                 'payment_method_type' => 'credit',
-                'payment_network' => 'MAES',
-                'payment_issuer' => 'HDFC',
-                'percent_rate' => 1000,
-                'international' => false,
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => false,
                 'amount_range_active' => false,
-                'amount_range_min' => null,
-                'amount_range_max' => null,
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
             ],
         ],
     ],
@@ -290,32 +450,32 @@ return [
     'testAddPricingPlanRuleWithDebitPinFeature' => [
         'request' => [
             'content' => [
-                'payment_method' => 'card',
-                'payment_method_type'  => 'debit',
-                'payment_network' => 'MAES',
-                'auth_type' => 'pin',
-                'payment_issuer' => 'HDFC',
-                'percent_rate' => 1000,
-                'international' => 0,
+                'payment_method'      => 'card',
+                'payment_method_type' => 'debit',
+                'payment_network'     => 'MAES',
+                'auth_type'           => 'pin',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => 0,
                 'amount_range_active' => '0',
-                'amount_range_min' => null,
-                'amount_range_max' => null,
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
             ],
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'plan_name' => 'TestPlan1',
-                'payment_method' => 'card',
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'card',
                 'payment_method_type' => 'debit',
-                'auth_type' => 'pin',
-                'payment_network' => 'MAES',
-                'payment_issuer' => 'HDFC',
-                'percent_rate' => 1000,
-                'international' => false,
+                'auth_type'           => 'pin',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => false,
                 'amount_range_active' => false,
-                'amount_range_min' => null,
-                'amount_range_max' => null,
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
             ],
         ],
     ],
@@ -323,32 +483,32 @@ return [
     'testAddPricingPlanRuleWithReceiver' => [
         'request' => [
             'content' => [
-                'payment_method' => 'card',
-                'payment_method_type'  => 'credit',
-                'payment_network' => 'DICL',
-                'payment_issuer' => 'HDFC',
-                'percent_rate' => 1000,
-                'international' => 0,
-                'receiver_type' => 'qr_code',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'DICL',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => 0,
+                'receiver_type'       => 'qr_code',
                 'amount_range_active' => '0',
-                'amount_range_min' => null,
-                'amount_range_max' => null,
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
             ],
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'plan_name' => 'TestPlan1',
-                'payment_method' => 'card',
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'card',
                 'payment_method_type' => 'credit',
-                'payment_network' => 'DICL',
-                'payment_issuer' => 'HDFC',
-                'percent_rate' => 1000,
-                'international' => false,
-                'receiver_type' => 'qr_code',
+                'payment_network'     => 'DICL',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => false,
+                'receiver_type'       => 'qr_code',
                 'amount_range_active' => false,
-                'amount_range_min' => null,
-                'amount_range_max' => null,
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
             ],
         ],
     ],
@@ -357,16 +517,16 @@ return [
     'testDuplicateReceiverRule' => [
         'request' => [
             'content' => [
-                'payment_method' => 'card',
-                'payment_method_type'  => 'credit',
-                'payment_network' => 'DICL',
-                'payment_issuer' => 'HDFC',
-                'percent_rate' => 1000,
-                'international' => 0,
-                'receiver_type' => 'qr_code',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'DICL',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => 0,
+                'receiver_type'       => 'qr_code',
                 'amount_range_active' => '0',
-                'amount_range_min' => null,
-                'amount_range_max' => null,
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
             ],
             'method' => 'POST'
         ],
@@ -379,7 +539,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
         ]
     ],
@@ -389,26 +549,84 @@ return [
     'testAddPricingPlanNBRule' => [
         'request' => [
             'content' => [
-                'payment_method' => 'netbanking',
-                'percent_rate' => 1000,
-                'payment_network' => 'BARB_R',
+                'payment_method'      => 'netbanking',
+                'percent_rate'        => 1000,
+                'payment_network'     => 'BARB_R',
                 'amount_range_active' => true,
-                'amount_range_min' => 0,
-                'amount_range_max' => 100000
+                'amount_range_min'    => 0,
+                'amount_range_max'    => 100000
             ],
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'plan_name' => 'TestPlan1',
-                'payment_method' => 'netbanking',
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'netbanking',
                 'payment_method_type' => null,
-                'payment_network' => 'BARB_R',
-                'payment_issuer' => null,
-                'percent_rate' => 1000,
+                'payment_network'     => 'BARB_R',
+                'payment_issuer'      => null,
+                'percent_rate'        => 1000,
                 'amount_range_active' => true,
-                'amount_range_min' => 0,
-                'amount_range_max' => 100000,
+                'amount_range_min'    => 0,
+                'amount_range_max'    => 100000,
+                'type'                => 'pricing',
+            ],
+        ],
+    ],
+
+    'testAddingPricingPlanNBRuleDifferentTypes' => [
+        'request' => [
+            'content' => [
+                'payment_method'      => 'netbanking',
+                'percent_rate'        => 1000,
+                'payment_network'     => 'BARB_R',
+                'amount_range_active' => true,
+                'amount_range_min'    => 0,
+                'amount_range_max'    => 100000,
+                'type'                => 'commission',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PRICING_PLAN_CANNOT_HAVE_MULTIPLE_TYPES,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_PLAN_CANNOT_HAVE_MULTIPLE_TYPES,
+        ],
+    ],
+
+    'testAddCommissionPlanNBRule' => [
+        'request' => [
+            'content' => [
+                'payment_method'      => 'netbanking',
+                'percent_rate'        => 1000,
+                'payment_network'     => 'BARB_R',
+                'amount_range_active' => true,
+                'amount_range_min'    => 0,
+                'amount_range_max'    => 100000,
+                'type'                => 'commission',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'netbanking',
+                'payment_method_type' => null,
+                'payment_network'     => 'BARB_R',
+                'payment_issuer'      => null,
+                'percent_rate'        => 1000,
+                'amount_range_active' => true,
+                'amount_range_min'    => 0,
+                'amount_range_max'    => 100000,
+                'type'                => 'commission',
             ],
         ],
     ],
@@ -416,27 +634,27 @@ return [
     'testAddPricingPlanNBRuleWithReceiver' => [
         'request' => [
             'content' => [
-                'payment_method' => 'netbanking',
-                'percent_rate' => 1000,
-                'payment_network' => 'SIBL',
+                'payment_method'      => 'netbanking',
+                'percent_rate'        => 1000,
+                'payment_network'     => 'SIBL',
                 'amount_range_active' => true,
-                'amount_range_min' => 0,
-                'amount_range_max' => 100000,
-                'receiver_type'    => 'qr_code',
+                'amount_range_min'    => 0,
+                'amount_range_max'    => 100000,
+                'receiver_type'       => 'qr_code',
             ],
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The receiver type field may be sent only when payment method is card',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -445,18 +663,18 @@ return [
         'request' => [
             'content' => [
                 'payment_method' => 'netbanking',
-                'percent_rate' => 1000
+                'percent_rate'   => 1000
             ],
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'plan_name' => 'TestPlan1',
-                'payment_method' => 'netbanking',
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'netbanking',
                 'payment_method_type' => null,
-                'payment_network' => null,
-                'payment_issuer' => null,
-                'percent_rate' => 1000
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 1000
             ],
         ],
     ],
@@ -465,20 +683,43 @@ return [
     'testAddPricingPlanWalletRule' => [
         'request' => [
             'content' => [
-                'payment_method' => 'wallet',
+                'payment_method'  => 'wallet',
                 'payment_network' => 'paytm',
-                'percent_rate' => 1000
+                'percent_rate'    => 1000
             ],
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'plan_name' => 'TestPlan1',
-                'payment_method' => 'wallet',
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'wallet',
                 'payment_method_type' => null,
-                'payment_network' => 'paytm',
-                'payment_issuer' => null,
-                'percent_rate' => 1000
+                'payment_network'     => 'paytm',
+                'payment_issuer'      => null,
+                'percent_rate'        => 1000
+            ],
+        ],
+    ],
+
+    'testAddPricingPlanFundAccountValidationRule' => [
+        'request' => [
+            'content' => [
+                'feature'        => 'fund_account_validation',
+                'payment_method' => 'bank_account',
+                'fixed_rate'     => 1000
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'feature'             => 'fund_account_validation',
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'bank_account',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1000
             ],
         ],
     ],
@@ -493,13 +734,13 @@ return [
         ],
         'response' => [
             'content' => [
-                'plan_name' => 'TestPlan1',
-                'payment_method' => 'emandate',
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'emandate',
                 'payment_method_type' => null,
-                'payment_network' => null,
-                'payment_issuer' => null,
-                'percent_rate' => 0,
-                'fixed_rate'   => 1000
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1000
             ],
         ],
     ],
@@ -507,22 +748,22 @@ return [
     'testAddPricingPlanEmandateRegistrationRule' => [
         'request' => [
             'content' => [
-                'payment_method' => 'emandate',
+                'payment_method'      => 'emandate',
                 'payment_method_type' => 'netbanking',
-                'payment_issuer' => 'initial',
-                'fixed_rate'     => 1000
+                'payment_issuer'      => 'initial',
+                'fixed_rate'          => 1000
             ],
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'plan_name' => 'TestPlan1',
-                'payment_method' => 'emandate',
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'emandate',
                 'payment_method_type' => 'netbanking',
-                'payment_network' => null,
-                'payment_issuer' => 'initial',
-                'percent_rate' => 0,
-                'fixed_rate'   => 1000
+                'payment_network'     => null,
+                'payment_issuer'      => 'initial',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 1000
             ],
         ],
     ],
@@ -530,22 +771,22 @@ return [
     'testAddPricingPlanEmandateDebitAadhaarRule' => [
         'request' => [
             'content' => [
-                'payment_method' => 'emandate',
+                'payment_method'      => 'emandate',
                 'payment_method_type' => 'aadhaar',
-                'payment_issuer' => 'auto',
-                'fixed_rate'     => 2000
+                'payment_issuer'      => 'auto',
+                'fixed_rate'          => 2000
             ],
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'plan_name' => 'TestPlan1',
-                'payment_method' => 'emandate',
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'emandate',
                 'payment_method_type' => 'aadhaar',
-                'payment_network' => null,
-                'payment_issuer' => 'auto',
-                'percent_rate' => 0,
-                'fixed_rate'   => 2000
+                'payment_network'     => null,
+                'payment_issuer'      => 'auto',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 2000
             ],
         ],
     ],
@@ -553,24 +794,24 @@ return [
     'testAddPricingPlanEmandatePercentageRateRule' => [
         'request' => [
             'content' => [
-                'payment_method' => 'emandate',
+                'payment_method'      => 'emandate',
                 'payment_method_type' => 'aadhaar',
-                'payment_issuer' => 'auto',
-                'percent_rate'     => 1000
+                'payment_issuer'      => 'auto',
+                'percent_rate'        => 1000
             ],
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Percentage rate pricing is not allowed for E-mandate',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -579,28 +820,28 @@ return [
         'request' => [
             'method' => 'POST',
             'content' => [
-                'payment_method' => 'card',
-                'payment_method_type'  => 'credit',
-                'payment_network' => 'DICL',
-                'payment_issuer' => 'HDFC',
-                'percent_rate' => 1000,
-                'international' => 0,
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'DICL',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => 0,
                 'amount_range_active' => 0,
-                'amount_range_min' => null,
-                'amount_range_max' => null,
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
             ],
         ],
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => PublicErrorDescription::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
         ],
     ],
@@ -608,34 +849,34 @@ return [
     'testAddPricingPlanRuleWithMaxFee' => [
         'request' => [
             'content' => [
-                'payment_method' => 'card',
-                'payment_method_type'  => 'credit',
-                'payment_network' => 'MAES',
-                'payment_issuer' => 'HDFC',
-                'percent_rate' => 1000,
-                'international' => 0,
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => 0,
                 'amount_range_active' => '0',
-                'amount_range_min' => null,
-                'amount_range_max' => null,
-                'min_fee'  => null,
-                'max_fee'  => null,
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+                'min_fee'             => null,
+                'max_fee'             => null,
             ],
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'plan_name' => 'TestPlan1',
-                'payment_method' => 'card',
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'card',
                 'payment_method_type' => 'credit',
-                'payment_network' => 'MAES',
-                'payment_issuer' => 'HDFC',
-                'percent_rate' => 1000,
-                'international' => false,
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => false,
                 'amount_range_active' => false,
-                'amount_range_min' => null,
-                'amount_range_max' => null,
-                'min_fee'  => 0,
-                'max_fee'  => null,
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+                'min_fee'             => 0,
+                'max_fee'             => null,
             ],
         ],
     ],
@@ -651,12 +892,79 @@ return [
         ],
         'response' => [
             'content' => [
-                'plan_name' => 'TestPlan2',
+                'plan_name'    => 'TestPlan2',
                 'percent_rate' => 450,
-                'fixed_rate' => 0,
-                'min_fee' => 101,
-                'max_fee' => 10000,
+                'fixed_rate'   => 0,
+                'min_fee'      => 101,
+                'max_fee'      => 10000,
             ],
+        ],
+    ],
+
+    'testUpdateCommissionRule' => [
+        'request' => [
+            'content' => [
+                'min_fee'      => 101,
+                'max_fee'      => 10000,
+                'percent_rate' => 450,
+                'fixed_rate'   => 0,
+            ],
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'    => 'TestPlan2',
+                'percent_rate' => 450,
+                'fixed_rate'   => 0,
+                'min_fee'      => 101,
+                'max_fee'      => 10000,
+            ],
+        ],
+    ],
+
+    'testUpdatePricingPlanRuleByRZPAdmin' => [
+        'request'  => [
+            'content' => [
+                'min_fee'      => 101,
+                'max_fee'      => 10000,
+                'percent_rate' => 450,
+                'fixed_rate'   => 0,
+            ],
+            'method'  => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'    => 'TestPlan2',
+                'percent_rate' => 450,
+                'fixed_rate'   => 0,
+                'min_fee'      => 101,
+                'max_fee'      => 10000,
+            ],
+        ],
+    ],
+
+    'testUpdatePricingPlanRuleBySBIAdmin' => [
+        'request'   => [
+            'content' => [
+                'min_fee'      => 101,
+                'max_fee'      => 10000,
+                'percent_rate' => 450,
+                'fixed_rate'   => 0,
+            ],
+            'method'  => 'PATCH'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'No db records found.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
         ],
     ],
 
@@ -668,60 +976,131 @@ return [
                 'count' => 4,
                 'rules' => [
                     [
-                        'plan_name' => 'TestPlan2',
-                        'payment_method' => 'card',
+                        'plan_name'           => 'TestPlan2',
+                        'payment_method'      => 'card',
                         'payment_method_type' => 'credit',
-                        'payment_network' => 'MC',
-                        'payment_issuer' => 'AXIS',
-                        'percent_rate' => 0,
-                        'fixed_rate' => 3000,
-                        'international' => false,
+                        'payment_network'     => 'MC',
+                        'payment_issuer'      => 'AXIS',
+                        'percent_rate'        => 0,
+                        'fixed_rate'          => 3000,
+                        'international'       => false,
                         'amount_range_active' => false,
-                        'amount_range_min' => null,
-                        'amount_range_max' => null,
+                        'amount_range_min'    => null,
+                        'amount_range_max'    => null,
                     ],
                     [
-                        'plan_name' => 'TestPlan2',
-                        'payment_method' => 'card',
+                        'plan_name'           => 'TestPlan2',
+                        'payment_method'      => 'card',
                         'payment_method_type' => 'debit',
-                        'payment_network' => 'MAES',
-                        'payment_issuer' => 'PUNB',
-                        'percent_rate' => 250,
-                        'fixed_rate' => 0,
-                        'international' => false,
+                        'payment_network'     => 'MAES',
+                        'payment_issuer'      => 'PUNB',
+                        'percent_rate'        => 250,
+                        'fixed_rate'          => 0,
+                        'international'       => false,
                         'amount_range_active' => false,
-                        'amount_range_min' => null,
-                        'amount_range_max' => null,
+                        'amount_range_min'    => null,
+                        'amount_range_max'    => null,
                     ],
                     [
-                        'plan_name' => 'TestPlan2',
-                        'payment_method' => 'card',
+                        'plan_name'           => 'TestPlan2',
+                        'payment_method'      => 'card',
                         'payment_method_type' => 'credit',
-                        'payment_network' => 'DICL',
-                        'payment_issuer' => 'ICIC',
-                        'percent_rate' => 250,
-                        'fixed_rate' => 0,
-                        'international' => false,
+                        'payment_network'     => 'DICL',
+                        'payment_issuer'      => 'ICIC',
+                        'percent_rate'        => 250,
+                        'fixed_rate'          => 0,
+                        'international'       => false,
                         'amount_range_active' => false,
-                        'amount_range_min' => null,
-                        'amount_range_max' => null,
+                        'amount_range_min'    => null,
+                        'amount_range_max'    => null,
                     ],
                     [
-                        'plan_name' => 'TestPlan2',
-                        'gateway' => null,
-                        'payment_method' => 'card',
+                        'plan_name'           => 'TestPlan2',
+                        'gateway'             => null,
+                        'payment_method'      => 'card',
                         'payment_method_type' => 'credit',
-                        'payment_network' => 'DICL',
-                        'payment_issuer' => 'SBIN',
-                        'percent_rate' => 275,
-                        'fixed_rate' => 0,
-                        'international' => false,
+                        'payment_network'     => 'DICL',
+                        'payment_issuer'      => 'SBIN',
+                        'percent_rate'        => 275,
+                        'fixed_rate'          => 0,
+                        'international'       => false,
                         'amount_range_active' => false,
-                        'amount_range_min' => null,
-                        'amount_range_max' => null,
+                        'amount_range_min'    => null,
+                        'amount_range_max'    => null,
                     ],
                 ],
             ],
+        ],
+    ],
+
+    'testGetPricingPlanByRZPAdmin' => [
+        'response' => [
+            'content' => [
+                'name'   => 'TestPlan2',
+                'entity' => 'pricing',
+                'count'  => 4,
+                'rules'  => [
+                    [
+                        'plan_name'           => 'TestPlan2',
+                        'payment_method'      => 'card',
+                        'payment_method_type' => 'credit',
+                        'payment_network'     => 'MC',
+                        'payment_issuer'      => 'AXIS',
+                        'percent_rate'        => 0,
+                        'fixed_rate'          => 3000,
+                        'international'       => false,
+                        'amount_range_active' => false,
+                        'amount_range_min'    => null,
+                        'amount_range_max'    => null,
+                    ],
+                    [
+                        'plan_name'           => 'TestPlan2',
+                        'payment_method'      => 'card',
+                        'payment_method_type' => 'debit',
+                        'payment_network'     => 'MAES',
+                        'payment_issuer'      => 'PUNB',
+                        'percent_rate'        => 250,
+                        'fixed_rate'          => 0,
+                        'international'       => false,
+                        'amount_range_active' => false,
+                        'amount_range_min'    => null,
+                        'amount_range_max'    => null,
+                    ],
+                    [
+                        'plan_name'           => 'TestPlan2',
+                        'payment_method'      => 'card',
+                        'payment_method_type' => 'credit',
+                        'payment_network'     => 'DICL',
+                        'payment_issuer'      => 'ICIC',
+                        'percent_rate'        => 250,
+                        'fixed_rate'          => 0,
+                        'international'       => false,
+                        'amount_range_active' => false,
+                        'amount_range_min'    => null,
+                        'amount_range_max'    => null,
+                    ],
+                    [
+                        'plan_name'           => 'TestPlan2',
+                        'gateway'             => null,
+                        'payment_method'      => 'card',
+                        'payment_method_type' => 'credit',
+                        'payment_network'     => 'DICL',
+                        'payment_issuer'      => 'SBIN',
+                        'percent_rate'        => 275,
+                        'fixed_rate'          => 0,
+                        'international'       => false,
+                        'amount_range_active' => false,
+                        'amount_range_min'    => null,
+                        'amount_range_max'    => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetPricingPlanBySBIAdmin' => [
+        'response' => [
+            'content' => []
         ],
     ],
 
@@ -732,9 +1111,12 @@ return [
         ],
         'response' => [
             'content' => [
-                'count' => 6,
+                'count' => 7,
                 'entity' => 'collection',
                 'items' => [
+                    [
+                        'name' => 'Banking default plan',
+                    ],
                     [
                         'name' => 'testDefaultEmiPlan',
                         'entity' => 'pricing',
@@ -757,45 +1139,45 @@ return [
                         'count' => 4,
                         'rules' => [
                             [
-                                'plan_name' => 'TestPlan2',
-                                'gateway' => null,
-                                'payment_method' => 'card',
+                                'plan_name'           => 'TestPlan2',
+                                'gateway'             => null,
+                                'payment_method'      => 'card',
                                 'payment_method_type' => 'credit',
-                                'payment_network' => 'MC',
-                                'payment_issuer' => 'AXIS',
-                                'percent_rate' => 0,
-                                'fixed_rate' => 3000,
-                                'international' => false,
+                                'payment_network'     => 'MC',
+                                'payment_issuer'      => 'AXIS',
+                                'percent_rate'        => 0,
+                                'fixed_rate'          => 3000,
+                                'international'       => false,
                             ],
                             [
-                                'plan_name' => 'TestPlan2',
-                                'payment_method' => 'card',
+                                'plan_name'           => 'TestPlan2',
+                                'payment_method'      => 'card',
                                 'payment_method_type' => 'debit',
-                                'payment_network' => 'MAES',
-                                'payment_issuer' => 'PUNB',
-                                'percent_rate' => 250,
-                                'fixed_rate' => 0,
-                                'international' => false,
+                                'payment_network'     => 'MAES',
+                                'payment_issuer'      => 'PUNB',
+                                'percent_rate'        => 250,
+                                'fixed_rate'          => 0,
+                                'international'       => false,
                             ],
                             [
-                                'plan_name' => 'TestPlan2',
-                                'payment_method' => 'card',
+                                'plan_name'           => 'TestPlan2',
+                                'payment_method'      => 'card',
                                 'payment_method_type' => 'credit',
-                                'payment_network' => 'DICL',
-                                'payment_issuer' => 'ICIC',
-                                'percent_rate' => 250,
-                                'fixed_rate' => 0,
-                                'international' => false,
+                                'payment_network'     => 'DICL',
+                                'payment_issuer'      => 'ICIC',
+                                'percent_rate'        => 250,
+                                'fixed_rate'          => 0,
+                                'international'       => false,
                             ],
                             [
-                                'plan_name' => 'TestPlan2',
-                                'payment_method' => 'card',
+                                'plan_name'           => 'TestPlan2',
+                                'payment_method'      => 'card',
                                 'payment_method_type' => 'credit',
-                                'payment_network' => 'DICL',
-                                'payment_issuer' => 'SBIN',
-                                'percent_rate' => 275,
-                                'fixed_rate' => 0,
-                                'international' => false,
+                                'payment_network'     => 'DICL',
+                                'payment_issuer'      => 'SBIN',
+                                'percent_rate'        => 275,
+                                'fixed_rate'          => 0,
+                                'international'       => false,
                             ],
                         ]
                     ],
@@ -805,26 +1187,222 @@ return [
                         'count' => 1,
                         'rules' => [
                             [
-                                'plan_name' => 'TestPlan1',
-                                'gateway' => null,
-                                'payment_method' => 'card',
+                                'plan_name'           => 'TestPlan1',
+                                'gateway'             => null,
+                                'payment_method'      => 'card',
                                 'payment_method_type' => 'credit',
-                                'payment_network' => 'DICL',
-                                'payment_issuer' => 'HDFC',
-                                'percent_rate' => 1000,
-                                'international' => false,
-                                'fixed_rate' => 0,
-                                'expired_at' => null
+                                'payment_network'     => 'DICL',
+                                'payment_issuer'      => 'HDFC',
+                                'percent_rate'        => 1000,
+                                'international'       => false,
+                                'fixed_rate'          => 0,
+                                'expired_at'          => null
                             ]
                         ]
                     ],
                     [
                         'name' => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count' => 19,
+                        'count' => 20,
                         'rules' => [
                             [],
                         ],
+                    ],
+                ]
+            ]
+        ]
+    ],
+
+    'testGetPricingPlansTypeFilter' => [
+        'request' => [
+            'url'     => '/pricing',
+            'method'  => 'GET',
+            'content' => [
+                'type' => 'commission',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'rules' => [
+                            [
+                                'type' => 'commission',
+                            ]
+                        ]
+                    ]
+                ],
+            ],
+        ]
+    ],
+
+    'testGetPricingPlansByRZPAdmin' => [
+        'request'  => [
+            'url'    => '/pricing',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'count'  => 7,
+                'entity' => 'collection',
+                'items'  => [
+                    [
+                        'name' => 'Banking default plan',
+                    ],
+                    [
+                        'name'   => 'testDefaultEmiPlan',
+                        'entity' => 'pricing',
+                        'count'  => 1,
+                        'rules'  => [
+                            [],
+                        ],
+                    ],
+                    [
+                        'name'   => 'testDefaultQrPlan',
+                        'entity' => 'pricing',
+                        'count'  => 2,
+                        'rules'  => [
+                            [],
+                        ],
+                    ],
+                    [
+                        'name'   => 'TestPlan2',
+                        'entity' => 'pricing',
+                        'count'  => 4,
+                        'rules'  => [
+                            [
+                                'plan_name'           => 'TestPlan2',
+                                'gateway'             => null,
+                                'payment_method'      => 'card',
+                                'payment_method_type' => 'credit',
+                                'payment_network'     => 'MC',
+                                'payment_issuer'      => 'AXIS',
+                                'percent_rate'        => 0,
+                                'fixed_rate'          => 3000,
+                                'international'       => false,
+                            ],
+                            [
+                                'plan_name'           => 'TestPlan2',
+                                'payment_method'      => 'card',
+                                'payment_method_type' => 'debit',
+                                'payment_network'     => 'MAES',
+                                'payment_issuer'      => 'PUNB',
+                                'percent_rate'        => 250,
+                                'fixed_rate'          => 0,
+                                'international'       => false,
+                            ],
+                            [
+                                'plan_name'           => 'TestPlan2',
+                                'payment_method'      => 'card',
+                                'payment_method_type' => 'credit',
+                                'payment_network'     => 'DICL',
+                                'payment_issuer'      => 'ICIC',
+                                'percent_rate'        => 250,
+                                'fixed_rate'          => 0,
+                                'international'       => false,
+                            ],
+                            [
+                                'plan_name'           => 'TestPlan2',
+                                'payment_method'      => 'card',
+                                'payment_method_type' => 'credit',
+                                'payment_network'     => 'DICL',
+                                'payment_issuer'      => 'SBIN',
+                                'percent_rate'        => 275,
+                                'fixed_rate'          => 0,
+                                'international'       => false,
+                            ],
+                        ]
+                    ],
+                    [
+                        'name'   => 'TestPlan1',
+                        'entity' => 'pricing',
+                        'count'  => 1,
+                        'rules'  => [
+                            [
+                                'plan_name'           => 'TestPlan1',
+                                'gateway'             => null,
+                                'payment_method'      => 'card',
+                                'payment_method_type' => 'credit',
+                                'payment_network'     => 'DICL',
+                                'payment_issuer'      => 'HDFC',
+                                'percent_rate'        => 1000,
+                                'international'       => false,
+                                'fixed_rate'          => 0,
+                                'expired_at'          => null
+                            ]
+                        ]
+                    ],
+                    [
+                        'name'   => 'testDefaultPlan',
+                        'entity' => 'pricing',
+                        'count'  => 20,
+                        'rules'  => [
+                            [],
+                        ],
+                    ],
+                ]
+            ]
+        ]
+    ],
+
+    'testGetPricingPlansBySBIAdmin' => [
+        'request'  => [
+            'url'    => '/pricing',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'count'  => 1,
+                'entity' => 'collection',
+                'items'  => [
+                    [
+                        'name'   => 'TestPlan2',
+                        'entity' => 'pricing',
+                        'count'  => 4,
+                        'rules'  => [
+                            [
+                                'plan_name'           => 'TestPlan2',
+                                'gateway'             => null,
+                                'payment_method'      => 'card',
+                                'payment_method_type' => 'credit',
+                                'payment_network'     => 'MC',
+                                'payment_issuer'      => 'AXIS',
+                                'percent_rate'        => 0,
+                                'fixed_rate'          => 3000,
+                                'international'       => false,
+                            ],
+                            [
+                                'plan_name'           => 'TestPlan2',
+                                'payment_method'      => 'card',
+                                'payment_method_type' => 'debit',
+                                'payment_network'     => 'MAES',
+                                'payment_issuer'      => 'PUNB',
+                                'percent_rate'        => 250,
+                                'fixed_rate'          => 0,
+                                'international'       => false,
+                            ],
+                            [
+                                'plan_name'           => 'TestPlan2',
+                                'payment_method'      => 'card',
+                                'payment_method_type' => 'credit',
+                                'payment_network'     => 'DICL',
+                                'payment_issuer'      => 'ICIC',
+                                'percent_rate'        => 250,
+                                'fixed_rate'          => 0,
+                                'international'       => false,
+                            ],
+                            [
+                                'plan_name'           => 'TestPlan2',
+                                'payment_method'      => 'card',
+                                'payment_method_type' => 'credit',
+                                'payment_network'     => 'DICL',
+                                'payment_issuer'      => 'SBIN',
+                                'percent_rate'        => 275,
+                                'fixed_rate'          => 0,
+                                'international'       => false,
+                            ],
+                        ]
                     ],
                 ]
             ]
@@ -838,6 +1416,10 @@ return [
         ],
         'response' => [
             'content' => [
+                [
+                    'plan_name'   => 'Banking default plan',
+                    'rules_count' => 6,
+                ],
                 [
                     'plan_name'   => 'testDefaultEmiPlan',
                     'rules_count' => 1,
@@ -856,7 +1438,57 @@ return [
                 ],
                 [
                     'plan_name'   => 'testDefaultPlan',
-                    'rules_count' => 19,
+                    'rules_count' => 20,
+                ],
+            ],
+        ],
+    ],
+
+    'testGetPricingPlansGroupingByRZPAdmin' => [
+        'request'  => [
+            'url'    => '/pricing/merchants',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'plan_name'   => 'Banking default plan',
+                    'rules_count' => 6,
+                ],
+                [
+                    'plan_name'   => 'testDefaultEmiPlan',
+                    'rules_count' => 1,
+                ],
+                [
+                    'plan_name'   => 'testDefaultQrPlan',
+                    'rules_count' => 2,
+                ],
+                [
+                    'plan_name'   => 'TestPlan2',
+                    'rules_count' => 4,
+                ],
+                [
+                    'plan_name'   => 'TestPlan1',
+                    'rules_count' => 1,
+                ],
+                [
+                    'plan_name'   => 'testDefaultPlan',
+                    'rules_count' => 20,
+                ],
+            ],
+        ],
+    ],
+
+    'testGetPricingPlansGroupingBySBIAdmin' => [
+        'request'  => [
+            'url'    => '/pricing/merchants',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'plan_name'   => 'TestPlan2',
+                    'rules_count' => 4,
                 ],
             ],
         ],
@@ -874,12 +1506,12 @@ return [
                 'count' => 1,
                 'rules' => [
                     [
-                        'payment_method' => 'card',
+                        'payment_method'      => 'card',
                         'payment_method_type' => 'credit',
-                        'payment_network' => 'DICL',
-                        'payment_issuer' => 'HDFC',
-                        'percent_rate' => 1000,
-                        'international' => false,
+                        'payment_network'     => 'DICL',
+                        'payment_issuer'      => 'HDFC',
+                        'percent_rate'        => 1000,
+                        'international'       => false,
                     ],
                 ],
             ],
@@ -900,7 +1532,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
@@ -919,7 +1551,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_FOR_AMEX_NOT_PRESENT,
         ]
     ],
@@ -938,7 +1570,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
@@ -955,12 +1587,12 @@ return [
                 'count' => 1,
                 'rules' => [
                     [
-                        'payment_method' => 'card',
+                        'payment_method'      => 'card',
                         'payment_method_type' => 'credit',
-                        'payment_network' => 'DICL',
-                        'payment_issuer' => 'HDFC',
-                        'percent_rate' => 1000,
-                        'international' => false,
+                        'payment_network'     => 'DICL',
+                        'payment_issuer'      => 'HDFC',
+                        'percent_rate'        => 1000,
+                        'international'       => false,
                     ],
                 ],
             ],
@@ -1011,13 +1643,13 @@ return [
                 'count' => 1,
                 'rules' => [
                     [
-                        'payment_method' => 'card',
+                        'payment_method'      => 'card',
                         'payment_method_type' => 'credit',
-                        'payment_network' => 'VISA',
-                        'payment_issuer' => 'ICIC',
-                        'percent_rate' => 1000,
-                        'fixed_rate' => 10000,
-                        'international' => false,
+                        'payment_network'     => 'VISA',
+                        'payment_issuer'      => 'ICIC',
+                        'percent_rate'        => 1000,
+                        'fixed_rate'          => 10000,
+                        'international'       => false,
                     ],
                 ],
             ],
@@ -1033,6 +1665,49 @@ return [
             'content' => [
                 'message' => 'Pricing successfully deleted',
             ],
+        ],
+    ],
+
+    'testDeleteCommissionRule' => [
+        'request' => [
+            'method' => 'delete',
+        ],
+        'response' => [
+            'content' => [
+                'message' => 'Pricing successfully deleted',
+            ],
+        ],
+    ],
+
+    'testDeletePricingPlanRuleByRZPAdmin' => [
+        'request'  => [
+            'url'    => '/pricing/1hDYlICobzOCYt/rule/1zE3QYFf1zbys6',
+            'method' => 'delete',
+        ],
+        'response' => [
+            'content' => [
+                'message' => 'Pricing successfully deleted',
+            ],
+        ],
+    ],
+
+    'testDeletePricingPlanRuleBySBIAdmin' => [
+        'request'   => [
+            'url'    => '/pricing/1hDYlICobzOCYt/rule/1zD0BXpeOyaqpB',
+            'method' => 'delete',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'No db records found.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
         ],
     ],
 
@@ -1062,7 +1737,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -1070,24 +1745,24 @@ return [
     'testAddInternationalPricingPlanRule' => [
         'request' => [
             'content' => [
-                'payment_method' => 'card',
-                'payment_method_type'  => null,
-                'payment_network' => null,
-                'payment_issuer' => null,
-                'percent_rate' => 1100,
-                'international' => 1,
+                'payment_method'      => 'card',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 1100,
+                'international'       => 1,
             ],
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'plan_name' => 'TestPlan1',
-                'payment_method' => 'card',
-                'payment_method_type'  => null,
-                'payment_network' => null,
-                'payment_issuer' => null,
-                'percent_rate' => 1100,
-                'international' => true,
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'card',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 1100,
+                'international'       => true,
             ],
         ],
     ],
@@ -1095,15 +1770,15 @@ return [
     'testAddDuplicateInternationalPricingPlanRule' => [
         'request' => [
             'content' => [
-                'payment_method' => 'card',
-                'payment_method_type'  => null,
-                'payment_network' => null,
-                'payment_issuer' => null,
-                'percent_rate' => 1200,
-                'international' => 1,
+                'payment_method'      => 'card',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 1200,
+                'international'       => 1,
                 'amount_range_active' => 0,
-                'amount_range_min' => null,
-                'amount_range_max' => null,
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
             ],
             'method' => 'POST'
         ],
@@ -1116,7 +1791,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
         ],
     ],
@@ -1124,26 +1799,26 @@ return [
     'testAddInternationalPricingPlanRuleForNonCardMethod' => [
         'request' => [
             'content' => [
-                'payment_method' => 'netbanking',
-                'payment_method_type'  => null,
-                'payment_network' => null,
-                'payment_issuer' => null,
-                'percent_rate' => 1200,
-                'international' => 1,
+                'payment_method'      => 'netbanking',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 1200,
+                'international'       => 1,
             ],
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'International pricing rule is only allowed for card method',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -1151,26 +1826,26 @@ return [
     'testAddInternationalPricingPlanRuleWithExtraFields' => [
         'request' => [
             'content' => [
-                'payment_method' => 'card',
-                'payment_method_type'  => 'credit',
-                'payment_network' => null,
-                'payment_issuer' => null,
-                'percent_rate' => 1200,
-                'international' => 1,
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 1200,
+                'international'       => 1,
             ],
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'For international pricing rule, attribute payment_method_type should not be set',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -1178,26 +1853,26 @@ return [
     'testAddDuplicateWalletPricingRule' => [
         'request' => [
             'content' => [
-                'payment_method' => 'wallet',
-                'payment_method_type'  => 'credit',
-                'payment_network' => null,
-                'payment_issuer' => null,
-                'percent_rate' => 1200,
-                'international' => 1,
+                'payment_method'      => 'wallet',
+                'payment_method_type' => 'credit',
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 1200,
+                'international'       => 1,
             ],
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The payment method type field may be sent only when payment method is card',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -1205,30 +1880,30 @@ return [
     'testAddDuplicateWalletPricingRule' => [
         'request' => [
             'content' => [
-                'payment_method' => 'wallet',
+                'payment_method'      => 'wallet',
                 'payment_method_type' => null,
-                'payment_network' => null,
-                'payment_issuer' => null,
-                'percent_rate' => 300,
-                'fixed_rate' => 0,
-                'international' => 0,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 300,
+                'fixed_rate'          => 0,
+                'international'       => 0,
                 'amount_range_active' => 0,
-                'amount_range_min' => null,
-                'amount_range_max' => null,
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
             ],
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => PublicErrorDescription::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
         ],
     ],
@@ -1247,31 +1922,31 @@ return [
     'testAddAmountRangePricingPlanRule' => [
         'request' => [
             'content' => [
-                'payment_method' => 'card',
+                'payment_method'      => 'card',
                 'payment_method_type' => 'debit',
-                'payment_network' => null,
-                'payment_issuer' => null,
-                'percent_rate' => 1500,
-                'fixed_rate' => 0,
-                'international' => 0,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 1500,
+                'fixed_rate'          => 0,
+                'international'       => 0,
                 'amount_range_active' => 1,
-                'amount_range_min' => 100,
-                'amount_range_max' => 25000,
+                'amount_range_min'    => 100,
+                'amount_range_max'    => 25000,
             ],
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'plan_name' => 'TestPlan1',
-                'payment_method' => 'card',
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'card',
                 'payment_method_type' => 'debit',
-                'payment_network' => null,
-                'payment_issuer' => null,
-                'percent_rate' => 1500,
-                'international' => false,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 1500,
+                'international'       => false,
                 'amount_range_active' => true,
-                'amount_range_min' => 100,
-                'amount_range_max' => 25000,
+                'amount_range_min'    => 100,
+                'amount_range_max'    => 25000,
             ],
         ],
     ],
@@ -1279,46 +1954,46 @@ return [
     'testAddAmountRangePricingPlanRuleOverlap' => [
         'request' => [
             'content' => [
-                'payment_method' => 'card',
+                'payment_method'      => 'card',
                 'payment_method_type' => 'debit',
-                'payment_network' => null,
-                'payment_issuer' => null,
-                'percent_rate' => 1500,
-                'fixed_rate' => 0,
-                'international' => 0,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 1500,
+                'fixed_rate'          => 0,
+                'international'       => 0,
                 'amount_range_active' => 1,
-                'amount_range_min' => 2500,
-                'amount_range_max' => 100000000,
+                'amount_range_min'    => 2500,
+                'amount_range_max'    => 100000000,
             ],
             'method' => 'POST'
         ],
         'response'  => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => PublicErrorDescription::BAD_REQUEST_PRICING_RULE_FOR_AMOUNT_RANGE_OVERLAP,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
     'testAddAmountRangePricingPlanRuleDuplicate' => [
         'request' => [
             'content' => [
-                'payment_method' => 'card',
+                'payment_method'      => 'card',
                 'payment_method_type' => 'debit',
-                'payment_network' => null,
-                'payment_issuer' => null,
-                'percent_rate' => 1500,
-                'fixed_rate' => 0,
-                'international' => 0,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 1500,
+                'fixed_rate'          => 0,
+                'international'       => 0,
                 'amount_range_active' => 1,
-                'amount_range_min' => 100,
-                'amount_range_max' => 25000,
+                'amount_range_min'    => 100,
+                'amount_range_max'    => 25000,
             ],
             'method' => 'POST'
         ],
@@ -1331,7 +2006,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
         ],
     ],
@@ -1339,64 +2014,64 @@ return [
     'testAddPricingPlanRuleWithFeature' => [
         'request' => [
             'content' => [
-                'payment_method' => 'card',
-                'payment_method_type'  => 'credit',
-                'payment_network' => 'MAES',
-                'payment_issuer' => 'HDFC',
-                'percent_rate' => 1000,
-                'international' => 0,
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => 0,
                 'amount_range_active' => '0',
-                'amount_range_min' => null,
-                'amount_range_max' => null,
-                'feature' => 'recurring',
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+                'feature'             => 'recurring',
             ],
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'plan_name' => 'TestPlan1',
-                'payment_method' => 'card',
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'card',
                 'payment_method_type' => 'credit',
-                'payment_network' => 'MAES',
-                'payment_issuer' => 'HDFC',
-                'percent_rate' => 1000,
-                'international' => false,
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => false,
                 'amount_range_active' => false,
-                'amount_range_min' => null,
-                'amount_range_max' => null,
-                'feature' => 'recurring',
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+                'feature'             => 'recurring',
             ],
         ],
     ],
     'testAddPricingPlanRuleWithFeatureESAutomatic' => [
         'request' => [
             'content' => [
-                'payment_method' => 'card',
-                'payment_method_type'  => 'credit',
-                'payment_network' => 'MAES',
-                'payment_issuer' => 'HDFC',
-                'percent_rate' => 1000,
-                'international' => 0,
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => 0,
                 'amount_range_active' => '0',
-                'amount_range_min' => null,
-                'amount_range_max' => null,
-                'feature' => 'esautomatic',
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+                'feature'             => 'esautomatic',
             ],
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'plan_name' => 'TestPlan1',
-                'payment_method' => 'card',
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'card',
                 'payment_method_type' => 'credit',
-                'payment_network' => 'MAES',
-                'payment_issuer' => 'HDFC',
-                'percent_rate' => 1000,
-                'international' => false,
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => false,
                 'amount_range_active' => false,
-                'amount_range_min' => null,
-                'amount_range_max' => null,
-                'feature' => 'esautomatic',
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+                'feature'             => 'esautomatic',
             ],
         ],
     ],

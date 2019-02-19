@@ -1,5 +1,5 @@
 #!/bin/bash
-url='http://localhost:'
+url='http://0.0.0.0:'
 port=`docker ps|grep "razorpay:api"|awk -F" {2,}" '{print $6}'|cut -d ':' -f2|awk -F '->' '{print $1}'`
 if [ -z "$port" ] 
 then
@@ -15,7 +15,7 @@ do
 	if [ -z "$status" ]
 	then
 		echo "Database migrations ongoing. Waiting for server to startup and connect..."
-		sleep 30
+		sleep 5
 	else
 		echo "API Server is operationally up at:" $url
 		break

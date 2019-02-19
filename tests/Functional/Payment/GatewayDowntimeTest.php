@@ -5,8 +5,10 @@ namespace RZP\Tests\Functional\Payment;
 use Carbon\Carbon;
 
 use RZP\Exception;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\MockHttpResponseTrait;
 
 class GatewayDowntimeTest extends TestCase
 {
@@ -58,6 +60,21 @@ class GatewayDowntimeTest extends TestCase
         $this->startTest();
     }
 
+    public function testExternalApiHealth()
+    {
+        $this->startTest();
+    }
+
+    public function testExternalApiInvalidUrl()
+    {
+        $this->startTest();
+    }
+
+    public function testExternalApiWithGatewayResponse500()
+    {
+        $this->startTest();
+    }
+
     public function testGatewayCreateDowntimeDuplicate()
     {
         $request = [
@@ -71,8 +88,10 @@ class GatewayDowntimeTest extends TestCase
                 'begin'        => Carbon::now()->subMinutes(60)->timestamp
             ],
             'method' => 'POST',
-            'url' => '/gateway/downtimes'
+            'url' => '/gateway/downtimes/dummy/webhook'
         ];
+
+        $this->ba->directAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -98,8 +117,10 @@ class GatewayDowntimeTest extends TestCase
                 'begin'       => Carbon::now()->subMinutes(60)->timestamp,
             ],
             'method' => 'POST',
-            'url' => '/gateway/downtimes'
+            'url' => '/gateway/downtimes/dummy/webhook'
         ];
+
+        $this->ba->directAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -142,8 +163,10 @@ class GatewayDowntimeTest extends TestCase
                 'end'         => Carbon::now()->addMinutes(60)->timestamp
             ],
             'method' => 'POST',
-            'url' => '/gateway/downtimes'
+            'url' => '/gateway/downtimes/dummy/webhook'
         ];
+
+        $this->ba->directAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -176,11 +199,14 @@ class GatewayDowntimeTest extends TestCase
                 'gateway'     => 'axis_migs',
                 'reason_code' => 'LOW_SUCCESS_RATE',
                 'method'      => 'card',
-                'source'      => 'other'
+                'source'      => 'other',
+                'acquirer'    => 'axis',
             ],
             'method' => 'POST',
-            'url' => '/gateway/downtimes'
+            'url' => '/gateway/downtimes/dummy/webhook'
         ];
+
+        $this->ba->directAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -199,7 +225,6 @@ class GatewayDowntimeTest extends TestCase
         $this->assertEquals('OTHER', $response2['reason_code']);
 
         $this->assertEquals('VISA', $response2['network']);
-
     }
 
     public function testCreateDowntimeInvalidGateway()
@@ -659,7 +684,7 @@ class GatewayDowntimeTest extends TestCase
 
     protected function createGatewayDowntimeForOneHour($gatewayName = 'netbanking_hdfc', $from)
     {
-        $to = $from + 60*60;
+        $to = $from + 60 * 60;
 
         return $this->__createGatewayDowntime($gatewayName, $from, $to, null);
     }
@@ -752,5 +777,497 @@ class GatewayDowntimeTest extends TestCase
         $this->assertEquals($content['gateway'], $gatewayName);
 
         return $content;
+    }
+
+    protected function commonAlertUPIWebHookTestHandler($testName)
+    {
+        $this->ba->appAuth();
+
+        // create downtime
+
+        $testData = $this->testData[$testName];
+
+        $responseDataArray = $this->startTest($testData);
+
+        $expectedDowntimeCreatedResponse = $this->testData[$testName]['downtimeCreatedResponse'];
+
+        $this->assertArraySelectiveEquals($expectedDowntimeCreatedResponse, $responseDataArray);
+
+        foreach ($responseDataArray as $responseData)
+        {
+            $this->assertNotNull($responseData['begin']);
+
+            $this->assertNull($responseData['end']);
+        }
+
+        $gatewayDowntimeEntityIds = array_pluck($responseDataArray, 'id');
+
+        $gatewayDowntimeBeginTimes = array_pluck($responseDataArray, 'begin');
+
+        // duplicate create downtime
+
+        $responseDataArray = $this->startTest($testData);
+
+        $this->assertEmpty($responseDataArray);
+
+        // resolve downtime
+
+        $testData['request']['content']['state'] = 'ok';
+
+        $responseDataArray = $this->startTest($testData);
+
+        $this->assertArraySelectiveEquals($expectedDowntimeCreatedResponse, $responseDataArray);
+
+        foreach ($responseDataArray as $responseData)
+        {
+            $this->assertNotNull($responseData['begin']);
+
+            $this->assertNotNull($responseData['end']);
+        }
+
+        $this->assertEquals($gatewayDowntimeEntityIds, array_pluck($responseDataArray, 'id'));
+
+        $this->assertEquals($gatewayDowntimeBeginTimes, array_pluck($responseDataArray, 'begin'));
+
+        // duplicate resolve downtime
+
+        $responseDataArray = $this->startTest($testData);
+
+        $this->assertEmpty($responseDataArray);
+    }
+
+    protected function createUpiTerminals()
+    {
+        $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
+
+        // Create another upi mindgate terminal for merchant 100000Razorpay
+        $upiMindgateTerm2Attributes = [
+            'id'                        => '100UPIMindtml2',
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'upi_mindgate',
+            'gateway_merchant_id'       => 'razorpay upi mindgate',
+            'gateway_terminal_id'       => 'nodal account upi hdfc term 2',
+            'gateway_merchant_id2'      => 'razorpay@hdfcbank',
+            'gateway_terminal_password' => '3723476ytfew7823623gdgf87236',
+            'upi'                       => 1,
+            'gateway_acquirer'          => 'hdfc',
+        ];
+
+        $this->fixtures->create('terminal', $upiMindgateTerm2Attributes);
+    }
+
+    public function testVajraAlertUPIWebhookMerchantId()
+    {
+        $this->createUpiTerminals();
+
+        $this->commonAlertUPIWebHookTestHandler(__FUNCTION__);
+    }
+
+    public function testVajraAlertUPIWebhookMerchantIds()
+    {
+        $this->createUpiTerminals();
+
+        $this->commonAlertUPIWebHookTestHandler(__FUNCTION__);
+    }
+
+    public function testVajraAlertUPIWebhookTerminalId()
+    {
+        $this->createUpiTerminals();
+
+        $this->commonAlertUPIWebHookTestHandler(__FUNCTION__);
+    }
+
+    public function testVajraAlertUPIWebhookTerminalIds()
+    {
+        $this->createUpiTerminals();
+
+        $this->commonAlertUPIWebHookTestHandler(__FUNCTION__);
+    }
+
+    public function testVajraAlertUPIWebhookWithoutTerminalDowntime()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create("terminal:shared_upi_mindgate_terminal");
+
+        // Create alert for gateway + terminal
+
+        array_set(
+            $this->testData[__FUNCTION__],
+            'request.content.message',
+            $this->testData[__FUNCTION__]['messageFor']['withTerminal']
+        );
+
+        array_set(
+            $this->testData[__FUNCTION__],
+            'response',
+            $this->testData[__FUNCTION__]['downtimeResponseWithTerminal']
+        );
+
+        $responseDataArray = $this->startTest();
+
+        $this->assertNotNull($responseDataArray[0]['terminal_id']);
+
+        $downtimeWithTerminalId = $responseDataArray[0]['id'];
+
+        // Create alert for gateway
+
+        array_set(
+            $this->testData[__FUNCTION__],
+            'request.content.message',
+            $this->testData[__FUNCTION__]['messageFor']['withoutTerminal']
+        );
+
+        array_set(
+            $this->testData[__FUNCTION__],
+            'response',
+            $this->testData[__FUNCTION__]['downtimeResponseWithoutTerminal']
+        );
+
+        $responseDataArray = $this->startTest();
+
+        $this->assertNull($responseDataArray[0]['terminal_id']);
+
+        $downtimeWithoutTerminalId = $responseDataArray[0]['id'];
+
+        // Check if seperate downtimes created
+
+        $this->assertNotEquals($downtimeWithTerminalId, $downtimeWithoutTerminalId);
+
+        // Resolve alert for gateway
+
+        $this->testData[__FUNCTION__]['request']['content']['state'] = 'ok';
+
+        $this->startTest();
+
+        $downtimeWithoutTerminalEntity = $this->getEntityById('gateway_downtime', $downtimeWithoutTerminalId, true);
+
+        $downtimeWithTerminalEntity = $this->getEntityById('gateway_downtime', $downtimeWithTerminalId, true);
+
+        // Check end times
+
+        $this->assertNotNull($downtimeWithoutTerminalEntity['end']);
+
+        $this->assertNull($downtimeWithTerminalEntity['end']);
+
+        // Resolve alert for gateway + terminal
+
+        array_set(
+            $this->testData[__FUNCTION__],
+            'request.content.message',
+            $this->testData[__FUNCTION__]['messageFor']['withTerminal']
+        );
+
+        array_set(
+            $this->testData[__FUNCTION__],
+            'response',
+            $this->testData[__FUNCTION__]['downtimeResponseWithTerminal']
+        );
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $downtimeWithoutTerminalEntity = $this->getEntityById('gateway_downtime', $downtimeWithoutTerminalId, true);
+
+        $downtimeWithTerminalEntity = $this->getEntityById('gateway_downtime', $downtimeWithTerminalId, true);
+
+        // Check end times
+
+        $this->assertNotNull($downtimeWithoutTerminalEntity['end']);
+
+        $this->assertNotNull($downtimeWithTerminalEntity['end']);
+    }
+
+    public function testGatewayCreateOverlappingDowntimeViaDashboard1()
+    {
+        $request = $this->getDowntimeCreationRequest();
+
+        $this->ba->adminAuth();
+
+        $request['content']['begin'] = Carbon::createFromTime(0, 20, 0, Timezone::IST)->timestamp;
+        $request['content']['end'] = Carbon::createFromTime(0, 40, 0, Timezone::IST)->timestamp;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        // |                ██████████████████████████████████                  |
+        // |                                ██████████████████████████████████  |
+        $request['content']['begin'] = Carbon::createFromTime(0, 30, 0, Timezone::IST)->timestamp;
+        $request['content']['end'] = Carbon::createFromTime(0, 50, 0, Timezone::IST)->timestamp;
+        $this->expectException(Exception\BadRequestException::class);
+        $this->expectExceptionMessage('A conflicting gateway downtime already exists.');
+        $this->makeRequestAndGetContent($request);
+    }
+
+    public function testGatewayCreateOverlappingDowntimeViaDashboard2()
+    {
+        $request = $this->getDowntimeCreationRequest();
+
+        $this->ba->adminAuth();
+
+        $request['content']['begin'] = Carbon::createFromTime(0, 20, 0, Timezone::IST)->timestamp;
+        $request['content']['end'] = Carbon::createFromTime(0, 40, 0, Timezone::IST)->timestamp;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        // |                ██████████████████████████████████                  |
+        // |██████████████████████████████████                                  |
+        $request['content']['begin'] = Carbon::createFromTime(0, 10, 0, Timezone::IST)->timestamp;
+        $request['content']['end'] = Carbon::createFromTime(0, 30, 0, Timezone::IST)->timestamp;
+        $this->expectException(Exception\BadRequestException::class);
+        $this->expectExceptionMessage('A conflicting gateway downtime already exists.');
+        $this->makeRequestAndGetContent($request);
+    }
+
+    public function testGatewayCreateOverlappingDowntimeViaDashboard3()
+    {
+        $request = $this->getDowntimeCreationRequest();
+
+        $this->ba->adminAuth();
+
+        $request['content']['begin'] = Carbon::createFromTime(0, 20, 0, Timezone::IST)->timestamp;
+        $request['content']['end'] = Carbon::createFromTime(0, 40, 0, Timezone::IST)->timestamp;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        // |                ██████████████████████████████████                  |
+        // |                        ███████████████                             |
+        $request['content']['begin'] = Carbon::createFromTime(0, 25, 0, Timezone::IST)->timestamp;
+        $request['content']['end'] = Carbon::createFromTime(0, 35, 0, Timezone::IST)->timestamp;
+        $this->expectException(Exception\BadRequestException::class);
+        $this->expectExceptionMessage('A conflicting gateway downtime already exists.');
+        $this->makeRequestAndGetContent($request);
+    }
+
+    public function testGatewayCreateOverlappingDowntimeViaDashboard4()
+    {
+        $request = $this->getDowntimeCreationRequest();
+
+        $this->ba->adminAuth();
+
+        $request['content']['begin'] = Carbon::createFromTime(0, 20, 0, Timezone::IST)->timestamp;
+        $request['content']['end'] = Carbon::createFromTime(0, 40, 0, Timezone::IST)->timestamp;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        // |                ██████████████████████████████████                  |
+        // |██████████████████████████████████████████████████████████████████  |
+        $request['content']['begin'] = Carbon::createFromTime(0, 10, 0, Timezone::IST)->timestamp;
+        $request['content']['end'] = Carbon::createFromTime(0, 50, 0, Timezone::IST)->timestamp;
+        $this->expectException(Exception\BadRequestException::class);
+        $this->expectExceptionMessage('A conflicting gateway downtime already exists.');
+        $this->makeRequestAndGetContent($request);
+    }
+
+    public function testGatewayCreateOverlappingWithExistingNullEndDowntimeViaDashboard1()
+    {
+        $request = $this->getDowntimeCreationRequest();
+
+        $this->ba->adminAuth();
+
+        $request['content']['begin'] = Carbon::createFromTime(0, 20, 0, Timezone::IST)->timestamp;
+        unset($request['content']['end']);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        // |                      ████████████████████████████████████████████████∞
+        // |     ███████████████████████                                        |
+        $request['content']['begin'] = Carbon::createFromTime(0, 0, 0, Timezone::IST)->timestamp;
+        $request['content']['end'] = Carbon::createFromTime(0, 30, 0, Timezone::IST)->timestamp;
+        $this->expectException(Exception\BadRequestException::class);
+        $this->expectExceptionMessage('A conflicting gateway downtime already exists.');
+        $this->makeRequestAndGetContent($request);
+    }
+
+    public function testGatewayCreateOverlappingWithExistingNullEndDowntimeViaDashboard2()
+    {
+        $request = $this->getDowntimeCreationRequest();
+
+        $this->ba->adminAuth();
+
+        $request['content']['begin'] = Carbon::createFromTime(0, 20, 0, Timezone::IST)->timestamp;
+        unset($request['content']['end']);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        // |                      ████████████████████████████████████████████████∞
+        // |                            ███████████                             |
+        $request['content']['begin'] = Carbon::createFromTime(0, 30, 0, Timezone::IST)->timestamp;
+        $request['content']['end'] = Carbon::createFromTime(0, 40, 0, Timezone::IST)->timestamp;
+        $this->expectException(Exception\BadRequestException::class);
+        $this->expectExceptionMessage('A conflicting gateway downtime already exists.');
+        $this->makeRequestAndGetContent($request);
+    }
+
+    public function testGatewayCreateOverlappingWithNewNullEndDowntimeViaDashboard1()
+    {
+        $request = $this->getDowntimeCreationRequest();
+
+        $this->ba->adminAuth();
+
+        $request['content']['begin'] = Carbon::createFromTime(0, 20, 0, Timezone::IST)->timestamp;
+        $request['content']['end'] = Carbon::createFromTime(0, 40, 0, Timezone::IST)->timestamp;;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        // |     ███████████████████████                                        |
+        // | █████████████████████████████████████████████████████████████████████∞
+        $request['content']['begin'] = Carbon::createFromTime(0, 10, 0, Timezone::IST)->timestamp;
+        unset($request['content']['end']);
+        $this->expectException(Exception\BadRequestException::class);
+        $this->expectExceptionMessage('A conflicting gateway downtime already exists.');
+        $this->makeRequestAndGetContent($request);
+    }
+
+    public function testGatewayCreateOverlappingWithNewNullEndDowntimeViaDashboard2()
+    {
+        $request = $this->getDowntimeCreationRequest();
+
+        $this->ba->adminAuth();
+
+        $request['content']['begin'] = Carbon::createFromTime(0, 20, 0, Timezone::IST)->timestamp;
+        $request['content']['end'] = Carbon::createFromTime(0, 40, 0, Timezone::IST)->timestamp;;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        // |     ███████████████████████                                        |
+        // |                ██████████████████████████████████████████████████████∞
+        $request['content']['begin'] = Carbon::createFromTime(0, 30, 0, Timezone::IST)->timestamp;
+        unset($request['content']['end']);
+        $this->expectException(Exception\BadRequestException::class);
+        $this->expectExceptionMessage('A conflicting gateway downtime already exists.');
+        $this->makeRequestAndGetContent($request);
+    }
+
+    public function testGatewayCreateOverlappingWithBothNullEndDowntimeViaDashboard1()
+    {
+        $request = $this->getDowntimeCreationRequest();
+
+        $this->ba->adminAuth();
+
+        $request['content']['begin'] = Carbon::createFromTime(0, 20, 0, Timezone::IST)->timestamp;
+        unset($request['content']['end']);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        // |                ██████████████████████████████████████████████████████∞
+        // |     █████████████████████████████████████████████████████████████████∞
+        $request['content']['begin'] = Carbon::createFromTime(0, 10, 0, Timezone::IST)->timestamp;
+        unset($request['content']['end']);
+        $this->expectException(Exception\BadRequestException::class);
+        $this->expectExceptionMessage('A conflicting gateway downtime already exists.');
+        $this->makeRequestAndGetContent($request);
+    }
+
+    public function testGatewayCreateOverlappingWithBothNullEndDowntimeViaDashboard2()
+    {
+        $request = $this->getDowntimeCreationRequest();
+
+        $this->ba->adminAuth();
+
+        $request['content']['begin'] = Carbon::createFromTime(0, 10, 0, Timezone::IST)->timestamp;
+        unset($request['content']['end']);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        // |     █████████████████████████████████████████████████████████████████∞
+        // |                ██████████████████████████████████████████████████████∞
+        $request['content']['begin'] = Carbon::createFromTime(0, 20, 0, Timezone::IST)->timestamp;
+        unset($request['content']['end']);
+        $this->expectException(Exception\BadRequestException::class);
+        $this->expectExceptionMessage('A conflicting gateway downtime already exists.');
+        $this->makeRequestAndGetContent($request);
+    }
+
+    public function testGatewayCreateNonOverlappingDowntimeViaDashboard1()
+    {
+        $request = $this->getDowntimeCreationRequest();
+
+        $this->ba->adminAuth();
+
+        $request['content']['begin'] = Carbon::createFromTime(0, 20, 0, Timezone::IST)->timestamp;
+        $request['content']['end'] = Carbon::createFromTime(0, 40, 0, Timezone::IST)->timestamp;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        // |                      ███████████████                               |
+        // |     ███████████████                                                |
+        $request['content']['begin'] = Carbon::createFromTime(0, 0, 0, Timezone::IST)->timestamp;
+        $request['content']['end'] = Carbon::createFromTime(0, 10, 0, Timezone::IST)->timestamp;
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertNotNull($response['id']);
+    }
+
+    public function testGatewayCreateNonOverlappingDowntimeViaDashboard2()
+    {
+        $request = $this->getDowntimeCreationRequest();
+
+        $this->ba->adminAuth();
+
+        $request['content']['begin'] = Carbon::createFromTime(0, 20, 0, Timezone::IST)->timestamp;
+        $request['content']['end'] = Carbon::createFromTime(0, 40, 0, Timezone::IST)->timestamp;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        // |                      ███████████████                               |
+        // |                                        ███████████████             |
+        $request['content']['begin'] = Carbon::createFromTime(0, 50, 0, Timezone::IST)->timestamp;
+        $request['content']['end'] = Carbon::createFromTime(1, 0, 0, Timezone::IST)->timestamp;
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertNotNull($response['id']);
+    }
+
+    public function testGatewayCreateNonOverlappingWithExistingNullEndDowntimeViaDashboard()
+    {
+        $request = $this->getDowntimeCreationRequest();
+
+        $this->ba->adminAuth();
+
+        $request['content']['begin'] = Carbon::createFromTime(0, 20, 0, Timezone::IST)->timestamp;
+        unset($request['content']['end']);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        // |                      ████████████████████████████████████████████████∞
+        // |     ███████████████                                                |
+        $request['content']['begin'] = Carbon::createFromTime(0, 0, 0, Timezone::IST)->timestamp;
+        $request['content']['end'] = Carbon::createFromTime(0, 10, 0, Timezone::IST)->timestamp;
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertNotNull($response['id']);
+    }
+
+    public function testGatewayCreateNonOverlappingWithNewNullEndDowntimeViaDashboard()
+    {
+        $request = $this->getDowntimeCreationRequest();
+
+        $this->ba->adminAuth();
+
+        $request['content']['begin'] = Carbon::createFromTime(0, 20, 0, Timezone::IST)->timestamp;
+        $request['content']['end'] = Carbon::createFromTime(0, 40, 0, Timezone::IST)->timestamp;;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        // |     ███████████████                                                |
+        // |                      ████████████████████████████████████████████████∞
+        $request['content']['begin'] = Carbon::createFromTime(0, 50, 0, Timezone::IST)->timestamp;
+        unset($request['content']['end']);
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertNotNull($response['id']);
+    }
+
+    protected function getDowntimeCreationRequest(): array
+    {
+        return [
+            'content' => [
+                'gateway'     => 'netbanking_hdfc',
+                'reason_code' => 'LOW_SUCCESS_RATE',
+                'method'      => 'netbanking',
+                'issuer'      => 'HDFC',
+                'comment'     => 'Test Reason',
+                'source'      => 'statuscake',
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ];
     }
 }

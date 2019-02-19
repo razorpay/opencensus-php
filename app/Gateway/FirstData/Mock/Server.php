@@ -179,24 +179,21 @@ class Server extends Base\Mock\Server
 
         $content = [
             FirstData\ApiResponseFields::APPROVAL_CODE               => $this->getApprovalCode(),
-            FirstData\ApiResponseFields::AVS_RESPONSE                => "random",
-            FirstData\ApiResponseFields::BRAND                       => "MASTERCARD",
-            FirstData\ApiResponseFields::BUILDTIME                   => (string) $dateTime->format("Y.m.d @ H:i:s T"),
-            FirstData\ApiResponseFields::COMMERCIAL_SERVICE_PROVIDER => "random",
-            FirstData\ApiResponseFields::COUNTRY                     => "RANDOM_COUNTRY_CODE",
-            FirstData\ApiResponseFields::IPG_TRANSACTION_ID          => random_integer(10),
+            FirstData\ApiResponseFields::AVS_RESPONSE                => 'random',
+            FirstData\ApiResponseFields::BRAND                       => 'MASTERCARD',
+            FirstData\ApiResponseFields::COUNTRY                     => 'RANDOM_COUNTRY_CODE',
+            FirstData\ApiResponseFields::COMMERCIAL_SERVICE_PROVIDER => 'random',
             FirstData\ApiResponseFields::ORDER_ID                    => $body['Transaction']['TransactionDetails']['OrderId'],
-            FirstData\ApiResponseFields::PAYMENT_TYPE                => "RANDOM_PAYMENT_TYPE",
-            FirstData\ApiResponseFields::PROCESSOR_APPROVAL_CODE     => "007121",
-            FirstData\ApiResponseFields::PROCESSOR_RESPONSE_CODE     => "00",
-            FirstData\ApiResponseFields::PROCESSOR_RESPONSE_MESSAGE  => "Function performed error-free",
-            FirstData\ApiResponseFields::REFERENCED_TDATE            => (string) $dateTime->getTimestamp(),
+            FirstData\ApiResponseFields::IPG_TRANSACTION_ID          => random_integer(10),
+            FirstData\ApiResponseFields::PAYMENT_TYPE                => 'RANDOM_PAYMENT_TYPE',
+            FirstData\ApiResponseFields::PROCESSOR_APPROVAL_CODE     => '007121',
+            FirstData\ApiResponseFields::PROCESSOR_RESPONSE_CODE     => '00',
+            FirstData\ApiResponseFields::PROCESSOR_RESPONSE_MESSAGE  => 'Function performed error-free',
             FirstData\ApiResponseFields::TDATE                       => (string) $dateTime->getTimestamp() . random_integer(5),
-            FirstData\ApiResponseFields::TDATE_FORMATTED             => (string) $dateTime->format("Y.m.d H:i:s (T)"),
-            FirstData\ApiResponseFields::TERMINAL_ID                 => "random_terminal_id",
+            FirstData\ApiResponseFields::TDATE_FORMATTED             => (string) $dateTime->format('Y.m.d H:i:s (T)'),
+            FirstData\ApiResponseFields::TERMINAL_ID                 => 'random_terminal_id',
             FirstData\ApiResponseFields::TRANSACTION_RESULT          => FirstData\Status::APPROVED,
             FirstData\ApiResponseFields::TRANSACTION_TIME            => (string) $dateTime->getTimestamp(),
-            FirstData\ApiResponseFields::VERSION                     => "5.4.0-200",
         ];
 
         $this->content($content);
@@ -288,8 +285,18 @@ class Server extends Base\Mock\Server
 
         $oid = $inquiryOrder[FirstData\ApiRequestFields::ORDER_ID];
 
-        $soapContent = FirstData\SoapWrapper::verifyResponseWrapper($oid);
+        $this->content($content, 'verify_action');
 
+        // to ensure backward compatibility we will be setting the content to true in s2s flow test cases and to false
+        // for old flow and rupay flow..
+        if ($content === true)
+        {
+            $soapContent = FirstData\SoapWrapper::s2sVerifyResponseWrapper($oid);
+        }
+        else
+        {
+            $soapContent = FirstData\SoapWrapper::verifyResponseWrapper($oid);
+        }
         $this->content($soapContent, $this->action);
 
         return $this->prepareResponse($soapContent);
@@ -506,7 +513,7 @@ class Server extends Base\Mock\Server
     {
         $xml = $this->arrayToXml($content);
 
-        $response = FirstData\SoapWrapper::defaultWrapper($xml,Constants::IPGAPI_ORDER_RESPONSE);
+        $response = FirstData\SoapWrapper::defaultWrapper($xml, Constants::IPGAPI_ORDER_RESPONSE);
 
         return $response;
     }

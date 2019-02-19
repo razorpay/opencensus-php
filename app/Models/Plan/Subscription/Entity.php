@@ -545,6 +545,48 @@ class Entity extends Base\PublicEntity
     }
 
     /**
+     * Duplication of the conditions present in getSubscriptionToCharge
+     * Used to re-check the conditions before charging a subscription,
+     * to avoid race conditions arising from parallel processes
+     * @return boolean [description]
+     */
+    public function isChargeable(): bool
+    {
+        $currentTime = Carbon::now()->getTimestamp();
+
+        if ($this->getChargeAt() > $currentTime)
+        {
+            return false;
+        }
+
+        if (in_array($this->getStatus(), Status::$cronChargeableStatuses, true) === false)
+        {
+            return false;
+        }
+
+        if (($this->getEndedAt() !== null) or
+            ($this->getCancelAt() !== null))
+        {
+            return false;
+        }
+
+        if (($this->getAuthAttempts() !== 0) and
+            (($this->getAuthAttempts() !== Charge::MAX_AUTH_ATTEMPTS) or
+             ($this->getStatus() !== Status::HALTED)))
+        {
+            return false;
+        }
+
+        if (($this->getCurrentEnd() !== null) and
+            ($this->getCurrentEnd() > $currentTime))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Subscription time fields are only to be updated under certain conditions
      * - Latest invoice of a subscription is being charged
      * -         AND

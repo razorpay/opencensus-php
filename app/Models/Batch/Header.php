@@ -36,16 +36,17 @@ class Header
     //
     // Payment Link Headers
     //
-    const INVOICE_NUMBER      = 'Invoice Number';
-    const CUSTOMER_NAME       = 'Customer Name';
-    const CUSTOMER_EMAIL      = 'Customer Email';
-    const CUSTOMER_CONTACT    = 'Customer Contact';
-    const AMOUNT_IN_PAISE     = 'Amount (In Paise)';
-    const DESCRIPTION         = 'Description';
-    const EXPIRE_BY           = 'Expire By';
-    const PARTIAL_PAYMENT     = 'Partial Payment';
-    const PAYMENT_LINK_ID     = 'Payment Link Id';
-    const SHORT_URL           = 'Payment Link Short URL';
+    const INVOICE_NUMBER           = 'Invoice Number';
+    const CUSTOMER_NAME            = 'Customer Name';
+    const CUSTOMER_EMAIL           = 'Customer Email';
+    const CUSTOMER_CONTACT         = 'Customer Contact';
+    const AMOUNT_IN_PAISE          = 'Amount (In Paise)';
+    const DESCRIPTION              = 'Description';
+    const EXPIRE_BY                = 'Expire By';
+    const PARTIAL_PAYMENT          = 'Partial Payment';
+    const PAYMENT_LINK_ID          = 'Payment Link Id';
+    const SHORT_URL                = 'Payment Link Short URL';
+    const FIRST_PAYMENT_MIN_AMOUNT = 'First Payment Min Amount (In Paise)';
 
     //
     // IRCTC Headers
@@ -101,6 +102,9 @@ class Header
     const PROMOTER_PAN             = 'promoter_pan';
     const PROMOTER_PAN_NAME        = 'promoter_pan_name';
     const WEBSITE_URL              = 'website';
+    const COMPANY_PAN_NAME         = 'company_pan_name';
+    const COMPANY_CIN              = 'company_cin';
+    const COMPANY_PAN              = 'company_pan';
 
     //
     // Virtual Account Bulk Creation Headers
@@ -276,22 +280,56 @@ class Header
     const ENACH_DEBIT_REASON_DESCRIPTION    = EnachRblDebitHeadings::REASON_DESCRIPTION;
 
     //
-    // Payout headers
+    //enach npci netbanking register headers
     //
-    const PAYOUT_CUSTOMER_ID         = 'customer_id';
-    const PAYOUT_CUSTOMER_NAME       = 'customer_name';
-    const PAYOUT_CUSTOMER_CONTACT    = 'customer_contact';
-    const PAYOUT_CUSTOMER_EMAIL      = 'customer_email';
-    const PAYOUT_BANK_ACCOUNT_ID     = 'bank_account_id';
-    const PAYOUT_BANK_ACCOUNT_NUMBER = 'bank_account_number';
-    const PAYOUT_BANK_IFSC           = 'bank_ifsc';
-    const PAYOUT_ID                  = 'payout_id';
-    const PAYOUT_METHOD              = 'payout_method';
-    const PAYOUT_AMOUNT              = 'payout_amount';
-    const PAYOUT_CURRENCY            = 'payout_currency';
-    const PAYOUT_NOTES               = 'payout_notes';
-    const PAYOUT_FEE                 = 'payout_fee';
-    const PAYOUT_TAX                 = 'payout_tax';
+    const ENACH_NPCI_NETBANKING_REGISTER_UMRN              = 'UMRN';
+    const ENACH_NPCI_NETBANKING_REGISTER_STATUS            = 'STATUS';
+    const ENACH_NPCI_NETBANKING_REGISTER_PAYMENT_ID        = 'MESSAGE ID';
+    const ENACH_NPCI_NETBANKING_REGISTER_MANDATE_DATE      = 'MANDATE DATE';
+    const ENACH_NPCI_NETBANKING_REGISTER_MANDATE_ID        = 'MANDATE ID';
+    const ENACH_NPCI_NETBANKING_REGISTER_CUST_REF_NO       = 'CUST REF NO';
+    const ENACH_NPCI_NETBANKING_REGISTER_SCH_REF_NO        = 'SCH REF NO';
+    const ENACH_NPCI_NETBANKING_REGISTER_CUST_NAME         = 'CUST NAME';
+    const ENACH_NPCI_NETBANKING_REGISTER_BANK              = 'BANK';
+    const ENACH_NPCI_NETBANKING_REGISTER_BRANCH            = 'BRANCH';
+    const ENACH_NPCI_NETBANKING_REGISTER_BANK_CODE         = 'BANK CODE';
+    const ENACH_NPCI_NETBANKING_REGISTER_AC_TYPE           = 'AC TYPE';
+    const ENACH_NPCI_NETBANKING_REGISTER_AC_NO             = 'AC NO';
+    const ENACH_NPCI_NETBANKING_REGISTER_AMOUNT            = 'AMOUNT';
+    const ENACH_NPCI_NETBANKING_REGISTER_FREQUENCY         = 'FREQUENCY';
+    const ENACH_NPCI_NETBANKING_REGISTER_DEBIT_TYPE        = 'DEBIT TYPE';
+    const ENACH_NPCI_NETBANKING_REGISTER_START_DATE        = 'START DATE';
+    const ENACH_NPCI_NETBANKING_REGISTER_END_DATE          = 'END DATE';
+    const ENACH_NPCI_NETBANKING_REGISTER_UNTIL_CANCEL      = 'UNTIL CANCEL';
+    const ENACH_NPCI_NETBANKING_REGISTER_TEL_NO            = 'TEL NO';
+    const ENACH_NPCI_NETBANKING_REGISTER_MOBILE_NO         = 'MOBILE NO';
+    const ENACH_NPCI_NETBANKING_REGISTER_MAIL_ID           = 'MAIL ID';
+    const ENACH_NPCI_NETBANKING_REGISTER_UPLOAD_DATE       = 'UPLOAD DATE';
+    const ENACH_NPCI_NETBANKING_REGISTER_RESPONSE_DATE     = 'RESPONSE DATE';
+    const ENACH_NPCI_NETBANKING_REGISTER_UTILITY_CODE      = 'UTILITY CODE';
+    const ENACH_NPCI_NETBANKING_REGISTER_UTILITY_NAME      = 'UTILITY NAME';
+    const ENACH_NPCI_NETBANKING_REGISTER_STATUS_CODE       = 'STATUS CODE';
+    const ENACH_NPCI_NETBANKING_REGISTER_REASON            = 'REASON';
+    const ENACH_NPCI_NETBANKING_REGISTER_MANDATE_REQID     = 'MANDATE REQID';
+
+    //
+    // enach npci netbanking debit headers
+    //
+    const ENACH_NPCI_NETBANKING_DEBIT_PRESENTATION_DATE = 'Presentation Date';
+    const ENACH_NPCI_NETBANKING_DEBIT_UMRN              = 'UMRN';
+    const ENACH_NPCI_NETBANKING_DEBIT_PAYMENT_ID        = 'Transaction Ref No';
+    const ENACH_NPCI_NETBANKING_DEBIT_UTILITY_CODE      = 'Utility Code';
+    const ENACH_NPCI_NETBANKING_DEBIT_BANK_ACC          = 'Bank A/c Number';
+    const ENACH_NPCI_NETBANKING_DEBIT_ACCOUNT_NAME      = 'Account Holder Name';
+    const ENACH_NPCI_NETBANKING_DEBIT_BANK              = 'Bank';
+    const ENACH_NPCI_NETBANKING_DEBIT__IFSC             = 'IFSC/MICR';
+    const ENACH_NPCI_NETBANKING_DEBIT_AMOUNT            = 'Amount';
+    const ENACH_NPCI_NETBANKING_DEBIT_REF_ONE           = 'Reference 1';
+    const ENACH_NPCI_NETBANKING_DEBIT_REF_TWO           = 'Reference 2';
+    const ENACH_NPCI_NETBANKING_DEBIT_STATUS            = 'Status';
+    const ENACH_NPCI_NETBANKING_DEBIT_ERROR_CODE        = 'Reason Code';
+    const ENACH_NPCI_NETBANKING_DEBIT_ERROR_DESCRIPTION = 'Reason Discription';
+    const ENACH_NPCI_NETBANKING_DEBIT_USER_REF          = 'User Reference';
 
     const DIRECT_DEBIT_EMAIL           = 'email';
     const DIRECT_DEBIT_CONTACT         = 'contact';
@@ -361,6 +399,66 @@ class Header
     const AUTH_LINK_SMS_SENT            = 'sent_sms';
     const AUTH_LINK_CREATED_AT          = 'created_at';
 
+    //
+    // Hitachi Bulk Terminal Creation Headers
+    //
+    const HITACHI_RID          = 'RID';
+    const HITACHI_MERCHANT_ID  = 'Merchant ID';
+    const HITACHI_SUB_IDS      = 'Sub IDs';
+    const HITACHI_MID          = 'MID';
+    const HITACHI_TID          = 'TID';
+    const HITACHI_PART_NAME    = 'Part Name';
+    const HITACHI_ME_NAME      = 'ME Name';
+    const HITACHI_LOCATION     = 'Location';
+    const HITACHI_CITY         = 'City';
+    const HITACHI_STATE        = 'State';
+    const HITACHI_COUNTRY      = 'Country';
+    const HITACHI_MCC          = 'MCC';
+    const HITACHI_TERM_STATUS  = 'Term Status';
+    const HITACHI_ME_STATUS    = 'ME Status';
+    const HITACHI_ZIPCODE      = 'ZIPCode';
+    const HITACHI_SWIPER_ID    = 'Swiper ID';
+    const HITACHI_SPONSOR_BANK = 'Sponsor Bank';
+    const HITACHI_CURRENCY     = 'Currency';
+    const HITACHI_TERMINAL_ID  = 'Terminal ID';
+    const FAILURE_REASON       = 'Failure Reason';
+
+    //
+    // ICICI netbanking bulk terminal creation headers
+    //
+    const ICIC_NB_MERCHANT_ID  = 'merchant_id';
+    const ICIC_NB_SUB_IDS      = 'Sub IDs';
+    const ICIC_NB_GATEWAY_MID  = 'SPID';
+    const ICIC_NB_GATEWAY_MID2 = 'Payee ID';
+    const ICIC_NB_SECTOR       = 'Sector';
+    const ICIC_NB_TERMINAL_ID  = 'Terminal ID';
+
+    // Contact Headers
+    const CONTACT_ID                  = 'Contact Id';
+    const CONTACT_TYPE                = 'Contact Type';
+    // Using small suffix as there exists with snake cased values. :(
+    const CONTACT_NAME_2              = 'Contact Name';
+    const CONTACT_EMAIL_2             = 'Contact Email';
+    const CONTACT_MOBILE_2            = 'Contact Mobile';
+    const CONTACT_REFERENCE_ID        = 'Contact Reference Id';
+
+    // Fund Account Headers, refer HEADER_MAP for full list of input & output headers.
+    const FUND_ACCOUNT_ID             = 'Fund Account Id';
+    const FUND_ACCOUNT_TYPE           = 'Fund Account Type';
+    const FUND_ACCOUNT_NAME           = 'Fund Account Name';
+    const FUND_ACCOUNT_IFSC           = 'Fund Account Ifsc';
+    const FUND_ACCOUNT_NUMBER         = 'Fund Account Number';
+    const FUND_ACCOUNT_VPA            = 'Fund Account Vpa';
+
+    // Payout Headers, refer HEADER_MAP for full list of input & output headers.
+    const RAZORPAYX_ACCOUNT_NUMBER = 'RazorpayX Account Number';
+    const PAYOUT_AMOUNT            = 'Payout Amount';
+    const PAYOUT_CURRENCY          = 'Payout Currency';
+    const PAYOUT_MODE              = 'Payout Mode';
+    const PAYOUT_PURPOSE           = 'Payout Purpose';
+    const PAYOUT_REFERENCE_ID      = 'Payout Reference Id';
+    const PAYOUT_ID                = 'Payout Id';
+
     /**
      * Input and output file headers
      * The keys need to be like <type>_<sub-type>_<gateway>.
@@ -401,6 +499,7 @@ class Header
                 self::DESCRIPTION,
                 self::EXPIRE_BY,
                 self::PARTIAL_PAYMENT,
+                self::NOTES,
             ],
 
             self::OUTPUT => [
@@ -412,6 +511,7 @@ class Header
                 self::DESCRIPTION,
                 self::EXPIRE_BY,
                 self::PARTIAL_PAYMENT,
+                self::NOTES,
                 self::STATUS,
                 self::PAYMENT_LINK_ID,
                 self::SHORT_URL,
@@ -627,6 +727,114 @@ class Header
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ]
+        ],
+
+        'emandate_register_enach_npci_netbanking' => [
+            self::INPUT => [
+                self::ENACH_NPCI_NETBANKING_REGISTER_MANDATE_DATE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_MANDATE_ID,
+                self::ENACH_NPCI_NETBANKING_REGISTER_UMRN,
+                self::ENACH_NPCI_NETBANKING_REGISTER_CUST_REF_NO,
+                self::ENACH_NPCI_NETBANKING_REGISTER_SCH_REF_NO,
+                self::ENACH_NPCI_NETBANKING_REGISTER_CUST_NAME,
+                self::ENACH_NPCI_NETBANKING_REGISTER_BANK,
+                self::ENACH_NPCI_NETBANKING_REGISTER_BRANCH,
+                self::ENACH_NPCI_NETBANKING_REGISTER_BANK_CODE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_AC_TYPE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_AC_NO,
+                self::ENACH_NPCI_NETBANKING_REGISTER_AMOUNT,
+                self::ENACH_NPCI_NETBANKING_REGISTER_FREQUENCY,
+                self::ENACH_NPCI_NETBANKING_REGISTER_DEBIT_TYPE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_START_DATE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_END_DATE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_UNTIL_CANCEL,
+                self::ENACH_NPCI_NETBANKING_REGISTER_TEL_NO,
+                self::ENACH_NPCI_NETBANKING_REGISTER_MOBILE_NO,
+                self::ENACH_NPCI_NETBANKING_REGISTER_MAIL_ID,
+                self::ENACH_NPCI_NETBANKING_REGISTER_UPLOAD_DATE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_RESPONSE_DATE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_UTILITY_CODE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_UTILITY_NAME,
+                self::ENACH_NPCI_NETBANKING_REGISTER_STATUS,
+                self::ENACH_NPCI_NETBANKING_REGISTER_STATUS_CODE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_REASON,
+                self::ENACH_NPCI_NETBANKING_REGISTER_MANDATE_REQID,
+                self::ENACH_NPCI_NETBANKING_REGISTER_PAYMENT_ID,
+            ],
+            self::OUTPUT => [
+                self::ENACH_NPCI_NETBANKING_REGISTER_MANDATE_DATE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_MANDATE_ID,
+                self::ENACH_NPCI_NETBANKING_REGISTER_UMRN,
+                self::ENACH_NPCI_NETBANKING_REGISTER_CUST_REF_NO,
+                self::ENACH_NPCI_NETBANKING_REGISTER_SCH_REF_NO,
+                self::ENACH_NPCI_NETBANKING_REGISTER_CUST_NAME,
+                self::ENACH_NPCI_NETBANKING_REGISTER_BANK,
+                self::ENACH_NPCI_NETBANKING_REGISTER_BRANCH,
+                self::ENACH_NPCI_NETBANKING_REGISTER_BANK_CODE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_AC_TYPE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_AC_NO,
+                self::ENACH_NPCI_NETBANKING_REGISTER_AMOUNT,
+                self::ENACH_NPCI_NETBANKING_REGISTER_FREQUENCY,
+                self::ENACH_NPCI_NETBANKING_REGISTER_DEBIT_TYPE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_START_DATE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_END_DATE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_UNTIL_CANCEL,
+                self::ENACH_NPCI_NETBANKING_REGISTER_TEL_NO,
+                self::ENACH_NPCI_NETBANKING_REGISTER_MOBILE_NO,
+                self::ENACH_NPCI_NETBANKING_REGISTER_MAIL_ID,
+                self::ENACH_NPCI_NETBANKING_REGISTER_UPLOAD_DATE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_RESPONSE_DATE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_UTILITY_CODE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_UTILITY_NAME,
+                self::ENACH_NPCI_NETBANKING_REGISTER_STATUS,
+                self::ENACH_NPCI_NETBANKING_REGISTER_STATUS_CODE,
+                self::ENACH_NPCI_NETBANKING_REGISTER_REASON,
+                self::ENACH_NPCI_NETBANKING_REGISTER_MANDATE_REQID,
+                self::ENACH_NPCI_NETBANKING_REGISTER_PAYMENT_ID,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        'emandate_debit_enach_npci_netbanking' => [
+            self::INPUT => [
+                self::ENACH_NPCI_NETBANKING_DEBIT_PRESENTATION_DATE,
+                self::ENACH_NPCI_NETBANKING_DEBIT_UMRN,
+                self::ENACH_NPCI_NETBANKING_DEBIT_PAYMENT_ID,
+                self::ENACH_NPCI_NETBANKING_DEBIT_UTILITY_CODE,
+                self::ENACH_NPCI_NETBANKING_DEBIT_BANK_ACC,
+                self::ENACH_NPCI_NETBANKING_DEBIT_ACCOUNT_NAME,
+                self::ENACH_NPCI_NETBANKING_DEBIT_BANK,
+                self::ENACH_NPCI_NETBANKING_DEBIT__IFSC,
+                self::ENACH_NPCI_NETBANKING_DEBIT_AMOUNT,
+                self::ENACH_NPCI_NETBANKING_DEBIT_REF_ONE,
+                self::ENACH_NPCI_NETBANKING_DEBIT_REF_TWO,
+                self::ENACH_NPCI_NETBANKING_DEBIT_STATUS,
+                self::ENACH_NPCI_NETBANKING_DEBIT_ERROR_CODE,
+                self::ENACH_NPCI_NETBANKING_DEBIT_ERROR_DESCRIPTION,
+                self::ENACH_NPCI_NETBANKING_DEBIT_USER_REF,
+            ],
+            self::OUTPUT => [
+                self::ENACH_NPCI_NETBANKING_DEBIT_PRESENTATION_DATE,
+                self::ENACH_NPCI_NETBANKING_DEBIT_UMRN,
+                self::ENACH_NPCI_NETBANKING_DEBIT_PAYMENT_ID,
+                self::ENACH_NPCI_NETBANKING_DEBIT_UTILITY_CODE,
+                self::ENACH_NPCI_NETBANKING_DEBIT_BANK_ACC,
+                self::ENACH_NPCI_NETBANKING_DEBIT_ACCOUNT_NAME,
+                self::ENACH_NPCI_NETBANKING_DEBIT_BANK,
+                self::ENACH_NPCI_NETBANKING_DEBIT__IFSC,
+                self::ENACH_NPCI_NETBANKING_DEBIT_AMOUNT,
+                self::ENACH_NPCI_NETBANKING_DEBIT_REF_ONE,
+                self::ENACH_NPCI_NETBANKING_DEBIT_REF_TWO,
+                self::ENACH_NPCI_NETBANKING_DEBIT_STATUS,
+                self::ENACH_NPCI_NETBANKING_DEBIT_ERROR_CODE,
+                self::ENACH_NPCI_NETBANKING_DEBIT_ERROR_DESCRIPTION,
+                self::ENACH_NPCI_NETBANKING_DEBIT_USER_REF,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
         ],
 
         Type::BANK_TRANSFER => [
@@ -852,37 +1060,6 @@ class Header
             ],
         ],
 
-        Type::PAYOUT => [
-            self::INPUT => [
-                self::PAYOUT_CUSTOMER_NAME,
-                self::PAYOUT_CUSTOMER_CONTACT,
-                self::PAYOUT_CUSTOMER_EMAIL,
-                self::PAYOUT_BANK_ACCOUNT_NUMBER,
-                self::PAYOUT_BANK_IFSC,
-                self::PAYOUT_METHOD,
-                self::PAYOUT_AMOUNT,
-                self::PAYOUT_CURRENCY,
-                self::PAYOUT_NOTES,
-            ],
-
-            self::OUTPUT => [
-                self::PAYOUT_CUSTOMER_ID,
-                self::PAYOUT_CUSTOMER_NAME,
-                self::PAYOUT_CUSTOMER_CONTACT,
-                self::PAYOUT_CUSTOMER_EMAIL,
-                self::PAYOUT_BANK_ACCOUNT_ID,
-                self::PAYOUT_BANK_ACCOUNT_NUMBER,
-                self::PAYOUT_BANK_IFSC,
-                self::PAYOUT_ID,
-                self::PAYOUT_METHOD,
-                self::PAYOUT_AMOUNT,
-                self::PAYOUT_CURRENCY,
-                self::PAYOUT_NOTES,
-                self::PAYOUT_FEE,
-                self::PAYOUT_TAX,
-            ],
-        ],
-
         Type::SUB_MERCHANT => [
 
             self::INPUT  => [
@@ -917,6 +1094,9 @@ class Header
                 self::BANK_ACCOUNT_NAME,
                 self::BANK_BRANCH_IFSC,
                 self::BANK_ACCOUNT_NUMBER,
+                self::COMPANY_CIN,
+                self::COMPANY_PAN,
+                self::COMPANY_PAN_NAME,
             ],
 
             self::OUTPUT => [
@@ -1097,6 +1277,178 @@ class Header
                 self::ERROR_DESCRIPTION,
             ],
         ],
+
+        'terminal_netbanking_icici' => [
+            self::INPUT => [
+                self::ICIC_NB_GATEWAY_MID,
+                self::ICIC_NB_GATEWAY_MID2,
+                self::ICIC_NB_MERCHANT_ID,
+                self::ICIC_NB_SECTOR,
+                self::ICIC_NB_SUB_IDS,
+            ],
+            self::OUTPUT => [
+                self::ICIC_NB_GATEWAY_MID,
+                self::ICIC_NB_GATEWAY_MID2,
+                self::ICIC_NB_MERCHANT_ID,
+                self::ICIC_NB_SECTOR,
+                self::ICIC_NB_SUB_IDS,
+                self::ICIC_NB_TERMINAL_ID,
+                self::STATUS,
+                self::FAILURE_REASON
+            ]
+        ],
+
+        'terminal_hitachi' => [
+            self::INPUT => [
+                self::HITACHI_RID,
+                self::HITACHI_MERCHANT_ID,
+                self::HITACHI_SUB_IDS,
+                self::HITACHI_MID,
+                self::HITACHI_TID,
+                self::HITACHI_PART_NAME,
+                self::HITACHI_ME_NAME,
+                self::HITACHI_LOCATION,
+                self::HITACHI_CITY,
+                self::HITACHI_STATE,
+                self::HITACHI_COUNTRY,
+                self::HITACHI_MCC,
+                self::HITACHI_TERM_STATUS,
+                self::HITACHI_ME_STATUS,
+                self::HITACHI_ZIPCODE,
+                self::HITACHI_SWIPER_ID,
+                self::HITACHI_SPONSOR_BANK,
+                self::HITACHI_CURRENCY,
+            ],
+            self::OUTPUT => [
+                self::HITACHI_RID,
+                self::HITACHI_MERCHANT_ID,
+                self::HITACHI_SUB_IDS,
+                self::HITACHI_MID,
+                self::HITACHI_TID,
+                self::HITACHI_PART_NAME,
+                self::HITACHI_ME_NAME,
+                self::HITACHI_LOCATION,
+                self::HITACHI_CITY,
+                self::HITACHI_STATE,
+                self::HITACHI_COUNTRY,
+                self::HITACHI_MCC,
+                self::HITACHI_TERM_STATUS,
+                self::HITACHI_ME_STATUS,
+                self::HITACHI_ZIPCODE,
+                self::HITACHI_SWIPER_ID,
+                self::HITACHI_SPONSOR_BANK,
+                self::HITACHI_CURRENCY,
+                self::HITACHI_TERMINAL_ID,
+                self::STATUS,
+                self::FAILURE_REASON,
+            ],
+        ],
+
+        Type::CONTACT => [
+            self::INPUT => [
+                self::CONTACT_TYPE,
+                self::CONTACT_NAME_2,
+                self::CONTACT_EMAIL_2,
+                self::CONTACT_MOBILE_2,
+                self::CONTACT_REFERENCE_ID,
+                self::NOTES,
+            ],
+            self::OUTPUT => [
+                self::CONTACT_TYPE,
+                self::CONTACT_NAME_2,
+                self::CONTACT_EMAIL_2,
+                self::CONTACT_MOBILE_2,
+                self::CONTACT_REFERENCE_ID,
+                self::NOTES,
+                self::CONTACT_ID,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::FUND_ACCOUNT => [
+            self::INPUT => [
+                self::FUND_ACCOUNT_TYPE,
+                self::FUND_ACCOUNT_NAME,
+                self::FUND_ACCOUNT_IFSC,
+                self::FUND_ACCOUNT_NUMBER,
+                self::FUND_ACCOUNT_VPA,
+                self::CONTACT_ID,
+                self::CONTACT_TYPE,
+                self::CONTACT_NAME_2,
+                self::CONTACT_EMAIL_2,
+                self::CONTACT_MOBILE_2,
+                self::CONTACT_REFERENCE_ID,
+                // Contact's notes.
+                self::NOTES,
+            ],
+            self::OUTPUT => [
+                self::FUND_ACCOUNT_TYPE,
+                self::FUND_ACCOUNT_NAME,
+                self::FUND_ACCOUNT_IFSC,
+                self::FUND_ACCOUNT_NUMBER,
+                self::FUND_ACCOUNT_VPA,
+                self::CONTACT_ID,
+                self::CONTACT_TYPE,
+                self::CONTACT_NAME_2,
+                self::CONTACT_EMAIL_2,
+                self::CONTACT_MOBILE_2,
+                self::CONTACT_REFERENCE_ID,
+                // Contact's notes.
+                self::NOTES,
+                self::FUND_ACCOUNT_ID,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::PAYOUT => [
+            self::INPUT => [
+                self::RAZORPAYX_ACCOUNT_NUMBER,
+                self::PAYOUT_AMOUNT,
+                self::PAYOUT_CURRENCY,
+                self::PAYOUT_MODE,
+                self::PAYOUT_PURPOSE,
+                self::PAYOUT_REFERENCE_ID,
+                self::FUND_ACCOUNT_ID,
+                self::FUND_ACCOUNT_TYPE,
+                self::FUND_ACCOUNT_NAME,
+                self::FUND_ACCOUNT_IFSC,
+                self::FUND_ACCOUNT_NUMBER,
+                self::FUND_ACCOUNT_VPA,
+                self::CONTACT_TYPE,
+                self::CONTACT_NAME_2,
+                self::CONTACT_EMAIL_2,
+                self::CONTACT_MOBILE_2,
+                self::CONTACT_REFERENCE_ID,
+                // Payout's notes.
+                self::NOTES,
+            ],
+            self::OUTPUT => [
+                self::RAZORPAYX_ACCOUNT_NUMBER,
+                self::PAYOUT_AMOUNT,
+                self::PAYOUT_CURRENCY,
+                self::PAYOUT_MODE,
+                self::PAYOUT_PURPOSE,
+                self::PAYOUT_REFERENCE_ID,
+                self::FUND_ACCOUNT_ID,
+                self::FUND_ACCOUNT_TYPE,
+                self::FUND_ACCOUNT_NAME,
+                self::FUND_ACCOUNT_IFSC,
+                self::FUND_ACCOUNT_NUMBER,
+                self::FUND_ACCOUNT_VPA,
+                self::CONTACT_TYPE,
+                self::CONTACT_NAME_2,
+                self::CONTACT_EMAIL_2,
+                self::CONTACT_MOBILE_2,
+                self::CONTACT_REFERENCE_ID,
+                // Payout's notes.
+                self::NOTES,
+                self::PAYOUT_ID,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
     ];
 
     /**
@@ -1128,6 +1480,16 @@ class Header
             (in_array(self::NOTES, $actualHeaders, true) === false))
         {
             $actualHeaders[] = self::NOTES;
+        }
+
+        //
+        // For PL batch, we want to optionally accept the FIRST_PAYMENT_MIN_AMOUNT
+        // headers. This is temporary until we have support for optional headers.
+        //
+        if (($type === Type::PAYMENT_LINK) and
+            ((in_array(self::FIRST_PAYMENT_MIN_AMOUNT, $actualHeaders, true) === true)))
+        {
+            $expectedHeaders[] = self::FIRST_PAYMENT_MIN_AMOUNT;
         }
 
         $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);

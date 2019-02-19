@@ -6,7 +6,7 @@ use RZP\Services\Aws\Credentials\FileCache;
 // By default aws's php sdk usage InstanceProfileProvider mechanism to get credentials from EC2 meta data server.
 // We cache the result in file system(by using FileCache adapter).
 //
-$awsCredentialsProvider = new FileCache;
+$awsCredentialsCache = new FileCache;
 
 return [
 
@@ -185,6 +185,26 @@ return [
         'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
         'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
     ],
+    'instant_fund_transfer' => [
+        'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
+        'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
+    ],
+    'fund_transfer_recon_update' => [
+        'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
+        'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
+    ],
+    'fund_transfer_status_check' => [
+        'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
+        'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
+    ],
+    'fts_create_account' => [
+        'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
+        'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
+    ],
+    'fts_register_account' => [
+        'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
+        'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
+    ],
     /*
      | Lists various queues to be used per mailable
      */
@@ -230,7 +250,13 @@ return [
             'prefix'      => env('AWS_QUEUE_PREFIX'),
             'queue'       => env('AWS_DEFAULT_QUEUE'),
             'region'      => env('AWS_REGION'),
-            'credentials' => $awsCredentialsProvider,
+            //
+            // This timeout is only used for getting credentials from instance meta server.
+            // This timeout is "not" for normal http operations of sdk, e.g. push sqs job, publish sns message etc
+            // for which there is another argument/option i.e. http.timeout.
+            //
+            'timeout'     => 3.0,
+            'credentials' => $awsCredentialsCache,
         ],
 
         // TODO: Update brahma's & k8s code & remove this block
@@ -242,7 +268,9 @@ return [
             'prefix'      => env('AWS_QUEUE_PREFIX'),
             'queue'       => env('AWS_DEFAULT_QUEUE'),
             'region'      => env('AWS_REGION'),
-            'credentials' => $awsCredentialsProvider,
+            // See sqs.timeout configuration above.
+            'timeout'     => 3.0,
+            'credentials' => $awsCredentialsCache,
         ],
 
         // TODO: Slack lib should expose method to set just queue name instead of connection
@@ -253,7 +281,9 @@ return [
             'prefix'      => env('AWS_QUEUE_PREFIX'),
             'queue'       => env('AWS_EMAILS_QUEUE'),
             'region'      => env('AWS_REGION'),
-            'credentials' => $awsCredentialsProvider,
+            // See sqs.timeout configuration above.
+            'timeout'     => 3.0,
+            'credentials' => $awsCredentialsCache,
         ],
 
         'redis' => [

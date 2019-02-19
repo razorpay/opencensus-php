@@ -4,15 +4,20 @@ namespace RZP\Models\FundTransfer\Attempt;
 
 use Mail;
 use Carbon\Carbon;
+use Monolog\Logger;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Jobs\AttemptStatusCheck;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Settlement\Channel;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Settlement\SlackNotification;
+use RZP\Models\FundTransfer\Mode as TransferMode;
+use RZP\Models\FundTransfer\Mode as FundTransferMode;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Mail\Settlement\Reconciliation as ReconciliationEmail;
 use RZP\Mail\Settlement\CriticalFailure as CriticalFailureEmail;
@@ -67,21 +72,65 @@ class BulkRecon extends Base\Core
         return $data;
     }
 
+    public function processIndividualEntity(Entity $fta)
+    {
+        $attempts = (new Base\PublicCollection)->push($fta);
+
+        $channel = $fta->getChannel();
+
+        (new Lock($channel))->acquireLockAndProcessAttempts(
+            $attempts,
+            function(Base\PublicCollection $collection)
+            {
+                return $this->initiateBulkReconProcess($collection);
+            });
+
+        $this->fireSettlementWebhook();
+    }
+
     public function processEntities()
     {
         list($from, $to) = $this->getTimestamps();
 
-        $relations = ['source', 'source.transaction', 'source.merchant' , 'batchFundTransfer'];
+        $attempts = $this->repo
+                         ->fund_transfer_attempt
+                         ->getAttemptsBetweenTimestampsWithStatus($this->channel, Status::INITIATED, $from, $to);
 
-        $ftaIds = $this->repo
-                       ->fund_transfer_attempt
-                       ->getAttemptsBetweenTimestampsWithStatus($this->channel, Status::INITIATED, $from, $to)
-                       ->pluck(FundTransferAttempt\Entity::ID)
-                       ->toArray();
+        (new Lock( $this->channel))->acquireLockAndProcessAttempts(
+            $attempts,
+            function(Base\PublicCollection $collection)
+            {
+                return $this->initiateBulkReconProcess($collection);
+            });
+
+        try
+        {
+            $summary = $this->getSummary();
+
+            (new SlackNotification)->send('setl_reconciliation', $summary, null, $summary['failures_count']);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::SETTLEMENT_RECON_NOTIFIER_FAILED);
+        }
+
+        $this->fireSettlementWebhook();
+
+        return $summary;
+    }
+
+    protected function initiateBulkReconProcess(Base\PublicCollection $attempts)
+    {
+        $ftaIds = $attempts->getIds();
+
+        $relations = ['source', 'source.transaction', 'source.merchant' , 'batchFundTransfer'];
 
         $chunks = array_chunk($ftaIds, 1000);
 
-        $entityProcessor = '\\RZP\\Models\FundTransfer\\' . ucfirst($this->channel) . '\\Reconciliation\\EntityProcessor';
+        $entityProcessor = $this->getEntityProcessorClass($this->channel);
 
         $this->repo->transactionOnLiveAndTest(function() use ($ftaIds, $relations, $chunks, $entityProcessor)
         {
@@ -102,17 +151,13 @@ class BulkRecon extends Base\Core
                         $this->updateBatchFundTransferStats($entity);
 
                         $this->updateCriticalErrorsSummary($fta);
+
+                        $this->dispatchForStatusCheck($fta);
                     }
                 }
 
                 // Update batch stats post reconciliations
-                foreach ($this->batchFundTransferStats as $batchId => $attrs)
-                {
-                    $batchEntity = $this->repo->batch_fund_transfer->findByPublicId($batchId);
-                    $batchEntity->setProcessedCount($attrs['processed_count']);
-                    $batchEntity->setProcessedAmount($attrs['processed_amount']);
-                    $batchEntity->saveOrFail();
-                }
+                $this->updateBatchProcess();
             }
             catch (\Throwable $e)
             {
@@ -121,22 +166,51 @@ class BulkRecon extends Base\Core
                 throw $e;
             }
         });
+    }
 
+    // This will dispatch the fta id for status check if the recon dint derive the final status for the attempt
+    // It will only dispatch for status check only if the transfer mode is IMPS and status is initiated
+    protected function dispatchForStatusCheck(Entity $attempt)
+    {
         try
         {
-            $summary = $this->getSummary();
+            if (($attempt->getMode() !== TransferMode::IMPS) or ($attempt->getStatus() !== Status::INITIATED))
+            {
+                return;
+            }
 
-            (new SlackNotification)->send('setl_reconciliation', $summary, null, $summary['failures_count']);
+            $ageOfAttempt = Carbon::now(Timezone::IST)->getTimestamp() - $attempt->getCreatedAt();
 
+            // If the attempt is more then 30 min old then don't dispatch for status check
+            if ($ageOfAttempt >= Constants::MAX_AGE_ATTEMPT_STATUS_DISPATCH_AGE)
+            {
+                return;
+            }
+
+            AttemptStatusCheck::dispatch($this->mode, $attempt->getId())->delay(Constants::IMPS_STATUS_CHECK_DISPATCH_TIME);
+
+            $this->trace->info(
+                TraceCode::FTA_STATUS_CHECK_JOB_DISPATCHED,
+                [
+                    'mode'   => $this->mode,
+                    'fta_id' => $attempt->getId(),
+                ]);
         }
         catch (\Throwable $e)
         {
             $this->trace->traceException(
                 $e,
-                Trace::CRITICAL,
-                TraceCode::SETTLEMENT_RECON_NOTIFIER_FAILED);
+                Logger::ERROR,
+                TraceCode::FTA_STATUS_CHECK_DISPATCH_FAILED,
+                [
+                    'mode'   => $this->mode,
+                    'fta_id' => $attempt->getId(),
+                ]);
         }
+    }
 
+    protected function fireSettlementWebhook()
+    {
         // Isolating the webhook flow in a try-catch, to keep the original settlement cycle unaffected
         try
         {
@@ -156,8 +230,17 @@ class BulkRecon extends Base\Core
                 TraceCode::SETTLEMENT_PROCESSED_WEBHOOOK_FAILED,
                 ['entities' => $entityIds]);
         }
+    }
 
-        return $summary;
+    protected function updateBatchProcess()
+    {
+        foreach ($this->batchFundTransferStats as $batchId => $attrs)
+        {
+            $batchEntity = $this->repo->batch_fund_transfer->findByPublicId($batchId);
+            $batchEntity->setProcessedCount($attrs['processed_count']);
+            $batchEntity->setProcessedAmount($attrs['processed_amount']);
+            $batchEntity->saveOrFail();
+        }
     }
 
     protected function notifyCriticalErrors()
@@ -232,7 +315,7 @@ class BulkRecon extends Base\Core
             'ids'     => []
         ];
 
-        $statusClass = $this->getStatusClass($this->channel);
+        $statusClass = $this->getStatusClass($entity);
 
         $isCriticalError = $statusClass::isCriticalError($entity);
 
@@ -242,6 +325,12 @@ class BulkRecon extends Base\Core
         }
 
         $remark = $entity->getRemarks();
+
+        if (($this->channel === Channel::ICICI) and
+            ($entity->getMode() === FundTransferMode::RTGS))
+        {
+            $remark = $entity->getBankStatusCode();
+        }
 
         $this->notificationSummary = (empty($this->notificationSummary) === true) ?
                                         $default : $this->notificationSummary;
@@ -258,9 +347,21 @@ class BulkRecon extends Base\Core
         $this->notificationSummary[$remark]++;
     }
 
-    protected function getStatusClass(string $channel)
+    protected function getStatusClass(FundTransferAttempt\Entity $entity)
     {
+        $channel = $entity->getChannel();
+
+        if ($entity->hasVpa() === true)
+        {
+            return '\\RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\GatewayStatus';
+        }
+
         return "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\Reconciliation\\Status";
+    }
+
+    protected function getEntityProcessorClass(string $channel)
+    {
+        return '\\RZP\\Models\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\EntityProcessor';
     }
 
     protected function getSummary(): array

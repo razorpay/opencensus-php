@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
+use RZP\Models\Transaction;
 use RZP\Models\Transaction\Core as TransactionCore;
 
 trait TransactionTrait
@@ -42,7 +43,7 @@ trait TransactionTrait
     {
         return $this->transaction(function() use ($payout)
         {
-            return (new TransactionCore)->createFromPayout($payout);
+            return (new Transaction\Processor\Payout($payout))->createTransaction()[0];
         });
     }
 

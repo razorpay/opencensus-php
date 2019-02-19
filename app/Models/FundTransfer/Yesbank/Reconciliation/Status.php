@@ -5,9 +5,9 @@ namespace RZP\Models\FundTransfer\Yesbank\Reconciliation;
 use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
-use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\FundTransfer\Yesbank\Mode;
 use RZP\Models\FundTransfer\Base\Reconciliation\Status as BaseStatus;
 
 class Status extends BaseStatus
@@ -65,6 +65,8 @@ class Status extends BaseStatus
 
     const INVALID_BENEFICIARY_DETAILS   = 'INVALID_BENEFICIARY_DETAILS';
 
+    const TRANSFER_TIMEOUT              = 'TRANSFER_TIMEOUT';
+
     const BENE_ACCOUNT_BLOCKED          = 'BENE_ACCOUNT_BLOCKED';
 
     const BENE_NOT_REGISTERED           = 'BENE_NOT_REGISTERED';
@@ -76,6 +78,8 @@ class Status extends BaseStatus
     const INVALID_ACCOUNT_DETAILS       = 'INVALID_ACCOUNT_DETAILS';
 
     const ACQUIRING_BANK_CBS_OFFLINE    = 'ACQUIRING_BANK_CBS_OFFLINE';
+
+    const INVALID_REQUEST               = 'INVALID_REQUEST';
 
     // Map to the derived state
     const STATUS_MAP = [
@@ -97,13 +101,13 @@ class Status extends BaseStatus
             'sfms:E18'   => self::BAD_GATEWAY,
             'ns:E6001'   => self::BENE_NOT_REGISTERED,
             'ns:E2005'   => self::BENE_NOT_REGISTERED,
+            'ns:E400'    => self::INVALID_REQUEST,
 
             // Merchant Errors
             'ns:E406'    => self::BENEFICIARY_NOT_ACCEPTED,
             'flex:E449'  => self::BENEFICIARY_NOT_ACCEPTED,
             'flex:E8087' => self::INVALID_BENEFICIARY_DETAILS,
             'flex:E9072' => self::INVALID_BENEFICIARY_DETAILS,
-            'flex:E8087' => self::INVALID_BENEFICIARY_DETAILS,
             'npci:E449'  => self::BENEFICIARY_NOT_ACCEPTED,
             'npci:E08'   => self::ACQUIRING_BANK_CBS_OFFLINE,
             'npci:EM1'   => self::BENEFICIARY_NOT_ACCEPTED,
@@ -115,6 +119,11 @@ class Status extends BaseStatus
             'npci:EM3'   => self::BENE_ACCOUNT_BLOCKED,
             'ns:E1029'   => self::IMPS_NOT_ENABLED_FOR_REMITTER,
             'atom:E449'  => self::INVALID_BENEFICIARY_DETAILS,
+            'ns:E502'    => self::TRANSFER_TIMEOUT,
+            'ns:E1001'   => self::TRANSFER_TIMEOUT,
+            'ns:E1002'   => self::TRANSFER_TIMEOUT,
+            'ns:E8000'   => self::TRANSFER_TIMEOUT,
+            'flex:E404'  => self::TRANSFER_TIMEOUT,
         ],
     ];
 
@@ -123,6 +132,108 @@ class Status extends BaseStatus
         self::WAIT_FOR_TWO_DAYS    => 48,
         self::WAIT_FOR_THREE_HOURS => 3,
         self::WAIT_FOR_ONE_DAY     => 24,
+    ];
+
+    //
+    // We are maintaining the map of sub code to remark because status response will only have the sub status code
+    // So this mapping will give the corresponding remark based on the sub status code
+    //
+    const FAILURE_CODE_INTERNAL_MAPPING = [
+        'ns:E400'    => 'Invalid request sent to bank',
+        'ns:E402'    => 'Insufficient Balance in debit account, payment required',
+        'ns:E405'    => 'Invalid Transfer Type',
+        'ns:E429'    => '(Limit Daily/transaction/rate) exceeded',
+        'ns:E406'    => 'Beneficiary not acceptable',
+        'ns:E502'    => 'Bad Gateway',
+        'ns:E504'    => 'Technical Error',
+        'ns:E1001'   => 'The transaction amount exceeds the maximum amount for IMPS:',
+        'ns:E1002'   => 'The transfer currency is not supported. Supported currency is INR.',
+        'ns:E1004'   => 'Transfer Amount is less than minimum amount for RTGS',
+        'ns:E1005'   => 'For APBS transferType, specify the Aadhaar no and mobile no in the beneficiary Detail',
+        'ns:E1006'   => 'Use APBS transferType, when transferring funds to an Aadhaar No',
+        'ns:E1028'   => 'IMPS is not enabled for the beneficiary IFSC',
+        'ns:E2000'   => 'Either customer does not exist or Customer/Account combination is invalid or '
+                        . 'Customer/Account Relationship is invalid',
+        'ns:E6000'   => 'Purpose Code not found:',
+        'ns:E6001'   => 'Only registered beneficiaries are allowed for this purpose code:',
+        'ns:E6002'   => 'Purpose Code is required for this customer:',
+        'ns:E6003'   => 'Invalid Debit Account for Customer',
+        'ns:E6005'   => 'Either Beneficiary Name or beneficiary IFSC code is not valid for GST payment.'
+                        . 'Valid value is for beneficiary name: < GST> and ifsc code is: <RBIS0GSTPMT >',
+        'ns:E6006'   => 'Beneficiary account no length is not valid for GST payment allowed length is 14',
+        'ns:E6007'   => 'The specified purpose code is not allowed for the chosen transferType',
+        'ns:E6008'   => 'Unique request no length is not valid for APBS transfer type, max allowed length is 13',
+        'flex:E18'   => 'Hold Funds Present - Refer to Drawer ( Account would Overdraw )',
+        'flex:E307'  => 'Rejected/Failed at upstream CBS Service. Retry after 30 min',
+        'flex:E404'  => 'No Relationship Exists with the debit Account {AccountNo} and partner',
+        'flex:E449'  => 'Rejected by upstream CBS Service for the request parameters passed',
+        'flex:E8036' => 'NEFT - Both Customer Mobile and Email is not valid.',
+        'flex:E8087' => 'To Account Number is Invalid.',
+        'flex:E9072' => 'Destination Bank and Branch could not be resolved.',
+        'npci:E08'   => 'Acquiring Bank CBS or node offline',
+        'npci:EM1'   => 'Invalid Beneficiary MMID/Mobile Number',
+        'npci:EM2'   => 'Amount limit exceeded',
+        'npci:EM3'   => 'Account blocked/frozen',
+        'npci:EM4'   => 'Beneficiary Bank is not enabled for Foreign Inward Remittance',
+        'npci:EM5'   => 'Account closed',
+        'npci:E307'  => 'Rejected/Failed at beneficiary bank',
+        'npci:E308'  => 'Rejected by beneficiary bank in reconciliation',
+        'npci:E449'  => 'Rejected by beneficiary bank for request parameters passed',
+        'atom:E307'  => 'Rejected/Failed at upstream IMPS Service',
+        'atom:E404'  => 'No Relationship Exists with the debit Account {AccountNo} and partner',
+        'atom:E449'  => 'Rejected by upstream IMPS Service for the request parameters passed',
+        'sfms:E99'   => 'Manually Marked in Error',
+        'sfms:E70'   => 'Outward Transaction Rejected',
+        'sfms:E18'   => 'Rejected by SFMS',
+        'ns:E1029'   => 'IMPS is not enabled for the remitter',
+    ];
+
+    const FAILURE_CODE_PUBLIC_MAPPING = [
+        'ns:E400'    => 'Payout failed. Contact support for help.',
+        'ns:E402'    => 'Payout failed. Contact support for help.',
+        'ns:E405'    => 'Payout failed. Contact support for help.',
+        'ns:E429'    => 'Payout failed. Contact support for help.',
+        'ns:E406'    => 'Payout failed. Contact support for help.',
+        'ns:E502'    => 'Payout failed. Contact support for help.',
+        'ns:E504'    => 'Payout failed. Contact support for help.',
+        'ns:E1001'   => 'Payout failed. Contact support for help.',
+        'ns:E1002'   => 'Payout failed. Contact support for help.',
+        'ns:E1004'   => 'Payout failed. Contact support for help.',
+        'ns:E1005'   => 'Payout failed. Contact support for help.',
+        'ns:E1006'   => 'Payout failed. Contact support for help.',
+        'ns:E1028'   => 'IMPS is not enabled on this fund account.',
+        'ns:E2000'   => 'Payout failed. Contact support for help.',
+        'ns:E6000'   => 'Payout failed. Contact support for help.',
+        'ns:E6001'   => 'Payout failed. Contact support for help.',
+        'ns:E6002'   => 'Payout failed. Contact support for help.',
+        'ns:E6003'   => 'Payout failed. Contact support for help.',
+        'ns:E6005'   => 'Payout failed. Contact support for help.',
+        'ns:E6006'   => 'Payout failed. Contact support for help.',
+        'ns:E6007'   => 'Payout failed. Contact support for help.',
+        'ns:E6008'   => 'Payout failed. Contact support for help.',
+        'flex:E18'   => 'Payout failed. Contact support for help.',
+        'flex:E307'  => 'Partner bank systems are down. Try again later.',
+        'flex:E404'  => 'Payout failed. Contact support for help.',
+        'flex:E449'  => 'Payout failed. Contact support for help.',
+        'flex:E8036' => 'Payout failed. Contact support for help.',
+        'flex:E8087' => 'Account number is not valid.',
+        'flex:E9072' => "Fund account's bank and branch could not be resolved.",
+        'npci:E08'   => 'Partner bank systems are down. Try again later.',
+        'npci:EM1'   => 'Payout failed. Contact support for help.',
+        'npci:EM2'   => 'Payout failed. Contact support for help.',
+        'npci:EM3'   => 'Fund account is blocked or frozen.',
+        'npci:EM4'   => 'Payout failed. Contact support for help.',
+        'npci:EM5'   => 'Fund account is closed.',
+        'npci:E307'  => "Contact's bank rejected/failed the payout.",
+        'npci:E308'  => "Contact's bank rejected/failed the payout.",
+        'npci:E449'  => "Contact's bank rejected/failed the payout due to invalid parameters.",
+        'atom:E307'  => 'Payout failed. Contact support for help.',
+        'atom:E404'  => 'Payout failed. Contact support for help.',
+        'atom:E449'  => 'Payout failed. Contact support for help.',
+        'sfms:E99'   => 'Payout failed. Contact support for help.',
+        'sfms:E70'   => 'Payout failed. Contact support for help.',
+        'sfms:E18'   => 'Payout failed. Contact support for help.',
+        'ns:E1029'   => 'Payout failed. Contact support for help.',
     ];
 
     /**
@@ -155,7 +266,9 @@ class Status extends BaseStatus
             self::IMPS_NOT_ENABLED_FOR_REMITTER,
             self::INVALID_ACCOUNT_DETAILS,
             self::BAD_GATEWAY,
-            self::ACQUIRING_BANK_CBS_OFFLINE
+            self::ACQUIRING_BANK_CBS_OFFLINE,
+            self::TRANSFER_TIMEOUT,
+            self::INVALID_REQUEST,
         ];
     }
 
@@ -174,16 +287,8 @@ class Status extends BaseStatus
             self::BENE_NOT_REGISTERED,
             self::INVALID_ACCOUNT_DETAILS,
             self::IMPS_NOT_ENABLED_FOR_REMITTER,
-            self::ACQUIRING_BANK_CBS_OFFLINE
-        ];
-    }
-
-    public static function getPotentialErrorStatus(): array
-    {
-        return [
-            self::WAIT_FOR_TWO_DAYS,
-            self::WAIT_FOR_THREE_HOURS,
-            self::WAIT_FOR_ONE_DAY,
+            self::ACQUIRING_BANK_CBS_OFFLINE,
+            self::INVALID_REQUEST,
         ];
     }
 
@@ -266,6 +371,15 @@ class Status extends BaseStatus
         return (bool) $status;
     }
 
+    public static function getPotentialErrorStatus(): array
+    {
+        return [
+            self::WAIT_FOR_TWO_DAYS,
+            self::WAIT_FOR_THREE_HOURS,
+            self::WAIT_FOR_ONE_DAY,
+        ];
+    }
+
     /**
      * Checks if the attempts wait time is over
      * if not then returns false else true
@@ -293,69 +407,31 @@ class Status extends BaseStatus
         return false;
     }
 
-    //
-    // We are maintaining the map of sub code to remark because status response will only have the sub status code
-    // So this mapping will give the corresponding remark based on the sub status code
-    //
-    const REMARK_MAP = [
-        'ns:E402'    => 'Insufficient Balance in debit account, payment required',
-        'ns:E405'    => 'Invalid Transfer Type',
-        'ns:E429'    => '(Limit Daily/transaction/rate) exceeded',
-        'ns:E406'    => 'Beneficiary not acceptable',
-        'ns:E502'    => 'Bad Gateway',
-        'ns:E504'    => 'Technical Error',
-        'ns:E1001'   => 'The transaction amount exceeds the maximum amount for IMPS:',
-        'ns:E1002'   => 'The transfer currency is not supported. Supported currency is INR.',
-        'ns:E1004'   => 'Transfer Amount is less than minimum amount for RTGS',
-        'ns:E1005'   => 'For APBS transferType, specify the Aadhaar no and mobile no in the beneficiary Detail',
-        'ns:E1006'   => 'Use APBS transferType, when transferring funds to an Aadhaar No',
-        'ns:E1028'   => 'IMPS is not enabled for the beneficiary IFSC',
-        'ns:E2000'   => 'Either customer does not exist or Customer/Account combination is invalid or '
-                        . 'Customer/Account Relationship is invalid',
-        'ns:E6000'   => 'Purpose Code not found:',
-        'ns:E6001'   => 'Only registered beneficiaries are allowed for this purpose code:',
-        'ns:E6002'   => 'Purpose Code is required for this customer:',
-        'ns:E6003'   => 'Invalid Debit Account for Customer',
-        'ns:E6005'   => 'Either Beneficiary Name or beneficiary IFSC code is not valid for GST payment.'
-                        . 'Valid value is for beneficiary name: < GST> and ifsc code is: <RBIS0GSTPMT >',
-        'ns:E6006'   => 'Beneficiary account no length is not valid for GST payment allowed length is 14',
-        'ns:E6007'   => 'The specified purpose code is not allowed for the chosen transferType',
-        'ns:E6008'   => 'Unique request no length is not valid for APBS transfer type, max allowed length is 13',
-        'flex:E18'   => 'Hold Funds Present - Refer to Drawer ( Account would Overdraw )',
-        'flex:E307'  => 'Rejected/Failed at upstream CBS Service. Retry after 30 min',
-        'flex:E404'  => 'No Relationship Exists with the debit Account {AccountNo} and partner',
-        'flex:E449'  => 'Rejected by upstream CBS Service for the request parameters passed',
-        'flex:E8036' => 'NEFT - Both Customer Mobile and Email is not valid.',
-        'flex:E8087' => 'To Account Number is Invalid.',
-        'flex:E9072' => 'Destination Bank and Branch could not be resolved.',
-        'npci:E08'   => 'Acquiring Bank CBS or node offline',
-        'npci:EM1'   => 'Invalid Beneficiary MMID/Mobile Number',
-        'npci:EM2'   => 'Amount limit exceeded',
-        'npci:EM3'   => 'Account blocked/frozen',
-        'npci:EM4'   => 'Beneficiary Bank is not enabled for Foreign Inward Remittance',
-        'npci:EM5'   => 'Account closed',
-        'npci:E307'  => 'Rejected/Failed at beneficiary bank',
-        'npci:E308'  => 'Rejected by beneficiary bank in reconciliation',
-        'npci:E449'  => 'Rejected by beneficiary bank for request parameters passed',
-        'atom:E307'  => 'Rejected/Failed at upstream IMPS Service',
-        'atom:E404'  => 'No Relationship Exists with the debit Account {AccountNo} and partner',
-        'atom:E449'  => 'Rejected by upstream IMPS Service for the request parameters passed',
-        'sfms:E99'   => 'Manually Marked in Error',
-        'sfms:E70'   => 'Outward Transaction Rejected',
-        'sfms:E18'   => 'Rejected by SFMS',
-        'ns:E6000'   => 'Purpose Code passed in the request does not exist in the system',
-        'ns:E1029'   => 'IMPS is not enabled for the remitter',
-    ];
-
     /**
-     * If the code exist in remark map then returns the remark corresponding to the code
-     * else returns null
+     * If the code exist in remark map then returns the
+     * remark corresponding to the code else returns null
      *
      * @param string|null $code
+     *
      * @return mixed|null
      */
-    public static function  getRemark(string $code = null)
+    public static function getRemark(string $code = null)
     {
-        return (isset(self::REMARK_MAP[$code]) === true) ? self::REMARK_MAP[$code] : null;
+        return (isset(self::FAILURE_CODE_INTERNAL_MAPPING[$code]) === true) ? self::FAILURE_CODE_INTERNAL_MAPPING[$code] : null;
+    }
+
+    public static function getPublicFailureReason($bankSubStatus)
+    {
+        // sub status code will be empty if the request was complete
+        if ((empty($bankSubStatus) === true) || (in_array($bankSubStatus, self::getSuccessfulStatus(), true)))
+        {
+            return null;
+        }
+        else if (in_array($bankSubStatus, array_keys(self::FAILURE_CODE_PUBLIC_MAPPING), true) === true)
+        {
+            return self::FAILURE_CODE_PUBLIC_MAPPING[$bankSubStatus];
+        }
+
+        return 'transfer not completed';
     }
 }

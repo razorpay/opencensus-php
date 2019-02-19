@@ -86,7 +86,13 @@ class FeatureAccess
 
         $merchantRouteFeatures = $this->getMerchantRouteFeatures($routeFeatures);
 
-        if (empty($bearerToken) === true)
+        //
+        // We want to allow aggrepay to have application features and hence we will check
+        // for them if it's aggrepay app (hardcoded below) in the auth context when oauth
+        // token is null (this means it would be partner auth). Eventually, we want all
+        // partners to have app features, once we do that we can remove the following app id check.
+        //
+        if ((empty($bearerToken) === true) and ($this->ba->getOAuthApplicationId() !== 'AwtIC8XQqM0Wet'))
         {
             //
             // If the merchant is directly accessing the resource, allow if it

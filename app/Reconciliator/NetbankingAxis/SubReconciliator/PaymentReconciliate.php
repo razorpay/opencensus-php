@@ -75,4 +75,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                                                                      Action::AUTHORIZE,
                                                                      $statuses);
     }
+
+    protected function getInputForForceAuthorize($row)
+    {
+        return [
+            'gateway_payment_id'    => $this->getReferenceNumber($row),
+        ];
+    }
 }

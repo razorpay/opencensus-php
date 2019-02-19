@@ -43,6 +43,7 @@ class Entity extends Base\PublicEntity
         self::ROLE,
         self::EMAIL,
         self::TOKEN,
+        self::PRODUCT,
     ];
 
     protected $hidden = [

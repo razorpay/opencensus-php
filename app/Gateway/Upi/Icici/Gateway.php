@@ -19,6 +19,8 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Base\VerifyResult;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Gateway\Base as GatewayBase;
+use RZP\Error\PublicErrorDescription;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Models\BharatQr;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
@@ -64,6 +66,7 @@ class Gateway extends Base\Gateway
         Fields::BANK_RRN                  => Entity::GATEWAY_PAYMENT_ID,
         Fields::ORIGINAL_BANK_RRN         => Entity::GATEWAY_PAYMENT_ID,
         Fields::MERCHANT_ID               => Entity::GATEWAY_MERCHANT_ID,
+        Fields::ORIGINAL_BANK_RRN_REQ     => Entity::NPCI_REFERENCE_ID,
     ];
 
     protected $forceFillable = [
@@ -199,9 +202,7 @@ class Gateway extends Base\Gateway
             Base\IntentParams::MCC           => '5411',
         ];
 
-        $query = str_replace(' ', '', urldecode(http_build_query($content)));
-
-        return ['data' => ['intent_url' => 'upi://pay?' . $query]];
+        return ['data' => ['intent_url' => $this->generateIntentString($content)]];
     }
 
     /**
@@ -480,24 +481,6 @@ class Gateway extends Base\Gateway
         return $mcc;
     }
 
-    /**
-     * This is same as the payment description, capped
-     * to 50 characters
-     *
-     * @param array $input
-     *
-     * @return string
-     */
-    protected function getPaymentRemark(array $input): string
-    {
-        $paymentDescription = $input['payment']['description'] ?? '';
-        $filteredPaymentDescription = Payment\Entity::getFilteredDescription($paymentDescription);
-
-        $description = $input['merchant']->getFilteredDba() . ' ' . $filteredPaymentDescription;
-
-        return ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
-    }
-
     protected function getSubMerchantName(array $input): string
     {
         $dba = preg_replace('/\s+/', '', $input['merchant']->getFilteredDba());
@@ -626,9 +609,19 @@ class Gateway extends Base\Gateway
 
     protected function getRefundVerifyRequestArray(array $input)
     {
+        //
+        // Appending (attempt count - 1)  to refund id for verifying previous refund if that was successful.
+        // For scrooge refunds, attempts are sent from scrooge which signifies the attempts which have been done on this.
+        // As attempts in scrooge starts with 0, For eg. if attempts = 5,
+        // that means we will be requesting refund R5 and we need to verify for R4.
+        //
         $attempts = $input['refund']['attempts'] - 1;
 
-        if ($input['refund']['attempts'] === 1)
+        //
+        // If this is 0th or 1st attempt, verify refund should be called for first refund (exact Refund Id)
+        // Appending empty string to refund if we want to verify refund with 14 digit refund id.
+        //
+        if (((int) $attempts === 0) or ((int) $input['refund']['attempts'] === 0))
         {
             $attempts = '';
         }
@@ -756,48 +749,101 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
+        $scroogeResponse = new GatewayBase\ScroogeResponse();
+
         $unprocessedRefunds = $this->getUnprocessedRefunds();
 
         $processedRefunds = $this->getProcessedRefunds();
 
         if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
         {
-            return false;
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
+                                   ->toArray();
         }
 
         if (in_array($input['refund']['id'], $processedRefunds) === true)
         {
-            return true;
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
         }
 
         $content = $this->sendRefundVerifyRequest($input);
 
-        if (($content[Fields::STATUS] === Status::SUCCESS) or
-            ($content[Fields::STATUS] === Status::DEEMED))
+        $scroogeResponse->setGatewayVerifyResponse($content)
+                        ->setGatewayKeys($this->getGatewayData($content));
+
+        if (($content[Fields::STATUS] === Status::SUCCESS))
         {
-            return true;
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
         }
 
         if (($content[Fields::STATUS] === Status::FAILURE) or
             ($content[Fields::STATUS] === Status::FAIL))
         {
-            return false;
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED)
+                                   ->toArray();
         }
+
+        $this->checkVerifyRefundStatus($input, $content);
 
         $msg = strtolower($content['message']);
 
         if (in_array($msg, [Status::NO_RECORDS, Status::NO_RECORDS2], true) === true)
         {
-            return false;
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
+                                   ->toArray();
         }
 
         throw new Exception\LogicException(
                 'Shouldn\'t reach here',
-                null,
+                ErrorCode::GATEWAY_ERROR_UNEXPECTED_STATUS,
                 [
-                    'gateway_status' => $content['status'],
-                    'refund_id'      => $input['refund']['id'],
+                    Payment\Gateway::GATEWAY_VERIFY_RESPONSE  => json_encode($content),
+                    Payment\Gateway::GATEWAY_KEYS             =>
+                        [
+                            'gateway_status' => $content[Fields::STATUS],
+                            'refund_id'      => $input['refund']['id'],
+                        ],
                 ]);
+    }
+
+    protected function checkVerifyRefundStatus(array $input, array $content)
+    {
+        $responseKey = ($this->action === Action::VERIFY) ? Payment\Gateway::GATEWAY_VERIFY_RESPONSE : Payment\Gateway::GATEWAY_RESPONSE;
+
+        if (($content[Fields::STATUS] === Status::DEEMED))
+        {
+            throw new Exception\LogicException(
+                PublicErrorDescription::GATEWAY_ERROR_REFUND_DEEMED,
+                ErrorCode::GATEWAY_ERROR_REFUND_DEEMED,
+                [
+                    $responseKey                       => json_encode($content),
+                    Payment\Gateway::GATEWAY_KEYS      =>
+                        [
+                            'gateway_status' => $content[Fields::STATUS],
+                            'refund_id'      => $input['refund']['id'],
+                        ],
+                ]);
+        }
+
+        if (($content[Fields::STATUS] === Status::PENDING))
+        {
+            throw new Exception\LogicException(
+                PublicErrorDescription::GATEWAY_ERROR_TRANSACTION_PENDING,
+                ErrorCode::GATEWAY_ERROR_TRANSACTION_PENDING,
+                [
+                    $responseKey                       => json_encode($content),
+                    Payment\Gateway::GATEWAY_KEYS      =>
+                        [
+                            'gateway_status' => $content[Fields::STATUS],
+                            'refund_id'      => $input['refund']['id'],
+                        ],
+                ]);
+        }
     }
 
     /**
@@ -919,7 +965,7 @@ class Gateway extends Base\Gateway
 
         if ($status !== Status::SUCCESS)
         {
-            $message = "Payment Failed during callback";
+            $message = 'Payment Failed during callback';
 
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
@@ -965,8 +1011,18 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 $errorCode,
                 $content[Fields::STATUS],
-                ResponseCode::getResponseMessage($code));
+                ResponseCode::getResponseMessage($code),
+                [
+                    Payment\Gateway::GATEWAY_RESPONSE  => json_encode($content),
+                    Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($content)
+                ]
+            );
         }
+
+        return [
+            Payment\Gateway::GATEWAY_RESPONSE  => json_encode($content),
+            Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($content)
+        ];
     }
 
     protected function getRefundRequest(array $input)
@@ -1006,6 +1062,22 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    protected function getGatewayData(array $refundFields = [])
+    {
+        if (empty($refundFields) === false)
+        {
+            return [
+                Fields::ORIGINAL_BANK_RRN_REQ => $refundFields[Fields::ORIGINAL_BANK_RRN_REQ] ?? null,
+                Fields::STATUS                => $refundFields[Fields::STATUS] ?? null,
+                Fields::RESPONSE              => $refundFields[Fields::RESPONSE] ?? null,
+                Fields::SUCCESS               => $refundFields[Fields::SUCCESS] ?? null,
+                Fields::MESSAGE               => $refundFields[Fields::MESSAGE] ?? null,
+                Fields::ORIGINAL_BANK_RRN     => $refundFields[Fields::ORIGINAL_BANK_RRN] ?? null,
+            ];
+        }
+        return [];
+    }
+
     /**
      * This is done in order to fix refund retry
      * if refund fails in first attempt
@@ -1024,10 +1096,12 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * This is done in order to fix duplicate
-     * merchant transaction id issue in case
-     * refund is retried multiple times
+     * This is done in order to fix duplicate merchant transaction id issue in case refund is retried multiple times
      *
+     * UPI gateways do not process refund which has been failed, they process new refund everytime. And hence,
+     * we send the refund id appended with attempts to generate new refund id.
+     *
+     * @param array $refund
      * @return string
      */
     protected function getRefundId(array $refund)
@@ -1100,5 +1174,16 @@ class Gateway extends Base\Gateway
         $gatewayPayment->saveOrFail();
 
         return true;
+    }
+
+    protected function getStandardRequestArray($content = [], $method = 'post', $type = null)
+    {
+        $request = parent::getStandardRequestArray($content, $method, $type);
+
+        $request['headers'] = [
+            'Content-Type' => 'text/plain'
+        ];
+
+        return $request;
     }
 }

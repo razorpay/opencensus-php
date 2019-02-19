@@ -34,7 +34,9 @@ class OrderController extends Controller
 
     public function fetchPayments($id)
     {
-        $payments = $this->service()->fetchPaymentsFor($id);
+        $input = Request::all();
+
+        $payments = $this->service()->fetchPaymentsFor($id, $input);
 
         return ApiResponse::json($payments);
     }

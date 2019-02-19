@@ -2,8 +2,6 @@
 
 namespace RZP\Gateway\Upi\Yesbank;
 
-use RZP\Error\ErrorCode;
-
 class ResponseCodes
 {
     const CODES = [
@@ -97,7 +95,7 @@ class ResponseCodes
         'AM' => 'UPI PIN not set by customer',
         'B1' => 'Registered Mobile number linked to the account has been changed/removed',
         'B3' => 'Transaction not permitted to the account',
-        '0 ' => 'APPROVED OR COMPLETED SUCCESSFULLY',
+        '0'  => 'APPROVED OR COMPLETED SUCCESSFULLY',
         'ZA' => 'TRANSACTION DECLINED BY CUSTOMER',
         'ZH' => 'INVALID VIRTUAL ADDRESS',
         'UX' => 'EXPIRED VIRTUAL ADDRESS',
@@ -109,13 +107,9 @@ class ResponseCodes
         'UT' => 'REMITTER/ISSUER UNAVAILABLE (TIMEOUT)',
         'BT' => 'ACQUIRER/BENEFICIARY UNAVAILABLE(TIMEOUT)',
         'RB' => 'CREDIT REVERSAL TIMEOUT(REVERSAL)',
-        'AM' => 'UPI PIN not set by customer',
-        'B1' => 'Registered Mobile number linked to the account has been changed/removed',
-        'B3' => 'Transaction not permitted to the account',
-        '0 ' => 'APPROVED OR COMPLETED SUCCESSFULLY',
-        'RP ' => 'PARTIAL DEBIT REVERSAL TIMEOUT',
-        '32 ' => 'PARTIAL REVERSAL',
-        '21 ' => 'NO ACTION TAKEN (FULL REVERSAL)',
+        'RP' => 'PARTIAL DEBIT REVERSAL TIMEOUT',
+        '32' => 'PARTIAL REVERSAL',
+        '21' => 'NO ACTION TAKEN (FULL REVERSAL)',
         'U01' => 'The request is duplicate',
         'U02' => 'Amount CAP is exceeded',
         'U03' => 'Net debit CAP is exceeded',
@@ -179,12 +173,100 @@ class ResponseCodes
         'U78' => 'Beneficiary bank offline',
         'OC'  => 'Original Credit Not Found',
         'OD'  => 'Original Debit Not Found',
-        'NC ' => 'Credit Not Done',
-        'ND ' => 'Debit Not Done',
+        'NC'  => 'Credit Not Done',
+        'ND'  => 'Debit Not Done',
+        'DT'  => 'Duplicate reference received',
+
+
+        'EXT_RSP9001' => 'Account does not exist.',
+        'EXT_RSP9002' => 'Account Closed.',
+        'EXT_RSP9003' => 'Account Blocked.',
+        'EXT_RSP9004' => 'No debits allowed on Account.',
+        'EXT_RSP9005' => 'No credits allowed on Account.',
+        'EXT_RSP9006' => 'Account Closed Today.',
+        'EXT_RSP9007' => 'Account is Dormant.',
+        'EXT_RSP9010' => 'Account details have been changed since last request. Please reinitiate',
+        'EXT_RSP9011' => 'There is a memo present on the Debit account.',
+        'EXT_RSP9018' => 'Hold Funds Present - Refer to Drawer ( Account would Overdraw )',
+        'EXT_RSP9029' => 'Internal OLTP Error.',
+        'EXT_RSP9031' => 'Insufficient funds in the debit account.',
+        'EXT_RSP9035' => 'There is a memo present on the Credit account.',
+        'EXT_RSP9037' => 'Transaction Amt is exceeding the limit Amt. Account is going to Overline.',
+        'EXT_RSP9039' => 'All Installments have been paid for the account/Value date beyond maturity date',
+        'EXT_RSP9042' => 'Hold Funds Present - Account is going to Overline.',
+        'EXT_RSP9045' => 'Transaction Amt is exceeding the limit Amt. Account is going to Overline.',
+        'EXT_RSP9086' => 'Insufficient Balance.',
+        'EXT_RSP9088' => 'Account has Credit Override status.',
+        '7'           => 'No record in Endpoint Calender',
+        '10'          => 'No Status Change Of Customer',
+        '11'          => 'Invalid Account No',
+        '18'          => 'Invalid destination bank',
+        '92'          => 'Invalid LO code',
+        '1001'        => 'Error {0} {1} {2}',
+        '1206'        => 'Fatal Error has occurred.Please Exit and Contact System Administrator {0} {1} {2}',
+        '1210'        => 'Database Error : {0} {1} {2}',
+        '1282'        => 'Duplicate {0} {1}',
+        '2075'        => 'A database error occurred during the execution of a stored procedure',
+        '2435'        => 'Invalid Input {0} {1} {2}.',
+        '2988'        => 'Invalid Account Status',
+        '3934'        => 'Debit and Credit accounts cannot be same',
+        '3403'        => 'Called function has had a Fatal Error {1} {2}',
+        '3573'        => 'Invalid input {0} {1} {2}',
+        '2778'        => 'Account not found',
+        '2853'        => 'Account not found {1} {2}',
+        '3611'        => 'Invalid transaction',
+        '3769'        => 'Invalid Account Number',
+        '3915'        => 'Non-existent reference transaction number',
+        '4388'        => 'No Rows Found',
+        '4470'        => 'Batch number not found',
+        '5281'        => 'Invalid Product Type',
+        '8024'        => 'card number in use',
+        '8037'        => 'Account is linked to Aadhar no, cannot close the account.',
+        '8080'        => 'Mandate has Expired',
+        '8086'        => 'Cutoff start time not in range defined',
+        '8087'        => 'Could not save payment data',
+        '8088'        => 'Float details could not be resolved.',
+        '9007'        => 'Disbursement date cannot be less than CASA a/c opening date..',
+        '9008'        => 'Limit attached to the account is frozen.Cannot Modify Account Status.',
+        '9015'        => 'Value date should be greater than process date',
+        '9030'        => 'Maximum limit of Date Fields is over',
+        '9093'        => 'FROM and TO account products are marked for IB transfer block.',
+        '80002'       => 'Error {0} cannot be null or blank',
+        '80004'       => 'Error {0} Invalid field length.',
+        '80016'       => 'Transaction found with this  external reference number {0}',
+        '90152'       => 'Invalid FromAccountID',
+        '90185'       => 'Transaction Amount is invalid.',
+        '90290'       => 'Funds Transfer Not Allowed from NRE product.',
+        '90296'       => 'To Account Number is Invalid',
+        '90188'       => 'Voucher entry not allowed for this GL account.',
+
+        // razorpay custom error codes for transfer request
+        'RZP_DUPLICATE_PAYOUT'              => 'RZP: A payout with given reference Id already exists',
+        'RZP_FTA_REQUEST_INVALID'           => 'RZP: payout fta request is invalid',
+        'RZP_REQUEST_ENCRYPTION_FAILURE'    => 'RZP: request encryption failure',
+        'RZP_PAYOUT_TIMED_OUT'              => 'RZP: payout request timed out',
+        'RZP_PAYOUT_REQUEST_FAILURE'        => 'RZP: payout request failed',
+        'RZP_REQUEST_DECRYPTION_FAILED'     => 'RZP: response decryption failed',
+        'RZP_PAYOUT_UNKNOWN_ERROR'          => 'RZP: fatal error, please contact gateway',
+
+        // razorpay custom error codes for verify request
+        'RZP_REF_ID_MISMATCH'               => 'RZP: Validation error, ref id mismatch',
+        'RZP_AMOUNT_MISMATCH'               => 'RZP: amount mismatch',
+        'RZP_PAYOUT_VERIFY_TIMED_OUT'       => 'RZP: verify payout timed out',
+        'RZP_PAYOUT_VERIFY_REQUEST_FAILURE' => 'RZP: verify payout request failed',
+
     ];
 
-    public static function getResponseMessage($code)
+    public static function getResponseMessage(
+        $responseCode,
+        $errorCode = null,
+        $responseErrorCode = null,
+        $desc = null)
     {
-        return self::CODES[$code] ?? 'Unknown Gateway Response Code';
+        return self::CODES[$responseCode] ??
+               self::CODES[$errorCode] ??
+               self::CODES[$responseErrorCode] ??
+               $desc ??
+               'Unknown Gateway Response Code';
     }
 }

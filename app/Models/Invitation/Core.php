@@ -7,6 +7,7 @@ use Mail;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Product;
 use RZP\Mail\Invitation\Invite as InvitationMail;
 
 class Core extends Base\Core
@@ -50,11 +51,11 @@ class Core extends Base\Core
         return $invitation;
     }
 
-    public function list(): array
+    public function list($product = Product::PRIMARY): array
     {
         $merchant = $this->merchant;
 
-        return $merchant->invitations->callOnEveryItem('toArrayPublic');
+        return $merchant->invitations()->where(Entity::PRODUCT, $product)->get()->callOnEveryItem('toArrayPublic');
     }
 
     public function edit(Entity $invitation, array $input): Entity
@@ -177,6 +178,7 @@ class Core extends Base\Core
             'name'        => $this->merchant->getName(),
             'token'       => $invitation->getToken(),
             'user_id'     => $invitation->getUserId(),
+            'product'     => $invitation->getProduct(),
         ];
 
         $this->trace->info(
@@ -187,6 +189,7 @@ class Core extends Base\Core
                 'email'         => $invitation->getEmail(),
                 'name'          => $this->merchant->getName(),
                 'user_id'       => $invitation->getUserId(),
+                'product'     => $invitation->getProduct(),
             ]);
 
         $invitationMail = new InvitationMail($data);

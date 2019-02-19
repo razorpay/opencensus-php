@@ -192,6 +192,7 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                     'trace_code' => TraceCode::RECON_MISMATCH,
                     'message'    => 'Payment status is failed.',
                     'payment_id' => $this->payment->getId(),
+                    'amount'     => $this->payment->getAmount(),
                     'gateway'    => $this->gateway
                 ]);
 
@@ -236,6 +237,7 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                         'trace_code'    => TraceCode::RECON_MISMATCH,
                         'message'       => 'Refund transaction not found in DB',
                         'refund_id'     => $this->refund->getId(),
+                        'amount'        => $this->refund->getAmount(),
                         'gateway'       => $this->gateway
                     ]);
 
@@ -378,6 +380,7 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                     'message'    => 'Corresponding payment for the refund not found in DB.',
                     'row'        => $row,
                     'refund_id'  => $refundId,
+                    'amount'     => $refund->getAmount(),
                     'gateway'    => $this->gateway
                 ]);
 
@@ -674,6 +677,7 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                             'message'       => 'Arn number for the refund entity does not match',
                             'row'           => $rowDetails,
                             'refund_id'     => $refund->getId(),
+                            'amount'        => $refund->getAmount(),
                             'gateway'       => $this->gateway,
                             'refund_arn'    => $currentArn,
                         ]);
@@ -815,10 +819,12 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'                => TraceCode::RECON_MISMATCH,
-                    'info_code'                 => 'DATA_MISMATCH',
+                    'info_code'                 => Base\InfoCode::DATA_MISMATCH,
                     'message'                   => 'Reference number in db is not same as in recon',
                     'refund_id'                 => $this->refund->getId(),
+                    'amount'                    => $this->refund->getAmount(),
                     'payment_id'                => $this->payment->getId(),
+                    'payment_amount'            => $this->payment->getAmount(),
                     'db_reference_number'       => $dbGatewayTransactionId,
                     'recon_reference_number'    => $gatewayTransactionId,
                     'gateway'                   => $this->gateway
@@ -850,10 +856,12 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'                => TraceCode::RECON_MISMATCH,
-                    'info_code'                 => 'DATA_MISMATCH',
+                    'info_code'                 => Base\InfoCode::DATA_MISMATCH,
                     'message'                   => 'Reference number in db is not same as in recon',
                     'refund_id'                 => $this->refund->getId(),
+                    'amount'                    => $this->refund->getAmount(),
                     'payment_id'                => $this->payment->getId(),
+                    'payment_amount'            => $this->payment->getAmount(),
                     'db_reference_number'       => $dbReferenceNumber,
                     'recon_reference_number'    => $referenceNumber,
                     'gateway'                   => $this->gateway

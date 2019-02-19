@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Allahabad;
 
 use RZP\Exception;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Verify;
@@ -10,7 +11,6 @@ use RZP\Models\Payment\Action;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
-use RZP\Constants\Mode as RZPMode;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
 
@@ -40,9 +40,9 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity($content);
 
-        $request = $this->getStandardRequestArray([],'post');
+        $request = $this->getStandardRequestArray([], 'post');
 
-        $paramStr = http_build_query($content,null,'|');
+        $paramStr = http_build_query($content, null, '|');
 
         $paramStr = urldecode($paramStr);
 
@@ -106,7 +106,7 @@ class Gateway extends Base\Gateway
             RequestFields::BANK_ID              => Constants::BANK_ID,
             RequestFields::MODE_OF_PAYMENT      => Constants::MODE_OF_PAYMENT_AUTH,
             RequestFields::PAYEE_ID             => Constants::PAYEE_ID,
-            RequestFields::ITEM_CODE            => $input['payment']['id'],
+            RequestFields::ITEM_CODE            => $this->getMerchantId2(),
             RequestFields::PRODUCT_REF_NUMBER   => $input['payment']['id'],
             RequestFields::AMOUNT               => $this->formatAmount($input['payment']['amount'] / 100),
             RequestFields::CURRENCY             => Currency::INR,
@@ -207,7 +207,7 @@ class Gateway extends Base\Gateway
             RequestFields::BANK_ID                => Constants::BANK_ID,
             RequestFields::PAYEE_ID               => Constants::PAYEE_ID,
             RequestFields::MODE_OF_PAYMENT        => Constants::MODE_OF_PAYMENT_VERIFY,
-            RequestFields::ITEM_CODE              => $input['payment']['id'],
+            RequestFields::ITEM_CODE              => $this->getMerchantId2(),
             RequestFields::PRODUCT_REF_NUMBER     => $input['payment']['id'],
             RequestFields::AMOUNT                 => $this->formatAmount($input['payment']['amount'] / 100),
             RequestFields::CURRENCY               => Currency::INR,
@@ -314,12 +314,12 @@ class Gateway extends Base\Gateway
 
     public function formatAmount($amount): string
     {
-        return number_format($amount , 2, '.', '');
+        return number_format($amount, 2, '.', '');
     }
 
     protected function getHashOfString($str)
     {
-        $secret = $this->getSecret();
+        $secret = $this->getTerminalPassword();
 
         $sigStr = hash_hmac('sha1', $str, $secret);
 
@@ -334,7 +334,7 @@ class Gateway extends Base\Gateway
 
         $newArray = array();
 
-        foreach($array as $val)
+        foreach ($array as $val)
         {
             $temp = explode('=', $val);
 
@@ -348,12 +348,31 @@ class Gateway extends Base\Gateway
     {
         $merchantId = $this->getLiveMerchantId();
 
-        if ($this->mode === RZPMode::TEST)
+        if ($this->mode === Mode::TEST)
         {
             $merchantId = $this->getTestMerchantId();
         }
 
         return $merchantId;
+    }
+
+    public function getMerchantId2()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            $mid = $this->getTestMerchantId2();
+
+            return $mid;
+        }
+
+        return $this->getLiveMerchantId2();
+    }
+
+    protected function getTestTerminalPassword()
+    {
+        assert($this->mode === Mode::TEST);
+
+        return $this->config['test_hash_secret'];
     }
 }
 

@@ -2,35 +2,66 @@
 
 namespace RZP\Models\P2p\Base;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
+use RZP\Models\P2p\Base\Libraries\ArrayBag;
 
 class Entity extends Base\PublicEntity
 {
+    // Common constants across Entities
+    const REQUEST       = 'request';
+    const RESPONSE      = 'response';
+    const SUCCESS       = 'success';
     const DEVICE_ID     = 'device_id';
     const REFRESHED_AT  = 'refreshed_at';
+    const UPI           = 'upi';
 
-    protected static $doesEntityHasMerchant = false;
-    protected static $doesEntityHasDevice   = false;
-    protected static $doesEntityHasHandle   = false;
-
-
-    public function getRefreshed()
+    /**
+     * Generator for refreshed at
+     * @return $this
+     */
+    public function generateRefreshedAt()
     {
-        return $this->getAttribute(self::REFRESHED_AT);
+        return $this->setAttribute(static::REFRESHED_AT, Carbon::now()->getTimestamp());
     }
 
-    public function hasDevice(): bool
+    /**
+     * @return integer|null
+     */
+    public function getRefreshedAt()
     {
-        return self::$doesEntityHasDevice;
+        return $this->getAttribute(static::REFRESHED_AT);
     }
 
     public function hasMerchant(): bool
     {
-        return self::$doesEntityHasMerchant;
+        return false;
     }
 
     public function hasHandle(): bool
     {
-        return self::$doesEntityHasHandle;
+        return false;
+    }
+
+    public function hasDevice(): bool
+    {
+        return false;
+    }
+
+    public function toArrayBag()
+    {
+        return (new ArrayBag($this->attributesToArray()));
+    }
+
+    public function setPublicEntityAttribute(array & $array)
+    {
+        $entity = $this->entity;
+
+        if (starts_with($this->entity, 'p2p_'))
+        {
+            $entity = substr($this->entity, 4);
+        }
+
+        $array[self::ENTITY] = $entity;
     }
 }

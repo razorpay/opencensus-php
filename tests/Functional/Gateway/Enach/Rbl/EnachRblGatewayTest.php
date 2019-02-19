@@ -599,8 +599,10 @@ class EnachRblGatewayTest extends TestCase
 
         $batchFile = $this->getBatchFileToUpload($payment);
 
+        $user = $this->fixtures->user->createUserForMerchant('100000Razorpay');
+
         $url = '/batches';
-        $this->ba->proxyAuth('rzp_test_100000Razorpay');
+        $this->ba->proxyAuth('rzp_test_100000Razorpay', $user->getId());
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -739,6 +741,18 @@ class EnachRblGatewayTest extends TestCase
         unset($payment['auth_type']);
 
         $response = $this->doS2SRecurringPayment($payment);
+
+        $lastDebitPayment = $this->getLastEntity('payment', true);
+
+        // setting created at to 8am. Payments are picked from 9 to 9 cycle.
+        $createdAt = Carbon::today(Timezone::IST)->addHours(8)->getTimestamp();
+
+        $this->fixtures->edit(
+            'payment',
+            $lastDebitPayment['id'],
+            [
+                'created_at' => $createdAt,
+            ]);
 
         $paymentId = substr($response['razorpay_payment_id'], 4);
 

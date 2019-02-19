@@ -6,6 +6,7 @@ use App;
 
 use RZP\Exception;
 use RZP\Models\BankAccount\Generator;
+use RZP\Models\Card;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
@@ -620,31 +621,33 @@ class TransactionFilter extends Terminal\Filter
                         break;
 
                     case Payment\AuthType::OTP:
+                        $iin = $payment->card->iinRelation;
                         // We should select the terminal only if iin is set and flows are supported
                         // by the IIN
-                        if ($payment->card->iinRelation !== null)
+                        if ($iin !== null)
                         {
                             if (($terminal->isIvr() === true) and
-                                ($payment->card->iinRelation->supports(Flow::OTP) === true))
+                                (($iin->supports(Flow::IVR) === true) or
+                                 ($iin->supports(Flow::OTP) === true)))
                             {
                                 return true;
                             }
 
                             $gateway = $terminal->getGateway();
 
-                            if ((Gateway::supportsHeadlessBrowser($gateway) === true) and
-                                ($payment->card->iinRelation->supports(Flow::HEADLESS_OTP) === true))
+                            //
+                            // IVR is supported only on on Hitachi.
+                            // Hence, it should be enabled only for all the IVR enabled iins.
+                            //
+                            if (($gateway === Payment\Gateway::HITACHI) and
+                                (($iin->supports(Flow::IVR) === true) or
+                                 ($iin->supports(Flow::OTP) === true)))
                             {
                                 return true;
                             }
 
-                            //
-                            // Expresspay is supported on Hitachi.
-                            // Hence, it should be enabled only for axis MC/Visa cards.
-                            //
-                            if (($gateway === Payment\Gateway::HITACHI) and
-                                ($payment->card->iinRelation->supports(Flow::OTP) === true) and
-                                ($payment->card->getIssuer() === IFSC::UTIB))
+                            if ((Gateway::supportsHeadlessBrowser($gateway, $iin->getNetworkCode()) === true) and
+                                ($iin->supports(Flow::HEADLESS_OTP) === true))
                             {
                                 return true;
                             }
@@ -695,13 +698,14 @@ class TransactionFilter extends Terminal\Filter
 
     protected function isTerminalWithMerchantMccAbsent(
         array $applicableTerminals,
-        int $merchantMcc = null): bool
+        $merchantMcc = null): bool
     {
         foreach ($applicableTerminals as $terminal)
         {
             //
             // Currently this checks only for HDFC and hitachi gateway terminals
             //
+
             if ((in_array($terminal->getGateway(), Gateway::MCC_FILTER_GATEWAYS, true) === true) and
                 ($terminal->getCategory() === $merchantMcc))
             {
@@ -726,11 +730,6 @@ class TransactionFilter extends Terminal\Filter
 
     public function directSettlementFilter($terminal, $applicableTerminals)
     {
-       if ($this->input['payment']->isNetbanking() === false)
-       {
-            return true;
-       }
-
        $directSettlementTerminals = array_filter(
                                     $applicableTerminals,
                                     function ($terminal)
@@ -763,9 +762,16 @@ class TransactionFilter extends Terminal\Filter
 
         $metadata = $payment->getMetadata();
 
+        $bankingTypeApplicable = $terminal->isTypeApplicable(Terminal\Type::BUSINESS_BANKING);
+
         // If a bank account is requested specifically for banking, only terminals with that type set can be selected.
-        if (($metadata[Generator::BANKING] === true) and
-            ($terminal->isTypeApplicable(Terminal\Type::BUSINESS_BANKING) === false))
+        if (($metadata[Generator::BANKING] === true) and ($bankingTypeApplicable === false))
+        {
+            return false;
+        }
+
+        // If metadata.banking is not set, we must not select the terminal with business_banking type.
+        if (($metadata[Generator::BANKING] === false) and ($bankingTypeApplicable === true))
         {
             return false;
         }
@@ -776,5 +782,39 @@ class TransactionFilter extends Terminal\Filter
         }
 
         return $terminal->isTypeApplicable(Terminal\Type::ALPHA_NUMERIC_ACCOUNT);
+    }
+
+    public function capabilityFilter(Terminal\Entity $terminal)
+    {
+        $payment = $this->input['payment'];
+
+        if ((Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true) or
+            ($terminal->getCapability() === Terminal\Capability::ALL))
+        {
+            return true;
+        }
+
+        switch ($payment->getMethod())
+        {
+            case Method::CARD:
+            case Method::EMI:
+                $allowedNetworks = [Network::MAES, Network::VISA, Network::MC];
+
+                if (in_array($payment->card->getNetworkCode(), $allowedNetworks, true) === true)
+                {
+                    return true;
+                }
+                break;
+
+            case Method::EMANDATE:
+                // Only Enach RBL gateway supports only authorization
+                if ($terminal->getGateway() === Gateway::ENACH_RBL)
+                {
+                    return true;
+                }
+                break;
+        }
+
+        return false;
     }
 }

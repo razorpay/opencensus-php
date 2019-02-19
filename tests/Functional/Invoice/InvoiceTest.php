@@ -62,6 +62,8 @@ class InvoiceTest extends TestCase
 
     public function testCreateInvoiceWithNewCustomer()
     {
+        $this->fixtures->merchant->addFeatures(['invoice_receipt_mandatory']);
+
         $response = $this->startTest();
 
         $this->assertInvoiceCreateResponse($response);
@@ -461,6 +463,13 @@ class InvoiceTest extends TestCase
         // Case 4: Draft invoice with same receipt already exists
         $attributes = ['status' => 'draft', 'issued_at' => null];
         $this->fixtures->invoice->edit('1000000invoice', $attributes);
+
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceWithReceiptMandatoryFailure()
+    {
+        $this->fixtures->merchant->addFeatures(['invoice_receipt_mandatory']);
 
         $this->startTest();
     }
@@ -1497,9 +1506,7 @@ class InvoiceTest extends TestCase
                                 'item_id' => null,
                             ]);
 
-        $esMock = $this->createEsMock(['search']);
-
-        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
 
         $this->startTest();
     }
@@ -1669,9 +1676,7 @@ class InvoiceTest extends TestCase
 
         $this->createManyInvoicesForFetchTests();
 
-        $esMock = $this->createEsMock(['search']);
-
-        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
 
         $this->startTest();
     }
@@ -1682,27 +1687,21 @@ class InvoiceTest extends TestCase
 
         $this->createManyInvoicesForFetchTests();
 
-        $esMock = $this->createEsMock(['search']);
-
-        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
 
         $this->startTest();
     }
 
     public function testGetMultipleInvoicesByEsFeildAndFrom()
     {
-        $esMock = $this->createEsMock(['search']);
-
-        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
 
         $this->startTest();
     }
 
     public function testGetMultipleInvoicesByEsFeildFromAndTo()
     {
-        $esMock = $this->createEsMock(['search']);
-
-        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
 
         $this->startTest();
     }
@@ -1762,9 +1761,7 @@ class InvoiceTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $esMock = $this->createEsMock(['search']);
-
-        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
 
         $this->startTest();
     }
@@ -1782,9 +1779,7 @@ class InvoiceTest extends TestCase
             'Temporarily disabled, waiting for one other pr
             which handles eager loading of relations to go out.');
 
-        $esMock = $this->createEsMock(['search']);
-
-        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
 
         $this->startTest();
     }

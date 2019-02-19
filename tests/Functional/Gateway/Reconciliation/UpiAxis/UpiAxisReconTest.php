@@ -94,6 +94,38 @@ class UpiAxisReconTest extends TestCase
         $this->assertEquals($entries[0]['TXNID'], $upiEntity['gateway_payment_id']);
     }
 
+    public function testUpiAxisForceAuthorizeFailedPayment()
+    {
+        $upiEntity = $this->getNewAxisUpiEntity('10000000000000', 'upi_axis');
+
+        $entries[] = $this->overrideNewUpiAxisPayment($upiEntity);
+
+        $file = $this->writeToExcelFile($entries, 'Razorpay Software Pvt Ltd');
+
+        $uploadedFile = $this->createUploadedFile($file);
+
+        // set the payment status to 'failed' and try to reconcile it with force authorise
+        $this->fixtures->edit('payment', $upiEntity['payment_id'], ['status' => Payment\Status::FAILED]);
+
+        $this->reconcile($uploadedFile, 'UpiAxis', ['pay_'. $upiEntity['payment_id']]);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $upiEntity = $this->getDbLastEntityToArray('upi');
+
+        $this->assertEquals($entries[0]['RRN'], $upiEntity['npci_reference_id']);
+
+        $this->assertEquals($entries[0]['TXNID'], $upiEntity['gateway_payment_id']);
+
+        $updatedPayment = $this->getDbEntityById('payment', $upiEntity['payment_id']);
+
+        $this->assertEquals('authorized', $updatedPayment['status']);
+    }
+
     public function testRefundReconciliation()
     {
         // Disabled refund recon because bank is not sending unique refund identifiers in the refund recon file

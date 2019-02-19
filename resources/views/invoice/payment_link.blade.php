@@ -8,6 +8,7 @@ $invoice_payments               = $invoice_data['payments'];
 $is_invoice_partial_payment     = $invoice_data['partial_payment'] === true;
 $invoice_status                 = $invoice_data['status'];
 $customer_details               = $invoice_data['customer_details'];
+$custom_labels                  = $data['custom_labels'];
 ?>
 
 <!doctype html>
@@ -264,14 +265,14 @@ $customer_details               = $invoice_data['customer_details'];
 
                                 @if(isset($invoice_data['receipt']))
                                     <div class="info">
-                                        RECEIPT NO.
+                                        {{ $custom_labels['receipt_number'] ?? 'RECEIPT NO.' }}
                                         <div class="val">
                                             {{{ $invoice_data['receipt'] }}}
                                         </div>
                                     </div>
                                 @endif
 
-                                @if($invoice_expire_by and $invoice_status !== 'paid')
+                                @if($invoice_expire_by and in_array($invoice_status, array('paid', 'partially_paid')) === false)
                                     <div class="info">
                                         {{$invoice_status === 'expired' ? 'EXPIRED ON' : 'EXPIRES ON'}}
                                         <div class="val">
@@ -281,7 +282,7 @@ $customer_details               = $invoice_data['customer_details'];
                                 @endif
 
                                 <div class="info">
-                                    <span id="pay-title">AMOUNT PAYABLE</span>
+                                    <span id="pay-title">{{ isset($invoice_data['first_payment_min_amount']) ? 'TOTAL AMOUNT OVERDUE' : 'AMOUNT PAYABLE'}}</span>
                                     <div class="val" id="display-pay-amt">
                                         ₹{{amount_format_IN($invoice_data['amount'])}}
                                     </div>
@@ -422,7 +423,7 @@ $customer_details               = $invoice_data['customer_details'];
 
                         @if(isset($invoice_data['receipt']))
                             <div class="info">
-                                RECEIPT NO.
+                                {{ $custom_labels['receipt_number'] ?? 'RECEIPT NO.' }}
                                 <div class="val">
                                     {{{ $invoice_data['receipt'] }}}
                                 </div>
@@ -430,7 +431,7 @@ $customer_details               = $invoice_data['customer_details'];
                         @endif
 
                         <div class="info">
-                            <span id="pay-title">AMOUNT PAYABLE</span>
+                            <span id="pay-title">{{ isset($invoice_data['first_payment_min_amount']) ? 'TOTAL AMOUNT OVERDUE' : 'AMOUNT PAYABLE'}}</span>
                             <div class="val" id="display-pay-amt">
                                 ₹{{amount_format_IN($invoice_data['amount'])}}
                             </div>
@@ -453,7 +454,7 @@ $customer_details               = $invoice_data['customer_details'];
                             </div>
                         @endif
 
-                        @if($invoice_expire_by and $invoice_status !== 'paid')
+                        @if($invoice_expire_by and in_array($invoice_status, array('paid', 'partially_paid')) === false)
                             <div class="info">
                                 {{$invoice_status === 'expired' ? 'EXPIRED ON' : 'EXPIRES ON'}}
                                 <div class="val">{{epoch_format($invoice_expire_by)}} </div>
@@ -679,6 +680,10 @@ $customer_details               = $invoice_data['customer_details'];
             };
 
             options.name = invoiceObj.merchant_label;
+
+            if (data.custom_labels) {
+                options.min_amount_label = data.custom_labels.first_payment_min_amount;
+            }
 
             if (merchant) {
                 var color = merchant.brand_color || '#168AFA';

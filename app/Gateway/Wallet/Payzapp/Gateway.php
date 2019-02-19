@@ -95,7 +95,7 @@ class Gateway extends Base\Gateway
 
         $this->verifyPaymentCallbackResponse($input['gateway']);
 
-        assert ($input['gateway']['merTxnId'] === $input['payment']['id']);
+        $this->assertPaymentId($input['payment']['id'], $input['gateway']['merTxnId']);
 
         $payment = $this->repo->findByPaymentIdAndAction(
                     $input['gateway']['merTxnId'], Action::AUTHORIZE);
@@ -109,8 +109,7 @@ class Gateway extends Base\Gateway
 
         $serverData = $this->pickupData($input);
 
-        // TODO: Fix this
-        // $this->assertAmount($input['payment']['amount'], $serverData['data']['txnAmt']);
+        $this->assertAmount($input['payment']['amount'], $serverData['data']['txnAmt']);
 
         $this->verifyPaymentCallbackResponse($serverData);
 
@@ -230,7 +229,7 @@ class Gateway extends Base\Gateway
         $content = array(
             'wibmoTxnId'        => $input['gateway']['wibmoTxnId'],
             'dataPickupCode'    => $input['gateway']['dataPickUpCode'],
-            'merTxnId'          => $input['gateway']['merTxnId'],
+            'merTxnId'          => $input['payment']['id'],
             'merchantInfo'      => array(
                 'merId'                 => $input['terminal']['gateway_merchant_id'],
                 'merAppId'              => $input['terminal']['gateway_terminal_id'],

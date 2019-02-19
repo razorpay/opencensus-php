@@ -2,6 +2,7 @@
 
 namespace RZP\Reconciliator\UpiIcici\SubReconciliator;
 
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Status;
@@ -63,10 +64,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 [
                     'trace_code'      => TraceCode::RECON_INFO_ALERT,
                     'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
-                    'message'         => 'Payment amount mismatch',
+                    'payment_id'      => $this->payment->getId(),
                     'expected_amount' => $this->payment->getBaseAmount(),
+                    'recon_amount'    => $this->getReconPaymentAmount($row),
                     'currency'        => $this->payment->getCurrency(),
-                    'row'             => $row,
                     'gateway'         => $this->gateway
                 ]);
 
@@ -92,5 +93,17 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     private final function isPaymentStatusFailed(string $status)
     {
         return (($status === UpiStatus::REJECT) or ($status === UpiStatus::FAILURE));
+    }
+
+
+    protected function setAllowForceAuthorization(Payment\Entity $payment)
+    {
+        //
+        // Enabling force Auth for all payments because verify API of upi-icici
+        // gives wrong status in case of payment retries (i.e. multiple payments are created at
+        // gateway/bank side and verify api return the status of failed payment, even though we
+        // have received the payment in MIS file, which means payment got success at bank's side)
+        //
+        $this->allowForceAuthorization = true;
     }
 }

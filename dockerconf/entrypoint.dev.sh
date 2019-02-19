@@ -3,7 +3,10 @@ set -euo pipefail
 
 db_wait(){
   echo "Waiting for DB to intialize"
-  sleep 30
+  until mysqladmin -h "$DB_LIVE_HOST" -u "$DB_LIVE_USERNAME" -p"$DB_LIVE_PASSWORD" processlist &> /dev/null; do
+        echo "Mysql DB is unavailable"
+        sleep 1
+    done
 }
 
 fix_permissions(){

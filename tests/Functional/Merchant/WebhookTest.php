@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
@@ -22,6 +23,7 @@ use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use Http\Client\Common\Exception\ClientErrorException;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 
 /**
@@ -48,7 +50,13 @@ class WebhookTest extends TestCase
 
     public function testCreateWebhook()
     {
-        $this->startTest();
+        $response = $this->startTest();
+
+        // Events of other products (e.g. banking) should not come in response.
+        $this->assertArrayNotHasKey('transaction.created', $response['events']);
+        $this->assertArrayNotHasKey('payout.created', $response['events']);
+        $this->assertArrayNotHasKey('payout.processed', $response['events']);
+        $this->assertArrayNotHasKey('payout.reversed', $response['events']);
 
         $webhook = $this->getDbLastEntity('webhook');
 
@@ -165,6 +173,20 @@ class WebhookTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateWebhookForProductBanking()
+    {
+        $this->fixtures->merchant->addFeatures(['payout']);
+
+        $this->startTest();
+    }
+
+    public function testCreateWebhookForProductBankingWithInvalidEvents()
+    {
+        $this->fixtures->merchant->addFeatures(['payout']);
+
+        $this->startTest();
+    }
+
     public function testEditWebhook()
     {
         $webhook = $this->createWebhook();
@@ -204,13 +226,27 @@ class WebhookTest extends TestCase
         $this->startTest();
     }
 
-    public function testEditDisableWebhookOnProxyAuth()
+    public function testEditDisableWebhookOnAdminProxyAuth()
     {
         $webhook = $this->createWebhook();
 
         $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/'.$webhook['id'];
 
-        $this->ba->proxyAuth();
+        $this->ba->addAdminProxyAuthHeaders('10000000000000');
+
+        $this->startTest();
+
+        $webhook = $this->getDbEntityById('webhook', $webhook['id']);
+
+        $this->assertFalse($webhook->isDisableOnFailure());
+    }
+
+    public function testEditWebhookForProductBankingWithInvalidEvents()
+    {
+        $this->testCreateWebhookForProductBanking();
+
+        $webhookId = $this->getDbLastEntity('webhook')->getPublicId();
+        $this->testData[__FUNCTION__]['request']['url'] = '/webhooks/' . $webhookId;
 
         $this->startTest();
     }
@@ -237,6 +273,12 @@ class WebhookTest extends TestCase
         $this->assertContains('order.paid', $response);
         $this->assertContains('virtual_account.credited', $response);
         $this->assertNotContains('subscription.charged', $response);
+
+        // Events of other products (e.g. banking) should not come in response.
+        $this->assertNotContains('transaction.created', $response);
+        $this->assertNotContains('payout.created', $response);
+        $this->assertNotContains('payout.processed', $response);
+        $this->assertNotContains('payout.reversed', $response);
     }
 
     public function testGetAppWebhooks()
@@ -246,6 +288,13 @@ class WebhookTest extends TestCase
         $this->createApplicationWebhook('10000000000App');
 
         $this->createApplicationWebhook('1000000000App2');
+
+        $this->startTest();
+    }
+
+    public function testGetWebhookEventsForProductBanking()
+    {
+        $this->fixtures->merchant->addFeatures(['payout']);
 
         $this->startTest();
     }
@@ -422,8 +471,28 @@ class WebhookTest extends TestCase
         $this->doAuthPayment($payment);
     }
 
+    public function testCreateWebhookWithEventWhenFeatureNotEnabled()
+    {
+        // Subscribing to subscription.charged requires subscription feature to be enabled and hence expected failure.
+        $this->expectException(BadRequestValidationFailureException::class);
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+        $this->expectExceptionMessage('Invalid event name/names: subscription.charged');
+
+        $this->createWebhook(
+            [
+                'events' => [
+                    'payment.authorized'   => '1',
+                    'subscription.charged' => '1',
+                ],
+            ]);
+    }
+
     public function testWebhooksFeatureBasedEvents()
     {
+        // Adds feature and creates webhook with subscriptions.charged even and asserts the same in next get call.
+
+        $this->fixtures->merchant->addFeatures(['subscriptions']);
+
         $this->createWebhook(['events' => ['payment.authorized' => '1', 'subscription.charged' => '1']]);
 
         $testData = $this->testData['testGetWebhooks'];
@@ -432,9 +501,14 @@ class WebhookTest extends TestCase
 
         $events = $response['items'][0]['events'];
 
-        $this->assertArrayNotHasKey('subscription.charged', $events);
+        $this->assertArrayHasKey('subscription.charged', $events);
 
-        $this->fixtures->merchant->addFeatures(['subscriptions']);
+        //
+        // Hypothetically, for backward compatibility, if the events were added by mistake or via some other unknown flow,
+        // the same must not be exposed still in get/list requests.
+        //
+
+        $this->fixtures->merchant->removeFeatures(['subscriptions']);
 
         $testData = $this->testData['testGetWebhooks'];
 
@@ -442,7 +516,7 @@ class WebhookTest extends TestCase
 
         $events = $response['items'][0]['events'];
 
-        $this->assertArrayHasKey('subscription.charged', $events);
+        $this->assertArrayNotHasKey('subscription.charged', $events);
     }
 
     public function testOrderPaidWebhookEventData()

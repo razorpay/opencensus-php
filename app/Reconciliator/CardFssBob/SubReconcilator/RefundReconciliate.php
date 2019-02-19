@@ -109,9 +109,10 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
                 [
                     'trace_code'        => TraceCode::RECON_INFO_ALERT,
                     'info_code'         => InfoCode::AMOUNT_MISMATCH,
+                    'refund_id'         => $this->refund->getId(),
                     'expected_amount'   => $refundAmount,
+                    'recon_amount'      => $this->getReconRefundAmount($row),
                     'currency'          => $this->refund->getCurrency(),
-                    'row'               => $row,
                     'gateway'           => $this->gateway
                 ]);
 

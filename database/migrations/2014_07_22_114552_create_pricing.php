@@ -6,6 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Constants\Product;
 use RZP\Models\Pricing\Entity as Pricing;
+use RZP\Models\Pricing\Type as PricingType;
 
 class CreatePricing extends Migration
 {
@@ -30,7 +31,10 @@ class CreatePricing extends Migration
             $table->string(Pricing::PRODUCT, 255)
                   ->default(Product::PRIMARY);
 
-            $table->string(Pricing::FEATURE, 20);
+            $table->string(Pricing::FEATURE, 255);
+
+            $table->string(Pricing::TYPE)
+                  ->default(PricingType::PRICING);
 
             $table->string(Pricing::GATEWAY)
                   ->nullable();

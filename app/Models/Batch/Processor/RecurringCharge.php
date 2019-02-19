@@ -60,6 +60,17 @@ class RecurringCharge extends Base
 
     protected function getCustomer(array $entry): Customer\Entity
     {
+        if (empty($entry[Header::RECURRING_CHARGE_CUSTOMER_ID]) === true)
+        {
+            $tokenId = $entry[Header::RECURRING_CHARGE_TOKEN];
+
+            $token = $this->repo->token->findByPublicIdAndMerchant($tokenId, $this->merchant);
+
+            $customerId = $token->getCustomerId();
+
+            return $this->repo->customer->findByIdAndMerchant($customerId, $this->merchant);
+        }
+
         $customerId = $entry[Header::RECURRING_CHARGE_CUSTOMER_ID];
 
         return $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);

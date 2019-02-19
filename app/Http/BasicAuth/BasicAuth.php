@@ -7,7 +7,6 @@ use Config;
 use ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
-use Razorpay\OAuth\Client as OAuthClient;
 
 use RZP\Exception;
 use RZP\Http\Route;
@@ -17,11 +16,16 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Models\Admin\Org;
 use RZP\Http\RequestHeader;
+use RZP\Models\EntityOrigin;
 use RZP\Base\RepositoryManager;
 use RZP\Exception\LogicException;
 use RZP\Models\User\Entity as User;
+use RZP\Models\User\Service as UserService;
 use RZP\Models\Merchant\Account\Entity as Account;
+
+use Razorpay\OAuth\Client as OAuthClient;
 
 /**
  * Class BasicAuth
@@ -62,11 +66,11 @@ class BasicAuth
 
     /**
      * Callback key in the partner token flow looks like this:
-     * rzp_test_1DP5mmOlF5G5ag~rzp_partner_ACIg2tb8NySnuh
+     * rzp_test_1DP5mmOlF5G5ag-rzp_partner_ACIg2tb8NySnuh
      *
      * Delimiter used is defined in this const.
      */
-    const PARTNER_CALLBACK_KEY_DELIMITER = '~';
+    const PARTNER_CALLBACK_KEY_DELIMITER = '-';
 
     const KEY                     = 'key';
     const KEY_ID                  = 'key_id';
@@ -98,7 +102,7 @@ class BasicAuth
      *
      * @var string|null
      */
-    protected $applicationId;
+    protected $applicationId = null;
 
     /**
      * OAuth's access token (public) id.
@@ -266,7 +270,15 @@ class BasicAuth
 
     protected $orgId       = null;
 
+    /**
+     * If admin's organisation has cross route enabled, admin will have access to other organisations as well. In this
+     * case, admin may have cross Id. Cross id is the id of the organisation to which admin want to access.
+     */
+    protected $crossOrgId;
+
     protected $orgHostName = null;
+
+    protected $orgType     = null;
 
     /**
      * User is set from the id received in X-Dashboard-User-Id header.
@@ -274,6 +286,11 @@ class BasicAuth
      * @var \RZP\Models\User\Entity | null
      */
     protected $user        = null;
+
+    /**
+     * User Role is a role associated to the merchant for the user.
+     */
+    protected $userRole    = null;
 
     /**
      * @var boolean
@@ -456,8 +473,9 @@ class BasicAuth
 
         $matches = [];
 
-        // Sample token: rzp_test_partner_1DP5mmOlF5G5ag~acc_ACIg2tb8NySnuh
-        $keyRegex = '/^(rzp_(test|live)_partner_[a-zA-Z0-9]{14})~(acc_[a-zA-Z0-9]{14})$/';
+        // Sample token: rzp_test_partner_1DP5mmOlF5G5ag-acc_ACIg2tb8NySnuh
+        // Todo: For bc we have [-~] in below regex, to be removed soon after this deploy.
+        $keyRegex = '/^(rzp_(test|live)_partner_[a-zA-Z0-9]{14})[-~](acc_[a-zA-Z0-9]{14})$/';
 
         $validCallbackKey = (preg_match($keyRegex, $key, $matches) === 1);
 
@@ -601,9 +619,9 @@ class BasicAuth
         }
     }
 
-    public function oauthPublicTokenAuth(string $token = null)
+    public function oauthPublicTokenAuth(string $token = null, string $auth = Type::PUBLIC_AUTH)
     {
-        $this->setType(Type::PUBLIC_AUTH);
+        $this->setType($auth);
 
         $this->authCreds = new KeyAuthCreds($this->app, $token);
 
@@ -1372,8 +1390,10 @@ class BasicAuth
         {
             $this->authCreds->setMode($mode);
 
-            $this->mode = $this->authCreds->getMode();
+            $mode = $this->authCreds->getMode();
         }
+
+        $this->mode = $mode;
 
         $this->app['rzp.mode'] = $mode;
     }
@@ -1409,9 +1429,15 @@ class BasicAuth
     {
         if ($merchant !== null)
         {
-            $this->setOrgId($merchant->org->getPublicId());
+            /** @var Org\Entity $org */
+            $org = $merchant->org;
 
-            // basic auth is scattered across the code in core and services  for avoiding duplicate code setting merchant here
+            $this->setOrgId($org->getPublicId());
+
+            $this->setOrgType($org->getType());
+
+            // basic auth is scattered across the code in core and services
+            // for avoiding duplicate code setting merchant here
 
             $this->merchant = $merchant;
         }
@@ -1641,6 +1667,11 @@ class BasicAuth
         {
             return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER);
         }
+
+        $applicationId = $this->authCreds->getPartnerApplicationId();
+
+        // $this->applicationId will be set to null if it is not set in authCreds. Also, it defaults to null.
+        $this->setOAuthApplicationId($applicationId);
     }
 
     protected function isPartnerAuthAllowed(): bool
@@ -1850,9 +1881,36 @@ class BasicAuth
         $this->orgId = $orgId;
     }
 
+    /**
+     * Setting and validating crossOrgId.
+     *
+     * @param $crossOrgId
+     */
+    public function setCrossOrgId(string $crossOrgId = null)
+    {
+        $validateOrgId = $crossOrgId;
+
+        if (empty($validateOrgId) === false)
+        {
+            $this->repo->org->isValidOrg(Org\Entity::verifyIdAndStripSign($validateOrgId));
+        }
+
+        $this->crossOrgId = $crossOrgId;
+    }
+
     public function getOrgId()
     {
         return $this->orgId;
+    }
+
+    /**
+     * Getting crossOrgId.
+     *
+     * @return string|null $crossOrgId
+     */
+    public function getCrossOrgId()
+    {
+        return $this->crossOrgId;
     }
 
     public function fetchOrgByHostname($orgHostname)
@@ -1898,6 +1956,26 @@ class BasicAuth
         $this->orgHostName = $orgHostName;
 
         return $this;
+    }
+
+    /**
+     * Certain access and return contents are controlled by org
+     * type, hence setting it in the auth object
+     *
+     * @param $orgType
+     *
+     * @return $this
+     */
+    public function setOrgType($orgType)
+    {
+        $this->orgType = $orgType;
+
+        return $this;
+    }
+
+    public function getOrgType()
+    {
+        return $this->orgType;
     }
 
     public function getOrgHostName()
@@ -1955,6 +2033,11 @@ class BasicAuth
         return $this->user;
     }
 
+    public function getUserRole()
+    {
+        return $this->userRole;
+    }
+
     /**
      * Verifies and sets user from the headers.
      */
@@ -1969,6 +2052,33 @@ class BasicAuth
             $user = $this->repo->user->findOrFailPublic($userId);
 
             $this->setUser($user);
+
+            $this->setUserRole($userId);
+        }
+    }
+
+    public function setUserRole(string $userId)
+    {
+        // Fetching MID from authcreds because X-Razorpay-Account will be set as ba merchant
+        // When a marketplace account requests on behalf of linked account. so fetching the user
+        // mapping via keyId and userId.
+        if ($this->isProxyAuth() === true)
+        {
+            $merchantId = $this->authCreds->creds[self::KEY_ID];
+        }
+
+        if (empty($merchantId) === false)
+        {
+            $userMapping = $this->repo->merchant->getMerchantUserMapping($merchantId, $userId);
+
+            if (empty($userMapping) === false)
+            {
+                $this->userRole = $userMapping->pivot->role;
+            }
+            else
+            {
+                $this->userRole = (new UserService)->syncMerchantUserOnProducts($merchantId);
+            }
         }
     }
 
@@ -1992,5 +2102,59 @@ class BasicAuth
     {
         $this->request->query->remove($key);
         $this->request->request->remove($key);
+    }
+
+    /**
+     * Check if admin has access to other organisations.
+     *
+     * @return bool
+     *
+     */
+    public function adminHasCrossOrgAccess()
+    {
+        return ($this->isAdminAuth() === true) and
+               (empty($this->admin) === false) and
+               ($this->getAdmin()->org->isCrossOrgAccessEnabled() === true);
+    }
+  
+    /**
+     * Returns the origin type and origin id based on the auth used.
+     *
+     * If the merchant's credentials are used, ['merchant', $merchantId] is returned.
+     * If the partner or the oauth credentials are used, ['application', $oauthApplicationId] is returned.
+     *
+     * @return array
+     */
+    public function getOriginDetailsFromAuth(): array
+    {
+        $originId = $originType = null;
+
+        switch (true)
+        {
+            //
+            // This case covers the following cases -
+            //      the bearer auth (pure platform partner flow), and,
+            //      the partner auth (aggregator, fully managed partner flow)
+            //
+            case (empty($this->getOAuthApplicationId()) === false):
+
+                $originType = EntityOrigin\Constants::APPLICATION;
+                $originId   = $this->getOAuthApplicationId();
+                break;
+
+            //
+            // isPublicAuth() returns true even for partner auth when the partner key is used.
+            // Hence keep this case at the end.
+            // privateAuth is required for S2S payments.
+            //
+            case ($this->isPublicAuth() === true):
+            case ($this->isPrivateAuth() === true):
+
+                $originType = EntityOrigin\Constants::MERCHANT;
+                $originId   = $this->getMerchantId();
+                break;
+        }
+
+        return [$originType, $originId];
     }
 }

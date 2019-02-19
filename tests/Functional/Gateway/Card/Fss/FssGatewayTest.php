@@ -6,7 +6,7 @@ class FssGatewayTest extends BobGatewayTest
 {
     protected $acquirer = 'fss';
 
-    public function testPaymentAuthWithCHNameSpecialChars()
+    public function testPaymentAuthWithCardHolderNameSpecialChars()
     {
         $payment = $this->getDefaultPaymentArray();
 
@@ -17,6 +17,23 @@ class FssGatewayTest extends BobGatewayTest
             if ($action === 'authorize_decrypted')
             {
                 self::assertEquals('N HJJKas', $content['member']);
+            }
+        }, $this->gateway);
+
+        $this->doAuthPayment($payment);
+    }
+
+    public function testPaymentAuthWithCardHolderNameSpecialCharsAndMultipleSpaces()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['name'] = '  N. HJJK   as1232   ';
+
+        $this->mockServerRequestFunction(function (&$content, $action = null)
+        {
+            if ($action === 'authorize_decrypted')
+            {
+                self::assertEquals('N HJJK as', $content['member']);
             }
         }, $this->gateway);
 

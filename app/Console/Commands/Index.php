@@ -5,17 +5,15 @@ namespace RZP\Console\Commands;
 use App;
 use Illuminate\Console\Command;
 
+use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\EsRepository;
-use Razorpay\Trace\Logger as Trace;
+
 
 /**
  * Indexes entity into es for search purposes.
- * Usage: `php artisan rzp:index --mode=test --entity=invoice`
  * Do -h for more options.
- *
  * Refer: https://github.com/razorpay/api/wiki/Making-models-in-API-searchable-via-ES
- *
  */
 class Index extends Command
 {
@@ -146,8 +144,7 @@ class Index extends Command
                             $documents,
                             function (& $doc)
                             {
-                                return $this->repo
-                                            ->isEsSyncNeeded(EsRepository::CREATE, $doc);
+                                return $this->repo->isEsSyncNeeded(EsRepository::CREATE, $doc);
                             });
 
             $filteredCount = count($documents);
@@ -164,6 +161,13 @@ class Index extends Command
                 $response = $this->esRepo->bulkUpdate($documents);
 
                 $this->info('Took: ' . $response['took'] . 'ms');
+
+                $this->trace->info(
+                    TraceCode::ES_INDEX_PROGRESS,
+                    [
+                        'offset'  => $skip,
+                        'took_ms' => $response['took'],
+                    ]);
             }
             catch(\Throwable $e)
             {

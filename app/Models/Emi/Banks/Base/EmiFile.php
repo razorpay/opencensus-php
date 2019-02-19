@@ -11,15 +11,23 @@ use RZP\Constants\MailTags;
 use RZP\Mail\Emi as EmiMail;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Services\Beam\Service;
 use RZP\Models\Emi\Banks\Base\EmiMode;
 use RZP\Models\FileStore;
 use RZP\Trace\TraceCode;
 use RZP\Encryption\Type;
+use RZP\Mail\Base\Constants;
+use RZP\Services\Beam\Constants as BeamConstants;
 
 class EmiFile extends Base\Core
 {
     // Regenerated every time the EMI file is created
     protected $emiFilePassword;
+
+    /**
+     * @var $file FileStore\Entity
+     */
+    protected $file;
 
     protected $shouldCompress = true;
 
@@ -73,6 +81,8 @@ class EmiFile extends Base\Core
                 ->store($store)
                 ->type($this->type)
                 ->metadata($metadata);
+
+        $this->file = $creator->getFileInstance();
 
         if ($this->shouldEncrypt === true)
         {
@@ -129,18 +139,14 @@ class EmiFile extends Base\Core
 
         $cardToken = $card->getVaultToken();
 
-        $cardNumber = (new Card\Tokenex)->getCardNumber($cardToken);
+        $cardNumber = (new Card\CardVault)->getCardNumber($cardToken);
 
         return $cardNumber;
     }
 
     protected function getAuthCode($payment)
     {
-        $gateway = $payment->getGateway();
-
-        $gatewayPayment = $this->repo->$gateway->findCapturedPaymentByIdOrFail($payment->getId());
-
-        $authCode = $gatewayPayment->getAuthCode();
+        $authCode = $payment->getReference2();
 
         if (empty($authCode) === true)
         {
@@ -200,6 +206,42 @@ class EmiFile extends Base\Core
             $data);
 
         Mail::queue($emiFileMail);
+    }
+
+    protected function pushEmiFileToBeam(string $jobName)
+    {
+        try
+        {
+            $fullFileName = $this->file->getName() . '.' . $this->file->getExtension();
+
+            $fileInfo = [$fullFileName];
+
+            $data =  [
+                Service::BEAM_PUSH_FILES   => $fileInfo,
+                Service::BEAM_PUSH_JOBNAME => $jobName
+            ];
+
+            // In seconds
+            $timelines = [];
+
+            $mailInfo = [
+                'fileInfo'  => $fileInfo,
+                'channel'   => 'settlements',
+                'filetype'  => 'emi',
+                'subject'   => 'File Send failure',
+                'recipient' => Constants::MAIL_ADDRESSES[Constants::EMI]
+            ];
+
+            $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(TraceCode::BEAM_PUSH_FAILED,
+            [
+                'job_name'  => $jobName,
+                'file_name' => $fullFileName,
+            ]);
+        }
     }
 
     protected function sendEmiPassword()

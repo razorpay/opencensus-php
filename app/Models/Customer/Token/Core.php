@@ -382,7 +382,7 @@ class Core extends Base\Core
     {
         $cardInput = array_pull($input, Entity::CARD);
 
-        $cardInput[Card\Entity::VAULT] = Card\Vault::TOKENEX;
+        $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_VAULT;
 
         $iin = substr($cardInput[Card\Entity::NUMBER], 0, 6);
 

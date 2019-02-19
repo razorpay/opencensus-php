@@ -1,0 +1,35 @@
+<?php
+
+namespace RZP\Services\Mock;
+
+use RZP\Services\CardVault as BaseCardVault;
+
+class CardVault extends BaseCardVault
+{
+    public function tokenize($input)
+    {
+        $token = base64_encode($input['card']);
+
+        return $token;
+    }
+
+    public function validateToken($token)
+    {
+        return [
+            'error' => '',
+            'success' => true,
+        ];
+    }
+
+    public function detokenize($token)
+    {
+        $data = base64_decode($token);
+
+        return $data;
+    }
+
+    public function deleteToken($token)
+    {
+        return [];
+    }
+}

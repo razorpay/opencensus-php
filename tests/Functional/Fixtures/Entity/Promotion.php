@@ -23,6 +23,26 @@ class Promotion extends Base
         return $promotion;
     }
 
+    public function createOnetimeDaily(array $attributes = [])
+    {
+        $scheduleAttributes = [
+            'period' => Period::DAILY,
+        ];
+
+        $schedule = $this->fixtures->create('schedule', $scheduleAttributes);
+
+        $promotionAttributes = [
+            'credits_expire' => true,
+            'schedule_id'    => $schedule->getId(),
+        ];
+
+        $attributes = array_merge($promotionAttributes, $attributes);
+
+        $promotion = $this->fixtures->create('promotion', $attributes);
+
+        return $promotion;
+    }
+
     public function createRecurring(array $attributes = [])
     {
         $currentTime = Carbon::now(Timezone::IST);
@@ -37,9 +57,9 @@ class Promotion extends Base
         $schedule = $this->fixtures->create('schedule', $scheduleAttributes);
 
         $promotionAttributes = [
-            'iterations'        => '1',
-            'credits_expire'    => true,
-            'schedule_id'       => $schedule->getId(),
+            'iterations'     => '1',
+            'credits_expire' => true,
+            'schedule_id'    => $schedule->getId(),
         ];
 
         $attributes = array_merge($promotionAttributes, $attributes);
@@ -54,7 +74,7 @@ class Promotion extends Base
         $defaultValues = [
             'name'          => 'Test-Promotion',
             'credit_amount' => 100,
-            'credit_type'   => 'fee',
+            'credit_type'   => 'amount',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

@@ -4,18 +4,11 @@ namespace RZP\Models\FundTransfer\Rbl\Reconciliation;
 
 use RZP\Trace\TraceCode;
 use RZP\Models\FundTransfer\Rbl\Request\Status as StatusRequest;
+use RZP\Models\FundTransfer\Base\Reconciliation\Constants as ReconConstants;
 use RZP\Models\FundTransfer\Base\Reconciliation\RowProcessor as BaseRowProcessor;
 
 class StatusProcessor extends BaseRowProcessor
 {
-    const UTR               = 'utr';
-    const BANK_STATUS_CODE  = 'bank_status_code';
-    const PAYMENT_DATE      = 'payment_date';
-    const REMARK            = 'remark';
-    const PAYMENT_REF_NO    = 'payment_ref_no';
-    const RRN               = 'rrn';
-    const REFERENCE_NUMBER  = 'reference_number';
-
     public function updateTransferStatus()
     {
         $this->setParsedData($this->row);
@@ -42,14 +35,17 @@ class StatusProcessor extends BaseRowProcessor
     protected function setParsedData(array $response)
     {
         $this->parsedData = [
-            self::REFERENCE_NUMBER => $response[self::REFERENCE_NUMBER],
-            self::UTR              => $response[self::UTR],
-            self::BANK_STATUS_CODE => $response[self::BANK_STATUS_CODE],
-            self::REMARK           => $response[self::REMARK],
-            self::PAYMENT_DATE     => $response[self::PAYMENT_DATE]
+            ReconConstants::REFERENCE_NUMBER      => $response[ReconConstants::REFERENCE_NUMBER],
+            ReconConstants::UTR                   => $response[ReconConstants::UTR],
+            ReconConstants::BANK_STATUS_CODE      => $response[ReconConstants::BANK_STATUS_CODE],
+            ReconConstants::REMARKS               => $response[ReconConstants::REMARKS],
+            ReconConstants::PAYMENT_DATE          => $response[ReconConstants::PAYMENT_DATE],
+            // Won't be present in case of success response
+            ReconConstants::PUBLIC_FAILURE_REASON => $response[ReconConstants::PUBLIC_FAILURE_REASON] ?? null,
+            ReconConstants::NAME_WITH_BENE_BANK   => null,
         ];
 
-        $this->reconEntityId = $response[self::PAYMENT_REF_NO];
+        $this->reconEntityId = $response[ReconConstants::PAYMENT_REF_NO];
 
         $this->trace->info(TraceCode::FTA_RECON_PARSED_DATA, ['parsed_data' => $this->parsedData]);
     }
@@ -58,19 +54,19 @@ class StatusProcessor extends BaseRowProcessor
     {
         $this->updateUtrOnReconEntity();
 
-        $this->reconEntity->setBankStatusCode($this->parsedData[self::BANK_STATUS_CODE]);
+        $this->reconEntity->setBankStatusCode($this->parsedData[ReconConstants::BANK_STATUS_CODE]);
 
-        $this->reconEntity->setDateTime($this->parsedData[self::PAYMENT_DATE]);
+        $this->reconEntity->setDateTime($this->parsedData[ReconConstants::PAYMENT_DATE]);
 
-        $this->reconEntity->setCmsRefNo($this->parsedData[self::REFERENCE_NUMBER]);
+        $this->reconEntity->setCmsRefNo($this->parsedData[ReconConstants::REFERENCE_NUMBER]);
 
-        $this->reconEntity->setRemarks($this->parsedData[self::REMARK]);
+        $this->reconEntity->setRemarks($this->parsedData[ReconConstants::REMARKS]);
 
         $this->reconEntity->saveOrFail();
     }
 
     protected function getUtrToUpdate()
     {
-        return $this->parsedData[self::UTR];
+        return $this->parsedData[ReconConstants::UTR];
     }
 }

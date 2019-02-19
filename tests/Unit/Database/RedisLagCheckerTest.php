@@ -16,8 +16,7 @@ class RedisLagCheckerTest extends TestCase
     public function testReturnsPdoConnectionOnSuccess()
     {
         $lagChecker = new RedisLagChecker([
-                                              'flag'  => ConfigKey::SKIP_SLAVE,
-                                              'flag2' => ConfigKey::MASTER_PERCENT,
+                                              'flag'  => ConfigKey::MASTER_PERCENT,
         ]);
 
         Cache::shouldReceive('get')
@@ -36,8 +35,7 @@ class RedisLagCheckerTest extends TestCase
     public function testReturnsPdoConnectionWhenInitializedConnectionPassed()
     {
         $lagChecker = new RedisLagChecker([
-                                              'flag'  => ConfigKey::SKIP_SLAVE,
-                                              'flag2' => ConfigKey::MASTER_PERCENT,
+                                              'flag' => ConfigKey::MASTER_PERCENT,
         ]);
 
         Cache::shouldReceive('get')
@@ -53,8 +51,7 @@ class RedisLagCheckerTest extends TestCase
     public function testReturnsNullWhenFlagSet()
     {
         $lagChecker = new RedisLagChecker([
-                                              'flag'  => ConfigKey::SKIP_SLAVE,
-                                              'flag2' => ConfigKey::MASTER_PERCENT,
+                                              'flag' => ConfigKey::MASTER_PERCENT,
         ]);
 
         Cache::shouldReceive('get')
@@ -73,8 +70,7 @@ class RedisLagCheckerTest extends TestCase
     public function testReturnsNullOnCacheException()
     {
         $lagChecker = new RedisLagChecker([
-                                              'flag'  => ConfigKey::SKIP_SLAVE,
-                                              'flag2' => ConfigKey::MASTER_PERCENT,
+                                              'flag' => ConfigKey::MASTER_PERCENT,
         ]);
 
         Cache::shouldReceive('get')

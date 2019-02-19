@@ -352,7 +352,7 @@ class Repository extends \Razorpay\Spine\Repository
 
     public function assertTransactionActive()
     {
-        assert ($this->isTransactionActive());
+        assertTrue ($this->isTransactionActive());
     }
 
     public function fetchBetweenTimestampWithRelations($merchantId, $from, $to, $count, $skip = 0, $relations = [])
@@ -434,12 +434,10 @@ class Repository extends \Razorpay\Spine\Repository
      * unaffected. Any change ON the passed object will affect the original
      * object too.
      *
-     * @param Models\Base\PublicEntity $entity
-     * @param bool|boolean             $withTrashed
+     * @param PublicEntity $entity
+     * @param bool|boolean $withTrashed
      */
-    public function lockForUpdateAndReload(
-        Models\Base\PublicEntity $entity,
-        bool $withTrashed = false)
+    public function lockForUpdateAndReload(PublicEntity $entity, bool $withTrashed = false)
     {
         assertTrue($this->isTransactionActive(), 'Lock for update attempted without transaction!');
 
@@ -454,7 +452,7 @@ class Repository extends \Razorpay\Spine\Repository
      * @param string $id
      * @param bool   $withTrashed - Whether to include soft deleted results?
      *
-     * @return Models\Base\PublicEntity
+     * @return PublicEntity
      * @throws Exception\LogicException
      */
     public function lockForUpdate(string $id, bool $withTrashed = false)
@@ -526,6 +524,29 @@ class Repository extends \Razorpay\Spine\Repository
     }
 
     /**
+     * Find entities with given ids for indexing.
+     *
+     * @param array $ids
+     *
+     * @return array
+     */
+    public function findManyForIndexingByIds(array $ids): array
+    {
+        $query = $this->newQuery();
+
+        $this->modifyQueryForIndexing($query);
+
+        $collection = $query->findOrFail($ids);
+
+        return array_map(
+            function($v)
+            {
+                return $this->serializeForIndexing($v);
+            },
+            $collection->all());
+    }
+
+    /**
      * Finds many entities for indexing.
      *
      * @param int      $skip
@@ -588,11 +609,10 @@ class Repository extends \Razorpay\Spine\Repository
      * Serializes a given model for indexing.
      * Please override this per need to avoid unnecessary MySQL queries.
      *
-     * @param Models\Base\PublicEntity $entity
-     *
+     * @param  PublicEntity $entity
      * @return array
      */
-    protected function serializeForIndexing(Models\Base\PublicEntity $entity): array
+    protected function serializeForIndexing(PublicEntity $entity): array
     {
         // We use setVisible to make only select attributes available after
         // toArray. The result from toArray is directly passed to es client for
@@ -624,20 +644,20 @@ class Repository extends \Razorpay\Spine\Repository
      * - $mode:  If mode is passed then this will be used, else rzp.mode
      *           will be used.
      *
-     * @param Models\Base\PublicEntity $entity
-     * @param string                   $action
-     * @param array                    $dirty
-     * @param string                   $mode
+     * @param PublicEntity $entity
+     * @param string       $action
+     * @param array        $dirty
+     * @param string       $mode
      */
     public function syncToEs(
-        Models\Base\PublicEntity $entity,
+        PublicEntity $entity,
         string $action,
         array $dirty = null,
         string $mode = null)
     {
         $this->setEsRepoIfExist();
 
-        if (($this->esRepo === null) or ($this->isEsSyncNeeded($action, $dirty) === false))
+        if (($this->esRepo === null) or ($this->isEsSyncNeeded($action, $dirty, $entity) === false))
         {
             return;
         }
@@ -668,7 +688,7 @@ class Repository extends \Razorpay\Spine\Repository
     }
 
     public function syncToEsLiveAndTest(
-        Models\Base\PublicEntity $entity,
+        PublicEntity $entity,
         string $action,
         array $dirty = null)
     {
@@ -679,12 +699,13 @@ class Repository extends \Razorpay\Spine\Repository
     /**
      * Checks if es sync after a model operation is needed or not.
      *
-     * @param string $action
-     * @param array  $dirty
+     * @param string            $action
+     * @param array|null        $dirty
+     * @param PublicEntity|null $entity
      *
      * @return bool
      */
-    public function isEsSyncNeeded(string $action, array $dirty = null): bool
+    public function isEsSyncNeeded(string $action, array $dirty = null, PublicEntity $entity = null): bool
     {
         $esFields = $this->esRepo->getIndexedFields();
 
@@ -838,7 +859,7 @@ class Repository extends \Razorpay\Spine\Repository
 
         $mode = $mode ?? $this->app['rzp.mode'];
 
-        $connection = ($mode === MODE::TEST) ? Connection::SLAVE_TEST : Connection::SLAVE_LIVE;
+        $connection = ($mode === Mode::TEST) ? Connection::SLAVE_TEST : Connection::SLAVE_LIVE;
 
         return $connection;
     }

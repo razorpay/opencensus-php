@@ -6,15 +6,14 @@
     "additionalProperties": false,
     "required": [
         "id",
-        "deleted"
+        "success"
     ],
     "properties": {
         "id": {
             "type": "string",
-            "default": null,
             "pattern": "^vpa_[\\w]{14}$"
         },
-        "deleted": {
+        "success": {
             "type": "boolean"
         }
     }

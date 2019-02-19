@@ -176,9 +176,11 @@ class Service extends Base\Service
                 ]);
         }
 
-        $reconNamepsace = 'RZP\\Models\\FundTransfer\\' . ucwords($channel) . '\\Reconciliation\\Processor';
+        (new Validator)->validateInput('status_reconcile_for_api', $input);
 
-        return (new $reconNamepsace)->process($input);
+        $reconNamespace = 'RZP\\Models\\FundTransfer\\' . ucwords($channel) . '\\Reconciliation\\Processor';
+
+        return (new $reconNamespace)->process($input);
     }
 
     public function reconcileH2HSettlements($input, string $channel)

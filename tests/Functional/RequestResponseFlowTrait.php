@@ -10,6 +10,7 @@ use RZP\Tests\Functional\Helpers\EntityFetchTrait;
 trait RequestResponseFlowTrait
 {
     use EntityFetchTrait;
+    use CustomAssertions;
 
     /**
      * Auths a payment & tests it is correctly done
@@ -335,6 +336,8 @@ trait RequestResponseFlowTrait
 
     protected function makeRequestAndGetContent($request, &$callback = null)
     {
+        $this->resetSingletons();
+
         $response = $this->sendRequest($request, $callback);
 
         return $this->getJsonContentFromResponse($response, $callback);

@@ -5,6 +5,7 @@ namespace RZP\Models\Schedule;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Admin\Org;
 
 class Core extends Base\Core
 {
@@ -15,23 +16,21 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    public function createSchedule(array $input, $merchant = null)
+    public function createSchedule(array $input)
     {
         $this->trace->info(
             TraceCode::SCHEDULE_CREATE_REQUEST,
             $input
         );
 
+        if (array_key_exists('org_id', $input) && $input['org_id'] != null)
+        {
+            Org\Entity::verifyIdAndStripSign($input['org_id']);
+        }
+
         $schedule = (new Entity)->build($input);
 
         $schedule->generateId();
-
-        if ($merchant === null)
-        {
-            $merchant = $this->repo->merchant->getSharedAccount();
-        }
-
-        $schedule->merchant()->associate($merchant);
 
         $this->repo->saveOrFail($schedule);
 

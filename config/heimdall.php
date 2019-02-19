@@ -28,6 +28,10 @@ return [
             Permission::VIEW_HOMEPAGE => 'View Dashboard Home',
         ],
 
+        PermissionCategory::RAZORX => [
+            Permission::RAZORX_APPROVERS => 'Approve workflows for activation of razorx experiments',
+        ],
+
         PermissionCategory::MERCHANT => [
             Permission::VIEW_ALL_MERCHANTS            => [
                 'description' => 'View all merchants in merchant lists',
@@ -190,6 +194,7 @@ return [
             Permission::EDIT_TERMINAL                       => '',
             Permission::CREATE_SETTLEMENTS_RECONCILE        => '',
             Permission::CREATE_RECONCILIATE                 => '',
+            Permission::CREATE_PROMOTION_COUPON             => '',
             Permission::VIEW_ACTIVATION_FORM                => [
                 'assignable' => true,
             ],
@@ -243,6 +248,8 @@ return [
             Permission::SCHEDULE_UPDATE                     => '',
             Permission::SCHEDULE_ASSIGN                     => '',
             Permission::SCHEDULE_ASSIGN_BULK                => '',
+            Permission::PRICING_ASSIGN_BULK                 => '',
+            Permission::METHODS_ASSIGN_BULK                 => '',
             Permission::SCHEDULE_MIGRATION                  => '',
             Permission::VIEW_ACTIONS                        => '',
             Permission::VIEW_MERCHANT_STATS                 => '',
@@ -471,7 +478,13 @@ return [
             Permission::DOWNLOAD_NON_MERCHANT_REPORT => [
                 'description' => 'download non-merchant reports',
                 'assignable'  => true,
-            ]
+            ],
+            Permission::ES_WRITE_OPERATION           => [
+                'description' => 'Perform write operations on Elasticsearch',
+            ],
+            Permission::ADMIN_FILE_UPLOAD            => [
+                'description' => 'Upload a bank file',
+            ],
         ],
 
         // Permissions
@@ -543,6 +556,18 @@ return [
                 'description' => 'view_gateway_rule',
                 'assignable'  => true,
                 'workflow'    => true
+            ],
+        ],
+
+        PermissionCategory::GATEWAY_DOWNTIME  => [
+            Permission::CREATE_GATEWAY_DOWNTIME => [
+                'description' => 'Create Gateway Downtime',
+            ],
+            Permission::UPDATE_GATEWAY_DOWNTIME => [
+                'description' => 'Update Gateway Downtime',
+            ],
+            Permission::VIEW_GATEWAY_DOWNTIME => [
+                'description' => 'View Gateway Downtime',
             ],
         ],
 

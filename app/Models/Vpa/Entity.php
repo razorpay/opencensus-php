@@ -3,20 +3,22 @@
 namespace RZP\Models\Vpa;
 
 use RZP\Models\Base;
+use RZP\Base\BuilderEx;
 use RZP\Models\Merchant;
 
 class Entity extends Base\PublicEntity
 {
-    const ID              = 'id';
-    const ENTITY_ID       = 'entity_id';
-    const ENTITY_TYPE     = 'entity_type';
-    const USERNAME        = 'username';
-    const HANDLE          = 'handle';
-    const MERCHANT_ID     = 'merchant_id';
+    const ID                   = 'id';
+    const ENTITY_ID            = 'entity_id';
+    const ENTITY_TYPE          = 'entity_type';
+    const USERNAME             = 'username';
+    const HANDLE               = 'handle';
+    const MERCHANT_ID          = 'merchant_id';
+    const FTS_FUND_ACCOUNT_ID  = 'fts_fund_account_id';
 
-    const ADDRESS               = 'address';
+    const ADDRESS = 'address';
 
-    const AROBASE               = '@';
+    const AROBASE = '@';
 
     protected $generateIdOnCreate = true;
 
@@ -86,11 +88,26 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ENTITY_ID);
     }
 
+    public function getEntityType()
+    {
+        return $this->getAttribute(self::ENTITY_TYPE);
+    }
+
+    public function getFtsFundAccountId()
+    {
+        return $this->getAttribute(self::FTS_FUND_ACCOUNT_ID);
+    }
+
     // ----------------------- Setters -----------------------
 
     public function setHandle($handle)
     {
         return $this->setAttribute(self::HANDLE, $handle);
+    }
+
+    public function setFtsFundAccountId($ftsFundAccountId)
+    {
+        return $this->setAttribute(self::FTS_FUND_ACCOUNT_ID, $ftsFundAccountId);
     }
 
     // ----------------------- Accessor ----------------------
@@ -110,5 +127,13 @@ class Entity extends Base\PublicEntity
     public function entity()
     {
         return $this->morphTo();
+    }
+
+    public function scopeAddress(BuilderEx $query, string $address)
+    {
+        list($username, $handle) = explode(self::AROBASE, $address);
+
+        $query->where(Entity::USERNAME, $username)
+              ->where(Entity::HANDLE, $handle);
     }
 }

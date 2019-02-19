@@ -209,6 +209,22 @@ class Fixtures extends Constants
         return $entity;
     }
 
+    /**
+     * @param bool $verified
+     * @return P2p\Device\DeviceToken\Entity
+     */
+    public function currentDeviceToken(bool $verified = false)
+    {
+        $deviceToken = $this->device->deviceTokens()->handle($this->handle);
+
+        if ($verified === true)
+        {
+            $deviceToken->verified();
+        }
+
+        return $deviceToken->first();
+    }
+
     public function __get($property)
     {
         if ($this->current->{$property} !== null)

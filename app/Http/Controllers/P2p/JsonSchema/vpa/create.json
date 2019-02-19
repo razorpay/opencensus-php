@@ -11,6 +11,9 @@
         "username",
         "handle",
         "bank_account_id",
+        "active",
+        "validated",
+        "verified",
         "created_at"
     ],
     "properties": {
@@ -40,9 +43,18 @@
             "pattern": "^(.*)$"
         },
         "bank_account_id": {
-            "type": "string",
+            "type": ["string", "null"],
             "default": null,
             "pattern": "^ba_[\\w]{14}$"
+        },
+        "active": {
+            "type": "boolean"
+        },
+        "validated": {
+            "type": "boolean"
+        },
+        "verified": {
+            "type": "boolean"
         },
         "created_at": {
             "type": "integer"

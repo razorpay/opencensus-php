@@ -47,7 +47,7 @@ class Bank
         IFSC::VIJB         => 1039,     // Vijaya Bank
         IFSC::ALLA         => 1056,     // Allahabad Bank
         IFSC::UTIB         => 1003,     // Axis Bank
-        IFSC::BKID         => 1046,     // Bank of India
+        IFSC::BKID         => 1012,     // Bank of India
         IFSC::CNRB         => 1030,     // Canara Bank
         IFSC::SBBJ         => 1014,
         IFSC::SBHY         => 1014,

@@ -15,4 +15,13 @@ class NodalBeneficiaryController extends Controller
 
         return ApiResponse::json($entity);
     }
+
+    public function createOrUpdateNodalBeneficiary()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createOrUpdateNodalBeneficiary($input);
+
+        return ApiResponse::json($response);
+    }
 }

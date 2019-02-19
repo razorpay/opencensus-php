@@ -33,7 +33,7 @@ class SubscriptionNotificationTest extends TestCase
 
         $this->gateway = 'cybersource';
 
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         // This is set to 10 Jan 2018
         // Because in test cases subsription start date is set

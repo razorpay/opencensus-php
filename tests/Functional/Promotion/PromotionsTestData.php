@@ -13,6 +13,7 @@ return [
                 'credit_type'       => 'amount',
                 'iterations'        => 1,
                 'credits_expire'    => false,
+                'purpose'           => 'Promotion Testing',
             ],
             'url'    => '/promotions',
             'method' => 'POST'
@@ -36,6 +37,7 @@ return [
                 'credits_expire'          => true,
                 'credits_expiry_period'   => 'monthly',
                 'credits_expiry_interval' => 1,
+                'purpose'                 => 'Testing Promotion',
             ],
             'url'    => '/promotions',
             'method' => 'POST'
@@ -54,13 +56,13 @@ return [
             'url'      => '',
             'method'   => 'PATCH',
             'content'  => [
-                'name'  => 'Updated name'
+                'name'  => 'Updated_Name'
             ]
         ],
         'response' => [
             'content' => [
                 'id'                => null,
-                'name'              => 'Updated name',
+                'name'              => 'Updated_Name',
                 'credit_amount'     => 100,
                 'credits_expire'    => false,
             ]
@@ -289,5 +291,6 @@ return [
     'scheduleEntity' => [
         'interval' => 1,
         'period'   => 'monthly',
+        'type'     => 'promotion',
     ],
 ];

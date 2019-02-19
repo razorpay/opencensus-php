@@ -46,6 +46,18 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
+    /**
+     * Checks if any org with given org id exists in database.
+     *
+     * @param string $id
+     *
+     * @return mixed
+     */
+    public function isValidOrg(string $id)
+    {
+        return $this->newQuery()->findOrFailPublic($id);
+    }
+
     public function findOrFailByHostname(string $hostname)
     {
         // Collect different table names, and their columns to query on

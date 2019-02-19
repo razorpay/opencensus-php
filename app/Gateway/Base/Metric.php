@@ -8,7 +8,6 @@ use RZP\Gateway\Upi;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Gateway\Wallet;
-use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use Razorpay\Trace\Logger as Trace;
@@ -23,10 +22,12 @@ class Metric
 
     // Counter type metric names only for gateway api calls
     const GATEWAY_REQUEST_COUNT          = 'gateway_request_count_v2';
+    const GATEWAY_REQUEST_COUNT_V3       = 'gateway_request_count_v3';
 
     // class constants for usage in the class
     const SUCCESS                        = 'success';
     const FAILED                         = 'failed';
+    const CURL_ERROR                     = 'curl_error';
 
     // Dimensions for gateway api calls to log
     const DIMENSION_GATEWAY              = 'gateway';
@@ -46,6 +47,7 @@ class Metric
     const DIMENSION_STATUS               = 'status';
     const DIMENSION_TERMINAL_ID          = 'terminal_id';
     const DIMENSION_MERCHANT_CATEGORY    = 'merchant_category';
+    const DIMENSION_ERROR                = 'curl_error_no';
 
     // Actions array for which we need to push data to prometheus
     const ACTIONS_TO_ALLOW  = [
@@ -53,6 +55,10 @@ class Metric
         Payment\Action::CALLBACK,
         Payment\Action::CAPTURE,
         Payment\Action::REFUND,
+        Payment\Action::CHECK_ACCOUNT,
+        Payment\Action::FETCH_TOKEN,
+        Payment\Action::VERIFY,
+        Payment\Action::VERIFY_REFUND,
         // Payment\Action::OTP_GENERATE,
         // Payment\Action::REVERSE,
         // Payment\Action::AUTHORIZE_PUSH,
@@ -101,8 +107,6 @@ class Metric
 
         $isBharatQr = $this->isBharatQrPayment($input);
 
-        $terminalId = $this->getTerminalId($input);
-
         $merchantCategory = 'none';
 
         return [
@@ -120,9 +124,18 @@ class Metric
             Metric::DIMENSION_CARD_INTERNATIONAL   => $isInternationalPayment,
             Metric::DIMENSION_BHARAT_QR            => $isBharatQr,
             Metric::DIMENSION_AUTH_TYPE            => $authType,
-            Metric::DIMENSION_TERMINAL_ID          => $terminalId,
+            Metric::DIMENSION_TERMINAL_ID          => 'none',
             Metric::DIMENSION_MERCHANT_CATEGORY    => $merchantCategory
         ];
+    }
+
+    public function getV2Dimensions($action, $input, $gateway = 'none', $excData = 'none')
+    {
+        $dimensions = $this->getDimensions($action, $input, $gateway);
+
+        $dimensions[Metric::DIMENSION_ERROR] = $excData;
+
+        return $dimensions;
     }
 
     protected function getInstrumentType($input, $method)
@@ -182,8 +195,7 @@ class Metric
         if (($method === Payment\Method::NETBANKING) or
             ($method === Payment\Method::UPI))
         {
-            if ((isset($input[Entity::ORDER][Payment\Entity::ACCOUNT_NUMBER]) === true) and
-                ($input[Entity::MERCHANT]->isTPVRequired() === true))
+            if ($input[Entity::MERCHANT]->isTPVRequired() === true)
             {
                 $tpv = '1';
             }
@@ -248,7 +260,9 @@ class Metric
 
     protected function isRecurringPayment($input)
     {
-        return $input[Entity::PAYMENT][Payment\Entity::RECURRING] ?? '0';
+        $recurringType = $input[Entity::PAYMENT][Payment\Entity::RECURRING_TYPE] ?? 'none';
+
+        return $recurringType;
     }
 
     protected function getAuthType($input)
@@ -288,12 +302,7 @@ class Metric
         return $input[Entity::PAYMENT][Payment\Entity::MERCHANT_ID];
     }
 
-    protected function getTerminalid($input)
-    {
-        return $input[Entity::TERMINAL][Terminal\Entity::ID];
-    }
-
-    public function pushGatewayDimensions($action, $input, $status, $gateway = null)
+    public function pushGatewayDimensions($action, $input, $status, $gateway = null, $excData = null)
     {
         try
         {
@@ -303,11 +312,25 @@ class Metric
             {
                 $dimensions = $this->getDimensions($action, $input, $gateway);
 
+                $dimensions2 = $this->getV2Dimensions($action, $input, $gateway, $excData);
+
+                $dimensions2[Metric::DIMENSION_STATUS] = $status;
+
+                /**
+                 * Not making any change to the old metric. Hence pushing status as failed and not curl error.
+                 */
+                if ($status === Metric::CURL_ERROR)
+                {
+                    $status = Metric::FAILED;
+                }
+
                 $dimensions[Metric::DIMENSION_STATUS] = $status;
 
                 $gatewayMetrics = app('trace')->metricsDriver(self::DOGSTATSD_DRIVER);
 
                 $gatewayMetrics->count(Metric::GATEWAY_REQUEST_COUNT, 1, $dimensions);
+
+                $gatewayMetrics->count(Metric::GATEWAY_REQUEST_COUNT_V3, 1, $dimensions2);
             }
         }
         catch (\Throwable $exc)

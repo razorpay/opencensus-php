@@ -73,6 +73,63 @@ class NetbankingAirtelReconTest extends TestCase
         $this->assertEquals(Status::PROCESSED, $batch['status']);
     }
 
+    public function testNetbankingAirtelForceAuthorizePayment()
+    {
+        $payments = $this->makeAirtelPaymentSince();
+
+        $this->ba->appAuth();
+
+        $fileContents = $this->generateReconFile();
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $forceAuthPayments = [];
+
+        // set the payment status as 'failed'
+        foreach ($payments as $id => $payment)
+        {
+            $this->fixtures->payment->edit($payment,
+                [
+                    'status' => 'failed',
+                    'error_code' => 'BAD_REQUEST_ERROR',
+                ]);
+
+            $updatedPayment = $this->getEntityById('payment', $payment, true);
+
+            $this->assertEquals('failed', $updatedPayment['status']);
+
+            $forceAuthPayments[] = $updatedPayment['id'];
+        }
+
+        // Pass the failed payments in force auth field
+        $this->reconcile($uploadedFile, Recon::AIRTEL, $forceAuthPayments);
+
+        $batch = $this->getLastEntity('batch', true);
+
+        $this->assertEquals(3, $batch['total_count']);
+        $this->assertEquals(3, $batch['success_count']);
+        $this->assertEquals(0, $batch['failure_count']);
+
+        $netbanking = $this->getEntities('netbanking', [], true);
+
+        foreach ($netbanking['items'] as $id => $netbankingEntity)
+        {
+            $payment = $this->getEntityById('payment', $payments[$id], true);
+
+            $this->assertEquals(true, $payment['gateway_captured']);
+
+            $this->assertEquals('authorized', $payment['status']);
+
+            $transactionId = $payment['transaction_id'];
+
+            $transaction = $this->getEntityById('transaction', $transactionId, true);
+
+            $this->assertNotNull($transaction['reconciled_at']);
+        }
+
+        $this->assertEquals(Status::PROCESSED, $batch['status']);
+    }
+
     public function testReconAmountValidationFailed()
     {
         $payment = $this->makeAirtelPaymentSince(1)[0];

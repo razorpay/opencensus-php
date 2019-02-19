@@ -5,9 +5,9 @@ namespace RZP\Base;
 use App;
 
 use RZP\Http\BasicAuth;
-use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
+use RZP\Models\{Payment, Admin\Org};
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Fetch
@@ -35,6 +35,7 @@ class Fetch
     const TYPE_OBJECT          = 'object';
 
     const FIELD_MERCHANT_ID         = 'merchant_id';
+    const FIELD_BALANCE_ID          = 'balance_id';
     const FIELD_GATEWAY             = 'gateway';
     const FIELD_PAYMENT_ID          = 'payment_id';
     const FIELD_PAYMENT_STATUS      = 'payment_status';
@@ -44,6 +45,18 @@ class Fetch
     const FIELD_SUBSCRIPTION_ID     = 'subscription_id';
     const FIELD_REFUND_ID           = 'refund_id';
     const FIELD_NOTES               = 'notes';
+
+    /**
+     * Key for list of rules specific for restricted orgs like SBI,
+     * in the Default_Rules and Rules arrays.
+     */
+    const ADMIN_RESTRICTED = 'admin_restricted';
+
+    /**
+     * List of attributes allowed to restricted orgs like SBI, in the This is
+     * the complete whitelist and is not appended to lists of public, etc. attributes
+     */
+    const ADMIN_RESTRICTED_ACCESSES = [];
 
     /**
      * Validation rules for all fields in Entity, is an multi-dimensional array
@@ -125,6 +138,8 @@ class Fetch
         ],
 
         BasicAuth\Type::ADMIN_AUTH => [],
+
+        self::ADMIN_RESTRICTED => [],
     ];
 
     /**
@@ -390,10 +405,27 @@ class Fetch
 
         if ($this->auth->isAdminAuth() === true)
         {
-            $defaultRules    = array_merge($defaultRules, self::DEFAULT_RULES[BasicAuth\Type::ADMIN_AUTH]);
+            if ($this->auth->getOrgType() === Org\Entity::RESTRICTED)
+            {
+                $defaultRules = array_merge($defaultRules, self::DEFAULT_RULES[self::ADMIN_RESTRICTED]);
 
-            $adminRules    = array_get(static::RULES, BasicAuth\Type::ADMIN_AUTH, []);
-            $adminAccesses = array_get(static::ACCESSES, BasicAuth\Type::ADMIN_AUTH, []);
+                $adminRules    = array_get(static::RULES, self::ADMIN_RESTRICTED, []);
+                $adminAccesses = static::ADMIN_RESTRICTED_ACCESSES;
+
+                //
+                // In case of restricted orgs, we reset default accesses to original defaults without
+                // accesses from other auths like private, proxy (which are allowed for regular admin
+                // auth) and then merge only the ones allowed to restricted orgs
+                //
+                $accesses      = array_get(static::ACCESSES, self::DEFAULTS, []);
+            }
+            else
+            {
+                $defaultRules = array_merge($defaultRules, self::DEFAULT_RULES[BasicAuth\Type::ADMIN_AUTH]);
+
+                $adminRules    = array_get(static::RULES, BasicAuth\Type::ADMIN_AUTH, []);
+                $adminAccesses = array_get(static::ACCESSES, BasicAuth\Type::ADMIN_AUTH, []);
+            }
 
             $rules    = array_merge($rules, $adminRules);
             $accesses = array_merge($accesses, $adminAccesses);
@@ -526,6 +558,10 @@ class Fetch
             self::FIELD_MERCHANT_ID => [
                 self::LABEL     => 'Merchant Id',
                 self::TYPE      => self::TYPE_STRING
+            ],
+            self::FIELD_BALANCE_ID => [
+                self::LABEL     => 'Balance Id',
+                self::TYPE      => self::TYPE_STRING,
             ],
             self::FIELD_GATEWAY => [
                 self::LABEL     => 'Gateway',

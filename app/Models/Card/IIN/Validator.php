@@ -10,49 +10,54 @@ use RZP\Models\Card;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::IIN           => 'required|numeric|digits:6',
-        Entity::NETWORK       => 'required',
-        Entity::TYPE          => 'required',
-        Entity::COUNTRY       => 'sometimes|nullable|size:2',
-        Entity::CATEGORY      => 'sometimes',
-        Entity::ISSUER        => 'required_if:emi,1',
-        Entity::TRIVIA        => 'sometimes',
-        Entity::ISSUER_NAME   => 'sometimes',
-        Entity::EMI           => 'sometimes|integer|in:0,1',
-        Entity::ENABLED       => 'sometimes|integer|in:0,1',
-        Entity::FLOWS         => 'sometimes|array|custom',
+        Entity::IIN            => 'required|numeric|digits:6',
+        Entity::NETWORK        => 'required',
+        Entity::TYPE           => 'required',
+        Entity::COUNTRY        => 'sometimes|nullable|size:2',
+        Entity::CATEGORY       => 'sometimes',
+        Entity::ISSUER         => 'required_if:emi,1',
+        Entity::TRIVIA         => 'sometimes',
+        Entity::ISSUER_NAME    => 'sometimes',
+        Entity::EMI            => 'sometimes|integer|in:0,1',
+        Entity::ENABLED        => 'sometimes|integer|in:0,1',
+        Entity::FLOWS          => 'sometimes|array|custom',
+        Entity::MESSAGE_TYPE   => 'sometimes|string|custom',
     );
 
     protected static $editRules = array(
-        Entity::NETWORK       => 'sometimes',
-        Entity::TYPE          => 'sometimes',
-        Entity::COUNTRY       => 'sometimes|nullable|size:2',
-        Entity::CATEGORY      => 'sometimes',
-        Entity::ISSUER        => 'required_if:emi,1',
-        Entity::TRIVIA        => 'sometimes',
-        Entity::ISSUER_NAME   => 'sometimes',
-        Entity::EMI           => 'sometimes|integer|in:0,1',
-        Entity::ENABLED       => 'sometimes|integer|in:0,1',
-        Entity::FLOWS         => 'sometimes|array|filled|custom',
+        Entity::NETWORK        => 'sometimes',
+        Entity::TYPE           => 'sometimes',
+        Entity::COUNTRY        => 'sometimes|nullable|size:2',
+        Entity::CATEGORY       => 'sometimes',
+        Entity::ISSUER         => 'required_if:emi,1',
+        Entity::TRIVIA         => 'sometimes',
+        Entity::ISSUER_NAME    => 'sometimes',
+        Entity::EMI            => 'sometimes|integer|in:0,1',
+        Entity::ENABLED        => 'sometimes|integer|in:0,1',
+        Entity::FLOWS          => 'sometimes|array|filled|custom',
+        Entity::LOCKED         => 'sometimes|integer|in:0,1',
+        Entity::MESSAGE_TYPE   => 'sometimes|string|custom',
     );
 
     protected static $binIssuerValidationRules = [
-        Entity::ISSUER       => 'required|string|in:HDFC',
         Entity::NUMBER       => 'required|numeric|digits_between:6,19',
-        Entity::TYPE         => 'required|string|in:credit,debit',
     ];
 
-    protected static $createValidators = array(
+    protected static $createValidators = [
         'create_network',
         Entity::TYPE,
         Entity::ISSUER,
-    );
+    ];
 
-    protected static $editValidators = array(
+    protected static $editValidators = [
         'edit_network',
         Entity::TYPE,
         Entity::ISSUER,
-    );
+    ];
+
+    protected static $binListValidationRules = [
+        'flow'             => 'required|string|in:otp',
+    ];
 
     protected function validateCreateNetwork($input)
     {
@@ -129,6 +134,19 @@ class Validator extends Base\Validator
                 throw new Exception\BadRequestValidationFailureException(
                     'Invalid flow in input: ' . $flow);
             }
+        }
+    }
+
+    protected function validateMessageType($attribute, $value)
+    {
+        if (MessageType::isValid($value) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid Message type given',
+                $attribute,
+                [
+                    $attribute => $value,
+                ]);
         }
     }
 }

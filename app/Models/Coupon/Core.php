@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Promotion as MerchantPromotion;
 
 class Core extends Base\Core
@@ -29,6 +30,16 @@ class Core extends Base\Core
             $merchant = $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
         }
 
+        $couponCode = $input[Entity::CODE];
+
+        $couponExists = $this->repo->coupon->fetchByCodeWithRelations($couponCode, $merchant->id);
+
+        if ($couponExists !== null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_COUPON_ALREADY_EXISTS);
+        }
+
         $coupon->source()->associate($entity);
 
         $coupon->merchant()->associate($merchant);
@@ -38,9 +49,63 @@ class Core extends Base\Core
         return $coupon;
     }
 
-    public function apply(Merchant\Entity $merchant, Entity $coupon): array
+    /**
+     *
+     * Updating start_at and end_at
+     * @param Entity $coupon
+     * @param array $input
+     * @return Entity
+     */
+    public function update(Entity $coupon, array $input): Entity
     {
+        $coupon->edit($input);
+
+        $this->repo->saveOrFail($coupon);
+
+        return $coupon;
+    }
+
+    /**
+     * @param Merchant\Entity $merchant
+     * @param array $input
+     * @return mixed|Entity
+     * @throws Exception\BadRequestException
+     */
+    public function validateAndGetDetails(Merchant\Entity $merchant, array $input): Entity
+    {
+        $coupon = $this->getCouponByCode($merchant, $input);
+
         $this->validateMerchantPromotion($merchant, $coupon);
+
+        return $coupon;
+    }
+
+    /**
+     *  Validating and Checking whether coupon and merchant is valid
+     *
+     * @param Merchant\Entity $merchant
+     * @param array $input
+     * @return mixed
+     * @throws Exception\BadRequestException
+     */
+    protected function getCouponByCode(Merchant\Entity $merchant, array $input): Entity
+    {
+        $coupon = $this->repo->coupon->fetchByCodeWithRelations($input[Entity::CODE], $merchant->getId());
+
+        if ($coupon === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_COUPON_CODE,
+                null,
+                $input);
+        }
+
+        return $coupon;
+    }
+
+    public function apply(Merchant\Entity $merchant, array $input): array
+    {
+        $coupon = $this->validateAndGetDetails($merchant, $input);
 
         $this->applyMerchantPromotion($merchant, $coupon);
 
@@ -50,7 +115,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Check if the coupon is valid for given merchant
+     * Check if the coupon has been used by the merchant
      *
      * @param Merchant\Entity $merchant
      * @param Entity          $coupon
@@ -97,10 +162,26 @@ class Core extends Base\Core
         //
         $this->repo->transaction(function() use ($merchant, $promotion, $coupon)
         {
+            $pricingPlanId = $promotion->getPricingPlanId();
+
+            $merchant->setPricingPlan($pricingPlanId);
+
+            $this->repo->saveOrFail($merchant);
+
+            $this->trace->info(TraceCode::MERCHANT_PROMOTION_PRICING_CHANGED,
+                               [
+                                   'merchant_old_pricing_plan' => $merchant->getPricingPlanId(),
+                                   'merchant_new_pricing_plan' => $pricingPlanId,
+                               ]);
+
             $merchantPromotionCore = (new MerchantPromotion\Core);
 
             $merchantPromotion = $merchantPromotionCore->create($merchant, $promotion);
 
+            //
+            //  Promotion/Coupon is applied to merchant only if merchant is activated.
+            //  As credits and balance are credited for merchant in live mode once activated.
+            //
             if ($merchant->isActivated() === true)
             {
                 $merchantPromotionCore->activate($merchantPromotion);
@@ -109,6 +190,8 @@ class Core extends Base\Core
             $coupon->incrementUsedCount();
 
             $this->repo->saveOrFail($coupon);
+
+            $this->trace->info(TraceCode::MERCHANT_PROMOTION_CREATED);
         });
     }
 }

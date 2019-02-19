@@ -8,8 +8,10 @@ use ZipArchive;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Mail;
+use Queue;
 
 use RZP\Mail\Emi as EmiMail;
+use RZP\Jobs\BeamJob;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -33,7 +35,7 @@ class EMIPaymentTest extends TestCase
 
         $this->emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
 
-        $this->mockTokenex();
+        $this->mockCardVault();
     }
 
     public function testEmiPaymentCreate()
@@ -117,6 +119,43 @@ class EMIPaymentTest extends TestCase
         $this->deleteAlltheGenerateFiles($content);
 
         unlink($content['YESB']);
+    }
+
+    public function testBeamPushForEmiFile()
+    {
+        Mail::fake();
+
+        Queue::fake();
+
+        $emiPlan = $this->emiPlan;
+
+        //Making transactions hapen yesterday
+        $yesterdayAtTen = Carbon::yesterday(Timezone::IST)->addHours(10)->timestamp;
+
+        $this->fixtures->merchant->enableEmi();
+
+        $this->ba->publicAuth();
+
+        //ICICI Card
+        $this->makeEmiPaymentOnCard('4076510000000033', 9, $yesterdayAtTen);
+
+        //Yes Bank
+        $this->makeEmiPaymentOnCard('5318491050009999', 9 ,$yesterdayAtTen);
+
+        $request = array(
+            'method' => 'POST',
+            'url' => '/emi/generate/excel',
+            'content' => []);
+
+        $this->ba->adminAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(count($content), 2);
+
+        Queue::assertPushed(BeamJob::class, 2);
+
+        Queue::assertPushedOn('general_test', BeamJob::class);
     }
 
     private function zipFileName($filePath)

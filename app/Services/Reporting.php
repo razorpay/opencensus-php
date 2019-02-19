@@ -16,6 +16,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
+use RZP\Models\Admin\Org;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Feature\Constants as Feature;
@@ -62,6 +63,8 @@ class Reporting implements ExternalService
 
     protected $headers;
 
+    protected  $app;
+
     /**
      * @var \RZP\Http\BasicAuth\BasicAuth
      */
@@ -71,6 +74,7 @@ class Reporting implements ExternalService
     {
         $app = App::getFacadeRoot();
 
+        $this->app    = $app;
         $this->config = $app['config']['applications.reporting'];
         $this->trace  = $app['trace'];
         $this->mode   = $app['rzp.mode'];
@@ -153,6 +157,16 @@ class Reporting implements ExternalService
             {
                 $headers[self::REPORT_TYPE_HEADER] = $reportType;
                 $headers[self::CONSUMER_HEADER] = $consumer;
+            }
+
+            //
+            // The below if condition check is not for admins of RZP organisation. Here, Admin should not be able to
+            // access the consumer(org id here) which is not same as his organisation. Admin auth will be used here.
+            //
+            if (($this->ba->getAdmin()->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID) and
+                ($this->ba->getAdmin()->getOrgId() !== $consumer))
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REPORTING_INTEGRATION);
             }
         }
 
@@ -294,6 +308,8 @@ class Reporting implements ExternalService
 
         $response = $this->createScheduleOnReportingService($reportingServiceRequest);
 
+        $apiResponse = null;
+
         // In case reporting service returns error, then we dont create schedule/schedule task
         if (isset($response['error']) === false)
         {
@@ -302,10 +318,16 @@ class Reporting implements ExternalService
             // Need to store entity_id without sign.
             $scheduleRequest[ScheduleTask\Entity::ENTITY_ID] = $this->generateEntityId($response['id']);
 
-            $this->createScheduleOnApi($scheduleRequest);
+            $apiResponse = $this->createScheduleOnApi($scheduleRequest);
         }
 
-        return $response;
+        if (empty($apiResponse) === true)
+        {
+            throw new Exception\DbQueryException(
+                'Failed to create schedule');
+        }
+
+        return $apiResponse;
     }
 
     public function fetchScheduleMultiple(array $input): array
@@ -441,7 +463,9 @@ class Reporting implements ExternalService
             ScheduleTask\Entity::SCHEDULE_ID => $input[ScheduleTask\Entity::SCHEDULE_ID],
         ];
 
-        (new ScheduleTask\Core)->createForExternalService($merchant, $scheduleTaskRequest);
+        $scheduleTask = (new ScheduleTask\Core)->createForExternalService($merchant, $scheduleTaskRequest);
+
+        return $scheduleTask->toArrayPublic();
     }
 
     protected function createScheduleOnReportingService(array $input): array
@@ -606,6 +630,12 @@ class Reporting implements ExternalService
         $hasOfferTag                   = in_array(Feature::OFFERS, $features, true);
         $hasChargeAtWillTag            = in_array(Feature::CHARGE_AT_WILL, $features, true);
         $hasSubscriptionsTag           = in_array(Feature::SUBSCRIPTIONS, $features, true);
+        $hasGenericNotesTag            = in_array(Feature::REPORTING_GENRERIC_NOTES, $features, true);
+
+        $merchantInvoiceExperimentValue = $this->app->razorx->getTreatment(
+            $merchant->getId(),
+            'reporting_merchant_invoice',
+            $this->mode);
 
         $items = $items->filter(function ($value, $key) use (
             $hasPlTag,
@@ -640,11 +670,31 @@ class Reporting implements ExternalService
             }
         });
 
-        $items = $items->filter(function ($value) use ($hasOfferTag)
+        $items = $items->filter(function ($value) use (
+            $hasOfferTag,
+            $hasGenericNotesTag,
+            $merchantInvoiceExperimentValue)
         {
-            return (($value['name'] === 'Offer Payments') and
+            if (($value['name'] === 'Offer Payments') and
                 ($value['type'] === Table::PAYMENT) and
-                ($value['consumer'] === Account::SHARED_ACCOUNT)) ? $hasOfferTag : true;
+                ($value['consumer'] === Account::SHARED_ACCOUNT))
+            {
+                return $hasOfferTag;
+            }
+            else if (($value['name'] === 'Custom Settlement Recon With Notes') and
+                     ($value['type'] === Table::SETTLEMENT) and
+                     ($value['consumer'] === Account::SHARED_ACCOUNT))
+            {
+                return $hasGenericNotesTag;
+            }
+            else if (($value['name'] === 'Merchant Invoice') and
+                     ($value['type'] === null) and
+                     ($value['consumer'] === Account::SHARED_ACCOUNT))
+            {
+                return ($merchantInvoiceExperimentValue === 'on');
+            }
+
+            return true;
         });
 
         $configs['items'] = $items->values()->all();

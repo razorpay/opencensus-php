@@ -42,6 +42,11 @@ class Options
         'routing_filter',
     ];
 
+
+    protected $authenticationRuleGroups = [
+        'authentication',
+    ];
+
     public function __construct()
     {
         $this->setChance();
@@ -90,6 +95,11 @@ class Options
     public function getGloballyApplicableRuleGroups()
     {
         return $this->globallyApplicableRuleGroups;
+    }
+
+    public function getAuthenticationRuleGroups()
+    {
+        return $this->authenticationRuleGroups;
     }
 
     public function setFailedTerminals(array $exclude)

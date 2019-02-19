@@ -156,6 +156,10 @@ class FileStoreTest extends TestCase
                 'name'   => 'test_bucket',
                 'region' => 'region5'
             ],
+            'h2h_default_bucket_config' => [
+                'name'   => 'h2h_bucket',
+                'region' => 'region4'
+            ],
         ];
 
         Config::set('filestore.aws', $bucketConfig);
@@ -178,7 +182,7 @@ class FileStoreTest extends TestCase
 
         $this->checkBucketAndRegion(
             'fund_transfer_default',
-            'settlement_bucket_config',
+            'h2h_default_bucket_config',
             $bucketConfig);
 
         $this->checkBucketAndRegion(

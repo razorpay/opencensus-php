@@ -33,7 +33,12 @@ class Preferences
     const MID_ANGEL_BROKING         = 'AC4DJNMIX9xXOz';
     const MID_SHELLHATCH            = 'A7W1rwbYMRmn6M';
     const MID_PAISABAZAAR_MARKETING = 'B1uh6CFFBKk35S';
-    const MID_FLYREMIT              = 'BFnwkJtHkMqswv';
+    const MID_AMIT_RBLCARD          = 'BcVn9Oy1aSkcOa';
+    const MID_AMIT_RBLLOAN          = 'BcVzB5W2m4noKJ';
+    const MID_RBLCARD               = 'BYUXW3iBH0P0zU';
+    const MID_RBLLOAN               = 'BUjzZmAEXnXVJs';
+    const MID_DMI_FINANCE           = 'BU4wKuO2IisLWY';
+    const MID_VARTHANA_FINANCE      = 'BpqmTAX1XcFMvB';
 
     const DEMO_ACCOUNT         = '100DemoAccount';
     const MID_ENDURANCE        = [
@@ -43,6 +48,7 @@ class Preferences
         'A0GNi6PHlqy5zX', 'A0HuEfx39zhjr9', 'A5ONBRrNJ7dS1K',
         'A5MmRVEM3qf6QJ', 'A5OZ1qi9tgwnZB', 'A5OeZOCaeyQQ8Q',
     ];
+
     const MID_IRCTC = [
         '8byazTDARv4Io0',
         'AEPXwjSlJJhfUl',
@@ -52,6 +58,7 @@ class Preferences
         '8YPFnW5UOM91H7',
         '90xVmQJTCEJ6GH'
     ];
+
     const MID_CLEARTAX         = 'AGQJfLbWcmjxDX';
     const MID_APARTMENTADDA    = '9NVPPQuTqF4cYx';
     const MID_INVEZTA          = '8YQygO7pzP3Gut';
@@ -130,7 +137,6 @@ class Preferences
         self::MID_ANGEL_BROKING,
         self::MID_SHELLHATCH,
         self::MID_PAISABAZAAR_MARKETING,
-        self::MID_FLYREMIT,
     ];
 
     const ONLY_NEFT_SETTLEMENT_MIDS = [

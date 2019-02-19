@@ -183,9 +183,7 @@ return [
             'method'  => 'post',
             'url'     => '/cards/validate',
             'content' => [
-                'issuer' => 'HDFC',
                 'number' => '401200',
-                'type'   => 'credit',
             ],
         ],
         'response' => [
@@ -200,15 +198,17 @@ return [
             'method'  => 'post',
             'url'     => '/cards/validate',
             'content' => [
-                'issuer' => 'HDFC',
                 'number' => '401200',
-                'type'   => 'credit',
             ],
         ],
         'response' => [
-            'content' => [
-                'result' => false
+           'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The requested URL was not found on the server.',
+                ]
             ],
+            'status_code' => 400,
         ],
     ],
 
@@ -217,40 +217,13 @@ return [
             'method'  => 'post',
             'url'     => '/cards/validate',
             'content' => [
-                'issuer' => 'HDFC',
                 'number' => '101200122',
-                'type'   => 'credit',
             ],
         ],
         'response' => [
             'content' => [
                 'result' => false
             ],
-        ],
-    ],
-
-    'testBinValidationInvalidType' => [
-        'request' => [
-            'method'  => 'post',
-            'url'     => '/cards/validate',
-            'content' => [
-                'issuer' => 'HDFC',
-                'number' => '101200122',
-                'type'   => 'test',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The selected type is invalid.',
-                ]
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 ];

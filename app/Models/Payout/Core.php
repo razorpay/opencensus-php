@@ -6,25 +6,40 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Services\Mutex;
+use RZP\Models\Customer;
+use RZP\Models\Reversal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Jobs\FundTransfer;
+use RZP\Models\Settlement;
+use RZP\Models\FundAccount;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Models\Settlement\Merchant as SettlementMerchant;
-use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
+use RZP\Models\FundTransfer\Attempt;
 
+/**
+ * Class Core
+ *
+ * IMPORTANT: None of the flows in payout should rely on Basic Auth's merchant
+ * since payout creation can happen via admin route too (retry_payouts)
+ * In this class, everything should be taken in the input only.
+ *
+ * @package RZP\Models\Payout
+ */
 class Core extends Base\Core
 {
-    const PAYOUT_RETRY          = 'payout_retry_%s';
+    const PAYOUT_RETRY                      = 'payout_retry_%s';
 
-    const MUTEX_RESOURCE        = 'PAYOUT_PROCESSING_%s_%s';
+    const MUTEX_RESOURCE                    = 'PAYOUT_PROCESSING_%s_%s';
 
-    const MAX_PAYOUT_AMOUNT     = 800000000; // 80 Lakhs
+    const CUSTOMER_WALLET_MUTEX_RESOURCE    = 'CUSTOMER_WALLET_PAYOUT_%s_%s_%s';
 
-    const MUTEX_LOCK_TIMEOUT    = 300;
+    const MAX_PAYOUT_AMOUNT                 = 800000000; // 80 Lakhs
 
-    const PAYOUT_MUTEX_LOCK_TIMEOUT = 180;
+    const MUTEX_LOCK_TIMEOUT                = 300;
+
+    const PAYOUT_MUTEX_LOCK_TIMEOUT         = 180;
 
     /**
      * @var Mutex
@@ -42,6 +57,9 @@ class Core extends Base\Core
      * Here, onDemand is used to do payout calculation for
      * merchant with es_on_demand feature enabled
      *
+     * SOURCE: Merchant PG balance
+     * TO: Merchant linked bank account (destination_id)
+     *
      * @param Merchant\Entity $merchant
      * @param array           $input
      *
@@ -57,7 +75,7 @@ class Core extends Base\Core
 
         $mutexResource = sprintf(self::MUTEX_RESOURCE, $merchant->getId(), $this->mode);
 
-        return $this->mutex->acquireAndRelease(
+        $payout = $this->mutex->acquireAndRelease(
             $mutexResource,
             function () use ($input, $merchant)
             {
@@ -68,74 +86,122 @@ class Core extends Base\Core
                 $onDemand = $this->getOnDemandStatus($input);
 
                 $payoutInput = [
-                    Entity::PURPOSE   => FundTransferAttempt\Purpose::SETTLEMENT,
+                    Entity::PURPOSE   => Purpose::PAYOUT,
                     Entity::AMOUNT    => $amount,
                     Entity::CURRENCY  => $currency,
-                    Entity::METHOD    => Method::FUND_TRANSFER,
                     Entity::TYPE      => $onDemand,
                 ];
 
-                return $this->getProcessor('merchant_payout', $merchant)->createPayout($payoutInput);
+                return $this->getProcessor('merchant_payout')
+                            ->setMerchant($merchant)
+                            ->createPayout($payoutInput);
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
+
+        if ((isset($input[Entity::TYPE])) and
+            ($input[Entity::TYPE] === Entity::ON_DEMAND))
+        {
+            $this->dispatchFtaInitiate($payout);
+        }
+
+        return $payout;
     }
 
-    public function createPayoutToCustomer(array $input, Merchant\Entity $merchant): Entity
+    /**
+     * Payouts to a fund account
+     *
+     * SOURCE: Merchant Balance (PG/Banking)
+     * TO: Fund Account (BankAccount/VPA/Card etc) (fund_account_id)
+     *
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     *
+     * @return Entity
+     */
+    public function createPayoutToFundAccount(array $input, Merchant\Entity $merchant): Entity
     {
         $this->trace->info(
-            TraceCode::PAYOUT_CUSTOMER_CREATE_REQUEST,
+            TraceCode::PAYOUT_TO_FUND_ACCOUNT_CREATE_REQUEST,
             [
                 'input' => $input
             ]);
 
-        $customerId = $input[Entity::CUSTOMER_ID] ?? null;
-
-        if (is_string($customerId) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException('customer_id is mandatory for the payout');
-        }
-
         $mutexResource = sprintf(self::MUTEX_RESOURCE, $merchant->getId(), $this->mode);
 
-        return $this->mutex->acquireAndRelease(
+        $payout = $this->mutex->acquireAndRelease(
             $mutexResource,
-            function() use ($input, $customerId, $merchant)
+            function() use ($input, $merchant)
             {
-                return $this->getProcessor('customer_payout', $merchant, $customerId)->createPayout($input);
+                return $this->getProcessor('fund_account_payout')
+                            ->setMerchant($merchant)
+                            ->createPayout($input);
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
 
+        $this->dispatchFtaInitiate($payout);
+
+        return $payout;
     }
 
-    public function createPayoutToCustomerWallet(string $customerId, array $input, Merchant\Entity $merchant): Entity
+    /**
+     * IMPS payout from a customer wallet to a func account
+     *
+     * SOURCE: Customer Wallet Balance
+     * TO: Fund Account (BankAccount/VPA/Card etc) (fund_account_id)
+     *
+     * @param Customer\Entity $customer
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     *
+     * @return Entity
+     */
+    public function createPayoutFromCustomerWallet(
+        array $input,
+        Customer\Entity $customer,
+        Merchant\Entity $merchant): Entity
     {
+        $customerId = $customer->getId();
+
         $this->trace->info(
-            TraceCode::PAYOUT_CUSTOMER_WALLET_CREATE_REQUEST,
+            TraceCode::PAYOUT_FROM_CUSTOMER_WALLET_CREATE_REQUEST,
             [
-                'input' => $input,
+                'input'       => $input,
                 'customer_id' => $customerId
             ]);
 
-        // We are doing this so that validations do not fail in createPayout.
-        // We don't want to remove it from the input validation to ensure that
-        // customer wallet payout always has a customer_id.
-        // (instead of relying on function params)
-        $input[Entity::CUSTOMER_ID] = $customerId;
-
-        $mutexResource = sprintf(self::MUTEX_RESOURCE, $merchant->getId(), $this->mode);
+        $mutexResource = sprintf(
+            self::CUSTOMER_WALLET_MUTEX_RESOURCE,
+            $merchant->getId(),
+            $customerId,
+            $this->mode);
 
         return $this->mutex->acquireAndRelease(
             $mutexResource,
-            function() use ($input, $customerId, $merchant)
+            function() use ($input, $customer, $merchant)
             {
-                return $this->getProcessor('customer_wallet_payout', $merchant, $customerId)->createPayout($input);
+                return $this->getProcessor('customer_wallet_payout')
+                            ->setSourceCustomer($customer)
+                            ->setMerchant($merchant)
+                            ->createPayout($input);
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
     }
 
+    /**
+     * Makes a payout from merchant primary balance, but link the Payout to a payment ID
+     *
+     * SOURCE: Merchant Balance (PG/Banking) - Payment ID
+     * TO: Fund Account (BankAccount/VPA/Card etc)
+     *
+     * @param Payment\Entity  $payment
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     *
+     * @return Entity
+     */
     public function createPayoutFromPayment(Payment\Entity $payment, array $input, Merchant\Entity $merchant): Entity
     {
         $this->trace->info(
@@ -144,13 +210,10 @@ class Core extends Base\Core
                 'input' => $input
             ]);
 
-        //
-        // The mutex for this is handled in `createPayoutToCustomer`.
-        //
-
+        // The mutex for this is handled in `createPayoutToFundAccount()`.
         (new Validator)->validatePaymentForPayout($input, $payment);
 
-        $payout = $this->createPayoutToCustomer($input, $merchant);
+        $payout = $this->createPayoutToFundAccount($input, $merchant);
 
         $payout->payment()->associate($payment);
 
@@ -159,84 +222,193 @@ class Core extends Base\Core
         return $payout;
     }
 
-    public function retryFailedPayouts(array $input): array
+    public function retryReversedPayout(Entity $payout): Entity
     {
+        // We can't just retry the existing payout (create another FTA and process it via that) since the
+        // payout will be marked as reversed. A reverse transaction would also get created for the same.
+        // Hence, we create a new payout and a new transaction and so on.
+
         $this->trace->info(
-            TraceCode::MERCHANT_PAYOUT_RETRY_REQUEST,
-            $input);
+            TraceCode::PAYOUT_RETRY_REQUEST,
+            [
+                'payout' => $payout->toArray(),
+            ]);
 
-        (new Validator)->validateInput('payout_retry', $input);
+        (new Validator)->validateRetryPayout($payout);
 
-        $ids = Entity::verifyIdAndStripSignMultiple($input['ids']);
-
-        $payouts = $this->repo->payout->fetchFailedPayouts($ids);
-
-        $mutexResource = sprintf(self::PAYOUT_RETRY, $this->mode);
-
-        $result = $this->mutex->acquireAndRelease(
-            $mutexResource,
-            function () use ($payouts)
+        if ($payout->hasFundAccount() === true)
+        {
+            if ($payout->hasCustomer() === true)
             {
-                return $this->attemptRetryForFailedPayouts($payouts);
-            },
-            self::MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_PAYOUT_ANOTHER_OPERATION_IN_PROGRESS);
+                $payoutInput = $this->getRetryPayoutInputForCustomerWallet($payout);
 
-        return $result + [
-            'not_attempted' => array_diff($ids, $payouts->getIds()),
+                return $this->createPayoutFromCustomerWallet($payoutInput, $payout->customer, $payout->merchant);
+            }
+            else
+            {
+                $payoutInput = $this->getRetryPayoutInputForFundAccount($payout);
+
+                return $this->createPayoutToFundAccount($payoutInput, $payout->merchant);
+            }
+
+        }
+        else
+        {
+            $payoutInput = $this->getRetryPayoutInputForMerchant($payout);
+
+            return $this->createPayoutToMerchant($payoutInput, $payout->merchant);
+        }
+    }
+
+    public function updateStatusAfterFtaRecon(Entity $payout, array $ftaData)
+    {
+        switch ($ftaData[Attempt\Constants::FTA_STATUS])
+        {
+            case Attempt\Status::PROCESSED:
+                $this->handleFtaProcessed($payout);
+                break;
+
+            case Attempt\Status::FAILED:
+                $this->handleFtaFailed($payout, $ftaData[Attempt\Constants::FAILURE_REASON]);
+                break;
+
+            case Attempt\Status::CREATED:
+            case Attempt\Status::INITIATED:
+                $this->handleFtaProcessing($payout);
+                break;
+
+            default:
+                $this->trace->warning(
+                    TraceCode::UNKNOWN_FTA_STATUS_SENT_TO_PAYOUT,
+                    $ftaData);
+        }
+    }
+
+    public function updateStatusAfterFtaInitiated(Entity $entity, Attempt\Entity $fta)
+    {
+        $entity->batchFundTransfer()->associate($fta->batchFundTransfer);
+
+        $entity->setStatus(Status::INITIATED);
+
+        $this->repo->saveOrFail($entity);
+    }
+
+    public function updateWithDetailsBeforeFtaRecon(Entity $payout, array $ftaData = [])
+    {
+        // For non-Yesbank, we will not get public_failure_reason
+        $failureReason = $responseData[Attempt\Constants::FAILURE_REASON] ?? null;
+
+        $payout->setUtr($ftaData[Attempt\Constants::UTR]);
+
+        $payout->setRemarks($ftaData[Attempt\Constants::REMARKS]);
+
+        // For VPA type, we always set it to UPI only
+        // at build and we don't take the mode from FTA.
+        if (empty($ftaData[Attempt\Constants::VPA_ID]) === true)
+        {
+            $payout->setMode($ftaData[Attempt\Constants::MODE]);
+        }
+
+        $payout->setFailureReason($failureReason);
+
+        $this->repo->saveOrFail($payout);
+    }
+
+    protected function getRetryPayoutInputForMerchant(Entity $payout): array
+    {
+        return [
+            Entity::AMOUNT      => $payout->getAmount(),
+            Entity::CURRENCY    => $payout->getCurrency(),
+            Entity::TYPE        => $payout->getPayoutType()
         ];
     }
 
-    protected function attemptRetryForFailedPayouts(Base\PublicCollection $payouts): array
+    protected function getRetryPayoutInputForFundAccount(Entity $payout): array
     {
-        $payoutsRetried = [];
+        $payoutInput = [
+            Entity::FUND_ACCOUNT_ID => FundAccount\Entity::getSignedId($payout->getFundAccountId()),
+            Entity::AMOUNT          => $payout->getAmount(),
+            Entity::CURRENCY        => $payout->getCurrency(),
+            Entity::PURPOSE         => $payout->getPurpose(),
+            Entity::BALANCE_ID      => $payout->getBalanceId(),
+            Entity::MODE            => $payout->getMode(),
+        ];
 
-        $retryFailed = [];
+        // TODO: Support Notes copy also.
 
-        foreach ($payouts as $payout)
+        return $payoutInput;
+    }
+
+    protected function getRetryPayoutInputForCustomerWallet(Entity $payout): array
+    {
+        $payoutInput = [
+            Entity::FUND_ACCOUNT_ID => FundAccount\Entity::getSignedId($payout->getFundAccountId()),
+            Entity::AMOUNT          => $payout->getAmount(),
+            Entity::CURRENCY        => $payout->getCurrency(),
+            Entity::PURPOSE         => $payout->getPurpose(),
+        ];
+
+        // TODO: Support Notes copy also.
+
+        return $payoutInput;
+    }
+
+    protected function handleFtaProcessed(Entity $payout)
+    {
+        $payout->setStatus(Status::PROCESSED);
+
+        $this->repo->saveOrFail($payout);
+
+        $this->app->events->fire('api.payout.processed', [$payout]);
+    }
+
+    protected function handleFtaProcessing(Entity $payout)
+    {
+        $payout->setStatus(Status::PROCESSING);
+
+        $this->repo->saveOrFail($payout);
+    }
+
+    protected function handleFtaFailed(Entity $payout, string $ftaFailureReason = null)
+    {
+        $this->reversePayout($payout, $ftaFailureReason);
+
+        $this->app->events->fire('api.payout.reversed', [$payout]);
+    }
+
+    protected function reversePayout(Entity $payout, string $reverseReason = null): Reversal\Entity
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_REVERSAL_INITIATED,
+            [
+                'payout_id' => $payout->getId(),
+            ]);
+
+        if ($payout->isStatusReversed() === true)
         {
-            $channel = $payout->getChannel();
-
-            $merchantSettler = new SettlementMerchant($payout->merchant, $channel, $this->repo);
-
-            try
-            {
-                $payout = $this->repo->transaction(
-                    function () use ($merchantSettler, $payout)
-                    {
-                        return $merchantSettler->retryFailedPayout($payout);
-                    });
-
-                $payoutsRetried[] = $payout->getId();
-            }
-            catch (\Throwable $e)
-            {
-                $retryFailed[] = $payout->getId();
-
-                $this->trace->traceException(
-                    $e,
-                    Trace::ERROR,
-                    TraceCode::MERCHANT_PAYOUT_RETRY_FAILED,
-                    [
-                        'id'      => $payout->getId(),
-                        'message' => $e->getMessage()
-                    ]
-                );
-
-                continue;
-            }
-
-            return [
-                'payouts_retried'       => $payoutsRetried,
-                'failed_retries'        => $retryFailed,
-            ];
+            throw new Exception\LogicException(
+                'Attempted to reverse an already reversed payout',
+                [
+                    'payout_id'         => $payout->getId(),
+                    'status'            => $payout->getStatus(),
+                    'reverse_reason'    => $reverseReason,
+                ]);
         }
 
-        $this->trace->info(
-            TraceCode::MERCHANT_PAYOUT_RETRIED_IDS,
-            $payoutsRetried);
+        $reversal = $this->repo->transaction(
+            function() use ($payout, $reverseReason) {
+                $reversal = (new Reversal\Core)->reverseForPayout($payout);
 
-        return $payoutsRetried;
+                $payout->setStatus(Status::REVERSED);
+
+                $payout->setFailureReason($reverseReason);
+
+                $this->repo->saveOrFail($payout);
+
+                return $reversal;
+            });
+
+        return $reversal;
     }
 
     protected function getMerchantPayoutAmount(array $input, Merchant\Entity $merchant)
@@ -300,7 +472,7 @@ class Core extends Base\Core
     {
         if (isset($input[Entity::CURRENCY]) === true)
         {
-             return $input[Entity::CURRENCY];
+            return $input[Entity::CURRENCY];
         }
 
         return Currency::INR;
@@ -311,12 +483,47 @@ class Core extends Base\Core
         return ($input[Entity::TYPE] ?? Entity::DEFAULT);
     }
 
-    protected function getProcessor(string $type, Merchant\Entity $merchant, ...$args): Processor\Base
+    protected function getProcessor(string $type): Processor\Base
     {
         $processor = __NAMESPACE__ . '\\' . 'Processor';
 
         $processor .= '\\' . studly_case($type);
 
-        return new $processor($merchant, ...$args);
+        return new $processor();
+    }
+
+    protected function dispatchFtaInitiate(Entity $payout)
+    {
+        $ftaId = $payout->fundTransferAttempts->first()->getId();
+
+        $info = [
+            'fta_id'    => $ftaId,
+            'payout_id' => $payout->getId()
+        ];
+
+        try
+        {
+            $this->trace->info(TraceCode::FTA_DISPATCH_FOR_PAYOUT_INIT, $info);
+
+            FundTransfer::dispatch($this->mode, $ftaId);
+
+            $this->trace->info(TraceCode::FTA_DISPATCH_FOR_PAYOUT_COMPLETE, $info);
+        }
+        catch (\Throwable $e)
+        {
+            $data = $info + [ 'message' => $e->getMessage() ];
+
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FTA_DISPATCH_FOR_MERCHANT_FAILED,
+                $data);
+
+            (new Settlement\SlackNotification)->send(
+                'FundTransfer dispatch for merchant failed',
+                $data,
+                $e,
+                1);
+        }
     }
 }

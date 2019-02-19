@@ -57,10 +57,11 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         {
             $this->messenger->raiseReconAlert(
                 [
-                    'trace_code'        => TraceCode::RECON_INFO_ALERT,
-                    'info_code'         => Base\InfoCode::REFUND_ABSENT,
-                    'row'               => $row,
-                    'gateway'           => $this->gateway,
+                    'trace_code'            => TraceCode::RECON_INFO_ALERT,
+                    'info_code'             => Base\InfoCode::REFUND_ABSENT,
+                    'refund_reference_id'   => $gatewayPaymentId,
+                    'payment_id'            => $paymentId,
+                    'gateway'               => $this->gateway,
                 ]);
         }
 
@@ -77,8 +78,8 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
                     'info_code'         => Base\InfoCode::AMOUNT_MISMATCH,
                     'refund_id'         => $this->refund->getId(),
                     'expected_amount'   => $this->refund->getBaseAmount(),
-                    'actual_amount'     => $this->getReconRefundAmount($row),
-                    'row'               => $row,
+                    'recon_amount'      => $this->getReconRefundAmount($row),
+                    'currency'          => $this->refund->getCurrency(),
                     'gateway'           => $this->refund->getGateway(),
                 ]);
 

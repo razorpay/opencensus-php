@@ -14,6 +14,7 @@ use Lib\PhoneBook;
 use RZP\Exception;
 use RZP\Models\Upi;
 use RZP\Models\Emi;
+use RZP\Models\Base;
 use RZP\Models\Risk;
 use RZP\Models\Card;
 use RZP\Models\Admin;
@@ -33,8 +34,10 @@ use RZP\Models\Customer;
 use RZP\Models\Discount;
 use RZP\Models\Card\IIN;
 use RZP\Models\Bank\IFSC;
+use RZP\Constants\Entity;
 use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
+use RZP\Constants\Timezone;
 use RZP\Jobs\RunShieldCheck;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Method;
@@ -83,9 +86,19 @@ trait Authorize
 
         $this->runPaymentInputValidations($payment, $input);
 
+        return $this->gatewayRelatedProcessing($payment, $input, $gatewayInput);
+    }
+
+    //
+    // Called from to places
+    // 1. authorize - regular flow
+    // 2. processRedirectToAuthorize - s2s redirect flow
+    //
+    public function gatewayRelatedProcessing(Payment\Entity $payment, array $input, array $gatewayInput = []): array
+    {
         $ret = $this->hitGatewayIfRequired($payment, $input, $gatewayInput);
 
-        $this->validateAndSaveInputDetailsIfRequired($payment, $input);
+        $this->validateAndSaveInputDetailsIfRequired($payment, $input, $gatewayInput, $ret);
 
         if ($ret !== null)
         {
@@ -108,6 +121,17 @@ trait Authorize
         }
     }
 
+    protected function setAuthenticationGatewayViaGatewayRules(Payment\Entity $payment, array & $gatewayInput)
+    {
+        $this->trace->info(
+            TraceCode::AUTH_SELECTION_VIA_GATEWAY_RULES,
+            [
+                'payment_id'        => $payment->getId(),
+            ]);
+
+        (new TerminalProcessor)->setAuthenticationGateway($payment, $gatewayInput);
+    }
+
     protected function hitGatewayIfRequired(Payment\Entity $payment, array $input, array $gatewayInput)
     {
         //
@@ -123,6 +147,25 @@ trait Authorize
             $this->repo->saveOrFail($payment);
 
             return null;
+        }
+
+        try
+        {
+            $request = $this->validateAndReturnRedirectResponseIfApplicable($payment);
+
+            if ($request != null)
+            {
+                return $request;
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::CRITICAL,
+                TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_VALIDATION_ERROR,
+                ['payment_id' => $payment->getId()]
+            );
         }
 
         $request = $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
@@ -192,7 +235,7 @@ trait Authorize
 
             try
             {
-                if ($this->canRunOtpPaymentFlow($payment) === true)
+                if ($this->canRunOtpPaymentFlow($payment, $terminalGatewayInput) === true)
                 {
                     $request = $this->callGatewayFunction(Action::OTP_GENERATE, $terminalGatewayInput);
                 }
@@ -203,7 +246,7 @@ trait Authorize
 
                 $retry = false;
 
-                if ($this->canRunHeadlessOtpFlow($payment) === true)
+                if ($this->canRunHeadlessOtpFlow($payment, $terminalGatewayInput) === true)
                 {
                     $request = $this->openHeadlessBrowser($payment, $request);
                 }
@@ -240,6 +283,8 @@ trait Authorize
                 $internalErrorCode = $payment->getInternalErrorCode();
 
                 $this->logRiskFailureForGateway($payment, $internalErrorCode);
+
+                $this->disableIinFlowIfApplicable($payment, $internalErrorCode);
 
                 throw $e;
             }
@@ -375,7 +420,7 @@ trait Authorize
             'contact'    => $payment->getContact(),
             'amount'     => number_format(($payment->getAmount() / 100), 2),
             'wallet'     => $payment->getWallet(),
-            'merchant'   => $payment->merchant->getDbaName(),
+            'merchant'   => $payment->merchant->getBillingLabel(),
         ];
 
         // This is a hack to return direct method for IVR payments
@@ -388,6 +433,8 @@ trait Authorize
             {
                 $redirectUrl = $this->getPaymentRedirectTo3dsUrl();
             }
+
+            $response['redirect'] = $redirectUrl;
 
             $metaData = [
                 'issuer'     => $card->getIssuer(),
@@ -435,10 +482,10 @@ trait Authorize
                 'payment_id' => $payment->getPublicId(),
                 'next'       => $next,
                 'gateway'    => $response['gateway'],
-                'redirect'   => $redirectUrl,
                 'submit_url' => $request['url'],
                 'resend_url' => $resendUrl,
                 'metadata'   => $metaData,
+                'redirect'   => $redirectUrl,
             ];
         }
 
@@ -956,6 +1003,21 @@ trait Authorize
             return;
         }
 
+        $oAuthApplicationId = $this->app['basicauth']->getOAuthApplicationId();
+
+        //refer testAppBlacklistedFeatureEnabledOnApp
+        if ($oAuthApplicationId !== null)
+        {
+            $feature = $this->repo
+                            ->feature
+                            ->findByEntityTypeEntityIdAndName(Feature\Constants::APPLICATION, $oAuthApplicationId, Feature\Constants::S2S);
+
+            if ($feature !== null)
+            {
+                return;
+            }
+        }
+
         if ($payment->isOpenWalletPayment() === true)
         {
             $this->verifyFeatureForMerchant($merchant, Feature\Constants::OPENWALLET);
@@ -1010,12 +1072,17 @@ trait Authorize
                 // We support OTP flow with native supports from the gateway, headless_otp
                 // flow is something which is a hack and not natively supported by the gateway
                 if (($payment->card->iinRelation === null) or
-                    (($payment->card->iinRelation->supports(IIN\Flow::OTP) === false) and
-                     ($payment->card->iinRelation->supports(IIN\Flow::HEADLESS_OTP) === false)))
+                    ((($payment->merchant->isAxisExpressPayEnabled() === false) or
+                      ($payment->card->iinRelation->supports(IIN\Flow::OTP) === false)) and
+                     (($payment->merchant->isFeatureEnabled(Feature\Constants::HEADLESS) === false) or
+                      ($payment->card->iinRelation->supports(IIN\Flow::HEADLESS_OTP) === false)) and
+                     (($payment->merchant->isFeatureEnabled(Feature\Constants::IVR) === false) or
+                      ($payment->card->iinRelation->supports(IIN\Flow::IVR) === false))))
                 {
                     throw new Exception\BadRequestValidationFailureException(
                         'The otp authentication type is not applicable on the given card');
                 }
+
                 break;
 
             case Payment\AuthType::SKIP:
@@ -1382,9 +1449,9 @@ trait Authorize
 
     protected function runPostGatewaySelectionPreProcessing(Payment\Entity $payment, array & $gatewayInput)
     {
-        $this->setAuthenticationGateway($payment, $gatewayInput);
+        $this->setAuthAndAuthenticationGateway($payment, $gatewayInput);
 
-        $this->setAuthTypeInPayment($payment);
+        $this->setPaymentRoutedThroughCpsIfApplicable($payment);
 
         $this->repo->saveOrFail($payment);
 
@@ -1425,9 +1492,43 @@ trait Authorize
      * @param Payment\Entity $payment
      * @param array $gatewayInput
      */
-    protected function setAuthenticationGateway(Payment\Entity $payment, array & $gatewayInput)
+    protected function setAuthAndAuthenticationGateway(Payment\Entity $payment, array & $gatewayInput)
     {
-        if (Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true)
+        try
+        {
+            if (($payment->isMethodCardOrEmi()   === true) and
+                ($payment->isSecondRecurring()   === false) and
+                ($payment->isPushPaymentMethod() === false))
+            {
+                $response = $this->app->razorx->getTreatment($payment->merchant->getId(), 'authentication_via_gateway_rules', $this->mode);
+
+                if (strtolower($response) === 'on')
+                {
+                   $this->setAuthenticationGatewayViaGatewayRules($payment, $gatewayInput);
+
+                    $this->setAuthInPaymentViaGatewayRules($payment, $gatewayInput);
+
+                    return;
+                }
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::CRITICAL,
+                TraceCode::AUTH_SELECTION_FAILURE,
+                [
+                    'payment_id'  => $payment->getId(),
+                ]
+            );
+        }
+
+        // Keeping this condition for backward compatibility
+        // @todo: Remove the authorization gateway check once it's live
+        //
+        if ((Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true) or
+            ($payment->terminal->getCapability() === Terminal\Capability::AUTHORIZE))
         {
             $method = $payment->getMethod();
 
@@ -1477,7 +1578,6 @@ trait Authorize
                     }
 
                     $gatewayInput['authenticate']['gateway'] = $eSignerGateway;
-
                     break;
 
                 case Payment\Method::CARD:
@@ -1485,21 +1585,55 @@ trait Authorize
                     if (($payment->isRecurring() === false) or
                         ($payment->isRecurringTypeInitial() === true))
                     {
-                        if ($payment->getGateway() === Payment\Gateway::HITACHI)
+                        $gateway = Payment\Gateway::MPI_BLADE;
+                        $authType = '3ds';
+
+                        if ($this->canRunIvrFlow($payment) === true)
                         {
-                            $authGateway = Payment\Gateway::MPI_BLADE;
-
-                            if ($this->canRunAxisExpressPay($payment) === true)
-                            {
-                                $authGateway = Payment\Gateway::MPI_ENSTAGE;
-                            }
-
-                            $gatewayInput['authenticate']['gateway'] = $authGateway;
+                            $authType = 'otp';
+                            $gateway = Payment\Gateway::MPI_BLADE;
                         }
-                    }
 
+                        if ($this->canRunAxisExpressPay($payment) === true)
+                        {
+                            $authType = 'otp';
+                            $gateway = Payment\Gateway::MPI_ENSTAGE;
+                        }
+
+                        $gatewayInput['authenticate'] = [
+                            'gateway'   => $gateway,
+                            'auth_type' => $authType,
+                        ];
+                    }
                     break;
             }
+        }
+
+        $this->setAuthTypeInPayment($payment);
+    }
+
+    protected function setAuthInPaymentViaGatewayRules(Payment\Entity $payment, array $gatewayInput)
+    {
+        $payment->setAuthType(null);
+
+        if (empty($gatewayInput['auth_type']) === true)
+        {
+            return;
+        }
+
+        if ($gatewayInput['auth_type'] === Payment\AuthType::PIN)
+        {
+            $payment->setAuthType(Payment\AuthType::PIN);
+        }
+
+        $otpAuth = [
+            Payment\AuthType::IVR,
+            Payment\AuthType::OTP,
+        ];
+
+        if (in_array($gatewayInput['auth_type'], $otpAuth, true) === true)
+        {
+            $payment->setAuthType(Payment\AuthType::OTP);
         }
     }
 
@@ -1985,7 +2119,7 @@ trait Authorize
 
             $cacheKey = sprintf('emi_plans_%s', $cacheKey);
 
-            $emiPlans = (array)$this->app['cache']->get($cacheKey, null);
+            $emiPlans = (array) $this->app['cache']->get($cacheKey, null);
 
             $key = array_search($input['emi_duration'], array_column($emiPlans, 'duration'));
 
@@ -2786,7 +2920,7 @@ trait Authorize
 
     protected function fillReturnRequestDataForMerchant(Payment\Entity $payment, array & $returnData)
     {
-        assert ($payment->getCallbackUrl() !== null);
+        assertTrue ($payment->getCallbackUrl() !== null);
 
         //
         // This would be normal request data at this point.
@@ -4040,7 +4174,7 @@ trait Authorize
      *
      * @return bool
      */
-    protected function canRunOtpPaymentFlow(Payment\Entity $payment): bool
+    protected function canRunOtpPaymentFlow(Payment\Entity $payment, array $gatewayInput = []): bool
     {
         // All the IVR terminal use Otp payment flow regardless of their method
         if ($payment->terminal->isIvr() === true)
@@ -4054,15 +4188,40 @@ trait Authorize
         {
             if ($payment->card->iinRelation !== null)
             {
+                $authType = $payment->getAuthType();
+
+                if (empty($gatewayInput['auth_type']) === false)
+                {
+                    if ($gatewayInput['auth_type'] === Payment\AuthType::OTP)
+                    {
+                        return true;
+                    }
+
+                    if ($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP)
+                    {
+                        return true;
+                    }
+
+                    return false;
+                }
+
                 //
                 // This check is specifically for Hitachi Axis Expresspay
                 // Also, the order of the checks matter here since the second
                 // condition covers a superset.
                 //
                 if (($payment->getGateway() === Payment\Gateway::HITACHI) and
-                    ($this->canRunAxisExpressPay($payment) === true))
+                    ($this->isAuthTypeOtp($payment) === true))
                 {
-                    return true;
+                    if ($this->canRunAxisExpressPay($payment) === true)
+                    {
+                        return true;
+                    }
+
+                    if ($this->canRunIvrFlow($payment) === true)
+                    {
+                        return true;
+                    }
                 }
 
                 if ($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP)
@@ -4100,6 +4259,18 @@ trait Authorize
             }
         }
 
+        //
+        // We are doing this for Olamoney to maintain a smooth
+        // transition from Olamoney Power wallet to Olamoney Postpaid
+        //
+        if ($wallet === Wallet::OLAMONEY)
+        {
+            if ($payment->terminal->isIvr() === false)
+            {
+                return false;
+            }
+        }
+
         // TODO: Figure out a way to do this for other power wallets
 
         return true;
@@ -4108,10 +4279,23 @@ trait Authorize
     protected function canRunAxisExpressPay(Payment\Entity $payment)
     {
         if (($payment->merchant->isAxisExpressPayEnabled() === true) and
-            ($this->isAuthTypeOtp($payment) === true) and
             ($payment->card->iinRelation !== null) and
             ($payment->card->iinRelation->getIssuer() === IFSC::UTIB) and
+            ($this->isAuthTypeOtp($payment) === true) and
             ($payment->card->iinRelation->supports(IIN\Flow::OTP) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function  canRunIvrFlow(Payment\Entity $payment)
+    {
+        if (($payment->merchant->isFeatureEnabled(Feature\Constants::IVR) === true) and
+            ($payment->card->iinRelation !== null) and
+            ($this->isAuthTypeOtp($payment) === true) and
+            ($payment->card->iinRelation->supports(IIN\Flow::IVR) === true))
         {
             return true;
         }
@@ -4198,7 +4382,7 @@ trait Authorize
 
         if ($vault === true)
         {
-            $cardInput[Card\Entity::VAULT] = Card\Vault::TOKENEX;
+            $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_VAULT;
         }
 
         $cardCore = new Card\Core;
@@ -4235,7 +4419,7 @@ trait Authorize
     {
         $card = $this->repo->card->fetchForToken($token);
 
-        $cardNumber = (new Card\Tokenex)->getCardNumber($card->getVaultToken());
+        $cardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken());
 
         // Recurring terminals accept null cvv.
         $cvv = isset($input['card']['cvv']) ? $input['card']['cvv'] : null;
@@ -4265,7 +4449,7 @@ trait Authorize
     {
         $card = $this->repo->card->fetchForToken($token);
 
-        $cardNumber = (new Card\Tokenex)->getCardNumber($card->getVaultToken());
+        $cardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken());
 
         $cvv = isset($input['card']['cvv']) ? $input['card']['cvv'] : null;
 
@@ -4293,6 +4477,14 @@ trait Authorize
         $merchant = $payment->merchant;
 
         $merchantMethods = (new Methods\Core)->getMethods($merchant);
+
+        if (($merchantMethods === null) or
+            ($merchantMethods->isNetbankingEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_NETBANKING_NOT_ENABLED_FOR_MERCHANT
+            );
+        }
 
         $merchantBanks = ($merchantMethods === null) ? [] : $merchantMethods->getSupportedBanks();
 
@@ -4841,12 +5033,11 @@ trait Authorize
                 ($input[Payment\Entity::RECURRING] === 'preferred'));
     }
 
-    protected function validateAndSaveInputDetailsIfRequired($payment, $input)
+    protected function validateAndSaveInputDetailsIfRequired($payment, $input, $gatewayInput, $ret)
     {
-        $authType = $payment->getAuthType();
+        $type = $this->getFallbackOrRedirectType($payment, $ret);
 
-        if (($authType === null) or
-            (Payment\AuthType::isRedirectTo3dsAuth($authType) === false))
+        if ($type === null)
         {
             return;
         }
@@ -4855,16 +5046,187 @@ trait Authorize
 
         $cache = Cache::getFacadeRoot();
 
-        $key = $payment->getCacheInputKey();
+        if ($type === 'fallback')
+        {
+            $key = $payment->getCacheInputKey();
+            $ttl = static::CACHE_TTL;
+        }
+        else
+        {
+            $key = $payment->getCacheRedirectInputKey();
+            $ttl = static::REDIRECT_CACHE_TTL;
+            $input['gateway_input'] = $gatewayInput;
+        }
 
         if (empty($input[Payment\Entity::TOKEN]) === true)
         {
-            // storing card details for fallback purpose
-            $this->persistCardDetailsTemporarily($input);
+            /*
+             * In Maestro card sometimes cvv will be null and
+             * persistCardDetailsTemporarily will fail if we use $input
+             * Card\Entity::modifyMaestro will add dummy cvv and save it in
+             * gatewayInput, so we are using gateway input to persist card details
+             */
+            $gatewayInput['payment']['id'] = $payment->getId();
+
+            // storing card details for fallback/redirect purpose
+            $this->persistCardDetailsTemporarily($gatewayInput);
+
             unset($input['card']['number']);
             unset($input['card']['cvv']);
         }
 
-        $this->cache->put($key, $input, static::CACHE_TTL);
+        $this->cache->put($key, $input, $ttl);
+    }
+
+    protected function validateAndReturnRedirectResponseIfApplicable(Payment\Entity $payment)
+    {
+        $merchant = $payment->merchant;
+
+        if ($this->app['basicauth']->isPrivateAuth() === false)
+        {
+            return null;
+        }
+
+        if (($payment->isMethodCardOrEmi() === false) or
+            ($payment->isRecurring() === true) or
+            ($payment->isPushPaymentMethod() === true))
+        {
+            return null;
+        }
+
+        $authType = $payment->getAuthType();
+
+        if (($authType !== null) and
+            ($authType !== Payment\AuthType::_3DS))
+        {
+            return null;
+        }
+
+        $payload = [
+            'merchant_id' => $payment->getMerchantId(),
+            'payment_id' => $payment->getPublicId(),
+            'mode'  => $this->mode,
+            'public_key' => $this->app['basicauth']->getPublicKey(),
+            'account_id' => $this->app['basicauth']->authCreds->creds['account_id'],
+        ];
+
+        // encrypt with key
+        $encryptedPayload = Crypt::encrypt($payload);
+
+        $trackId = Base\UniqueIdEntity::generateUniqueId();
+
+        $key = Payment\Entity::getRedirectToAuthorizeTrackIdKey($trackId);
+
+        $this->cache->put($key, $encryptedPayload, self::REDIRECT_CACHE_TTL);
+
+        $redirectUrl = $this->route->getUrl('payment_redirect_to_authorize_get', ['id' => $trackId]);
+
+        $data['type'] = 'first';
+
+        $data['request'] = [
+            'url'     => $redirectUrl,
+            'method'  => 'redirect',
+            'task_id' => $this->request->getTaskId(),
+        ];
+
+        $data['version'] = 1;
+
+        $this->repo->saveOrFail($payment);
+
+        $payload['track_id'] = $trackId;
+        $payload['request'] = $data;
+
+        $this->trace->info(
+            TraceCode::PAYMENT_CREATED_IN_REDIRECT_TO_AUTHORIZE_FLOW,
+            $payload
+        );
+
+        return $data;
+    }
+
+    public function processRedirectToAuthorize(string $paymentId)
+    {
+        $payment = $this->retrieve($paymentId);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_PAYMENT,
+            ['payment_id' => $payment->getId()]
+        );
+
+        $diff = Carbon::now(Timezone::IST)->getTimestamp() - $payment->getCreatedAt();
+
+        if ($diff > self::PAYMENT_REDIRECT_TO_AUTHORIZE_TIME_DURATION)
+        {
+            $this->segment->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE);
+        }
+
+        $key = $payment->getCacheRedirectInputKey();
+
+        $inputDetails = $this->cache->get($key);
+
+        if ($inputDetails === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED
+            );
+        }
+
+        if (empty($inputDetails[Payment\Entity::TOKEN]) === true)
+        {
+            $this->setCardNumberAndCvv($inputDetails);
+        }
+
+        $this->setPreferredAuthIfApplicable($payment);
+
+        $resource = $this->getCallbackMutexResource($payment);
+
+        $response = $this->mutex->acquireAndRelease(
+            $resource,
+            function() use ($payment, $inputDetails)
+            {
+                // Reload in case it's processed by another thread.
+                $this->repo->reload($payment);
+
+                if ($payment->hasBeenAuthorized() === true)
+                {
+                    return $this->processPaymentCallbackSecondTime($payment);
+                }
+
+                $this->repo->saveOrFail($payment);
+
+                $gatewayInput = $inputDetails['gateway_input'];
+
+                unset($inputDetails['gatewayInput']);
+
+                return $this->gatewayRelatedProcessing($payment, $inputDetails, $gatewayInput);
+            },
+            120,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+            20,
+            1000,
+            2000);
+
+        return $response;
+    }
+
+    protected function getFallbackOrRedirectType($payment, $ret)
+    {
+        if ((empty($ret['request']['method']) === false) and
+            ($ret['request']['method'] === 'redirect'))
+        {
+            return 'redirect';
+        }
+
+        if (($payment->isMethodCardOrEmi() === true) and
+            (empty($ret['type']) === false) and
+            ($ret['type'] === 'otp'))
+        {
+            return 'fallback';
+        }
+
+        return null;
     }
 }

@@ -11,7 +11,7 @@ class Validator extends Base\Validator
     protected static $validateRules;
     protected static $fetchAllRules;
 
-    protected function rules()
+    public function rules()
     {
         $rules = [
             Entity::DEVICE_ID    => 'string',
@@ -23,7 +23,7 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    protected function getCreateRules()
+    public function makeCreateRules()
     {
         $rules = $this->makeRules([
             Entity::DEVICE_ID    => 'sometimes',
@@ -35,21 +35,21 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    protected function getAddRules()
+    public function makeAddRules()
     {
         $rules = $this->makeRules([]);
 
         return $rules;
     }
 
-    protected function getValidateRules()
+    public function makeValidateRules()
     {
         $rules = $this->makeRules([]);
 
         return $rules;
     }
 
-    protected function getFetchAllRules()
+    public function makeFetchAllRules()
     {
         $rules = $this->makeRules([]);
 

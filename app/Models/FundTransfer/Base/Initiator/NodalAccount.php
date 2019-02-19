@@ -3,17 +3,23 @@
 namespace RZP\Models\FundTransfer\Base\Initiator;
 
 use Carbon\Carbon;
+use Monolog\Logger;
 
+use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Constants\Entity;
+use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
+use RZP\Models\Payment\Refund;
 use RZP\Models\FundTransfer\Mode;
+use RZP\Models\FundTransfer\Batch;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Holidays;
 use RZP\Exception\RuntimeException;
 use RZP\Models\FundTransfer\Attempt;
-use RZP\Models\FundTransfer\Batch\Entity;
 use RZP\Models\FundTransfer\Attempt\Metric;
 
 abstract class NodalAccount extends Base\Core
@@ -22,26 +28,22 @@ abstract class NodalAccount extends Base\Core
 
     const FAILED                 = 'failed';
 
-    const MIN_RTGS_AMOUNT        = 200000;
+    const LOW_BALANCE_ALERT      = 'low_balance_alert';
 
+    const MIN_RTGS_AMOUNT        = 200000;
     const MAX_IMPS_AMOUNT        = 200000;
 
     const RTGS_CUTOFF_HOUR_MIN   = 8;
-
     const RTGS_CUTOFF_HOUR_MAX   = 15;
-
     const RTGS_CUTOFF_MINUTE_MAX = 45;
 
     protected $batchFundTransfer = null;
 
     protected $amount = 0;
-
     protected $fees = 0;
-
     protected $tax = 0;
 
     protected $count = 0;
-
     protected $txnsCount = 0;
 
     protected $channel = null;
@@ -57,8 +59,9 @@ abstract class NodalAccount extends Base\Core
     protected $isWorkingDay;
 
     protected $bankingStartTime;
-
     protected $bankingEndTime;
+    protected $bankingStartTimeRtgs;
+    protected $bankingEndTimeRtgs;
 
     public function __construct(string $purpose = null)
     {
@@ -71,6 +74,16 @@ abstract class NodalAccount extends Base\Core
         $this->bankingStartTime = Carbon::today(Timezone::IST)->hour(8)->getTimestamp();
 
         $this->bankingEndTime = Carbon::today(Timezone::IST)->hour(18)->minute(15)->getTimestamp();
+
+        $this->bankingStartTimeRtgs = Carbon::createFromTime(self::RTGS_CUTOFF_HOUR_MIN, 0, 0, Timezone::IST)
+                                            ->getTimestamp();
+
+        $this->bankingEndTimeRtgs = Carbon::createFromTime(
+                                                self::RTGS_CUTOFF_HOUR_MAX,
+                                                self::RTGS_CUTOFF_MINUTE_MAX,
+                                                0,
+                                                Timezone::IST)
+                                          ->getTimestamp();
 
         $this->initSummary();
 
@@ -98,25 +111,12 @@ abstract class NodalAccount extends Base\Core
 
     protected function getTransferMode($amount, Merchant\Entity $merchant): string
     {
-        $rtgsMinCutoffTime = Carbon::createFromTime(
-            self::RTGS_CUTOFF_HOUR_MIN,
-            0,
-            0,
-            Timezone::IST
-        )->getTimestamp();
-
-        $rtgsMaxCutoffTime = Carbon::createFromTime(
-            self::RTGS_CUTOFF_HOUR_MAX,
-            self::RTGS_CUTOFF_MINUTE_MAX,
-            0,
-            Timezone::IST)->getTimestamp();
-
-
         $now = Carbon::now(Timezone::IST)->getTimestamp();
 
         $mode = Mode::NEFT;
 
-        if ((($now >= $rtgsMinCutoffTime) and ($now <= $rtgsMaxCutoffTime)) and
+        if ((($now >= $this->bankingStartTimeRtgs) and
+             ($now <= $this->bankingEndTimeRtgs)) and
             ($amount >= self::MIN_RTGS_AMOUNT))
         {
             $mode = Mode::RTGS;
@@ -170,10 +170,6 @@ abstract class NodalAccount extends Base\Core
 
                 $attempt->setStatus(Attempt\Status::INITIATED);
 
-                $attempt->source->batchFundTransfer()->associate($this->batchFundTransfer);
-
-                $attempt->source->setStatus(Attempt\Status::INITIATED);
-
                 $this->trace->info(
                     TraceCode::FUND_TRANSFER_ATTEMPT_STATUS_UPDATED,
                     ['fta_id' => $attempt->getId()]);
@@ -193,25 +189,33 @@ abstract class NodalAccount extends Base\Core
         $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_FTA_UPDATE_STATUS_END);
     }
 
+    protected function getInitiatedStatusForEntity(string $sourceEntityName): string
+    {
+        /** @var Payout\Status|Settlement\Status|Refund\Status $entityStatusClass */
+        $entityStatusClass = Constants\Entity::getEntityNamespace($sourceEntityName) . '\\Status';
+
+        return $entityStatusClass::INITIATED;
+    }
+
     /**
      * It'll create batchFundTransfer entity only if its not created
      */
     protected function createBatchFundTransferEntity()
     {
-        $this->batchFundTransfer = new Entity;
+        $this->batchFundTransfer = new Batch\Entity;
 
         $input = [
-            Entity::TYPE              => $this->type,
-            Entity::CHANNEL           => $this->channel,
-            Entity::AMOUNT            => $this->amount,
-            Entity::FEES              => $this->fees,
-            Entity::TAX               => $this->tax,
-            Entity::TOTAL_COUNT       => 1,
-            Entity::TRANSACTION_COUNT => $this->txnsCount,
-            Entity::INITIATED_AT      => time(),
-            Entity::API_FEE           => 0,
-            Entity::GATEWAY_FEE       => 0,
-            Entity::URLS              => null,
+            Batch\Entity::TYPE              => $this->type,
+            Batch\Entity::CHANNEL           => $this->channel,
+            Batch\Entity::AMOUNT            => $this->amount,
+            Batch\Entity::FEES              => $this->fees,
+            Batch\Entity::TAX               => $this->tax,
+            Batch\Entity::TOTAL_COUNT       => 1,
+            Batch\Entity::TRANSACTION_COUNT => $this->txnsCount,
+            Batch\Entity::INITIATED_AT      => time(),
+            Batch\Entity::API_FEE           => 0,
+            Batch\Entity::GATEWAY_FEE       => 0,
+            Batch\Entity::URLS              => null,
         ];
 
         $this->batchFundTransfer->build($input);
@@ -299,6 +303,8 @@ abstract class NodalAccount extends Base\Core
 
     /**
      * This is used to update the response status for the API based nodal accounts
+     *
+     * @param int $initiated
      */
     protected function updateTransferStatus(int $initiated)
     {
@@ -350,5 +356,75 @@ abstract class NodalAccount extends Base\Core
                 'memory_peak_usage'              => $memoryPeakUsage,
                 'memory_peak_usage_allocated'    => $memoryPeakUsageAllocated,
             ]);
+    }
+
+    protected function sendLowBalanceAlert(array $data)
+    {
+        try
+        {
+            // sending 3rd and 4th param just represent this as an failure alert
+            // because immediate action is required for this
+            (new Settlement\SlackNotification)->send('low_balance_alert', $data, null, 1);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::SLACK_NOTIFICATION_SEND_FAILED,
+                $data);
+        }
+    }
+
+    /**
+     * Gives request type for the given attempt.
+     * Based on these attempts nodal config will be picked while making any request to bank
+     *
+     * @param Attempt\Entity $attempt
+     * @return string
+     */
+    protected function getRequestType(Attempt\Entity $attempt): string
+    {
+        switch (true)
+        {
+            case $attempt->isOfBanking():
+                return Attempt\Type::BANKIING;
+
+            case $attempt->isPennyTesting():
+                return Attempt\Type::SYNC;
+
+            default:
+                return Attempt\Type::PRIMARY;
+        }
+    }
+
+    protected function postFtaInitiateProcess(Attempt\Entity $fta)
+    {
+        try
+        {
+            $source = $fta->source;
+
+            $entityType = $source->getEntity();
+
+            $sourceCoreClass = Entity::getEntityNamespace($entityType) . '\\Core';
+
+            $sourceCore = new $sourceCoreClass();
+
+            if (method_exists($sourceCore, 'updateStatusAfterFtaInitiated') === false)
+            {
+                return;
+            }
+
+            $sourceCore->updateStatusAfterFtaInitiated($source, $fta);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::FTA_SOURCE_PROCESSING_FAILED,
+                []
+            );
+        }
     }
 }

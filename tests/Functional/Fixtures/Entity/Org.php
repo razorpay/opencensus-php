@@ -2,12 +2,12 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
-use RZP\Tests\Functional\Fixtures\Entity\Permission as PermissionEntity;
-
-use Carbon\Carbon;
-use Config;
 use DB;
 use Hash;
+use Config;
+use Carbon\Carbon;
+
+use RZP\Tests\Functional\Fixtures\Entity\Permission as PermissionEntity;
 
 class Org extends Base
 {
@@ -142,6 +142,7 @@ class Org extends Base
             'id'                      => self::RZP_ORG,
             'email'                   => 'admin@razorpay.com',
             'cross_org_access'        => true,
+            'custom_code'             => 'rzp',
             'default_pricing_plan_id' => '1In3Yh5Mluj605',
         ]);
 

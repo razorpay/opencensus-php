@@ -26,7 +26,15 @@ class Server extends Base\Mock\Server
 
         $this->content($content);
 
-        $content['checksum'] = $this->generateHash($content);
+        /**
+         * This is a temporary fix as Mobikwik is not using refid while calculating checksum for callback response.
+         */
+
+        $checksumContent = $content;
+
+        unset($checksumContent['refid']);
+
+        $content['checksum'] = $this->generateHash($checksumContent);
 
         $url = $input['redirecturl'] . '?' . http_build_query($content);
 
@@ -89,7 +97,7 @@ class Server extends Base\Mock\Server
     {
         // verify checksum.
 
-        assert ($input['action'] === 'existingusercheck');
+        assertTrue ($input['action'] === 'existingusercheck');
 
         $content = array(
             'messagecode'       => '500',

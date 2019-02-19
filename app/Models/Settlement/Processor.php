@@ -500,10 +500,10 @@ class Processor extends Base\Core
         if ($useQueue === true)
         {
             $activatedMerchants = $this->repo
-                                       ->merchant
-                                       ->fetchMerchantsForSettlement([], $skipMids);
+                                       ->transaction
+                                       ->fetchUnsettledTransactions($this->setlTime, $channel, [], $skipMids, false);
 
-            $activatedMerchants = $activatedMerchants->get()->getIds();
+            $activatedMerchants = array_keys($activatedMerchants->getStringAttributesByKey(Transaction\Entity::MERCHANT_ID));
 
             return $this->pushMerchantsToSettlementQueue($activatedMerchants, $channel);
         }

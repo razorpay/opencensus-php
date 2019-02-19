@@ -413,7 +413,8 @@ class Gateway extends Base\Gateway
 
         $attributes[Entity::SUCCESS] = false;
 
-        if ($attributes[Entity::ERROR_CODE] === Status::REFUND_SUCCESS)
+        if (($attributes[Entity::ERROR_CODE] === Status::FULL_REFUND_SUCCESS) or
+            ($attributes[Entity::ERROR_CODE] === Status::PARTIAL_REFUND_SUCCESS))
         {
             $attributes[Entity::SUCCESS] = true;
         }
@@ -829,7 +830,7 @@ class Gateway extends Base\Gateway
 
     public function getTestSecret()
     {
-        assert ($this->mode === Mode::TEST);
+        assertTrue ($this->mode === Mode::TEST);
 
         if ($this->action === Action::AUTHORIZE)
         {
@@ -949,7 +950,8 @@ class Gateway extends Base\Gateway
 
     protected function checkRefundSuccess(array $responseArray)
     {
-        if ($responseArray[RefundResponseFields::STATUS_CODE] !== Status::REFUND_SUCCESS)
+        if (($responseArray[RefundResponseFields::STATUS_CODE] !== Status::FULL_REFUND_SUCCESS) and
+            ($responseArray[RefundResponseFields::STATUS_CODE] !== Status::PARTIAL_REFUND_SUCCESS))
         {
             $responseCode = $responseArray[RefundResponseFields::STATUS_CODE];
 

@@ -97,6 +97,34 @@ return [
         ],
     ],
 
+    'testCreateBatchOfPaymentLinkTypeWithNotes' => [
+        'request' => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'payment_link',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testCreateBatchOfPaymentLinkTypeWithNotesFileRows' => [
+        [
+            Header::INVOICE_NUMBER   => '#1',
+            Header::CUSTOMER_NAME    => 'test',
+            Header::CUSTOMER_EMAIL   => 'test@test.test',
+            Header::CUSTOMER_CONTACT => '9999998888',
+            Header::AMOUNT_IN_PAISE  => 500,
+            Header::DESCRIPTION      => 'test payment link',
+            Header::EXPIRE_BY        => null,
+            Header::PARTIAL_PAYMENT  => 'YES',
+            'notes[key1]'            => 'Notes Value 1',
+            'notes[key2]'            => 'Notes Value 2',
+        ],
+    ],
+
     'testCreateBatchOfPaymentLinkTypeWithInvalidFile1' => [
         'request' => [
             'url'     => '/batches',
@@ -154,15 +182,15 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The uploaded batch payment link file does not contain proper values',
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'There are validation errors in 1 row of the file',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_BATCH_PAYMENT_LINK_FILE_ERRORS,
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
@@ -210,6 +238,8 @@ return [
                         Header::DESCRIPTION      => 'test payment link',
                         Header::EXPIRE_BY        => null,
                         Header::PARTIAL_PAYMENT  => 'YES',
+                        'notes[key1]'            => 'Notes Value 1',
+                        'notes[key2]'            => 'Notes Value 2',
                     ],
                     // Duplicate receipt number will not get detected in the validation api
                     [
@@ -221,6 +251,8 @@ return [
                         Header::DESCRIPTION      => 'test payment link - 2',
                         Header::EXPIRE_BY        => null,
                         Header::PARTIAL_PAYMENT  => 'NO',
+                        'notes[key1]'            => null,
+                        'notes[key2]'            => null,
                     ],
                     [
                         Header::INVOICE_NUMBER   => '#3',
@@ -231,6 +263,8 @@ return [
                         Header::DESCRIPTION      => 'test payment link - 3',
                         Header::EXPIRE_BY        => null,
                         Header::PARTIAL_PAYMENT  => null,
+                        'notes[key1]'            => 'Notes Value 1 - second',
+                        'notes[key2]'            => 'Notes Value 2 - second',
                     ],
                 ],
             ],

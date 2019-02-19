@@ -6,6 +6,9 @@ use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Reconciliator\Base;
+use RZP\Models\Payment\Action;
+use RZP\Models\Base\PublicEntity;
+use RZP\Models\Payment\Refund\Status;
 
 class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
@@ -14,6 +17,10 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     const ORIGINAL_BANK_RRN    = 'original_bank_rrn';
     const REFUND_TRANS_DATE    = 'refund_transaction_date';
     const REFUND_TRANS_TIME    = 'refund_transaction_time';
+    const REFUND_RRN           = 'refund_rrn';
+    const STATUS               = 'status';
+
+    const SUCCESS = 'SUCCESS';
 
     protected function getRefundId(array $row)
     {
@@ -63,6 +70,22 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         return $upiEntity->getPaymentId();
     }
 
+    protected function getReferenceNumber(array $row)
+    {
+        return $row[self::REFUND_RRN] ?? null;
+    }
+
+    /**
+     * Setting RRN in refund's reference1 attribute
+     *
+     * @param array $row
+     * @return null
+     */
+    protected function getArn(array $row)
+    {
+        return $row[self::REFUND_RRN] ?? null;
+    }
+
     protected function validateRefundAmountEqualsReconAmount(array $row)
     {
         $reconAmount = $this->getReconRefundAmount($row);
@@ -75,10 +98,10 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
                 [
                     'trace_code'      => TraceCode::RECON_INFO_ALERT,
                     'info_code'       => Base\InfoCode::AMOUNT_MISMATCH,
-                    'message'         => 'Payment amount mismatch',
+                    'refund_id'       => $this->refund->getId(),
                     'expected_amount' => $this->refund->getBaseAmount(),
+                    'recon_amount'    => $this->getReconRefundAmount($row),
                     'currency'        => $this->refund->getCurrency(),
-                    'row'             => $row,
                     'gateway'         => $this->gateway
                 ]);
 
@@ -91,5 +114,38 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     protected function getReconRefundAmount(array $row)
     {
         return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_REFUND_AMOUNT]);
+    }
+
+    protected function getGatewayRefund(string $refundId)
+    {
+        $gatewayRefunds = $this->repo->upi->findByRefundIdAndAction($refundId, Action::REFUND);
+
+        return $gatewayRefunds->first();
+    }
+
+    protected function setReferenceNumberInGateway(string $referenceNumber, PublicEntity $gatewayRefund)
+    {
+        $npciRefId = (string) $gatewayRefund->getNpciReferenceId();
+
+        if ((empty($npciRefId) === false) and
+            ($npciRefId !== $referenceNumber))
+        {
+            $this->trace->info(TraceCode::RECON_INFO_ALERT, [
+                'info_code'                 => Base\InfoCode::DATA_MISMATCH,
+                'message'                   => 'Reference number in db is not same as in recon',
+                'refund_id'                 => $this->refund->getId(),
+                'amount'                    => $this->refund->getBaseAmount(),
+                'payment_id'                => $this->payment->getId(),
+                'payment_amount'            => $this->payment->getBaseAmount(),
+                'db_reference_number'       => $npciRefId,
+                'recon_reference_number'    => $referenceNumber,
+                'gateway'                   => $this->gateway
+            ]);
+
+            return;
+        }
+
+        // We will only update the RRN if it is empty
+        $gatewayRefund->setNpciReferenceId($referenceNumber);
     }
 }

@@ -269,6 +269,33 @@ class Repository extends Base\Repository
         return $this->createOrFail($attributes);
     }
 
+    public function persistAfterPreAuth($request, $data)
+    {
+        $status = Payment\Status::AUTHORIZED;
+
+        if ($data['result'] === Payment\Result::CAPTURED)
+        {
+            $status = Payment\Status::CAPTURED;
+        }
+
+        $attributes = [
+            'received'      => '1',
+            'payment_id'    => $data['trackid'],
+            'status'        => $status,
+            'action'        => $request['action'],
+            'amount'        => $data['amt'],
+            'result'        => $data['result'],
+            'currency'      => $request['currencycode'],
+            'ref'           => $data['ref'],
+            'auth'          => $data['auth'],
+            'avr'           => $data['avr'],
+            'postdate'      => $data['postdate'],
+            'gateway_transaction_id' => $data['tranid']
+        ];
+
+        return $this->createOrFail($attributes);
+    }
+
     public function persistAfterAuthNotEnrolledError($model, $authResponse)
     {
         $error = $authResponse['error'];
@@ -328,6 +355,22 @@ class Repository extends Base\Repository
             'error_code2'           => $error['code'],
             'error_text'            => $error['text'],
             'status'                => Payment\Status::AUTH_RECURRING_FAILED
+         ];
+
+        return $this->createOrFail($attributes);
+    }
+
+    public function persistAfterPreAuthError($request, $error)
+    {
+        $attributes = [
+            'received'              => '1',
+            'payment_id'            => $request['trackid'],
+            'action'                => $request['action'],
+            'amount'                => $request['amt'],
+            'currency'              => $request['currencycode'],
+            'error_code2'           => $error['code'],
+            'error_text'            => $error['text'],
+            'status'                => Payment\Status::AUTHORIZE_FAILED
          ];
 
         return $this->createOrFail($attributes);

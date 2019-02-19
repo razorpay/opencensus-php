@@ -2,49 +2,38 @@
 
 namespace RZP\Models\Batch\Helpers;
 
-use RZP\Models\Payout as P;
-use RZP\Models\Customer;
-use RZP\Models\BankAccount;
+use RZP\Models\Merchant;
 use RZP\Models\Batch\Header;
-use RZP\Models\FundTransfer\Attempt\Purpose;
+use RZP\Models\Payout as PayoutModel;
+use RZP\Models\FundAccount as FundAccountModel;
 
 class Payout
 {
-    public static function getCustomerCreateInput(array $entry): array
-    {
-        return [
-            Customer\Entity::NAME    => $entry[Header::PAYOUT_CUSTOMER_NAME],
-            Customer\Entity::CONTACT => $entry[Header::PAYOUT_CUSTOMER_CONTACT],
-            Customer\Entity::EMAIL   => $entry[Header::PAYOUT_CUSTOMER_EMAIL],
-        ];
-    }
-
-    public static function getBankAccountCreateInput(array $entry): array
-    {
-        $name = preg_replace('/[^a-zA-Z0-9 ]+/', '', $entry[Header::PAYOUT_CUSTOMER_NAME]);
-
-        return [
-            BankAccount\Entity::BENEFICIARY_NAME => substr($name, 0, 39),
-            BankAccount\Entity::ACCOUNT_NUMBER   => $entry[Header::PAYOUT_BANK_ACCOUNT_NUMBER],
-            BankAccount\Entity::IFSC_CODE        => $entry[Header::PAYOUT_BANK_IFSC],
-        ];
-    }
-
-    public static function getPayoutCreateInput(
+    public static function getPayoutInput(
         array $entry,
-        BankAccount\Entity $bankAccount,
-        Customer\Entity $customer): array
+        FundAccountModel\Entity $fundAccount,
+        Merchant\Entity $merchant): array
     {
-        $requestArray = [
-            P\Entity::PURPOSE     => Purpose::REFUND,
-            P\Entity::CUSTOMER_ID => $customer->getPublicId(),
-            P\Entity::DESTINATION => $bankAccount->getPublicId(),
-            P\Entity::METHOD      => $entry[Header::PAYOUT_METHOD],
-            P\Entity::AMOUNT      => $entry[Header::PAYOUT_AMOUNT],
-            P\Entity::CURRENCY    => $entry[Header::PAYOUT_CURRENCY],
-            P\Entity::NOTES       => json_decode($entry[Header::PAYOUT_NOTES], true) ?? [],
+
+        // Call to validateAndTranslateAccountNumberForBanking() expect the key in snake case.
+        $entry['account_number'] = $entry[Header::RAZORPAYX_ACCOUNT_NUMBER];
+        // Optimization: Have a map of account number to balance id to avoid multiple read calls.
+        $merchant->getValidator()->validateAndTranslateAccountNumberForBanking($entry);
+
+        $input = [
+            PayoutModel\Entity::PURPOSE         => $entry[Header::PAYOUT_PURPOSE],
+            PayoutModel\Entity::AMOUNT          => $entry[Header::PAYOUT_AMOUNT],
+            PayoutModel\Entity::CURRENCY        => $entry[Header::PAYOUT_CURRENCY],
+            // Key balance_id got appended in above validation call.
+            PayoutModel\Entity::BALANCE_ID      => $entry['balance_id'],
+            PayoutModel\Entity::FUND_ACCOUNT_ID => $fundAccount->getPublicId(),
+            PayoutModel\Entity::MODE            => $entry[Header::PAYOUT_MODE],
+            PayoutModel\Entity::REFERENCE_ID    => $entry[Header::PAYOUT_REFERENCE_ID],
+            // Notes is optional.
+            PayoutModel\Entity::NOTES           => $entry[Header::NOTES] ?? [],
         ];
 
-        return $requestArray;
+        // Returns removing attributes with empty values.
+        return array_filter($input);
     }
 }

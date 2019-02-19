@@ -2,23 +2,25 @@
 
 namespace RZP\Listeners;
 
-use Illuminate\Events\Dispatcher;
-
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Jobs\WebHook;
 use RZP\Models\Event;
+use RZP\Models\Payout;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\FundAccount;
+use RZP\Models\Transaction;
 use RZP\Models\Customer\Token;
 use RZP\Models\VirtualAccount;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Jobs\SubscriptionPaymentHandler;
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
 use RZP\Models\Merchant\Webhook\Entity as WebhookEntity;
+use RZP\Models\Merchant\Webhook\Metric as WebhookMetric;
 use RZP\Models\Merchant\AccessMap\Entity as AccessMapEntity;
 
 class ApiEventSubscriber extends Base\Core
@@ -81,6 +83,8 @@ class ApiEventSubscriber extends Base\Core
         WebhookEvent::INVOICE_PAID,
         WebhookEvent::PAYMENT_AUTHORIZED,
         WebhookEvent::PAYMENT_FAILED,
+        WebhookEvent::PAYOUT_PROCESSED,
+        WebhookEvent::PAYOUT_REVERSED,
     ];
 
     public function __construct()
@@ -98,6 +102,8 @@ class ApiEventSubscriber extends Base\Core
     public function onEvent($event, $params)
     {
         $event = $this->getFiringEvent($event);
+
+        $this->trace->count(WebhookMetric::WEBHOOK_EVENTS_TRIGGERED_TOTAL, compact('event'));
 
         //
         // sequential_array check is present here only
@@ -175,7 +181,8 @@ class ApiEventSubscriber extends Base\Core
         $merchant = $this->getMerchantFromEntity($payment);
 
         if (($payment->hasSubscription() === true) and
-            ($merchant->isFeatureEnabled(Feature\Constants::SUBSCRIPTION_AUTH_V2) === true)) {
+            ($merchant->isFeatureEnabled(Feature\Constants::SUBSCRIPTION_AUTH_V2) === true))
+        {
             $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
 
             SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
@@ -231,6 +238,13 @@ class ApiEventSubscriber extends Base\Core
     protected function onPaymentDisputeClosed($payment)
     {
         $payload = $this->getPaymentPayloadWithDispute($payment);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onFundAccountValidationCompleted(FundAccount\Validation\Entity $fundAccountValidation)
+    {
+        $payload = $this->getFundAccountValidationPayload($fundAccountValidation);
 
         $this->prepareAndDispatchWebhook($payload);
     }
@@ -390,6 +404,51 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onTransactionCreated(Transaction\Entity $txn)
+    {
+        $payload = $this->getTransactionPayload($txn);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onPayoutCreated(Payout\Entity $payout)
+    {
+        $payload = $this->getPayoutPayload($payout);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onPayoutProcessed(Payout\Entity $payout)
+    {
+        if ($payout->isOfMerchantTransaction() === true)
+        {
+            (new Transaction\Notifier($payout->transaction, $this->event))->notify();
+        }
+
+        if ($this->webhookEnabledForEvent === true)
+        {
+            $payload = $this->getPayoutPayload($payout);
+
+            $this->prepareAndDispatchWebhook($payload);
+        }
+    }
+
+    protected function onPayoutReversed(Payout\Entity $payout)
+    {
+        // Todo: Uncomment this once payout_reversed.blade.php file is updated with content.
+        // if ($payout->isOfMerchantTransaction() === true)
+        // {
+        //     (new Transaction\Notifier($payout->transaction, $this->event))->notify();
+        // }
+
+        if ($this->webhookEnabledForEvent === true)
+        {
+            $payload = $this->getPayoutPayload($payout);
+
+            $this->prepareAndDispatchWebhook($payload);
+        }
+    }
+
     protected function getP2pPayload($p2p)
     {
         $source = $p2p->source;
@@ -508,6 +567,15 @@ class ApiEventSubscriber extends Base\Core
         return $partialPayload;
     }
 
+    protected function getFundAccountValidationPayload(FundAccount\Validation\Entity $fundAccountValidation)
+    {
+        $partialPayload['fund_account.validation'] = [
+            'entity' => $fundAccountValidation->toArrayPublic()
+        ];
+
+        return $partialPayload;
+    }
+
     protected function getInvoicePayload(Invoice\Entity $invoice)
     {
         $payload = [
@@ -561,6 +629,28 @@ class ApiEventSubscriber extends Base\Core
         return $payload;
     }
 
+    protected function getTransactionPayload(Transaction\Entity $txn): array
+    {
+        $payload = [
+            Constants\Entity::TRANSACTION => [
+                'entity' => $txn->toStatement()->toArrayPublic(),
+            ],
+        ];
+
+        return $payload;
+    }
+
+    protected function getPayoutPayload(Payout\Entity $payout): array
+    {
+        $payload = [
+            Constants\Entity::PAYOUT => [
+                'entity' => $payout->toArrayPublic(),
+            ],
+        ];
+
+        return $payload;
+    }
+
     protected function getPaymentPayloadWithDispute($payment)
     {
         $partialPayload = $this->getPaymentPayload($payment);
@@ -607,12 +697,15 @@ class ApiEventSubscriber extends Base\Core
         $entity     = $this->mainEntity;
         $merchant   = $this->getMerchantFromEntity($entity);
 
+        //
         // Send the signed account id of the merchant associated with the entity, along with the payload
         // In case of settlements, $entity->merchant is the the merchant to whom the settlement is processed
+        //
         $signedAccountId = Merchant\Account\Entity::getSignedId($entity->merchant->getId());
 
         $attributes = array(
             Event\Entity::EVENT      => $eventFired,
+
             //
             // The same event may or may not contain some entities, based on the state.
             // For example, if subscription.pending is fired on an auth failure,
@@ -634,6 +727,7 @@ class ApiEventSubscriber extends Base\Core
         $data = [
             'mode'       => $this->getMode(),
             'event'      => json_encode($event->toArrayPublic()),
+            'event_name' => $eventFired,
             'webhook_id' => $webhook->getId()
         ];
 
@@ -664,9 +758,7 @@ class ApiEventSubscriber extends Base\Core
 
         $webhook = $this->repo->webhook->findByMerchant($merchant);
 
-        //
         // Check if the merchant has an active webhook for the event
-        //
         $enabledForMerchant = $this->isWebhookActiveAndEnabled($webhook);
 
         if ($enabledForMerchant === true)
@@ -675,9 +767,9 @@ class ApiEventSubscriber extends Base\Core
         }
 
         //
-        // Check if any of the apps used by the merchant have an active webhook
-        // for the event. This means that the app needs notification of events on
-        // the merchants using the app.
+        // Check if any of the Partner applications connected to the merchant have an
+        // active webhook for the event. If defined, we will eventually send the
+        // webhook request to all of these active application webhooks.
         //
         $enabledForApps = $this->checkAndSetWebhooksEnabledForEventForAnyApp();
 
@@ -718,6 +810,7 @@ class ApiEventSubscriber extends Base\Core
      */
     protected function getActiveWebhooksForConnectedApps(string $merchantId)
     {
+        // Fetch all applications connected to the current merchant ID
         $appConnections = $this->repo
                                ->merchant_access_map
                                ->fetchMerchantAccessMapsOnEntityType($merchantId, WebhookEntity::APPLICATION);
@@ -727,11 +820,17 @@ class ApiEventSubscriber extends Base\Core
             return [];
         }
 
+        //
+        // If one or more applications are connected, fetch all webhooks that are
+        // defined by the applications.
+        //
         $appIds = $appConnections->pluck(AccessMapEntity::ENTITY_ID)->all();
 
         $appWebhooks = $this->repo->webhook->findMultipleByApplicationIds($appIds);
 
-        $activeEnabledAppWebhooks = $appWebhooks->filter(function($webhook, $key) {
+        // Filter and return the list of active application webhooks
+        $activeEnabledAppWebhooks = $appWebhooks->filter(function($webhook, $key)
+        {
             return ($this->isWebhookActiveAndEnabled($webhook) === true);
         });
 

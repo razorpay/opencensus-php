@@ -27,15 +27,19 @@ class OrgTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content']['permissions'] = $permIds;
 
         $this->startTest();
+
+        $org = $this->getLastEntity('org', true);
+
+        $this->assertEquals($org['type'], 'restricted');
     }
 
     public function testEditOrg()
     {
         $org = $this->fixtures->create('org');
 
-        $firstOrgHost = $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
+        $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
 
-        $secondOrgHost = $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
+        $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
 
         $authToken = $this->getAuthTokenForOrg($org);
 

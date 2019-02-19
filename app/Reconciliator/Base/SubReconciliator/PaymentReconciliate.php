@@ -237,17 +237,22 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
     protected function validatePaymentDetails(array $row)
     {
-        $validPaymentStatus = $this->validatePaymentStatus($row);
-
         $validPaymentAmount = $this->validatePaymentAmountEqualsReconAmount($row);
 
         $validCurrencyCode  = $this->validatePaymentCurrencyEqualsReconCurrency($row);
 
-        $validPaymentDetails = (($validPaymentStatus === true) and
-                                ($validPaymentAmount === true) and
-                                ($validCurrencyCode === true));
+        if (($validPaymentAmount === false) or ($validCurrencyCode === false))
+        {
+            return false;
+        }
 
-        return $validPaymentDetails;
+        //
+        // As validatePaymentStatus() may end up force-authorizing the failed payment,
+        // we keep it after payment amount and currency match check.
+        //
+        $validPaymentStatus = $this->validatePaymentStatus($row);
+
+        return ($validPaymentStatus === true);
     }
 
     /**
@@ -458,8 +463,9 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             $this->trace->info(
                 TraceCode::RECON_INFO_ALERT,
                 [
-                    'message'    => 'Force authorized the failed payment.',
+                    'info_code'  => Base\InfoCode::PAYMENT_FORCE_AUTHORIZED,
                     'payment_id' => $this->payment->getId(),
+                    'amount'     => $this->payment->getAmount(),
                     'gateway'    => $this->gateway,
                 ]);
 
@@ -470,8 +476,9 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code' => TraceCode::RECON_FAILED_VERIFY,
-                    'message'    => 'Unable to force authorize the payment. Payment is still in failed state.',
+                    'info_code'  => Base\InfoCode::PAYMENT_FORCE_AUTHORIZE_FAILED,
                     'payment_id' => $this->payment->getId(),
+                    'amount'     => $this->payment->getAmount(),
                     'gateway'    => $this->gateway
                 ]);
 
@@ -559,7 +566,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 $this->messenger->raiseReconAlert(
                     [
                         'trace_code'    => TraceCode::RECON_FAILURE,
-                        'failure_code'  => 'PAYMENT_TRANSACTION_ABSENT',
+                        'failure_code'  => Base\InfoCode::PAYMENT_TRANSACTION_ABSENT,
                         'message'       => 'Unable to create payment transaction after verifying',
                         'payment_id'    => $this->payment->getId(),
                         'gateway'       => $this->gateway
@@ -710,8 +717,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 $this->trace->info(
                     TraceCode::RECON_INFO,
                     [
-                        'message'    => 'Payment Transaction not found in DB.',
-                        'info_code'  => 'PAYMENT_TRANSACTION_ABSENT',
+                        'info_code'  => Base\InfoCode::PAYMENT_TRANSACTION_ABSENT,
                         'payment_id' => $paymentId,
                         'gateway'    => $this->gateway
                     ]);
@@ -722,9 +728,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code' => TraceCode::RECON_MISMATCH,
-                    'info_code'  => 'PAYMENT_ABSENT',
+                    'info_code'  => Base\InfoCode::PAYMENT_ABSENT,
                     'message'    => 'Payment not found in DB. -> ' . $ex->getMessage(),
-                    'row'        => $row,
                     'payment_id' => $paymentId,
                     'gateway'    => $this->gateway
                 ]);
@@ -1298,13 +1303,14 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         {
             $this->messenger->raiseReconAlert(
                 [
-                    'trace_code'        => TraceCode::RECON_MISMATCH,
-                    'info_code'         => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
-                    'message'           => 'Reference1 is not same as in recon',
-                    'payment_id'        => $this->payment->getId(),
-                    'api_reference1'    => $dbReference1,
-                    'recon_reference1'  => $reference1,
-                    'gateway'           => $this->gateway
+                    'trace_code'                => TraceCode::RECON_MISMATCH,
+                    'info_code'                 => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
+                    'message'                   => 'Reference1 is not same as in recon',
+                    'payment_id'                => $this->payment->getId(),
+                    'amount'                    => $this->payment->getAmount(),
+                    'db_reference_number'       => $dbReference1,
+                    'recon_reference_number'    => $reference1,
+                    'gateway'                   => $this->gateway
                 ]);
 
             return;
@@ -1335,12 +1341,14 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         {
             $this->messenger->raiseReconAlert(
                 [
-                    'trace_code'        => TraceCode::RECON_MISMATCH,
-                    'message'           => 'Reference2 is not same as in recon',
-                    'payment_id'        => $this->payment->getId(),
-                    'api_reference2'    => $dbReference2,
-                    'recon_reference2'  => $reference2,
-                    'gateway'           => $this->gateway
+                    'trace_code'                => TraceCode::RECON_MISMATCH,
+                    'info_code'                 => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
+                    'message'                   => 'Reference2 is not same as in recon',
+                    'payment_id'                => $this->payment->getId(),
+                    'amount'                    => $this->payment->getAmount(),
+                    'db_reference_number'       => $dbReference2,
+                    'recon_reference_number'    => $reference2,
+                    'gateway'                   => $this->gateway
                 ]);
 
             return;
@@ -1392,8 +1400,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 $this->messenger->raiseReconAlert(
                     [
                         'trace_code'    => TraceCode::RECON_FAILURE,
-                        'failure_code'  => 'PAYMENT_TRANSACTION_ABSENT',
-                        'message'       => 'Transaction not present for the given payment ID.',
+                        'failure_code'  => Base\InfoCode::PAYMENT_TRANSACTION_ABSENT,
                         'row_details'   => $rowDetails,
                         'gateway'       => $this->gateway
                     ]);
@@ -1473,8 +1480,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 $this->trace->warning(
                     TraceCode::RECON_INFO_ALERT,
                     [
-                        'info_code'     => 'PAYMENT_TRANSACTION_ABSENT',
-                        'message'       => 'Transaction not present for the given payment ID.',
+                        'info_code'     => Base\InfoCode::PAYMENT_TRANSACTION_ABSENT,
                         'row_details'   => $rowDetails,
                         'gateway'       => $this->gateway
                     ]);
@@ -1919,7 +1925,14 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
     {
         $dbReferenceNumber = trim($gatewayPayment->getBankPaymentId());
 
+        //
+        // Sometimes we have db reference number saved as string 'null'.
+        // (we encountered few cases in Atom). We don't want to raise data
+        // mismatch alert in such cases. so adding a check to compare
+        // string 'null'
+        //
         if ((empty($dbReferenceNumber) === false) and
+            ($dbReferenceNumber !== 'null') and
             ($dbReferenceNumber !== $referenceNumber))
         {
             $this->messenger->raiseReconAlert(
@@ -1928,6 +1941,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                     'info_code'                 => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
                     'message'                   => 'Reference number in db is not same as in recon',
                     'payment_id'                => $this->payment->getId(),
+                    'amount'                    => $this->payment->getAmount(),
                     'db_reference_number'       => $dbReferenceNumber,
                     'recon_reference_number'    => $referenceNumber,
                     'gateway'                   => $this->gateway
@@ -1962,8 +1976,9 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                     'info_code'                 => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
                     'message'                   => 'Gateway Transaction ID in db is not same as in recon',
                     'payment_id'                => $this->payment->getId(),
-                    'db_gateway_txn_id'         => $dbGatewayTransactionId,
-                    'recon_gateway_txn_id'      => $gatewayTransactionId,
+                    'amount'                    => $this->payment->getAmount(),
+                    'db_reference_number'       => $dbGatewayTransactionId,
+                    'recon_reference_number'    => $gatewayTransactionId,
                     'gateway'                   => $this->gateway
                 ]);
 
@@ -1996,8 +2011,9 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                     'info_code'                 => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
                     'message'                   => 'Gateway Payment Id in db is not same as in recon',
                     'payment_id'                => $this->payment->getId(),
-                    'db_gateway_payment_id'     => $dbGatewayPaymentId,
-                    'recon_gateway_payment_id'  => $gatewayPaymentId,
+                    'amount'                    => $this->payment->getAmount(),
+                    'db_reference_number'       => $dbGatewayPaymentId,
+                    'recon_reference_number'    => $gatewayPaymentId,
                     'gateway'                   => $this->gateway
                 ]);
 
@@ -2032,6 +2048,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 'trace_code'    => TraceCode::RECON_MISMATCH,
                 'message'       => 'DB says international but recon says domestic',
                 'payment_id'    => $this->payment->getId(),
+                'amount'        => $this->payment->getAmount(),
                 'iin_id'        => $this->paymentIin->getKey(),
                 'gateway'       => $this->gateway
             ]);

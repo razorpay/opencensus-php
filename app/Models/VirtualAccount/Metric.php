@@ -18,7 +18,9 @@ class Metric extends Base\Core
     {
         $receivers = $input[Entity::RECEIVERS];
 
-        if ((is_array($receivers) === true) and (is_array($receivers[Entity::TYPES]) === true))
+        if ((is_array($receivers) === true) and
+            (isset($receivers[Entity::TYPES]) === true) and
+            (is_array($receivers[Entity::TYPES]) === true))
         {
             $types = $receivers[Entity::TYPES];
         }

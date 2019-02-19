@@ -41,10 +41,17 @@ class Validator extends Base\Validator
         Entity::MPESA          => 'sometimes|boolean',
         Entity::BANK_TRANSFER  => 'sometimes|boolean',
         Entity::CARDLESS_EMI   => 'sometimes|boolean',
+        Entity::CARD_NETWORKS  => 'sometimes|array|custom',
     ];
 
     protected static $setMethodsValidators = [
         'methodBanks'
+    ];
+
+    protected static $bulkAssignMethodsRules = [
+        'methods'               => 'required|array|custom',
+        'merchants'             => 'required|array',
+        'merchants.*'           => 'required|string|filled|size:14',
     ];
 
     protected function validateMethodBanks(array $input)
@@ -55,6 +62,24 @@ class Validator extends Base\Validator
         }
 
         $this->validateDisabledBanks($input);
+    }
+
+    protected function validateMethods($attribute, $methods, $parameters)
+    {
+        $this->validateInput('set_methods', $methods);
+    }
+
+    protected function validateCardNetworks($attribute, $networks, $parameters)
+    {
+        foreach ($networks as $network => $value)
+        {
+            if (($value !== 1) and
+                ($value !== 0))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Not a boolean value'. $network .' '. $value);
+            }
+        }
     }
 
     protected function validateDisabledBanks(array $input)

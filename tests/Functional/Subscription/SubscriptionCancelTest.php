@@ -34,7 +34,7 @@ class SubscriptionCancelTest extends TestCase
 
         $this->gateway = 'cybersource';
 
-        $this->mockTokenex();
+        $this->mockCardVault();
 
         $this->setupMockDns();
 

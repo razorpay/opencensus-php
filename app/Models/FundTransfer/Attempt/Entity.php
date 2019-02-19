@@ -4,8 +4,14 @@ namespace RZP\Models\FundTransfer\Attempt;
 
 use RZP\Models\Base;
 use RZP\Constants\Entity as E;
+use RZP\Models\FundTransfer\Mode;
+use RZP\Models\FundTransfer\Attempt\Type;
+use RZP\Models\FundTransfer\Yesbank\NodalAccount;
 use RZP\Models\Settlement\Channel;
 
+/**
+ * @property mixed batchFundTransfer
+ */
 class Entity extends Base\PublicEntity
 {
     const SOURCE                 = 'source';
@@ -19,6 +25,7 @@ class Entity extends Base\PublicEntity
     const CHANNEL                = 'channel';
     const VERSION                = 'version';
     const BANK_STATUS_CODE       = 'bank_status_code';
+    const BANK_RESPONSE_CODE     = 'bank_response_code';
     const MODE                   = 'mode';
     const STATUS                 = 'status';
     const UTR                    = 'utr';
@@ -37,6 +44,11 @@ class Entity extends Base\PublicEntity
     const SETTLEMENT            = 'settlement';
     const BENEFICIARY           = 'beneficiary';
 
+    /**
+     * Used to check if the FTA's source has balance ID
+     */
+    const BALANCE_ID            = 'balance_id';
+
     protected $entity = 'fund_transfer_attempt';
 
     protected $fillable = [
@@ -47,6 +59,7 @@ class Entity extends Base\PublicEntity
         self::MODE,
         self::NARRATION,
         self::BANK_STATUS_CODE,
+        self::BANK_RESPONSE_CODE,
         self::STATUS,
         self::REMARKS,
         self::FAILURE_REASON,
@@ -64,6 +77,7 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::VERSION,
         self::BANK_STATUS_CODE,
+        self::BANK_RESPONSE_CODE,
         self::MODE,
         self::STATUS,
         self::UTR,
@@ -150,9 +164,24 @@ class Entity extends Base\PublicEntity
 
     // ------------------------------- getters ---------------------------------
 
+    public function getVpaId()
+    {
+        return $this->getAttribute(self::VPA_ID);
+    }
+
+    public function getBankAccountId()
+    {
+        return $this->getAttribute(self::BANK_ACCOUNT_ID);
+    }
+
     public function getChannel()
     {
         return $this->getAttribute(self::CHANNEL);
+    }
+
+    public function getPurpose()
+    {
+        return $this->getAttribute(self::PURPOSE);
     }
 
     public function getRemarks()
@@ -185,6 +214,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BANK_STATUS_CODE);
     }
 
+    public function getBankResponseCode()
+    {
+        return $this->getAttribute(self::BANK_RESPONSE_CODE);
+    }
+
     public function getSourceId()
     {
         return $this->getAttribute(self::SOURCE_ID);
@@ -210,6 +244,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::INITIATE_AT);
     }
 
+    public function hasMode()
+    {
+        return ($this->isAttributeNotNull(self::MODE) === true);
+    }
+
     public function getMode()
     {
         return $this->getAttribute(self::MODE);
@@ -220,14 +259,45 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CMS_REF_NO);
     }
 
+    public function getDateTime()
+    {
+        return $this->getAttribute(self::DATE_TIME);
+    }
+
     public function isRefund()
     {
         return ($this->getAttribute(self::PURPOSE) === Purpose::REFUND);
     }
 
-    public function getDateTime()
+    public function isSettlement()
     {
-        return $this->getAttribute(self::DATE_TIME);
+        return ($this->getAttribute(self::PURPOSE) === Purpose::SETTLEMENT);
+    }
+
+    public function getDestinationType()
+    {
+        if ($this->hasVpa() === true)
+        {
+            return E::VPA;
+        }
+        else if ($this->hasBankAccount() === true)
+        {
+            return E::BANK_ACCOUNT;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public function hasBankAccount()
+    {
+        return ($this->isAttributeNotNull(self::BANK_ACCOUNT_ID));
+    }
+
+    public function hasVpa()
+    {
+        return ($this->isAttributeNotNull(self::VPA_ID));
     }
 
     // ------------------------------- setters ---------------------------------
@@ -260,6 +330,11 @@ class Entity extends Base\PublicEntity
     public function setBankStatusCode($code)
     {
         $this->setAttribute(self::BANK_STATUS_CODE, $code);
+    }
+
+    public function setBankResponseCode($code)
+    {
+        $this->setAttribute(self::BANK_RESPONSE_CODE, $code);
     }
 
     public function setFailureReason($reason)
@@ -299,6 +374,28 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::CMS_REF_NO] = substr($refNo, 0, 255);
     }
 
+    public function modifyModeIfRequired()
+    {
+        if ($this->hasMode() === false)
+        {
+            return;
+        }
+
+        // Assumption is that the validation would have happened already before this
+        // step and hence we can assume that the bank account exists and is valid.
+
+        $ba = $this->bankAccount;
+
+        $ifsc = $ba->getIfscCode();
+
+        $ifscFirstFour = substr($ifsc, 0, 4);
+
+        if (starts_with($ifscFirstFour, NodalAccount::IFSC_IDENTIFIER) === true)
+        {
+            $this->setMode(Mode::IFT);
+        }
+    }
+
     // -------------------------------- methods --------------------------------
 
     public function isStatusCreated()
@@ -336,7 +433,25 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
+    public function isOfBanking(): bool
+    {
+        $source = $this->source;
+
+        if ($source->hasAttribute(self::BALANCE_ID) === true)
+        {
+            return $source->isBalanceTypeBanking();
+        }
+
+        return false;
+    }
+
+    public function isPennyTesting(): bool
+    {
+        return ($this->getSourceType() === Type::FUND_ACCOUNT_VALIDATION);
+    }
+
     // ---------------------------- public setters -----------------------------
+
     public function setPublicSourceAttribute(array & $attributes)
     {
         $sourceId = $this->getAttribute(self::SOURCE_ID);
@@ -351,5 +466,17 @@ class Entity extends Base\PublicEntity
     public function setMode($mode)
     {
         return $this->setAttribute(self::MODE, $mode);
+    }
+
+    public function isBeneRegistrationRequired(): bool
+    {
+        if (($this->isRefund() === true) or
+            ($this->hasVpa() === true) or
+            ($this->isPennyTesting() === true))
+        {
+            return false;
+        }
+
+        return true;
     }
 }

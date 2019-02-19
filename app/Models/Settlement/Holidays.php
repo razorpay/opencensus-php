@@ -152,6 +152,36 @@ class Holidays
                 25 => 'Christmas',
             ],
         ],
+
+        2019 => [
+            1 => [
+                26 => 'Republic Day',
+            ],
+            2 => [
+                19 => 'Shivaji Jayanti',
+            ],
+            4 => [
+                1  => 'Annual closing of Banks',
+                19 => 'Good Friday',
+            ],
+            6 => [
+                5 => 'Ramzan Id (Id-Ul-Fitr)',
+            ],
+            8 => [
+                12 => 'Bakri Id(ld-UI-Zuha)',
+                15 => 'Independence Day',
+            ],
+            9 => [
+                10 => 'Muharram',
+            ],
+            10 => [
+                2 => 'Mahatma Gandhi Jayanti',
+                8 => 'Dussehra / Vijaya Dasami',
+            ],
+            12 => [
+                25 => 'Christmas',
+            ],
+        ],
     ];
 
     /**

@@ -4,11 +4,33 @@ namespace RZP\Gateway\Upi\Yesbank;
 
 class Fields
 {
-    const PGMERCHANTID     = 'pgMerchantId';
-    const REQUESTMSG       = 'requestMsg';
+    // ==== REQUEST FIELDS FROM FTS TO GATEWAY SERVICE ====
 
-    const PGMERCHANT_ID    = 'pgmerchant_id';
-    const ORDER_ID         = 'order_id';
+    const REF_ID                    = 'ref_id';
+    const GATEWAY_INPUT             = 'gateway_input';
+    const TERMINAL                  = 'terminal';
+    const MERCHANT                  = 'merchant';
+    const GATEWAY_MERCHANT_ID       = 'gateway_merchant_id';
+    const CATEGORY                  = 'category';
+    const NARRATION                 = 'narration';
+
+    // ==== RESPONSE FIELDS FROM GATEWAY SERVICE TO FTS ====
+
+    const SUCCESS                   = 'success';
+    const REQUEST_REFERENCE_NUMBER  = 'request_reference_number';
+    const UNIQUE_RESPONSE_NUMBER    = 'unique_response_number';
+    const BANK_REFERENCE_NUMBER     = 'bank_reference_number';
+    const API_ERROR_CODE            = 'api_error_code';
+    const STATUS_CODE               = 'status_code';
+    const STATUS_DESC               = 'status_desc';
+    const RESPONSE_CODE             = 'response_code';
+
+
+
+    // ==== REQUEST FIELDS FOR YESBANK ====
+
+    const PGMERCHANTID     = 'pgMerchantId';
+    const ORDERNO          = 'orderno';
     const TXN_NOTE         = 'txn_note';
     const AMOUNT           = 'amount';
     const CURRENCY         = 'currency';
@@ -43,10 +65,17 @@ class Fields
     const ADD8             = 'add8';
     const ADD9             = 'add9';
     const ADD10            = 'add10';
-    const REFERENCE_ID     = 'reference_id';
+    const REQUESTMSG       = 'requestMsg';
 
+    // ==== PAYOUT VERIFY REQUEST FIELDS FOR YESBANK ====
+    const PGMERCHANT_ID          = 'pgmerchant_id';
+    const ORDER_ID               = 'order_id';
     const YBLREFNO               = 'yblrefno';
-    const ORDERNO                = 'orderno';
+    const CUST_REF_ID            = 'cust_ref_id';
+    const REFERENCE_ID           = 'reference_id';
+
+    // ==== RESPONSE FIELDS FROM YESBANK ====
+
     const DATE                   = 'date';
     const STATUSCODE             = 'statuscode';
     const STATUSDESC             = 'statusdesc';
@@ -67,7 +96,6 @@ class Fields
     const PYACCNAME              = 'pyaccname';
     const PAYER_VPA              = 'payer_vpa';
     const NPCI_TXN_ID            = 'npci_txn_id';
-    const CUST_REF_ID            = 'cust_ref_id';
     const PAYER_ACC_NO           = 'payer_acc_no';
     const PAYER_IFSC_NO          = 'payer_ifsc_no';
     const PAYER_ACC_NAME         = 'payer_account_name';
@@ -75,15 +103,6 @@ class Fields
     const RESPONSE_ERROR_CODE    = 'response_error_code';
     const PAYEE_ACC_NAME         = 'payee_account_name';
     const TIMED_OUT_TXN_STATUS   = 'timed_out_txn_status';
-
-    // fields which FTA service will use to talk to gateway
-    const REF_ID                    = 'ref_id';
-    const GATEWAY_INPUT             = 'gateway_input';
-    const SUCCESS                   = 'success';
-    const ERROR_MESSAGE             = 'error_message';
-    const REQUEST_REFERENCE_NUMBER  = 'requestReferenceNo';
-    const STATUS_CODE               = 'statusCode';
-    const SUB_STATUS_TEXT           = 'subStatusText';
 
     const PAYOUT = [
       self::YBLREFNO,

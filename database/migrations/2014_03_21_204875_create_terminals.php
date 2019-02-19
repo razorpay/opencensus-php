@@ -33,8 +33,7 @@ class CreateTerminals extends Migration
             $table->tinyInteger(Terminal::USED)
                   ->default(0);
 
-            $table->integer(Terminal::CATEGORY)
-                  ->unsigned()
+            $table->char(Terminal::CATEGORY, Terminal::CATEGORY_LENGTH)
                   ->nullable();
 
             $table->string(Terminal::GATEWAY);
@@ -116,7 +115,11 @@ class CreateTerminals extends Migration
 
             $table->tinyInteger(Terminal::RECURRING)
                   ->unsigned()
-                  ->default(1);
+                  ->default(0);
+
+            $table->tinyInteger(Terminal::CAPABILITY)
+                  ->unsigned()
+                  ->default(0);
 
             $table->tinyInteger(Terminal::INTERNATIONAL)
                   ->default(0);
@@ -150,7 +153,10 @@ class CreateTerminals extends Migration
                   ->nullable();
 
             $table->string(Terminal::ACCOUNT_NUMBER, 50)
-                 ->nullable();
+                  ->nullable();
+
+            $table->string(Terminal::IFSC_CODE, 11)
+                  ->nullable();
 
             $table->integer(Terminal::CREATED_AT);
 

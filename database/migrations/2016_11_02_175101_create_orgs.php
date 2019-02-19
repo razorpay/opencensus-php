@@ -1,7 +1,6 @@
 <?php
 
 use RZP\Constants\Table;
-
 use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Models\Merchant\Entity as Merchant;
 
@@ -31,6 +30,9 @@ class CreateOrgs extends Migration
 
             $table->string(Org::EMAIL)
                   ->unique();
+
+            $table->string(Org::TYPE)
+                  ->nullable();
 
             $table->string(Org::AUTH_TYPE);
 

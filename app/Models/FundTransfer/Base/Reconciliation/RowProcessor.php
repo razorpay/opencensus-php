@@ -3,21 +3,28 @@
 namespace RZP\Models\FundTransfer\Base\Reconciliation;
 
 use Carbon\Carbon;
+use Monolog\Logger;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
+use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Attempt\Metric;
-use RZP\Models\FundTransfer\Attempt\Entity as AttemptEntity;
 
 abstract class RowProcessor extends Base\Core
 {
+    use DispatchesEvents;
+
     protected $row;
 
     protected $version;
 
     protected $parsedData;
 
+    /**
+     * @var Attempt\Entity
+     */
     protected $reconEntity   = null;
 
     protected $reconEntityId = null;
@@ -38,11 +45,22 @@ abstract class RowProcessor extends Base\Core
         $this->row = $row;
     }
 
+    /**
+     * This is called for both file based and api based..
+     *
+     * @return null
+     */
     public function process()
     {
+        //
+        // We can take a lock only after processRow runs
+        // since only then we get the fta ID.
+        // This applies for both file based and API based.
+        //
+
         $this->processRow();
 
-        if(empty($this->reconEntityId) === false)
+        if (empty($this->reconEntityId) === false)
         {
             $this->fetchEntities();
         }
@@ -58,7 +76,14 @@ abstract class RowProcessor extends Base\Core
             return null;
         }
 
-        $this->updateEntities();
+        // We are accepting a dummy collection because
+        // that's how the function was written.
+        (new Attempt\Lock)->acquireLockAndProcessAttempt(
+            $this->reconEntity,
+            function(Base\PublicCollection $collection)
+            {
+                $this->updateEntities();
+            });
 
         return $this->reconEntity;
     }
@@ -85,8 +110,8 @@ abstract class RowProcessor extends Base\Core
                 [
                     'source_batch_id'       => $sourceBatchId,
                     'recon_entity_batch_id' => $reconEntityBatchId
-                ]
-            );
+                ]);
+
             return;
         }
 
@@ -131,19 +156,77 @@ abstract class RowProcessor extends Base\Core
 
     protected function updateSourceEntity()
     {
-        $utr = $this->reconEntity->getUtr();
+        $source = $this->reconEntity->source;
 
-        $remarks = $this->reconEntity->getRemarks();
+        $statusNamespace = $this->getStatusClass($this->reconEntity);
 
-        $this->reconEntity->source->setUtr($utr);
+        $statusClass = new $statusNamespace;
 
-        $this->reconEntity->source->setRemarks($remarks);
+        $requestFailure = $this->parsedData[Constants::REQUEST_FAILURE] ?? false;
 
-        $this->repo->saveOrFail($this->reconEntity->source);
+        $isInternalError = $requestFailure || $statusClass::isCriticalError($this->reconEntity);
 
-        $this->trace->info(
-            TraceCode::FTA_RECON_SOURCE_UPDATED,
-            ['source_id' => $this->reconEntity->source->getId()]);
+        $bankStatusCode = $this->reconEntity->getBankStatusCode();
+
+        $publicErrorMessage = $statusClass::getPublicFailureReason($bankStatusCode);
+
+        $ftaData = [
+            'bank_account_id'   => $this->reconEntity->getBankAccountId(),
+            'vpa_id'            => $this->reconEntity->getVpaId(),
+            'merchant_id'       => $this->reconEntity->getMerchantId(),
+            'fta_id'            => $this->reconEntity->getId(),
+            'mode'              => $this->reconEntity->getMode(),
+            'source_id'         => $source->getId(),
+            'beneficiary_name'  => $this->parsedData[Constants::NAME_WITH_BENE_BANK],
+            'remarks'           => $this->reconEntity->getRemarks(),
+            'utr'               => $this->reconEntity->getUtr(),
+            'fta_status'        => $this->reconEntity->getStatus(),
+            'bank_status_code'  => $bankStatusCode,
+            'internal_error'    => $isInternalError,
+            'failure_reason'    => $publicErrorMessage,
+        ];
+
+        $this->postFtaStatusProcess($source, $ftaData);
+    }
+
+    protected function postFtaStatusProcess($entity, array $ftaData)
+    {
+        try
+        {
+            $sourceType = $entity->getEntity();
+
+            $sourceCoreClass = Entity::getEntityNamespace($sourceType) . '\\Core';
+
+            $sourceCore = new $sourceCoreClass();
+
+            if (method_exists($sourceCore, 'updateWithDetailsBeforeFtaRecon') === false)
+            {
+                return;
+            }
+
+            $sourceCore->updateWithDetailsBeforeFtaRecon($entity, $ftaData);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::FTA_SOURCE_PROCESSING_FAILED,
+                $ftaData
+            );
+        }
+    }
+
+    protected function getStatusClass(Attempt\Entity $entity)
+    {
+        $channel = $entity->getChannel();
+
+        if ($entity->hasVpa() === true)
+        {
+            return '\\RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\GatewayStatus';
+        }
+
+        return 'RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\Status';
     }
 
     /**
@@ -200,5 +283,27 @@ abstract class RowProcessor extends Base\Core
         }
 
         $this->updateSourceEntity();
+    }
+
+    /**
+     * Gives request type for the given attempt.
+     * Based on these attempts nodal config will be picked while making any request to bank
+     *
+     * @param Attempt\Entity $attempt
+     * @return string
+     */
+    protected function getRequestType(Attempt\Entity $attempt): string
+    {
+        switch (true)
+        {
+            case $attempt->isOfBanking():
+                return Attempt\Type::BANKIING;
+
+            case $attempt->isPennyTesting():
+                return Attempt\Type::SYNC;
+
+            default:
+                return Attempt\Type::PRIMARY;
+        }
     }
 }

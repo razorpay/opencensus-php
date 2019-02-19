@@ -6,11 +6,16 @@ use RZP\Jobs\Batch as BatchJob;
 use RZP\Models\Merchant\Entity;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Queue;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 
+/**
+ * @group dns-sensitive
+ */
 class InstantActivationTest extends TestCase
 {
     use BatchTestTrait;
+    use MocksDnsTrait;
 
     public function setUp()
     {
@@ -19,6 +24,8 @@ class InstantActivationTest extends TestCase
         parent::setUp();
 
         $this->ba->proxyAuth();
+
+        $this->setupMockDns();
     }
 
     /**
@@ -60,7 +67,7 @@ class InstantActivationTest extends TestCase
 
         $this->assertSame(true, $liveMerchant->isActivated());
         $this->assertSame(true, $liveMerchant->getHoldFunds());
-        $this->assertSame(8931, $liveMerchant->getCategory());
+        $this->assertSame('8931', $liveMerchant->getCategory());
         $this->assertSame('others', $liveMerchant->getCategory2());
 
         $this->assertSame('whitelist', $liveMerchantDetails->getActivationFlow());
@@ -89,7 +96,7 @@ class InstantActivationTest extends TestCase
 
         $this->assertSame(false, $liveMerchant->isActivated());
         $this->assertSame(false, $liveMerchant->getHoldFunds());
-        $this->assertSame(5399, $liveMerchant->getCategory());
+        $this->assertSame('5399', $liveMerchant->getCategory());
         $this->assertSame('others', $liveMerchant->getCategory2());
 
         $this->assertSame('greylist', $liveMerchantDetails->getActivationFlow());
@@ -171,7 +178,7 @@ class InstantActivationTest extends TestCase
             DetailEntity::BUSINESS_SUBCATEGORY => $businessSubCategory,
             DetailEntity::PROMOTER_PAN         => 'ABCDE1234E',
             DetailEntity::BUSINESS_NAME        => 'test',
-            DetailEntity::BUSINESS_WEBSITE     => 'https://www.facebook.com',
+            DetailEntity::BUSINESS_WEBSITE     => 'https://www.example.com',
             DetailEntity::BUSINESS_TYPE        => '1',
             DetailEntity::BUSINESS_DBA         => 'test',
         ]);

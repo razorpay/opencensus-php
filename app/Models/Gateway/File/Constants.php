@@ -35,7 +35,9 @@ class Constants
     const ISG              = 'isg';
     const SBI              = 'sbi';
     const CORPORATION      = 'corporation';
+    const CITI             = 'citi';
 
+    const ENACH_NPCI_NETBANKING = 'enach_npci_netbanking';
 
     /**
      * Stores a mapping of valid banks for each file type
@@ -58,6 +60,7 @@ class Constants
             self::RBL,
             self::SCBL,
             self::SBI,
+            self::CITI,
         ],
         Type::COMBINED => [
             self::KOTAK,
@@ -83,6 +86,7 @@ class Constants
             self::HDFC,
             self::AXIS,
             self::ENACH_RBL,
+            self::ENACH_NPCI_NETBANKING,
         ],
         Type::REFUND_FAILED => [
             'All',
@@ -128,20 +132,22 @@ class Constants
             self::CSB         => ['csb.netbanking.refunds@razorpay.com'],
             self::EQUITAS     => ['equitas.netbanking.refunds@razorpay.com'],
             self::IDFC        => ['idfc.netbanking.refunds@razorpay.com'],
-            self::ALLA        => ['settlements@razorpay.com'],
+            self::ALLA        => ['settlements@razorpay.com','imps.recon@allahabadbank.in'],
             self::CORPORATION => ['corporation.netbanking.refunds@razorpay.com'],
             self::VIJAYA      => ['vijaya.netbanking.refunds@razorpay.com']
         ],
 
         Type::EMANDATE_REGISTER => [
-            self::HDFC      => ['hdfc.emandate@razorpay.com'],
+            self::HDFC      => ['hdfc.emandate@razorpay.com', 'amit.salvi@hdfcbank.com'],
             self::ENACH_RBL => ['rbl.emandate@razorpay.com'],
         ],
 
         Type::EMANDATE_DEBIT => [
-            self::HDFC      => ['hdfc.emandate@razorpay.com'],
-            self::AXIS      => ['axis.emandate@razorpay.com'],
-            self::ENACH_RBL => ['rbl.emandate@razorpay.com'],
+            self::HDFC                  => ['hdfc.emandate@razorpay.com', 'amit.salvi@hdfcbank.com'],
+            self::AXIS                  => ['axis.emandate@razorpay.com'],
+            self::ENACH_RBL             => ['rbl.emandate@razorpay.com'],
+            //TODO
+            self::ENACH_NPCI_NETBANKING => [''],
         ],
 
         Type::EMI => [
@@ -151,6 +157,8 @@ class Constants
             self::RBL      => ['Rblcards.emi@razorpay.com'],
             self::SCBL     => ['scbl.emi@razorpay.com'],
             self::SBI      => [''],
+            // todo: Add the recepients to the bank group
+            self::CITI     => ['citibank.emi@razorpay.com'],
         ],
 
         Type::REFUND_FAILED => [

@@ -16,6 +16,8 @@ class RazorxController extends Controller
 
     const CONTENT_TYPE_JSON = 'application/json';
 
+    const ACTION_ADMIN_EMAIL_PARAM_NAME = 'action_admin_email';
+
     /**
      * @var string
      */
@@ -36,6 +38,12 @@ class RazorxController extends Controller
         Requests::HEAD,
     ];
 
+    const EXPERIMENT_ACTIVATE_ROUTE = 'EXPERIMENT_ACTIVATE_ROUTE';
+
+    const WORKFLOW_REGEX_ROUTES = [
+        self::EXPERIMENT_ACTIVATE_ROUTE => '/^experiments\/(\w+)\/activate$/',
+    ];
+
     public function __construct()
     {
         parent::__construct();
@@ -48,7 +56,38 @@ class RazorxController extends Controller
 
     public function sendRequest()
     {
-        $requestParams = $this->getRequestParams();
+        $this->addActionAdminEmail();
+
+        $path           = $this->validateAndGetServicePathParam();
+        $method         = null;
+        $requestParams  = $this->getRequestParams();
+
+        foreach (self::WORKFLOW_REGEX_ROUTES as $route => $regex)
+        {
+            if (preg_match($regex, $path, $matches) === 1)
+            {
+                switch ($route)
+                {
+                    case self::EXPERIMENT_ACTIVATE_ROUTE:
+                        $experimentId = $matches[1];
+
+                        $this->validateActivateRequest($experimentId, $requestParams);
+                        $this->startWorkflow($experimentId);
+
+                        $method = 'PATCH';
+                        break;
+
+                    default:
+                        break;
+                }
+                break;
+            }
+        }
+
+        if ($method !== null)
+        {
+            $requestParams['method'] = $method;
+        }
 
         try
         {
@@ -72,6 +111,39 @@ class RazorxController extends Controller
                 $e
             );
         }
+    }
+
+    protected function startWorkflow($experimentId)
+    {
+        $this->app['workflow']
+             ->setEntityAndId('razorx_experiment_activate', $experimentId)
+             ->handle([], ['status' => 'razorx_experiment_workflow_started']);
+    }
+
+    protected function validateActivateRequest($experimentId, $requestParams)
+    {
+        $url    = $this->baseUrl . "validate/experiment/$experimentId/activate";
+        $method = 'POST';
+
+        $validateResponse = Requests::request(
+            $url,
+            null,
+            $requestParams['data'],
+            $method,
+            $requestParams['options']
+        );
+
+        $razorxResponse = $this->parseAndReturnResponse($validateResponse);
+
+        if ($razorxResponse['status_code'] !== 200)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $razorxResponse['response'],
+                null,
+                null
+            );
+        }
+
     }
 
     protected function parseAndReturnResponse($res)
@@ -145,5 +217,19 @@ class RazorxController extends Controller
         }
 
         return $path;
+    }
+
+    protected function addActionAdminEmail()
+    {
+        $admin = app()['basicauth']->getAdmin();
+
+        if ($admin === null)
+        {
+            throw new Exception\BadRequestValidationFailureException('admin auth not present.');
+        }
+
+        $adminEmail = $admin->getEmail();
+
+        Request::merge([self::ACTION_ADMIN_EMAIL_PARAM_NAME => $adminEmail]);
     }
 }

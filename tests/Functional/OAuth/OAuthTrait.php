@@ -20,21 +20,23 @@ trait OAuthTrait
         $application = factory(Application\Entity::class)
                         ->create($attributes);
 
+        $clientAttributes = [
+            Client\Entity::APPLICATION_ID => $application->id,
+            Client\Entity::REDIRECT_URL   => ['http://www.example.com'],
+        ];
+
+        if (empty($attributes['merchant_id']) === false)
+        {
+            $clientAttributes['merchant_id'] = $attributes['merchant_id'];
+        }
+
         // Create dev Client for the Application
-        factory(Client\Entity::class)->create(
-            [
-                'application_id' => $application->id,
-                'redirect_url'   => ['http://www.example.com'],
-                'environment'    => 'dev'
-            ]);
+        $clientAttributes['environment'] = 'dev';
+        factory(Client\Entity::class)->create($clientAttributes);
 
         // Create prod Client for the Application
-        factory(Client\Entity::class)->create(
-            [
-                'application_id' => $application->id,
-                'redirect_url'   => ['https://www.example.com'],
-                'environment'    => 'prod'
-            ]);
+        $clientAttributes['environment'] = 'prod';
+        factory(Client\Entity::class)->create($clientAttributes);
 
         return $application;
     }

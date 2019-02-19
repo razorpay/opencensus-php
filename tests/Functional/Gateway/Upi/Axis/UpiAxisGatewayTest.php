@@ -550,6 +550,61 @@ class UpiAxisGatewayTest extends TestCase
         $this->assertEquals('pay', $gatewayEntity['type']);
     }
 
+    public function testRefundFailure()
+    {
+        $payment = $this->testPayment();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            $content[Fields::CODE] = 'A79';
+        });
+
+        $this->refundPayment($payment->getPublicId());
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+    }
+
+    public function testRefundAndVerifyOnIntent()
+    {
+        $payment = $this->testIntentPayment();
+
+        $this->mockServerRequestFunction(
+            function(& $request)
+            {
+                $requestArray = json_decode($request, true);
+
+                $this->assertEquals('RAZORPPROD4264718195', $requestArray['merchId']);
+                $this->assertEquals('RAZORPPRODAPP4264718195', $requestArray['merchChanId']);
+            });
+
+        $this->refundPayment('pay_' . $payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('processed', $refund['status']);
+
+        $gateway = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('pay', $gateway['type']);
+
+        $this->mockServerRequestFunction(
+            function(& $request)
+            {
+                $requestArray = $request;
+
+                $this->assertEquals('RAZORPPROD4264718195', $requestArray['merchid']);
+                $this->assertEquals('RAZORPPRODAPP4264718195', $requestArray['merchchanid']);
+            });
+
+        $this->verifyPayment('pay_' . $payment['id']);
+
+        $payment->reload();
+
+        $this->assertEquals('1', $payment['verified']);
+    }
+
     protected function checkPaymentStatus($id, $expectedStatus)
     {
         $response = $this->getPaymentStatus($id);

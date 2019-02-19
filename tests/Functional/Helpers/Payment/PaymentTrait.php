@@ -63,6 +63,8 @@ trait PaymentTrait
 
     protected $merchantCallbackFlow = false;
 
+    protected $redirectToAuthorize = false;
+
     /**
      * For certain payments, user has the option to fail it
      * on the bank page. If this property is set to true in
@@ -453,6 +455,35 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function doS2sUpiPaymentPartner($client, $submerchantId, $payment = null, $server = null)
+    {
+        $server = [
+            'HTTP_X-Razorpay-Account' => $submerchantId,
+        ];
+
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/upi',
+            'content' => $payment
+        ];
+
+        if (isset($server))
+        {
+            $request['server'] = $server;
+        }
+
+        $this->ba->privateAuth('rzp_test_partner_' . $client->getId(), $client->getSecret());
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function doS2SPrivateAuthAndCapturePayment($payment = null)
     {
         $paymentAuth = $this->doS2SPrivateAuthPayment($payment);
@@ -582,10 +613,12 @@ trait PaymentTrait
         return $this->sendRequest($request);
     }
 
-    protected function makeS2sCallbackAndGetContent($content)
+    protected function makeS2sCallbackAndGetContent($content, $gateway = null)
     {
+        $gateway = $gateway ?: $this->gateway;
+
         $request = [
-            'url'    => '/callback/' . $this->gateway,
+            'url'    => '/callback/' . $gateway,
             'method' => 'post'
         ];
 
@@ -892,7 +925,7 @@ trait PaymentTrait
         }
 
         //TODO: remove merchant id check
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway, '10000000000000') === true)
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway) === true)
         {
             $this->scroogeRefund($refund);
         }
@@ -900,7 +933,7 @@ trait PaymentTrait
         return $refund;
     }
 
-    protected function scroogeRefund(array $refund)
+    protected function scroogeRefund(array $refund, array $data = [])
     {
         $input = $this->getDefaultScroogeInputArray();
 
@@ -911,39 +944,82 @@ trait PaymentTrait
         $input['amount'] = $refund['amount'] ?? $input['amount'];
         $input['base_amount'] = $refund['amount'] ?? $input['base_amount'];
 
+        if (isset($data['bank_account']) === true)
+        {
+            $input['fta_data'] = $data;
+        }
+
         $this->ba->scroogeAuth();
 
         $request = array(
             'method'  => 'POST',
-            'url'     => '/refunds/'.$input['id'].'/gateway_refund',
+            'url'     => '/refunds/'.$input['id'].'/gateway_verify',
             'content' => $input);
 
         $response = $this->makeRequestAndGetContent($request);
 
+        $callRefund = $this->checkForRefundCall($response);
+
+        if ($callRefund === true)
+        {
+            $request = array(
+                'method'  => 'POST',
+                'url'     => '/refunds/'.$input['id'].'/gateway_refund',
+                'content' => $input);
+
+            $response = $this->makeRequestAndGetContent($request);
+        }
+
         if ($response['status_code'] === 'REFUND_SUCCESSFUL')
         {
-            $this->scroogeRefundMarkProcessed($refund);
+            $this->scroogeUpdateRefundStatus($refund, 'processed');
+        }
+        // Adding specific amount check - this is meant to test failed refunds on scrooge -
+        // in which case we have reversal of refund transactions as well
+        else if ((isset($refund['amount']) === true) and ($refund['amount'] === 3459))
+        {
+            $this->scroogeUpdateRefundStatus($refund, 'failed');
         }
 
         return $response;
     }
 
-    protected function scroogeRefundMarkProcessed(array $refund)
+    protected function checkForRefundCall($response)
+    {
+        $verifyFailures = [
+            '0',
+            'GATEWAY_VERIFY_OLDER_REFUNDS_DISABLED',
+            'GATEWAY_ERROR_REQUEST_ERROR',
+            'REFUND_SUCCESSFUL',
+            'GATEWAY_ERROR_UNEXPECTED_STATUS'
+        ];
+
+        if (in_array($response['status_code'], $verifyFailures, true) === true)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function scroogeUpdateRefundStatus(array $refund, $status)
     {
         $input = $this->getDefaultScroogeInputArray();
 
         $input['id'] = substr($refund['id'], strlen('rfnd_'));
 
-        if ($this->gateway === Payment\Gateway::UPI_MINDGATE)
+        if (($this->gateway === Payment\Gateway::UPI_MINDGATE) or ($this->gateway === Payment\Gateway::UPI_ICICI))
         {
             $input['reference_no'] = random_integer(12);
         }
+
+        $input['status'] = $status;
 
         $this->ba->scroogeAuth();
 
         $request = array(
             'method'  => 'PUT',
-            'url'     => '/refunds/'.$input['id'].'/processed',
+            'url'     => '/refunds/'.$input['id'].'/update_status',
             'content' => $input);
 
         $response = $this->makeRequestAndGetContent($request);
@@ -1023,14 +1099,13 @@ trait PaymentTrait
 
         $response = $this->makeRequestAndGetContent($request);
 
-        //TODO: remove merchant id check
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway, '10000000000000') === true)
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway) === true)
         {
             $response['id'] = $response['refund_id'];
             $response['payment_id'] = $paymentId;
             $response['attempts'] = 1;
 
-            $this->scroogeRefund($response);
+            $this->scroogeRefund($response, $content);
         }
 
         return $response;
@@ -1049,8 +1124,7 @@ trait PaymentTrait
 
         $this->assertEquals('refund', $refund['entity']);
 
-        //TODO: remove merchant id check
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway, '10000000000000') === true)
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway) === true)
         {
             $this->scroogeRefund($refund);
         }
@@ -1069,10 +1143,9 @@ trait PaymentTrait
 
         $data = $this->makeRequestAndGetContent($request);
 
-        //TODO: remove merchant id check
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway, '10000000000000'))
+        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway) === true)
         {
-            $this->scroogeRefund($data);
+            $this->scroogeRefund($this->getLastEntity('refund'));
         }
 
         return $data;
@@ -1638,6 +1711,18 @@ trait PaymentTrait
         return $url;
     }
 
+    public function getPaymentRedirectToAuthorizrUrl($trackId)
+    {
+        $params = [
+            'id' => $trackId,
+        ];
+
+        $url = \URL::route('payment_redirect_to_authorize_get', $params, false);
+        $url = 'http://localhost' . $url;
+
+        return $url;
+    }
+
     /**
      * Get Otp resend Url
      */
@@ -1871,43 +1956,48 @@ trait PaymentTrait
         });
     }
 
-    protected function mockTokenex()
+    protected function mockCardVault($callable = null)
     {
-        $tokenex = Mockery::mock('RZP\Services\TokenEx')->makePartial();
+        $cardVault = Mockery::mock('RZP\Services\CardVault')->makePartial();
 
-        $this->app->instance('card.tokenex', $tokenex);
+        $this->app->instance('card.cardVault', $cardVault);
 
-        $tokenex->shouldReceive('sendRequest')
-            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
-            ->andReturnUsing(function ($route, $method, $input)
+        $callable = $callable ?: function ($route, $method, $input)
+        {
+            $response = [
+                'error' => '',
+                'success' => true,
+            ];
+
+            switch ($route)
             {
-                $response = [
-                    'Error' => '',
-                    'ReferenceNumber' => '15102913382030662954',
-                    'Success' => true,
-                ];
+                case 'tokenize':
+                    $response['token'] = base64_encode($input['secret']);
+                    break;
 
-                switch ($route)
-                {
-                    case 'REST/Tokenize':
-                        $response['Token'] = base64_encode($input['Data']);
-                        break;
+                case 'detokenize':
+                    $response['value'] = base64_decode($input['token']);
+                    break;
 
-                    case 'REST/Detokenize':
-                        $response['Value'] = base64_decode($input['Token']);
-                        break;
+                case 'validate':
+                    if ($input['token'] === 'fail')
+                    {
+                        $response['success'] = false;
+                    }
+                    break;
 
-                    case 'REST/ValidateToken':
-                        $response['Valid'] = true;
-                        break;
+                case 'delete':
+                    break;
+            }
 
-                    case 'REST/DeleteToken':
-                        break;
-                }
-                return $response;
-            });
+            return $response;
+        };
 
-        $this->app->instance('card.tokenex', $tokenex);
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing($callable);
+
+        $this->app->instance('card.cardVault', $cardVault);
     }
 
     protected function mockShield()
@@ -1936,5 +2026,67 @@ trait PaymentTrait
                 });
 
         $this->app->instance('shield.service', $shield);
+    }
+
+    /**
+     * @param $payment
+     * @param $clientId
+     * @param $submerchantId Signed submerchant id
+     *
+     * @return bool|mixed|string
+     */
+    protected function doPartnerAuthPayment($payment, $clientId, $submerchantId)
+    {
+        $server = [
+            'HTTP_X-Razorpay-Account' => $submerchantId,
+        ];
+
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments',
+            'content' => $payment,
+            'server'  => $server,
+        ];
+
+        $this->ba->publicAuth('rzp_test_partner_' . $clientId);
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    /**
+     * @param $payment
+     * @param $client
+     * @param $submerchantId
+     *
+     * @return bool|mixed|string
+     */
+    protected function doS2SPartnerAuthPayment($payment, $client, $submerchantId)
+    {
+        $server = [
+            'HTTP_X-Razorpay-Account' => $submerchantId,
+        ];
+
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/redirect',
+            'content' => $payment,
+            'server'  => $server,
+        ];
+
+        $this->ba->privateAuth('rzp_test_partner_' . $client->getId(), $client->getSecret());
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
     }
 }

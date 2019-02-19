@@ -41,6 +41,15 @@ class InvoiceController extends Controller
         return ApiResponse::json($invoices);
     }
 
+    public function getInvoicesCount()
+    {
+        $input = Request::all();
+
+        $invoiceCount = $this->service()->getInvoicesCount($input);
+
+        return ApiResponse::json($invoiceCount);
+    }
+
     public function updateInvoice(string $id)
     {
         $input = Request::all();
@@ -171,16 +180,6 @@ class InvoiceController extends Controller
         }
 
         //
-        // Following is only temporary and is to be removed soon.
-        // In case of Uber, a different hosted page is being served.
-        // For testing purposes have made one more test account behave same way.
-        //
-        $idsForUberFlow = [
-            Preferences::MID_UBER,
-            Preferences::MID_AMIT_MAHBUBANI,
-        ];
-
-        //
         // We pull the merchant.id because we don't want the same to be sent to view.
         // If ever this condition is being removed from here, need to remove merchant.id from ViewDataSerializer
         //
@@ -198,7 +197,7 @@ class InvoiceController extends Controller
             $view = 'invoice.auth_link';
         }
 
-        if (in_array($merchantId, $idsForUberFlow, true) === true)
+        if ($merchantId === Preferences::MID_UBER)
         {
             $view = 'invoice.uber';
         }

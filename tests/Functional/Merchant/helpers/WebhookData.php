@@ -55,7 +55,7 @@ return [
         ],
     ],
 
-    'testEditDisableWebhookOnProxyAuth' => [
+    'testEditDisableWebhookOnAdminProxyAuth' => [
         'request' => [
             'url' => '/webhooks',
             'content' => [
@@ -76,6 +76,35 @@ return [
                 'active' => true,
             ]
         ]
+    ],
+
+    'testEditWebhookForProductBankingWithInvalidEvents' => [
+        'request' => [
+            'url'       => '/webhooks/10000000000000',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'content'   => [
+                'url'       => 'http://webhook.com',
+                'events'    => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method'    => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid event name/names: payment.authorized'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
     ],
 
     'testCreateWebhookWhenAlreadyCreated' => [
@@ -275,6 +304,63 @@ return [
         ],
     ],
 
+    'testCreateWebhookForProductBanking' => [
+        'request' => [
+            'url'       => '/webhooks',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'content'   => [
+                'url'       => 'http://webhook.com',
+                'events'    => [
+                    'transaction.created' => '1',
+                ],
+            ],
+            'method'    => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'url'       => 'http://webhook.com',
+                'events'    => [
+                    'transaction.created'   => true,
+                    'payout.created'        => false,
+                    'payout.processed'      => false,
+                    'payout.reversed'       => false,
+                ],
+                'active'    => true,
+            ],
+        ],
+    ],
+
+    'testCreateWebhookForProductBankingWithInvalidEvents' => [
+        'request' => [
+            'url'       => '/webhooks',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'content'   => [
+                'url'       => 'http://webhook.com',
+                'events'    => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method'    => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid event name/names: payment.authorized'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateWebhookWithDisallowedPort' => [
         'request' => [
             'url' => '/webhooks',
@@ -438,6 +524,24 @@ return [
                 ]
             ]
         ]
+    ],
+
+    'testGetWebhookEventsForProductBanking' => [
+        'request' => [
+            'url'       => '/webhooks/events/all',
+            'method'    => 'GET',
+            'server'    => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'transaction.created',
+                'payout.created',
+                'payout.processed',
+                'payout.reversed',
+            ],
+        ],
     ],
 
     'testRecreateWebhook' => [

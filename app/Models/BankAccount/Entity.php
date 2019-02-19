@@ -17,41 +17,43 @@ class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
 
-    const ID                        = 'id';
-    const MERCHANT_ID               = 'merchant_id';
-    const ENTITY_ID                 = 'entity_id';
-    const TYPE                      = 'type';
-    const BENEFICIARY_CODE          = 'beneficiary_code';
-    const IFSC_CODE                 = 'ifsc_code';
-    const BANK_NAME                 = 'bank_name';
-    const ACCOUNT_NUMBER            = 'account_number';
-    const BENEFICIARY_NAME          = 'beneficiary_name';
-    const BENEFICIARY_ADDRESS1      = 'beneficiary_address1';
-    const BENEFICIARY_ADDRESS2      = 'beneficiary_address2';
-    const BENEFICIARY_ADDRESS3      = 'beneficiary_address3';
-    const BENEFICIARY_ADDRESS4      = 'beneficiary_address4';
-    const BENEFICIARY_EMAIL         = 'beneficiary_email';
-    const BENEFICIARY_MOBILE        = 'beneficiary_mobile';
-    const BENEFICIARY_PIN           = 'beneficiary_pin';
-    const BENEFICIARY_CITY          = 'beneficiary_city';
-    const BENEFICIARY_STATE         = 'beneficiary_state';
-    const BENEFICIARY_COUNTRY       = 'beneficiary_country';
-    const DELETED_AT                = 'deleted_at';
-    const MOBILE_BANKING_ENABLED    = 'mobile_banking_enabled';
-    const ACCOUNT_TYPE              = 'account_type';
-    const MPIN                      = 'mpin';
+    const ID                            = 'id';
+    const MERCHANT_ID                   = 'merchant_id';
+    const ENTITY_ID                     = 'entity_id';
+    const TYPE                          = 'type';
+    const BENEFICIARY_CODE              = 'beneficiary_code';
+    const IFSC_CODE                     = 'ifsc_code';
+    const BANK_NAME                     = 'bank_name';
+    const ACCOUNT_NUMBER                = 'account_number';
+    const BENEFICIARY_NAME              = 'beneficiary_name';
+    const BENEFICIARY_ADDRESS1          = 'beneficiary_address1';
+    const BENEFICIARY_ADDRESS2          = 'beneficiary_address2';
+    const BENEFICIARY_ADDRESS3          = 'beneficiary_address3';
+    const BENEFICIARY_ADDRESS4          = 'beneficiary_address4';
+    const BENEFICIARY_EMAIL             = 'beneficiary_email';
+    const BENEFICIARY_MOBILE            = 'beneficiary_mobile';
+    const BENEFICIARY_PIN               = 'beneficiary_pin';
+    const BENEFICIARY_CITY              = 'beneficiary_city';
+    const BENEFICIARY_STATE             = 'beneficiary_state';
+    const BENEFICIARY_COUNTRY           = 'beneficiary_country';
+    const DELETED_AT                    = 'deleted_at';
+    const MOBILE_BANKING_ENABLED        = 'mobile_banking_enabled';
+    const ACCOUNT_TYPE                  = 'account_type';
+    const MPIN                          = 'mpin';
+    const VIRTUAL                       = 'virtual';
+    const FTS_FUND_ACCOUNT_ID           = 'fts_fund_account_id';
 
-    const NAME                      = 'name';
-    const IFSC                      = 'ifsc';
+    const NAME                          = 'name';
+    const IFSC                          = 'ifsc';
 
     // Mobile Banking Enabled
-    const MPIN_SET                  = 'mpin_set';
+    const MPIN_SET                      = 'mpin_set';
 
-    const IFSC_CODE_LENGTH          = 11;
+    const IFSC_CODE_LENGTH              = 11;
 
-    const ACCOUNT_NUMBER_LENGTH     = 16;
+    const ACCOUNT_NUMBER_LENGTH         = 16;
 
-    const SPECIAL_IFSC_CODE     = 'RZPB0000000';
+    const SPECIAL_IFSC_CODE             = 'RZPB0000000';
 
     //
     // Beneficiary registration constants
@@ -60,6 +62,11 @@ class Entity extends Base\PublicEntity
     const ALL               = 'all';
     const RECIPIENT_EMAILS  = 'recipient_emails';
     const DURATION          = 'duration';
+
+    //
+    // Used for accepting mode in the input for Bank Account FTA
+    //
+    const TRANSFER_MODE = 'transfer_mode';
 
     protected static $sign      = 'ba';
 
@@ -205,6 +212,11 @@ class Entity extends Base\PublicEntity
         return $this->morphMany('RZP\Models\Payout\Entity', 'destination');
     }
 
+    public function isVirtual()
+    {
+        return ($this->getAttribute(self::VIRTUAL) === 1);
+    }
+
     public function getMpinSetAttribute()
     {
         return ($this->getAttribute(self::MPIN) !== null);
@@ -242,6 +254,11 @@ class Entity extends Base\PublicEntity
     protected function getNameAttribute()
     {
         return $this->attributes[self::BENEFICIARY_NAME];
+    }
+
+    protected function getRegisteredBeneficiaryNameAttribute()
+    {
+        return $this->attributes[self::REGISTERED_BENEFICIARY_NAME];
     }
 
     public function settlements()
@@ -324,6 +341,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BENEFICIARY_MOBILE);
     }
 
+    public function getBeneficiaryState()
+    {
+        return $this->getAttribute(self::BENEFICIARY_STATE);
+    }
+
+    public function getBeneficiaryCountry()
+    {
+        return $this->getAttribute(self::BENEFICIARY_COUNTRY);
+    }
+
+    public function getFtsFundAccountId()
+    {
+        return $this->getAttribute(self::FTS_FUND_ACCOUNT_ID);
+    }
+
     public function setMobileBankingEnabled($mobileBankingEnabled)
     {
         return $this->setAttribute(self::MOBILE_BANKING_ENABLED, $mobileBankingEnabled);
@@ -347,6 +379,16 @@ class Entity extends Base\PublicEntity
     protected function setNameAttribute($name)
     {
         $this->setAttribute(self::BENEFICIARY_NAME, $name);
+    }
+
+    public function setRegisteredBeneficiaryName($name)
+    {
+        $this->setAttribute(self::REGISTERED_BENEFICIARY_NAME, $name);
+    }
+
+    public function setFtsFundAccountId($ftsFundAccountId)
+    {
+        return $this->setAttribute(self::FTS_FUND_ACCOUNT_ID, $ftsFundAccountId);
     }
 
     protected function setIfscAttribute($code)

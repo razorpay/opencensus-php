@@ -239,6 +239,27 @@ return [
         ]
     ],
 
+    'testSearchEsForNotesOnAdminAuthRestricted' => [
+        'request' => [
+            'url'     => '/admin/payment',
+            'method'  => 'get',
+            'content' => ['notes' => 'es'],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'notes is/are not required and should not be sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\ExtraFieldsException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED
+        ],
+    ],
+
     'testSearchEsForNotesOnAdminAuthExpectedSearchParams' => [
         'index' => env('ES_ENTITY_TYPE_PREFIX').'payment_test',
         'type'  => env('ES_ENTITY_TYPE_PREFIX').'payment_test',

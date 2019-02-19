@@ -12,9 +12,11 @@ class Url
 
     const FETCH_TOKEN       = '/WebPaymentS2S/Merchant/MerchantToken';
 
+    const FETCH_TOKEN_TPV   = '/WebPaymentS2S/Merchant/MerchantTokenEncryption';
+
     const VERIFY            = '/WebPaymentS2S/Merchant/checkstatusV3';
 
-    const REFUND            = '/WebPaymentS2S/Merchant/txnRefund';
+    const REFUND            = '/WebPaymentS2S/Merchant/refund';
 
     const PAY               = '/WebPaymentS2S/Merchant/MerchRefid';
 }

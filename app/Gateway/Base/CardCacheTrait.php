@@ -30,7 +30,9 @@ trait CardCacheTrait
         }
         else
         {
-            $vaultToken = (new Card\Tokenex)->getVaultToken($input['card']['number']);
+            $tempInput['card'] = $input['card']['number'];
+
+            $vaultToken = (new Card\CardVault)->getVaultToken($tempInput);
         }
 
         $key = $this->getCacheKey($input['payment']['id']);
@@ -51,7 +53,7 @@ trait CardCacheTrait
     {
         $data = $this->getCardDetailsFromCache($input);
 
-        $input['card']['number'] = (new Card\Tokenex)->getCardNumber($data['vault_token']);
+        $input['card']['number'] = (new Card\CardVault)->getCardNumber($data['vault_token']);
 
         $input['card']['cvv'] = $this->app['encrypter']->decrypt($data['cvv']);
     }

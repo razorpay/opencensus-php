@@ -4,7 +4,7 @@ namespace RZP\Gateway\Wallet\Olamoney;
 
 class Url
 {
-    const TEST_DOMAIN       = 'http://sandbox.olamoney.in';
+    const TEST_DOMAIN       = 'https://sandbox.olamoney.in';
     const LIVE_DOMAIN       = 'https://om.olacabs.com';
 
     const OTP_GENERATE      = '/olamoney/v1/userWallet/addUserWallet';
@@ -16,4 +16,6 @@ class Url
     const DEBIT_WALLET      = '/olamoney/v1/autoDebit';
     const REFUND            = '/olamoney/v2/refund';
     const VERIFY            = '/olamoney/v2/query';
+    const AUTHORIZE_V2      = '/credit-app/postpaid';
+    const REFUND_V3         = '/olamoney/v3/refund';
 }

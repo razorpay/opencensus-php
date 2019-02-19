@@ -67,7 +67,11 @@ class UserAccess
      */
     public function handle(Request $request, Closure $next)
     {
-        $this->setRequestOriginProduct($request);
+        // Only if request is from internal application dashboard then we understand/process origin header.
+        if ($this->ba->isDashboardApp() === true)
+        {
+            $this->setRequestOriginProduct($request);
+        }
 
         if (($this->ba->isAdminAuth() === false) and
             ($this->ba->isStrictPrivateAuth() === false) and
@@ -128,8 +132,8 @@ class UserAccess
 
     /**
      * Check if the request origin is banking and set the banking product as banking in BA.
-     * Don't need to add any other stricter checks becaues we have cors enabled for only BB domain and one request
-     * uri on oauth app.
+     * Don't need to add any other stricter checks because we have CORS enabled for only BB
+     * domain and one request uri on oauth app.
      *
      * @param $request
      */
@@ -165,7 +169,7 @@ class UserAccess
             return;
         }
 
-        $userRole = $this->getUserRole();
+        $userRole = $this->ba->getUserRole();
 
         // If no role was sent in the headers
         if (empty($userRole) === true)
@@ -181,24 +185,5 @@ class UserAccess
             return ApiResponse::unauthorized(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED);
         }
-    }
-
-    private function getUserRole()
-    {
-        // @todo validate the user actually has the role sent
-        // in headers since we don't want to trust dashboard
-
-        $dashboardHeaders = $this->ba->getDashboardHeaders();
-
-        if ($this->ba->isProductBanking() === true)
-        {
-            $userRole = $dashboardHeaders['user_banking_role'] ?? null;
-        }
-        else
-        {
-            $userRole = $dashboardHeaders['user_role'] ?? null;
-        }
-
-        return $userRole;
     }
 }
