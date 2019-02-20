@@ -906,6 +906,7 @@ final class Route
 
         'razorx_route'                             => ['any',      'service/razorx',                                 'RazorxController@sendRequest'                                      ],
         'merchant_razorx_evaluate'                 => ['get',      'razorx/evaluate/{featureFlag}',                  'MerchantController@getRazorxTreatment'                             ],
+        'razorx_guest'                             => ['get',      'razorx/evaluate/{id}/{featureFlag}',             'RazorxController@getTreatment'                                     ],
 
         // Account API routes
         'beta_account_create'                      => ['post',     'beta/accounts',                                  'AccountController@create'                                          ],
@@ -1345,6 +1346,7 @@ final class Route
         'user_resend_verification',
         'user_reset_password_create',
         'user_reset_password_token',
+        'razorx_guest',
         'virtual_account_refund_excess',
         'fund_transfer_attempt_process',
         'daily_reconciliation_summary_fetch',
@@ -2393,6 +2395,7 @@ final class Route
         'dashboard_guest' => [
             'user_login',
             'user_register',
+            'razorx_guest',
             'org_get_by_hostname',
             'user_reset_password_create',
             'user_merchant_upgrade',

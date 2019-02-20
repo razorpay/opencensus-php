@@ -232,4 +232,15 @@ class RazorxController extends Controller
 
         Request::merge([self::ACTION_ADMIN_EMAIL_PARAM_NAME => $adminEmail]);
     }
+
+    public function getTreatment($id, $featureFlag)
+    {
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $result = app('razorx')->getTreatment($id, $featureFlag, $mode);
+
+        $response = ['result' => $result];
+
+        return $response;
+    }
 }
