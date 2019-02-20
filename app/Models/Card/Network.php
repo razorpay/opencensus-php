@@ -6,15 +6,16 @@ use RZP\Exception;
 
 class Network
 {
-    const AMEX  = 'AMEX';
-    const DICL  = 'DICL';
-    const DISC  = 'DISC';
-    const JCB   = 'JCB';
-    const MAES  = 'MAES';
-    const MC    = 'MC';
-    const RUPAY = 'RUPAY';
-    const UNP   = 'UNP';
-    const VISA  = 'VISA';
+    const AMEX   = 'AMEX';
+    const DICL   = 'DICL';
+    const DISC   = 'DISC';
+    const JCB    = 'JCB';
+    const MAES   = 'MAES';
+    const MC     = 'MC';
+    const RUPAY  = 'RUPAY';
+    const UNP    = 'UNP';
+    const VISA   = 'VISA';
+    const BAJAJ  = 'BAJAJ';
 
     // Unidentified
     const UNKNOWN = 'UNKNOWN';
@@ -35,7 +36,8 @@ class Network
         self::RUPAY   => 'RuPay',
         self::UNKNOWN => 'Unknown',
         self::VISA    => 'Visa',
-        self::UNP     => 'Union Pay');
+        self::UNP     => 'Union Pay',
+        self::BAJAJ   => 'Bajaj Finserv',);
 
     public static $colorCodes = array(
         self::AMEX    => '#2584C3',
@@ -57,6 +59,7 @@ class Network
         self::UNP,
         self::VISA,
         self::DISC,
+        self::BAJAJ
     );
 
     public static $cardNetworkMap = [
@@ -67,9 +70,12 @@ class Network
         Network::VISA  => 16,
         Network::JCB   => 32,
         Network::RUPAY => 64,
+        Network::BAJAJ => 128,
+
     ];
 
     public static $networkRegexes = array(
+        self::BAJAJ => '/^203040/',
         self::MC    => '/^5[1-5][0-9]{4,}$/',
         self::VISA  => '/^4[0-9]{5,}$/',
         self::AMEX  => '/^3[47][0-9]{4,}$/',
