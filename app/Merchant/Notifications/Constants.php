@@ -43,40 +43,6 @@ class Constants
             'filters'     => []
         ],
         [
-            'title'       => 'All New Payment Pages!',
-            'description' => 'Payment pages now has a ton of enhanced features, a lot more customisation and a better look and feel. Check it out now!',
-            'start_ts'    => 1545213008,
-            'end_ts'      => 1545762599,
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/paymentpages.png',
-            'buttons'     => [
-                [
-                    'type'  => 'link',
-                    'label' => 'Go To Payment Pages',
-                    'url'   => 'https://dashboard.razorpay.com/#/app/paymentpages',
-                ],
-            ],
-            'filters'     => [
-                'tags' => ['pp_notify_existing'],
-            ]
-        ],
-        [
-            'title'       => 'Payment Pages - Now Live!',
-            'description' => 'The wait is over, we finally have the product live. Thanks for showing interest. Start creating your custom branded page now! ',
-            'start_ts'    => 1545213008,
-            'end_ts'      => 1545762599,
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/paymentpages.png',
-            'buttons'     => [
-                [
-                    'type'  => 'link',
-                    'label' => 'Go To Payment Pages',
-                    'url'   => 'https://dashboard.razorpay.com/#/app/paymentpages',
-                ],
-            ],
-            'filters'     => [
-                'tags' => ['pp_notify_earlyaccess'],
-            ]
-        ],
-        [
             'title'       => 'RazorpayX',
             'description' => 'With RazorpayX, track, automate and accelerate every aspect of your financial payouts',
             'start_ts'    => 1545625800,
@@ -112,19 +78,36 @@ class Constants
         ],
         [
             'title'       => 'Introducing Payment Pages',
-            'description' => 'Introducing Razorpay Payment Pages: Create custom-branded Payment Pages in minutes to collect payments securely. No integrations or coding required!',
-            'start_ts'    => 1549871552,
-            'end_ts'      => 1553070707,
+            'description' => 'Create custom-branded Payment Pages in minutes to collect payments securely. No integrations or coding required! Check it out now!',
+            'start_ts'    => 1550695523,
+            'end_ts'      => 1553199300,
             'icon'        => 'http://cdn.razorpay.com/static/assets/paymentpages/display_icon.svg',
             'buttons'     => [
                 [
                     'type'  => 'button',
                     'label' => 'Go To Payment Pages',
-                    'url'   => 'https://dashboard.razorpay.com/#/app/paymentpages',
+                    'url'   => '/paymentpages',
                 ],
             ],
             'filters'     => [
-                'merchant_ids' => ['8cJmR1VZdoDNIv'],
+                'tags' => ['payment_pages_new'],
+            ]
+        ],
+        [
+            'title'       => 'All new Payment Pages!',
+            'description' => 'Payment pages now has a ton of enhanced features, a lot more customisation and a better look and feel. Check it out now!',
+            'start_ts'    => 1550695523,
+            'end_ts'      => 1553199300,
+            'icon'        => 'http://cdn.razorpay.com/static/assets/paymentpages/display_icon.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Go To Payment Pages',
+                    'url'   => '/paymentpages',
+                ],
+            ],
+            'filters'     => [
+                'not_tags' => ['payment_pages_new'],
             ]
         ],
     ];

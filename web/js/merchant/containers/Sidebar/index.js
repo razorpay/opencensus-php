@@ -316,6 +316,7 @@ export default class Sidebar extends Component {
                       user.isAllowedView('payment_pages') &&
                       user.isPaymentPagesV2Enabled
                     }
+                    isNew
                   />
                   <MainNavLink
                     label="Route"
