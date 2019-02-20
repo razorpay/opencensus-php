@@ -59,9 +59,9 @@ export default function NodalMoneyTransfer() {
 const options = {
   kotak: 'Kotak',
   icici: 'ICICI',
-  axis: 'Axis',
   yesbank: 'Yes Bank',
   hdfc: 'HDFC',
   rbl: 'RBL',
-  axis2: 'Power Access',
+  axis2: 'Axis',
+  yesbank2: 'Yes Bank 2',
 };
