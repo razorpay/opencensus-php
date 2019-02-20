@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 import Button from 'component/Button';
 import * as ModalActions from 'rzp/modules/modals';
 import { Field, reduxForm } from 'redux-form';
@@ -8,7 +9,11 @@ import trackESAnnouncements from '../ga';
 import ajax from 'merchant/utils/ajax';
 import LocalStorageService from 'rzp/utils/localStorage';
 
-@connect(state => ({ user: state.session.user }), { ...ModalActions })
+@withRouter
+@connect(
+  state => ({ user: state.session.user }),
+  { ...ModalActions }
+)
 @reduxForm({
   form: 'es-access',
   initialValues: {
@@ -216,6 +221,12 @@ export default class RequestEarlyAccessForm extends Component {
 
   closeForm() {
     trackESAnnouncements.trackESModalClose(this.props.from);
+
+    //remove hash from URL when modal is closed
+    if (location.hash.indexOf('#requestearlyaccess') > -1) {
+      this.props.history.replace(this.props.location.pathname);
+    }
+
     this.props.closeModal();
   }
 
