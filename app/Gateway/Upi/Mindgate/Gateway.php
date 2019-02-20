@@ -421,7 +421,8 @@ class Gateway extends Base\Gateway
         // Gateways must return array in callback
         return [
             'acquirer' => [
-                Payment\Entity::VPA => $gatewayPayment->getVpa()
+                Payment\Entity::VPA => $gatewayPayment->getVpa(),
+                Payment\Entity::REFERENCE16 => $gatewayPayment->getNpciReferenceId(),
             ]
         ];
     }
