@@ -39,10 +39,7 @@ class Service extends Base\Service
         $extra[Entity::SLUG] = $entity->getSlugFromShortUrl();
         $extra[Entity::CAPTURED_PAYMENTS_COUNT] = $entity->getCapturedPaymentsCount();
 
-        if ($this->merchant->isTagAdded(Entity::TAG_PAYMENT_PAGE_V2) === true)
-        {
-            $extra[Entity::SETTINGS] = (new ViewSerializer($entity))->serializeSettingsWithDefaults();
-        }
+        $extra[Entity::SETTINGS] = (new ViewSerializer($entity))->serializeSettingsWithDefaults();
 
         return $entity->toArrayPublic() + $extra;
     }
