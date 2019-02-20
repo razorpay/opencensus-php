@@ -161,6 +161,19 @@ class Service extends Base\Service
                     $isUserEligible = in_array("on", $value);
 
                     break;
+
+                case 'merchant_ids':
+
+                    if (isset($user['id']) === false)
+                    {
+                        return false;
+                    }
+
+                    $merchant_id = $user['id'];
+
+                    $isUserEligible = in_array($merchant_id, $value, true);
+
+                    break;
             }
 
             if ($isUserEligible === false)

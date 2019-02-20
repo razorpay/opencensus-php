@@ -109,7 +109,24 @@ class Constants
             'filters'     => [
                 'tags' => ['android_sdk_merchants'],
             ]
-        ],        
+        ],
+        [
+            'title'       => 'Introducing Payment Pages',
+            'description' => 'Introducing Razorpay Payment Pages: Create custom-branded Payment Pages in minutes to collect payments securely. No integrations or coding required!',
+            'start_ts'    => 1549871552,
+            'end_ts'      => 1553070707,
+            'icon'        => 'http://cdn.razorpay.com/static/assets/paymentpages/display_icon.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Go To Payment Pages',
+                    'url'   => 'https://dashboard.razorpay.com/#/app/paymentpages',
+                ],
+            ],
+            'filters'     => [
+                'merchant_ids' => ['8cJmR1VZdoDNIv'],
+            ]
+        ],
     ];
 
     public static function getNotifications(): array
