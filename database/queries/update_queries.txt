@@ -2294,7 +2294,6 @@ UPDATE bank_accounts SET updated_at = UNIX_TIMESTAMP() WHERE id = 'BikuFg4LjWPaR
 # Populating type data in schedule table from schedule_task
 UPDATE schedules as s INNER JOIN schedule_tasks as st ON s.id = st.schedule_id SET s.type = st.type;
 
-
 # authentication filters
 # 3ds
 INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type) VALUES ('BuyiCsLnZY8JW5', 0, 'card', '100000Razorpay', 'filter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'hitachi', '3ds');
@@ -2397,3 +2396,6 @@ INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_typ
 
 # headless first data - MC, VISA, MAES
 INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, network, `load`) VALUES ('Bv0ajCybtgk8yH', 0, 'card', '100000Razorpay', 'sorter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'first_data', 'headless_otp', null, 0);
+
+# Setting default mercahnt id for existing emi plans
+UPDATE emi_plans SET merchant_id = '100000Razorpay';

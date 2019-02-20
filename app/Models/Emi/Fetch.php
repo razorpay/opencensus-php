@@ -11,6 +11,8 @@ class Fetch extends BaseFetch
         self::DEFAULTS => [
             Entity::BANK            => 'sometimes|string|size:4',
             Entity::NETWORK         => 'sometimes|string|max:12',
+            Entity::MERCHANT_ID     => 'sometimes|string|size:14',
+            Entity::DURATION        => 'sometimes|integer',
         ],
     ];
 
@@ -18,6 +20,8 @@ class Fetch extends BaseFetch
         AuthType::PRIVILEGE_AUTH => [
             Entity::BANK,
             Entity::NETWORK,
+            Entity::DURATION,
+            Entity::MERCHANT_ID,
         ]
     ];
 }

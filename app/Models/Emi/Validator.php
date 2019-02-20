@@ -2,15 +2,19 @@
 
 namespace RZP\Models\Emi;
 
+use Illuminate\Support\Facades\App;
 use RZP\Base;
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Merchant\Repository as Repo;
 
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
+        Entity::MERCHANT_ID             => 'required|string|size:14',
         Entity::BANK                    => 'required_without:network|size:4',
-        Entity::NETWORK                 => 'required_without:bank|max:5|in:AMEX',
+        Entity::NETWORK                 => 'required_without:bank|max:5|in:AMEX,BAJAJ',
         Entity::DURATION                => 'required|integer|in:3,6,9,12,18,24',
         Entity::RATE                    => 'required|integer|min:0',
         Entity::METHODS                 => 'sometimes|in:card,wallet,netbanking',
@@ -39,6 +43,37 @@ class Validator extends Base\Validator
         if (in_array($input[Entity::BANK], Gateway::$emiBanks, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException('invalid bank name: '. $input[Entity::BANK]);
+        }
+    }
+
+    public function validateExistingEmiPlan()
+    {
+        $newEmiPlan = $this->entity;
+
+        $params = [
+            Entity::MERCHANT_ID => $newEmiPlan->getMerchantId(),
+            Entity::DURATION    => $newEmiPlan->getDuration(),
+        ];
+
+        if ($newEmiPlan->getNetwork() === null)
+        {
+            $params[Entity::BANK] = $newEmiPlan->getBank();
+        }
+        else
+        {
+            $params[Entity::NETWORK] = $newEmiPlan->getNetwork();
+        }
+
+        $repo = App::getFacadeRoot()['repo'];
+
+        $existingEmis = $repo->emi_plan->fetch($params);
+
+        $count = $existingEmis->count();
+
+        if ($count > 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_EMI_PLAN_EXIST);
         }
     }
 }

@@ -18,8 +18,34 @@ class EmiTest extends TestCase
         $this->ba->adminAuth();
     }
 
-    public function testAddEmiPlans()
+    public function testAddEmiPlansWithoutMerchant()
     {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testDuplicateAddEmiPlans()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->create(
+        'emi_plan',
+        [
+            'bank'        => 'HDFC',
+            'methods'     => 'card',
+            'merchant_id' => '100000Razorpay',
+            'subvention'  => 'customer',
+            'duration'    => 9,
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testAddEmiPlansWithMerchant()
+    {
+        $this->fixtures->create('merchant', ['id' => '10000000000001']);
+
         $this->ba->adminAuth();
 
         $this->startTest();
