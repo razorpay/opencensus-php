@@ -718,9 +718,13 @@ class Calculator extends Base\Core
         if ($partner === null)
         {
             // This should never happen because the partner context is fetched from the database
-            $this->traceContext(TraceCode::COMMISSION_PARTNER_DOES_NOT_EXIST, [], Trace::CRITICAL);
 
-            return;
+            $traceData = $this->getTraceData();
+
+            throw new LogicException(
+                'The partner application does not have an owner merchant',
+                null,
+                $traceData);
         }
 
         $this->setPartner($partner);
