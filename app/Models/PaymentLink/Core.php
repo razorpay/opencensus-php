@@ -124,6 +124,9 @@ class Core extends Base\Core
     public function updateShortUrlIfApplicable(Entity $paymentLink, array $input)
     {
         if ((($slug = $input[Entity::SLUG] ?? null) !== null) and
+            // In patch requests frontned can send same slug as input and gimli
+            // request will fail with duplicate slug/alias, so just ignore.
+            ($slug !== $paymentLink->getSlugFromShortUrl()) and
             ($this->isTestMode() === false))
         {
             $this->createAndSetShortUrl($paymentLink, $slug);
