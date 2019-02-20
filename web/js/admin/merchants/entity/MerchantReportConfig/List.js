@@ -25,7 +25,7 @@ const getFields = ({ view, edit, clone, remove, merchantId }) => [
   ],
   ['Name', item => item.name],
   ['Description', item => item.description],
-  ['No. Of Columns', item => item.template.output_fields.length],
+  ['No. Of Columns', item => (item.template.output_fields || []).length],
   [
     '',
     item => (
