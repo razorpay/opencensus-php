@@ -5,6 +5,10 @@ pipeline:
     commands:
       - find -path ./vendor -prune -o -iname '*.php'|xargs -n1 php -l
     group: A
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
   restore_cache:
     image: razorpay/containers:drone-s3-cache
     restore: true
@@ -689,33 +693,6 @@ pipeline:
       - ${DRONE_COMMIT_SHA}
     when:
       environment: stage-charlie
-      event:
-        exclude: [push]
-        include: [deployment]
-  deploy-prod-api:
-    group: PROD_DEPLOY
-    image: razorpay/drone-kubernetes
-    pull: true
-    secrets:
-      - docker_username
-      - docker_password
-      - server_url_klusterapi
-      - client_key_klusterapi
-      - server_cert_klusterapi
-      - client_cert_klusterapi
-    user: drone
-    cluster: kluster-api
-    auth_mode: client-cert
-    kind: daemonset
-    daemonset:
-      - api-web
-    repo: razorpay/api
-    namespace: api
-    tag:
-      - ${DRONE_COMMIT_SHA}
-    when:
-      environment: prod-api
-      branch: master
       event:
         exclude: [push]
         include: [deployment]
