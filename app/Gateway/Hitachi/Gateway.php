@@ -1281,10 +1281,11 @@ class Gateway extends Base\Gateway
     protected function getGatewayData(array $refundFields)
     {
         return [
-            ResponseFields::REQUEST_ID           => $refundFields[ResponseFields::REQUEST_ID] ?? null,
-            ResponseFields::RESPONSE_CODE        => $refundFields[ResponseFields::RESPONSE_CODE] ?? null,
-            ResponseFields::TRANSACTION_TYPE     => $refundFields[ResponseFields::TRANSACTION_TYPE] ?? null,
-            ResponseFields::RETRIEVAL_REF_NUM    => $refundFields[ResponseFields::RETRIEVAL_REF_NUM] ?? null,
+            ResponseFields::REQUEST_ID        => $refundFields[ResponseFields::REQUEST_ID] ?? null,
+            ResponseFields::MERCHANT_ID       => $refundFields[ResponseFields::MERCHANT_ID] ?? null,
+            ResponseFields::RESPONSE_CODE     => $refundFields[ResponseFields::RESPONSE_CODE] ?? null,
+            ResponseFields::TRANSACTION_TYPE  => $refundFields[ResponseFields::TRANSACTION_TYPE] ?? null,
+            ResponseFields::RETRIEVAL_REF_NUM => $refundFields[ResponseFields::RETRIEVAL_REF_NUM] ?? null,
         ];
     }
 }
