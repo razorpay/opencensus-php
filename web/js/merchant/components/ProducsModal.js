@@ -29,6 +29,23 @@ export default ({ onClose, onBack, track }) => {
             */}
             <li>
               <Link
+                to="/paymentpages"
+                onClick={() => {
+                  track.trackProductClick('Paymentpages');
+                  onClose();
+                }}
+              >
+                <img src="https://cdn.razorpay.com/static/assets/paymentpages/display_icon.svg" />
+                <p className="text-primary">Payment Pages</p>
+                <p>
+                  Effortlessly create personalised web pages without the need to
+                  code
+                </p>
+                <i className="i i-chevron-right" />
+              </Link>
+            </li>
+            <li>
+              <Link
                 to="/paymentlinks"
                 onClick={() => {
                   track.trackProductClick('Payment Links');
@@ -37,7 +54,7 @@ export default ({ onClose, onBack, track }) => {
               >
                 <img src="/dist/css/assets/symbols/pl.svg" />
                 <p className="text-primary">Payment Links</p>
-                <p>Create & share Payment Links via SMS, Email etc.</p>
+                <p>Create & share Payment Links via SMS, Email etc</p>
                 <i className="i i-chevron-right" />
               </Link>
             </li>
