@@ -393,7 +393,7 @@ class GatewayController extends Controller
             TraceCode::NETBANKING_PAYMENT_CALLBACK,
             [
                 'input'   => $input ,
-                'gateway' => 'enach_rbl',
+                'gateway' => 'enach_npci_netbanking',
             ]
         );
 
