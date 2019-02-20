@@ -753,7 +753,12 @@ class Service extends Base\Service
 
         $pricingPlanId = $merchant->getPricingPlanId();
 
-        $plan = $this->repo->pricing->getPricingPlanById($pricingPlanId);
+        $plan = new Plan;
+
+        if(empty($pricingPlanId) === false)
+        {
+            $plan = $this->repo->pricing->getPricingPlanById($pricingPlanId);
+        }
 
         return $plan->toArrayPublic();
     }

@@ -591,6 +591,15 @@ class Core extends Base\Core
         return $this->createTransactionForSource($refund);
     }
 
+    public function createFromRefundReversal(Reversal\Entity $reversal)
+    {
+        $txnProcessor = (new TransactionProcessor\Reversal($reversal));
+
+        list($txn, $feesSplit) = $txnProcessor->createTransaction();
+
+        return $txn;
+    }
+
     public function createFromAdjustment(Adjustment\Entity $adj, $updateEscrow = true)
     {
         $txn = new Transaction\Entity;

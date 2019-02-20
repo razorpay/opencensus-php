@@ -628,6 +628,17 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::FAILED);
     }
 
+    /**
+     * This is required for the Refund reversal module -
+     * Flipkart changes
+     *
+     * @return bool
+     */
+    public function isStatusReversed()
+    {
+        return ($this->getStatus() === Status::REVERSED);
+    }
+
     public function getGateway()
     {
         $gateway = $this->getAttribute(self::GATEWAY);
@@ -787,6 +798,8 @@ class Entity extends Base\PublicEntity
 
         if ($response[self::STATUS] === Status::PENDING)
         {
+            $response[self::STATUS] = Status::PENDING;
+
             $app   = App::getFacadeRoot();
             $trace = $app['trace'];
 

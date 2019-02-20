@@ -40,6 +40,7 @@ class Validator extends Base\Validator
         Entity::FIXED_RATE          => 'sometimes|integer|max:100000',
         Entity::MIN_FEE             => 'sometimes|integer|max:100000',
         Entity::MAX_FEE             => 'sometimes|nullable|integer|min:1|max:100000',
+        Entity::TYPE                => 'sometimes|string|custom',
     ];
 
     protected static $editPlanRuleRules = [
@@ -61,6 +62,10 @@ class Validator extends Base\Validator
         'addPlanRuleFeature',
         'addPlanRulePricingMethod',
         'addPlanRuleMinAndMaxFee'
+    ];
+
+    protected static $fetchRules = [
+        Entity::TYPE   => 'sometimes|string|custom',
     ];
 
     protected static $editPlanRuleValidators = [
@@ -380,6 +385,30 @@ class Validator extends Base\Validator
     }
 
     /**
+     * Throw error if pricing plan has rules of multiple types
+     *
+     * @param Plan $plan
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateTypeMatch(Plan $plan)
+    {
+        $newRule = $this->entity;
+
+        $types = $plan->pluck(Entity::TYPE);
+        $types = $types->push($newRule[Entity::TYPE])->unique();
+
+        if ($types->count() > 1)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PRICING_PLAN_CANNOT_HAVE_MULTIPLE_TYPES,
+                Entity::TYPE,
+                $types->values()->all()
+            );
+        }
+    }
+
+    /**
      * Check whether this new rule already exists
      *
      * @param Plan $plan
@@ -484,6 +513,11 @@ class Validator extends Base\Validator
     public function validateProduct($attribute, $value)
     {
         Product::validate($value);
+    }
+
+    public function validateType($attribute, $value)
+    {
+        Type::validate($value);
     }
 
     protected function between($n, $min, $max)

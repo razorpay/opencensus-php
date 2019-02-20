@@ -28,6 +28,8 @@ class Core extends Base\Core
 
         $rule->getValidator()->validateRuleDoesNotMatch($plan);
 
+        $rule->getValidator()->validateTypeMatch($plan);
+
         $rule->setAuditAction(Action::CREATE_PRICING_PLAN_RULE);
 
         $this->app['workflow']
@@ -74,7 +76,7 @@ class Core extends Base\Core
      */
     public function editPlanRule(String $planId, String $ruleId, array $input): Entity
     {
-        $rule = $this->repo->pricing->getPricingPlanRule($planId, $ruleId);
+        $rule = $this->repo->pricing->getPlanRule($planId, $ruleId);
 
         $newRule = $rule->replicate();
 
@@ -108,7 +110,7 @@ class Core extends Base\Core
         return $newRule;
     }
 
-    public function createPricing(array $input, string $ruleOrgId)
+    public function create(array $input, string $ruleOrgId)
     {
         $validator = new Validator();
 
@@ -119,7 +121,7 @@ class Core extends Base\Core
         $inputRules = $input[Entity::RULES];
 
         // Validate plan name is unique
-        $plan = $this->repo->pricing->getPricingPlanByName($planName);
+        $plan = $this->repo->pricing->getPlanByName($planName);
 
         $validator->validatePlanCountZero($plan);
 

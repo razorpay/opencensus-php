@@ -583,6 +583,20 @@ class Gateway extends Base\Gateway
 
         switch ($amount)
         {
+            // intermediate failure - no retry - waiting for recon
+            case ($amount === 1111):
+                $response['result']         = 'Gateway verify refund unexpected response';
+                $response['status_code']    = ErrorCode::GATEWAY_ERROR_UNEXPECTED_STATUS;
+
+                break;
+
+            // request failure
+            case ($amount === 2222):
+                $response['result']         = 'Request Timeout. Please try again.';
+                $response['status_code']    = ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT;
+
+                break;
+
             case (($amount === 8888) and ((int) $attempts === 0) and ($amount === $amountRefunded)):
                 $response['result']         = 'Request Timeout. Please try again.';
                 $response['status_code']    = ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT;

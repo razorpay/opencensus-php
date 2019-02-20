@@ -4722,6 +4722,9 @@ ALTER TABLE gateway_rules
 ALTER TABLE contacts
     ADD INDEX contacts_merchant_id_active_index (merchant_id, active);
 
+ALTER TABLE `pricing`
+    ADD COLUMN `type` varchar(255) NOT NULL DEFAULT 'pricing' after `feature`;
+
 ALTER TABLE iins
     ADD COLUMN type_indicator varchar(255) DEFAULT NULL AFTER type;
 

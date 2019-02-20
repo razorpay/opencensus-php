@@ -162,11 +162,11 @@ class RefundController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function markRefundProcessed(string $id)
+    public function updateScroogeRefundStatus(string $id)
     {
         $input = Request::all();
 
-        $data = $this->service()->markRefundProcessed($id, $input);
+        $data = $this->service()->updateScroogeRefundStatus($id, $input);
 
         return ApiResponse::json($data);
     }
