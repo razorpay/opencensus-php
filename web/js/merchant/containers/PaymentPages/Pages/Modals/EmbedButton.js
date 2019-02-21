@@ -75,6 +75,7 @@ export default class extends React.Component {
             minHeight: 38,
             width,
             padding: 10,
+            margin: '0 auto',
             lineHeight: '18px',
             fontWeight: 600,
             fontSize: 14,
