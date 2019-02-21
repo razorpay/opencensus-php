@@ -200,9 +200,13 @@ export default class SettlementsListContainer extends ListContainer {
                     How settlements work?&nbsp;
                     <span class="icon i-external-link" />
                   </a>
-                  <span class="settlement-balance-amount">
-                    Current Balance: <Amount value={balance} />
-                  </span>
+                  {this.props.user.isOrgAllowedFunctionality(
+                    'current_balance'
+                  ) && (
+                    <span class="settlement-balance-amount">
+                      Current Balance: <Amount value={balance} />
+                    </span>
+                  )}
 
                   {this.props.user.isOndemandSettlementEnabled && (
                     <Button.Secondary
