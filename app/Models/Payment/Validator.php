@@ -95,6 +95,7 @@ class Validator extends Base\Validator
         Entity::APPROVAL_CODE        => 'sometimes|string|max:6',
         Entity::REFERENCE1           => 'sometimes|nullable|string',
         Entity::REFERENCE2           => 'sometimes|nullable|string',
+        Entity::REFERENCE16          => 'sometimes|nullable|string',
     ];
 
     protected static $captureRules = [

@@ -5,6 +5,7 @@ namespace RZP\Models\Partner\Config;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Pricing\Plan;
 use RZP\Models\Merchant\AccessMap;
 
 use Razorpay\OAuth\Application;
@@ -132,6 +133,30 @@ class Core extends Base\Core
         $this->repo->saveOrFail($config);
 
         return $config;
+    }
+
+    /**
+     * @param Entity|null $partnerConfig
+     *
+     * @return Plan|null
+     */
+    public function getImplicitPlanFromConfig($partnerConfig)
+    {
+        if ($partnerConfig === null)
+        {
+            return null;
+        }
+
+        $pricingPlanId = $partnerConfig->getImplicitPricingPlanId();
+
+        if ($pricingPlanId === null)
+        {
+            return null;
+        }
+
+        $pricingPlan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($pricingPlanId);
+
+        return $pricingPlan;
     }
 
     protected function validatePricingPlans(array $input)

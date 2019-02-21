@@ -79,6 +79,10 @@ class UpiAxisGatewayTest extends TestCase
 
         $this->assertNotNull($upi['npci_reference_id']);
 
+        $this->assertEquals($payment['reference16'], $upi['npci_reference_id']);
+
+        $this->assertNotNull($payment['acquirer_data']['rrn']);
+
         // Add a capture as well, just for completeness sake
         $this->capturePayment($payment->getPublicId(), $payment['amount']);
 
@@ -362,6 +366,8 @@ class UpiAxisGatewayTest extends TestCase
 
         $this->assertNotNull($upi['npci_reference_id']);
 
+        $this->assertEquals($payment['reference16'], $upi['npci_reference_id']);
+
         // Add a capture as well, just for completeness sake
         $this->capturePayment($payment->getPublicId(), $payment['amount']);
 
@@ -535,6 +541,8 @@ class UpiAxisGatewayTest extends TestCase
         $this->assertNotNull($upi['status_code']);
 
         $this->assertNotNull($upi['npci_reference_id']);
+
+        $this->assertEquals($payment['reference16'], $upi['npci_reference_id']);
 
         // Add a capture as well, just for completeness sake
         $this->capturePayment($payment->getPublicId(), $payment['amount']);

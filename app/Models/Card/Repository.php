@@ -61,7 +61,7 @@ class Repository extends Base\Repository
         return Card\IIN\Entity::find($iin);
     }
 
-    public function getByParams($params)
+    public function getByParams($params, $limit = 1)
     {
         $query = $this->newQuery();
 
@@ -69,6 +69,8 @@ class Repository extends Base\Repository
         {
             $query = $query->where($key, '=', $value);
         }
+
+        $query->limit($limit);
 
         return $query->get();
     }

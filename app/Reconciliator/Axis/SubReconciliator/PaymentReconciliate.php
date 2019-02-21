@@ -77,7 +77,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         {
             if (empty($row[$cpi]) === false)
             {
-                $paymentId = $row[$cpi];
+                $paymentId = trim($row[$cpi]);
 
                 break;
             }
@@ -101,7 +101,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         $paymentId = null;
 
-        $orderId = $row[self::COLUMN_ORDER_ID];
+        $orderId = trim($row[self::COLUMN_ORDER_ID]);
 
         $gatewayPayment = $this->repo->cybersource->findSuccessfulTxnByActionAndRef(
                                                         Cybersource\Action::CAPTURE, $orderId);

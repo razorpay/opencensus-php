@@ -1557,8 +1557,8 @@ class AdminFetch
 
             Entity::REVERSAL => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
-                'transfer_id' => [
-                    Fetch::LABEL  => 'Transfer Id',
+                'entity_id' => [
+                    Fetch::LABEL  => 'Transfer Id/ Payout Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
             ],
@@ -1881,7 +1881,7 @@ class AdminFetch
 
             Entity::NODAL_BENEFICIARY => [
                 'merchant_id'     => Fetch::FIELD_MERCHANT_ID,
-                'bank_account_id' =>  [
+                'bank_account_id' => [
                     Fetch::LABEL => 'Bank Account Id',
                     Fetch::TYPE  => Fetch::TYPE_STRING
                 ],

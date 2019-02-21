@@ -975,7 +975,8 @@ class Gateway extends Base\Gateway
 
         return [
             'acquirer' => [
-                Payment\Entity::VPA => $gatewayPayment->getVpa()
+                Payment\Entity::VPA => $gatewayPayment->getVpa(),
+                Payment\Entity::REFERENCE16 => $gatewayPayment->getNpciReferenceId(),
             ]
         ];
     }
@@ -1054,9 +1055,9 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_REQUEST,
             [
-                'request' => $request,
+                'request'           => $request,
                 'decrypted_content' => $data,
-                'gateway' => $this->gateway,
+                'gateway'           => $this->gateway,
             ]);
 
         return $request;
@@ -1080,14 +1081,14 @@ class Gateway extends Base\Gateway
 
     /**
      * This is done in order to fix refund retry
-     * if refund fails in first attempt
+     * if refund fails after 2 retries,
      * refund is retried with offline mode
      *
      * @return string
      */
     protected function isOnlineRefund(array $refund)
     {
-        if (empty($refund['attempts']) === true)
+        if ($refund['attempts'] < 3)
         {
             return 'Y';
         }

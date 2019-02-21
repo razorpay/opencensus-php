@@ -12,6 +12,7 @@ use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Models\VirtualAccount;
+use RZP\Models\Partner\Commission;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\Capture as CaptureJob;
 use RZP\Listeners\ApiEventSubscriber;
@@ -539,8 +540,33 @@ trait Capture
 
             $this->updateVirtualAccountStatusIfApplicable($payment);
 
+            // @todo: Uncomment this once the test cases for commission calculation are added
+            // $this->createPartnerCommission($payment);
+
             $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
+    }
+
+    /**
+     * Creates partner commission entities from a captured payment
+     *
+     * @param Payment\Entity $payment
+     */
+    protected function createPartnerCommission(Payment\Entity $payment)
+    {
+        try
+        {
+            (new Commission\Core)->createFromCapturedPayment($payment);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->critical(
+                TraceCode::COMMISSION_CREATE_FAILED,
+                [
+                    'payment_id' => $this->payment->getId(),
+                    'message'    => $e->getMessage(),
+                ]);
+        }
     }
 
     /**
@@ -706,6 +732,12 @@ trait Capture
     protected function setVerifyPaymentIfApplicable(Payment\Entity & $payment)
     {
         $gateway = $payment->getGateway();
+
+        // Ignore QR payments
+        if ($payment->isBharatQr() === true)
+        {
+            return;
+        }
 
         if (in_array($gateway, Payment\Gateway::$captureVerifyEnabled, true) === true)
         {

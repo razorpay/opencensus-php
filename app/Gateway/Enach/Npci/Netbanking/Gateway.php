@@ -109,6 +109,29 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input, $recurringData);
     }
 
+    public function forceAuthorizeFailed($input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction($input['payment']['id'], Action::AUTHORIZE);
+
+        // If it's already authorized on gateway side, We just return back.
+        if ($gatewayPayment->getStatus() === RegistrationStatus::SUCCESS)
+        {
+            return true;
+        }
+
+        $attributes = [
+            Base\Entity::STATUS          => RegistrationStatus::SUCCESS,
+            Base\Entity::ERROR_MESSAGE   => null,
+            Base\Entity::ERROR_CODE      => null
+        ];
+
+        $gatewayPayment->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return true;
+    }
+
     // -------------------------- authorize helper functions ----------------------------------
 
     protected function setCrypto()

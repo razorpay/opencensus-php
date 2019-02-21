@@ -457,6 +457,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EMANDATE_REGISTER_REQUEST                     = 'EMANDATE_REGISTER_REQUEST';
     const EMANDATE_REGISTER_REQUEST_ROW                 = 'EMANDATE_REGISTER_REQUEST_ROW';
 
+    const EMANDATE_RECON_FORCE_AUTH_RESPONSE            = 'EMANDATE_RECON_FORCE_AUTH_RESPONSE';
+
     const MAILER_JOB_ERROR                              = 'MAILER_JOB_ERROR';
     const INVOICE_ACTION_JOB_ERROR                      = 'INVOICE_ACTION_JOB_ERROR';
     const INVOICE_PDF_GEN_FAILED                        = 'INVOICE_PDF_GEN_FAILED';
@@ -1594,6 +1596,24 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_DISPATCH_FOR_PAYOUT_COMPLETE    = 'FTA_DISPATCH_FOR_PAYOUT_COMPLETE';
     const FTA_RECONCILIATION_JOB_RELEASED     = 'FTA_RECONCILIATION_JOB_RELEASED';
 
+    // Commission trace codes
+    const COMMISSION_CREATED                            = 'COMMISSION_CREATED';
+    const COMMISSION_COMPUTED                           = 'COMMISSION_COMPUTED';
+    const COMMISSION_NOT_ENABLED                        = 'COMMISSION_NOT_ENABLED';
+    const COMMISSION_NOT_DEFINED                        = 'COMMISSION_NOT_DEFINED';
+    const COMMISSION_COMPUTED_ZERO                      = 'COMMISSION_COMPUTED_ZERO';
+    const COMMISSION_CREATE_FAILED                      = 'COMMISSION_CREATE_FAILED';
+    const COMMISSION_NOT_APPLICABLE                     = 'COMMISSION_NOT_APPLICABLE';
+    const COMMISSION_COMPUTED_NEGATIVE                  = 'COMMISSION_COMPUTED_NEGATIVE';
+    const COMMISSION_INVALID_SOURCE_ENTITY              = 'COMMISSION_INVALID_SOURCE_ENTITY';
+    const COMMISSION_PARTNER_DOES_NOT_EXIST             = 'COMMISSION_PARTNER_DOES_NOT_EXIST';
+    const COMMISSION_PARTNER_APP_DOES_NOT_EXIST         = 'COMMISSION_PARTNER_APP_DOES_NOT_EXIST';
+    const COMMISSION_PARTNER_CONFIG_NOT_DEFINED         = 'COMMISSION_PARTNER_CONFIG_NOT_DEFINED';
+    const COMMISSION_IMPLICIT_PRICING_PLAN_NOT_SET      = 'COMMISSION_IMPLICIT_PRICING_PLAN_NOT_SET';
+    const COMMISSION_CUSTOMER_FEE_MODEL_NOT_SUPPORTED   = 'COMMISSION_CUSTOMER_FEE_MODEL_NOT_SUPPORTED';
+    const COMMISSION_CUSTOMER_FEE_BEARER_NOT_SUPPORTED  = 'COMMISSION_CUSTOMER_FEE_BEARER_NOT_SUPPORTED';
+    const COMMISSION_PARTNER_PRICING_TYPE_NOT_SUPPORTED = 'COMMISSION_PARTNER_PRICING_TYPE_NOT_SUPPORTED';
+
     // redirect to authorize trace code
     const PAYMENT_CREATED_IN_REDIRECT_TO_AUTHORIZE_FLOW  = 'PAYMENT_CREATED_IN_REDIRECT_TO_AUTHORIZE_FLOW';
     const PAYMENT_REDIRECT_TO_AUTHORIZE_VALIDATION_ERROR = 'PAYMENT_REDIRECT_TO_AUTHORIZE_VALIDATION_ERROR';
@@ -1763,6 +1783,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::BATCH_UPLOAD_FILE                         => 'Uploaded batch file',
         self::BATCH_ALREADY_PROCESSED                   => 'Batch File already processed',
         self::BATCH_PROCESSING_ERROR                    => 'Error in processing batch',
+        self::EMANDATE_RECON_FORCE_AUTH_RESPONSE        => 'response received for force auth of emandate recon',
         self::FEATURE_DELETE_REQUEST                    => 'Feature delete request initiated',
         self::FEATURE_MIGRATION_EXCEPTION               => 'Exception while creating features for merchant',
         self::FEATURE_ASSIGNMENT_EXCEPTION              => 'Exception assigning feature to merchant',
