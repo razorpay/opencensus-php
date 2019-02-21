@@ -1,5 +1,5 @@
 import { Component } from 'react';
-
+import ShowWhen from 'merchant/components/ShowWhen';
 import FileUpload from 'merchant/components/File/Upload';
 
 import { titleCase } from 'rzp/utils/rzp-utils';
@@ -59,9 +59,19 @@ export default class BatchValidateModal extends Component {
           <div class="modal-info">
             <h5 style={{ fontSize: '16px' }}>
               Getting Started with Batch Uploads?{' '}
-              <a class="btn btn-link m-l doc-url" href={docUrl} target="_blank">
-                View Documentation <i class="i i-external-link" />
-              </a>
+              <ShowWhen
+                additionalCondition={user =>
+                  user.isOrgAllowedFunctionality('external_links')
+                }
+              >
+                <a
+                  class="btn btn-link m-l doc-url"
+                  href={docUrl}
+                  target="_blank"
+                >
+                  View Documentation <i class="i i-external-link" />
+                </a>
+              </ShowWhen>
             </h5>
             <p>
               Upload a batch file to continue. Please note the following things

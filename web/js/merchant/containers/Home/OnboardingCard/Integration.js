@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import LocalStorageService from 'rzp/utils/localStorage';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 import {
   trackGoToKeyGen,
@@ -79,18 +80,36 @@ class WrapperElement extends Component {
     }
 
     if (keysGenerated && !paymentsMade) {
+      const content = (
+        <div className="media">
+          {children}
+          <Arrow />
+        </div>
+      );
       return (
-        <a
-          href="https://docs.razorpay.com/docs/getting-started"
-          target="_blank"
-          onClick={this.trackStep}
-          {...otherProps}
-        >
-          <div className="media">
-            {children}
-            <Arrow />
-          </div>
-        </a>
+        <React.Fragment>
+          <ShowWhen
+            additionalCondition={user =>
+              user.isOrgAllowedFunctionality('external_links')
+            }
+          >
+            <a
+              href="https://docs.razorpay.com/docs/getting-started"
+              target="_blank"
+              onClick={this.trackStep}
+              {...otherProps}
+            >
+              {content}
+            </a>
+          </ShowWhen>
+          <ShowWhen
+            additionalCondition={user =>
+              !user.isOrgAllowedFunctionality('external_links')
+            }
+          >
+            {content}
+          </ShowWhen>
+        </React.Fragment>
       );
     }
 

@@ -9,6 +9,7 @@ import HeaderAction from 'rzp/ui/HeaderAction';
 import { titleCase } from 'common/util';
 import { getTime } from 'rzp/ui/item';
 import ListContainer from '../ListContainer';
+import ShowWhen from 'merchant/components/ShowWhen';
 import {
   disputeId,
   paymentId,
@@ -46,13 +47,19 @@ export default class Dispute extends ListContainer {
     return (
       <div class="content-wrapper">
         <HeaderAction>
-          <a
-            class="btn btn-link"
-            href="https://razorpay.com/docs/disputes/"
-            target="_blank"
+          <ShowWhen
+            additionalCondition={user =>
+              user.isOrgAllowedFunctionality('external_links')
+            }
           >
-            Guide to Dispute
-          </a>
+            <a
+              class="btn btn-link"
+              href="https://razorpay.com/docs/disputes/"
+              target="_blank"
+            >
+              Guide to Dispute
+            </a>
+          </ShowWhen>
         </HeaderAction>
         <DisputeListFilter
           form="DisputeListFilter"

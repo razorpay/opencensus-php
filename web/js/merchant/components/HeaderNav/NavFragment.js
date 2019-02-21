@@ -95,15 +95,21 @@ class NavFragment extends Component {
             <SwitchMerchant user={user} onSwitchMerchant={onSwitchMerchant} />
           </li>
         ) : null}
-        <li>
-          <a
-            target="_blank"
-            href="https://docs.razorpay.com"
-            onClick={() => analytics('Go To - Documentation')}
-          >
-            <span>Documentation</span>
-          </a>
-        </li>
+        <ShowWhen
+          additionalCondition={user =>
+            user.isOrgAllowedFunctionality('external_links')
+          }
+        >
+          <li>
+            <a
+              target="_blank"
+              href="https://docs.razorpay.com"
+              onClick={() => analytics('Go To - Documentation')}
+            >
+              <span>Documentation</span>
+            </a>
+          </li>
+        </ShowWhen>
       </React.Fragment>
     );
   }

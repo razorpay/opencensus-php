@@ -180,13 +180,19 @@ export default class ProfileDropdown extends Component {
                     <div className="media-body">GST Details</div>
                   </div>
                 </ShowWhen>
-                <div class="media media-action">
-                  <div class="media-body">
-                    <a target="_blank" href="https://docs.razorpay.com">
-                      Documentation
-                    </a>
+                <ShowWhen
+                  additionalCondition={user =>
+                    user.isOrgAllowedFunctionality('external_links')
+                  }
+                >
+                  <div class="media media-action">
+                    <div class="media-body">
+                      <a target="_blank" href="https://docs.razorpay.com">
+                        Documentation
+                      </a>
+                    </div>
                   </div>
-                </div>
+                </ShowWhen>
               </React.Fragment>
             )}
 

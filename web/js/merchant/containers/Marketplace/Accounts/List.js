@@ -165,14 +165,20 @@ export default class AccountsListContainer extends ListContainer {
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <a
-              class="btn btn-link"
-              href="https://docs.razorpay.com/v1/page/route"
-              target="_blank"
+            <ShowWhen
+              additionalCondition={user =>
+                user.isOrgAllowedFunctionality('external_links')
+              }
             >
-              Route APIs Documentation &nbsp;
-              <i class="i i-external-link" />
-            </a>
+              <a
+                class="btn btn-link"
+                href="https://docs.razorpay.com/v1/page/route"
+                target="_blank"
+              >
+                Route APIs Documentation &nbsp;
+                <i class="i i-external-link" />
+              </a>
+            </ShowWhen>
 
             <button class="btn btn-default" onClick={this.exportAccountsCSV}>
               <i class="i i-download" />

@@ -25,6 +25,7 @@ import { fetchCurrentBalance } from 'merchant/modules/home';
 import OndemandModal from './OndemandModal';
 import Amount from 'rzp/ui/Amount';
 import Button from 'component/Button';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 @withRouter
 @connect(
@@ -191,15 +192,21 @@ export default class SettlementsListContainer extends ListContainer {
                     ''
                   )}
 
-                  <a
-                    class="btn btn-link settlement-doc-btn"
-                    href="http://razorpay.com/settlement"
-                    target="_blank"
-                    onClick={trackHowSettlementsWorkClicks}
+                  <ShowWhen
+                    additionalCondition={user =>
+                      user.isOrgAllowedFunctionality('external_links')
+                    }
                   >
-                    How settlements work?&nbsp;
-                    <span class="icon i-external-link" />
-                  </a>
+                    <a
+                      class="btn btn-link settlement-doc-btn"
+                      href="http://razorpay.com/settlement"
+                      target="_blank"
+                      onClick={trackHowSettlementsWorkClicks}
+                    >
+                      How settlements work?&nbsp;
+                      <span class="icon i-external-link" />
+                    </a>
+                  </ShowWhen>
                   {this.props.user.isOrgAllowedFunctionality(
                     'current_balance'
                   ) && (

@@ -199,12 +199,18 @@ export default ({
                   <div class="info">
                     <b>Test Mode:</b>
                     {testModeMsg.infoMsg}
-                    <a
-                      href="https://razorpay.com/docs/subscriptions"
-                      target="_blank"
+                    <ShowWhen
+                      additionalCondition={user =>
+                        user.isOrgAllowedFunctionality('external_links')
+                      }
                     >
-                      View docs >
-                    </a>{' '}
+                      <a
+                        href="https://razorpay.com/docs/subscriptions"
+                        target="_blank"
+                      >
+                        View docs >
+                      </a>{' '}
+                    </ShowWhen>
                   </div>
                 </div>
               )}

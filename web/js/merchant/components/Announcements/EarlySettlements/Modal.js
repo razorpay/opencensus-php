@@ -7,6 +7,7 @@ import RadioButton from 'rzp/ui/Forms/RadioButton';
 import trackESAnnouncements from '../ga';
 import ajax from 'merchant/utils/ajax';
 import LocalStorageService from 'rzp/utils/localStorage';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 @connect(state => ({ user: state.session.user }), { ...ModalActions })
 @reduxForm({
@@ -389,12 +390,18 @@ export default class RequestEarlyAccessForm extends Component {
             Razorpay is working with <strong>top financing institutions</strong>{' '}
             to help you realise your settlements within a few working hours. No
             more shortfalls in working capital.
-            <p class="m-t">
-              <a target="_blank" href="https://razorpay.com/knowledgebase/">
-                Know more about Early Settlements{' '}
-                <i class="i i-external-link" />
-              </a>
-            </p>
+            <ShowWhen
+              additionalCondition={user =>
+                user.isOrgAllowedFunctionality('external_links')
+              }
+            >
+              <p class="m-t">
+                <a target="_blank" href="https://razorpay.com/knowledgebase/">
+                  Know more about Early Settlements{' '}
+                  <i class="i i-external-link" />
+                </a>
+              </p>
+            </ShowWhen>
           </div>
           <div class="features-list">
             <div class="feature-item">

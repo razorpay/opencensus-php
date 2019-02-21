@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import { updateFeatures } from 'merchant/modules/config';
 import { showNotification } from 'rzp/modules/notifications';
-
+import ShowWhen from 'merchant/components/ShowWhen';
 @connect(
   state => {
     return {
@@ -102,16 +102,25 @@ export default class FlashCheckout extends Component {
             </span>
 
             <div class="form-group">
-              <div class="col-sm-10">
-                <a
-                  class="highlight"
-                  target="_blank"
-                  href="https://razorpay.com/flashcheckout/"
-                >
-                  Know more about Flash Checkout
-                  <i class="i i-external-link" style={{ marginLeft: '5px' }} />
-                </a>
-              </div>
+              <ShowWhen
+                additionalCondition={user =>
+                  user.isOrgAllowedFunctionality('external_links')
+                }
+              >
+                <div class="col-sm-10">
+                  <a
+                    class="highlight"
+                    target="_blank"
+                    href="https://razorpay.com/flashcheckout/"
+                  >
+                    Know more about Flash Checkout
+                    <i
+                      class="i i-external-link"
+                      style={{ marginLeft: '5px' }}
+                    />
+                  </a>
+                </div>
+              </ShowWhen>
               <div class="col-sm-2">
                 <AsyncButton
                   class="btn btn-default pull-right"

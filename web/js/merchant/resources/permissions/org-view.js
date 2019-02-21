@@ -20,6 +20,7 @@ const HDFC_restrictedFeatures = [
   'monthlyInvoice',
   'current_balance',
   'card_refunds',
+  'external_links',
 ];
 
 /*
