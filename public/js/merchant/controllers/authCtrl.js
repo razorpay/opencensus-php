@@ -957,6 +957,7 @@ app
           $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
           return true;
         }
+        showSpinner();
         var data = {
           email: $scope.login.data.email,
         };
@@ -966,6 +967,7 @@ app
           data: data,
         });
         request.success(function(data) {
+          hideSpinner();
           if (data.success) {
             $scope.alerts.addAlert(
               'success',
