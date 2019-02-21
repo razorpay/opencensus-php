@@ -850,6 +850,15 @@ class Core extends Base\Core
 
         $oldOwner = $merchant->primaryOwner();
 
+        $traceData = [
+            'team_user' => empty($teamUser) ? null : $teamUser->getEmail(),
+            'existing_user' => empty($existingUser) ? null : $existingUser->getEmail(),
+            'self_user' => empty($selfUser) ? null : $selfUser->getEmail(),
+            'old_owner' => empty($oldOwner) ? null : $oldOwner->getEmail(),
+        ];
+
+        $this->trace->info(TraceCode::MERCHANT_USER_EMAIL_CHANGE, $traceData);
+
         if ((empty($oldOwner) === false) and ((empty($teamUser) === false) or (empty($existingUser) === false)))
         {
             // Assign Manager role to the old owner.
