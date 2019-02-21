@@ -270,7 +270,7 @@ export default class InvoiceLineItem extends React.Component {
       (typeof selectedOption.tax_rate !== 'undefined' ||
         selectedOption.tax_rate !== null)
     ) {
-      gstSlab = gstSlabs[selectedOption.tax_rate];
+      gstSlab = gstSlabs[selectedOption.tax_rate * 100];
 
       // Add to taxIDs array.
       if (gstSlab && gstSlab.mapping) {
