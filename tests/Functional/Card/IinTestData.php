@@ -335,6 +335,23 @@ return [
         ],
     ],
 
+    'testGetCardPaymentFlowsFromIin' => [
+        'request'  => [
+            'url'     => '/payment/flows',
+            'content' => [
+                'iin' => '401200',
+            ],
+            'method'  => 'post',
+        ],
+        'response'  => [
+            'content' => [
+                'pin' => true,
+                'otp' => true,
+            ],
+        ],
+    ],
+
+
     'testGetCardPaymentFlows' => [
         'request'  => [
             'url'     => '/payment/flows',

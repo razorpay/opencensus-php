@@ -36,7 +36,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $cardNumberRules = [
-        'card_number'              => 'required|numeric|luhn|digits_between:12,19',
+        'card_number'        => 'sometimes|numeric|luhn|digits_between:12,19',
+        'iin'                => 'sometimes|numeric|digits:6'
     ];
 
     protected static $createValidators = array(
