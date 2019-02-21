@@ -18,8 +18,6 @@ class InvoiceTaxesTest extends TestCase
 
     public function setUp()
     {
-        $this->markTestSkipped();
-
         $this->testDataFilePath = __DIR__ . '/Helpers/InvoiceTaxesTestData.php';
 
         parent::setUp();

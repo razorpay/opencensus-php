@@ -1278,8 +1278,6 @@ class InvoiceTest extends TestCase
 
     public function testUpdateLineItemOfInvoiceWithExistingItem()
     {
-        $this->markTestSkipped();
-
         $this->ba->proxyAuth();
 
         $this->createDraftInvoice();
