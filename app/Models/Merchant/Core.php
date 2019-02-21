@@ -381,7 +381,6 @@ class Core extends Base\Core
     public function modifyEditInput(array $input): array
     {
         if (array_key_exists('category', $input))
-
         {
             $input['category'] = (string) $input['category'];
         }
@@ -1867,7 +1866,8 @@ class Core extends Base\Core
     }
 
     /**
-     * Syncs merchant and merchant details website and business name
+     * Update merchant data like international based on business category
+     * and syncs merchant data with merchant_details website and business name
      *
      * @param Entity $merchant
      * @param array  $input
@@ -1878,6 +1878,15 @@ class Core extends Base\Core
     public function syncMerchantEntityFields(Merchant\Entity $merchant, array $input): Entity
     {
         $merchantInput = [];
+
+        $isMerchantInternational = $this->isMerchantEligibleForInternational($merchant);
+
+        if ($isMerchantInternational === true)
+        {
+            $merchantInput[Entity::INTERNATIONAL] = true;
+
+            $merchantInput[Entity::CONVERT_CURRENCY] = false;
+        }
 
         if (isset($input[Detail\Entity::BUSINESS_WEBSITE]) === true)
         {
@@ -1907,6 +1916,32 @@ class Core extends Base\Core
     }
 
     /**
+     * Checks and returns if the business category and subcategory are whitelisted.
+     *
+     * @param Entity $merchant
+     *
+     * @return bool
+     * @throws \Throwable
+     */
+    protected function isMerchantEligibleForInternational(Entity $merchant): bool
+    {
+        $merchantDetails = (new Detail\Core)->getMerchantDetails($merchant);
+
+        $category = $merchantDetails->getBusinessCategory();
+
+        $subcategory = $merchantDetails->getBusinessSubCategory();
+
+        if ((empty($category) === false) and
+            (BusinessSubCategoryMetaData::isFeatureCategoryOrSubcategoryWhitelisted(
+                BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION, $category, $subcategory) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /*
      * Returns the partner merchant from the partner app entity passed as an argument
      *
      * @param $partnerApp
