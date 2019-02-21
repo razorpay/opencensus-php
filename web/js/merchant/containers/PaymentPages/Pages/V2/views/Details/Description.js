@@ -179,6 +179,12 @@ export default class extends React.PureComponent {
       const isImageType = /^image\//.test(file.type);
 
       if (isImageType) {
+        this.props.showNotification({
+          type: 'success',
+          message: 'Uploading image...',
+          closeTimeout: 2500,
+        });
+
         uploadImageInDescription(file)
           .then(res => {
             if (res && res.success) {

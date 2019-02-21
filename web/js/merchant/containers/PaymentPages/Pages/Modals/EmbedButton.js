@@ -70,23 +70,27 @@ export default class extends React.Component {
         <a
           href={shortUrl}
           style={{
-            textAlign: 'center',
-            backgroundColor: this.color,
-            color: this.state.textClr || '#fff',
+            display: 'block',
+            minHeight: 38,
             width,
             padding: 10,
-            borderRadius: 2,
-            boxShadow: '0 0 24px 0 rgba(0,0,0,0.2)',
             lineHeight: '18px',
             fontWeight: 600,
             fontSize: 14,
-            fontFamily: '"Lato", "Muli"',
+            fontFamily:
+              'Lato, Muli, -apple-system, BlinkMacSystemFont, Arial, sans-serif',
+            wordBreak: 'break-word',
+            borderRadius: 2,
+            textAlign: 'center',
+            backgroundColor: this.color,
+            color: this.state.textClr || '#fff',
+            boxShadow: '0 0 24px 0 rgba(0,0,0,0.2)',
           }}
           target="_blank"
         >
-          {btnLabel}
+          {this.state.textClr && btnLabel}
         </a>
-        <div style={{ fontSize: 8, marginTop: 8 }}>
+        <div style={{ fontSize: 8, marginTop: 8, textAlign: 'center' }}>
           <b>Powered by </b>{' '}
           <img
             height="12px"

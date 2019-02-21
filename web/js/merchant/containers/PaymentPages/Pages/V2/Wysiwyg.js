@@ -59,6 +59,11 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
   componentWillMount() {
     this.fetchEntity(this.props.id);
+
+    // Preload Social media image
+    const socialMediaIcons = new Image();
+    socialMediaIcons.src =
+      'https://cdn.razorpay.com/static/assets/social-share/icons.png';
   }
 
   componentWillReceiveProps(nextProps) {
