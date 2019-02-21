@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Partner\Commission;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
@@ -41,7 +43,6 @@ class Entity extends Base\PublicEntity
         self::DEBIT,
         self::NOTES,
         self::CREDIT,
-        self::STATUS,
         self::CURRENCY,
     ];
 
@@ -78,7 +79,8 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
-        self::NOTES => [],
+        self::STATUS => Status::CREATED,
+        self::NOTES  => [],
     ];
 
     public function transaction()
@@ -99,5 +101,34 @@ class Entity extends Base\PublicEntity
     public function partner()
     {
         return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    /**
+     * @param string $next
+     *
+     * @throws LogicException
+     */
+    public function setStatus(string $next)
+    {
+        $current = $this->getStatus();
+
+        if (Status::isValidStateTransition($current, $next) === false)
+        {
+            throw new LogicException(
+                'Invalid status transition',
+                null,
+                [
+                    'current' => $current,
+                    'next'    => $next,
+                ]
+            );
+        }
+
+        $this->setAttribute(self::STATUS, $next);
+    }
+
+    public function getStatus(): string
+    {
+        return $this->getAttribute(self::STATUS);
     }
 }

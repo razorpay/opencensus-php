@@ -3,6 +3,7 @@
 namespace RZP\Models\Partner\Commission;
 
 use RZP\Models\Base;
+use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Partner\Config as PartnerConfig;
@@ -29,5 +30,21 @@ class Core extends Base\Core
         $commission->transaction()->associate($txn);
 
         return $commission;
+    }
+
+    /**
+     * Creates partner commission entities from a captured payment
+     *
+     * @param Payment\Entity $payment
+     *
+     * @return array
+     */
+    public function createFromCapturedPayment(Payment\Entity $payment): array
+    {
+        $calculator = new Calculator($payment);
+
+        $calculator->calculateAndSaveCommission();
+
+        return $calculator->getCommissions();
     }
 }

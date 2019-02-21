@@ -1905,4 +1905,20 @@ class Core extends Base\Core
 
         return $merchant;
     }
+
+    /**
+     * Returns the partner merchant from the partner app entity passed as an argument
+     *
+     * @param $partnerApp
+     *
+     * @return null
+     */
+    public function getPartnerFromApp($partnerApp)
+    {
+        $partnerId = $partnerApp->getMerchantId();
+
+        $partner = $this->repo->merchant->find($partnerId);
+
+        return $partner;
+    }
 }
