@@ -531,6 +531,9 @@ class Gateway
         Payment\Gateway::UPI_MINDGATE   => [
             self::GO_LIVE_TIMESTAMP => 1540826221
         ],
+        Payment\Gateway::HITACHI   => [
+            self::GO_LIVE_TIMESTAMP => 1550745552
+        ],
     ];
 
     /**
