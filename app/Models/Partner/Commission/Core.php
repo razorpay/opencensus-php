@@ -47,4 +47,27 @@ class Core extends Base\Core
 
         return $calculator->getCommissions();
     }
+
+    /**
+     * @param Merchant\Entity $merchant
+     * @param array           $input
+     *
+     * @return Base\PublicCollection
+     * @throws \RZP\Exception\BadRequestException
+     */
+    public function list(Merchant\Entity $merchant, array $input) : Base\PublicCollection
+    {
+        // resellers should not see transaction commissions data
+        (new Merchant\Validator)->validateIsNotResellerPartner($merchant);
+
+        // check to get only logged in partner's commission list
+        $input[Entity::PARTNER_ID] = $merchant->getId();
+
+        // add expands to fetch merchant details
+        $input[Repository::EXPAND] = [Entity::SOURCE_MERCHANT];
+
+        $commissions = $this->repo->commission->fetch($input);
+
+        return $commissions;
+    }
 }

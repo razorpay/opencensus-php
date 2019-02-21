@@ -8,6 +8,9 @@ use RZP\Models\Dispute;
 use RZP\Models\FundTransfer;
 use RZP\Models\NodalBeneficiary;
 use RZP\Models\Settlement\Channel;
+use RZP\Models\Partner\Commission;
+use RZP\Models\Partner\Config\Entity as PartnerConfig;
+
 /**
  * Class AdminFetch
  *
@@ -1923,6 +1926,69 @@ class AdminFetch
                 'entity_owner_id' => [
                     Fetch::LABEL => 'Entity Owner Id',
                     Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+            ],
+
+            Entity::PARTNER_CONFIG => [
+                PartnerConfig::ENTITY_TYPE => [
+                    Fetch::LABEL  => 'Entity Type',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'application',
+                        'merchant',
+                    ],
+                ],
+                PartnerConfig::ENTITY_ID => [
+                    Fetch::LABEL => 'Entity Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                PartnerConfig::ORIGIN_ID => [
+                    Fetch::LABEL => 'Origin Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                PartnerConfig::DEFAULT_PLAN_ID  => [
+                    Fetch::LABEL => 'Default Plan',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                PartnerConfig::IMPLICIT_PLAN_ID => [
+                    Fetch::LABEL => 'Implicit Plan',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                PartnerConfig::EXPLICIT_PLAN_ID => [
+                    Fetch::LABEL => 'Explicit Plan',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+            ],
+
+            Entity::COMMISSION     => [
+                Commission\Entity::SOURCE_TYPE => [
+                    Fetch::LABEL  => 'Source Type',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'payment',
+                        'refund',
+                    ],
+                ],
+                Commission\Entity::SOURCE_ID  => [
+                    Fetch::LABEL => 'Source Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                Commission\Entity::PARTNER_ID => [
+                    Fetch::LABEL => 'Partner Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                Commission\Entity::PARTNER_CONFIG_ID => [
+                    Fetch::LABEL => 'Partner Config Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                Commission\Entity::STATUS => [
+                    Fetch::LABEL  => 'Commission Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        Commission\Status::CREATED,
+                        Commission\Status::PROCESSED,
+                        Commission\Status::REFUNDED,
+                    ],
                 ],
             ],
         ];

@@ -1264,6 +1264,11 @@ class Entity extends Base\PublicEntity
         return ($this->getPartnerType() === Constants::PURE_PLATFORM);
     }
 
+    public function isResellerPartner(): bool
+    {
+        return ($this->getPartnerType() === Constants::RESELLER);
+    }
+
     public function isAggregatorPartner(): bool
     {
         return ($this->getPartnerType() === Constants::AGGREGATOR);

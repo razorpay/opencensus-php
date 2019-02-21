@@ -11,6 +11,15 @@ class Repository extends Base\Repository
 
     protected $entity = AppConstants\Entity::PARTNER_CONFIG;
 
+    protected $appFetchParamRules = [
+        Entity::ENTITY_ID        => 'sometimes|string|size:14',
+        Entity::ORIGIN_ID        => 'sometimes|string|size:14',
+        Entity::ENTITY_TYPE      => 'filled|string',
+        Entity::DEFAULT_PLAN_ID  => 'sometimes|string|size:14',
+        Entity::IMPLICIT_PLAN_ID => 'sometimes|string|size:14',
+        Entity::EXPLICIT_PLAN_ID => 'sometimes|string|size:14',
+    ];
+
     /**
      * @param string $appId
      *

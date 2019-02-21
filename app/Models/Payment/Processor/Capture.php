@@ -541,7 +541,7 @@ trait Capture
             $this->updateVirtualAccountStatusIfApplicable($payment);
 
             // @todo: Uncomment this once the test cases for commission calculation are added
-            // $this->createPartnerCommission($payment);
+//             $this->createPartnerCommission($payment);
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
