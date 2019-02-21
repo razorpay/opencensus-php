@@ -532,7 +532,7 @@ class Gateway
             self::GO_LIVE_TIMESTAMP => 1540826221
         ],
         Payment\Gateway::HITACHI   => [
-            self::GO_LIVE_TIMESTAMP => 1550745552
+            self::GO_LIVE_TIMESTAMP => 1550746997
         ],
     ];
 
