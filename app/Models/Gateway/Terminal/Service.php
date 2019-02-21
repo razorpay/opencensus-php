@@ -8,6 +8,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Mode;
 use RZP\Gateway\Base\Terminal;
 use RZP\Constants\Environment;
+use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {
@@ -91,14 +92,8 @@ class Service extends Base\Service
                 }
                 catch (\Throwable $e)
                 {
-                    $this->trace->info(
-                        TraceCode::MERCHANT_ONBOARD_REQUEST_FAILED,
-                        [
-                            'merchant_id'   => $merchant->getId(),
-                            'gateway'       => $gateway,
-                            'gateway_input' => $gatewayInput,
-                            'error'         => $e->getMessage(),
-                        ]);
+                    $this->trace->traceException($e, Trace::ERROR, TraceCode::MERCHANT_ONBOARD_REQUEST_FAILED, $gatewayInput);
+
                     throw $e;
                 }
             },
