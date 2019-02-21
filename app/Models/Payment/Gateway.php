@@ -971,6 +971,7 @@ class Gateway
 
     public static $captureVerifyEnabled = [
         self::HITACHI,
+        self::AXIS_MIGS,
     ];
 
     /**

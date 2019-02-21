@@ -733,6 +733,12 @@ trait Capture
     {
         $gateway = $payment->getGateway();
 
+        // Ignore QR payments
+        if ($payment->isBharatQr() === true)
+        {
+            return;
+        }
+
         if (in_array($gateway, Payment\Gateway::$captureVerifyEnabled, true) === true)
         {
             $payment->setVerifyBucket(0);
