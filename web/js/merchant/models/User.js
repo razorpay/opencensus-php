@@ -277,10 +277,6 @@ export default class User {
     return this.findTag('diwali_promotional_plan');
   }
 
-  get isSubLinkEnabled() {
-    return this.getExpStatus('subscription_link');
-  }
-
   // Allowed roles can be revoked refund access selectively with this tag
   get isRefundAllowed() {
     return this.isAllowedEdit('refunds') && !this.isRefundsDisabled;

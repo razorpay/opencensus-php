@@ -125,11 +125,9 @@ export default ({
                 )}
               />
 
-              <ShowWhen additionalCondition={user => user.isSubLinkEnabled}>
-                <EntityDetailRow label="Link">
-                  <CopyLink url={subscription.short_url} />
-                </EntityDetailRow>
-              </ShowWhen>
+              <EntityDetailRow label="Link">
+                <CopyLink url={subscription.short_url} />
+              </EntityDetailRow>
 
               <EntityDetailRow
                 label="Recurring Billing"

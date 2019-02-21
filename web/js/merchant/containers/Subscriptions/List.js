@@ -55,16 +55,14 @@ export default class SubscriptionsListContainer extends ListContainer {
 
     return (
       <div class="content-wrapper">
-        <ShowWhen additionalCondition={user => user.isSubLinkEnabled}>
-          <HeaderAction>
-            <div class="btn-toolbar pull-right">
-              <NavLink class="btn btn-primary" to="/subscriptions/new">
-                <i class="i i-plus" />
-                <span>Create New Subscription</span>
-              </NavLink>
-            </div>
-          </HeaderAction>
-        </ShowWhen>
+        <HeaderAction>
+          <div class="btn-toolbar pull-right">
+            <NavLink class="btn btn-primary" to="/subscriptions/new">
+              <i class="i i-plus" />
+              <span>Create New Subscription</span>
+            </NavLink>
+          </div>
+        </HeaderAction>
         <SubscriptionsListFilter
           form="subscriptionsListFilter"
           count={this.state.count}
@@ -78,11 +76,7 @@ export default class SubscriptionsListContainer extends ListContainer {
           columns={[
             subscriptionId,
             planId,
-            ...(showWhenUtil({
-              additionalCondition: user => user.isSubLinkEnabled,
-            })
-              ? link
-              : []),
+            ...link,
             customerId,
             nextDueOn,
             createdAt,
