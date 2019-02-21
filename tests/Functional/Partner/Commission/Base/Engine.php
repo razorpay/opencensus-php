@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Partner\Commission\Base;
 
 use Functional\Partner\Commission\Action;
 use Functional\Partner\Commission\Assertions;
+use Functional\Partner\Commission\Base\Assertions as BaseAssertions;
 
 class Engine
 {
@@ -15,6 +16,8 @@ class Engine
 
     private $assertions;
 
+    private $baseAssertions;
+
     public function __construct($fixtures)
     {
         $this->loadContext(__DIR__ . '/../Context.php');
@@ -24,6 +27,8 @@ class Engine
         $this->loadAction(__DIR__ . '/../Action.php');
 
         $this->loadAssertions(__DIR__ . '/../Assertions.php');
+
+        $this->loadBaseAssertions(__DIR__ . '/Assertions.php');
     }
 
     protected function loadContext($path)
@@ -52,6 +57,13 @@ class Engine
         include_once $path;
 
         $this->assertions = new Assertions;
+    }
+
+    protected function loadBaseAssertions($path)
+    {
+        include_once $path;
+
+        $this->baseAssertions = new BaseAssertions;
     }
 
     /**
@@ -85,16 +97,35 @@ class Engine
 
         $this->setupFixtures($testContext['setup'], $testContext['post_setup']);
 
-        if (method_exists($this->action, $contextName) === true)
+        $exception = null;
+
+        try
         {
-            $this->action->$contextName($testContext['post_setup'], $testContext['post_action']);
+            if (method_exists($this->action, $contextName) === true)
+            {
+                $this->action->$contextName($testContext['post_setup'], $testContext['post_action']);
+            }
+            else
+            {
+                $this->action->defaultAction($testContext['post_setup'], $testContext['post_action']);
+            }
         }
-        else
+        catch (\Throwable $ex)
         {
-            $this->action->defaultAction($testContext['post_setup'], $testContext['post_action']);
+            $exception = $ex;
+        }
+        finally
+        {
+            $testContext['post_action']['exception'] = $exception;
         }
 
-        $this->assertions->$contextName($testContext);
+        $this->baseAssertions->runExceptionAssertions($testContext);
+
+        if (method_exists($this->assertions, $contextName) === true)
+        {
+            $this->assertions->$contextName($testContext);
+        }
+
     }
 
     public function setupFixtures(array $setupRequests, array & $output)

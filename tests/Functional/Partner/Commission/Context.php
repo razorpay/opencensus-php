@@ -33,8 +33,13 @@ return [
     ],
 
     'testInvalidSource' => [
-        'setup' => [
+        'setup'  => [
             'create_transfer' => [],
+        ],
+        'action' => [
+            'exception' => [
+                'class'   => 'TypeError',
+            ],
         ],
     ],
 
