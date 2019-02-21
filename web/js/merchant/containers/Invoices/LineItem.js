@@ -519,7 +519,7 @@ export default class InvoiceLineItem extends React.Component {
                 {gstSlab &&
                   gstSlab.groups.map(group => (
                     <p key={`${selectedOption.item_id}_${group}`}>
-                      {group} @ {gstSlab.perGroup / 100.0}%
+                      {group} @ {gstSlab.perGroup / 10000.0}%
                     </p>
                   ))}
                 {cess && <p>Cess @ {cess / 100.0}%</p>}

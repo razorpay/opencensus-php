@@ -516,7 +516,7 @@ export { acronyms, shortenText };
 
 /**
  * Returns the applicable GST groups, a corresponding mapping, and the rate per GST group.
- * @param {Integer} slab Slab. eg: 500 (5%)
+ * @param {Integer} slab Slab. eg: 50000 (5%, value is multiple of 10000)
  * @param {Integer} serviceStateCode State Code of Service (Merchant)
  * @param {Integer} supplyStateCode State Code of Supply (Customer)
  * @param {Object} mapping TaxGroup_Slab => Razorpay_Tax_ID mapping
