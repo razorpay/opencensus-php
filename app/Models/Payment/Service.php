@@ -857,9 +857,9 @@ class Service extends Base\Service
 
     public function getPaymentFlowsPrivate(array $input)
     {
-        (new Card\Validator)->validateInput('card_number', $input);
+        (new Payment\Validator)->validateInput('post_flows', $input);
 
-        $iin = null
+        $iin = null;
 
         if (isset($input['card_number']) === true) 
         {
