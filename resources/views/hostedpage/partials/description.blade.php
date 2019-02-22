@@ -4,9 +4,6 @@
     </div>
     <div class="text-underline"></div>
 
-    @if(isset($payment_page_data['description']) === true)
-        <p id="payment-for"></p>
-    @endif
     <p>{{$intro_note}}</p>
 
     @if(empty($instructions) === false)
