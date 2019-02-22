@@ -779,6 +779,27 @@ class Gateway extends Base\Gateway
                                    ->toArray();
         }
 
+        //
+        // Checking for 8010 code specifically here as this is Internal Service Failure, its not a refund failure.
+        // throwing exception so that, verify will be called in such case.
+        //
+        if (((int) $content[Fields::RESPONSE] === 8010) or
+            ($content[Fields::MESSAGE] === 'INTERNAL_SERVICE_FAILURE-The system had an internal exception'))
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                $content[Fields::STATUS],
+                $content[Fields::MESSAGE],
+                [
+                    Payment\Gateway::GATEWAY_VERIFY_RESPONSE    => json_encode($content),
+                    Payment\Gateway::GATEWAY_KEYS               =>
+                        [
+                            'gateway_status' => $content[Fields::STATUS],
+                            'refund_id'      => $input['refund']['id'],
+                        ],
+                ]);
+        }
+
         if (($content[Fields::STATUS] === Status::FAILURE) or
             ($content[Fields::STATUS] === Status::FAIL))
         {
