@@ -23,6 +23,29 @@ class PromotionsTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateOneTimePromotionWithPartnerId()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        $this->startTest();
+
+        $promo = $this->getLastEntity('promotion', true);
+
+        $this->assertEquals('10000000000000', $promo['partner_id']);
+    }
+
+    public function testCreateOneTimePromotionWithInvalidPartnerId()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'pure_platform']);
+
+        $this->startTest();
+    }
+
+    public function testCreateOneTimePromotionWithNonPartner()
+    {
+        $this->startTest();
+    }
+
     public function testCreateRecurringPromotion()
     {
         $this->startTest();
