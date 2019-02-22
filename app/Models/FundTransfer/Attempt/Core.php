@@ -230,6 +230,11 @@ class Core extends Base\Core
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
     }
 
+    /**
+     * @param Entity $fta
+     * @param string $accountType
+     * @param bool   $isRegistered
+     */
     public function sendFTSFundTransferRequest(Entity $fta, string $accountType, bool $isRegistered = false)
     {
         try
@@ -243,6 +248,8 @@ class Core extends Base\Core
                 $this->trace->info(
                     TraceCode::FTS_INVALID_CHANNEL,
                     $fta->getChannel());
+
+                return;
             }
 
             FundTransfer::dispatch($this->mode, $fta->getId(), $accountType, $isRegistered);

@@ -9,13 +9,16 @@ use RZP\Models\Payment\Core as PaymentCore;
 use RZP\Models\Payment\Refund\Core as RefundCore;
 use RZP\Models\Settlement\Core as SettlementCore;
 use RZP\Models\BankAccount\Core as BankAccountCore;
-use RZP\Models\FundTransfer\Attempt\Core as FundTransferAttemptCore;
+use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Models\FundAccount\Validation\Core  as FundAccountValidationCore;
 
 class FundTransfer extends Base
 {
     protected $FTACore;
 
+    /**
+     * @var FundTransferAttempt\Entity
+     */
     protected $fta;
 
     protected $source;
@@ -24,15 +27,24 @@ class FundTransfer extends Base
     {
         parent::__construct($app);
 
-        $this->FTACore = new FundTransferAttemptCore;
+        $this->FTACore = new FundTransferAttempt\Core;
     }
 
-    public function requestFundTransfer(string $ftaId, string $accountType, bool $isRegistered):array
+    /**
+     * @param string $ftaId
+     * @param string $accountType
+     * @param bool   $isRegistered
+     * @return array
+     * @throws LogicException
+     * @throws \RZP\Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function requestFundTransfer(string $ftaId, string $accountType, bool $isRegistered): array
     {
         $input = $this->makeRequestUsingType($ftaId, $accountType, $isRegistered);
 
         $response = $this->createAndSendRequest(
-            parent::FUND_TRANSFER_BASE_URL . '/' . parent::URLS['request'],
+            parent::FUND_TRANSFER_CREATE_URI,
             'POST', $input);
 
         $this->handleResponse($response['body'], $accountType);
@@ -40,7 +52,14 @@ class FundTransfer extends Base
         return $response;
     }
 
-    public function makeRequestUsingType(string $ftaId, string $type, bool $isRegistered):array
+    /**
+     * @param string $ftaId
+     * @param string $type
+     * @param bool   $isRegistered
+     * @return array
+     * @throws LogicException
+     */
+    public function makeRequestUsingType(string $ftaId, string $type, bool $isRegistered): array
     {
         $this->fta = $this->FTACore->getFTAEntity($ftaId);
 
@@ -48,9 +67,16 @@ class FundTransfer extends Base
 
         $sourceType = $this->fta->getSourceType();
 
+        $product = $sourceType;
+
+        if (($sourceType === Constants::PAYOUT) and
+            ($this->fta->isRefund() === true))
+        {
+            $product .= '_refund';
+        }
+
         $request = [
-            //TODO:: Derive product name using source_type and purpose (e.g in case of payout-refund)
-            Constants::PRODUCT           => $sourceType,
+            Constants::PRODUCT           => $product,
             Constants::MERCHANT_ID       => $this->fta->merchant->getId(),
         ];
 
@@ -62,27 +88,33 @@ class FundTransfer extends Base
         }
         else
         {
-                switch ($type)
-                {
-                    case Constants::BANK_ACCOUNT:
-                        $request = $this->addBankAccountDetails($request);
+            switch ($type)
+            {
+                case Constants::BANK_ACCOUNT:
+                    $request = $this->addBankAccountDetails($request);
 
-                        break;
+                    break;
 
-                    case Constants::VPA:
-                        $request = $this->addVpaDetails($request);
+                case Constants::VPA:
+                    $request = $this->addVpaDetails($request);
 
-                        break;
+                    break;
 
-                    default:
-                        throw new LogicException('Account Type is not supported ' . $type);
-
-                }
+                default:
+                    throw new LogicException('Account Type is not supported ' . $type);
+            }
         }
 
         return $request;
     }
 
+    /**
+     * @param array  $request
+     * @param string $sourceId
+     * @param string $sourceType
+     * @return array
+     * @throws LogicException
+     */
     protected function addTransferBlock(
         array $request,
         string $sourceId,
@@ -113,7 +145,6 @@ class FundTransfer extends Base
     public function addBankAccountDetails(array $request):array
     {
         $request[Constants::ACCOUNT] = [
-
                 Constants::BANK_ACCOUNT => [
                         Constants::IFSC_CODE                  => $this->fta->bankAccount->getIfscCode(),
                         Constants::ACCOUNT_TYPE               => $this->fta->bankAccount->getAccountType(),
@@ -145,6 +176,11 @@ class FundTransfer extends Base
         return $request;
     }
 
+    /**
+     * @param string $sourceId
+     * @param string $sourceType
+     * @throws LogicException
+     */
     protected function setSourceEntityByType(string $sourceId, string $sourceType)
     {
         switch ($sourceType)
@@ -176,11 +212,9 @@ class FundTransfer extends Base
     }
 
     /**
-     * Method to update entities using
-     * received response.
-     *
-     * @param array $responseBody
+     * @param array  $responseBody
      * @param string $type
+     * @throws LogicException
      */
     protected function handleResponse(array $responseBody, string $type)
     {
@@ -189,6 +223,10 @@ class FundTransfer extends Base
         $this->updatePaymentInstrumentByType($responseBody, $type);
     }
 
+    /**
+     * @param array $responseBody
+     * @throws LogicException
+     */
     protected function updateFTA(array $responseBody)
     {
         $ftsTransferId = $responseBody[Constants::FUND_TRANSFER_ID];
@@ -216,6 +254,10 @@ class FundTransfer extends Base
         }
     }
 
+    /**
+     * @param $ftsTransferId
+     * @throws LogicException
+     */
     protected function updateSource($ftsTransferId)
     {
         switch ($this->fta->getSourceType())

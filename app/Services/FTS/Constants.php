@@ -30,6 +30,8 @@ final class Constants
 
     const USERNAME                      = 'username';
 
+    const IFSC_CODE                     = 'ifsc_code';
+
     const NARRATION                     = 'narration';
 
     const ENTITY_ID                     = 'entity_id';
@@ -37,8 +39,6 @@ final class Constants
     const SETTLEMENT                    = 'settlement';
 
     const INITIATE_AT                   = 'initiate_at';
-
-    const IFSC_CODE                     = 'ifsc_code';
 
     const MERCHANT_ID                   = 'merchant_id';
 

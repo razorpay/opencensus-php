@@ -7,9 +7,12 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
+use RZP\Exception\RecordAlreadyExists;
 
 class FundTransfer extends Job
 {
+    const RETRY_PERIOD         = 30;
+
     const MAX_ALLOWED_ATTEMPTS = 10;
 
     /**
@@ -67,6 +70,10 @@ class FundTransfer extends Job
                 TraceCode::FTS_FUND_TRANSFER_COMPLETE,
                 $ftsResponse);
         }
+        catch (RecordAlreadyExists $e)
+        {
+            $this->delete();
+        }
         catch (\Throwable $e)
         {
             $data = [
@@ -82,8 +89,10 @@ class FundTransfer extends Job
             if ($this->attempts() > self::MAX_ALLOWED_ATTEMPTS)
             {
                 $this->delete();
-
-                return;
+            }
+            else
+            {
+                $this->release(self::RETRY_PERIOD);
             }
         }
     }

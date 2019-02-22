@@ -11,6 +11,7 @@ use RZP\Models\Settlement\Channel;
 
 /**
  * @property mixed batchFundTransfer
+ * @property mixed bankAccount
  */
 class Entity extends Base\PublicEntity
 {

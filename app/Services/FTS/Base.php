@@ -28,14 +28,12 @@ class Base
 
     protected $auth;
 
-    const FUND_ACCOUNT_BASE_URL  = '/accounts';
+    // Account related URIs
+    const FUND_ACCOUNT_CREATE_URI  = '/account';
+    const FUND_ACCOUNT_REGISTER_URI  = '/account/register';
 
-    const FUND_TRANSFER_BASE_URL = '/transfer';
-
-    const URLS = [
-        'request'  => 'request',
-        'register' => 'registration',
-    ];
+    // Transfer related URIs
+    const FUND_TRANSFER_CREATE_URI = '/transfer';
 
     // Headers
     const ACCEPT        = 'Accept';
@@ -92,6 +90,15 @@ class Base
         $this->trace->info(TraceCode::FTS_RESPONSE, [
             'response' => $response->body
         ]);
+
+        if ($response->status_code === 409)
+        {
+            throw new Exception\RecordAlreadyExists(
+                "record already exists",
+                TraceCode::FTS_DUPLICATE_TRANSFER_REQUEST_SENT, [
+                'response' => $response->body,
+            ]);
+        }
 
         return $this->parseResponse($response);
     }

@@ -8,7 +8,6 @@ use Carbon\Carbon;
 use RZP\Models;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Payout;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
@@ -16,6 +15,7 @@ use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement\Details as SetlDetails;
+use RZP\Models\FundAccount\Type as FundAccountType;
 use RZP\Models\Schedule\Task\Type as ScheduleTaskType;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Models\Settlement\Details\Component as SetlComponent;
@@ -391,7 +391,7 @@ class Merchant
 
         $this->bankTransferAtpt = $fundTransferAttempt;
 
-        (new FundTransferAttempt\Core())->sendFTSFundTransferRequest($fundTransferAttempt, '', true);
+        (new FundTransferAttempt\Core)->sendFTSFundTransferRequest($fundTransferAttempt, FundAccountType::BANK_ACCOUNT, true);
     }
 
     protected function saveSettlementEntitiesToDb()
