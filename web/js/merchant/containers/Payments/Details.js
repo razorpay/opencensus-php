@@ -154,7 +154,10 @@ export default class PaymentDetailsContainer extends Component {
             <p>
               The payment amount is{' '}
               <b>
-                <Amount value={payment.capturableAmount} />
+                <Amount
+                  value={payment.capturableAmount}
+                  currency={payment.currency}
+                />
               </b>
             </p>
           </div>
