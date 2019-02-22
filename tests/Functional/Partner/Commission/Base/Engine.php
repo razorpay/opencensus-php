@@ -101,18 +101,11 @@ class Engine
 
         try
         {
-            if (method_exists($this->action, $contextName) === true)
-            {
-                $this->action->$contextName($testContext['post_setup'], $testContext['post_action']);
-            }
-            else
-            {
-                $this->action->defaultAction($testContext['post_setup'], $testContext['post_action']);
-            }
+            $this->runAction($testContext, $contextName);
         }
         catch (\Throwable $ex)
         {
-            $exception = $ex;
+            $exception = $this->getExceptionData($ex);
         }
         finally
         {
@@ -128,7 +121,7 @@ class Engine
 
     }
 
-    public function setupFixtures(array $setupRequests, array & $output)
+    protected function setupFixtures(array $setupRequests, array & $output)
     {
         foreach($setupRequests as $setupRequest => $data)
         {
@@ -138,12 +131,53 @@ class Engine
         }
     }
 
-    public function getDefaultContext(): array
+    protected function getDefaultContext(): array
     {
         return [
             'setup'       => [],
             'post_setup'  => [],
             'post_action' => [],
         ];
+    }
+
+    protected function runAction(array & $testContext, string $contextName)
+    {
+        if (method_exists($this->action, $contextName) === true)
+        {
+            $this->action->$contextName($testContext['post_setup'], $testContext['post_action']);
+        }
+        else
+        {
+            $this->action->defaultAction($testContext['post_setup'], $testContext['post_action']);
+        }
+    }
+
+
+    protected function getExceptionData(\Throwable $ex): array
+    {
+        $data = [
+            'code'    => $ex->getCode(),
+            'trace'   => array_map(
+                function ($trace)
+                {
+                    if (empty($trace['file']) === false)
+                    {
+                        // file:line_no
+                        $formattedTrace = $trace['file'] . ':' . $trace['line'];
+                    }
+                    else
+                    {
+                        // class:function()
+                        $formattedTrace = $trace['class'] . ':' . $trace['function'] . '()';
+                    }
+
+                    return $formattedTrace;
+                },
+                $ex->getTrace()),
+            'message' => $ex->getMessage(),
+            'class'   => get_class($ex),
+        ];
+
+        return $data;
     }
 }

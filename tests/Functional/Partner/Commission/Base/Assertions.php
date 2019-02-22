@@ -10,7 +10,10 @@ class Assertions extends TestCase
     {
         if (empty($testContext['action']['exception']) === true)
         {
-            $this->assertNull($testContext['post_action']['exception']);
+            if (empty($testContext['post_action']['exception']) === false)
+            {
+                $this->assertNull($testContext['post_action']['exception']);
+            }
         }
         else
         {
@@ -18,16 +21,16 @@ class Assertions extends TestCase
 
             $exception = $testContext['post_action']['exception'];
 
-            $this->assertTrue(is_object($exception));
+            $this->assertTrue(is_array($exception));
 
             if (empty($expectedExceptionData['class']) === false)
             {
-                $this->assertEquals($expectedExceptionData['class'], get_class($exception));
+                $this->assertEquals($expectedExceptionData['class'], $exception['class']);
             }
 
             if (empty($expectedExceptionData['message']) === false)
             {
-                $this->assertEquals($expectedExceptionData['message'], $exception->getMessage());
+                $this->assertEquals($expectedExceptionData['message'], $exception['message']);
             }
         }
     }
