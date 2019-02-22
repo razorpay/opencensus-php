@@ -160,7 +160,6 @@ return [
     'hitachi' => [
         'gateway_salt'         => env('HITACHI_GATEWAY_LIVE_HASH_SECRET'),
         'gateway_salt2'        => env('HITACHI_GATEWAY_LIVE_HASH_SECRET2'),
-        'paysecure_merchant_id' => env('HITACHI_GATEWAY_PAYSECURE_MID'),
         'test_merchant_id'     => env('HITACHI_GATEWAY_TEST_MERCHANT_ID'),
         'test_terminal_id'     => env('HITACHI_GATEWAY_TEST_TERMINAL_ID'),
         'test_hash_secret'     => env('HITACHI_GATEWAY_TEST_HASH_SECRET'),

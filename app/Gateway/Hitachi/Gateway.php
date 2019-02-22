@@ -1230,9 +1230,12 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantId()
     {
+        // For Paysecure, we're the acquirer. Hence, we will be onboarded on NPCI using
+        // Razorpay merchant id as MID. So, when calling Advice message to Hitachi for Paysecure,
+        // we'd have to send our merchant id.
         if ($this->input['payment']['gateway'] === Payment\Gateway::PAYSECURE)
         {
-            return $this->config['paysecure_merchant_id'];
+            return $this->input['merchant']['id'];
         }
 
         $merchantId = $this->getLiveMerchantId();
