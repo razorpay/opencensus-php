@@ -1,14 +1,16 @@
 <?php
 
-namespace Functional\Partner\Commission;
+namespace RZP\Tests\Functional\Partner\Commission;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Partner\Commission\Calculator;
+use RZP\Tests\Functional\Helpers\PrivateMethodTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class Assertions extends TestCase
 {
     use DbEntityFetchTrait;
+    use PrivateMethodTrait;
 
     public function testImplicitVariable(array $data)
     {
@@ -57,7 +59,12 @@ class Assertions extends TestCase
 
     protected function assertBasicCalculatorRules(Calculator $calculator)
     {
-        $this->assertTrue($calculator->shouldCreateCommission());
+        $shouldCreateCommission = $this->invokePrivateMethod(
+                                    $calculator,
+                                    Calculator::class,
+                                    'shouldCreateCommission');
+
+        $this->assertTrue($shouldCreateCommission);
 
         $commissionFee = $calculator->getCommissionFee();
         $commissionTax = $calculator->getCommissionTax();
@@ -89,6 +96,11 @@ class Assertions extends TestCase
 
         $calculator = $postAction['calculator'];
 
-        $this->assertFalse($calculator->shouldCreateCommission());
+        $shouldCreateCommission = $this->invokePrivateMethod(
+                                    $calculator,
+                                    Calculator::class,
+                                    'shouldCreateCommission');
+
+        $this->assertFalse($shouldCreateCommission);
     }
 }

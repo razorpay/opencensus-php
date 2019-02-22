@@ -1,6 +1,6 @@
 <?php
 
-namespace Functional\Partner\Commission\Base;
+namespace RZP\Tests\Functional\Partner\Commission\Base;
 
 use RZP\Tests\Functional\TestCase;
 

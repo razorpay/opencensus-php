@@ -2,9 +2,9 @@
 
 namespace RZP\Tests\Functional\Partner\Commission\Base;
 
-use Functional\Partner\Commission\Action;
-use Functional\Partner\Commission\Assertions;
-use Functional\Partner\Commission\Base\Assertions as BaseAssertions;
+use RZP\Tests\Functional\Partner\Commission\Action;
+use RZP\Tests\Functional\Partner\Commission\Assertions;
+use RZP\Tests\Functional\Partner\Commission\Base\Assertions as BaseAssertions;
 
 class Engine
 {
