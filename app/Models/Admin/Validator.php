@@ -48,6 +48,7 @@ class Validator extends Base\Validator
         ConfigKey::NPCI_UPI_DEMO                      => 'filled|array',
         ConfigKey::MERCHANT_ENACH_CONFIGS             => 'filled|array',
         ConfigKey::HEARTBEAT_ENABLED                  => 'filled|boolean',
+        ConfigKey::HEARTBEAT_FORCE_RUN                => 'filled|boolean',
         ConfigKey::HEARTBEAT_MOCK                     => 'filled|boolean',
         ConfigKey::HEARTBEAT_TIME_THRESHOLD           => 'filled|integer',
         ConfigKey::HEARTBEAT_TRAFFIC_PERCENTAGE       => 'filled|integer',
