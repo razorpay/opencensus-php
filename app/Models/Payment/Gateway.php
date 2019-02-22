@@ -534,6 +534,9 @@ class Gateway
         Payment\Gateway::HITACHI   => [
             self::GO_LIVE_TIMESTAMP => 1550746997
         ],
+        Payment\Gateway::WALLET_OLAMONEY   => [
+            self::GO_LIVE_TIMESTAMP => 1550827800
+        ],
     ];
 
     /**
