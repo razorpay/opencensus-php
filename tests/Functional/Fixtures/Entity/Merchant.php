@@ -206,7 +206,7 @@ class Merchant extends Base
         return $merchant;
     }
 
-    public function createWithBalance(array $attributes)
+    public function createWithBalance(array $attributes = [])
     {
         $merchant = $this->fixtures->create('merchant', $attributes);
 

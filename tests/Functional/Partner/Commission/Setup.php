@@ -24,7 +24,7 @@ class Setup
      */
     public function createPartner(array $data, array & $output)
     {
-        $data = array_merge($data, $this->getDefaultCreatePartnerData());
+        $data = array_merge($this->getDefaultCreatePartnerData(), $data);
 
         $account = $this->fixtures->merchant->createAccount($data['id']);
 
