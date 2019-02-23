@@ -128,6 +128,18 @@ class InvoiceTaxesTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * Asserts that tax of 0.125% is working fine.
+     * Adding this after we have made tax.rate multiple of 10000 to keep values up to more precision
+     */
+    public function testCreateInvoiceWithSharedGstTaxes2()
+    {
+        $this->startTest();
+
+        // Asserts that model values were flushed in db correctly
+        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
+    }
+
     public function testCreateInvoiceLineItemWithItemCessTax()
     {
         $this->fixtures->create('item', [

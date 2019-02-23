@@ -884,6 +884,30 @@ class Validator extends Base\Validator
     }
 
     /**
+     * Validates merchant is partner.
+     * Throws an error if the merchant is not a partner or if merchant is a reseller partner
+     *
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateIsNotResellerPartner(Entity $merchant)
+    {
+        $this->validateIsPartner($merchant);
+
+        if ($merchant->isResellerPartner() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCESS_NOT_ALLOWED_FOR_RESELLER,
+                Entity::PARTNER_TYPE,
+                [
+                    Entity::PARTNER_TYPE => $merchant->getPartnerType(),
+                ]
+            );
+        }
+    }
+
+    /**
      * @param Entity $merchant
      *
      * @throws Exception\BadRequestException

@@ -35,10 +35,6 @@ class Validator extends Base\Validator
         'limit'              => 'sometimes|numeric',
     ];
 
-    protected static $cardNumberRules = [
-        'card_number'              => 'required|numeric|luhn|digits_between:12,19',
-    ];
-
     protected static $createValidators = array(
         'expiry_date'
     );

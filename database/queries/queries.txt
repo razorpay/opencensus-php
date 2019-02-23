@@ -4694,6 +4694,9 @@ ALTER TABLE payouts
 ALTER TABLE promotions
     MODIFY COLUMN credit_amount int(11) NOT NULL DEFAULT 0;
 
+ALTER TABLE `partner_configs` ADD INDEX `partner_configs_entity_id_index` (`entity_id`);
+ALTER TABLE `partner_configs` ADD INDEX `partner_configs_origin_id_index` (`origin_id`);
+
 ALTER TABLE gateway_rule
     ADD COLUMN authentication_gateway varchar(255) DEFAULT NULL AFTER category2,
     ADD COLUMN auth_type varchar(14) DEFAULT NULL AFTER authentication_gateway;
@@ -4746,3 +4749,7 @@ ALTER TABLE payouts
 ALTER TABLE emi_plans
     ADD COLUMN merchant_id char(14) DEFAULT NULL AFTER id,
     ADD INDEX emi_plans_merchant_id_index (merchant_id);
+
+ALTER TABLE promotions
+    ADD COLUMN partner_id CHAR(14) DEFAULT NULL AFTER pricing_plan_id,
+    ADD INDEX promotions_partner_id_index (partner_id);

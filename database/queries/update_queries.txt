@@ -2399,3 +2399,60 @@ INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_typ
 
 # Setting default mercahnt id for existing emi plans
 UPDATE emi_plans SET merchant_id = '100000Razorpay';
+
+# 1st revision to GST default taxes
+
+INSERT INTO `taxes` (`id`, `merchant_id`, `name`, `rate_type`, `rate`, `created_at`, `updated_at`, `deleted_at`)
+VALUES
+    ('BfshA51SxQsUxK', '100000Razorpay', 'IGST 0.1%', 'percentage', 1000, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('BfshAynA8QJFrw', '100000Razorpay', 'IGST 0.25%', 'percentage', 2500, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('BfshBdBn4hHoad', '100000Razorpay', 'IGST 3%', 'percentage', 30000, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('BfshCEQAP7ajjz', '100000Razorpay', 'CGST 0.05%', 'percentage', 500, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('BfshCs8x6I95YV', '100000Razorpay', 'CGST 0.1%', 'percentage', 1000, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('BfshDU2gwdUNb9', '100000Razorpay', 'CGST 0.125%', 'percentage', 1250, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('BfshE7U0aFEoAi', '100000Razorpay', 'CGST 0.25%', 'percentage', 2500, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('BfshEjK5qyZJq9', '100000Razorpay', 'CGST 1.5%', 'percentage', 15000, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('BfshFHja7s8Vvq', '100000Razorpay', 'SGST 0.05%', 'percentage', 500, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('BfshFtJ8pE8N5t', '100000Razorpay', 'SGST 0.1%', 'percentage', 1000, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('BfshGT85ZW7NJl', '100000Razorpay', 'SGST 0.125%', 'percentage', 1250, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('BfshH5DzT0LaTL', '100000Razorpay', 'SGST 0.25%', 'percentage', 2500, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('BfshHgO8t432o6', '100000Razorpay', 'SGST 1.5%', 'percentage', 15000, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('BfshIDuScOgtCh', '100000Razorpay', 'SGST 3%', 'percentage', 30000, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('BfshInY3KVdZrm', '100000Razorpay', 'UTGST 0.05%', 'percentage', 500, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('BfshJMH0TddvbZ', '100000Razorpay', 'UTGST 0.1%', 'percentage', 1000, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('BfshJsRIX0WZga', '100000Razorpay', 'UTGST 0.125%', 'percentage', 1250, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('BfshKVrLHgEbvN', '100000Razorpay', 'UTGST 0.25%', 'percentage', 2500, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('BfshL7JKKArrv9', '100000Razorpay', 'UTGST 1.5%', 'percentage', 15000, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL),
+    ('BfshLkpOqY3Zng', '100000Razorpay', 'UTGST 3%', 'percentage', 30000, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), NULL);
+
+UPDATE taxes SET rate = rate * 100 WHERE rate_type = "percentage";
+
+# Fixes double multiplication done as a result of above 2 queries.
+# Mistakeny in 1st query the value were multiple of 10000 instead of 100.
+UPDATE taxes SET rate = 1000 WHERE id = 'BfshA51SxQsUxK' LIMIT 1;
+UPDATE taxes SET rate = 2500 WHERE id = 'BfshAynA8QJFrw' LIMIT 1;
+UPDATE taxes SET rate = 30000 WHERE id = 'BfshBdBn4hHoad' LIMIT 1;
+UPDATE taxes SET rate = 500 WHERE id = 'BfshCEQAP7ajjz' LIMIT 1;
+UPDATE taxes SET rate = 1000 WHERE id = 'BfshCs8x6I95YV' LIMIT 1;
+UPDATE taxes SET rate = 1250 WHERE id = 'BfshDU2gwdUNb9' LIMIT 1;
+UPDATE taxes SET rate = 2500 WHERE id = 'BfshE7U0aFEoAi' LIMIT 1;
+UPDATE taxes SET rate = 15000 WHERE id = 'BfshEjK5qyZJq9' LIMIT 1;
+UPDATE taxes SET rate = 500 WHERE id = 'BfshFHja7s8Vvq' LIMIT 1;
+UPDATE taxes SET rate = 1000 WHERE id = 'BfshFtJ8pE8N5t' LIMIT 1;
+UPDATE taxes SET rate = 1250 WHERE id = 'BfshGT85ZW7NJl' LIMIT 1;
+UPDATE taxes SET rate = 2500 WHERE id = 'BfshH5DzT0LaTL' LIMIT 1;
+UPDATE taxes SET rate = 15000 WHERE id = 'BfshHgO8t432o6' LIMIT 1;
+UPDATE taxes SET rate = 30000 WHERE id = 'BfshIDuScOgtCh' LIMIT 1;
+UPDATE taxes SET rate = 500 WHERE id = 'BfshInY3KVdZrm' LIMIT 1;
+UPDATE taxes SET rate = 1000 WHERE id = 'BfshJMH0TddvbZ' LIMIT 1;
+UPDATE taxes SET rate = 1250 WHERE id = 'BfshJsRIX0WZga' LIMIT 1;
+UPDATE taxes SET rate = 2500 WHERE id = 'BfshKVrLHgEbvN' LIMIT 1;
+UPDATE taxes SET rate = 15000 WHERE id = 'BfshL7JKKArrv9' LIMIT 1;
+UPDATE taxes SET rate = 30000 WHERE id = 'BfshLkpOqY3Zng' LIMIT 1;
+
+# Updates line_item_taxes.rate same way as taxes.rate because it is only copied over as a value for former attribute.
+# The exception id exist here becase on production that one got created with correct value already.
+UPDATE line_item_taxes SET rate = rate * 100 WHERE rate_type = 'percentage' AND id != 'Bz6R9OTSj4pKlj';
+
+# Result of above query ^. Some subscription cron created another entity using correct tax.rate value in between.
+UPDATE line_item_taxes SET rate = 180000 WHERE id = 'Bz6kYfEYhnonxn' LIMIT 1;

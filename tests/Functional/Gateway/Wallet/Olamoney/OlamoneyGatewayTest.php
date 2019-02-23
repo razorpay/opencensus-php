@@ -2,17 +2,18 @@
 
 namespace RZP\Tests\Functional\Gateway\Wallet\Olamoney;
 
-use RZP\Exception;
-use RZP\Http\Route;
-use RZP\Models\Payment\Entity as PaymentEntity;
-use RZP\Models\Payment\Refund\Status as RefundStatus;
 use RZP\Gateway\Wallet\Base\Otp;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\Wallet\Olamoney\ResponseFields;
+use RZP\Models\Payment\Entity as PaymentEntity;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Payment\Refund\Status as RefundStatus;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class OlamoneyGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     const WALLET = 'olamoney';
 
@@ -384,6 +385,13 @@ class OlamoneyGatewayTest extends TestCase
 
         $authPayment = $this->doAuthPayment($payment);
 
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content[ResponseFields::STATUS] = 'error';
+
+            return $content;
+        });
+
         $this->refundAuthorizedPayment($authPayment['razorpay_payment_id'], $input);
 
         $refund = $this->getLastEntity('wallet', true);
@@ -406,11 +414,24 @@ class OlamoneyGatewayTest extends TestCase
 
         $paymentId = $payment['razorpay_payment_id'];
 
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content[ResponseFields::STATUS] = 'error';
+
+            return $content;
+        });
+
         $refund = $this->refundAuthorizedPayment($paymentId, $input);
 
         $gatewayRefund = $this->getLastEntity('wallet', true);
 
         $this->assertSame($gatewayRefund['status_code'], 'error');
+
+        $refundEntity = $this->getDbLastRefund();
+
+        $this->assertEquals($refund['id'], 'rfnd_'.$refundEntity['id']);
+
+        $this->assertEquals('created', $refundEntity['status']);
 
         return $refund;
     }
@@ -424,6 +445,13 @@ class OlamoneyGatewayTest extends TestCase
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $amount = (int) ($payment['amount'] / 3);
+
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content[ResponseFields::STATUS] = 'error';
+
+            return $content;
+        });
 
         $this->refundPayment($payment['id'], $amount);
 
@@ -449,9 +477,15 @@ class OlamoneyGatewayTest extends TestCase
     {
         $refund = $this->testRefundFailed();
 
-        $response = $this->retryFailedRefund($refund['id']);
+        $this->clearMockFunction();
 
-        $this->assertEquals(RefundStatus::PROCESSED, $response['status']);
+        $this->retryFailedRefund($refund['id'], $refund['payment_id']);
+
+        $refundEntity = $this->getDbLastRefund();
+
+        $this->assertEquals($refund['id'], 'rfnd_'.$refundEntity['id']);
+
+        $this->assertEquals(RefundStatus::PROCESSED, $refundEntity['status']);
     }
 
     protected function failOlamoneyAuthorizePayment()

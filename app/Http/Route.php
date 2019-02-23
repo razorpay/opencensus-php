@@ -950,6 +950,8 @@ final class Route
         'partner_config_fetch'                     => ['get',      'partner_configs',                                'PartnerConfigController@getConfig'                                 ],
         'partner_config_edit'                      => ['put',      'partner_configs/{id}',                           'PartnerConfigController@update'                                    ],
 
+        'commissions_get_multiple'                 => ['get',      'commissions',                                    'CommissionController@list'                                         ],
+      
         'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
         'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
         'merchant_associated_accounts_fetch'       => ['get',      'merchant/{id}/associated_accounts',              'MerchantController@getAssociatedAccounts'                          ],
@@ -1569,6 +1571,7 @@ final class Route
         'user_verify_contact',
         'payout_create_with_otp',
         'payment_link_images',
+        'commissions_get_multiple',
     ];
 
     // These will run on internal auth with the assurance
