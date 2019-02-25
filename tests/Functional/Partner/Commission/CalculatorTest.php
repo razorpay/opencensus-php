@@ -66,4 +66,16 @@ class CalculatorTest extends OAuthTestCase
     {
         $this->ruleEngine->execute(__FUNCTION__);
     }
+
+    /**
+     * Fee calculation can have multiple rules - base rule + add on rule (like recurring payment pricing rule)
+     * This test asserts that if multiple pricing rules have been added in the pricing plan for the merchant and the
+     * partner, the commission calculation takes into account the following calculation -
+     *
+     * commission = sum(merchant fees from all rules) - sum(partner fees from all rules)
+     */
+    public function testImplicitVariableMultiplePricingRules()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
 }
