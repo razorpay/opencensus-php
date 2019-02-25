@@ -75,6 +75,8 @@ class Service extends Base\Service
 
                 if ($existingVirtualAccount !== null)
                 {
+                    $this->editAmountExpectedToIncludeFees($order, $existingVirtualAccount);
+
                     return $existingVirtualAccount->toArrayPublic();
                 }
 
@@ -91,12 +93,7 @@ class Service extends Base\Service
 
                 $virtualAccount = $this->create($createArray);
 
-                if ($order->merchant->isFeeBearerCustomer() === true)
-                {
-                    $amountExpected = $this->getExpectedAmountForVirtualAccount($order);
-
-                    $virtualAccount[Entity::AMOUNT_EXPECTED] = $amountExpected;
-                }
+                $this->editAmountExpectedToIncludeFees($order, $virtualAccount);
 
                 return $virtualAccount;
             },
@@ -104,6 +101,16 @@ class Service extends Base\Service
             ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS);
 
         return $response;
+    }
+
+    protected function editAmountExpectedToIncludeFees(Order\Entity $order, array & $virtualAccount)
+    {
+        if ($order->merchant->isFeeBearerCustomer() === true)
+        {
+            $amountExpected = $this->getExpectedAmountForVirtualAccount($order);
+
+            $virtualAccount[Entity::AMOUNT_EXPECTED] = $amountExpected;
+        }
     }
 
     protected function getExpectedAmountForVirtualAccount(Order\Entity $order)
