@@ -2,15 +2,11 @@
 
 namespace RZP\Services\FTS;
 
+use RZP\Constants\Entity;
 use RZP\Exception\LogicException;
 use RZP\Models\Vpa\Core as VPACore;
-use RZP\Models\Payout\Core as PayoutCore;
-use RZP\Models\Payment\Core as PaymentCore;
-use RZP\Models\Payment\Refund\Core as RefundCore;
-use RZP\Models\Settlement\Core as SettlementCore;
 use RZP\Models\BankAccount\Core as BankAccountCore;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
-use RZP\Models\FundAccount\Validation\Core  as FundAccountValidationCore;
 
 class FundTransfer extends Base
 {
@@ -22,6 +18,13 @@ class FundTransfer extends Base
     protected $fta;
 
     protected $source;
+
+    const SOURCE_TYPES = [
+        Constants::REFUND,
+        Constants::PAYOUT,
+        Constants::SETTLEMENT,
+        Constants::FUND_ACCOUNT_VALIDATION,
+    ];
 
     public function __construct($app)
     {
@@ -63,9 +66,9 @@ class FundTransfer extends Base
     {
         $this->fta = $this->FTACore->getFTAEntity($ftaId);
 
-        $sourceId   = $this->fta->getSourceId();
-
         $sourceType = $this->fta->getSourceType();
+
+        $this->setSourceEntityByType($sourceType);
 
         $product = $sourceType;
 
@@ -80,7 +83,7 @@ class FundTransfer extends Base
             Constants::MERCHANT_ID       => $this->fta->merchant->getId(),
         ];
 
-        $request = $this->addTransferBlock($request, $sourceId, $sourceType);
+        $request = $this->addTransferBlock($request);
 
         if($isRegistered === true)
         {
@@ -109,24 +112,19 @@ class FundTransfer extends Base
     }
 
     /**
-     * @param array  $request
-     * @param string $sourceId
-     * @param string $sourceType
+     * @param array $request
      * @return array
-     * @throws LogicException
      */
-    protected function addTransferBlock(
-        array $request,
-        string $sourceId,
-        string $sourceType):array
+    protected function addTransferBlock(array $request): array
     {
-        $this->setSourceEntityByType($sourceId, $sourceType);
 
         $request[Constants::TRANSFER] = [
             Constants::MODE              => $this->fta->getMode(),
             Constants::AMOUNT            => $this->source->getAmount(),
             Constants::CHANNEL           => $this->fta->getChannel(),
             Constants::NARRATION         => $this->fta->getNarration(),
+            Constants::SOURCE_ID         => $this->fta->getSourceId(),
+            Constants::SOURCE_TYPE       => $this->fta->getSourceType(),
             Constants::INITIATE_AT       => $this->fta->getInitiateAt(),
         ];
 
@@ -177,38 +175,17 @@ class FundTransfer extends Base
     }
 
     /**
-     * @param string $sourceId
      * @param string $sourceType
      * @throws LogicException
      */
-    protected function setSourceEntityByType(string $sourceId, string $sourceType)
+    protected function setSourceEntityByType(string $sourceType)
     {
-        switch ($sourceType)
+        if(in_array($sourceType, self::SOURCE_TYPES, true) === false)
         {
-            case Constants::SETTLEMENT:
-                $this->source = (new SettlementCore)->getSettlementEntityById($sourceId);
-
-                break;
-
-            case Constants::REFUND:
-                $this->source = (new PaymentCore)->retrieveRefundById($sourceId);
-
-                break;
-
-            case Constants::PAYOUT:
-                $this->source = (new PayoutCore)->getPayoutEntityById($sourceId);
-
-                break;
-
-            case Constants::FUND_ACCOUNT_VALIDATION:
-                $this->source = (new FundAccountValidationCore)->getFundAccountValidationEntityById($sourceId);
-
-                break;
-
-            default:
-                throw new LogicException('Source Type is not supported : ' . $sourceType);
-
+            throw new LogicException('Source Type is not supported : ' . $sourceType);
         }
+
+        $this->source = $this->fta->source;
     }
 
     /**
@@ -256,37 +233,13 @@ class FundTransfer extends Base
 
     /**
      * @param $ftsTransferId
-     * @throws LogicException
      */
     protected function updateSource($ftsTransferId)
     {
-        switch ($this->fta->getSourceType())
-        {
-            case Constants::SETTLEMENT:
-                (new SettlementCore)->updateSettlementWithFtsTransferId($this->source, $ftsTransferId);
+        $sourceCoreClass = Entity::getEntityNamespace($this->source->getEntity()) . '\\Core';
 
-                break;
+        $sourceCore = new $sourceCoreClass();
 
-            case Constants::REFUND:
-                (new RefundCore)->updateRefundWithFtsTransferId($this->source, $ftsTransferId);
-
-                break;
-
-            case Constants::PAYOUT:
-                (new PayoutCore)->updatePayoutWithFtsTransferId($this->source, $ftsTransferId);
-
-                break;
-
-            case Constants::FUND_ACCOUNT_VALIDATION:
-                (new FundAccountValidationCore)->updateFundAccountValidationWithFtsTransferId(
-                    $this->source,
-                    $ftsTransferId);
-
-                break;
-
-            default:
-                throw new LogicException('Source Type is not supported : ' . $this->fta->getSourceType());
-
-        }
+        $sourceCore->updateEntityWithFtsTransferId($this->source, $ftsTransferId);
     }
 }

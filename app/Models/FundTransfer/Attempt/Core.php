@@ -279,7 +279,7 @@ class Core extends Base\Core
         return $this->repo->fund_transfer_attempt->findOrFailPublic($ftaId);
     }
 
-    public function updateFTA(Entity $fta, string $status, $ftsTransferId)
+    public function updateFTA(Entity $fta, $ftsTransferId, string $status)
     {
         $fta->setFTSTransferId($ftsTransferId);
 

@@ -215,12 +215,7 @@ class Core extends Base\Core
                 ]);
     }
 
-    public function getFundAccountValidationEntityById(string $id)
-    {
-        return $this->repo->fund_account_validation->findOrFailPublic($id);
-    }
-
-    public function updateFundAccountValidationWithFtsTransferId(Entity $entity, $ftsTransferId)
+    public function updateEntityWithFtsTransferId(Entity $entity, $ftsTransferId)
     {
         $entity->setFTSTransferId($ftsTransferId);
 

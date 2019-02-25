@@ -305,12 +305,7 @@ class Core extends Base\Core
         return new $nodalClass();
     }
 
-    public function getSettlementEntityById(string $setlId)
-    {
-        return $this->repo->settlement->findOrFailPublic($setlId);
-    }
-
-    public function updateSettlementWithFtsTransferId(Entity $entity, $ftsTransferId)
+    public function updateEntityWithFtsTransferId(Entity $entity, $ftsTransferId)
     {
         $entity->setFTSTransferId($ftsTransferId);
 

@@ -28,6 +28,8 @@ class Base
 
     protected $auth;
 
+    protected $mode;
+
     // Account related URIs
     const FUND_ACCOUNT_CREATE_URI  = '/account';
     const FUND_ACCOUNT_REGISTER_URI  = '/account/register';
@@ -58,11 +60,13 @@ class Base
 
         $this->config = $app['config']->get('applications.fts');
 
-        $this->baseUrl = $this->config['url'];
+        $this->mode = $app['rzp.mode'];
 
-        $this->key = $this->config['fts_key'];
+        $this->baseUrl = $this->config[$this->mode]['url'];
 
-        $this->secret = $this->config['fts_secret'];
+        $this->key = $this->config[$this->mode]['fts_key'];
+
+        $this->secret = $this->config[$this->mode]['fts_secret'];
 
         $this->setHeaders();
     }
@@ -94,7 +98,7 @@ class Base
         if ($response->status_code === 409)
         {
             throw new Exception\RecordAlreadyExists(
-                "record already exists",
+                'record already exists',
                 TraceCode::FTS_DUPLICATE_TRANSFER_REQUEST_SENT, [
                 'response' => $response->body,
             ]);

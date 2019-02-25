@@ -36,7 +36,11 @@ final class Constants
 
     const ENTITY_ID                     = 'entity_id';
 
+    const SOURCE_ID                     = 'source_id';
+
     const SETTLEMENT                    = 'settlement';
+
+    const SOURCE_TYPE                   = 'source_type';
 
     const INITIATE_AT                   = 'initiate_at';
 

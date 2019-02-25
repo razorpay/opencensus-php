@@ -97,7 +97,7 @@ class Core extends Base\Core
         $this->repo->saveOrFail($entity);
     }
 
-    public function updateRefundWithFtsTransferId(Entity $entity, $ftsTransferId)
+    public function updateEntityWithFtsTransferId(Entity $entity, $ftsTransferId)
     {
         $entity->setFTSTransferId($ftsTransferId);
 
