@@ -1888,9 +1888,9 @@ class Core extends Base\Core
     {
         $merchantInput = [];
 
-        $isMerchantInternational = $this->isMerchantEligibleForInternational($merchant);
+        $shouldEnableInternationalForMerchant = $this->shouldEnableInternationalForMerchant($merchant, $input);
 
-        if ($isMerchantInternational === true)
+        if ($shouldEnableInternationalForMerchant === true)
         {
             $merchantInput[Entity::INTERNATIONAL] = true;
 
@@ -1926,14 +1926,24 @@ class Core extends Base\Core
 
     /**
      * Checks and returns if the business category and subcategory are whitelisted.
+     * If merchant.website is empty return false
      *
      * @param Entity $merchant
      *
      * @return bool
      * @throws \Throwable
      */
-    protected function isMerchantEligibleForInternational(Entity $merchant): bool
+    protected function shouldEnableInternationalForMerchant(Entity $merchant, array $input): bool
     {
+        // If business_website is empty, then don't allow international by default
+        $businessWebsite = $merchant->getWebsite() ?? $input[Detail\Entity::BUSINESS_WEBSITE] ?? '';
+
+        if (($merchant->isInternational() === true) or
+            (empty($businessWebsite) === true))
+        {
+            return false;
+        }
+
         $merchantDetails = (new Detail\Core)->getMerchantDetails($merchant);
 
         $category = $merchantDetails->getBusinessCategory();
@@ -1944,6 +1954,14 @@ class Core extends Base\Core
             (BusinessSubCategoryMetaData::isFeatureCategoryOrSubcategoryWhitelisted(
                 BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION, $category, $subcategory) === true))
         {
+            $this->trace->info(
+                TraceCode::MERCHANT_UPDATE_INTERNATIONAL,
+                [
+                    'merchant_id'   => $merchant->getPublicId(),
+                    'category'      => $category,
+                    'subcategory'   => $subcategory,
+                ]);
+
             return true;
         }
 
