@@ -707,8 +707,12 @@ pipeline:
       - client_key_klusterapi
       - server_cert_klusterapi
       - client_cert_klusterapi
+      - server_url_cdegreen
+      - client_key_cdegreen
+      - server_cert_cdegreen
+      - client_cert_cdegreen
     user: drone
-    cluster: kluster-api
+    cluster: kluster-api,cde-green
     auth_mode: client-cert
     deployment:
       - api-web
