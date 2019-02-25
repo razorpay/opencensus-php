@@ -69,15 +69,17 @@ class Service extends Base\Service
             $orderId,
             function() use ($order, $input)
             {
-                $existingVirtualAccount = $this->repo
-                                                ->virtual_account
-                                                ->findActiveVirtualAccountByOrder($order);
+                $virtualAccount = $this->repo
+                                       ->virtual_account
+                                       ->findActiveVirtualAccountByOrder($order);
 
-                if ($existingVirtualAccount !== null)
+                if ($virtualAccount !== null)
                 {
-                    $this->editAmountExpectedToIncludeFees($order, $existingVirtualAccount);
+                    $virtualAccount = $virtualAccount->toArrayPublic();
 
-                    return $existingVirtualAccount->toArrayPublic();
+                    $this->editAmountExpectedToIncludeFees($order, $virtualAccount);
+
+                    return $virtualAccount;
                 }
 
                 $createArray = [
