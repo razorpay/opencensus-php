@@ -535,7 +535,7 @@ class Gateway
             self::GO_LIVE_TIMESTAMP => 1550746997
         ],
         Payment\Gateway::WALLET_OLAMONEY   => [
-            self::GO_LIVE_TIMESTAMP => 1550827800
+            self::GO_LIVE_TIMESTAMP => 1550838065
         ],
     ];
 
