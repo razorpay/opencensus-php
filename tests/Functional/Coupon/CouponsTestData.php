@@ -109,6 +109,21 @@ return [
 
     'testCreateCouponAndApplyOnMerchant' => $defaultRequestAndResponse,
 
+    'testCreateCouponAndApplyOnMerchantInvalidPartner' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION
+        ],
+    ],
+
     'testMultiCouponApply' => $defaultRequestAndResponse,
 
     'testCreateMultipleCouponsPerPromotion' => [
