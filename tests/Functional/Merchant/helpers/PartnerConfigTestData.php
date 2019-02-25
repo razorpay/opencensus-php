@@ -87,10 +87,7 @@ return [
             'content' => [
                 'default_plan_id'        => Pricing::DEFAULT_PRICING_PLAN_ID,
                 'application_id'         => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID,
-                'explicit_plan_id'       => Pricing::DEFAULT_PRICING_PLAN_ID,
                 'commissions_enabled'    => 1,
-                'explicit_should_charge' => 1,
-                'explicit_refund_fees'   => 1,
                 'revisit_at'             => 1648416783,
             ],
         ],
@@ -99,10 +96,7 @@ return [
                 'entity_type' => 'application',
                 'entity_id'   => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID,
                 'default_plan_id'        => Pricing::DEFAULT_PRICING_PLAN_ID,
-                'explicit_plan_id'       => Pricing::DEFAULT_PRICING_PLAN_ID,
                 'commissions_enabled'    => true,
-                'explicit_should_charge' => true,
-                'explicit_refund_fees'   => true,
                 'revisit_at'             => 1648416783,
             ],
         ],
@@ -320,7 +314,14 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity_id'   => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID,
+                [
+                    'entity_id'   => PartnerConfigTest::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                    'entity_type' => 'merchant',
+                ],
+                [
+                    'entity_id'   => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID,
+                    'entity_type' => 'application',
+                ],
             ],
         ],
     ],
@@ -340,6 +341,25 @@ return [
                 'entity_id'   => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID,
                 'origin_id'   => null,
                 'origin_type' => null,
+            ],
+        ],
+    ],
+
+    'testGettingOverriddenConfig' => [
+        'request'  => [
+            'url'     => '/partner_configs',
+            'method'  => 'GET',
+            'content' => [
+                'application_id' => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID,
+                'submerchant_id' => PartnerConfigTest::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity_type' => 'merchant',
+                'entity_id'   => PartnerConfigTest::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'origin_id'   => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID,
+                'origin_type' => 'application',
             ],
         ],
     ],

@@ -18,7 +18,7 @@ class ToType
     {
         if (defined(__CLASS__ . '::' . strtoupper($method)) === false)
         {
-            throw new Exception\InvalidArgumentException(
+            throw new Exception\BadRequestValidationFailureException(
                 'Not a valid Transfer destination: ' . $method);
         }
     }

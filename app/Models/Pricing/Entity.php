@@ -24,6 +24,7 @@ class Entity extends Base\PublicEntity
     const PAYMENT_METHOD_TYPE  = 'payment_method_type';
     const PAYMENT_NETWORK      = 'payment_network';
     const INTERNATIONAL        = 'international';
+    const TYPE                 = 'type';
 
     // Humanized name of the payment network
     const PAYMENT_NETWORK_NAME = 'payment_network_name';
@@ -79,6 +80,7 @@ class Entity extends Base\PublicEntity
         self::MAX_FEE,
         self::EMI_DURATION,
         self::ORG_ID,
+        self::TYPE,
     ];
 
     protected $entity = 'pricing';
@@ -110,6 +112,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_RANGE_ACTIVE => '0',
         self::EMI_DURATION        => null,
         self::RECEIVER_TYPE       => null,
+        self::TYPE                => Type::PRICING,
     ];
 
     /**
@@ -349,6 +352,11 @@ class Entity extends Base\PublicEntity
     public function getProduct()
     {
         return $this->getAttribute(self::PRODUCT);
+    }
+
+    public function getType(): string
+    {
+        return $this->getAttribute(self::TYPE);
     }
 
     public function isPrimaryProduct(): bool

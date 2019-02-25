@@ -3,6 +3,7 @@
 namespace RZP\Base\Database;
 
 use App;
+use Cache;
 use Closure;
 use Razorpay\Trace\Logger as Trace;
 use Razorpay\Trace\Facades\Trace as TraceFacade;
@@ -44,6 +45,13 @@ class MySqlConnection extends BaseMySqlConnection
     protected $forceCheckReplicaLag;
 
     /**
+     * If set, heartbeat lag check will run regardless of master percentage check
+     * and it'll only collect state rather than deciding the connection
+     * @var bool
+     */
+    protected $heartbeatForceRun = false;
+
+    /**
      * Holds the previously established read pdo connection if any, for usage later once replication lag is resolved.
      * @var mixed
      */
@@ -59,9 +67,11 @@ class MySqlConnection extends BaseMySqlConnection
 
         $this->lagChecker = $this->getLagChecker($lagCheckConfig);
 
-        $lagCheckConfig = $config['heartbeat_check'];
+        $heartbeatCheckConfig = $config['heartbeat_check'];
 
-        $this->heartbeatLagChecker = $this->getLagChecker($lagCheckConfig);
+        $this->heartbeatForceRun = (bool) Cache::get($heartbeatCheckConfig['force_run']);
+
+        $this->heartbeatLagChecker = $this->getLagChecker($heartbeatCheckConfig);
 
         $this->trace = TraceFacade::getFacadeRoot();
 
@@ -198,20 +208,23 @@ class MySqlConnection extends BaseMySqlConnection
         // If true then use write PDO object and move all traffic to master.
         $result = $this->lagChecker->useReadPdoIfApplicable($readPdo);
 
-        if ($result === null)
+        if (($result === null) and ($this->heartbeatForceRun === false))
         {
             return null;
         }
 
         // If the Redis lagchecker is not in effect then we'll go ahead with
         // pt-heartbeat lag checker.
-        $result = $this->heartbeatLagChecker->useReadPdoIfApplicable($readPdo);
+        $heartbeatResult = $this->heartbeatLagChecker->useReadPdoIfApplicable($readPdo);
 
-        $connection = ($result === null) ? Metric::MASTER : Metric::SLAVE;
+        $connection = ($heartbeatResult === null) ? Metric::MASTER : Metric::SLAVE;
 
         $this->trace->count(Metric::ENFORCE_MASTER_CONNECTION, [
             Metric::CONNECTION => $connection
         ], 1);
+
+        $result = ($this->heartbeatForceRun === true) ?
+            $result : $heartbeatResult;
 
         return $result;
     }

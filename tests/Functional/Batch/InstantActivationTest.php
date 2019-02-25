@@ -196,6 +196,8 @@ class InstantActivationTest extends TestCase
             'credit_card'             => 0,
         ]);
 
+        $this->fixtures->edit('pricing', $plan->getId(), ['international' => 1]);
+
         return $merchantDetail->getMerchantId();
     }
 

@@ -1,0 +1,63 @@
+<?php
+
+namespace RZP\Tests\Functional\Partner\Commission;
+
+use RZP\Models\Partner\Commission\Calculator;
+use RZP\Tests\Functional\Helpers\PrivateMethodTrait;
+
+class Action
+{
+    use PrivateMethodTrait;
+
+    /**
+     * Gets triggered if the test's action function is not defined here explictly. Calculates commission.
+     *
+     * @param array $postSetupData
+     * @param array $postActionData
+     */
+    public function defaultAction(array $postSetupData, array & $postActionData)
+    {
+        $calculator = new Calculator($postSetupData['source_entity']);
+
+        $this->invokePrivateMethod($calculator, Calculator::class, 'calculate');
+
+        $postActionData['calculator'] = $calculator;
+    }
+
+    public function testInvalidSource(array $postSetupData, array & $postActionData)
+    {
+        $this->instantiateCalculator($postSetupData, $postActionData);
+    }
+
+    public function testPartnerDoesNotExist(array $postSetupData, array & $postActionData)
+    {
+        $this->instantiateCalculator($postSetupData, $postActionData);
+    }
+
+    public function testImplicitPricingDoesNotExist(array $postSetupData, array & $postActionData)
+    {
+        $this->instantiateCalculator($postSetupData, $postActionData);
+    }
+
+    public function testPartnerConfigDoesNotExist(array $postSetupData, array & $postActionData)
+    {
+        $this->instantiateCalculator($postSetupData, $postActionData);
+    }
+
+    public function testPostpaidFeeModel(array $postSetupData, array & $postActionData)
+    {
+        $this->instantiateCalculator($postSetupData, $postActionData);
+    }
+
+    public function testCommissionDisabled(array $postSetupData, array & $postActionData)
+    {
+        $this->instantiateCalculator($postSetupData, $postActionData);
+    }
+
+    public function instantiateCalculator(array $postSetupData, array & $postActionData)
+    {
+        $calculator = new Calculator($postSetupData['source_entity']);
+
+        $postActionData['calculator'] = $calculator;
+    }
+}

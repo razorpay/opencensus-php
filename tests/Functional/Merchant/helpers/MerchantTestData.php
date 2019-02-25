@@ -709,6 +709,26 @@ return [
         ]
     ],
 
+    'testEditMerchantEmailUserExists' => [
+        'request' => [
+            'content' => [
+                'email' => 'newemail@razorpay.com',
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt/email',
+            'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => '1X4hRFHFx4UiXt',
+                'email' => 'newemail@razorpay.com'
+            ]
+        ]
+    ],
+
     'testEditMerchantUppercaseEmail' => [
         'request' => [
             'content' => [

@@ -22,6 +22,10 @@ class InfoCode
 
     const RECON_TYPE_NOT_FOUND              = 'RECON_TYPE_NOT_FOUND';
 
+    const GATEWAY_PAYMENT_ABSENT            = 'GATEWAY_PAYMENT_ABSENT';
+
+    const COLUMN_HEADER_MISMATCH            = 'COLUMN_HEADER_MISMATCH';
+
     const DATA_MISMATCH                     = 'DATA_MISMATCH';
 
     const UNEXPECTED_PAYMENT                = 'UNEXPECTED_PAYMENT';

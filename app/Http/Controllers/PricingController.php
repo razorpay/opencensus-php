@@ -7,25 +7,27 @@ use Request;
 
 class PricingController extends Controller
 {
-    public function postCreatePricingPlan()
+    public function postCreatePlan()
     {
         $input = Request::all();
 
-        $data = $this->service()->createPricingPlan($input);
+        $data = $this->service()->createPlan($input);
 
         return ApiResponse::json($data);
     }
 
-    public function getPricingPlan($id)
+    public function getPlan($id)
     {
-        $data = $this->service()->getPricingPlanById($id);
+        $data = $this->service()->getPlanById($id);
 
         return ApiResponse::json($data);
     }
 
-    public function getPricingPlans()
+    public function getPlans()
     {
-        $data = $this->service()->getPricingPlans();
+        $input = Request::all();
+
+        $data = $this->service()->getPlans($input);
 
         return ApiResponse::json($data);
     }
@@ -44,34 +46,34 @@ class PricingController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postAddPricingPlanRule($id)
+    public function postAddPlanRule($id)
     {
         $input = Request::all();
 
-        $data = $this->service()->addPricingPlanRule($id, $input);
+        $data = $this->service()->addPlanRule($id, $input);
 
         return ApiResponse::json($data);
     }
 
-    public function deletePricingPlanRule($planId, $ruleId)
+    public function deletePlanRule($planId, $ruleId)
     {
-        $data = $this->service()->deletePricingPlanRule($planId, $ruleId);
+        $data = $this->service()->deletePlanRule($planId, $ruleId);
 
         return ApiResponse::json($data);
     }
 
-    public function updatePricingPlanRule($planId, $ruleId)
+    public function updatePlanRule($planId, $ruleId)
     {
         $input = Request::all();
 
-        $data = $this->service()->updatePricingPlanRule($planId, $ruleId, $input);
+        $data = $this->service()->updatePlanRule($planId, $ruleId, $input);
 
         return ApiResponse::json($data);
     }
 
-    public function deletePricingPlanRuleForce($planId, $ruleId)
+    public function deletePlanRuleForce($planId, $ruleId)
     {
-        $data = $this->service()->deletePricingPlanRuleForce($planId, $ruleId);
+        $data = $this->service()->deletePlanRuleForce($planId, $ruleId);
 
         return ApiResponse::json($data);
     }

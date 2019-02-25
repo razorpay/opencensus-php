@@ -857,11 +857,24 @@ class Service extends Base\Service
 
     public function getPaymentFlowsPrivate(array $input)
     {
-        (new Card\Validator)->validateInput('card_number', $input);
+        (new Payment\Validator)->validateInput('post_flows', $input);
 
-        $iin = substr($input['card_number'], 0, 6);
-        unset($input['card_number']);
-        $input['iin'] = $iin;
+        $iin = null;
+
+        if (isset($input['card_number']) === true) 
+        {
+            $iin = substr($input['card_number'], 0, 6);
+        }
+        else if (isset($input['iin']) === true)
+        {
+            $iin = $input['iin'];
+        }
+        else
+        {
+            throw new Exception\BadRequestValidationFailureException('invalid input');
+        }
+
+        $input = ['iin' => $iin];
 
         return $this->getPaymentFlows($input);
     }

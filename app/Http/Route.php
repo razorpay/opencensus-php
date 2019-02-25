@@ -134,7 +134,7 @@ final class Route
         'refund_without_verify_bulk'               => ['post',     'refunds/retry/direct/bulk',                      'RefundController@postRefundDirectRetryBulk'                        ],
         'refund_verify'                            => ['get',      'refunds/{id}/verify',                            'RefundController@postRefundVerify'                                 ],
         // We will change this in the future when we want to update more things than just marking it as processed.
-        'refund_mark_processed'                    => ['put',      'refunds/{id}/processed',                         'RefundController@markRefundProcessed'                              ],
+        'refund_update_status'                     => ['put',      'refunds/{id}/update_status',                     'RefundController@updateScroogeRefundStatus'                        ],
         'refund_gateway_call'                      => ['post',     'refunds/{id}/gateway_refund',                    'RefundController@postGatewayRefundCall'                            ],
         'refund_verify_call'                       => ['post',     'refunds/{id}/gateway_verify',                    'RefundController@postGatewayVerifyRefundCall'                      ],
         'scrooge_refund_create'                    => ['post',     'refunds/{id}/scrooge_create',                    'RefundController@scroogeRefundCreate'                              ],
@@ -311,16 +311,16 @@ final class Route
         'merchant_get_rejection_reasons'           => ['get',      'merchant/activation/rejection_reasons',          'MerchantController@getRejectionReasons'                            ],
         'merchant_batches'                         => ['post',     'merchant/{id}/batches',                          'MerchantController@createBatches'                                  ],
         'merchant_payout_mail'                     => ['post',     'merchant/payout/mail',                           'MerchantController@sendPayoutMail'                                 ],
-        'pricing_create_plan'                      => ['post',     'pricing',                                        'PricingController@postCreatePricingPlan'                           ],
-        'pricing_get_plans'                        => ['get',      'pricing',                                        'PricingController@getPricingPlans'                                 ],
+        'pricing_create_plan'                      => ['post',     'pricing',                                        'PricingController@postCreatePlan'                                  ],
+        'pricing_get_plans'                        => ['get',      'pricing',                                        'PricingController@getPlans'                                        ],
         'pricing_get_merchant_plans'               => ['get',      'pricing/merchants',                              'PricingController@getMerchantPricingPlans'                         ],
         'pricing_get_gateway_plans'                => ['get',      'pricing/gateways',                               'PricingController@getGatewayPricingPlans'                          ],
         'pricing_supported_networks'               => ['get',      'pricing/networks',                               'PricingController@getSupportedNetworks'                            ],
-        'pricing_get_plan'                         => ['get',      'pricing/{id}',                                   'PricingController@getPricingPlan'                                  ],
-        'pricing_add_plan_rule'                    => ['post',     'pricing/{id}/rule',                              'PricingController@postAddPricingPlanRule'                          ],
-        'pricing_delete_plan_rule'                 => ['delete',   'pricing/{planId}/rule/{ruleId}',                 'PricingController@deletePricingPlanRule'                           ],
-        'pricing_delete_plan_rule_force'           => ['delete',   'pricing/{planId}/rule/{ruleId}/force',           'PricingController@deletePricingPlanRuleForce'                      ],
-        'pricing_update_plan_rule'                 => ['patch',    'pricing/{planId}/rule/{ruleId}',                 'PricingController@updatePricingPlanRule'                           ],
+        'pricing_get_plan'                         => ['get',      'pricing/{id}',                                   'PricingController@getPlan'                                         ],
+        'pricing_add_plan_rule'                    => ['post',     'pricing/{id}/rule',                              'PricingController@postAddPlanRule'                                 ],
+        'pricing_delete_plan_rule'                 => ['delete',   'pricing/{planId}/rule/{ruleId}',                 'PricingController@deletePlanRule'                                  ],
+        'pricing_delete_plan_rule_force'           => ['delete',   'pricing/{planId}/rule/{ruleId}/force',           'PricingController@deletePlanRuleForce'                             ],
+        'pricing_update_plan_rule'                 => ['patch',    'pricing/{planId}/rule/{ruleId}',                 'PricingController@updatePlanRule'                                  ],
         'schedule_create'                          => ['post',     'schedules',                                      'ScheduleController@postSchedule'                                   ],
         'schedule_fetch'                           => ['get',      'schedules/{id}',                                 'ScheduleController@getSchedule'                                    ],
         'schedule_fetch_multiple'                  => ['get',      'schedules',                                      'ScheduleController@getSchedules'                                   ],
@@ -516,6 +516,7 @@ final class Route
         'pages_view'                               => ['get,post', 'pages/{x_entity_id}/view',                       'PaymentLinkController@view'                                        ],
         'pages_view_by_slug'                       => ['get,post', 'pages/{slug}',                                   'PaymentLinkController@viewBySlug'                                  ],
         'payment_link_view_get'                    => ['get,post', 'payment_links/{x_entity_id}/view',               'PaymentLinkController@view'                                        ],
+        'payment_link_images'                      => ['post',     'payment_links/images',                           'PaymentLinkController@upload'                                      ],
         'payment_link_get'                         => ['get',      'payment_links/{id}',                             'PaymentLinkController@get'                                         ],
         'payment_link_get_details'                 => ['get',      'payment_links/{id}/details',                     'PaymentLinkController@getWithDetailsForDashboard'                  ],
         'payment_link_list'                        => ['get',      'payment_links',                                  'PaymentLinkController@list'                                        ],
@@ -905,6 +906,7 @@ final class Route
 
         'razorx_route'                             => ['any',      'service/razorx',                                 'RazorxController@sendRequest'                                      ],
         'merchant_razorx_evaluate'                 => ['get',      'razorx/evaluate/{featureFlag}',                  'MerchantController@getRazorxTreatment'                             ],
+        'razorx_guest'                             => ['get',      'razorx/evaluate/{id}/{featureFlag}',             'RazorxController@getTreatment'                                     ],
 
         // Account API routes
         'beta_account_create'                      => ['post',     'beta/accounts',                                  'AccountController@create'                                          ],
@@ -948,6 +950,8 @@ final class Route
         'partner_config_fetch'                     => ['get',      'partner_configs',                                'PartnerConfigController@getConfig'                                 ],
         'partner_config_edit'                      => ['put',      'partner_configs/{id}',                           'PartnerConfigController@update'                                    ],
 
+        'commissions_get_multiple'                 => ['get',      'commissions',                                    'CommissionController@list'                                         ],
+      
         'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
         'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
         'merchant_associated_accounts_fetch'       => ['get',      'merchant/{id}/associated_accounts',              'MerchantController@getAssociatedAccounts'                          ],
@@ -1318,7 +1322,7 @@ final class Route
         'refund_gateway_refunded_txns',
         'refund_generate_excel',
         'refund_retry_failed',
-        'refund_mark_processed',
+        'refund_update_status',
         'refund_gateway_call',
         'refund_verify_call',
         'schedule_migration',
@@ -1344,6 +1348,7 @@ final class Route
         'user_resend_verification',
         'user_reset_password_create',
         'user_reset_password_token',
+        'razorx_guest',
         'virtual_account_refund_excess',
         'fund_transfer_attempt_process',
         'daily_reconciliation_summary_fetch',
@@ -1565,6 +1570,8 @@ final class Route
         'user_otp_create',
         'user_verify_contact',
         'payout_create_with_otp',
+        'payment_link_images',
+        'commissions_get_multiple',
     ];
 
     // These will run on internal auth with the assurance
@@ -2391,6 +2398,7 @@ final class Route
         'dashboard_guest' => [
             'user_login',
             'user_register',
+            'razorx_guest',
             'org_get_by_hostname',
             'user_reset_password_create',
             'user_merchant_upgrade',
@@ -2534,7 +2542,7 @@ final class Route
         ],
 
         'scrooge' => [
-            'refund_mark_processed',
+            'refund_update_status',
             'refund_gateway_call',
             'scrooge_refund_create',
             'scrooge_refund_create_bulk',

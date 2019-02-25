@@ -7,6 +7,7 @@ use Excel;
 use Queue;
 Use Carbon\Carbon;
 
+use RZP\Error\Error;
 use RZP\Models\Feature;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
@@ -205,7 +206,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertNotNull($transaction['reconciled_at']);
     }
 
-    public function testRegisterReconRejected()
+    public function testPaymentSuccessRegisterFileRejected()
     {
         $payment                 = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
 
@@ -241,6 +242,56 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $transaction = $this->getDbLastEntityToArray('transaction');
 
         $this->assertNotNull($transaction['reconciled_at']);
+
+        $enach = $this->getDbLastEntityToArray('enach');
+
+        $this->assertEquals('M032', $enach['error_code']);
+        $this->assertEquals('Rejected as per customer confirmation', $enach['error_message']);
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertEquals('rejected', $token['recurring_status']);
+        $this->assertEquals('E-Mandate registration cancelled by the customer', $token['recurring_failure_reason']);
+    }
+
+    public function testPaymentFailedRegisterFileRejected()
+    {
+        $payment = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
+
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'yesb0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->mockRejectCallbackResponse();
+
+        $testData = $this->testData['testPaymentRejectResponse'];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $batchFile = $this->getBatchFileToUpload($payment, 'cancel', 'M032', 'Rejected as per customer confirmation');
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('created', $batch['status']);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('failed', $payment['status']);
 
         $enach = $this->getDbLastEntityToArray('enach');
 
@@ -374,6 +425,60 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals('Balance insufficient', $enach['error_message']);
 
         $this->assertEquals('REJECTED', $enach['status']);
+    }
+
+    public function testRegisterReconLateAuth()
+    {
+        $payment                 = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
+
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'yesb0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->mockRejectCallbackResponse();
+
+        $testData = $this->testData['testPaymentRejectResponse'];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $batchFile = $this->getBatchFileToUpload($payment, 'Active');
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('created', $batch['status']);
+
+        $enach = $this->getDbLastEntityToArray('enach');
+
+        $this->assertNotNull($enach['umrn']);
+        $this->assertEquals('Active', $enach['registration_status']);
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertNotNull($token['gateway_token']);
+        $this->assertEquals('confirmed', $token['recurring_status']);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $transaction = $this->getDbLastEntityToArray('transaction');
+
+        $this->assertNotNull($transaction['reconciled_at']);
     }
 
     protected function makeDebitPayment()

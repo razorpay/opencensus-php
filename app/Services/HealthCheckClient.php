@@ -39,9 +39,8 @@ class HealthCheckClient
         $this->url = $request['url'];
 
         $output = [
-            self::HTTP_STATUS               => 200,
+            self::HTTP_STATUS               => 500,
             self::HEADERS                   => [],
-            self::GATEWAY_STATUS_CODE       => null,
             self::ERROR_MESSAGE             => null,
         ];
 
@@ -49,7 +48,7 @@ class HealthCheckClient
         {
             $response = $this->getResponse($request);
 
-            $output[self::GATEWAY_STATUS_CODE] = $response->status_code;
+            $output[self::HTTP_STATUS] = $response->status_code;
         }
         catch (\Exception $e)
         {

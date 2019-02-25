@@ -9,11 +9,10 @@ use RZP\Models\Base;
 class Entity extends Base\PublicEntity
 {
     /**
-     * We keep tax rate as multiple of 100 in case it's of type
-     * percentage. So to return the actual percent value we
-     * multiply the value by 0.0001.
+     * We keep tax rate as multiple of 10000 in case it is percentage type.
+     * So to return the actual percent value we multiply the value by 0.000001.
      */
-    const PERCENT_MULTIPLIER = 0.0001;
+    const PERCENT_MULTIPLIER = 0.000001;
 
     use SoftDeletes;
 
@@ -35,8 +34,10 @@ class Entity extends Base\PublicEntity
     const RATE        = 'rate';
 
     // Additional output keys
-    const GST_TAX_SLABS  = 'gst_tax_slabs';
-    const GST_TAX_ID_MAP = 'gst_tax_id_map';
+    const GST_TAX_SLABS     = 'gst_tax_slabs';
+    const GST_TAX_ID_MAP    = 'gst_tax_id_map';
+    const GST_TAX_SLABS_V2  = 'gst_tax_slabs_v2';
+    const GST_TAX_ID_MAP_V2 = 'gst_tax_id_map_v2';
 
     protected static $sign = 'tax';
 

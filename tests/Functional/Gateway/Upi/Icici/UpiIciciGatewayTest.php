@@ -135,6 +135,7 @@ class UpiIciciGatewayTest extends TestCase
         $this->assertEquals('ICIC', $upi['bank']);
         $this->assertEquals('icici', $upi['acquirer']);
         $this->assertEquals('icici', $upi['provider']);
+        $this->assertEquals($payment['reference16'], $upi['npci_reference_id']);
     }
 
     public function testPaymentWithExpiryPublicAuth()

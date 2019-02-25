@@ -28,7 +28,7 @@ class Validator extends Base\Validator
         Entity::TIMES_PAYABLE   => 'sometimes|mysql_unsigned_int|min:1|nullable',
         Entity::RECEIPT         => 'string|min:3|max:40|nullable',
         Entity::TITLE           => 'required|string|min:3|max:40',
-        Entity::DESCRIPTION     => 'string|min:3|max:2048|nullable',
+        Entity::DESCRIPTION     => 'string|max:65535|nullable', // 65535 bytes is size of mysql's text data type.
         Entity::NOTES           => 'sometimes|notes',
         Entity::SLUG            => 'filled|min:4|max:30|custom',
         Entity::SUPPORT_CONTACT => 'nullable|string|min:8|max:255',
@@ -51,7 +51,7 @@ class Validator extends Base\Validator
         Entity::TIMES_PAYABLE   => 'sometimes|mysql_unsigned_int|min:1|nullable|custom',
         Entity::RECEIPT         => 'string|min:3|max:40|nullable',
         Entity::TITLE           => 'string|min:3|max:40',
-        Entity::DESCRIPTION     => 'string|min:3|max:2048|nullable',
+        Entity::DESCRIPTION     => 'string|max:65535|nullable', // 65535 bytes is size of mysql's text data type.
         Entity::NOTES           => 'sometimes|notes',
         Entity::SLUG            => 'filled|min:4|max:30|custom',
         Entity::SUPPORT_CONTACT => 'nullable|string|min:8|max:255',
@@ -85,6 +85,11 @@ class Validator extends Base\Validator
         'udf_schema.*.title' => 'required|string|max:255',
         // Additional optional parameters are left intentionally, for now at least.
         // This is because there are keys conditioned to type.
+    ];
+
+    protected static $uploadImagesRules = [
+        'images'     => 'required|array|min:1|max:5',
+        'images.*'   => 'required|image|max:2048',
     ];
 
     protected static $createValidators = [
@@ -188,13 +193,6 @@ class Validator extends Base\Validator
         if (empty($settings) === true)
         {
             return;
-        }
-
-        if ($this->entity->merchant->isTagAdded(Entity::TAG_PAYMENT_PAGE_V2) === false)
-        {
-            throw new BadRequestValidationFailureException(
-                'Extra attribute sent in request - settings.',
-                Entity::SETTINGS);
         }
 
         $extraSettingsKeys = array_values(array_diff(array_keys($settings), Entity::SETTINGS_KEYS));

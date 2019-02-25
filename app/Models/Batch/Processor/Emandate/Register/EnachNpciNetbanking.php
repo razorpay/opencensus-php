@@ -3,11 +3,15 @@
 namespace RZP\Models\Batch\Processor\Emandate\Register;
 
 use Config;
+
 use RZP\Models\Batch;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Models\Customer\Token;
+use RZP\Error\PublicErrorCode;
 use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Enach\Base\Entity;
+use RZP\Error\PublicErrorDescription;
 use RZP\Gateway\Enach\Npci\Netbanking;
 
 class EnachNpciNetbanking extends Base
@@ -69,5 +73,41 @@ class EnachNpciNetbanking extends Base
         return $this->repo
                     ->enach
                     ->findAuthorizedPaymentByPaymentId($payment->getId());
+    }
+
+    protected function forceAuthorizeIfApplicable(Payment\Entity $payment, array $data)
+    {
+        $authorizeSuccess = true;
+
+        if (($payment->isFailed() === true) and
+            ($data[self::TOKEN_STATUS] === Token\RecurringStatus::CONFIRMED))
+        {
+            $paymentService = new Payment\Service;
+
+            $paymentId = $payment->getPublicId();
+
+            $this->trace->critical(TraceCode::FORCE_AUTH_FAILED_PAYMENT,
+                [
+                    'status'     => $payment->getStatus(),
+                    'payment_id' => $payment->getId(),
+                ]);
+
+            $response = $paymentService->forceAuthorizeFailed($paymentId, []);
+
+            $this->trace->info(
+                TraceCode::EMANDATE_RECON_FORCE_AUTH_RESPONSE,
+                [
+                    'info_code' => 'FORCE_AUTHORIZATION_RESPONSE',
+                    'message'   => 'Response received from force authorization',
+                    'response'  => $response
+                ]
+            );
+
+            $payment->reload();
+
+            $authorizeSuccess = $payment->isAuthorized();
+        }
+
+        return [$payment, $authorizeSuccess];
     }
 }

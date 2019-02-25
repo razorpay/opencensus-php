@@ -34,7 +34,9 @@ class GatewayManager extends \Illuminate\Support\Manager
 
     public function call($gateway, $action, $input, $mode, $terminal = null)
     {
-        $gateway = $this->gateway($gateway);
+        $gatewayName = $gateway;
+
+        $gateway = $this->gateway($gatewayName);
 
         $gateway->setGatewayParams($input, $mode, $terminal);
 
@@ -50,7 +52,7 @@ class GatewayManager extends \Illuminate\Support\Manager
             // to core payment service or not
             if ($this->shouldRouteToCps($input) === true)
             {
-                // Call Core Payment Service
+                $response = $this->app['cps']->action($gatewayName, $action, $input);
             }
             else
             {

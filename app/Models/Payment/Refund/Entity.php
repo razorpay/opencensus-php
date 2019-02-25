@@ -639,6 +639,17 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::FAILED);
     }
 
+    /**
+     * This is required for the Refund reversal module -
+     * Flipkart changes
+     *
+     * @return bool
+     */
+    public function isStatusReversed()
+    {
+        return ($this->getStatus() === Status::REVERSED);
+    }
+
     public function getGateway()
     {
         $gateway = $this->getAttribute(self::GATEWAY);
@@ -785,7 +796,7 @@ class Entity extends Base\PublicEntity
         return $array;
     }
 
-    protected function getPublicStatusFromScrooge($response)
+    protected function getPublicStatus($response)
     {
         $refundStatus = $this->getStatus();
 
@@ -796,7 +807,9 @@ class Entity extends Base\PublicEntity
 
         $response[self::STATUS] = $publicStatusMap[$refundStatus] ?? Status::PENDING;
 
-        if ($response[self::STATUS] === Status::PENDING)
+        $isScrooge = Payment\Gateway::isScroogeGatewayAndMerchant($this->getGateway());
+
+        if (($response[self::STATUS] === Status::PENDING) and ($isScrooge === true))
         {
             $app   = App::getFacadeRoot();
             $trace = $app['trace'];
@@ -841,14 +854,11 @@ class Entity extends Base\PublicEntity
     {
         $response = parent::toArrayPublic();
 
-        $isScrooge = Payment\Gateway::isScroogeGatewayAndMerchant(
-            $this->getGateway(),
-            $this->getMerchantId()
-        );
+        $displayRefundPublicStatus = Payment\Gateway::isRefundsPublicStatusMerchant($this->getMerchantId());
 
-        if ($isScrooge === true)
+        if ($displayRefundPublicStatus === true)
         {
-            $scroogeResponse = $this->getPublicStatusFromScrooge($response);
+            $scroogeResponse = $this->getPublicStatus($response);
 
             return $scroogeResponse;
         }

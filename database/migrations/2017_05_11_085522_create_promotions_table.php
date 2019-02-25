@@ -6,8 +6,9 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Schedule;
 use RZP\Models\Base\PublicEntity;
-use RZP\Models\Merchant\Credits\Entity as Credits;
+use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Promotion\Entity as Promotion;
+use RZP\Models\Merchant\Credits\Entity as Credits;
 
 class CreatePromotionsTable extends Migration
 {
@@ -52,6 +53,9 @@ class CreatePromotionsTable extends Migration
             $table->char(Promotion::PRICING_PLAN_ID, PublicEntity::ID_LENGTH)
                   ->nullable();
 
+            $table->char(Promotion::PARTNER_ID, Merchant::ID_LENGTH)
+                  ->nullable();
+
             $table->integer(Promotion::CREATED_AT);
 
             $table->integer(Promotion::UPDATED_AT);
@@ -59,6 +63,11 @@ class CreatePromotionsTable extends Migration
             $table->foreign(Promotion::SCHEDULE_ID)
                   ->references(Schedule\Entity::ID)
                   ->on(Table::SCHEDULE)
+                  ->on_delete('restrict');
+
+            $table->foreign(Promotion::PARTNER_ID)
+                  ->references(Merchant::ID)
+                  ->on(Table::MERCHANT)
                   ->on_delete('restrict');
         });
 
@@ -83,6 +92,7 @@ class CreatePromotionsTable extends Migration
         Schema::table(Table::PROMOTION, function($table)
         {
             $table->dropForeign(Table::PROMOTION.'_'.Promotion::SCHEDULE_ID.'_foreign');
+            $table->dropForeign(Table::PROMOTION.'_'.Promotion::PARTNER_ID.'_foreign');
         });
 
         Schema::table(Table::CREDITS, function($table)

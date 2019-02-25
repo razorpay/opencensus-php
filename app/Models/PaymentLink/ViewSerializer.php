@@ -150,10 +150,7 @@ class ViewSerializer extends Base\Core
 
     protected function addSettingsOfPaymentLink(array & $serialized)
     {
-        if ($this->merchant->isTagAdded(Entity::TAG_PAYMENT_PAGE_V2) === true)
-        {
-            $serialized[Entity::SETTINGS] = $this->serializeSettingsWithDefaults();
-        }
+        $serialized[Entity::SETTINGS] = $this->serializeSettingsWithDefaults();
     }
 
     /**

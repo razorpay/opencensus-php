@@ -5,6 +5,7 @@ namespace RZP\Models\Partner\Config;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Pricing\Plan;
 use RZP\Models\Merchant\AccessMap;
 
 use Razorpay\OAuth\Application;
@@ -104,6 +105,18 @@ class Core extends Base\Core
     }
 
     /**
+     * Fetch all default and overridden configs of an application
+     *
+     * @param Application\Entity $application
+     *
+     * @return mixed
+     */
+    public function fetchAllConfigForApp(Application\Entity $application)
+    {
+        return $this->repo->partner_config->fetchAllConfigForApp($application->getId());
+    }
+
+    /**
      * @param string $id
      * @param array  $input
      *
@@ -122,6 +135,30 @@ class Core extends Base\Core
         return $config;
     }
 
+    /**
+     * @param Entity|null $partnerConfig
+     *
+     * @return Plan|null
+     */
+    public function getImplicitPlanFromConfig($partnerConfig)
+    {
+        if ($partnerConfig === null)
+        {
+            return null;
+        }
+
+        $pricingPlanId = $partnerConfig->getImplicitPricingPlanId();
+
+        if ($pricingPlanId === null)
+        {
+            return null;
+        }
+
+        $pricingPlan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($pricingPlanId);
+
+        return $pricingPlan;
+    }
+
     protected function validatePricingPlans(array $input)
     {
         // check if all plan ids are valid
@@ -132,12 +169,12 @@ class Core extends Base\Core
 
         if (empty($input[Entity::IMPLICIT_PLAN_ID]) === false)
         {
-            $this->repo->pricing->getPricingPlanByIdOrFailPublic($input[Entity::IMPLICIT_PLAN_ID]);
+            $this->repo->pricing->getPlanByIdOrFailPublic($input[Entity::IMPLICIT_PLAN_ID]);
         }
 
         if (empty($input[Entity::EXPLICIT_PLAN_ID]) === false)
         {
-            $this->repo->pricing->getPricingPlanByIdOrFailPublic($input[Entity::EXPLICIT_PLAN_ID]);
+            $this->repo->pricing->getCommissionPlanById($input[Entity::EXPLICIT_PLAN_ID], true, true);
         }
     }
 }

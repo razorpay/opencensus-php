@@ -247,6 +247,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PRICING_NOT_DEFINED_FOR_MERCHANT                          = 'The merchant does not have pricing assigned';
     const BAD_REQUEST_PRICING_FIELD_NOT_REQUIRED_FOR_NB                         = 'The field should be null for net-banking';
     const BAD_REQUEST_PRICING_RULE_FOR_AMEX_NOT_PRESENT                         = 'Amex pricing rule not present for merchant';
+    const BAD_REQUEST_PRICING_PLAN_CANNOT_HAVE_MULTIPLE_TYPES                   = 'Pricing Plan cannot have rules of multiple types';
     const BAD_REQUEST_PRICING_RULE_FOR_CARD_NETWORK_NOT_PRESENT                 = 'Pricing rule not present for merchant with this card network';
     const BAD_REQUEST_PRICING_RULE_FOR_AMOUNT_RANGE_OVERLAP                     = 'Pricing rule amount range collides with another existing rule\'s amount range.';
     const BAD_REQUEST_UNKNOWN_SCHEDULE                                          = 'Schedule not found in database.';
@@ -686,6 +687,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PARTNER_CONTEXT_NOT_SET                                   = 'Partner context must be set';
     const BAD_REQUEST_MERCHANT_IS_NOT_PARTNER                                   = 'Merchant is not a partner';
     const BAD_REQUEST_MERCHANT_IS_ALREADY_PARTNER                               = 'Merchant is already a partner';
+    const BAD_REQUEST_ACCESS_NOT_ALLOWED_FOR_RESELLER                           = 'Reseller partner is not allowed the requested access';
     const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER                          = 'Linked account cannot be a partner';
     const BAD_REQUEST_PAYMENT_MDR_UPDATE_IN_PROGRESS                            = 'Payments MDR backfill job is currently in progress';
     const BAD_REQUEST_CANNOT_ADD_MERCHANT_USER                                  = 'Cannot add sub-merchant user with given details';
@@ -719,6 +721,8 @@ class PublicErrorDescription
 
     const BAD_REQUEST_SETTLEMENT_ANOTHER_QUEUE_OPERATION_IN_PROGRESS            = 'Request failed because another settlement queue operation in progress';
     const BAD_REQUEST_NO_DEFAULT_PLAN_IN_ORG                                    = 'No default plan id in org';
+
+    const BAD_REQUEST_GATEWAY_DOWNTIME_CONFLICT                                 = 'A conflicting gateway downtime already exists.';
 
     // ---------------------- UPI (NPCI) Error codes -------------------------------
     const GATEWAY_ERROR_TRANSACTION_PENDING                                         = 'Transaction is in pending state';

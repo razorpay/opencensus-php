@@ -9,14 +9,10 @@ body{background:#fff;font-family:ubuntu,helvetica,verdana,sans-serif;margin:0;pa
 #text.s #icon{background:#61BC6D}
 #text.f{color:#EF6050;}
 #text.f #icon{background:#EF6050}
-#closer{position:fixed;bottom:20px;width:100%;left:0;color:#7f7f7f;font-size:14px;}
 </style>
 <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
 </head><body>
 <div id="text"><div id="icon"></div><br>Payment<br>
-</div>
-<div id="closer">
-You can safely close this tab
 </div>
 <script>
 

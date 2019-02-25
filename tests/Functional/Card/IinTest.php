@@ -190,7 +190,22 @@ class IinTest extends TestCase
 
         $this->fixtures->edit('iin', 401200, ['flows' => $flows]);
 
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'axis_express_pay', 'headless']);
 
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetCardPaymentFlowsFromIin()
+    {
+        $flows = [
+            'pin'          => '1',
+            'headless_otp' => '1',
+            'otp'          => '1',
+        ];
+
+        $this->fixtures->edit('iin', 401200, ['flows' => $flows]);
 
         $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'axis_express_pay', 'headless']);
 
@@ -198,6 +213,7 @@ class IinTest extends TestCase
 
         $this->startTest();
     }
+
 
     public function testGetBulkFlows()
     {

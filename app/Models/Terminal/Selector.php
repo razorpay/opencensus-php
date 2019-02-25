@@ -137,10 +137,9 @@ class Selector extends Base\Core
             return (new Rule\Core)->fetchApplicableRulesForPayment($this->input);
         });
 
+        $this->processHitachiOnboarding($allTerminals);
 
         $filteredTerminals = $this->filterTerminals($allTerminals, $applicableRules, $verbose);
-
-        $this->processHitachiOnboarding($filteredTerminals);
 
         $payment = $this->input['payment'];
 
@@ -379,11 +378,13 @@ class Selector extends Base\Core
         return $sorterRules;
     }
 
-    protected function processHitachiOnboarding(&$filteredTerminals)
+    protected function processHitachiOnboarding(&$allTerminals)
     {
         try
         {
-            if ($this->input['payment']->isMethod(Method::CARD)=== true)
+            $payment = $this->input['payment'];
+
+            if (($payment->isMethod(Method::CARD) === true) and ($payment->isBharatQr() === false))
             {
                 $merchant = $this->input['merchant'];
 
@@ -392,7 +393,7 @@ class Selector extends Base\Core
                 $currency = ($payment->getConvertCurrency() === true) ? Currency::INR : $payment->getCurrency();
 
                 $hasHitachiDirectTerminal = (new TerminalService)->checkDirectTerminalForGateway(
-                    $filteredTerminals,
+                    $allTerminals,
                     Constants::HITACHI,
                     $merchant,
                     $currency);
@@ -403,14 +404,19 @@ class Selector extends Base\Core
 
                     if ($newTerminal !== null)
                     {
-                        array_push($filteredTerminals, $newTerminal);
+                        array_push($allTerminals, $newTerminal);
                     }
                 }
             }
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENT_TERMINAL_CREATION_ERROR);
+            $this->trace->info(
+                TraceCode::PAYMENT_TERMINAL_CREATION_ERROR,
+                [
+                    'terminals'  => $allTerminals,
+                    'message'    => $e->getMessage(),
+                ]);
         }
 
     }

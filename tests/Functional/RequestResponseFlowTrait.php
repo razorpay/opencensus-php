@@ -10,6 +10,7 @@ use RZP\Tests\Functional\Helpers\EntityFetchTrait;
 trait RequestResponseFlowTrait
 {
     use EntityFetchTrait;
+    use CustomAssertions;
 
     /**
      * Auths a payment & tests it is correctly done

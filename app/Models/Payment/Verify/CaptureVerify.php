@@ -14,6 +14,8 @@ class CaptureVerify extends Verify
     {
         $result = Result::SUCCESS;
 
+        $action = null;
+
         $merchant = $payment->merchant;
 
         //
