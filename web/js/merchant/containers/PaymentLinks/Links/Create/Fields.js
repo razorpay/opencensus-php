@@ -7,6 +7,7 @@ import {
   PopoverBodyText,
   validateMinAmount,
 } from '../../Edit/EditMinimumAmount';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 const CustomInput = props => {
   return (
@@ -56,14 +57,20 @@ export default [
       fieldLabel: (
         <span>
           Enable Partial Payment
-          <a
-            class="btn-link m-l"
-            href="https://razorpay.com/docs/payment-links/partial-payments/"
-            target="_blank"
-            onClick={trackHelpClick}
+          <ShowWhen
+            additionalCondition={user =>
+              user.isOrgAllowedFunctionality('external_links')
+            }
           >
-            (What's this?)
-          </a>
+            <a
+              class="btn-link m-l"
+              href="https://razorpay.com/docs/payment-links/partial-payments/"
+              target="_blank"
+              onClick={trackHelpClick}
+            >
+              (What's this?)
+            </a>
+          </ShowWhen>
         </span>
       ),
       _cmp: Input.Check,

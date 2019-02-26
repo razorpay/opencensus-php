@@ -48,6 +48,7 @@ class UserController extends Controller
             'isConfirmed'           => false,
             'preSignupData'         => [],
             'isPreSignupComplete'   => false,
+            'org'                   => json_encode($org),
         ];
 
         if (empty($userError) and empty($orgError))
@@ -58,7 +59,6 @@ class UserController extends Controller
                 'preSignupData'         => $details['pre_signup'],
                 'isPreSignupComplete'   => $details['pre_signup_complete'],
                 'user'                  => json_encode($details),
-                'org'                   => json_encode($org),
                 'api_host'              => ApiUrl::getApiBaseUrl(),
             ];
         }

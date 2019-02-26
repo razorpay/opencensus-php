@@ -91,49 +91,70 @@ export default ({
       ).length;
     return (
       <div>
-        <div className="m-b">
-          {refundStatus === 'partial' ? (
-            <Definition>
-              <span>
-                <Amount value={refundAmount} currency={currency} /> Refunded
-              </span>
-              <span>
-                Partially refunded in{' '}
-                <NumRefunds
-                  refunds={refunds}
-                  onToggleClick={() => {
-                    onToggleClick(payment);
-                  }}
-                />
-              </span>
-            </Definition>
-          ) : (
-            <Definition>No refunds issued yet</Definition>
-          )}
-        </div>
-        {
-          <ShowWhen additionalCondition={user => user.isRefundAllowed}>
-            <p>
-              <button
-                className="btn btn-default"
-                onClick={openRefundModal}
-                disabled={hasOpenNonFraudDisputes}
-              >
-                {refundStatus === 'partial'
-                  ? 'Issue another Refund'
-                  : 'Issue Refund'}
-              </button>
-            </p>
-            {hasOpenNonFraudDisputes ? (
-              <span class="text-danger">
-                Refunds are disabled as there{' '}
-                {hasOpenNonFraudDisputes > 1 ? 'are ' : 'is an '} open dispute{hasOpenNonFraudDisputes >
-                  1 && 's'}{' '}
-                on this payment
-              </span>
-            ) : null}
-          </ShowWhen>
-        }
+        <ShowWhen
+          additionalCondition={user =>
+            !user.isRefundAllowed ||
+            (user.isOrgAllowedFunctionality('card_refunds') ||
+              !(['card', 'emi'].indexOf(payment.method) !== -1))
+          }
+        >
+          <div className="m-b">
+            {refundStatus === 'partial' ? (
+              <Definition>
+                <span>
+                  <Amount value={refundAmount} currency={currency} /> Refunded
+                </span>
+                <span>
+                  Partially refunded in{' '}
+                  <NumRefunds
+                    refunds={refunds}
+                    onToggleClick={() => {
+                      onToggleClick(payment);
+                    }}
+                  />
+                </span>
+              </Definition>
+            ) : (
+              <Definition>No refunds issued yet</Definition>
+            )}
+          </div>
+        </ShowWhen>
+        <ShowWhen
+          additionalCondition={user =>
+            user.isRefundAllowed &&
+            (user.isOrgAllowedFunctionality('card_refunds') ||
+              !(['card', 'emi'].indexOf(payment.method) !== -1))
+          }
+        >
+          <p>
+            <button
+              className="btn btn-default"
+              onClick={openRefundModal}
+              disabled={hasOpenNonFraudDisputes}
+            >
+              {refundStatus === 'partial'
+                ? 'Issue another Refund'
+                : 'Issue Refund'}
+            </button>
+          </p>
+          {hasOpenNonFraudDisputes ? (
+            <span class="text-danger">
+              Refunds are disabled as there{' '}
+              {hasOpenNonFraudDisputes > 1 ? 'are ' : 'is an '} open dispute{hasOpenNonFraudDisputes >
+                1 && 's'}{' '}
+              on this payment
+            </span>
+          ) : null}
+        </ShowWhen>
+        <ShowWhen
+          additionalCondition={user =>
+            user.isRefundAllowed &&
+            (!user.isOrgAllowedFunctionality('card_refunds') ||
+              ['card', 'emi'].indexOf(payment.method) > -1)
+          }
+        >
+          Refunds cannot be created for Card transactions
+        </ShowWhen>
         {refundStatus === 'partial' && (
           <RefundsList
             refunds={refunds}

@@ -321,14 +321,20 @@ export default class CreatePaymentLink extends Component {
                       />
                       <label for="partial_payment" class="icon i-check">
                         Enable Partial Payments
-                        <a
-                          class="btn-link m-l"
-                          href="https://razorpay.com/docs/payment-links/partial-payments/"
-                          target="_blank"
-                          onClick={trackHelpClick}
+                        <ShowWhen
+                          additionalCondition={user =>
+                            user.isOrgAllowedFunctionality('external_links')
+                          }
                         >
-                          What's this?
-                        </a>
+                          <a
+                            class="btn-link m-l"
+                            href="https://razorpay.com/docs/payment-links/partial-payments/"
+                            target="_blank"
+                            onClick={trackHelpClick}
+                          >
+                            What's this?
+                          </a>
+                        </ShowWhen>
                       </label>
                     </div>
                   </div>

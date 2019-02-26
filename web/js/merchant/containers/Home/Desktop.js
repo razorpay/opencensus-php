@@ -32,12 +32,9 @@ import {
   trackSettleNow,
 } from './ga';
 
-@connect(
-  state => ({ user: state.session.user, config: state.config }),
-  {
-    openModal,
-  }
-)
+@connect(state => ({ user: state.session.user, config: state.config }), {
+  openModal,
+})
 class AnalyticsDesktop extends Component {
   constructor(props) {
     super(props);
@@ -160,14 +157,18 @@ class AnalyticsDesktop extends Component {
               }`}
             >
               <Group>
-                <GroupItem>
-                  <span className="balance-amount">
-                    Current Balance:{' '}
-                    {!current_balance.loading && (
-                      <Amount value={current_balance.data.balance} />
-                    )}
-                  </span>
-                </GroupItem>
+                {this.props.user.isOrgAllowedFunctionality(
+                  'current_balance'
+                ) && (
+                  <GroupItem>
+                    <span className="balance-amount">
+                      Current Balance:{' '}
+                      {!current_balance.loading && (
+                        <Amount value={current_balance.data.balance} />
+                      )}
+                    </span>
+                  </GroupItem>
+                )}
                 <GroupItem>
                   {this.props.user.isOndemandSettlementEnabled ? (
                     <Button.Secondary

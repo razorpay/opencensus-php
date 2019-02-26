@@ -43,6 +43,7 @@ import {
 import Banner from 'rzp/ui/Banner';
 import Desktop from './Desktop';
 import Mobile from './Mobile';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 const dateRangePresets = [
     ['Past 7 Days', -7, 'days'],
@@ -705,9 +706,15 @@ export default class HomeContainer extends Component {
                       : 'Start transacting with us and enjoy our slashed pricing - 1.75%. Valid on payments till 31st January, 2019'}
                   </span>
                   <span class="m-l btn-link">
-                    <a href="https://razorpay.com/pricing" target="_blank">
-                      <b>View T&Cs</b>
-                    </a>
+                    <ShowWhen
+                      additionalCondition={user =>
+                        user.isOrgAllowedFunctionality('external_links')
+                      }
+                    >
+                      <a href="https://razorpay.com/pricing" target="_blank">
+                        <b>View T&Cs</b>
+                      </a>
+                    </ShowWhen>
                   </span>
                 </Banner>
               </div>

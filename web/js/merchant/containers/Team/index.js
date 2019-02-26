@@ -8,6 +8,7 @@ import * as NotificationsActions from 'rzp/modules/notifications';
 import NewInvitation from './NewInvitation';
 import Invitation from './Invitation';
 import User from './User';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 @connect(
   state => {
@@ -40,14 +41,20 @@ export default class TeamContainer extends Component {
       <div>
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <a
-              class="btn btn-link"
-              href="https://docs.razorpay.com/v1/page/team-support"
-              target="_blank"
+            <ShowWhen
+              additionalCondition={user =>
+                user.isOrgAllowedFunctionality('external_links')
+              }
             >
-              Documentation &nbsp;
-              <i class="icon icon-external-link" />
-            </a>
+              <a
+                class="btn btn-link"
+                href="https://docs.razorpay.com/v1/page/team-support"
+                target="_blank"
+              >
+                Documentation &nbsp;
+                <i class="icon icon-external-link" />
+              </a>
+            </ShowWhen>
           </div>
         </HeaderAction>
 

@@ -82,6 +82,11 @@ export default class Sidebar extends Component {
     let routes = this.routes;
     const user = this.props.user;
 
+    // Selecting next route if default route is not available
+    if (!user.isAllowedView('configuration')) {
+      routes.settings = '/webhooks';
+    }
+
     if (location.state && location.state.was404) {
       routes[this.prevRoute] = BASE_ROUTES[this.prevRoute]; // Assumption that these routes are always valid for any given role
     }
