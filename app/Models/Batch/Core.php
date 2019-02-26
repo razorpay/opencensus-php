@@ -254,9 +254,6 @@ class Core extends Base\Core
             $creator = $user;
         }
 
-        if (empty($creator) === false)
-        {
-            $batch->creator()->associate($creator);
-        }
+        $batch->creator()->associate($creator);
     }
 }

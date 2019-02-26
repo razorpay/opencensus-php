@@ -331,9 +331,11 @@ class Generator extends Base\Core
         $invoice->setMerchantGstin($this->merchant->getGstin());
         $invoice->setMerchantLabel($this->merchant->getLabelForInvoice());
 
-        if ($this->batch !== null && $this->batch->getCreatorType() === self::USER)
+        if (($this->batch !== null) && ($this->batch->getCreatorType() === self::USER))
         {
-            $invoice->setUserId($this->batch->getCreatorId());
+            $user = $this->repo->user->findOrFailPublic($this->batch->getCreatorId());
+
+            $invoice->user()->associate($user);
         }
 
         $this->invoice = $invoice;

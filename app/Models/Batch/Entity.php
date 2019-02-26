@@ -19,6 +19,7 @@ class Entity extends Base\PublicEntity
     const SUCCESS_COUNT             = 'success_count';
     const FAILURE_COUNT             = 'failure_count';
     const ATTEMPTS                  = 'attempts';
+    const CREATOR                   = 'creator';
 
     /**
      * Fields amount and processed_amount represent the total amounnt across
@@ -305,11 +306,11 @@ class Entity extends Base\PublicEntity
     /**
      * Defines a polymorphic relation with entities
      * implementing a morphMany association on the
-     * 'source' key
+     * 'creator' key
      */
     public function creator()
     {
-        return $this->morphTo('creator', self::CREATOR_TYPE, self::CREATOR_ID);
+        return $this->morphTo(self::CREATOR);
     }
 
     // ----------------------- Getters -------------------------------
@@ -567,16 +568,6 @@ class Entity extends Base\PublicEntity
     public function setTotalCount($totalCount)
     {
         $this->setAttribute(self::TOTAL_COUNT, $totalCount);
-    }
-
-    public function setCreatorId(string $creatorId)
-    {
-        $this->setAttribute(self::CREATOR_ID, $creatorId);
-    }
-
-    public function setCreatorType(string $creatorType)
-    {
-        $this->setAttribute(self::CREATOR_TYPE, $creatorType);
     }
 
     public function incrementAttempts()
