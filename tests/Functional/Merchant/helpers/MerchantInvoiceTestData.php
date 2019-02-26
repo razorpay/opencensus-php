@@ -3,6 +3,9 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\FundAccount\Entity as FundAccount;
+use RZP\Models\BankAccount\Entity as BankAccount;
+use RZP\Models\FundAccount\Validation\Entity as Validation;
 
 return [
 
@@ -20,6 +23,11 @@ return [
         'card_lte_2k'    => [
             'amount'    => 1000,
             'tax'       => 0,
+            'gstin'     => '29kjsngjk213922',
+        ],
+        'validation'    => [
+            'amount'    => 300,
+            'tax'       => 54,
             'gstin'     => '29kjsngjk213922',
         ],
     ],
@@ -40,6 +48,11 @@ return [
             'tax'       => 0,
             'gstin'     => '29kjsngjk213922',
         ],
+        'validation'    => [
+            'amount'    => 300,
+            'tax'       => 54,
+            'gstin'     => '29kjsngjk213922',
+        ],
     ],
 
     'testInvoiceEntityCreateForGivenMonthYear' => [
@@ -56,6 +69,11 @@ return [
         'card_lte_2k'    => [
             'amount'    => 1000,
             'tax'       => 0,
+            'gstin'     => '29kjsngjk213922',
+        ],
+        'validation'    => [
+            'amount'    => 300,
+            'tax'       => 54,
             'gstin'     => '29kjsngjk213922',
         ],
     ],
@@ -99,22 +117,9 @@ return [
             'tax'       => 0,
             'gstin'     => '29kjsngjk213922',
         ],
-    ],
-
-    'testInvoiceEntityCreateForGivenMerchantWithLateAuth' => [
-        'others'      => [
-            'amount'    => 1510,
-            'tax'       => 272,
-            'gstin'     => '29kjsngjk213922',
-        ],
-        'card_gt_2k'    => [
-            'amount'    => 4680,
-            'tax'       => 842,
-            'gstin'     => '29kjsngjk213922',
-        ],
-        'card_lte_2k'    => [
-            'amount'    => 1000,
-            'tax'       => 0,
+        'validation'    => [
+            'amount'    => 300,
+            'tax'       => 54,
             'gstin'     => '29kjsngjk213922',
         ],
     ],
@@ -132,6 +137,51 @@ return [
         'exception' => [
             'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_MERCHANT_INVOICE_NUMBER,
+        ],
+    ],
+
+    'createValidationWithFundAccountEntity' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                Validation::FUND_ACCOUNT  => [
+                    FundAccount::ACCOUNT_TYPE => 'bank_account',
+                    FundAccount::DETAILS      => [
+                        BankAccount::ACCOUNT_NUMBER => '123456789',
+                        BankAccount::NAME           => 'Rohit Keshwani',
+                        BankAccount::IFSC           => 'SBIN0010411',
+                    ],
+                ],
+                Validation::AMOUNT        => '100',
+                Validation::CURRENCY      => 'INR',
+                Validation::NOTES         => [],
+                Validation::RECEIPT       => '12345667',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account.validation',
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'bank_account',
+                    'active'       => true,
+                    'details'      => [
+                        'account_number' => '123456789',
+                        'name'           => 'Rohit Keshwani',
+                        'ifsc'           => 'SBIN0010411',
+                        'bank_name'      => 'State Bank of India',
+                    ],
+                ],
+                'status'       => 'created',
+                'amount'       => 100,
+                'currency'     => 'INR',
+                'notes'        => [],
+                'results'      => [
+                    'account_status'  => null,
+                    'registered_name' => null,
+                ],
+            ],
         ],
     ],
 ];
