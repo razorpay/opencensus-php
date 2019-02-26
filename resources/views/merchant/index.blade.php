@@ -78,10 +78,9 @@
     }
 
     var screenWidth = window.innerWidth;
-    var showChat = screenWidth > 780 && {!! $isOrgHDFC !!};
-    console.log('showchat..', showChat);
+    var allowHelpNinja = screenWidth > 780 && {!! $isOrgHDFC !!};
 
-    if (showChat) {
+    if (allowHelpNinja) {
         addHelpNinja();
     }
   </script>
