@@ -5,17 +5,17 @@ namespace RZP\Models\Partner\Commission;
 use App;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
+use Razorpay\OAuth\Application as OAuthApp;
 
-use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Models\Pricing;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Models\EntityOrigin;
 use RZP\Models\Pricing\Plan;
 use RZP\Exception\LogicException;
 use RZP\Models\Partner\Commission;
-use Razorpay\OAuth\Application as OAuthApp;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Models\Pricing\Calculator as FeeCalculator;
 
@@ -421,7 +421,7 @@ class Calculator extends Base\Core
             $this->traceContext(
                 TraceCode::COMMISSION_NOT_APPLICABLE,
                 [
-                    'implicit_expiry_at'  => $this->getPartnerConfig()->getImplicitExpiryAt(),
+                    'implicit_expiry_at'  => optional($this->getPartnerConfig())->getImplicitExpiryAt(),
                     'customer_fee_bearer' => $this->isCustomerFeeBearer(),
                     'implicit_plan_type'  => optional($this->getImplicitPricingPlan())->getType(),
                     'fee_model_prepaid'   => $this->getSubMerchant()->isPrepaid(),
@@ -464,10 +464,11 @@ class Calculator extends Base\Core
                 return false;
             }
 
-            $now = Carbon::now(Timezone::IST)->getTimestamp();
+            $now    = Carbon::now(Timezone::IST)->getTimestamp();
+            $expiry = $this->getPartnerConfig()->getImplicitExpiryAt();
 
             // Commissions is not applicable if implicit plan has expired and explicit plan is not defined
-            if ($this->getPartnerConfig()->getImplicitExpiryAt() < $now)
+            if ((empty($expiry) === false) and ($expiry < $now))
             {
                 return false;
             }
