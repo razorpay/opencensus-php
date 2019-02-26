@@ -1,0 +1,18 @@
+<?php
+
+namespace RZP\Tests\Functional\Partner;
+
+class Constants
+{
+    const DEFAULT_MERCHANT_ID                 = '10000000000000';
+    const DEFAULT_SUBMERCHANT_ID              = '10000000000019';
+    const DEFAULT_PARTNER_CONFIGS_ID          = '100configId001';
+
+    const DEFAULT_PLATFORM_APP_ID             = '1000000platApp';
+    const DEFAULT_PLATFORM_SUBMERCHANT_ID     = '100submerchant';
+    const DEFAULT_PLATFORM_MERCHANT_ID        = '1000000000plat';
+
+    const DEFAULT_NON_PLATFORM_APP_ID         = '1000nonplatApp';
+    const DEFAULT_NON_PLATFORM_SUBMERCHANT_ID = '10submerchant1';
+    const DEFAULT_NON_PLATFORM_MERCHANT_ID    = '100nonplatform';
+}
