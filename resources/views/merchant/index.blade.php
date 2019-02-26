@@ -1,5 +1,5 @@
 <?php
-    $isOrgHDFC = (json_decode($org, true)['custom_code'] !== "hdfc");
+    $isOrgHDFC = (json_decode($org, true)['custom_code']) === "hdfc";
 ?>
 @include('partials/header')
 
@@ -66,24 +66,24 @@
   <script src="{{$cdnDashboardUrl}}/dist/merchant-entry.js"></script>
 @else
   <script src='{{$cdnDashboardUrl}}/js/generated/signup.js'></script>
-  <script>
-    function addHelpNinja() {
-      var helpNinjaScript = document.createElement('script');
-      helpNinjaScript.setAttribute('src','https://static.helpninja.com/helpninja.js');
-      helpNinjaScript.setAttribute('id', 'oc_script');
-      helpNinjaScript.setAttribute('convid', '-Kvx6dgy972KCFPlQR0s');
-      helpNinjaScript.async = true;
+  @if(!$isOrgHDFC)
+      <script>
+        function addHelpNinja() {
+          var helpNinjaScript = document.createElement('script');
+          helpNinjaScript.setAttribute('src','https://static.helpninja.com/helpninja.js');
+          helpNinjaScript.setAttribute('id', 'oc_script');
+          helpNinjaScript.setAttribute('convid', '-Kvx6dgy972KCFPlQR0s');
+          helpNinjaScript.async = true;
 
-      document.head.appendChild(helpNinjaScript);
-    }
+          document.head.appendChild(helpNinjaScript);
+        }
 
-    var screenWidth = window.innerWidth;
-    var allowHelpNinja = screenWidth > 780 && {!! $isOrgHDFC !!};
-
-    if (allowHelpNinja) {
-        addHelpNinja();
-    }
-  </script>
+        var screenWidth = window.innerWidth;
+        if (screenWidth > 780) {
+            addHelpNinja();
+        }
+      </script>
+  @endif
 @endif
 
 
