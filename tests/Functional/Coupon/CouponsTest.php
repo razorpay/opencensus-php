@@ -3,8 +3,11 @@
 namespace RZP\Tests\Functional\Coupon;
 
 use Carbon\Carbon;
-use RZP\Tests\Functional\TestCase;
+use Illuminate\Database\Eloquent\Factory;
+
 use RZP\Models\Schedule\Period;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
@@ -12,12 +15,17 @@ class CouponsTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use DbEntityFetchTrait;
+    use OAuthTrait;
 
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/CouponsTestData.php';
 
         parent::setUp();
+
+        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->app->make(Factory::class)->load($factoryPath);
 
         $this->ba->adminAuth();
     }
@@ -365,6 +373,69 @@ class CouponsTest extends TestCase
         $testMerchant = $this->getDbEntityById('merchant', '10000000000000', 'test');
 
         $this->assertSame('BAJq6FJDNJ4ZqD', $testMerchant->getPricingPlanId());
+    }
+
+    public function testCreateCouponAndApplyOnMerchantandVerifyPartner()
+    {
+        $promotionAttributes = [
+            'partner_id' => '10000000000000',
+        ];
+
+        $this->fixtures->merchant->markPartner();
+
+        $this->createPartnerApplicationAndGetClientByEnv('dev');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->createCoupon($promotionAttributes);
+
+        $content = [
+            'merchant_id' => $merchant['id'],
+            'code'        => 'RANDOM-123',
+        ];
+
+        $response = $this->applyCouponOnMerchant($content);
+
+        $this->checkValidResponse($response);
+
+        $accessMap = $this->getLastEntity('merchant_access_map', true);
+
+        $this->assertNotNull($accessMap);
+
+        $this->assertEquals('10000000000000', $accessMap['entity_owner_id']);
+
+        $this->assertEquals($merchant['id'], $accessMap['merchant_id']);
+
+        $this->assertEquals('application', $accessMap['entity_type']);
+    }
+
+    public function testCreateCouponAndApplyOnMerchantInvalidPartner()
+    {
+        $promotionAttributes = [
+            'partner_id' => '10000000000000',
+        ];
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->createCoupon($promotionAttributes);
+
+        $content = [
+            'merchant_id' => $merchant['id'],
+            'code'        => 'RANDOM-123',
+        ];
+
+        $requestData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $requestData,
+            function() use ($content)
+            {
+                $this->applyCouponOnMerchant($content);
+            });
+
+        $accessMap = $this->getLastEntity('merchant_access_map', true);
+
+        $this->assertNull($accessMap);
     }
 
     public function testValidateCoupon()

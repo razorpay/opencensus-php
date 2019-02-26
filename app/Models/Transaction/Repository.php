@@ -730,6 +730,37 @@ class Repository extends Base\Repository
     }
 
     /**
+     * calculates the sum of `fee` and `tax` for the transaction of particular type created for a merchant in given time frame.
+     *
+     * @param string $merchantId
+     * @param string $type
+     * @param int $start
+     * @param int $end
+     *
+     * @return mixed
+     */
+    public function fetchFeesAndTaxForTransactionsByType(
+        string $merchantId,
+        string $type,
+        int $start,
+        int $end)
+    {
+        //
+        // There is no variation based on transaction type here.
+        // All the transaction here will be part of `OTHERS` section
+        // Because this will look at only transaction which not in ignore list
+        // And Payment is part of ignore list and only payment has the type difference
+        //
+        return $this->newQuery()
+                    ->selectRaw(
+                        'SUM(' . Entity::TAX .') AS tax, SUM(' . Entity::FEE . ') AS fee')
+                    ->where(Entity::TYPE, $type)
+                    ->whereBetween(Entity::CREATED_AT, [$start, $end])
+                    ->merchantId($merchantId)
+                    ->first();
+    }
+
+    /**
      * Raw sql query :
      *
      *  select FROM_UNIXTIME(transactions.created_at + 19800,'%D %M, %Y') AS date,
