@@ -207,4 +207,74 @@ return [
             ],
         ],
     ],
+
+    'testImplicitPricingExpiredNoExplicitDefined' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'   => 'BptVjGnFv6ITBm',
+                'type' => 'fully_managed',
+            ],
+            'create_plans'       => [
+                [
+                    'plan_id'      => '200MerchantPln',
+                    'percent_rate' => '200',
+                ],
+                [
+                    'plan_id'      => '180PartnerPlan',
+                    'percent_rate' => '180',
+                ],
+            ],
+            'attach_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'pricing_plan_id' => '200MerchantPln',
+            ],
+            'define_config'      => [
+                'type'                => 'partner',
+                'implicit_plan_id'    => '180PartnerPlan',
+                'implicit_expiry_at'  => 1551169951,
+            ],
+            'create_payment'     => [
+                'amount' => 4000 * 100, // paise
+                'auth'   => 'partner',
+            ],
+        ],
+    ],
+
+    'testImplicitPricingExpiredExplicitExists' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'   => 'BptVjGnFv6ITBm',
+                'type' => 'fully_managed',
+            ],
+            'create_plans'       => [
+                [
+                    'plan_id'      => '200MerchantPln',
+                    'percent_rate' => '200',
+                ],
+                [
+                    'plan_id'      => '180PartnerPlan',
+                    'percent_rate' => '180',
+                ],
+                [
+                    'plan_id'      => '1CommissionPln',
+                    'percent_rate' => '20',
+                    'type'         => 'commission',
+                ],
+            ],
+            'attach_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'pricing_plan_id' => '200MerchantPln',
+            ],
+            'define_config'      => [
+                'type'                => 'partner',
+                'implicit_plan_id'    => '180PartnerPlan',
+                'explicit_plan_id'    => '1CommissionPln',
+                'implicit_expiry_at'  => 1551169951,
+            ],
+            'create_payment'     => [
+                'amount' => 4000 * 100, // paise
+                'auth'   => 'partner',
+            ],
+        ],
+    ],
 ];

@@ -66,4 +66,20 @@ class CalculatorTest extends OAuthTestCase
     {
         $this->ruleEngine->execute(__FUNCTION__);
     }
+
+    /**
+     * Asserts that the commission doesn't get created if implicit commission is expired and explicit is not defined.
+     */
+    public function testImplicitPricingExpiredNoExplicitDefined()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    /**
+     * Asserts that the commission gets created if implicit pricing is expired and but explicit pricing is defined.
+     */
+    public function testImplicitPricingExpiredExplicitExists()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
 }

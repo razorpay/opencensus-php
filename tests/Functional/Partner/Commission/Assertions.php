@@ -57,6 +57,16 @@ class Assertions extends TestCase
         $this->assertShouldNotCreateCommission($data);
     }
 
+    public function testImplicitPricingExpiredNoExplicitDefined(array $data)
+    {
+        $this->assertShouldNotCreateCommission($data);
+    }
+
+    public function testImplicitPricingExpiredExplicitExists(array $data)
+    {
+        $this->assertShouldCreateCommission($data);
+    }
+
     protected function assertBasicCalculatorRules(Calculator $calculator)
     {
         $shouldCreateCommission = $this->invokePrivateMethod(
@@ -102,5 +112,19 @@ class Assertions extends TestCase
                                     'shouldCreateCommission');
 
         $this->assertFalse($shouldCreateCommission);
+    }
+
+    protected function assertShouldCreateCommission(array $data)
+    {
+        $postAction = $data['post_action'];
+
+        $calculator = $postAction['calculator'];
+
+        $shouldCreateCommission = $this->invokePrivateMethod(
+                                    $calculator,
+                                    Calculator::class,
+                                    'shouldCreateCommission');
+
+        $this->assertTrue($shouldCreateCommission);
     }
 }

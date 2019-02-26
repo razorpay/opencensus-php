@@ -54,6 +54,16 @@ class Action
         $this->instantiateCalculator($postSetupData, $postActionData);
     }
 
+    public function testImplicitPricingExpiredNoExplicitDefined(array $postSetupData, array & $postActionData)
+    {
+        $this->instantiateCalculator($postSetupData, $postActionData);
+    }
+
+    public function testImplicitPricingExpiredExplicitExists(array $postSetupData, array & $postActionData)
+    {
+        $this->instantiateCalculator($postSetupData, $postActionData);
+    }
+
     public function instantiateCalculator(array $postSetupData, array & $postActionData)
     {
         $calculator = new Calculator($postSetupData['source_entity']);
