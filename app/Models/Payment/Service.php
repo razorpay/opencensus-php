@@ -263,7 +263,7 @@ class Service extends Base\Service
 
             list($merchant, $paymentId) = $this->setRequiredDetailsGetMerchantAndPaymentId($id);
 
-            return $this->getNewProcessor($merchant)->processRedirectToAuthorize($paymentId);
+            return $this->getNewProcessor($merchant)->processRedirectToAuthorize($paymentId, $id);
         }
         catch (\Throwable $e)
         {
@@ -861,7 +861,7 @@ class Service extends Base\Service
 
         $iin = null;
 
-        if (isset($input['card_number']) === true) 
+        if (isset($input['card_number']) === true)
         {
             $iin = substr($input['card_number'], 0, 6);
         }
