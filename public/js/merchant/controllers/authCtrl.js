@@ -79,6 +79,7 @@ app
         $scope.isOrgCheckDone = true;
         $scope.organization = data;
         $scope.isOrgRZP = $scope.organization.custom_code === 'rzp';
+        $scope.isOrgHDFC = $scope.organization.custom_code === 'hdfc';
       });
       $scope.forms = {};
 

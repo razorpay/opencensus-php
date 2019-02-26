@@ -1,3 +1,6 @@
+<?php
+    $isOrgHDFC = (json_decode($org, true)['custom_code'] !== "hdfc");
+?>
 @include('partials/header')
 
 @if ($isConfirmed and $isPreSignupComplete)
@@ -74,9 +77,11 @@
       document.head.appendChild(helpNinjaScript);
     }
 
-    const screenWidth = window.innerWidth;
+    var screenWidth = window.innerWidth;
+    var showChat = screenWidth > 780 && {!! $isOrgHDFC !!};
+    console.log('showchat..', showChat);
 
-    if (screenWidth > 780) {
+    if (showChat) {
         addHelpNinja();
     }
   </script>
