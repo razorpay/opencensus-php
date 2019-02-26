@@ -1929,6 +1929,7 @@ class Core extends Base\Core
      * If merchant.website is empty return false
      *
      * @param Entity $merchant
+     * @param array $input
      *
      * @return bool
      * @throws \Throwable
