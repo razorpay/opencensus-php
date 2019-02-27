@@ -18,6 +18,8 @@ class Entity extends Base\Entity
     const AUTH_NOT_REQUIRED       = 'auth_not_required';
     const APPRCODE                = 'apprcode';
     const RRN                     = 'rrn';
+    const TRAN_DATE               = 'tran_date';
+    const TRAN_TIME               = 'tran_time';
     const SETTLED                 = 'settled';
 
     protected $fillable = [
@@ -34,7 +36,9 @@ class Entity extends Base\Entity
         self::AUTH_NOT_REQUIRED,
         self::APPRCODE,
         self::RRN,
-        self::SETTLED
+        self::SETTLED,
+        self::TRAN_DATE,
+        self::TRAN_TIME,
     ];
 
     protected $hidden = [
