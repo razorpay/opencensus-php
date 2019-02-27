@@ -334,6 +334,7 @@ class Header
     const MERCHANT_ONBOARDING_EMI_SBI_MID         = 'MerchantID';
     const MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_MID = 'GatewayMID';
     const MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_TID = 'GatewayTID';
+    const MERCHANT_ONBOARDING_EMI_SBI_RZP_TID     = 'TerminalID';
 
     const DIRECT_DEBIT_EMAIL           = 'email';
     const DIRECT_DEBIT_CONTACT         = 'contact';
@@ -851,6 +852,7 @@ class Header
                 self::MERCHANT_ONBOARDING_EMI_SBI_MID,
                 self::MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_MID,
                 self::MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_TID,
+                self::MERCHANT_ONBOARDING_EMI_SBI_RZP_TID,
             ],
         ],
 

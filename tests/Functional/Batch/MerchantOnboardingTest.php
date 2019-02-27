@@ -2,8 +2,11 @@
 
 namespace RZP\Tests\Functional\Batch;
 
+use Mail;
+
 use RZP\Models\Batch\Header;
 use RZP\Tests\Functional\TestCase;
+use RZP\Mail\Batch\MerchantOnboarding as MerchantOnboardingMail;
 
 class MerchantOnboardingTest extends TestCase
 {
@@ -18,6 +21,8 @@ class MerchantOnboardingTest extends TestCase
 
     public function testSbiEmi()
     {
+        Mail::fake();
+
         $sampleMerchantId = '7thBRSDf3F7NHL';
 
         $entries = [
@@ -62,6 +67,18 @@ class MerchantOnboardingTest extends TestCase
                 'enabled'             => true,
             ],
             $terminal
+        );
+
+        Mail::assertSent(
+            MerchantOnboardingMail::class,
+            function ($mail) {
+                $this->assertNotEmpty($mail->attachments);
+
+                $subject = 'Razorpay | Merchant onboarding file for SBI EMI dated';
+                $this->assertStringStartsWith($subject, $mail->subject);
+
+                return true;
+            }
         );
     }
 

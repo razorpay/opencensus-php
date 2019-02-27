@@ -24,6 +24,7 @@ class Constants
     const DISPUTES          = 'disputes';
     const NOREPLY           = 'noreply';
     const RECON             = 'recon';
+    const MERCHANT_ONBOARDING = 'merchant_onboarding';
     const SETTLEMENT_ALERTS = 'settlement_alert';
     const BEAM_FAILURE      = 'beam_failure';
     const CREDITS_ALERTS    = 'credit_alerts';
@@ -59,6 +60,7 @@ class Constants
         self::PARTNERSHIPS      => 'partnerships@razorpay.com',
         self::APPROVALS_OAUTH   => 'approvals.oauth@razorpay.com',
         self::BANK_DISPUTE_FILE => 'chargebacks@razorpay.com',
+        self::MERCHANT_ONBOARDING => 'support@razorpay.com',
     ];
 
     const HEADERS = [
@@ -81,5 +83,6 @@ class Constants
         self::PARTNERSHIPS      => 'Partnerships',
         self::APPROVALS_OAUTH   => 'Approvals OAuth',
         self::BANK_DISPUTE_FILE => 'Bank Dispute File',
+        self::MERCHANT_ONBOARDING => 'support@razorpay.com',
     ];
 }

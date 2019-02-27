@@ -2,10 +2,13 @@
 
 namespace RZP\Models\Batch\Processor\MerchantOnboarding;
 
+use Mail;
+
 use RZP\Models\Batch;
 use RZP\Models\Terminal;
 use RZP\Models\Batch\Header;
 use RZP\Models\Payment\Gateway;
+use RZP\Mail\Batch\MerchantOnboarding as MerchantOnboardingMail;
 use RZP\Models\Batch\Processor\Base as BaseProcessor;
 
 class EmiSbi extends BaseProcessor
@@ -29,13 +32,28 @@ class EmiSbi extends BaseProcessor
             Terminal\Entity::ENABLED             => '1',
         ];
 
-        (new Terminal\Core)->create($createTerminalInput, $merchant);
+        $terminal = (new Terminal\Core)->create($createTerminalInput, $merchant);
+
 
         $entry[Header::STATUS] = Batch\Status::SUCCESS;
+        $entry[Header::MERCHANT_ONBOARDING_EMI_SBI_RZP_TID] = $terminal->id;
     }
 
     protected function sendProcessedMail()
     {
-        return;
+        $mail = new MerchantOnboardingMail(
+            $this->batch->toArray(),
+            $this->merchant->toArray(),
+            $this->outputFileLocalPath,
+            [
+                'gateway' => 'SBI EMI',
+            ]);
+
+        Mail::send($mail);
+    }
+
+    public function getOutputFileHeadings(): array
+    {
+        return Batch\Header::HEADER_MAP['merchant_onboarding_emi_sbi'][Batch\Header::OUTPUT] ?? [];
     }
 }
