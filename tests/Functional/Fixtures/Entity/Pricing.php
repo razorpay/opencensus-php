@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use RZP\Models;
+use RZP\Tests\Functional\Partner\Constants;
 
 class Pricing extends Base
 {
@@ -342,8 +343,7 @@ class Pricing extends Base
 
     public function createStandardPlan($attributes = [])
     {
-        $pricingPlanId = $attributes['plan_id'] ?? '1A0Fkd38fGZPVC';
-        $type          = $attributes['type'] ?? 'pricing';
+        $pricingPlanId = '1A0Fkd38fGZPVC';
 
         $rows = [
             [
@@ -355,7 +355,6 @@ class Pricing extends Base
                 'percent_rate'   => 2000,
                 'fixed_rate'     => 0,
                 'org_id'         => '100000razorpay',
-                'type'           => $type,
             ],
             [
                 'id'             => '1osdf0GGDdalfF',
@@ -366,7 +365,6 @@ class Pricing extends Base
                 'percent_rate'   => 2000,
                 'fixed_rate'     => 0,
                 'org_id'         => '100000razorpay',
-                'type'           => $type,
             ],
             [
                 'id'             => '1osdf0GGDdaHfF',
@@ -377,7 +375,6 @@ class Pricing extends Base
                 'percent_rate'   => 0,
                 'fixed_rate'     => 1000,
                 'org_id'         => '100000razorpay',
-                'type'           => $type,
             ],
             [
                 'id'             => '1pteg2HHEebmhH',
@@ -388,7 +385,6 @@ class Pricing extends Base
                 'percent_rate'   => 2000,
                 'fixed_rate'     => 0,
                 'org_id'         => '100000razorpay',
-                'type'           => $type,
             ],
             [
                 'id'             => '1pteg2FFEebmgG',
@@ -399,7 +395,6 @@ class Pricing extends Base
                 'percent_rate'   => 0,
                 'fixed_rate'     => 0,
                 'org_id'         => '100000razorpay',
-                'type'           => $type,
             ],
             [
                 'id'             => '1zE31zbyeGCTd4',
@@ -410,7 +405,6 @@ class Pricing extends Base
                 'percent_rate'   => 200,
                 'fixed_rate'     => 0,
                 'org_id'         => '100000razorpay',
-                'type'           => $type,
             ],
             [
                 'id'             => '1zE31zbyeGCTd5',
@@ -421,7 +415,6 @@ class Pricing extends Base
                 'percent_rate'   => 200,
                 'fixed_rate'     => 0,
                 'org_id'         => '100000razorpay',
-                'type'           => $type,
             ],
         ];
 
@@ -789,6 +782,47 @@ class Pricing extends Base
         return $pricingPlanId;
     }
 
+    public function createTwoPercentPricingPlan($attributes = [])
+    {
+        $pricingPlanId = $attributes['plan_id'] ?? Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN;
+
+        $rows = [
+            [
+                'id'             => '1ABp2Xd3t5aRPX',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'standard_plan',
+                'feature'        => 'payment',
+                'payment_method' => 'card',
+                'percent_rate'   => 200,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+                'type'           => 'pricing',
+            ],
+        ];
+
+        $this->addPricingRulesToDb($rows);
+    }
+
+    public function createImplicitPartnerPricingPlan($attributes = [])
+    {
+        $pricingPlanId = $attributes['plan_id'] ?? Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN;
+
+        $rows = [
+            [
+                'id'             => '1ABp2Xd3t5aRQX',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'standard_plan',
+                'feature'        => 'payment',
+                'payment_method' => 'card',
+                'percent_rate'   => 180,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+                'type'           => 'pricing',
+            ],
+        ];
+
+        $this->addPricingRulesToDb($rows);
+    }
 
     protected function addPricingRulesToDb($rows)
     {

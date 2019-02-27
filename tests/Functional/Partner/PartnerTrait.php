@@ -111,6 +111,15 @@ trait PartnerTrait
             ]
         );
 
+        $this->createDefaultSubmerchantPricingPlan();
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            [
+                'pricing_plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
+            ]
+        );
+
         $this->createOAuthApplication(
             [
                 'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
@@ -140,9 +149,17 @@ trait PartnerTrait
 
     public function createImplicitPricingPlan($planId = Constants::DEFAULT_IMPLICIT_PRICING_PLAN)
     {
-        $this->fixtures->create('pricing:standard_plan', [
+        $this->fixtures->create('pricing:implicit_partner_pricing_plan', [
             'plan_id' => $planId,
-            'type'    => 'pricing'
+            'type'    => 'pricing',
+        ]);
+    }
+
+    public function createDefaultSubmerchantPricingPlan($planId = Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN)
+    {
+        $this->fixtures->create('pricing:two_percent_pricing_plan', [
+            'plan_id' => $planId,
+            'type'    => 'pricing',
         ]);
     }
 }

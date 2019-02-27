@@ -17,4 +17,7 @@ class Constants
     const DEFAULT_NON_PLATFORM_MERCHANT_ID    = '100nonplatform';
 
     const DEFAULT_IMPLICIT_PRICING_PLAN       = '10ImplicitPlan';
+    const DEFAULT_SUBMERCHANT_PRICING_PLAN    = 'SubmerchantPln';
+
+    const GST_RATE                            = 18;
 }

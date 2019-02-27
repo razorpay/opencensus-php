@@ -5,13 +5,15 @@ use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Partner\Constants;
-use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Partner\Commission\CommissionTrait;
 
 class CommissionCreateTest extends TestCase
 {
-    use PartnerTrait;
+    use CommissionTrait;
+    use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
     public function setUp()
@@ -33,6 +35,7 @@ class CommissionCreateTest extends TestCase
 
         $payment = $this->fixtures->create('payment:authorized', [
             'merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            'amount'      => 4000 * 100,
         ]);
 
         $this->fixtures->create(
@@ -71,5 +74,15 @@ class CommissionCreateTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals(true, $payment['gateway_captured']);
+
+        $commissions = $this->getCommissionsForSourceEntity($payment['id'])->toArray();
+
+        $this->assertCount(1, $commissions);
+
+        $commission = $commissions[0];
+        
+        $this->assertEquals($this->getFee(4000 * 100, (2.0 - 1.8)), $commission['fee']);
+
+        $this->assertEquals($this->getTax(4000 * 100, (2.0 - 1.8)), $commission['tax']);
     }
 }
