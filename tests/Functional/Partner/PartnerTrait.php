@@ -128,4 +128,21 @@ trait PartnerTrait
             ]
         );
     }
+
+    public function setSubmerchantPrivateAuth($merchantId = Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID)
+    {
+        $key = $this->fixtures->create('key', ['merchant_id' => $merchantId]);
+
+        $key = $key->getKey();
+
+        $this->ba->privateAuth('rzp_test_' . $key);
+    }
+
+    public function createImplicitPricingPlan($planId = Constants::DEFAULT_IMPLICIT_PRICING_PLAN)
+    {
+        $this->fixtures->create('pricing:standard_plan', [
+            'plan_id' => $planId,
+            'type'    => 'pricing'
+        ]);
+    }
 }

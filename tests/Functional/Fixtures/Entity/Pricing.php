@@ -340,9 +340,10 @@ class Pricing extends Base
         $this->addPricingRulesToDb(Models\Pricing\DefaultPlan::getBankingPlanData());
     }
 
-    public function createStandardPlan()
+    public function createStandardPlan($attributes = [])
     {
-        $pricingPlanId = '1A0Fkd38fGZPVC';
+        $pricingPlanId = $attributes['plan_id'] ?? '1A0Fkd38fGZPVC';
+        $type          = $attributes['type'] ?? 'pricing';
 
         $rows = [
             [
@@ -354,6 +355,7 @@ class Pricing extends Base
                 'percent_rate'   => 2000,
                 'fixed_rate'     => 0,
                 'org_id'         => '100000razorpay',
+                'type'           => $type,
             ],
             [
                 'id'             => '1osdf0GGDdalfF',
@@ -364,6 +366,7 @@ class Pricing extends Base
                 'percent_rate'   => 2000,
                 'fixed_rate'     => 0,
                 'org_id'         => '100000razorpay',
+                'type'           => $type,
             ],
             [
                 'id'             => '1osdf0GGDdaHfF',
@@ -374,6 +377,7 @@ class Pricing extends Base
                 'percent_rate'   => 0,
                 'fixed_rate'     => 1000,
                 'org_id'         => '100000razorpay',
+                'type'           => $type,
             ],
             [
                 'id'             => '1pteg2HHEebmhH',
@@ -384,6 +388,7 @@ class Pricing extends Base
                 'percent_rate'   => 2000,
                 'fixed_rate'     => 0,
                 'org_id'         => '100000razorpay',
+                'type'           => $type,
             ],
             [
                 'id'             => '1pteg2FFEebmgG',
@@ -394,6 +399,7 @@ class Pricing extends Base
                 'percent_rate'   => 0,
                 'fixed_rate'     => 0,
                 'org_id'         => '100000razorpay',
+                'type'           => $type,
             ],
             [
                 'id'             => '1zE31zbyeGCTd4',
@@ -404,6 +410,7 @@ class Pricing extends Base
                 'percent_rate'   => 200,
                 'fixed_rate'     => 0,
                 'org_id'         => '100000razorpay',
+                'type'           => $type,
             ],
             [
                 'id'             => '1zE31zbyeGCTd5',
@@ -414,6 +421,7 @@ class Pricing extends Base
                 'percent_rate'   => 200,
                 'fixed_rate'     => 0,
                 'org_id'         => '100000razorpay',
+                'type'           => $type,
             ],
         ];
 
