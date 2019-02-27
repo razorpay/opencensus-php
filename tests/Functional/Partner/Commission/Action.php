@@ -34,7 +34,7 @@ class Action
         $this->instantiateCalculator($postSetupData, $postActionData);
     }
 
-    public function testImplicitPricingDoesNotExist(array $postSetupData, array & $postActionData)
+    public function testImplicitExplicitPricingDoesNotExist(array $postSetupData, array & $postActionData)
     {
         $this->instantiateCalculator($postSetupData, $postActionData);
     }
@@ -50,6 +50,16 @@ class Action
     }
 
     public function testCommissionDisabled(array $postSetupData, array & $postActionData)
+    {
+        $this->instantiateCalculator($postSetupData, $postActionData);
+    }
+
+    public function testImplicitPricingExpiredNoExplicitDefined(array $postSetupData, array & $postActionData)
+    {
+        $this->instantiateCalculator($postSetupData, $postActionData);
+    }
+
+    public function testImplicitPricingExpiredExplicitExists(array $postSetupData, array & $postActionData)
     {
         $this->instantiateCalculator($postSetupData, $postActionData);
     }
