@@ -354,6 +354,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PRODUCT);
     }
 
+    public function getType(): string
+    {
+        return $this->getAttribute(self::TYPE);
+    }
+
     public function isPrimaryProduct(): bool
     {
         return ($this->getProduct() === Product::PRIMARY);

@@ -12,6 +12,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore\Format;
+use RZP\Reconciliator\Base\InfoCode;
 
 class Converter extends Base\Core
 {
@@ -261,7 +262,9 @@ class Converter extends Base\Core
                             [
                                 'message'       => 'The number of columns in the row does not match the column headers count',
                                 'file_details'  => ['column_headers' => $columnHeaders, 'row' => $row],
-                                'info_code'     => 'COLUMN_HEADER_MISMATCH'
+                                'info_code'     => InfoCode::COLUMN_HEADER_MISMATCH,
+                                'header_count'  => $columnHeadersCount,
+                                'row_count'     => count($row),
                             ]);
 
                         continue;

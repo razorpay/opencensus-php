@@ -5142,13 +5142,16 @@ trait Authorize
         return $data;
     }
 
-    public function processRedirectToAuthorize(string $paymentId)
+    public function processRedirectToAuthorize(string $paymentId, string $trackId)
     {
         $payment = $this->retrieve($paymentId);
 
         $this->trace->info(
             TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_PAYMENT,
-            ['payment_id' => $payment->getId()]
+            [
+                'payment_id' => $payment->getId(),
+                'track_id'   => $trackId,
+            ]
         );
 
         $diff = Carbon::now(Timezone::IST)->getTimestamp() - $payment->getCreatedAt();

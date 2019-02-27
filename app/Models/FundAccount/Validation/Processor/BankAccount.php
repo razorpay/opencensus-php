@@ -134,6 +134,16 @@ class BankAccount extends Base
                 $this->updateValidationAfterFtaFailed($input);
                 break;
 
+            case Attempt\Status::INITIATED:
+                $this->trace->info(
+                    TraceCode::FUND_TRANSFER_ATTEMPT_STILL_INITIATED,
+                    [
+                        'input' => $input,
+                        'validation_status' => $this->validation->getStatus(),
+                    ]);
+
+                break;
+
             default:
                 throw new Exception\LogicException(
                     'Unknown FTA status after recon. Should be either Processed or Failed',
@@ -198,10 +208,24 @@ class BankAccount extends Base
             throw new Exception\LogicException('Validation is already processed. Should not have reached here');
         }
 
-        $this->markValidationAsCompleted(AccountStatus::INVALID);
+        if ($input['internal_error'] === false)
+        {
+            $this->markValidationAsCompleted(AccountStatus::INVALID);
 
-        $this->repo->saveOrFail($this->validation);
+            $this->repo->saveOrFail($this->validation);
 
-        $this->triggerValidationCompletedWebhook();
+            $this->triggerValidationCompletedWebhook();
+        }
+        else
+        {
+            $this->slack->queue(
+                'Penny Testing Failed due to critical reasons.',
+                [
+                    'input' => $input,
+                    'validation_status' => $this->validation->getStatus(),
+                ],
+                Constants::slackSettings()
+            );
+        }
     }
 }

@@ -5,7 +5,6 @@ namespace RZP\Models\Batch;
 use App;
 use RZP\Base;
 use RZP\Models\User;
-use RZP\Models\Payout;
 use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;

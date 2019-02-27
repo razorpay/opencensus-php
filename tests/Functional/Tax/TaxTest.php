@@ -57,7 +57,7 @@ class TaxTest extends TestCase
             [
                 'id'        => '00000000000001',
                 'rate_type' => 'flat',
-                'rate'      => '10500',
+                'rate'      => '1050000',
             ]);
 
         $this->startTest();

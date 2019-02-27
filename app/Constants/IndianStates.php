@@ -82,6 +82,8 @@ class IndianStates
 
     public static function getStateCode(string $value)
     {
+        $value = strtoupper($value);
+
         if (isset(self::$stateCodeMap[$value]) === true)
         {
             return self::$stateCodeMap[$value];
@@ -97,6 +99,8 @@ class IndianStates
 
     public static function stateValueExist(string $value):bool
     {
+        $value = strtoupper($value);
+
         if (in_array($value, self::$stateCodeMap, true) === true)
         {
             return true;

@@ -6,6 +6,8 @@ use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer\Token;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Gateway\Base\Entity as GatewayEntity;
 use RZP\Models\Batch\Processor\Emandate\Base as BaseProcessor;
 
@@ -46,6 +48,24 @@ abstract class Base extends BaseProcessor
         $parsedData = $this->getDataFromRow($entry);
 
         $payment = $this->repo->payment->findOrFailPublic($parsedData[self::PAYMENT_ID]);
+
+        list($payment, $authorizeSuccess) = $this->forceAuthorizeIfApplicable($payment, $parsedData);
+
+        if ($authorizeSuccess === false)
+        {
+            $this->trace->critical(TraceCode::PAYMENT_RECURRING_INVALID_STATUS,
+                [
+                    'trace_code' => TraceCode::EMANDATE_RECON_ROW_FAILED,
+                    'message'  => 'payment force authorize failed',
+                    'payment_id' => $payment->getId(),
+                ]);
+
+            $entry[Batch\Header::STATUS]            = Batch\Status::FAILURE;
+            $entry[Batch\Header::ERROR_CODE]        = PublicErrorCode::SERVER_ERROR;
+            $entry[Batch\Header::ERROR_DESCRIPTION] = PublicErrorDescription::SERVER_ERROR;
+
+            return;
+        }
 
         $gatewayPayment = $this->getGatewayPayment($payment);
 
@@ -95,9 +115,9 @@ abstract class Base extends BaseProcessor
             $this->reconcileEntity($payment);
         }
         //
-        // We marked payment as refunded if registration is rejected
+        // We marked payment as refunded if payment is authorized and registration is rejected
         //
-        else if ($data[self::TOKEN_STATUS] === Token\RecurringStatus::REJECTED)
+        else if (($data[self::TOKEN_STATUS] === Token\RecurringStatus::REJECTED) and ($payment->isAuthorized() === true))
         {
             $refund = $this->refundPayment($payment);
 
@@ -210,6 +230,13 @@ abstract class Base extends BaseProcessor
         (new Token\Core)->updateTokenFromEmandateGatewayData($token, $tokenParams);
 
         $this->repo->saveOrFail($token);
+    }
+
+
+    protected function forceAuthorizeIfApplicable(Payment\Entity $payment, array $data)
+    {
+        // Override this in child class if required
+        return [$payment, true];
     }
 
     protected function shouldMarkProcessedOnFailures(): bool

@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Promotion;
 use RZP\Models\Merchant\Promotion as MerchantPromotion;
 
 class Core extends Base\Core
@@ -162,30 +163,11 @@ class Core extends Base\Core
         //
         $this->repo->transaction(function() use ($merchant, $promotion, $coupon)
         {
-            $pricingPlanId = $promotion->getPricingPlanId();
+            $this->applyPromotionPricing($merchant, $promotion);
 
-            $merchant->setPricingPlan($pricingPlanId);
+            $this->mapPromotionPartnerIfApplicable($merchant, $promotion);
 
-            $this->repo->saveOrFail($merchant);
-
-            $this->trace->info(TraceCode::MERCHANT_PROMOTION_PRICING_CHANGED,
-                               [
-                                   'merchant_old_pricing_plan' => $merchant->getPricingPlanId(),
-                                   'merchant_new_pricing_plan' => $pricingPlanId,
-                               ]);
-
-            $merchantPromotionCore = (new MerchantPromotion\Core);
-
-            $merchantPromotion = $merchantPromotionCore->create($merchant, $promotion);
-
-            //
-            //  Promotion/Coupon is applied to merchant only if merchant is activated.
-            //  As credits and balance are credited for merchant in live mode once activated.
-            //
-            if ($merchant->isActivated() === true)
-            {
-                $merchantPromotionCore->activate($merchantPromotion);
-            }
+            $this->createAndActivateMerchantPromotion($merchant, $promotion);
 
             $coupon->incrementUsedCount();
 
@@ -193,5 +175,51 @@ class Core extends Base\Core
 
             $this->trace->info(TraceCode::MERCHANT_PROMOTION_CREATED);
         });
+    }
+
+    protected function applyPromotionPricing(Merchant\Entity $merchant, Promotion\Entity $promotion)
+    {
+        $pricingPlanId = $promotion->getPricingPlanId();
+
+        $oldPricingPlanId = $merchant->getPricingPlanId();
+
+        $merchant->setPricingPlan($pricingPlanId);
+
+        $this->repo->saveOrFail($merchant);
+
+        $this->trace->info(TraceCode::MERCHANT_PROMOTION_PRICING_CHANGED,
+            [
+                'merchant_old_pricing_plan' => $oldPricingPlanId,
+                'merchant_new_pricing_plan' => $merchant->getPricingPlanId(),
+                Entity::MERCHANT_ID         => $merchant->getId(),
+                'promotion_id'              => $promotion->getId(),
+            ]);
+    }
+
+    protected function createAndActivateMerchantPromotion(Merchant\Entity $merchant, Promotion\Entity $promotion)
+    {
+        $merchantPromotionCore = (new MerchantPromotion\Core);
+
+        $merchantPromotion = $merchantPromotionCore->create($merchant, $promotion);
+
+        //
+        //  Promotion/Coupon is applied to merchant only if merchant is activated.
+        //  As credits and balance are credited for merchant in live mode once activated.
+        //
+        if ($merchant->isActivated() === true)
+        {
+            $merchantPromotionCore->activate($merchantPromotion);
+        }
+    }
+
+    protected function mapPromotionPartnerIfApplicable(Merchant\Entity $merchant, Promotion\Entity $promotion)
+    {
+        /** @var Merchant\Entity $partner */
+        $partner = $promotion->partner;
+
+        if (empty($partner) === false)
+        {
+            (new Merchant\Core)->createPartnerSubmerchantAccessMap($partner, $merchant);
+        }
     }
 }

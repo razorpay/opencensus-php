@@ -635,6 +635,13 @@ class Activate extends Base\Core
 
                 // Virtual Account.
                 $virtualAccount = (new VirtualAccount\Core)->createOrFetchBankingVirtualAccount($merchant, $balance);
+
+                $this->trace->info(
+                    TraceCode::MERCHANT_BUSINESS_BANKING_ACCOUNT,
+                    [
+                        'virtual_account_id' => $virtualAccount->getId(),
+                        'merchant_id'        => $virtualAccount->getMerchantId(),
+                    ]);
             }
 
             $merchantDetails->reload();

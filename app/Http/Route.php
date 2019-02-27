@@ -907,6 +907,7 @@ final class Route
 
         'razorx_route'                             => ['any',      'service/razorx',                                 'RazorxController@sendRequest'                                      ],
         'merchant_razorx_evaluate'                 => ['get',      'razorx/evaluate/{featureFlag}',                  'MerchantController@getRazorxTreatment'                             ],
+        'razorx_guest'                             => ['get',      'razorx/evaluate/{id}/{featureFlag}',             'RazorxController@getTreatment'                                     ],
 
         // Account API routes
         'beta_account_create'                      => ['post',     'beta/accounts',                                  'AccountController@create'                                          ],
@@ -950,6 +951,8 @@ final class Route
         'partner_config_fetch'                     => ['get',      'partner_configs',                                'PartnerConfigController@getConfig'                                 ],
         'partner_config_edit'                      => ['put',      'partner_configs/{id}',                           'PartnerConfigController@update'                                    ],
 
+        'commissions_get_multiple'                 => ['get',      'commissions',                                    'CommissionController@list'                                         ],
+      
         'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
         'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
         'merchant_associated_accounts_fetch'       => ['get',      'merchant/{id}/associated_accounts',              'MerchantController@getAssociatedAccounts'                          ],
@@ -1347,6 +1350,7 @@ final class Route
         'user_resend_verification',
         'user_reset_password_create',
         'user_reset_password_token',
+        'razorx_guest',
         'virtual_account_refund_excess',
         'fund_transfer_attempt_process',
         'daily_reconciliation_summary_fetch',
@@ -1569,6 +1573,7 @@ final class Route
         'user_verify_contact',
         'payout_create_with_otp',
         'payment_link_images',
+        'commissions_get_multiple',
     ];
 
     // These will run on internal auth with the assurance
@@ -2395,6 +2400,7 @@ final class Route
         'dashboard_guest' => [
             'user_login',
             'user_register',
+            'razorx_guest',
             'org_get_by_hostname',
             'user_reset_password_create',
             'user_merchant_upgrade',

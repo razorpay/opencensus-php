@@ -25,6 +25,14 @@ class Reconciliate extends Base\Core
     const COMBINED       = 'combined';
     const EMANDATE_DEBIT = 'emandate_debit';
 
+    /**
+     * This is being used as a hack to ignore the unexpected files coming
+     * from NB-ICICI. We return recon type as 'invalid_recon_type'
+     * instead of null AND use this to decide whether to throw slack
+     * alert when recon type does not belong to VALID_RECON_TYPES.
+     */
+    const INVALID_RECON_TYPE = 'invalid_recon_type';
+
     const VALID_RECON_TYPES = [self::NODAL, self::PAYMENT, self::REFUND, self::COMBINED, self::EMANDATE_DEBIT];
 
     //
@@ -293,14 +301,26 @@ class Reconciliate extends Base\Core
         // Ideally, should never come here.
         if ((in_array($reconciliationType, self::VALID_RECON_TYPES, true) === false))
         {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'            => TraceCode::RECON_PARSE_ERROR,
-                    'message'               => 'Unable to figure out the reconciliation type. Skipping this file.',
-                    'reconciliation_type'   => $reconciliationType,
-                    'extra_details'         => $extraDetails,
-                    'gateway'               => $this->gateway
-                ]);
+            $traceData = [
+                'trace_code'            => TraceCode::RECON_PARSE_ERROR,
+                'message'               => 'Unable to figure out the reconciliation type. Skipping this file.',
+                'reconciliation_type'   => $reconciliationType,
+                'extra_details'         => $extraDetails,
+                'gateway'               => $this->gateway
+            ];
+
+            // No slack alerts for unexpected MIS files, just trace it
+            if ($reconciliationType !== self::INVALID_RECON_TYPE)
+            {
+                $this->messenger->raiseReconAlert($traceData);
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::RECON_INFO_ALERT,
+                    $traceData
+                );
+            }
 
             return null;
         }

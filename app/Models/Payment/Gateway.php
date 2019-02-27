@@ -219,6 +219,7 @@ class Gateway
         self::WALLET_AIRTELMONEY,
         self::WALLET_OPENWALLET,
         self::CARDLESS_EMI,
+        self::ENACH_NPCI_NETBANKING,
 
         // UPI HULK is TEMPORARY, As payment are still failed on hulk and we can't do much there,
         //If you are seeing this after Sep'18, Please report to gateway payments team
@@ -531,6 +532,12 @@ class Gateway
         Payment\Gateway::UPI_MINDGATE   => [
             self::GO_LIVE_TIMESTAMP => 1540826221
         ],
+        Payment\Gateway::HITACHI   => [
+            self::GO_LIVE_TIMESTAMP => 1550746997
+        ],
+        Payment\Gateway::WALLET_OLAMONEY   => [
+            self::GO_LIVE_TIMESTAMP => 1550838065
+        ],
     ];
 
     /**
@@ -538,7 +545,7 @@ class Gateway
      *
      * @var array
      */
-    public static $scroogeMerchants = [
+    public static $refundsPublicStatusMerchants = [
         '9DZkE60krEG4wq',
         '9ncOh0EZ8sC9z9',
         '9hefgkvGhT18Q9',
@@ -974,10 +981,16 @@ class Gateway
         self::NETBANKING_CORPORATION,
         self::NETBANKING_IDFC,
         self::NETBANKING_VIJAYA,
+        self::NETBANKING_EQUITAS,
+        self::ENACH_NPCI_NETBANKING,
     ];
 
     public static $captureVerifyEnabled = [
         self::HITACHI,
+        self::AXIS_MIGS,
+        self::CYBERSOURCE,
+        self::FIRST_DATA,
+        self::CARD_FSS,
     ];
 
     /**
@@ -1412,9 +1425,9 @@ class Gateway
         return array_keys(self::$scroogeGateways);
     }
 
-    public static function getScroogeMerchants(): array
+    public static function getRefundsPublicStatusMerchants(): array
     {
-        return self::$scroogeMerchants;
+        return self::$refundsPublicStatusMerchants;
     }
 
     public static function isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer)
@@ -1441,12 +1454,6 @@ class Gateway
      */
     public static function isScroogeGatewayAndMerchant(string $gateway = null, string $merchantId = null): bool
     {
-        if (empty($merchantId) === false)
-        {
-            return ((in_array($gateway, self::getScroogeGateways(), true) === true) and
-                (in_array($merchantId, self::getScroogeMerchants(), true) === true));
-        }
-
         return (in_array($gateway, self::getScroogeGateways(), true) === true);
     }
 
@@ -1465,6 +1472,18 @@ class Gateway
             isset(self::$scroogeGateways[$gateway][self::GO_LIVE_TIMESTAMP]) and
             $timestamp > self::$scroogeGateways[$gateway][self::GO_LIVE_TIMESTAMP]
         );
+    }
+
+    /**
+     * This function checks if a given merchant is to be shown refund's Public status.
+     *
+     * @param $merchantId
+     * @return bool
+     *
+     */
+    public static function isRefundsPublicStatusMerchant(string $merchantId = null): bool
+    {
+        return (in_array($merchantId, self::getRefundsPublicStatusMerchants(), true) === true);
     }
 
     /**

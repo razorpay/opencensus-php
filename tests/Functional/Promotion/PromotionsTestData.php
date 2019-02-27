@@ -1,5 +1,6 @@
 <?php
 
+use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -24,6 +25,88 @@ return [
                 'credit_amount'     => 100,
                 'credits_expire'    => false,
             ]
+        ]
+    ],
+
+    'testCreateOneTimePromotionWithPartnerId' => [
+        'request' => [
+            'content' => [
+                'name'              => 'Test-Promotion',
+                'credit_amount'     => 100,
+                'credit_type'       => 'amount',
+                'iterations'        => 1,
+                'credits_expire'    => false,
+                'purpose'           => 'Promotion Testing',
+                'partner_id'        => '10000000000000'
+            ],
+            'url'    => '/promotions',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'name'              => 'Test-Promotion',
+                'credit_amount'     => 100,
+                'credits_expire'    => false,
+                'partner_id'        => '10000000000000'
+            ]
+        ]
+    ],
+
+    'testCreateOneTimePromotionWithInvalidPartnerId' => [
+        'request' => [
+            'content' => [
+                'name'              => 'Test-Promotion',
+                'credit_amount'     => 100,
+                'credit_type'       => 'amount',
+                'iterations'        => 1,
+                'credits_expire'    => false,
+                'purpose'           => 'Promotion Testing',
+                'partner_id'        => '10000000000000'
+            ],
+            'url'    => '/promotions',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_ACTION
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION
+        ]
+    ],
+
+    'testCreateOneTimePromotionWithNonPartner' => [
+        'request' => [
+            'content' => [
+                'name'              => 'Test-Promotion',
+                'credit_amount'     => 100,
+                'credit_type'       => 'amount',
+                'iterations'        => 1,
+                'credits_expire'    => false,
+                'purpose'           => 'Promotion Testing',
+                'partner_id'        => '10000000000000'
+            ],
+            'url'    => '/promotions',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_ACTION
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION
         ]
     ],
 

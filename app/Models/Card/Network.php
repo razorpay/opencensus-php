@@ -6,15 +6,16 @@ use RZP\Exception;
 
 class Network
 {
-    const AMEX  = 'AMEX';
-    const DICL  = 'DICL';
-    const DISC  = 'DISC';
-    const JCB   = 'JCB';
-    const MAES  = 'MAES';
-    const MC    = 'MC';
-    const RUPAY = 'RUPAY';
-    const UNP   = 'UNP';
-    const VISA  = 'VISA';
+    const AMEX   = 'AMEX';
+    const DICL   = 'DICL';
+    const DISC   = 'DISC';
+    const JCB    = 'JCB';
+    const MAES   = 'MAES';
+    const MC     = 'MC';
+    const RUPAY  = 'RUPAY';
+    const UNP    = 'UNP';
+    const VISA   = 'VISA';
+    const BAJAJ  = 'BAJAJ';
 
     // Unidentified
     const UNKNOWN = 'UNKNOWN';
@@ -35,7 +36,8 @@ class Network
         self::RUPAY   => 'RuPay',
         self::UNKNOWN => 'Unknown',
         self::VISA    => 'Visa',
-        self::UNP     => 'Union Pay');
+        self::UNP     => 'Union Pay',
+        self::BAJAJ   => 'Bajaj Finserv',);
 
     public static $colorCodes = array(
         self::AMEX    => '#2584C3',
@@ -57,6 +59,7 @@ class Network
         self::UNP,
         self::VISA,
         self::DISC,
+        self::BAJAJ
     );
 
     public static $cardNetworkMap = [
@@ -67,10 +70,15 @@ class Network
         Network::VISA  => 16,
         Network::JCB   => 32,
         Network::RUPAY => 64,
+        Network::BAJAJ => 128,
+
     ];
 
+    // use https://regex101.com/
+    // MC bin ranges (222100-272099,510000-559999,590000-599999)
     public static $networkRegexes = array(
-        self::MC    => '/^5[1-5][0-9]{4,}$/',
+        self::BAJAJ => '/^203040/',
+        self::MC    => '/^(5[1-5,9][0-9]{3}|222[1-8][0-9]{1}|2229[0-8]|22299|22[3-9][0-9]{2}|2[3-6][0-9]{3}|27[01][0-9]{2}|2720[0-8]|27209)[0-9]{1,}$/',
         self::VISA  => '/^4[0-9]{5,}$/',
         self::AMEX  => '/^3[47][0-9]{4,}$/',
         self::JCB   => '/^((?!353800)(?:2131|1800|35[0-9]{2}))[0-9]{2,}$/',

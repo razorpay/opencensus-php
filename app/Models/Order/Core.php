@@ -146,6 +146,7 @@ class Core extends Base\Core
         $data = [
             Entity::PARTIAL_PAYMENT          => $order->isPartialPaymentAllowed(),
             Entity::AMOUNT                   => $order->getAmount(),
+            Entity::CURRENCY                 => $order->getCurrency(),
             Entity::AMOUNT_PAID              => $order->getAmountPaid(),
             Entity::AMOUNT_DUE               => $order->getAmountDue(),
             Entity::FIRST_PAYMENT_MIN_AMOUNT => $order->getFirstPaymentMinAmount(),
