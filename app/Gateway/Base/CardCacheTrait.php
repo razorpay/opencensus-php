@@ -42,7 +42,15 @@ trait CardCacheTrait
             'vault_token' => $vaultToken
         ];
 
-        $this->app['cache']->store($this->secureCacheDriver)->put($key, $data, static::CACHE_TTL);
+        if (static::CACHE_TTL === 0)
+        {
+            $this->app['cache']->store($this->secureCacheDriver)->forever($key, $data);
+        }
+        else
+        {
+            $this->app['cache']->store($this->secureCacheDriver)->put($key, $data, static::CACHE_TTL);
+        }
+
     }
 
     /**

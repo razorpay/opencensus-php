@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\HashAlgo;
@@ -25,7 +26,7 @@ class Gateway extends Base\Gateway
     protected $secureCacheDriver;
 
     const CACHE_KEY = 'paysecure_%s_card_details';
-    const CACHE_TTL = 180;
+    const CACHE_TTL = 0;
 
     protected $gatewayPayment = null;
 
@@ -225,6 +226,32 @@ class Gateway extends Base\Gateway
         $verify = new Base\Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    public function capture(array $input)
+    {
+        parent::capture($input);
+
+        $this->setCardNumberAndCvv($input);
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], Action::AUTHORIZE);
+
+        // If advice message has already been called for this, do not call again.
+        // We do not want to block capture request even if this is set to 1, hence not throwing
+        // an exception here.
+        if ($gatewayPayment[Entity::SETTLED] === 0)
+        {
+            $this->callAdviceGateway($input);
+
+            $gatewayPayment->fill(
+                [
+                    Entity::SETTLED => 1,
+                ]
+            );
+
+            $this->getRepository()->saveOrFail($gatewayPayment);
+        }
     }
 
     // ------------ Auth request helpers -----------------
@@ -474,7 +501,6 @@ class Gateway extends Base\Gateway
     /**
      * @param $response
      * @param $action
-     * @return bool
      * @throws Exception\GatewayErrorException
      */
     protected function handleFailure($response, $action)
@@ -494,6 +520,15 @@ class Gateway extends Base\Gateway
                 ]
             );
         }
+    }
+
+    protected function callAdviceGateway(array $input)
+    {
+        $this->app['gateway']->call(
+            Payment\Gateway::HITACHI,
+            Action::ADVICE,
+            $input,
+            $this->mode);
     }
 
     protected function getRepository()

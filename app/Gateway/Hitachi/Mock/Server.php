@@ -37,6 +37,11 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
+    public function advice($input)
+    {
+        return $this->callback($input);
+    }
+
     public function getBharatQrCallback($qrCodeId, $ref = null)
     {
         $data = [

@@ -104,11 +104,6 @@ class Gateway extends Base\Gateway
             return $this->authorizeMoto($input);
         }
 
-        if ($this->isPaysecureTransactionRequest($input) === true)
-        {
-            return $this->authorizePaysecure($input);
-        }
-
         $authenticationGateway = $this->decideAuthenticationGateway($input);
 
         $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
@@ -225,6 +220,13 @@ class Gateway extends Base\Gateway
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    public function advice(array $input)
+    {
+        parent::advice($input);
+
+        return $this->advicePaysecure($input);
     }
 
     public function preProcessServerCallback($input, $isBharatQr = false): array
@@ -374,9 +376,9 @@ class Gateway extends Base\Gateway
         $this->checkErrorsAndThrowException($response);
     }
 
-    protected function authorizePaysecure(array $input)
+    protected function advicePaysecure(array $input)
     {
-        $request = $this->getAuthorizeRequestArrayForPaysecure($input);
+        $request = $this->getAdviceRequestArrayForPaysecure($input);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -741,15 +743,13 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getAuthorizeRequestArrayForPaysecure(array $input)
+    protected function getAdviceRequestArrayForPaysecure(array $input)
     {
         $content = $this->getDefaultAuthorizeRequestArray($input);
 
         $content[RequestFields::TRANSACTION_TYPE] = TransactionType::RUPAY;
 
         $content[RequestFields::ECI] = '07';
-
-//        $content
 
         $traceContent = $content;
 

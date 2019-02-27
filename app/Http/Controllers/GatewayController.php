@@ -15,7 +15,6 @@ use RZP\Models\Gateway\Rule;
 use RZP\Models\Payment\Gateway;
 use Exception as BaseException;
 use RZP\Models\Gateway\Downtime;
-use RZP\Models\Gateway\Settlement;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Jobs\DynamicNetBankingUrlUpdater;
 use RZP\Models\Gateway\Priority as GatewayPriority;
@@ -756,14 +755,5 @@ class GatewayController extends Controller
                 'exception' => $exc->getMessage(),
             ]);
         }
-    }
-
-    public function initiateSettlements($gateway)
-    {
-        $input = Request::all();
-
-        $data = (new Settlement\Service)->processSettlements($gateway, $input);
-
-        return ApiResponse::json($data);
     }
 }
