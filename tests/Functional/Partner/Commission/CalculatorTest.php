@@ -71,6 +71,22 @@ class CalculatorTest extends OAuthTestCase
     }
 
     /**
+     * Asserts that resellers get commission even when the payment is originated using the public auth
+     */
+    public function testPublicAuthPaymentForReseller()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    /**
+     * Asserts that aggregators do not get commission when the payment is originated using the public auth
+     */
+    public function testPublicAuthPaymentForAggregator()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    /**
      * Fee calculation can have multiple rules - base rule + add on rule (like recurring payment pricing rule)
      * This test asserts that if multiple pricing rules have been added in the pricing plan for the merchant and the
      * partner, the commission calculation takes into account the following calculation -
