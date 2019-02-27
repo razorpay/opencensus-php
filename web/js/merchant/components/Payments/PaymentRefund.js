@@ -123,7 +123,7 @@ export default ({
           additionalCondition={user =>
             user.isRefundAllowed &&
             (user.isOrgAllowedFunctionality('card_refunds') ||
-              !(['card', 'emi'].indexOf(payment.method) !== -1))
+              ['card', 'emi'].indexOf(payment.method) === -1)
           }
         >
           <p>
@@ -149,7 +149,7 @@ export default ({
         <ShowWhen
           additionalCondition={user =>
             user.isRefundAllowed &&
-            (!user.isOrgAllowedFunctionality('card_refunds') ||
+            (!user.isOrgAllowedFunctionality('card_refunds') &&
               ['card', 'emi'].indexOf(payment.method) > -1)
           }
         >
