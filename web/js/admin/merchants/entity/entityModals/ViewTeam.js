@@ -3,8 +3,12 @@ import { observer } from 'mobx-react';
 import { ModalContent } from 'component/Modal';
 
 import fetch, { adminFetch } from 'common/fetch';
+import { openModal } from 'common/modal';
+import user from 'admin/user';
 
 import Table from 'ui/Table';
+
+import UserResetPassword from './UserResetPassword';
 
 @observer
 export default class TeamDetails extends Component {
@@ -26,6 +30,36 @@ export default class TeamDetails extends Component {
     });
   }
 
+  openPasswordResetModal = member => {
+    openModal(
+      <UserResetPassword member={member} merchantId={this.props.merchantId} />
+    );
+  };
+
+  _getUsersFields = () => {
+    let fields = [
+      ['Name', item => item.name],
+      ['Email', item => item.email],
+      ['Role', item => item.role],
+    ];
+
+    if (user.permissions.indexOf('user_password_reset') > -1) {
+      fields.push([
+        '',
+        item => (
+          <span
+            class="link danger"
+            onClick={this.openPasswordResetModal.bind(this, item)}
+          >
+            Reset Password
+          </span>
+        ),
+      ]);
+    }
+
+    return fields;
+  };
+
   render() {
     return (
       <ModalContent
@@ -36,7 +70,7 @@ export default class TeamDetails extends Component {
           {!this.state.users ? (
             <div class="spinner center" />
           ) : (
-            <Table items={this.state.users} fields={_getUsersFields()} />
+            <Table items={this.state.users} fields={this._getUsersFields()} />
           )}
         </div>
 
@@ -60,14 +94,6 @@ export default class TeamDetails extends Component {
 }
 
 /* Resources */
-
-function _getUsersFields() {
-  return [
-    ['Name', item => item.name],
-    ['Email', item => item.email],
-    ['Role', item => item.role],
-  ];
-}
 
 function _getPendingInvitesFields() {
   return [['Email', item => item.email], ['Role', item => item.role]];
