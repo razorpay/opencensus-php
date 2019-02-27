@@ -274,6 +274,34 @@ class PaysecureGatewayTest extends TestCase
         );
     }
 
+    public function testPaymentRefundViaHitachi()
+    {
+        $this->testPaymentSettledViaHitachi();
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->refundPayment('pay_' . $payment['id'], 1000);
+
+        $hitachi = $this->getDbLastEntityToArray('hitachi');
+        $this->assertArraySelectiveEquals(
+            [
+                'amount'     => 1000,
+                'payment_id' => $payment['id'],
+                'action'     => 'refund',
+            ],
+            $hitachi
+        );
+
+        $refund = $this->getDbLastEntityToArray('refund');
+        $this->assertArraySelectiveEquals(
+            [
+                'amount' => 1000,
+                'payment_id' => $payment['id'],
+            ],
+            $refund
+        );
+    }
+
     public function testSoapFault()
     {
         $this->mockServerContentFunction(
