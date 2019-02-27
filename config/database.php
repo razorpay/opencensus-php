@@ -73,6 +73,7 @@ return array(
              ],
             'heartbeat_check' => [
                 'driver'                => 'heartbeat',
+                'force_run'             => ConfigKey::HEARTBEAT_FORCE_RUN,
                 'enabled'               => ConfigKey::HEARTBEAT_ENABLED,
                 'mock'                  => ConfigKey::HEARTBEAT_MOCK,
                 'time_threshold'        => ConfigKey::HEARTBEAT_TIME_THRESHOLD,
@@ -107,6 +108,7 @@ return array(
              ],
             'heartbeat_check' => [
                 'driver'                => 'heartbeat',
+                'force_run'             => ConfigKey::HEARTBEAT_FORCE_RUN,
                 'enabled'               => ConfigKey::HEARTBEAT_ENABLED,
                 'mock'                  => ConfigKey::HEARTBEAT_MOCK,
                 'time_threshold'        => ConfigKey::HEARTBEAT_TIME_THRESHOLD,

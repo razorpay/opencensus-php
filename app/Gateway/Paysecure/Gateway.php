@@ -536,4 +536,40 @@ class Gateway extends Base\Gateway
 
         return $this->app['repo']->$gateway;
     }
+
+    protected function traceGatewayPaymentRequest(
+        array $request,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
+    {
+        if (isset($request['command']) === true)
+        {
+            // Remove sensitive data from logs
+            if ($request['command'] === 'initiate' or $request['command'] === 'initiate2')
+            {
+                $toRemove = [
+                    'card_no',
+                    'card_exp_date',
+                    'cvd2',
+                    'retrieval_ref_number',
+                ];
+
+                foreach ($toRemove as $field)
+                {
+                    unset($request['parameters'][$field]);
+                }
+            }
+
+            unset($request['parameters']['partner_id']);
+            unset($request['parameters']['merchant_password']);
+        }
+
+        $this->trace->info(
+            $traceCode,
+            [
+                'request'    => $request,
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+            ]);
+    }
 }

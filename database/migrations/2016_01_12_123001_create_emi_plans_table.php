@@ -27,6 +27,9 @@ class CreateEmiPlansTable extends Migration {
             $table->char(Emi\Entity::ID, 14)
                   ->primary();
 
+            $table->char(Emi\Entity::MERCHANT_ID, 14)
+                  ->nullable();
+
             $table->char(Emi\Entity::BANK, 4)
                   ->nullable();
 
@@ -58,6 +61,7 @@ class CreateEmiPlansTable extends Migration {
             $table->integer(Emi\Entity::DELETED_AT)
                   ->nullable();
 
+            $table->index(Emi\Entity::MERCHANT_ID);
             $table->index(Emi\Entity::BANK);
             $table->index(Emi\Entity::NETWORK);
             $table->index(Emi\Entity::SUBVENTION);

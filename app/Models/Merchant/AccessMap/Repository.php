@@ -5,6 +5,8 @@ namespace RZP\Models\Merchant\AccessMap;
 use DB;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
+use RZP\Constants\Table;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
 
 class Repository extends Base\Repository
@@ -34,6 +36,27 @@ class Repository extends Base\Repository
                     ->merchantId($merchantId)
                     ->where(Entity::ENTITY_ID, $entityId)
                     ->where(Entity::ENTITY_TYPE, $entityType)
+                    ->first();
+    }
+
+    /**
+     * Returns the access map that links the submerchantId with a non pure-platform partner.
+     *
+     * @param string $subMerchantId
+     *
+     * @return Entity|null
+     */
+    public function getNonPurePlatformPartnerMapping(string $subMerchantId)
+    {
+        $accessMapsEntityOwnerId = $this->dbColumn(Entity::ENTITY_OWNER_ID);
+        $merchantsId             = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+        $merchantsPartnerType    = Table::MERCHANT . '.' . Merchant\Entity::PARTNER_TYPE;
+
+        return $this->newQuery()
+                    ->select($this->getTableName() . '.*')
+                    ->merchantId($subMerchantId)
+                    ->join(Table::MERCHANT, $accessMapsEntityOwnerId, $merchantsId)
+                    ->where($merchantsPartnerType, '!=', Merchant\Constants::PURE_PLATFORM)
                     ->first();
     }
 

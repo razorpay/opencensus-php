@@ -238,15 +238,13 @@ trait RequestHandlerTrait
         try
         {
             $response = $soapClient->__soapCall('CallPaySecure', array('parameters' => $requestBody));
-
-            $this->logSoapRequestAndResponse($response, $soapClient, $command);
         }
         catch (SoapFault $sf)
         {
             if (Utility::checkSoapTimeout($sf))
             {
-                $this->logSoapRequestOnTimeout($soapClient, $command);
-
+                // If Soap request times out on auth request, we need to verify using transaction status and
+                // mark the payment accordingly
                 if (($command === Command::AUTHORIZE) and
                     ($this->gatewayPayment !== null))
                 {
@@ -368,43 +366,4 @@ trait RequestHandlerTrait
         return $xmlResponseArray;
     }
     //---------------- Soap Request related functions end --------------------
-
-    protected function logSoapRequestAndResponse($response, $soapClient, $command)
-    {
-        $xml = $soapClient->__getLastRequest();
-        $dom = new \DOMDocument('1.0');
-        $dom->preserveWhiteSpace = false;
-        $dom->formatOutput = true;
-        $dom->loadXML($xml);
-        $request = $dom->saveXML();
-
-        $this->trace->info(
-            TraceCode::GATEWAY_SOAP_REQUEST,
-            [
-                'request'    => $request,
-                'response'   => $response,
-                'gateway'    => $this->gateway,
-                'payment_id' => $this->input['payment']['id'],
-                'command'    => $command,
-            ]);
-    }
-
-    protected function logSoapRequestOnTimeout($soapClient, $command)
-    {
-        $xml = $soapClient->__getLastRequest();
-        $dom = new \DOMDocument('1.0');
-        $dom->preserveWhiteSpace = false;
-        $dom->formatOutput = true;
-        $dom->loadXML($xml);
-        $request = $dom->saveXML();
-
-        $this->trace->error(
-            TraceCode::GATEWAY_REQUEST_TIMEOUT,
-            [
-                'request'    => $request,
-                'gateway'    => $this->gateway,
-                'payment_id' => $this->input['payment']['id'],
-                'command'    => $command,
-            ]);
-    }
 }

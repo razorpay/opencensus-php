@@ -193,7 +193,7 @@ class ActivationTest extends TestCase
     {
         $this->fixtures->create('merchant_detail', [
             'merchant_id'   => self::DEFAULT_MERCHANT_ID,
-            'contact_email' => "test@razorpay.com",
+            'contact_email' => 'test@razorpay.com',
         ]);
 
         $this->ba->adminAuth();
@@ -208,7 +208,7 @@ class ActivationTest extends TestCase
     {
         $this->fixtures->create('merchant_detail', [
             'merchant_id'   => self::DEFAULT_MERCHANT_ID,
-            'contact_email' => "test@razorpay.com",
+            'contact_email' => 'test@razorpay.com',
         ]);
 
         $this->ba->adminAuth();
@@ -366,6 +366,8 @@ class ActivationTest extends TestCase
 
         $this->fixtures->pricing->createPromotionalPlan();
 
+        $this->fixtures->edit('pricing', '1AXp2Xd3t5aRLX', ['international' => 1]);
+
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $this->startTest();
@@ -418,6 +420,8 @@ class ActivationTest extends TestCase
             'debit_card'        => 0,
             'credit_card'       => 0,
         ]);
+
+        $this->fixtures->edit('pricing', $plan->getId(), ['international' => 1]);
 
         return $merchantDetail->getMerchantId();
     }
@@ -490,4 +494,70 @@ class ActivationTest extends TestCase
             'submitted_at'                => 1539543931,
         ];
     }
+
+    public function testInternationalWithWhitelistedCategory()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->runFixturesForInternationalActivation($merchantId);
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertFalse($merchant->convertOnApi());
+    }
+
+    public function testInternationalWithBlacklistedCategory()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->runFixturesForInternationalActivation($merchantId);
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertNull($merchant->convertOnApi());
+    }
+
+    public function testInternationalWithGreylistedCategory()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->runFixturesForInternationalActivation($merchantId);
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertNull($merchant->convertOnApi());
+    }
+
+    public function testInternationalWithGreylistedCategoryAndNonInstantActivation()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->runFixturesForInternationalActivation($merchantId);
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertNull($merchant->convertOnApi());
+    }
+
+    protected function runFixturesForInternationalActivation($merchantId)
+    {
+        $this->fixtures->edit('merchant', $merchantId, ['international' => 0]);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => $merchantId
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+    }
+
 }

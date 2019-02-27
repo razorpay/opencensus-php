@@ -83,7 +83,7 @@ class Service extends Base\Service
             // Merchant with this feature enabled will have their
             // subscriptions charge via the cron on subscriptions service
             // Currently commented out to enable just the crud flow
-           /* if ($subscription->merchant->isFeatureEnabled(Feature::SUBSCRIPTION_V2) === true)
+            if ($subscription->merchant->isFeatureEnabled(Feature::SUBSCRIPTION_V2) === true)
             {
                 $this->trace->info(
                     TraceCode::SUBSCRIPTION_SKIPPED, [
@@ -94,7 +94,7 @@ class Service extends Base\Service
                 $skipped++;
 
                 continue;
-            }*/
+            }
 
             try
             {

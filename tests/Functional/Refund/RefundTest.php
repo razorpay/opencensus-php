@@ -95,6 +95,36 @@ class RefundTest extends TestCase
         $this->startTest($payment['id'], (string) $payment['amount']);
     }
 
+    public function testRefundWhenDisabledOnMerchantForCards()
+    {
+        $this->fixtures->merchant->addFeatures('disable_card_refunds');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment');
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+    }
+
+    public function testNetBankRefundWhenDisabledOnMerchantForCards()
+    {
+        $this->fixtures->merchant->addFeatures('disable_card_refunds');
+
+        $payment = $this->getDefaultNetbankingPaymentArray('CORP');
+
+        $this->setMockGatewayTrue();
+
+        $this->fixtures->create('terminal:shared_netbanking_corporation_terminal');
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment');
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+    }
+
     public function testVoidRefundFeatureDeactivated()
     {
         $payment = $this->getDefaultPaymentArray();

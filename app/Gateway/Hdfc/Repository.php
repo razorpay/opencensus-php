@@ -235,6 +235,11 @@ class Repository extends Base\Repository
             $attributes['amount'] = $data['amt'];
         }
 
+        if (empty($data['eci']) === false)
+        {
+            $attributes['eci'] = $data['eci'];
+        }
+
         $model->fill($attributes);
 
         $this->saveOrFail($model);

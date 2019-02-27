@@ -9,6 +9,8 @@ use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Payment\Status;
 use RZP\Models\Base\PublicEntity;
+use Razorpay\Trace\Logger as Trace;
+use Razorpay\Spine\Exception\DbQueryException;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
@@ -94,9 +96,26 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getGatewayPayment($paymentId)
     {
-        return $this->repo
-                    ->wallet_jiomoney
-                    ->findSuccessfulPaymentsByPaymentIdAndAction($paymentId, Action::AUTHORIZE);
+        try
+        {
+            return $this->repo
+                        ->wallet_jiomoney
+                        ->findSuccessfulPaymentsByPaymentIdAndAction($paymentId, Action::AUTHORIZE);
+        }
+        catch (DbQueryException $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'     => Base\InfoCode::GATEWAY_PAYMENT_ABSENT,
+                    'payment_id'    => $paymentId,
+                    'gateway'       => $this->gateway,
+                ]);
+
+            return null;
+        }
     }
 
     protected function setGatewayTransactionId(string $gatewayPaymentId, PublicEntity $gatewayPayment)

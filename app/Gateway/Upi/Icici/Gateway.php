@@ -779,6 +779,27 @@ class Gateway extends Base\Gateway
                                    ->toArray();
         }
 
+        //
+        // Checking for 8010 code specifically here as this is Internal Service Failure, its not a refund failure.
+        // throwing exception so that, verify will be called in such case.
+        //
+        if (((int) $content[Fields::RESPONSE] === 8010) or
+            ($content[Fields::MESSAGE] === 'INTERNAL_SERVICE_FAILURE-The system had an internal exception'))
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                $content[Fields::STATUS],
+                $content[Fields::MESSAGE],
+                [
+                    Payment\Gateway::GATEWAY_VERIFY_RESPONSE    => json_encode($content),
+                    Payment\Gateway::GATEWAY_KEYS               =>
+                        [
+                            'gateway_status' => $content[Fields::STATUS],
+                            'refund_id'      => $input['refund']['id'],
+                        ],
+                ]);
+        }
+
         if (($content[Fields::STATUS] === Status::FAILURE) or
             ($content[Fields::STATUS] === Status::FAIL))
         {
@@ -975,7 +996,8 @@ class Gateway extends Base\Gateway
 
         return [
             'acquirer' => [
-                Payment\Entity::VPA => $gatewayPayment->getVpa()
+                Payment\Entity::VPA => $gatewayPayment->getVpa(),
+                Payment\Entity::REFERENCE16 => $gatewayPayment->getNpciReferenceId(),
             ]
         ];
     }
@@ -1054,9 +1076,9 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_REQUEST,
             [
-                'request' => $request,
+                'request'           => $request,
                 'decrypted_content' => $data,
-                'gateway' => $this->gateway,
+                'gateway'           => $this->gateway,
             ]);
 
         return $request;
@@ -1080,14 +1102,14 @@ class Gateway extends Base\Gateway
 
     /**
      * This is done in order to fix refund retry
-     * if refund fails in first attempt
+     * if refund fails after 2 retries,
      * refund is retried with offline mode
      *
      * @return string
      */
     protected function isOnlineRefund(array $refund)
     {
-        if (empty($refund['attempts']) === true)
+        if ($refund['attempts'] < 3)
         {
             return 'Y';
         }

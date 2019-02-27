@@ -100,6 +100,9 @@ class UpiMindgateGatewayTest extends TestCase
 
         $upiEntity = $this->getLastEntity('upi', true);
         $this->assertNotNull($upiEntity['npci_reference_id']);
+        $this->assertNotNull($payment['acquirer_data']['rrn']);
+
+        $this->assertEquals($payment['reference16'], $upiEntity['npci_reference_id']);
         $this->assertNotNull($upiEntity['gateway_payment_id']);
         $this->assertSame('00', $upiEntity['status_code']);
 
@@ -341,6 +344,7 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertEquals('invalidvpa@hdfcbank', $upiEntity[Entity::VPA]);
         $this->assertNull($upiEntity[Entity::GATEWAY_PAYMENT_ID]);
         $this->assertNull($upiEntity[Entity::NPCI_REFERENCE_ID]);
+        $this->assertEquals($payment['reference16'], $upiEntity['npci_reference_id']);
     }
 
 
@@ -1157,6 +1161,8 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertNotNull($upi['status_code']);
 
         $this->assertNotNull($upi['npci_reference_id']);
+
+        $this->assertEquals($payment['reference16'], $upi['npci_reference_id']);
 
         $this->capturePayment($payment->getPublicId(), $payment['amount']);
 

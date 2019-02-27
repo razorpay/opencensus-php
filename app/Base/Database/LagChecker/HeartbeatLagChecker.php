@@ -115,11 +115,11 @@ class HeartbeatLagChecker implements LagChecker
         $useSlave = true;
 
         //
-        // We wont be checking heartbeat for test mode
+        // We wont be checking heartbeat if mode is not set
         //
         if ($this->mode === null)
         {
-            return $useSlave;
+            return false;
         }
 
         //

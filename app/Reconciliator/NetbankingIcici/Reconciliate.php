@@ -41,18 +41,26 @@ class Reconciliate extends Base\Reconciliate
      * For now, only payment.
      * we convert file name to lower case before sending
      *
+     * Note : Here we return type as 'invalid_recon_type' for
+     * unexpected MIS files. Doing this, as it is not practical to
+     * keep adding new file names to exclude list each time we get
+     * such files. This new tag ensures no slack alert for these
+     * files, when recon type does not fall under VALID_RECON_TYPES.
+     *
      * @param string $fileName
      * @return null | string
      */
     public function getTypeName($fileName)
     {
-        $typeName = null;
+        $typeName = self::INVALID_RECON_TYPE;
 
         foreach (self::SUCCESS as $name => $type)
         {
             if (strpos($fileName, $name) !== false)
             {
                 $typeName = $type;
+
+                break;
             }
         }
 
@@ -61,14 +69,14 @@ class Reconciliate extends Base\Reconciliate
 
     public function getColumnHeadersForType($type)
     {
-        if (empty($type) === true)
+        if ($type === self::INVALID_RECON_TYPE)
         {
             //
             // We are getting few extra files from NB-icici (file data is blank),
             // which is not yet defined in SUCCESS const here. As of now we have
             // not put these files under exclude list.
-            // For such unexpected files, type is returned as NULL in function
-            // getTypeName() above. So we are handling the undefined index error
+            // For such unexpected files, recon type is being returned as 'invalid_recon_type'
+            // in function getTypeName() above. So we are handling the undefined index error
             // here, when lookup in done in TYPE_TO_COLUMN_HEADER_MAP array.
             //
             $this->trace->info(

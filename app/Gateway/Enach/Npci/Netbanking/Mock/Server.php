@@ -8,6 +8,8 @@ use RZP\Gateway\Base;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Enach\Npci\Netbanking\Crypto;
+use RZP\Gateway\Enach\Npci\Netbanking\ResponseType;
+use RZP\Gateway\Enach\Npci\Netbanking\ResponseFields;
 
 class Server extends Base\Mock\Server
 {
@@ -29,7 +31,7 @@ class Server extends Base\Mock\Server
 
         $requestArray = json_decode($json,true);
 
-        $respType = 'RespXML';
+        $respType = ResponseType::SUCCESS;
 
         $this->content($respType, 'authorize');
 
@@ -37,13 +39,13 @@ class Server extends Base\Mock\Server
 
         $secureData = [];
 
-        if($respType === 'RespXML')
+        if($respType === ResponseType::SUCCESS)
         {
             $secureData = $this->getSecureData();
 
             $checksum = $this->generateHash($secureData);
 
-            $content['CheckSumVal'] = $checksum;
+            $content[ResponseFields::CHECKSUM] = $checksum;
         }
 
         $responseData = $this->getResponseData($requestArray, $respType, $secureData);
@@ -54,9 +56,9 @@ class Server extends Base\Mock\Server
 
         $callbackUrl = $this->route->getUrl('gateway_emandate_callback_npci_nb');
 
-        $content['MandateRespDoc'] = $signedResponseXml;
+        $content[ResponseFields::RESPONSE_XML] = $signedResponseXml;
 
-        $content['RespType'] = $respType;
+        $content[ResponseFields::RESPONSE_TYPE] = $respType;
 
         $request = [
             'url'     => $callbackUrl,
@@ -69,7 +71,7 @@ class Server extends Base\Mock\Server
 
     private function getResponseData($requestArray, $respType, $secureData)
     {
-        if($respType === 'RespXML')
+        if($respType === ResponseType::SUCCESS)
         {
             $data = [
                 'GrpHdr'      => [
@@ -120,7 +122,7 @@ class Server extends Base\Mock\Server
 
     private function getResponseOrErrorXml($data, $respType)
     {
-        if ($respType === 'RespXML')
+        if ($respType === ResponseType::SUCCESS)
         {
             return $this->getResponseXml($data);
         }

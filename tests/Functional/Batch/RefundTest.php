@@ -189,6 +189,36 @@ class RefundTest extends TestCase
         $this->startTest();
     }
 
+    public function testProcessRefundFileCardRefundsDisabled()
+    {
+        $this->fixtures->merchant->addFeatures('disable_card_refunds');
+
+        $entries = $this->getDefaultRefundFileEntries();
+
+        $this->capturePayment($entries[0]['Payment Id'], 50000);
+
+        $payment = $this->getDefaultNetbankingPaymentArray('CORP');
+
+        $this->setMockGatewayTrue();
+
+        $this->fixtures->create('terminal:shared_netbanking_corporation_terminal');
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment');
+
+        $entries[] = [
+            Header::PAYMENT_ID => $payment['id'],
+            Header::AMOUNT     => 4000,
+        ];
+
+        $this->fixtures->create('batch:refund', $entries);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     public function testProcessRefundFileWithRefundedBatch()
     {
         $entries = $this->getDefaultRefundFileEntries(false);

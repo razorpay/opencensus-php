@@ -158,4 +158,11 @@
     span.className = 'spin';
     btn.appendChild(span);
   }
+  function addHash() {
+    if (window.history && !window.opener) {
+      history.pushState(null, null, "#_");
+    }
+  }
+  window.onpopstate = addHash;
+  addHash();
 </script>

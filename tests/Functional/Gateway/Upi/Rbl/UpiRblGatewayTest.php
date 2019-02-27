@@ -321,6 +321,10 @@ class UpiRblGatewayTest extends TestCase
         $this->assertEquals('authorized', $payment['status']);
 
         $this->assertEquals('random@icici', $payment['vpa']);
+
+        $this->assertEquals($payment['reference16'], $upi['npci_reference_id']);
+
+        $this->assertNotNull($payment['acquirer_data']['rrn']);
     }
 
     public function testIntentPaymentVerify()

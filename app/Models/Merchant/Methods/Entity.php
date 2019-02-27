@@ -40,6 +40,7 @@ class Entity extends Base\PublicEntity
 
     protected $primaryKey = self::MERCHANT_ID;
 
+    // Table name has been renamed to 'merchant_banks'
     protected $entity = 'methods';
 
     protected $revisionEnabled = true;
