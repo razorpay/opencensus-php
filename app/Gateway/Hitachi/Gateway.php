@@ -171,10 +171,17 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-                            $input['payment']['id'], Base\Action::AUTHORIZE);
+        if ($input['payment']['gateway'] === Payment\Gateway::PAYSECURE)
+        {
+            $request = $this->getPaysecureRefundRequestArray($input);
+        }
+        else
+        {
+            $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                $input['payment']['id'], Base\Action::AUTHORIZE);
 
-        $request = $this->getRefundRequestArray($input, $gatewayPayment);
+            $request = $this->getRefundRequestArray($input, $gatewayPayment);
+        }
 
         $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_REFUND_REQUEST);
 
@@ -186,7 +193,7 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getAttributesFromRefundReverseResponse($response);
 
-        $refundEntity = $this->updateGatewayRefundEntity($refundEntity, $attributes, false);
+        $this->updateGatewayRefundEntity($refundEntity, $attributes, false);
 
         $this->checkErrorsAndThrowException($response);
 
@@ -773,6 +780,10 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::ECI] = '07';
 
+        $content[RequestFields::TRANSACTION_DATE] = $input['paysecure']['tran_date'];
+
+        $content[RequestFields::TRANSACTION_TIME] = $input['paysecure']['tran_time'];
+
         $traceContent = $content;
 
         $content += $this->getCardDataForAuthorizeRequestArray($input);
@@ -909,7 +920,6 @@ class Gateway extends Base\Gateway
 
     protected function getCaptureRequestArray(array $input, Entity $gatewayPayment)
     {
-        $createdAt = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST);
         $time = Carbon::now(Timezone::IST)->format(self::TIME_FORMAT);
         $date = Carbon::now(Timezone::IST)->format(self::DATE_FORMAT);
 
@@ -942,6 +952,28 @@ class Gateway extends Base\Gateway
             RequestFields::RETRIEVAL_REF_NUM   => $gatewayPayment->getRrn(),
             RequestFields::MERCHANT_ID         => $this->getMerchantId(),
             RequestFields::TERMINAL_ID         => $this->getTerminalId(),
+            RequestFields::MERCHANT_REF_NUMBER => $input['refund']['id'],
+            RequestFields::REQUEST_ID          => UniqueIdEntity::generateUniqueId(),
+        ];
+
+        return $this->getStandardRequestArray($content);
+    }
+
+    protected function getPaysecureRefundRequestArray(array $input)
+    {
+        $createdAt = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST);
+
+        $time = $createdAt->format(self::TIME_FORMAT);
+        $date = $createdAt->format('dmY');
+
+        $content = [
+            RequestFields::TRANSACTION_TYPE    => TransactionType::REFUND,
+            RequestFields::TRANSACTION_AMOUNT  => $this->getFormattedAmount($input['refund']['amount']),
+            RequestFields::TRANSACTION_TIME    => $time,
+            RequestFields::TRANSACTION_DATE    => $date,
+            RequestFields::RETRIEVAL_REF_NUM   => $input['paysecure']['rrn'],
+            RequestFields::MERCHANT_ID         => $input['merchant']['id'],
+            RequestFields::TERMINAL_ID         => $input['terminal']['id'],
             RequestFields::MERCHANT_REF_NUMBER => $input['refund']['id'],
             RequestFields::REQUEST_ID          => UniqueIdEntity::generateUniqueId(),
         ];

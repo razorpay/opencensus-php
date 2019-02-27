@@ -241,6 +241,8 @@ class Gateway extends Base\Gateway
         // an exception here.
         if ($gatewayPayment[Entity::SETTLED] === 0)
         {
+            $input['paysecure'] = $gatewayPayment->toArray();
+
             $this->callAdviceGateway($input);
 
             $gatewayPayment->fill(
@@ -251,6 +253,13 @@ class Gateway extends Base\Gateway
 
             $this->getRepository()->saveOrFail($gatewayPayment);
         }
+    }
+
+    public function refund(array $input)
+    {
+        parent::refund($input);
+
+        return $this->callRefundGateway($input);
     }
 
     // ------------ Auth request helpers -----------------
@@ -526,6 +535,20 @@ class Gateway extends Base\Gateway
         $this->app['gateway']->call(
             Payment\Gateway::HITACHI,
             Action::ADVICE,
+            $input,
+            $this->mode);
+    }
+
+    protected function callRefundGateway(array $input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], Action::AUTHORIZE);
+
+        $input['paysecure'] = $gatewayPayment->toArray();
+
+        return $this->app['gateway']->call(
+            Payment\Gateway::HITACHI,
+            Action::REFUND,
             $input,
             $this->mode);
     }
