@@ -81,7 +81,7 @@ return [
         ],
     ],
 
-    'testImplicitPricingDoesNotExist' => [
+    'testImplicitExplicitPricingDoesNotExist' => [
         'setup' => [
             'create_partner'     => [
                 'id'   => 'BptVjGnFv6ITBm',
@@ -104,6 +104,7 @@ return [
             'define_config'      => [
                 'type'             => 'partner',
                 'implicit_plan_id' => null,
+                'explicit_plan_id' => null,
             ],
             'create_payment'     => [
                 'amount' => 4000 * 100, // paise

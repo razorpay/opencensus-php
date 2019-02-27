@@ -34,7 +34,7 @@ class Action
         $this->instantiateCalculator($postSetupData, $postActionData);
     }
 
-    public function testImplicitPricingDoesNotExist(array $postSetupData, array & $postActionData)
+    public function testImplicitExplicitPricingDoesNotExist(array $postSetupData, array & $postActionData)
     {
         $this->instantiateCalculator($postSetupData, $postActionData);
     }

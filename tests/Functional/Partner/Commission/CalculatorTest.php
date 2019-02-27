@@ -47,7 +47,10 @@ class CalculatorTest extends OAuthTestCase
         $this->ruleEngine->execute(__FUNCTION__);
     }
 
-    public function testImplicitPricingDoesNotExist()
+    /**
+     * Asserts that the commission doesn't get created if neither implicit nor explicit pricing are defined
+     */
+    public function testImplicitExplicitPricingDoesNotExist()
     {
         $this->ruleEngine->execute(__FUNCTION__);
     }
