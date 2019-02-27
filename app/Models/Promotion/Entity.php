@@ -3,7 +3,6 @@
 namespace RZP\Models\Promotion;
 
 use RZP\Models\Base;
-use RZP\Constants\Table;
 use RZP\Models\Pricing\DefaultPlan;
 use RZP\Models\Transaction\CreditType;
 
@@ -16,6 +15,7 @@ class Entity extends Base\PublicEntity
     const ITERATIONS              = 'iterations';
     const CREDITS_EXPIRE          = 'credits_expire';
     const PRICING_PLAN_ID         = 'pricing_plan_id';
+    const PARTNER_ID              = 'partner_id';
     const PURPOSE                 = 'purpose';
     const CREATOR_NAME            = 'creator_name';
 
@@ -54,6 +54,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::PRICING_PLAN_ID,
+        self::PARTNER_ID,
         self::PURPOSE,
         self::CREATOR_NAME,
     ];
@@ -91,6 +92,11 @@ class Entity extends Base\PublicEntity
     public function coupons()
     {
         return $this->morphMany('RZP\Models\Coupon\Entity', 'source');
+    }
+
+    public function partner()
+    {
+        return $this->belongsTo(\RZP\Models\Merchant\Entity::class);
     }
 
 // ----------------------- Getters ---------------------------------------------

@@ -541,7 +541,7 @@ trait Capture
             $this->updateVirtualAccountStatusIfApplicable($payment);
 
             // @todo: Uncomment this once the test cases for commission calculation are added
-            // $this->createPartnerCommission($payment);
+//             $this->createPartnerCommission($payment);
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
@@ -732,6 +732,12 @@ trait Capture
     protected function setVerifyPaymentIfApplicable(Payment\Entity & $payment)
     {
         $gateway = $payment->getGateway();
+
+        // Ignore QR payments
+        if ($payment->isBharatQr() === true)
+        {
+            return;
+        }
 
         if (in_array($gateway, Payment\Gateway::$captureVerifyEnabled, true) === true)
         {

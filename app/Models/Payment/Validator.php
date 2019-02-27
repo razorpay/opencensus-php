@@ -159,6 +159,11 @@ class Validator extends Base\Validator
         'order_id'                  => 'sometimes|filled',
     ];
 
+    protected static $postFlowsRules = [
+        'card_number'        => 'sometimes|numeric|luhn|digits_between:12,19',
+        'iin'                => 'sometimes|numeric|digits:6'
+    ];
+
     protected static $pspAmountLimit = [
         'upi'       => 2000000,
     ];

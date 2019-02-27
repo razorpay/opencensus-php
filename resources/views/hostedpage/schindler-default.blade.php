@@ -69,7 +69,7 @@
             <div id="desktop-container">
                 <div class="merchant-display-image"></div>
                 @include('hostedpage.partials.header')
-                <div class="content">
+                <div class  ="content">
                     @include('hostedpage.partials.description')
                     @include('hostedpage.partials.form')
                 </div>
@@ -90,7 +90,6 @@
         <script src="https://cdn.razorpay.com/static/libs/jsoneditor.min.js"></script>
         <script>
             window.RZP.cleanHTML();
-            window.RZP.toggleTrimDescription(true);
 
             var editor = window.RZP.initJSONEditor();
 

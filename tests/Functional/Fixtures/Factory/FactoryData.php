@@ -332,6 +332,7 @@ final class FactoryData
 
         $factory(\RZP\Models\Emi\Entity::class, [
             'id'               => '10101010101010',
+            'merchant_id'      => '100000Razorpay',
             'duration'         => 9,
             'rate'             => 1200,
             'bank'             => 'HDFC',
@@ -999,6 +1000,22 @@ final class FactoryData
             'origin_type'       => 'merchant',
             'entity_id'         => 'factory:\RZP\Models\Payment\Entity',
             'entity_type'       => 'payment',
+            'created_at'        => $faker->timestamp,
+            'updated_at'        => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\Partner\Commission\Entity::class, [
+            'id'                => $faker->uniqueid,
+            'source_type'       => 'payment',
+            'source_id'         => 'factory:\RZP\Models\Payment\Entity',
+            'partner_id'        => 'factory:\RZP\Models\Merchant\Entity',
+            'partner_config_id' => 'factory:\RZP\Models\Partner\Config\Entity',
+            'status'            => 'created',
+            'debit'             => 0,
+            'credit'            => 1770,
+            'currency'          => 'INR',
+            'fee'               => 270,
+            'notes'             => null,
             'created_at'        => $faker->timestamp,
             'updated_at'        => $faker->timestamp,
         ]);

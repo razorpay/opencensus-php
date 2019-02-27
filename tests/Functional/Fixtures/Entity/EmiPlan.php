@@ -13,6 +13,7 @@ class EmiPlan extends Base
             'bank'              => 'HDFC',
             'min_amount'        => '300000',
             'merchant_payback'  => '518',
+            'merchant_id'       => '100000Razorpay',
         ],
         [
             'id'                => '20101010101010',
@@ -22,6 +23,7 @@ class EmiPlan extends Base
             'bank'              => 'HDFC',
             'min_amount'        => '300000',
             'merchant_payback'  => '518',
+            'merchant_id'       => '100000Razorpay',
         ],
         [
             'id'                => '10101010101011',
@@ -30,6 +32,7 @@ class EmiPlan extends Base
             'methods'           => 'debitcard',
             'bank'              => 'UTIB',
             'min_amount'        => '300000',
+            'merchant_id'       => '100000Razorpay',
         ],
         [
             'id'                => '10101010101100',
@@ -38,6 +41,7 @@ class EmiPlan extends Base
             'methods'           => 'debitcard',
             'bank'              => 'KKBK',
             'min_amount'        => '300000',
+            'merchant_id'       => '100000Razorpay',
         ],
         [
             'id'                => '10101010101101',
@@ -46,6 +50,7 @@ class EmiPlan extends Base
             'methods'           => 'debitcard',
             'bank'              => 'INDB',
             'min_amount'        => '200000',
+            'merchant_id'       => '100000Razorpay',
         ],
         [
             'id'                => '10101010101110',
@@ -54,7 +59,8 @@ class EmiPlan extends Base
             'methods'           => 'debitcard',
             'bank'              => 'RATN',
             'min_amount'        => '300000',
-            'issuer_plan_id'    => '85009'
+            'issuer_plan_id'    => '85009',
+            'merchant_id'       => '100000Razorpay',
         ],
         [
             'id'                => '10101010101111',
@@ -63,7 +69,8 @@ class EmiPlan extends Base
             'methods'           => 'debitcard',
             'bank'              => 'SCBL',
             'min_amount'        => '300000',
-            'issuer_plan_id'    => '850092'
+            'issuer_plan_id'    => '850092',
+            'merchant_id'       => '100000Razorpay',
         ],
         [
             'id'                => '10101010111110',
@@ -72,7 +79,8 @@ class EmiPlan extends Base
             'methods'           => 'debitcard',
             'bank'              => 'ICIC',
             'min_amount'        => '300000',
-            'issuer_plan_id'    => '1007773209'
+            'issuer_plan_id'    => '1007773209',
+            'merchant_id'       => '100000Razorpay',
         ],
         [
             'id'                => '10101011111110',
@@ -83,7 +91,8 @@ class EmiPlan extends Base
             'min_amount'        => '300000',
             'issuer_plan_id'    => '1007773209',
             'subvention'        => 'merchant',
-            'merchant_payback'  => 549
+            'merchant_payback'  =>  549,
+            'merchant_id'       => '100000Razorpay',
         ],
         [
             'id'                => '10101111111110',
@@ -92,6 +101,8 @@ class EmiPlan extends Base
             'methods'           => 'debitcard',
             'bank'              => 'YESB',
             'min_amount'        => '250000',
+            'merchant_id'       => '100000Razorpay',
+
         ],
         [
             'id'                => '11111111111110',
@@ -102,6 +113,7 @@ class EmiPlan extends Base
             'min_amount'        => '250000',
             'subvention'        => 'merchant',
             'merchant_payback'  => 549,
+            'merchant_id'       => '100000Razorpay',
         ],
         [
             'id'                => '10111110111110',
@@ -111,7 +123,8 @@ class EmiPlan extends Base
             'network'           => 'AMEX',
             'min_amount'        => '300000',
             'merchant_payback'  => '518',
-            'bank'              => null,
+            'bank'              =>  null,
+            'merchant_id'       => '100000Razorpay',
         ],
         [
             'id'                => '11101010111111',
@@ -121,7 +134,8 @@ class EmiPlan extends Base
             'network'           => 'AMEX',
             'min_amount'        => '300000',
             'merchant_payback'  => '600',
-            'bank'              => null,
+            'bank'              =>  null,
+            'merchant_id'       => '100000Razorpay',
         ],
         [
             'id'                => '30101010101011',
@@ -130,6 +144,7 @@ class EmiPlan extends Base
             'methods'           => 'creditcard',
             'bank'              => 'SBIN',
             'min_amount'        => '300000',
+            'merchant_id'       => '100000Razorpay',
         ],
         [
             'id'                => '40101010101011',
@@ -138,6 +153,7 @@ class EmiPlan extends Base
             'methods'           => 'creditcard',
             'bank'              => 'SBIN',
             'min_amount'        => '300000',
+            'merchant_id'       => '100000Razorpay',
         ],
         [
             'id'                => '50101010101011',
@@ -146,12 +162,58 @@ class EmiPlan extends Base
             'methods'           => 'creditcard',
             'bank'              => 'CITI',
             'min_amount'        => '300000',
+            'merchant_id'       => '100000Razorpay',
+        ],
+    ];
+
+    protected $merchantSpecificItems = [
+        [
+            'id'                => '11101010101010',
+            'duration'          => '6',
+            'rate'              => '1250',
+            'methods'           => 'debitcard',
+            'bank'              => 'HDFC',
+            'min_amount'        => '25000',
+            'merchant_payback'  => '518',
+            'merchant_id'       => '10000000000000',
+        ],
+        [
+            'id'                => '50101010101012',
+            'duration'          => '12',
+            'rate'              => '1300',
+            'methods'           => 'creditcard',
+            'bank'              => 'CITI',
+            'min_amount'        => '20000',
+            'merchant_id'       => '10000000000000',
+        ],
+        [
+            'id'                => '30111111111110',
+            'duration'          => '9',
+            'rate'              => '1200',
+            'methods'           => 'credit',
+            'network'           => 'BAJAJ',
+            'min_amount'        => '300000',
+            'merchant_id'       => '10000000000000',
+            'bank'              => null,
         ],
     ];
 
     public function createDefaultEmiPlans()
     {
         $items = $this->items;
+
+        $emiPlans = [];
+        foreach ($items as $attributes)
+        {
+            $emiPlans[] = $this->fixtures->create('emi_plan', $attributes);
+        }
+
+        return $emiPlans;
+    }
+
+    public function createMerchantSpecificEmiPlans()
+    {
+        $items = $this->merchantSpecificItems;
 
         $emiPlans = [];
         foreach ($items as $attributes)

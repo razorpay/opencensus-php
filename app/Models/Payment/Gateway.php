@@ -531,6 +531,12 @@ class Gateway
         Payment\Gateway::UPI_MINDGATE   => [
             self::GO_LIVE_TIMESTAMP => 1540826221
         ],
+        Payment\Gateway::HITACHI   => [
+            self::GO_LIVE_TIMESTAMP => 1550746997
+        ],
+        Payment\Gateway::WALLET_OLAMONEY   => [
+            self::GO_LIVE_TIMESTAMP => 1550838065
+        ],
     ];
 
     /**
@@ -966,11 +972,16 @@ class Gateway
         self::NETBANKING_CORPORATION,
         self::NETBANKING_IDFC,
         self::NETBANKING_VIJAYA,
+        self::NETBANKING_EQUITAS,
         self::ENACH_NPCI_NETBANKING,
     ];
 
     public static $captureVerifyEnabled = [
         self::HITACHI,
+        self::AXIS_MIGS,
+        self::CYBERSOURCE,
+        self::FIRST_DATA,
+        self::CARD_FSS,
     ];
 
     /**

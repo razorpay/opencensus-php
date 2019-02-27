@@ -4,11 +4,11 @@ namespace RZP\Models\Merchant\Invoice;
 
 use Carbon\Carbon;
 
-use RZP\Constants\Timezone;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Transaction\Type as TransactionType;
 
 class Processor extends Base\Core
 {
@@ -135,16 +135,36 @@ class Processor extends Base\Core
     {
         $transactionFeeAmount = [];
 
-        $paymentFeeAmount = $this->repo
-                                 ->payment
-                                 ->fetchFeesAndTaxForPaymentByType(
-                                     $this->merchantId,
-                                     $this->beginTimestamp,
-                                     $this->endTimestamp,
-                                     $type,
-                                     $isCorrection);
+        $validationFeeAmount = [];
+
+        $paymentFeeAmount = [];
+
+        if ($this->isInvoiceTypeOfPayment($type) === true)
+        {
+            $paymentFeeAmount = $this->repo
+                ->payment
+                ->fetchFeesAndTaxForPaymentByType(
+                    $this->merchantId,
+                    $this->beginTimestamp,
+                    $this->endTimestamp,
+                    $type,
+                    $isCorrection);
+        }
 
         $paymentAmounts = $this->formatFeesForInvoice($paymentFeeAmount);
+
+        if ($type === Type::VALIDATION)
+        {
+            $validationFeeAmount = $this->repo
+                                        ->transaction
+                                        ->fetchFeesAndTaxForTransactionsByType(
+                                            $this->merchantId,
+                                            TransactionType::FUND_ACCOUNT_VALIDATION,
+                                            $this->beginTimestamp,
+                                            $this->endTimestamp);
+        }
+
+        $validationAmounts = $this->formatFeesForInvoice($validationFeeAmount);
 
         if ($type === Type::OTHERS)
         {
@@ -159,9 +179,14 @@ class Processor extends Base\Core
         $transactionAmounts = $this->formatFeesForInvoice($transactionFeeAmount);
 
         return [
-            Entity::TAX     => $paymentAmounts[Entity::TAX] + $transactionAmounts[Entity::TAX],
-            Entity::AMOUNT  => $paymentAmounts[Entity::AMOUNT] + $transactionAmounts[Entity::AMOUNT],
+            Entity::TAX     => $paymentAmounts[Entity::TAX] + $transactionAmounts[Entity::TAX] + $validationAmounts[Entity::TAX] ,
+            Entity::AMOUNT  => $paymentAmounts[Entity::AMOUNT] + $transactionAmounts[Entity::AMOUNT] + $validationAmounts[Entity::AMOUNT],
         ];
+    }
+
+    protected function isInvoiceTypeOfPayment(string $type)
+    {
+        return (in_array($type, [Type::CARD_GT_2K, Type::CARD_LTE_2K, Type::OTHERS]) === true);
     }
 
     /**

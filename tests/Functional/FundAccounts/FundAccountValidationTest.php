@@ -2,16 +2,12 @@
 
 namespace RZP\Tests\Functional\FundAccount;
 
-use Closure;
-use Mockery;
-
-use RZP\Models\Merchant\Webhook;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\FundAccount\Validation\Constants;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountTrait;
+use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 
 class FundAccountValidationTest extends TestCase
 {
@@ -19,6 +15,7 @@ class FundAccountValidationTest extends TestCase
     use FundAccountTrait;
     use DbEntityFetchTrait;
     use AttemptReconcileTrait;
+    use FundAccountValidationTrait;
 
     public function setUp()
     {
@@ -315,48 +312,5 @@ class FundAccountValidationTest extends TestCase
         });
 
         $this->initiateTransferAndReconcile();
-    }
-
-    protected function initiateTransferAndReconcile()
-    {
-        $this->initiateTransferAndAssertSuccess('yesbank', 'penny_testing', 1, 'penny_testing');
-
-        $this->reconcileOnlineSettlements('yesbank', false);
-
-        $this->reconcileEntitiesForChannel('yesbank');
-    }
-
-    protected function createValidationWithFundAccountEntity(): array
-    {
-        $response = $this->startTest();
-
-        $bankAccount = $this->getLastEntity('bank_account', true);
-        $fundAccount = $this->getLastEntity('fund_account', true);
-
-        $fav = $this->getLastEntity('fund_account_validation', true);
-        $this->assertEquals('created', $fav['status']);
-        $this->assertEquals($fundAccount['id'], 'fa_'.$fav['fund_account_id']);
-
-        $fta = $this->getLastEntity('fund_transfer_attempt', true);
-        $this->assertEquals('penny_testing', $fta['purpose']);
-        $this->assertEquals($fav['id'], $fta['source']);
-        $this->assertEquals($bankAccount['id'], 'ba_'.$fta['bank_account_id']);
-
-        $this->assertNotNull($fta['narration']);
-
-        return $response;
-    }
-
-    protected function mockInfernoFire(Closure $closure)
-    {
-        $inferno = Mockery::mock(Webhook\Inferno::class, [])->makePartial();
-
-        $inferno->shouldReceive('fire')
-                ->once()
-                ->with(
-                    Mockery::type('RZP\Jobs\WebHook'),
-                    Mockery::on($closure));
-
-        $this->app->instance('webhook.inferno', $inferno);
     }
 }

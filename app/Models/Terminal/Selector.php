@@ -411,7 +411,12 @@ class Selector extends Base\Core
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENT_TERMINAL_CREATION_ERROR);
+            $this->trace->info(
+                TraceCode::PAYMENT_TERMINAL_CREATION_ERROR,
+                [
+                    'terminals'  => $allTerminals,
+                    'message'    => $e->getMessage(),
+                ]);
         }
 
     }

@@ -4,10 +4,6 @@
     </div>
     <div class="text-underline"></div>
 
-    @if(isset($payment_page_data['description']) === true)
-        <p id="payment-for"></p>
-    @endif
-
     @if($fund_type === 'kerala')
         <p>Kerala has been hit by relentless rain for the last two weeks. Rains, floods and landslides have resulted in loss of life and extensive damage in the state.</p>
         <p>Your contribution can go a long way in rebuilding the lives of flood-affected people in Kerala.</p>

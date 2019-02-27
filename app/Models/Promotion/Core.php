@@ -3,18 +3,30 @@
 namespace RZP\Models\Promotion;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
-use RZP\Models\Base;
+
 use RZP\Exception;
-use RZP\Models\Schedule;
+use RZP\Constants\Timezone;
 use RZP\Models\Schedule\Anchor;
+use RZP\Models\{Base, Schedule, Merchant};
 use RZP\Models\Merchant\Promotion as MerchantPromotion;
 
 class Core extends Base\Core
 {
     public function create(array $input): Entity
     {
-        return $this->repo->transaction(function() use ($input)
+        $partner = null;
+
+        if (empty($input[Entity::PARTNER_ID]) === false)
+        {
+            /** @var Merchant\Entity $merchant */
+            $partner = $this->repo->merchant->findOrFailPublic($input[Entity::PARTNER_ID]);
+
+            (new Merchant\Validator)->validateIsNonPurePlatformPartner($partner);
+
+            unset($input[Entity::PARTNER_ID]);
+        }
+
+        return $this->repo->transaction(function() use ($input, $partner)
         {
             $promotion = (new Entity)->build($input);
 
@@ -23,6 +35,11 @@ class Core extends Base\Core
                 $schedule = $this->createSchedule($input);
 
                 $promotion->schedule()->associate($schedule);
+            }
+
+            if (empty($partner) === false)
+            {
+                $promotion->partner()->associate($partner);
             }
 
             $this->repo->saveOrFail($promotion);

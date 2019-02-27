@@ -5,6 +5,7 @@ namespace RZP\Models\Terminal;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant\Account;
@@ -199,18 +200,32 @@ class Repository extends Base\Repository
                 // Condition for the merchant id being directly in the terminal
                 $query->whereIn(Entity::MERCHANT_ID, $merchantIds);
 
-                //
-                // Condition for getting terminals where merchant id is
-                // associated through the many-to-many association in
-                // merchant-terminal table.
-                //
-                $query->orWhereHas(
-                    'merchants',
-                    function ($query) use ($merchantIds)
-                    {
-                        $query->whereIn(Entity::MERCHANT_ID, $merchantIds);
-                    });
+                // //
+                // // Condition for getting terminals where merchant id is
+                // // associated through the many-to-many association in
+                // // merchant-terminal table.
+                // //
+                // $query->orWhereHas(
+                //     'merchants',
+                //     function ($query) use ($merchantIds)
+                //     {
+                //         $query->whereIn(Entity::MERCHANT_ID, $merchantIds);
+                //     });
             });
+
+
+
+        $unionQuery = $this->newQuery()
+                           ->enabled()
+                           ->select($this->getTableName().'.*')
+                           ->join(Table::MERCHANT_TERMINAL, Entity::TERMINAL_ID, Entity::ID)
+                           ->where(function ($q) use ($merchantIds)
+                           {
+                                $q->whereIn(Table::MERCHANT_TERMINAL . '.' . Entity::MERCHANT_ID, $merchantIds);
+                           }
+                       );
+
+        $query->union($unionQuery);
     }
 
     public function getByGatewayTerminalIdAndGatewayAndReconPasswordNotNull($gatewayTerminalId, $gateway)
@@ -249,7 +264,12 @@ class Repository extends Base\Repository
                     ->where(Entity::GATEWAY, $gateway)
                     ->enabled();
 
-        $this->addMerchantWhereCondition($query, $mids);
+         $query->where(
+            function ($query) use ($mids)
+            {
+                // Condition for the merchant id being directly in the terminal
+                $query->whereIn(Entity::MERCHANT_ID, $mids);
+            });
 
         return $query->pluck(Entity::ID)->all();
     }

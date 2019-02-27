@@ -19,8 +19,8 @@ return [
                 'international'       => true,
                 'percent_rate'        => 1000,
                 'processing_time'     => 86400,
-                'starts_at'           => 1519457070,
-                'ends_at'             => 1550993070,
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ],
@@ -38,8 +38,8 @@ return [
                 'international'       => true,
                 'percent_rate'        => 1000,
                 'processing_time'     => 86400,
-                'starts_at'           => 1519457070,
-                'ends_at'             => 1550993070,
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ]
@@ -54,8 +54,8 @@ return [
                 'issuer'              => 'HDFC',
                 'percent_rate'        => 1000,
                 'processing_time'     => 86400,
-                'starts_at'           => 1519457070,
-                'ends_at'             => 1550993070,
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ],
@@ -70,8 +70,8 @@ return [
                 'issuer'              => 'HDFC',
                 'percent_rate'        => 1000,
                 'processing_time'     => 86400,
-                'starts_at'           => 1519457070,
-                'ends_at'             => 1550993070,
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ]
@@ -157,8 +157,8 @@ return [
                 'issuer'              => 'XXXX',
                 'percent_rate'        => 1000,
                 'processing_time'     => 86400,
-                'starts_at'           => 1519457070,
-                'ends_at'             => 1550993070,
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ],
@@ -190,7 +190,7 @@ return [
                 'issuer'              => 'HDFC',
                 'percent_rate'        => 1000,
                 'max_payment_count'   => 2,
-                'ends_at'             => 1550993070,
+                'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ],
@@ -207,7 +207,7 @@ return [
                 'issuer'              => 'HDFC',
                 'percent_rate'        => 1000,
                 'max_payment_count'   => 2,
-                'ends_at'             => 1550993070,
+                'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ]
@@ -225,7 +225,7 @@ return [
                 'percent_rate'        => 1500,
                 'max_payment_count'   => 2,
                 'linked_offer_ids'    => null,
-                'ends_at'             => 1550993070,
+                'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ],
@@ -243,7 +243,7 @@ return [
                 'percent_rate'        => 1500,
                 'max_payment_count'   => 2,
                 'linked_offer_ids'    => null,
-                'ends_at'             => 1550993070,
+                'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ]
@@ -261,7 +261,7 @@ return [
                 'percent_rate'        => 1500,
                 'max_payment_count'   => 2,
                 'linked_offer_ids'    => null,
-                'ends_at'             => 1550993070,
+                'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ],
@@ -291,8 +291,8 @@ return [
                 'iins'            => ['411111'],
                 'percent_rate'    => 1000,
                 'processing_time' => 86400,
-                'starts_at'       => 1519457070,
-                'ends_at'         => 1550993070,
+                'starts_at'       => 1514764800,
+                'ends_at'         => 1546300800,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details'
             ],
@@ -306,8 +306,8 @@ return [
                 'iins'            => ['411111'],
                 'percent_rate'    => 1000,
                 'processing_time' => 86400,
-                'starts_at'       => 1519457070,
-                'ends_at'         => 1550993070,
+                'starts_at'       => 1514764800,
+                'ends_at'         => 1546300800,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details'
             ]
@@ -324,8 +324,8 @@ return [
                 'max_cashback'    => 200,
                 'min_amount'      => 500,
                 'processing_time' => 172800,
-                'starts_at'       => 1519457070,
-                'ends_at'         => 1550993070,
+                'starts_at'       => 1514764800,
+                'ends_at'         => 1546300800,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details'
             ],
@@ -342,8 +342,8 @@ return [
                 'issuer'          => 'airtelmoney',
                 'percent_rate'    => 1000,
                 'processing_time' => 172800,
-                'starts_at'       => 1519457070,
-                'ends_at'         => 1550993070,
+                'starts_at'       => 1514764800,
+                'ends_at'         => 1546300800,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details'
             ]
@@ -360,8 +360,8 @@ return [
                 'max_cashback'    => 200,
                 'min_amount'      => 500,
                 'processing_time' => 172800,
-                'starts_at'       => 1519457070,
-                'ends_at'         => 1550993070,
+                'starts_at'       => 1514764800,
+                'ends_at'         => 1546300800,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details'
             ],
@@ -378,8 +378,8 @@ return [
                 'issuer'          => 'UTIB',
                 'percent_rate'    => 1000,
                 'processing_time' => 172800,
-                'starts_at'       => 1519457070,
-                'ends_at'         => 1550993070,
+                'starts_at'       => 1514764800,
+                'ends_at'         => 1546300800,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details'
             ]
@@ -395,8 +395,8 @@ return [
                 'flat_cashback'   => 300,
                 'min_amount'      => 500,
                 'processing_time' => 172800,
-                'starts_at'       => 1519457070,
-                'ends_at'         => 1550993070,
+                'starts_at'       => 1514764800,
+                'ends_at'         => 1546300800,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details'
             ],
@@ -412,8 +412,8 @@ return [
                 'payment_method'  => 'wallet',
                 'issuer'          => 'airtelmoney',
                 'processing_time' => 172800,
-                'starts_at'       => 1519457070,
-                'ends_at'         => 1550993070,
+                'starts_at'       => 1514764800,
+                'ends_at'         => 1546300800,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details'
             ]
@@ -431,8 +431,8 @@ return [
                 'percent_rate'        => 1000,
                 'max_payment_count'   => 2,
                 'processing_time'     => 86400,
-                'starts_at'           => 1519457070,
-                'ends_at'             => 1550993070,
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ],
@@ -464,8 +464,8 @@ return [
                 'issuer'              => 'HDFC',
                 'max_payment_count'   => 2,
                 'processing_time'     => 86400,
-                'starts_at'           => 1519457070,
-                'ends_at'             => 1550993070,
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ],
@@ -497,8 +497,8 @@ return [
                 'issuer'              => 'HDFC',
                 'percent_rate'        => 1000,
                 'processing_time'     => 86400,
-                'starts_at'           => 1519457070,
-                'ends_at'             => 1550993070,
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ],
@@ -530,8 +530,8 @@ return [
                 'issuer'              => 'HDFC',
                 'percent_rate'        => 1000,
                 'processing_time'     => '1',
-                'starts_at'           => 1519457070,
-                'ends_at'             => 1550993070,
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ],
@@ -562,8 +562,8 @@ return [
                 'percent_rate'       => 1000,
                 'max_cashback'       => 200,
                 'processing_time'    => '2',
-                'starts_at'          => 1519457070,
-                'ends_at'            => 1550993070,
+                'starts_at'          => 1514764800,
+                'ends_at'            => 1546300800,
                 'display_text'       => 'Some more details',
                 'terms'              => 'Some more details'
             ],
@@ -595,8 +595,8 @@ return [
                 'max_cashback'       => 200,
                 'min_amount'         => 500,
                 'processing_time'    => '2',
-                'starts_at'          => 1519457070,
-                'ends_at'            => 1550993070,
+                'starts_at'          => 1514764800,
+                'ends_at'            => 1546300800,
                 'display_text' => 'Some more details',
                 'terms' => 'Some more details'
             ],
@@ -629,8 +629,8 @@ return [
                 'percent_rate'        => 1000,
                 'max_payment_count'   => 2,
                 'processing_time'     => '1',
-                'starts_at'           => 1519457070,
-                'ends_at'             => 1550993070,
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ],
@@ -663,8 +663,8 @@ return [
                 'percent_rate'        => 1000,
                 'max_payment_count'   => 2,
                 'processing_time'     => '1',
-                'starts_at'           => 1519457070,
-                'ends_at'             => 1550993070,
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ],
@@ -698,8 +698,8 @@ return [
                 'flat_cashback'       => 200,
                 'max_payment_count'   => 2,
                 'processing_time'     => '1',
-                'starts_at'           => 1519457070,
-                'ends_at'             => 1550993070,
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ],
@@ -797,7 +797,7 @@ return [
                 'max_payment_count'   => 2,
                 'processing_time'     => '1',
                 'starts_at'           => 1519457060,
-                'ends_at'             => 1550993070,
+                'ends_at'             => 1546300800,
                 'display_text'        => 'Emi Subvention offers',
                 'terms'               => 'Some more details'
             ],
@@ -858,7 +858,7 @@ return [
                 'payment_method'      => 'emi',
                 'payment_network'     => 'AMEX',
                 'emi_subvention'      => true,
-                'emi_durations'       => ["9","9"],
+                'emi_durations'       => ['9', '9'],
                 'max_payment_count'   => 2,
                 'processing_time'     => '1',
                 'ends_at'             => Carbon::tomorrow()->getTimestamp(),
@@ -1001,8 +1001,8 @@ return [
                 'percent_rate'              => 1000,
                 'processing_time'           => 86400,
                 'max_payment_count'         => 2,
-                'starts_at'                 => 1519457070,
-                'ends_at'                   => 1550993070,
+                'starts_at'                 => 1514764800,
+                'ends_at'                   => 1546300800,
             ]
         ]
     ],
@@ -1073,8 +1073,8 @@ return [
                 'percent_rate'        => 1000,
                 'processing_time'     => 86400,
                 'max_payment_count'   => 2,
-                'starts_at'           => 1519457070,
-                'ends_at'             => 1550993070,
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
             ]
         ]
     ],
@@ -1100,7 +1100,7 @@ return [
                 'percent_rate'        => 1000,
                 'processing_time'     => 86400,
                 'max_payment_count'   => 2,
-                'starts_at'           => 1519457070,
+                'starts_at'           => 1514764800,
                 'ends_at'             => 1550999999,
             ]
         ]
@@ -1192,8 +1192,8 @@ return [
                 'percent_rate'        => 1000,
                 'processing_time'     => 86400,
                 'max_payment_count'   => 2,
-                'starts_at'           => 1519457070,
-                'ends_at'             => 1550993070,
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
             ]
         ]
     ],
@@ -1218,8 +1218,8 @@ return [
                         'percent_rate'        => 1000,
                         'processing_time'     => 86400,
                         'max_payment_count'   => 2,
-                        'starts_at'           => 1519457070,
-                        'ends_at'             => 1550993070,
+                        'starts_at'           => 1514764800,
+                        'ends_at'             => 1546300800,
                     ]
                 ]
             ]
@@ -1238,7 +1238,7 @@ return [
         ]
     ],
 
-    "testOfferFixForAttemptedOrders" => [
+    'testOfferFixForAttemptedOrders' => [
         'request' => [
             'url'      => '/payments/fix_attempted_orders',
             'method'   => 'POST',
@@ -1263,8 +1263,8 @@ return [
                 'international'       => true,
                 'percent_rate'        => 1000,
                 'processing_time'     => 86400,
-                'starts_at'           => 1519457070,
-                'ends_at'             => 1550993070,
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ],
@@ -1295,8 +1295,8 @@ return [
                 'min_amount'      => 1000,
                 'flat_cashback'   => 800,
                 'processing_time' => 172800,
-                'starts_at'       => 1519457070,
-                'ends_at'         => 1550993070,
+                'starts_at'       => 1514764800,
+                'ends_at'         => 1546300800,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details'
             ],
@@ -1312,8 +1312,8 @@ return [
                 'min_amount'      => 1000,
                 'flat_cashback'   => 800,
                 'processing_time' => 172800,
-                'starts_at'       => 1519457070,
-                'ends_at'         => 1550993070,
+                'starts_at'       => 1514764800,
+                'ends_at'         => 1546300800,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details'
             ],
@@ -1329,8 +1329,8 @@ return [
                 'max_cashback'    => 200,
                 'min_amount'      => 500,
                 'processing_time' => 172800,
-                'starts_at'       => 1519457070,
-                'ends_at'         => 1550993070,
+                'starts_at'       => 1514764800,
+                'ends_at'         => 1546300800,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details'
             ],
@@ -1363,8 +1363,8 @@ return [
                 'international'       => true,
                 'percent_rate'        => 1000,
                 'processing_time'     => 86400,
-                'starts_at'           => 1519457070,
-                'ends_at'             => 1550993070,
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ],
@@ -1382,8 +1382,8 @@ return [
                 'international'       => true,
                 'percent_rate'        => 1000,
                 'processing_time'     => 86400,
-                'starts_at'           => 1519457070,
-                'ends_at'             => 1550993070,
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ],
@@ -1401,8 +1401,8 @@ return [
                 'international'       => true,
                 'percent_rate'        => 1000,
                 'processing_time'     => 86400,
-                'starts_at'           => 1519457070,
-                'ends_at'             => 1550993070,
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ],
@@ -1433,8 +1433,8 @@ return [
                 'min_amount'      => 500,
                 'flat_cashback'   => 800,
                 'processing_time' => 172800,
-                'starts_at'       => 1519457070,
-                'ends_at'         => 1550993070,
+                'starts_at'       => 1514764800,
+                'ends_at'         => 1546300800,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details'
             ],
@@ -1464,8 +1464,8 @@ return [
                 'iins'            => ['4111111'],
                 'percent_rate'    => 1000,
                 'processing_time' => 86400,
-                'starts_at'       => 1519457070,
-                'ends_at'         => 1550993070,
+                'starts_at'       => 1514764800,
+                'ends_at'         => 1546300800,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details'
             ],
@@ -1498,8 +1498,8 @@ return [
                 'international'       => true,
                 'percent_rate'        => 1000,
                 'processing_time'     => 86400,
-                'starts_at'           => 1519457070,
-                'ends_at'             => 1550993070,
+                'starts_at'           => 1514764800,
+                'ends_at'             => 1546300800,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ],

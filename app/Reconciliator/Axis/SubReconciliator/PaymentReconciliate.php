@@ -45,10 +45,15 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     /**
      * If we are not able to find payment id to reconcile,
      * this ratio defines the minimum proportion of columns to be filled in a valid row.
-     * In Axis MIS, last row has around 9 out of 34 columns as stats data and rest empty.
-     * Therefore, if less than 27% of data is present, we don't mark row as failure
+     * In old Axis MIS format, last row has around 9 out of 34 columns as stats data and
+     * rest empty. (9/34)*100 = 26.47 %
+     *
+     * In new Axis MIS format, last row has around 10 out of 35 columns as stats data and
+     * rest empty. (10/36)*100 = 27.77 %
+     *
+     * Therefore, if less than 28% of data is present, we don't mark row as failure
      */
-    const MIN_ROW_FILLED_DATA_RATIO = 0.27;
+    const MIN_ROW_FILLED_DATA_RATIO = 0.28;
 
     protected function getPaymentId(array $row)
     {
