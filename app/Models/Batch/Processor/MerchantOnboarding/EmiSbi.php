@@ -41,6 +41,7 @@ class EmiSbi extends BaseProcessor
 
     protected function sendProcessedMail()
     {
+        // The batch settings would be used to identify the gateway while sending mail
         $mail = new MerchantOnboardingMail(
             $this->batch->toArray(),
             $this->merchant->toArray(),

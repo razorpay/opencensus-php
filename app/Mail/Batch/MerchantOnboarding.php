@@ -38,6 +38,7 @@ class MerchantOnboarding extends Base
 
     protected function addRecipients()
     {
+        // Add more if required
         $emails = ['pgonboarding@razorpay.com'];
 
         $this->to($emails);
