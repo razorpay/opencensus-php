@@ -12,6 +12,8 @@ class Assertions extends TestCase
     use DbEntityFetchTrait;
     use PrivateMethodTrait;
 
+    const GST_RATE = 18;
+
     public function testImplicitVariable(array $data)
     {
         $postAction = $data['post_action'];
@@ -21,6 +23,33 @@ class Assertions extends TestCase
         $this->assertBasicCalculatorRules($calculator);
 
         $commissions = $calculator->getCommissions();
+
+        $amount          = 400000; // INR 4000
+        $merchantPricing = 2; // 2% pricing
+
+        $this->assertEquals($this->getFee($amount, $merchantPricing), $calculator->getMerchantFee());
+        $this->assertEquals($this->getTax($amount, $merchantPricing), $calculator->getMerchantTax());
+
+        $this->assertEquals(1, count($commissions));
+        $this->assertEquals(944, $commissions[0]->fee);
+        $this->assertEquals(144, $commissions[0]->tax);
+    }
+
+    public function testImplicitVariableMultiplePricingRules(array $data)
+    {
+        $postAction = $data['post_action'];
+
+        $calculator = $postAction['calculator'];
+
+        $this->assertBasicCalculatorRules($calculator);
+
+        $commissions = $calculator->getCommissions();
+
+        $amount          = 400000; // INR 4000
+        $merchantPricing = 4; // 2% base pricing + 2% recurring payment pricing
+
+        $this->assertEquals($this->getFee($amount, $merchantPricing), $calculator->getMerchantFee());
+        $this->assertEquals($this->getTax($amount, $merchantPricing), $calculator->getMerchantTax());
 
         $this->assertEquals(1, count($commissions));
         $this->assertEquals(944, $commissions[0]->fee);
@@ -112,6 +141,21 @@ class Assertions extends TestCase
                                     'shouldCreateCommission');
 
         $this->assertFalse($shouldCreateCommission);
+    }
+
+    protected function getFee(int $amount, int $rate)
+    {
+        return ($this->getFeeWithoutTax($amount, $rate) + $this->getTax($amount, $rate));
+    }
+
+    protected function getFeeWithoutTax(int $amount, int $rate)
+    {
+        return ($amount * ($rate / 100));
+    }
+
+    protected function getTax(int $amount, int $rate)
+    {
+        return ($this->getFeeWithoutTax($amount, $rate) * self::GST_RATE / 100);
     }
 
     protected function assertShouldCreateCommission(array $data)

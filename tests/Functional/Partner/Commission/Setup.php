@@ -101,26 +101,27 @@ class Setup
     {
         $merchantId = $output['merchant_id'] ?? $data['merchant_id'];
 
-        $payment = $this->fixtures->create(
-                        'payment:authorized',
-                        [
-                            'merchant_id' => $merchantId,
-                            'amount'      => $data['amount'],
-                        ]);
-        unset($data['amount']);
+        // get auth context
+        $auth = $data['auth'] ?? null;
+        unset($data['auth']);
 
-        if (isset($data['auth']))
+        $defaultAttributes = [
+            'merchant_id' => $merchantId,
+            'amount'      => $data['amount'],
+        ];
+        $data = array_merge($defaultAttributes, $data);
+
+        $payment = $this->fixtures->create('payment:authorized', $data);
+
+        // build entity_origin
+        if (empty($auth) === false)
         {
-            $attributes = $this->getEntityOriginData();
+            $defaultAttributes = $this->getEntityOriginData();
+            $entityOriginAttributes['entity_id'] = $payment->getId();
+            $entityOriginAttributes['origin_id'] = $output['application_id'];
+            $attributes                          = array_merge($defaultAttributes, $entityOriginAttributes);
 
-            $auth = $data['auth'];
-            unset($data['auth']);
-
-            $data['entity_id'] = $payment->getId();
-            $data['origin_id'] = $output['application_id'];
-            $attributes = array_merge($attributes, $data);
-
-            switch($auth)
+            switch ($auth)
             {
                 case 'partner':
                     $this->fixtures->create('entity_origin', $attributes);
