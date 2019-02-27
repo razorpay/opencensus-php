@@ -78,13 +78,7 @@ class Core extends Base\Core
         }
     }
 
-    /**
-     * @param Base\PublicEntity $entity
-     * @param Merchant\Entity   $subMerchant
-     *
-     * @return mixed
-     */
-    public function getPartnerAppFromEntityOrigin(Base\PublicEntity $entity, Merchant\Entity $subMerchant)
+    public function isOriginApplication(Base\PublicEntity $entity)
     {
         $entityOrigin = $entity->entityOrigin;
 
@@ -95,31 +89,21 @@ class Core extends Base\Core
         $origin     = optional($entityOrigin)->origin;
         $originType = optional($origin)->getEntityName();
 
-        //
-        // If an application had initiated the source entity then
-        // fetch the partner configurations defined for the application-submerchant.
-        //
-        $accessMap = null;
+        return ($originType === Constants::APPLICATION);
+    }
 
-        if ($originType === Constants::APPLICATION)
-        {
-            $partnerApp = $origin;
-        }
-        else
-        {
-            //
-            // If $origin is null or $originType is 'merchant',
-            // check if a reseller / aggregator / bank / fully managed partner exists for the submerchant
-            // and fetch the internal OAuth application linked to the partner merchant account.
-            //
-            $accessMap = $this->repo
-                              ->merchant_access_map
-                              ->getNonPurePlatformPartnerMapping($subMerchant->getId());
+    /**
+     * @param Base\PublicEntity $entity
+     *
+     * @return mixed
+     */
+    public function getOrigin(Base\PublicEntity $entity)
+    {
+        $entityOrigin = $entity->entityOrigin;
 
-            $partnerApp = optional($accessMap)->entity;
-        }
+        $origin = optional($entityOrigin)->origin;
 
-        return $partnerApp;
+        return $origin;
     }
 
     /**
