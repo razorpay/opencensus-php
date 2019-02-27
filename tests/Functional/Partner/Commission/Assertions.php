@@ -66,7 +66,7 @@ class Assertions extends TestCase
         $this->assertShouldNotCreateCommission($data);
     }
 
-    public function testImplicitPricingDoesNotExist(array $data)
+    public function testImplicitExplicitPricingDoesNotExist(array $data)
     {
         $this->assertShouldNotCreateCommission($data);
     }
@@ -84,6 +84,16 @@ class Assertions extends TestCase
     public function testCommissionDisabled(array $data)
     {
         $this->assertShouldNotCreateCommission($data);
+    }
+
+    public function testImplicitPricingExpiredNoExplicitDefined(array $data)
+    {
+        $this->assertShouldNotCreateCommission($data);
+    }
+
+    public function testImplicitPricingExpiredExplicitExists(array $data)
+    {
+        $this->assertShouldCreateCommission($data);
     }
 
     protected function assertBasicCalculatorRules(Calculator $calculator)
@@ -146,5 +156,19 @@ class Assertions extends TestCase
     protected function getTax(int $amount, int $rate)
     {
         return ($this->getFeeWithoutTax($amount, $rate) * self::GST_RATE / 100);
+    }
+
+    protected function assertShouldCreateCommission(array $data)
+    {
+        $postAction = $data['post_action'];
+
+        $calculator = $postAction['calculator'];
+
+        $shouldCreateCommission = $this->invokePrivateMethod(
+                                    $calculator,
+                                    Calculator::class,
+                                    'shouldCreateCommission');
+
+        $this->assertTrue($shouldCreateCommission);
     }
 }
