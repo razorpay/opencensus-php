@@ -26,8 +26,6 @@ class PaysecureGatewayTest extends TestCase
 
         $this->setMockGatewayTrue();
 
-        $this->mockTokenex();
-
         $this->payment = $this->getDefaultPaymentArray();
     }
 
@@ -36,6 +34,8 @@ class PaysecureGatewayTest extends TestCase
         $authResponse = $this->doAuthPayment($this->payment);
 
         $this->assertSuccess($authResponse, 'redirect');
+
+        return $authResponse;
     }
 
     /**
@@ -248,40 +248,29 @@ class PaysecureGatewayTest extends TestCase
         $this->assertSuccess($authResponse, 'iframe');
     }
 
-    public function testSettlementCron()
+    public function testPaymentSettledViaHitachi()
     {
-        $this->testPaymentAuthViaRedirect();
+        $authResponse = $this->testPaymentAuthViaRedirect();
 
-        $this->ba->cronAuth();
-
-        $request = [
-            'url'    => '/gateway/settlement/paysecure',
-            'method' => 'post'
-        ];
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertArraySelectiveEquals(
-            [
-                'total'   => 1,
-                'success' => 1,
-            ],
-            $content
-        );
-
-        $paysecure = $this->getDbLastEntityToArray('paysecure');
-
-        $this->assertEquals(1, $paysecure['settled']);
+        $this->capturePayment($authResponse['razorpay_payment_id'], '50000');
 
         $hitachi = $this->getDbLastEntityToArray('hitachi');
 
         $this->assertArraySelectiveEquals(
             [
-                'payment_id' => $paysecure['payment_id'],
-                'action'     => 'authorize',
-                'pRespCode'  => '00',
+                'action' => 'authorize',
+                'pRespCode' => '00',
+                'payment_id' => substr($authResponse['razorpay_payment_id'],4),
             ],
             $hitachi
+        );
+
+        $paysecure = $this->getDbLastEntityToArray('paysecure');
+        $this->assertArraySelectiveEquals(
+            [
+                'settled' => 1,
+            ],
+            $paysecure
         );
     }
 
