@@ -77,6 +77,11 @@ class External extends Base
 
         if (isset($input[Payment\Entity::TOKEN]) === true)
         {
+            if (strpos($input[Payment\Entity::TOKEN], 'token_') === false)
+            {
+                $input[Payment\Entity::TOKEN] = "token_".$input[Payment\Entity::TOKEN];
+            }
+
             $requestBody[Payment\Entity::TOKEN] = $input[Payment\Entity::TOKEN];
         }
 
