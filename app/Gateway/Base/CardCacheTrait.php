@@ -42,6 +42,7 @@ trait CardCacheTrait
             'vault_token' => $vaultToken
         ];
 
+        // If this is set to 0, set the cache forever
         if (static::CACHE_TTL === 0)
         {
             $this->app['cache']->store($this->secureCacheDriver)->forever($key, $data);

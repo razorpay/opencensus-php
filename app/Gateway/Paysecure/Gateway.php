@@ -92,7 +92,7 @@ class Gateway extends Base\Gateway
 
             $this->traceGatewayPaymentRequest($request, $input);
 
-            // We fetch these details in the cron which initiates settlement from Hitachi
+            // This will be used in the capture flow, to be passed to Hitachi for advice message call.
             $this->persistCardDetailsTemporarily($input);
 
             return $request;
@@ -112,7 +112,6 @@ class Gateway extends Base\Gateway
 
             $this->traceGatewayPaymentRequest($request, $input);
 
-            // We fetch these details in the cron which initiates settlement from Hitachi
             $this->persistCardDetailsTemporarily($input);
 
             $request['content'] = View::make('gateway.paysecurePinpadForm')
