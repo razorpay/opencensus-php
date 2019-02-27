@@ -332,6 +332,7 @@ final class FactoryData
 
         $factory(\RZP\Models\Emi\Entity::class, [
             'id'               => '10101010101010',
+            'merchant_id'      => '100000Razorpay',
             'duration'         => 9,
             'rate'             => 1200,
             'bank'             => 'HDFC',
