@@ -3,10 +3,9 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use RZP\Models\Merchant;
-use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Partner\Constants;
-use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
