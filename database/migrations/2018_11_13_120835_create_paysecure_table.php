@@ -48,11 +48,9 @@ class CreatePaysecureTable extends Migration
             $table->bigInteger(Paysecure::RRN)
                   ->unsigned();
 
-            $table->integer(Paysecure::TRAN_DATE)
-                  ->unsigned();
+            $table->string(Paysecure::TRAN_DATE, 4);
 
-            $table->integer(Paysecure::TRAN_TIME)
-                  ->unsigned();
+            $table->string(Paysecure::TRAN_TIME, 6);
 
             $table->string(Paysecure::FLOW, 10)
                   ->nullable();
