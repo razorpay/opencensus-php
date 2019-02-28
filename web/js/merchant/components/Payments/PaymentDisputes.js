@@ -16,7 +16,8 @@ export default ({ disputes }) => {
         <Definition allowEmptyTitle={true} key={dispute.id} customClass="m-t">
           {Id(dispute)}
           <div>
-            {titleCase(dispute.phase)}, <Amount value={dispute.amount} />
+            {titleCase(dispute.phase)},{' '}
+            <Amount value={dispute.amount} currency={'INR'} />
           </div>
           <StatusLabel status={dispute.status} />
         </Definition>

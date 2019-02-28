@@ -211,7 +211,8 @@ export default class SettlementsListContainer extends ListContainer {
                     'current_balance'
                   ) && (
                     <span class="settlement-balance-amount">
-                      Current Balance: <Amount value={balance} />
+                      Current Balance:{' '}
+                      <Amount value={balance} currency={'INR'} />
                     </span>
                   )}
 

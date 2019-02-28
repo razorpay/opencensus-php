@@ -106,11 +106,13 @@ export default class SetCreditAlert extends Component {
                   <div class="col-xs-6 m-t">
                     <Amount
                       value={rupeesToPaise(formValues.feeCreditsThreshold) / 2}
+                      currency={'INR'}
                     />
                   </div>
                   <div class="col-xs-6 m-t">
                     <Amount
                       value={rupeesToPaise(formValues.feeCreditsThreshold) / 4}
+                      currency={'INR'}
                     />
                   </div>
                 </Fragment>
