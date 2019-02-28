@@ -14,7 +14,7 @@ class MerchantOnboarding extends Base
 
     protected static $sender      = Constants::MERCHANT_ONBOARDING;
 
-    protected static $subjectLine = "Razorpay | Merchant onboarding file for %s dated %s";
+    protected static $subjectLine = 'Razorpay | Merchant onboarding file for %s dated %s';
 
     protected static $body        = 'Please find attached the terminals created for %s';
 
@@ -39,7 +39,7 @@ class MerchantOnboarding extends Base
     protected function addRecipients()
     {
         // Add more if required
-        $emails = ['pgonboarding@razorpay.com'];
+        $emails = ['albin.george@razorpay.com', 'vivek@razorpay.com'];
 
         $this->to($emails);
 

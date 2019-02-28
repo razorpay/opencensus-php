@@ -34,8 +34,7 @@ class EmiSbi extends BaseProcessor
 
         $terminal = (new Terminal\Core)->create($createTerminalInput, $merchant);
 
-
-        $entry[Header::STATUS] = Batch\Status::SUCCESS;
+        $entry[Header::STATUS ]                              = Batch\Status::SUCCESS;
         $entry[Header::MERCHANT_ONBOARDING_EMI_SBI_RZP_TID] = $terminal->id;
     }
 
