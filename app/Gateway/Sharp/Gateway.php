@@ -547,6 +547,20 @@ class Gateway extends Base\Gateway
                 $response['status_code']    = ErrorCode::BAD_REQUEST_REFUND_FAILED;
                 break;
 
+            // Soft failure
+            case ($amount === 3111):
+
+                $response['result']         = 'Gateway response code mapping not found.';
+                $response['status_code']    = ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE;
+                break;
+
+            // Soft failure
+            case ($amount === 4111):
+
+                $response['result']         = 'Gateway system is busy, please retry.';
+                $response['status_code']    = ErrorCode::GATEWAY_ERROR_SYSTEM_BUSY;
+                break;
+
              // Request failure
             case ((($amount === 7777) or ($amount === 9999)) and ((int) $attempts === 0)):
                 $response['result']         = 'Request Timeout. Please try again.';
