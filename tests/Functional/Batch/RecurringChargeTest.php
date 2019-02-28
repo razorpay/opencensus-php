@@ -248,7 +248,7 @@ class RecurringChargeTest extends TestCase
                 Batch\Header::RECURRING_CHARGE_TOKEN       => $this->token,
                 Batch\Header::RECURRING_CHARGE_CUSTOMER_ID => '',
                 Batch\Header::RECURRING_CHARGE_AMOUNT      => 100,
-                Batch\Header::RECURRING_CHARGE_CURRENCY    => 'INR',
+                Batch\Header::RECURRING_CHARGE_CURRENCY    => 'inr',
                 Batch\Header::RECURRING_CHARGE_RECEIPT     => '',
                 Batch\Header::RECURRING_CHARGE_DESCRIPTION => null,
                 'notes[notes_1]'                           => null,

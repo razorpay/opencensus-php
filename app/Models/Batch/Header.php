@@ -1276,8 +1276,6 @@ class Header
                 self::AUTH_LINK_ID,
                 self::AUTH_LINK_SHORT_URL,
                 self::AUTH_LINK_STATUS,
-                self::AUTH_LINK_MAIL_SENT,
-                self::AUTH_LINK_SMS_SENT,
                 self::AUTH_LINK_CREATED_AT,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
