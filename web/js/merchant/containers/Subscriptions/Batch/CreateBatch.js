@@ -29,7 +29,7 @@ export default class CreateHostedMandateBatch extends Component {
       createBatch={this.props.createRecurringChargeBatch}
       validateBatch={this.props.validateRecurringChargeBatch}
       gaEvents={gaEvents}
-      maxRows={5000}
+      maxRows="10,000"
       batchType="recurring_charge"
       docUrl="https://razorpay.com/docs/recurring-payments/"
       sampleUrl="https://cdn.razorpay.com/dashboard/sample_recurring_payments.csv"
@@ -41,7 +41,7 @@ export default class CreateHostedMandateBatch extends Component {
       createBatch={this.props.createAuthLinkBatch}
       validateBatch={this.props.validateAuthLinkBatch}
       gaEvents={gaEvents}
-      maxRows={5000}
+      maxRows="10,000"
       batchType="auth_link"
       renderBatchCreationForm={AuthLinksBatchForm}
       docUrl="https://razorpay.com/docs/recurring-payments/"
