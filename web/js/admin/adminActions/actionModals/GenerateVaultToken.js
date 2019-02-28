@@ -48,5 +48,5 @@ export default function GenerateVaultToken() {
 }
 
 const options = {
-  nodal_creds: 'nodal_creds',
+  nodal_certs: 'nodal_certs',
 };
