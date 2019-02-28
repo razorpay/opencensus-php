@@ -60,17 +60,16 @@ class External extends Base
         return $request;
     }
 
-    public function fetchSubscriptionInfo(array $input, Merchant\Entity $merchant, $callback = false)
+    public function fetchSubscriptionInfo(array $input, Merchant\Entity $merchant, $callback = false, $appTokenPresent = false)
     {
         $amount             = $input[Payment\Entity::AMOUNT] ?? null;
         $isCardChange       = $input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false;
-        $isAppTokenPresnent = (isset($input[Payment\Entity::APP_TOKEN]) === true);
         $isCardPresent      = (isset($input[Payment\Entity::CARD]) === true);
 
         $requestBody = [
             Payment\Entity::AMOUNT                        => $amount,
             Subscription\Entity::SUBSCRIPTION_CARD_CHANGE => $isCardChange,
-            'app_token_present'                           => $isAppTokenPresnent,
+            'app_token_present'                           => $appTokenPresent,
             'card_present'                                => $isCardPresent,
             'callback'                                    => $callback,
         ];

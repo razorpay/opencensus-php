@@ -309,9 +309,11 @@ class Processor
             return;
         }
 
+        $appTokenPresent = $this->checkIfAppTokenPresent();
+
         $this->subscription = $this->app['module']
                                    ->subscription
-                                   ->fetchSubscriptionInfo($input, $payment->merchant);
+                                   ->fetchSubscriptionInfo($input, $payment->merchant, false, $appTokenPresent);
 
         if ($this->subscription->isExternal() === true)
         {
@@ -323,7 +325,7 @@ class Processor
 
             $this->addOrderIdToInputForExternalSubscription($input);
 
-            $this->addCustomerIdToInputForExternalSubscription($input);
+            //$this->addCustomerIdToInputForExternalSubscription($input);
         }
     }
 
@@ -2625,5 +2627,24 @@ class Processor
                 TraceCode::PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC
             );
         }
+    }
+
+    protected function checkIfAppTokenPresent(): bool
+    {
+        if ($this->request->hasSession() === false)
+        {
+            return false;
+        }
+
+        $key = $this->mode . '_app_token';
+
+        $appToken = $this->request->session()->get($key);
+
+        if ($appToken !== null)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

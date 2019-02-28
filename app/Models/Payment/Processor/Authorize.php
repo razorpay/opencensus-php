@@ -2039,9 +2039,9 @@ trait Authorize
             if ($this->subscription->isExternal() === false)
             {
                 $this->associateSubscriptionToPayment($payment, $input);
-
-                $this->addCustomerIdToSubscriptionInput($input);
             }
+
+            $this->addCustomerIdToSubscriptionInput($input);
 
             $this->addTestSuccessFlagToGatewayInput($input, $gatewayInput);
 
