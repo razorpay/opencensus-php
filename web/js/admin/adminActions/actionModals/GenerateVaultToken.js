@@ -4,7 +4,7 @@ import Field, { SelectField, TextAreaField } from 'ui/Field';
 import Form from 'ui/Form';
 import { adminPost } from 'common/fetch';
 import AsyncButton from 'ui/AsyncButton';
-import { notifySuccess, closeModal } from 'common/modal';
+import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
 GenerateVaultToken.title = 'Tokenize input data';
 GenerateVaultToken.permission = 'make_api_call';
@@ -29,6 +29,9 @@ export default function GenerateVaultToken() {
         class="btn"
         pendingClass="small spinner"
         onSubmit={data => {
+          if (!data.secret) {
+            return notifyError('Please enter a secret.');
+          }
           return adminPost({
             url: 'live/vault_token_create',
             data,
