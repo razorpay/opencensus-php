@@ -69,9 +69,9 @@ class Repository extends Transaction\Repository
     /**
      * {@inheritDoc}
      */
-    public function fetch(array $input, string $merchantId = null): PublicCollection
+    public function fetch(array $input, string $merchantId = null, bool $useSlave = false): PublicCollection
     {
-        $statements = parent::fetch($input, $merchantId);
+        $statements = parent::fetch($input, $merchantId, $useSlave);
 
         // After fetching settlement collection, we lazy load source relations for payout.
         $statements->where(Entity::TYPE, E::PAYOUT)->load($this->expandsForTypePayout);
