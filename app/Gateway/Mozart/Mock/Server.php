@@ -11,138 +11,6 @@ use RZP\Gateway\Cybersource\Fields as F;
 
 class Server extends Base\Mock\Server
 {
-    protected $repo;
-
-    protected function getWsdlFile()
-    {
-        return dirname(__DIR__) . '/Wsdl/cybstest.wsdl.xml';
-    }
-
-    public function acs(array $input)
-    {
-        $this->validateAuthenticateInput($input);
-
-        $response = [
-            F::MD => $input[F::MD],
-            F::PA_RES => 'eNpVUttygjAQfc9XMP0AkiAw',
-            F::TERM_URL => $input[F::TERM_URL]
-        ];
-
-        $this->content($response, 'callback');
-
-        return $response;
-    }
-
-    // Dummy function for mock soap client
-    public function Security($header)
-    {
-        return null;
-    }
-
-    public function authenticateInit($input)
-    {
-        $input = json_decode($input, true);
-        $entities = $input['entities'];
-
-        switch ($entities['card']['number'])
-        {
-            case 4012001038443335:
-            case 4000000000000002:
-                $response = [
-                    'data'  => [
-                        '_raw'                  => '',
-                        'commerce_indicator'    => null,
-                        'eci'                   => null,
-                        'enrollment_status'     => 'Y',
-                        'reason_code'           => 475,
-                        'status'                => 'created',
-                        'xid'                   => 'aFM3NktkemM4OW1sSGNoOERXUzE=',
-                        'attempt_id'            => $entities['payment']['created_at'],
-                        'gateway_reference_id1' => '4661468455432' . random_int(10000000, 99999999),
-                        'payment_id'            => $entities['payment']['created_at'],
-                    ],
-                    'next'    => [
-                        'redirect'   => [
-                            'content' => [
-                                'MD'      => $entities['payment']['id'],
-                                'PaReq'   => 'eNpVUV1vgkAQfL9fQXxuuA8Qi1kvsdVUm2qsNbH1jZ4XpQrocRTtr+8doLY87Qw7tzuzsNgqKQdvUhRKcpjIPI820onXvdbpi0S7F/U5eu+E3isLVmRDWxxm/bk8cviWKo+zlFOXuAzwBSLzhBLbKNUcInF8GE+5H4SMBoAbiCCRajzgnk99xnxG6g9wTSNIo0Tyhcy1s4u14wGuCAQiK1KtzvzeN80XgKBQe77V+tDFuCxLVxuhK7IEsP2BAN/2mRW2yo3NU7zm8ikrP5Z6IpLn8XIg2hM6PE/3Wbn6GfYA2w4E60hLzggNCSWhw0iXsa5nplc8giixW/B5HtwZB6410VAIDnZYv0ZB4/AvZ/wUSslUnLnXNulcEQJ5OmSpND0m12ttnNz2fxzZdIU2eVEatEnHTq5xJY9NMsyjtNLHVUzYanBzPNzc2VT/7v8LOren5w==',
-                                'TermUrl' => $entities['gateway']['payment']['callbackUrl'],
-                            ],
-                            'method'    => 'post',
-                            'url'       => 'https://0eafstag.cardinalcommerce.com/EAFService/jsp/v1/redirect',
-                        ],
-                    ],
-                    'error'             => null,
-                    'success'           => true,
-                    'mozart_id'         => '',
-                    'external_trace_id' => '',
-                ];
-                break;
-
-            default:
-                $response = [
-                    'data'  => [
-                        '_raw'                  => '',
-                        'commerce_indicator'    => 'vbv_attempted',
-                        'eci'                   => '06',
-                        'enrollment_status'     => 'N',
-                        'reason_code'           => 100,
-                        'status'                => 'created',
-                        'xid'                   => null,
-                        'attempt_id'            => $entities['payment']['created_at'],
-                        'gateway_reference_id1' => '4661468455432' . random_int(10000000, 99999999),
-                        'payment_id'            => $entities['payment']['id'],
-                    ],
-                    'error'             => null,
-                    'success'           => true,
-                    'mozart_id'         => '',
-                    'external_trace_id' => '',
-                ];
-
-        }
-
-        $this->content($response, 'auth_init');
-
-        $response = json_encode($response);
-
-        $response = $this->makeResponseJson($response);
-
-        return $response;
-    }
-
-    public function authenticateVerify($input)
-    {
-        $input = json_decode($input, true);
-        $entities = $input['entities'];
-
-        $response = [
-            'data' =>
-                [
-                    '_raw' => '',
-                    'attempt_id' => $entities['payment']['id'],
-                    'authentication_status' => 'Y',
-                    'cavv' => 'AAABAWFlmQAAAABjRWWZEEFgFz+=',
-                    'commerce_indicator' => 'vbv',
-                    'eci' => '05',
-                    'enrollment_status' => null,
-                    'gateway_reference_id1' => '4661468455432' . random_int(10000000, 99999999),
-                    'payment_id' => $entities['payment']['id'],
-                    'received' => true,
-                    'status' => 'authenticated',
-                    'xid' => 'aFM3NktkemM4OW1sSGNoOERXUzE=',
-                ],
-            'error' => null,
-            'success' => true,
-        ];
-
-        $this->content($response, 'auth_verify');
-
-        $response = json_encode($response);
-
-        $response = $this->makeResponseJson($response);
-
-        return $response;
-    }
 
     public function payInit($input)
     {
@@ -152,25 +20,31 @@ class Server extends Base\Mock\Server
         $response = [
             'data' =>
                 [
+                    'Errordescription' => 'SUCCESS (OTP First Process Completed Succesfully)',
+                    'Key' => $entities['terminal']['gateway_secure_secret'],
+                    'MobileNo' => '2376',
+                    'RequestID' => 'RZP190219162906767',
+                    'Responsecode' => '0',
+                    'status' => 'OTP_sent',
                     '_raw' => '',
-                    'attempt_id' => $entities['payment']['id'],
-                    'avs_code' => 'Y',
-                    'card_category' => null,
-                    'card_group' => null,
-                    'cv_code' => 'M',
-                    'gateway_reference_id1' => '5474993075916772203012',
-                    'gateway_reference_id2' => '016153570198200',
-                    'gateway_reference_id3' => '831000',
-                    'payment_id' => $entities['payment']['id'],
-                    'processorResponse' => '00',
-                    'processor_code' => '01',
-                    'reason_code' => 100,
-                    'received' => true,
-                    'rrn' => '184090',
-                    'status' => 'authorized',
                 ],
-            'error' => null,
-            'success' => true,
+            'next' => [
+                'redirect' => [
+                    'content' => [
+                        'type' => 'otp',
+                        'bank' => '',
+                        'next' => [
+                            'submit_otp',
+                        ]
+                    ],
+                    'method' => 'post',
+                    'url' => 'www.test.com',
+                ]
+            ],
+            'error'             => null,
+            'success'           => true,
+            'mozart_id'         => '',
+            'external_trace_id' => '',
         ];
 
         $this->content($response, 'pay_init');
@@ -182,30 +56,31 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    public function capture($input)
+    public function payVerify($input)
     {
         $input = json_decode($input, true);
         $entities = $input['entities'];
 
         $response = [
-             'data'  => [
-                    '_raw'                  => '',
-                    'received'              => true,
-                    'attempt_id'            => $entities['payment']['id'],
-                    'payment_id'            => '',
-                    'gateway_reference_id1' => '5470653499446597903009',
-                    'status'                => 'captured',
-                    'decision'              => 'ACCEPT',
-                    'reconciliationID'      => '',
-                    'reason_code'           => 100,
+            'data' =>
+                [
+                    'Errordescription' => 'TRANSACTION PERFORMED SUCCESSFULLY',
+                    'Key' => $entities['terminal']['gateway_secure_secret'],
+                    'MobileNo' => '2376',
+                    'RequestID' => 'RZP190219162906768',
+                    'Responsecode' => '0',
+                    'status' => 'created',
+                    'OrderNo' => '104',
+                    'DealID' => 'CS905114097404',
+                    '_raw' => '',
                 ],
-                'error'             => null,
-                'success'           => true,
-                'mozart_id'         => '',
-                'external_trace_id' => '',
-            ];
+            'error'             => null,
+            'success'           => true,
+            'mozart_id'         => '',
+            'external_trace_id' => '',
+        ];
 
-        $this->content($response, 'capture');
+        $this->content($response, 'pay_verify');
 
         $response = json_encode($response);
 
@@ -216,28 +91,38 @@ class Server extends Base\Mock\Server
 
     public function verify($input)
     {
-        parent::verify($input);
+        $input = json_decode($input, true);
+        $entities = $input['entities'];
 
         $response = [
-             'data'              => [
-                    '_raw'                  => '',
-                    'received'              => true,
-                    'gateway_reference_id1' => '5470653499446597903009',
-                    'gateway_reference_id3' => '5470653499446597903008',
-                    'status'                => 'authorized',
-                    'eci'                   => null,
-                    'avs_code'              => 100,
-                    'cavv'                  => '',
-                    'cvCode'                => '',
-                    'xid'                   => '',
+            'data' =>
+                [
+                    'enqinfo' => [
+                        'DEALID' => 'CS905114097404',
+                        'ERRORDESCRIPTION' => 'TRANSACTION PERFORMED SUCCESSFULLY',
+                        'Key' => $entities['terminal']['gateway_secure_secret'],
+                        'ORDERNO' => '104',
+                        'REQUESTID' => $entities['gateway']['pay_verify']['requestid'],
+                        'RESPONSECODE' => '0'
+                    ],
+                    'received' => true,
+                    'requeryid' => $entities['gateway']['pay_verify']['requestid'],
+                    'reqid' => 'RZP200219195445344',
+                    'rescode' => '00',
+                    'rqtype' => 'AUTH',
+                    'status' => 'verification_successful',
+                    'valkey' => $entities['terminal']['gateway_secure_secret'],
+                    'errdesc' => 'SUCCESS',
+                    'Key' => $entities['terminal']['gateway_secure_secret'],
+                    '_raw' => '',
                 ],
-                'error'             => null,
-                'success'           => true,
-                'mozart_id'         => '',
-                'external_trace_id' => '',
-            ];
+            'error'             => null,
+            'success'           => true,
+            'mozart_id'         => '',
+            'external_trace_id' => '',
+        ];
 
-        $this->content($response, 'verify_content');
+        $this->content($response, 'verify');
 
         $response = json_encode($response);
 
@@ -246,151 +131,75 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    public function runTransaction($request)
+    public function refund($input)
     {
-        $request = json_decode(json_encode($request), true);
+        $input = json_decode($input, true);
+        $entities = $input['entities'];
 
-        switch(true)
-        {
-            case isset($request[F::PA_ENROLL_SERVICE]):
-                $action = 'auth_enroll';
-                break;
-            case isset($request[F::PA_VALIDATE_SERVICE]):
-                $action = 'auth_validate';
-                break;
-            case isset($request[F::CC_AUTH_SERVICE]):
-                $action = 'authorize';
-                break;
-            case isset($request[F::CC_CAPTURE_SERVICE]):
-                $action = 'capture';
-                break;
-            case isset($request[F::CC_CREDIT_SERVICE]):
-                $action = 'refund';
-                break;
-            case isset($request[F::CC_AUTH_REVERSAL_SERVICE]):
-                $action = 'auth_reversal';
-                break;
-            default:
-                assertTrue(false, 'Unrecognized request type');
-        }
+        $response = [
+            'data' =>
+                [
+                    'Errordescription' => 'TRANSACTION PERFORMED SUCCESSFULLY',
+                    'Key' => $entities['terminal']['gateway_secure_secret'],
+                    'RequestID' => 'RZP190219162906769',
+                    'Responsecode' => '0',
+                    'status' => 'refunded',
+                    'received' => 'true',
+                    '_raw' => '',
+                ],
+            'error'             => null,
+            'success'           => true,
+            'mozart_id'         => '',
+            'external_trace_id' => '',
+        ];
 
-        $action = camel_case($action);
+        $this->content($response, 'refund');
 
-        return $this->{$action}($request);
+        $response = json_encode($response);
+
+        $response = $this->makeResponseJson($response);
+
+        return $response;
     }
 
     public function verifyRefund($input)
     {
-        $content = $this->getVerifyContent($input);
+        $input = json_decode($input, true);
+        $entities = $input['entities'];
 
-        $this->content($content, 'verify_content');
-
-        $xml = '';
-
-        if ($content !== [])
-        {
-            $xml = require __DIR__ . '/VerifyResponseXml.php';
-        }
-
-        $this->content($xml, 'verify_xml');
-
-        return $this->makeResponse($xml);
-    }
-
-    protected function getVerifyContent(array $input)
-    {
-        $payment = $this->getRepo()->findByPaymentIdAndAction(
-            $input[F::MERCHANT_REFERENCE_NUMBER], Cybersource\Action::AUTHORIZE);
-
-        if ($payment === null)
-        {
-            return [];
-        }
-
-        $amount = ($payment->getAmount() / 100);
-
-        return [
-            'ccCaptureService' => [
-                'requestId' => '4661468455432' . random_int(10000000, 99999999),
-                'amount' => $amount
-            ],
-            'ccAuthService' => [
-                'requestId' => '4661468455432' . random_int(10000000, 99999999),
-                'amount' => $amount,
-                'authCode' => strtoupper(Str::random(6)),
-                'eci' => '2',
-                'RFlag' => Cybersource\ReplyFlag::SOK
-            ],
-            'payerAuthEnrollService' => [
-                'requestId' => '4661468455432' . random_int(10000000, 99999999),
-                'amount' => $amount
-            ]
-        ];
-    }
-
-    protected function refund($input)
-    {
-        parent::refund($input);
-
-        $this->validateActionInput($input);
-
-        $this->content($input, 'validate_refund');
-
-        $response = [];
-
-        $response[F::MERCHANT_REFERENCE_CODE] = $input[F::MERCHANT_REFERENCE_CODE];
-
-        $response[F::REQUEST_ID] = '4661468455432' . random_int(10000000, 99999999);
-
-        $response[F::REQUEST_TOKEN] = Str::random(40);
-
-        $response[F::DECISION] = 'ACCEPT';
-
-        $response[F::REASON_CODE] = 100;
-
-        $response[F::CC_CREDIT_REPLY] = [
-            F::REASON_CODE       => 100,
-            F::AMOUNT            => $input[F::PURCHASE_TOTALS][F::GRAND_TOTAL_AMOUNT],
-            F::RECONCILIATION_ID => $response[F::REQUEST_ID],
-            F::REFUND_DATETIME   => Carbon::now('UTC')->format('Y-m-d\TH:i:s\Z')
+        $response = [
+            'data' =>
+                [
+                    'enqinfo' => [
+                        'DEALID' => 'CS905114097404',
+                        'ERRORDESCRIPTION' => 'TRANSACTION PERFORMED SUCCESSFULLY',
+                        'Key' => $entities['terminal']['gateway_secure_secret'],
+                        'ORDERNO' => '104',
+                        'REQUESTID' => $entities['gateway']['refund']['requestid'],
+                        'RESPONSECODE' => '0'
+                    ],
+                    'received' => true,
+                    'requeryid' => $entities['gateway']['refund']['requestid'],
+                    'reqid' => 'RZP200219195445345',
+                    'rescode' => '00',
+                    'rqtype' => 'CAN',
+                    'status' => 'verification_successful',
+                    'valkey' => $entities['terminal']['gateway_secure_secret'],
+                    'errdesc' => 'SUCCESS',
+                    'Key' => $entities['terminal']['gateway_secure_secret'],
+                    '_raw' => '',
+                ],
+            'error'             => null,
+            'success'           => true,
+            'mozart_id'         => '',
+            'external_trace_id' => '',
         ];
 
-        $response[F::PURCHASE_TOTALS][F::CURRENCY] = 'INR';
+        $this->content($response, 'verify_refund');
 
-        $this->content($response, 'refund');
+        $response = json_encode($response);
 
-        return $response;
-    }
-    protected function authReversal($input)
-    {
-        parent::reverse($input);
-
-        $this->validateActionInput($input);
-
-        $this->content($input, 'validate_auth_reversal');
-
-        $response = [];
-
-        $response[F::MERCHANT_REFERENCE_CODE] = $input[F::MERCHANT_REFERENCE_CODE];
-
-        $response[F::REQUEST_ID] = '4661468455432' . random_int(10000000, 99999999);
-
-        $response[F::REQUEST_TOKEN] = Str::random(40);
-
-        $response[F::DECISION] = 'ACCEPT';
-
-        $response[F::REASON_CODE] = 100;
-
-        $response[F::CC_AUTH_REVERSAL_REPLY] = [
-            F::REASON_CODE        => 100,
-            F::AMOUNT             => $input[F::PURCHASE_TOTALS][F::GRAND_TOTAL_AMOUNT],
-            F::PROCESSOR_RESPONSE => $response[F::REQUEST_ID],
-            F::REQUEST_DATETIME   => Carbon::now('UTC')->format('Y-m-d\TH:i:s\Z')
-        ];
-
-        $response[F::PURCHASE_TOTALS][F::CURRENCY] = 'INR';
-
-        $this->content($response);
+        $response = $this->makeResponseJson($response);
 
         return $response;
     }
@@ -405,13 +214,4 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    protected function makeResponse($body)
-    {
-        $response = \Response::make($body);
-
-        $response->headers->set('Content-Type', 'application/xml; charset=UTF-8');
-        $response->headers->set('Cache-Control', 'no-cache');
-
-        return $response;
-    }
 }
