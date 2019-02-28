@@ -81,7 +81,7 @@ class Constants
             'description' => 'Create custom-branded Payment Pages in minutes to collect payments securely. No integrations or coding required! Check it out now!',
             'start_ts'    => 1550695523,
             'end_ts'      => 1553199300,
-            'icon'        => 'http://cdn.razorpay.com/static/assets/paymentpages/display_icon.svg',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/paymentpages/display_icon.svg',
             'buttons'     => [
                 [
                     'type'  => 'button',
@@ -98,7 +98,7 @@ class Constants
             'description' => 'Payment pages now has a ton of enhanced features, a lot more customisation and a better look and feel. Check it out now!',
             'start_ts'    => 1550695523,
             'end_ts'      => 1553199300,
-            'icon'        => 'http://cdn.razorpay.com/static/assets/paymentpages/display_icon.svg',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/paymentpages/display_icon.svg',
             'buttons'     => [
                 [
                     'type'  => 'button',
