@@ -61,7 +61,7 @@ export default class CreditSubDetails extends Component {
                 <div class="list-group details-row-container">
                   <EntityDetailRow label="Amount Credits">
                     <strong>
-                      <Amount value={credit.value} />
+                      <Amount value={credit.value} currency={'INR'} />
                     </strong>
                   </EntityDetailRow>
                   <EntityDetailRow

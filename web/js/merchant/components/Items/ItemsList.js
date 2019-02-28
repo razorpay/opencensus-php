@@ -1,7 +1,9 @@
+import Amount from 'rzp/ui/Amount';
 import TableBody from 'rzp/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 
 const ItemsListItem = ({ item, onEdit, onDelete }) => {
+  console.log('..ITEM.....', item);
   return (
     <EntityItemRow id={item.id}>
       <td>
@@ -13,7 +15,9 @@ const ItemsListItem = ({ item, onEdit, onDelete }) => {
         <a onClick={onEdit}>{item.name}</a>
       </td>
       <td>{item.description}</td>
-      <td class="text-right">{item.amountInINR}</td>
+      <td class="text-right">
+        <Amount value={item.amount} currency={item.currency} />
+      </td>
       <td class="row-action">
         <div class="btn-group">
           <button class="btn btn-xs btn-default" onClick={onDelete}>

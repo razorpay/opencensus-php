@@ -87,7 +87,7 @@ export default class CreditDetails extends Component {
 
           <small>Total: </small>
           <strong class="big-font">
-            <Amount value={totalCredits} />
+            <Amount value={totalCredits} currency={'INR'} />
           </strong>
           <div class="collapsible-container">
             {!!creditItems.length && (
@@ -118,17 +118,24 @@ export default class CreditDetails extends Component {
                             {cItem.used === cItem.value ? (
                               <>
                                 <strong>
-                                  <Amount value={cItem.value} />
+                                  <Amount
+                                    value={cItem.value}
+                                    currency={'INR'}
+                                  />
                                 </strong>{' '}
                                 All credits used
                               </>
                             ) : (
                               <>
                                 <strong>
-                                  <Amount value={cItem.value - cItem.used} />
+                                  <Amount
+                                    value={cItem.value - cItem.used}
+                                    currency={'INR'}
+                                  />
                                 </strong>{' '}
-                                of <Amount value={cItem.value} /> is still
-                                unused
+                                of{' '}
+                                <Amount value={cItem.value} currency={'INR'} />{' '}
+                                is still unused
                               </>
                             )}
                           </div>
