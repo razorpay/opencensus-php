@@ -106,9 +106,9 @@ export default class TokenEntityContainer extends Component {
             <div class="panel-heading">
               {entity.id}
               <div class="btn-toolbar pull-right">
-                {(entity.method === 'card' ||
-                  (entity.recurring_details &&
-                    entity.recurring_details.status !== 'rejected')) && (
+                {['rejected', 'initiated'].indexOf(
+                  (entity.recurring_details || {}).status
+                ) === -1 && (
                   <button
                     class="btn btn-primary btn-sm"
                     onClick={this.handleChargeNow}
