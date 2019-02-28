@@ -2,14 +2,15 @@
 
 namespace RZP\Gateway\Mozart;
 
+use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
-use RZP\Gateway\Base;
+use RZP\Constants\Mode;
 
 class Gateway extends Base\Gateway
 {
-    protected $gateway = 'mozart';
+    protected $gateway = 'bajajfinserv';
 
     public function authorize(array $input)
     {
@@ -21,7 +22,17 @@ class Gateway extends Base\Gateway
 
         $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
 
-        return $responseBody['next']['redirect'] ?? null;
+        return $response['next']['redirect'] ?? null;
+    }
+
+    public function otpGenerate(array $input)
+    {
+        return $this->authorize($input);
+    }
+
+    public function callbackOtpSubmit(array $input)
+    {
+        return $this->callback($input);
     }
 
     public function callback(array $input)
@@ -29,6 +40,7 @@ class Gateway extends Base\Gateway
         parent::action($input, Action::PAY_VERIFY);
 
         $gateway = $input['gateway'];
+
         unset($input['gateway']);
 
         $input['gateway']['redirect'] = $gateway;
@@ -38,6 +50,17 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request);
 
         $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+
+        if ($input['payment']['gateway'] === Payment\Gateway::BAJAJ)
+        {
+            $input['gateway']['pay_verify']['requestid'] = $response['data']['RequestID'];
+
+            $verifyResponse = $this->verify($input);
+
+            return $verifyResponse;
+        }
+
+        return $response;
     }
 
     public function refund(array $input)
@@ -65,11 +88,24 @@ class Gateway extends Base\Gateway
     public function verify(array $input)
     {
         parent::verify($input);
+
+        $request = $this->getMozartRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+
+        return $response;
     }
 
     protected function getMozartRequestArray($input)
     {
         $input['terminal'] = $input['terminal']->toArrayWithPassword();
+
+        if($this->mode === Mode::TEST)
+        {
+            $input['payment']['amount'] = 100;
+        }
 
         $content['entities'] = $input;
 

@@ -157,6 +157,7 @@ class Table
     const CARD_FSS              = 'card_fss';
     const ISG                   = 'isg';
     const CARDLESS_EMI          = 'cardless_emi';
+    const MOZART                = 'mozart';
 
     // Sessions table
     const SESSION               = 'sessions';

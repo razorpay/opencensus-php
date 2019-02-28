@@ -73,7 +73,7 @@ return [
         'wallet_mpesa',
         'bt_yesbank',
         'bt_kotak',
-
+        'bajajfinserv',
         'p2p_upi_sharp',
     ],
 

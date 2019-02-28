@@ -86,6 +86,7 @@ class Validator extends Base\Validator
         Payment\Gateway::EMI_SBI,
         Payment\Gateway::WALLET_OLAMONEY,
         Payment\Gateway::PAYTM,
+        Payment\Gateway::BAJAJ,
     ];
 
     protected static $createValidators = [
@@ -743,6 +744,18 @@ class Validator extends Base\Validator
         Entity::TERMINAL_IDS                => 'required|array',
         Entity::ACTION                      => 'required|string|in:add,remove',
         Entity::BANK                        => 'required|string|custom',
+    ];
+
+    protected static $bajajfinservTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:bajajfinserv',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET2     => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'required|string',
+        Entity::EMI                        => 'required|boolean|in:1',
+        Entity::EMI_SUBVENTION             => 'required|string|in:merchant,customer',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::EMI_DURATION               => 'required|integer|in:3,6,9,12,18,24',
     ];
 
     public function validateType()

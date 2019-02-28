@@ -11,6 +11,8 @@ class Entity extends Base\Entity
     const RECEIVED              = 'received';
     const AMOUNT                = 'amount';
     const ACTION                = 'action';
+    const BANK                  = 'bank';
+    const RAW                   = 'raw';
 
     protected $entity = 'mozart';
 
@@ -21,6 +23,7 @@ class Entity extends Base\Entity
         self::RECEIVED,
         self::AMOUNT,
         self::ACTION,
+        self::RAW,
     ];
 
     protected $fillable = [
