@@ -212,7 +212,7 @@ class Service extends Base\Service
 
     public function fetchMultiple($input)
     {
-        $orders = $this->repo->order->fetch($input, $this->merchant->getId());
+        $orders = $this->repo->order->fetch($input, $this->merchant->getId(), true);
 
         return $orders->toArrayPublic();
     }
