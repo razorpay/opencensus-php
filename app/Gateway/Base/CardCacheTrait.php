@@ -51,12 +51,12 @@ trait CardCacheTrait
         {
             $this->app['cache']->store($this->secureCacheDriver)->put($key, $data, static::CACHE_TTL);
         }
-
     }
 
     /**
      * This method gets the cached card detail and sets it in the input.
      * @param array $input
+     * @throws \Exception
      */
     protected function setCardNumberAndCvv(array & $input)
     {

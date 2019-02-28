@@ -236,23 +236,17 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
-        // If advice message has already been called for this, do not call again.
-        // We do not want to block capture request even if this is set to 1, hence not throwing
-        // an exception here.
-        if ($gatewayPayment[Entity::SETTLED] === 0)
-        {
-            $input['paysecure'] = $gatewayPayment->toArray();
+        $input['paysecure'] = $gatewayPayment->toArray();
 
-            $this->callAdviceGateway($input);
+        $this->callAdviceGateway($input);
 
-            $gatewayPayment->fill(
-                [
-                    Entity::SETTLED => 1,
-                ]
-            );
+        $gatewayPayment->fill(
+            [
+                Entity::SETTLED => 1,
+            ]
+        );
 
-            $this->getRepository()->saveOrFail($gatewayPayment);
-        }
+        $this->getRepository()->saveOrFail($gatewayPayment);
     }
 
     public function refund(array $input)

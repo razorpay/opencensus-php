@@ -171,17 +171,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        if ($input['payment']['gateway'] === Payment\Gateway::PAYSECURE)
-        {
-            $request = $this->getPaysecureRefundRequestArray($input);
-        }
-        else
-        {
-            $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-                $input['payment']['id'], Base\Action::AUTHORIZE);
-
-            $request = $this->getRefundRequestArray($input, $gatewayPayment);
-        }
+        $request = $this->getRefundRequestArray($input);
 
         $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_REFUND_REQUEST);
 
@@ -937,8 +927,16 @@ class Gateway extends Base\Gateway
         return $this->getStandardRequestArray($content);
     }
 
-    protected function getRefundRequestArray(array $input, Entity $gatewayPayment)
+    protected function getRefundRequestArray(array $input)
     {
+        if ($input['payment']['gateway'] === Payment\Gateway::PAYSECURE)
+        {
+            return  $this->getPaysecureRefundRequestArray($input);
+        }
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], Base\Action::AUTHORIZE);
+
         $createdAt = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST);
 
         $time = $createdAt->format(self::TIME_FORMAT);
