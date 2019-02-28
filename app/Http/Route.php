@@ -209,6 +209,7 @@ final class Route
         'merchant_update_key_access'               => ['put',      'merchants/{id}/update_key_access',               'MerchantController@updateKeyAccess'                                ],
         'merchant_edit_free_credits'               => ['post',     'merchants/{id}/credits',                         'MerchantController@postAmountCredits',                             ],
         'merchant_fetch_users'                     => ['get',      'merchants-users',                                'MerchantController@getUsers',                                      ],
+        'merchant_user_reset_password'             => ['put',      'users/{id}/password',                            'UserController@resetUserPassword',                                 ],
         'merchant_patch_beneficiary_code'          => ['patch',    'merchants/beneficiary/code',                     'MerchantController@patchMerchantBeneficiaryCode'                   ],
         'merchant_beneficiary_file'                => ['post',     'merchants/beneficiary/file/{channel}',           'MerchantController@getMerchantBeneficiary'                         ],
         'merchant_post_beneficiary_file'           => ['post',     'merchants/beneficiary/file/bank/{channel}',      'MerchantController@postMerchantBeneficiary'                        ],
@@ -1846,6 +1847,7 @@ final class Route
         'nodal_get_account_balance',
         'enable_emi_merchant_sub',
         'oauth_sync_merchant_map',
+        'merchant_user_reset_password',
 
         // Shield Routes
         'shield_rules_get_multiple',
@@ -2299,6 +2301,7 @@ final class Route
         'partner_config_create'                    => '*',
         'partner_config_fetch'                     => '*',
         'partner_config_edit'                      => '*',
+        'merchant_user_reset_password'             => Permission::USER_PASSWORD_RESET,
     ];
 
     public static $direct = [

@@ -8,8 +8,10 @@ use Hash;
 use Carbon\Carbon;
 
 use RZP\Mail\User\Otp;
+use RZP\Models\Admin\Admin;
 use RZP\Models\User\Constants;
 use RZP\Mail\User\PasswordReset;
+use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\User\AccountVerification;
 use RZP\Models\User\Entity as UserEntity;
@@ -555,5 +557,131 @@ class UserTest extends TestCase
     public function testVerifyContactWithInvalidToken()
     {
         $this->markTestSkipped('Todo: Not possible with current implementation!');
+    }
+
+    public function testResetMerchantUserPassword()
+    {
+        $this->setPasswordResetTestData(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    /**
+     * Admin belongs to a different org than the one merchant
+     * belongs to, admin has access to all merchants in his
+     * org, and is not attached to the particular merchant
+     */
+    public function testResetDiffOrgMerchantUserPassword()
+    {
+        /** @var Admin\Entity $admin */
+        $admin = $this->setPasswordResetTestData(__FUNCTION__);
+
+        $admin->merchants()->detach('10000000000000');
+
+        $admin->setAllowAllMerchants();
+
+        $admin->saveOrFail();
+
+        $org = $this->fixtures->create('org');
+
+        $this->fixtures->edit('merchant', '10000000000000', ['org_id' => $org['id']]);
+
+        $this->startTest();
+    }
+
+    /**
+     * Merchant not assigned to the admin, admin can view all
+     * merchants in his org, both belong to same org
+     */
+    public function testResetNonLinkedMerchantUserPassword()
+    {
+        /** @var Admin\Entity $admin */
+        $admin = $this->setPasswordResetTestData(__FUNCTION__);
+
+        $admin->merchants()->detach('10000000000000');
+
+        $admin->setAllowAllMerchants();
+
+        $admin->saveOrFail();
+
+        $this->startTest();
+    }
+
+    /**
+     * Admin does not have the permission to take this action
+     */
+    public function testResetMerchantUserPasswordNoPermission()
+    {
+        $admin = $this->setPasswordResetTestData(__FUNCTION__);
+
+        $role = $admin->roles()->first();
+
+        $perms = ['user_password_reset'];
+
+        $perm = (new Permission\Repository)->retrieveIdsByNames($perms)[0];
+
+        $role->permissions()->detach($perm);
+
+        $this->startTest();
+    }
+
+    /**
+     * User does not belong to the merchant's team
+     */
+    public function testResetMerchantNonLinkedUserPassword()
+    {
+        $this->setPasswordResetTestData(__FUNCTION__);
+
+        $user = $this->fixtures->create('user');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/users/' . $user['id'] . '/password';
+
+        $this->startTest();
+    }
+
+    /**
+     * User is not the owner of the merchant account and
+     * he also belongs to another team
+     */
+    public function testResetMerchantNonOwnerUserPassword()
+    {
+        $this->setPasswordResetTestData(__FUNCTION__);
+
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], 'finance');
+
+        $merchant2 = $this->fixtures->create('merchant');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchant2['id'],
+            'role'        => 'owner',
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/users/' . $user['id'] . '/password';
+
+        $this->startTest();
+    }
+
+    protected function setPasswordResetTestData(string $callee)
+    {
+        $testData = & $this->testData[$callee];
+
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $password = str_random(16) . 'a1';
+
+        $testData['request']['content']['password'] = $password;
+
+        $testData['request']['content']['password_confirmation'] = $password;
+
+        return $admin;
     }
 }

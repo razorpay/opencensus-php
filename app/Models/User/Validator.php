@@ -4,7 +4,9 @@ namespace RZP\Models\User;
 
 use App;
 use Hash;
+
 use RZP\Base;
+use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Exception\BadRequestException;
@@ -83,6 +85,11 @@ class Validator extends Base\Validator
         Entity::PASSWORD              => 'required|between:8,50|confirmed|numbers|letters',
         Entity::PASSWORD_CONFIRMATION => 'required|between:8,50',
         Entity::TOKEN                 => 'required|string|size:50',
+    ];
+
+    protected static $changePasswordAdminRules = [
+        Entity::PASSWORD              => 'required|between:8,50|confirmed|numbers|letters',
+        Entity::PASSWORD_CONFIRMATION => 'required|between:8,50',
     ];
 
     protected static $actionValidators = [
@@ -290,5 +297,21 @@ class Validator extends Base\Validator
         }
 
         $this->validateInput('verifyOtp', $input);
+    }
+
+    /**
+     * @param  Merchant\Entity $merchant
+     * @param  Entity          $user
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateMerchantUserRelation(Merchant\Entity $merchant, Entity $user)
+    {
+        if (in_array($user->getId(), $merchant->users()->get()->getIds(), true) === true)
+        {
+            return;
+        }
+
+        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHANT);
     }
 }

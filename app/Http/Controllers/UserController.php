@@ -144,4 +144,13 @@ class UserController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function resetUserPassword(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->resetUserPassword($id, $input);
+
+        return ApiResponse::json($response);
+    }
 }

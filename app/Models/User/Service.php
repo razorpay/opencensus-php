@@ -14,6 +14,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Product;
 use RZP\Models\Invitation;
+use RZP\Models\Admin\Admin;
 use RZP\Mail\User as UserMail;
 use RZP\Models\Admin\AdminLead;
 
@@ -497,12 +498,7 @@ class Service extends Base\Service
         }
         else
         {
-            $changePasswordData = [
-                'password'              => $input['password'],
-                'password_confirmation' => $input['password_confirmation'],
-            ];
-
-            (new Core)->changePassword($user, $changePasswordData);
+            (new Core)->setNewPassword($user, $input);
 
             // Password reset via mail essentially confirms the email.
             if ($user->getConfirmedAttribute() === false)
@@ -664,5 +660,36 @@ class Service extends Base\Service
         $this->core()->verifyContactWithOtp($input, $this->merchant, $this->user);
 
         return $this->user->toArrayPublic();
+    }
+
+    /**
+     * @param  string $id
+     * @param  array  $input
+     *
+     * @return array
+     */
+    public function resetUserPassword(string $id, array $input)
+    {
+        /** @var Admin\Entity $admin */
+        $admin = $this->auth->getAdmin();
+
+        $merchant = $this->auth->getMerchant();
+
+        $user = $this->repo->user->findOrFailPublic($id);
+
+        $userValidator = (new Validator);
+
+        // TODO: Remove this after handling properly in AdminAccess middleware
+        // It does not handle org id as of now, also need to test admin-
+        // merchant relations
+        (new Merchant\Validator)->validateAdminMerchantAccess($admin, $merchant);
+
+        $userValidator->validateMerchantUserRelation($merchant, $user);
+
+        $userValidator->validateInput('changePasswordAdmin', $input);
+
+        $this->core()->edit($user, $input, 'changePasswordAdmin');
+
+        return ['success' => true];
     }
 }
