@@ -200,6 +200,7 @@ class CreateInvoices extends Migration
             $table->index([Entity::MERCHANT_ID, Entity::RECEIPT]);
             $table->index([Entity::INTERNAL_REF, Entity::MERCHANT_ID]);
             $table->index([Entity::STATUS, Entity::EXPIRE_BY, Entity::DELETED_AT]);
+            $table->index([Entity::USER_ID, Entity::MERCHANT_ID, Entity::TYPE, Entity::ENTITY_TYPE]);
 
             $table->foreign(Entity::ORDER_ID)
                   ->references(Order\Entity::ID)
