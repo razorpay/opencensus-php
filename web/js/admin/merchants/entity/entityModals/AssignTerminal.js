@@ -126,6 +126,13 @@ const HDFC_terminalTypesMapping = [
   { value: 'direct_settlement', name: 'Direct Settlement' },
 ];
 
+const gatewayMappingTerminalTypesDefaults = {
+  paytm: {
+    value: 'direct_settlement',
+    name: 'Direct Settlement',
+  },
+};
+
 export default class TerminalForm extends Component {
   state = { pricingPlans: {} };
 
@@ -200,6 +207,20 @@ export default class TerminalForm extends Component {
       });
   };
 
+  handleGateway = e => {
+    const value = e.target.value;
+    if (gatewayMappingTerminalTypesDefaults.hasOwnProperty(value)) {
+      const options = gatewayMappingTerminalTypesDefaults[value];
+
+      if (this.terminalTypesEle.state.selectedOptions.indexOf(options) >= 0)
+        return;
+
+      this.terminalTypesEle.handleChange({
+        options: [...this.terminalTypesEle.state.selectedOptions, options],
+      });
+    }
+  };
+
   render() {
     const { isEditMode, handleEdit, entity } = this.props;
 
@@ -252,6 +273,7 @@ export default class TerminalForm extends Component {
             label="Gateway"
             defaultValue={isEditMode ? entity.gateway : ''}
             disabled={isEditMode}
+            onChange={this.handleGateway}
           >
             {Object.keys(gateways).map(key => (
               <option key={key} value={key}>
@@ -459,6 +481,7 @@ export default class TerminalForm extends Component {
 
           <div class="types-select">
             <MultiSelectField
+              ref={el => (this.terminalTypesEle = el)}
               class="terminal-types"
               label="Types"
               name="type"
