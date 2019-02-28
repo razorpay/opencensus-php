@@ -1,8 +1,8 @@
 <?php
 
-namespace RZP\Tests\P2p\Service\Vpa;
+namespace RZP\Tests\P2p\Service\UpiSharp\Vpa;
 
-use RZP\Tests\P2p\Service\TestCase;
+use RZP\Tests\P2p\Service\UpiSharp\TestCase;
 
 class VpaTest extends TestCase
 {

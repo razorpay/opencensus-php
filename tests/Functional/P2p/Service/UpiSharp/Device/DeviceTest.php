@@ -1,8 +1,8 @@
 <?php
 
-namespace RZP\Tests\P2p\Service\Device;
+namespace RZP\Tests\P2p\Service\UpiSharp\Device;
 
-use RZP\Tests\P2p\Service\TestCase;
+use RZP\Tests\P2p\Service\UpiSharp\TestCase;
 use RZP\Tests\P2p\Service\Base\Fixtures\Fixtures;
 
 class DeviceTest extends TestCase

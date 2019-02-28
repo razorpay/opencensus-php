@@ -1,8 +1,8 @@
 <?php
 
-namespace RZP\Tests\P2p\Service\BankAccount;
+namespace RZP\Tests\P2p\Service\UpiSharp\BankAccount;
 
-use RZP\Tests\P2p\Service\TestCase;
+use RZP\Tests\P2p\Service\UpiSharp\TestCase;
 use RZP\Models\P2p\BankAccount\Entity;
 
 class BankAccountTest extends TestCase

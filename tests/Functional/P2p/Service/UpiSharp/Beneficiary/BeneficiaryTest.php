@@ -1,8 +1,8 @@
 <?php
 
-namespace RZP\Tests\P2p\Service\Beneficiary;
+namespace RZP\Tests\P2p\Service\UpiSharp\Beneficiary;
 
-use RZP\Tests\P2p\Service\TestCase;
+use RZP\Tests\P2p\Service\UpiSharp\TestCase;
 
 class BeneficiaryTest extends TestCase
 {
