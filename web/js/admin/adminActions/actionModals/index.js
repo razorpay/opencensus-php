@@ -71,3 +71,5 @@ export FetchGatewayUnprocessedRefundsConfig from './FetchGatewayUnprocessedRefun
 export EditGatewayUnprocessedRefundsConfig from './EditGatewayUnprocessedRefundsConfig';
 
 export CreatePromotion from './CreatePromotion';
+
+export GenerateVaultToken from './GenerateVaultToken';
