@@ -10,4 +10,5 @@ class TransactionType
     const CAPTURE = 'CP';
     const VOID    = 'CN';
     const MOTO    = 'MT';
+    const RUPAY   = 'RU';
 }

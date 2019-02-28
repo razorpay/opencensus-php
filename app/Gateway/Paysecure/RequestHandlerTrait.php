@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\Paysecure;
 
-use RZP\Gateway\Base\Action;
 use SoapVar;
 use SoapFault;
 use SoapHeader;
@@ -49,7 +48,9 @@ trait RequestHandlerTrait
         list($rrn, $requestArray) = $this->getInitiateRequestArray();
 
         $content = [
-            Entity::RRN  => $rrn,
+            Entity::RRN       => $rrn,
+            Entity::TRAN_DATE => $requestArray[Fields::TRAN_DATE],
+            Entity::TRAN_TIME => $requestArray[Fields::TRAN_TIME],
         ];
 
         $gatewayPayment = $this->createGatewayPaymentEntity($content, 'iframe');
@@ -68,8 +69,10 @@ trait RequestHandlerTrait
         list($rrn, $requestArray) = $this->getInitiateRequestArray();
 
         $content = [
-            Entity::RRN  => $rrn,
-            Entity::FLOW => 'redirect',
+            Entity::RRN       => $rrn,
+            Entity::FLOW      => 'redirect',
+            Entity::TRAN_DATE => $requestArray[Fields::TRAN_DATE],
+            Entity::TRAN_TIME => $requestArray[Fields::TRAN_TIME],
         ];
 
         $gatewayPayment = $this->createGatewayPaymentEntity($content);
@@ -118,14 +121,14 @@ trait RequestHandlerTrait
             Fields::CVD2                              => $card['cvv'],
             // todo: fetch this correctly from card BIN
             Fields::TRANSACTION_TYPE_INDICATOR        => 'SMS',
-            Fields::TID                               => $this->config['terminal_id'],
+            Fields::TID                               => $this->getTerminalId(),
             Fields::STAN                              => $systemTraceAuditNumber,
             Fields::TRAN_TIME                         => $time,
             Fields::TRAN_DATE                         => $date,
             Fields::MCC                               => $mcc,
             Fields::ACQUIRER_INSTITUTION_COUNTRY_CODE => '356',
             Fields::RETRIEVAL_REF_NUMBER              => $rrn,
-            Fields::CARD_ACCEPTOR_ID                  => $this->config['merchant_id'],
+            Fields::CARD_ACCEPTOR_ID                  => $this->getMerchantId(),
             Fields::TERMINAL_OWNER_NAME               => $this->input['merchant']->getBillingLabel() ?? 'Razorpay',
             Fields::TERMINAL_CITY                     => 'Bangalore',
             Fields::TERMINAL_STATE_CODE               => 'KA',
@@ -136,6 +139,26 @@ trait RequestHandlerTrait
         ];
 
         return [$rrn, $requestArray];
+    }
+
+    // Since we're the acquirer, we can pass our own internal merchant id
+    protected function getMerchantId()
+    {
+        if ($this->mode === Mode::LIVE)
+        {
+            return $this->input['merchant']['id'];
+        }
+        return $this->config['merchant_id'];
+    }
+
+    // Since we're the acquirer, we can pass our own internal terminal id
+    protected function getTerminalId()
+    {
+        if ($this->mode === Mode::LIVE)
+        {
+            return $this->input['terminal']['id'];
+        }
+        return $this->config['terminal_id'];
     }
 
     protected function generateRrn($stan)

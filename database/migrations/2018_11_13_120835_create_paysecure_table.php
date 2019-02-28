@@ -25,40 +25,47 @@ class CreatePaysecureTable extends Migration
             $table->char(Paysecure::PAYMENT_ID, Paysecure::ID_LENGTH);
 
             $table->string(Paysecure::ACTION, 10)
-                ->nullable();
+                  ->nullable();
 
             $table->tinyInteger(Paysecure::RECEIVED)
-                ->default(0);
+                  ->default(0);
 
             $table->string(Paysecure::REFUND_ID, Paysecure::ID_LENGTH)
-                ->nullable();
+                  ->nullable();
 
             $table->string(Paysecure::STATUS, 20)
-                ->nullable();
+                  ->nullable();
 
             $table->string(Paysecure::GATEWAY_TRANSACTION_ID, 30)
-                ->nullable();
+                  ->nullable();
 
             $table->string(Paysecure::ERROR_CODE, 50)
-                ->nullable();
+                  ->nullable();
 
             $table->string(Paysecure::ERROR_MESSAGE, 255)
-                ->nullable();
+                  ->nullable();
 
             $table->bigInteger(Paysecure::RRN)
-                ->unsigned();
+                  ->unsigned();
+
+            $table->string(Paysecure::TRAN_DATE, 4);
+
+            $table->string(Paysecure::TRAN_TIME, 6);
 
             $table->string(Paysecure::FLOW, 10)
-                ->nullable();
+                  ->nullable();
 
             $table->string(Paysecure::HKEY)
-                ->nullable();
+                  ->nullable();
 
             $table->string(Paysecure::AUTH_NOT_REQUIRED, 5)
-                ->nullable();
+                  ->nullable();
 
             $table->string(Paysecure::APPRCODE, 10)
-                ->nullable();
+                  ->nullable();
+
+            $table->tinyInteger(Paysecure::SETTLED)
+                  ->default(0);
 
             $table->integer(Paysecure::CREATED_AT);
 

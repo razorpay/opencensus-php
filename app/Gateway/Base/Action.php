@@ -5,6 +5,7 @@ namespace RZP\Gateway\Base;
 class Action
 {
     const PURCHASE      = 'purchase';
+    const ADVICE        = 'advice';
     const AUTHENTICATE  = 'authenticate';
     const AUTHORIZE     = 'authorize';
     const CAPTURE       = 'capture';

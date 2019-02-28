@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\HashAlgo;
@@ -16,10 +17,16 @@ use RZP\Gateway\Base\VerifyResult;
 
 class Gateway extends Base\Gateway
 {
-    use Base\AuthorizeFailed;
+    use Base\CardCacheTrait;
     use RequestHandlerTrait;
+    use Base\AuthorizeFailed;
 
     protected $gateway = 'paysecure';
+
+    protected $secureCacheDriver;
+
+    const CACHE_KEY = 'paysecure_%s_card_details';
+    const CACHE_TTL = 0;
 
     protected $gatewayPayment = null;
 
@@ -50,6 +57,13 @@ class Gateway extends Base\Gateway
         $this->wsdlDetails['wsdl_file'] = dirname(__FILE__) . '/rupay.wsdl.test';
     }
 
+    public function setGatewayParams($input, $mode, $terminal)
+    {
+        parent::setGatewayParams($input, $mode, $terminal);
+
+        $this->secureCacheDriver = $this->getDriver($input);
+    }
+
     /**
      * @param array $input
      * @return array
@@ -78,6 +92,9 @@ class Gateway extends Base\Gateway
 
             $this->traceGatewayPaymentRequest($request, $input);
 
+            // This will be used in the capture flow, to be passed to Hitachi for advice message call.
+            $this->persistCardDetailsTemporarily($input);
+
             return $request;
         }
         // Iframe flow
@@ -94,6 +111,8 @@ class Gateway extends Base\Gateway
             ];
 
             $this->traceGatewayPaymentRequest($request, $input);
+
+            $this->persistCardDetailsTemporarily($input);
 
             $request['content'] = View::make('gateway.paysecurePinpadForm')
                                       ->with('data', $this->getPinpadData($response))
@@ -206,6 +225,35 @@ class Gateway extends Base\Gateway
         $verify = new Base\Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    public function capture(array $input)
+    {
+        parent::capture($input);
+
+        $this->setCardNumberAndCvv($input);
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], Action::AUTHORIZE);
+
+        $input['paysecure'] = $gatewayPayment->toArray();
+
+        $this->callAdviceGateway($input);
+
+        $gatewayPayment->fill(
+            [
+                Entity::SETTLED => 1,
+            ]
+        );
+
+        $this->getRepository()->saveOrFail($gatewayPayment);
+    }
+
+    public function refund(array $input)
+    {
+        parent::refund($input);
+
+        return $this->callRefundGateway($input);
     }
 
     // ------------ Auth request helpers -----------------
@@ -455,7 +503,6 @@ class Gateway extends Base\Gateway
     /**
      * @param $response
      * @param $action
-     * @return bool
      * @throws Exception\GatewayErrorException
      */
     protected function handleFailure($response, $action)
@@ -475,6 +522,29 @@ class Gateway extends Base\Gateway
                 ]
             );
         }
+    }
+
+    protected function callAdviceGateway(array $input)
+    {
+        $this->app['gateway']->call(
+            Payment\Gateway::HITACHI,
+            Action::ADVICE,
+            $input,
+            $this->mode);
+    }
+
+    protected function callRefundGateway(array $input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], Action::AUTHORIZE);
+
+        $input['paysecure'] = $gatewayPayment->toArray();
+
+        return $this->app['gateway']->call(
+            Payment\Gateway::HITACHI,
+            Action::REFUND,
+            $input,
+            $this->mode);
     }
 
     protected function getRepository()

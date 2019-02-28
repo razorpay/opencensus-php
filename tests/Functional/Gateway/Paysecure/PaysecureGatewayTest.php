@@ -34,6 +34,8 @@ class PaysecureGatewayTest extends TestCase
         $authResponse = $this->doAuthPayment($this->payment);
 
         $this->assertSuccess($authResponse, 'redirect');
+
+        return $authResponse;
     }
 
     /**
@@ -244,6 +246,60 @@ class PaysecureGatewayTest extends TestCase
         $authResponse = $this->doAuthPayment($this->payment);
 
         $this->assertSuccess($authResponse, 'iframe');
+    }
+
+    public function testPaymentSettledViaHitachi()
+    {
+        $authResponse = $this->testPaymentAuthViaRedirect();
+
+        $this->capturePayment($authResponse['razorpay_payment_id'], '50000');
+
+        $hitachi = $this->getDbLastEntityToArray('hitachi');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'action' => 'authorize',
+                'pRespCode' => '00',
+                'payment_id' => substr($authResponse['razorpay_payment_id'],4),
+            ],
+            $hitachi
+        );
+
+        $paysecure = $this->getDbLastEntityToArray('paysecure');
+        $this->assertArraySelectiveEquals(
+            [
+                'settled' => 1,
+            ],
+            $paysecure
+        );
+    }
+
+    public function testPaymentRefundViaHitachi()
+    {
+        $this->testPaymentSettledViaHitachi();
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->refundPayment('pay_' . $payment['id'], 1000);
+
+        $hitachi = $this->getDbLastEntityToArray('hitachi');
+        $this->assertArraySelectiveEquals(
+            [
+                'amount'     => 1000,
+                'payment_id' => $payment['id'],
+                'action'     => 'refund',
+            ],
+            $hitachi
+        );
+
+        $refund = $this->getDbLastEntityToArray('refund');
+        $this->assertArraySelectiveEquals(
+            [
+                'amount' => 1000,
+                'payment_id' => $payment['id'],
+            ],
+            $refund
+        );
     }
 
     public function testSoapFault()
