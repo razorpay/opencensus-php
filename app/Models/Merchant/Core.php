@@ -1958,7 +1958,6 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::MERCHANT_UPDATE_INTERNATIONAL,
                 [
-                    'merchant_id'   => $merchant->getPublicId(),
                     'category'      => $category,
                     'subcategory'   => $subcategory,
                 ]);
