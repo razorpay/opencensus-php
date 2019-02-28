@@ -347,7 +347,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::DISPUTES,
         self::CREATED_AT,
         self::TRANSFER,
-        self::REFERENCE16,
     ];
 
     /**
