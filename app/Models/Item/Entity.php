@@ -119,7 +119,6 @@ class Entity extends Base\PublicEntity
         self::TAX,
         self::TAX_GROUP_ID,
         self::CREATED_AT,
-        self::UPDATED_AT,
     ];
 
     protected $fillable = [
