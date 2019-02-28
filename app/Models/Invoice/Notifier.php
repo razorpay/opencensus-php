@@ -12,6 +12,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Mail\Invoice as InvoiceMail;
 use RZP\Models\Merchant\Preferences;
+use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Invoice\ViewDataSerializer;
 
 class Notifier extends Base\Core
@@ -353,6 +354,21 @@ class Notifier extends Base\Core
             'invoice_link'  => $this->invoice->getShortUrl(),
             'amount'        => $this->invoice->getAmount() / 100,
         ];
+
+        if ($this->invoice->isTypeOfSubscriptionRegistration() === true)
+        {
+            $subscriptionRegistration = $this->invoice->entity;
+
+            if ($subscriptionRegistration->getMethod() === SubscriptionRegistration\Entity::METHOD_TYPE_CARD)
+            {
+                $defaultTemplate = 'sms.custom_invoice.subscription_registration_card';
+            }
+
+            if ($subscriptionRegistration->getMethod() === SubscriptionRegistration\Entity::METHOD_TYPE_EMANDATE)
+            {
+                $defaultTemplate = 'sms.custom_invoice.subscription_registration_emandate';
+            }
+        }
 
         $custom         = $this->getCustomRavenTemplateAndParams($merchant);
         $customTemplate = $custom['template'];

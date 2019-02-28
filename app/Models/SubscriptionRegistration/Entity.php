@@ -38,6 +38,9 @@ class Entity extends Base\PublicEntity
     const EXPIRE_AT         = 'expire_at';
     const DELETED_AT        = 'deleted_at';
 
+    const METHOD_TYPE_CARD      = 'card';
+    const METHOD_TYPE_EMANDATE  = 'emandate';
+
     protected static $sign = 'subr';
 
     protected $entity = 'subscription_registration';
