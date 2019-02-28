@@ -1596,6 +1596,70 @@ return [
         'status_code' => 200,
     ],
 
+    'testInternationalWithWhitelistedCategoryAndWebsiteAlreadySet' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'accounting',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
+                'business_website'     => '',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'                     => 'ABCDE0000Z',
+                'gstin'                            => null,
+                'p_gstin'                          => null,
+                'business_category'                => 'financial_services',
+                'business_subcategory'             => 'accounting',
+                'international'                    => true,
+                'archived'                         => 0,
+                'submitted_at'                     => null,
+                'can_submit'                       => false,
+                'activated'                        => 1,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
+    'testInternationalWithWhitelistedCategoryAndNoWebsiteAlreadySet' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'accounting',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
+                'business_website'     => 'https://www.example.com',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'                     => 'ABCDE0000Z',
+                'gstin'                            => null,
+                'p_gstin'                          => null,
+                'business_category'                => 'financial_services',
+                'business_subcategory'             => 'accounting',
+                'international'                    => true,
+                'archived'                         => 0,
+                'submitted_at'                     => null,
+                'can_submit'                       => false,
+                'activated'                        => 1,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
     'testInternationalWithBlacklistedCategory' => [
         'request'     => [
             'method'  => 'POST',
