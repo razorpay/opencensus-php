@@ -540,6 +540,13 @@ class Gateway extends Base\Gateway
                 $response['status_code']    = ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE;
                 break;
 
+            // Soft failure
+            case ($amount === 2111):
+
+                $response['result']         = 'Refund failed';
+                $response['status_code']    = ErrorCode::BAD_REQUEST_REFUND_FAILED;
+                break;
+
              // Request failure
             case ((($amount === 7777) or ($amount === 9999)) and ((int) $attempts === 0)):
                 $response['result']         = 'Request Timeout. Please try again.';
