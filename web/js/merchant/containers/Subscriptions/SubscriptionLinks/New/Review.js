@@ -3,7 +3,11 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
 import { getIntervalCycle } from 'rzp/utils/rzp-utils';
 
-export default function NewSubscriptionLinkReview({ fields, ...props }) {
+export default function NewSubscriptionLinkReview({
+  fields,
+  internals,
+  ...props
+}) {
   const selectedPlan = props.plans.find(({ id }) => id === fields.plan_id);
 
   const { amount: planAmount } = selectedPlan.item;
@@ -14,7 +18,11 @@ export default function NewSubscriptionLinkReview({ fields, ...props }) {
     0
   );
   const subscriptioAmount = planAmount * planQuantity;
-  const authorizationAmount = subscriptioAmount + addOnAmount;
+  const authorizationAmount = getAuthorizationAmount(
+    subscriptioAmount,
+    addOnAmount,
+    internals._startsImmediately
+  );
 
   const intervalCycle = getIntervalCycle(
     selectedPlan.interval,
@@ -83,4 +91,17 @@ export default function NewSubscriptionLinkReview({ fields, ...props }) {
       </div>
     </div>
   );
+}
+
+/**
+ * refer https://razorpay.com/docs/subscriptions/create/#possible-scenarios to understand logic
+ */
+function getAuthorizationAmount(subAmt, addonAmt, immediate) {
+  if (immediate) {
+    // in case of addons not present addonAmt will be zero. so no effect on subscription Amount
+    return subAmt + addonAmt;
+  } else {
+    // in case of future subscriptions it is either addon amount (if addons present) else Rs. 5
+    return addonAmt || 500; //Rs. 5
+  }
 }
