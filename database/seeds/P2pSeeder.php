@@ -89,15 +89,19 @@ class P2pSeeder extends Seeder
         P2p\Device\DeviceToken\Entity::whereIn(
             P2p\Device\DeviceToken\Entity::ID,
             [
-                Constants::CUSTOMER_1_DEVICE_TOKEN_1,
-                Constants::CUSTOMER_1_DEVICE_TOKEN_2,
-                Constants::CUSTOMER_2_DEVICE_TOKEN_1,
-                Constants::CUSTOMER_2_DEVICE_TOKEN_2,
+                Constants::CUSTOMER_2_DEVICE_TOKEN_1_SHARP,
+                Constants::CUSTOMER_1_DEVICE_TOKEN_2_SHARP,
+                Constants::CUSTOMER_2_DEVICE_TOKEN_1_SHARP,
+                Constants::CUSTOMER_2_DEVICE_TOKEN_2_SHARP,
+                Constants::CUSTOMER_1_DEVICE_TOKEN_1_AXIS,
+                Constants::CUSTOMER_1_DEVICE_TOKEN_2_AXIS,
+                Constants::CUSTOMER_2_DEVICE_TOKEN_1_AXIS,
+                Constants::CUSTOMER_2_DEVICE_TOKEN_2_AXIS,
             ])->delete();
 
         factory(P2p\Device\DeviceToken\Entity::class)->create(
             [
-                'id'                    => Constants::CUSTOMER_1_DEVICE_TOKEN_1,
+                'id'                    => Constants::CUSTOMER_1_DEVICE_TOKEN_1_SHARP,
                 'device_id'             => Constants::CUSTOMER_1_DEVICE_1,
                 'handle'                => Constants::RAZOR_SHARP,
                 'status'                => P2p\Device\Status::VERIFIED,
@@ -105,7 +109,7 @@ class P2pSeeder extends Seeder
 
         factory(P2p\Device\DeviceToken\Entity::class)->create(
             [
-                'id'                    => Constants::CUSTOMER_1_DEVICE_TOKEN_2,
+                'id'                    => Constants::CUSTOMER_1_DEVICE_TOKEN_2_SHARP,
                 'device_id'             => Constants::CUSTOMER_1_DEVICE_1,
                 'handle'                => Constants::RZP_SHARP,
                 'status'                => P2p\Device\Status::PENDING,
@@ -113,9 +117,33 @@ class P2pSeeder extends Seeder
 
         factory(P2p\Device\DeviceToken\Entity::class)->create(
             [
-                'id'                    => Constants::CUSTOMER_2_DEVICE_TOKEN_1,
+                'id'                    => Constants::CUSTOMER_2_DEVICE_TOKEN_1_SHARP,
                 'device_id'             => Constants::CUSTOMER_2_DEVICE_1,
                 'handle'                => Constants::RAZOR_SHARP,
+                'status'                => P2p\Device\Status::VERIFIED,
+            ]);
+
+        factory(P2p\Device\DeviceToken\Entity::class)->create(
+            [
+                'id'                    => Constants::CUSTOMER_1_DEVICE_TOKEN_1_AXIS,
+                'device_id'             => Constants::CUSTOMER_1_DEVICE_1,
+                'handle'                => Constants::RAZOR_AXIS,
+                'status'                => P2p\Device\Status::VERIFIED,
+            ]);
+
+        factory(P2p\Device\DeviceToken\Entity::class)->create(
+            [
+                'id'                    => Constants::CUSTOMER_1_DEVICE_TOKEN_2_AXIS,
+                'device_id'             => Constants::CUSTOMER_1_DEVICE_1,
+                'handle'                => Constants::RZP_AXIS,
+                'status'                => P2p\Device\Status::PENDING,
+            ]);
+
+        factory(P2p\Device\DeviceToken\Entity::class)->create(
+            [
+                'id'                    => Constants::CUSTOMER_2_DEVICE_TOKEN_1_AXIS,
+                'device_id'             => Constants::CUSTOMER_2_DEVICE_1,
+                'handle'                => Constants::RAZOR_AXIS,
                 'status'                => P2p\Device\Status::VERIFIED,
             ]);
     }
@@ -151,13 +179,15 @@ class P2pSeeder extends Seeder
         P2p\BankAccount\Entity::whereIn(
             P2p\BankAccount\Entity::ID,
             [
-                Constants::CUSTOMER_1_BANK_ACCOUNT_1,
-                Constants::CUSTOMER_2_BANK_ACCOUNT_1,
+                Constants::CUSTOMER_1_BANK_ACCOUNT_1_SHARP,
+                Constants::CUSTOMER_2_BANK_ACCOUNT_1_SHARP,
+                Constants::CUSTOMER_1_BANK_ACCOUNT_1_AXIS,
+                Constants::CUSTOMER_2_BANK_ACCOUNT_1_AXIS,
             ])->delete();
 
         factory(P2p\BankAccount\Entity::class)->create(
             [
-                'id'                    => Constants::CUSTOMER_1_BANK_ACCOUNT_1,
+                'id'                    => Constants::CUSTOMER_1_BANK_ACCOUNT_1_SHARP,
                 'device_id'             => Constants::CUSTOMER_1_DEVICE_1,
                 'handle'                => Constants::RAZOR_SHARP,
                 'bank'                  => Constants::ARZP
@@ -165,7 +195,23 @@ class P2pSeeder extends Seeder
 
         factory(P2p\BankAccount\Entity::class)->create(
             [
-                'id'                    => Constants::CUSTOMER_2_BANK_ACCOUNT_1,
+                'id'                    => Constants::CUSTOMER_2_BANK_ACCOUNT_1_SHARP,
+                'device_id'             => Constants::CUSTOMER_2_DEVICE_1,
+                'handle'                => Constants::RAZOR_SHARP,
+                'bank'                  => Constants::BRZP
+            ]);
+
+        factory(P2p\BankAccount\Entity::class)->create(
+            [
+                'id'                    => Constants::CUSTOMER_1_BANK_ACCOUNT_1_AXIS,
+                'device_id'             => Constants::CUSTOMER_1_DEVICE_1,
+                'handle'                => Constants::RAZOR_AXIS,
+                'bank'                  => Constants::ARZP
+            ]);
+
+        factory(P2p\BankAccount\Entity::class)->create(
+            [
+                'id'                    => Constants::CUSTOMER_2_BANK_ACCOUNT_1_AXIS,
                 'device_id'             => Constants::CUSTOMER_2_DEVICE_1,
                 'handle'                => Constants::RAZOR_SHARP,
                 'bank'                  => Constants::BRZP
@@ -180,6 +226,9 @@ class P2pSeeder extends Seeder
                 Constants::RAZOR_SHARP,
                 Constants::RZP_SHARP,
                 Constants::NORZP_SHARP,
+                Constants::RAZOR_AXIS,
+                Constants::RZP_AXIS,
+                Constants::NORZP_AXIS,
             ])->delete();
 
         factory(P2p\Vpa\Handle\Entity::class)->create(
@@ -205,6 +254,30 @@ class P2pSeeder extends Seeder
                 'bank'                  => Constants::CRZP,
                 'active'                => false,
             ]);
+
+        factory(P2p\Vpa\Handle\Entity::class)->create(
+            [
+                'code'                  => Constants::RAZOR_AXIS,
+                'acquirer'              => Constants::P2P_UPI_AXIS,
+                'bank'                  => Constants::ARZP,
+                'active'                => true,
+            ]);
+
+        factory(P2p\Vpa\Handle\Entity::class)->create(
+            [
+                'code'                  => Constants::RZP_AXIS,
+                'acquirer'              => Constants::P2P_UPI_AXIS,
+                'bank'                  => Constants::BRZP,
+                'active'                => true,
+            ]);
+
+        factory(P2p\Vpa\Handle\Entity::class)->create(
+            [
+                'code'                  => Constants::NORZP_AXIS,
+                'acquirer'              => Constants::P2P_UPI_AXIS,
+                'bank'                  => Constants::CRZP,
+                'active'                => false,
+            ]);
     }
 
     private function seedVpas()
@@ -212,45 +285,85 @@ class P2pSeeder extends Seeder
         P2p\Vpa\Entity::whereIn(
             P2p\Vpa\Entity::HANDLE,
             [
-                Constants::CUSTOMER_1_VPA_1,
-                Constants::CUSTOMER_1_VPA_2,
-                Constants::CUSTOMER_2_VPA_1,
-                Constants::CUSTOMER_2_VPA_2,
+                Constants::CUSTOMER_1_VPA_1_SHARP,
+                Constants::CUSTOMER_1_VPA_2_SHARP,
+                Constants::CUSTOMER_2_VPA_1_SHARP,
+                Constants::CUSTOMER_2_VPA_2_SHARP,
+                Constants::CUSTOMER_1_VPA_1_AXIS,
+                Constants::CUSTOMER_1_VPA_2_AXIS,
+                Constants::CUSTOMER_2_VPA_1_AXIS,
+                Constants::CUSTOMER_2_VPA_2_AXIS,
             ])->delete();
 
         factory(P2p\Vpa\Entity::class)->create(
             [
-                'id'                    => Constants::CUSTOMER_1_VPA_1,
+                'id'                    => Constants::CUSTOMER_1_VPA_1_SHARP,
                 'device_id'             => Constants::CUSTOMER_1_DEVICE_1,
                 'handle'                => Constants::RAZOR_SHARP,
-                'username'              => Constants::CUSTOMER_1_VPA_1,
-                'bank_account_id'       => Constants::CUSTOMER_1_BANK_ACCOUNT_1,
+                'username'              => Constants::CUSTOMER_1_VPA_1_SHARP,
+                'bank_account_id'       => Constants::CUSTOMER_1_BANK_ACCOUNT_1_SHARP,
             ]);
 
         factory(P2p\Vpa\Entity::class)->create(
             [
-                'id'                    => Constants::CUSTOMER_1_VPA_2,
+                'id'                    => Constants::CUSTOMER_1_VPA_2_SHARP,
                 'device_id'             => Constants::CUSTOMER_1_DEVICE_1,
                 'handle'                => Constants::RZP_SHARP,
-                'username'              => Constants::CUSTOMER_1_VPA_2,
+                'username'              => Constants::CUSTOMER_1_VPA_2_SHARP,
                 'bank_account_id'       => null,
             ]);
 
         factory(P2p\Vpa\Entity::class)->create(
             [
-                'id'                    => Constants::CUSTOMER_2_VPA_1,
+                'id'                    => Constants::CUSTOMER_2_VPA_1_SHARP,
                 'device_id'             => Constants::CUSTOMER_2_DEVICE_1,
                 'handle'                => Constants::RAZOR_SHARP,
-                'username'              => Constants::CUSTOMER_2_VPA_1,
-                'bank_account_id'       => Constants::CUSTOMER_2_BANK_ACCOUNT_1,
+                'username'              => Constants::CUSTOMER_2_VPA_1_SHARP,
+                'bank_account_id'       => Constants::CUSTOMER_2_BANK_ACCOUNT_1_SHARP,
             ]);
 
         factory(P2p\Vpa\Entity::class)->create(
             [
-                'id'                    => Constants::CUSTOMER_2_VPA_2,
+                'id'                    => Constants::CUSTOMER_2_VPA_2_SHARP,
                 'device_id'             => Constants::CUSTOMER_2_DEVICE_1,
                 'handle'                => Constants::RZP_SHARP,
-                'username'              => Constants::CUSTOMER_2_VPA_2,
+                'username'              => Constants::CUSTOMER_2_VPA_2_SHARP,
+                'bank_account_id'       => null,
+            ]);
+
+        factory(P2p\Vpa\Entity::class)->create(
+            [
+                'id'                    => Constants::CUSTOMER_1_VPA_1_AXIS,
+                'device_id'             => Constants::CUSTOMER_1_DEVICE_1,
+                'handle'                => Constants::RAZOR_AXIS,
+                'username'              => Constants::CUSTOMER_1_VPA_1_AXIS,
+                'bank_account_id'       => Constants::CUSTOMER_1_BANK_ACCOUNT_1_AXIS,
+            ]);
+
+        factory(P2p\Vpa\Entity::class)->create(
+            [
+                'id'                    => Constants::CUSTOMER_1_VPA_2_AXIS,
+                'device_id'             => Constants::CUSTOMER_1_DEVICE_1,
+                'handle'                => Constants::RZP_AXIS,
+                'username'              => Constants::CUSTOMER_1_VPA_2_AXIS,
+                'bank_account_id'       => null,
+            ]);
+
+        factory(P2p\Vpa\Entity::class)->create(
+            [
+                'id'                    => Constants::CUSTOMER_2_VPA_1_AXIS,
+                'device_id'             => Constants::CUSTOMER_2_DEVICE_1,
+                'handle'                => Constants::RAZOR_AXIS,
+                'username'              => Constants::CUSTOMER_2_VPA_1_AXIS,
+                'bank_account_id'       => Constants::CUSTOMER_2_BANK_ACCOUNT_1_AXIS,
+            ]);
+
+        factory(P2p\Vpa\Entity::class)->create(
+            [
+                'id'                    => Constants::CUSTOMER_2_VPA_2_AXIS,
+                'device_id'             => Constants::CUSTOMER_2_DEVICE_1,
+                'handle'                => Constants::RZP_AXIS,
+                'username'              => Constants::CUSTOMER_2_VPA_2_AXIS,
                 'bank_account_id'       => null,
             ]);
     }

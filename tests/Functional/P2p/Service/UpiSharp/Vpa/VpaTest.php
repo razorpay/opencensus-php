@@ -14,7 +14,7 @@ class VpaTest extends TestCase
 
         $handles = $helper->fetchHandles();
 
-        $this->assertCollection($handles, 2);
+        $this->assertCollection($handles, 4);
     }
 
     public function testCreateVpa()

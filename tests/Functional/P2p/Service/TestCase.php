@@ -61,9 +61,4 @@ class TestCase extends Functional\TestCase
     {
         return new Base\TransactionHelper($this->fixtures);
     }
-
-    protected function fixtureVpa(string $device)
-    {
-        return $this->fixtures->deviceSet($device)->vpa;
-    }
 }
