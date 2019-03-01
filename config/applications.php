@@ -290,4 +290,8 @@ return [
         'fts_key'           => env('FTS_KEY'),
         'fts_secret'        => env('FTS_SECRET'),
     ],
+
+    'batch' => [
+        'secret'   => env('BATCH_MS_SECRET'),
+    ],
 ];
