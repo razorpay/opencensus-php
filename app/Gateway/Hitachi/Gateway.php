@@ -931,7 +931,7 @@ class Gateway extends Base\Gateway
     {
         if ($input['payment']['gateway'] === Payment\Gateway::PAYSECURE)
         {
-            return  $this->getPaysecureRefundRequestArray($input);
+            return $this->getPaysecureRefundRequestArray($input);
         }
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(

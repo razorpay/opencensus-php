@@ -126,23 +126,6 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $now = Carbon::now()->getTimestamp();
-
-        // Timeout if callback received after 6 minutes
-        if ($now - $input['payment']['updated_at'] > 360)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_TIMED_OUT,
-                null,
-                null,
-                [
-                    'response' => $input['gateway'],
-                    'payment'  => $input['payment']['id'],
-                    'gateway'  => $this->gateway,
-                ]
-            );
-        }
-
         if ((isset($input['gateway'][Fields::SESSION]) === true) and
             ($input['payment']['id'] !== $input['gateway'][Fields::SESSION]))
         {
@@ -464,7 +447,6 @@ class Gateway extends Base\Gateway
     // ------------ Verify request helpers end ---------------
 
     // ------------ General helpers --------------------------
-
     protected function getSoapClientObject($request)
     {
         $soapClient = new SoapClient($request['wsdl'], $request['options']);
@@ -561,8 +543,7 @@ class Gateway extends Base\Gateway
     {
         if (isset($request['command']) === true)
         {
-            // Remove sensitive data from logs
-            if ($request['command'] === 'initiate' or $request['command'] === 'initiate2')
+            if ($request['command'] === Command::INITIATE or $request['command'] === Command::INITIATE_2)
             {
                 $toRemove = [
                     'card_no',
