@@ -4754,6 +4754,9 @@ ALTER TABLE promotions
     ADD COLUMN partner_id CHAR(14) DEFAULT NULL AFTER pricing_plan_id,
     ADD INDEX promotions_partner_id_index (partner_id);
 
+ALTER table `commissions`
+    ADD COLUMN `type` varchar(255) NOT NULL DEFAULT 'implicit' after `partner_config_id`;
+
 ALTER TABLE subscriptions
     ADD INDEX subscriptions_status_start_at_index (status, start_at);
 
