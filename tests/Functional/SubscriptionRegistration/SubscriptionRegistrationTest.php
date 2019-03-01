@@ -80,6 +80,25 @@ class SubscriptionRegistrationTest extends TestCase
         $this->assertEquals($subr['method'], 'emandate');
     }
 
+    public function testAuthLinkHostedPage()
+    {
+        $this->testCreateAuthLinkWithBankAccount();
+
+        $invoice = $this->getDbLastEntity('invoice');
+
+        $invoiceId = $invoice->getPublicId();
+
+        $this->ba->publicAuth();
+
+        $response = $this->call('GET', "/v1/t/$invoiceId", ['key_id' => $this->ba->getKey()]);
+
+        $response->assertStatus(200);
+
+        $testData = '"order":{"status":"created"}}';
+
+        $this->assertContains($testData, $response->getContent());
+    }
+
     public function testCreateAuthLinkWithIncompleteBankData()
     {
         $this->startTest();
