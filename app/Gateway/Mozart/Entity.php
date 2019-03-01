@@ -29,6 +29,7 @@ class Entity extends Base\Entity
     protected $fillable = [
         self::AMOUNT,
         self::RECEIVED,
+        self::RAW,
     ];
 
     public function setAmount($amount)
@@ -39,5 +40,10 @@ class Entity extends Base\Entity
     public function setReceived($received)
     {
         $this->setAttribute(self::RECEIVED, $received);
+    }
+
+    public function setRaw($raw)
+    {
+        $this->setAttribute(self::RAW, $raw);
     }
 }

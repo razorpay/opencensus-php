@@ -5,7 +5,6 @@ namespace RZP\Gateway\Mozart;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
-use RZP\Models\Merchant;
 use RZP\Constants\Mode;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
@@ -14,15 +13,31 @@ class Gateway extends Base\Gateway
 {
     protected $gateway = 'mozart';
 
+    protected $map = [
+        'data'      => Entity::RAW,
+    ];
+
     public function authorize(array $input)
     {
         parent::action($input, Action::PAY_INIT);
 
         $request = $this->getMozartRequestArray($input);
 
+        $traceReq = $this->getTraceData($request);
+
+        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
+
         $response = $this->sendGatewayRequest($request);
 
+        $traceRes = $this->getTraceData($response);
+
+        $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_AUTHORIZE_RESPONSE);
+
         $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+
+        $attributes = $this->getMappedAttributes($response);
+
+        $this->gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input);
 
         return $response['next']['redirect'] ?? null;
     }
@@ -49,7 +64,22 @@ class Gateway extends Base\Gateway
 
         $request = $this->getMozartRequestArray($input);
 
+        $traceReq = $this->getTraceData($request);
+
+        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_PAYMENT_REQUEST);
+
         $response = $this->sendGatewayRequest($request);
+
+        $traceRes = $this->getTraceData($response);
+
+        $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_PAYMENT_RESPONSE);
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], 'authorize');
+
+        $attributes = $this->getMappedAttributes($response);
+
+        $this->gatewayPayment = $this->updateGatewayPaymentEntity($gatewayPayment, $attributes, true);
 
         $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
 
@@ -71,7 +101,19 @@ class Gateway extends Base\Gateway
 
         $request = $this->getMozartRequestArray($input);
 
+        $traceReq = $this->getTraceData($request);
+
+        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_REFUND_REQUEST);
+
         $response = $this->sendGatewayRequest($request);
+
+        $traceRes = $this->getTraceData($response);
+
+        $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_REFUND_RESPONSE);
+
+        $attributes = $this->getMappedAttributes($response);
+
+        $this->gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input);
 
         $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
     }
@@ -224,5 +266,45 @@ class Gateway extends Base\Gateway
         $response = parent::sendGatewayRequest($request);
 
         return $this->jsonToArray($response->body, true);
+    }
+
+    protected function getTraceData($data)
+    {
+        if (isset($data['data']['Key']))
+        {
+            unset($data['data']['Key']);
+        }
+
+        if (isset($data['data']['enqinfo']['Key']))
+        {
+            unset($data['data']['enqinfo']['Key']);
+        }
+
+        if (isset($data['terminal']))
+        {
+            unset($data['terminal']);
+        }
+
+        return $data;
+    }
+
+    protected function createGatewayPaymentEntity($attributes, $input)
+    {
+        $gatewayPayment = $this->getNewGatewayPaymentEntity();
+
+        $paymentId = $input['payment']['id'];
+        $amount    = $input['payment']['amount'];
+
+        $gatewayPayment->setAction($this->action);
+        $gatewayPayment->setAmount($amount);
+        $gatewayPayment->setPaymentId($paymentId);
+
+        $gatewayPayment->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        $this->gatewayPayment = $gatewayPayment;
+
+        return $gatewayPayment;
     }
 }
