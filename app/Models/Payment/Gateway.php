@@ -834,6 +834,9 @@ class Gateway
         self::AMEX => [
             Network::AMEX
         ],
+        self::BAJAJ => [
+            Network::BAJAJ
+        ],
         self::MPI_BLADE => [
             Network::MC,
             Network::VISA
