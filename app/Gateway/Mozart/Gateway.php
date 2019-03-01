@@ -185,19 +185,6 @@ class Gateway extends Base\Gateway
         }
     }
 
-//    public function verifyOld(array $input)
-//    {
-//        parent::verify($input);
-//
-//        $request = $this->getMozartRequestArray($input);
-//
-//        $response = $this->sendGatewayRequest($request);
-//
-//        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
-//
-//        return $response;
-//    }
-
     protected function getMozartRequestArray($input)
     {
         $input['terminal'] = $input['terminal']->toArrayWithPassword();

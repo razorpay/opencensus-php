@@ -136,7 +136,7 @@ return [
     'mock_mpi_enstage'            => env('ENSTAGE_MOCK'),
     'mock_isg'                    => env('ISG_MOCK'),
     'mock_cardless_emi'           => env('CARDLESS_EMI_MOCK'),
-
+    'mock_bajajfinserv'           => env('BAJAJFINSERV_MOCK'),
     'mock_p2p_upi_sharp'          => env('P2P_UPI_SHARP_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),

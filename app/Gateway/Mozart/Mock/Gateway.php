@@ -15,4 +15,14 @@ class Gateway extends Mozart\Gateway
 
         $this->mock = true;
     }
+
+    protected function sendGatewayRequest($request)
+    {
+
+        $serverResponse = $this->callGatewayRequestFunctionInternally($request);
+
+        $response =  $this->prepareInternalResponse($serverResponse);
+
+        return $this->jsonToArray($response->body, true);
+    }
 }
