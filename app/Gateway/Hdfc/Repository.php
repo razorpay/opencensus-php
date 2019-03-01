@@ -344,6 +344,11 @@ class Repository extends Base\Repository
             'error_text'    => $error['text']
         ];
 
+        if (empty($authResponse['data']['eci']) === false)
+        {
+            $attributes['eci'] = $authResponse['data']['eci'];
+        }
+
         $model->fill($attributes);
 
         $this->saveOrFail($model);
