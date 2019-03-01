@@ -76,7 +76,6 @@ return [
         'bajajfinserv',
         'p2p_upi_sharp',
         'p2p_upi_axis',
-        'paysecure',
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),

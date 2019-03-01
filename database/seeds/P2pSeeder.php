@@ -281,6 +281,30 @@ class P2pSeeder extends Seeder
                 'bank'                  => 'CRZP',
                 'active'                => false,
             ]);
+
+        factory(P2p\Vpa\Handle\Entity::class)->create(
+            [
+                'code'                  => Constants::RAZOR_AXIS,
+                'acquirer'              => Constants::P2P_UPI_AXIS,
+                'bank'                  => Constants::ARZP,
+                'active'                => true,
+            ]);
+
+        factory(P2p\Vpa\Handle\Entity::class)->create(
+            [
+                'code'                  => Constants::RZP_AXIS,
+                'acquirer'              => Constants::P2P_UPI_AXIS,
+                'bank'                  => Constants::BRZP,
+                'active'                => true,
+            ]);
+
+        factory(P2p\Vpa\Handle\Entity::class)->create(
+            [
+                'code'                  => Constants::NORZP_AXIS,
+                'acquirer'              => Constants::P2P_UPI_AXIS,
+                'bank'                  => Constants::CRZP,
+                'active'                => false,
+            ]);
     }
 
     private function seedVpas()
