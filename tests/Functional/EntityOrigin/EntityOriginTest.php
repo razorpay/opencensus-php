@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Models\Base\PublicEntity;
 use RZP\Tests\Functional\TestCase;
-use Functional\Partner\PartnerTrait;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
