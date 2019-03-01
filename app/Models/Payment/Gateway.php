@@ -107,6 +107,7 @@ class Gateway
 
     // this is a dummy gateway. this is required to save MIDs & TIDs of a merchant.
     const EMI_SBI            = 'emi_sbi';
+    const BAJAJFINSERV       = 'bajajfinserv';
 
     const GO_LIVE_TIMESTAMP = 'go_live_timestamp';
 
@@ -677,6 +678,7 @@ class Gateway
             self::AMEX,
             self::HDFC,
             self::FIRST_DATA,
+            self::BAJAJFINSERV,
         ],
 
         Method::UPI => [
@@ -833,9 +835,6 @@ class Gateway
         ],
         self::AMEX => [
             Network::AMEX
-        ],
-        self::BAJAJ => [
-            Network::BAJAJ
         ],
         self::MPI_BLADE => [
             Network::MC,

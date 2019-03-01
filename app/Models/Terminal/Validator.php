@@ -86,7 +86,7 @@ class Validator extends Base\Validator
         Payment\Gateway::EMI_SBI,
         Payment\Gateway::WALLET_OLAMONEY,
         Payment\Gateway::PAYTM,
-        Payment\Gateway::BAJAJ,
+        Payment\Gateway::BAJAJFINSERV,
     ];
 
     protected static $createValidators = [
