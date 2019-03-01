@@ -17,8 +17,9 @@ export default class UserResetPassword extends Component {
     }
 
     return adminPut({
-      url: `live/merchants/${merchantId}/users/${member.id}/password`,
+      url: `live/users/${member.id}/password`,
       data: body,
+      headers: { ['X-Razorpay-Account']: merchantId },
     }).then(response => {
       if (response) {
         notifySuccess('Password has been changed.');
@@ -28,10 +29,10 @@ export default class UserResetPassword extends Component {
   };
 
   render() {
-    const { name } = this.props.member;
+    const { name, email } = this.props.member;
 
     return (
-      <ModalContent header={`Reset Password for ${name} `}>
+      <ModalContent header={`Reset Password for ${name} (${email})`}>
         <Form class="full-span full-elements">
           <Field label="Password" name="password" type="password" required />
           <Field
