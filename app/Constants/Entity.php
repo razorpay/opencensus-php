@@ -91,6 +91,7 @@ class Entity
     const VIRTUAL_ACCOUNT           = 'virtual_account';
     const MERCHANT_DETAIL           = 'merchant_detail';
     const TERMINAL_ACTION           = 'terminal_action';
+    const METHOD_DOWNTIME           = 'method_downtime';
     const MERCHANT_REQUEST          = 'merchant_request';
     const CUSTOMER_BALANCE          = 'customer_balance';
     const GATEWAY_DOWNTIME          = 'gateway_downtime';
@@ -335,6 +336,7 @@ class Entity
         self::MERCHANT_REQUEST          => \RZP\Models\Merchant\Request::class,
         self::CUSTOMER_BALANCE          => \RZP\Models\Customer\Balance::class,
         self::GATEWAY_DOWNTIME          => \RZP\Models\Gateway\Downtime::class,
+        self::METHOD_DOWNTIME           => \RZP\Models\Gateway\MethodDowntime::class,
         self::GATEWAY_RULE              => \RZP\Models\Gateway\Rule::class,
         self::GATEWAY_FILE              => \RZP\Models\Gateway\File::class,
         self::MERCHANT_EMAIL            => \RZP\Models\Merchant\Email::class,
