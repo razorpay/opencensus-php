@@ -92,8 +92,9 @@ class CaptureVerify extends Verify
         }
         finally
         {
-            if (($result === Result::ERROR) or
-                ($result === Result::UNKNOWN))
+            if (($payment->getVerifyBucket() >= 4) and
+                (($result === Result::ERROR) or
+                ($result === Result::UNKNOWN)))
             {
                 // Put the settlement on hold if verification has failed
                 // $payment->setOnHold(true);

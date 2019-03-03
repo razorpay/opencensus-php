@@ -747,6 +747,7 @@ class Calculator extends Base\Core
 
         if ($partnerApp === null)
         {
+            // the payment might not be mapped to a partner. @todo - logging needs to be improved
             $this->traceContext(TraceCode::COMMISSION_PARTNER_APP_DOES_NOT_EXIST);
 
             return;

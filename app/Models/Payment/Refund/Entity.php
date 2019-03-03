@@ -823,7 +823,7 @@ class Entity extends Base\PublicEntity
             {
                 $trace->traceException(
                     $e,
-                    Trace::ERROR,
+                    Trace::WARNING,
                     TraceCode::SCROOGE_GET_REFUND_STATUS_REQUEST_FAILED,
                     [
                         'refund_id' => $response[self::ID],

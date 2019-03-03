@@ -91,6 +91,7 @@ class CreateHdfcGateway extends Migration
             $table->index('received');
             $table->index('ref');
             $table->index('created_at');
+            $table->index('auth');
         });
     }
 

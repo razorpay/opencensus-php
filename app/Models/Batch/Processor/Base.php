@@ -639,6 +639,8 @@ class Base extends BaseModel\Core
 
         foreach ($entries as $entry)
         {
+            $dict = [];
+
             // Prepares each entry rows
             foreach ($headers as $header)
             {

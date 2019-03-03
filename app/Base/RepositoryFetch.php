@@ -122,18 +122,26 @@ trait RepositoryFetch
      * @param array       $params
      * @param string|null $merchantId
      *
+     * @param bool        $useSlave
      * @return PublicCollection
-     * @throws InvalidArgumentException
      * @throws BadRequestValidationFailureException
+     * @throws InvalidArgumentException
      */
-    public function fetch(array $params, string $merchantId = null): PublicCollection
+    public function fetch(array $params, string $merchantId = null, bool $useSlave = false): PublicCollection
     {
         // Process params (sanitization, validation, modification, etc.)
         $this->processFetchParams($params);
 
         $expands = $this->getExpandsForQueryFromInput($params);
 
-        $query = $this->newQuery()->with($expands);
+        $query = $this->newQuery();
+
+        if ($useSlave === true)
+        {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        }
+
+        $query = $query->with($expands);
 
         $this->addCommonQueryParamMerchantId($query, $merchantId);
 

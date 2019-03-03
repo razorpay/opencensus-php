@@ -154,7 +154,8 @@ class Repository extends Base\Repository
         $merchantIds = [$merchant->getId()];
 
         $query = $this->newQuery()
-                        ->where(Entity::GATEWAY, $gateway);
+                      ->where(Entity::GATEWAY, $gateway)
+                      ->enabled();
 
         $this->addMerchantWhereCondition($query, $merchantIds);
 
@@ -194,6 +195,8 @@ class Repository extends Base\Repository
 
     protected function addMerchantWhereCondition($query, array $merchantIds)
     {
+        $newQuery = clone $query;
+
         $query->where(
             function ($query) use ($merchantIds)
             {
@@ -213,17 +216,13 @@ class Repository extends Base\Repository
                 //     });
             });
 
-
-
-        $unionQuery = $this->newQuery()
-                           ->enabled()
-                           ->select($this->getTableName().'.*')
-                           ->join(Table::MERCHANT_TERMINAL, Entity::TERMINAL_ID, Entity::ID)
-                           ->where(function ($q) use ($merchantIds)
-                           {
-                                $q->whereIn(Table::MERCHANT_TERMINAL . '.' . Entity::MERCHANT_ID, $merchantIds);
-                           }
-                       );
+        $unionQuery = $newQuery->select($this->getTableName().'.*')
+                               ->join(Table::MERCHANT_TERMINAL, Entity::TERMINAL_ID, Entity::ID)
+                               ->where(function ($q) use ($merchantIds)
+                               {
+                                    $q->whereIn(Table::MERCHANT_TERMINAL . '.' . Entity::MERCHANT_ID, $merchantIds);
+                               }
+                           );
 
         $query->union($unionQuery);
     }
@@ -251,7 +250,8 @@ class Repository extends Base\Repository
     public function getByMerchantIdAndGateway($mid, $gateway)
     {
         $query = $this->newQuery()
-                      ->where(Entity::GATEWAY, '=', $gateway);
+                      ->where(Entity::GATEWAY, '=', $gateway)
+                      ->enabled();
 
         $this->addMerchantWhereCondition($query, [$mid]);
 

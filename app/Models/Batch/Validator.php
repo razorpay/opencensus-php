@@ -114,6 +114,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY     => 'required|string',
     ];
 
+    protected static $merchantOnboardingCreateRules = [
+        Entity::FILE    => 'required|file' . self::DEFAULT_MIME_RULE,
+        Entity::TYPE    => 'required|in:merchant_onboarding',
+        Entity::GATEWAY => 'required|string',
+    ];
+
     protected static $terminalCreateRules = [
         Entity::TYPE                 => 'required|custom',
         Entity::SUB_TYPE             => 'required|string|in:hitachi,netbanking_icici',

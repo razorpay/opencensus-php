@@ -345,6 +345,8 @@ class Entity extends Base\PublicEntity
         self::WHITELISTED_IPS_TEST   => [],
         self::FEE_CREDITS_THRESHOLD  => null,
         self::CATEGORY               => 0,
+        self::WEBSITE                => null,
+        self::INTERNATIONAL          => 0,
     ];
 
     protected $publicSetters = [

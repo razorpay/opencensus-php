@@ -6,11 +6,11 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Base\PublicEntity;
-use RZP\Models\Pricing\Entity as Pricing;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Transaction\Entity as Transaction;
 use RZP\Models\Partner\Config\Entity as PartnerConfig;
 use RZP\Models\Partner\Commission\Entity as Commission;
+use RZP\Models\Partner\Commission\Type as CommissionType;
 
 class CreateCommissionsTable extends Migration
 {
@@ -35,6 +35,9 @@ class CreateCommissionsTable extends Migration
             $table->char(Commission::PARTNER_ID, Merchant::ID_LENGTH);
 
             $table->char(Commission::PARTNER_CONFIG_ID, PartnerConfig::ID_LENGTH);
+
+            $table->string(Commission::TYPE)
+                  ->default(CommissionType::IMPLICIT);
 
             $table->string(Commission::STATUS);
 

@@ -4756,3 +4756,21 @@ ALTER TABLE promotions
 
 ALTER TABLE isg
     MODIFY bank_reference_no CHAR(30);
+
+ALTER table `commissions`
+    ADD COLUMN `type` varchar(255) NOT NULL DEFAULT 'implicit' after `partner_config_id`;
+
+ALTER TABLE subscriptions
+    ADD INDEX subscriptions_status_start_at_index (status, start_at);
+
+ALTER TABLE line_item_taxes
+    ADD INDEX line_item_taxes_line_item_id_index(line_item_id);
+
+ALTER TABLE webhooks
+    ADD INDEX webhooks_entity_id_entity_type_index (entity_id, entity_type);
+
+ALTER TABLE invoices
+    ADD INDEX invoices_user_id_merchant_id_type_entity_type_index (user_id, merchant_id, `type`, entity_type);
+
+ALTER TABLE hdfc
+    ADD INDEX hdfc_auth_index (auth);
