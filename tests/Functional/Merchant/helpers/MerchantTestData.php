@@ -2455,6 +2455,103 @@ return [
         ],
     ],
 
+    'testGetCardDowntimeForRupayGateways' => [
+        'request' => [
+            'url' => '/methods/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    'entity'     => 'method_downtime',
+                    'method'     => 'card',
+                    'end'        => null,
+                    'instrument' => [
+                        'network' => 'RUPAY',
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetNoCardDowntimeForSingleRupayGateway' => [
+        'request' => [
+            'url' => '/methods/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [
+                ],
+            ],
+        ],
+    ],
+
+    'testGetUpiDowntimeForAllGateways' => [
+        'request' => [
+            'url' => '/methods/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    'entity'     => 'method_downtime',
+                    'method'     => 'upi',
+                    'end'        => null,
+                    'instrument' => [
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetUpiDowntimeForIndividualGateways' => [
+        'request' => [
+            'url' => '/methods/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    'entity'     => 'method_downtime',
+                    'method'     => 'upi',
+                    'end'        => null,
+                    'instrument' => [
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetWalletDowntime' => [
+        'request' => [
+            'url' => '/methods/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    'entity'     => 'method_downtime',
+                    'method'     => 'wallet',
+                    'end'        => null,
+                    'instrument' => [
+                        'issuer' => 'airtelmoney'
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithCardDowntimeWithIssuerOrNetworkUnknown' => [
         'request' => [
             'url' => '/preferences',
@@ -3821,7 +3918,7 @@ return [
             'content' => []
         ],
     ],
-  
+
     'testGetCheckoutPreferencesForCardlessEmi' => [
         'request' => [
             'url' => '/preferences',
