@@ -4753,3 +4753,6 @@ ALTER TABLE emi_plans
 ALTER TABLE promotions
     ADD COLUMN partner_id CHAR(14) DEFAULT NULL AFTER pricing_plan_id,
     ADD INDEX promotions_partner_id_index (partner_id);
+
+ALTER TABLE isg
+    MODIFY bank_reference_no CHAR(30);
