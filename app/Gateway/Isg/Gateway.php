@@ -23,6 +23,9 @@ use ApiResponse;
 
 class Gateway extends Base\Gateway
 {
+    // adding the below prefix in refund id as bank expects the id to be atleast 16 characters.
+    const REFUND_ID_PREFIX = 'rfnd_';
+
     protected $gateway = 'isg';
 
     public function preProcessServerCallback($input, $isBharatQr = false): array
@@ -97,7 +100,8 @@ class Gateway extends Base\Gateway
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $refundAttributesToSave, false);
 
-        $this->assertRefundId('RZP' . $input['refund']['id'], $responseContent[Field::RFD_TXN_ID]);
+        $this->assertRefundId(self::REFUND_ID_PREFIX . $input['refund']['id'],
+                               $responseContent[Field::RFD_TXN_ID]);
 
         $this->checkRefundResponse($responseContent);
     }
@@ -110,7 +114,7 @@ class Gateway extends Base\Gateway
         $refundTimeStamp = Carbon::now(Timezone::IST)->format('YmdHis');
 
         $content = [
-            Field::RFD_TXN_ID         => 'RZP' . $this->input['refund']['id'],
+            Field::RFD_TXN_ID         => self::REFUND_ID_PREFIX . $this->input['refund']['id'],
             Field::TXN_ID             => $gatewayEntity[Entity::BANK_REFERENCE_NUMBER],
             Field::MERCHANT_PAN       => $gatewayEntity[Entity::MERCHANT_PAN],
             Field::TXN_DATE           => $transactionDate,

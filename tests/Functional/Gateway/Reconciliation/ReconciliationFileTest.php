@@ -1623,7 +1623,7 @@ class ReconciliationFileTest extends TestCase
 
         $entries[] = $this->testData['facades']['hdfc'];
 
-        $entries[0]['merchant_trackid'] = substr($refund['id'], 5);
+        $entries[0]['merchant_trackid'] = $refund['id'];
 
         $entries[0]['rec_fmt'] = 'CVD';
 
