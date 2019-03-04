@@ -79,10 +79,15 @@ class CreateSettlements extends Migration
 
             $table->index(Settlement::STATUS);
 
+            $table->integer(Settlement::FTS_TRANSFER_ID)
+                  ->nullable();
+
             $table->index(Settlement::CREATED_AT);
 
             $table->index(Settlement::UPDATED_AT);
             $table->index([Settlement::MERCHANT_ID, Settlement::CREATED_AT]);
+
+            $table->index(Settlement::FTS_TRANSFER_ID);
 
             $table->foreign(Settlement::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

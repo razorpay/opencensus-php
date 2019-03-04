@@ -272,6 +272,7 @@ class Gateway
         IFSC::IDFB,
         IFSC::UTIB,
         IFSC::CBIN,
+        Netbanking::BARB_R
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [

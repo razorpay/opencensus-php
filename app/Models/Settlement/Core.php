@@ -304,4 +304,11 @@ class Core extends Base\Core
 
         return new $nodalClass();
     }
+
+    public function updateEntityWithFtsTransferId(Entity $entity, $ftsTransferId)
+    {
+        $entity->setFTSTransferId($ftsTransferId);
+
+        return $this->repo->saveOrFail($entity);
+    }
 }

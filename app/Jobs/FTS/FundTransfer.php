@@ -9,7 +9,7 @@ use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
 use RZP\Exception\RecordAlreadyExists;
 
-class CreateAccount extends Job
+class FundTransfer extends Job
 {
     const RETRY_PERIOD         = 30;
 
@@ -18,32 +18,32 @@ class CreateAccount extends Job
     /**
      * @var string
      */
-    protected $id;
+    protected $ftaId;
 
     /**
      * @var string
      */
-    protected $type;
+    protected $accountType;
+
+    /**
+     * @var bool
+     */
+    protected $isRegistered;
 
     /**
      * @var string
      */
-    protected $product;
+    protected $queueConfigKey = 'fts_fund_transfer';
 
-    /**
-     * @var string
-     */
-    protected $queueConfigKey = 'fts_create_account';
-
-    public function __construct(string $mode, string $id, string $type, string $product)
+    public function __construct(string $mode, string $id, string $type, bool $isRegistered)
     {
         parent::__construct($mode);
 
-        $this->id   = $id;
+        $this->ftaId  = $id;
 
-        $this->type = $type;
+        $this->accountType = $type;
 
-        $this->product = $product;
+        $this->isRegistered = $isRegistered;
     }
 
     /**
@@ -55,20 +55,19 @@ class CreateAccount extends Job
         {
             parent::handle();
 
-            $this->trace->info(TraceCode::FTS_CREATE_ACCOUNT_INIT,
+            $this->trace->info(TraceCode::FTS_FUND_TRANSFER_INIT,
                 [
-                    'id'      => $this->id,
-                    'type'    => $this->type,
-                    'product' => $this->product,
+                    'fta_id'       => $this->ftaId ,
+                    'account_type' => $this->accountType,
                 ]);
 
-            $ftsResponse = App::getFacadeRoot()['fts_create_account']->createFundAccount(
-                $this->id,
-                $this->type,
-                $this->product);
+            $ftsResponse = App::getFacadeRoot()['fts_fund_transfer']->requestFundTransfer(
+                $this->ftaId,
+                $this->accountType,
+                $this->isRegistered);
 
             $this->trace->info(
-                TraceCode::FTS_CREATE_ACCOUNT_COMPLETE,
+                TraceCode::FTS_FUND_TRANSFER_COMPLETE,
                 $ftsResponse);
         }
         catch (RecordAlreadyExists $e)
@@ -78,14 +77,13 @@ class CreateAccount extends Job
         catch (\Throwable $e)
         {
             $data = [
-                'id'      => $this->id,
-                'type'    => $this->type,
-                'product' => $this->product,
+                'fta_id'       => $this->ftaId ,
+                'account_type' => $this->accountType,
             ];
 
             $this->trace->traceException($e,
                 Trace::ERROR,
-                TraceCode::FTS_CREATE_ACCOUNT_FAILED,
+                TraceCode::FTS_FUND_TRANSFER_FAILED,
                 $data);
 
             if ($this->attempts() > self::MAX_ALLOWED_ATTEMPTS)

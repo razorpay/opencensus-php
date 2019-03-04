@@ -474,7 +474,7 @@ class Core extends Base\Core
         $this->repo->saveOrFail($entity);
     }
 
-    public function getBankAccountByFtsFundAccountId(string $ftsFundAccountId)
+    public function getBankAccountByFtsFundAccountId($ftsFundAccountId)
     {
         return $this->repo->bank_account->getBankAccountByFtsFundAccountId($ftsFundAccountId);
     }
