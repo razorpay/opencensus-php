@@ -526,4 +526,11 @@ class Core extends Base\Core
                 1);
         }
     }
+
+    public function updateEntityWithFtsTransferId(Entity $entity, $ftsTransferId)
+    {
+        $entity->setFTSTransferId($ftsTransferId);
+
+        $this->repo->saveOrFail($entity);
+    }
 }

@@ -29,6 +29,7 @@ class Entity extends Base\PublicEntity
     const RETURN_UTR             = 'return_utr';
     const PROCESSED_AT           = 'processed_at';
     const SETTLED_ON             = 'settled_on';
+    const FTS_TRANSFER_ID        = 'fts_transfer_id';
 
     // Nodal Nodal Settlement Constants
     const GATEWAY                = 'gateway';
@@ -212,6 +213,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BATCH_FUND_TRANSFER_ID);
     }
 
+    public function getFTSTransferId()
+    {
+        return $this->getAttribute(self::FTS_TRANSFER_ID);
+    }
+
     public function hasTransaction()
     {
         return ($this->isAttributeNotNull(self::TRANSACTION_ID));
@@ -287,6 +293,11 @@ class Entity extends Base\PublicEntity
     public function setSettledOn($date)
     {
         $this->setAttribute(self::SETTLED_ON, $date);
+    }
+
+    public function setFTSTransferId($ftsTransferId)
+    {
+        $this->setAttribute(self::FTS_TRANSFER_ID, $ftsTransferId);
     }
 
     // --------------------------------- accessors -------------------------------

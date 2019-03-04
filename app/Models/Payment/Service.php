@@ -814,7 +814,7 @@ class Service extends Base\Service
     {
         $merchantId = $this->merchant->getId();
 
-        $payments = $this->repo->payment->fetch($input, $merchantId);
+        $payments = $this->repo->payment->fetch($input, $merchantId, true);
 
         return $payments->toArrayPublic();
     }

@@ -78,14 +78,14 @@ class Gateway extends Base\Gateway
             $content[ResponseFields::AMOUNT]
         );
 
-        $checksumInput = $this->getArrayForChecksum($content);
-
-        $this->verifySecureHash($checksumInput);
-
         $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
         $this->checkCallbackStatus($content);
+
+        $checksumInput = $this->getArrayForChecksum($content);
+
+        $this->verifySecureHash($checksumInput);
 
         $this->saveCallbackResponse($content, $gatewayEntity);
 
@@ -212,7 +212,7 @@ class Gateway extends Base\Gateway
 
     protected function checkCallbackStatus($content)
     {
-        $status = $content[ResponseFields::AUTH_STATUS];
+        $status = trim($content[ResponseFields::AUTH_STATUS]);
 
         if(in_array($status, Status::VALID_STATUS_LIST))
         {
@@ -224,7 +224,6 @@ class Gateway extends Base\Gateway
                     ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
             }
         }
-
         else
         {
             throw new Exception\GatewayErrorException(

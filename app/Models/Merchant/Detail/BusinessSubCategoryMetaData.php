@@ -751,7 +751,7 @@ class BusinessSubCategoryMetaData
             Merchant::CATEGORY2            => Category::PHARMA,
             Entity::ACTIVATION_FLOW        => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION           => ActivationFlow::BLACKLIST,
-            self::INTERNATIONAL_ACTIVATION => ActivationFlow::GREYLIST,
+            self::INTERNATIONAL_ACTIVATION => ActivationFlow::BLACKLIST,
         ],
         Sub::PROFESSIONAL_NETWORK          => [
             Merchant::CATEGORY             => 8699,

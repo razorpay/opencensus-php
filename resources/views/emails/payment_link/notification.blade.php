@@ -47,10 +47,7 @@
             @endif
             <td colspan="2" class="content" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E; padding: 24px 4%; padding-bottom: 0; background-color: #fff; border-left: 1px solid #f2f2f2; border-right: 1px solid #f2f2f2; width: 92%; border-top: 1px solid #f2f2f2;">
                 <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E;">
-                    <label style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; font-size: 12px; color: #58666E;; font-weight: bold;">{{$payment_link['title']}}</label>
-                    @if ($payment_link['description'])
-                        <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E;">{{$payment_link['description']}}</div>
-                    @endif
+                    {{ $merchant['name'] }} has requested a payment for {{ $payment_link['title'] }}. You can view more details and complete your payment by visiting this page <a href="{{ $payment_link['short_url'] }}">{{ $payment_link['short_url'] }}</a> or clicking the button below.
                 </div>
             </td>
 

@@ -43,7 +43,7 @@ class CreateAccount extends Base
 
         $input = $this->makeRequestUsingType($id, $type);
 
-        $response = $this->createAndSendRequest(parent::FUND_ACCOUNT_BASE_URL, 'POST', $input);
+        $response = $this->createAndSendRequest(parent::FUND_ACCOUNT_CREATE_URI, 'POST', $input);
 
         $ftsFundAccountId = array_key_exists(Constants::FUND_ACCOUNT_ID, $response['body']) ?
             $response['body'][Constants::FUND_ACCOUNT_ID] : null;

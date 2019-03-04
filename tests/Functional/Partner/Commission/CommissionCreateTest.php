@@ -1,6 +1,7 @@
 <?php
 
-namespace Functional\Partner\Commission;
+namespace RZP\Tests\Functional\Partner\Commission;
+
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Tests\Functional\TestCase;
@@ -8,7 +9,6 @@ use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use RZP\Tests\Functional\Partner\Commission\CommissionTrait;
 
 class CommissionCreateTest extends TestCase
 {

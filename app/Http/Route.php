@@ -32,6 +32,7 @@ final class Route
         // TODO: Check Splunk and remove the write here
         'merchant_methods'                         => ['get',      'methods',                                        'MerchantController@getPaymentMethods'                              ],
         'merchant_methods_downtime'                => ['get',      'methods/downtime',                               'MerchantController@getPublicGatewayDowntimeData'                   ],
+        'merchant_methods_downtime_private'        => ['get',      'methods/downtimes',                              'MerchantController@getMethodDowntimeData'                          ],
         'merchant_checkout_preferences'            => ['get',      'preferences',                                    'MerchantController@getCheckoutPreferences'                         ],
         'payment_create'                           => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'                         ],
         // @todo: Require feature S2S for payment_create_private route.
@@ -135,6 +136,7 @@ final class Route
         'refund_verify'                            => ['get',      'refunds/{id}/verify',                            'RefundController@postRefundVerify'                                 ],
         // We will change this in the future when we want to update more things than just marking it as processed.
         'refund_update_status'                     => ['put',      'refunds/{id}/update_status',                     'RefundController@updateScroogeRefundStatus'                        ],
+        'refund_fetch_status'                      => ['get',      'refunds/{id}/status',                            'RefundController@getRefundEntity'                                  ],
         'refund_gateway_call'                      => ['post',     'refunds/{id}/gateway_refund',                    'RefundController@postGatewayRefundCall'                            ],
         'refund_verify_call'                       => ['post',     'refunds/{id}/gateway_verify',                    'RefundController@postGatewayVerifyRefundCall'                      ],
         'scrooge_refund_create'                    => ['post',     'refunds/{id}/scrooge_create',                    'RefundController@scroogeRefundCreate'                              ],
@@ -208,6 +210,7 @@ final class Route
         'merchant_update_key_access'               => ['put',      'merchants/{id}/update_key_access',               'MerchantController@updateKeyAccess'                                ],
         'merchant_edit_free_credits'               => ['post',     'merchants/{id}/credits',                         'MerchantController@postAmountCredits',                             ],
         'merchant_fetch_users'                     => ['get',      'merchants-users',                                'MerchantController@getUsers',                                      ],
+        'merchant_user_reset_password'             => ['put',      'users/{id}/password',                            'UserController@resetUserPassword',                                 ],
         'merchant_patch_beneficiary_code'          => ['patch',    'merchants/beneficiary/code',                     'MerchantController@patchMerchantBeneficiaryCode'                   ],
         'merchant_beneficiary_file'                => ['post',     'merchants/beneficiary/file/{channel}',           'MerchantController@getMerchantBeneficiary'                         ],
         'merchant_post_beneficiary_file'           => ['post',     'merchants/beneficiary/file/bank/{channel}',      'MerchantController@postMerchantBeneficiary'                        ],
@@ -951,7 +954,7 @@ final class Route
         'partner_config_edit'                      => ['put',      'partner_configs/{id}',                           'PartnerConfigController@update'                                    ],
 
         'commissions_get_multiple'                 => ['get',      'commissions',                                    'CommissionController@list'                                         ],
-      
+
         'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
         'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
         'merchant_associated_accounts_fetch'       => ['get',      'merchant/{id}/associated_accounts',              'MerchantController@getAssociatedAccounts'                          ],
@@ -1008,6 +1011,7 @@ final class Route
         'transaction_statement_fetch_multiple'     => ['get',      'transactions',                                   'StatementController@list'                                          ],
 
         //API Routes for FTS
+        'update_fts_fund_transfer'                 => ['post',     'update_fts_fund_transfer',                       'FundTransferAttemptController@updateFTA'                           ],
         'update_fts_nodal_beneficiary'             => ['post',     'update_fts_nodal_beneficiary',                   'NodalBeneficiaryController@createOrUpdateNodalBeneficiary'         ],
     ];
 
@@ -1254,6 +1258,7 @@ final class Route
         //'fund_account_delete',
         'transaction_statement_fetch',
         'transaction_statement_fetch_multiple',
+        'merchant_methods_downtime_private',
     ];
 
     // Only routes defined in internalApps go here
@@ -1325,6 +1330,7 @@ final class Route
         'refund_update_status',
         'refund_gateway_call',
         'refund_verify_call',
+        'refund_fetch_status',
         'schedule_migration',
         'schedule_process_tasks',
         'scorecard',
@@ -1370,6 +1376,7 @@ final class Route
         'gateway_downtime_vajra_webhook',
         'scrooge_refund_verify_bulk',
         'update_fts_nodal_beneficiary',
+        'update_fts_fund_transfer',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1844,6 +1851,7 @@ final class Route
         'nodal_get_account_balance',
         'enable_emi_merchant_sub',
         'oauth_sync_merchant_map',
+        'merchant_user_reset_password',
 
         // Shield Routes
         'shield_rules_get_multiple',
@@ -2277,6 +2285,7 @@ final class Route
         'merchants_access_map_delete'              => Permission::EDIT_PARTNERS,
         'submerchants_fetch'                       => Permission::VIEW_PARTNERS,
         'submerchants_fetch_multiple'              => Permission::VIEW_PARTNERS,
+        'oauth_application_fetch_multiple'         => Permission::VIEW_PARTNERS,
         'merchant_associated_accounts_fetch'       => Permission::VIEW_PARTNERS,
         'nodal_file_upload_retry'                  => Permission::SETTLEMENT_BULK_UPDATE,
         'subscription_manual_retry'                => '*',
@@ -2297,6 +2306,7 @@ final class Route
         'partner_config_create'                    => '*',
         'partner_config_fetch'                     => '*',
         'partner_config_edit'                      => '*',
+        'merchant_user_reset_password'             => Permission::USER_PASSWORD_RESET,
     ];
 
     public static $direct = [
@@ -2546,7 +2556,8 @@ final class Route
             'refund_gateway_call',
             'scrooge_refund_create',
             'scrooge_refund_create_bulk',
-            'refund_verify_call'
+            'refund_verify_call',
+            'refund_fetch_status'
         ],
 
         'hosted' => [
@@ -2581,6 +2592,7 @@ final class Route
 
         'fts'  => [
             'update_fts_nodal_beneficiary',
+            'update_fts_fund_transfer',
         ],
     ];
 

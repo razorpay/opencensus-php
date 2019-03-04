@@ -4373,6 +4373,17 @@ trait Authorize
      */
     protected function createCardEntity(array $cardInput, bool $vault, Merchant\Entity $merchant)
     {
+
+        // temp change.
+        $merchantIds = [
+            '8S0i1kWYyF2woQ', // swiggy
+        ];
+
+        if (in_array($merchant->getId(), $merchantIds, true) === true)
+        {
+            $vault = true;
+        }
+
         //
         // Creates card entity. Card number is vaulted if vault is true
         //
