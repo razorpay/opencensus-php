@@ -983,6 +983,7 @@ class Gateway
         self::CYBERSOURCE,
         self::FIRST_DATA,
         self::CARD_FSS,
+        self::HDFC,
     ];
 
     /**
