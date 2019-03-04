@@ -46,4 +46,9 @@ class Entity extends Base\Entity
     {
         $this->setAttribute(self::RAW, $raw);
     }
+
+    public function setBank($bank)
+    {
+        $this->setAttribute(self::BANK, $bank);
+    }
 }

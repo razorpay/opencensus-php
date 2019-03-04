@@ -7,6 +7,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Mode;
 use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\Entity as BaseEntity;
 use RZP\Gateway\Base\VerifyResult;
 
 class Gateway extends Base\Gateway
@@ -23,13 +24,13 @@ class Gateway extends Base\Gateway
 
         $request = $this->getMozartRequestArray($input);
 
-        $traceReq = $this->getTraceData($request);
+        $traceReq = $this->getRedactedData($request);
 
         $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
 
         $response = $this->sendGatewayRequest($request);
 
-        $traceRes = $this->getTraceData($response);
+        $traceRes = $this->getRedactedData($response);
 
         $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_AUTHORIZE_RESPONSE);
 
@@ -49,6 +50,8 @@ class Gateway extends Base\Gateway
 
     public function callbackOtpSubmit(array $input)
     {
+        $this->verifyOtpAttempts($input['payment']);
+
         return $this->callback($input);
     }
 
@@ -64,33 +67,31 @@ class Gateway extends Base\Gateway
 
         $request = $this->getMozartRequestArray($input);
 
-        $traceReq = $this->getTraceData($request);
+        $traceReq = $this->getRedactedData($request);
 
         $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_PAYMENT_REQUEST);
 
         $response = $this->sendGatewayRequest($request);
 
-        $traceRes = $this->getTraceData($response);
+        $traceRes = $this->getRedactedData($response);
 
         $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_PAYMENT_RESPONSE);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], 'authorize');
+            $input['payment']['id'], 'pay_init');
 
-        $attributes = $this->getMappedAttributes($response);
-
-        $this->gatewayPayment = $this->updateGatewayPaymentEntity($gatewayPayment, $attributes, true);
+        $this->gatewayPayment = $this->updateGatewayPaymentEntity($gatewayPayment, $response, true);
 
         $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
 
-        if ($input['payment']['gateway'] === Payment\Gateway::BAJAJFINSERV)
-        {
-            $input['gateway']['pay_verify']['requestid'] = $response['data']['RequestID'];
-
-            $verifyResponse = $this->verify($input);
-
-            return $verifyResponse;
-        }
+//        if ($input['payment']['gateway'] === Payment\Gateway::BAJAJFINSERV)
+//        {
+//            $input['gateway']['pay_verify']['requestid'] = $response['data']['RequestID'];
+//
+//            $verifyResponse = $this->verify($input);
+//
+//            return $verifyResponse;
+//        }
 
         return $response;
     }
@@ -101,13 +102,13 @@ class Gateway extends Base\Gateway
 
         $request = $this->getMozartRequestArray($input);
 
-        $traceReq = $this->getTraceData($request);
+        $traceReq = $this->getRedactedData($request);
 
         $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_REFUND_REQUEST);
 
         $response = $this->sendGatewayRequest($request);
 
-        $traceRes = $this->getTraceData($response);
+        $traceRes = $this->getRedactedData($response);
 
         $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_REFUND_RESPONSE);
 
@@ -148,7 +149,21 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
-        $verify->verifyResponseContent = $this->sendMozartRequest($input);
+        //$verify->verifyResponseContent = $this->sendMozartRequest($input);
+
+        $request = $this->getMozartRequestArray($input);
+
+        $traceReq = $this->getRedactedData($request);
+
+        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $traceRes = $this->getRedactedData($response);
+
+        $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE);
+
+        $verify->verifyResponseContent = $response;
 
         $verify->verifyResponse = null;
 
@@ -176,7 +191,7 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
-        $attributes = $this->getMappedAttributes($content['data']);
+        $attributes = $this->getMappedAttributes($content);
 
         $this->updateGatewayPaymentEntity($verify->payment, $attributes);
 
@@ -268,7 +283,7 @@ class Gateway extends Base\Gateway
         return $this->jsonToArray($response->body, true);
     }
 
-    protected function getTraceData($data)
+    protected function getRedactedData($data)
     {
         if (isset($data['data']['Key']))
         {
@@ -285,25 +300,57 @@ class Gateway extends Base\Gateway
             unset($data['terminal']);
         }
 
+        if (isset($data['Key']))
+        {
+            unset($data['Key']);
+        }
+
         return $data;
     }
 
     protected function createGatewayPaymentEntity($attributes, $input)
     {
+        $redactedRaw = $this->getRedactedData($attributes['raw']);
+        $attributes['raw'] = json_encode($redactedRaw);
+
         $gatewayPayment = $this->getNewGatewayPaymentEntity();
 
         $paymentId = $input['payment']['id'];
         $amount    = $input['payment']['amount'];
+        $bank      = $input['payment']['gateway'];
 
         $gatewayPayment->setAction($this->action);
         $gatewayPayment->setAmount($amount);
         $gatewayPayment->setPaymentId($paymentId);
+        $gatewayPayment->setBank($bank);
 
         $gatewayPayment->fill($attributes);
 
         $this->repo->saveOrFail($gatewayPayment);
 
         $this->gatewayPayment = $gatewayPayment;
+
+        return $gatewayPayment;
+    }
+
+    protected function updateGatewayPaymentEntity(
+        BaseEntity $gatewayPayment,
+        array $attributes,
+        bool $mapped = true)
+    {
+        if ($mapped === true)
+        {
+            $attributes = $this->getMappedAttributes($attributes);
+        }
+
+        $redactedRaw = $this->getRedactedData($attributes['raw']);
+        $attributes['raw'] = json_encode($redactedRaw);
+
+        $gatewayPayment->setAction($this->action);
+
+        $gatewayPayment->fill($attributes);
+
+        $this->getRepository()->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
     }
