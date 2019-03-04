@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 
 return [
@@ -14,7 +15,7 @@ return [
             'method'  => 'POST',
             'content' => [
                 'default_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
-                'partner_id'      => PartnerConfigTest::DEFAULT_MERCHANT_ID,
+                'partner_id'      => Constants::DEFAULT_MERCHANT_ID,
             ],
         ],
         'response' => [
@@ -61,8 +62,8 @@ return [
             'method'  => 'POST',
             'content' => [
                 'default_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
-                'partner_id'      => PartnerConfigTest::DEFAULT_NON_PLATFORM_MERCHANT_ID,
-                'application_id'  => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID
+                'partner_id'      => Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+                'application_id'  => Constants::DEFAULT_NON_PLATFORM_APP_ID
             ],
         ],
         'response' => [
@@ -86,7 +87,7 @@ return [
             'method'  => 'POST',
             'content' => [
                 'default_plan_id'        => Pricing::DEFAULT_PRICING_PLAN_ID,
-                'application_id'         => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID,
+                'application_id'         => Constants::DEFAULT_NON_PLATFORM_APP_ID,
                 'commissions_enabled'    => 1,
                 'revisit_at'             => 1648416783,
             ],
@@ -94,7 +95,7 @@ return [
         'response' => [
             'content' => [
                 'entity_type' => 'application',
-                'entity_id'   => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID,
+                'entity_id'   => Constants::DEFAULT_NON_PLATFORM_APP_ID,
                 'default_plan_id'        => Pricing::DEFAULT_PRICING_PLAN_ID,
                 'commissions_enabled'    => true,
                 'revisit_at'             => 1648416783,
@@ -108,14 +109,14 @@ return [
             'method'  => 'POST',
             'content' => [
                 'default_plan_id'        => Pricing::DEFAULT_PRICING_PLAN_ID,
-                'partner_id'             => PartnerConfigTest::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+                'partner_id'             => Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
                 'commissions_enabled'    => 1,
             ],
         ],
         'response' => [
             'content' => [
                 'entity_type'            => 'application',
-                'entity_id'              => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID,
+                'entity_id'              => Constants::DEFAULT_NON_PLATFORM_APP_ID,
                 'commissions_enabled'    => true,
             ],
         ],
@@ -127,14 +128,14 @@ return [
             'method'  => 'POST',
             'content' => [
                 'default_plan_id'        => Pricing::DEFAULT_PRICING_PLAN_ID,
-                'application_id'         => PartnerConfigTest::DEFAULT_PLATFORM_APP_ID,
+                'application_id'         => Constants::DEFAULT_PLATFORM_APP_ID,
                 'commissions_enabled'    => 1,
             ],
         ],
         'response' => [
             'content' => [
                 'entity_type'         => 'application',
-                'entity_id'           => PartnerConfigTest::DEFAULT_PLATFORM_APP_ID,
+                'entity_id'           => Constants::DEFAULT_PLATFORM_APP_ID,
                 'commissions_enabled' => true,
             ],
         ],
@@ -146,7 +147,7 @@ return [
             'method'  => 'POST',
             'content' => [
                 'default_plan_id'        => Pricing::DEFAULT_PRICING_PLAN_ID,
-                'partner_id'             => PartnerConfigTest::DEFAULT_PLATFORM_MERCHANT_ID,
+                'partner_id'             => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
             ],
         ],
         'response'  => [
@@ -170,7 +171,7 @@ return [
             'method'  => 'POST',
             'content' => [
                 'default_plan_id'        => Pricing::DEFAULT_PRICING_PLAN_ID,
-                'partner_id'             => PartnerConfigTest::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+                'partner_id'             => Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
             ],
         ],
         'response' => [
@@ -194,8 +195,8 @@ return [
             'method'  => 'POST',
             'content' => [
                 'default_plan_id'        => Pricing::DEFAULT_PRICING_PLAN_ID,
-                'application_id'         => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID,
-                'submerchant_id'         => PartnerConfigTest::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'application_id'         => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+                'submerchant_id'         => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
             ],
         ],
         'response'  => [
@@ -219,17 +220,17 @@ return [
             'method'  => 'POST',
             'content' => [
                 'default_plan_id'        => Pricing::DEFAULT_PRICING_PLAN_ID,
-                'application_id'         => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID,
-                'submerchant_id'         => PartnerConfigTest::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'application_id'         => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+                'submerchant_id'         => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
                 'commissions_enabled'    => 1,
             ],
         ],
         'response' => [
             'content' => [
                 'entity_type'            => 'merchant',
-                'entity_id'              => PartnerConfigTest::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'entity_id'              => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
                 'origin_type'            => 'application',
-                'origin_id'              => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID,
+                'origin_id'              => Constants::DEFAULT_NON_PLATFORM_APP_ID,
                 'commissions_enabled'    => true,
             ],
         ],
@@ -241,17 +242,17 @@ return [
             'method'  => 'POST',
             'content' => [
                 'default_plan_id'        => Pricing::DEFAULT_PRICING_PLAN_ID,
-                'partner_id'             => PartnerConfigTest::DEFAULT_NON_PLATFORM_MERCHANT_ID,
-                'submerchant_id'         => PartnerConfigTest::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'partner_id'             => Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+                'submerchant_id'         => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
                 'commissions_enabled'    => 1,
             ],
         ],
         'response' => [
             'content' => [
                 'entity_type'         => 'merchant',
-                'entity_id'           => PartnerConfigTest::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'entity_id'           => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
                 'origin_type'         => 'application',
-                'origin_id'           => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID,
+                'origin_id'           => Constants::DEFAULT_NON_PLATFORM_APP_ID,
                 'commissions_enabled' => true,
             ],
         ],
@@ -263,17 +264,17 @@ return [
             'method'  => 'POST',
             'content' => [
                 'default_plan_id'        => Pricing::DEFAULT_PRICING_PLAN_ID,
-                'partner_id'             => PartnerConfigTest::DEFAULT_NON_PLATFORM_MERCHANT_ID,
-                'submerchant_id'         => PartnerConfigTest::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'partner_id'             => Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+                'submerchant_id'         => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
                 'commissions_enabled'    => 1,
             ],
         ],
         'response' => [
             'content' => [
                 'entity_type'            => 'merchant',
-                'entity_id'              => PartnerConfigTest::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'entity_id'              => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
                 'origin_type'            => 'application',
-                'origin_id'              => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID,
+                'origin_id'              => Constants::DEFAULT_NON_PLATFORM_APP_ID,
                 'commissions_enabled'    => true,
             ],
         ],
@@ -285,8 +286,8 @@ return [
             'method'  => 'POST',
             'content' => [
                 'default_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
-                'partner_id'      => PartnerConfigTest::DEFAULT_NON_PLATFORM_MERCHANT_ID,
-                'submerchant_id'  => PartnerConfigTest::DEFAULT_SUBMERCHANT_ID,
+                'partner_id'      => Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+                'submerchant_id'  => Constants::DEFAULT_SUBMERCHANT_ID,
             ],
         ],
         'response' => [
@@ -309,17 +310,17 @@ return [
             'url'     => '/partner_configs',
             'method'  => 'GET',
             'content' => [
-                'application_id' => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID,
+                'application_id' => Constants::DEFAULT_NON_PLATFORM_APP_ID,
             ],
         ],
         'response' => [
             'content' => [
                 [
-                    'entity_id'   => PartnerConfigTest::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                    'entity_id'   => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
                     'entity_type' => 'merchant',
                 ],
                 [
-                    'entity_id'   => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID,
+                    'entity_id'   => Constants::DEFAULT_NON_PLATFORM_APP_ID,
                     'entity_type' => 'application',
                 ],
             ],
@@ -331,14 +332,14 @@ return [
             'url'     => '/partner_configs',
             'method'  => 'GET',
             'content' => [
-                'application_id' => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID,
-                'submerchant_id' => PartnerConfigTest::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'application_id' => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+                'submerchant_id' => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
             ],
         ],
         'response' => [
             'content' => [
                 'entity_type' => 'application',
-                'entity_id'   => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID,
+                'entity_id'   => Constants::DEFAULT_NON_PLATFORM_APP_ID,
                 'origin_id'   => null,
                 'origin_type' => null,
             ],
@@ -350,15 +351,15 @@ return [
             'url'     => '/partner_configs',
             'method'  => 'GET',
             'content' => [
-                'application_id' => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID,
-                'submerchant_id' => PartnerConfigTest::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'application_id' => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+                'submerchant_id' => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
             ],
         ],
         'response' => [
             'content' => [
                 'entity_type' => 'merchant',
-                'entity_id'   => PartnerConfigTest::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
-                'origin_id'   => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID,
+                'entity_id'   => Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID,
+                'origin_id'   => Constants::DEFAULT_NON_PLATFORM_APP_ID,
                 'origin_type' => 'application',
             ],
         ],
@@ -374,7 +375,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity_id'           => PartnerConfigTest::DEFAULT_NON_PLATFORM_APP_ID,
+                'entity_id'           => Constants::DEFAULT_NON_PLATFORM_APP_ID,
                 'default_plan_id'     => '10ZeroPricingP',
                 'commissions_enabled' => false,
             ],

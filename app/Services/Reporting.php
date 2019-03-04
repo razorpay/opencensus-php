@@ -10,12 +10,10 @@ use Requests_Exception;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
-use RZP\Base\Common;
 
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Table;
-use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\PublicCollection;
@@ -632,11 +630,6 @@ class Reporting implements ExternalService
         $hasSubscriptionsTag           = in_array(Feature::SUBSCRIPTIONS, $features, true);
         $hasGenericNotesTag            = in_array(Feature::REPORTING_GENRERIC_NOTES, $features, true);
 
-        $merchantInvoiceExperimentValue = $this->app->razorx->getTreatment(
-            $merchant->getId(),
-            'reporting_merchant_invoice',
-            $this->mode);
-
         $items = $items->filter(function ($value, $key) use (
             $hasPlTag,
             $hasMarketplaceTag,
@@ -670,30 +663,43 @@ class Reporting implements ExternalService
             }
         });
 
-        $items = $items->filter(function ($value) use (
-            $hasOfferTag,
-            $hasGenericNotesTag,
-            $merchantInvoiceExperimentValue)
-        {
-            if (($value['name'] === 'Offer Payments') and
-                ($value['type'] === Table::PAYMENT) and
-                ($value['consumer'] === Account::SHARED_ACCOUNT))
-            {
-                return $hasOfferTag;
-            }
-            else if (($value['name'] === 'Custom Settlement Recon With Notes') and
-                     ($value['type'] === Table::SETTLEMENT) and
-                     ($value['consumer'] === Account::SHARED_ACCOUNT))
-            {
-                return $hasGenericNotesTag;
-            }
-            else if (($value['name'] === 'Merchant Invoice') and
-                     ($value['type'] === null) and
-                     ($value['consumer'] === Account::SHARED_ACCOUNT))
-            {
-                return ($merchantInvoiceExperimentValue === 'on');
-            }
+        $filterConditions = [
+            [
+                'name'      => 'Offer Payments',
+                'type'      => Table::PAYMENT,
+                'consumer'  => Account::SHARED_ACCOUNT,
+                'condition' => $hasOfferTag,
+            ],
+            [
+                'name'      => 'Custom Settlement Recon With Notes',
+                'type'      => Table::SETTLEMENT,
+                'consumer'  => Account::SHARED_ACCOUNT,
+                'condition' => $hasGenericNotesTag,
+            ],
+            [
+                'name'      => 'SubMerchant Report for Platform Partner',
+                'type'      => null,
+                'consumer'  => Account::SHARED_ACCOUNT,
+                'condition' => false,
+            ],
+            [
+                'name'      => 'SubMerchant Report for Non Platform Partner',
+                'type'      => null,
+                'consumer'  => Account::SHARED_ACCOUNT,
+                'condition' => false,
+            ],
+        ];
 
+        $items = $items->filter(function ($value) use ($filterConditions) {
+            foreach ($filterConditions as $filterCondition)
+            {
+                if (($value['name'] === $filterCondition['name']) and
+                    ($value['type'] === $filterCondition['type']) and
+                    ($value['consumer'] === $filterCondition['consumer']))
+                {
+                    return $filterCondition['condition'];
+                }
+            }
             return true;
         });
 

@@ -3,20 +3,21 @@
 namespace RZP\Models\Partner\Commission;
 
 use App;
+use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
+use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Models\Base;
 use RZP\Models\Pricing;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Models\EntityOrigin;
 use RZP\Models\Pricing\Plan;
 use RZP\Exception\LogicException;
 use RZP\Models\Partner\Commission;
-use Razorpay\OAuth\Application as OAuthApp;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Models\Pricing\Calculator as FeeCalculator;
-use RZP\Models\Partner\Commission\CommissionSourceInterface;
 
 /**
  * Class Calculator
@@ -91,6 +92,11 @@ class Calculator extends Base\Core
      * @var null
      */
     protected $implicitPricingPlan = null;
+
+    /**
+     * @var null
+     */
+    protected $explicitPricingPlan = null;
 
     /**
      * @var
@@ -177,6 +183,17 @@ class Calculator extends Base\Core
     public function getImplicitPricingPlan()
     {
         return $this->implicitPricingPlan;
+    }
+
+
+    /**
+     * Implicit pricing plan property will be set to null if the partner does not exist.
+     *
+     * @return Plan|null
+     */
+    public function getExplicitPricingPlan()
+    {
+        return $this->explicitPricingPlan;
     }
 
     /**
@@ -303,6 +320,14 @@ class Calculator extends Base\Core
     }
 
     /**
+     * @param Plan $pricingPlan
+     */
+    public function setExplicitPricingPlan(Plan $pricingPlan)
+    {
+        $this->explicitPricingPlan = $pricingPlan;
+    }
+
+    /**
      * @param int $fee
      */
     public function setCommissionFee(int $fee)
@@ -374,6 +399,9 @@ class Calculator extends Base\Core
 
         // configuration's implicit pricing plan
         $this->setImplicitPricingPlanContext();
+
+        // configuration's explicit pricing plan
+        $this->setExplicitPricingPlanContext();
     }
 
     /**
@@ -393,6 +421,7 @@ class Calculator extends Base\Core
             $this->traceContext(
                 TraceCode::COMMISSION_NOT_APPLICABLE,
                 [
+                    'implicit_expiry_at'  => optional($this->getPartnerConfig())->getImplicitExpiryAt(),
                     'customer_fee_bearer' => $this->isCustomerFeeBearer(),
                     'implicit_plan_type'  => optional($this->getImplicitPricingPlan())->getType(),
                     'fee_model_prepaid'   => $this->getSubMerchant()->isPrepaid(),
@@ -426,17 +455,26 @@ class Calculator extends Base\Core
             return false;
         }
 
-        if ($this->getImplicitPricingPlan() === null)
+        // Return false if no explicit plan has been defined and the implicit plan that was defined has been expired.
+        if ($this->getExplicitPricingPlan() === null)
         {
-            return false;
+            // Commissions is not applicable if neither implicit nor explicit plans are defined
+            if ($this->getImplicitPricingPlan() === null)
+            {
+                return false;
+            }
+
+            $now    = Carbon::now(Timezone::IST)->getTimestamp();
+            $expiry = $this->getPartnerConfig()->getImplicitExpiryAt();
+
+            // Commissions is not applicable if implicit plan has expired and explicit plan is not defined
+            if ((empty($expiry) === false) and ($expiry < $now))
+            {
+                return false;
+            }
         }
 
         // Blocks create commission if the conditions are not supported, from here -
-
-        if ($this->getImplicitPricingPlan()->isTypePricing() === false)
-        {
-            return false;
-        }
 
         if ($this->isCustomerFeeBearer() === true)
         {
@@ -683,6 +721,22 @@ class Calculator extends Base\Core
         $this->setImplicitPricingPlan($pricingPlan);
     }
 
+    /**
+     * Fetches the explicit pricing plan id defined in the partner configs and sets the explicitPricingPlan property.
+     * The property is set to null if the partner config is set to null or if the explicit pricing plan is not defined.
+     */
+    protected function setExplicitPricingPlanContext()
+    {
+        $pricingPlan = $this->partnerConfigCore->getExplicitPlanFromConfig($this->getPartnerConfig());
+
+        if ($pricingPlan === null)
+        {
+            return;
+        }
+
+        $this->setExplicitPricingPlan($pricingPlan);
+    }
+
     protected function setPartnerAppContext()
     {
         $sourceEntity = $this->getSource(); // payment, refund, etc
@@ -693,6 +747,7 @@ class Calculator extends Base\Core
 
         if ($partnerApp === null)
         {
+            // the payment might not be mapped to a partner. @todo - logging needs to be improved
             $this->traceContext(TraceCode::COMMISSION_PARTNER_APP_DOES_NOT_EXIST);
 
             return;

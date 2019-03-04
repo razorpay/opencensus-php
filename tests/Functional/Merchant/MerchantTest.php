@@ -1754,6 +1754,35 @@ class MerchantTest extends TestCase
         // Only one expected, since HDFC is forced
         $this->assertEquals(1, count($response['methods']['emi_options']));
         $this->assertArrayHasKey('HDFC', $response['methods']['emi_options']);
+
+    }
+
+    public function testGetCheckoutPreferencesWithForcedEmiSubventionOfferWithMerchantSpecificEmi()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $this->fixtures->create('emi_plan:merchant_specific_emi_plans');
+
+        $offer = $this->fixtures->create('offer:emi_subvention', [
+            'issuer'          => 'HDFC',
+            'emi_durations'   => [6],
+            'payment_network' => null,
+        ]);
+
+        $order = $this->fixtures->order->createWithOffers($offer, [
+            'force_offer' => true,
+        ]);
+
+        $response = $this->getPreferences($order->getPublicId());
+
+        // Only one expected, since HDFC is forced
+        $this->assertEquals(1, count($response['methods']['emi_options']));
+        $this->assertArrayHasKey('HDFC', $response['methods']['emi_options']);
+        $this->assertEquals('6', $response['methods']['emi_options']['HDFC'][0]['duration']);
+        $this->assertEquals('0', $response['methods']['emi_options']['HDFC'][0]['interest']);
+
     }
 
     public function testGetCheckoutPreferencesForCardlessEmi()

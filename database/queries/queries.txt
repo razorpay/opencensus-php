@@ -4754,6 +4754,24 @@ ALTER TABLE promotions
     ADD COLUMN partner_id CHAR(14) DEFAULT NULL AFTER pricing_plan_id,
     ADD INDEX promotions_partner_id_index (partner_id);
 
+ALTER table `commissions`
+    ADD COLUMN `type` varchar(255) NOT NULL DEFAULT 'implicit' after `partner_config_id`;
+
+ALTER TABLE subscriptions
+    ADD INDEX subscriptions_status_start_at_index (status, start_at);
+
+ALTER TABLE line_item_taxes
+    ADD INDEX line_item_taxes_line_item_id_index(line_item_id);
+
+ALTER TABLE webhooks
+    ADD INDEX webhooks_entity_id_entity_type_index (entity_id, entity_type);
+
+ALTER TABLE invoices
+    ADD INDEX invoices_user_id_merchant_id_type_entity_type_index (user_id, merchant_id, `type`, entity_type);
+
+ALTER TABLE hdfc
+    ADD INDEX hdfc_auth_index (auth);
+
 ALTER TABLE fund_transfer_attempts
     ADD COLUMN fts_transfer_id INTEGER DEFAULT NULL AFTER status;
     ADD INDEX `fund_transfer_attempts_fts_transfer_id_index` (`fts_transfer_id`);

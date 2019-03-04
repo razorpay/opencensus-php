@@ -8,10 +8,11 @@ use RZP\Error\ErrorCode;
 
 class IIN
 {
+    // Only the banks with IINs having more than 6 digits needs to be added here.
+    // If the IINs are 6 digits, you could enable EMI for those I directly from the DB.
     protected static $emiBanks = array(
         Bank\IFSC::UTIB,
         Bank\IFSC::INDB,
-        Bank\IFSC::SBIN,
         Bank\IFSC::CITI,
     );
 
@@ -137,10 +138,6 @@ class IIN
             "52686102",
             "52686110",
             "53765210",
-        ],
-        Bank\IFSC::SBIN => [
-            '47264268',
-            '55676300', // TODO: fix bin range
         ],
         Bank\IFSC::CITI => [
             '55463700',

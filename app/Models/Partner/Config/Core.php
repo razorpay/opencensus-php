@@ -159,6 +159,30 @@ class Core extends Base\Core
         return $pricingPlan;
     }
 
+    /**
+     * @param Entity|null $partnerConfig
+     *
+     * @return Plan|null
+     */
+    public function getExplicitPlanFromConfig($partnerConfig)
+    {
+        if ($partnerConfig === null)
+        {
+            return null;
+        }
+
+        $pricingPlanId = $partnerConfig->getExplicitPricingPlanId();
+
+        if ($pricingPlanId === null)
+        {
+            return null;
+        }
+
+        $pricingPlan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($pricingPlanId);
+
+        return $pricingPlan;
+    }
+
     protected function validatePricingPlans(array $input)
     {
         // check if all plan ids are valid

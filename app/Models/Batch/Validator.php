@@ -5,7 +5,6 @@ namespace RZP\Models\Batch;
 use App;
 use RZP\Base;
 use RZP\Models\User;
-use RZP\Models\Payout;
 use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -113,6 +112,12 @@ class Validator extends Base\Validator
         Entity::TYPE        => 'required|in:emandate',
         Entity::SUB_TYPE    => 'required|string|in:register,debit,acknowledge',
         Entity::GATEWAY     => 'required|string',
+    ];
+
+    protected static $merchantOnboardingCreateRules = [
+        Entity::FILE    => 'required|file' . self::DEFAULT_MIME_RULE,
+        Entity::TYPE    => 'required|in:merchant_onboarding',
+        Entity::GATEWAY => 'required|string',
     ];
 
     protected static $terminalCreateRules = [

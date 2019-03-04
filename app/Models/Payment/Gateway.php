@@ -972,12 +972,16 @@ class Gateway
         self::NETBANKING_CORPORATION,
         self::NETBANKING_IDFC,
         self::NETBANKING_VIJAYA,
+        self::NETBANKING_EQUITAS,
         self::ENACH_NPCI_NETBANKING,
     ];
 
     public static $captureVerifyEnabled = [
         self::HITACHI,
         self::AXIS_MIGS,
+        self::CYBERSOURCE,
+        self::FIRST_DATA,
+        self::CARD_FSS,
     ];
 
     /**

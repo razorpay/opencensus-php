@@ -31,11 +31,7 @@
 <tr style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
 <td class="text-center" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; text-align: center;">
               <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: {{ $merchant['brand_text_color'] }};">
-                  @if ($payment_link['receipt'])
-                      Payment Page Receipt: {{$payment_link['receipt']}}
-                  @else
-                      Payment Page Id: {{$payment_link['id']}}
-                  @endif
+                {{$payment_link['title']}}
               </div>
             </td>
           </tr>

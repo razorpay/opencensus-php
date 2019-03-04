@@ -636,6 +636,7 @@ trait Refund
 
     public function refundPaymentViaMerchant($paymentId, $input)
     {
+        /** @var Payment\Entity $payment */
         $payment = $this->retrieve($paymentId);
 
         // From subscription service we will always refund authorized payments
@@ -645,13 +646,19 @@ trait Refund
         }
 
         //
-        // This check is here since only Merchant initiated refunds hit this function.
+        // The following checks are here since only Merchant initiated refunds hit this function.
         // Downstream functions such as `refundCapturePayment` are used by other cases where we will
         // actually need to refund captured payment always: like payment pages, or virtual accounts
         //
         if ($this->merchant->isFeatureEnabled(Feature::DISABLE_REFUNDS) === true)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REFUND_NOT_ALLOWED);
+        }
+
+        if (($this->merchant->isFeatureEnabled(Feature::DISABLE_CARD_REFUNDS) === true) and
+            ($payment->getMethod() === Payment\Method::CARD))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CARD_REFUND_NOT_ALLOWED);
         }
 
         return $this->refundCapturedPayment($payment, $input);

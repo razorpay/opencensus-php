@@ -306,6 +306,15 @@ class Service extends Base\Service
         return $this->repo->refund->fetchAndReturnPublicArray($id, $this->merchant);
     }
 
+    public function fetchEntity($id)
+    {
+        $refund = $this->repo->refund->findOrFailPublic($id);
+
+        $response = $refund->toArray();
+
+        return $response;
+    }
+
     public function fetchMultiple($input)
     {
         $refunds = $this->repo->refund->fetch($input, $this->merchant->getId());

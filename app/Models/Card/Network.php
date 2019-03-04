@@ -46,6 +46,7 @@ class Network
         self::MC      => '#25BAC3',
         self::RUPAY   => '#74C674',
         self::VISA    => '#C15482',
+        self::BAJAJ   => '#0069B4',
         self::UNKNOWN => '#E74C3C'
     );
 

@@ -80,6 +80,8 @@ class EmiTest extends TestCase
     {
         $this->fixtures->emiPlan->createDefaultEmiPlans();
 
+        $this->fixtures->emiPlan->createMerchantSpecificEmiPlans();
+
         $request = [
             'content' => [
                 ],
@@ -107,6 +109,8 @@ class EmiTest extends TestCase
         $emiPlans = $this->makeRequestAndGetContent($request);
 
         $this->assertNotContains('SBIN', array_keys($emiPlans));
+
+        $this->assertContains('HDFC', array_keys($emiPlans));
 
         // After a few days, when the merchant has been onboarded.
         $this->fixtures->edit('terminal', $terminalId, ['enabled' => 1]);

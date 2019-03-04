@@ -18,6 +18,7 @@ use RZP\Models\Gateway\Downtime;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Gateway\Netbanking\Corporation;
 use RZP\Jobs\DynamicNetBankingUrlUpdater;
+use RZP\Gateway\Enach\Npci\Netbanking as EnachNb;
 use RZP\Models\Gateway\Priority as GatewayPriority;
 use RZP\Gateway\Wallet\Amazonpay\ResponseFields as AmazonResponse;
 
@@ -397,13 +398,13 @@ class GatewayController extends Controller
             ]
         );
 
-        $responseXml = (array) simplexml_load_string(trim($input['MandateRespDoc']));
+        $responseXml = (array) simplexml_load_string(trim($input[EnachNb\ResponseFields::RESPONSE_XML]));
 
         $json = json_encode($responseXml);
 
         $responseArray = json_decode($json,true);
 
-        if($input['RespType'] === 'RespXML')
+        if($input[EnachNb\ResponseFields::RESPONSE_TYPE] === EnachNb\ResponseType::SUCCESS)
         {
             $paymentId = $responseArray['MndtAccptResp']['UndrlygAccptncDtls']['OrgnlMsgInf']['MndtReqId'];
         }

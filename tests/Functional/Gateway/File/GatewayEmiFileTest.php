@@ -259,20 +259,7 @@ class GatewayEmiFileTest extends TestCase
 
         $this->fixtures->create('iin',
             [
-                'iin'           => '472642',
-                'category'      => 'STANDARD',
-                'network'       => 'Visa',
-                'type'          => 'credit',
-                'country'       => 'IN',
-                'issuer_name'   => 'STATE BANK OF INDI',
-                'issuer'        => 'SBIN',
-                'emi'           => 1,
-                'trivia'        => 'random trivia'
-            ]);
-
-        $this->fixtures->create('iin',
-            [
-                'iin'           => '556763',
+                'iin'           => '400666',
                 'category'      => 'STANDARD',
                 'network'       => 'MasterCard',
                 'type'          => 'credit',
@@ -297,13 +284,14 @@ class GatewayEmiFileTest extends TestCase
 
         $this->ba->publicAuth();
 
-        $this->makeEmiPaymentOnCard('5567630000002004', 9);
+        // Generated using luhn generator
+        $this->makeEmiPaymentOnCard('4006660000086709', 9);
 
         $payment = $this->getLastPayment(true);
 
         $this->assertEquals('hitachi', $payment['gateway']);
 
-        $this->makeEmiPaymentOnCard('5567630000002004', 12);
+        $this->makeEmiPaymentOnCard('4006660000086709', 12);
 
         $this->ba->adminAuth();
 
@@ -357,7 +345,7 @@ class GatewayEmiFileTest extends TestCase
 
         $this->fixtures->create('iin',
             [
-                'iin'           => '472642',
+                'iin'           => '400666',
                 'category'      => 'STANDARD',
                 'network'       => 'Visa',
                 'type'          => 'credit',
@@ -401,9 +389,9 @@ class GatewayEmiFileTest extends TestCase
 
         $this->ba->publicAuth();
 
-        $this->makeEmiPaymentOnCard('4726426854804947', 9);
+        $this->makeEmiPaymentOnCard('4006660000086709', 9);
 
-        $this->makeEmiPaymentOnCard('4726426854804947', 12);
+        $this->makeEmiPaymentOnCard('4006660000086709', 12);
 
         $this->ba->adminAuth();
 
@@ -457,7 +445,7 @@ class GatewayEmiFileTest extends TestCase
 
         $this->fixtures->create('iin',
             [
-                'iin'           => '472642',
+                'iin'           => '400666',
                 'category'      => 'STANDARD',
                 'network'       => 'Visa',
                 'type'          => 'credit',
@@ -476,9 +464,9 @@ class GatewayEmiFileTest extends TestCase
 
         $this->ba->publicAuth();
 
-        $this->makeEmiPaymentOnCard('4726426854804947', 9);
+        $this->makeEmiPaymentOnCard('4006660000086709', 9);
 
-        $this->makeEmiPaymentOnCard('4726426854804947', 12);
+        $this->makeEmiPaymentOnCard('4006660000086709', 12);
 
         $this->ba->adminAuth();
 
