@@ -145,6 +145,16 @@ class Gateway extends Base\Gateway
 
     }
 
+    protected function getPaymentToVerify(Verify $verify)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+            $verify->input['payment']['id'], Action::PAY_VERIFY);
+
+        $verify->payment = $gatewayPayment;
+
+        return $gatewayPayment;
+    }
+
     public function sendPaymentVerifyRequest($verify)
     {
         $input = $verify->input;
@@ -249,6 +259,15 @@ class Gateway extends Base\Gateway
         if($this->mode === Mode::TEST)
         {
             $input['payment']['amount'] = 100;
+        }
+
+        if ($this->action === 'verify' && $this->gateway === 'bajajfinserv')
+        {
+            $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                $input['payment']['id'], 'pay_verify');
+
+            $jsonRaw = json_decode($gatewayPayment['raw']);
+            $input['gateway'][$this->action] = $jsonRaw;
         }
 
         $content['entities'] = $input;
