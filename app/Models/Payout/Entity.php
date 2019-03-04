@@ -90,14 +90,15 @@ class Entity extends Base\PublicEntity
     const ON_DEMAND = 'on_demand';
 
     // Additional input/output attributes
-    const CONTACT_NAME    = 'contact_name';
-    const CONTACT_PHONE   = 'contact_phone';
-    const CONTACT_ID      = 'contact_id';
-    const CONTACT_EMAIL   = 'contact_email';
-    const CONTACT_TYPE    = 'contact_type';
+    const CONTACT_NAME  = 'contact_name';
+    const CONTACT_PHONE = 'contact_phone';
+    const CONTACT_ID    = 'contact_id';
+    const CONTACT_EMAIL = 'contact_email';
+    const CONTACT_TYPE  = 'contact_type';
 
     // Input keys
-    const ACCOUNT_NUMBER = 'account_number';
+    const ACCOUNT_NUMBER    = 'account_number';
+    const QUEUED            = 'queued';
 
     // Used only for `visible` array
     const INTERNAL_STATUS = 'internal_status';
@@ -108,6 +109,8 @@ class Entity extends Base\PublicEntity
     const FUND_ACCOUNT  = 'fund_account';
     const TRANSACTION   = 'transaction';
     const REVERSAL      = 'reversal';
+
+    protected $queueFlag = false;
 
     protected $entity = 'payout';
 
@@ -399,6 +402,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_TYPE) === Constants\Entity::TRANSACTION;
     }
 
+    public function toBeQueued(): bool
+    {
+        return ($this->queueFlag === true);
+    }
+
     /**
      * FeeCalculator calls `$entity->getFee()` for all the pricing entity
      *
@@ -564,6 +572,11 @@ class Entity extends Base\PublicEntity
     public function getFTSTransferId()
     {
         return $this->getAttribute(self::FTS_TRANSFER_ID);
+    }
+
+    public function setQueueFlag($flag)
+    {
+        $this->queueFlag = $flag;
     }
 
     public function setChannel($channel)

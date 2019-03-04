@@ -80,11 +80,31 @@ abstract class Base extends BaseCore
             // Create a payout entity
             $payout = $this->createPayoutEntity($input);
 
-            // Create a fund transfer entity where the fund transfers will be processed.
-            $this->createFundTransferAttemptEntity($payout);
+            try
+            {
+                // Create merchant/customer transactions and link it to payout.
+                $this->createTxns($payout);
 
-            // Create merchant/customer transactions and link it to payout.
-            $this->createTxns($payout);
+                // Create a fund transfer entity where the fund transfers will be processed.
+                // NOTE: Ensure that this is created after transaction creation, so that if
+                // the transaction creation fails because of insufficient funds and we want
+                // to queue the payout instead of failing the complete DB transaction, this
+                // FTA does not get created.
+                $this->createFundTransferAttemptEntity($payout);
+            }
+            catch (Exception\BadRequestException $ex)
+            {
+                $insufficientFundsErrorCode = ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING;
+
+                if ($ex->getError()->getInternalErrorCode() === $insufficientFundsErrorCode)
+                {
+                    $this->handleInsufficientFunds($ex, $payout);
+                }
+                else
+                {
+                    throw $ex;
+                }
+            }
 
             $this->repo->saveOrFail($payout);
 
@@ -100,6 +120,7 @@ abstract class Base extends BaseCore
             return $payout;
         });
 
+        // TODO: Fix this after discussion with product
         $this->app->events->fire('api.payout.created', [$payout]);
 
         return $payout;
@@ -207,6 +228,12 @@ abstract class Base extends BaseCore
         // some validations run on the relations' data
         //
         $this->runInputValidations($payout, $input);
+
+        if ((isset($input[Payout\Entity::QUEUED]) === true) and
+            (boolval($input[Payout\Entity::QUEUED]) === true))
+        {
+            $payout->setQueueFlag(true);
+        }
 
         (new Payout\Purpose)->setPurposeAndTypeForPayout($payout, $payout->getPurpose());
 
@@ -347,6 +374,11 @@ abstract class Base extends BaseCore
         $method = Payout\Method::$destinationMethodMap[$destinationType];
 
         $payout->setMethod($method);
+    }
+
+    protected function handleInsufficientFunds(Exception\BadRequestException $ex, Payout\Entity $payout)
+    {
+        throw $ex;
     }
 
     abstract protected function setChannel($input = []);
