@@ -165,15 +165,20 @@ export default class TerminalForm extends Component {
         temp[elem] = '1';
       });
 
-      if (gatewayMappingTerminalTypeValue) {
+      if (
+        gatewayMappingTerminalTypeValue &&
+        !temp[gatewayMappingTerminalTypeValue.value]
+      ) {
         temp[gatewayMappingTerminalTypeValue.value] = '1';
       }
 
       body.type = temp;
     } else {
-      body.type = {
-        [gatewayMappingTerminalTypeValue.value]: '1',
-      };
+      if (gatewayMappingTerminalTypeValue) {
+        body.type = {
+          [gatewayMappingTerminalTypeValue.value]: '1',
+        };
+      }
     }
 
     if (body.file) {
