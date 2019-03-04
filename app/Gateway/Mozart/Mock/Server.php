@@ -206,11 +206,11 @@ class Server extends Base\Mock\Server
                         'ERRORDESCRIPTION' => 'TRANSACTION PERFORMED SUCCESSFULLY',
                         'Key' => $entities['terminal']['gateway_secure_secret'],
                         'ORDERNO' => '104',
-                        'REQUESTID' => $entities['gateway']['refund']['requestid'],
+                        'REQUESTID' => '1234',
                         'RESPONSECODE' => '0'
                     ],
                     'received' => true,
-                    'requeryid' => $entities['gateway']['refund']['requestid'],
+                    'requeryid' => '1234',
                     'reqid' => 'RZP200219195445345',
                     'rescode' => '00',
                     'rqtype' => 'CAN',

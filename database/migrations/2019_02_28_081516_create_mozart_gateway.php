@@ -7,6 +7,7 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Gateway\Mozart\Entity as Mozart;
 use RZP\Constants\Table;
+use RZP\Models\Base\UniqueIdEntity;
 
 class CreateMozartGateway extends Migration
 {
@@ -25,9 +26,13 @@ class CreateMozartGateway extends Migration
             $table->char(Mozart::ID)
                 ->primary();
 
-            $table->char(Mozart::PAYMENT_ID,Payment::ID_LENGTH);
+            $table->char(Mozart::PAYMENT_ID,UniqueIdEntity::ID_LENGTH)
+                ->unique();
 
             $table->char(Mozart::ACTION)
+                ->nullable();
+
+            $table->char(Mozart::REFUND_ID, UniqueIdEntity::ID_LENGTH)
                 ->nullable();
 
             $table->integer(Mozart::AMOUNT);

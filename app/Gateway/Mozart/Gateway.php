@@ -84,14 +84,14 @@ class Gateway extends Base\Gateway
 
         $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
 
-//        if ($input['payment']['gateway'] === Payment\Gateway::BAJAJFINSERV)
-//        {
-//            $input['gateway']['pay_verify']['requestid'] = $response['data']['RequestID'];
-//
-//            $verifyResponse = $this->verify($input);
-//
-//            return $verifyResponse;
-//        }
+        if ($input['payment']['gateway'] === Payment\Gateway::BAJAJFINSERV)
+        {
+            $input['gateway']['pay_verify']['RequestID'] = $response['data']['RequestID'];
+
+            $verifyResponse = $this->verify($input);
+
+            return $verifyResponse;
+        }
 
         return $response;
     }
@@ -130,10 +130,10 @@ class Gateway extends Base\Gateway
         $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
     }
 
-    public function verifyRefund(array $input)
-    {
-        return $this->verify($input);
-    }
+//    public function verifyRefund(array $input)
+//    {
+//        return $this->verify($input);
+//    }
 
     public function verify(array $input)
     {
@@ -145,21 +145,9 @@ class Gateway extends Base\Gateway
 
     }
 
-    protected function getPaymentToVerify(Verify $verify)
-    {
-        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
-            $verify->input['payment']['id'], Action::PAY_VERIFY);
-
-        $verify->payment = $gatewayPayment;
-
-        return $gatewayPayment;
-    }
-
     public function sendPaymentVerifyRequest($verify)
     {
         $input = $verify->input;
-
-        //$verify->verifyResponseContent = $this->sendMozartRequest($input);
 
         $request = $this->getMozartRequestArray($input);
 
@@ -201,9 +189,7 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
-        $attributes = $this->getMappedAttributes($content);
-
-        $this->updateGatewayPaymentEntity($verify->payment, $attributes);
+        $this->updateGatewayPaymentEntity($verify->payment, $content);
 
         return $verify->status;
     }
@@ -267,7 +253,16 @@ class Gateway extends Base\Gateway
                 $input['payment']['id'], 'pay_verify');
 
             $jsonRaw = json_decode($gatewayPayment['raw']);
-            $input['gateway'][$this->action] = $jsonRaw;
+            $input['gateway']['pay_verify'] = $jsonRaw;
+        }
+
+        if ($this->action === 'verify_refund' && $this->gateway === 'bajajfinserv')
+        {
+            $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                $input['payment']['id'], 'refund');
+
+            $jsonRaw = json_decode($gatewayPayment['raw']);
+            $input['gateway']['refund'] = $jsonRaw;
         }
 
         $content['entities'] = $input;
@@ -397,6 +392,17 @@ class Gateway extends Base\Gateway
         $gatewayPayment->fill($attributes);
 
         $this->getRepository()->saveOrFail($gatewayPayment);
+
+        return $gatewayPayment;
+    }
+
+
+    protected function getPaymentToVerify(Verify $verify)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+            $verify->input['payment']['id'], Action::PAY_VERIFY);
+
+        $verify->payment = $gatewayPayment;
 
         return $gatewayPayment;
     }
