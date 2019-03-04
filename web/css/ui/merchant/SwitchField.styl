@@ -40,9 +40,21 @@
     transition: .2s
   }
 
+  &--round::before {
+    border-radius: 8px
+  }
 
+  &--round::after {
+    content: ''
+    border-radius: 50%
+    padding: 0
+    height: 12px
+    width: 12px
+    top: 1px
+    left: 2px
+  }
 
-  &--default.checked {
+  &--default.checked, &--round.checked {
     &:before {
       background: linear-gradient(to bottom, #4CD964, #4BD863)
     }

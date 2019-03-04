@@ -5,6 +5,17 @@ import { showNotification } from 'rzp/modules/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
 import SwitchField from 'rzp/ui/Forms/SwitchField';
 
+const customMsg = {
+  not_supported:
+    'International card payments is not supported to your business model.',
+  kyc_pending:
+    'Your KYC has to be approved in-order to accept International card payments.',
+  activation_pending:
+    'You will have to fill your Activation form & KYC form to be eligible to receive International card payments.',
+  international_activated:
+    'Settlement cycle and transaction fee is higher for International payments. \n International card payments is currently available only for payment gateways and not for payment pages, payment links & invoices.',
+};
+
 @connect(
   state => {
     return {
@@ -37,22 +48,22 @@ export default class FlashCheckout extends Component {
     let noFlashCheckout =
       features.find(feature => feature.feature === 'noflashcheckout') || {};
 
-    const fcEnabled = !noFlashCheckout.value;
-    return fcEnabled;
+    this.setState({ fcEnabled: !noFlashCheckout.value });
   }
 
   analytics = action => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Settings',
-      eventAction: `${action} - Flash Checkout`,
+      eventAction: `${action} - Internationalization`,
     });
   };
 
-  toggleFc = (enableFC, cb) => {
+  toggleInternationalization = () => {
+    let fcEnabled = this.state.fcEnabled;
     let shouldSync = 1;
     var data = {
       features: {
-        noflashcheckout: enableFC ? 0 : 1,
+        noflashcheckout: fcEnabled ? 1 : 0,
       },
       should_sync: shouldSync,
     };
@@ -60,22 +71,20 @@ export default class FlashCheckout extends Component {
     return this.props
       .updateFeatures(data, this.props.user.current)
       .then(res => {
-        if (enableFC) {
-          this.analytics('Enable');
-        } else {
+        if (fcEnabled) {
           this.analytics('Disable');
+        } else {
+          this.analytics('Enable');
         }
         this.props.showNotification({
           type: 'success',
           message: 'Your preference was saved',
         });
         this.setState({
-          fcEnabled: enableFC,
+          fcEnabled: !fcEnabled,
         });
       })
       .catch(err => {
-        cb(false);
-
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -87,46 +96,45 @@ export default class FlashCheckout extends Component {
     let { fcEnabled } = this.state;
 
     return (
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <span class="title">Flash Checkout</span>
+      <div className="panel panel-default">
+        <div className="panel-heading">
+          <span className="title">International card payments</span>
 
-          <span class="toggler-btn">
+          <span className="toggler-btn">
             <SwitchField
               defaultChecked={!!fcEnabled}
               onChange={(isChecked, cb) => this.toggleFc(isChecked, cb)}
               type="round"
             />
             {fcEnabled ? (
-              <b class="text-success">Enabled</b>
+              <b className="text-success">Enabled</b>
             ) : (
-              <b class="text-danger">Disabled</b>
+              <b className="text-danger">Disabled</b>
             )}
           </span>
         </div>
 
-        <div class="panel-body">
-          <form class="form-horizontal">
-            <div class="description">
-              Securely save the card details of your customers, with Razorpay's
-              Flash Checkout.
+        <div className="panel-body">
+          <form className="form-horizontal">
+            <div className="description">
+              {customMsg['international_activated']}
             </div>
 
-            <div class="form-group">
+            <div className="form-group">
               <ShowWhen
                 additionalCondition={user =>
                   user.isOrgAllowedFunctionality('external_links')
                 }
               >
-                <div class="col-sm-10">
+                <div className="col-sm-10">
                   <a
-                    class="highlight"
+                    className="highlight"
                     target="_blank"
-                    href="https://razorpay.com/flashcheckout/"
+                    href="https://razorpay.com/"
                   >
                     Know more
                     <i
-                      class="i i-external-link"
+                      className="i i-external-link"
                       style={{ marginLeft: '5px' }}
                     />
                   </a>

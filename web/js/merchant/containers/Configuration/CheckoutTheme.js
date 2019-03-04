@@ -5,6 +5,7 @@ import AsyncButton from 'react-async-button';
 import FileUploadButton from 'rzp/ui/FileUpload/Button';
 import { uploadLogo } from 'merchant/modules/config';
 import { showNotification } from 'rzp/modules/notifications';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 @connect(state => state.config, { uploadLogo, showNotification })
 @reduxForm({})
@@ -46,22 +47,24 @@ export default class CheckoutTheme extends Component {
   render() {
     return (
       <div class="panel panel-default">
-        <div class="panel-heading">Checkout Theme</div>
+        <div class="panel-heading">
+          <span className="title">Checkout Theme</span>
+        </div>
         <div class="panel-body">
           <form class="form-horizontal">
             <div class="form-group">
-              <label class="col-md-12">
+              <label class="col-md-12 m-t">
                 <strong>Theme Color</strong>
               </label>
-              <div class="col-md-2 col-sm-3">
-                <Field
-                  name="brand_color"
-                  component="input"
-                  class="form-control"
-                  type="color"
-                />
-              </div>
-              <div class="col-md-3 col-sm-6">
+              <div class="col-md-3 col-sm-6" style={{ position: 'relative' }}>
+                <div class="color-picker">
+                  <Field
+                    name="brand_color"
+                    component="input"
+                    class="form-control"
+                    type="color"
+                  />
+                </div>
                 <Field
                   name="brand_color"
                   component="input"
@@ -76,15 +79,15 @@ export default class CheckoutTheme extends Component {
                   onClick={this.onSave}
                 />
               </div>
-              <div class="col-md-12 help-block">
-                Choose a theme color to customize the checkout form. The default
-                theme color will be used if none is specified.{' '}
-                <b>Use the color picker or enter the hexadecimal color code</b>
+              <div class="col-md-12 description">
+                Choose a theme color for your brand.
+                <br />
+                The default theme color will be used if none is specified.
               </div>
             </div>
 
             <div class="form-group">
-              <label class="col-md-12">
+              <label class="col-md-12 m-t">
                 <strong>Your Logo</strong>
               </label>
               <div class="col-md-12 media" style={{ marginTop: 0 }}>
@@ -110,18 +113,36 @@ export default class CheckoutTheme extends Component {
                     onChange={this.uploadLogo}
                   />
                   <div class="help-block">
-                    <i>Max file size: 1MB</i>
+                    <i style={{ fontSize: 12 }}>Max file size: 1MB</i>
                   </div>
                 </div>
-                <div>
-                  <small class="help-block">
-                    Upload your logo that will appear on the checkout form.
-                    Choose a square image of minimum dimensions 256x256 px.
-                  </small>
+                <div class="description">
+                  Choose a square image of minimum dimensions 256x256 px.
                 </div>
               </div>
             </div>
           </form>
+          <div class="footer-note">
+            Changes will reflect on{' '}
+            <ShowWhen
+              additionalCondition={user =>
+                user.isOrgAllowedFunctionality('external_links')
+              }
+            >
+              <a target="_blank" href="https://razorpay.com/payment-gateway/">
+                Checkout page
+              </a>,{' '}
+              <a target="_blank" href="https://razorpay.com/payment-links/">
+                Payment Links
+              </a>,{' '}
+              <a target="_blank" href="https://razorpay.com/invoices/">
+                Invoices
+              </a>,{' '}
+              <a target="_blank" href="https://razorpay.com/payment-pages">
+                Payment pages
+              </a>.
+            </ShowWhen>
+          </div>
         </div>
       </div>
     );
