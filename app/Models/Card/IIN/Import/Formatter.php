@@ -78,7 +78,10 @@ class Formatter
                         break;
 
                     case 'message_type':
-                        $input[IIN::MESSAGE_TYPE] = $row[$index];
+                        if (\RZP\Models\Card\IIN\MessageType::isValid($row[$index]) === true)
+                        {
+                            $input[IIN::MESSAGE_TYPE] = $row[$index];
+                        }
                         break;
 
                     default:
