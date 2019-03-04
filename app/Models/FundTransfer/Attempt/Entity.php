@@ -66,6 +66,7 @@ class Entity extends Base\PublicEntity
         self::REMARKS,
         self::FAILURE_REASON,
         self::INITIATE_AT,
+        self::DATE_TIME,
     ];
 
     protected $visible = [

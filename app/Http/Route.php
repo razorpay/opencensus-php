@@ -1010,6 +1010,7 @@ final class Route
         'transaction_statement_fetch_multiple'     => ['get',      'transactions',                                   'StatementController@list'                                          ],
 
         //API Routes for FTS
+        'update_fts_fund_transfer'                 => ['post',     'update_fts_fund_transfer',                       'FundTransferAttemptController@updateFTA'                           ],
         'update_fts_nodal_beneficiary'             => ['post',     'update_fts_nodal_beneficiary',                   'NodalBeneficiaryController@createOrUpdateNodalBeneficiary'         ],
     ];
 
@@ -1373,6 +1374,7 @@ final class Route
         'gateway_downtime_vajra_webhook',
         'scrooge_refund_verify_bulk',
         'update_fts_nodal_beneficiary',
+        'update_fts_fund_transfer',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2587,6 +2589,7 @@ final class Route
 
         'fts'  => [
             'update_fts_nodal_beneficiary',
+            'update_fts_fund_transfer',
         ],
     ];
 
