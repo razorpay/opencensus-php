@@ -173,21 +173,16 @@ class Entity extends Base\PublicEntity
     ];
 
     /**
-     * Overridden
+     * {@inheritDoc}
      * Ref: validateInputByType
-     *
-     * @param  array $input
-     * @param bool   $validateFlow Indicates if called in the batch validate flow
-     *
-     * @return Entity
      */
-    public function build(array $input = [], bool $validateFlow = false)
+    public function build(array $input = [], string $operation = 'create')
     {
         $this->input = $input;
 
         $this->modify($input);
 
-        $this->validateInputByType($input, $validateFlow);
+        $this->validateInputByType($input, $operation);
 
         // Todo: https://github.com/razorpay/spine/issues/25
         $this->getValidator()->validateOtp($input);
@@ -202,44 +197,31 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * Does input validation for create based on batch type if defined else
-     * there is one default create rule.
+     * Does input validation for create based on batch type if defined else there is one default create rule.
      *
      * @param array $input
-     * @param bool  $validateFlow Indicates if called in the batch validate flow
+     * @param bool  $operation Indicates if called in the batch validate flow or normal create flow
      */
-    protected function validateInputByType(array $input, bool $validateFlow = false)
+    protected function validateInputByType(array $input, string $operation = 'create')
     {
-        if ($validateFlow === true)
-        {
-            //
-            // If in the validate flow, validate the request against a different set of rules
-            // if defined, else fallback to the create validation logic.
-            //
-            $type = $input[Entity::TYPE] ?? 'unknown';
-            $rule = camel_case($type) . 'ValidateRules';
-
-            if (property_exists(Validator::class, $rule) === true)
-            {
-                $operation = $type . '_validate';
-
-                $this->validateInput($operation, $input);
-
-                return;
-            }
-        }
-
-        $operation = 'default_create';
-
         $type = $input[Entity::TYPE] ?? 'unknown';
-        $rule = camel_case($type) . 'CreateRules';
+        $ruleKey = camel_case("{$type}_{$operation}_rules");
+        $fallbackRuleKey = camel_case("{$type}_create_rules");
 
-        if (property_exists(Validator::class, $rule) === true)
+        if (property_exists(Validator::class, $ruleKey) === true)
         {
-            $operation = $type . '_create';
+            $validationOp = snake_case(str_before($ruleKey, 'Rules'));
+        }
+        else if (property_exists(Validator::class, $fallbackRuleKey) === true)
+        {
+            $validationOp = snake_case(str_before($fallbackRuleKey, 'Rules'));
+        }
+        else
+        {
+            $validationOp = 'default_create';
         }
 
-        $this->validateInput($operation, $input);
+        $this->validateInput($validationOp, $input);
     }
 
     // Relations
