@@ -247,7 +247,9 @@ class Core extends Base\Core
             {
                 $this->trace->info(
                     TraceCode::FTS_INVALID_CHANNEL,
-                    $fta->getChannel());
+                    [
+                        'channel' => $fta->getChannel(),
+                    ]);
 
                 return;
             }
