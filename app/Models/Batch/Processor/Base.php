@@ -1299,6 +1299,11 @@ class Base extends BaseModel\Core
     {
         foreach ($entry as $key => $row)
         {
+            if ($row === null)
+            {
+                continue;
+            }
+
             if (in_array($key, array_keys($conversionMap)) === true)
             {
                 $entry[$key] = $this->convertCase($row, $conversionMap[$key]);
