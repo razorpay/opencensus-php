@@ -1,4 +1,5 @@
 import Definition from 'rzp/ui/Definition';
+import { capitalize } from 'rzp/utils/rzp-utils';
 
 export default function MandateBankAccountDetails({ bankDetails = {}, bank }) {
   return (
@@ -12,7 +13,7 @@ export default function MandateBankAccountDetails({ bankDetails = {}, bank }) {
       <>Beneficiary Name: {bankDetails.beneficiary_name}</>
 
       {/* Type of Account */}
-      <>Account Type: {bankDetails.account_type}</>
+      <>Account Type: {capitalize(bankDetails.account_type)}</>
 
       {/* IFSC */}
       <>IFSC: {bankDetails.ifsc}</>
