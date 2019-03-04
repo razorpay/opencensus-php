@@ -6,11 +6,26 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use Illuminate\Database\Eloquent\Collection;
 
 class Core extends Base\Core
 {
     public function create(array $input): Entity
     {
+        $this->trace->info(
+            TraceCode::METHOD_DOWNTIME_CREATE,
+            $input
+        );
 
+        $downtime = (new Entity)->build($input);
+
+        $this->repo->saveOrFail($downtime);
+
+        return $downtime;
+    }
+
+    protected function processUpi(Collection $gatewayDowntimes)
+    {
+        (new UpiProcessor)->process($gatewayDowntimes);
     }
 }
