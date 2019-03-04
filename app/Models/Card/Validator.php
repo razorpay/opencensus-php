@@ -39,6 +39,11 @@ class Validator extends Base\Validator
         'expiry_date'
     );
 
+    protected static $createVaultTokenRules = [
+        'namespace' => 'required|max:30|in:nodal_certs',
+        'secret'    => 'required'
+    ];
+
     protected function validateExpiryDate($input)
     {
         $month = $input['expiry_month'];

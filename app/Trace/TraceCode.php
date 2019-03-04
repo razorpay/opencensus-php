@@ -1677,6 +1677,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AUTH_RULES_SEARCH_CRITERIA          = 'AUTH_RULES_SEARCH_CRITERIA';
     const AUTH_TERMINAL_SELECTION_FOR_RULE_GROUP   = 'AUTH_TERMINAL_SELECTION_FOR_RULE_GROUP';
 
+    const VAULT_TOKEN_CREATE_INIT             = 'VAULT_TOKEN_CREATE_INIT';
+    const VAULT_TOKEN_CREATE_COMPLETE         = 'VAULT_TOKEN_CREATE_COMPLETE';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
