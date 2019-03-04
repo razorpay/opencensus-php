@@ -407,26 +407,23 @@ class Calculator extends Base\Core
     /**
      * @return bool
      */
-    protected function shouldCreateCommission(): bool
+    public function shouldCreateCommission(): bool
     {
         if (Constants::isValidCommissionSource($this->getSource()) === false)
         {
-            $this->traceContext(TraceCode::COMMISSION_INVALID_SOURCE_ENTITY);
+            $this->traceContext(TraceCode::COMMISSION_INVALID_SOURCE_ENTITY, [], Trace::CRITICAL);
 
+            return false;
+        }
+
+        if ($this->getPartner() === null)
+        {
+            // If the partner does not exist, no need to add a log for each source entity (payment/refund/..)
             return false;
         }
 
         if ($this->isCommissionApplicable() === false)
         {
-            $this->traceContext(
-                TraceCode::COMMISSION_NOT_APPLICABLE,
-                [
-                    'implicit_expiry_at'  => optional($this->getPartnerConfig())->getImplicitExpiryAt(),
-                    'customer_fee_bearer' => $this->isCustomerFeeBearer(),
-                    'implicit_plan_type'  => optional($this->getImplicitPricingPlan())->getType(),
-                    'fee_model_prepaid'   => $this->getSubMerchant()->isPrepaid(),
-                ]);
-
             return false;
         }
 
@@ -445,22 +442,20 @@ class Calculator extends Base\Core
      */
     protected function isCommissionApplicable(): bool
     {
-        if ($this->getPartner() === null)
-        {
-            return false;
-        }
-
         if ($this->getPartnerConfig() === null)
         {
+            $this->traceContext(TraceCode::COMMISSION_NOT_APPLICABLE_CONFIG_NOT_DEFINED);
+
             return false;
         }
 
-        // Return false if no explicit plan has been defined and the implicit plan that was defined has been expired.
         if ($this->getExplicitPricingPlan() === null)
         {
             // Commissions is not applicable if neither implicit nor explicit plans are defined
             if ($this->getImplicitPricingPlan() === null)
             {
+                $this->traceContext(TraceCode::COMMISSION_NOT_APPLICABLE_PLANS_NOT_SET);
+
                 return false;
             }
 
@@ -470,6 +465,8 @@ class Calculator extends Base\Core
             // Commissions is not applicable if implicit plan has expired and explicit plan is not defined
             if ((empty($expiry) === false) and ($expiry < $now))
             {
+                $this->traceContext(TraceCode::COMMISSION_NOT_APPLICABLE_IMPLICIT_EXPIRED);
+
                 return false;
             }
         }
@@ -478,11 +475,15 @@ class Calculator extends Base\Core
 
         if ($this->isCustomerFeeBearer() === true)
         {
+            $this->traceContext(TraceCode::COMMISSION_NOT_APPLICABLE_INVALID_FEE_BEARER);
+
             return false;
         }
 
         if ($this->getSubMerchant()->isPrepaid() === false)
         {
+            $this->traceContext(TraceCode::COMMISSION_NOT_APPLICABLE_INVALID_FEE_MODEL);
+
             return false;
         }
 
@@ -524,16 +525,11 @@ class Calculator extends Base\Core
 
     /**
      * Calculates all types of applicable commissions [implicit (fixed and variable), explicit (fixed)] and saves them.
-     * This function should be called within a database transaction.
      */
     public function calculateAndSaveCommission()
     {
+        // Ensure that this is being called within a database transaction
         assertTrue ($this->repo->commission->isTransactionActive());
-
-        if ($this->shouldCreateCommission() === false)
-        {
-            return;
-        }
 
         $this->calculate();
 
@@ -747,9 +743,6 @@ class Calculator extends Base\Core
 
         if ($partnerApp === null)
         {
-            // the payment might not be mapped to a partner. @todo - logging needs to be improved
-            $this->traceContext(TraceCode::COMMISSION_PARTNER_APP_DOES_NOT_EXIST);
-
             return;
         }
 
@@ -801,8 +794,6 @@ class Calculator extends Base\Core
 
         if ($partnerConfig === null)
         {
-            // @todo - add logs
-
             return;
         }
 
