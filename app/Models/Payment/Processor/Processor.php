@@ -333,6 +333,16 @@ class Processor
     {
         assert($this->subscription->isExternal() === true);
 
+        if ($this->subscription->isActive() === true)
+        {
+            $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
+
+            if ($cardChange === true)
+            {
+                return;
+            }
+        }
+
         if (($this->subscription->hasCurrentInvoice() === true) and
             (isset($input[Payment\Entity::ORDER_ID]) === false))
         {
