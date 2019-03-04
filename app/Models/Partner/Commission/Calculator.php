@@ -109,6 +109,13 @@ class Calculator extends Base\Core
     protected $feeCalculator = null;
 
     /**
+     * Is set to true if the source txn has been initiated by a partner or a partner associated OAuth application.
+     *
+     * @var bool
+     */
+    protected $isPartnerOriginated = false;
+
+    /**
      * Calculator constructor.
      *
      * @param CommissionSourceInterface $sourceEntity
@@ -254,6 +261,14 @@ class Calculator extends Base\Core
         return $this->partnerTax;
     }
 
+    /**
+     * @return bool
+     */
+    public function isPartnerOriginated(): bool
+    {
+        return ($this->isPartnerOriginated === true);
+    }
+
     public function getFeeCalculator(): FeeCalculator\Base
     {
         if ($this->feeCalculator === null)
@@ -375,6 +390,14 @@ class Calculator extends Base\Core
         $this->partnerTax = $partnerTax;
     }
 
+    /**
+     * @param bool $isPartnerOriginated
+     */
+    public function setIsPartnerOriginated(bool $isPartnerOriginated)
+    {
+        $this->isPartnerOriginated = $isPartnerOriginated;
+    }
+
     // ====================================== END ======================================
 
     /**
@@ -469,6 +492,18 @@ class Calculator extends Base\Core
 
                 return false;
             }
+        }
+
+        $partnerType = $this->getPartner()->getPartnerType();
+
+        //
+        // Block commissions for all payments of an aggregator's submerchant which are not coming through the partner
+        // auth. This also applies to banks, pure platforms and fully managed partners.
+        //
+        if (($this->isPartnerOriginated() === false) and
+            (in_array($partnerType, Constants::$partnerTypesEligibleWithoutOrigin, true) === false))
+        {
+            return false;
         }
 
         // Blocks create commission if the conditions are not supported, from here -
@@ -739,7 +774,21 @@ class Calculator extends Base\Core
 
         $submerchant = $this->getSubMerchant();
 
-        $partnerApp = (new EntityOrigin\Core)->getPartnerAppFromEntityOrigin($sourceEntity, $submerchant);
+        $entityOriginCore = new EntityOrigin\Core;
+
+        if ($entityOriginCore->isOriginApplication($sourceEntity) === true)
+        {
+            // $partnerApp will always be a non-null value here
+            $partnerApp = $entityOriginCore->getOrigin($sourceEntity);
+
+            $this->setIsPartnerOriginated(true);
+        }
+        else
+        {
+            $partnerApp = (new Merchant\AccessMap\Core)->getNonPurePlatformPartnerApp($submerchant);
+
+            $this->setIsPartnerOriginated(false);
+        }
 
         if ($partnerApp === null)
         {
