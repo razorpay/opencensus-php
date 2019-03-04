@@ -126,12 +126,28 @@ const HDFC_terminalTypesMapping = [
   { value: 'direct_settlement', name: 'Direct Settlement' },
 ];
 
+const gatewayMappingOnAddMessages = {
+  paytm: 'Direct settlement will be enforced on for gateway Paytm',
+};
+
+const gatewayMappingTerminalTypesDefaults = {
+  paytm: {
+    value: 'direct_settlement',
+    name: 'Direct Settlement',
+  },
+};
+
 export default class TerminalForm extends Component {
-  state = { pricingPlans: {} };
+  state = {
+    pricingPlans: {},
+    alertMessageForTerminalType: null,
+  };
 
   // Creates terminal
   handleCreate = body => {
     let file;
+    const gatewayMappingTerminalTypeValue =
+      gatewayMappingTerminalTypesDefaults[body.gateway];
 
     if (
       body['gateway_terminal_password'] &&
@@ -148,7 +164,21 @@ export default class TerminalForm extends Component {
       body.type.split(',').forEach(elem => {
         temp[elem] = '1';
       });
+
+      if (
+        gatewayMappingTerminalTypeValue &&
+        !temp[gatewayMappingTerminalTypeValue.value]
+      ) {
+        temp[gatewayMappingTerminalTypeValue.value] = '1';
+      }
+
       body.type = temp;
+    } else {
+      if (gatewayMappingTerminalTypeValue) {
+        body.type = {
+          [gatewayMappingTerminalTypeValue.value]: '1',
+        };
+      }
     }
 
     if (body.file) {
@@ -198,6 +228,23 @@ export default class TerminalForm extends Component {
       .catch(err => {
         notifyError(JSON.stringify(err.response));
       });
+  };
+
+  handleAlertMessageForTerminalType = message =>
+    this.setState({ alertMessageForTerminalType: message });
+
+  handleGateway = e => {
+    const value = e.target.value;
+
+    if (gatewayMappingOnAddMessages.hasOwnProperty(value)) {
+      this.handleAlertMessageForTerminalType(
+        gatewayMappingOnAddMessages[value]
+      );
+    } else {
+      if (this.state.alertMessageForTerminalType) {
+        this.handleAlertMessageForTerminalType();
+      }
+    }
   };
 
   render() {
@@ -252,6 +299,7 @@ export default class TerminalForm extends Component {
             label="Gateway"
             defaultValue={isEditMode ? entity.gateway : ''}
             disabled={isEditMode}
+            onChange={this.handleGateway}
           >
             {Object.keys(gateways).map(key => (
               <option key={key} value={key}>
@@ -471,6 +519,11 @@ export default class TerminalForm extends Component {
           </div>
 
           <div class="m-t m-b" />
+          {this.state.alertMessageForTerminalType && (
+            <div class="text-success">
+              {this.state.alertMessageForTerminalType}
+            </div>
+          )}
           <AsyncButton
             text="Cancel"
             class="btn btn-default"
