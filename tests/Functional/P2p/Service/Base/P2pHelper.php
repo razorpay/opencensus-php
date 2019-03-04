@@ -249,7 +249,7 @@ class P2pHelper
         $response = $request->send();
 
         // TODO: Remove Before Merging
-        info('_LOGGER_ RESPONSE', [$response->content()]);
+        info('_LOGGER_ RESPONSE', [$response->json()]);
 
         $this->runResponseCallbacks($response);
 
