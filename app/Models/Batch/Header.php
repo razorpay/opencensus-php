@@ -331,6 +331,11 @@ class Header
     const ENACH_NPCI_NETBANKING_DEBIT_ERROR_DESCRIPTION = 'Reason Discription';
     const ENACH_NPCI_NETBANKING_DEBIT_USER_REF          = 'User Reference';
 
+    const MERCHANT_ONBOARDING_EMI_SBI_MID         = 'MerchantID';
+    const MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_MID = 'GatewayMID';
+    const MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_TID = 'GatewayTID';
+    const MERCHANT_ONBOARDING_EMI_SBI_RZP_TID     = 'TerminalID';
+
     const DIRECT_DEBIT_EMAIL           = 'email';
     const DIRECT_DEBIT_CONTACT         = 'contact';
     const DIRECT_DEBIT_CARD_NUMBER     = 'card_number';
@@ -834,6 +839,20 @@ class Header
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        'merchant_onboarding_emi_sbi' => [
+            self::INPUT => [
+                self::MERCHANT_ONBOARDING_EMI_SBI_MID,
+                self::MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_MID,
+                self::MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_TID,
+            ],
+            self::OUTPUT => [
+                self::MERCHANT_ONBOARDING_EMI_SBI_MID,
+                self::MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_MID,
+                self::MERCHANT_ONBOARDING_EMI_SBI_GATEWAY_TID,
+                self::MERCHANT_ONBOARDING_EMI_SBI_RZP_TID,
             ],
         ],
 

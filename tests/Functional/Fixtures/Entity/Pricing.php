@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use RZP\Models;
+use RZP\Tests\Functional\Partner\Constants;
 
 class Pricing extends Base
 {
@@ -781,6 +782,47 @@ class Pricing extends Base
         return $pricingPlanId;
     }
 
+    public function createTwoPercentPricingPlan($attributes = [])
+    {
+        $pricingPlanId = $attributes['plan_id'] ?? Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN;
+
+        $rows = [
+            [
+                'id'             => '1ABp2Xd3t5aRPX',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'standard_plan',
+                'feature'        => 'payment',
+                'payment_method' => 'card',
+                'percent_rate'   => 200,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+                'type'           => 'pricing',
+            ],
+        ];
+
+        $this->addPricingRulesToDb($rows);
+    }
+
+    public function createImplicitPartnerPricingPlan($attributes = [])
+    {
+        $pricingPlanId = $attributes['plan_id'] ?? Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN;
+
+        $rows = [
+            [
+                'id'             => '1ABp2Xd3t5aRQX',
+                'plan_id'        => $pricingPlanId,
+                'plan_name'      => 'standard_plan',
+                'feature'        => 'payment',
+                'payment_method' => 'card',
+                'percent_rate'   => 180,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+                'type'           => 'pricing',
+            ],
+        ];
+
+        $this->addPricingRulesToDb($rows);
+    }
 
     protected function addPricingRulesToDb($rows)
     {

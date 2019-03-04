@@ -55,4 +55,13 @@ class FundTransferAttemptController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function updateFTA()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updateFundTransferAttempt($input);
+
+        return ApiResponse::json($response);
+    }
 }

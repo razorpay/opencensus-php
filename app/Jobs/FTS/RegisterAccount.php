@@ -10,6 +10,8 @@ use RZP\Trace\TraceCode;
 
 class RegisterAccount extends Job
 {
+    const RETRY_PERIOD         = 30;
+
     const MAX_ALLOWED_ATTEMPTS = 10;
 
     /**
@@ -51,7 +53,9 @@ class RegisterAccount extends Job
                     'channel' => $this->channel,
                 ]);
 
-            $ftsResponse = App::getFacadeRoot()['fts_register_account']->registerFundAccount($this->channel, $this->ids);
+            $ftsResponse = App::getFacadeRoot()['fts_register_account']->registerFundAccount(
+                $this->channel,
+                $this->ids);
 
             $this->trace->info(
                 TraceCode::FTS_REGISTER_ACCOUNT_COMPLETE,
@@ -72,8 +76,10 @@ class RegisterAccount extends Job
             if ($this->attempts() > self::MAX_ALLOWED_ATTEMPTS)
             {
                 $this->delete();
-
-                return;
+            }
+            else
+            {
+                $this->release(self::RETRY_PERIOD);
             }
         }
     }

@@ -19,6 +19,7 @@ class Entity extends Base\PublicEntity
     const FEE               = 'fee';
 
     const TAX               = 'tax';
+    const TYPE              = 'type';
     const DEBIT             = 'debit';
     const NOTES             = 'notes';
     const CREDIT            = 'credit';
@@ -54,6 +55,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::FEE,
         self::TAX,
+        self::TYPE,
         self::DEBIT,
         self::CREDIT,
         self::STATUS,
@@ -65,12 +67,13 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $publicSetters = [
-        self::MERCHANT
+        self::MERCHANT,
     ];
 
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
+        self::TYPE   => Type::IMPLICIT,
         self::STATUS => Status::CREATED,
         self::NOTES  => [],
     ];

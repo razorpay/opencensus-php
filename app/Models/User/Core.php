@@ -573,4 +573,18 @@ class Core extends Base\Core
 
         return $payload;
     }
+
+    /**
+     * @param Entity $user
+     * @param array  $input
+     */
+    public function setNewPassword(Entity $user, array $input)
+    {
+        $changePasswordData = [
+            'password'              => $input['password'],
+            'password_confirmation' => $input['password_confirmation'],
+        ];
+
+        $this->changePassword($user, $changePasswordData);
+    }
 }

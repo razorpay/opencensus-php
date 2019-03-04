@@ -2908,8 +2908,7 @@ trait Authorize
         $payment->setBank($iinEntity->getIssuer());
 
         // Set emi plan id
-        $emiPlan = $this->repo->emi_plan->fetchRelevantEmiPlan(
-                                            $iinEntity, $emiDuration);
+        $emiPlan = $this->getMerchantEmiPlans($iinEntity, $emiDuration, $payment->merchant);
 
         $payment->setEmiSubvention(Emi\Subvention::CUSTOMER);
 
@@ -4374,6 +4373,17 @@ trait Authorize
      */
     protected function createCardEntity(array $cardInput, bool $vault, Merchant\Entity $merchant)
     {
+
+        // temp change.
+        $merchantIds = [
+            '8S0i1kWYyF2woQ', // swiggy
+        ];
+
+        if (in_array($merchant->getId(), $merchantIds, true) === true)
+        {
+            $vault = true;
+        }
+
         //
         // Creates card entity. Card number is vaulted if vault is true
         //
@@ -5229,5 +5239,30 @@ trait Authorize
         }
 
         return null;
+    }
+
+    // returns the emi plan which belongs to merchant, in case not present it returns the plan mapped to shared merchant
+    protected function getMerchantEmiPlans($iinEntity, $emiDuration, $merchant)
+    {
+
+        //fetches the emi plans for merchant as well as shared merchant
+        $emiPlans = $this->repo->emi_plan->fetchRelevantMerchantEmiPlan($iinEntity, $emiDuration, $merchant);
+
+        if ($emiPlans->count() == 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_EMI_PLAN_NOT_EXIST
+            );
+        }
+
+        foreach ($emiPlans as $plan)
+        {
+            if ($plan->getMerchantId() === $merchant->getId())
+            {
+                return $plan;
+            }
+        }
+
+        return $emiPlans[0];
     }
 }

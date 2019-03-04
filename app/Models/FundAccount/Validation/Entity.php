@@ -36,6 +36,7 @@ class Entity extends Base\PublicEntity
     const ERROR_DESCRIPTION      = 'error_description';
     const NOTES                  = 'notes';
     const RESULTS                = 'results';
+    const FTS_TRANSFER_ID        = 'fts_transfer_id';
 
     // Key for the response
     const FUND_ACCOUNT          = 'fund_account';
@@ -183,6 +184,11 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::REGISTERED_NAME, $name);
     }
 
+    public function setFTSTransferId($ftsTransferId)
+    {
+        $this->setAttribute(self::FTS_TRANSFER_ID, $ftsTransferId);
+    }
+
     // -------------- Public Setters --------------
 
     public function setPublicEntityAttribute(array & $array)
@@ -243,6 +249,11 @@ class Entity extends Base\PublicEntity
     public function getFundAccountType()
     {
         return $this->getAttribute(self::FUND_ACCOUNT_TYPE);
+    }
+
+    public function getFTSTransferId()
+    {
+        return $this->getAttribute(self::FTS_TRANSFER_ID);
     }
 
     // ------------ Mocked Setters ---------

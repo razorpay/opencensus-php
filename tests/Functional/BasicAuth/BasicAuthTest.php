@@ -6,10 +6,9 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Tests\Functional\TestCase;
-use Functional\Partner\PartnerTrait;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
-
 
 class BasicAuthTest extends TestCase
 {

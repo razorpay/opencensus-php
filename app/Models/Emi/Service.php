@@ -3,34 +3,19 @@
 namespace RZP\Models\Emi;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
-
 use RZP\Models\Base;
-use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Bank\IFSC;
+use RZP\Constants\Timezone;
+use RZP\Models\Merchant\Account;
 
 class Service extends Base\Service
 {
     public function all()
     {
-        $emiPlans = $this->repo->emi_plan->fetchEmiPlans();
+        $plans = $this->fetchEmiPlans();
 
-        $plans = [];
-
-        foreach ($emiPlans as $plan)
-        {
-            $issuer = $plan->getIssuer();
-
-            $duration = $plan->getDuration();
-
-            $amount = $plan->getMinAmount();
-
-            // all plans of a bank will have same min amount
-            $plans[$issuer][Entity::MIN_AMOUNT] = $amount;
-
-            $plans[$issuer]['plans'][$duration] = $plan->getRate() / 100;
-        }
+        $plans = $this->formatPlan($plans);
 
         if ((new Merchant\Service)->isSbiEmiEnabled() === false)
         {
@@ -43,7 +28,7 @@ class Service extends Base\Service
 
     public function getEmiOptions($offers = null, $order = null)
     {
-        $emiPlans = $this->repo->emi_plan->fetchEmiPlans();
+        $emiPlans = $this->fetchEmiPlans();
 
         $plans = [];
 
@@ -208,7 +193,7 @@ class Service extends Base\Service
             return [];
         }
 
-        $emiPlans = $this->repo->emi_plan->fetchEmiPlans();
+        $emiPlans = $this->fetchEmiPlans();
         $emiOfferPlans = [];
 
         $offers->map(function ($offer) use($emiPlans, & $emiOfferPlans) {
@@ -315,6 +300,55 @@ class Service extends Base\Service
         }
 
         return array($from, $to);
+    }
+
+    private function formatPlan($emiPlans)
+    {
+        $plans = [];
+
+        foreach ($emiPlans as $plan)
+        {
+            $issuer = $plan->getIssuer();
+
+            $duration = $plan->getDuration();
+
+            $amount = $plan->getMinAmount();
+
+            // all plans of a bank will have same min amount
+            $plans[$issuer][Entity::MIN_AMOUNT] = $amount;
+
+            $plans[$issuer]['plans'][$duration] = $plan->getRate() / 100;
+        }
+
+        return $plans;
+    }
+
+    private function fetchEmiPlans()
+    {
+        $sharedEmiPlans = $this->repo->emi_plan->fetchEmiPlansByMerchantId(Account::SHARED_ACCOUNT);
+
+        $merchantEmiPlans = $this->repo->emi_plan->fetchEmiPlansByMerchantId($this->merchant->getId());
+
+        $issuers = [];
+
+        foreach ($merchantEmiPlans as $plan)
+        {
+            $issuer = $plan->getIssuer();
+
+            if (in_array($issuer, $issuers, true) === false)
+            {
+                array_push($issuers, $issuer);
+            }
+        }
+
+        $sharedEmiPlans = $sharedEmiPlans->reject(function ($sharedPlan) use ($issuers)
+        {
+            return in_array($sharedPlan->getIssuer(), $issuers, true) === true;
+        });
+
+        $emiPlans = $merchantEmiPlans->merge($sharedEmiPlans);
+
+        return $emiPlans;
     }
 
 }

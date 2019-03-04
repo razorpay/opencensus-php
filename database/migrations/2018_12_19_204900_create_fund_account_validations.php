@@ -35,6 +35,9 @@ class CreateFundAccountValidations extends Migration
 
             $table->string(E::STATUS, 255);
 
+            $table->integer(E::FTS_TRANSFER_ID)
+                  ->nullable();
+
             $table->string(E::ACCOUNT_STATUS, 255)
                   ->nullable();
 
@@ -77,6 +80,7 @@ class CreateFundAccountValidations extends Migration
             $table->index(E::MERCHANT_ID);
             $table->index([E::FUND_ACCOUNT_ID, E::MERCHANT_ID]);
             $table->index([E::CREATED_AT, E::MERCHANT_ID]);
+            $table->index(E::FTS_TRANSFER_ID);
         });
     }
 

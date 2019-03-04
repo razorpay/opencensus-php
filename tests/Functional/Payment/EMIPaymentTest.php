@@ -4,14 +4,12 @@ namespace RZP\Tests\Functional\Payment;
 
 use Str;
 use File;
-use ZipArchive;
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use Mail;
 use Queue;
-
-use RZP\Mail\Emi as EmiMail;
+use ZipArchive;
+use Carbon\Carbon;
 use RZP\Jobs\BeamJob;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -58,6 +56,32 @@ class EMIPaymentTest extends TestCase
         $this->assertEquals($feeBreakup['items'][1]['pricing_rule_id'], '1zE31zbybabab2');
 
         $this->assertEquals($payment['emi_plan_id'], $emiPlan[0]['id']);
+        $this->assertEquals($payment['method'], 'emi');
+        $this->assertEquals($payment['status'], 'captured');
+
+        $this->fixtures->merchant->disableEmi();
+    }
+
+    public function testEmiPaymentCreatWithMerchantSpecificEmiPlan()
+    {
+        $this->fixtures->emiPlan->createMerchantSpecificEmiPlans();
+
+        $this->fixtures->merchant->enableEmi();
+        $this->ba->publicAuth();
+        $this->payment['amount'] = 500000;
+        $this->payment['method'] = 'emi';
+        $this->payment['emi_duration'] = 6;
+        $this->payment['card']['number'] = '41476700000006';
+
+        $content = $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $feeBreakup = $this->getEntities('fee_breakup',[], true);
+
+        $this->assertEquals($feeBreakup['items'][1]['pricing_rule_id'], '1zE31zbybabab2');
+
+        $this->assertEquals($payment['emi_plan_id'], '11101010101010');
         $this->assertEquals($payment['method'], 'emi');
         $this->assertEquals($payment['status'], 'captured');
 
