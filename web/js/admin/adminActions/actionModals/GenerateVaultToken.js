@@ -38,6 +38,13 @@ export default function GenerateVaultToken() {
           }).then(response => {
             if (response) {
               notifySuccess('Token created successfully.');
+              openModal(
+                <ModalContent header="API Response" noPadding>
+                  <div class="code" style={{ width: '650px' }}>
+                    {JSON.stringify(response, null, 4)}
+                  </div>
+                </ModalContent>
+              );
               closeModal();
             }
           });
