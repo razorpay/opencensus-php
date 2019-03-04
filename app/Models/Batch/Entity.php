@@ -176,16 +176,18 @@ class Entity extends Base\PublicEntity
      * Overridden
      * Ref: validateInputByType
      *
-     * @param  array  $input
+     * @param  array $input
+     * @param bool   $validateFlow Indicates if called in the batch validate flow
+     *
      * @return Entity
      */
-    public function build(array $input = [])
+    public function build(array $input = [], bool $validateFlow = false)
     {
         $this->input = $input;
 
         $this->modify($input);
 
-        $this->validateInputByType($input);
+        $this->validateInputByType($input, $validateFlow);
 
         // Todo: https://github.com/razorpay/spine/issues/25
         $this->getValidator()->validateOtp($input);
@@ -204,9 +206,29 @@ class Entity extends Base\PublicEntity
      * there is one default create rule.
      *
      * @param array $input
+     * @param bool  $validateFlow Indicates if called in the batch validate flow
      */
-    protected function validateInputByType(array $input)
+    protected function validateInputByType(array $input, bool $validateFlow = false)
     {
+        if ($validateFlow === true)
+        {
+            //
+            // If in the validate flow, validate the request against a different set of rules
+            // if defined, else fallback to the create validation logic.
+            //
+            $type = $input[Entity::TYPE] ?? 'unknown';
+            $rule = camel_case($type) . 'ValidateRules';
+
+            if (property_exists(Validator::class, $rule) === true)
+            {
+                $operation = $type . '_validate';
+
+                $this->validateInput($operation, $input);
+
+                return;
+            }
+        }
+
         $operation = 'default_create';
 
         $type = $input[Entity::TYPE] ?? 'unknown';
