@@ -127,7 +127,7 @@ const HDFC_terminalTypesMapping = [
 ];
 
 const gatewayMappingOnAddMessages = {
-  paytm: `Direct settlement will be enforsed on this Paytm gateway`,
+  paytm: 'Direct settlement will be enforced on for gateway Paytm',
 };
 
 const gatewayMappingTerminalTypesDefaults = {
@@ -507,7 +507,6 @@ export default class TerminalForm extends Component {
 
           <div class="types-select">
             <MultiSelectField
-              ref={el => (this.terminalTypesEle = el)}
               class="terminal-types"
               label="Types"
               name="type"
@@ -520,9 +519,11 @@ export default class TerminalForm extends Component {
           </div>
 
           <div class="m-t m-b" />
-          <div class="text-success">
-            {this.state.alertMessageForTerminalType}
-          </div>
+          {this.state.alertMessageForTerminalType && (
+            <div class="text-success">
+              {this.state.alertMessageForTerminalType}
+            </div>
+          )}
           <AsyncButton
             text="Cancel"
             class="btn btn-default"
