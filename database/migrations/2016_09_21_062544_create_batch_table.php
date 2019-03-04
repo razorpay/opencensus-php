@@ -88,6 +88,7 @@ class CreateBatchTable extends Migration
             $table->index(Batch::TYPE);
             $table->index(Batch::GATEWAY);
             $table->index(Batch::STATUS);
+            $table->index(Batch::CREATOR_ID);
 
             $table->foreign(Batch::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

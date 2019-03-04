@@ -36,6 +36,12 @@ class EntityMappingTest extends TestCase
         // for payment link type.
 
         Queue::assertPushed(BatchJob::class);
+
+        // Asserts association of creator for batch.
+        // In this case because this is app auth neither admin nor user exists.
+        $batch = $this->getDbLastEntity('batch');
+        $this->assertEquals(null, $batch->getCreatorId());
+        $this->assertEquals(null, $batch->getCreatorType());
     }
 
     public function testCreateEntityMappingBatchStatus()

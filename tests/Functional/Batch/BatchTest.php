@@ -4,7 +4,6 @@ namespace RZP\Tests\Functional\Batch;
 
 use RZP\Models\Vpa;
 use RZP\Models\Payout;
-use RZP\Models\Invoice;
 use RZP\Models\BankAccount;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
@@ -60,6 +59,11 @@ class BatchTest extends TestCase
         // 2 + 1 (Existing)
         $this->assertCount(2 + 1, $vpas);
         $this->assertCount(2, $vpas->where(Vpa\Entity::ADDRESS, 'jitendrakkkk@upi'));
+
+        // Asserts association of creator for batch.
+        $batch = $this->getDbLastEntity('batch');
+        $this->assertEquals('MerchantUser01', $batch->getCreatorId());
+        $this->assertEquals('user', $batch->getCreatorType());
     }
 
     public function testCreateBatchOfPayoutType()
@@ -83,29 +87,12 @@ class BatchTest extends TestCase
         $this->startTest();
 
         $payouts = $this->getDbEntities('payout');
-
         $this->assertCount(2, $payouts);
         $this->assertEquals(1100, $payouts->sum(Payout\Entity::AMOUNT));
         $this->assertEquals('1234567890', $payouts->first()->fundAccount->account->getAccountNumber());
         $this->assertEquals('Jitendra', $payouts->first()->fundAccount->contact->getName());
         $this->assertEquals('fa_000000000test1', $payouts->last()->fundAccount->getPublicId());
         $this->assertEquals('test user', $payouts->last()->fundAccount->contact->getName());
-    }
-
-    public function testCreateBatchOfPaymentLinks()
-    {
-        $entries = $this->getFileEntries(__FUNCTION__);
-
-        $this->createAndPutCsvFileInRequest($entries, __FUNCTION__);
-
-        $this->startTest();
-
-        $invoices = $this->getDbEntities('invoice');
-
-        $this->assertCount(2, $invoices);
-        $this->assertEquals(300, $invoices->sum(Invoice\Entity::AMOUNT));
-        $this->assertEquals('Test payment link description 1', $invoices->first()->getDescription());
-        $this->assertEquals('Test payment link description 2', $invoices->last()->getDescription());
     }
 
     protected function getFileEntries(string $callee): array

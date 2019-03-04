@@ -1,11 +1,8 @@
 <?php
 
-use Carbon\Carbon;
 use RZP\Error\ErrorCode;
-use RZP\Constants\Timezone;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
-
 
 return [
     'testCreateBatchOfFundAccountType' => [
@@ -42,26 +39,6 @@ return [
                 'type'        => 'payout',
                 'status'      => 'created',
                 'total_count' => 2,
-            ],
-        ],
-    ],
-
-    'testCreateBatchOfPaymentLinks' => [
-        'request' => [
-            'url'     => '/batches',
-            'method'  => 'post',
-            'content' => [
-                'type' => 'payment_link',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                "entity"            => "batch",
-                "type"              => "payment_link",
-                "status"            => "created",
-                "total_count"       => 2,
-                "creator_id"        => "MerchantUser01",
-                "creator_type"      => "user",
             ],
         ],
     ],
@@ -191,29 +168,6 @@ return [
             'Contact Reference Id'      => '',
             'notes[place]'              => '',
             'notes[code]'               => '',
-        ],
-    ],
-
-    'testCreateBatchOfPaymentLinksRequestFileEntries' => [
-        [
-            'Invoice Number'    => '1',
-            'Customer Name'     => 'Test Customer',
-            'Customer Email'    => 'test@test.test',
-            'Customer Contact'  => '9999988888',
-            'Amount'            => 100,
-            'Description'       => 'Test payment link description 1',
-            'Expire By'         => Carbon::now(Timezone::IST)->format('d-m-Y'),
-            'Partial Payment'   => 0
-        ],
-        [
-            'Invoice Number'    => '2',
-            'Customer Name'     => 'Test Customer',
-            'Customer Email'    => 'testing@test.test',
-            'Customer Contact'  => '9999988888',
-            'Amount'            => 200,
-            'Description'       => 'Test payment link description 2',
-            'Expire By'         => Carbon::now(Timezone::IST)->format('d-m-Y'),
-            'Partial Payment'   => 0
         ],
     ],
 ];
