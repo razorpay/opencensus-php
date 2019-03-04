@@ -77,6 +77,10 @@ class Formatter
                         }
                         break;
 
+                    case 'message_type':
+                        $input[IIN::MESSAGE_TYPE] = $row[$index];
+                        break;
+
                     default:
                         //ignore extra columns
                         break;
