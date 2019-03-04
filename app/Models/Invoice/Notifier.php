@@ -12,7 +12,6 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Mail\Invoice as InvoiceMail;
 use RZP\Models\Merchant\Preferences;
-use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Invoice\ViewDataSerializer;
 
 class Notifier extends Base\Core
@@ -357,20 +356,14 @@ class Notifier extends Base\Core
 
         if ($this->invoice->isTypeOfSubscriptionRegistration() === true)
         {
-            $subscriptionRegistration = $this->invoice->entity;
-
-            if ($subscriptionRegistration->getMethod() === SubscriptionRegistration\Entity::METHOD_TYPE_CARD)
-            {
-                $defaultTemplate = 'sms.custom_invoice.subscription_registration_card';
-            }
-
-            if ($subscriptionRegistration->getMethod() === SubscriptionRegistration\Entity::METHOD_TYPE_EMANDATE)
-            {
-                $defaultTemplate = 'sms.custom_invoice.subscription_registration_emandate';
-            }
+            $custom = $this->getCustomTemplateAndParamsForSubscriptionRegistration($merchant);
         }
 
-        $custom         = $this->getCustomRavenTemplateAndParams($merchant);
+        else
+        {
+            $custom = $this->getCustomRavenTemplateAndParams($merchant);
+        }
+
         $customTemplate = $custom['template'];
         $customParams   = $custom['params'];
         $customSender   = $custom['sender'];
@@ -397,7 +390,7 @@ class Notifier extends Base\Core
         return $request;
     }
 
-    protected function getCustomRavenTemplateAndParams(Merchant\Entity $merchant): array
+    protected function  getCustomRavenTemplateAndParams(Merchant\Entity $merchant): array
     {
         $template = $params = $sender = null;
 
@@ -444,16 +437,6 @@ class Notifier extends Base\Core
 
                 break;
 
-            case Preferences::MID_DMI_FINANCE:
-
-                $template = 'sms.custom_invoice.dmi_finance';
-                $params   = [
-                    'receipt'      => $receipt,
-                    'invoice_link' => $invoiceLink,
-                ];
-
-                break;
-
             case Preferences::MID_VARTHANA_FINANCE:
 
                 $template = 'sms.custom_invoice.varthana_finance';
@@ -470,6 +453,51 @@ class Notifier extends Base\Core
                 [
                     'parameter' => Entity::RECEIPT,
                 ]);
+        }
+
+        return ['template' => $template, 'params' => $params, 'sender' => $sender];
+    }
+
+    protected function getCustomTemplateAndParamsForSubscriptionRegistration(Merchant\Entity $merchant): array
+    {
+        $template = $params = $sender = null;
+
+        $receipt = $this->invoice->getReceipt();
+
+        $invoiceLink = $this->invoice->getShortUrl();
+
+        switch ($merchant->getId())
+        {
+            case Preferences::MID_DMI_FINANCE:
+
+                $template = 'sms.custom_invoice.dmi_finance';
+
+                $params   = [
+                    'receipt'      => $receipt,
+                    'invoice_link' => $invoiceLink,
+                ];
+
+                break;
+
+            default:
+
+                $subscriptionRegistration = $this->invoice->entity;
+
+                if ($subscriptionRegistration->isMethodCard() === true)
+                {
+                    $template = 'sms.custom_invoice.subscription_registration_card';
+                }
+
+                if ($subscriptionRegistration->isMethodEmandate() === true)
+                {
+                    $template = 'sms.custom_invoice.subscription_registration_emandate';
+                }
+
+                $params   = [
+                    'merchant_name' => $merchant->getBillingLabel(),
+                    'invoice_link'  => $this->invoice->getShortUrl(),
+                    'amount'        => $this->invoice->getAmount() / 100,
+                ];
         }
 
         return ['template' => $template, 'params' => $params, 'sender' => $sender];
