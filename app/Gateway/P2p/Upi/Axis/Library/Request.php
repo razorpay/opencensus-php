@@ -3,6 +3,7 @@
 namespace RZP\Gateway\P2p\Upi\Axis\Library;
 
 use Illuminate\Support\Collection;
+
 use RZP\Base\JitValidator;
 
 class Request
@@ -12,8 +13,6 @@ class Request
     protected $map;
 
     protected $input;
-
-    protected $payload;
 
     protected $signature;
 

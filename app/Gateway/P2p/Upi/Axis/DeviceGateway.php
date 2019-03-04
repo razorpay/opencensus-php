@@ -2,12 +2,12 @@
 
 namespace RZP\Gateway\P2p\Upi\Axis;
 
+use RZP\Gateway\P2p\Upi\Contracts;
 use RZP\Gateway\P2p\Base\Response;
+use RZP\Models\P2p\Device\RegisterToken;
 use RZP\Gateway\P2p\Upi\Axis\Library\Action;
 use RZP\Gateway\P2p\Upi\Axis\Library\Fields;
 use RZP\Gateway\P2p\Upi\Axis\Library\Request;
-use RZP\Gateway\P2p\Upi\Contracts;
-use RZP\Models\P2p\Device\RegisterToken;
 use RZP\Gateway\P2p\Upi\Axis\Library\Requests\Device;
 
 class DeviceGateway extends Gateway implements Contracts\DeviceGateway
