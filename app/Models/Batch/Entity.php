@@ -11,6 +11,8 @@ use RZP\Models\FileStore;
  */
 class Entity extends Base\PublicEntity
 {
+    use Base\Traits\HasCreator;
+
     const NAME                      = 'name';
     const STATUS                    = 'status';
     const PROCESSING                = 'processing';
@@ -20,6 +22,8 @@ class Entity extends Base\PublicEntity
     const FAILURE_COUNT             = 'failure_count';
     const ATTEMPTS                  = 'attempts';
     const CREATOR                   = 'creator';
+    const CREATOR_ID                = 'creator_id';
+    const CREATOR_TYPE              = 'creator_type';
 
     /**
      * Fields amount and processed_amount represent the total amounnt across
@@ -29,8 +33,6 @@ class Entity extends Base\PublicEntity
     const PROCESSED_AMOUNT          = 'processed_amount';
 
     const COMMENT                   = 'comment';
-    const CREATOR_ID                = 'creator_id';
-    const CREATOR_TYPE              = 'creator_type';
     const PROCESSED_AT              = 'processed_at';
     const TYPE                      = 'type';
 
@@ -130,8 +132,6 @@ class Entity extends Base\PublicEntity
         self::PROCESSED_PERCENTAGE,
         self::ATTEMPTS,
         self::AMOUNT,
-        self::CREATOR_ID,
-        self::CREATOR_TYPE,
         self::PROCESSED_AMOUNT,
         self::PROCESSED_AT,
         self::CREATED_AT,
@@ -151,8 +151,6 @@ class Entity extends Base\PublicEntity
         self::FAILURE_REASON      => null,
         self::SUB_TYPE            => null,
         self::NAME                => null,
-        self::CREATOR_ID          => null,
-        self::CREATOR_TYPE        => null,
         self::COMMENT             => null,
         self::PROCESSED_AT        => null,
     ];
@@ -301,16 +299,6 @@ class Entity extends Base\PublicEntity
     public function latestFile()
     {
         return $this->files()->latest()->first();
-    }
-
-    /**
-     * Defines a polymorphic relation with entities
-     * implementing a morphMany association on the
-     * 'creator' key
-     */
-    public function creator()
-    {
-        return $this->morphTo(self::CREATOR);
     }
 
     // ----------------------- Getters -------------------------------
@@ -469,16 +457,6 @@ class Entity extends Base\PublicEntity
     public function getLocalSavePath(string $prefix): string
     {
         return $this->getLocalSaveDir($prefix) . $this->getFileKeyWithExt();
-    }
-
-    public function getCreatorId()
-    {
-        return $this->getAttribute(self::CREATOR_ID);
-    }
-
-    public function getCreatorType()
-    {
-        return $this->getAttribute(self::CREATOR_TYPE);
     }
 
     public function isCreatedByFileUpload(): bool

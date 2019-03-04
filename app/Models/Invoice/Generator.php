@@ -78,7 +78,6 @@ class Generator extends Base\Core
     const ORDER_CURRENCY = 'INR';
     const SHORT_MODE_LIVE = 'l';
     const SHORT_MODE_TEST = 't';
-    const USER            = 'user';
 
     public function __construct(Merchant\Entity $merchant, Entity $invoice = null)
     {
@@ -325,18 +324,11 @@ class Generator extends Base\Core
         $invoice->generateId();
 
         // Capture dashboard user id from dashboard headers if applies
-        $this->setInvoiceUserIdFromDashboardHeadersIfAvailable($invoice);
+        $this->setInvoiceCreator($invoice);
 
         // Saves merchant specific details in invoice as copy e.g. merchant label & gstin to use
         $invoice->setMerchantGstin($this->merchant->getGstin());
         $invoice->setMerchantLabel($this->merchant->getLabelForInvoice());
-
-        if (($this->batch !== null) && ($this->batch->getCreatorType() === self::USER))
-        {
-            $user = $this->repo->user->findOrFailPublic($this->batch->getCreatorId());
-
-            $invoice->user()->associate($user);
-        }
 
         $this->invoice = $invoice;
     }
@@ -393,13 +385,20 @@ class Generator extends Base\Core
         $this->setShortUrl();
     }
 
-    protected function setInvoiceUserIdFromDashboardHeadersIfAvailable(Entity $invoice)
+    protected function setInvoiceCreator(Entity $invoice)
     {
-        $headers = $this->app['basicauth']->getDashboardHeaders();
-
-        if (array_key_exists(Entity::USER_ID, $headers) === true)
+        // If the creation is via batch get the batch creator and associate conditionally.
+        if ($this->batch !== null)
         {
-            $invoice->setUserId($headers[Entity::USER_ID]);
+            if ($this->batch->isCreatorTypeUser() === true)
+            {
+                $invoice->user()->associate($this->batch->creator);
+            }
+        }
+        // Else just associates the authenticated user.
+        else
+        {
+            $invoice->user()->associate($this->app->basicauth->getUser());
         }
     }
 

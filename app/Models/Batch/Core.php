@@ -19,17 +19,18 @@ class Core extends Base\Core
      * Create flow: Creates new batch entity against given file id or against
      * given file(by first storing it).
      *
-     * @param  array           $input
-     * @param  Merchant\Entity $merchant
+     * @param  array             $input
+     * @param  Merchant\Entity   $merchant
+     * @param  Base\PublicEntity $creator
      * @return Entity
      */
-    public function create(array $input, Merchant\Entity $merchant): Entity
+    public function create(array $input, Merchant\Entity $merchant, Base\PublicEntity $creator = null): Entity
     {
         $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, $input);
 
         $batch = (new Entity)->build($input);
 
-        $this->associateCreatorDetails($batch);
+        $batch->creator()->associate($creator);
 
         $batch->merchant()->associate($merchant);
 
@@ -230,30 +231,5 @@ class Core extends Base\Core
 
             BatchJob::dispatch($this->mode, $batch->getId(), $input);
         }
-    }
-
-    /**
-     * It sets the batch creator_type and creator_id by fetching from dashboard headers.
-     *
-     * @param Entity $batch
-     */
-    protected function associateCreatorDetails(Entity $batch)
-    {
-        $creator = null;
-
-        $admin = $this->app['basicauth']->getAdmin();
-
-        $user = $this->app['basicauth']->getUser();
-
-        if (empty($admin) === false)
-        {
-            $creator = $admin;
-        }
-        else if(empty($user) === false)
-        {
-            $creator = $user;
-        }
-
-        $batch->creator()->associate($creator);
     }
 }

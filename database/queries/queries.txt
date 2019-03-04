@@ -3034,9 +3034,6 @@ ALTER TABLE `merchant_details`
 ALTER TABLE batches
     ADD COLUMN name varchar(255) AFTER sub_type;
 
-ALTER TABLE batches
-    ADD COLUMN `creator_id` char(14) DEFAULT NULL AFTER `comment`,
-    ADD COLUMN `creator_type` varchar(255) DEFAULT NULL AFTER `creator_id`;
 
 # Airtel aggregator accounts breakup -- start
 
@@ -3217,6 +3214,7 @@ insert into tagging_tagged (taggable_id, taggable_type, tag_name, tag_slug)  VAL
 
 update merchant_users
 set user_id='9mPSvBxUBCLKx8'
+
 where merchant_id IN ('9ac0ApXdgwOurS','9ac0BFkiA29q8o','9ac0Bihc4F9qnW','9ac0CBXZ5Oszgy','9ac0CbzTsptnFU','9ac0D4UcMgbTZV','9ac0DT7Epk7Dre','9ac0DtwA1clRpg','9ac0EIkPFZHWYR','9ac0EnB7f5eyU7','9ac0FFIRLXx83B','9ac0FcOUFdiZWP','9ac0FzCLhwFBx4','9ac0HPqkLkY6tR')
 and role = 'owner';
 
@@ -4798,3 +4796,7 @@ ALTER TABLE fund_account_validations
 
 ALTER TABLE fund_transfer_attempts
     ADD COLUMN card_id CHAR(14) DEFAULT NULL after vpa_id;
+
+ALTER TABLE batches
+    ADD COLUMN creator_id CHAR(14) DEFAULT NULL AFTER comment,
+    ADD COLUMN creator_type VARCHAR(255) DEFAULT NULL AFTER creator_id;

@@ -111,4 +111,13 @@ class Service
 
         return $this->core;
     }
+
+    /**
+     * @return \RZP\Models\Admin\Admin\Entity|
+     *         \RZP\Models\User\Entity
+     */
+    public function getAuthAdminElseUser(): PublicEntity
+    {
+        return $this->auth->getAdmin() ?: $this->auth->getUser();
+    }
 }

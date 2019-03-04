@@ -444,7 +444,6 @@ class ApiServiceProvider extends BaseServiceProvider
             'role'                      => Admin\Role\Entity::class,
             'permission'                => Admin\Permission\Entity::class,
 
-            // merchant user
             'user'                      => User\Entity::class,
 
             // line items
