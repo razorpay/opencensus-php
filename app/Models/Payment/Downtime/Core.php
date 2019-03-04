@@ -24,6 +24,13 @@ class Core extends Base\Core
         return $downtime;
     }
 
+    public function createFromGatewayDowntimes(array $input)
+    {
+        $gatewayDowntimes = $this->repo->gateway_downtime->fetchCurrentAndFutureDowntimes();
+
+        $this->processUpi($gatewayDowntimes);
+    }
+
     protected function processUpi(Collection $gatewayDowntimes)
     {
         (new UpiProcessor)->process($gatewayDowntimes);

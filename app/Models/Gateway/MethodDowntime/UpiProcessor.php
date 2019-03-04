@@ -6,9 +6,9 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Payment\Gateway;
 use Illuminate\Database\Eloquent\Collection;
 use RZP\Models\Gateway\Downtime\Entity as GatewayDowntime;
-use RZP\Models\Payment\Gateway;
 
 class UpiProcessor extends Base\Core
 {
@@ -18,7 +18,7 @@ class UpiProcessor extends Base\Core
     {
         $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::METHOD, '=', self::UPI);
 
-        if (($gatewayDowntimes->isEmpty() === true) and
+        if (($gatewayDowntimes->isEmpty() === true) or
             ($this->impliesUpiDowntime($gatewayDowntimes) === false))
         {
             return;
@@ -26,12 +26,12 @@ class UpiProcessor extends Base\Core
 
         list($begin, $end) = $this->calculateDowntimePeriod($gatewayDowntimes);
 
-        $this->createMethodDowntime($begin, $end);
+        return $this->createMethodDowntime($begin, $end);
     }
 
     protected function impliesUpiDowntime(Collection $gatewayDowntimes)
     {
-        $gatewaysDown = $gatewayDowntimes->pluck(GatewayDowntime::Gateway);
+        $gatewaysDown = $gatewayDowntimes->pluck(GatewayDowntime::GATEWAY)->toArray();
 
         $upiGateways = Gateway::$methodMap[self::UPI];
 
@@ -55,7 +55,7 @@ class UpiProcessor extends Base\Core
         return [$gatewayDowntimeMaxStart, $gatewayDowntimeMinEnd];
     }
 
-    protected function createMethodDowntime(int $begin, int $end): Entity
+    protected function createMethodDowntime(int $begin, int $end = null): Entity
     {
         $input = [
             Entity::METHOD => self::UPI,
@@ -63,6 +63,6 @@ class UpiProcessor extends Base\Core
             Entity::END    => $end,
         ];
 
-        (new Core)->create($input);
+        return (new Core)->create($input);
     }
 }

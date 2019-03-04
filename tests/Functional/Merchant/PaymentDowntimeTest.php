@@ -19,12 +19,12 @@ class PaymentDowntimeTest extends TestCase
         parent::setUp();
 
         $this->ba->privateAuth();
-
-        $this->markTestSkipped('no code, lol');
     }
 
     public function testGetCardDowntimeForRupayGateways()
     {
+        $this->markTestSkipped('no code, lol');
+
         $this->createCardNetworkDowntime('RUPAY');
 
         $this->startTest();
@@ -32,6 +32,8 @@ class PaymentDowntimeTest extends TestCase
 
     public function testGetNoCardDowntimeForSingleRupayGateway()
     {
+        $this->markTestSkipped('no code, lol');
+
         // Only one gateway down, network should still be up
         $this->fixtures->create('gateway_downtime:card', [
             'begin'     => Carbon::now()->subMinutes(30)->timestamp,
@@ -54,6 +56,10 @@ class PaymentDowntimeTest extends TestCase
             'scheduled' => false,
         ]);
 
+        $this->createMethodDowntimes();
+
+        $this->ba->privateAuth();
+
         $this->startTest();
     }
 
@@ -61,11 +67,50 @@ class PaymentDowntimeTest extends TestCase
     {
         $this->createUpiAllGatewayDowntime();
 
+        $this->createMethodDowntimes();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetNoUpiDowntimeForSingleGateway()
+    {
+        $this->fixtures->create('gateway_downtime:upi', [
+            'begin'     => Carbon::now()->subMinutes(30)->timestamp,
+            'end'       => null,
+            'gateway'   => 'upi_mindgate',
+            'scheduled' => false,
+        ]);
+
+        $this->createMethodDowntimes();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetSingleUpiDowntimeForMultipleDowntimeCreations()
+    {
+        $this->fixtures->create('gateway_downtime:upi', [
+            'begin'     => Carbon::now()->subMinutes(30)->timestamp,
+            'end'       => null,
+            'gateway'   => 'ALL',
+            'scheduled' => false,
+        ]);
+
+        $this->createMethodDowntimes();
+        $this->createMethodDowntimes();
+
+        $this->ba->privateAuth();
+
         $this->startTest();
     }
 
     public function testGetWalletDowntime()
     {
+        $this->markTestSkipped('no code, lol');
+
         $this->fixtures->create('gateway_downtime:wallet', [
             'begin'     => Carbon::now()->subMinutes(30)->timestamp,
             'end'       => null,
@@ -78,6 +123,8 @@ class PaymentDowntimeTest extends TestCase
 
     protected function createCardNetworkDowntime(string $network)
     {
+        $this->markTestSkipped('no code, lol');
+
         foreach (Gateway::$cardNetworkMap as $gateway => $networks)
         {
             if (in_array($network, $networks, true) === true)
@@ -105,5 +152,18 @@ class PaymentDowntimeTest extends TestCase
                 'scheduled' => false,
             ]);
         }
+    }
+
+    protected function createMethodDowntimes()
+    {
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/methods/downtimes/create',
+            'content' => [],
+        ];
+
+        $this->ba->cronAuth();
+
+        $this->makeRequestAndGetContent($request);
     }
 }

@@ -49,6 +49,14 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $public = [
+        self::ID,
+        self::ENTITY,
+        self::METHOD,
+        self::BEGIN,
+        self::END,
+        self::INSTRUMENT,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected $casts = [
@@ -61,11 +69,24 @@ class Entity extends Base\PublicEntity
         self::END,
     ];
 
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::INSTRUMENT,
+    ];
+
     protected $defaults = [
         self::END           => null,
     ];
 
+    protected static $sign = 'down';
+
     protected $entity = EntityConstants::PAYMENT_DOWNTIME;
 
     protected $generateIdOnCreate = true;
+
+    public function setPublicInstrumentAttribute(array & $array)
+    {
+        $array[self::INSTRUMENT] = [];
+    }
 }

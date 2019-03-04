@@ -33,6 +33,7 @@ final class Route
         'merchant_methods'                         => ['get',      'methods',                                        'MerchantController@getPaymentMethods'                              ],
         'merchant_methods_downtime'                => ['get',      'methods/downtime',                               'MerchantController@getPublicGatewayDowntimeData'                   ],
         'merchant_methods_downtime_private'        => ['get',      'methods/downtimes',                              'MerchantController@getMethodDowntimeData'                          ],
+        'merchant_methods_downtime_create'         => ['post',     'methods/downtimes/create',                       'DowntimeController@createFromGatewayDowntimes'                     ],
         'merchant_checkout_preferences'            => ['get',      'preferences',                                    'MerchantController@getCheckoutPreferences'                         ],
         'payment_create'                           => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'                         ],
         // @todo: Require feature S2S for payment_create_private route.
@@ -2483,6 +2484,10 @@ final class Route
         ],
 
         'cron' => [
+            // Not actually a cron, but added in this list
+            // so the cron app has access to the route.
+            'setcronjob_webhook',
+            // The rest are crons
             'entity_tax_update',
             'setl_initiate',
             'setl_initiate_daily',
@@ -2548,9 +2553,6 @@ final class Route
             'refund_processed_at_backfill',
             'refund_reference1_backfill',
             'refund_reference1_bulk_update',
-            // Not actually a cron, but added in this list
-            // so the cron app has access to the route.
-            'setcronjob_webhook',
             'admin_mdr_update',
             'merchant_post_beneficiary_api',
             'setl_verify',
@@ -2558,7 +2560,7 @@ final class Route
             'merchant_es_sync_cron',
             'entity_balance_id_update',
             'scrooge_refund_verify_bulk',
-            'setl_initiate_adhoc',
+            'merchant_methods_downtime_create',
         ],
 
         'subscriptions' => [

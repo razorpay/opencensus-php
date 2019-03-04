@@ -2501,11 +2501,13 @@ return [
                 'entity' => 'collection',
                 'count'  => 1,
                 'items'  => [
-                    'entity'     => 'payment.downtime',
-                    'method'     => 'upi',
-                    'end'        => null,
-                    'instrument' => [
-                    ]
+                    [
+                        'entity'     => 'payment.downtime',
+                        'method'     => 'upi',
+                        'end'        => null,
+                        'instrument' => [
+                        ]
+                    ],
                 ],
             ],
         ],
@@ -2521,11 +2523,49 @@ return [
                 'entity' => 'collection',
                 'count'  => 1,
                 'items'  => [
-                    'entity'     => 'payment.downtime',
-                    'method'     => 'upi',
-                    'end'        => null,
-                    'instrument' => [
-                    ]
+                    [
+                        'entity'     => 'payment.downtime',
+                        'method'     => 'upi',
+                        'end'        => null,
+                        'instrument' => [
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetNoUpiDowntimeForSingleGateway' => [
+        'request' => [
+            'url' => '/methods/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+        ],
+    ],
+
+    'testGetSingleUpiDowntimeForMultipleDowntimeCreations' => [
+        'request' => [
+            'url' => '/methods/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'     => 'payment.downtime',
+                        'method'     => 'upi',
+                        'end'        => null,
+                        'instrument' => [
+                        ]
+                    ],
                 ],
             ],
         ],
