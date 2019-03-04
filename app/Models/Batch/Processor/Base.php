@@ -1288,7 +1288,7 @@ class Base extends BaseModel\Core
     {
         foreach ($entry as $key => $row)
         {
-            if (is_array($row) === false)
+            if ((is_array($row) === false) and (is_string($row) === true))
             {
                 $entry[$key] = trim($row);
             }
