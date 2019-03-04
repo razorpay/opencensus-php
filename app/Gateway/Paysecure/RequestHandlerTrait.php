@@ -12,6 +12,7 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Utility;
 use RZP\Constants\Timezone;
+use RZP\Models\Currency\Currency;
 
 trait RequestHandlerTrait
 {
@@ -117,7 +118,7 @@ trait RequestHandlerTrait
             Fields::CARD_EXP_DATE                     => $card['expiry_month'] . $card['expiry_year'],
             Fields::LANGUAGE_CODE                     => 'en',
             Fields::AUTH_AMOUNT                       => $this->input['payment']['amount'],
-            Fields::CURRENCY_CODE                     => '356',
+            Fields::CURRENCY_CODE                     => Currency::ISO_NUMERIC_CODES[$this->input['payment']['currency']],
             Fields::CVD2                              => $card['cvv'],
             // todo: fetch this correctly from card BIN
             Fields::TRANSACTION_TYPE_INDICATOR        => 'SMS',
@@ -126,15 +127,15 @@ trait RequestHandlerTrait
             Fields::TRAN_TIME                         => $time,
             Fields::TRAN_DATE                         => $date,
             Fields::MCC                               => $mcc,
-            Fields::ACQUIRER_INSTITUTION_COUNTRY_CODE => '356',
+            Fields::ACQUIRER_INSTITUTION_COUNTRY_CODE => Currency::ISO_NUMERIC_CODES[$this->input['payment']['currency']],
             Fields::RETRIEVAL_REF_NUMBER              => $rrn,
             Fields::CARD_ACCEPTOR_ID                  => $this->getMerchantId(),
             Fields::TERMINAL_OWNER_NAME               => $this->input['merchant']->getBillingLabel() ?? 'Razorpay',
-            Fields::TERMINAL_CITY                     => 'Bangalore',
-            Fields::TERMINAL_STATE_CODE               => 'KA',
+            Fields::TERMINAL_CITY                     => $this->input['merchant']->getBusinessRegisteredCity() ?? 'Bangalore',
+            Fields::TERMINAL_STATE_CODE               => $this->input['merchant']->getBusinessRegisteredState() ?? 'KA',
             Fields::TERMINAL_COUNTRY_CODE             => 'IN',
-            Fields::MERCHANT_POSTAL_CODE              => '560030',
-            Fields::MERCHANT_TELEPHONE                => '9999999999',
+            Fields::MERCHANT_POSTAL_CODE              => $this->input['merchant']->getBusinessRegisteredPin() ?? '560030',
+            Fields::MERCHANT_TELEPHONE                => $this->input['merchant']->getContactMobile() ?? '9999999999',
             Fields::ORDER_ID                          => $this->input['payment']['id'],
         ];
 
@@ -179,7 +180,7 @@ trait RequestHandlerTrait
         $requestArray = [
             Fields::TRAN_ID       => $gatewayPayment[Entity::GATEWAY_TRANSACTION_ID],
             Fields::AUTH_AMOUNT   => $this->input['payment']['amount'],
-            Fields::CURRENCY_CODE => '356',
+            Fields::CURRENCY_CODE => Currency::ISO_NUMERIC_CODES[$this->input['payment']['currency']],
         ];
 
         $contents = $this->getRequestContents($requestArray);
