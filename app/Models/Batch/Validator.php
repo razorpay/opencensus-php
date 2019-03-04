@@ -227,6 +227,13 @@ class Validator extends Base\Validator
         Entity::TOKEN   => 'required|unsigned_id',
     ];
 
+    protected static $payoutValidateRules = [
+        Entity::TYPE    => 'required|in:payout',
+        Entity::NAME    => 'filled|string|max:255',
+        Entity::FILE    => 'required_without:file_id|file|max:10240' . self::CSV_MIME_RULE,
+        Entity::FILE_ID => 'required_without:file|public_id',
+    ];
+
     protected static $fundAccountTypeRowRules = [
         Header::FUND_ACCOUNT_TYPE         => 'required|string|in:bank_account,vpa',
         Header::FUND_ACCOUNT_NAME         => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',

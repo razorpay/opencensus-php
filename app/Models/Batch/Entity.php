@@ -173,19 +173,16 @@ class Entity extends Base\PublicEntity
     ];
 
     /**
-     * Overridden
+     * {@inheritDoc}
      * Ref: validateInputByType
-     *
-     * @param  array  $input
-     * @return Entity
      */
-    public function build(array $input = [])
+    public function build(array $input = [], string $operation = 'create')
     {
         $this->input = $input;
 
         $this->modify($input);
 
-        $this->validateInputByType($input);
+        $this->validateInputByType($input, $operation);
 
         // Todo: https://github.com/razorpay/spine/issues/25
         $this->getValidator()->validateOtp($input);
@@ -200,24 +197,31 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * Does input validation for create based on batch type if defined else
-     * there is one default create rule.
+     * Does input validation for create based on batch type if defined else there is one default create rule.
      *
      * @param array $input
+     * @param bool  $operation Indicates if called in the batch validate flow or normal create flow
      */
-    protected function validateInputByType(array $input)
+    protected function validateInputByType(array $input, string $operation = 'create')
     {
-        $operation = 'default_create';
-
         $type = $input[Entity::TYPE] ?? 'unknown';
-        $rule = camel_case($type) . 'CreateRules';
+        $ruleKey = camel_case("{$type}_{$operation}_rules");
+        $fallbackRuleKey = camel_case("{$type}_create_rules");
 
-        if (property_exists(Validator::class, $rule) === true)
+        if (property_exists(Validator::class, $ruleKey) === true)
         {
-            $operation = $type . '_create';
+            $validationOp = snake_case(str_before($ruleKey, 'Rules'));
+        }
+        else if (property_exists(Validator::class, $fallbackRuleKey) === true)
+        {
+            $validationOp = snake_case(str_before($fallbackRuleKey, 'Rules'));
+        }
+        else
+        {
+            $validationOp = 'default_create';
         }
 
-        $this->validateInput($operation, $input);
+        $this->validateInput($validationOp, $input);
     }
 
     // Relations
