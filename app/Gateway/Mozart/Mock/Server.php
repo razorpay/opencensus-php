@@ -133,11 +133,11 @@ class Server extends Base\Mock\Server
                         'ERRORDESCRIPTION' => 'TRANSACTION PERFORMED SUCCESSFULLY',
                         'Key' => $entities['terminal']['gateway_secure_secret'],
                         'ORDERNO' => '104',
-                        'REQUESTID' => $entities['gateway']['pay_verify']['requestid'],
+                        'REQUESTID' => '1234',
                         'RESPONSECODE' => '0'
                     ],
                     'received' => true,
-                    'requeryid' => $entities['gateway']['pay_verify']['requestid'],
+                    'requeryid' => '1234',
                     'reqid' => 'RZP200219195445344',
                     'rescode' => '00',
                     'rqtype' => 'AUTH',

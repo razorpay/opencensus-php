@@ -252,7 +252,7 @@ class Gateway extends Base\Gateway
     {
         $input['terminal'] = $input['terminal']->toArrayWithPassword();
 
-        $prevStep = $this->getPreviousStep($input);
+        $prevStep = $this->getPreviousStep($input['payment']['gateway']);
 
         if ($prevStep != null)
         {
