@@ -130,10 +130,23 @@ class Gateway extends Base\Gateway
         $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
     }
 
-//    public function verifyRefund(array $input)
-//    {
-//        return $this->verify($input);
-//    }
+    public function verifyRefund(array $input)
+    {
+        $this->input = $input;
+        $this->action = Action::VERIFY_REFUND;
+
+        $request = $this->getMozartRequestArray($input);
+
+        $traceReq = $this->getRedactedData($request);
+
+        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_REFUND_VERIFY_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $traceRes = $this->getRedactedData($response);
+
+        $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE);
+    }
 
     public function verify(array $input)
     {
@@ -201,18 +214,16 @@ class Gateway extends Base\Gateway
 
         $verify->gatewaySuccess = false;
 
-        if (($payment === null) and
-            (($input['payment']['status'] === 'failed') or
-                ($input['payment']['status'] === 'created')))
+        if (($payment === null) and ($input['payment']['status'] === 'failed'))
         {
             $verify->apiSuccess = false;
         }
-        else if (($payment['status'] === null) or
-            ($payment['status'] !== Payment\Status::AUTHORIZED))
+        else if (($payment === null) or
+            ($input['payment']['status'] !== Payment\Status::AUTHORIZED))
         {
             $verify->apiSuccess = false;
         }
-        else if ($payment['status'] === Payment\Status::AUTHORIZED)
+        else if ($input['payment']['status'] === Payment\Status::AUTHORIZED)
         {
             $verify->status = VerifyResult::STATUS_MISMATCH;
             $verify->apiSuccess = true;
@@ -241,27 +252,17 @@ class Gateway extends Base\Gateway
     {
         $input['terminal'] = $input['terminal']->toArrayWithPassword();
 
+        $prevStep = $this->getPreviousStep($input);
+
+        if ($prevStep != null)
+        {
+            $input['gateway'][$prevStep] = $this->getPreviousData($input, $prevStep);
+        }
+
+        //This is implemented for testing Bajaj as minimum payment is 3000 which is not supported on bajaj test cards.
         if($this->mode === Mode::TEST)
         {
             $input['payment']['amount'] = 100;
-        }
-
-        if ($this->action === 'verify' && $this->gateway === 'bajajfinserv')
-        {
-            $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-                $input['payment']['id'], 'pay_verify');
-
-            $jsonRaw = json_decode($gatewayPayment['raw']);
-            $input['gateway']['pay_verify'] = $jsonRaw;
-        }
-
-        if ($this->action === 'verify_refund' && $this->gateway === 'bajajfinserv')
-        {
-            $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-                $input['payment']['id'], 'refund');
-
-            $jsonRaw = json_decode($gatewayPayment['raw']);
-            $input['gateway']['refund'] = $jsonRaw;
         }
 
         $content['entities'] = $input;
@@ -289,6 +290,30 @@ class Gateway extends Base\Gateway
         ];
     }
 
+    protected function getPreviousStep($gateway)
+    {
+        $previousActionForData = [
+            Payment\Gateway::BAJAJFINSERV => [
+                Action::PAY_INIT => null,
+                Action::PAY_VERIFY => Action::PAY_INIT,
+                Action::VERIFY => Action::PAY_VERIFY,
+                Action::REFUND => Action::PAY_VERIFY,
+                Action::VERIFY_REFUND => Action::REFUND,
+            ],
+        ];
+
+        return $previousActionForData[$gateway][$this->action];
+    }
+
+    protected function getPreviousData($input, $prevActionForData)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], $prevActionForData);
+
+        $jsonRaw = json_decode($gatewayPayment['raw']);
+        return $jsonRaw;
+    }
+
     protected function sendGatewayRequest($request)
     {
         $response = parent::sendGatewayRequest($request);
@@ -298,25 +323,15 @@ class Gateway extends Base\Gateway
 
     protected function getRedactedData($data)
     {
-        if (isset($data['data']['Key']))
-        {
-            unset($data['data']['Key']);
-        }
+        unset($data['data']['Key']);
 
-        if (isset($data['data']['enqinfo']['Key']))
-        {
-            unset($data['data']['enqinfo']['Key']);
-        }
+        unset($data['data']['enqinfo']['Key']);
 
-        if (isset($data['terminal']))
-        {
-            unset($data['terminal']);
-        }
+        unset($data['terminal']);
 
-        if (isset($data['Key']))
-        {
-            unset($data['Key']);
-        }
+        unset($data['Key']);
+
+        unset($data['Card']['number']);
 
         return $data;
     }
