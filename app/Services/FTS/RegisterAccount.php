@@ -26,8 +26,15 @@ class RegisterAccount extends Base
     {
         $input = $this->makeRequestUsingIds($ids);
 
+        $uri = parent::FUND_ACCOUNT_REGISTER_URI;
+
+        if (empty($channel) === false)
+        {
+            $uri .= ('/'. $channel);
+        }
+
         $response = $this->createAndSendRequest(
-            parent::FUND_ACCOUNT_BASE_URL .'/'. parent::URLS['register'] .'/'. $channel,
+            $uri,
             'POST', $input);
 
         $this->updateNodalBeneficiaryStatus($response, $channel);
