@@ -64,6 +64,8 @@ class Entity extends Base\PublicEntity
     const REMARKS                = 'remarks';
     const PROCESSED_AT           = 'processed_at';
     const REVERSED_AT            = 'reversed_at';
+    const QUEUED_AT              = 'queued_at';
+    const CANCELLED_AT           = 'cancelled_at';
     const SETTLED_ON             = 'settled_on';
     const TYPE                   = 'type';
     const MODE                   = 'mode';
@@ -129,6 +131,8 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::PROCESSED_AT,
         self::REVERSED_AT,
+        self::QUEUED_AT,
+        self::CANCELLED_AT,
         self::SETTLED_ON,
         self::TYPE,
         self::MODE,
@@ -164,6 +168,8 @@ class Entity extends Base\PublicEntity
         self::REMARKS,
         self::PROCESSED_AT,
         self::REVERSED_AT,
+        self::QUEUED_AT,
+        self::CANCELLED_AT,
         self::SETTLED_ON,
         self::TYPE,
         self::MODE,
@@ -260,6 +266,8 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::PROCESSED_AT,
         self::REVERSED_AT,
+        self::QUEUED_AT,
+        self::CANCELLED_AT,
         self::SETTLED_ON,
     ];
 
@@ -451,6 +459,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REVERSED_AT);
     }
 
+    public function getQueuedAt()
+    {
+        return $this->getAttribute(self::QUEUED_AT);
+    }
+
+    public function getCancelledAt()
+    {
+        return $this->getAttribute(self::CANCELLED_AT);
+    }
+
+    public function hasBeenQueued()
+    {
+        return ($this->isAttributeNotNull(self::QUEUED_AT) === true);
+    }
+
     public function isStatusCreated(): bool
     {
         return ($this->getStatus() === Status::CREATED);
@@ -464,6 +487,16 @@ class Entity extends Base\PublicEntity
     public function isStatusReversed()
     {
         return ($this->getStatus() === Status::REVERSED);
+    }
+
+    public function isStatusQueued()
+    {
+        return ($this->getStatus() === Status::QUEUED);
+    }
+
+    public function isStatusCancelled()
+    {
+        return ($this->getStatus() === Status::CANCELLED);
     }
 
     /**
@@ -628,6 +661,16 @@ class Entity extends Base\PublicEntity
     public function setReversedAt($date)
     {
         $this->setAttribute(self::REVERSED_AT, $date);
+    }
+
+    public function setQueuedAt($date)
+    {
+        $this->setAttribute(self::QUEUED_AT, $date);
+    }
+
+    public function setCancelledAt($date)
+    {
+        $this->setAttribute(self::CANCELLED_AT, $date);
     }
 
     public function setPurpose(string $purpose)
