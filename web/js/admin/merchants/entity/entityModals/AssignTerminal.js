@@ -126,6 +126,10 @@ const HDFC_terminalTypesMapping = [
   { value: 'direct_settlement', name: 'Direct Settlement' },
 ];
 
+const gatewayMappingOnAddMessages = {
+  paytm: `Direct settlement will be enforsed on this Paytm gateway`,
+};
+
 const gatewayMappingTerminalTypesDefaults = {
   paytm: {
     value: 'direct_settlement',
@@ -134,11 +138,16 @@ const gatewayMappingTerminalTypesDefaults = {
 };
 
 export default class TerminalForm extends Component {
-  state = { pricingPlans: {} };
+  state = {
+    pricingPlans: {},
+    alertMessageForTerminalType: null,
+  };
 
   // Creates terminal
   handleCreate = body => {
     let file;
+    const gatewayMappingTerminalTypeValue =
+      gatewayMappingTerminalTypesDefaults[body.gateway];
 
     if (
       body['gateway_terminal_password'] &&
@@ -155,7 +164,16 @@ export default class TerminalForm extends Component {
       body.type.split(',').forEach(elem => {
         temp[elem] = '1';
       });
+
+      if (gatewayMappingTerminalTypeValue) {
+        temp[gatewayMappingTerminalTypeValue.value] = '1';
+      }
+
       body.type = temp;
+    } else {
+      body.type = {
+        [gatewayMappingTerminalTypeValue.value]: '1',
+      };
     }
 
     if (body.file) {
@@ -207,17 +225,20 @@ export default class TerminalForm extends Component {
       });
   };
 
+  handleAlertMessageForTerminalType = message =>
+    this.setState({ alertMessageForTerminalType: message });
+
   handleGateway = e => {
     const value = e.target.value;
-    if (gatewayMappingTerminalTypesDefaults.hasOwnProperty(value)) {
-      const options = gatewayMappingTerminalTypesDefaults[value];
 
-      if (this.terminalTypesEle.state.selectedOptions.indexOf(options) >= 0)
-        return;
-
-      this.terminalTypesEle.handleChange({
-        options: [...this.terminalTypesEle.state.selectedOptions, options],
-      });
+    if (gatewayMappingOnAddMessages.hasOwnProperty(value)) {
+      this.handleAlertMessageForTerminalType(
+        gatewayMappingOnAddMessages[value]
+      );
+    } else {
+      if (this.state.alertMessageForTerminalType) {
+        this.handleAlertMessageForTerminalType();
+      }
     }
   };
 
@@ -494,6 +515,11 @@ export default class TerminalForm extends Component {
           </div>
 
           <div class="m-t m-b" />
+          {
+            <div class="text-success">
+              {this.state.alertMessageForTerminalType}
+            </div>
+          }
           <AsyncButton
             text="Cancel"
             class="btn btn-default"
