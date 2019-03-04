@@ -9,6 +9,7 @@ class Fetch extends BaseFetch
 {
     const RULES = [
         self::DEFAULTS => [
+            Entity::ID          => 'sometimes|public_id|size:20',
             Entity::TYPE        => 'sometimes|string|custom',
             Entity::SUB_TYPE    => 'sometimes|string',
             Entity::GATEWAY     => 'sometimes|string|required_with:sub_type',
@@ -20,6 +21,7 @@ class Fetch extends BaseFetch
 
     const ACCESSES = [
         AuthType::PROXY_AUTH => [
+            Entity::ID,
             Entity::TYPE,
             Entity::TYPES,
         ],
