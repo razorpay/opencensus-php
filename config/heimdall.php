@@ -44,7 +44,11 @@ return [
             Permission::MANAGE_ONBOARDING_SUBMISSIONS => [
                 'description' => 'View and update product onboarding submissions and the activation statuses',
                 'assignable'  => true,
-            ]
+            ],
+            Permission::MERCHANT_EMAIL_EDIT           => [
+                'description' => 'Edit Merchant Email',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::MERCHANT_REQUEST => [
@@ -110,6 +114,12 @@ return [
             ],
             Permission::EDIT_MERCHANT_TAGS                  => '',
             Permission::EDIT_MERCHANT_FEATURES              => [
+                'assignable' => true,
+            ],
+            Permission::MANAGE_BULK_FEATURE_MAPPING         => [
+                'assignable' => true,
+            ],
+            Permission::MERCHANT_BENEFICIARY_UPLOAD         => [
                 'assignable' => true,
             ],
             Permission::EDIT_MERCHANT_FEATURES              => '',
