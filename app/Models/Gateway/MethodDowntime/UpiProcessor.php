@@ -63,6 +63,22 @@ class UpiProcessor extends Base\Core
             Entity::END    => $end,
         ];
 
-        return (new Core)->create($input);
+        $downtime = $this->getDuplicate($input);
+
+        if ($downtime === null)
+        {
+            $downtime = (new Core)->create($input);
+        }
+        else
+        {
+            $downtime = (new Core)->edit($downtime, $input);
+        }
+
+        return $downtime;
+    }
+
+    protected function getDuplicate(array $input)
+    {
+        return $this->repo->method_downtime->getDuplicate($input);
     }
 }

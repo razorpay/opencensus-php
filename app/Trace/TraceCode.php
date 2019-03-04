@@ -701,6 +701,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_VERIFY_INVALID_HEADER             = 'GATEWAY_VERIFY_INVALID_HEADER';
     const GATEWAY_DOWNTIME_DELETE                   = 'GATEWAY_DOWNTIME_DELETE';
     const METHOD_DOWNTIME_CREATE                    = 'METHOD_DOWNTIME_CREATE';
+    const METHOD_DOWNTIME_EDIT                      = 'METHOD_DOWNTIME_EDIT';
     const GATEWAY_ALREADY_REFUNDED                  = 'GATEWAY_ALREADY_REFUNDED';
     const GATEWAY_TERMINAL_TPV                      = 'GATEWAY_TERMINAL_TPV';
     const GATEWAY_HDFC_CAPTURED                     = 'GATEWAY_HDFC_CAPTURED';

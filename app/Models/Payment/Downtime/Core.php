@@ -24,6 +24,17 @@ class Core extends Base\Core
         return $downtime;
     }
 
+    public function edit(Entity $downtime, array $input): Entity
+    {
+        $this->trace->info(TraceCode::METHOD_DOWNTIME_EDIT, $input);
+
+        $downtime->edit($input);
+
+        $this->repo->saveOrFail($downtime);
+
+        return $downtime;
+    }
+
     public function createFromGatewayDowntimes(array $input)
     {
         $gatewayDowntimes = $this->repo->gateway_downtime->fetchCurrentAndFutureDowntimes();
