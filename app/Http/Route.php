@@ -706,6 +706,7 @@ final class Route
         'payout_purpose_get'                       => ['get',      'payouts/purposes',                               'PayoutController@getPurposes'                                      ],
         'payout_purpose_post'                      => ['post',     'payouts/purposes',                               'PayoutController@postPurpose'                                      ],
         'payout_fetch_reversals'                   => ['get',      'payouts/{id}/reversals',                         'PayoutController@getPayoutReversal'                                ],
+        'payouts_process_queued'                   => ['post',     'payouts/process/queued',                         'PayoutController@processQueuedPayouts'                             ],
         'transfer_fetch'                           => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
         'transfer_fetch_multiple'                  => ['get',      'transfers/',                                     'TransferController@getTransfers'                                   ],
 
@@ -953,7 +954,7 @@ final class Route
         'partner_config_edit'                      => ['put',      'partner_configs/{id}',                           'PartnerConfigController@update'                                    ],
 
         'commissions_get_multiple'                 => ['get',      'commissions',                                    'CommissionController@list'                                         ],
-      
+
         'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
         'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
         'merchant_associated_accounts_fetch'       => ['get',      'merchant/{id}/associated_accounts',              'MerchantController@getAssociatedAccounts'                          ],
@@ -1373,6 +1374,7 @@ final class Route
         'gateway_downtime_vajra_webhook',
         'scrooge_refund_verify_bulk',
         'update_fts_nodal_beneficiary',
+        'payouts_process_queued',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2207,11 +2209,8 @@ final class Route
         'setl_edit'                                => '*',
         'setl_file_generate'                       => '*',
         'setl_fixer'                               => '*',
-        'setl_reconcile'                           => '*',
-        'setl_update_channel_bulk'                 => '*',
         'terminal_check_encrypted_value'           => '*',
         'terminal_restore'                         => '*',
-        'transaction_bulk_update'                  => '*',
         'transaction_create_fees_breakup'          => '*',
         'upi_fill_bank'                            => '*',
         'upi_psp_allow'                            => '*',
@@ -2501,6 +2500,7 @@ final class Route
             'merchant_es_sync_cron',
             'entity_balance_id_update',
             'scrooge_refund_verify_bulk',
+            'payouts_process_queued',
         ],
 
         'subscriptions' => [

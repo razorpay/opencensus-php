@@ -120,7 +120,6 @@ abstract class Base extends BaseCore
             return $payout;
         });
 
-        // TODO: Fix this after discussion with product
         $this->app->events->fire('api.payout.created', [$payout]);
 
         return $payout;

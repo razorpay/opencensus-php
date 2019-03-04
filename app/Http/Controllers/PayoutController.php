@@ -93,4 +93,13 @@ class PayoutController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function processQueuedPayouts()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->processQueuedPayouts($input);
+
+        return ApiRespose::json($data);
+    }
 }
