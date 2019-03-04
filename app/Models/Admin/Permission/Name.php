@@ -78,6 +78,7 @@ class Name
     const SETTLEMENT_BULK_UPDATE              = 'settlement_bulk_update';
     const CREATE_NODAL_ACCOUNT_TRANSFER       = 'create_nodal_account_transfer';
     const MERCHANT_INVOICE_EDIT               = 'merchant_invoice_edit';
+    const MERCHANT_EMAIL_EDIT                 = 'merchant_edit_email';
     const CREATE_RECONCILIATE                 = 'create_reconciliate';
     const VIEW_ACTIVATION_FORM                = 'view_activation_form';
     const EDIT_MERCHANT_LOCK_ACTIVATION       = 'edit_merchant_lock_activation';
@@ -175,8 +176,10 @@ class Name
     const CREATE_WALLET_CONFIG                = 'create_wallet_config';
     const EDIT_WALLET_CONFIG                  = 'edit_wallet_config';
     const MERCHANT_BATCH_UPLOAD               = 'merchant_batch_upload';
+    const MERCHANT_BENEFICIARY_UPLOAD         = 'merchant_beneficiary_upload';
     const CREATE_DISPUTE_REASON               = 'create_dispute_reason';
     const MANAGE_ONBOARDING_SUBMISSIONS       = 'manage_onboarding_submissions';
+    const MANAGE_BULK_FEATURE_MAPPING         = 'manage_bulk_feature_mapping';
     const MANAGE_RAZORX_OPERATIONS            = 'manage_razorx_operations';
     const EDIT_MERCHANT_RISK_THRESHOLD        = 'edit_merchant_risk_threshold';
     const RETRY_BATCH                         = 'retry_batch';
