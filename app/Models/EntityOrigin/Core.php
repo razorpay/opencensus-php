@@ -78,7 +78,12 @@ class Core extends Base\Core
         }
     }
 
-    public function isOriginApplication(Base\PublicEntity $entity)
+    /**
+     * @param Base\PublicEntity $entity
+     *
+     * @return bool
+     */
+    public function isOriginApplication(Base\PublicEntity $entity): bool
     {
         $entityOrigin = $entity->entityOrigin;
 
