@@ -271,6 +271,13 @@ class Fixtures extends Constants
         return $deviceToken->first();
     }
 
+    public function createRegisterToken(array $attributes)
+    {
+        $entity = factory(P2p\Device\RegisterToken\Entity::class)->create($attributes);
+
+        return $entity;
+    }
+
     public function __get($property)
     {
         if ($this->current->{$property} !== null)
