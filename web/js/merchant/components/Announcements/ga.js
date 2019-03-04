@@ -69,3 +69,10 @@ export const trackInstantSettlementsBanner = label => {
     eventLabel: label,
   });
 };
+
+export const trackMarketingExperimentBanner = (action, label) => {
+  track({
+    eventAction: `${action} - Banner`,
+    eventLabel: label,
+  });
+};

@@ -110,6 +110,27 @@ class Constants
                 'not_tags' => ['payment_pages_new'],
             ]
         ],
+        [
+          'title'       => 'Razorpay Capital',
+          'description' =>
+              'Get loans up to Rs 10 Lakhs for your business and repay from your Razorpay settlements with ease. ',
+          'start_ts'    => 1551673800,
+          'end_ts'      => 1559305800,
+          'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/capital.svg',
+          'buttons'     => [
+              [
+                  'type'  => 'button',
+                  'label' => 'I\'m Interested',
+                  'url'   => 'https://razorpay.com/capital/?get-in-touch&utm_source=signup&utm_medium=banner&utm_campaign=businessloans_febs2',
+              ],
+          ],
+          'filters'     => [
+              'experiments'         => ['capital_announcement'],
+          ],
+          'ga'          => [
+              'action'        => 'Capital - Announcement'
+          ]
+      ],        
     ];
 
     public static function getNotifications(): array

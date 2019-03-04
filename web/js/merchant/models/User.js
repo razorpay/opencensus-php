@@ -286,6 +286,10 @@ export default class User {
   get isISBannerEnabled() {
     return this.getExpStatus('is_banner');
   }
+
+  get isCapitalBannerEnabled() {
+    return this.getExpStatus('capital_banner');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {
