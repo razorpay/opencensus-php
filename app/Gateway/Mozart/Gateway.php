@@ -114,7 +114,7 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getMappedAttributes($response);
 
-        $this->gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input);
+        $this->gatewayPayment = $this->createGatewayRefundEntity($attributes, $input);
 
         $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
     }
@@ -321,6 +321,33 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment->setAction($this->action);
         $gatewayPayment->setAmount($amount);
+        $gatewayPayment->setPaymentId($paymentId);
+        $gatewayPayment->setBank($bank);
+
+        $gatewayPayment->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        $this->gatewayPayment = $gatewayPayment;
+
+        return $gatewayPayment;
+    }
+
+    protected function createGatewayRefundEntity($attributes, $input)
+    {
+        $redactedRaw = $this->getRedactedData($attributes['raw']);
+        $attributes['raw'] = json_encode($redactedRaw);
+
+        $gatewayPayment = $this->getNewGatewayPaymentEntity();
+
+        $paymentId = $input['payment']['id'];
+        $refundId  = $input['refund']['id'];
+        $refundAmount = $input['refund']['amount'];
+        $bank      = $input['payment']['gateway'];
+
+        $gatewayPayment->setAction($this->action);
+        $gatewayPayment->setRefundId($refundId);
+        $gatewayPayment->setAmount($refundAmount);
         $gatewayPayment->setPaymentId($paymentId);
         $gatewayPayment->setBank($bank);
 
