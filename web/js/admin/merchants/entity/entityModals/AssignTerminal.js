@@ -520,11 +520,9 @@ export default class TerminalForm extends Component {
           </div>
 
           <div class="m-t m-b" />
-          {
-            <div class="text-success">
-              {this.state.alertMessageForTerminalType}
-            </div>
-          }
+          <div class="text-success">
+            {this.state.alertMessageForTerminalType}
+          </div>
           <AsyncButton
             text="Cancel"
             class="btn btn-default"
