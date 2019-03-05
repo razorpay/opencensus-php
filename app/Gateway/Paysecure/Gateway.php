@@ -54,7 +54,7 @@ class Gateway extends Base\Gateway
             ],
         ];
 
-        $this->wsdlDetails['wsdl_file'] = dirname(__FILE__) . '/rupay.wsdl.test';
+        $this->wsdlDetails['wsdl_file'] = dirname(__FILE__) . '/rupay.wsdl';
     }
 
     public function setGatewayParams($input, $mode, $terminal)
