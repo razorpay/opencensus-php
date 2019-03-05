@@ -292,6 +292,6 @@ return [
     ],
 
     'batch' => [
-        'secret'   => env('BATCH_MS_SECRET'),
+        'secret'   => env('BATCH_API_SECRET'),
     ],
 ];
