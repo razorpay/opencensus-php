@@ -158,6 +158,7 @@ class Table
     const ISG                   = 'isg';
     const PAYSECURE             = 'paysecure';
     const CARDLESS_EMI          = 'cardless_emi';
+    const MOZART                = 'mozart';
 
     // Sessions table
     const SESSION               = 'sessions';

@@ -73,6 +73,7 @@ return [
         'wallet_mpesa',
         'bt_yesbank',
         'bt_kotak',
+        'bajajfinserv',
         'p2p_upi_sharp',
         'paysecure',
     ],
@@ -137,7 +138,7 @@ return [
     'mock_isg'                    => env('ISG_MOCK'),
     'mock_paysecure'              => env('PAYSECURE_MOCK'),
     'mock_cardless_emi'           => env('CARDLESS_EMI_MOCK'),
-
+    'mock_bajajfinserv'           => env('BAJAJFINSERV_MOCK'),
     'mock_p2p_upi_sharp'          => env('P2P_UPI_SHARP_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),

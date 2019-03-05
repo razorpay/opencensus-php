@@ -204,6 +204,8 @@ class Entity
     const WALLET_MPESA           = 'wallet_mpesa';
     const WALLET_AMAZONPAY       = 'wallet_amazonpay';
     const CARDLESS_EMI           = 'cardless_emi';
+    const MOZART                 = 'mozart';
+    const BAJAJFINSERV           = 'bajajfinserv';
 
     // P2P Service Entities
     const P2P_DEVICE             = 'p2p_device';
@@ -419,6 +421,8 @@ class Entity
         self::MPI_ENSTAGE            => \RZP\Gateway\Mpi\Enstage::class,
         self::WALLET_AMAZONPAY       => \RZP\Gateway\Wallet\Amazonpay::class,
         self::CARDLESS_EMI           => \RZP\Gateway\CardlessEmi::class,
+        self::MOZART                 => \RZP\Gateway\Mozart::class,
+        self::BAJAJFINSERV           => \RZP\Gateway\Mozart::class,
 
         // heimdall
         self::ORG                   => \RZP\Models\Admin\Org::class,
