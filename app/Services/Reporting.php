@@ -611,6 +611,12 @@ class Reporting implements ExternalService
         //
         $items = collect($configs['items'] ?? []);
 
+        $this->trace->info(TraceCode::REPORTING_SERVICE_UNFILTERED_CONFIGS,
+            [
+                'count'     => $items->count(),
+                'items'     => $items->pluck('name', 'id')->toArray(),
+            ]);
+
         $merchant = $this->ba->getMerchant();
 
         // Don't filter anything for non merchants
@@ -624,6 +630,12 @@ class Reporting implements ExternalService
         $items = $this->filterOnReportTypeAndNameAndConsumer($merchant, $items);
 
         $items = $this->filterForBusinessBanking($merchant, $items);
+
+        $this->trace->info(TraceCode::REPORTING_SERVICE_FILTERED_CONFIGS,
+            [
+                'count'     => $items->count(),
+                'items'     => $items->pluck('name', 'id')->toArray(),
+            ]);
 
         $configs['items'] = $items->values()->all();
         $configs['count'] = $items->count();
