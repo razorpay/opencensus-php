@@ -380,8 +380,8 @@ export default class TerminalForm extends Component {
 
           <SelectField name="corporate" label="Banking Type" defaultValue="">
             <option value="" />
-            <option value="1">Retail</option>
-            <option value="0">Corporate</option>
+            <option value="0">Retail</option>
+            <option value="1">Corporate</option>
             <option value="2">Both</option>
           </SelectField>
 
