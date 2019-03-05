@@ -332,7 +332,6 @@ export default class Refunds extends Component {
                           name={filter.formKey + '.gte'}
                           component="input"
                           min={0}
-                          max={100}
                           type="number"
                           defaultValue={
                             this.defaultValues[filter.formKey] &&
@@ -347,7 +346,6 @@ export default class Refunds extends Component {
                           name={filter.formKey + '.lte'}
                           component="input"
                           min={0}
-                          max={100}
                           type="number"
                           defaultValue={
                             this.defaultValues[filter.formKey] &&
@@ -609,6 +607,11 @@ const formFilters = [
     name: 'Status(es)',
     formKey: 'status',
     type: 'multi-select',
+  },
+  {
+    name: 'Refund Amount',
+    formKey: 'amount',
+    type: 'numeric-range',
   },
   {
     name: 'Attempts',
