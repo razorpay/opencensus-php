@@ -268,7 +268,7 @@ class Gateway extends Base\Gateway
 
         $baseUrl = $this->app['config']->get('applications.mozart.url');
 
-        $url =  $baseUrl . 'payments/' . $this->gateway. '/v1/' . $this->action;
+        $url =  $baseUrl . 'payments/' . $input['payment']['gateway'] . '/v1/' . $this->action;
 
         $authentication = [
             'api',
@@ -408,7 +408,6 @@ class Gateway extends Base\Gateway
 
         return $gatewayPayment;
     }
-
 
     protected function getPaymentToVerify(Verify $verify)
     {

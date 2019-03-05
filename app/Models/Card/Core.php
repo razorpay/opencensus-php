@@ -57,6 +57,7 @@ class Core extends Base\Core
         //
         Card\Entity::modifyNumber($input);
         Card\Entity::modifyMaestro($input);
+        Card\Entity::modifyBajajFinserv($input);
 
         $card = null;
 

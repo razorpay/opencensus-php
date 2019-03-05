@@ -23,8 +23,7 @@ class CreateMozartGateway extends Migration
 
             $table->engine = 'InnoDB';
 
-            $table->char(Mozart::ID)
-                ->primary();
+            $table->increments(Mozart::ID);
 
             $table->char(Mozart::PAYMENT_ID,UniqueIdEntity::ID_LENGTH)
                 ->unique();

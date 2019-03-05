@@ -227,6 +227,17 @@ class Iin extends Base
                 'emi'           => 1,
                 'trivia'        => 'random trivia'
             ],
+            [
+                'iin'           => '203040',
+                'category'      => 'PLATINUM',
+                'network'       => 'Bajaj Finserv',
+                'type'          => 'credit',
+                'country'       => 'IN',
+                'issuer_name'   => null,
+                'issuer'        => null,
+                'emi'           => 1,
+                'trivia'        => 'random trivia'
+        ],
         ];
 
     public function createDefaultIins()

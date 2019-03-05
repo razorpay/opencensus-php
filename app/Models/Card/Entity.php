@@ -237,6 +237,20 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public static function modifyBajajFinserv(& $input)
+    {
+        $iin         = substr($input['number'] ?? null, 0, 6);
+
+        $cardNetwork = Network::detectNetwork($iin);
+
+        if ($cardNetwork === Network::BAJAJ)
+        {
+            $input[Entity::EXPIRY_YEAR]    = self::DUMMY_EXPIRY_YEAR;
+            $input[Entity::EXPIRY_MONTH]   = self::DUMMY_EXPIRY_MONTH;
+            $input[Entity::CVV]            = self::DUMMY_CVV;
+        }
+    }
+
     public function modifyExpiryYear(& $input)
     {
         if ((isset($input['expiry_year'])) and
