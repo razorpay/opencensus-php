@@ -680,8 +680,8 @@ return [
         'password'          => env('PAYSECURE_PASSWORD'),
         'partner_id'        => env('PAYSECURE_PARTNER_ID'),
         'merchant_password' => env('PAYSECURE_MERCHANT_PASSWORD'),
-        'terminal_id'       => env('PAYSECURE_TERMINAL_ID'),
-        'merchant_id'       => env('PAYSECURE_MERCHANT_ID'),
+        'terminal_id'       => env('PAYSECURE_TEST_TERMINAL_ID'),
+        'merchant_id'       => env('PAYSECURE_TEST_MERCHANT_ID'),
     ],
     'netbanking_sbi' => [
         'test_merchant_id'  => env('NETBANKING_SBI_TEST_MERCHANT_ID'),
