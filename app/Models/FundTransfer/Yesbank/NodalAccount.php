@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
+use RZP\Models\Card\Issuer;
 use RZP\Models\Payment\Gateway;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
@@ -65,7 +66,7 @@ class NodalAccount extends NodalBase\NodalAccount
                 continue;
             }
 
-            $gateway = ($attempt->hasVpa() === true);
+            $gateway = $this->shouldUseGateway($attempt);
 
             $this->doRequiredChecks($gateway);
 
@@ -202,7 +203,8 @@ class NodalAccount extends NodalBase\NodalAccount
      */
     protected function isTransferAllowedToday(Attempt\Entity $attempt):  bool
     {
-        if ($attempt->hasVpa() === true)
+        if (($attempt->hasVpa() === true) or
+            ($attempt->hasCard() === true))
         {
             return true;
         }
@@ -262,6 +264,22 @@ class NodalAccount extends NodalBase\NodalAccount
                 'banking_start_time'    => $this->bankingStartTime,
                 'banking_ending_time'   => $this->bankingEndTime,
             ]);
+
+        return false;
+    }
+
+    protected function shouldUseGateway(Attempt\Entity $attempt): bool
+    {
+        if ($attempt->hasVpa() === true)
+        {
+            return true;
+        }
+
+        if (($attempt->hasCard() === true) and
+            ($attempt->card->getIssuer() === Issuer::ICIC))
+        {
+            return true;
+        }
 
         return false;
     }
