@@ -217,7 +217,9 @@ class Reporting implements ExternalService
 
     public function fetchConfigMultiple(array $input): array
     {
-        $configs = $this->createAndSendRequest(Requests::GET, self::CONFIG_PATH, $input);
+        $path = self::CONFIG_PATH . '?count=50';
+
+        $configs = $this->createAndSendRequest(Requests::GET, $path, $input);
 
         return $this->filterConfigsByFeatureAndTags($configs);
     }
@@ -437,7 +439,9 @@ class Reporting implements ExternalService
     // TODO: Add filter based upon feature/tags for admin calls
     public function fetchConfigMultipleAdmin(array $input): array
     {
-        return $this->createAndSendRequest(Requests::GET, self::CONFIG_PATH, $input);
+        $path = self::CONFIG_PATH . '?count=50';
+
+        return $this->createAndSendRequest(Requests::GET, $path, $input);
     }
 
     public function fetchScheduleMultipleAdmin(array $input): array
@@ -611,6 +615,12 @@ class Reporting implements ExternalService
         //
         $items = collect($configs['items'] ?? []);
 
+        $this->trace->info(TraceCode::REPORTING_SERVICE_UNFILTERED_CONFIGS, 
+            [
+                'count'     => $items->count(),
+                'items'     => collect($items)->pluck('name', 'id')->toArray(),
+            ]);
+
         $merchant = $this->ba->getMerchant();
 
         // Don't filter anything for non merchants
@@ -624,6 +634,12 @@ class Reporting implements ExternalService
         $items = $this->filterOnReportTypeAndNameAndConsumer($merchant, $items);
 
         $items = $this->filterForBusinessBanking($merchant, $items);
+
+        $this->trace->info(TraceCode::REPORTING_SERVICE_FILTERED_CONFIGS, 
+            [
+                'count'     => $items->count(),
+                'items'     => $items->pluck('name', 'id')->toArray(),
+            ]);
 
         $configs['items'] = $items->values()->all();
         $configs['count'] = $items->count();
