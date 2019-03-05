@@ -6,6 +6,7 @@ use Config;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Models\Order;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\LineItem;
@@ -314,6 +315,12 @@ class ViewDataSerializer extends Base\Core
                 [E::SUBSCRIPTION_REGISTRATION]
                 [E::BANK_ACCOUNT]
                 [BankAccount\Entity::BANK_NAME] = $order->getBank();
+
+                $serialized
+                [E::SUBSCRIPTION_REGISTRATION]
+                [E::ORDER]
+                [Order\Entity::STATUS] = $order->getStatus();
+
             }
         }
         else

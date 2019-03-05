@@ -3909,7 +3909,14 @@ trait Authorize
             }
             else if ($payment->hasInvoice() === true)
             {
-                assertTrue($payment->hasBeenCaptured() === true);
+                $invoice = $payment->invoice;
+
+                // No assert check if invoice is of subscription registration type.
+                // For emandate auth links, the payment wont be captured immediately.
+                if ($invoice->isTypeOfSubscriptionRegistration() === false)
+                {
+                    assertTrue($payment->hasBeenCaptured() === true);
+                }
 
                 $this->fillReturnDataWithInvoice($payment, $returnData);
             }
