@@ -94,6 +94,6 @@ class CreatePaysecureTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('paysecure');
+        Schema::dropIfExists(Table::PAYSECURE);
     }
 }

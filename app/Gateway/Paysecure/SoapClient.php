@@ -6,7 +6,6 @@ class SoapClient extends \SoapClient
 {
     function __doRequest($request, $location, $action, $version, $one_way = 0)
     {
-
         $namespace = 'https://paysecure/merchant.soap/';
 
         $request = str_replace( 'SOAP-ENV:', 'soapenv:', $request );

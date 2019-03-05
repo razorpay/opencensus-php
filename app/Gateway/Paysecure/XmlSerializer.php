@@ -56,7 +56,7 @@ class XmlSerializer
             }
             else
             {
-                $xmlData->addChild("$key",htmlspecialchars("$value"));
+                $xmlData->addChild("$key", htmlspecialchars("$value"));
             }
         }
 
