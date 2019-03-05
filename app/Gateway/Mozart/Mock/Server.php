@@ -61,6 +61,7 @@ class Server extends Base\Mock\Server
         $this->verifyOtpAttempts($entities['payment']);
 
         $otp = $entities['gateway']['redirect']['otp'];
+
         switch($otp)
         {
             case 111111:

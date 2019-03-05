@@ -24,6 +24,4 @@ class Gateway extends Mozart\Gateway
 
         return $this->jsonToArray($response->body, true);
     }
-
 }
-

@@ -678,7 +678,6 @@ class Gateway
             self::AMEX,
             self::HDFC,
             self::FIRST_DATA,
-            self::BAJAJFINSERV,
         ],
 
         Method::UPI => [

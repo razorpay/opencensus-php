@@ -218,8 +218,7 @@ class Gateway extends Base\Gateway
         {
             $verify->apiSuccess = false;
         }
-        else if (($payment === null) or
-            ($input['payment']['status'] !== Payment\Status::AUTHORIZED))
+        else if (($payment === null) or ($input['payment']['status'] !== Payment\Status::AUTHORIZED))
         {
             $verify->apiSuccess = false;
         }
