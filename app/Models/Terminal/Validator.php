@@ -755,7 +755,6 @@ class Validator extends Base\Validator
         Entity::EMI                        => 'required|boolean|in:1',
         Entity::EMI_SUBVENTION             => 'required|string|in:merchant,customer',
         Entity::TYPE                       => 'sometimes|array',
-        Entity::EMI_DURATION               => 'required|integer|in:3,6,9,12,18,24',
     ];
 
     public function validateType()
