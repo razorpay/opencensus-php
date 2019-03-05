@@ -344,12 +344,12 @@ class Gateway extends Base\Gateway
 
         $paymentId = $input['payment']['id'];
         $amount    = $input['payment']['amount'];
-        $bank      = $input['payment']['gateway'];
+        $gateway   = $input['payment']['gateway'];
 
         $gatewayPayment->setAction($this->action);
         $gatewayPayment->setAmount($amount);
         $gatewayPayment->setPaymentId($paymentId);
-        $gatewayPayment->setBank($bank);
+        $gatewayPayment->setGateway($gateway);
 
         $gatewayPayment->fill($attributes);
 
@@ -370,13 +370,13 @@ class Gateway extends Base\Gateway
         $paymentId = $input['payment']['id'];
         $refundId  = $input['refund']['id'];
         $refundAmount = $input['refund']['amount'];
-        $bank      = $input['payment']['gateway'];
+        $gateway      = $input['payment']['gateway'];
 
         $gatewayPayment->setAction($this->action);
         $gatewayPayment->setRefundId($refundId);
         $gatewayPayment->setAmount($refundAmount);
         $gatewayPayment->setPaymentId($paymentId);
-        $gatewayPayment->setBank($bank);
+        $gatewayPayment->setGateway($gateway);
 
         $gatewayPayment->fill($attributes);
 

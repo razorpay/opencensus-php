@@ -40,7 +40,7 @@ class CreateMozartGateway extends Migration
             $table->integer(Mozart::RECEIVED)
                 ->default(0);
 
-            $table->char(Mozart::BANK);
+            $table->char(Mozart::GATEWAY);
 
             $table->integer(Mozart::CREATED_AT);
 

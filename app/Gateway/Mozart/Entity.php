@@ -11,7 +11,7 @@ class Entity extends Base\Entity
     const RECEIVED              = 'received';
     const AMOUNT                = 'amount';
     const ACTION                = 'action';
-    const BANK                  = 'bank';
+    const GATEWAY               = 'gateway';
     const RAW                   = 'raw';
 
     protected $entity = 'mozart';
@@ -19,7 +19,7 @@ class Entity extends Base\Entity
     protected $fields = [
         self::ID,
         self::PAYMENT_ID,
-        self::BANK,
+        self::GATEWAY,
         self::RECEIVED,
         self::AMOUNT,
         self::ACTION,
@@ -47,8 +47,8 @@ class Entity extends Base\Entity
         $this->setAttribute(self::RAW, $raw);
     }
 
-    public function setBank($bank)
+    public function setGateway($gateway)
     {
-        $this->setAttribute(self::BANK, $bank);
+        $this->setAttribute(self::GATEWAY, $gateway);
     }
 }
