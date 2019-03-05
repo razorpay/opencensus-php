@@ -152,6 +152,11 @@ class Constants
     const DISABLE_REFUNDS               = 'disable_refunds';
 
     /**
+     * If set, disables all refund operations on the merchant's card payments
+     */
+    const DISABLE_CARD_REFUNDS          = 'disable_card_refunds';
+
+    /**
      * Makes `receipt` a mandatory field for invoice creation
      */
     const INVOICE_RECEIPT_MANDATORY     = 'invoice_receipt_mandatory';
@@ -302,6 +307,7 @@ class Constants
         self::S2S_OTP_JSON                    => true,
         self::FUND_ACCOUNT_VALIDATIONS        => true,
         self::DISABLE_REFUNDS                 => true,
+        self::DISABLE_CARD_REFUNDS            => true,
         self::TOKEN_BANK_DETAILS              => true,
         self::INVOICE_RECEIPT_MANDATORY       => true,
         self::INVOICE_NO_EXPIRY_EMAIL         => true,
@@ -387,6 +393,11 @@ class Constants
         self::DISABLE_REFUNDS           => [
             'feature'       => self::DISABLE_REFUNDS,
             'display_name'  => 'Disable Refund Operations',
+            'documentation' => '',
+        ],
+        self::DISABLE_CARD_REFUNDS      => [
+            'feature'       => self::DISABLE_CARD_REFUNDS,
+            'display_name'  => 'Disable Refunds on Card Payments',
             'documentation' => '',
         ],
         self::INVOICE_RECEIPT_MANDATORY => [

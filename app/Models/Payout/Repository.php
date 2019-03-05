@@ -72,9 +72,11 @@ class Repository extends Base\Repository
     {
         $id = $params[Entity::ID];
 
+        $idColumn = $this->dbColumn(Entity::ID);
+
         Entity::verifyIdAndStripSign($id);
 
-        $query->where(Entity::ID, $id);
+        $query->where($idColumn, $id);
     }
 
     public function addQueryParamDestination(BuilderEx $query, array $params)

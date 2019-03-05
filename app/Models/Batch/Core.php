@@ -55,7 +55,7 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::BATCH_FILE_VALIDATE_REQUEST, $input);
 
-        $batch = (new Entity)->build($input);
+        $batch = (new Entity)->build($input, 'validate');
 
         $batch->merchant()->associate($merchant);
 

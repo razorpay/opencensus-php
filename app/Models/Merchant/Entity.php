@@ -345,6 +345,8 @@ class Entity extends Base\PublicEntity
         self::WHITELISTED_IPS_TEST   => [],
         self::FEE_CREDITS_THRESHOLD  => null,
         self::CATEGORY               => 0,
+        self::WEBSITE                => null,
+        self::INTERNATIONAL          => 0,
     ];
 
     protected $publicSetters = [
@@ -1105,6 +1107,17 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CONVERT_CURRENCY);
     }
 
+    /**
+     * set convert_currency to either of (null, true, false)
+     * if convert_currency === null, then international payments are off
+     * if convert_currency === false, then conversion is handled by Gateway
+     * if convert_currency === true, then conversion is handled by us
+     */
+    public function setCurrencyConversion($val)
+    {
+        $this->setAttribute(self::CONVERT_CURRENCY, $val);
+    }
+
     public function getBrandColor()
     {
         return $this->getAttribute(self::BRAND_COLOR);
@@ -1262,6 +1275,11 @@ class Entity extends Base\PublicEntity
     public function isPurePlatformPartner(): bool
     {
         return ($this->getPartnerType() === Constants::PURE_PLATFORM);
+    }
+
+    public function isResellerPartner(): bool
+    {
+        return ($this->getPartnerType() === Constants::RESELLER);
     }
 
     public function isAggregatorPartner(): bool

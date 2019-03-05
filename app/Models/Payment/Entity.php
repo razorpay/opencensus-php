@@ -11,6 +11,7 @@ use RZP\Constants\Timezone;
 use Razorpay\Spine\DataTypes\Dictionary;
 
 use RZP\Models\Emi;
+use RZP\Gateway\Upi;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Order;
@@ -220,6 +221,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::APPROVAL_CODE,
         self::REFERENCE1,
         self::REFERENCE2,
+        self::REFERENCE16,
         self::CPS_ROUTE,
         self::DISPUTED,
         self::AUTH_TYPE,
@@ -272,6 +274,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::BATCH_ID,
         self::REFERENCE1,
         self::REFERENCE2,
+        self::REFERENCE16,
         self::CPS_ROUTE,
         self::ACQUIRER_DATA,
         self::TRANSFER_ID,
@@ -1068,6 +1071,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::REFERENCE2, $reference2);
     }
 
+    public function setReference16(string $reference16)
+    {
+        $this->setAttribute(self::REFERENCE16, $reference16);
+    }
+
     public function setCpsRoute()
     {
         $this->setAttribute(self::CPS_ROUTE, 1);
@@ -1181,6 +1189,13 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->attributes[self::REFERENCE2] =  $trimmedReference2;
     }
 
+    protected function setReference16Attribute($reference16)
+    {
+        $trimmedReference16 = (blank($reference16) === true) ? null : trim($reference16);
+
+        $this->attributes[self::REFERENCE16] =  $trimmedReference16;
+    }
+
 // ----------------------- Mutator Ends ----------------------------------------
 
 // ----------------------- Accessor --------------------------------------------
@@ -1249,7 +1264,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
             case Method::UPI:
 
-                $acquirerData = [];
+                $acquirerData = [
+                    'rrn' => $this->getReference16()
+                ];
                 break;
         }
 
@@ -1945,6 +1962,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getReference2()
     {
         return $this->getAttribute(self::REFERENCE2);
+    }
+
+    public function getReference16()
+    {
+        return $this->getAttribute(self::REFERENCE16);
     }
 
     public function isSecondRecurring()

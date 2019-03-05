@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Merchant;
 
-use App;
-
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Feature;
@@ -11,6 +9,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Settlement;
+use RZP\Models\Admin\Admin;
 use RZP\Error\PublicErrorDescription;
 
 /**
@@ -884,6 +883,30 @@ class Validator extends Base\Validator
     }
 
     /**
+     * Validates merchant is partner.
+     * Throws an error if the merchant is not a partner or if merchant is a reseller partner
+     *
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateIsNotResellerPartner(Entity $merchant)
+    {
+        $this->validateIsPartner($merchant);
+
+        if ($merchant->isResellerPartner() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCESS_NOT_ALLOWED_FOR_RESELLER,
+                Entity::PARTNER_TYPE,
+                [
+                    Entity::PARTNER_TYPE => $merchant->getPartnerType(),
+                ]
+            );
+        }
+    }
+
+    /**
      * @param Entity $merchant
      *
      * @throws Exception\BadRequestException
@@ -1069,5 +1092,26 @@ class Validator extends Base\Validator
         $balanceId = app('repo')->balance->getBalanceIdByAccountNumberOrFail($accountNumber);
 
         $input[Balance\Entity::BALANCE_ID] = $balanceId;
+    }
+
+    /**
+     * @param  Admin\Entity    $admin
+     * @param  Entity          $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateAdminMerchantAccess(Admin\Entity $admin, Entity $merchant)
+    {
+        if (($admin->canSeeAllMerchants() === true) and ($admin->getOrgId() === $merchant->getOrgId()))
+        {
+            return;
+        }
+
+        if (in_array($merchant->getId(), $admin->merchants()->get()->getIds(), true) === true)
+        {
+            return;
+        }
+
+        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
     }
 }

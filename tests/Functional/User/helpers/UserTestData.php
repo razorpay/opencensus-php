@@ -532,4 +532,121 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP,
         ],
     ],
+
+    'testResetMerchantUserPassword' => [
+        'request'  => [
+            'url'     => '/users/MerchantUser01/password',
+            'method'  => 'put',
+            'content' => [],
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testResetDiffOrgMerchantUserPassword' => [
+        'request'  => [
+            'url'     => '/users/MerchantUser01/password',
+            'method'  => 'put',
+            'content' => [],
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ACCESS_DENIED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
+
+    'testResetNonLinkedMerchantUserPassword' => [
+        'request'  => [
+            'url'     => '/users/MerchantUser01/password',
+            'method'  => 'put',
+            'content' => [],
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testResetMerchantUserPasswordNoPermission' => [
+        'request'  => [
+            'url'     => '/users/MerchantUser01/password',
+            'method'  => 'put',
+            'content' => [],
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ACCESS_DENIED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
+
+    'testResetMerchantNonLinkedUserPassword' => [
+        'request'  => [
+            'url'     => '/users/MerchantUser01/password',
+            'method'  => 'put',
+            'content' => [],
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHANT,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_DOES_NOT_BELONG_TO_MERCHANT,
+        ],
+    ],
+
+    'testResetMerchantNonOwnerUserPassword' => [
+        'request'  => [
+            'url'     => '/users/MerchantUser01/password',
+            'method'  => 'put',
+            'content' => [],
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
 ];

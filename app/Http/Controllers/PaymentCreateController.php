@@ -360,14 +360,22 @@ class PaymentCreateController extends Controller
     {
         $data = $this->service(E::PAYMENT)->redirectTo3ds($id);
 
-        return $this->processCoprotoData($data);
+        $response = $this->processCoprotoData($data);
+
+        $this->logResponseIfApplicable($response);
+
+        return $response;
     }
 
     public function postRedirectToAuthorize($id)
     {
         $data = $this->service(E::PAYMENT)->redirectToAuthorize($id);
 
-        return $this->processCoprotoData($data);
+        $response = $this->processCoprotoData($data);
+
+        $this->logResponseIfApplicable($response);
+
+        return $response;
     }
 
     protected function returnCallbackResponse($data)
@@ -565,6 +573,7 @@ class PaymentCreateController extends Controller
                         [
                             'response'      => $responseToTrace,
                             'merchant_id'   => $merchant->getId(),
+                            'route_name'    => $this->app['router']->currentRouteName(),
                         ]);
                 }
             }

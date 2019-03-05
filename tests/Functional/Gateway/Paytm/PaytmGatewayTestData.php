@@ -195,7 +195,7 @@ return [
         'respcode'          => '01',
         'respmsg'           => 'Txn Successful.',
         'paymentmode'       => 'NB',
-        'refundamount'      => '500',
+        'refundamount'      => '500.00',
         'gatewayname'       => 'INDB',
         'txntype'           => 'REFUND',
         'entity'            => 'paytm',

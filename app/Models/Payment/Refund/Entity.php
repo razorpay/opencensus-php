@@ -38,6 +38,7 @@ class Entity extends Base\PublicEntity
     const INTERNAL_ERROR_CODE    = 'internal_error_code';
     const ERROR_DESCRIPTION      = 'error_description';
     const NOTES                  = 'notes';
+    const FTS_TRANSFER_ID        = 'fts_transfer_id';
 
     //merchant reference number for refund if provided by merchant
     const RECEIPT                = 'receipt';
@@ -452,6 +453,11 @@ class Entity extends Base\PublicEntity
         return (new Dictionary($acquirerData));
     }
 
+    public function getFTSTransferId()
+    {
+        return $this->getAttribute(self::FTS_TRANSFER_ID);
+    }
+
     /**
      * Used by FTA reconciliation
      */
@@ -480,6 +486,11 @@ class Entity extends Base\PublicEntity
     public function setSettledBy($settledBy)
     {
         $this->setAttribute(self::SETTLED_BY, $settledBy);
+    }
+
+    public function setFTSTransferId($ftsTransferId)
+    {
+        $this->setAttribute(self::FTS_TRANSFER_ID, $ftsTransferId);
     }
 
     public function pushStatusChangeMetrics($statusToChange)
@@ -785,7 +796,7 @@ class Entity extends Base\PublicEntity
         return $array;
     }
 
-    protected function getPublicStatusFromScrooge($response)
+    protected function getPublicStatus($response)
     {
         $refundStatus = $this->getStatus();
 
@@ -796,10 +807,10 @@ class Entity extends Base\PublicEntity
 
         $response[self::STATUS] = $publicStatusMap[$refundStatus] ?? Status::PENDING;
 
-        if ($response[self::STATUS] === Status::PENDING)
-        {
-            $response[self::STATUS] = Status::PENDING;
+        $isScrooge = Payment\Gateway::isScroogeGatewayAndMerchant($this->getGateway());
 
+        if (($response[self::STATUS] === Status::PENDING) and ($isScrooge === true))
+        {
             $app   = App::getFacadeRoot();
             $trace = $app['trace'];
 
@@ -823,7 +834,7 @@ class Entity extends Base\PublicEntity
             {
                 $trace->traceException(
                     $e,
-                    Trace::ERROR,
+                    Trace::WARNING,
                     TraceCode::SCROOGE_GET_REFUND_STATUS_REQUEST_FAILED,
                     [
                         'refund_id' => $response[self::ID],
@@ -843,14 +854,11 @@ class Entity extends Base\PublicEntity
     {
         $response = parent::toArrayPublic();
 
-        $isScrooge = Payment\Gateway::isScroogeGatewayAndMerchant(
-            $this->getGateway(),
-            $this->getMerchantId()
-        );
+        $displayRefundPublicStatus = Payment\Gateway::isRefundsPublicStatusMerchant($this->getMerchantId());
 
-        if ($isScrooge === true)
+        if ($displayRefundPublicStatus === true)
         {
-            $scroogeResponse = $this->getPublicStatusFromScrooge($response);
+            $scroogeResponse = $this->getPublicStatus($response);
 
             return $scroogeResponse;
         }

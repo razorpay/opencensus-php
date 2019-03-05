@@ -4,6 +4,7 @@ namespace RZP\Models\Gateway\File\Processor\EMandate\Debit;
 
 use RZP\Gateway\Enach;
 use RZP\Models\Payment;
+use RZP\Models\Settlement\Holidays;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
@@ -26,7 +27,7 @@ class EnachNpciNetbanking extends Base
 
     const FILE_TYPE = FileStore\Type::ENACH_NPCI_NB_DEBIT;
 
-    const FILE_NAME = 'NACH_DR_{$date}_{$utilityCode}_RAZORPAY_001';
+    const FILE_NAME = 'yesbank/nach/input_file/NACH_DR_{$date}_{$utilityCode}_RAZORPAY_001';
 
     protected $utilityCode;
 
@@ -57,7 +58,7 @@ class EnachNpciNetbanking extends Base
             {
                 $paymentId = $token['payment_id'];
 
-                $debitDate = Carbon::createFromTimestamp($token['payment_created_at'], Timezone::IST)->format('dmY');
+                $debitDate = Carbon::today(Timezone::IST)->format('dmY');
 
                 $row = [
                     Headings::PAYMENT_ID              => $paymentId,
@@ -144,9 +145,9 @@ class EnachNpciNetbanking extends Base
     public function sendFile($data)
     {
         $file = $this->gatewayFile
-                ->files()
-                ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
-                ->first();
+                     ->files()
+                     ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
+                     ->first();
 
         $fullFileName = $file->getName() . '.' . $file->getExtension();
 

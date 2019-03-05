@@ -84,6 +84,9 @@ class CreatePayoutsTable extends Migration
 
             $table->string(Payout::STATUS);
 
+            $table->integer(Payout::FTS_TRANSFER_ID)
+                  ->nullable();
+
             $table->char(Payout::TRANSACTION_ID, Payout::ID_LENGTH)
                   ->nullable()
                   ->unique();
@@ -153,6 +156,8 @@ class CreatePayoutsTable extends Migration
             $table->index([Payout::MERCHANT_ID, Payout::CREATED_AT]);
 
             $table->index(Payout::USER_ID);
+
+            $table->index(Payout::FTS_TRANSFER_ID);
 
             $table->foreign(Payout::BALANCE_ID)
                   ->references(Balance\Entity::ID)

@@ -1,0 +1,193 @@
+<?php
+
+namespace RZP\Tests\Functional\Partner\Commission\Base;
+
+use RZP\Tests\Functional\Settlement\SettlementTrait;
+
+class Setup
+{
+    use SettlementTrait;
+
+    protected $fixtures;
+
+    public function __construct($fixtures)
+    {
+        $this->fixtures = $fixtures;
+    }
+
+    /**
+     * Attributes required - type
+     * Attributes accepted - id
+     *
+     * @param array $data
+     * @param array $output
+     */
+    public function createPartner(array $data, array & $output)
+    {
+        $data = array_merge($this->getDefaultCreatePartnerData(), $data);
+
+        $account = $this->fixtures->merchant->createAccount($data['id']);
+
+        $this->fixtures->merchant->edit($account->getId(), ['partner_type' => $data['type']]);
+
+        $appData = [
+            'merchant_id' => $account->getId(),
+        ];
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp($appData);
+
+        $output['application_id'] = $app['id'];
+    }
+
+    public function createPlan(array $data, array & $output)
+    {
+        $defaultPricingPlan = $this->getDefaultPricingPlan();
+
+        $data = array_merge($defaultPricingPlan, $data);
+
+        $this->fixtures->create('pricing', $data);
+    }
+
+    public function createPlans(array $data, array & $output)
+    {
+        foreach ($data as $planData)
+        {
+            $this->createPlan($planData, $output);
+        }
+    }
+
+    public function attachSubmerchant(array $data, array & $output)
+    {
+        $partnerId = $data['partner_id'];
+        unset($data['partner_id']);
+
+        $merchant = $this->fixtures->create('merchant:with_balance', $data);
+
+        $accessMapArray = [
+            'entity_type'     => 'application',
+            'entity_id'       => $output['application_id'],
+            'merchant_id'     => $merchant->getId(),
+            'entity_owner_id' => $partnerId,
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapArray);
+
+        $output['merchant_id'] = $merchant->getId();
+    }
+
+    public function defineConfig(array $data, array & $output)
+    {
+        if ($data['type'] === 'partner')
+        {
+            $data['entity_type'] = 'application';
+            $data['entity_id'] = $output['application_id'];
+        }
+        else
+        {
+            $data['entity_type'] = 'merchant';
+            $data['entity_id'] = $data['merchant_id'];
+            $data['origin_type'] = 'application';
+            $data['origin_id'] = $output['application_id'];
+        }
+
+        unset($data['type']);
+
+        $data = array_merge($this->getDefaultPartnerConfig(), $data);
+
+        $this->fixtures->create('partner_config', $data);
+    }
+
+    public function createPayment(array $data, array & $output)
+    {
+        $merchantId = $output['merchant_id'] ?? $data['merchant_id'];
+
+        // get auth context
+        $auth = $data['auth'] ?? null;
+        unset($data['auth']);
+
+        $defaultAttributes = [
+            'merchant_id' => $merchantId,
+            'amount'      => $data['amount'],
+        ];
+        $data = array_merge($defaultAttributes, $data);
+
+        $payment = $this->fixtures->create('payment:authorized', $data);
+
+        // build entity_origin
+        if (empty($auth) === false)
+        {
+            $defaultAttributes = $this->getEntityOriginData();
+            $entityOriginAttributes['entity_id'] = $payment->getId();
+            $entityOriginAttributes['origin_id'] = $output['application_id'];
+            $attributes                          = array_merge($defaultAttributes, $entityOriginAttributes);
+
+            switch ($auth)
+            {
+                case 'partner':
+                    $this->fixtures->create('entity_origin', $attributes);
+            }
+        }
+
+        $output['source_entity'] = $payment;
+    }
+
+    public function createTransfer(array $data, array & $output)
+    {
+        $this->fixtures->merchant->edit('10000000000000');
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $payment = $this->createPaymentEntities(1);
+
+        $account = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
+
+        $transfer = $this->fixtures->create(
+                        'transfer:to_account',
+                        [
+                            'account'       => $account,
+                            'source_id'     => $payment->getId(),
+                            'source_type'   => 'payment',
+                            'amount'        => 2500,
+                            'currency'      => 'INR',
+                            'on_hold'       => '0',
+                        ]);
+
+        $output['source_entity'] = $transfer;
+    }
+
+    protected function getDefaultCreatePartnerData(): array
+    {
+        return [
+            'id'   => 'DefaultPartner',
+            'type' => 'fully_managed',
+        ];
+    }
+
+    protected function getDefaultPricingPlan(): array
+    {
+        return [
+            'percent_rate'        => 200,
+            'fixed_rate'          => 0,
+            'org_id'              => '100000razorpay',
+            'payment_method_type' => 'debit',
+        ];
+    }
+
+    protected function getDefaultPartnerConfig()
+    {
+        return [
+            'default_plan_id' => '1hDYlICobzOCYt',
+            'implicit_plan_id' => '',
+            'commissions_enabled' => true,
+        ];
+    }
+
+    protected function getEntityOriginData()
+    {
+        return [
+            'entity_id'   => 'RandomPayment0',
+            'entity_type' => 'payment',
+            'origin_id'   => 'RandomApp10000',
+            'origin_type' => 'application',
+        ];
+    }
+}

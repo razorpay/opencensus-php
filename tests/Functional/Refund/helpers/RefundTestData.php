@@ -35,6 +35,36 @@ return [
         ],
     ],
 
+    'testRefundWhenDisabledOnMerchantForCards' => [
+        'request'   => [
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CARD_REFUND_NOT_ALLOWED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CARD_REFUND_NOT_ALLOWED,
+        ],
+    ],
+
+    'testNetBankRefundWhenDisabledOnMerchantForCards' => [
+        'request'  => [
+        ],
+        'response' => [
+            'content' => [
+                'entity'   => 'refund',
+                'amount'   => 50000,
+                'currency' => 'INR',
+            ],
+        ],
+    ],
+
     'testFailedVoidRefundGatewayReversalAbsent' => [
         'request' => [
         ],

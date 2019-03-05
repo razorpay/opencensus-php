@@ -3,17 +3,24 @@
 namespace RZP\Models\FundTransfer\Attempt;
 
 use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
 
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
+use RZP\Models\FundAccount;
 use RZP\Constants\Timezone;
+use RZP\Jobs\FTS\FundTransfer;
 use RZP\Services\Beam\Service;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Exception\LogicException;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\Vpa\Entity as VpaEntity;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
+use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
 class Core extends Base\Core
 {
@@ -38,6 +45,8 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($fundTransferAttempt);
 
+        $this->sendFTSFundTransferRequest($fundTransferAttempt, FundAccount\Type::BANK_ACCOUNT);
+
         return $fundTransferAttempt;
     }
 
@@ -54,6 +63,8 @@ class Core extends Base\Core
         $fundTransferAttempt->getValidator()->validateModeIfSet($values);
 
         $this->repo->saveOrFail($fundTransferAttempt);
+
+        $this->sendFTSFundTransferRequest($fundTransferAttempt, FundAccount\Type::VPA);
 
         return $fundTransferAttempt;
     }
@@ -217,5 +228,94 @@ class Core extends Base\Core
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+    }
+
+    /**
+     * @param Entity $fta
+     * @param string $accountType
+     * @param bool   $isRegistered
+     */
+    public function sendFTSFundTransferRequest(Entity $fta, string $accountType, bool $isRegistered = false)
+    {
+        try
+        {
+            $redis = $this->app['redis']->connection('redis_labs');
+
+            $ftsChannels = $redis->SMEMBERS(ConfigKey::FTS_CHANNELS);
+
+            if(in_array($fta->getChannel(), $ftsChannels, true) === false)
+            {
+                $this->trace->info(
+                    TraceCode::FTS_INVALID_CHANNEL,
+                    [
+                        'channel' => $fta->getChannel(),
+                    ]);
+
+                return;
+            }
+
+            FundTransfer::dispatch($this->mode, $fta->getId(), $accountType, $isRegistered);
+
+            $this->trace->info(
+                TraceCode::FTS_FUND_TRANSFER_JOB_DISPATCHED,
+                [
+                    'fta_id'      => $fta->getId(),
+                    'source_type' => $fta->getSourceType(),
+                ]);
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FTS_FUND_TRANSFER_DISPATCH_FAILED,
+                [
+                    'fta_id'      => $fta->getId(),
+                    'source_type' => $fta->getSourceType(),
+                ]);
+        }
+    }
+
+    public function getFTAEntity(string $ftaId)
+    {
+        return $this->repo->fund_transfer_attempt->findOrFailPublic($ftaId);
+    }
+
+    public function updateFTA(Entity $fta, $ftsTransferId, string $status)
+    {
+        $fta->setFTSTransferId($ftsTransferId);
+
+        $fta->setStatus($status);
+
+        $this->repo->saveOrFail($fta);
+    }
+
+    public function updateFundTransfer(array $input)
+    {
+        try
+        {
+            (new Validator)->validateInput('fts_status_update', $input);
+
+            $fta = $this->repo->fund_transfer_attempt->getAttemptByFTSTransferId($input['fund_transfer_id']);
+
+            if(empty($input['utr']) === false)
+            {
+                $fta->setUtr($input['utr']);
+            }
+
+            $fta->fill($input);
+
+            $this->repo->saveOrFail($fta);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FTS_UPDATE_FUND_TRANSFER_ATTEMPT_FAILED,
+                [
+                    'error' => $e->getMessage()
+                ]);
+        }
     }
 }

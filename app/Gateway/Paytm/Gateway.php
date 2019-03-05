@@ -61,13 +61,17 @@ class Gateway extends Base\Gateway
         $payment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
+        $amount = $input['refund']['amount']/100;
+
         $content = array(
             'MID'           => $input['terminal']['gateway_merchant_id'],
-            'TXNID'         => $payment['txnid'],
             'ORDERID'       => $input['payment']['id'],
             'TXNTYPE'       => Type::REFUND,
-            'REFUNDAMOUNT'  => (string) ($input['refund']['amount'] / 100),
+            'REFUNDAMOUNT'  => sprintf('%0.2f',$amount),
+            'TXNID'         => $payment['txnid'],
+            'REFID'         => $input['refund']['id'],
         );
+
 
         $this->addTestMerchantIdIfTestMode($content);
 
@@ -85,13 +89,24 @@ class Gateway extends Base\Gateway
 
         $refund = $this->createGatewayRefundEntity($storeContent, $input);
 
-        $content['CHECKSUM'] = $this->generateHash($content);
+        $content['CHECKSUM'] = $this->getHashOfArrayForRefund($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_REQUEST,
+            [
+                'paytm' => $content
+            ]);
 
         $content = $this->postRequestToPaytm($content);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REFUND, ['paytm' => $content]);
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_RESPONSE,
+            [
+                'paytm' => $content
+            ]);
 
         $attr = $this->lowerArrayKeys($content);
+        
         $attr['received'] = 1;
 
         $refund->fill($attr);
@@ -135,7 +150,11 @@ class Gateway extends Base\Gateway
             'MID'       => $input['terminal']['gateway_merchant_id'],
             'ORDERID'  => $input['payment']['id']);
 
+        $content['CHECKSUM'] = $this->getHashOfArrayForRefund($content);
+
         $this->addTestMerchantIdIfTestMode($content);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST, $content);
 
         $content = $this->postRequestToPaytm($content);
 
@@ -145,9 +164,7 @@ class Gateway extends Base\Gateway
 
         $verify->verifyResponseContent = $content;
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
-            $content);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE, $content);
 
         return $content;
     }
@@ -460,6 +477,13 @@ class Gateway extends Base\Gateway
         return Checksum::getChecksumFromArray($content, $secret);
     }
 
+    protected function getHashOfArrayForRefund($content)
+    {
+        $secret = $this->getSecret();
+
+        return Checksum::getRefundChecksumFromArray($content, $secret);
+    }
+
     protected function getHashOfString($str)
     {
         $secret = $this->getSecret();
@@ -490,5 +514,10 @@ class Gateway extends Base\Gateway
     {
         $chars = ['+', '(', ')'];
         return str_replace($chars, '', $contact);
+    }
+
+    protected function getFormattedAmount($amount)
+    {
+        return number_format($amount / 100, 2, '.', '');
     }
 }

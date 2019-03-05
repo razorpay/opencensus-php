@@ -280,6 +280,8 @@ class Server extends Base\Mock\Server
             ResponseFields::UNIQUE_BILL_ID  => 'bgho5botne16',
         ];
 
+        $this->content($response);
+
         return $this->makeResponse($response);
     }
 

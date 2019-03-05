@@ -343,6 +343,7 @@ class Response
             'customer_create_token_public',
             'refund_fetch_for_customer',
             'get_merchant_partner_status',
+            'payment_get_status',
         ];
 
         if (in_array($route, $routes, true) === true)

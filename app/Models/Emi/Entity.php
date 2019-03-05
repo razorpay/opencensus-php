@@ -13,6 +13,7 @@ class Entity extends Base\PublicEntity
     use SoftDeletes;
 
     const ID                    = 'id';
+    const MERCHANT_ID           = 'merchant_id';
     const BANK                  = 'bank';
     const NETWORK               = 'network';
     const RATE                  = 'rate';
@@ -38,6 +39,7 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $fillable = [
+        self::MERCHANT_ID,
         self::BANK,
         self::NETWORK,
         self::RATE,
@@ -51,6 +53,7 @@ class Entity extends Base\PublicEntity
 
     protected $visible = [
         self::ID,
+        self::MERCHANT_ID,
         self::BANK,
         self::NETWORK,
         self::ISSUER_NAME,
@@ -100,6 +103,11 @@ class Entity extends Base\PublicEntity
         {
             $input[self::MERCHANT_PAYBACK] = Calculator::calculateMerchantPayback($input[self::RATE], $input[self::DURATION]);
         }
+    }
+
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
     }
 
     public function getRate()

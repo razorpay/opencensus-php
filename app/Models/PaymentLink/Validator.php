@@ -195,13 +195,6 @@ class Validator extends Base\Validator
             return;
         }
 
-        if ($this->entity->merchant->isTagAdded(Entity::TAG_PAYMENT_PAGE_V2) === false)
-        {
-            throw new BadRequestValidationFailureException(
-                'Extra attribute sent in request - settings.',
-                Entity::SETTINGS);
-        }
-
         $extraSettingsKeys = array_values(array_diff(array_keys($settings), Entity::SETTINGS_KEYS));
         if (empty($extraSettingsKeys) === false)
         {

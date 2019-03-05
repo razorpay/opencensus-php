@@ -451,18 +451,6 @@ class PaymentLinkTest extends TestCase
         $this->callViewUrlAndMakeAssertions();
     }
 
-    public function testGetInactivePaymentLinkView()
-    {
-        $attributes = [
-            PaymentLinkModel\Entity::STATUS        => PaymentLinkModel\Status::INACTIVE,
-            PaymentLinkModel\Entity::STATUS_REASON => PaymentLinkModel\StatusReason::COMPLETED,
-        ];
-
-        $this->createPaymentLink(self::TEST_PL_ID, $attributes);
-
-        $this->callViewUrlAndMakeAssertions(self::TEST_PL_ID, 200, 'Inactive Page');
-    }
-
     public function testGetSlugExistsApi()
     {
         $gimli = $this->getMockBuilder(Elfin\Impl\Gimli::class)

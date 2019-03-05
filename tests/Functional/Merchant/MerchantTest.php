@@ -1754,6 +1754,35 @@ class MerchantTest extends TestCase
         // Only one expected, since HDFC is forced
         $this->assertEquals(1, count($response['methods']['emi_options']));
         $this->assertArrayHasKey('HDFC', $response['methods']['emi_options']);
+
+    }
+
+    public function testGetCheckoutPreferencesWithForcedEmiSubventionOfferWithMerchantSpecificEmi()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $this->fixtures->create('emi_plan:merchant_specific_emi_plans');
+
+        $offer = $this->fixtures->create('offer:emi_subvention', [
+            'issuer'          => 'HDFC',
+            'emi_durations'   => [6],
+            'payment_network' => null,
+        ]);
+
+        $order = $this->fixtures->order->createWithOffers($offer, [
+            'force_offer' => true,
+        ]);
+
+        $response = $this->getPreferences($order->getPublicId());
+
+        // Only one expected, since HDFC is forced
+        $this->assertEquals(1, count($response['methods']['emi_options']));
+        $this->assertArrayHasKey('HDFC', $response['methods']['emi_options']);
+        $this->assertEquals('6', $response['methods']['emi_options']['HDFC'][0]['duration']);
+        $this->assertEquals('0', $response['methods']['emi_options']['HDFC'][0]['interest']);
+
     }
 
     public function testGetCheckoutPreferencesForCardlessEmi()
@@ -3395,7 +3424,7 @@ class MerchantTest extends TestCase
     {
         $this->fixtures->create('merchant',[
             'id'     => '10000000000040',
-            'email'  => 'test1@razorpay.com',
+            'email'  => 'test@razorpay.com',
         ]);
 
         $user = $this->fixtures->user->createUserForMerchant('10000000000000', ['email' => 'test@razorpay.com']);
@@ -3428,6 +3457,73 @@ class MerchantTest extends TestCase
         $this->fixtures->user->createUserForMerchant('10000000000000', ['email' => 'test@razorpay.com']);
 
         $this->fixtures->user->createUserForMerchant('10000000000040', ['email' => 'invite.owner@razorpay.com']);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner']);
+
+        $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * Sub-merchant's registered email is different from partner but does not
+     * have user with the same email as registered email, invite using
+     * registered email.
+     */
+    public function testAggregatorInviteSubMerchantToManageDashEmailDifferent()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('merchant',[
+            'id'     => '10000000000040',
+            'email'  => 'testnew@razorpay.com',
+        ]);
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['email' => 'test@razorpay.com']);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner']);
+
+        $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(PasswordResetMail::class, function ($mailable)
+        {
+            $mailData = $mailable->viewData;
+
+            $this->assertNotEmpty($mailData['token']);
+
+            $this->assertNotEmpty($mailData['org']);
+
+            $this->assertTrue($mailable->hasTo('testnew@razorpay.com'));
+
+            return true;
+        });
+
+        Mail::assertNotQueued(MappedToAccount::class);
+    }
+
+    /**
+     * Submerchant's email is different from partner and partner email is invited
+     * for login as owner. Any other email would also fail, test emphasizes that
+     * even partner email is not allowed in these cases.
+     */
+    public function testAggregatorInviteEmailDifferentSubLoginPartnerEmail()
+    {
+        $this->fixtures->create('merchant',[
+            'id'     => '10000000000040',
+            'email'  => 'testnew@razorpay.com',
+        ]);
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['email' => 'test@razorpay.com']);
 
         $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
 

@@ -201,7 +201,7 @@ class Provider
         if ((isset($merchantIdentifiers['account_number']) === true) and
             (isset($merchantIdentifiers['ifsc_code']) === true))
         {
-            $value = $merchantIdentifiers['account_number'] . $merchantIdentifiers['ifsc_code'];
+            $value = $merchantIdentifiers['ifsc_code'] . $merchantIdentifiers['account_number'];
 
             if (empty($value) === false)
             {

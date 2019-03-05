@@ -79,6 +79,39 @@ class Core extends Base\Core
     }
 
     /**
+     * @param Base\PublicEntity $entity
+     *
+     * @return bool
+     */
+    public function isOriginApplication(Base\PublicEntity $entity): bool
+    {
+        $entityOrigin = $entity->entityOrigin;
+
+        //
+        // If the origin (merchant / application) is defined for the source entity (payment, refund etc),
+        // fetch the origin, else, return null.
+        //
+        $origin     = optional($entityOrigin)->origin;
+        $originType = optional($origin)->getEntityName();
+
+        return ($originType === Constants::APPLICATION);
+    }
+
+    /**
+     * @param Base\PublicEntity $entity
+     *
+     * @return mixed
+     */
+    public function getOrigin(Base\PublicEntity $entity)
+    {
+        $entityOrigin = $entity->entityOrigin;
+
+        $origin = optional($entityOrigin)->origin;
+
+        return $origin;
+    }
+
+    /**
      * Origin type and id can be null.
      *
      * @param $originType

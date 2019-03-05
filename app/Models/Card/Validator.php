@@ -35,13 +35,14 @@ class Validator extends Base\Validator
         'limit'              => 'sometimes|numeric',
     ];
 
-    protected static $cardNumberRules = [
-        'card_number'              => 'required|numeric|luhn|digits_between:12,19',
-    ];
-
     protected static $createValidators = array(
         'expiry_date'
     );
+
+    protected static $createVaultTokenRules = [
+        'namespace' => 'required|max:30|in:nodal_certs',
+        'secret'    => 'required'
+    ];
 
     protected function validateExpiryDate($input)
     {

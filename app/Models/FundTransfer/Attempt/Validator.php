@@ -41,6 +41,17 @@ class Validator extends Base\Validator
         Entity::FILE_TYPE => 'required|filled|string',
     ];
 
+    protected static $ftsStatusUpdateRules = [
+
+        Entity::UTR            => 'sometimes|string',
+        Entity::STATUS         => 'required|string|custom',
+        Entity::REMARKS        => 'sometimes|string',
+        Entity::NARRATION      => 'sometimes|string',
+        Entity::DATE_TIME      => 'sometimes|string',
+        Entity::FAILURE_REASON => 'sometimes|string',
+        'fund_transfer_id'     => 'required|int',
+    ];
+
     protected function validateStatus($attribute, $value)
     {
         if (Status::isValidForBulkUpdate($value) === false)

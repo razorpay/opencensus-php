@@ -13,6 +13,9 @@ class Type
     // Commission on All Methods Except Cards
     const OTHERS        = 'others';
 
+    // Commission on All Validations
+    const VALIDATION   = 'validation';
+
     // This is kept to support older invoice
     const NON_CARD      = 'non_card';
 
@@ -26,6 +29,7 @@ class Type
         self::CARD_GT_2K    => 997158,
         self::OTHERS        => 997158,
         self::ADJUSTMENT    => 997158,
+        self::VALIDATION    => 997158,
         // This is kept to support older invoice
         self::NON_CARD      => 997158,
     ];
@@ -35,11 +39,13 @@ class Type
     const CARD_LTE_2K_DESCRIPTION   = 'Commission on Card Payments <= INR 2,000';
     const CARD_GT_2K_DESCRIPTION    = 'Commission on Card Payments > INR 2,000';
     const OTHERS_DESCRIPTION        = 'Commission on All Methods Except Cards';
+    const VALIDATION_DESCRIPTION    = 'Commission on All Validations';
 
     protected static $typeToDescriptionMap = [
         self::CARD_LTE_2K   => self::CARD_LTE_2K_DESCRIPTION,
         self::CARD_GT_2K    => self::CARD_GT_2K_DESCRIPTION,
         self::OTHERS        => self::OTHERS_DESCRIPTION,
+        self::VALIDATION    => self::VALIDATION_DESCRIPTION,
         // This is kept to support older invoice
         self::NON_CARD      => self::OTHERS_DESCRIPTION,
     ];
@@ -50,6 +56,7 @@ class Type
             self::CARD_LTE_2K,
             self::CARD_GT_2K,
             self::OTHERS,
+            self::VALIDATION,
         ];
     }
 

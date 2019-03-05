@@ -43,13 +43,13 @@ class Offer extends Base
     public function createEmiSubvention(array $attributes = [])
     {
         $emiSubventionAttributes = [
-            'payment_method' => 'emi',
-            'emi_subvention' => true,
-            'emi_durations'  => [9],
-            'payment_network'=> 'AMEX',
-            'issuer'         => null,
-            'min_amount'     => 319149,
-            'percent_rate'   => null,
+            'payment_method'  => 'emi',
+            'emi_subvention'  => true,
+            'emi_durations'   => [9],
+            'payment_network' => 'AMEX',
+            'issuer'          => null,
+            'min_amount'      => 319149,
+            'percent_rate'    => null,
         ];
 
         $attributes = array_merge($emiSubventionAttributes, $attributes);
@@ -83,6 +83,9 @@ class Offer extends Base
 
     public function create(array $attributes = [])
     {
+        $start = Carbon::now()->getTimestamp();
+        $end = Carbon::now()->addYear(1)->getTimestamp();
+
         $defaultValues = [
             'name'              => 'Test Offer',
             'merchant_id'       => '10000000000000',
@@ -90,8 +93,8 @@ class Offer extends Base
             'min_amount'        => 1000,
             'max_payment_count' => 2,
             'processing_time'   => 86400,
-            'starts_at'         => 1519457070,
-            'ends_at'           => 1550993070,
+            'starts_at'         => $start,
+            'ends_at'           => $end,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

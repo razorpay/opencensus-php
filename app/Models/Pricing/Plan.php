@@ -19,6 +19,44 @@ class Plan extends PublicCollection
 
     protected $entity = 'pricing';
 
+    public function getType()
+    {
+        if (count($this->items) > 0)
+        {
+            return $this->items[0]->getType();
+        }
+
+        // The pricing plan has no rules
+        return null;
+    }
+
+    public function isTypePricing(): bool
+    {
+        // @todo: Later refer to pricing.type column which can have values - pricing, commission
+        return true;
+    }
+
+    public function isTypeCommission(): bool
+    {
+        // @todo: Later refer to pricing.type column which can have values - pricing, commission
+        return false;
+    }
+
+    /**
+     * Extract and return the plan id from the public collection of pricing rules
+     *
+     * @return null
+     */
+    public function getId()
+    {
+        if ($this->isNotEmpty() === true)
+        {
+            return $this->first()->getPlanId();
+        }
+
+        return null;
+    }
+
     /**
      * Get the collection of items as a plain array.
      * @return array

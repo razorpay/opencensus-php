@@ -96,7 +96,7 @@ class Entity extends PublicEntity
         return $this->getAttribute(self::ENTITY_TYPE);
     }
 
-    public function isCommissionEnabled() : bool
+    public function isCommissionsEnabled() : bool
     {
         return ($this->getAttribute(self::COMMISSIONS_ENABLED) === true);
     }
@@ -104,6 +104,21 @@ class Entity extends PublicEntity
     public function getDefaultPlanId()
     {
         return $this->getAttribute(self::DEFAULT_PLAN_ID);
+    }
+
+    public function getImplicitPricingPlanId()
+    {
+        return $this->getAttribute(self::IMPLICIT_PLAN_ID);
+    }
+
+    public function getExplicitPricingPlanId()
+    {
+        return $this->getAttribute(self::EXPLICIT_PLAN_ID);
+    }
+
+    public function getImplicitExpiryAt()
+    {
+        return $this->getAttribute(self::IMPLICIT_EXPIRY_AT);
     }
 
     // --------------------- SETTERS ---------------------

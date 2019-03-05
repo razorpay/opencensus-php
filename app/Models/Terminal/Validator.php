@@ -86,6 +86,7 @@ class Validator extends Base\Validator
         Payment\Gateway::EMI_SBI,
         Payment\Gateway::WALLET_OLAMONEY,
         Payment\Gateway::PAYTM,
+        Payment\Gateway::BAJAJFINSERV,
     ];
 
     protected static $createValidators = [
@@ -231,9 +232,9 @@ class Validator extends Base\Validator
 
     protected static $cybersourceTerminalRules = [
         Entity::GATEWAY                    => 'required|in:cybersource',
-        Entity::GATEWAY_TERMINAL_ID        => 'required|string|min:10',
-        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string|min:50',
-        Entity::GATEWAY_MERCHANT_ID        => 'required|string|max:20',
+        Entity::GATEWAY_TERMINAL_ID        => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
@@ -244,7 +245,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY                    => 'required|in:' . Gateway::EMI_SBI,
         Entity::GATEWAY_MERCHANT_ID        => 'required|string|size:9',
         Entity::GATEWAY_TERMINAL_ID        => 'required|string|size:8',
-        Entity::ENABLED                    => 'required|in:0',
+        Entity::ENABLED                    => 'required|in:0,1',
     ];
 
     protected static $emiSbiEditTerminalRules = [
@@ -743,6 +744,17 @@ class Validator extends Base\Validator
         Entity::TERMINAL_IDS                => 'required|array',
         Entity::ACTION                      => 'required|string|in:add,remove',
         Entity::BANK                        => 'required|string|custom',
+    ];
+
+    protected static $bajajfinservTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:bajajfinserv',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET2     => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'required|string',
+        Entity::EMI                        => 'required|boolean|in:1',
+        Entity::EMI_SUBVENTION             => 'required|string|in:merchant,customer',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     public function validateType()

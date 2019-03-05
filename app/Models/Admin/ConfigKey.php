@@ -15,6 +15,7 @@ class ConfigKey
     const MERCHANT_ENACH_CONFIGS                = 'merchant_enach_configs';
     const SKIP_SLAVE                            = 'skip_slave';
     const MASTER_PERCENT                        = 'master_percent';
+    const HEARTBEAT_FORCE_RUN                   = 'heartbeat_force_run';
     const HEARTBEAT_ROUTES                      = 'heartbeat_routes';
     const HEARTBEAT_TRAFFIC_PERCENTAGE          = 'heartbeat_traffic_percentage';
     const HEARTBEAT_ENABLED                     = 'heartbeat_enabled';
@@ -35,6 +36,7 @@ class ConfigKey
         self::GATEWAY_PROCESSED_REFUNDS,
         self::GATEWAY_UNPROCESSED_REFUNDS,
         self::BLOCK_BANK_TRANSFERS_FOR_CRYPTO,
+        self::HEARTBEAT_FORCE_RUN,
         self::SKIP_SLAVE,
         self::MASTER_PERCENT,
         self::HEARTBEAT_ROUTES,

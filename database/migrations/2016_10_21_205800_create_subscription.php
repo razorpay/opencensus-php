@@ -124,6 +124,7 @@ class CreateSubscription extends Migration
             $table->index(Entity::UPDATED_AT);
             $table->index(Entity::CUSTOMER_EMAIL);
             $table->index([Entity::MERCHANT_ID, Entity::CREATED_AT]);
+            $table->index([Entity::STATUS, Entity::START_AT]);
 
             $table->foreign(Entity::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

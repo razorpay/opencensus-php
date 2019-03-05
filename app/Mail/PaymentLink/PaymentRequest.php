@@ -58,7 +58,8 @@ class PaymentRequest extends Mailable
 
     protected function addSubject()
     {
-        $subject = "Payment link notification";
+        $title = $this->mailPayload['payment_link']['title'];
+        $subject = "Payment Request: {$title}";
 
         $this->subject($subject);
 

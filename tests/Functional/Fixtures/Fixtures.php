@@ -2,11 +2,10 @@
 
 namespace RZP\Tests\Functional\Fixtures;
 
-use RZP\Models\Merchant;
 use Config;
 use Eloquent;
-use RZP\Tests\TestDummy\Factory;
 use RZP\Models;
+use Illuminate\Support\Facades\Artisan;
 
 class Fixtures
 {
@@ -92,6 +91,20 @@ class Fixtures
         $this->entities = $entities;
 
         $this->seedP2pFixture();
+    }
+
+    public function createEsIndex($entity, $mode)
+    {
+        Artisan::call(
+            'rzp:index_create',
+            [
+                'mode'         => $mode,
+                'entity'       => $entity,
+                'index_prefix' => env('ES_ENTITY_TYPE_PREFIX'),
+                'type_prefix'  => env('ES_ENTITY_TYPE_PREFIX'),
+                '--reindex'    => true,
+            ]
+        );
     }
 
     public function generateUniqueId()

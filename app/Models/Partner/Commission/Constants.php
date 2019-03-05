@@ -3,6 +3,7 @@
 namespace RZP\Models\Partner\Commission;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 
 class Constants
 {
@@ -19,6 +20,19 @@ class Constants
     ];
 
     /**
+     * Partner types which are eligible to get commissions even if the source transaction (payment, refund, etc) is
+     * not originated by the partner via the partner auth or bearer auth (oauth).
+     *
+     * Commission will be calculated and rolled out only to the partner types defined here if the transactions do not
+     * have the origin set to 'application'.
+     *
+     * @var array
+     */
+    public static $partnerTypesEligibleWithoutOrigin = [
+        Merchant\Constants::RESELLER,
+    ];
+
+    /**
      * @return array
      */
     public static function getSourceEntities(): array
@@ -26,7 +40,12 @@ class Constants
         return self::$sourceEntities;
     }
 
-    public static function isValidCommissionSource(Base\PublicEntity $entity): bool
+    /**
+     * @param CommissionSourceInterface $entity
+     *
+     * @return bool
+     */
+    public static function isValidCommissionSource(CommissionSourceInterface $entity): bool
     {
         $entityType = $entity->getEntity();
 
