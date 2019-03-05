@@ -989,8 +989,13 @@ class Gateway
         self::CYBERSOURCE,
         self::FIRST_DATA,
         self::CARD_FSS,
-        self::BAJAJ,
         self::HDFC,
+        self::UPI_AXIS,
+        self::UPI_HULK,
+        self::UPI_RBL,
+        self::UPI_SBI,
+        self::UPI_YESBANK,
+        self::BAJAJ,
     ];
 
     /**
