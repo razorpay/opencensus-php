@@ -333,7 +333,7 @@ class Processor
     {
         assert($this->subscription->isExternal() === true);
 
-        if ($this->subscription->isActive() === true)
+        if (($this->subscription->isActive() === true) or ($this->subscription->isHalted() === true))
         {
             $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
 
