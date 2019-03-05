@@ -9,8 +9,6 @@ import Field, { SelectField, SelectMode } from 'ui/Field';
 import { adminFetch, adminPost, adminFormUpload2 } from 'common/fetch';
 import AsyncButton from 'ui/AsyncButton';
 
-import CurrencyData from './currency.json';
-
 export default class TerminalForm extends Component {
   getMcc = () => {
     const detailsMap = getDetailsViewMap(this.props.props);
@@ -76,8 +74,10 @@ export default class TerminalForm extends Component {
           />
           <SelectField name="currency_code" label="Currency" defaultValue="INR">
             <option value="" />
-            {CurrencyData.data.map(({ code }) => (
-              <option value={code}>{code}</option>
+            {Object.keys(window.currencyLib.displayCurrencies).map(k => (
+              <option key={k} value={k}>
+                {k}
+              </option>
             ))}
           </SelectField>
           <div class="m-t m-b" />
