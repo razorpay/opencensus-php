@@ -2,7 +2,9 @@
 
 namespace RZP\Tests\Unit\Database;
 
+use Cache;
 use PDOStatement;
+
 use RZP\Tests\TestCase;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Tests\Unit\Database\Helpers\MockPDO;
@@ -13,7 +15,7 @@ class MySqlConnectionTest extends TestCase
     public function testReadPdoSelectedForNormalSelects()
     {
         //
-        // Creates mock pdo and statemeent objects.
+        // Creates mock pdo and statement objects.
         //
         $readPdo   = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
         $writePdo  = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
@@ -324,6 +326,7 @@ class MySqlConnectionTest extends TestCase
                 'enabled'               => ConfigKey::HEARTBEAT_ENABLED,
                 'mock'                  => ConfigKey::HEARTBEAT_MOCK,
                 'time_threshold'        => ConfigKey::HEARTBEAT_TIME_THRESHOLD,
+                'slave_time_threshold'  => ConfigKey::HEARTBEAT_SLAVE_TIME_THRESHOLD,
                 'routes'                => ConfigKey::HEARTBEAT_ROUTES,
                 'traffic_percentage'    => ConfigKey::HEARTBEAT_TRAFFIC_PERCENTAGE,
             ]
