@@ -8,6 +8,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
 use RZP\Exception\RecordAlreadyExists;
+use RZP\Models\Settlement\SlackNotification;
 
 class FundTransfer extends Job
 {
@@ -89,6 +90,12 @@ class FundTransfer extends Job
             if ($this->attempts() > self::MAX_ALLOWED_ATTEMPTS)
             {
                 $this->delete();
+
+                $operation = 'fts fund transfer job failed';
+
+                (new SlackNotification)->send($operation, $data, null, 1, 'fts_alerts');
+
+                return;
             }
             else
             {

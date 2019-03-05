@@ -32,6 +32,7 @@ final class Route
         // TODO: Check Splunk and remove the write here
         'merchant_methods'                         => ['get',      'methods',                                        'MerchantController@getPaymentMethods'                              ],
         'merchant_methods_downtime'                => ['get',      'methods/downtime',                               'MerchantController@getPublicGatewayDowntimeData'                   ],
+        'merchant_methods_downtime_private'        => ['get',      'methods/downtimes',                              'MerchantController@getMethodDowntimeData'                          ],
         'merchant_checkout_preferences'            => ['get',      'preferences',                                    'MerchantController@getCheckoutPreferences'                         ],
         'payment_create'                           => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'                         ],
         // @todo: Require feature S2S for payment_create_private route.
@@ -954,7 +955,7 @@ final class Route
         'partner_config_edit'                      => ['put',      'partner_configs/{id}',                           'PartnerConfigController@update'                                    ],
 
         'commissions_get_multiple'                 => ['get',      'commissions',                                    'CommissionController@list'                                         ],
-      
+
         'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
         'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
         'merchant_associated_accounts_fetch'       => ['get',      'merchant/{id}/associated_accounts',              'MerchantController@getAssociatedAccounts'                          ],
@@ -1013,6 +1014,9 @@ final class Route
         //API Routes for FTS
         'update_fts_fund_transfer'                 => ['post',     'update_fts_fund_transfer',                       'FundTransferAttemptController@updateFTA'                           ],
         'update_fts_nodal_beneficiary'             => ['post',     'update_fts_nodal_beneficiary',                   'NodalBeneficiaryController@createOrUpdateNodalBeneficiary'         ],
+
+        // API Route for Vault
+        'vault_token_create'                       => ['post',     'vault_token_create',                             'AdminController@createVaultToken'                                  ],
     ];
 
     public static $public = [
@@ -1259,6 +1263,7 @@ final class Route
         //'fund_account_delete',
         'transaction_statement_fetch',
         'transaction_statement_fetch_multiple',
+        'merchant_methods_downtime_private',
     ];
 
     // Only routes defined in internalApps go here
@@ -1920,6 +1925,8 @@ final class Route
         'partner_config_create',
         'partner_config_fetch',
         'partner_config_edit',
+
+        'vault_token_create',
     ];
 
     public static $routePermission = [
@@ -2285,6 +2292,7 @@ final class Route
         'merchants_access_map_delete'              => Permission::EDIT_PARTNERS,
         'submerchants_fetch'                       => Permission::VIEW_PARTNERS,
         'submerchants_fetch_multiple'              => Permission::VIEW_PARTNERS,
+        'oauth_application_fetch_multiple'         => Permission::VIEW_PARTNERS,
         'merchant_associated_accounts_fetch'       => Permission::VIEW_PARTNERS,
         'nodal_file_upload_retry'                  => Permission::SETTLEMENT_BULK_UPDATE,
         'subscription_manual_retry'                => '*',
@@ -2305,6 +2313,7 @@ final class Route
         'partner_config_create'                    => '*',
         'partner_config_fetch'                     => '*',
         'partner_config_edit'                      => '*',
+        'vault_token_create'                       => Permission::MAKE_API_CALL,
         'merchant_user_reset_password'             => Permission::USER_PASSWORD_RESET,
     ];
 
