@@ -420,7 +420,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     let isAllowedToSubmit, actionBtns, themeColor;
 
     const merchantData = {
-      name: this.props.user.name,
+      name: this.props.user.billing_label || this.props.user.name,
       brand_color: this.props.config.brand_color,
       image: this.props.user.logo_url,
     };
