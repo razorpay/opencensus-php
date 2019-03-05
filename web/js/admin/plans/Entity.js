@@ -4,7 +4,6 @@ import { DataTable } from 'ui/Table';
 import Plan, { options } from './plan';
 import { toJS, observable } from 'mobx';
 import { observer } from 'mobx-react';
-import * as item from 'ui/Item';
 import AsyncButton from 'ui/AsyncButton';
 import Field, { SelectField } from 'ui/Field';
 import { ModalContent } from 'component/Modal';
@@ -68,26 +67,27 @@ export default class PlanEntity extends Component {
                 defaultValue={props.name}
                 required
               />
-              {isOrgRazorpay() && !isBlank(orgs) && (
-                <SelectField
-                  label="Organisation"
-                  name="org_id"
-                  defaultValue={
-                    this.props.plan.collection.extraFields.selectedOrg ||
-                    'org_100000razorpay'
-                  }
-                  onChange={e => {
-                    updateOrg(e);
-                    this.props.plan.collection.data.handleOrgChange(e);
-                  }}
-                >
-                  {Object.keys(orgs).map(orgId => (
-                    <option key={orgId} value={orgId}>
-                      {orgs[orgId]}
-                    </option>
-                  ))}
-                </SelectField>
-              )}
+              {isOrgRazorpay() &&
+                !isBlank(orgs) && (
+                  <SelectField
+                    label="Organisation"
+                    name="org_id"
+                    defaultValue={
+                      this.props.plan.collection.extraFields.selectedOrg ||
+                      'org_100000razorpay'
+                    }
+                    onChange={e => {
+                      updateOrg(e);
+                      this.props.plan.collection.data.handleOrgChange(e);
+                    }}
+                  >
+                    {Object.keys(orgs).map(orgId => (
+                      <option key={orgId} value={orgId}>
+                        {orgs[orgId]}
+                      </option>
+                    ))}
+                  </SelectField>
+                )}
               {items.length > 1 && (
                 <AsyncButton
                   class="btn"
@@ -120,6 +120,7 @@ const fields = [
   ['', item => item.id],
   ['Product', item => item.selectField('product')],
   ['Feature', item => item.selectField('feature')],
+  ['Type', item => item.selectField('type')],
   [
     'Method',
     item => (

@@ -115,7 +115,7 @@ export const options = {
     transfer: 'Transfer',
     emi: 'EMI',
     esautomatic: 'Early Settlement',
-    fund_account_validation: 'Fund Account Validation'
+    fund_account_validation: 'Fund Account Validation',
   },
   payment_method: {
     ...methods,
@@ -179,6 +179,10 @@ export const options = {
   auth_type: {
     '': 'All',
     pin: 'PIN',
+  },
+  type: {
+    pricing: 'Pricing',
+    commission: 'Commission',
   },
   percent_rate: '',
   fixed_rate: '',
