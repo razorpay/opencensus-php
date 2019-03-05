@@ -20,7 +20,7 @@ class Gateway extends Mozart\Gateway
     {
         $serverResponse = $this->callGatewayRequestFunctionInternally($request);
 
-        $response =  $this->prepareInternalResponse($serverResponse);
+        $response = $this->prepareInternalResponse($serverResponse);
 
         return $this->jsonToArray($response->body, true);
     }

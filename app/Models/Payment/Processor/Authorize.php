@@ -429,7 +429,7 @@ trait Authorize
             $card = $payment->card;
             $redirectUrl = null;
 
-            if ($this->isRupayNetwork($payment) === false)
+            if (($this->isRupayNetwork($payment) === false) and ($payment->getGateway() !== Payment\Gateway::BAJAJ))
             {
                 $redirectUrl = $this->getPaymentRedirectTo3dsUrl();
             }
@@ -4226,6 +4226,12 @@ trait Authorize
                     {
                         return true;
                     }
+                }
+
+                if (($payment->getGateway() === Payment\Gateway::BAJAJ) and
+                    ($payment->isEmi() === true))
+                {
+                    return true;
                 }
 
                 if ($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP)

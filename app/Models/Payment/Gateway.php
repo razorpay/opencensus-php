@@ -133,6 +133,8 @@ class Gateway
     //
     const DEFAULT_ESIGNER_GATEWAY = self::ESIGNER_DIGIO;
 
+    const BAJAJ = 'bajajfinserv';
+
     const GATEWAY_ACQUIRERS = [
         self::AXIS_MIGS    => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
         self::HDFC         => [self::ACQUIRER_HDFC],
@@ -836,6 +838,9 @@ class Gateway
         self::AMEX => [
             Network::AMEX
         ],
+        self::BAJAJ => [
+            Network::BAJAJ
+        ],
         self::MPI_BLADE => [
             Network::MC,
             Network::VISA
@@ -984,6 +989,7 @@ class Gateway
         self::CYBERSOURCE,
         self::FIRST_DATA,
         self::CARD_FSS,
+        self::BAJAJ,
         self::HDFC,
     ];
 

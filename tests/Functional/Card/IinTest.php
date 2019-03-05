@@ -27,18 +27,6 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
-    public function testAddIinFailed()
-    {
-        $this->startTest();
-    }
-
-    public function testEditIinFailed()
-    {
-        $this->testAddIin();
-
-        $this->startTest();
-    }
-
     public function testEditIinFailedInvalidMessageType()
     {
         $this->testAddIin();

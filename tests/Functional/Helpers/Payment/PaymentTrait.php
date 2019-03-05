@@ -44,6 +44,7 @@ trait PaymentTrait
     use PaymentTraitMpiEnstage;
     use PaymentCybersourceTrait;
     use PaymentCardlessEmiTrait;
+    use PaymentBajajFinservTrait;
     use PaymentWalletAmazonpayTrait;
     use PaymentWalletAirtelMoneyTrait;
 
