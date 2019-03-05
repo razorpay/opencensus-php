@@ -105,13 +105,13 @@ class ErrorCodes
         self::EC_407  => ErrorCode::BAD_REQUEST_UNAUTHORIZED,
         self::EC_408  => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
         self::EC_410  => ErrorCode::BAD_REQUEST_PAYMENT_FAILED_DUE_TO_INVALID_BIN,
-        self::EC_412  => ErrorCode::BAD_REQUEST_CARD_ISSUER_AUTHENTICATION_ERROR,
+        self::EC_412  => ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
 
         // Callback error code mappings
         self::ACCU200 => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER,
         self::ACCU400 => ErrorCode::GATEWAY_ERROR_USER_INACTIVE,
         self::ACCU600 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-        self::ACCU700 => ErrorCode::BAD_REQUEST_CARD_ISSUER_AUTHENTICATION_ERROR,
+        self::ACCU700 => ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
         self::ACCU800 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
 
         // Authorize error code mappings
