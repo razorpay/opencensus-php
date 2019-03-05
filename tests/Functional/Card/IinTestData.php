@@ -252,6 +252,31 @@ return [
         ],
     ],
 
+    'testImportIinWithMessageType' => [
+        'request' => [
+            'url' => '/iins',
+            'method' => 'post',
+            'files' => [
+                'file' => '',
+            ],
+            'content' => [
+                'network' => 'MasterCard',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'duplicates' => [],
+                'db_conflicts' => [],
+                'network_errors' => [
+                    '497522' => [
+                        8,
+                    ]
+                ],
+                'success' => 5,
+            ],
+        ],
+    ],
+
     'testImportIinWithIssuer' => [
         'request' => [
             'url' => '/iins',

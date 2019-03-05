@@ -9,6 +9,9 @@ class Type
     const REFUND                = 'refund';
     const PAYMENT_LINK          = 'payment_link';
 
+    // Merchant Onboarding
+    const MERCHANT_ONBOARDING   = 'merchant_onboarding';
+
     // IRCTC Batch Types
     const IRCTC_REFUND          = 'irctc_refund';
     const IRCTC_SETTLEMENT      = 'irctc_settlement';
@@ -75,7 +78,8 @@ class Type
         self::EMANDATE,
         self::BANK_TRANSFER,
         self::ENTITY_MAPPING,
-        self::TERMINAL
+        self::TERMINAL,
+        self::MERCHANT_ONBOARDING,
     ];
 
     /**
@@ -114,6 +118,7 @@ class Type
         self::TERMINAL,
         self::CONTACT,
         self::FUND_ACCOUNT,
+        self::MERCHANT_ONBOARDING,
     ];
 
     /**

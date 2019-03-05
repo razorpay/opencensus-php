@@ -4,7 +4,7 @@ namespace RZP\Tests\Functional\Merchant;
 
 use Config;
 use RZP\Constants\Mode;
-use Functional\Partner\PartnerTrait;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 
 trait CommissionTrait

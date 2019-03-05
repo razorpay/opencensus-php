@@ -86,7 +86,7 @@ class MerchantController extends Controller
     {
         if (Request::hasFile('logo'))
         {
-            $input['logo'] = Request::file("logo");
+            $input['logo'] = Request::file('logo');
 
             $data = $this->service()->editConfig($input);
 
@@ -120,7 +120,7 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $data = (new Gateway\Terminal\Service)->onboardMerchant($id, $input, false)->toArrayPublic();
-        
+
         return ApiResponse::json($data);
     }
 
@@ -993,6 +993,13 @@ class MerchantController extends Controller
     public function getPublicGatewayDowntimeData()
     {
         $data = $this->service(E::GATEWAY_DOWNTIME)->getDowntimeDataForMerchant();
+
+        return ApiResponse::json($data);
+    }
+
+    public function getMethodDowntimeData()
+    {
+        $data = $this->service(E::GATEWAY_DOWNTIME)->getMethodDowntimeDataForMerchant();
 
         return ApiResponse::json($data);
     }

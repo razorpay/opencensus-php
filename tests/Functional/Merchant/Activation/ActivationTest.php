@@ -508,6 +508,51 @@ class ActivationTest extends TestCase
         $this->assertFalse($merchant->convertOnApi());
     }
 
+    public function testInternationalWithWhitelistedCategoryAndNoWebsite()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->edit('merchant', $merchantId, ['website' => null]);
+
+        $this->runFixturesForInternationalActivation($merchantId);
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertNull($merchant->convertOnApi());
+    }
+
+    public function testInternationalWithWhitelistedCategoryAndWebsiteAlreadySet()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->edit('merchant', $merchantId, ['website' => 'https://www.example.com']);
+
+        $this->runFixturesForInternationalActivation($merchantId);
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertFalse($merchant->convertOnApi());
+    }
+
+    public function testInternationalWithWhitelistedCategoryAndNoWebsiteAlreadySet()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->edit('merchant', $merchantId, ['website' => null]);
+
+        $this->runFixturesForInternationalActivation($merchantId);
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertFalse($merchant->convertOnApi());
+    }
+
     public function testInternationalWithBlacklistedCategory()
     {
         $merchantId = '1cXSLlUU8V9sXl';

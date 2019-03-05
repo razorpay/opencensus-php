@@ -6,13 +6,13 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\Partner\Commission\Calculator;
 use RZP\Tests\Functional\Helpers\PrivateMethodTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Partner\Commission\CommissionTrait;
 
 class Assertions extends TestCase
 {
+    use CommissionTrait;
     use DbEntityFetchTrait;
     use PrivateMethodTrait;
-
-    const GST_RATE = 18;
 
     public function testImplicitVariable(array $data)
     {
@@ -96,6 +96,16 @@ class Assertions extends TestCase
         $this->assertShouldCreateCommission($data);
     }
 
+    public function testPublicAuthPaymentForReseller(array $data)
+    {
+        $this->assertShouldCreateCommission($data);
+    }
+
+    public function testPublicAuthPaymentForAggregator(array $data)
+    {
+        $this->assertShouldNotCreateCommission($data);
+    }
+
     protected function assertBasicCalculatorRules(Calculator $calculator)
     {
         $shouldCreateCommission = $this->invokePrivateMethod(
@@ -141,21 +151,6 @@ class Assertions extends TestCase
                                     'shouldCreateCommission');
 
         $this->assertFalse($shouldCreateCommission);
-    }
-
-    protected function getFee(int $amount, int $rate)
-    {
-        return ($this->getFeeWithoutTax($amount, $rate) + $this->getTax($amount, $rate));
-    }
-
-    protected function getFeeWithoutTax(int $amount, int $rate)
-    {
-        return ($amount * ($rate / 100));
-    }
-
-    protected function getTax(int $amount, int $rate)
-    {
-        return ($this->getFeeWithoutTax($amount, $rate) * self::GST_RATE / 100);
     }
 
     protected function assertShouldCreateCommission(array $data)

@@ -214,4 +214,11 @@ class Core extends Base\Core
                     'balance'    =>  $balance->getBalance(),
                 ]);
     }
+
+    public function updateEntityWithFtsTransferId(Entity $entity, $ftsTransferId)
+    {
+        $entity->setFTSTransferId($ftsTransferId);
+
+        $this->repo->saveOrFail($entity);
+    }
 }

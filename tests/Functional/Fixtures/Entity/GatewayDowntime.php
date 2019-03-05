@@ -32,6 +32,24 @@ class GatewayDowntime extends Base
         return $downtime;
     }
 
+    public function createUpi(array $attributes = [])
+    {
+        $cardAttributes = [
+            'method'      => 'upi',
+            'card_type'   => 'NA',
+            'reason_code' => 'OTHER',
+            'source'      => 'other',
+            'partial'     => false,
+            'scheduled'   => true,
+        ];
+
+        $attributes = array_merge($cardAttributes, $attributes);
+
+        $downtime = $this->fixtures->create('gateway_downtime', $attributes);
+
+        return $downtime;
+    }
+
     public function createNetbanking(array $attributes = [])
     {
         // Sunday, 28 January 2018 00:00:00 GMT+05:30

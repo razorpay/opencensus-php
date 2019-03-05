@@ -57,6 +57,13 @@ class Service extends Base\Service
         return $downtimes->toArrayPublic();
     }
 
+    public function getMethodDowntimeDataForMerchant(): array
+    {
+        $downtimes = $this->core()->getPublicGatewayDowntimeData();
+
+        return $downtimes->toArrayPublic();
+    }
+
     public function processGatewayDowntimeWebhook(string $source, array $input)
     {
         $processor = new Webhook\Processor($source);

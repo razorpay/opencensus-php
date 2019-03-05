@@ -1,7 +1,8 @@
 <?php
 
-namespace Functional\Partner;
+namespace RZP\Tests\Functional\Partner;
 
+use RZP\Models\Merchant;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Tests\Functional\Fixtures\Entity\Org as Org;
@@ -96,5 +97,69 @@ trait PartnerTrait
         $accessMap = $this->fixtures->create('merchant_access_map', $accessMapData);
 
         return [$subMerchant, $accessMap];
+    }
+
+    public function createPurePlatFormMerchantAndSubMerchant()
+    {
+        $this->fixtures->merchant->createAccount(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+        $this->fixtures->merchant->createAccount(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID);
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::PURE_PLATFORM,
+            ]
+        );
+
+        $this->createDefaultSubmerchantPricingPlan();
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            [
+                'pricing_plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
+            ]
+        );
+
+        $this->createOAuthApplication(
+            [
+                'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                'id'          => Constants::DEFAULT_PLATFORM_APP_ID,
+            ]
+        );
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'merchant_id'     => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+                'entity_id'       => Constants::DEFAULT_PLATFORM_APP_ID,
+                'entity_type'     => 'application',
+                'entity_owner_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+            ]
+        );
+    }
+
+    public function setSubmerchantPrivateAuth($merchantId = Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID)
+    {
+        $key = $this->fixtures->create('key', ['merchant_id' => $merchantId]);
+
+        $key = $key->getKey();
+
+        $this->ba->privateAuth('rzp_test_' . $key);
+    }
+
+    public function createImplicitPricingPlan($planId = Constants::DEFAULT_IMPLICIT_PRICING_PLAN)
+    {
+        $this->fixtures->create('pricing:implicit_partner_pricing_plan', [
+            'plan_id' => $planId,
+            'type'    => 'pricing',
+        ]);
+    }
+
+    public function createDefaultSubmerchantPricingPlan($planId = Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN)
+    {
+        $this->fixtures->create('pricing:two_percent_pricing_plan', [
+            'plan_id' => $planId,
+            'type'    => 'pricing',
+        ]);
     }
 }

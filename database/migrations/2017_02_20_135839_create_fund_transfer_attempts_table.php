@@ -85,6 +85,9 @@ class CreateFundTransferAttemptsTable extends Migration
 
             $table->index(FundTransferAttempt::STATUS);
 
+            $table->integer(FundTransferAttempt::FTS_TRANSFER_ID)
+                  ->nullable();
+
             $table->index([FundTransferAttempt::SOURCE_ID, FundTransferAttempt::SOURCE_TYPE]);
 
             $table->index(FundTransferAttempt::CHANNEL);
@@ -92,6 +95,8 @@ class CreateFundTransferAttemptsTable extends Migration
             $table->index(FundTransferAttempt::INITIATE_AT);
 
             $table->index(FundTransferAttempt::CREATED_AT);
+
+            $table->index(FundTransferAttempt::FTS_TRANSFER_ID);
 
             $table->foreign(FundTransferAttempt::MERCHANT_ID)
                   ->references(Merchant::ID)

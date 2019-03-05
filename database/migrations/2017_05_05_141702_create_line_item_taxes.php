@@ -48,6 +48,7 @@ class CreateLineItemTaxes extends Migration
             $table->integer(Entity::DELETED_AT)
                   ->nullable();
 
+            $table->index(Entity::LINE_ITEM_ID);
             $table->index(Entity::CREATED_AT);
             $table->index(Entity::UPDATED_AT);
             $table->index(Entity::DELETED_AT);
