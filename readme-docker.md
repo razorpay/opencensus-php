@@ -137,6 +137,18 @@ If you want to pass in specific params(e.g. -filter PaymentTest or --stop-on-fai
 $ make test AT="--filter PaymentTest --stop-on-failure"
 ```
 
+##### Optional
+ Add the following to your `.env.testing_docker`:
+```
+RUN_FIXTURES                                   = (true)
+RUN_FIXTURES_ONCE                              = (true)
+TRUNCATE_DATABASE                              = (true)
+```
+After running one test, you can edit them all to false. This will speed up test execution on your pc.
+###### NOTE: 
+* You need to make these 3 variables `true` everytime you run `make build`. Then, just run one test, and then make them `false` again.
+* Or, you can leave them all true. This will slow down the first test, but still speed up the rest of the tests on your pc.
+
 #### Connecting to mysql:
 
 Available Databases:
@@ -157,3 +169,4 @@ above configuration. Do note that the mysql port is going to be `23306`.
 
 Please file issues regarding Containerization on the local `api`
 issue-tracker and tag @razorpay/devops
+
