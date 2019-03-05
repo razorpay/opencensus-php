@@ -131,11 +131,11 @@ trait RequestHandlerTrait
             Fields::RETRIEVAL_REF_NUMBER              => $rrn,
             Fields::CARD_ACCEPTOR_ID                  => $this->getMerchantId(),
             Fields::TERMINAL_OWNER_NAME               => $this->input['merchant']->getBillingLabel() ?? 'Razorpay',
-            Fields::TERMINAL_CITY                     => $this->input['merchant']->getBusinessRegisteredCity() ?? 'Bangalore',
-            Fields::TERMINAL_STATE_CODE               => $this->input['merchant']->getBusinessRegisteredState() ?? 'KA',
+            Fields::TERMINAL_CITY                     => $this->input['merchant_detail']->getBusinessRegisteredCity() ?? 'Bangalore',
+            Fields::TERMINAL_STATE_CODE               => $this->input['merchant_detail']->getBusinessRegisteredState() ?? 'KA',
             Fields::TERMINAL_COUNTRY_CODE             => 'IN',
-            Fields::MERCHANT_POSTAL_CODE              => $this->input['merchant']->getBusinessRegisteredPin() ?? '560030',
-            Fields::MERCHANT_TELEPHONE                => $this->input['merchant']->getContactMobile() ?? '9999999999',
+            Fields::MERCHANT_POSTAL_CODE              => $this->input['merchant_detail']->getBusinessRegisteredPin() ?? '560030',
+            Fields::MERCHANT_TELEPHONE                => $this->input['merchant_detail']->getContactMobile() ?? '9999999999',
             Fields::ORDER_ID                          => $this->input['payment']['id'],
         ];
 

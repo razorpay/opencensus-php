@@ -22,6 +22,20 @@ class PaysecureGatewayTest extends TestCase
 
         $this->fixtures->create('terminal:shared_paysecure_terminal');
 
+        $merchantDetailArray = [
+            'contact_name'                => 'rzp',
+            'contact_email'               => 'test@rzp.com',
+            'merchant_id'                 => '10000000000000',
+            'business_registered_address' => 'Koramangala',
+            'business_registered_state'   => 'KARNATAKA',
+            'business_registered_pin'     => 560047,
+            'business_dba'                => 'test',
+            'business_name'               => 'rzp_test',
+            'business_registered_city'    => 'Bangalore',
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailArray);
+
         $this->gateway = 'paysecure';
 
         $this->setMockGatewayTrue();
