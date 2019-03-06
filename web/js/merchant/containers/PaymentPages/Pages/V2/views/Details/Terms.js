@@ -12,23 +12,16 @@ export default class extends React.PureComponent {
     if (!target) {
       return;
     }
+
     const content = target.value;
     const fakeEle = window.document.querySelector(
       '#terms-details .fake-textarea'
     );
 
-    let newLineChars = 0;
-    for (let i = 0; i < content.length; i++) {
-      if (content[i] === '\n') {
-        newLineChars++;
-      }
-    }
+    fakeEle.value = content;
+    const newHeight = fakeEle.scrollHeight;
 
-    let fakeLinesHeight = newLineChars * 22; // 22 is line-height
-
-    fakeEle.innerHTML = content;
-    this.elHeight = fakeEle.scrollHeight + fakeLinesHeight + 10 + 'px'; // 10 is combination of vertical padding and line height of the textarea in css
-    target.style.height = this.elHeight;
+    target.style.height = newHeight + 'px';
   }
 
   componentDidMount() {
@@ -44,7 +37,7 @@ export default class extends React.PureComponent {
       <div id="terms-details">
         {isEditable ? (
           <React.Fragment>
-            <div class="fake-textarea" />
+            <textarea class="fake-textarea" readOnly />
             <label>Terms & Conditions:</label>
             <Input.Textarea
               name="terms"
