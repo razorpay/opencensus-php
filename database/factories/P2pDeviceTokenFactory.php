@@ -13,7 +13,7 @@ $factory->define(Entity::class, function (Faker $faker) {
         Entity::HANDLE          => $faker->randomElement(['rzpsharp', 'razorsharp']),
         Entity::GATEWAY_DATA    => $faker->randomElements(['a' => 1, 'b' => 2]),
         Entity::STATUS          => 'pending',
-        Entity::CL              => [
+        Entity::SDK_DATA        => [
             ClientLibrary::CAPABILITY   => $faker->numerify('#######################'),
             ClientLibrary::TOKEN        => $faker->lexify('???????????????????????????????'),
             ClientLibrary::PAYLOAD      => $faker->paragraph(4),

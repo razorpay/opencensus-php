@@ -44,6 +44,10 @@
         "auth_token" : {
             "type" : "string",
             "description": "Auth token for the device, should be cached to be used in later APIs"
+        },
+        "status" : {
+            "type" : "string",
+            "description": "Status of current token"
         }
     },
 
@@ -64,9 +68,7 @@
         "request" : {
             "type" : "object",
             "description": "Request to be made for given type of response",
-            "required" : [
-                "id"
-            ],
+            "required" : [],
             "properties" : {
                 "id" : {
                     "type" : "string",
@@ -93,7 +95,7 @@
                     "description": "Name of SDK action to invode for [response.type = 'sdk']"
                 },
                 "content" : {
-                    "type" : "object",
+                    "type" : ["string", "object"],
                     "description": "Payload to be passed to SDK action for [response.type = 'sdk']"
                 },
                 "validate" : {

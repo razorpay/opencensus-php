@@ -19,22 +19,17 @@ class Validator extends Base\Validator
             Entity::HANDLE           => 'string',
             Entity::GATEWAY_DATA     => 'array',
             Entity::STATUS           => 'string',
-            Entity::CL               => 'array',
+            Entity::SDK_DATA         => 'array',
         ];
 
         return $rules;
     }
 
-    public function makeClRules()
+    public function makeSdkDataRules()
     {
         $rules = $this->makeRules();
 
-        $arrayRules = ClientLibrary::rules()->with([
-            ClientLibrary::CAPABILITY   => 'required',
-            ClientLibrary::CHALLENGE    => 'required',
-        ]);
-
-        $rules->arrayRules(ClientLibrary::CL, $arrayRules->toArray());
+        $rules->arrayRules(Entity::SDK_DATA, []);
 
         return $rules;
     }
@@ -57,9 +52,8 @@ class Validator extends Base\Validator
     {
         $rules = $this->makeRules([
             Entity::GATEWAY_DATA     => 'sometimes',
+            Entity::SDK_DATA         => 'sometimes',
         ]);
-
-        $rules->merge($this->makeClRules());
 
         return $rules;
     }

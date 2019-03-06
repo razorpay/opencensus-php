@@ -253,7 +253,7 @@ class P2pHelper
 
         $this->runResponseCallbacks($response);
 
-        $this->validateResponseJsonSchema($response->content());
+        $this->validateResponseJsonSchema(json_decode($response->content()));
 
         return $response->json();
     }
@@ -277,21 +277,27 @@ class P2pHelper
      *
      * @param string $json
      */
-    protected function validateResponseJsonSchema(string $json)
+    protected function validateResponseJsonSchema(\stdClass $data)
     {
         if ($this->shouldValidateJsonSchema === false)
         {
             return;
         }
 
-        $jsonPath = app_path('Http/Controllers/P2p/JsonSchema/' . $this->validationJsonSchemaPath . '.json');
+        $suffix = 'processed';
+
+        if (isset($data->type) and in_array($data->type, ['sdk', 'sms', 'poll'], true))
+        {
+            $suffix = 'next';
+        }
+
+        $jsonPath = app_path('Http/Controllers/P2p/JsonSchema/' .
+                             $this->validationJsonSchemaPath . '.response.' . $suffix . '.json');
 
         if (file_exists($jsonPath) === false)
         {
             $this->throwTestingException('Json schema file does not exists', [$jsonPath]);
         }
-
-        $data = json_decode($json);
 
         $validator = new JsonSchema\Validator;
 
@@ -313,6 +319,13 @@ class P2pHelper
 
     protected function makeUri(string $uri, array $parameters)
     {
+        $url = parse_url($uri);
+
+        if (empty($url['scheme']) === false)
+        {
+            return $uri;
+        }
+
         $prefix = 'v1/upi/';
 
         if ($this->isCustomerInContext === true)

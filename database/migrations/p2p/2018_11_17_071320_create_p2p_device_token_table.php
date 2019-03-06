@@ -29,7 +29,7 @@ class CreateP2pDeviceTokenTable extends Migration
 
             $table->text(Entity::GATEWAY_DATA);
 
-            $table->text(Entity::CL);
+            $table->text(Entity::SDK_DATA);
 
             $table->string(Entity::STATUS, 50);
 

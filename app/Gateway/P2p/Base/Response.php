@@ -74,7 +74,7 @@ class Response
 
     public function setRequest(Request $request)
     {
-        $this->content[self::REQUEST] = $next;
+        $this->content[self::REQUEST] = $request;
     }
 
     public function hasRequest(): bool
@@ -82,7 +82,7 @@ class Response
         return ($this->content[self::REQUEST] instanceof Request);
     }
 
-    public function request(): array
+    public function request(): ArrayBag
     {
         return $this->content[self::REQUEST]->toArrayBag();
     }

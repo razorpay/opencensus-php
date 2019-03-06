@@ -11,10 +11,12 @@
         "callback"
     ],
     "properties": {
-        "allOf" : [
-            {"$ref" : "definitions.json#/next"},
-            {
-                "request" : {
+        "version" : {"$ref" : "definitions.json#/next/version"},
+        "type" : {"$ref" : "definitions.json#/next/type"},
+        "request" : {
+            "allOf" : [
+                {"$ref" : "definitions.json#/next/request"},
+                {
                     "properties" : {
                         "action" : {
                             "examples" : [
@@ -23,7 +25,8 @@
                         }
                     }
                 }
-            }
-        ]
+            ]
+        },
+        "callback" : {"$ref" : "definitions.json#/next/callback"}
     }
 }

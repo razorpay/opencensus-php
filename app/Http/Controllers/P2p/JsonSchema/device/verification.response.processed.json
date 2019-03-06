@@ -9,8 +9,8 @@
         "auth_token"
     ],
     "properties": {
-        "allOf" : [
-            {"$ref" : "definitions.json#/device_response"}
-        ]
+        "id" : {"$ref" : "definitions.json#/device_response/id"},
+        "auth_token" : {"$ref" : "definitions.json#/device_response/id"},
+        "status" : {"$ref" : "definitions.json#/device_response/status"}
     }
 }

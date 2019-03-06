@@ -13,26 +13,31 @@ use RZP\Models\Admin\Permission\Name as Permission;
 
 final class P2pRoute
 {
-
     protected static $p2pRoutes = [
         /*************** Customers ****************/
-        Requests::P2P_CUSTOMER_START_VERIFICATION =>
+        Requests::P2P_CUSTOMER_INITIATE_VERIFICATION =>
             [
                 'post',
-                'customers/verification/start',
-                'DeviceController@startVerification',
+                'customers/verification/initiate',
+                'DeviceController@initiateVerification',
             ],
-        Requests::P2P_CUSTOMER_VERIFICATION_STATUS =>
+        Requests::P2P_CUSTOMER_VERIFICATION =>
             [
-                'get',
+                'post',
                 'customers/verification/{token}',
-                'DeviceController@getVerificationStatus'
+                'DeviceController@verification'
             ],
-        Requests::P2P_CUSTOMER_REFRESH_TOKEN =>
+        Requests::P2P_CUSTOMER_INITIATE_GET_TOKEN =>
             [
                 'post',
-                'customer/cl_token_refresh',
-                'DeviceController@refreshClToken'
+                'customer/token/initiate',
+                'DeviceController@initiateGetToken'
+            ],
+        Requests::P2P_CUSTOMER_GET_TOKEN =>
+            [
+                'post',
+                'customer/token',
+                'DeviceController@getToken'
             ],
         Requests::P2P_CUSTOMER_DEREGISTER =>
             [
@@ -202,15 +207,16 @@ final class P2pRoute
 
     public static $public = [
         Requests::P2P_HANDLES_FETCH_ALL,
-        Requests::P2P_CUSTOMER_START_VERIFICATION,
-        Requests::P2P_CUSTOMER_VERIFICATION_STATUS,
+        Requests::P2P_BANKS_FETCH_ALL,
+        Requests::P2P_CUSTOMER_INITIATE_VERIFICATION,
+        Requests::P2P_CUSTOMER_VERIFICATION,
     ];
 
     public static $device = [
-        Requests::P2P_CUSTOMER_REFRESH_TOKEN,
+        Requests::P2P_CUSTOMER_INITIATE_GET_TOKEN,
+        Requests::P2P_CUSTOMER_GET_TOKEN,
         Requests::P2P_CUSTOMER_DEREGISTER,
 
-        Requests::P2P_BANKS_FETCH_ALL,
         Requests::P2P_CUSTOMER_BA_RETRIEVE,
         Requests::P2P_CUSTOMER_BA_FETCH_ALL,
         Requests::P2P_CUSTOMER_BA_FETCH,

@@ -12,23 +12,30 @@ use RZP\Models\P2p\Base;
  */
 class Service extends Base\Service
 {
-    public function startVerification(array $input): array
+    public function initiateVerification(array $input): array
     {
-        $response = $this->processor->startVerification($input);
+        $response = $this->processor->initiateVerification($input);
 
         return $response;
     }
 
-    public function getVerificationStatus(array $input): array
+    public function verification(array $input): array
     {
-        $response = $this->processor->getVerificationStatus($input);
+        $response = $this->processor->verification($input);
 
         return $response;
     }
 
-    public function refreshClToken(array $input): array
+    public function initiateGetToken(array $input): array
     {
-        $response = $this->processor->refreshClToken($input);
+        $response = $this->processor->initiateGetToken($input);
+
+        return $response;
+    }
+
+    public function getToken(array $input): array
+    {
+        $response = $this->processor->getToken($input);
 
         return $response;
     }

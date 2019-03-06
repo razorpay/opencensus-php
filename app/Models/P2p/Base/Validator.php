@@ -41,7 +41,21 @@ class Validator extends Base\Validator
 
         $rules = $this->{$method}();
 
-        static::$$ruleName = $rules->toArray();
+        $commonRules = $this->getCommonRules();
+
+        static::$$ruleName = array_merge($commonRules, $rules->toArray());
+    }
+
+    /**
+     * These are common rules and can be available in any request
+     * @return array
+     */
+    protected function getCommonRules()
+    {
+        return [
+            Entity::GATEWAY => 'sometimes',
+            Entity::SDK     => 'sometimes',
+        ];
     }
 
     /**

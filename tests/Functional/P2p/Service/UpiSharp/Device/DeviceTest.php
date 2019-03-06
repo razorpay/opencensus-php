@@ -7,33 +7,44 @@ use RZP\Tests\P2p\Service\Base\Fixtures\Fixtures;
 
 class DeviceTest extends TestCase
 {
-    public function testStartVerification()
+    public function testInitiateVerification()
     {
         $helper = $this->getDeviceHelper();
 
         $helper->withSchemaValidated();
 
-        $helper->startVerification();
+        $helper->initiateVerification();
     }
 
-    public function testVerificationStatus()
+    public function testVerification()
     {
         $helper = $this->getDeviceHelper();
 
-        $registerResponse = $helper->startVerification();
+        $initiate = $helper->initiateVerification();
 
         $helper->withSchemaValidated();
 
-        $helper->fetchVerificationStatus($registerResponse['token']);
+        $helper->verification($initiate['callback']);
     }
 
-    public function testDeviceRefreshToken()
+    public function testInitiateGetToken()
     {
         $helper = $this->getDeviceHelper();
 
         $helper->withSchemaValidated();
 
-        $helper->refreshClToken();
+        $helper->initiateGetToken();
+    }
+
+    public function testGetToken()
+    {
+        $helper = $this->getDeviceHelper();
+
+        $initiate = $helper->initiateGetToken();
+
+        $helper->withSchemaValidated();
+
+        $helper->getToken($initiate['callback']);
     }
 
     public function testDeviceDeregister()

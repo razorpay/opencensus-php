@@ -15,7 +15,7 @@ class Entity extends Base\Entity
     const DEVICE_ID        = 'device_id';
     const HANDLE           = 'handle';
     const GATEWAY_DATA     = 'gateway_data';
-    const CL               = 'cl';
+    const SDK_DATA         = 'sdk_data';
     const STATUS           = 'status';
 
     /************** Entity Properties ************/
@@ -37,7 +37,7 @@ class Entity extends Base\Entity
     protected $fillable = [
         Entity::GATEWAY_DATA,
         Entity::STATUS,
-        Entity::CL,
+        Entity::SDK_DATA,
     ];
 
     protected $visible = [
@@ -46,7 +46,7 @@ class Entity extends Base\Entity
         Entity::HANDLE,
         Entity::GATEWAY_DATA,
         Entity::STATUS,
-        Entity::CL,
+        Entity::SDK_DATA,
         Entity::REFRESHED_AT,
         Entity::CREATED_AT,
     ];
@@ -57,7 +57,7 @@ class Entity extends Base\Entity
         Entity::HANDLE,
         Entity::GATEWAY_DATA,
         Entity::STATUS,
-        Entity::CL,
+        Entity::SDK_DATA,
         Entity::REFRESHED_AT,
         Entity::CREATED_AT,
     ];
@@ -65,7 +65,7 @@ class Entity extends Base\Entity
     protected $defaults = [
         Entity::GATEWAY_DATA     => [],
         Entity::STATUS           => RegisterToken\Status::VERIFIED,
-        Entity::CL               => [],
+        Entity::SDK_DATA         => [],
     ];
 
     protected $casts = [
@@ -74,7 +74,7 @@ class Entity extends Base\Entity
         Entity::HANDLE           => 'string',
         Entity::GATEWAY_DATA     => 'array',
         Entity::STATUS           => 'string',
-        Entity::CL               => 'array',
+        Entity::SDK_DATA         => 'array',
         Entity::REFRESHED_AT     => 'int',
         Entity::DELETED_AT       => 'int',
         Entity::CREATED_AT       => 'int',
@@ -126,17 +126,17 @@ class Entity extends Base\Entity
     /**
      * @return $this
      */
-    public function setCl(array $cl)
+    public function setSdkData(array $sdkData)
     {
-        return $this->setAttribute(self::CL, $cl);
+        return $this->setAttribute(self::SDK_DATA, $sdkData);
     }
 
     /**
      * @return $this
      */
-    public function mergeCl(array $cl)
+    public function mergeSdkData(array $sdkData)
     {
-        return $this->setCl(array_merge($this->getCl(), $cl));
+        return $this->setSdkData(array_merge($this->getSdkData(), $sdkData));
     }
 
     /***************** GETTERS *****************/
@@ -179,11 +179,11 @@ class Entity extends Base\Entity
     }
 
     /**
-     * @return string self::CL
+     * @return string self::SDK_DATA
      */
-    public function getCl()
+    public function getSdkData()
     {
-        return $this->getAttribute(self::CL);
+        return $this->getAttribute(self::SDK_DATA);
     }
 
     /***************** SCOPES *****************/
