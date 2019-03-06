@@ -158,7 +158,7 @@ export default class CheckoutTheme extends Component {
                       maxSize="1048576"
                       onChange={this.uploadLogo}
                     />
-                    <div class="help-block">
+                    <div class="help-block" style={{ marginBottom: 0 }}>
                       <i style={{ fontSize: 12 }}>Max file size: 1MB</i>
                     </div>
                   </div>
@@ -217,7 +217,7 @@ export default class CheckoutTheme extends Component {
               <div id="payment-method-icons">
                 {['card', 'netbanking', 'wallet', 'upi', 'emi', 'qr'].map(
                   (type, ix) => (
-                    <span>
+                    <span key={ix}>
                       {getIcon(type, colorVariations)}
                       <span class="payment-method-label">{type}</span>
                     </span>
