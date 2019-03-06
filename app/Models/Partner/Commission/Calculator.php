@@ -9,6 +9,7 @@ use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Models\Base;
 use RZP\Models\Pricing;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -623,7 +624,24 @@ class Calculator extends Base\Core
     {
         list($merchantFee, $merchantTax, $merchantFeesSplit) = $this->getMerchantFees();
 
-        list($partnerFee, $partnerTax, $partnerSplit) = $this->getPartnerPricing();
+        try
+        {
+            list($partnerFee, $partnerTax, $partnerSplit) = $this->getPartnerPricing();
+        }
+        catch (LogicException $ex)
+        {
+            if ($ex->getCode() === ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT)
+            {
+                $this->traceContext(
+                    TraceCode::COMMISSION_NOT_DEFINED,
+                    [
+                        'merchant_fees' => $merchantFee,
+                        'merchant_tax'  => $merchantTax,
+                    ]);
+                return;
+            }
+            throw $ex;
+        }
 
         $this->setMerchantFee($merchantFee);
         $this->setMerchantTax($merchantTax);
@@ -632,8 +650,9 @@ class Calculator extends Base\Core
 
         if ($partnerFee === 0)
         {
+            // The partner fee computed based on the implicit partner pricing is zero
             $this->traceContext(
-                TraceCode::COMMISSION_NOT_DEFINED,
+                TraceCode::COMMISSION_ZERO_PARTNER_FEES,
                 [
                     'merchant_fees' => $merchantFee,
                     'partner_fees'  => $partnerFee,
