@@ -184,7 +184,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH                             = 'Payment amount provided does not match with the amount in order';
     const BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE                 = 'Payment amount is greater than the amount due for order';
     const BAD_REQUEST_PAYMENT_UPI_MULTIPLE_ACCOUNTS_LINKED                      = 'Payment failed since account linked with multiple names';
-    const BAD_REQUEST_UPI_INVALID_ATM_PIN                                       = 'Invalid ATM PIN entered';
+    const BAD_REQUEST_UPI_INVALID_ATM_PIN                                       = 'Invalid PIN entered.';
+
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MINIMUM_ALLOWED_AMOUNT           = 'Payment amount is lesser than the minimum amount allowed';
     const BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH                           = 'Payment currency provided does not match with the currency in order';
     const BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID                                = 'Payment already done for this order.';
@@ -330,6 +331,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_NOT_ENROLLED_FOR_3DSECURE                    = 'Payment processing failed because card is not enrolled for the required 3dsecure authentication';
     const BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED             = 'Payment processing failed because OTP validation attempts limit exceeded';
     const BAD_REQUEST_PAYMENT_OTP_INCORRECT                                     = 'Payment processing failed because of incorrect OTP';
+    const BAD_REQUEST_PAYMENT_OTP_INCORRECT_OR_EXPIRED                          = 'Payment processing failed because of incorrect or expired OTP';
     const BAD_REQUEST_PAYMENT_OTP_EXPIRED                                       = 'Payment processing failed because of expired OTP';
     const BAD_REQUEST_PAYMENT_PARES_XML_SIGNATURE_ERROR                         = 'Payment processing failed because of card authentication failure';
     const BAD_REQUEST_PAYMENT_ABORTED                                           = 'Payment processing aborted';

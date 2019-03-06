@@ -11,6 +11,8 @@ use RZP\Models\FileStore;
  */
 class Entity extends Base\PublicEntity
 {
+    use Base\Traits\HasCreator;
+
     const NAME                      = 'name';
     const STATUS                    = 'status';
     const PROCESSING                = 'processing';
@@ -19,6 +21,9 @@ class Entity extends Base\PublicEntity
     const SUCCESS_COUNT             = 'success_count';
     const FAILURE_COUNT             = 'failure_count';
     const ATTEMPTS                  = 'attempts';
+    const CREATOR                   = 'creator';
+    const CREATOR_ID                = 'creator_id';
+    const CREATOR_TYPE              = 'creator_type';
 
     /**
      * Fields amount and processed_amount represent the total amounnt across

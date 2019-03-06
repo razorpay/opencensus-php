@@ -19,15 +19,18 @@ class Core extends Base\Core
      * Create flow: Creates new batch entity against given file id or against
      * given file(by first storing it).
      *
-     * @param  array           $input
-     * @param  Merchant\Entity $merchant
+     * @param  array             $input
+     * @param  Merchant\Entity   $merchant
+     * @param  Base\PublicEntity $creator
      * @return Entity
      */
-    public function create(array $input, Merchant\Entity $merchant): Entity
+    public function create(array $input, Merchant\Entity $merchant, Base\PublicEntity $creator = null): Entity
     {
         $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, $input);
 
         $batch = (new Entity)->build($input);
+
+        $batch->creator()->associate($creator);
 
         $batch->merchant()->associate($merchant);
 

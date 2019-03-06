@@ -151,7 +151,9 @@ final class RequestContext
         $this->resolveKeyIdIfApplicable();
     }
 
-    public function getRoute(): string
+    // There are few cases where getRoute returns null
+    // ex: in case workers
+    public function getRoute()
     {
         return $this->route;
     }

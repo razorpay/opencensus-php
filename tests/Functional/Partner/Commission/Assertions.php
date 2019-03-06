@@ -96,6 +96,16 @@ class Assertions extends TestCase
         $this->assertShouldCreateCommission($data);
     }
 
+    public function testPublicAuthPaymentForReseller(array $data)
+    {
+        $this->assertShouldCreateCommission($data);
+    }
+
+    public function testPublicAuthPaymentForAggregator(array $data)
+    {
+        $this->assertShouldNotCreateCommission($data);
+    }
+
     protected function assertBasicCalculatorRules(Calculator $calculator)
     {
         $shouldCreateCommission = $this->invokePrivateMethod(

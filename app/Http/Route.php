@@ -154,7 +154,7 @@ final class Route
         'card_issuer_validate'                     => ['post',     'cards/validate',                                 'IinController@validateIinIssuer'                                   ],
         'iin_list_by_flow'                         => ['get',      'iins/list',                                      'IinController@getIinsList'                                         ],
         'iin_add'                                  => ['post',     'iins',                                           'IinController@postIin'                                             ],
-        'iin_upload'                               => ['post',     'iins/upload',                                    'IinControllerr@uploadIin'                                          ],
+        'iin_upload'                               => ['post',     'iins/upload',                                    'IinController@uploadIin'                                           ],
         'iin_range_upload'                         => ['post',     'iins/range/upload',                              'IinController@rangeUploadIin'                                      ],
         'iin_edit'                                 => ['put',      'iins/{id}',                                      'IinController@editIin'                                             ],
         'iin_generate_post'                        => ['post',     'iins/import/generate',                           'IinController@postIinGenerate'                                     ],
@@ -1013,6 +1013,9 @@ final class Route
         //API Routes for FTS
         'update_fts_fund_transfer'                 => ['post',     'update_fts_fund_transfer',                       'FundTransferAttemptController@updateFTA'                           ],
         'update_fts_nodal_beneficiary'             => ['post',     'update_fts_nodal_beneficiary',                   'NodalBeneficiaryController@createOrUpdateNodalBeneficiary'         ],
+
+        // API Route for Vault
+        'vault_token_create'                       => ['post',     'vault_token_create',                             'AdminController@createVaultToken'                                  ],
     ];
 
     public static $public = [
@@ -1920,6 +1923,8 @@ final class Route
         'partner_config_create',
         'partner_config_fetch',
         'partner_config_edit',
+
+        'vault_token_create',
     ];
 
     public static $routePermission = [
@@ -2306,6 +2311,7 @@ final class Route
         'partner_config_create'                    => '*',
         'partner_config_fetch'                     => '*',
         'partner_config_edit'                      => '*',
+        'vault_token_create'                       => Permission::MAKE_API_CALL,
         'merchant_user_reset_password'             => Permission::USER_PASSWORD_RESET,
     ];
 

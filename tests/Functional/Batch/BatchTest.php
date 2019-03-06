@@ -59,6 +59,11 @@ class BatchTest extends TestCase
         // 2 + 1 (Existing)
         $this->assertCount(2 + 1, $vpas);
         $this->assertCount(2, $vpas->where(Vpa\Entity::ADDRESS, 'jitendrakkkk@upi'));
+
+        // Asserts association of creator for batch.
+        $batch = $this->getDbLastEntity('batch');
+        $this->assertEquals('MerchantUser01', $batch->getCreatorId());
+        $this->assertEquals('user', $batch->getCreatorType());
     }
 
     public function testCreateBatchOfPayoutType()

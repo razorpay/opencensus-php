@@ -267,6 +267,8 @@ class Inferno
         }
         catch (\Throwable $e)
         {
+            $clientError = true;
+
             $this->trace->count(
                 Metric::WEBHOOK_REQUEST_FAILURES_TOTAL,
                 [

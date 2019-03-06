@@ -324,7 +324,7 @@ class Generator extends Base\Core
         $invoice->generateId();
 
         // Capture dashboard user id from dashboard headers if applies
-        $this->setInvoiceUserIdFromDashboardHeadersIfAvailable($invoice);
+        $this->setInvoiceCreator($invoice);
 
         // Saves merchant specific details in invoice as copy e.g. merchant label & gstin to use
         $invoice->setMerchantGstin($this->merchant->getGstin());
@@ -385,13 +385,20 @@ class Generator extends Base\Core
         $this->setShortUrl();
     }
 
-    protected function setInvoiceUserIdFromDashboardHeadersIfAvailable(Entity $invoice)
+    protected function setInvoiceCreator(Entity $invoice)
     {
-        $headers = $this->app['basicauth']->getDashboardHeaders();
-
-        if (array_key_exists(Entity::USER_ID, $headers) === true)
+        // If the creation is via batch get the batch creator and associate conditionally.
+        if ($this->batch !== null)
         {
-            $invoice->setUserId($headers[Entity::USER_ID]);
+            if ($this->batch->isCreatorTypeUser() === true)
+            {
+                $invoice->user()->associate($this->batch->creator);
+            }
+        }
+        // Else just associates the authenticated user.
+        else
+        {
+            $invoice->user()->associate($this->app->basicauth->getUser());
         }
     }
 
