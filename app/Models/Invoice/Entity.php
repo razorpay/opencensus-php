@@ -1092,11 +1092,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT, $amount);
     }
 
-    public function setUserId(string $userId)
-    {
-        $this->setAttribute(self::USER_ID, $userId);
-    }
-
     public function setMerchantGstin(string $gstin = null)
     {
         $this->setAttribute(self::MERCHANT_GSTIN, $gstin);

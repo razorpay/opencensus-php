@@ -72,6 +72,12 @@ class CreateBatchTable extends Migration
             $table->text(Batch::COMMENT)
                   ->nullable();
 
+            $table->char(Batch::CREATOR_ID, 14)
+                  ->nullable();
+
+            $table->string(Batch::CREATOR_TYPE, 255)
+                  ->nullable();
+
             $table->integer(Batch::PROCESSED_AT)
                   ->nullable();
 
@@ -82,6 +88,7 @@ class CreateBatchTable extends Migration
             $table->index(Batch::TYPE);
             $table->index(Batch::GATEWAY);
             $table->index(Batch::STATUS);
+            $table->index(Batch::CREATOR_ID);
 
             $table->foreign(Batch::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
