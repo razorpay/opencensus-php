@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\Paysecure;
 
-
 class StatusCode
 {
     const SUCCESS    = 'success';
