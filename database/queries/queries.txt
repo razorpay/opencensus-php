@@ -4794,3 +4794,8 @@ ALTER TABLE fund_account_validations
 
 ALTER TABLE fund_transfer_attempts
     ADD COLUMN card_id CHAR(14) DEFAULT NULL after vpa_id;
+
+ALTER TABLE batches
+    ADD COLUMN creator_id CHAR(14) DEFAULT NULL AFTER comment,
+    ADD COLUMN creator_type VARCHAR(255) DEFAULT NULL AFTER creator_id,
+    ADD INDEX batches_creator_id_index (creator_id);
