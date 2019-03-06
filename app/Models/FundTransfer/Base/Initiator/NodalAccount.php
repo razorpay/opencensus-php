@@ -427,4 +427,28 @@ abstract class NodalAccount extends Base\Core
             );
         }
     }
+
+    public function getPaymentModeForCard(Entity $attempt, $amount): string
+    {
+        if ($attempt->hasMode() === true)
+        {
+            return $attempt->getMode();
+        }
+
+        if ($amount < self::MAX_IMPS_AMOUNT)
+        {
+            return Mode::IMPS;
+        }
+
+        $now = Carbon::now(Timezone::IST)->getTimestamp();
+
+        if ((($now >= $this->bankingStartTimeRtgs) and
+                ($now <= $this->bankingEndTimeRtgs)) and
+            ($amount >= self::MIN_RTGS_AMOUNT))
+        {
+            return Mode::RTGS;
+        }
+
+        return Mode::NEFT;
+    }
 }
