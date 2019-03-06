@@ -40,6 +40,8 @@ class PaysecureGatewayTest extends TestCase
 
         $this->setMockGatewayTrue();
 
+        $this->mockCardVault();
+
         $this->payment = $this->getDefaultPaymentArray();
     }
 
