@@ -1,17 +1,17 @@
 import Field, { SelectField, SearchableSelectField } from 'ui/Field';
 
 export default function PerTransactionForm({ plans, values, internals }) {
-  const { comission, pricing } = plans;
+  const { commission, pricing } = plans;
   return (
     <>
-      <SelectField data-name="_comission_mode" label="Comission Type">
+      <SelectField data-name="_commission_mode" label="Commission Type">
         <option value="variable">Variable</option>
         <option value="fixed">Fixed</option>
       </SelectField>
 
       <Searchable
         name="default_plan_id"
-        trackBy="plan_id"
+        trackBy="id"
         label="Default sub-merchant pricing"
         options={pricing.data}
         defaultValue={values.default_plan_id}
@@ -20,21 +20,21 @@ export default function PerTransactionForm({ plans, values, internals }) {
 
       <Searchable
         name="implicit_plan_id"
-        trackBy="plan_id"
+        trackBy="id"
         label="Partner Pricing"
-        options={internals === 'fixed' ? comission.data : pricing.data}
+        options={internals === 'fixed' ? commission.data : pricing.data}
         defaultValue={values.implicit_plan_id}
-        pending={pricing.pending || comission.pending}
+        pending={pricing.pending || commission.pending}
       />
 
       <Searchable
         name="explicit_plan_id"
-        trackBy="plan_id"
-        label="Add-on Comission"
-        options={comission.data}
+        trackBy="id"
+        label="Add-on Commission"
+        options={commission.data}
         helpMsg="This will be exposed to sub-merchants"
         defaultValue={values.explicit_plan_id}
-        pending={comission.pending}
+        pending={commission.pending}
       />
     </>
   );

@@ -6,8 +6,9 @@ import { stringToObj } from 'common/util';
 import { isPresent, pickProps, without } from 'rzp/utils/rzp-utils';
 
 import Form from 'ui/Form';
-import Field, { DateField, SwitchField, SelectField } from 'ui/Field';
+import { DateField, SwitchField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
+import EntityRow from 'ui/EntityRow';
 
 import PerTransactionForm from './PerTransactionForm';
 
@@ -22,7 +23,7 @@ export default class WritePartnerConfig extends Component {
           pending: true,
           data: [],
         },
-        comission: {
+        commission: {
           pending: true,
           data: [],
         },
@@ -31,18 +32,18 @@ export default class WritePartnerConfig extends Component {
   }
 
   componentWillMount() {
-    this.fetchPricingPlans({ type: 'comission' });
+    this.fetchPricingPlans({ type: 'commission' });
     this.fetchPricingPlans({ type: 'pricing' });
   }
 
   fetchPricingPlans = params => {
     adminFetch({
-      url: 'live/pricing/merchants',
+      url: 'live/pricing',
       params,
     }).then(data => {
       const fetchedPlans = {
         pending: false,
-        data: formatPlanData(data),
+        data: formatPlanData(data.items),
       };
       const plans = stringToObj(params.type, fetchedPlans, this.state.plans);
       this.setState({ plans });
@@ -52,7 +53,7 @@ export default class WritePartnerConfig extends Component {
   handleSearchableSelectChange = name => ({ option }) => {
     const target = {
       name,
-      value: option.plan_id,
+      value: option.id,
     };
     this.handleChange({ target });
   };
@@ -108,7 +109,7 @@ export default class WritePartnerConfig extends Component {
       !!values && (
         <>
           <SwitchField
-            label="Comission"
+            label="Commission"
             name="commissions_enabled"
             enabledLabel="Enable"
             disabledLabel="Disable"
@@ -142,22 +143,23 @@ export default class WritePartnerConfig extends Component {
           />
 
           <SwitchField
+            name="explicit_should_charge"
+            label="Charge Add-on Commission"
+            enabledLabel="Yes"
+            disabledLabel="No"
+            onChange={this.handleChange}
+            helpMsg="If No, we'll only record but not charge Add-on commission from sub-merchant"
+            defaultValue={values.explicit_should_charge}
+          />
+
+          <SwitchField
             name="explicit_refund_fees"
-            label="Charge Refund Fees"
+            label="Refund Add-on Commission on payment refund"
             enabledLabel="Yes"
             disabledLabel="No"
             onChange={this.handleChange}
             defaultValue={values.explicit_refund_fees}
-          />
-
-          <SwitchField
-            name="explicit_should_charge"
-            label="Charge Add-on Comission"
-            enabledLabel="Yes"
-            disabledLabel="No"
-            onChange={this.handleChange}
-            helpMsg="If No, we'll only record but not charge Add-on comission from sub-merchant"
-            defaultValue={values.explicit_should_charge}
+            disabled={!values.explicit_should_charge}
           />
 
           {/* add support for helpMsg in SwitchField to avoid this */}
@@ -166,7 +168,7 @@ export default class WritePartnerConfig extends Component {
             <label>{/* dummy label */}</label>
             <div class="info-block">
               <i class="i i-info-circle" />
-              If No, we'll only record but not charge Add-on comission from
+              If No, we'll only record but not charge Add-on commission from
               sub-merchant
             </div>
           </div>
@@ -183,27 +185,40 @@ export default class WritePartnerConfig extends Component {
   };
 
   render() {
+    const { submerchant } = this.props;
     return (
-      <div class="box">
-        <header>Comission Settings</header>
-        <div class="row-item">
-          <Form class="full-span full-elements" onChange={this.handleChange}>
-            {this.renderForm()}
-          </Form>
+      <>
+        {isPresent(submerchant) && (
+          <div className="box">
+            <div className="heading">
+              <strong>Submerchant Details</strong>
+            </div>
+
+            <EntityRow label="Id" value={submerchant.id} />
+            <EntityRow label="Name" value={submerchant.name} />
+            <EntityRow label="Email" value={submerchant.email} />
+          </div>
+        )}
+        <div class="box">
+          <header>Commission Settings</header>
+          <div class="row-item">
+            <Form class="full-span full-elements" onChange={this.handleChange}>
+              {this.renderForm()}
+            </Form>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 }
 
 function formatPlanData(data) {
-  return data.map(({ plan_name, ...plan }) => ({
+  return data.map(plan => ({
     ...plan,
-    name: plan_name,
-    value: plan.plan_id,
+    value: plan.id,
   }));
 }
 
 function getDefaultDateVal(unixTime) {
-  return unixTime ? moment(unixTime, 'X') : undefined;
+  return unixTime ? moment(unixTime, 'X') : null;
 }

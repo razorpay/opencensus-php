@@ -7,7 +7,7 @@ import Field, { SelectField } from 'ui/Field';
 import { PageTable } from 'ui/Table';
 import { ModalContent } from 'component/Modal';
 
-import { isPresent, pickProps } from 'rzp/utils/rzp-utils';
+import { isPresent, pickProps, without } from 'rzp/utils/rzp-utils';
 
 import { adminFetch, adminPost, adminPut } from 'common/fetch';
 import { openModal } from 'common/modal';
@@ -50,10 +50,11 @@ export default class PartnerConfigList extends Component {
           <Write
             values={{
               ...values,
-              ...sanitizeConfig(config),
+              ...(isPresent(config) ? sanitizeConfig(config) : defaultValues),
             }}
-            submit={!!config ? adminPut : adminPost}
-            buttonText={!!config ? 'Update' : 'Create'}
+            submit={!!(config || {}).id ? adminPut : adminPost}
+            buttonText={!!(config || {}).id ? 'Update' : 'Create'}
+            submerchant={submerchant}
           />
         </ModalContent>
       </div>
@@ -147,10 +148,10 @@ export default class PartnerConfigList extends Component {
     return (
       <div className="list-container">
         <div className="box">
-          <header>Partner Configs</header>
-          {merchant.purePlatform && (
-            <Form class="full-span full-elements" style={{ width: '85%' }}>
-              {applications.loading ? (
+          <header>Partner Commission Settings</header>
+          <Form class="full-span full-elements" style={{ width: '85%' }}>
+            {merchant.purePlatform &&
+              (applications.loading ? (
                 <Field
                   value="Loading Applications..."
                   label="Application"
@@ -165,34 +166,35 @@ export default class PartnerConfigList extends Component {
                     </option>
                   ))}
                 </SelectField>
-              )}
-            </Form>
-          )}
-        </div>
-        {isPresent(configsAndSubsFetched) &&
-          (configsAndSubsFetched === true ? (
-            <>
-              <div className="box">
-                <header>
-                  Default Config
+              ))}
+            {isPresent(configsAndSubsFetched) &&
+              configsAndSubsFetched === true && (
+                <div className="field">
+                  <label>Default Config</label>
                   <button
-                    class="btn pull-right"
+                    class="btn"
+                    type="button"
                     onClick={this.onWriteConfig({
                       config: this.defaultConfigs[0],
                     })}
                   >
                     {isPresent(this.defaultConfigs) ? 'Update' : 'Create'}
                   </button>
-                </header>
-              </div>
-              <PageTable
-                model={this.submerchants}
-                animateRow={false}
-                fields={getSubmerchantFields({
-                  write: this.onWriteConfig,
-                })}
-              />
-            </>
+                </div>
+              )}
+          </Form>
+        </div>
+        {isPresent(configsAndSubsFetched) &&
+          (configsAndSubsFetched === true ? (
+            <PageTable
+              model={this.submerchants}
+              animateRow={false}
+              fields={getSubmerchantFields({
+                write: this.onWriteConfig,
+                defaultConfig: without(this.defaultConfigs[0] || {}, ['id']),
+              })}
+              info={false}
+            />
           ) : (
             <div className="box">
               <div className="spinner center" />
@@ -207,7 +209,7 @@ function isPurePlatform(merchant = {}) {
   return merchant.partner_type === 'pure_platform';
 }
 
-var getSubmerchantFields = ({ write }) => [
+var getSubmerchantFields = ({ write, defaultConfig }) => [
   [
     'Submerchant ID',
     item => <span className="link">{item.submerchant.id}</span>,
@@ -216,8 +218,11 @@ var getSubmerchantFields = ({ write }) => [
   [
     'Config',
     item => (
-      <button class="button" onClick={write(item)}>
-        {item.config ? 'Update' : 'Create'}
+      <button
+        class="button"
+        onClick={write({ ...item, config: item.config || defaultConfig })}
+      >
+        {item.config ? 'Update' : 'Override'}
       </button>
     ),
   ],
@@ -236,3 +241,10 @@ function sanitizeConfig(data = {}) {
     'id',
   ]);
 }
+
+var defaultValues = {
+  explicit_should_charge: true,
+  revisit_at: moment()
+    .add(1, 'year')
+    .format('X'),
+};
