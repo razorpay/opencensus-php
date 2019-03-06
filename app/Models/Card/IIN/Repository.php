@@ -62,6 +62,15 @@ class Repository extends Base\Repository
         return $iin;
     }
 
+    public function findByIin(int $iin)
+    {
+        $iin = $this->newQuery()
+                    ->where(Entity::IIN, $iin)
+                    ->first();
+
+        return $iin;
+    }
+
     public function findIinsByFlows(int $val)
     {
         $iin = $this->newQuery()

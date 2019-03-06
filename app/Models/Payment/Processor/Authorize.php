@@ -2130,6 +2130,12 @@ trait Authorize
             }
         }
 
+        if (($payment->isCard() === true) and
+            (isset($gatewayInput['card']['iin']) === true))
+        {
+            $gatewayInput['iin'] = $this->repo->iin->findByIin($gatewayInput['card']['iin']);
+        }
+
         if ($payment->isUpi() === true)
         {
             $gatewayInput['upi']['flow'] = $input['_']['flow'] ?? null;

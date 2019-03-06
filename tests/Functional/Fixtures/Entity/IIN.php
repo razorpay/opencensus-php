@@ -237,7 +237,19 @@ class Iin extends Base
                 'issuer'        => null,
                 'emi'           => 1,
                 'trivia'        => 'random trivia'
-        ],
+            ],
+            [
+                'iin'           => '607384',
+                'category'      => null,
+                'network'       => 'RuPay',
+                'type'          => 'debit',
+                'country'       => 'IN',
+                'issuer_name'   => null,
+                'issuer'        => null,
+                'message_type'  => 'SMS',
+                'emi'           => 0,
+                'trivia'        => null
+            ],
         ];
 
     public function createDefaultIins()

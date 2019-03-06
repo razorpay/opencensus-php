@@ -95,6 +95,10 @@ trait RequestHandlerTrait
         return [$gatewayPayment, $response];
     }
 
+    /**
+     * @return array
+     * @throws Exception\LogicException
+     */
     protected function getInitiateRequestArray(): array
     {
         $card = $this->input['card'];
@@ -113,6 +117,26 @@ trait RequestHandlerTrait
 
         $rrn = $this->generateRrn($systemTraceAuditNumber);
 
+        if ((isset($this->input['iin']) === true) and
+            (isset($this->input['iin']['message_type']) === true) and
+            (empty($this->input['iin']['message_type']) === false))
+        {
+            $messageType = $this->input['iin']['message_type'];
+        }
+        else
+        {
+            throw new Exception\LogicException(
+                "Message type missing for IIN",
+                null,
+                [
+                    'payment_id' => $this->input['payment']['id'],
+                    'gateway'    => $this->gateway,
+                    'iin'        => $this->input['card']['iin'],
+                ]
+            );
+        }
+
+
         $requestArray = [
             Fields::CARD_NO                           => $card['number'],
             Fields::CARD_EXP_DATE                     => $card['expiry_month'] . $card['expiry_year'],
@@ -120,8 +144,7 @@ trait RequestHandlerTrait
             Fields::AUTH_AMOUNT                       => $this->input['payment']['amount'],
             Fields::CURRENCY_CODE                     => Currency::ISO_NUMERIC_CODES[$this->input['payment']['currency']],
             Fields::CVD2                              => $card['cvv'],
-            // todo: fetch this correctly from card BIN
-            Fields::TRANSACTION_TYPE_INDICATOR        => 'SMS',
+            Fields::TRANSACTION_TYPE_INDICATOR        => $messageType,
             Fields::TID                               => $this->getTerminalId(),
             Fields::STAN                              => $systemTraceAuditNumber,
             Fields::TRAN_TIME                         => $time,
