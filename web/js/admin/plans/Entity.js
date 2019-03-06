@@ -120,7 +120,7 @@ const fields = [
   ['', item => item.id],
   ['Product', item => item.selectField('product')],
   ['Feature', item => item.selectField('feature')],
-  ['Type', item => item.selectField('type')],
+  ...(isOrgRazorpay() ? [['Type', item => item.selectField('type')]] : []),
   [
     'Method',
     item => (
