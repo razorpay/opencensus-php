@@ -8,6 +8,8 @@ class Response
 {
     const MOCKED        = 'mocked';
     const SUCCESS       = 'success';
+    const REQUEST       = 'request';
+    const CALLBACK      = 'callback';
     const DATA          = 'data';
     const ERROR         = 'error';
     const CODE          = 'code';
@@ -20,6 +22,8 @@ class Response
         $this->content = [
             self::MOCKED    => $mocked,
             self::SUCCESS   => $success,
+            self::REQUEST   => null,
+            self::CALLBACK  => null,
             self::DATA      => new ArrayBag(),
             self::ERROR     => new ArrayBag(),
         ];
@@ -66,5 +70,35 @@ class Response
     public function error(): ArrayBag
     {
         return $this->error();
+    }
+
+    public function setRequest(Request $request)
+    {
+        $this->content[self::REQUEST] = $next;
+    }
+
+    public function hasRequest(): bool
+    {
+        return ($this->content[self::REQUEST] instanceof Request);
+    }
+
+    public function request(): array
+    {
+        return $this->content[self::REQUEST]->toArrayBag();
+    }
+
+    public function requestType()
+    {
+        return $this->content[self::REQUEST]->type();
+    }
+
+    public function requestCallback()
+    {
+        return $this->content[self::REQUEST]->callback();
+    }
+
+    private function next(): Next
+    {
+        return $this->content[self::NEXT];
     }
 }
