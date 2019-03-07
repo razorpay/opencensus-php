@@ -19,6 +19,12 @@ class Request
     private $callback = [];
     private $load = [];
 
+    public function __construct(array $load)
+    {
+        $this->load = $load;
+
+    }
+
     public function setId($id)
     {
         $this->load[self::ID] = $id;

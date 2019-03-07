@@ -82,7 +82,7 @@ class Response
         return ($this->content[self::REQUEST] instanceof Request);
     }
 
-    public function request(): ArrayBag
+    public function request()
     {
         return $this->content[self::REQUEST]->toArrayBag();
     }

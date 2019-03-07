@@ -144,6 +144,13 @@ return [
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
 
+    'p2p_upi_axis' => [
+      'private_key'                => env('P2P_UPI_AXIS_PRIVATE_KEY'),
+      'merchant_id'                => env('P2P_UPI_AXIS_MERCHANT_ID'),
+      'merchant_channel_id'        => env('P2P_UPI_AXIS_MERCHANT_CHANNEL_ID'),
+      'merchant_category_code'     => env('P2P_UPI_AXIS_MERCHANT_CATEGORY_CODE'),
+    ],
+
     'hdfc' => [
         'test_terminal_id'                 => env('HDFC_GATEWAY_TEST_TERMINAL_ID'),
         'test_terminal_pwd'                => env('HDFC_GATEWAY_TEST_TERMINAL_PASSWORD'),
