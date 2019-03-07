@@ -54,7 +54,8 @@ class BankAccount extends Base
         $fta = (new Attempt\Core)->createWithBankAccount(
             $this->validation,
             $this->account,
-            $fundTransferAttemptInput);
+            $fundTransferAttemptInput,
+            true);
 
         $this->trace->info(TraceCode::FUND_TRANSFER_ATTEMPT_CREATED, $fta->toArrayPublic());
 

@@ -42,7 +42,7 @@ class FundAccountValidationTest extends TestCase
         $fundAccount = $this->getLastEntity('fund_account', true);
 
         $fav = $this->getLastEntity('fund_account_validation', true);
-        $this->assertEquals('created', $fav['status']);
+        $this->assertEquals('completed', $fav['status']);
         $this->assertEquals($fundAccount['id'], 'fa_'.$fav['fund_account_id']);
 
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
@@ -96,8 +96,6 @@ class FundAccountValidationTest extends TestCase
 
         $this->createValidationWithFundAccountEntity();
 
-        $this->initiateTransferAndReconcile();
-
         $fav = $this->getLastEntity('fund_account_validation', true);
         $this->assertEquals('completed', $fav['status']);
         $this->assertEquals('active', $fav['results']['account_status']);
@@ -122,6 +120,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationWhenFailedDuringRecon()
     {
+        $this->markTestSkipped();
+
         $this->addFeeCredits(['value' => 10000, 'campaign' => 'silent-ads']);
 
         $this->ba->privateAuth();
@@ -167,8 +167,6 @@ class FundAccountValidationTest extends TestCase
 
         $this->createValidationWithFundAccountEntity();
 
-        $this->initiateTransferAndReconcile();
-
         $fav = $this->getLastEntity('fund_account_validation', true);
         $this->assertEquals('completed', $fav['status']);
         $this->assertEquals('active', $fav['results']['account_status']);
@@ -195,8 +193,6 @@ class FundAccountValidationTest extends TestCase
     {
         $this->testCreateValidationForCustomerFeeBearer();
 
-        $this->initiateTransferAndReconcile();
-
         $fav = $this->getLastEntity('fund_account_validation', true);
         $this->assertEquals('completed', $fav['status']);
         $this->assertEquals('active', $fav['results']['account_status']);
@@ -222,8 +218,6 @@ class FundAccountValidationTest extends TestCase
     public function testFundAccValidationWithReconOnPostpaidModelWithNoFeeCredits()
     {
         $this->createValidationWithFundAccountEntity();
-
-        $this->initiateTransferAndReconcile();
 
         $fav = $this->getLastEntity('fund_account_validation', true);
         $this->assertEquals('completed', $fav['status']);
@@ -253,8 +247,6 @@ class FundAccountValidationTest extends TestCase
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
 
         $this->createValidationWithFundAccountEntity();
-
-        $this->initiateTransferAndReconcile();
 
         $fav = $this->getLastEntity('fund_account_validation', true);
         $this->assertEquals('completed', $fav['status']);
@@ -298,8 +290,6 @@ class FundAccountValidationTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $this->createValidationWithFundAccountEntity();
-
         $this->mockInfernoFire(function ($data) use ($testData)
         {
             $data['event'] = json_decode($data['event'], true);
@@ -311,6 +301,6 @@ class FundAccountValidationTest extends TestCase
             return true;
         });
 
-        $this->initiateTransferAndReconcile();
+        $this->createValidationWithFundAccountEntity();
     }
 }
