@@ -5,6 +5,7 @@ namespace RZP\Models\Invitation;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\User;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
 
@@ -58,6 +59,7 @@ class Validator extends Base\Validator
 
     protected function validateRole(string $attribute, string $role)
     {
+        /** @var Merchant\Entity $merchant */
         $merchant = $this->entity->merchant;
 
         $product = app('basicauth')->getRequestOriginProduct();
@@ -68,7 +70,7 @@ class Validator extends Base\Validator
         {
             $dashboardRoles = User\Role::LINKED_ACCOUNT_ROLES;
         }
-        else if($userRole === User\Role::RBL_SUPERVISOR)
+        else if ($userRole === User\Role::RBL_SUPERVISOR)
         {
             $dashboardRoles = User\Role::RBL_ROLES;
         }
@@ -79,6 +81,11 @@ class Validator extends Base\Validator
         else
         {
             $dashboardRoles = User\Role::ALL_ROLES;
+        }
+
+        if ($merchant->isTagAdded('enable_rbl_role') === true)
+        {
+            $dashboardRoles = array_merge($dashboardRoles, User\Role::RBL_ROLES);
         }
 
         if (in_array($role, $dashboardRoles, true) === false)
