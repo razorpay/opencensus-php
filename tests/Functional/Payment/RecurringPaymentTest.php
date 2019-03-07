@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Payment;
 
 use Redis;
+use RZP\Exception;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Feature\Constants as Feature;
@@ -971,6 +972,64 @@ class RecurringPaymentTest extends TestCase
         {
             $this->doAuthPayment($payment);
         });
+    }
+
+    public function testRecurringPaymentWithExpiredToken()
+    {
+        $this->fixtures->create('terminal:shared_emandate_hdfc_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
+
+        $this->fixtures->merchant->enableEmandate();
+
+        $this->mockCardVault();
+
+        $payment = $this->getEmandateNetbankingRecurringPaymentArray('HDFC');
+
+        $payment['bank_account'] = [
+            'account_number'    => '0123456789',
+            'ifsc'              => 'HDFC0000186',
+            'name'              => 'Test Account'
+        ];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $tokenId = $paymentEntity[Payment::TOKEN_ID];
+
+        $this->fixtures->edit(
+            'token',
+            $tokenId,
+            [
+                Payment::RECURRING => 1,
+                Token::RECURRING_STATUS => 'confirmed',
+                Token::EXPIRED_AT => 1551931831,
+            ]);
+
+        $payment[Payment::TOKEN] = $tokenId;
+
+        $payment['amount'] = 4000;
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        // Second recurring payment request
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doS2SRecurringPayment($payment);
+            },
+            Exception\BadRequestException::class,
+            "Token has expired and cannot be used for recurring payments");
     }
 
     protected function assignSubMerchant(string $tid, string $mid)

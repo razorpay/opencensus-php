@@ -787,4 +787,6 @@ class PublicErrorDescription
     const BAD_REQUEST_APPLICATION_SUBMERCHANT_CONFIG_EXISTS                         = 'Application/submerchant config already exists';
 
     const BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE                          = 'Payment failed';
+
+    const BAD_REQUEST_TOKEN_EXPIRED                                                 = 'Token has expired and cannot be used for recurring payments';
 }

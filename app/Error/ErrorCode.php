@@ -581,6 +581,7 @@ class ErrorCode
     const BAD_REQUEST_SUBSCRIPTION_PAYMENT_PARAMS_MISSING                           = 'BAD_REQUEST_SUBSCRIPTION_PAYMENT_PARAMS_MISSING';
     const BAD_REQUEST_CARDLESS_EMI_USER_DOES_NOT_EXIST                              = 'BAD_REQUEST_CARDLESS_EMI_USER_DOES_NOT_EXIST';
     const BAD_REQUEST_EMI_DURATION_NOT_VALID                                        = 'BAD_REQUEST_EMI_DURATION_NOT_VALID';
+    const BAD_REQUEST_TOKEN_EXPIRED                                                 = 'BAD_REQUEST_TOKEN_EXPIRED';
 
     const BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD                                        = 'BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD';
     const BAD_REQUEST_CARD_AVS_FAILED                                               = 'BAD_REQUEST_CARD_AVS_FAILED';

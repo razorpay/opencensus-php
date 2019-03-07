@@ -1322,6 +1322,8 @@ trait Authorize
         $this->validateTokenRecurringStatus($token, $payment);
 
         $this->validateTokenMaxAmount($token, $payment);
+
+        $this->validateTokenExpiredAt($token);
     }
 
     protected function validateInitialRecurringForEmandate(Payment\Entity $payment, array $input)
@@ -1417,6 +1419,22 @@ trait Authorize
                          'payment' => $payment->toArray(),
                          'token'   => $token->toArray(),
                     ]);
+        }
+    }
+
+    protected function validateTokenExpiredAt(Token\Entity $token)
+    {
+        $currentTime = Carbon::now()->getTimestamp();
+
+        if (($token->getExpiredAt() !== null) and
+            ($token->getExpiredAt() < $currentTime) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TOKEN_EXPIRED,
+                Token\Entity::EXPIRED_AT,
+                [
+                    'token'          => $token->toArray(),
+                ]);
         }
     }
 
