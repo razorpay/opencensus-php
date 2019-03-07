@@ -1127,7 +1127,7 @@ trait Authorize
         //
         if ($payment->isCard() === true)
         {
-            $this->validateRecurringForCard($payment);
+            $this->validateRecurringForCard($payment, $token);
         }
         else if ($payment->isEmandate() === true)
         {
@@ -1243,13 +1243,15 @@ trait Authorize
         }
     }
 
-    protected function validateRecurringForCard(Payment\Entity $payment)
+    protected function validateRecurringForCard(Payment\Entity $payment, Token\Entity $token)
     {
         if ($payment->card->isRecurringSupported() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED);
         }
+
+        $this->validateTokenExpiredAt($token);
     }
 
     protected function validateRecurringForEmandate(

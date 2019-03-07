@@ -974,7 +974,7 @@ class RecurringPaymentTest extends TestCase
         });
     }
 
-    public function testRecurringPaymentWithExpiredToken()
+    public function testRecurringEmandatePaymentWithExpiredToken()
     {
         $this->fixtures->create('terminal:shared_emandate_hdfc_terminal');
 
@@ -1022,6 +1022,47 @@ class RecurringPaymentTest extends TestCase
         $payment['order_id'] = $order->getPublicId();
 
         // Second recurring payment request
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doS2SRecurringPayment($payment);
+            },
+            Exception\BadRequestException::class,
+            'Token has expired and cannot be used for recurring payments');
+    }
+
+    public function testRecurringCardPaymentWithExpiredToken()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+
+        $tokenId = $paymentEntity[Payment::TOKEN_ID];
+
+        $this->fixtures->edit(
+            'token',
+            $tokenId,
+            [
+                Payment::RECURRING => 1,
+                Token::RECURRING_STATUS => 'confirmed',
+                Token::EXPIRED_AT => 1551931831,
+            ]);
+
+        unset($payment[Payment::CARD]);
+
+        unset($payment[Payment::BANK]);
+
+        $payment[Payment::TOKEN] = $tokenId;
+
+        $this->ba->privateAuth();
 
         $this->makeRequestAndCatchException(
             function() use ($payment)
