@@ -256,13 +256,17 @@ export default class SettlementsListContainer extends ListContainer {
                     up here.
                   </div>
                   <div>
-                    <a
-                      class="btn-link"
-                      target="_blank"
-                      href="http://razorpay.com/settlement"
-                    >
-                      See our Settlements Guide
-                    </a>{' '}
+                    {user.isOrgAllowedFunctionality('external_links') ? (
+                      <a
+                        class="btn-link"
+                        target="_blank"
+                        href="http://razorpay.com/settlement"
+                      >
+                        See our Settlements Guide
+                      </a>
+                    ) : (
+                      'See the Settlements Guide'
+                    )}{' '}
                     to understand how it works.
                   </div>
                 </div>
