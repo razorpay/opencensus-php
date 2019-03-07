@@ -14,9 +14,9 @@ class Constants
 
     // --------------------- BANKS ---------------------
 
-    const ARZP                                              = 'ARZP';
-    const BRZP                                              = 'BRZP';
-    const CRZP                                              = 'CRZP';
+    const ARZP                                              = 'ARZP0000000001';
+    const BRZP                                              = 'BRZP0000000001';
+    const CRZP                                              = 'CRZP0000000001';
 
     // ------------------------ TEST DEVICES ------------------------
 

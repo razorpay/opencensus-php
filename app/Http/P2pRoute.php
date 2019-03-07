@@ -56,7 +56,7 @@ final class P2pRoute
         Requests::P2P_CUSTOMER_BA_RETRIEVE =>
             [
                 'get',
-                'customer/bank_accounts/bank/{bank_code}',
+                'customer/bank_accounts/bank/{bank_id}',
                 'BankAccountController@retrieve'
             ],
         Requests::P2P_CUSTOMER_BA_FETCH_ALL =>

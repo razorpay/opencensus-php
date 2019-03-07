@@ -55,12 +55,9 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
     public function getToken(Response $response)
     {
         $response->setData([
-            'sdk_data' => [
-                'token'     => 'I_AM_REFRESTED_TOKEN',
-                'payload'   => '<payload>And_i_am_refreshed_payload</payload>'
-            ],
             'gateway_data' => [
                 'token'     => 'I_AM_REFRESTED_TOKEN',
+                'payload'   => '<payload>And_i_am_refreshed_payload</payload>'
             ],
         ]);
 

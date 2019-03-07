@@ -72,8 +72,6 @@ class Validator extends Base\Validator
             Entity::GEOCODE        => 'required',
         ]);
 
-        $rules->merge((new DeviceToken\Validator)->makeSdkDataRules());
-
         return $rules;
     }
 
@@ -116,8 +114,6 @@ class Validator extends Base\Validator
     {
         $rules = $this->makeRules();
 
-        $rules->merge((new DeviceToken\Validator)->makeSdkDataRules());
-
         return $rules;
     }
 
@@ -132,7 +128,6 @@ class Validator extends Base\Validator
     {
         $rules = $this->makeRules([
             DeviceToken\Entity::GATEWAY_DATA         => 'required',
-            DeviceToken\Entity::SDK_DATA             => 'required',
         ]);
 
         return $rules;

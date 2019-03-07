@@ -151,7 +151,7 @@ class P2pSeeder extends Seeder
     private function seedBanks()
     {
         P2p\BankAccount\Bank\Entity::whereIn(
-            P2p\BankAccount\Bank\Entity::IFSC,
+            P2p\BankAccount\Bank\Entity::ID,
             [
                 Constants::ARZP,
                 Constants::BRZP,
@@ -160,17 +160,20 @@ class P2pSeeder extends Seeder
 
         factory(P2p\BankAccount\Bank\Entity::class)->create(
             [
-                'ifsc'                    => Constants::ARZP,
+                'id'                    => Constants::ARZP,
+                'handle'                => Constants::RAZOR_SHARP,
             ]);
 
         factory(P2p\BankAccount\Bank\Entity::class)->create(
             [
-                'ifsc'                    => Constants::BRZP,
+                'id'                    => Constants::BRZP,
+                'handle'                => Constants::RAZOR_SHARP,
             ]);
 
         factory(P2p\BankAccount\Bank\Entity::class)->create(
             [
-                'ifsc'                    => Constants::CRZP,
+                'id'                    => Constants::CRZP,
+                'handle'                => Constants::RAZOR_SHARP,
             ]);
     }
 
@@ -190,7 +193,7 @@ class P2pSeeder extends Seeder
                 'id'                    => Constants::CUSTOMER_1_BANK_ACCOUNT_1_SHARP,
                 'device_id'             => Constants::CUSTOMER_1_DEVICE_1,
                 'handle'                => Constants::RAZOR_SHARP,
-                'bank'                  => Constants::ARZP
+                'bank_id'               => Constants::ARZP
             ]);
 
         factory(P2p\BankAccount\Entity::class)->create(
@@ -198,7 +201,7 @@ class P2pSeeder extends Seeder
                 'id'                    => Constants::CUSTOMER_2_BANK_ACCOUNT_1_SHARP,
                 'device_id'             => Constants::CUSTOMER_2_DEVICE_1,
                 'handle'                => Constants::RAZOR_SHARP,
-                'bank'                  => Constants::BRZP
+                'bank_id'               => Constants::BRZP
             ]);
 
         factory(P2p\BankAccount\Entity::class)->create(
@@ -206,7 +209,7 @@ class P2pSeeder extends Seeder
                 'id'                    => Constants::CUSTOMER_1_BANK_ACCOUNT_1_AXIS,
                 'device_id'             => Constants::CUSTOMER_1_DEVICE_1,
                 'handle'                => Constants::RAZOR_AXIS,
-                'bank'                  => Constants::ARZP
+                'bank_id'               => Constants::ARZP
             ]);
 
         factory(P2p\BankAccount\Entity::class)->create(
@@ -214,7 +217,7 @@ class P2pSeeder extends Seeder
                 'id'                    => Constants::CUSTOMER_2_BANK_ACCOUNT_1_AXIS,
                 'device_id'             => Constants::CUSTOMER_2_DEVICE_1,
                 'handle'                => Constants::RAZOR_SHARP,
-                'bank'                  => Constants::BRZP
+                'bank_id'               => Constants::BRZP
             ]);
     }
 
@@ -235,7 +238,7 @@ class P2pSeeder extends Seeder
             [
                 'code'                  => Constants::RAZOR_SHARP,
                 'acquirer'              => Constants::P2P_UPI_SHARP,
-                'bank'                  => Constants::ARZP,
+                'bank'                  => 'ARZP',
                 'active'                => true,
             ]);
 
@@ -243,7 +246,7 @@ class P2pSeeder extends Seeder
             [
                 'code'                  => Constants::RZP_SHARP,
                 'acquirer'              => Constants::P2P_UPI_SHARP,
-                'bank'                  => Constants::BRZP,
+                'bank'                  => 'BRZP',
                 'active'                => true,
             ]);
 
@@ -251,7 +254,7 @@ class P2pSeeder extends Seeder
             [
                 'code'                  => Constants::NORZP_SHARP,
                 'acquirer'              => Constants::P2P_UPI_SHARP,
-                'bank'                  => Constants::CRZP,
+                'bank'                  => 'CRZP',
                 'active'                => false,
             ]);
 
@@ -259,7 +262,7 @@ class P2pSeeder extends Seeder
             [
                 'code'                  => Constants::RAZOR_AXIS,
                 'acquirer'              => Constants::P2P_UPI_AXIS,
-                'bank'                  => Constants::ARZP,
+                'bank'                  => 'ARZP',
                 'active'                => true,
             ]);
 
@@ -267,7 +270,7 @@ class P2pSeeder extends Seeder
             [
                 'code'                  => Constants::RZP_AXIS,
                 'acquirer'              => Constants::P2P_UPI_AXIS,
-                'bank'                  => Constants::BRZP,
+                'bank'                  => 'BRZP',
                 'active'                => true,
             ]);
 
@@ -275,7 +278,7 @@ class P2pSeeder extends Seeder
             [
                 'code'                  => Constants::NORZP_AXIS,
                 'acquirer'              => Constants::P2P_UPI_AXIS,
-                'bank'                  => Constants::CRZP,
+                'bank'                  => 'CRZP',
                 'active'                => false,
             ]);
     }

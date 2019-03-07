@@ -284,15 +284,23 @@ class P2pHelper
             return;
         }
 
-        $suffix = 'processed';
-
-        if (isset($data->type) and in_array($data->type, ['sdk', 'sms', 'poll'], true))
+        if ($this instanceof DeviceHelper)
         {
-            $suffix = 'next';
-        }
+            $suffix = 'processed';
 
-        $jsonPath = app_path('Http/Controllers/P2p/JsonSchema/' .
-                             $this->validationJsonSchemaPath . '.response.' . $suffix . '.json');
+            if (isset($data->type) and in_array($data->type, ['sdk', 'sms', 'poll'], true))
+            {
+                $suffix = 'next';
+            }
+
+            $jsonPath = app_path('Http/Controllers/P2p/JsonSchema/' .
+                $this->validationJsonSchemaPath . '.response.' . $suffix . '.json');
+        }
+        else
+        {
+            $jsonPath = app_path('Http/Controllers/P2p/JsonSchema/' .
+                $this->validationJsonSchemaPath . '.json');
+        }
 
         if (file_exists($jsonPath) === false)
         {

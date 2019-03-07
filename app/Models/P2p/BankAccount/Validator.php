@@ -26,15 +26,15 @@ class Validator extends Base\Validator
     public function rules()
     {
         $rules = [
-            Entity::DEVICE_ID                => 'string',
-            Entity::HANDLE                   => 'string',
-            Entity::GATEWAY_DATA             => 'array',
-            Entity::BANK                     => 'string',
-            Entity::IFSC                     => 'string',
-            Entity::ACCOUNT_NUMBER           => 'string',
-            Entity::MASKED_ACCOUNT_NUMBER    => 'string',
-            Entity::BENEFICIARY_NAME         => 'string',
-            Entity::CREDS                    => 'array',
+            Entity::DEVICE_ID             => 'string',
+            Entity::HANDLE                => 'string',
+            Entity::GATEWAY_DATA          => 'array',
+            Entity::BANK_ID               => 'string',
+            Entity::IFSC                  => 'string',
+            Entity::ACCOUNT_NUMBER        => 'string',
+            Entity::MASKED_ACCOUNT_NUMBER => 'string',
+            Entity::BENEFICIARY_NAME      => 'string',
+            Entity::CREDS                 => 'array',
         ];
 
         return $rules;
@@ -140,7 +140,7 @@ class Validator extends Base\Validator
     public function makeRetrieveRules()
     {
         $rules = $this->makeRules([
-            Entity::BANK        => 'required',
+            Entity::BANK_ID => 'required',
         ]);
 
         return $rules;
@@ -149,7 +149,7 @@ class Validator extends Base\Validator
     public function makeRetrieveSuccessRules()
     {
         $rules = $this->makeRules([
-            Entity::BANK    => 'required',
+            Entity::BANK_ID => 'required',
         ]);
 
         $rules->arrayRules(Entity::BANK_ACCOUNTS,
@@ -183,7 +183,7 @@ class Validator extends Base\Validator
     public function makeInitiateSetUpiPinSuccessRules()
     {
         $rules = $this->makeRules([
-            Entity::BANK        => 'required',
+            Entity::BANK_ID => 'required',
         ]);
 
         $rules->arrayRules(Entity::BANK_ACCOUNT, [
@@ -199,7 +199,7 @@ class Validator extends Base\Validator
     {
         $rules = $this->makePublicIdRules();
 
-        $rules->arrayRules(Entity::CL, $this->makeCredBlockRules()->toArray());
+        $rules->arrayRules(Entity::SDK, $this->makeCredBlockRules()->toArray());
         $rules->merge($this->makeCardRules());
         $rules->merge($this->makeTxnRules());
 
@@ -209,7 +209,7 @@ class Validator extends Base\Validator
     public function makeSetUpiPinSuccessRules()
     {
         $rules = $this->makeRules([
-            Entity::BANK        => 'required',
+            Entity::BANK_ID => 'required',
         ]);
 
         $rules->arrayRules(Entity::BANK_ACCOUNT, [
@@ -231,7 +231,7 @@ class Validator extends Base\Validator
     public function makeInitiateFetchBalanceSuccessRules()
     {
         $rules = $this->makeRules([
-            Entity::BANK        => 'required',
+            Entity::BANK_ID => 'required',
         ]);
 
         $rules->arrayRules(Entity::BANK_ACCOUNT, [
@@ -247,7 +247,7 @@ class Validator extends Base\Validator
     {
         $rules = $this->makePublicIdRules();
 
-        $rules->arrayRules(Entity::CL, $this->makeCredBlockRules()->toArray());
+        $rules->arrayRules(Entity::SDK, $this->makeCredBlockRules()->toArray());
         $rules->merge($this->makeTxnRules());
 
         return $rules;
@@ -256,7 +256,7 @@ class Validator extends Base\Validator
     public function makeFetchBalanceSuccessRules()
     {
         $rules = $this->makeRules([
-            Entity::BANK        => 'required',
+            Entity::BANK_ID => 'required',
         ]);
 
         $rules->arrayRules(Entity::BANK_ACCOUNT, [

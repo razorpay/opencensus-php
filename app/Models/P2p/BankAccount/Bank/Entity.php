@@ -6,10 +6,14 @@ use RZP\Models\P2p\Base;
 
 class Entity extends Base\Entity
 {
-    const IFSC             = 'ifsc';
+    use Base\Traits\HasHandle;
+
+    const HANDLE           = 'handle';
     const NAME             = 'name';
+    const IFSC             = 'ifsc';
     const UPI_IIN          = 'upi_iin';
     const UPI_FORMAT       = 'upi_format';
+    const GATEWAY_DATA     = 'gateway_data';
     const ACTIVE           = 'active';
     const SPOC             = 'spoc';
 
@@ -18,9 +22,10 @@ class Entity extends Base\Entity
     /************** Entity Properties ************/
 
     protected $entity             = 'p2p_bank';
-    protected $primaryKey         = self::IFSC;
-    protected $generateIdOnCreate = false;
+    protected $primaryKey         = self::ID;
+    protected $generateIdOnCreate = true;
     protected static $generators  = [];
+    protected static $sign        = 'bank';
 
     protected $dates = [
         Entity::REFRESHED_AT,
@@ -38,6 +43,7 @@ class Entity extends Base\Entity
     ];
 
     protected $visible = [
+        Entity::ID,
         Entity::IFSC,
         Entity::NAME,
         Entity::UPI_IIN,
@@ -68,10 +74,11 @@ class Entity extends Base\Entity
     protected $casts = [
         Entity::IFSC             => 'string',
         Entity::NAME             => 'string',
+        Entity::HANDLE           => 'string',
+        Entity::GATEWAY_DATA     => 'array',
         Entity::UPI_IIN          => 'string',
         Entity::UPI_FORMAT       => 'string',
         Entity::ACTIVE           => 'bool',
-        Entity::SPOC             => 'array',
         Entity::REFRESHED_AT     => 'int',
         Entity::CREATED_AT       => 'int',
         Entity::UPDATED_AT       => 'int',

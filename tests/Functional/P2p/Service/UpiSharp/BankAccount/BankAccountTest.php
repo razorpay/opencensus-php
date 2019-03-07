@@ -2,8 +2,9 @@
 
 namespace RZP\Tests\P2p\Service\UpiSharp\BankAccount;
 
-use RZP\Tests\P2p\Service\UpiSharp\TestCase;
+use RZP\Tests\P2p\Service\Base;
 use RZP\Models\P2p\BankAccount\Entity;
+use RZP\Tests\P2p\Service\UpiSharp\TestCase;
 
 class BankAccountTest extends TestCase
 {
@@ -15,23 +16,18 @@ class BankAccountTest extends TestCase
 
         $banks = $helper->fetchBanks();
 
-        $this->assertCollection($banks, 3, [
-            ['ifsc' => 'ARZP'],
-            ['ifsc' => 'BRZP'],
-            ['ifsc' => 'CRZP'],
-        ]);
-
+        $this->assertCollection($banks, 3);
     }
 
     public function testRetrieve()
     {
-        $ifsc = 'ARZP';
+        $id = 'bank_' . Base\Constants::ARZP;
 
         $helper = $this->getBankAccountHelper();
 
         $helper->withSchemaValidated();
 
-        $helper->retrieve($ifsc);
+        $helper->retrieve($id);
     }
 
     public function testFetchAll()

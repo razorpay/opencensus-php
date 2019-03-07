@@ -6,9 +6,10 @@ class BankAccountHelper extends P2pHelper
 {
     public function fetchBanks()
     {
-        $this->validationJsonSchemaPath = 'bank_account/bank/fetch_all';
+        $this->validationJsonSchemaPath = 'bank_account/list_banks.response';
 
         $this->setCustomerInContext(false);
+        $this->setDeviceInContext(false);
 
         $request = $this->request('banks');
 
@@ -51,7 +52,7 @@ class BankAccountHelper extends P2pHelper
         $request = $this->request('bank_accounts/%s/upi_pin', [$bankId]);
 
         $default = [
-            'cl'   => [
+            'sdk'   => [
                 'creds' => [
                     [
                         'code'     => 'NPCI',
@@ -102,7 +103,7 @@ class BankAccountHelper extends P2pHelper
         $request = $this->request('bank_accounts/%s/balance', [$bankId]);
 
         $default = [
-            'cl'   => [
+            'sdk'   => [
                 'creds' => [
                     [
                         'code'     => 'NPCI',
