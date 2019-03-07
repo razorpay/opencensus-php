@@ -1428,7 +1428,8 @@ trait Authorize
     {
         $currentTime = Carbon::now()->getTimestamp();
 
-        if (($token->getExpiredAt() !== null) and
+        if (($token !== null) and
+            ($token->getExpiredAt() !== null) and
             ($token->getExpiredAt() < $currentTime) === true)
         {
             throw new Exception\BadRequestException(
