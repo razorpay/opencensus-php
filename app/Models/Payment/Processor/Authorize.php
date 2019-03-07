@@ -1433,7 +1433,8 @@ trait Authorize
                 ErrorCode::BAD_REQUEST_RECURRING_TOKEN_EXPIRED,
                 Token\Entity::EXPIRED_AT,
                 [
-                    'token'          => $token->toArray(),
+                    Token\Entity::ID         => $token->getPublicId(),
+                    Token\Entity::EXPIRED_AT => $token->getExpiredAt(),
                 ]);
         }
     }
