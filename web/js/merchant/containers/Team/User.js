@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import * as NotificationsActions from 'rzp/modules/notifications';
-import { roles, agentRole } from 'rzp/utils/constants';
+import { roles, agentRole, RBLRoles } from 'rzp/utils/constants';
 import { without } from 'rzp/utils/rzp-utils';
 import {
   updateUser,
@@ -74,12 +74,23 @@ export default class EditUser extends Component {
   };
 
   render() {
-    const { handleSubmit, user } = this.props;
+    const { handleSubmit, user, session } = this.props;
 
+    let isAllowedEdit = true;
     let allRoles = roles;
 
-    if (this.props.session.user.isAgentRole) {
+    if (session.user.isAgentRole) {
       allRoles = { ...allRoles, ...agentRole };
+    } else if (session.user.isRBLRoleEnabled) {
+      allRoles = { ...allRoles, ...RBLRoles };
+
+      if (session.user.role === 'rbl_supervisor') {
+        isAllowedEdit = false; // No roles apart from rbl_agent to be allowed to be managed by rbl_supervisor
+
+        if (user.role === 'rbl_agent') {
+          isAllowedEdit = true;
+        }
+      }
     }
 
     let ROLES = user.role === 'owner' ? allRoles : without(allRoles, 'owner');
@@ -88,7 +99,12 @@ export default class EditUser extends Component {
         <td>{user.email}</td>
         <td>{user.name}</td>
         <td>
-          <Field name="role" component="select" class="form-control">
+          <Field
+            name="role"
+            component="select"
+            class="form-control"
+            disabled={!isAllowedEdit}
+          >
             {Object.keys(ROLES).map(role => (
               <option key={role} value={role}>
                 {ROLES[role].label}
@@ -98,21 +114,23 @@ export default class EditUser extends Component {
         </td>
 
         <td>
-          <div class="btn-toolbar">
-            <AsyncButton
-              class="btn btn-sm btn-success"
-              text="Update"
-              data-tip="Updates the user's role"
-              onClick={handleSubmit(this.updateUser)}
-            />
+          {isAllowedEdit && (
+            <div class="btn-toolbar">
+              <AsyncButton
+                class="btn btn-sm btn-success"
+                text="Update"
+                data-tip="Updates the user's role"
+                onClick={handleSubmit(this.updateUser)}
+              />
 
-            <AsyncButton
-              class="btn btn-sm btn-danger"
-              text="Remove"
-              data-tip="Removes user from your team"
-              onClick={handleSubmit(this.removeUser)}
-            />
-          </div>
+              <AsyncButton
+                class="btn btn-sm btn-danger"
+                text="Remove"
+                data-tip="Removes user from your team"
+                onClick={handleSubmit(this.removeUser)}
+              />
+            </div>
+          )}
         </td>
       </tr>
     );

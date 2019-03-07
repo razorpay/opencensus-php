@@ -106,6 +106,8 @@ export default {
     'finance',
     'support',
     'sellerapp',
+    'rbl_supervisor',
+    'rbl_agent',
   ],
   add_funds: ['owner', 'admin', 'manager', 'operations'],
   profile_gst: [
@@ -121,7 +123,7 @@ export default {
   credits: ['owner', 'admin', 'manager', 'operations', 'finance'],
   activation: ['owner', 'admin', 'manager'],
   referrals: ['owner', 'admin', 'manager', 'operations', 'finance', 'support'],
-  team: ['owner'],
+  team: ['owner', 'rbl_supervisor'],
   webhooks: ['owner', 'admin', 'manager'],
   configuration: ['owner', 'admin', 'manager'],
   applications: ['owner'],

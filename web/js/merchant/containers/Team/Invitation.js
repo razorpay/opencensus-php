@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import * as NotificationsActions from 'rzp/modules/notifications';
-import { roles, agentRole } from 'rzp/utils/constants';
+import { roles, agentRole, RBLRoles } from 'rzp/utils/constants';
 import { without } from 'rzp/utils/rzp-utils';
 import {
   resendInvitation,
@@ -91,18 +91,43 @@ export default class EditInvitation extends Component {
   };
 
   render() {
-    const { handleSubmit, invite } = this.props;
+    const { handleSubmit, invite, user } = this.props;
 
-    if (this.props.user.isAgentRole) {
-      ROLES = { ...ROLES, ...agentRole };
+    let isAllowedEdit = true;
+    let allRoles = roles;
+
+    if (user.isAgentRole) {
+      allRoles = { ...allRoles, ...agentRole };
+    } else if (user.isRBLRoleEnabled) {
+      allRoles = { ...allRoles, ...RBLRoles };
+
+      if (user.role === 'rbl_supervisor') {
+        allRoles = { ...allRoles, ...RBLRoles };
+
+        isAllowedEdit = false; // No roles apart from rbl_agent to be allowed to be managed by rbl_supervisor
+
+        if (invite.role === 'rbl_agent') {
+          isAllowedEdit = true;
+          allRoles = { rbl_agent: RBLRoles.rbl_agent };
+        }
+      }
     }
+
+    let ROLES = allRoles;
 
     return (
       <tr>
         <td>{invite.email}</td>
         <td>
-          <Field name="role" component="select" class="form-control">
-            {Object.keys(ROLES).map(role => (
+          <Field
+            name="role"
+            component="select"
+            class="form-control"
+            disabled={!isAllowedEdit}
+          >
+            {Object.keys(ROLES).map((
+              role // Only limited roles allowed to be managed in pending invitation
+            ) => (
               <option key={role} value={role}>
                 {ROLES[role].label}
               </option>
@@ -111,28 +136,30 @@ export default class EditInvitation extends Component {
         </td>
 
         <td>
-          <div class="btn-toolbar">
-            <AsyncButton
-              class="btn btn-sm btn-success"
-              text="Update"
-              data-tip="Update role of the invited user"
-              onClick={handleSubmit(this.updateInvitation)}
-            />
+          {isAllowedEdit && (
+            <div class="btn-toolbar">
+              <AsyncButton
+                class="btn btn-sm btn-success"
+                text="Update"
+                data-tip="Update role of the invited user"
+                onClick={handleSubmit(this.updateInvitation)}
+              />
 
-            <AsyncButton
-              class="btn btn-sm btn-danger"
-              text="Cancel"
-              data-tip="Cancels invitation"
-              onClick={handleSubmit(this.cancelInvitation)}
-            />
+              <AsyncButton
+                class="btn btn-sm btn-danger"
+                text="Cancel"
+                data-tip="Cancels invitation"
+                onClick={handleSubmit(this.cancelInvitation)}
+              />
 
-            <AsyncButton
-              class="btn btn-sm btn-primary"
-              text="Resend"
-              data-tip="Resend invitation email"
-              onClick={handleSubmit(this.resendInvitation)}
-            />
-          </div>
+              <AsyncButton
+                class="btn btn-sm btn-primary"
+                text="Resend"
+                data-tip="Resend invitation email"
+                onClick={handleSubmit(this.resendInvitation)}
+              />
+            </div>
+          )}
         </td>
       </tr>
     );

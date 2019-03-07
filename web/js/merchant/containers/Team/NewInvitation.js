@@ -4,7 +4,7 @@ import { Field, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import InputField from 'rzp/ui/Forms/InputField';
 import { required, email } from 'rzp/utils/validators';
-import { roles, agentRole } from 'rzp/utils/constants';
+import { roles, agentRole, RBLRoles } from 'rzp/utils/constants';
 import { without } from 'rzp/utils/rzp-utils';
 import { sendInvitation, fetchTeamDetails } from 'merchant/modules/team';
 import * as NotificationsActions from 'rzp/modules/notifications';
@@ -54,10 +54,16 @@ export default class NewInvitation extends Component {
   };
 
   render() {
-    const { handleSubmit, selectedRole } = this.props;
+    const { handleSubmit, selectedRole, user } = this.props;
 
-    if (this.props.user.isAgentRole) {
+    if (user.isAgentRole) {
       ROLES = { ...ROLES, ...agentRole };
+    } else {
+      if (user.role === 'rbl_supervisor') {
+        ROLES = { rbl_agent: RBLRoles.rbl_agent }; // RBL Supervisor can only invite rbl_agent
+      } else if (user.isRBLRoleEnabled) {
+        ROLES = { ...ROLES, ...RBLRoles }; // Allowed only for roles with edit access as per permissions map
+      }
     }
 
     return (

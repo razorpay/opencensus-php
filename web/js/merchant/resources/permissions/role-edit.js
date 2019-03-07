@@ -59,7 +59,7 @@ export default {
   credits: ['owner', 'admin', 'manager'],
   activation: ['owner', 'admin', 'manager'],
   referrals: ['owner', 'admin', 'manager'],
-  team: ['owner'],
+  team: ['owner', 'rbl_supervisor'],
   webhooks: ['owner', 'admin', 'manager'],
   configuration: ['owner', 'admin', 'manager'],
   applications: ['owner'],

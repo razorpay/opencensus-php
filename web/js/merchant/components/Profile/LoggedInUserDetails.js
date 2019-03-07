@@ -1,9 +1,9 @@
 import DetailRow from '../DetailRow';
 import { titleCase } from 'rzp/utils/rzp-utils';
-import { roles, agentRole } from 'rzp/utils/constants';
+import { roles, agentRole, RBLRoles } from 'rzp/utils/constants';
 
 export default ({ loggedInUser, loggedInUserRole }) => {
-  let ROLES = { ...roles, ...agentRole };
+  let ROLES = { ...roles, ...agentRole, ...RBLRoles };
 
   return (
     <div class="panel panel-default">

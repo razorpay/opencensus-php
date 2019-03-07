@@ -25,9 +25,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 )
 export default class TeamContainer extends Component {
   componentWillMount() {
-    if (this.props.merchant.userRole === 'owner') {
-      this.props.fetchTeamDetails({ merchant_id: this.props.merchant.current });
-    }
+    this.props.fetchTeamDetails({ merchant_id: this.props.merchant.current });
   }
 
   render() {
@@ -37,7 +35,7 @@ export default class TeamContainer extends Component {
       user => user.email !== this.props.merchant.email
     );
 
-    return this.props.merchant.userRole === 'owner' ? (
+    return (
       <div>
         <HeaderAction>
           <div class="btn-toolbar pull-right">
@@ -102,8 +100,6 @@ export default class TeamContainer extends Component {
           ) : null}
         </div>
       </div>
-    ) : (
-      <Redirect to="/profile" />
     );
   }
 }

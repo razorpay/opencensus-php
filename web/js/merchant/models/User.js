@@ -125,13 +125,14 @@ export default class User {
     let isHoodAllowed = false;
     moduleNames = moduleNames.split(' ');
 
-    moduleNames.forEach(m => {
+    for (let key = 0; key < moduleNames.length; key++) {
+      const m = moduleNames[key];
       isHoodAllowed = this.isAllowedView(m);
 
       if (isHoodAllowed) {
-        return false;
+        break;
       }
-    });
+    }
 
     return isHoodAllowed;
   }
@@ -212,6 +213,10 @@ export default class User {
 
   get isInvoiceReceiptMandatory() {
     return this.isFeatureEnabled('invoice_receipt_mandatory');
+  }
+
+  get isRBLRoleEnabled() {
+    return this.findTag('enable_RBL_role');
   }
 
   get enabledFeatures() {
