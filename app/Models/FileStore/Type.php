@@ -417,6 +417,7 @@ class Type
         self::H2H_DEFAULT_BUCKET_CONFIG => [
             self::FUND_TRANSFER_DEFAULT
         ],
+        // todo: Add a bucket config for EMI
     ];
 
     /**

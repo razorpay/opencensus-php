@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
+use RZP\Encryption\Type;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
@@ -26,6 +27,8 @@ class Sbi extends Base
     const FILE_TYPE         = FileStore\Type::SBI_EMI_FILE;
     const FILE_NAME         = 'GGCMS1';
     const BEAM_FILE_TYPE    = 'emi';
+
+    protected $encryptionKey;
 
     /**
      * @var $file FileStore\Entity
@@ -77,10 +80,18 @@ class Sbi extends Base
 
             $creator = new FileStore\Creator;
 
+            $this->encryptionKey = openssl_random_pseudo_bytes(256);
+
             $creator->extension(static::EXTENSION)
                     ->content($fileData)
                     ->name($fileName)
-                    ->store(FileStore\Store::LOCAL)
+                    ->store(FileStore\Store::S3)
+                    ->encrypt(
+                        Type::AES_ENCRYPTION,
+                        [
+                            'mode'   => \phpseclib\Crypt\Base::MODE_CBC,
+                            'secret' => $this->encryptionKey
+                        ])
                     ->type(static::FILE_TYPE)
                     ->entity($this->gatewayFile)
                     ->metadata($metadata);
