@@ -4,6 +4,7 @@ namespace RZP\Models\Gateway\File\Processor\Emi;
 
 use Carbon\Carbon;
 
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
@@ -26,6 +27,8 @@ class Sbi extends Base
     const FILE_TYPE         = FileStore\Type::SBI_EMI_FILE;
     const FILE_NAME         = 'GGCMS1';
     const BEAM_FILE_TYPE    = 'emi';
+
+    const TEST_ENCRYPTION_KEY = 'T8DIATjuwS';
 
     /**
      * @var $file FileStore\Entity
@@ -58,6 +61,11 @@ class Sbi extends Base
 
     public function generateEmiFilePassword()
     {
+        if ($this->mode === Mode::TEST)
+        {
+            return self::TEST_ENCRYPTION_KEY;
+        }
+
         return openssl_random_pseudo_bytes(256);
     }
 
@@ -107,10 +115,13 @@ class Sbi extends Base
         catch (\Throwable $e)
         {
             throw new GatewayFileException(
-                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE, [
-                    'id'        => $this->gatewayFile->getId(),
+            ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
+                [
+                    'id'      => $this->gatewayFile->getId(),
+                    'message' => $e->getMessage(),
                 ],
-                $e);
+                $e
+            );
         }
     }
 
