@@ -9,7 +9,7 @@ class Service extends Base\Service
 {
     public function createBatch(array $input): array
     {
-        $batch = $this->core()->create($input, $this->merchant);
+        $batch = $this->core()->create($input, $this->merchant, $this->getAuthAdminElseUser());
 
         return $batch->toArrayPublic();
     }

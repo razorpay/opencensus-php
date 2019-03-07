@@ -4797,3 +4797,11 @@ ALTER TABLE payouts
     ADD COLUMN cancelled_at int(11) DEFAULT NULL AFTER `queued_at`,
     ADD INDEX payouts_queued_at_index (queued_at),
     ADD INDEX payouts_cancelled_at_index (cancelled_at);
+
+ALTER TABLE fund_transfer_attempts
+    ADD COLUMN card_id CHAR(14) DEFAULT NULL after vpa_id;
+
+ALTER TABLE batches
+    ADD COLUMN creator_id CHAR(14) DEFAULT NULL AFTER comment,
+    ADD COLUMN creator_type VARCHAR(255) DEFAULT NULL AFTER creator_id,
+    ADD INDEX batches_creator_id_index (creator_id);

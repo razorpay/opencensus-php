@@ -8,6 +8,7 @@ use Redirect;
 use Request;
 use RZP\Models\Admin;
 use RZP\Models\Report;
+use RZP\Constants\Entity as E;
 
 class AdminController extends Controller
 {
@@ -291,5 +292,14 @@ class AdminController extends Controller
         $data = $this->service()->updateRedisKeys($input);
 
         return ApiResponse::json($data);
+    }
+
+    public function createVaultToken()
+    {
+        $input = Request::all();
+
+        $response = $this->app['card.cardVault']->createVaultToken($input);
+
+        return ApiResponse::json($response);
     }
 }

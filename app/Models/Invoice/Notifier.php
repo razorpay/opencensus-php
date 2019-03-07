@@ -417,6 +417,17 @@ class Notifier extends Base\Core
 
                 break;
 
+            case Preferences::MID_RBLBFL:
+                $template = 'sms.custom_invoice.rbl_bfl';
+                $sender   = 'SPRCRD';
+                $params   = [
+                    'receipt'      => $receipt,
+                    'invoice_link' => $invoiceLink,
+                    'amount'       => $this->invoice->getAmount() / 100,
+                ];
+
+                break;
+
             case Preferences::MID_DMI_FINANCE:
 
                 $template = 'sms.custom_invoice.dmi_finance';

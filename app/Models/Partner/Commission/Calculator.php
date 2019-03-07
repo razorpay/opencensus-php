@@ -109,6 +109,13 @@ class Calculator extends Base\Core
     protected $feeCalculator = null;
 
     /**
+     * Is set to true if the source txn has been initiated by a partner or a partner associated OAuth application.
+     *
+     * @var bool
+     */
+    protected $isPartnerOriginated = false;
+
+    /**
      * Calculator constructor.
      *
      * @param CommissionSourceInterface $sourceEntity
@@ -254,6 +261,14 @@ class Calculator extends Base\Core
         return $this->partnerTax;
     }
 
+    /**
+     * @return bool
+     */
+    public function isPartnerOriginated(): bool
+    {
+        return ($this->isPartnerOriginated === true);
+    }
+
     public function getFeeCalculator(): FeeCalculator\Base
     {
         if ($this->feeCalculator === null)
@@ -375,6 +390,14 @@ class Calculator extends Base\Core
         $this->partnerTax = $partnerTax;
     }
 
+    /**
+     * @param bool $isPartnerOriginated
+     */
+    public function setIsPartnerOriginated(bool $isPartnerOriginated)
+    {
+        $this->isPartnerOriginated = $isPartnerOriginated;
+    }
+
     // ====================================== END ======================================
 
     /**
@@ -407,26 +430,23 @@ class Calculator extends Base\Core
     /**
      * @return bool
      */
-    protected function shouldCreateCommission(): bool
+    public function shouldCreateCommission(): bool
     {
         if (Constants::isValidCommissionSource($this->getSource()) === false)
         {
-            $this->traceContext(TraceCode::COMMISSION_INVALID_SOURCE_ENTITY);
+            $this->traceContext(TraceCode::COMMISSION_INVALID_SOURCE_ENTITY, [], Trace::CRITICAL);
 
+            return false;
+        }
+
+        if ($this->getPartner() === null)
+        {
+            // If the partner does not exist, no need to add a log for each source entity (payment/refund/..)
             return false;
         }
 
         if ($this->isCommissionApplicable() === false)
         {
-            $this->traceContext(
-                TraceCode::COMMISSION_NOT_APPLICABLE,
-                [
-                    'implicit_expiry_at'  => optional($this->getPartnerConfig())->getImplicitExpiryAt(),
-                    'customer_fee_bearer' => $this->isCustomerFeeBearer(),
-                    'implicit_plan_type'  => optional($this->getImplicitPricingPlan())->getType(),
-                    'fee_model_prepaid'   => $this->getSubMerchant()->isPrepaid(),
-                ]);
-
             return false;
         }
 
@@ -445,22 +465,20 @@ class Calculator extends Base\Core
      */
     protected function isCommissionApplicable(): bool
     {
-        if ($this->getPartner() === null)
-        {
-            return false;
-        }
-
         if ($this->getPartnerConfig() === null)
         {
+            $this->traceContext(TraceCode::COMMISSION_NOT_APPLICABLE_CONFIG_NOT_DEFINED);
+
             return false;
         }
 
-        // Return false if no explicit plan has been defined and the implicit plan that was defined has been expired.
         if ($this->getExplicitPricingPlan() === null)
         {
             // Commissions is not applicable if neither implicit nor explicit plans are defined
             if ($this->getImplicitPricingPlan() === null)
             {
+                $this->traceContext(TraceCode::COMMISSION_NOT_APPLICABLE_PLANS_NOT_SET);
+
                 return false;
             }
 
@@ -470,19 +488,37 @@ class Calculator extends Base\Core
             // Commissions is not applicable if implicit plan has expired and explicit plan is not defined
             if ((empty($expiry) === false) and ($expiry < $now))
             {
+                $this->traceContext(TraceCode::COMMISSION_NOT_APPLICABLE_IMPLICIT_EXPIRED);
+
                 return false;
             }
+        }
+
+        $partnerType = $this->getPartner()->getPartnerType();
+
+        //
+        // Block commissions for all payments of an aggregator's submerchant which are not coming through the partner
+        // auth. This also applies to banks, pure platforms and fully managed partners.
+        //
+        if (($this->isPartnerOriginated() === false) and
+            (in_array($partnerType, Constants::$partnerTypesEligibleWithoutOrigin, true) === false))
+        {
+            return false;
         }
 
         // Blocks create commission if the conditions are not supported, from here -
 
         if ($this->isCustomerFeeBearer() === true)
         {
+            $this->traceContext(TraceCode::COMMISSION_NOT_APPLICABLE_INVALID_FEE_BEARER);
+
             return false;
         }
 
         if ($this->getSubMerchant()->isPrepaid() === false)
         {
+            $this->traceContext(TraceCode::COMMISSION_NOT_APPLICABLE_INVALID_FEE_MODEL);
+
             return false;
         }
 
@@ -524,16 +560,11 @@ class Calculator extends Base\Core
 
     /**
      * Calculates all types of applicable commissions [implicit (fixed and variable), explicit (fixed)] and saves them.
-     * This function should be called within a database transaction.
      */
     public function calculateAndSaveCommission()
     {
+        // Ensure that this is being called within a database transaction
         assertTrue ($this->repo->commission->isTransactionActive());
-
-        if ($this->shouldCreateCommission() === false)
-        {
-            return;
-        }
 
         $this->calculate();
 
@@ -550,14 +581,24 @@ class Calculator extends Base\Core
             return;
         }
 
+        $commissions = [];
+
         foreach ($this->commissions as $commission)
         {
             $this->updateCommissionStatus($commission);
 
-            $this->repo->saveOrFail($commission);
+            $commission = $commission->toArrayPublic();
+
+            // merchant relation need not be logged
+            unset($commission['merchant']);
+
+            $commissions[] = $commission;
+
+            // @todo: Uncomment once the logs are verified
+            // $this->repo->saveOrFail($commission);
         }
 
-        $this->traceContext(TraceCode::COMMISSION_CREATED);
+        $this->traceContext(TraceCode::COMMISSION_LOGGED, ['commissions' => $commissions]);
     }
 
     protected function updateCommissionStatus(Commission\Entity $commission)
@@ -743,13 +784,24 @@ class Calculator extends Base\Core
 
         $submerchant = $this->getSubMerchant();
 
-        $partnerApp = (new EntityOrigin\Core)->getPartnerAppFromEntityOrigin($sourceEntity, $submerchant);
+        $entityOriginCore = new EntityOrigin\Core;
+
+        if ($entityOriginCore->isOriginApplication($sourceEntity) === true)
+        {
+            // $partnerApp will always be a non-null value here
+            $partnerApp = $entityOriginCore->getOrigin($sourceEntity);
+
+            $this->setIsPartnerOriginated(true);
+        }
+        else
+        {
+            $partnerApp = (new Merchant\AccessMap\Core)->getNonPurePlatformPartnerApp($submerchant);
+
+            $this->setIsPartnerOriginated(false);
+        }
 
         if ($partnerApp === null)
         {
-            // the payment might not be mapped to a partner. @todo - logging needs to be improved
-            $this->traceContext(TraceCode::COMMISSION_PARTNER_APP_DOES_NOT_EXIST);
-
             return;
         }
 
@@ -801,8 +853,6 @@ class Calculator extends Base\Core
 
         if ($partnerConfig === null)
         {
-            // @todo - add logs
-
             return;
         }
 

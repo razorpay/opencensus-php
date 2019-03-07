@@ -45,6 +45,8 @@ class Server extends Base\Mock\Server
 
             $checksum = $this->generateHash($secureData);
 
+            $checksum = $this->crypto->encrypt($checksum);
+
             $content[ResponseFields::CHECKSUM] = $checksum;
         }
 

@@ -8,6 +8,7 @@ use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Status;
 use RZP\Models\Batch\Helpers;
+use RZP\Models\Batch\Constants;
 use RZP\Models\SubscriptionRegistration;
 
 class AuthLink extends Base
@@ -16,6 +17,15 @@ class AuthLink extends Base
      * @var SubscriptionRegistration\Core
      */
     protected $subrCore;
+
+    protected $conversionMap = [
+        Header::AUTH_LINK_CURRENCY      =>  Constants::TO_UPPER_CASE,
+        Header::AUTH_LINK_METHOD        =>  Constants::TO_LOWER_CASE,
+        Header::AUTH_LINK_AUTH_TYPE     =>  Constants::TO_LOWER_CASE,
+        Header::AUTH_LINK_BANK          =>  Constants::TO_UPPER_CASE,
+        Header::AUTH_LINK_IFSC          =>  Constants::TO_UPPER_CASE,
+        Header::AUTH_LINK_ACCOUNT_TYPE  =>  Constants::TO_LOWER_CASE,
+    ];
 
     public function __construct(Entity $batch)
     {
@@ -27,6 +37,10 @@ class AuthLink extends Base
 
     protected function processEntry(array & $entry)
     {
+        $this->trimEntry($entry);
+
+        $this->processConvertCase($entry, $this->conversionMap);
+
         $this->invoice = $this->createAuthLink($entry);
 
         $entry[Header::STATUS]                  = Status::SUCCESS;
@@ -36,10 +50,6 @@ class AuthLink extends Base
         $entry[Header::AUTH_LINK_SHORT_URL]     = $this->invoice->getShortUrl();
 
         $entry[HEADER::AUTH_LINK_STATUS]        = $this->invoice->getStatus();
-
-        $entry[HEADER::AUTH_LINK_MAIL_SENT]     = $this->invoice->getEmailStatus();
-
-        $entry[HEADER::AUTH_LINK_SMS_SENT]      = $this->invoice->getSmsStatus();
 
         $entry[HEADER::AUTH_LINK_CREATED_AT]    = $this->invoice->getCreatedAt();
     }

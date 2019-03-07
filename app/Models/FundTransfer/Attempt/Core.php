@@ -247,7 +247,9 @@ class Core extends Base\Core
             {
                 $this->trace->info(
                     TraceCode::FTS_INVALID_CHANNEL,
-                    $fta->getChannel());
+                    [
+                        'channel' => $fta->getChannel(),
+                    ]);
 
                 return;
             }
@@ -286,5 +288,34 @@ class Core extends Base\Core
         $fta->setStatus($status);
 
         $this->repo->saveOrFail($fta);
+    }
+
+    public function updateFundTransfer(array $input)
+    {
+        try
+        {
+            (new Validator)->validateInput('fts_status_update', $input);
+
+            $fta = $this->repo->fund_transfer_attempt->getAttemptByFTSTransferId($input['fund_transfer_id']);
+
+            if(empty($input['utr']) === false)
+            {
+                $fta->setUtr($input['utr']);
+            }
+
+            $fta->fill($input);
+
+            $this->repo->saveOrFail($fta);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FTS_UPDATE_FUND_TRANSFER_ATTEMPT_FAILED,
+                [
+                    'error' => $e->getMessage()
+                ]);
+        }
     }
 }

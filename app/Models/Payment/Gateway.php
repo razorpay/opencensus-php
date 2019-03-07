@@ -107,6 +107,7 @@ class Gateway
 
     // this is a dummy gateway. this is required to save MIDs & TIDs of a merchant.
     const EMI_SBI            = 'emi_sbi';
+    const BAJAJFINSERV       = 'bajajfinserv';
 
     const GO_LIVE_TIMESTAMP = 'go_live_timestamp';
 
@@ -131,6 +132,8 @@ class Gateway
     // the below gateway would be used
     //
     const DEFAULT_ESIGNER_GATEWAY = self::ESIGNER_DIGIO;
+
+    const BAJAJ = 'bajajfinserv';
 
     const GATEWAY_ACQUIRERS = [
         self::AXIS_MIGS    => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
@@ -272,6 +275,7 @@ class Gateway
         IFSC::IDFB,
         IFSC::UTIB,
         IFSC::CBIN,
+        Netbanking::BARB_R
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [
@@ -834,6 +838,9 @@ class Gateway
         self::AMEX => [
             Network::AMEX
         ],
+        self::BAJAJ => [
+            Network::BAJAJ
+        ],
         self::MPI_BLADE => [
             Network::MC,
             Network::VISA
@@ -982,6 +989,14 @@ class Gateway
         self::CYBERSOURCE,
         self::FIRST_DATA,
         self::CARD_FSS,
+        self::HDFC,
+        self::UPI_AXIS,
+        self::UPI_HULK,
+        self::UPI_RBL,
+        self::UPI_SBI,
+        self::UPI_YESBANK,
+        self::UPI_MINDGATE,
+        self::BAJAJ,
     ];
 
     /**

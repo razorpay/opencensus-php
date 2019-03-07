@@ -7,6 +7,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
+use RZP\Models\Settlement\SlackNotification;
 
 class RegisterAccount extends Job
 {
@@ -76,6 +77,12 @@ class RegisterAccount extends Job
             if ($this->attempts() > self::MAX_ALLOWED_ATTEMPTS)
             {
                 $this->delete();
+
+                $operation = 'fts register account job failed';
+
+                (new SlackNotification)->send($operation, $data, null, 1, 'fts_alerts');
+
+                return;
             }
             else
             {
