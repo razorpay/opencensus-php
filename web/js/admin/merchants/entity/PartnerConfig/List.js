@@ -243,7 +243,6 @@ function sanitizeConfig(data = {}) {
 }
 
 var defaultValues = {
-  explicit_should_charge: true,
   revisit_at: moment()
     .add(1, 'year')
     .format('X'),

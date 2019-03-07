@@ -50,7 +50,7 @@ export default class WritePartnerConfig extends Component {
     });
   };
 
-  handleSearchableSelectChange = name => ({ option }) => {
+  handleSearchableChange = name => ({ option }) => {
     const target = {
       name,
       value: option.id,
@@ -68,15 +68,42 @@ export default class WritePartnerConfig extends Component {
 
   handleChange = ({ target }) => {
     const name = target.name || target.dataset.name;
+
     let value = target.value;
+    value = isPresent(value) && isNaN(value) ? value : Number(value);
+
     const stateKey = target.name ? 'values' : 'internals';
 
-    this.setState({
-      [stateKey]: {
-        ...this.state[stateKey],
-        [name]: isPresent(value) && isNaN(value) ? value : Number(value),
+    this.setState(
+      {
+        [stateKey]: {
+          ...this.state[stateKey],
+          [name]: value,
+        },
       },
-    });
+      () => {
+        // updating dependent fields if no negative value for certain fields
+        if (!value) {
+          let newValues = {};
+          switch (name) {
+            case 'explicit_plan_id':
+              newValues = { explicit_should_charge: 0 };
+              break;
+            case 'explicit_should_charge':
+              newValues = { explicit_refund_fees: 0 };
+              break;
+            default:
+              return;
+          }
+          this.setState({
+            values: {
+              ...this.state.values,
+              ...newValues,
+            },
+          });
+        }
+      }
+    );
   };
 
   handleSubmitClick = body => {
@@ -119,7 +146,7 @@ export default class WritePartnerConfig extends Component {
 
           <PerTransactionForm
             plans={plans}
-            onSearchableSelectChange={this.handleSearchableSelectChange}
+            onSearchableChange={this.handleSearchableChange}
             internals={internals}
             values={values}
           />
@@ -148,8 +175,8 @@ export default class WritePartnerConfig extends Component {
             enabledLabel="Yes"
             disabledLabel="No"
             onChange={this.handleChange}
-            helpMsg="If No, we'll only record but not charge Add-on commission from sub-merchant"
             defaultValue={values.explicit_should_charge}
+            disabled={!values.explicit_plan_id}
           />
 
           <SwitchField
@@ -159,19 +186,12 @@ export default class WritePartnerConfig extends Component {
             disabledLabel="No"
             onChange={this.handleChange}
             defaultValue={values.explicit_refund_fees}
+            value={values.explicit_refund_fees}
             disabled={!values.explicit_should_charge}
+            helpMsg={
+              "If No, we'll only record but not charge Add-on commission from sub-merchant"
+            }
           />
-
-          {/* add support for helpMsg in SwitchField to avoid this */}
-          <div class="field">
-            {/* dummy field since switch field does not support help msg */}
-            <label>{/* dummy label */}</label>
-            <div class="info-block">
-              <i class="i i-info-circle" />
-              If No, we'll only record but not charge Add-on commission from
-              sub-merchant
-            </div>
-          </div>
 
           <AsyncButton
             text={this.props.buttonText}

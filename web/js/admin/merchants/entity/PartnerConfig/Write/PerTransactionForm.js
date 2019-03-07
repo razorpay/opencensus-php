@@ -1,6 +1,11 @@
 import Field, { SelectField, SearchableSelectField } from 'ui/Field';
 
-export default function PerTransactionForm({ plans, values, internals }) {
+export default function PerTransactionForm({
+  plans,
+  values,
+  internals,
+  ...props
+}) {
   const { commission, pricing } = plans;
   return (
     <>
@@ -14,18 +19,28 @@ export default function PerTransactionForm({ plans, values, internals }) {
         trackBy="id"
         label="Default sub-merchant pricing"
         options={pricing.data}
-        defaultValue={values.default_plan_id}
         pending={pricing.pending}
+        selected={findSelectedName(pricing.data, values.default_plan_id)}
+        onChange={props.onSearchableChange('default_plan_id')}
       />
 
-      <Searchable
-        name="implicit_plan_id"
-        trackBy="id"
-        label="Partner Pricing"
-        options={internals === 'fixed' ? commission.data : pricing.data}
-        defaultValue={values.implicit_plan_id}
-        pending={pricing.pending || commission.pending}
-      />
+      {(function() {
+        const options =
+          internals._commission_mode === 'fixed'
+            ? commission.data
+            : pricing.data;
+        return (
+          <Searchable
+            name="implicit_plan_id"
+            trackBy="id"
+            label="Partner Pricing"
+            options={options}
+            pending={pricing.pending || commission.pending}
+            selected={findSelectedName(options, values.implicit_plan_id)}
+            onChange={props.onSearchableChange('implicit_plan_id')}
+          />
+        );
+      })()}
 
       <Searchable
         name="explicit_plan_id"
@@ -33,8 +48,9 @@ export default function PerTransactionForm({ plans, values, internals }) {
         label="Add-on Commission"
         options={commission.data}
         helpMsg="This will be exposed to sub-merchants"
-        defaultValue={values.explicit_plan_id}
         pending={commission.pending}
+        selected={findSelectedName(commission.data, values.explicit_plan_id)}
+        onChange={props.onSearchableChange('explicit_plan_id')}
       />
     </>
   );
@@ -46,4 +62,8 @@ function Searchable({ pending, ...props }) {
   ) : (
     <SearchableSelectField {...props} />
   );
+}
+
+function findSelectedName(options, selectedId) {
+  return (options.find(({ id }) => id === selectedId) || {}).name || '';
 }
