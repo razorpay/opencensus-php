@@ -1431,9 +1431,9 @@ trait Authorize
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_RECURRING_TOKEN_EXPIRED,
-                Token\Entity::EXPIRED_AT,
+                null,
                 [
-                    Token\Entity::ID         => $token->getPublicId(),
+                    Token\Entity::ID         => $token->getId(),
                     Token\Entity::EXPIRED_AT => $token->getExpiredAt(),
                 ]);
         }
