@@ -105,6 +105,8 @@ class Name
     const ADD_SETTLEMENT_RECONCILIATION       = 'add_settlement_reconciliation';
     const SEND_NEWSLETTER                     = 'send_newsletter';
     const TRIGGER_DUMMY_ERROR                 = 'trigger_dummy_error';
+    const CREATE_GATEWAY_FILE                 = 'create_gateway_file';
+    const UPDATE_CONFIG_KEY                   = 'update_config_key';
     const MAKE_API_CALL                       = 'make_api_call';
     const SCHEDULE_CREATE                     = 'schedule_create';
     const SCHEDULE_FETCH                      = 'schedule_fetch';
@@ -180,7 +182,15 @@ class Name
     const CREATE_DISPUTE_REASON               = 'create_dispute_reason';
     const MANAGE_ONBOARDING_SUBMISSIONS       = 'manage_onboarding_submissions';
     const MANAGE_BULK_FEATURE_MAPPING         = 'manage_bulk_feature_mapping';
+    const MANAGE_IINS                         = 'manage_iins';
+    const MANAGE_EMI_PLANS                    = 'manage_emi_plans';
     const MANAGE_RAZORX_OPERATIONS            = 'manage_razorx_operations';
+    const GENERATE_REFUND_EXCEL               = 'generate_refund_excel';
+    const GENERATE_EMI_EXCEL                  = 'generate_emi_excel';
+    const CONFIRM_USER                        = 'confirm_user';
+    const AUTHORIZE_PAYMENT                   = 'authorize_payment';
+    const VERIFY_PAYMENT                      = 'verify_payment';
+    const VERIFY_REFUND                       = 'verify_refund';
     const EDIT_MERCHANT_RISK_THRESHOLD        = 'edit_merchant_risk_threshold';
     const RETRY_BATCH                         = 'retry_batch';
     const VIEW_SHIELD_RULES                   = 'view_shield_rules';
