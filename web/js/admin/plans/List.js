@@ -10,16 +10,7 @@ import { isBlank } from 'common/util';
 import { isOrgRazorpay } from 'admin/user';
 
 function fetchFn() {
-  return adminFetch(...arguments).then(
-    data =>
-      data &&
-      data.map(p => ({
-        id: p.plan_id,
-        name: p.plan_name,
-        rules_count: p.rules_count,
-        org_id: `org_${p.org_id}`,
-      }))
-  );
+  return adminFetch(...arguments);
 }
 
 export default class PlanList extends Component {
@@ -30,13 +21,14 @@ export default class PlanList extends Component {
 
   collection = new Collection({
     data: {
-      url: 'live/pricing/merchants',
+      url: 'live/pricing',
       copyItem: rules => this.copyPricing(rules),
       handleOrgChange: e => this.handleOrgChange(e),
     },
     extraFields: {
       selectedOrg: null,
     },
+    noPagination: true,
     fetchFn,
   });
 
@@ -75,11 +67,8 @@ export default class PlanList extends Component {
   handleOrgChange = e => {
     const orgId = e.target.value;
     fetchFn({
-      data: {
-        count: 20,
-        skip: 0,
-      },
-      url: 'live/pricing/merchants',
+      data: {},
+      url: 'live/pricing',
       ...(orgId && {
         headers: {
           'x-cross-org-id': orgId,
@@ -124,23 +113,24 @@ export default class PlanList extends Component {
               Add New
             </div>
           </header>
-          {isOrgRazorpay() && !isBlank(orgs) && (
-            <div class="filters">
-              <SelectField
-                label="Organisation"
-                name="org_id"
-                value={this.state.selectedOrg}
-                onChange={this.handleOrgChange}
-              >
-                <option value="">All</option>
-                {Object.keys(orgs).map(orgId => (
-                  <option key={orgId} value={orgId}>
-                    {orgs[orgId]}
-                  </option>
-                ))}
-              </SelectField>
-            </div>
-          )}
+          {isOrgRazorpay() &&
+            !isBlank(orgs) && (
+              <div class="filters">
+                <SelectField
+                  label="Organisation"
+                  name="org_id"
+                  value={this.state.selectedOrg}
+                  onChange={this.handleOrgChange}
+                >
+                  <option value="">All</option>
+                  {Object.keys(orgs).map(orgId => (
+                    <option key={orgId} value={orgId}>
+                      {orgs[orgId]}
+                    </option>
+                  ))}
+                </SelectField>
+              </div>
+            )}
         </div>
         <PageTable
           model={this.collection}
