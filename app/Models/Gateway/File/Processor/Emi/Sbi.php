@@ -6,7 +6,6 @@ use Carbon\Carbon;
 
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
-use RZP\Encryption\Type;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
@@ -27,8 +26,6 @@ class Sbi extends Base
     const FILE_TYPE         = FileStore\Type::SBI_EMI_FILE;
     const FILE_NAME         = 'GGCMS1';
     const BEAM_FILE_TYPE    = 'emi';
-
-    protected $encryptionKey;
 
     /**
      * @var $file FileStore\Entity
@@ -59,6 +56,11 @@ class Sbi extends Base
         return $emiPaymentsForBank;
     }
 
+    public function generateEmiFilePassword()
+    {
+        return openssl_random_pseudo_bytes(256);
+    }
+
     /**
      * Implements \RZP\Models\Gateway\File\Processor\Base::createFile($data).
      * @throws GatewayFileException
@@ -80,17 +82,15 @@ class Sbi extends Base
 
             $creator = new FileStore\Creator;
 
-            $this->encryptionKey = openssl_random_pseudo_bytes(256);
-
             $creator->extension(static::EXTENSION)
                     ->content($fileData)
                     ->name($fileName)
                     ->store(FileStore\Store::S3)
                     ->encrypt(
-                        Type::AES_ENCRYPTION,
+                        Service::ENCRYPTION_TYPE,
                         [
-                            'mode'   => \phpseclib\Crypt\Base::MODE_CBC,
-                            'secret' => $this->encryptionKey
+                            'mode'   => Service::ENCRYPTION_MODE,
+                            'secret' => $data['password'],
                         ])
                     ->type(static::FILE_TYPE)
                     ->entity($this->gatewayFile)
@@ -268,6 +268,8 @@ class Sbi extends Base
 
     protected function sendEmiFile($data)
     {
+        // todo: Push to beam once decryption is handled at beam side
+        /*
         $fullFileName = $this->file->getName() . '.' . $this->file->getExtension();
 
         $fileInfo = [$fullFileName];
@@ -289,6 +291,7 @@ class Sbi extends Base
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+        */
     }
 
     protected function getFileToWriteName()
