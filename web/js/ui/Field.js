@@ -135,7 +135,7 @@ export function SwitchField({
   ...props
 }) {
   return (
-    <div class="field">
+    <div class={classList('field', props.disabled && 'disabled')}>
       {label && <label class={props.required ? 'required' : ''}>{label}</label>}
 
       {disabledLabel && (
@@ -170,6 +170,12 @@ export class Switch extends Component {
     }
     prevent(e);
   };
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.hasOwnProperty('value')) {
+      this.setState({ checked: this.enabledValue == nextProps.value });
+    }
+  }
 
   render() {
     let { knob = true, disabledValue, enabledValue, ...restProps } = this.props;
