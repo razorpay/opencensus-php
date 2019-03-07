@@ -55,3 +55,70 @@ export function trackListActions(action, eventLabel) {
     eventLabel,
   });
 }
+
+/*
+* Track the selection of template
+* */
+export function trackTemplateSelection(eventLabel) {
+  track({
+    eventAction: `Select Template`,
+    eventLabel,
+  });
+}
+
+/*
+* Track the selection of template
+* */
+export function trackGoBackDashboard() {
+  track({
+    eventAction: 'Create - Click Back to Dashboard',
+  });
+}
+
+/*
+* Track the selection of template
+* */
+export function trackGoBackToTemplates() {
+  track({
+    eventAction: 'Create - Click Back to Templates',
+  });
+}
+
+/*
+* Track the start creation of Payment page with what template
+* */
+export function trackStartCreation(eventLabel) {
+  track({
+    eventAction: 'Create - Click Lets go',
+    eventLabel,
+  });
+}
+
+/*
+* Track the button size selection in 'create button modal'
+* */
+export function trackCreateButtonSizeSelection(eventLabel) {
+  track({
+    eventAction: 'Create Payment Button - Copy Code',
+    eventLabel,
+  });
+}
+
+/*
+* Track the 'create button modal' close
+* */
+export function trackCreateButtonCancel() {
+  track({
+    eventAction: 'Create Payment Button - Cancel',
+  });
+}
+
+/*
+* Track the page settings data
+* */
+export function trackPageSettingsData(trackData) {
+  track({
+    eventAction: 'Page Settings',
+    eventLabel: trackData.join(' | '),
+  });
+}
