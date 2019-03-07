@@ -1029,7 +1029,7 @@ class RecurringPaymentTest extends TestCase
                 $this->doS2SRecurringPayment($payment);
             },
             Exception\BadRequestException::class,
-            "Token has expired and cannot be used for recurring payments");
+            'Token has expired and cannot be used for recurring payments');
     }
 
     protected function assignSubMerchant(string $tid, string $mid)

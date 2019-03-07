@@ -1430,7 +1430,7 @@ trait Authorize
             ($token->getExpiredAt() < $currentTime) === true)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_TOKEN_EXPIRED,
+                ErrorCode::BAD_REQUEST_RECURRING_TOKEN_EXPIRED,
                 Token\Entity::EXPIRED_AT,
                 [
                     'token'          => $token->toArray(),
