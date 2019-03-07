@@ -36,6 +36,18 @@ class PaysecureGatewayTest extends TestCase
 
         $this->fixtures->create('merchant_detail', $merchantDetailArray);
 
+        $this->fixtures->iin->create([
+            'iin'          => '607384',
+            'country'      => 'IN',
+            'issuer'       => 'PUNB',
+            'network'      => 'RuPay',
+            'message_type' => 'SMS',
+            'flows'        => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ],
+        ]);
+
         $this->gateway = 'paysecure';
 
         $this->setMockGatewayTrue();
