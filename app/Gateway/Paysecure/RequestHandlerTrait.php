@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\Utility;
 use RZP\Constants\Timezone;
 use RZP\Models\Currency\Currency;
@@ -97,7 +98,7 @@ trait RequestHandlerTrait
 
     /**
      * @return array
-     * @throws Exception\LogicException
+     * @throws Exception\GatewayErrorException
      */
     protected function getInitiateRequestArray(): array
     {
@@ -117,20 +118,20 @@ trait RequestHandlerTrait
 
         $rrn = $this->generateRrn($systemTraceAuditNumber);
 
-        if ((isset($this->input['iin']) === true) and
-            (isset($this->input['iin']['message_type']) === true) and
-            (empty($this->input['iin']['message_type']) === false))
+        if ((isset($this->input['card']['message_type']) === true) and
+            ($this->input['card']['message_type'] !== null))
         {
-            $messageType = $this->input['iin']['message_type'];
+            $messageType = $this->input['card']['message_type'];
         }
         else
         {
-            throw new Exception\LogicException(
-                "Message type missing for IIN",
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
+                null,
                 null,
                 [
+                    'message'    => "Message type missing for IIN",
                     'payment_id' => $this->input['payment']['id'],
-                    'gateway'    => $this->gateway,
                     'iin'        => $this->input['card']['iin'],
                 ]
             );
