@@ -4,8 +4,8 @@ namespace RZP\Tests\Unit\P2p\Upi\Axis;
 
 use RZP\Constants\Mode;
 use RZP\Gateway\P2p\Base;
-use RZP\Http\Response\Response;
 use RZP\Models\P2p\Device;
+use RZP\Http\Response\Response;
 use RZP\Gateway\P2p\Upi\Axis\Fields;
 use RZP\Models\P2p\Device\RegisterToken;
 use RZP\Models\P2p\Base\Libraries\Context;

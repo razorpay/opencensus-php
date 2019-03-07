@@ -195,8 +195,8 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
 
         $response->setData([
             Fields::SDK_DATA => [
-                Fields::IS_DEVICE_BOUND       => $sdk(Fields::IS_DEVICE_BOUND),
-                Fields::IS_DEVICE_ACTIVATED   => $sdk[Fields::IS_DEVICE_ACTIVATED],
+                Fields::IS_DEVICE_BOUND     => $sdk(Fields::IS_DEVICE_BOUND),
+                Fields::IS_DEVICE_ACTIVATED => $sdk[Fields::IS_DEVICE_ACTIVATED],
             ],
         ]);
     }
