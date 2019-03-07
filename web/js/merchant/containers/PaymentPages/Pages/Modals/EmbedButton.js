@@ -5,6 +5,9 @@ import Input from 'component/Input';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import ReactDOMServer from 'react-dom/server';
 import { closeModal } from 'rzp/modules/modals';
+import { trackCreateButtonSizeSelection, trackCreateButtonCancel } from '../ga';
+
+const BTN_SIZES = ['Large', 'Medium', 'Small'];
 
 @connect(
   state => ({
@@ -106,7 +109,13 @@ export default class extends React.Component {
 
     return (
       <div>
-        <ModalHeader title="Create Embed Button" onCloseClick={closeModal} />
+        <ModalHeader
+          title="Create Embed Button"
+          onCloseClick={() => {
+            closeModal();
+            trackCreateButtonCancel();
+          }}
+        />
 
         <div class="modal-body embed-button-form" style={{ paddingTop: 0 }}>
           <div class="ModalForm ModalForm--Share">
@@ -120,7 +129,7 @@ export default class extends React.Component {
             />
             <Input.Radio
               label="Button size"
-              options={['Large', 'Medium', 'Small']}
+              options={BTN_SIZES}
               className="Input--vTop"
               value={btnSize}
               onChange={this.updateButtonSize}
@@ -137,7 +146,12 @@ export default class extends React.Component {
                   <div class="description">
                     Copy & Paste this HTML in your code
                     <CustomClipboard value={liveCode}>
-                      <button class="btn btn-link btn-xs">
+                      <button
+                        class="btn btn-link btn-xs"
+                        onClick={() =>
+                          trackCreateButtonSizeSelection(BTN_SIZES[btnSize])
+                        }
+                      >
                         <i class="i i-copy" style={{ marginRight: 4 }} />
                         Copy
                       </button>
@@ -151,7 +165,13 @@ export default class extends React.Component {
             />
 
             <br />
-            <Button.Primary class="btn-block" onClick={closeModal}>
+            <Button.Primary
+              class="btn-block"
+              onClick={() => {
+                closeModal();
+                trackCreateButtonCancel();
+              }}
+            >
               Done
             </Button.Primary>
           </div>
