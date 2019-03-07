@@ -120,7 +120,26 @@ const fields = [
   ['', item => item.id],
   ['Product', item => item.selectField('product')],
   ['Feature', item => item.selectField('feature')],
-  ...(isOrgRazorpay() ? [['Type', item => item.selectField('type')]] : []),
+  ...(isOrgRazorpay()
+    ? [
+        [
+          'Type',
+          item => (
+            <>
+              {item.selectField('type')}
+              {!item.id && (
+                <p>
+                  <small>
+                    Please don't assign type as commission for non-rzp
+                    organizations
+                  </small>
+                </p>
+              )}
+            </>
+          ),
+        ],
+      ]
+    : []),
   [
     'Method',
     item => (
