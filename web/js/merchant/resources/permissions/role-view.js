@@ -4,8 +4,26 @@
  * */
 export default {
   home: ['owner', 'admin', 'manager', 'operations', 'finance'],
-  payments: ['owner', 'admin', 'manager', 'operations', 'finance', 'support'],
-  orders: ['owner', 'admin', 'manager', 'operations', 'finance', 'support'],
+  payments: [
+    'owner',
+    'admin',
+    'manager',
+    'operations',
+    'finance',
+    'support',
+    'rbl_supervisor',
+    'rbl_agent',
+  ],
+  orders: [
+    'owner',
+    'admin',
+    'manager',
+    'operations',
+    'finance',
+    'support',
+    'rbl_supervisor',
+    'rbl_agent',
+  ],
   refunds: ['owner', 'admin', 'manager', 'operations', 'finance', 'support'],
   payments_batch_uploads: ['owner', 'admin', 'manager', 'operations'],
   refunds_batch_uploads: ['owner', 'admin', 'manager', 'operations'],
@@ -16,6 +34,7 @@ export default {
     'operations',
     'finance',
     'support',
+    'rbl_supervisor',
   ],
   invoices: [
     'owner',
@@ -26,6 +45,7 @@ export default {
     'support',
     'sellerapp',
     'agent',
+    'rbl_supervisor',
   ],
   items: [
     'owner',
@@ -45,6 +65,8 @@ export default {
     'finance',
     'sellerapp',
     'agent',
+    'rbl_supervisor',
+    'rbl_agent',
   ],
   payment_pages: [
     'owner',
@@ -67,7 +89,14 @@ export default {
   addons: ['owner', 'admin', 'manager', 'operations', 'finance', 'support'],
   virtual_accounts: ['owner', 'admin', 'manager', 'operations', 'finance'],
   customers: ['owner', 'admin', 'manager', 'operations', 'finance', 'support'],
-  reports: ['owner', 'admin', 'manager', 'operations', 'finance'],
+  reports: [
+    'owner',
+    'admin',
+    'manager',
+    'operations',
+    'finance',
+    'rbl_supervisor',
+  ],
   api_keys: ['owner', 'admin'],
   profile: [
     'owner',
