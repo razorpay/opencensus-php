@@ -85,6 +85,7 @@ class Entity extends Base\Entity
     ];
 
     protected $publicSetters = [
+        Entity::ID,
         Entity::UPI,
         Entity::ENTITY,
     ];

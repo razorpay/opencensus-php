@@ -58,6 +58,21 @@ class Validator extends Base\Validator
         return $rules;
     }
 
+    public function makeEditRules()
+    {
+        $rules = $this->makeRules([
+            Entity::UUID            => 'required',
+            Entity::TYPE            => 'required',
+            Entity::OS              => 'required',
+            Entity::OS_VERSION      => 'required',
+            Entity::APP_NAME        => 'required',
+            Entity::IP              => 'required',
+            Entity::GEOCODE         => 'required',
+        ]);
+
+        return $rules;
+    }
+
     public function makeInitiateVerificationRules()
     {
         $rules = $this->makeRules([
