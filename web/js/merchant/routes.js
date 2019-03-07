@@ -148,13 +148,11 @@ export const supportHashMapping = {
 const fullPageViewsMap = {
   '/paymentpages/new': {
     component: PaymentPagesWysiwyg,
-    additionalCondition: user =>
-      user.isPaymentPagesV2Enabled && user.isAllowedEdit('payment_pages'),
+    additionalCondition: user => user.isAllowedEdit('payment_pages'),
   },
   '/paymentpages/:id(pl_.+)/edit': {
     component: PaymentPagesWysiwyg,
-    additionalCondition: user =>
-      user.isPaymentPagesV2Enabled && user.isAllowedEdit('payment_pages'),
+    additionalCondition: user => user.isAllowedEdit('payment_pages'),
   },
 };
 
