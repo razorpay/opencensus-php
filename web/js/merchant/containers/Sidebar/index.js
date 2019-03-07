@@ -318,8 +318,7 @@ export default class Sidebar extends Component {
                     icon="i i-payment-pages text-warm temp-icon-style"
                     to={routes.paymentpages}
                     additionalCondition={user =>
-                      user.isAllowedView('payment_pages') &&
-                      user.isPaymentPagesV2Enabled
+                      user.isAllowedView('payment_pages')
                     }
                     isNew
                   />

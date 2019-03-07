@@ -201,10 +201,7 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/paymentpages"
             component={PaymentPages}
-            additionalCondition={user =>
-              user.isAllowedView('payment_pages') &&
-              user.isPaymentPagesV2Enabled
-            }
+            additionalCondition={user => user.isAllowedView('payment_pages')}
           />
 
           <ShowWhenRoute

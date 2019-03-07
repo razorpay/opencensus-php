@@ -269,10 +269,6 @@ export default class User {
     return this.isFeatureEnabled('ES_ON_DEMAND');
   }
 
-  get isPaymentPagesV2Enabled() {
-    return getExperiment('paymentpagesv2') === 'on';
-  }
-
   get isDiwaliPromoEnabled() {
     return this.findTag('diwali_promotional_plan');
   }
