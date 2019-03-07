@@ -13,6 +13,7 @@ const HDFC_restrictedModules = [
   'payment_links',
   'configuration',
   'add_funds',
+  'profile_gst',
 ];
 
 const HDFC_restrictedFeatures = [
