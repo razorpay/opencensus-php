@@ -1004,6 +1004,7 @@ class Gateway
         self::UPI_RBL,
         self::UPI_SBI,
         self::UPI_YESBANK,
+        self::UPI_MINDGATE,
         self::BAJAJ,
     ];
 

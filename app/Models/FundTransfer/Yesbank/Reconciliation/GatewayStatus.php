@@ -698,7 +698,7 @@ class GatewayStatus extends BaseStatus
         if ((empty($errorCode) === false) and
             (strtolower($errorCode) !== 'na'))
         {
-            return $responseCode;
+            return $errorCode;
         }
 
         if ((empty($responseErrorCode) === false) and

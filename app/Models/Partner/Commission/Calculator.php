@@ -581,14 +581,24 @@ class Calculator extends Base\Core
             return;
         }
 
+        $commissions = [];
+
         foreach ($this->commissions as $commission)
         {
             $this->updateCommissionStatus($commission);
 
-            $this->repo->saveOrFail($commission);
+            $commission = $commission->toArrayPublic();
+
+            // merchant relation need not be logged
+            unset($commission['merchant']);
+
+            $commissions[] = $commission;
+
+            // @todo: Uncomment once the logs are verified
+            // $this->repo->saveOrFail($commission);
         }
 
-        $this->traceContext(TraceCode::COMMISSION_CREATED);
+        $this->traceContext(TraceCode::COMMISSION_LOGGED, ['commissions' => $commissions]);
     }
 
     protected function updateCommissionStatus(Commission\Entity $commission)

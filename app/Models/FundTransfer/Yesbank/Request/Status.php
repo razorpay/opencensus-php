@@ -162,7 +162,10 @@ class Status extends Base
         //
 
         $ftaId = $response[Constants::UPI_REQUEST_REFERENCE_NUMBER] ?? null;
+
         $utr = $response[Constants::UPI_UNIQUE_RESPONSE_NUMBER] ?? null;
+        $utr = (strtolower($utr) !== 'na')? $utr : null;
+
         $bankReferenceNumber = $response[Constants::UPI_BANK_REFERENCE_NUMBER] ?? null;
 
         $statusCode = $response[Constants::UPI_STATUS_CODE] ?? null;
@@ -176,7 +179,6 @@ class Status extends Base
         $remark = $response[Constants::UPI_STATUS_DESCRIPTION] ?? null;
 
         $publicFailureReason = GatewayStatus::getPublicFailureReason($finalResponseCode);
-
 
         return [
             ReconConstants::PAYMENT_REF_NO        => $this->getNullOnEmpty($ftaId),
