@@ -48,7 +48,9 @@ class Request extends Base\Request
 
         if (empty($this->actionMap[Action::SIGNATURE]) === false)
         {
-           $sign = $this->sign($this->actionMap[Action::SIGNATURE]);
+           $str = $this->getSignatureString($this->actionMap[Action::SIGNATURE]);
+
+           $sign = $this->generateSignature($str);
 
            $this->content->put(Fields::MERCHANT_SIGNATURE, $sign);
         }
@@ -89,8 +91,6 @@ class Request extends Base\Request
         $this->setAction($this->action);
 
         $this->setContent($this->content->toArray());
-
-        //$this->setValidate($this->actionMap[Action::SDK_VALIDATE]);
     }
 
     public function setValidate($deviceFingerPrint)
@@ -113,7 +113,7 @@ class Request extends Base\Request
         (new JitValidator)->rules($rules)->input($input)->validate();
     }
 
-    protected function sign($actionMap)
+    protected function getSignatureString($actionMap)
     {
         $str = '';
 
@@ -122,11 +122,7 @@ class Request extends Base\Request
             $str = $str . $this->content[$key];
         }
 
-        $key = $this->getPrivateKey();
-
-        $signature = $this->generateSignature($str, $key);
-
-        return $signature;
+        return $str;
     }
 
     protected function getPrivateKey()

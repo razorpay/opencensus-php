@@ -7,6 +7,4 @@ class Action
     const SIGNATURE     = 'signature';
 
     const VALIDATOR     = 'validator';
-
-    const SDK_VALIDATE  = 'sdk_validate';
 }

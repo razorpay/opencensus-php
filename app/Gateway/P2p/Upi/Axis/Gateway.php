@@ -60,11 +60,12 @@ class Gateway extends Upi\Gateway
 
     protected function formatMerchantCustomerId($customerId)
     {
-        return 'cust.' . $customerId;
+        return str_replace('_', '.', $customerId);
     }
 
     protected function throwP2pGatewayException()
     {
+        // .Todo Need to fix the implementation
         throw new \Exception('Hi!');
     }
 }

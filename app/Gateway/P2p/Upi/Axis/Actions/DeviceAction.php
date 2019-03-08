@@ -23,7 +23,6 @@ class DeviceAction extends Action
                 Fields::SIM_ID          => 'required',
             ],
             self::SIGNATURE => false,
-            self::SDK_VALIDATE => false,
         ],
 
         self::ACTIVATE_DEVICE_BINDING => [
@@ -40,7 +39,6 @@ class DeviceAction extends Action
                 Fields::TIME_STAMP,
                 Fields::UDF_PARAMETERS,
             ],
-            self::SDK_VALIDATE => false,
         ],
 
         self::GET_SESSION_TOKEN => [
@@ -61,7 +59,6 @@ class DeviceAction extends Action
                 Fields::TIMESTAMP,
                 Fields::UDF_PARAMETERS,
             ],
-            self::SDK_VALIDATE => false,
         ]
     ];
 }

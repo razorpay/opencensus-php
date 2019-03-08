@@ -95,7 +95,7 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
         $device = $this->getContextDevice();
         $merchantCustomerId = $this->formatMerchantCustomerId($device->get(Device\Entity::CUSTOMER_ID));
 
-        // Validate if DeviceData has SDK which has
+        // Validate if DeviceData has SDK
         $request = $this->getSessionTokenRequest();
 
         $request->merge([

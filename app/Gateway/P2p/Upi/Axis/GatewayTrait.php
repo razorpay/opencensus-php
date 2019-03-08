@@ -11,7 +11,7 @@ trait GatewayTrait
         return str_random();
     }
 
-    protected function generateSignature($input, $key)
+    protected function generateSignature($input)
     {
         $key = $this->getPrivateKey();
 
