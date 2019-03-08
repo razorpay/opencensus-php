@@ -44,13 +44,31 @@ class Core extends Base\Core
         return $fundAccount;
     }
 
+    /**
+     * We were accepting the account details object in the `details` key, and then changed to accept this in a
+     * key with a name corresponding to the account_type -> `bank_account` or `vpa`.
+     *
+     * This function handles this backward compatibilty modification of the request.
+     *
+     * Consumers can send the details in either `bank_account`|`vpa` or `details`.
+     *
+     * @param array $input
+     */
     protected function modifyRequestForBackwardCompatibility(array & $input)
     {
+        //
+        // If the `details` key is unset, we assume the details are present in the new structure
+        // under `bank_account` or `vpa`
+        //
         if (isset($input[Entity::DETAILS]) === false)
         {
             return;
         }
 
+        //
+        // `account_type` is a required field, so if unset we just return and let this fail at the Entity
+        // build validation stage.
+        //
         if (isset($input[Entity::ACCOUNT_TYPE]) === false)
         {
             return;
