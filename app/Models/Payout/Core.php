@@ -274,7 +274,6 @@ class Core extends Base\Core
 
             case Attempt\Status::CREATED:
             case Attempt\Status::INITIATED:
-                $this->handleFtaProcessing($payout);
                 break;
 
             default:
@@ -360,13 +359,6 @@ class Core extends Base\Core
         $this->repo->saveOrFail($payout);
 
         $this->app->events->fire('api.payout.processed', [$payout]);
-    }
-
-    protected function handleFtaProcessing(Entity $payout)
-    {
-        $payout->setStatus(Status::PROCESSING);
-
-        $this->repo->saveOrFail($payout);
     }
 
     protected function handleFtaFailed(Entity $payout, string $ftaFailureReason = null)

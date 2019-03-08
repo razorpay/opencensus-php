@@ -177,7 +177,6 @@ class Status extends Base
 
         $publicFailureReason = GatewayStatus::getPublicFailureReason($finalResponseCode);
 
-
         return [
             ReconConstants::PAYMENT_REF_NO        => $this->getNullOnEmpty($ftaId),
             ReconConstants::UTR                   => $this->getNullOnEmpty($utr),
