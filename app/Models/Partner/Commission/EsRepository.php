@@ -40,6 +40,11 @@ class EsRepository extends Base\EsRepository
         return $this->merchantFields;
     }
 
+    public function buildQueryForId(array & $query, string $value)
+    {
+        $this->addTermFilter($query, Entity::ID, $value);
+    }
+
     public function buildQueryForSourceId(array & $query, string $value)
     {
         $this->addTermFilter($query, Entity::SOURCE_ID, $value);
