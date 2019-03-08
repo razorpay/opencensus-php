@@ -199,15 +199,18 @@ export default class CheckoutTheme extends Component {
               id="checkout-header"
               style={{ backgroundColor: this.state.brandColor }}
             >
-              <div id="header-logo">
-                <img src={this.props.config.logo_url} width="100%" />
-              </div>
+              {this.props.config.logo_url && (
+                <div id="header-logo">
+                  <img src={this.props.config.logo_url} width="100%" />
+                </div>
+              )}
 
               <div id="header-details">
                 {textClr && (
                   <div id="merchant" style={{ color: textClr }}>
                     <div id="merchant-name">{this.props.user.contact_name}</div>
                     <div id="merchant-desc">Order ID</div>
+                    <div id="amount">₹1</div>
                   </div>
                 )}
               </div>
