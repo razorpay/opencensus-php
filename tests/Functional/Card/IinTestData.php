@@ -166,7 +166,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 24,
+                'count' => 23,
                 'items' => [
                     [
                     ]

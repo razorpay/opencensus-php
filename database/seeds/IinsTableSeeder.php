@@ -19,7 +19,6 @@ class IinsTableSeeder extends Seeder
             IIN\Entity::CATEGORY,
             IIN\Entity::NETWORK,
             IIN\Entity::TYPE,
-            IIN\Entity::MESSAGE_TYPE,
             IIN\Entity::COUNTRY,
             IIN\Entity::ISSUER_NAME,
             IIN\Entity::ISSUER,
