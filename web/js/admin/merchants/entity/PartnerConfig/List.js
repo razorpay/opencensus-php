@@ -50,7 +50,9 @@ export default class PartnerConfigList extends Component {
           <Write
             values={{
               ...values,
-              ...(isPresent(config) ? sanitizeConfig(config) : defaultValues),
+              ...(isPresent(config)
+                ? sanitizeConfig(config)
+                : getDefaultValues()),
             }}
             submit={!!(config || {}).id ? adminPut : adminPost}
             buttonText={!!(config || {}).id ? 'Update' : 'Create'}
@@ -242,8 +244,10 @@ function sanitizeConfig(data = {}) {
   ]);
 }
 
-var defaultValues = {
-  revisit_at: moment()
-    .add(1, 'year')
-    .format('X'),
-};
+function getDefaultValues() {
+  return {
+    revisit_at: moment()
+      .add(1, 'year')
+      .format('X'),
+  };
+}

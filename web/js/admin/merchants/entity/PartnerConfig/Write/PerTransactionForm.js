@@ -7,6 +7,9 @@ export default function PerTransactionForm({
   ...props
 }) {
   const { commission, pricing } = plans;
+  const implicitPlanOptions =
+    internals._commission_mode === 'fixed' ? commission.data : pricing.data;
+
   return (
     <>
       <SelectField data-name="_commission_mode" label="Commission Type">
@@ -24,23 +27,18 @@ export default function PerTransactionForm({
         onChange={props.onSearchableChange('default_plan_id')}
       />
 
-      {(function() {
-        const options =
-          internals._commission_mode === 'fixed'
-            ? commission.data
-            : pricing.data;
-        return (
-          <Searchable
-            name="implicit_plan_id"
-            trackBy="id"
-            label="Partner Pricing"
-            options={options}
-            pending={pricing.pending || commission.pending}
-            selected={findSelectedName(options, values.implicit_plan_id)}
-            onChange={props.onSearchableChange('implicit_plan_id')}
-          />
-        );
-      })()}
+      <Searchable
+        name="implicit_plan_id"
+        trackBy="id"
+        label="Partner Pricing"
+        options={implicitPlanOptions}
+        pending={pricing.pending || commission.pending}
+        selected={findSelectedName(
+          implicitPlanOptions,
+          values.implicit_plan_id
+        )}
+        onChange={props.onSearchableChange('implicit_plan_id')}
+      />
 
       <Searchable
         name="explicit_plan_id"
