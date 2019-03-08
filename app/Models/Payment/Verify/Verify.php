@@ -1105,6 +1105,11 @@ class Verify extends Base\Core
 
         $diff = Carbon::now()->getTimestamp() - $payment->getCreatedAt();
 
+        if ($filter === Filter::PAYMENTS_CAPTURED)
+        {
+            $diff = Carbon::now()->getTimestamp() - $payment->getCapturedAt();
+        }
+
         // Payments which are less than X minutes old should always be picked by cron
         // Payments older than X minutes should follow the bucket logic
         if (($filter === Filter::PAYMENTS_CREATED) and ($diff < self::CREATED_MAX_TIME))
