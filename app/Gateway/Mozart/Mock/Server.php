@@ -58,8 +58,6 @@ class Server extends Base\Mock\Server
         $input = json_decode($input, true);
         $entities = $input['entities'];
 
-        $this->verifyOtpAttempts($entities['payment']);
-
         $otp = $entities['gateway']['redirect']['otp'];
 
         switch($otp)

@@ -496,9 +496,7 @@ class MerchantInvoiceTest extends TestCase
         $this->ba->privateAuth();
 
         $this->createValidationWithFundAccountEntity();
-
-        $this->initiateTransferAndReconcile();
-
+        
         // Card payment less than 2k
         $p1  = $this->getDefaultPaymentArray();
 

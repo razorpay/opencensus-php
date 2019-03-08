@@ -24,13 +24,13 @@ class Validator extends Base\Validator
 
     protected static $editRules = [
         Entity::REVISIT_AT             => 'sometimes|integer',
-        Entity::DEFAULT_PLAN_ID        => 'required|alpha_num|size:14',
-        Entity::IMPLICIT_PLAN_ID       => 'filled|alpha_num|size:14',
-        Entity::EXPLICIT_PLAN_ID       => 'filled|alpha_num|size:14',
+        Entity::DEFAULT_PLAN_ID        => 'sometimes|alpha_num|size:14',
+        Entity::IMPLICIT_PLAN_ID       => 'sometimes|alpha_num|size:14|nullable',
+        Entity::EXPLICIT_PLAN_ID       => 'sometimes|alpha_num|size:14|nullable',
         Entity::IMPLICIT_EXPIRY_AT     => 'sometimes|integer',
-        Entity::COMMISSIONS_ENABLED    => 'required|boolean',
-        Entity::EXPLICIT_REFUND_FEES   => 'required_with:'.Entity::EXPLICIT_PLAN_ID.'|boolean',
-        Entity::EXPLICIT_SHOULD_CHARGE => 'required_with:'.Entity::EXPLICIT_PLAN_ID.'|boolean',
+        Entity::COMMISSIONS_ENABLED    => 'sometimes|boolean',
+        Entity::EXPLICIT_REFUND_FEES   => 'sometimes|boolean',
+        Entity::EXPLICIT_SHOULD_CHARGE => 'sometimes|boolean',
     ];
 
     public function validateEmptyConfig($config)

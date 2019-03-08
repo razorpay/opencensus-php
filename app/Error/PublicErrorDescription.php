@@ -331,6 +331,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_NOT_ENROLLED_FOR_3DSECURE                    = 'Payment processing failed because card is not enrolled for the required 3dsecure authentication';
     const BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED             = 'Payment processing failed because OTP validation attempts limit exceeded';
     const BAD_REQUEST_PAYMENT_OTP_INCORRECT                                     = 'Payment processing failed because of incorrect OTP';
+    const BAD_REQUEST_PAYMENT_OTP_INCORRECT_OR_EXPIRED                          = 'Payment processing failed because of incorrect or expired OTP';
     const BAD_REQUEST_PAYMENT_OTP_EXPIRED                                       = 'Payment processing failed because of expired OTP';
     const BAD_REQUEST_PAYMENT_PARES_XML_SIGNATURE_ERROR                         = 'Payment processing failed because of card authentication failure';
     const BAD_REQUEST_PAYMENT_ABORTED                                           = 'Payment processing aborted';
@@ -786,4 +787,6 @@ class PublicErrorDescription
     const BAD_REQUEST_APPLICATION_SUBMERCHANT_CONFIG_EXISTS                         = 'Application/submerchant config already exists';
 
     const BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE                          = 'Payment failed';
+
+    const BAD_REQUEST_RECURRING_TOKEN_EXPIRED                                       = 'Token has expired and cannot be used for recurring payments';
 }

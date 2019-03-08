@@ -9,7 +9,6 @@ use Illuminate\Redis\RedisManager;
 
 use Razorpay\Trace\Logger as Trace;
 
-use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestContext;
 use RZP\Base\Database\Metric;
@@ -21,6 +20,15 @@ use RZP\Base\Database\Metric;
  */
 class HeartbeatLagChecker implements LagChecker
 {
+    // slave connection identifier
+    const SLAVE     = 'slave';
+
+    // master connection identifier
+    const MASTER    = 'master';
+
+    // heartbeat connection identifier
+    const HEARTBEAT = 'heartbeat';
+
     /**
      * @var RequestContext
      */
@@ -51,15 +59,53 @@ class HeartbeatLagChecker implements LagChecker
      */
     protected $trace;
 
-    /**
-     * @var string
-     */
-    protected $mode;
 
     /**
      * @var int
      */
     protected $lag;
+
+    /**
+     * holds the handler for connection identifier
+     *
+     * @var array
+     */
+    protected $connectionResolver;
+
+    /**
+     * flag which indicates if the heartbeat is enabled
+     *
+     * @var bool
+     */
+    private $enabled;
+
+    /**
+     * if true heartbeat result will only get logged and result wont affect the connection
+     *
+     * @var bool
+     */
+    private $mock;
+
+    /**
+     * heartbeat threshold value in mili sec
+     *
+     * @var int
+     */
+    private $timeThreshold;
+
+    /**
+     * heartbeat threshold value in mili sec for slave connections
+     *
+     * @var int
+     */
+    private $slaveTimeThreshold;
+
+    /**
+     * heartbeat ramp percentage
+     *
+     * @var int
+     */
+    private $trafficPercent;
 
     public function __construct(array $config)
     {
@@ -82,7 +128,7 @@ class HeartbeatLagChecker implements LagChecker
 
         $this->cache = $app['cache'];
 
-        $this->mode = $app['rzp.mode'] ?? Mode::LIVE;;
+        $this->initializeConnectionResolvers();
     }
 
     /**
@@ -94,7 +140,16 @@ class HeartbeatLagChecker implements LagChecker
 
         try
         {
-            $useSlave = $this->checkHeartbeat($readPdo);
+            //
+            // Load configs from cache only of heartbeat evaluation is required
+            // this is because we might not even check heartbeat in case of master_percentage check passes
+            //
+            $this->loadConfigs();
+
+            // perform heartbeat check
+            $useSlave = $this->shouldUseSlave($readPdo);
+
+            $this->traceConnectionSelection(TraceCode::HEARTBEAT_DATABASE_ROUTING, $useSlave);
         }
         catch (\Throwable $ex)
         {
@@ -110,125 +165,66 @@ class HeartbeatLagChecker implements LagChecker
             null;
     }
 
-    protected function checkHeartbeat($readPdo): bool
-    {
-        $useSlave = true;
-
-        //
-        // We wont be checking heartbeat if mode is not set
-        //
-        if ($this->mode === null)
-        {
-            return false;
-        }
-
-        //
-        // We fetch 4 things from Redis:
-        // 1. heartbeat_enabled - Check if heartbeat is enabled or not
-        // 2. heartbeat_time_threshold - Get the threshold over which the time delta is considered to be a lagging
-        // 3. heartbeat_traffic_percent - What percentage of traffic we need to move to master for `heartbeat_routes`
-        // 4. heartbeat_mock - Mock heartbeat (only log to sumologic and don't take any action)
-        //
-        $heartbeatConfig = $this->cache->many([
-            $this->config['enabled'],
-            $this->config['time_threshold'],
-            $this->config['traffic_percentage'],
-            $this->config['mock'],
-        ]);
-
-        list($enabled, $timeThreshold, $trafficPercent, $mock) = array_values($heartbeatConfig);
-        //
-        // If pt-heartbeat is disabled then useSlave
-        //
-        if ((bool) $enabled === false)
-        {
-            return $useSlave;
-        }
-
-        //
-        // If the lag is not more than the time threshold set then continue using read connection
-        //
-        $isSlaveLagging = $this->isSlaveLagging($readPdo, $timeThreshold);
-
-        if ($isSlaveLagging === false)
-        {
-            $this->traceConnectionSelection(TraceCode::HEARTBEAT_CHECK_NO_LAG, $useSlave);
-
-            return $useSlave;
-        }
-
-        //
-        // Check if there are any whitelisted route that need to be routed
-        // to master basis $trafficPercent weight.
-        //
-        $useSlave = $this->resolveConnectionForRoute($trafficPercent);
-
-        $this->traceConnectionSelection(TraceCode::HEARTBEAT_CHECK_COMPLETED, $useSlave);
-
-        if ((bool) $mock === true)
-        {
-            $useSlave = true;
-        }
-
-        return $useSlave;
-    }
-
     /**
-     * It will check and evaluates the probability based on the percentage set.
-     * If passes then it does the route filter.
-     * If the current route pattern matches the whitelisted routes then returns true,
+     * It'll do series of operations:
+     * 1. Check if heartbeat is enabled. if not use master
+     * 2. If the route identifier is invalid then use master
+     * 3. call resolved based on connection identifier
+     * 4. check the ramp %. if not satisfied then use master
      *
-     * @param $trafficPercent
-     *
+     * @param $readPdo
      * @return bool
      */
-    protected function resolveConnectionForRoute($trafficPercent): bool
+    protected function shouldUseSlave($readPdo): bool
     {
-        $useSlave  = true;
-
-        $useMaster = false;
-
-        $routesLength = $this->redis->scard($this->config['routes']);
+        $useSlave = false;
 
         //
-        // If no routes have been set then move all traffic to master
+        // If pt-heartbeat is disabled then use slave connection as master % route suggests
         //
-        if ($routesLength === 0)
+        if ($this->enabled === false)
         {
-            $this->traceConnectionSelection(TraceCode::HEARTBEAT_CHECK_EMPTY_ROUTE_LIST, $useMaster);
+            $useSlave = true;
 
-            return $useMaster;
+            return $this->finalizeResult($useSlave);
         }
 
         $currentRoute = $this->reqCtx->getRoute();
 
-        $routeExists = (bool) $this->redis->sismember($this->config['routes'], $currentRoute);
+        $connectionIdentifier = $this->redis->hget($this->config['routes'], $currentRoute);
 
         //
-        // If the current route doesn't exist (but `routes` have some members)
-        // then move traffic to slave as its importance is less
+        // if connection identifier set is invalid then use master
         //
-        if ($routeExists === false)
+        if (isset($this->connectionResolver[$connectionIdentifier]) === false)
         {
-            $this->traceConnectionSelection(TraceCode::HEARTBEAT_CHECK_ROUTE_NOT_LISTED, $useSlave);
-
-            return $useSlave;
-        }
-        else
-        {
-            // Route exists inside `routes` and the random weight is less than threshold
-            // then move traffic to master
-            if ($this->randomTrafficPercent <= $trafficPercent)
-            {
-                $this->traceConnectionSelection(TraceCode::HEARTBEAT_CHECK_RAMP_RESULT, $useMaster);
-
-                return $useMaster;
-            }
-
-            $this->traceConnectionSelection(TraceCode::HEARTBEAT_CHECK_RAMP_RESULT, $useSlave);
+            return $this->finalizeResult($useSlave);
         }
 
-        return $useSlave;
+        //
+        // call connection resolved for given connection identifier
+        //
+        $useSlave = $this->connectionResolver[$connectionIdentifier]($readPdo);
+
+        $this->traceConnectionSelection(
+            TraceCode::HEARTBEAT_CHECK_COMPLETED,
+            $useSlave,
+            [
+                'route_name'            => $currentRoute,
+                'connection_identifier' => $connectionIdentifier,
+            ]);
+
+        //
+        // if the random weight is greater than threshold then move traffic to master
+        //
+        if ($this->randomTrafficPercent > $this->trafficPercent)
+        {
+            $useSlave = false;
+
+            return $this->finalizeResult($useSlave);
+        }
+
+        return $this->finalizeResult($useSlave);
     }
 
     /**
@@ -258,13 +254,7 @@ class HeartbeatLagChecker implements LagChecker
 
         $this->lag = $result['replica_lag_milli'];
 
-//        $result['diff_in_code'] = $this->diffInMilliseconds($result['ts']);
-
-        $status = ($this->lag <= $threshold)? false : true;
-
-//        $this->traceConnectionSelection(TraceCode::HEARTBEAT_LAG_CHECK_DEBUG_TRACE, !$status, $result);
-
-        return $status;
+        return ($this->lag > $threshold);
     }
 
     /**
@@ -321,8 +311,95 @@ class HeartbeatLagChecker implements LagChecker
         $this->trace->info(
             $traceCode,
             [
-                'connection' => $connection,
-                'lag'        => $this->lag,
+                'lag'                       => $this->lag,
+                'mock'                      => $this->mock,
+                'connection'                => $connection,
+                'traffic_percentage'        => $this->trafficPercent,
+                'random_traffic_percentage' => $this->randomTrafficPercent,
             ] + $extra);
+    }
+
+    /**
+     *
+     * We fetch 5 things from Cache:
+     * 1. heartbeat_enabled - Check if heartbeat is enabled or not
+     * 2. heartbeat_time_threshold - Get the threshold over which the time delta is considered to be a lagging
+     * 3  heartbeat_slave_time_threshold - Get the threshold over which the time delta is considered to be a lagging
+     *    in case of connection identifier is `slave`
+     * 4. heartbeat_traffic_percent - What percentage of traffic we need to move to master for `heartbeat_routes`
+     * 5. heartbeat_mock - Mock heartbeat (only log to sumologic and don't take any action)
+     *
+     * it'll load the values to corresponding class variables
+     * also does type casing for required fields
+     */
+    private function loadConfigs()
+    {
+        $heartbeatConfig = $this->cache->many([
+            $this->config['mock'],
+            $this->config['enabled'],
+            $this->config['time_threshold'],
+            $this->config['slave_time_threshold'],
+            $this->config['traffic_percentage'],
+        ]);
+
+        list(
+            $this->mock,
+            $this->enabled,
+            $this->timeThreshold,
+            $this->slaveTimeThreshold,
+            $this->trafficPercent,
+            ) = array_values($heartbeatConfig);
+
+        $this->mock = (bool) $this->mock;
+
+        $this->enabled = (bool) $this->enabled;
+    }
+
+    /**
+     * it will initialize the connection resolver for
+     * - master
+     * - slave
+     * - heartbeat
+     * this will also check the lag based in custom threshold for required identifier
+     * this will give a closure which can then be called by calling method
+     *
+     * all the closures return
+     * - true if slave to be used
+     * - false if master to be used
+     */
+    private function initializeConnectionResolvers()
+    {
+        $this->connectionResolver = [
+            self::MASTER => function ($readPdo): bool
+            {
+                return false;
+            },
+
+            self::SLAVE  => function ($readPdo): bool
+            {
+                return ($this->isSlaveLagging($readPdo, $this->slaveTimeThreshold) === false);
+            },
+
+            self::HEARTBEAT => function ($readPdo): bool
+            {
+                return ($this->isSlaveLagging($readPdo, $this->timeThreshold) === false);
+            },
+        ];
+    }
+
+    /**
+     * It will do a mock check based on this it sends whether to use slave or master
+     * @param bool $useSlave
+     * @return bool
+     */
+    private function finalizeResult(bool $useSlave): bool
+    {
+        // If mock flag is set then ignore the heartbeat result
+        if ($this->mock === true)
+        {
+            $useSlave = true;
+        }
+
+        return $useSlave;
     }
 }

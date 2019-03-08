@@ -958,6 +958,7 @@ class Entity extends Base\PublicEntity
         $terminal[self::GATEWAY_TERMINAL_PASSWORD]  = $this->getGatewayTerminalPasswordAttribute();
         $terminal[self::GATEWAY_TERMINAL_PASSWORD2] = $this->getGatewayTerminalPassword2Attribute();
         $terminal[self::GATEWAY_SECURE_SECRET]      = $this->getGatewaySecureSecretAttribute();
+        $terminal[self::GATEWAY_SECURE_SECRET2]      = $this->getGatewaySecureSecret2Attribute();
 
         return $terminal;
     }
@@ -1012,7 +1013,7 @@ class Entity extends Base\PublicEntity
     {
         if (($this->isEmiEnabled()) and
             ($this->getGateway() === $gateway) and
-            ($this->getEmiDuration() === $emiDuration))
+            (($this->getEmiDuration() === $emiDuration) or ($gateway === Gateway::BAJAJ)))
         {
             return true;
         }

@@ -8,16 +8,17 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Jobs\FundTransfer;
 use RZP\Models\Settlement;
 use RZP\Models\FundAccount;
 use RZP\Constants\Timezone;
-use RZP\Jobs\FTS\FundTransfer;
 use RZP\Services\Beam\Service;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Vpa\Entity as VpaEntity;
 use RZP\Mail\Base\Constants as MailConstants;
+use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
@@ -27,7 +28,8 @@ class Core extends Base\Core
     public function createWithBankAccount(
         Base\Entity $source,
         BankAccountEntity $bankAccount,
-        array $values = []): Entity
+        array $values = [],
+        $instantDispatch = false): Entity
     {
         $fundTransferAttempt = $this->create($source, $values);
 
@@ -45,9 +47,32 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($fundTransferAttempt);
 
+        if ($instantDispatch === true)
+        {
+            $this->dispatchForTransfer($fundTransferAttempt);
+        }
+
         $this->sendFTSFundTransferRequest($fundTransferAttempt, FundAccount\Type::BANK_ACCOUNT);
 
         return $fundTransferAttempt;
+    }
+
+    public function dispatchForTransfer(Entity $fta)
+    {
+        try
+        {
+            FundTransfer::dispatch($this->mode, $fta->getId());
+
+            $this->trace->info(TraceCode::FTA_TRANSFER_DISPATCH, [
+                'fta_id' => $fta->getId(),
+            ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(TraceCode::FTA_TRANSFER_DISPATCH_FAILED, [
+                'fta_id' => $fta->getId(),
+            ]);
+        }
     }
 
     public function createWithVpa(Base\Entity $source, VpaEntity $vpa, array $values = []): Entity
@@ -254,7 +279,7 @@ class Core extends Base\Core
                 return;
             }
 
-            FundTransfer::dispatch($this->mode, $fta->getId(), $accountType, $isRegistered);
+            FtsFundTransfer::dispatch($this->mode, $fta->getId(), $accountType, $isRegistered);
 
             $this->trace->info(
                 TraceCode::FTS_FUND_TRANSFER_JOB_DISPATCHED,

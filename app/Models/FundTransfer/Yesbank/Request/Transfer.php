@@ -7,8 +7,12 @@ use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Base as BaseModel;
 use RZP\Models\Base\PublicEntity;
+use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Yesbank\Mode;
+use RZP\Models\Card\Entity as CardVault;
+use RZP\Models\Settlement\SlackNotification;
+use RZP\Services\CardVault as CardVaultService;
 use RZP\Models\FundTransfer\Yesbank\NodalAccount;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\Status;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\GatewayStatus;
@@ -161,12 +165,26 @@ class Transfer extends Base
         //
         $terminal = $this->repo->terminal->findByGatewayAndTerminalData(Gateway::UPI_YESBANK);
 
+        if ($fta->hasCard() === true)
+        {
+            $cardObj = $fta->card;
+
+            $cardNum = $this->app['card.cardVault']->detokenize($cardObj->getVaultToken());
+
+            $vpa = 'CCPAY.' . $cardNum . '@icici';
+
+        }
+        else
+        {
+            $vpa = $fta->vpa->getAddress();
+        }
+
         return [
             'terminal' => $terminal->toArray(),
             'merchant' => $source->merchant->toArrayPublic(),
             'gateway_input' => [
                 'amount'    => $amount,
-                'vpa'       => $fta->vpa->getAddress(),
+                'vpa'       => $vpa,
                 'ref_id'    => $fta->getId(),
                 'narration' => $this->getNarration($fta),
             ]
@@ -221,7 +239,16 @@ class Transfer extends Base
             return Mode::IMPS;
         }
 
-        $mode = (new NodalAccount)->getPaymentModeForBankAccount($attempt, $amount);
+        $nodalAccount = new NodalAccount;
+
+        if ($attempt->hasCard() === true)
+        {
+            $mode = $nodalAccount->getPaymentModeForCard($attempt, $amount);
+        }
+        else
+        {
+            $mode = $nodalAccount->getPaymentModeForBankAccount($attempt, $amount);
+        }
 
         return Mode::getExternalModeFromInternalMode($mode);
     }
@@ -229,6 +256,12 @@ class Transfer extends Base
     protected function getPurposeSpecificData(): array
     {
         $attempt = $this->entity;
+
+        if (($attempt->isRefund() === true) and
+            ($attempt->hasCard() === true))
+        {
+            return $this->fetchCardInfoAndPurposeData();
+        }
 
         // Beneficiary details are required when the request is of purpose `refund` or
         // the request has to be made using sync API
@@ -410,7 +443,10 @@ class Transfer extends Base
         //
 
         $ftaId = $response[Constants::UPI_REQUEST_REFERENCE_NUMBER] ?? null;
+
         $utr = $response[Constants::UPI_UNIQUE_RESPONSE_NUMBER] ?? null;
+        $utr = (strtolower($utr) !== 'na')? $utr : null;
+
         $bankReferenceNumber = $response[Constants::UPI_BANK_REFERENCE_NUMBER] ?? null;
 
         $statusCode = $response[Constants::UPI_STATUS_CODE] ?? null;
@@ -551,5 +587,45 @@ class Transfer extends Base
     {
         // TODO: Return stuff
         return [];
+    }
+
+    protected function fetchCardInfoAndPurposeData()
+    {
+        $cardObj = $this->entity->card;
+
+        $response = $this->app['card.cardVault']->detokenize($cardObj->getVaultToken());
+
+        $beneName = $this->normalizeBeneficiaryName($cardObj->getName());
+
+        return [
+            Constants::BENEFICIARY_DETAILS => [
+                Constants::BENEFICIARY_NAME       => [
+                    Constants::FULL_NAME => $beneName,
+                ],
+                Constants::BENEFICIARY_CONTACT    => json_decode('{}'),
+                Constants::BENEFICIARY_ACCOUNT_NO => $response,
+                Constants::BENEFICIARY_IFSC       => $this->getIfscCodeUsingCardInfo($cardObj),
+            ],
+        ];
+    }
+
+    protected function getIfscCodeUsingCardInfo(CardVault $cardObj)
+    {
+        $cardIssuer = trim($cardObj->getIssuer());
+
+        if (in_array($cardIssuer, array_keys(Constants::BANK_IFSC), true) === true )
+        {
+            return Constants::BANK_IFSC[$cardIssuer];
+        }
+        else
+        {
+            (new SlackNotification)->send('Card payout not supported for issuer',
+                [
+                    'id'     => $this->entity->getId(),
+                    'issuer' => $cardIssuer,
+                ], null, 1);
+
+            new LogicException('Ifsc code does not exist for this card issuer');
+        }
     }
 }

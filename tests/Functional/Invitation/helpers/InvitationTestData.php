@@ -97,6 +97,52 @@ return [
         ],
     ],
 
+    'testPostSendInvitationByRBLSupervisorToValidRole' => [
+        'request'  => [
+            'url'     => '/invitations',
+            'method'  => 'POST',
+            'content' => [
+                'email'       => 'existinginvite@razorpay.com',
+                'role'        => 'rbl_agent',
+                'token'       => str_random(40),
+                'sender_name' => 'sender_name'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'role'        => 'rbl_agent',
+                'email'       => 'existinginvite@razorpay.com',
+                'merchant_id' => '10000000000000',
+            ]
+        ]
+    ],
+
+    'testPostSendInvitationByRBLSupervisorToInvalidRole' => [
+        'request'   => [
+            'url'     => '/invitations',
+            'method'  => 'POST',
+            'content' => [
+                'email'       => 'testteaminvite@razorpay.com',
+                'role'        => 'boss',
+                'token'       => str_random(40),
+                'sender_name' => 'sender_name'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The given role is not supported',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_ROLE_INVALID,
+        ],
+    ],
+
     'testPostResendInvitation' => [
         'request' => [
             'url'     => '/invitations/8hd48md930kel3/resend',

@@ -141,4 +141,18 @@ class Entity extends PublicEntity
             $this->setAttribute(self::REVISIT_AT, Carbon::now()->addYear()->getTimestamp());
         }
     }
+
+    public function setImplicitPlanIdAttribute($value)
+    {
+        $value = $value ?: null;
+
+        $this->attributes[self::IMPLICIT_PLAN_ID] = $value;
+    }
+
+    public function setExplicitPlanIdAttribute($value)
+    {
+        $value = $value ?: null;
+
+        $this->attributes[self::EXPLICIT_PLAN_ID] = $value;
+    }
 }
