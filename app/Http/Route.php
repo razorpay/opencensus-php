@@ -2317,6 +2317,7 @@ final class Route
         'partner_config_edit'                      => '*',
         'vault_token_create'                       => Permission::MAKE_API_CALL,
         'merchant_user_reset_password'             => Permission::USER_PASSWORD_RESET,
+        'subscription_update_data'                 => Permission::MODIFY_SUBSCRIPTION_DATA
     ];
 
     public static $direct = [
