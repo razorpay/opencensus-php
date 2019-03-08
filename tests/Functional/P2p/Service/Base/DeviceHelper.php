@@ -26,10 +26,7 @@ class DeviceHelper extends P2pHelper
             'type'             => 'mobile',
             'geocode'          => '12.971599,77.594566',
             'app_name'         => 'com.razorpay',
-            'sdk'              => [
-                'capability'       => '52000002000100040006',
-                'challenge'        => 'AUnhIkGYnGBK=='
-            ]
+            'sdk'              => []
         ];
 
         $this->content($request, $default, $content);
@@ -50,10 +47,7 @@ class DeviceHelper extends P2pHelper
         $this->resetContexts();
 
         $default = [
-            'sdk'   => [
-                'capability'       => '52000002000100040006',
-                'challenge'        => 'AUnhIkGYnGBK=='
-            ]
+            'sdk'   => []
         ];
 
         $this->content($request, $default, $content);
@@ -68,10 +62,15 @@ class DeviceHelper extends P2pHelper
         $request = $this->request('token/initiate');
 
         $default = [
-            'sdk' => [
-                'capability'    => '52000002000100040006',
-                'challenge'     => 'AUnhIkGYnGBK=='
-            ]
+            'ip'               => '179.0.0.1',
+            'os'               => 'android',
+            'os_version'       => '5.0.1',
+            'simid'            => '683729232343',
+            'uuid'             => '5637293534543',
+            'type'             => 'mobile',
+            'geocode'          => '12.971599,77.594566',
+            'app_name'         => 'com.razorpay',
+            'sdk' => []
         ];
 
         $this->content($request, $default, $content);
@@ -86,10 +85,7 @@ class DeviceHelper extends P2pHelper
         $request = $this->request($callback);
 
         $default = [
-            'sdk'   => [
-                'capability'       => '52000002000100040006',
-                'challenge'        => 'AUnhIkGYnGBK=='
-            ]
+            'sdk'              => []
         ];
 
         $this->content($request, $default, $content);

@@ -16,6 +16,7 @@ class Request
     const VALIDATE      = 'validate';
 
     private $type = null;
+    private $validate = [];
     private $callback = [];
     private $load = [];
 
@@ -65,23 +66,27 @@ class Request
 
     public function setValidate($validate)
     {
-        $this->load[self::VALIDATE] = $validate;
+        $this->validate = $validate;
         return $this;
     }
 
     public function setType(string $type)
     {
         $this->type = $type;
+        return $this;
     }
 
     public function setCallback(array $callback)
     {
         $this->callback = $callback;
+        return $this;
     }
 
     public function finish()
     {
         //$this->validate();
+
+        return $this;
     }
 
     public function type()
@@ -92,6 +97,11 @@ class Request
     public function callback()
     {
         return $this->callback;
+    }
+
+    public function validate()
+    {
+        return $this->validate;
     }
 
     public function toArrayBag(): ArrayBag

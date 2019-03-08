@@ -52,9 +52,15 @@ class DeviceTest extends TestCase
             'app_name'         => 'com.razorpay',
         ];
 
+        $register_token = $this->fixtures->createRegisterToken([
+            RegisterToken\Entity::DEVICE_DATA => $request,
+        ]);
+
         $this->gatewayInput = new ArrayBag();
 
-        $this->gatewayInput->put('sdk', $request);
+        $this->gatewayInput->put('sdk', new ArrayBag(['simId' => '0']));
+
+        $this->gatewayInput->put('register_token', $register_token->toArrayBag());
 
         $this->context->setGatewayData($this->gateway, Device\Action::INITIATE_VERIFICATION, $this->gatewayInput);
 
@@ -78,8 +84,8 @@ class DeviceTest extends TestCase
         $request = [
             Fields::SDK => [
                 Fields::STATUS                    => 'SUCCESS',
-                Fields::IS_DEVICE_BOUND           => "true",
-                Fields::IS_DEVICE_ACTIVATED       => "false",
+                Fields::IS_DEVICE_BOUND           => 'true',
+                Fields::IS_DEVICE_ACTIVATED       => 'false',
                 Fields::CUSTOMER_MOBILE_NUMBER    => '919742417121',
                 Fields::DEVICE_FINGERPRINT        => '61F275C82A0AECC4788FA'
             ]
@@ -126,7 +132,7 @@ class DeviceTest extends TestCase
 
         $this->gatewayInput->put('register_token', $register_token->toArrayBag());
 
-        $this->gatewayInput->put(Fields::SDK, $request[Fields::SDK]);
+        $this->gatewayInput->put(Fields::SDK, new ArrayBag($request[Fields::SDK]));
 
         $this->context->setGatewayData($this->gateway, Device\Action::VERIFICATION, $this->gatewayInput);
 

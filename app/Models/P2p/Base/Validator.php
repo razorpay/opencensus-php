@@ -53,8 +53,8 @@ class Validator extends Base\Validator
     protected function getCommonRules()
     {
         return [
-            Entity::GATEWAY => 'sometimes',
-            Entity::SDK     => 'sometimes',
+            Entity::CALLBACK    => 'sometimes',
+            Entity::SDK         => 'sometimes',
         ];
     }
 

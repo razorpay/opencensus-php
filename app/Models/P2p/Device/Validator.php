@@ -120,7 +120,16 @@ class Validator extends Base\Validator
 
     public function makeInitiateGetTokenRules()
     {
-        $rules = $this->makeRules([]);
+        $rules = $this->makeRules([
+            Entity::SIMID          => 'required',
+            Entity::UUID           => 'required',
+            Entity::TYPE           => 'required',
+            Entity::OS             => 'required',
+            Entity::OS_VERSION     => 'required',
+            Entity::APP_NAME       => 'required',
+            Entity::IP             => 'required',
+            Entity::GEOCODE        => 'required',
+        ]);
 
         return $rules;
     }

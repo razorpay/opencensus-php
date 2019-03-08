@@ -8,7 +8,7 @@ class Fields
     const PAYLOAD                   = 'payload';
     const ACTION                    = 'action';
     const SDK                       = 'sdk';
-    const GATEWAY                   = 'gateway';
+    const CALLBACK                  = 'callback';
     const CONTENT                   = 'content';
     const VALIDATE                  = 'validate';
     const API_ACTION                = 'api_action';

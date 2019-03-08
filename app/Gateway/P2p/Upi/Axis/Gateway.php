@@ -33,7 +33,7 @@ class Gateway extends Upi\Gateway
 
     protected function getTimeStamp()
     {
-        return (string)(Carbon::now(Timezone::IST)->getTimestamp() * 1000);
+        return (string) (Carbon::now(Timezone::IST)->getTimestamp() * 1000);
     }
 
     protected function toBoolean($value)
@@ -56,5 +56,15 @@ class Gateway extends Upi\Gateway
     protected function getMerchantCategoryCode()
     {
         return $this->config['merchant_category_code'];
+    }
+
+    protected function formatMerchantCustomerId($customerId)
+    {
+        return 'cust.' . $customerId;
+    }
+
+    protected function throwP2pGatewayException()
+    {
+        throw new \Exception('Hi!');
     }
 }

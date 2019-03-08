@@ -74,7 +74,7 @@ class Controller extends Controllers\Controller
         {
             $route = $this->action->toRoute($response['callback']['action']);
 
-            $gateway = http_build_query(['gateway' => $response['callback']['gateway']]);
+            $gateway = http_build_query(['callback' => $response['callback']['gateway']]);
 
             $response['callback'] = route($route, $response['callback']['input']) . '?' . $gateway;
         }

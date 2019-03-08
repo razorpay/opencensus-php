@@ -132,8 +132,8 @@ class Processor
         $mode        = $this->mode();
 
         // These two variables are passed directly to gateway and only gateway can validate these
-        $this->gatewayInput->put('sdk', $this->input->get('sdk'));
-        $this->gatewayInput->put('gateway', $this->input->get('gateway'));
+        $this->gatewayInput->put('sdk', $this->arrayBag($this->input->get('sdk', [])));
+        $this->gatewayInput->put('callback', $this->arrayBag($this->input->get('callback', [])));
 
         // Before passing input to gateway we will run basic check
         $this->modifyGatewayInput($this->gatewayInput);

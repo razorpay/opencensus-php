@@ -11,38 +11,26 @@ use RZP\Gateway\P2p\Upi\Contracts;
 use RZP\Gateway\P2p\Base\Response;
 use RZP\Gateway\P2p\Upi\Axis\Fields;
 use RZP\Gateway\P2p\Upi\Axis\Request;
+use RZP\Models\P2p\Device\DeviceToken;
 use RZP\Models\P2p\Device\RegisterToken;
+use RZP\Models\P2p\Base\Libraries\ArrayBag;
 use RZP\Gateway\P2p\Upi\Axis\Actions\DeviceAction;
 
 class DeviceGateway extends Gateway implements Contracts\DeviceGateway
 {
     protected $actionMap = DeviceAction::MAP;
 
-    public function startVerification(Response $response)
-    {
-
-    }
-
-    public function getVerificationStatus(Response $response)
-    {
-
-    }
-
-    public function refreshClToken(Response $response)
-    {
-
-    }
-
-    public function deregister(Response $response)
-    {
-
-    }
-
     public function initiateVerification(Response $response)
     {
-        $udfParameters = '';
+        $deviceData = $this->input->get(Device\Entity::REGISTER_TOKEN)->get(Fields::DEVICE_DATA);
 
-        $request = $this->getSessionToken($this->input, $udfParameters);
+        $merchantCustomerId = $this->formatMerchantCustomerId($deviceData[Device\Entity::CUSTOMER_ID]);
+        // Validate if DeviceData has SDK which has
+        $request = $this->getSessionTokenRequest();
+
+        $request->merge([
+            Fields::MERCHANT_CUSTOMER_ID  => $merchantCustomerId,
+        ]);
 
         $response->setRequest($request);
     }
@@ -51,108 +39,85 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
     {
         $sdk = $this->input->get(Fields::SDK);
 
-        $gateway = $this->input->get(Fields::GATEWAY);
+        $deviceData = $this->input->get(Device\Entity::REGISTER_TOKEN)->get(Fields::DEVICE_DATA);
 
-        switch ($gateway->get('action'))
+        $merchantCustomerId = $this->formatMerchantCustomerId($deviceData[Device\Entity::CUSTOMER_ID]);
+
+        $callack = $this->input->get(Fields::CALLBACK);
+
+        switch ($callack->get(Fields::ACTION))
         {
             case DeviceAction::GET_SESSION_TOKEN:
-                return $this->handleGetSessionToken();
+                $this->handleGetSessionToken(
+                    $response,
+                    [
+                        Fields::SIM_ID  => $deviceData[Fields::SDK][Fields::SIM_ID],
+                    ],
+                    [
+                        Fields::CUSTOMER_MOBILE_NUMBER  => $sdk->get(Fields::CUSTOMER_MOBILE_NUMBER),
+                        Fields::MERCHANT_CUSTOMER_ID    => $merchantCustomerId,
+                    ]);
+
+                break;
 
             case DeviceAction::BIND_DEVICE:
-                return $this->handleBindDevice();
+                $this->handleBindDevice(
+                    $response,
+                    [
+                        Fields::CUSTOMER_MOBILE_NUMBER  => $sdk->get(Fields::CUSTOMER_MOBILE_NUMBER),
+                        Fields::MERCHANT_CUSTOMER_ID    => $merchantCustomerId,
+                    ]);
+
+                break;
 
             default:
-                throw \Exception('why');
+                // As verification callback can only handle GET_SESSION_TOKEN or BIND_DEVICE
+                $this->throwP2pGatewayException();
         }
 
-        $registerToken = $this->input->get('register_token');
-
-        $isDeviceBound = $this->toBoolean($sdk[Fields::IS_DEVICE_BOUND]);
-
-        $isDeviceActivated = $this->toBoolean($sdk[Fields::IS_DEVICE_ACTIVATED]);
-        
-        if (($isDeviceBound === false) and ($isDeviceActivated === false))
-        {
-            $this->bindDevice($registerToken, $udfParameters);
-        }
-
-        //             $this->terminateDeviceBinding($response);
-        if (($isDeviceBound === true) and ($isDeviceActivated === false))
-        {
-            return $this->initiateActivateDeviceBinding($response);
-        }
-
-        if (($isDeviceBound === true) and ($isDeviceActivated === true))
+        if ($response->hasRequest() === false)
         {
             $response->setData([
-                Fields::TOKEN => $registerToken,
+                Fields::TOKEN       => $this->input->get(Device\Entity::REGISTER_TOKEN)->get(Fields::TOKEN),
                 Fields::DEVICE_DATA => [
-                    Device\Entity::CONTACT      => $sdk[Fields::CUSTOMER_MOBILE_NUMBER],
+                    Device\Entity::CONTACT           => $sdk->get(Fields::CUSTOMER_MOBILE_NUMBER),
+                    DeviceToken\Entity::GATEWAY_DATA => [
+                        Fields::DEVICE_FINGERPRINT      => $sdk->get(Fields::DEVICE_FINGERPRINT),
+                        Fields::MERCHANT_CUSTOMER_ID    => $merchantCustomerId,
+                    ],
                 ],
-                Fields::GATEWAY_DATA => [
-                    Fields::IS_DEVICE_BOUND     => $isDeviceBound,
-                    Fields::IS_DEVICE_ACTIVATED => $isDeviceActivated,
-                    Fields::DEVICE_FINGERPRINT  => $sdk[Fields::DEVICE_FINGERPRINT],
-                ]
             ]);
-            
-            return $response;
         }
     }
 
     public function initiateGetToken(Response $response)
     {
-        $sdk = $this->input->get(Fields::SDK);
+        $device = $this->getContextDevice();
+        $merchantCustomerId = $this->formatMerchantCustomerId($device->get(Device\Entity::CUSTOMER_ID));
 
-        $device = $this->context->getDevice();
+        // Validate if DeviceData has SDK which has
+        $request = $this->getSessionTokenRequest();
 
-        $udfParameters = '';
-
-        $attributes = [
-          Fields::MERCHANT_ID           => $this->getMerchantId(),
-          Fields::MERCHANT_CHANNEL_ID   => $this->getMerchantChannelId(),
-          Fields::MERCHANT_CUSTOMER_ID  => $device->getCustomerId(),
-          Fields::MCC                   => $this->getMerchantCategoryCode(),
-          Fields::SIM_ID                => $device->getSimid(),
-          Fields::TIMESTAMP             => $this->getTimeStamp(),
-          Fields::CURRENCY              => Currency::INR,
-          Fields::UDF_PARAMETERS        => $udfParameters
-        ];
-
-        $request = $this->initiateSdkRequest(DeviceAction::GET_SESSION_TOKEN);
-
-        $request->merge($attributes);
-
-        $request->setCallback();
-
-        $request->finish();
+        $request->merge([
+            Fields::MERCHANT_CUSTOMER_ID  => $merchantCustomerId,
+        ]);
 
         $response->setRequest($request);
-
-        return $response;
     }
 
     public function getToken(Response $response)
     {
         $sdk = $this->input->get(Fields::SDK);
 
-        $isDeviceBound = $this->toBoolean($sdk[Fields::IS_DEVICE_BOUND]);
-
-        $isDeviceActivated = $this->toBoolean($sdk[Fields::IS_DEVICE_ACTIVATED]);
-
-        if (($isDeviceBound === false) or ($isDeviceActivated === false))
+        if (($this->isDeviceBound($sdk) === false) or ($this->isDeviceActivated($sdk) === false))
         {
             // the device binding is not present, sdk needs to reinitiates device binding
             // need to check if we want to throw exception or set error in data
+            $this->throwP2pGatewayException();
         }
 
         $response->setData([
-            Fields::DEVICE_DATA => [
-                Device\Entity::CONTACT      => $sdk[Fields::CUSTOMER_MOBILE_NUMBER],
-            ],
-            Fields::SDK => [
-                Fields::IS_DEVICE_BOUND     => $isDeviceBound,
-                Fields::IS_DEVICE_ACTIVATED => $isDeviceActivated,
+            Fields::GATEWAY_DATA => [
                 Fields::DEVICE_FINGERPRINT  => $sdk[Fields::DEVICE_FINGERPRINT],
             ]
         ]);
@@ -160,36 +125,12 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
         return $response;
     }
 
-    private function initiateActivateDeviceBinding(Response $response)
+    public function deregister(Response $response)
     {
-        $sdk = $this->input->get(Fields::SDK);
 
-        $registerToken = $this->input->get('register_token');
-
-        $request = $this->initiateSdkRequest(DeviceAction::ACTIVATE_DEVICE_BINDING);
-
-        $deviceData = $registerToken->get(RegisterToken\Entity::DEVICE_DATA);
-
-        $udfParameters = '';
-
-        $attributes = [
-            Fields::SHOULD_ACTIVATE         => 'true',
-            Fields::CUSTOMER_MOBILE_NUMBER  => $sdk[Fields::CUSTOMER_MOBILE_NUMBER],
-            Fields::MERCHANT_CUSTOMER_ID    => $deviceData[Device\Entity::CUSTOMER_ID],
-            Fields::TIMESTAMP               => $this->getTimeStamp(),
-            Fields::UDF_PARAMETERS          => $udfParameters
-        ];
-
-        $request->merge($attributes);
-
-        $request->setCallback();
-
-        $request->finish();
-
-        $response->setRequest($request);
-
-        return $response;
     }
+
+
 
     private function terminateDeviceBinding(Response $response)
     {
@@ -203,60 +144,115 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
         ]);
     }
 
-    private function getSessionToken($input, $udfParameters)
+    private function handleGetSessionToken(
+        Response $response,
+        array $bindRequest,
+        array $activateBindingRequest)
     {
-        $attributes = [
-            Fields::MERCHANT_ID           => $this->getMerchantId(),
-            Fields::MERCHANT_CHANNEL_ID   => $this->getMerchantChannelId(),
-            Fields::MERCHANT_CUSTOMER_ID  => $input[Device\Entity::CUSTOMER_ID],
-            Fields::MCC                   => $this->getMerchantCategoryCode(),
-            Fields::SIM_ID                => $input[Device\Entity::SIMID],
-            Fields::TIMESTAMP             => $this->getTimeStamp(),
-            Fields::CURRENCY              => Currency::INR,
-            Fields::UDF_PARAMETERS        => $udfParameters
-        ];
+        $sdk = $this->input->get(Fields::SDK);
 
-        $request = $this->initiateSdkRequest(DeviceAction::GET_SESSION_TOKEN);
-
-        $request->merge($attributes);
-
-        $request->setCallback();
-
-        $request->finish();
-
-        return $request;
-    }
-
-    private function bindDevice($token, $udfParameters)
-    {
-        $attributes = [
-            Fields::SIM_ID          => $token[Device\Entity::SIMID],
-            Fields::UDF_PARAMETERS  => $udfParameters,
-        ];
-
-        $request = $this->initiateSdkRequest(DeviceAction::BIND_DEVICE);
-
-        $request->merge($attributes);
-
-        $request->setCallback();
-
-        $request->finish();
-
-        return $request;
-    }
-
-    private function handleGetSessionToken()
-    {
         if ($this->isSdkFailure())
         {
-            // Handle Error
+            $this->throwP2pGatewayException();
         }
 
+        if (($this->isDeviceBound($sdk) === false))
+        {
+            $request = $this->bindDeviceRequest();
 
+            $request->merge($bindRequest);
+
+            $response->setRequest($request);
+        }
+        else if ($this->isDeviceActivated($sdk) === false)
+        {
+            $request = $this->activateDeviceBindingRequest();
+
+            $request->merge($activateBindingRequest);
+
+            $response->setRequest($request);
+        }
     }
 
-    private function isSdkFailure()
+    private function handleBindDevice(Response $response)
     {
-        return $this->input->get(Fields::SDK)->get('status') != 'SUCCESS';
+        $sdk = $this->input->get(Fields::SDK);
+
+        if ($this->isSdkFailure())
+        {
+            $this->throwP2pGatewayException();
+        }
+
+        if (($this->isDeviceBound($sdk) === false))
+        {
+            // Should never come here as sdk can not be success for non bound device
+            $this->throwP2pGatewayException();
+        }
+        else if ($this->isDeviceActivated($sdk) === false)
+        {
+            $request = $this->activateDeviceBindingRequest();
+
+            $request->merge($activateBindingRequest);
+
+            $response->setRequest($request);
+        }
+    }
+
+    private function getSessionTokenRequest()
+    {
+        $request = $this->initiateSdkRequest(DeviceAction::GET_SESSION_TOKEN);
+
+        $request->merge([
+            Fields::MERCHANT_ID           => $this->getMerchantId(),
+            Fields::MERCHANT_CHANNEL_ID   => $this->getMerchantChannelId(),
+            Fields::MCC                   => $this->getMerchantCategoryCode(),
+            Fields::TIMESTAMP             => $this->getTimeStamp(),
+            Fields::CURRENCY              => Currency::INR,
+        ]);
+
+        $request->setCallback();
+
+        return $request;
+    }
+
+    private function bindDeviceRequest()
+    {
+        $request = $this->initiateSdkRequest(DeviceAction::BIND_DEVICE);
+
+        $request->setCallback();
+
+        return $request;
+    }
+
+    private function activateDeviceBindingRequest()
+    {
+        $request = $this->initiateSdkRequest(DeviceAction::ACTIVATE_DEVICE_BINDING);
+
+        $attributes = [
+            Fields::SHOULD_ACTIVATE         => 'true',
+            Fields::TIMESTAMP               => $this->getTimeStamp(),
+            Fields::UDF_PARAMETERS          => $udfParameters
+        ];
+
+        $request->merge($attributes);
+
+        $request->setCallback();
+
+        return $request;
+    }
+
+    private function isSdkFailure(): bool
+    {
+        return $this->input->get(Fields::SDK)->get(Fields::STATUS) != 'SUCCESS';
+    }
+
+    private function isDeviceBound(ArrayBag $sdk): bool
+    {
+        return $sdk->get(Fields::IS_DEVICE_BOUND) === 'true';
+    }
+
+    private function isDeviceActivated(ArrayBag $sdk): bool
+    {
+        return $sdk->get(Fields::IS_DEVICE_ACTIVATED) === 'true';
     }
 }

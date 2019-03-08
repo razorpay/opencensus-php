@@ -74,7 +74,7 @@ class Response
 
     public function setRequest(Request $request)
     {
-        $this->content[self::REQUEST] = $request;
+        $this->content[self::REQUEST] = $request->finish();
     }
 
     public function hasRequest(): bool

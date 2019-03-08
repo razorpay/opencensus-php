@@ -13,18 +13,33 @@ class DeviceTest extends TestCase
 
         $helper->withSchemaValidated();
 
-        $helper->initiateVerification();
+        $helper->initiateVerification([
+            'sdk' => [
+                'capability'       => '52000002000100040006',
+                'challenge'        => 'AUnhIkGYnGBK=='
+            ]
+        ]);
     }
 
     public function testVerification()
     {
         $helper = $this->getDeviceHelper();
 
-        $initiate = $helper->initiateVerification();
+        $initiate = $helper->initiateVerification([
+            'sdk' => [
+                'capability'       => '52000002000100040006',
+                'challenge'        => 'AUnhIkGYnGBK=='
+            ]
+        ]);
 
         $helper->withSchemaValidated();
 
-        $helper->verification($initiate['callback']);
+        $helper->verification($initiate['callback'], [
+            'sdk' => [
+                'capability'       => '52000002000100040006',
+                'challenge'        => 'AUnhIkGYnGBK=='
+            ]
+        ]);
     }
 
     public function testInitiateGetToken()
@@ -33,7 +48,12 @@ class DeviceTest extends TestCase
 
         $helper->withSchemaValidated();
 
-        $helper->initiateGetToken();
+        $helper->initiateGetToken([
+            'sdk' => [
+                'capability'       => '52000002000100040006',
+                'challenge'        => 'AUnhIkGYnGBK=='
+            ]
+        ]);
     }
 
     public function testGetToken()
@@ -44,7 +64,12 @@ class DeviceTest extends TestCase
 
         $helper->withSchemaValidated();
 
-        $helper->getToken($initiate['callback']);
+        $helper->getToken($initiate['callback'], [
+            'sdk' => [
+                'capability'       => '52000002000100040006',
+                'challenge'        => 'AUnhIkGYnGBK=='
+            ]
+        ]);
     }
 
     public function testDeviceDeregister()

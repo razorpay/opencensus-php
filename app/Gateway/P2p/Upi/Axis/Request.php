@@ -10,6 +10,7 @@ use RZP\Base\JitValidator;
 use RZP\Gateway\P2p\Upi\Axis\Gateway;
 use RZP\Gateway\P2p\Upi\Axis\GatewayTrait;
 use RZP\Gateway\P2p\Upi\Axis\Actions\Action;
+use RZP\Gateway\P2p\Upi\Axis\Actions\DeviceAction;
 
 class Request extends Base\Request
 {
@@ -25,11 +26,15 @@ class Request extends Base\Request
 
     protected $gatewayConfig;
 
+    protected $udf;
+
     public function setActionMap(string $action, $map)
     {
         $this->action = $action;
 
         $this->actionMap = $map;
+
+        $this->udf = [];
     }
 
     public function finish()
@@ -39,6 +44,8 @@ class Request extends Base\Request
             $this->validateInput($this->actionMap[Action::VALIDATOR]);
         }
 
+        $this->content->put(Fields::UDF_PARAMETERS, json_encode($this->udf));
+
         if (empty($this->actionMap[Action::SIGNATURE]) === false)
         {
            $sign = $this->sign($this->actionMap[Action::SIGNATURE]);
@@ -47,6 +54,8 @@ class Request extends Base\Request
         }
 
         $this->setRequestCommonProperties();
+
+        return parent::finish();
     }
 
     public function setCallback(array $attributes = [])
@@ -63,7 +72,9 @@ class Request extends Base\Request
             $this->content = new Collection($attributes);
         }
 
-        $this->content->merge($attributes);
+        $this->content = $this->content->merge($attributes);
+
+        return $this;
     }
 
     public function setGatewayConfig($config)
@@ -79,7 +90,20 @@ class Request extends Base\Request
 
         $this->setContent($this->content->toArray());
 
-        $this->setValidate($this->actionMap[Action::SDK_VALIDATE]);
+        //$this->setValidate($this->actionMap[Action::SDK_VALIDATE]);
+    }
+
+    public function setValidate($deviceFingerPrint)
+    {
+        $validate = [
+            self::ACTION      => DeviceAction::IS_DEVICE_FINGERPRINT_VALID,
+            self::CONTENT     => [
+                Fields::DEVICE_FINGERPRINT => $deviceFingerPrint,
+            ],
+            self::ID          => str_random()
+        ];
+
+        parent::setValidate($validate);
     }
 
     protected function validateInput($rules)
