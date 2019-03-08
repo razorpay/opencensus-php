@@ -77,8 +77,8 @@ class Role
     public function setProductRoles()
     {
         $this->productRoles = [
-            Product::PRIMARY => array_merge(self::ALL_ROLES, self::LINKED_ACCOUNT_ROLES),
-            Product::BANKING => self::BANKING_ROLES
+            Product::PRIMARY => array_merge(self::ALL_ROLES, self::LINKED_ACCOUNT_ROLES, self::RBL_ROLES),
+            Product::BANKING => self::BANKING_ROLES,
         ];
     }
 
