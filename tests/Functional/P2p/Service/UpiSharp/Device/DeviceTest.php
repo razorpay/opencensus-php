@@ -80,6 +80,6 @@ class DeviceTest extends TestCase
 
         $helper->deregisterDevice();
 
-        $this->assertTrue($this->fixtures->currentDeviceToken()->isExpired());
+        $this->assertTrue($this->fixtures->deviceToken(self::DEVICE_1, false)->isExpired());
     }
 }

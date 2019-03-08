@@ -130,19 +130,7 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
 
     }
 
-
-
-    private function terminateDeviceBinding(Response $response)
-    {
-        $sdk = $this->input->get(Fields::SDK);
-
-        $response->setData([
-            Fields::SDK_DATA => [
-                Fields::IS_DEVICE_BOUND     => $sdk(Fields::IS_DEVICE_BOUND),
-                Fields::IS_DEVICE_ACTIVATED => $sdk[Fields::IS_DEVICE_ACTIVATED],
-            ],
-        ]);
-    }
+    /*** PRIVATE METHODS ***/
 
     private function handleGetSessionToken(
         Response $response,
@@ -174,7 +162,9 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
         }
     }
 
-    private function handleBindDevice(Response $response)
+    private function handleBindDevice(
+        Response $response,
+        $activateBindingRequest)
     {
         $sdk = $this->input->get(Fields::SDK);
 
@@ -231,7 +221,6 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
         $attributes = [
             Fields::SHOULD_ACTIVATE         => 'true',
             Fields::TIMESTAMP               => $this->getTimeStamp(),
-            Fields::UDF_PARAMETERS          => $udfParameters
         ];
 
         $request->merge($attributes);

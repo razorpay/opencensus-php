@@ -83,15 +83,4 @@ class DeviceTest extends TestCase
             ]
         ]);
     }
-
-    public function testDeviceDeregister()
-    {
-        $helper = $this->getDeviceHelper();
-
-        $helper->withSchemaValidated();
-
-        $helper->deregisterDevice();
-
-        $this->assertTrue($this->fixtures->currentDeviceToken()->isExpired());
-    }
 }

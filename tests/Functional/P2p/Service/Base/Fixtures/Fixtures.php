@@ -125,6 +125,23 @@ class Fixtures extends Constants
 
     /**
      * @param string $deviceSetId
+     * @return P2p\Device\Entity
+     * @throws RuntimeException
+     */
+    public function deviceToken(string $deviceSetId, bool $verified = true): P2p\Device\DeviceToken\Entity
+    {
+        $tokens = $this->deviceSet($deviceSetId)->device->deviceTokens()->handle($this->handle);
+
+        if ($verified === true)
+        {
+            $tokens->verified();
+        }
+
+        return $tokens->first();
+    }
+
+    /**
+     * @param string $deviceSetId
      * @return P2p\Vpa\Handle\Entity
      * @throws RuntimeException
      */
@@ -255,25 +272,23 @@ class Fixtures extends Constants
         return $entity;
     }
 
-    /**
-     * @param bool $verified
-     * @return P2p\Device\DeviceToken\Entity
-     */
-    public function currentDeviceToken(bool $verified = false)
+    public function createRegisterToken(array $attributes): P2p\Device\RegisterToken\Entity
     {
-        $deviceToken = $this->device->deviceTokens()->handle($this->handle);
+        $defaults = [
+            P2p\Device\RegisterToken\Entity::DEVICE_DATA => [
+                P2p\Device\Entity::CUSTOMER_ID      => $this->customer->getPublicId(),
+                P2p\Device\Entity::IP               => '179.0.0.1',
+                P2p\Device\Entity::OS               => 'android',
+                P2p\Device\Entity::OS_VERSION       => '5.0.1',
+                P2p\Device\Entity::SIMID            => '0',
+                P2p\Device\Entity::UUID             => '5637293534543',
+                P2p\Device\Entity::TYPE             => 'mobile',
+                P2p\Device\Entity::GEOCODE          => '12.971599,77.594566',
+                P2p\Device\Entity::APP_NAME         => 'com.razorpay',
+            ]
+        ];
 
-        if ($verified === true)
-        {
-            $deviceToken->verified();
-        }
-
-        return $deviceToken->first();
-    }
-
-    public function createRegisterToken(array $attributes)
-    {
-        $entity = factory(P2p\Device\RegisterToken\Entity::class)->create($attributes);
+        $entity = factory(P2p\Device\RegisterToken\Entity::class)->create(array_merge($defaults, $attributes));
 
         return $entity;
     }
