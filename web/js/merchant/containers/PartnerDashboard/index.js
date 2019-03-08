@@ -6,6 +6,7 @@ import ApplicationEntity from 'merchant/containers/Applications/new';
 
 import SubMerchantList from './SubMerchant/List';
 import Settings from './Settings';
+import Commissions from './Commissions/List';
 
 export default function PartnerDashboard() {
   return (
@@ -27,6 +28,10 @@ export default function PartnerDashboard() {
           additionalCondition={user => user.isPartner('pure_platform')}
         >
           <NavLink to="/submerchants/applications">Applications</NavLink>
+        </ShowWhen>
+
+        <ShowWhen featureEnabled="show_commissions">
+          <NavLink to="/commissions">Transactional Details</NavLink>
         </ShowWhen>
       </header>
       <content>
@@ -56,6 +61,8 @@ export default function PartnerDashboard() {
             path="/submerchants/applications"
             component={Applications}
           />
+
+          <ShowWhenRoute path="/commissions" component={Commissions} />
 
           <Route path="/submerchants" component={SubMerchantList} />
         </Switch>

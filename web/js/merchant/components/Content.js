@@ -148,6 +148,12 @@ export default class Content extends Component {
           />
 
           <ShowWhenRoute
+            path="/commissions"
+            component={PartnerDashboard}
+            additionalCondition={user => user.isPartner()}
+          />
+
+          <ShowWhenRoute
             path="/payments"
             component={Transactions}
             additionalCondition={user => user.isAllowedView('payments')}
