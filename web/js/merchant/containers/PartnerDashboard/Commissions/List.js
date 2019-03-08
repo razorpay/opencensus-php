@@ -7,11 +7,20 @@ import DataTable from 'rzp/ui/Table/DataTable';
 
 import { commissionId } from 'rzp/ui/item/pair';
 
+import ListFilter from './ListFilter';
+
 @connect(state => ({ ...state.commisions }), { fetchAll })
 export default class CommissionList extends ListContainer {
   render() {
     return (
       <div class="content-wrapper">
+        <ListFilter
+          form="CommissionsListFilter"
+          type="link"
+          count={this.state.count}
+          onSubmit={this.search}
+        />
+
         <DataTable
           title="Commissions"
           columns={[commissionId]}
