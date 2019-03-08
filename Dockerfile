@@ -10,8 +10,8 @@ WORKDIR /app
 RUN apk add --allow-untrusted --no-cache \
     # gnu-libiconv is the only loaded from /edge/community. Was earlier /edge/testing
     # Version has not been bumped in repo move.
-    --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/ \
-    libxrender libx11-dev fontconfig zlib-dev gnu-libiconv \
+    --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/ gnu-libiconv && \
+    apk add --allow-untrusted --no-cache libxrender libx11-dev fontconfig zlib-dev \
     ca-certificates glib ttf-freefont dbus p7zip php7-sockets && \
     #https://github.com/gliderlabs/docker-alpine/issues/30#issuecomment-372020089
     update-ca-certificates 2>/dev/null && \
