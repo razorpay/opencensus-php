@@ -22,11 +22,10 @@ class Core extends Base\Core
      * @param Merchant\Entity $merchant
      * @param Base\PublicEntity|null $source
      * @return Entity
-     * @throws Exception\BaseException
      */
     public function create(array $input, Merchant\Entity $merchant, Base\PublicEntity $source = null): Entity
     {
-        $this->modifyValidationRequestToOldFormat($input);
+        $this->modifyRequestForBackwardCompatibility($input);
 
         $fundAccount = (new Entity)->build($input);
 
@@ -45,14 +44,23 @@ class Core extends Base\Core
         return $fundAccount;
     }
 
-    protected function modifyValidationRequestToOldFormat(array & $input)
+    protected function modifyRequestForBackwardCompatibility(array & $input)
     {
-        if (isset($input[Validation\FundAccountType::BANK_ACCOUNT]))
+        if (isset($input[Entity::DETAILS]) === false)
         {
-            $input[Entity::DETAILS] = $input[Validation\FundAccountType::BANK_ACCOUNT];
-
-            unset($input[Validation\FundAccountType::BANK_ACCOUNT]);
+            return;
         }
+
+        if (isset($input[Entity::ACCOUNT_TYPE]) === false)
+        {
+            return;
+        }
+
+        $accountType = $input[Entity::ACCOUNT_TYPE];
+
+        $input[$accountType] = $input[Entity::DETAILS];
+
+        unset($input[Entity::DETAILS]);
     }
 
     protected function createAccount(array $input,
@@ -61,7 +69,7 @@ class Core extends Base\Core
     {
         $accountType = $input[Entity::ACCOUNT_TYPE];
 
-        $accountInput = $input[Entity::DETAILS];
+        $accountInput = $input[$accountType];
 
         $account = null;
 
