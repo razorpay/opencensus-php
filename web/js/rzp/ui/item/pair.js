@@ -59,6 +59,7 @@ export const tokenId = { title: 'Token Id', value: id.token };
 export const creditId = { title: 'Credit Id', value: id.credit };
 export const submerchant = { title: 'Merchant Name', value: id.submerchant };
 export const submerchantId = { title: 'Merchant ID', value: id.submerchantId };
+export const commissionId = { title: 'Commission ID', value: id.commission };
 
 export const mapValues = values => title => {
   return { title, value: item => values[item.id] };
