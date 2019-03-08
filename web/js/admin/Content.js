@@ -20,6 +20,7 @@ import GenericEntity from 'admin/entities/Entity';
 import MerchantActivationForm from 'admin/merchants/entity/MerchantActivationForm';
 import MerchantAnalyticStats from 'admin/merchants/entity/MerchantAnalyticStats';
 import MerchantReportConfig from 'admin/merchants/entity/MerchantReportConfig/List';
+import PartnerConfig from 'admin/merchants/entity/PartnerConfig/List';
 
 import WorkflowEntity from 'admin/workflows/Entity';
 import WorkflowList from 'admin/workflows/List';
@@ -113,6 +114,7 @@ export default ({ location }) => (
       path="/merchants/:id/report_config"
       component={MerchantReportConfig}
     />
+    <Route path="/merchants/:id/partner_config" component={PartnerConfig} />
     <Route path="/merchants/:id" component={MerchantEntity} />
     <Route path="/merchants" component={MerchantList} />
     <Route path="/pricing-plans" component={PlanList} />
