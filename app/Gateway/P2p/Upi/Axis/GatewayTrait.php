@@ -13,12 +13,22 @@ trait GatewayTrait
 
     protected function generateSignature($input, $key)
     {
-        $privateKey = $this->getPrivateKey();
+        $key = $this->getPrivateKey();
+
+        $key = str_replace('\n', "\n", $key);
 
         $rsa = new RSA();
 
-        $rsa->loadKey($privateKey);
+        $rsa->loadKey($key, RSA::PRIVATE_FORMAT_PKCS1);
 
-        return base64_encode($rsa->sign(base64_decode($input)));
+        $rsa->setHash('sha256');
+
+        $rsa->setMGFHash('sha256');
+
+        $rsa->setSignatureMode(RSA::SIGNATURE_PSS);
+
+        $signature = bin2hex($rsa->sign($input));
+
+        return $signature;
     }
 }
