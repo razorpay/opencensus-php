@@ -86,10 +86,11 @@ class Context
         // We are only going to set the context entities if the are available in basic auth.
         $basicAuth = app('basicauth');
 
-        if ($basicAuth->getMerchant() instanceof Merchant\Entity)
+        if (($basicAuth->getMerchant() instanceof Merchant\Entity) === false)
         {
-            $this->setMerchant($basicAuth->getMerchant());
+            $this->throwContextException('Merchant has be context');
         }
+        $this->setMerchant($basicAuth->getMerchant());
 
         if ($basicAuth->getDevice() instanceof Device\Entity)
         {
@@ -149,7 +150,7 @@ class Context
         // Basic auth already takes care of device owner, here we are only enforcing it.
         if ($this->merchant->getId() !== $device->getMerchantId())
         {
-            throw new LogicException('Device does not belong to merchant in context');
+            $this->throwContextException('Device does not belong to merchant in context');
         }
 
         $this->device = $device;
@@ -300,6 +301,14 @@ class Context
     public function handleCode(): string
     {
         return $this->handle->getCode();
+    }
+
+    public function validateMerchant(Merchant\Entity $merchant)
+    {
+        if ($this->merchant->getId() !== $merchant->getId())
+        {
+            $this->throwContextException('Wrong merchant in context');
+        }
     }
 
     /**

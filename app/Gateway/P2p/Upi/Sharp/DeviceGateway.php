@@ -27,7 +27,7 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
         $response->setData([
             'token'    => $this->input->get('register_token')->get('token'),
             'device_data' => [
-                'contact'      => '919876543210',
+                'contact'      => $this->input->get('sdk')->get('contact', '919876543210'),
                 'gateway_data' => [
                     'gateway_device_id' => str_random(16),
                 ],

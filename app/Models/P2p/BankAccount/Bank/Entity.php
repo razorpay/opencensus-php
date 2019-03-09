@@ -55,6 +55,7 @@ class Entity extends Base\Entity
     ];
 
     protected $public = [
+        Entity::ID,
         Entity::ENTITY,
         Entity::IFSC,
         Entity::NAME,

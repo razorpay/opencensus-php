@@ -13,33 +13,18 @@ class DeviceTest extends TestCase
 
         $helper->withSchemaValidated();
 
-        $helper->initiateVerification([
-            'sdk' => [
-                'capability'       => '52000002000100040006',
-                'challenge'        => 'AUnhIkGYnGBK=='
-            ]
-        ]);
+        $helper->initiateVerification($this->getMockedSdkData());
     }
 
     public function testVerification()
     {
         $helper = $this->getDeviceHelper();
 
-        $initiate = $helper->initiateVerification([
-            'sdk' => [
-                'capability'       => '52000002000100040006',
-                'challenge'        => 'AUnhIkGYnGBK=='
-            ]
-        ]);
+        $initiate = $helper->initiateVerification($this->getMockedSdkData());
 
         $helper->withSchemaValidated();
 
-        $helper->verification($initiate['callback'], [
-            'sdk' => [
-                'capability'       => '52000002000100040006',
-                'challenge'        => 'AUnhIkGYnGBK=='
-            ]
-        ]);
+        $helper->verification($initiate['callback'], $this->getMockedSdkData());
     }
 
     public function testInitiateGetToken()
@@ -48,12 +33,7 @@ class DeviceTest extends TestCase
 
         $helper->withSchemaValidated();
 
-        $helper->initiateGetToken([
-            'sdk' => [
-                'capability'       => '52000002000100040006',
-                'challenge'        => 'AUnhIkGYnGBK=='
-            ]
-        ]);
+        $helper->initiateGetToken($this->getMockedSdkData());
     }
 
     public function testGetToken()
@@ -64,12 +44,7 @@ class DeviceTest extends TestCase
 
         $helper->withSchemaValidated();
 
-        $helper->getToken($initiate['callback'], [
-            'sdk' => [
-                'capability'       => '52000002000100040006',
-                'challenge'        => 'AUnhIkGYnGBK=='
-            ]
-        ]);
+        $helper->getToken($initiate['callback'], $this->getMockedSdkData());
     }
 
     public function testDeviceDeregister()
@@ -81,5 +56,34 @@ class DeviceTest extends TestCase
         $helper->deregisterDevice();
 
         $this->assertTrue($this->fixtures->deviceToken(self::DEVICE_1, false)->isExpired());
+    }
+
+    public function testEditSameDevide()
+    {
+        $device = $this->fixtures->device;
+
+        $helper = $this->getDeviceHelper();
+
+        $initiate = $helper->initiateVerification();
+
+        $authToken = $device->getAuthToken();
+
+        $helper->verification($initiate['callback'], $this->getMockedSdkData([
+            'contact' => $device->getContact(),
+        ]));
+
+        $device->reload();
+
+        $this->assertNotSame($authToken, $device->getAuthToken());
+    }
+
+    private function getMockedSdkData(array $override = [])
+    {
+        return [
+            'sdk' => array_filter(array_merge([
+                'capability'       => '52000002000100040006',
+                'challenge'        => 'AUnhIkGYnGBK=='
+            ], $override))
+        ];
     }
 }

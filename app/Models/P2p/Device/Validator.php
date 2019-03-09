@@ -8,6 +8,7 @@ use RZP\Models\P2p\Device\RegisterToken;
 
 class Validator extends Base\Validator
 {
+    protected static $editRules;
     protected static $initiateVerificationRules;
     protected static $initiateVerificationSuccessRules;
     protected static $verificationRules;
@@ -60,17 +61,7 @@ class Validator extends Base\Validator
 
     public function makeEditRules()
     {
-        $rules = $this->makeRules([
-            Entity::UUID            => 'required',
-            Entity::TYPE            => 'required',
-            Entity::OS              => 'required',
-            Entity::OS_VERSION      => 'required',
-            Entity::APP_NAME        => 'required',
-            Entity::IP              => 'required',
-            Entity::GEOCODE         => 'required',
-        ]);
-
-        return $rules;
+        return $this->makeCreateRules();
     }
 
     public function makeInitiateVerificationRules()

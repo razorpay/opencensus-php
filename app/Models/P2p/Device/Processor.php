@@ -19,6 +19,12 @@ class Processor extends Base\Processor
     {
         $this->initialize(Action::INITIATE_VERIFICATION, $input, true);
 
+        $customer = $this->core->getDeviceCustomer($input[Entity::CUSTOMER_ID]);
+
+        $this->context()->validateMerchant($customer->merchant);
+
+        $this->input->put(Entity::CUSTOMER_ID, $customer->getId());
+
         $registerToken = (new RegisterToken\Core)->createWithDeviceData($this->input->toArray());
 
         $this->gatewayInput->put(Entity::REGISTER_TOKEN, $registerToken);

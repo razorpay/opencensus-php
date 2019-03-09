@@ -15,18 +15,20 @@ class Core extends Base\Core
 {
     public function createOrUpdate(array $input): Entity
     {
-        // First we will try to find the device for same sim,
-        // merchant and app name. Here we will check for UUID.
-        $existing = $this->repo->findByDeviceProperties(array_only($input, [
-            Entity::SIMID,
-            Entity::APP_NAME
-        ]));
+        // First we will make sure that customer exists and belongs to same merchant
+        $customer = $this->getDeviceCustomer($input[Entity::CUSTOMER_ID], false);
 
-        // If device exists we will update the device details and regenerate the auth_token
+        // Then we will check if there are devices already created for customer
+        $existing = $this->repo->findByDeviceProperties([
+            Entity::CUSTOMER_ID => $customer->getId(),
+            Entity::CONTACT     => $input[Entity::CONTACT],
+        ]);
+
         if ($existing)
         {
             $existing->edit($input);
 
+            // This will make sure older device doesn't work
             $existing->generateAuthToken();
 
             $this->repo->saveOrFail($existing);
@@ -39,7 +41,6 @@ class Core extends Base\Core
 
         $device->build($input);
 
-        $customer = $this->getDeviceCustomer($input[Entity::CUSTOMER_ID]);
         $device->customer()->associate($customer);
 
         $this->repo->saveOrFail($device);
@@ -47,9 +48,12 @@ class Core extends Base\Core
         return $device;
     }
 
-    protected function getDeviceCustomer(string $customerId): Customer\Entity
+    public function getDeviceCustomer(string $customerId, bool $signed = true): Customer\Entity
     {
-        Customer\Entity::verifyIdAndStripSign($customerId);
+        if ($signed === true)
+        {
+            Customer\Entity::verifyIdAndStripSign($customerId);
+        }
 
         return $this->repo()->customer->findOrFailPublic($customerId);
     }
