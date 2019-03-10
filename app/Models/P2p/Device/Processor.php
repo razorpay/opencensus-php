@@ -62,6 +62,7 @@ class Processor extends Base\Processor
         $registerToken = (new RegisterToken\Core)->retrieveById($token);
 
         $this->gatewayInput->put(Entity::REGISTER_TOKEN, $registerToken);
+        $this->callbackInput->push($registerToken->getToken());
 
         return $this->callGateway();
     }

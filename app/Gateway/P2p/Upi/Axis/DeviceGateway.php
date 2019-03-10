@@ -10,7 +10,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Gateway\P2p\Upi\Contracts;
 use RZP\Gateway\P2p\Base\Response;
 use RZP\Gateway\P2p\Upi\Axis\Fields;
-use RZP\Gateway\P2p\Upi\Axis\Request;
+use RZP\Gateway\P2p\Upi\Axis\Sdk;
 use RZP\Models\P2p\Device\DeviceToken;
 use RZP\Models\P2p\Device\RegisterToken;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
@@ -25,6 +25,7 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
         $deviceData = $this->input->get(Device\Entity::REGISTER_TOKEN)->get(Fields::DEVICE_DATA);
 
         $merchantCustomerId = $this->formatMerchantCustomerId($deviceData[Device\Entity::CUSTOMER_ID]);
+
         // Validate if DeviceData has SDK which has
         $request = $this->getSessionTokenRequest();
 
@@ -43,19 +44,15 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
 
         $merchantCustomerId = $this->formatMerchantCustomerId($deviceData[Device\Entity::CUSTOMER_ID]);
 
-        $callack = $this->input->get(Fields::CALLBACK);
+        $callback = $this->input->get(Fields::CALLBACK);
 
-        switch ($callack->get(Fields::ACTION))
+        switch ($callback->get(Fields::ACTION))
         {
             case DeviceAction::GET_SESSION_TOKEN:
                 $this->handleGetSessionToken(
                     $response,
                     [
                         Fields::SIM_ID  => $deviceData[Fields::SDK][Fields::SIM_ID],
-                    ],
-                    [
-                        Fields::CUSTOMER_MOBILE_NUMBER  => $sdk->get(Fields::CUSTOMER_MOBILE_NUMBER),
-                        Fields::MERCHANT_CUSTOMER_ID    => $merchantCustomerId,
                     ]);
 
                 break;
@@ -93,6 +90,7 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
     public function initiateGetToken(Response $response)
     {
         $device = $this->getContextDevice();
+
         $merchantCustomerId = $this->formatMerchantCustomerId($device->get(Device\Entity::CUSTOMER_ID));
 
         // Validate if DeviceData has SDK
@@ -134,8 +132,7 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
 
     private function handleGetSessionToken(
         Response $response,
-        array $bindRequest,
-        array $activateBindingRequest)
+        array $bindRequest)
     {
         $sdk = $this->input->get(Fields::SDK);
 
@@ -144,19 +141,15 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
             $this->throwP2pGatewayException();
         }
 
-        if (($this->isDeviceBound($sdk) === false))
+        // we are intentionally calling bind device and not giving the control to session token api
+        // to activate device binding. This is being done to avoid cases where token can expire and we are
+        // in the middle of activation. Bind device is the call that can take maximum time so
+        // we want that bind device and activate bind device happen in one go.
+        if ($this->isDeviceActivated($sdk) === false)
         {
             $request = $this->bindDeviceRequest();
 
             $request->merge($bindRequest);
-
-            $response->setRequest($request);
-        }
-        else if ($this->isDeviceActivated($sdk) === false)
-        {
-            $request = $this->activateDeviceBindingRequest();
-
-            $request->merge($activateBindingRequest);
 
             $response->setRequest($request);
         }
@@ -219,7 +212,7 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
         $request = $this->initiateSdkRequest(DeviceAction::ACTIVATE_DEVICE_BINDING);
 
         $attributes = [
-            Fields::SHOULD_ACTIVATE         => 'true',
+            Fields::SHOULD_ACTIVATE         => 'true', // ToDo to handle these string conversions at one place
             Fields::TIMESTAMP               => $this->getTimeStamp(),
         ];
 

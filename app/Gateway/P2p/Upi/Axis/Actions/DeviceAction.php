@@ -4,7 +4,7 @@ namespace RZP\Gateway\P2p\Upi\Axis\Actions;
 
 use RZP\Models\P2p\Device;
 use RZP\Gateway\P2p\Upi\Axis\Fields;
-use RZP\Gateway\P2p\Upi\Axis\Request;
+use RZP\Gateway\P2p\Upi\Axis\Sdk;
 
 class DeviceAction extends Action
 {

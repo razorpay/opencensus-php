@@ -8,14 +8,15 @@ use RZP\Constants\Mode;
 use RZP\Gateway\P2p\Base;
 use RZP\Base\JitValidator;
 use RZP\Gateway\P2p\Upi\Axis\Gateway;
-use RZP\Gateway\P2p\Upi\Axis\GatewayTrait;
 use RZP\Gateway\P2p\Upi\Axis\Actions\Action;
 use RZP\Gateway\P2p\Upi\Axis\Actions\DeviceAction;
 
-class Request extends Base\Request
+/*
+ * This class is responsible for running validators, generating signature
+ * and other request properties for communicating with Axis Sdk.
+ */
+class Sdk extends Base\Request
 {
-    use GatewayTrait;
-
     const AXIS = 'axis';
 
     protected $action;
@@ -24,7 +25,7 @@ class Request extends Base\Request
 
     protected $content;
 
-    protected $gatewayConfig;
+    protected $sdkPrivateKey;
 
     protected $udf;
 
@@ -50,7 +51,7 @@ class Request extends Base\Request
         {
            $str = $this->getSignatureString($this->actionMap[Action::SIGNATURE]);
 
-           $sign = $this->generateSignature($str);
+           $sign = Gateway::generateSignature($str, $this->sdkPrivateKey);
 
            $this->content->put(Fields::MERCHANT_SIGNATURE, $sign);
         }
@@ -79,9 +80,22 @@ class Request extends Base\Request
         return $this;
     }
 
-    public function setGatewayConfig($config)
+    public function setSdkPrivateKey($key)
     {
-        $this->gatewayConfig = $config;
+        $this->sdkPrivateKey = $key;
+    }
+
+    public function setValidate($deviceFingerPrint)
+    {
+        $validate = [
+            self::ACTION  => DeviceAction::IS_DEVICE_FINGERPRINT_VALID,
+            self::CONTENT => [
+                Fields::DEVICE_FINGERPRINT => $deviceFingerPrint,
+            ],
+            self::ID      => str_random(14)
+        ];
+
+        parent::setValidate($validate);
     }
 
     protected function setRequestCommonProperties()
@@ -91,19 +105,6 @@ class Request extends Base\Request
         $this->setAction($this->action);
 
         $this->setContent($this->content->toArray());
-    }
-
-    public function setValidate($deviceFingerPrint)
-    {
-        $validate = [
-            self::ACTION      => DeviceAction::IS_DEVICE_FINGERPRINT_VALID,
-            self::CONTENT     => [
-                Fields::DEVICE_FINGERPRINT => $deviceFingerPrint,
-            ],
-            self::ID          => str_random()
-        ];
-
-        parent::setValidate($validate);
     }
 
     protected function validateInput($rules)
@@ -123,10 +124,5 @@ class Request extends Base\Request
         }
 
         return $str;
-    }
-
-    protected function getPrivateKey()
-    {
-        return $this->gatewayConfig['private_key'];
     }
 }

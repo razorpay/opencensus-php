@@ -3,30 +3,46 @@
 namespace RZP\Gateway\P2p\Upi\Axis;
 
 use Carbon\Carbon;
+use phpseclib\Crypt\RSA;
 
 use RZP\Gateway\P2p\Upi;
 use RZP\Constants\Timezone;
-use RZP\Gateway\P2p\Upi\Axis\Request;
-use RZP\Gateway\P2p\Upi\Axis\GatewayTrait;
+use RZP\Gateway\P2p\Upi\Axis\Sdk;
 
 class Gateway extends Upi\Gateway
 {
-    use GatewayTrait;
-
     protected $actionMap = [];
 
     protected $gateway = 'p2p_upi_axis';
 
+    public static function generateSignature($input, $key)
+    {
+        $key = str_replace('\n', "\n", $key);
+
+        $rsa = new RSA();
+
+        $rsa->loadKey($key, RSA::PRIVATE_FORMAT_PKCS1);
+
+        $rsa->setHash('sha256');
+
+        $rsa->setMGFHash('sha256');
+
+        $rsa->setSignatureMode(RSA::SIGNATURE_PSS);
+
+        $signature = bin2hex($rsa->sign($input));
+
+        return $signature;
+    }
+
     protected function initiateSdkRequest(string $action)
     {
-        $request = new Request([
-            'id'        => $this->getSdkRequestId(),
-            'action'    => $action,
+        $request = new Sdk([
+            'id'=> $this->getSdkRequestId(),
         ]);
 
         $request->setActionMap($action, $this->actionMap[$action]);
 
-        $request->setGatewayConfig($this->config);
+        $request->setSdkPrivateKey($this->config['private_key']);
 
         return $request;
     }
@@ -67,5 +83,10 @@ class Gateway extends Upi\Gateway
     {
         // .Todo Need to fix the implementation
         throw new \Exception('Hi!');
+    }
+
+    protected function getSdkRequestId()
+    {
+        return str_random(14);
     }
 }
