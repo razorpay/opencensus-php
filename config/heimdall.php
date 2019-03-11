@@ -674,6 +674,13 @@ return [
         PermissionCategory::REPORTING => [
             Permission::CREATE_SELF_SERVE_REPORT => 'Create Self Serve reporting configs',
         ],
+
+        PermissionCategory::SUBSCRIPTIONS => [
+            Permission::MODIFY_SUBSCRIPTION_DATA => [
+                'description' => 'Modify subscriptions form admin dashboard',
+                'assignable'  => true
+            ]
+        ]
     ],
 
     'workflows' => [

@@ -362,7 +362,7 @@ return [
                 'search_analyzer' => 'standard',
             ],
             'balance' => [
-                'type' => 'integer',
+                'type' => 'long',
             ]
         ],
     ],

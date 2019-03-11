@@ -218,6 +218,7 @@ class Name
     const CREATE_PROMOTION_COUPON             = 'create_promotion_coupon';
     const RAZORX_APPROVERS                    = 'razorx_approvers';
     const USER_PASSWORD_RESET                 = 'user_password_reset';
+    const MODIFY_SUBSCRIPTION_DATA            = 'modify_subscription_data';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,

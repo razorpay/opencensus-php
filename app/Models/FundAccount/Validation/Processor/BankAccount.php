@@ -94,25 +94,28 @@ class BankAccount extends Base
      */
     public function updateWithDetailsBeforeFtaRecon(array $input)
     {
-        if ($this->validation->getStatus() === Status::COMPLETED)
+        $this->repo->transaction(function () use ($input)
         {
-            // Validation is already processed.
-            // We might have reached here because of status check API call on FTA.
-            return;
-        }
+            if ($this->validation->getStatus() === Status::COMPLETED)
+            {
+                // Validation is already processed.
+                // We might have reached here because of status check API call on FTA.
+                return;
+            }
 
-        $beneficiaryName = $input['beneficiary_name'];
+            $beneficiaryName = $input['beneficiary_name'];
 
-        if ((empty($beneficiaryName) === false) and ($beneficiaryName !== 'NA'))
-        {
-            $this->markValidationAsCompleted(AccountStatus::ACTIVE);
+            if ((empty($beneficiaryName) === false) and ($beneficiaryName !== 'NA'))
+            {
+                $this->markValidationAsCompleted(AccountStatus::ACTIVE);
 
-            $this->validation->setRegisteredName($beneficiaryName);
+                $this->validation->setRegisteredName($beneficiaryName);
 
-            $this->repo->saveOrFail($this->validation);
+                $this->repo->saveOrFail($this->validation);
 
-            $this->triggerValidationCompletedWebhook();
-        }
+                $this->triggerValidationCompletedWebhook();
+            }
+        });
     }
 
     /**
@@ -193,40 +196,43 @@ class BankAccount extends Base
      */
     protected function updateValidationAfterFtaFailed(array $input)
     {
-        if ($this->validation->getStatus() === Status::COMPLETED)
+        $this->repo->transaction(function () use ($input)
         {
-            // This probably happened because FTA status might have moved from Initiated(with beneficiary name) to failed.
+            if ($this->validation->getStatus() === Status::COMPLETED)
+            {
+                // This probably happened because FTA status might have moved from Initiated(with beneficiary name) to failed.
 
-            $this->slack->queue(
-                'Validation is already processed. Cannot mark it as failed now.',
-                [
-                    'input' => $input,
-                    'validation_status' => $this->validation->getStatus(),
-                ],
-                Constants::slackSettings()
-            );
+                $this->slack->queue(
+                    'Validation is already processed. Cannot mark it as failed now.',
+                    [
+                        'input' => $input,
+                        'validation_status' => $this->validation->getStatus(),
+                    ],
+                    Constants::slackSettings()
+                );
 
-            throw new Exception\LogicException('Validation is already processed. Should not have reached here');
-        }
+                throw new Exception\LogicException('Validation is already processed. Should not have reached here');
+            }
 
-        if ($input['internal_error'] === false)
-        {
-            $this->markValidationAsCompleted(AccountStatus::INVALID);
+            if ($input['internal_error'] === false)
+            {
+                $this->markValidationAsCompleted(AccountStatus::INVALID);
 
-            $this->repo->saveOrFail($this->validation);
+                $this->repo->saveOrFail($this->validation);
 
-            $this->triggerValidationCompletedWebhook();
-        }
-        else
-        {
-            $this->slack->queue(
-                'Penny Testing Failed due to critical reasons.',
-                [
-                    'input' => $input,
-                    'validation_status' => $this->validation->getStatus(),
-                ],
-                Constants::slackSettings()
-            );
-        }
+                $this->triggerValidationCompletedWebhook();
+            }
+            else
+            {
+                $this->slack->queue(
+                    'Penny Testing Failed due to critical reasons.',
+                    [
+                        'input' => $input,
+                        'validation_status' => $this->validation->getStatus(),
+                    ],
+                    Constants::slackSettings()
+                );
+            }
+        });
     }
 }

@@ -27,7 +27,7 @@ class Factory
             if (Route::currentRouteName() === 'payment_create_subscriptions')
             {
                 // Used for subscription service charges, eg. test_charge, manual_charge, cron, etc.
-                $merchantFeatureCheck = $merchant->isFeatureEnabled(Feature\Constants::SUBSCRIPTION_V2);
+                $merchantFeatureCheck = true;
             }
             else
             {
