@@ -24,10 +24,6 @@ class Gateway extends Base\Gateway
 
         $request = $this->getMozartRequestArray($input);
 
-        $traceReq = $this->getRedactedData($request);
-
-        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
-
         $response = $this->sendGatewayRequest($request);
 
         $traceRes = $this->getRedactedData($response);
@@ -61,15 +57,15 @@ class Gateway extends Base\Gateway
 
         $gateway = $input['gateway'];
 
+        $traceRes = $this->getRedactedData($gateway);
+
+        $this->traceGatewayPaymentRequest($traceRes, $input, TraceCode::PAYMENT_CALLBACK_REQUEST );
+
         unset($input['gateway']);
 
         $input['gateway']['redirect'] = $gateway;
 
         $request = $this->getMozartRequestArray($input);
-
-        $traceReq = $this->getRedactedData($request);
-
-        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_PAYMENT_REQUEST);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -102,10 +98,6 @@ class Gateway extends Base\Gateway
 
         $request = $this->getMozartRequestArray($input);
 
-        $traceReq = $this->getRedactedData($request);
-
-        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_REFUND_REQUEST);
-
         $response = $this->sendGatewayRequest($request);
 
         $traceRes = $this->getRedactedData($response);
@@ -137,10 +129,6 @@ class Gateway extends Base\Gateway
 
         $request = $this->getMozartRequestArray($input);
 
-        $traceReq = $this->getRedactedData($request);
-
-        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_REFUND_VERIFY_REQUEST);
-
         $response = $this->sendGatewayRequest($request);
 
         $traceRes = $this->getRedactedData($response);
@@ -163,10 +151,6 @@ class Gateway extends Base\Gateway
         $input = $verify->input;
 
         $request = $this->getMozartRequestArray($input);
-
-        $traceReq = $this->getRedactedData($request);
-
-        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -331,6 +315,8 @@ class Gateway extends Base\Gateway
         unset($data['Key']);
 
         unset($data['Card']['number']);
+
+        unset($data['otp']);
 
         return $data;
     }
