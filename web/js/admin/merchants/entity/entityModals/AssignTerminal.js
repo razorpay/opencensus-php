@@ -18,6 +18,7 @@ const gatewayMapping = {
   hdfc: 'HDFC',
   amex: 'Amex',
   atom: 'Atom',
+  bajajfinserv: 'Bajaj Finserv',
   cardless_emi: 'Cardless EMI',
   axis_migs: 'Axis MIGS',
   axis_genius: 'Axis Genius',
@@ -249,7 +250,6 @@ export default class TerminalForm extends Component {
 
   render() {
     const { isEditMode, handleEdit, entity } = this.props;
-
     const gateways = isOrgHDFC() ? HDFC_gatewayMapping : gatewayMapping;
     const gatewayAcquirers = isOrgHDFC()
       ? HDFC_gatewayAcquirerMapping
