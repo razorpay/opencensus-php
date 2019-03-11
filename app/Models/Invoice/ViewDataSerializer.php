@@ -105,6 +105,7 @@ class ViewDataSerializer extends Base\Core
         switch ($merchantId)
         {
             case Preferences::MID_RBLCARD:
+            case Preferences::MID_RBLBFL:
             case Preferences::MID_AMIT_RBLCARD:
 
                 $customLabels = [

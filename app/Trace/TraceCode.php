@@ -1577,6 +1577,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REFUND_REVERSAL_INITIATED                  = 'REFUND_REVERSAL_INITIATED';
     const REFUND_REVERSAL_FAILED                     = 'REFUND_REVERSAL_FAILED';
 
+    const FTA_TRANSFER_DISPATCH                 = 'FTA_DISPATCH_TRANSFER';
+    const FTA_TRANSFER_DISPATCH_FAILED          = 'FTA_TRANSFER_DISPATCH_FAILED';
     const FTA_MERCHANT_BENE_REG_INIT            = 'FTA_MERCHANT_BENE_REG_INIT';
     const FTA_MERCHANT_BENE_REG_COMPLETE        = 'FTA_MERCHANT_BENE_REG_COMPLETE';
     const FTA_DISPATCH_FOR_MERCHANT_INIT        = 'FTA_DISPATCH_FOR_MERCHANT_INIT';
@@ -1599,6 +1601,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_RECONCILIATION_JOB_RELEASED     = 'FTA_RECONCILIATION_JOB_RELEASED';
 
     // Commission trace codes
+    const COMMISSION_LOGGED                             = 'COMMISSION_LOGGED';
     const COMMISSION_CREATED                            = 'COMMISSION_CREATED';
     const COMMISSION_COMPUTED                           = 'COMMISSION_COMPUTED';
     const COMMISSION_NOT_ENABLED                        = 'COMMISSION_NOT_ENABLED';

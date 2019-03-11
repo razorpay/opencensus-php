@@ -443,7 +443,10 @@ class Transfer extends Base
         //
 
         $ftaId = $response[Constants::UPI_REQUEST_REFERENCE_NUMBER] ?? null;
+
         $utr = $response[Constants::UPI_UNIQUE_RESPONSE_NUMBER] ?? null;
+        $utr = (strtolower($utr) !== 'na')? $utr : null;
+
         $bankReferenceNumber = $response[Constants::UPI_BANK_REFERENCE_NUMBER] ?? null;
 
         $statusCode = $response[Constants::UPI_STATUS_CODE] ?? null;
