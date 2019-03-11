@@ -4810,3 +4810,9 @@ ALTER TABLE batches
     ADD COLUMN creator_id CHAR(14) DEFAULT NULL AFTER comment,
     ADD COLUMN creator_type VARCHAR(255) DEFAULT NULL AFTER creator_id,
     ADD INDEX batches_creator_id_index (creator_id);
+
+ALTER TABLE payouts
+    MODIFY COLUMN purpose VARCHAR(255) NOT NULL;
+
+ALTER TABLE payouts
+    ADD INDEX payouts_purpose_index (purpose);
