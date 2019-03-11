@@ -104,6 +104,10 @@ class Base extends BaseProcessor
         }
     }
 
+    /**
+     * @param $data
+     * @throws GatewayFileException
+     */
     public function sendFile($data)
     {
         try
@@ -119,10 +123,10 @@ class Base extends BaseProcessor
         catch (\Throwable $e)
         {
             throw new GatewayFileException(
-                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE, [
-                    'id'        => $this->gatewayFile->getId(),
-                ],
-                $e);
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE,
+                ['id' => $this->gatewayFile->getId()],
+                $e
+            );
         }
     }
 
