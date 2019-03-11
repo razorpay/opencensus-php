@@ -41,10 +41,14 @@ trait Callback
      */
     public function callback($id, $hash, array $gatewayInput)
     {
+        $gatewayInputLog = $gatewayInput;
+
+        unset($gatewayInputLog['otp']);
+
         $this->trace->info(
             TraceCode::PAYMENT_CALLBACK_REQUEST,
             [
-                'gateway_input' => $gatewayInput,
+                'gateway_input' => $gatewayInputLog,
                 'payment_id'    => $id,
             ]);
 

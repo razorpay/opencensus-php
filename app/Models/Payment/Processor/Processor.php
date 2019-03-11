@@ -1453,6 +1453,8 @@ class Processor
 
         $gatewayData['merchant'] = $this->payment->merchant;
 
+        $gatewayData['merchant_detail'] = $this->repo->merchant_detail->getByMerchantId($this->payment->merchant['id']);
+
         //
         // This data was earlier picked up from env by gateways themselves.
         // With the migration to CPS, it will become necessary for API to pick

@@ -57,6 +57,21 @@ class CreateCards extends Migration
             $table->string(Card::VAULT_TOKEN, 50)
                    ->nullable();
 
+            $table->string(Card::GLOBAL_FINGERPRINT, 50)
+                   ->nullable();
+
+            $table->tinyInteger(Card::REFERENCE1)
+                   ->nullable();
+
+            $table->integer(Card::REFERENCE2)
+                   ->nullable();
+
+            $table->char(Card::REFERENCE3, Card::ID_LENGTH)
+                   ->nullable();
+
+            $table->string(Card::REFERENCE4)
+                   ->nullable();
+
             $table->string(Card::TRIVIA)
                   ->nullable();
 
@@ -75,6 +90,7 @@ class CreateCards extends Migration
             $table->index(Card::LAST4);
             $table->index(Card::VAULT);
             $table->index(Card::VAULT_TOKEN);
+            $table->index(Card::GLOBAL_FINGERPRINT);
 
             $table->index(Card::INTERNATIONAL);
 

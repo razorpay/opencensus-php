@@ -4798,6 +4798,16 @@ ALTER TABLE payouts
     ADD INDEX payouts_queued_at_index (queued_at),
     ADD INDEX payouts_cancelled_at_index (cancelled_at);
 
+ALTER TABLE cards
+    ADD COLUMN global_fingerprint varchar(50) DEFAULT NULL AFTER vault_token;
+    ADD INDEX  `cards_global_fingerprint_index` (`global_fingerprint`);
+
+ALTER TABLE cards
+    ADD COLUMN reference1 TINYINT(1) NULL AFTER global_fingerprint,
+    ADD COLUMN reference2 INT(11)  DEFAULT NULL AFTER global_fingerprint,
+    ADD COLUMN reference3 VARCHAR(14) DEFAULT NULL AFTER reference2,
+    ADD COLUMN reference4 VARCHAR(255) DEFAULT NULL AFTER reference3;
+
 ALTER TABLE fund_transfer_attempts
     ADD COLUMN card_id CHAR(14) DEFAULT NULL after vpa_id;
 

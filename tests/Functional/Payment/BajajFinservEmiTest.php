@@ -140,13 +140,12 @@ class BajajFinservEmiTest extends TestCase
 
         $this->runRequestResponseFlow($data);
 
-        $id = $payment->getId();
-
-        $id = 'pay_'.$id;
-
-        $payment = $this->getEntityById('payment', $id);
+        $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals($payment['status'], 'authorized');
+
+        $this->assertEquals($payment['gateway_captured'], true);
+
     }
 
 
@@ -179,7 +178,7 @@ class BajajFinservEmiTest extends TestCase
             'card_id'       => $card->getId(),
         ]);
 
-        $analytics = $this->fixtures->create('payment_analytics', ['ip' => '127.0.0.1', 'payment_id' => $payment->getId()]);
+        $this->fixtures->create('payment_analytics', ['ip' => '127.0.0.1', 'payment_id' => $payment->getId()]);
 
 
         $data = $this->testData[__FUNCTION__];
@@ -238,6 +237,10 @@ class BajajFinservEmiTest extends TestCase
         $data['request']['url'] = $url;
 
         $this->runRequestResponseFlow($data);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'failed');
     }
 
     public function testBajajFinservVerify()
@@ -299,6 +302,62 @@ class BajajFinservEmiTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals($payment['verified'], true);
+    }
+
+    public function testCapturePaymentForBajaj()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->emiPlan->createMerchantSpecificEmiPlans();
+
+        $card = $this->fixtures->create('card', ['name' => 'Test Name']);
+
+        $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'bajajfinserv',
+                'gateway_merchant_id' => '250000002',
+                'enabled' => 1,
+                'emi' => 1,
+                'emi_duration' => 9
+            ]);
+
+        $payment = $this->fixtures->create('payment', [
+            'method'           => 'emi',
+            'gateway'          => 'bajajfinserv',
+            'otp_attempts'     => 0,
+            'terminal_id'      => 'AqdfGh5460opVt',
+            'emi_plan_id'      => '30111111111110',
+            'amount'           => '10000',
+            'card_id'          => $card->getId(),
+            'authorized_at'    => time(),
+            'status'           => 'authorized',
+            'gateway_captured' => true,
+
+        ]);
+
+        $this->fixtures->create('mozart',
+            [
+                'payment_id'        => $payment->getId(),
+                'amount'            => 100,
+                'action'            => 'pay_init',
+            ]);
+
+        $this->fixtures->create('payment_analytics', ['ip' => '127.0.0.1', 'payment_id' => $payment->getId()]);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['request']['url'] = '/payments/pay_' . $payment->getId() . '/capture';
+
+        $this->runRequestResponseFlow($data);
+
+        $this->assertEquals($payment['captured'], false);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['captured'], true);
     }
 
     protected function setupRedisMock($paymentArray = [])

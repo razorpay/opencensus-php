@@ -75,6 +75,7 @@ return [
         'bt_kotak',
         'bajajfinserv',
         'p2p_upi_sharp',
+        'paysecure',
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),
@@ -135,6 +136,7 @@ return [
     'mock_card_fss'               => env('FSS_MOCK'),
     'mock_mpi_enstage'            => env('ENSTAGE_MOCK'),
     'mock_isg'                    => env('ISG_MOCK'),
+    'mock_paysecure'              => env('PAYSECURE_MOCK'),
     'mock_cardless_emi'           => env('CARDLESS_EMI_MOCK'),
     'mock_bajajfinserv'           => env('BAJAJFINSERV_MOCK'),
     'mock_p2p_upi_sharp'          => env('P2P_UPI_SHARP_MOCK'),
@@ -671,11 +673,20 @@ return [
         'live_hash_secret'   => env('NETBANKING_EQUITAS_LIVE_HASH_SECRET'),
         'live_merchant_id'   => env('NETBANKING_EQUITAS_LIVE_MERCHANT_ID'),
     ],
-
+    'paysecure' => [
+        'caller_id'         => env('PAYSECURE_CALLER_ID'),
+        'token'             => env('PAYSECURE_TOKEN'),
+        'userid'            => env('PAYSECURE_USERID'),
+        'password'          => env('PAYSECURE_PASSWORD'),
+        'partner_id'        => env('PAYSECURE_PARTNER_ID'),
+        'merchant_password' => env('PAYSECURE_MERCHANT_PASSWORD'),
+        'terminal_id'       => env('PAYSECURE_TEST_TERMINAL_ID'),
+        'merchant_id'       => env('PAYSECURE_TEST_MERCHANT_ID'),
+    ],
     'netbanking_sbi' => [
         'test_merchant_id'  => env('NETBANKING_SBI_TEST_MERCHANT_ID'),
         'test_hash_secret'  => env('NETBANKING_SBI_TEST_HASH_SECRET'),
-        'iv'                => env('NETBANKING_SBI_IV')
+        'iv'                => env('NETBANKING_SBI_IV'),
     ],
 
     'sharp' => [

@@ -6,6 +6,7 @@ use Redis;
 use Cache;
 
 use RZP\Services\RazorXClient;
+use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\GatewayRequestException;
 use RZP\Exception\GatewayTimeoutException;
@@ -17,6 +18,7 @@ use RZP\Models\Customer\Token\Entity as Token;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Card\IIN;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Services\OtpElf;
 
 class OtpPaymentTest extends TestCase
@@ -72,6 +74,103 @@ class OtpPaymentTest extends TestCase
         self::assertEquals('otp', $payment['auth_type']);
         self::assertEquals('hitachi', $payment['gateway']);
         self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
+    }
+
+    public function testIvrAuthenticationPaymentFailure()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['ivr']);
+        $this->mockCardVault();
+
+       $this->mockServerContentFunction(
+            function(& $content, $action)
+            {
+                throw new GatewayErrorException(
+                    ErrorCode::GATEWAY_ERROR_IVR_AUTHENTICATION_NOT_AVAILABLE
+                );
+
+            }, Gateway::MPI_BLADE
+        );
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds' => '1',
+                'ivr' => '1',
+                'otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['auth_type'] = 'otp';
+
+        $this->setOtp('213433');
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $response = $this->doAuthPayment($payment);
+            },
+            GatewayErrorException::class);
+
+        $iin = $this->getEntityById('iin', 556763, true);
+        self::assertNotContains('ivr', $iin['flows']);
+    }
+
+    public function testIvrAuthenticationPaymentFailurePreferredAuth()
+    {
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['ivr','otp_auth_default']);
+        $this->mockCardVault();
+
+       $this->mockServerContentFunction(
+            function(& $content, $action)
+            {
+                throw new GatewayErrorException(
+                    ErrorCode::GATEWAY_ERROR_IVR_AUTHENTICATION_NOT_AVAILABLE
+                );
+
+            }, Gateway::MPI_BLADE
+        );
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds' => '1',
+                'ivr' => '1',
+                'otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+
+        $this->setOtp('213433');
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $response = $this->doAuthPayment($payment);
+            },
+            GatewayErrorException::class);
+
+        $iin = $this->getEntityById('iin', 556763, true);
+        self::assertNotContains('ivr', $iin['flows']);
     }
 
     public function testIvrAuthenticationPaymentWithHeadlessFeature()

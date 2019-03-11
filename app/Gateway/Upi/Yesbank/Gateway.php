@@ -621,6 +621,7 @@ class Gateway extends Mindgate\Gateway
 
         $responseCode = $responseArray[Fields::RESPCODE] ?? null;
         $errorCode = $responseArray[Fields::ERRORCODE] ?? null;
+        $errorCode = $errorCode ?? $responseArray[Fields::ERROR_CODE] ?? null;
         $responseErrorCode = $responseArray[Fields::RESPONSE_ERROR_CODE] ?? null;
 
         $apiErrorCode = ResponseCodeMap::getApiErrorCode($responseCode,

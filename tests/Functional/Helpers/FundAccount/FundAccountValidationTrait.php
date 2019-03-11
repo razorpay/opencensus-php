@@ -9,15 +9,6 @@ use RZP\Models\Merchant\Webhook;
 
 trait FundAccountValidationTrait
 {
-    protected function initiateTransferAndReconcile()
-    {
-        $this->initiateTransferAndAssertSuccess('yesbank', 'penny_testing', 1, 'penny_testing');
-
-        $this->reconcileOnlineSettlements('yesbank', false);
-
-        $this->reconcileEntitiesForChannel('yesbank');
-    }
-
     protected function createValidationWithFundAccountEntity(): array
     {
         $response = $this->startTest();
@@ -26,7 +17,7 @@ trait FundAccountValidationTrait
         $fundAccount = $this->getLastEntity('fund_account', true);
 
         $fav = $this->getLastEntity('fund_account_validation', true);
-        $this->assertEquals('created', $fav['status']);
+        $this->assertEquals('completed', $fav['status']);
         $this->assertEquals($fundAccount['id'], 'fa_'.$fav['fund_account_id']);
 
         $fta = $this->getLastEntity('fund_transfer_attempt', true);

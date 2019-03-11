@@ -1127,7 +1127,7 @@ trait Authorize
         //
         if ($payment->isCard() === true)
         {
-            $this->validateRecurringForCard($payment);
+            $this->validateRecurringForCard($payment, $token);
         }
         else if ($payment->isEmandate() === true)
         {
@@ -1243,13 +1243,15 @@ trait Authorize
         }
     }
 
-    protected function validateRecurringForCard(Payment\Entity $payment)
+    protected function validateRecurringForCard(Payment\Entity $payment, Token\Entity $token)
     {
         if ($payment->card->isRecurringSupported() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED);
         }
+
+        $this->validateTokenExpiredAt($token);
     }
 
     protected function validateRecurringForEmandate(
@@ -1322,6 +1324,8 @@ trait Authorize
         $this->validateTokenRecurringStatus($token, $payment);
 
         $this->validateTokenMaxAmount($token, $payment);
+
+        $this->validateTokenExpiredAt($token);
     }
 
     protected function validateInitialRecurringForEmandate(Payment\Entity $payment, array $input)
@@ -1417,6 +1421,24 @@ trait Authorize
                          'payment' => $payment->toArray(),
                          'token'   => $token->toArray(),
                     ]);
+        }
+    }
+
+    protected function validateTokenExpiredAt(Token\Entity $token)
+    {
+        $currentTime = Carbon::now()->getTimestamp();
+
+        if (($token !== null) and
+            ($token->getExpiredAt() !== null) and
+            ($token->getExpiredAt() < $currentTime) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_RECURRING_TOKEN_EXPIRED,
+                null,
+                [
+                    Token\Entity::ID         => $token->getId(),
+                    Token\Entity::EXPIRED_AT => $token->getExpiredAt(),
+                ]);
         }
     }
 

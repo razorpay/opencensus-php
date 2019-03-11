@@ -274,7 +274,6 @@ class Core extends Base\Core
 
             case Attempt\Status::CREATED:
             case Attempt\Status::INITIATED:
-                $this->handleFtaProcessing($payout);
                 break;
 
             default:
@@ -316,11 +315,31 @@ class Core extends Base\Core
 
     protected function getRetryPayoutInputForMerchant(Entity $payout): array
     {
-        return [
-            Entity::AMOUNT      => $payout->getAmount(),
+        $type = $payout->getPayoutType();
+
+        $amount = $payout->getAmount();
+
+        $payoutInput = [
+            Entity::TYPE        => $type,
+            Entity::AMOUNT      => $amount,
             Entity::CURRENCY    => $payout->getCurrency(),
-            Entity::TYPE        => $payout->getPayoutType()
         ];
+
+        //
+        // If the merchant makes an on_demand payout request with 100rs,
+        // we actually create the payout entity with amount 98rs. We do
+        // this only for on_demand payouts. Hence, when retrying, we
+        // add the fees and amount to create a payout request of the
+        // original amount which the merchant would have sent initially.
+        //
+        if ($type === Entity::ON_DEMAND)
+        {
+            $fees = $payout->getFees();
+
+            $payoutInput[Entity::AMOUNT] = $amount + $fees;
+        }
+
+        return $payoutInput;
     }
 
     protected function getRetryPayoutInputForFundAccount(Entity $payout): array
@@ -360,13 +379,6 @@ class Core extends Base\Core
         $this->repo->saveOrFail($payout);
 
         $this->app->events->fire('api.payout.processed', [$payout]);
-    }
-
-    protected function handleFtaProcessing(Entity $payout)
-    {
-        $payout->setStatus(Status::PROCESSING);
-
-        $this->repo->saveOrFail($payout);
     }
 
     protected function handleFtaFailed(Entity $payout, string $ftaFailureReason = null)

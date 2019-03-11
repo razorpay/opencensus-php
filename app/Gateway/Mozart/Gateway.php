@@ -24,7 +24,10 @@ class Gateway extends Base\Gateway
 
         $request = $this->getMozartRequestArray($input);
 
-        $traceReq = $this->getRedactedData($request);
+        $traceReq = [
+            'method' => $request['method'],
+            'url' => $request['url'],
+        ];
 
         $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_AUTHORIZE_REQUEST);
 
@@ -61,13 +64,20 @@ class Gateway extends Base\Gateway
 
         $gateway = $input['gateway'];
 
+        $traceRes = $this->getRedactedData($gateway);
+
+        $this->traceGatewayPaymentRequest($traceRes, $input, TraceCode::PAYMENT_CALLBACK_REQUEST );
+
         unset($input['gateway']);
 
         $input['gateway']['redirect'] = $gateway;
 
         $request = $this->getMozartRequestArray($input);
 
-        $traceReq = $this->getRedactedData($request);
+        $traceReq = [
+            'method' => $request['method'],
+            'url' => $request['url'],
+        ];
 
         $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_PAYMENT_REQUEST);
 
@@ -102,7 +112,10 @@ class Gateway extends Base\Gateway
 
         $request = $this->getMozartRequestArray($input);
 
-        $traceReq = $this->getRedactedData($request);
+        $traceReq = [
+            'method' => $request['method'],
+            'url' => $request['url'],
+        ];
 
         $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_REFUND_REQUEST);
 
@@ -137,7 +150,10 @@ class Gateway extends Base\Gateway
 
         $request = $this->getMozartRequestArray($input);
 
-        $traceReq = $this->getRedactedData($request);
+        $traceReq = [
+            'method' => $request['method'],
+            'url' => $request['url'],
+        ];
 
         $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_REFUND_VERIFY_REQUEST);
 
@@ -164,7 +180,10 @@ class Gateway extends Base\Gateway
 
         $request = $this->getMozartRequestArray($input);
 
-        $traceReq = $this->getRedactedData($request);
+        $traceReq = [
+            'method' => $request['method'],
+            'url' => $request['url'],
+        ];
 
         $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST);
 
@@ -258,12 +277,6 @@ class Gateway extends Base\Gateway
             $input['gateway'][$prevStep] = $this->getPreviousData($input, $prevStep);
         }
 
-        //This is implemented for testing Bajaj as minimum payment is 3000 which is not supported on bajaj test cards.
-        if($this->mode === Mode::TEST)
-        {
-            $input['payment']['amount'] = 100;
-        }
-
         $content['entities'] = $input;
 
         $baseUrl = $this->app['config']->get('applications.mozart.url');
@@ -324,13 +337,17 @@ class Gateway extends Base\Gateway
     {
         unset($data['data']['Key']);
 
-        unset($data['data']['enqinfo']['Key']);
+        unset($data['data']['enqinfo']['0']['Key']);
 
-        unset($data['terminal']);
+        unset($data['data']['enqinfo']['0']['MOBILENO']);
 
-        unset($data['Key']);
+        unset($data['data']['MobileNo']);
 
-        unset($data['Card']['number']);
+        unset($data['data']['valkey']);
+
+        unset($data['otp']);
+
+        unset($data['data']['_raw']);
 
         return $data;
     }

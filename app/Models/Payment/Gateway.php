@@ -72,6 +72,7 @@ class Gateway
     const UPI_YESBANK            = 'upi_yesbank';
     const AEPS_ICICI             = 'aeps_icici';
     const ISG                    = 'isg';
+    const PAYSECURE              = 'paysecure';
 
     const CARD_FSS               = 'card_fss';
 
@@ -541,6 +542,9 @@ class Gateway
         Payment\Gateway::WALLET_OLAMONEY   => [
             self::GO_LIVE_TIMESTAMP => 1550838065
         ],
+        Payment\Gateway::WALLET_JIOMONEY   => [
+            self::GO_LIVE_TIMESTAMP => 1552303029
+        ]
     ];
 
     /**
@@ -596,6 +600,7 @@ class Gateway
         self::AEPS_ICICI          => Settlement\Channel::KOTAK,
         self::CYBERSOURCE         => Settlement\Channel::KOTAK,
         self::HITACHI             => Settlement\Channel::KOTAK,
+        self::PAYSECURE           => Settlement\Channel::KOTAK,
     ];
 
     /**
@@ -612,6 +617,7 @@ class Gateway
             self::PAYTM,
             self::AMEX,
             self::CYBERSOURCE,
+            self::PAYSECURE,
             self::FIRST_DATA,
             self::MPI_BLADE,
             self::MPI_ENSTAGE,
@@ -707,6 +713,7 @@ class Gateway
         self::AMEX,
         self::CYBERSOURCE,
         self::FIRST_DATA,
+        self::PAYSECURE,
     ];
 
     const SHARED_NETBANKING_GATEWAYS_LIVE = [
@@ -734,6 +741,7 @@ class Gateway
         self::AXIS_MIGS             => [],
         self::AMEX                  => [],
         self::CYBERSOURCE           => [],
+        self::PAYSECURE             => [],
         self::FIRST_DATA            => [
             self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY]
         ],
@@ -882,6 +890,9 @@ class Gateway
             Network::VISA,
             Network::RUPAY,
         ],
+        self::PAYSECURE => [
+            Network::RUPAY,
+        ]
     ];
 
     public static $bharatQrCardNetwork = [
@@ -962,6 +973,7 @@ class Gateway
         self::WALLET_PAYZAPP,
         self::FIRST_DATA,
         self::CYBERSOURCE,
+        self::PAYSECURE,
         self::WALLET_PAYUMONEY,
         self::WALLET_AIRTELMONEY,
         self::WALLET_OLAMONEY,

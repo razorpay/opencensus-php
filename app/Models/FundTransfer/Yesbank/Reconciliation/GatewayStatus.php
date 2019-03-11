@@ -485,7 +485,7 @@ class GatewayStatus extends BaseStatus
         self::U45                               => 'Form processing has been failed in UPI',
         self::U46                               => 'Request credit is not found',
         self::U47                               => 'Request debit is not found',
-        self::U48                               => 'Transaction is id not present',
+        self::U48                               => 'Transaction id not present',
         self::U49                               => 'Request message id is not present',
         self::U50                               => 'IFSC is not present',
         self::U51                               => 'Request refund is not found',
@@ -698,7 +698,7 @@ class GatewayStatus extends BaseStatus
         if ((empty($errorCode) === false) and
             (strtolower($errorCode) !== 'na'))
         {
-            return $responseCode;
+            return $errorCode;
         }
 
         if ((empty($responseErrorCode) === false) and
