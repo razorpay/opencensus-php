@@ -27,6 +27,7 @@ class Fetch extends BaseFetch
             Entity::FUND_ACCOUNT_ID   => 'sometimes|public_id|size:17',
             Entity::STATUS            => 'sometimes|string|custom',
             Entity::REFERENCE_ID      => 'sometimes|string|max:40',
+            Entity::PURPOSE           => 'sometimes|string|max:255',
             EsRepository::QUERY       => 'sometimes|string|min:2|max:50',
             // EsRepository::SEARCH_HITS => 'sometimes|boolean',
         ],
@@ -49,6 +50,7 @@ class Fetch extends BaseFetch
             Entity::BALANCE_ID,
             Entity::STATUS,
             Entity::REFERENCE_ID,
+            Entity::PURPOSE,
             EsRepository::QUERY,
             // EsRepository::SEARCH_HITS,
             Entity::MODE,
@@ -85,6 +87,7 @@ class Fetch extends BaseFetch
         Entity::METHOD,
         Entity::BALANCE_ID,
         Entity::STATUS,
+        Entity::PURPOSE,
     ];
 
     protected function validateMethod(string $attribute, string $value)
