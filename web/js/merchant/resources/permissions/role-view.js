@@ -68,6 +68,16 @@ export default {
     'rbl_supervisor',
     'rbl_agent',
   ],
+  payment_links_batch_uploads: [
+    'owner',
+    'admin',
+    'manager',
+    'operations',
+    'finance',
+    'sellerapp',
+    'agent',
+    'rbl_supervisor',
+  ],
   payment_pages: [
     'owner',
     'admin',

@@ -76,7 +76,8 @@ export default class EditUser extends Component {
   render() {
     const { handleSubmit, user, session } = this.props;
 
-    let isAllowedEdit = true;
+    let isAllowedUpdate = true,
+      isAllowedRemove = true;
     let allRoles = roles;
 
     if (session.user.isAgentRole) {
@@ -85,10 +86,12 @@ export default class EditUser extends Component {
       allRoles = { ...allRoles, ...RBLRoles };
 
       if (session.user.role === 'rbl_supervisor') {
-        isAllowedEdit = false; // No roles apart from rbl_agent to be allowed to be managed by rbl_supervisor
+        isAllowedUpdate = false; // No roles apart from rbl_agent to be allowed to be managed by rbl_supervisor
+        isAllowedRemove = false;
 
         if (user.role === 'rbl_agent') {
-          isAllowedEdit = true;
+          allRoles = { agent: RBLRoles.rbl_agent };
+          isAllowedRemove = true;
         }
       }
     }
@@ -103,7 +106,7 @@ export default class EditUser extends Component {
             name="role"
             component="select"
             class="form-control"
-            disabled={!isAllowedEdit}
+            disabled={!(isAllowedUpdate || isAllowedRemove)}
           >
             {Object.keys(ROLES).map(role => (
               <option key={role} value={role}>
@@ -114,23 +117,24 @@ export default class EditUser extends Component {
         </td>
 
         <td>
-          {isAllowedEdit && (
-            <div class="btn-toolbar">
+          <div class="btn-toolbar">
+            {isAllowedUpdate && (
               <AsyncButton
                 class="btn btn-sm btn-success"
                 text="Update"
                 data-tip="Updates the user's role"
                 onClick={handleSubmit(this.updateUser)}
               />
-
+            )}
+            {isAllowedRemove && (
               <AsyncButton
                 class="btn btn-sm btn-danger"
                 text="Remove"
                 data-tip="Removes user from your team"
                 onClick={handleSubmit(this.removeUser)}
               />
-            </div>
-          )}
+            )}
+          </div>
         </td>
       </tr>
     );
