@@ -198,4 +198,11 @@ class SubscriptionController extends Controller
 
         return ApiResponse::json($summary);
     }
+
+    public function postUpdateData(string $subscriptionId)
+    {
+        //We are proxying this API request to subserv
+        //This should not come here at all, added this method to make sure
+        // that api does not break on not finding this method
+    }
 }
