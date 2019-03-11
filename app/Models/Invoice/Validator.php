@@ -255,6 +255,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID,
         Entity::FIRST_PAYMENT_MIN_AMOUNT,
         self::RECEIPT_REQUIRED,
+        Feature\Constants::INVOICE_EXPIRE_BY_REQD,
     ];
 
     protected static $editDraftValidators = [
@@ -262,11 +263,13 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID,
         Entity::FIRST_PAYMENT_MIN_AMOUNT,
         self::RECEIPT_REQUIRED,
+        Feature\Constants::INVOICE_EXPIRE_BY_REQD,
     ];
 
     protected static $editIssuedValidators = [
         Entity::FIRST_PAYMENT_MIN_AMOUNT,
         self::RECEIPT_REQUIRED,
+        Feature\Constants::INVOICE_EXPIRE_BY_REQD,
     ];
 
     protected static $validExternalEntities = [
@@ -324,6 +327,29 @@ class Validator extends Base\Validator
                 'Either of customer_id or customer must be sent in input');
         }
     }
+
+    /**
+     * @param array $input
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateInvoiceExpireByReqd(array $input)
+    {
+        $type = $input[Entity::TYPE] ?? $this->entity->getType();
+
+        $expireBy = $input[Entity::EXPIRE_BY] ?? $this->entity->getExpireBy();
+
+        if ((empty($type) === false) and (Type::isPaymentLinkType($type) === true))
+        {
+            $expiryRequiredFeature = $this->entity->merchant->isFeatureEnabled(Feature\Constants::INVOICE_EXPIRE_BY_REQD);
+
+            if (($expiryRequiredFeature === true) and (empty($expireBy) === true))
+            {
+                throw new BadRequestValidationFailureException("expire_by is required.");
+            }
+        }
+    }
+
 
     /**
      * Checks if amount is expected in input key.

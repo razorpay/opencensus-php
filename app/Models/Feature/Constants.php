@@ -166,6 +166,11 @@ class Constants
      */
     const INVOICE_NO_EXPIRY_EMAIL       = 'invoice_no_expiry_email';
 
+    /**
+     * For RBL we have added this feature so that we can mandate expire by for their invoices.
+     */
+    const INVOICE_EXPIRE_BY_REQD        = 'invoice_expire_by_reqd';
+
     // Different actions for feature activation flow
     const CREATE           = 'create';
     const UPDATE           = 'update';
@@ -311,6 +316,7 @@ class Constants
         self::TOKEN_BANK_DETAILS              => true,
         self::INVOICE_RECEIPT_MANDATORY       => true,
         self::INVOICE_NO_EXPIRY_EMAIL         => true,
+        self::INVOICE_EXPIRE_BY_REQD          => true,
     ];
 
     // Entity type constants
