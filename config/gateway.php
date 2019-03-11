@@ -76,6 +76,7 @@ return [
         'bajajfinserv',
         'p2p_upi_sharp',
         'p2p_upi_axis',
+        'paysecure',
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),
@@ -145,10 +146,11 @@ return [
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
 
     'p2p_upi_axis' => [
-      'private_key'                => env('P2P_UPI_AXIS_PRIVATE_KEY'),
-      'merchant_id'                => env('P2P_UPI_AXIS_MERCHANT_ID'),
-      'merchant_channel_id'        => env('P2P_UPI_AXIS_MERCHANT_CHANNEL_ID'),
-      'merchant_category_code'     => env('P2P_UPI_AXIS_MERCHANT_CATEGORY_CODE'),
+        'bank_public_key'           => env('P2P_UPI_AXIS_BANK_PUBLIC_KEY'),
+        'merchant_private_key'      => env('P2P_UPI_AXIS_MERCHANT_PRIVATE_KEY'),
+        'merchant_id'               => env('P2P_UPI_AXIS_MERCHANT_ID'),
+        'merchant_channel_id'       => env('P2P_UPI_AXIS_MERCHANT_CHANNEL_ID'),
+        'merchant_category_code'    => env('P2P_UPI_AXIS_MERCHANT_CATEGORY_CODE'),
     ],
 
     'hdfc' => [

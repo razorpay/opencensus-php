@@ -39,7 +39,7 @@ class Processor extends Base\Processor
         $this->initialize(Action::INITIATE_VERIFICATION_SUCCESS, $input, true);
 
         $token = $this->input->get(RegisterToken\Entity::TOKEN);
-        $registerToken = (new RegisterToken\Core)->retrieveById($token);
+        $registerToken = (new RegisterToken\Core)->fetch($token);
 
         // Gateway might return device data to be saved in device_token
         $deviceData = array_merge_recursive(
@@ -59,7 +59,7 @@ class Processor extends Base\Processor
         $this->initialize(Action::VERIFICATION, $input, true);
 
         $token = $this->input->get(RegisterToken\Entity::TOKEN);
-        $registerToken = (new RegisterToken\Core)->retrieveById($token);
+        $registerToken = (new RegisterToken\Core)->fetch($token);
 
         $this->gatewayInput->put(Entity::REGISTER_TOKEN, $registerToken);
         $this->callbackInput->push($registerToken->getToken());
@@ -72,7 +72,7 @@ class Processor extends Base\Processor
         $this->initialize(Action::VERIFICATION_SUCCESS, $input, true);
 
         $token = $this->input->get(RegisterToken\Entity::TOKEN);
-        $registerToken = (new RegisterToken\Core)->retrieveById($token);
+        $registerToken = (new RegisterToken\Core)->fetch($token);
 
         // Gateway might return device data to be saved in device_token
         $deviceData = array_merge_recursive(
