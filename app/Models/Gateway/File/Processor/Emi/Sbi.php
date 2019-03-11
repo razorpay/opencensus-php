@@ -12,6 +12,7 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
+use RZP\Constants\Environment;
 use RZP\Services\Beam\Service;
 use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
@@ -61,7 +62,7 @@ class Sbi extends Base
 
     public function generateEmiFilePassword()
     {
-        if ($this->mode === Mode::TEST)
+        if ($this->app->environment(Environment::TESTING))
         {
             return self::TEST_ENCRYPTION_KEY;
         }
