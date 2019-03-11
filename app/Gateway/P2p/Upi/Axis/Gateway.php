@@ -17,8 +17,6 @@ class Gateway extends Upi\Gateway
 
     public static function generateSignature($input, $key)
     {
-        $key = str_replace('\n', "\n", $key);
-
         $rsa = new RSA();
 
         $rsa->loadKey($key, RSA::PRIVATE_FORMAT_PKCS1);
