@@ -5,20 +5,25 @@ namespace RZP\Gateway\Wallet\Jiomoney;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
-use RZP\Constants\HashAlgo;
-use RZP\Constants\Mode;
 use RZP\Error;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Gateway\Base\Verify;
-use RZP\Gateway\Base\VerifyResult;
-use RZP\Gateway\Wallet\Base;
-use RZP\Gateway\Wallet\Base\Entity;
-use RZP\Models\Payment\Entity as Payment;
-use RZP\Models\Payment\Processor\Wallet;
-use RZP\Models\Payment\Status;
+
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Constants\HashAlgo;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Wallet\Base;
+use RZP\Models\Payment\Status;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Wallet\Base\Entity;
+use RZP\Gateway\Base as GatewayBase;
+use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Models\Payment as PaymentModel;
+use RZP\Models\Payment\Processor\Wallet;
+use RZP\Models\Payment\Entity as Payment;
+use RZP\Models\Payment\Gateway as PaymentGateway;
+
 
 class Gateway extends Base\Gateway
 {
@@ -156,6 +161,11 @@ class Gateway extends Base\Gateway
         {
             $this->handleRefundFailure($content);
         }
+        return [
+            PaymentModel\Gateway::GATEWAY_RESPONSE => json_encode($content),
+            PaymentModel\Gateway::GATEWAY_KEYS     => $this->getGatewayData($content)
+        ];
+
     }
 
     public function alreadyRefunded(array $input)
@@ -251,6 +261,7 @@ class Gateway extends Base\Gateway
         $content = $this->jsonToArray($response->body);
 
         return $this->verifyRefundUsingGatewayResponse($content, $input);
+
     }
 
     //------------------Authorize helper methods begin--------------------------
@@ -489,7 +500,11 @@ class Gateway extends Base\Gateway
         throw new Exception\GatewayErrorException(
             ErrorCode::BAD_REQUEST_REFUND_FAILED,
             $content[ResponseFields::RESPONSE_CODE],
-            $content[ResponseFields::RESPONSE_DESCRIPTION]
+            $content[ResponseFields::RESPONSE_DESCRIPTION],
+            [
+                PaymentGateway::GATEWAY_RESPONSE  => json_encode($content),
+                PaymentGateway::GATEWAY_KEYS      => $this->getGatewayData($content)
+            ]
         );
     }
 
@@ -906,18 +921,26 @@ class Gateway extends Base\Gateway
         return false;
     }
 
-    protected function verifyRefundUsingGatewayResponse(array $content, array $input): bool
+    protected function verifyRefundUsingGatewayResponse(array $content, array $input)
     {
+        $scroogeResponse = new GatewayBase\ScroogeResponse();
+
+        $scroogeResponse->setGatewayVerifyResponse($content)
+                        ->setGatewayKeys($this->getGatewayData($content));
+
         if (isset($content[ResponseFields::RESPONSE][ResponseFields::GETREQUESTSTATUS]) === true)
         {
             $gatewayRefundData = $content[ResponseFields::RESPONSE][ResponseFields::GETREQUESTSTATUS];
 
             if ($this->isSuccessFullyRefundedOnGateway($gatewayRefundData, $input) === true)
             {
-                return true;
+                return $scroogeResponse->setSuccess(true)
+                                       ->toArray();
             }
 
-            return false;
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
+                                   ->toArray();
         }
         else if (isset($content[ResponseFields::RESPONSE][ResponseFields::RESPONSE_HEADER]) === true)
         {
@@ -925,17 +948,22 @@ class Gateway extends Base\Gateway
 
             if ($responseHeader[ResponseFields::API_MSG] === self::TRANSACTION_NOT_FOUND)
             {
-                return false;
+                return $scroogeResponse->setSuccess(false)
+                                       ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
+                                       ->toArray();
             }
         }
 
         throw new Exception\LogicException(
             'Unrecognized verify refund gateway response',
-            null,
+            ErrorCode::GATEWAY_ERROR_UNEXPECTED_STATUS,
             [
-                'payment_id' => $input['refund']['payment_id'],
-                'refund_id'  => $input['refund']['id'],
-                'content'    => $content,
+                PaymentModel\Gateway::GATEWAY_VERIFY_RESPONSE  => json_encode($content),
+                PaymentModel\Gateway::GATEWAY_KEYS      => [ 
+                    'payment_id' => $input['refund']['payment_id'],
+                    'refund_id'  => $input['refund']['id'],
+                    'content'    => json_encode($content)
+                ]
             ]);
     }
 
@@ -959,7 +987,8 @@ class Gateway extends Base\Gateway
 
     protected function isSuccessfulRefund(array $gatewayRefundData, array $input): bool
     {
-        return (($gatewayRefundData[ResponseFields::TXN_STATUS] === ResponseCode::SUCCESS) and
+        return (($gatewayRefundData['TRAN_REF_NO'] === $input['refund']['transaction_id']) and
+                ($gatewayRefundData[ResponseFields::TXN_STATUS] === ResponseCode::SUCCESS) and
                 ($input['refund']['amount'] === intval($gatewayRefundData[ResponseFields::REFUND_AMOUNT])));
     }
 
@@ -1144,5 +1173,23 @@ class Gateway extends Base\Gateway
                 'payment_id'  => $input['payment']['id'],
                 'terminal_id' => $input['terminal']['id'],
             ]);
+    }
+
+    protected function getGatewayData(array $refundFields = [])
+    {
+        if (empty($refundFields) === false)
+        {
+            return [
+                ResponseFields::DATE                  => $refundFields[ResponseFields::DATE] ?? null,
+                ResponseFields::CLIENT_ID             => $refundFields[ResponseFields::CLIENT_ID] ?? null,
+                ResponseFields::STATUS_CODE           => $refundFields[ResponseFields::STATUS_CODE] ?? null,
+                ResponseFields::MERCHANT_ID           => $refundFields[ResponseFields::MERCHANT_ID] ?? null,
+                ResponseFields::CUSTOMER_ID           => $refundFields[ResponseFields::CUSTOMER_ID] ?? null,
+                ResponseFields::RESPONSE_CODE         => $refundFields[ResponseFields::RESPONSE_CODE] ?? null,
+                ResponseFields::GATEWAY_PAYMENT_ID    => $refundFields[ResponseFields::GATEWAY_PAYMENT_ID] ?? null,
+                ResponseFields::RESPONSE_DESCRIPTION  => $refundFields[ResponseFields::RESPONSE_DESCRIPTION] ?? null
+            ];
+        }
+        return [];
     }
 }

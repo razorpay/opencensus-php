@@ -542,6 +542,9 @@ class Gateway
         Payment\Gateway::WALLET_OLAMONEY   => [
             self::GO_LIVE_TIMESTAMP => 1550838065
         ],
+        Payment\Gateway::WALLET_JIOMONEY   => [
+            self::GO_LIVE_TIMESTAMP => 1552303029
+        ]
     ];
 
     /**
