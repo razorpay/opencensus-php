@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\File\Processor\Emi;
 use Carbon\Carbon;
 
 use RZP\Constants\Mode;
+use RZP\Encryption;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
@@ -35,6 +36,10 @@ class Sbi extends Base
      * @var $file FileStore\Entity
      */
     protected $file;
+
+    protected $iv;
+
+    protected $tag;
 
     /**
      * Implements \RZP\Models\Gateway\File\Processor\Base::fetchEntities().
@@ -85,27 +90,35 @@ class Sbi extends Base
         {
             $fileData = $this->formatDataForFile($data);
 
-            $fileName = $this->getFileToWriteName();
+            // todo: Change the directory as required when going live
+            $fileName = 'sbi_emi/' . $this->getFileToWriteName();
 
             $metadata = $this->getH2HMetadata();
 
             $creator = new FileStore\Creator;
+
+            $this->iv = openssl_random_pseudo_bytes(12);
+
+            $encryptionParams = [
+                Encryption\AesGcmEncryption::SECRET => $data['password'],
+                Encryption\AesGcmEncryption::IV => $this->iv,
+            ];
 
             $creator->extension(static::EXTENSION)
                     ->content($fileData)
                     ->name($fileName)
                     ->store(FileStore\Store::S3)
                     ->encrypt(
-                        Service::ENCRYPTION_TYPE,
-                        [
-                            'mode'   => Service::ENCRYPTION_MODE,
-                            'secret' => $data['password'],
-                        ])
+                        Encryption\Type::AES_GCM_ENCRYPTION,
+                        $encryptionParams
+                    )
                     ->type(static::FILE_TYPE)
                     ->entity($this->gatewayFile)
                     ->metadata($metadata);
 
             $creator->save();
+
+            $this->tag = $creator->getEncryptionTag();
 
             $this->file = $creator->getFileInstance();
 

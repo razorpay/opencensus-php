@@ -43,6 +43,11 @@ return [
             'name'   => env('AWS_H2H_DEFAULT_BUCKET'),
             'region' => env('AWS_H2H_DEFAULT_BUCKET_REGION', 'ap-south-1')
         ],
+        // todo: Change these and create the corresponding envs once bucket is created
+        'encrypted_files_bucket_config' => [
+            'name'   => env('AWS_H2H_DEFAULT_BUCKET'),
+            'region' => env('AWS_H2H_DEFAULT_BUCKET_REGION', 'ap-south-1')
+        ],
     ],
 
     'local' => [
