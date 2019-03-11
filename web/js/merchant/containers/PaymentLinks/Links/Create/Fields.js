@@ -170,6 +170,9 @@ export default [
     label: 'Expire On',
     fieldLabel: 'No Expiry',
     _cmp: Input.Check,
+    _when: function(ctx) {
+      return !ctx.props.user.isExpireByRequired;
+    },
     _autoRenderImpure: true,
     className: 'Input--vTop',
     onChange: e => {
@@ -183,7 +186,15 @@ export default [
     },
   },
   {
-    className: 'InputGroup--near',
+    className: function(ctx) {
+      return ctx.props.user.isExpireByRequired ? null : 'InputGroup--near';
+    },
+    label: function(ctx) {
+      return ctx.props.user.isExpireByRequired ? 'Expire On' : null;
+    },
+    required: function(ctx) {
+      return ctx.props.user.isExpireByRequired;
+    },
     inlineFields: [
       {
         _name: 'expire_by_date',
@@ -197,6 +208,9 @@ export default [
         disablePastDates: true,
         placement: 'topLeft',
         readOnly: true,
+        required: function(ctx) {
+          return ctx.props.user.isExpireByRequired;
+        },
       },
       {
         name: 'expire_by',
@@ -209,6 +223,9 @@ export default [
         // defaultValue: moment().endOf().unix(), // Epoch of timestamp today end. Don't set. Has to be in sync with Date(expire_by_date).
         _cmp: Input.TimePicker,
         readOnly: true,
+        required: function(ctx) {
+          return ctx.props.user.isExpireByRequired;
+        },
       },
     ],
   },
