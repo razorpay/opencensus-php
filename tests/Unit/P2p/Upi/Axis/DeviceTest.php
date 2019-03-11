@@ -117,7 +117,7 @@ class DeviceTest extends TestCase
 
         $this->assertEquals($response->request()['sdk'], 'axis');
 
-        $this->assertEquals($response->request()['content']['merchantId'], '123456');
+        $this->assertEquals($response->request()['content']['merchantId'], 'BAJAJUATTEST');
     }
 
     public function testGetToken()
