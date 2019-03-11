@@ -375,6 +375,11 @@ class Provider
             $terminal = $terminal->toArray();
 
             $identifiers[$mpanAttr] = $terminal[$mpanAttr];
+
+            if ($bharatQrNetwork === Network::MC)
+            {
+                $identifiers[$mpanAttr] = substr($identifiers[$mpanAttr], 0, 15);
+            }
         }
 
         return $identifiers;
