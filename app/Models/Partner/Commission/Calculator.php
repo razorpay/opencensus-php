@@ -630,6 +630,7 @@ class Calculator extends Base\Core
         }
         catch (LogicException $ex)
         {
+            // If the exception is because a relevant pricing rule is not defined, do not block; assume zero.
             if ($ex->getCode() === ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT)
             {
                 $this->traceContext(
@@ -638,8 +639,10 @@ class Calculator extends Base\Core
                         'merchant_fees' => $merchantFee,
                         'merchant_tax'  => $merchantTax,
                     ]);
+
                 return;
             }
+
             throw $ex;
         }
 
@@ -880,8 +883,6 @@ class Calculator extends Base\Core
 
     /**
      * No fallback pricing rules are required for commissions as of now.
-     *
-     * @todo: Does the calculation break if the required pricing rules are not added or does it ignore assuming 0?
      *
      * @param Plan $pricing
      *
