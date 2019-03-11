@@ -25,7 +25,7 @@ class Sdk extends Base\Request
 
     protected $content;
 
-    protected $sdkPrivateKey;
+    protected $signer;
 
     protected $udf;
 
@@ -51,7 +51,7 @@ class Sdk extends Base\Request
         {
            $str = $this->getSignatureString($this->actionMap[Action::SIGNATURE]);
 
-           $sign = Gateway::generateSignature($str, $this->sdkPrivateKey);
+           $sign = bin2hex($this->signer->sign($str));
 
            $this->content->put(Fields::MERCHANT_SIGNATURE, $sign);
         }
@@ -80,9 +80,9 @@ class Sdk extends Base\Request
         return $this;
     }
 
-    public function setSdkPrivateKey($key)
+    public function setSigner($signer)
     {
-        $this->sdkPrivateKey = $key;
+        $this->signer = $signer;
     }
 
     public function setValidate($deviceFingerPrint)

@@ -67,6 +67,11 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
 
                 break;
 
+            case DeviceAction::ACTIVATE_DEVICE_BINDING:
+                $this->handleActivateDeviceBinding($response);
+
+                break;
+
             default:
                 // As verification callback can only handle GET_SESSION_TOKEN or BIND_DEVICE
                 $this->throwP2pGatewayException();
@@ -178,6 +183,23 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
             $request->merge($activateBindingRequest);
 
             $response->setRequest($request);
+        }
+    }
+
+    private function handleActivateDeviceBinding(
+        Response $response)
+    {
+        $sdk = $this->input->get(Fields::SDK);
+
+        if ($this->isSdkFailure())
+        {
+            $this->throwP2pGatewayException();
+        }
+
+        if (($this->isDeviceActivated($sdk) === false))
+        {
+            // Should never come here as sdk can not be success for non activated device
+            $this->throwP2pGatewayException();
         }
     }
 

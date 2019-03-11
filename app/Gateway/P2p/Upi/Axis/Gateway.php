@@ -15,11 +15,11 @@ class Gateway extends Upi\Gateway
 
     protected $gateway = 'p2p_upi_axis';
 
-    public static function generateSignature($input, $key)
+    public function getMerchantSigner()
     {
         $rsa = new RSA();
 
-        $rsa->loadKey($key, RSA::PRIVATE_FORMAT_PKCS1);
+        $rsa->loadKey($this->config['merchant_private_key'], RSA::PRIVATE_FORMAT_PKCS1);
 
         $rsa->setHash('sha256');
 
@@ -27,20 +27,18 @@ class Gateway extends Upi\Gateway
 
         $rsa->setSignatureMode(RSA::SIGNATURE_PSS);
 
-        $signature = bin2hex($rsa->sign($input));
-
-        return $signature;
+        return $rsa;
     }
 
     protected function initiateSdkRequest(string $action)
     {
         $request = new Sdk([
-            'id'=> $this->getSdkRequestId(),
+            'id' => $this->getSdkRequestId(),
         ]);
 
         $request->setActionMap($action, $this->actionMap[$action]);
 
-        $request->setSdkPrivateKey($this->config['private_key']);
+        $request->setSigner($this->getMerchantSigner());
 
         return $request;
     }
