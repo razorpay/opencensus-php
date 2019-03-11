@@ -576,6 +576,7 @@ final class Route
         'subscription_cancel_due'                  => ['post',     'subscriptions/cancel/due',                       'SubscriptionController@postCancelDueSubscriptions'                 ],
         'subscription_create_addon'                => ['post',     'subscriptions/{subscriptionId}/addons',          'SubscriptionController@postAddonForSubscription'                   ],
         'subscription_fetch_due_addons'            => ['get',      'subscriptions/{subscriptionId}/addons/due',      'SubscriptionController@getDueAddonsForSubscription'                ],
+        'subscription_update_data'                 => ['post',    'subscriptions/{subscriptionId}/update_data',      'SubscriptionController@postUpdateData'                             ],
         'subscription_view_live'                   => ['get',      'l/subscriptions/{id}',                           'SubscriptionController@getSubscriptionView'                        ],
         'subscription_view_test'                   => ['get',      't/subscriptions/{id}',                           'SubscriptionController@getSubscriptionView'                        ],
         'subscription_view_live_post'              => ['post',     'l/subscriptions/{id}',                           'SubscriptionController@getSubscriptionView'                        ],
@@ -1925,6 +1926,9 @@ final class Route
         'partner_config_edit',
 
         'vault_token_create',
+
+        //Admin route for fixing subscriptio data
+        'subscription_update_data'
     ];
 
     public static $routePermission = [
@@ -2313,6 +2317,7 @@ final class Route
         'partner_config_edit'                      => '*',
         'vault_token_create'                       => Permission::MAKE_API_CALL,
         'merchant_user_reset_password'             => Permission::USER_PASSWORD_RESET,
+        'subscription_update_data'                 => Permission::MODIFY_SUBSCRIPTION_DATA
     ];
 
     public static $direct = [
@@ -2781,6 +2786,7 @@ final class Route
         'subscriptions_expire',
         // 'subscriptions_charge_invoices',
         // 'subscriptions_retry',
+        'subscription_update_data'
     ];
 
     // These routes are redirected after a feature check
