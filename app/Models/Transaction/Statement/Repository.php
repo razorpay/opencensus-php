@@ -295,8 +295,6 @@ class Repository extends Transaction\Repository
      *        INNER JOIN payouts
      *                ON payouts.id = transactions.entity_id
      *                   AND transactions.type = 'payout'
-     *        INNER JOIN fund_accounts
-     *                ON fund_accounts.id = payouts.fund_account_id
      * WHERE  transactions.merchant_id = '10000000000000'
      *        AND payouts.purpose = 'refund'
      *        AND transactions.balance_id = 'xbalance000000'
