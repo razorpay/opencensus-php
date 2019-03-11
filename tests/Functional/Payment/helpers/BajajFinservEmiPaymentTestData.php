@@ -84,4 +84,17 @@ return [
             ],
         ],
     ],
+
+    'testCapturePaymentForBajaj' => [
+        'request' => [
+            'method' => 'post',
+            'content' => [
+                'amount' => 10000
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
 ];
