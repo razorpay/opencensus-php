@@ -5,14 +5,14 @@ import { showNotification } from 'rzp/modules/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
 import SwitchField from 'rzp/ui/Forms/SwitchField';
 
-const customMsg = {
+const CUSTOM_MSG = {
   not_supported:
     'International card payments is not supported to your business model.',
   kyc_pending:
     'Your KYC has to be approved in-order to accept International card payments.',
   activation_pending:
     'You will have to fill your Activation form & KYC form to be eligible to receive International card payments.',
-  international_activated:
+  international_allowed:
     'Settlement cycle and transaction fee is higher for International payments. \n International card payments is currently available only for payment gateways and not for payment pages, payment links & invoices.',
 };
 
@@ -95,6 +95,18 @@ export default class FlashCheckout extends Component {
   render() {
     let { fcEnabled } = this.state;
 
+    let display_msg = '';
+    const isInternationalAllowed =
+      true || (user.international || user.isWhitelistFlow);
+
+    if (isInternationalAllowed) {
+      display_msg = CUSTOM_MSG['international_activated'];
+    } else if (user.isBlacklistFlow) {
+      display_msg = CUSTOM_MSG['not_supported'];
+    } else if (user.isGraylistFlow) {
+      display_msg = CUSTOM_MSG['kyc_pending'];
+    }
+
     return (
       <div className="panel panel-default">
         <div className="panel-heading">
@@ -116,9 +128,15 @@ export default class FlashCheckout extends Component {
 
         <div className="panel-body">
           <form className="form-horizontal">
-            <div className="description">
-              {customMsg['international_activated']}
-            </div>
+            {isInternationalAllowed && (
+              <banner className="info">
+                From <b>3rd of March</b> your account will be activated for
+                international card payments, supporting 92 international
+                currencies.
+              </banner>
+            )}
+
+            <div className="description">{display_msg}</div>
 
             <div className="form-group">
               <ShowWhen
