@@ -241,13 +241,7 @@ class Gateway extends Base\Gateway
         {
             $input['gateway'][$prevStep] = $this->getPreviousData($input, $prevStep);
         }
-
-        //This is implemented for testing Bajaj as minimum payment is 3000 which is not supported on bajaj test cards.
-        if($this->mode === Mode::TEST)
-        {
-            $input['payment']['amount'] = 100;
-        }
-
+        
         $content['entities'] = $input;
 
         $baseUrl = $this->app['config']->get('applications.mozart.url');

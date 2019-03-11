@@ -908,6 +908,11 @@ class Validator extends Base\Validator
             return;
         }
 
+        if ($input[Entity::GATEWAY] === Gateway::BAJAJ)
+        {
+            return;
+        }
+
         if ($input[Entity::MERCHANT_ID] !== Merchant\Account::SHARED_ACCOUNT)
         {
             throw new Exception\LogicException(
