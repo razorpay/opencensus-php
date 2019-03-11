@@ -74,6 +74,11 @@ class NodalAccount extends NodalBase\NodalAccount
 
             $transfer = new Transfer($this->purpose, $type);
 
+            if ($attempt->hasCard() === true)
+            {
+                 $transfer->disableLogs();
+            }
+
             try
             {
                 // Calling init will reset all the data of previous request
@@ -121,12 +126,15 @@ class NodalAccount extends NodalBase\NodalAccount
             }
             catch (\Throwable $e)
             {
-                $this->trace->traceException(
-                    $e,
-                    Trace::ERROR,
-                    TraceCode::NODAL_TRANSFER_STATUS_UPDATE_FAILED,
-                    $response
-                );
+                if ($transfer->isLogEnabled() === true)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR,
+                        TraceCode::NODAL_TRANSFER_STATUS_UPDATE_FAILED,
+                        $response
+                    );
+                }
             }
 
             if ($lowBalanceAlert === true)
