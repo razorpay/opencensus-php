@@ -118,12 +118,6 @@ class BankAccount extends Base
         ];
 
         $this->trace->warn(TraceCode::BENEFICIARY_NAME_NOT_PRESENT, $traceArray);
-
-        $this->slack->queue(
-            TraceCode::BENEFICIARY_NAME_NOT_PRESENT,
-            $traceArray,
-            Constants::slackSettings()
-        );
     }
 
     /**
