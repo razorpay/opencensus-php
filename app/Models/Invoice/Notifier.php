@@ -438,6 +438,16 @@ class Notifier extends Base\Core
 
                 break;
 
+            case Preferences::MID_INDIABULLS_FINANCE:
+
+                $template = 'sms.custom_invoice.indiabulls_finance';
+                $params   = [
+                    'receipt'      => $receipt,
+                    'invoice_link' => $invoiceLink,
+                ];
+
+                break;
+
             case Preferences::MID_VARTHANA_FINANCE:
 
                 $template = 'sms.custom_invoice.varthana_finance';
