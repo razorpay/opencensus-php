@@ -175,6 +175,11 @@ class Constants
     const CREATE           = 'create';
     const UPDATE           = 'update';
 
+    // Feature base email block
+    const SELF_KYC_DISABLED      = 'self_kyc_disabled';
+    const PAYMENT_MAILS_DISABLED = 'payment_mails_disabled';
+    const DISPUTE_MAILS_DISABLED = 'dispute_mails_disabled';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,

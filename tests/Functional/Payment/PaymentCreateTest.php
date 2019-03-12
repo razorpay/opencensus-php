@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use Mail;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
@@ -9,6 +10,9 @@ use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
+use RZP\Mail\Payment\Refunded as RefundedMail;
+use RZP\Mail\Payment\Captured as CapturedMail;
+use RZP\Mail\Payment\Authorized as AuthorizedMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class PaymentCreateTest extends TestCase
@@ -468,6 +472,27 @@ class PaymentCreateTest extends TestCase
 
         $card = $this->getLastEntity('card', true);
         $this->assertEquals($card['international'], true);
+    }
+
+    public function testPaymentEmails()
+    {
+        $dummyOrg = $this->fixtures->create('org', ['custom_code' => 'dummy']);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['org_id' => $dummyOrg['id']]);
+
+        $this->fixtures->merchant->addFeatures(['dummy']);
+
+        Mail::fake();
+
+        Mail::setFakeConfig();
+
+        $this->doAuthCaptureAndRefundPayment($this->payment);
+
+        Mail::assertQueued(CapturedMail::class);
+
+        Mail::assertNotQueued(AuthorizedMail::class);
+
+        Mail::assertQueued(RefundedMail::class);
     }
 
     public function testIntlPaymentWhenNotAllowed()

@@ -25,9 +25,6 @@ class Payout extends Base
         $this->payoutCore = new PayoutModel\Core;
 
         $this->fundAccountProcessor = new FundAccount($batch);
-
-        // Repository method at getBalanceByAccountNumberOrFail() uses context's merchant.
-        app()->basicauth->setMerchant($this->merchant);
     }
 
     /**
