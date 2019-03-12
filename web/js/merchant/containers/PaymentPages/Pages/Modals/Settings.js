@@ -98,7 +98,10 @@ export default class extends React.Component {
       trackData.push('payment_success_redirect_url');
     }
 
-    trackPageSettingsData(trackData);
+    trackPageSettingsData(
+      this.props.isNew ? 'Save and Publish' : 'Save',
+      trackData
+    );
   };
 
   render() {

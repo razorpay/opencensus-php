@@ -1,4 +1,5 @@
 import { setTrackData } from 'rzp/utils/googleAnalytics';
+import { titleCase } from 'rzp/utils/rzp-utils';
 
 const eventCategory = 'Dashboard - Payment Pages';
 
@@ -115,10 +116,44 @@ export function trackCreateButtonCancel() {
 
 /*
 * Track the page settings data
+* label: 'Save and Publish', 'Save'
 * */
-export function trackPageSettingsData(trackData) {
+export function trackPageSettingsData(label, trackData) {
   track({
-    eventAction: 'Page Settings',
+    eventAction: 'Page Settings - ' + label,
+    eventLabel: trackData.join(' | '),
+  });
+}
+
+export function trackWYSIWYGCloseIntent() {
+  track({
+    eventAction: 'Close - WYWISYG (intent)',
+  });
+}
+
+export function trackConfirmWYSIWYGCloseIntent() {
+  track({
+    eventAction: 'Close - WYWISYG (confirmed)',
+  });
+}
+
+export function trackPageSettingsClick() {
+  track({
+    eventAction: 'Open - Page Settings',
+  });
+}
+
+/*
+* Track creation / updation of payment pages
+* type: create / save
+* */
+export function trackPageSave(type, trackData) {
+  if (['create', 'save'].indexOf(type.toLowerCase()) < -1) {
+    throw 'Invalid track type for saving payment pages';
+  }
+
+  track({
+    eventAction: `Create - ${titleCase(type)} and Publish`,
     eventLabel: trackData.join(' | '),
   });
 }
