@@ -14,6 +14,7 @@ use RZP\Models\State;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\RequestJob;
 use RZP\Models\Merchant;
+use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
@@ -448,7 +449,7 @@ class Core extends Base\Core
 
         $zapierData = $this->activationZapierData($customer, $merchant);
 
-        $this->postFormSubmissionToZapier($zapierData, 'submissions');
+        $this->postFormSubmissionToZapier($zapierData, 'submissions', $merchant);
     }
 
     protected function activationZapierData(array $customer, Merchant\Entity $merchant)
@@ -463,9 +464,11 @@ class Core extends Base\Core
         return $customer;
     }
 
-    public function postFormSubmissionToZapier($data, $zapierAction)
+    public function postFormSubmissionToZapier($data, $zapierAction, Merchant\Entity $merchant)
     {
-        if (Config::get('zapier.mock'))
+        // Don't send data to zapier for hdfc org.
+        // TODO:: Move the check to a feature flag after org level feature flags are implemented.
+        if ((Config::get('zapier.mock') === true) or ($merchant->getOrgId() === Org\Entity::HDFC_ORG_ID))
         {
             return;
         }
