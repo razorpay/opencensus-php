@@ -291,6 +291,10 @@ export default class User {
   get isCapitalBannerEnabled() {
     return this.getExpStatus('capital_banner');
   }
+
+  get isExpireByRequired() {
+    return this.isFeatureEnabled('invoice_expire_by_reqd');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

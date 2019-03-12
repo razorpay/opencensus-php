@@ -313,6 +313,7 @@ export default props => {
                             entityId={invoice.id}
                             trackerFn={trackDetailViewEdits}
                             isRoleAllowedEdit={isRoleAllowedEdit}
+                            isExpireByRequired={user.isExpireByRequired}
                           />
                         )
                       : () =>

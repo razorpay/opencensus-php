@@ -38,7 +38,7 @@ export default class EditExpiry extends React.Component {
   };
 
   render() {
-    const { isRoleAllowedEdit } = this.props;
+    const { isRoleAllowedEdit, isExpireByRequired } = this.props;
     let content = (
       <React.Fragment>
         {this.props.value ? (
@@ -66,6 +66,7 @@ export default class EditExpiry extends React.Component {
             updateDate={this.updateDate}
             expire_by={this.state.expire_by}
             defaultValue={this.state.expire_by}
+            isExpireByRequired={isExpireByRequired}
           />
 
           <div style={{ textAlign: 'right', marginBottom: 12, width: 192 }}>
@@ -114,7 +115,9 @@ export default class EditExpiry extends React.Component {
 export class DateField extends React.Component {
   state = {
     expire_by: this.props.defaultValue,
-    hasNoExpiry: !this.props.defaultValue,
+    hasNoExpiry: this.props.isExpireByRequired
+      ? false
+      : !this.props.defaultValue,
   };
 
   onDateChange = date => {
@@ -141,38 +144,52 @@ export class DateField extends React.Component {
 
   render() {
     const { expire_by, hasNoExpiry } = this.state;
-    const { isInline, label, className } = this.props;
+    const {
+      isInline,
+      label,
+      className,
+      isExpireByRequired = false,
+    } = this.props;
 
     return (
       <React.Fragment>
-        <Input.Check
-          label={label}
-          className={className}
-          fieldLabel="No Expiry"
-          defaultValue={this.props.defaultValue ? '0' : '1'}
-          value={hasNoExpiry}
-          onChange={e => {
-            if (!e.target.checked) {
-              setTimeout(() => {
-                document.querySelector('[data-name="expire_by_date"]').focus();
-                document.querySelector('[data-name="expire_by_date"]').click();
-              }, 10);
+        {!isExpireByRequired && (
+          <Input.Check
+            label={label}
+            className={className}
+            fieldLabel="No Expiry"
+            defaultValue={this.props.defaultValue ? '0' : '1'}
+            value={hasNoExpiry}
+            onChange={e => {
+              if (!e.target.checked) {
+                setTimeout(() => {
+                  document
+                    .querySelector('[data-name="expire_by_date"]')
+                    .focus();
+                  document
+                    .querySelector('[data-name="expire_by_date"]')
+                    .click();
+                }, 10);
 
-              this.props.updateDate && this.props.updateDate(null);
-            }
+                this.props.updateDate && this.props.updateDate(null);
+              }
 
-            this.setState({
-              hasNoExpiry: e.target.checked,
-            });
-          }}
-        />
+              this.setState({
+                hasNoExpiry: e.target.checked,
+              });
+            }}
+          />
+        )}
         <Input.Group
           class={classList(
-            'InputGroup--near',
+            !isExpireByRequired && 'InputGroup--near',
             isInline ? 'InputGroup--inline' : 'Input--half_big'
           )}
         >
-          <div class="Input-content">
+          <div
+            class="Input-content"
+            style={{ marginTop: isExpireByRequired ? -8 : 0 }}
+          >
             <Input.ToCalendar
               data-name="expire_by_date"
               placeholder="15-04-2018"
@@ -185,6 +202,7 @@ export class DateField extends React.Component {
               placement="topLeft"
               allowToday={true}
               disablePastDates={true}
+              required={isExpireByRequired}
             />
             {!!expire_by && (
               <Input.TimePicker
@@ -195,6 +213,7 @@ export class DateField extends React.Component {
                 onChange={this.onTimeChange}
                 size={isInline ? 'half_small' : 'half'}
                 addonAfter={<i class="i i-time" />}
+                required={isExpireByRequired}
               />
             )}
           </div>
