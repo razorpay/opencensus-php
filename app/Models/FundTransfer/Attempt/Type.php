@@ -25,6 +25,11 @@ class Type
         self::REFUND,
     ];
 
+    protected static $instantReconEntities = [
+        self::PAYOUT,
+        self::FUND_ACCOUNT_VALIDATION,
+    ];
+
     protected static $notifyTypes = [
         self::SETTLEMENT,
     ];
@@ -36,6 +41,11 @@ class Type
             throw new Exception\InvalidArgumentException(
                 'Not a valid FundTransferAttempt type: ' . $type);
         }
+    }
+
+    public static function isInstantReconEntity(string $type)
+    {
+        return (in_array($type, self::$instantReconEntities, true) === true);
     }
 
     public static function isNotifyType(string $type): bool

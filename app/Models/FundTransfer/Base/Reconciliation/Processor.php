@@ -163,7 +163,7 @@ abstract class Processor extends Base\Core
     protected function dispatchFtaForReconProcess(Entity $attempt)
     {
         // TODO: Allow for all, after testing payouts.
-        if ($attempt->getSourceType() !== Type::PAYOUT)
+        if (Type::isInstantReconEntity($attempt->getSourceType()) === false)
         {
             return;
         }

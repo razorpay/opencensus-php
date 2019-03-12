@@ -118,7 +118,35 @@ class Core extends Base\Core
 
             $processor->setDefaultValuesForValidation();
 
+            // We are saving here because when when creating transaction,
+            // it is assumed that source already exist.
+            $this->repo->saveOrFail($validation);
+
             $this->verifyFeesLessThanApplicableBalance($validation, $merchant);
+
+            // Transaction might fail because of concurrent request verifying and changing balance at the same time.
+            try
+            {
+                $txn = $processor->createTransaction();
+            }
+            catch (Exception\LogicException $e)
+            {
+                if ($e->getMessage() === 'Something very wrong is happening! Balance is going negative')
+                {
+                    $this->trace->info(TraceCode::UPDATE_STATUS_AFTER_FTA_INITIATED, $e->getData());
+
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INSUFFICIENT_BALANCE,
+                        null,
+                        null);
+                }
+
+                throw $e;
+            }
+
+            $validation->setFees($txn->getFee());
+
+            $validation->setTax($txn->getTax());
 
             $this->repo->saveOrFail($validation);
 

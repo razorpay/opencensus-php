@@ -94,28 +94,36 @@ class BankAccount extends Base
      */
     public function updateWithDetailsBeforeFtaRecon(array $input)
     {
-        $this->repo->transaction(function () use ($input)
+        if ($this->validation->getStatus() === Status::COMPLETED)
         {
-            if ($this->validation->getStatus() === Status::COMPLETED)
-            {
-                // Validation is already processed.
-                // We might have reached here because of status check API call on FTA.
-                return;
-            }
+            // Validation is already processed.
+            // We might have reached here because of status check API call on FTA.
+            return;
+        }
 
-            $beneficiaryName = $input['beneficiary_name'];
+        $beneficiaryName = $input['beneficiary_name'];
 
-            if ((empty($beneficiaryName) === false) and ($beneficiaryName !== 'NA'))
-            {
-                $this->markValidationAsCompleted(AccountStatus::ACTIVE);
+        if ((empty($beneficiaryName) === false) and ($beneficiaryName !== 'NA'))
+        {
+            $this->validation->setRegisteredName($beneficiaryName);
 
-                $this->validation->setRegisteredName($beneficiaryName);
+            $this->repo->saveOrFail($this->validation);
 
-                $this->repo->saveOrFail($this->validation);
+            return;
+        }
 
-                $this->triggerValidationCompletedWebhook();
-            }
-        });
+        $traceArray = [
+            'input'             => $input,
+            'validation_status' => $this->validation->getStatus(),
+        ];
+
+        $this->trace->warn(TraceCode::BENEFICIARY_NAME_NOT_PRESENT, $traceArray);
+
+        $this->slack->queue(
+            TraceCode::BENEFICIARY_NAME_NOT_PRESENT,
+            $traceArray,
+            Constants::slackSettings()
+        );
     }
 
     /**
@@ -167,72 +175,33 @@ class BankAccount extends Base
      */
     protected function updateValidationAfterFtaProcessed(array $input)
     {
-        if ($this->validation->getStatus() === Status::CREATED)
-        {
-            // This will happen when beneficiary name was not present at the time of initiating but FTA is processed now.
-
-            // TODO: If beneficiary name is not coming for a bank always,
-            // we should be able to disable the feature for that bank.
-            // Otherwise this may result in losses.
-
-            $traceArray = [
-                'input' => $input,
-                'validation_status' => $this->validation->getStatus(),
-            ];
-
-            $this->trace->info(TraceCode::BENEFICIARY_NAME_NOT_PRESENT, $traceArray);
-
-            $this->slack->queue(
-                TraceCode::BENEFICIARY_NAME_NOT_PRESENT,
-                $traceArray,
-                Constants::slackSettings()
-            );
-        }
+        $this->markValidationAsCompleted(AccountStatus::ACTIVE);
     }
 
     /**
      * @param array $input
-     * @throws Exception\LogicException
      */
     protected function updateValidationAfterFtaFailed(array $input)
     {
-        $this->repo->transaction(function () use ($input)
+        if ($input['internal_error'] === false)
         {
-            if ($this->validation->getStatus() === Status::COMPLETED)
-            {
-                // This probably happened because FTA status might have moved from Initiated(with beneficiary name) to failed.
+            $this->markValidationAsCompleted(AccountStatus::INVALID);
 
-                $this->slack->queue(
-                    'Validation is already processed. Cannot mark it as failed now.',
-                    [
-                        'input' => $input,
-                        'validation_status' => $this->validation->getStatus(),
-                    ],
-                    Constants::slackSettings()
-                );
+            return;
+        }
 
-                throw new Exception\LogicException('Validation is already processed. Should not have reached here');
-            }
+        $traceArray = [
+            'input'             => $input,
+            'validation_status' => $this->validation->getStatus(),
+        ];
 
-            if ($input['internal_error'] === false)
-            {
-                $this->markValidationAsCompleted(AccountStatus::INVALID);
+        $this->trace->error('Penny Testing Failed due to critical reasons. We should retry.', $traceArray);
 
-                $this->repo->saveOrFail($this->validation);
+        $this->slack->queue(
+            'Penny Testing Failed due to critical reasons. We should retry.',
+            $traceArray,
+            Constants::slackSettings()
+        );
 
-                $this->triggerValidationCompletedWebhook();
-            }
-            else
-            {
-                $this->slack->queue(
-                    'Penny Testing Failed due to critical reasons.',
-                    [
-                        'input' => $input,
-                        'validation_status' => $this->validation->getStatus(),
-                    ],
-                    Constants::slackSettings()
-                );
-            }
-        });
     }
 }
