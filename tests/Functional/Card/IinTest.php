@@ -27,6 +27,11 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddIinWithRecurring()
+    {
+        $this->startTest();
+    }
+
     public function testEditIinFailedInvalidMessageType()
     {
         $this->testAddIin();
