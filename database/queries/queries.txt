@@ -4816,3 +4816,9 @@ ALTER TABLE payouts
 
 ALTER TABLE payouts
     ADD INDEX payouts_purpose_index (purpose);
+
+ALTER TABLE transactions
+    ADD INDEX transactions_debit_index (debit);
+
+ALTER TABLE transactions
+    ADD INDEX transactions_credit_index (credit);
