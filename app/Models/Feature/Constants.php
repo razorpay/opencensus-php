@@ -416,6 +416,11 @@ class Constants
             'display_name'  => 'Mandatory invoice receipt field',
             'documentation' => '',
         ],
+        self::INVOICE_EXPIRE_BY_REQD    => [
+            'feature'       => self::INVOICE_EXPIRE_BY_REQD,
+            'display_name'  => 'Mandatory invoice expire_by field',
+            'documentation' => '',
+        ],
     ];
 
     /**
