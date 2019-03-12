@@ -33,8 +33,12 @@ export const resendInvite = submerchantId => ({
   payload: new Submerchant().resendInvite(submerchantId),
 });
 
-export const downloadSubmerchants = (isPurePlatform = false) => {
-  const startTime = new Date().getTime();
+export const downloadSubmerchants = (isPurePlatform = false, generated_by) => {
+  const errorObject = {
+    error: true,
+  };
+  const TIMEOUT = 5 * 60 * 1000; // 5 minutes;
+  const startTime = new Date();
 
   /**
    * these are hardcoded values
@@ -54,23 +58,31 @@ export const downloadSubmerchants = (isPurePlatform = false) => {
   const start_time = moment(end_time, 'X')
     .subtract(1, 'months')
     .format('X');
+
   return createLog({
     start_time,
     end_time,
     config_id,
-    generated_by: 'Azv3fr3tEOayGk',
+    generated_by,
   }).then(logResponse => {
     if (logResponse.data.id) {
       return poll({
         fetchFunc: () => getLog(logResponse.data.id),
+
         validator: validatorResp => {
+          const timeElapsed = new Date() - startTime;
           return (
-            validatorResp.error ||
+            validatorResp.error || timeElapsed > TIMEOUT,
             (validatorResp.data || {}).status !== 'created'
           );
         },
       }).promise.then(pollResponse => {
-        console.log({ pollResponse });
+        const { error, data } = pollResponse;
+
+        if (error || ['created', 'failed'].includes((data || {}).status)) {
+          return errorObject;
+        }
+
         const fileId = pollResponse.data.file_id;
         return getFile(fileId);
       });

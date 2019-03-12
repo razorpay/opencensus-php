@@ -149,21 +149,33 @@ export default class SubMerchantsList extends ListContainer {
   };
 
   onDownload = () => {
+    const { user } = this.props;
     this.props.showNotification({
       type: 'info',
       message: 'Your file will downloaded shortly',
-      hidPrevious: true,
+      hidePrevious: true,
     });
     this.setState({ affiliatesDownloading: true });
-    return downloadSubmerchants().then(response => {
-      this.setState({ affiliatesDownloading: false });
-
-      if (response.error) {
-        console.log(response.error);
-        return;
-      }
-      window.location = response.data.signed_url;
-    });
+    return downloadSubmerchants(user.isPartner('pure_platform'), user.id)
+      .then(response => {
+        this.setState({ affiliatesDownloading: false });
+        if (response.error) {
+          this.props.showNotification({
+            type: 'error',
+            message: 'Oops!, Unable to export data of submerchants',
+            hidePrevious: true,
+          });
+          return;
+        }
+        window.location = response.data.signed_url;
+      })
+      .catch(() => {
+        this.props.showNotification({
+          type: 'error',
+          message: 'Oops!, Unable to export data of submerchants',
+          hidePrevious: true,
+        });
+      });
   };
 
   componentDidMount() {
