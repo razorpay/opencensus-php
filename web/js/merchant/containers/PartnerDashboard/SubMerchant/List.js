@@ -8,6 +8,7 @@ import { openModal, closeModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 import { fetchSubmerchants as fetchAll } from 'merchant/modules/collection';
 import { switchMerchant } from 'merchant/modules/session';
+import { downloadSubmerchants } from 'merchant/modules/submerchant';
 
 import DataTable from 'rzp/ui/Table/DataTable';
 import HeaderAction from 'rzp/ui/HeaderAction';
@@ -145,6 +146,17 @@ export default class SubMerchantsList extends ListContainer {
       });
   };
 
+  onDownload = () => {
+    return downloadSubmerchants().then(response => {
+      console.log({ response });
+      if (response.error) {
+        console.log(response.error);
+        return;
+      }
+      window.location = response.data.signed_url;
+    });
+  };
+
   componentDidMount() {
     trackListEvents('Go To');
   }
@@ -165,13 +177,17 @@ export default class SubMerchantsList extends ListContainer {
     return (
       <div class="sub-merchants-list">
         <div>
-          <ShowWhen
-            myRole="owner manager admin"
-            additionalCondition={user =>
-              user.isPartner() && !user.isPartner('pure_platform')
-            }
-          >
-            <HeaderAction>
+          <HeaderAction>
+            <button class="btn btn-default" onClick={this.onDownload}>
+              <i className="i i-download" />
+              <span>Download All</span>
+            </button>
+            <ShowWhen
+              myRole="owner manager admin"
+              additionalCondition={user =>
+                user.isPartner() && !user.isPartner('pure_platform')
+              }
+            >
               <button
                 class="btn btn-primary pull-right"
                 onClick={this.handleAddMerchant}
@@ -179,20 +195,8 @@ export default class SubMerchantsList extends ListContainer {
                 <i class="i i-plus" />
                 Add New Merchant
               </button>
-            </HeaderAction>
-          </ShowWhen>
-          {/* <StatsCard
-            title="Total transaction volume"
-            value={humanReadableIndianCurrency(603000000)}
-          />
-          <StatsCard
-            title="Number of Payments"
-            value={humanReadableIndianCurrency(20630)}
-          />
-          <StatsCard
-            title="My Earnings"
-            value={humanReadableIndianCurrency(560000)}
-          /> */}
+            </ShowWhen>
+          </HeaderAction>
         </div>
         <div class="content-wrapper">
           <ListFilter

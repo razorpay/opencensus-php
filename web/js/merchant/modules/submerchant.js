@@ -1,6 +1,8 @@
 import Submerchant from 'merchant/models/Submerchant';
+import { createLog, getLog, getFile } from 'merchant/modules/reports';
 
 import { merge } from 'rzp/utils/immutable';
+import poll from 'rzp/utils/poll/longPoll';
 
 const SUB_MERCHANT_CREATE = 'SUB_MERCHANT_CREATE';
 const SUB_MERCHANT_FETCH_DETAILS = 'SUB_MERCHANT_FETCH_DETAILS';
@@ -30,6 +32,51 @@ export const resendInvite = submerchantId => ({
   type: SUB_MERCHANT_RESEND_INVITE,
   payload: new Submerchant().resendInvite(submerchantId),
 });
+
+export const downloadSubmerchants = (isPurePlatform = false) => {
+  const startTime = new Date().getTime();
+
+  /**
+   * these are hardcoded values
+   * reporting service consists of configs table which consist of configurations for different reports
+   * download submerchants uses the same service to get all the submerchants of the partner
+   * Mentioned config_ids are the id of configs of those respective configurations (which will get us the list of submerchants)
+   * For more info see the code of download report
+   */
+  const config_id = isPurePlatform
+    ? 'config_C26ykx5qWFJq0N'
+    : 'config_C26zkCd7EcdfTQ';
+
+  // fake params, since reporting service makes it mandatory
+  // and they should be one month apart
+  // any value won't affect the results
+  const end_time = moment().format('X');
+  const start_time = moment(end_time, 'X')
+    .subtract(1, 'months')
+    .format('X');
+  return createLog({
+    start_time,
+    end_time,
+    config_id,
+    generated_by: 'Azv3fr3tEOayGk',
+  }).then(logResponse => {
+    if (logResponse.data.id) {
+      return poll({
+        fetchFunc: () => getLog(logResponse.data.id),
+        validator: validatorResp => {
+          return (
+            validatorResp.error ||
+            (validatorResp.data || {}).status !== 'created'
+          );
+        },
+      }).promise.then(pollResponse => {
+        console.log({ pollResponse });
+        const fileId = pollResponse.data.file_id;
+        return getFile(fileId);
+      });
+    }
+  });
+};
 
 const initialState = {
   loading: true,
