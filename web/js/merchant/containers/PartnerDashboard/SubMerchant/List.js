@@ -125,6 +125,8 @@ const appId = {
   }
 )
 export default class SubMerchantsList extends ListContainer {
+  state = {};
+
   handleAddMerchant = () => {
     this.props.openModal({
       size: 'small',
@@ -147,8 +149,15 @@ export default class SubMerchantsList extends ListContainer {
   };
 
   onDownload = () => {
+    this.props.showNotification({
+      type: 'info',
+      message: 'Your file will downloaded shortly',
+      hidPrevious: true,
+    });
+    this.setState({ affiliatesDownloading: true });
     return downloadSubmerchants().then(response => {
-      console.log({ response });
+      this.setState({ affiliatesDownloading: false });
+
       if (response.error) {
         console.log(response.error);
         return;
@@ -178,9 +187,19 @@ export default class SubMerchantsList extends ListContainer {
       <div class="sub-merchants-list">
         <div>
           <HeaderAction>
-            <button class="btn btn-default" onClick={this.onDownload}>
-              <i className="i i-download" />
-              <span>Download All</span>
+            <button
+              class="btn btn-default"
+              onClick={this.onDownload}
+              disabled={this.state.affiliatesDownloading}
+            >
+              {!this.state.affiliatesDownloading ? (
+                <>
+                  <i className="i i-download" />
+                  <span>Export All (CSV)</span>
+                </>
+              ) : (
+                <>Exporting Affiliates...</>
+              )}
             </button>
             <ShowWhen
               myRole="owner manager admin"
