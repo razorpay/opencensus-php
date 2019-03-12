@@ -64,7 +64,7 @@ class Sbi extends Base
     {
         if ($this->app->environment(Environment::TESTING))
         {
-            return bin2hex(self::TEST_ENCRYPTION_KEY);
+            return self::TEST_ENCRYPTION_KEY;
         }
 
         return bin2hex(openssl_random_pseudo_bytes(256));
@@ -99,7 +99,7 @@ class Sbi extends Base
                         Service::ENCRYPTION_TYPE,
                         [
                             'mode'   => Service::ENCRYPTION_MODE,
-                            'secret' => hex2bin($data['password']),
+                            'secret' => $data['password'],
                         ])
                     ->type(static::FILE_TYPE)
                     ->entity($this->gatewayFile)
