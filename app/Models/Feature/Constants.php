@@ -322,6 +322,9 @@ class Constants
         self::INVOICE_RECEIPT_MANDATORY       => true,
         self::INVOICE_NO_EXPIRY_EMAIL         => true,
         self::INVOICE_EXPIRE_BY_REQD          => true,
+        self::SELF_KYC_DISABLED               => true,
+        self::PAYMENT_MAILS_DISABLED          => true,
+        self::DISPUTE_MAILS_DISABLED          => true,
     ];
 
     // Entity type constants
