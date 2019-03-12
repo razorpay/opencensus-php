@@ -269,13 +269,13 @@ trait Authorize
 
                 $this->disableIinFlowIfApplicable($payment, $internalErrorCode);
 
-                $this->logRiskFailureForGateway($payment, $internalErrorCode);
-
                 if (($retry === true) and
                     ($retryAttempts < $maxRetryAttempts))
                 {
                     continue;
                 }
+
+                $this->logRiskFailureForGateway($payment, $internalErrorCode);
 
                 $this->updatePaymentAuthFailedAndThrowException($e);
             }
