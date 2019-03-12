@@ -36,6 +36,7 @@ class Preferences
     const MID_AMIT_RBLCARD          = 'BcVn9Oy1aSkcOa';
     const MID_AMIT_RBLLOAN          = 'BcVzB5W2m4noKJ';
     const MID_RBLCARD               = 'BYUXW3iBH0P0zU';
+    const MID_DELINQUENT_LOANS      = 'C3oXor5gWBUoWB';
     const MID_RBLLOAN               = 'BUjzZmAEXnXVJs';
     const MID_RBLBFL                = 'BjdSExY3hArAHm';
     const MID_DMI_FINANCE           = 'BU4wKuO2IisLWY';

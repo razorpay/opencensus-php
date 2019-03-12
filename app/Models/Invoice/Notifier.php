@@ -405,6 +405,7 @@ class Notifier extends Base\Core
                 break;
 
             case Preferences::MID_RBLLOAN:
+            case Preferences::MID_DELINQUENT_LOANS:
             case Preferences::MID_AMIT_RBLLOAN:
 
                 $template = 'sms.custom_invoice.rbl_loan';
