@@ -207,6 +207,8 @@ class Sbi extends Base
 
                 $tenure = $emiPlan->getDuration();
 
+                $businessName = substr($merchantDetail[Detail\Entity::BUSINESS_NAME], 0, 40);
+
                 $body[] =
                     'DD' .    // record type always DD
                     'R' . $this->numpad($uniqueReferenceNum, 14) .
@@ -218,7 +220,7 @@ class Sbi extends Base
                     Carbon::createFromTimestamp($emiPayment['authorized_at'])->format('dmY') .
                     $this->strpad('Razor Pay', 40) .
                     $this->numpad($mid, 16) .
-                    $this->strpad($merchantDetail[Detail\Entity::BUSINESS_NAME], 40) .
+                    $this->strpad($businessName, 40) .
                     $this->strpad($tid, 8) .
                     str_pad($emiPlan->getRate(), 7, '0', STR_PAD_RIGHT) .
                     $this->strpad('', 40) .
