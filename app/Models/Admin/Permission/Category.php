@@ -29,5 +29,6 @@ class Category
     const MERCHANT_DETAIL  = 'merchant_detail';
     const MERCHANT_REQUEST = 'merchant_request';
     const RAZORX           = 'razorx';
+    const GATEWAY          = 'gateway';
     const SUBSCRIPTIONS    = 'subscriptions';
 }
