@@ -38,7 +38,7 @@ return [
                 'entity'      => 'batch',
                 'type'        => 'payout',
                 'status'      => 'created',
-                'total_count' => 2,
+                'total_count' => 4,
             ],
         ],
     ],
@@ -127,6 +127,7 @@ return [
     ],
 
     'testCreateBatchOfPayoutTypeRequestFileEntries' => [
+        // Expected to create new contact, fund account and then create payout.
         [
             'RazorpayX Account Number'  => '2224440041626905',
             'Payout Amount'             => 100,
@@ -148,6 +149,53 @@ return [
             'notes[place]'              => 'Bangalore',
             'notes[code]'               => 'Xyz123',
         ],
+        // Expected to use existing fund account and then create payout. Note
+        // that contact details is different in this case then 1st but that is
+        // ignored per product ask if fund account details is similar.
+        [
+            'RazorpayX Account Number'  => '2224440041626905',
+            'Payout Amount'             => 100,
+            'Payout Currency'           => 'INR',
+            'Payout Mode'               => 'NEFT',
+            'Payout Purpose'            => 'refund',
+            'Payout Reference Id'       => '',
+            'Fund Account Id'           => '',
+            'Fund Account Type'         => 'bank_account',
+            'Fund Account Name'         => 'Jitendra',
+            'Fund Account Ifsc'         => 'SBIN0007105',
+            'Fund Account Number'       => '1234567890',
+            'Fund Account Vpa'          => '',
+            'Contact Type'              => 'vendor',
+            'Contact Name'              => 'Jitendra Ojha',
+            'Contact Email'             => 'jitendra.ojha@example.com',
+            'Contact Mobile'            => '9988998899',
+            'Contact Reference Id'      => '',
+            'notes[place]'              => 'Bangalore',
+            'notes[code]'               => 'Xyz123',
+        ],
+        // Expect to create new fund account on existing contact and then create payout.
+        [
+            'RazorpayX Account Number'  => '2224440041626905',
+            'Payout Amount'             => 100,
+            'Payout Currency'           => 'INR',
+            'Payout Mode'               => 'NEFT',
+            'Payout Purpose'            => 'refund',
+            'Payout Reference Id'       => '',
+            'Fund Account Id'           => '',
+            'Fund Account Type'         => 'bank_account',
+            'Fund Account Name'         => 'Jitendra',
+            'Fund Account Ifsc'         => 'SBIN0007105',
+            'Fund Account Number'       => '1234567891',
+            'Fund Account Vpa'          => '',
+            'Contact Type'              => 'vendor',
+            'Contact Name'              => 'Jitendra',
+            'Contact Email'             => 'jitendra@example.com',
+            'Contact Mobile'            => '9988998899',
+            'Contact Reference Id'      => '',
+            'notes[place]'              => 'Bangalore',
+            'notes[code]'               => 'Xyz123',
+        ],
+        // Expect to use existing fund account and then create payout.
         [
             'RazorpayX Account Number'  => '2224440041626905',
             'Payout Amount'             => 1000,

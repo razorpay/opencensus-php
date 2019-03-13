@@ -86,13 +86,22 @@ class BatchTest extends TestCase
 
         $this->startTest();
 
+        /**
+         * @see testCreateBatchOfPayoutTypeRequestFileEntries
+         * Refer BatchTestData.php on details of scenarios and assertions below.
+         */
+
         $payouts = $this->getDbEntities('payout');
-        $this->assertCount(2, $payouts);
-        $this->assertEquals(1100, $payouts->sum(Payout\Entity::AMOUNT));
-        $this->assertEquals('1234567890', $payouts->first()->fundAccount->account->getAccountNumber());
-        $this->assertEquals('Jitendra', $payouts->first()->fundAccount->contact->getName());
-        $this->assertEquals('fa_000000000test1', $payouts->last()->fundAccount->getPublicId());
-        $this->assertEquals('test user', $payouts->last()->fundAccount->contact->getName());
+        $this->assertCount(4, $payouts);
+        $this->assertEquals(1300, $payouts->sum(Payout\Entity::AMOUNT));
+        $this->assertEquals('1234567890', $payouts[0]->fundAccount->account->getAccountNumber());
+        $this->assertEquals($payouts[0]->fundAccount->getId(), $payouts[1]->fundAccount->getId());
+        $this->assertEquals('Jitendra', $payouts[0]->fundAccount->contact->getName());
+        $this->assertEquals('Jitendra', $payouts[1]->fundAccount->contact->getName());
+        $this->assertEquals('1234567891', $payouts[2]->fundAccount->account->getAccountNumber());
+        $this->assertEquals($payouts[0]->fundAccount->contact->getId(), $payouts[2]->fundAccount->contact->getId());
+        $this->assertEquals('fa_000000000test1', $payouts[3]->fundAccount->getPublicId());
+        $this->assertEquals('test user', $payouts[3]->fundAccount->contact->getName());
     }
 
     protected function getFileEntries(string $callee): array

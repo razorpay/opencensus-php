@@ -41,6 +41,37 @@ class FundAccount extends Base
         });
     }
 
+    /**
+     * Processes fund account entry but little differently when it is coming
+     * from payout type batch flow. Note that there is a cascading design like
+     * processor of payout type -> uses fund account's -> uses contact's. Though
+     * contact type batch is disabled.
+     *
+     * When from payout type batch we check first existence of fund account
+     * "ignoring" contact details in the entry. If it exists use that. Else fall
+     * to the normal flow i.e. processEntryAndGetEntity(), refer that method.
+     *
+     * @param  array $entry
+     * @return FundAccountModel\Entity
+     */
+    public function processEntryForPayoutBatch(array & $entry): FundAccountModel\Entity
+    {
+        $fundAccountInput = Batch\Helpers\FundAccount::getFundAccountInput($entry);
+        $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetails($fundAccountInput, $this->merchant);
+
+        if ($fundAccount !== null)
+        {
+            return $fundAccount;
+        }
+
+        // Instead of now calling processEntryAndGetEntity() rewrites few lines
+        // here to avoid double query for fund account similarity check.
+
+        $contact = $this->processEntryForContact($entry);
+
+        return $this->fundAccountCore->create($fundAccountInput, $this->merchant, $contact);
+    }
+
     public function processEntryAndGetEntity(array & $entry): FundAccountModel\Entity
     {
         $contact = $this->processEntryForContact($entry);
