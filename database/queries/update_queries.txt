@@ -2457,5 +2457,10 @@ UPDATE line_item_taxes SET rate = rate * 100 WHERE rate_type = 'percentage' AND 
 # Result of above query ^. Some subscription cron created another entity using correct tax.rate value in between.
 UPDATE line_item_taxes SET rate = 180000 WHERE id = 'Bz6kYfEYhnonxn' LIMIT 1;
 
-# Manually marks a refund type batch as failed on support request.
+\# Manually marks a refund type batch as failed on support request.
 UPDATE batches SET status = "failed", processed_at = UNIX_TIMESTAMP(), comment = "Manually marked failed on support request" WHERE id IN ('C3cKCA0Qfma8Pr') AND processing = 0 LIMIT 1;
+
+# Setting recurring feature at bin level | PAY-928
+UPDATE iins SET recurring = 1 WHERE type != 'debit' and network in ('MasterCard', 'Visa');
+UPDATE iins SET recurring = 1 WHERE type = 'debit' and network in ('MasteCard', 'Visa') and issuer in ('ICIC', 'CITI', 'KKBK', 'CNRB', 'HDFC');
+

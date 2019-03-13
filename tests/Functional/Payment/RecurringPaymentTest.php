@@ -72,6 +72,7 @@ class RecurringPaymentTest extends TestCase
             'network' => 'Visa',
             'type' => 'debit',
             'issuer' => 'KKBK',
+            'recurring' => 1,
         ]);
 
         $payment = $this->getDefaultRecurringPaymentArray();
@@ -115,6 +116,7 @@ class RecurringPaymentTest extends TestCase
                                          'network' => 'Visa',
                                          'type' => 'debit',
                                          'issuer' => 'KKBK',
+                                         'recurring' => 1,
                                      ]);
 
         $payment = $this->getDefaultRecurringPaymentArray();

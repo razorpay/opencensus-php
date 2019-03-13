@@ -6,6 +6,8 @@ use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Bank\Name;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Card\Type;
+use RZP\Models\Payment\Gateway;
 
 class Entity extends Base\PublicEntity
 {
@@ -41,7 +43,8 @@ class Entity extends Base\PublicEntity
     protected static $modifiers = ['inputRemoveBlanks'];
 
     protected static $generators = [
-        self::ISSUER_NAME
+        self::ISSUER_NAME,
+        self::RECURRING,
     ];
 
     protected $fillable = [
@@ -58,7 +61,7 @@ class Entity extends Base\PublicEntity
         self::FLOWS,
         self::LOCKED,
         self::MESSAGE_TYPE,
-        self::RECURRING,
+        self::RECURRING
     ];
 
     protected $public = [
@@ -94,7 +97,6 @@ class Entity extends Base\PublicEntity
         self::ENABLED        => true,
         self::LOCKED         => false,
         self::MESSAGE_TYPE   => null,
-        self::RECURRING      => false,
     ];
 
     protected $casts = [
@@ -310,5 +312,37 @@ class Entity extends Base\PublicEntity
         {
             $this->setAttribute(self::ISSUER_NAME, Name::getName($input[self::ISSUER]));
         }
+    }
+
+    protected function generateRecurring($input)
+    {
+        if (isset($input[self::RECURRING]) === false)
+        {
+            $issuer = isset($input[self::ISSUER]) ? $input[self::ISSUER] : null;
+
+            $isRecurring = $this->isRecurringOnNetworkrAndTypeAndIssuer($input[self::NETWORK], $input[self::TYPE], $issuer);
+
+            $this->setAttribute(self::RECURRING, $isRecurring);
+        }
+    }
+
+    protected function isRecurringOnNetworkrAndTypeAndIssuer($network, $type, $issuer): bool
+    {
+        if (in_array($network, Gateway::getNetworksSupportedForCardRecurring(), true) === false)
+        {
+            return false;
+        }
+
+        if ($type !== Type::DEBIT)
+        {
+            return true;
+        }
+
+        if(($issuer !== null) and (in_array($issuer, Gateway::getIssuersSupportedForDebitCardRecurring(), true)))
+        {
+            return true;
+        }
+
+        return false;
     }
 }
