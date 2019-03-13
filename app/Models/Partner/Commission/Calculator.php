@@ -17,6 +17,7 @@ use RZP\Models\EntityOrigin;
 use RZP\Models\Pricing\Plan;
 use RZP\Exception\LogicException;
 use RZP\Models\Partner\Commission;
+use RZP\Constants as BaseConstants;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Models\Pricing\Calculator as FeeCalculator;
 
@@ -648,6 +649,9 @@ class Calculator extends Base\Core
 
         $commissionFee = $merchantFee - $partnerFee;
         $commissionTax = $merchantTax - $partnerTax;
+
+        $commissionTax = $this->addTaxToCommissionIfApplicable($commissionFee, $commissionTax);
+
         $this->setCommissionFee($commissionFee);
         $this->setCommissionTax($commissionTax);
 
@@ -921,13 +925,56 @@ class Calculator extends Base\Core
                             $this->getCommissions());
 
         return [
-            'source_type'    => optional($this->getSource())->getId(),
-            'source_id'      => optional($this->getSource())->getEntityName(),
+            'source_type'    => optional($this->getSource())->getEntityName(),
+            'source_id'      => optional($this->getSource())->getId(),
             'submerchant'    => optional($this->getSubMerchant())->getId(),
             'partner'        => optional($this->getPartner())->getId(),
             'partner_app'    => optional($this->getPartnerApp())->getId(),
             'partner_config' => optional($this->getPartnerConfig())->getId(),
             'commissions'    => $commissionIds,
         ];
+    }
+
+    /**
+     * As per RBI guidelines, for card payments < 2000 INR, no GST is charged.
+     * Since the commission calculator internally uses the merchant fee calculator,
+     * there will be no tax calculated on the commission as well.
+     * This function adds tax to the commission calculation if the tax calculated so far is zero.
+     *
+     * @param float $commissionFee
+     * @param float $commissionTax
+     *
+     * @return float
+     * @throws LogicException
+     */
+    protected function addTaxToCommissionIfApplicable(float $commissionFee, float $commissionTax): float
+    {
+        if ($commissionTax === 0)
+        {
+            $entityType = $this->getSource()->getEntity();
+
+            switch ($entityType)
+            {
+                case BaseConstants\Entity::PAYMENT:
+
+                    $calculationPercentage = FeeCalculator\Base::CGST_PERCENTAGE;
+
+                    $taxValue = 2 * ((int) round(($calculationPercentage * $commissionFee) / 10000));
+
+                    return $taxValue;
+
+                default:
+
+                    $traceData = $this->getTraceData();
+
+                    throw new LogicException(
+                        'The GST calculation on commission for ' . $entityType . ' is not handled',
+                        null,
+                        $traceData);
+            }
+
+        }
+
+        return $commissionTax;
     }
 }
