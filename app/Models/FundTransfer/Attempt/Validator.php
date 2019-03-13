@@ -48,6 +48,7 @@ class Validator extends Base\Validator
         Entity::REMARKS        => 'sometimes|string',
         Entity::NARRATION      => 'sometimes|string',
         Entity::DATE_TIME      => 'sometimes|string',
+        Entity::SOURCE_ID      => 'required|string',
         Entity::FAILURE_REASON => 'sometimes|string',
         'fund_transfer_id'     => 'required|int',
     ];
