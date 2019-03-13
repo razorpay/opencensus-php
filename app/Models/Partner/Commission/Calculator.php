@@ -650,7 +650,7 @@ class Calculator extends Base\Core
         $commissionFee = $merchantFee - $partnerFee;
         $commissionTax = $merchantTax - $partnerTax;
 
-        $commissionTax = $this->addTaxToCommissionIfApplicable($commissionFee, $commissionTax);
+        list($commissionFee, $commissionTax) = $this->addTaxToCommissionIfApplicable($commissionFee, $commissionTax);
 
         $this->setCommissionFee($commissionFee);
         $this->setCommissionTax($commissionTax);
@@ -944,12 +944,12 @@ class Calculator extends Base\Core
      * @param float $commissionFee
      * @param float $commissionTax
      *
-     * @return float
+     * @return array
      * @throws LogicException
      */
-    protected function addTaxToCommissionIfApplicable(float $commissionFee, float $commissionTax): float
+    protected function addTaxToCommissionIfApplicable(float $commissionFee, float $commissionTax): array
     {
-        if ($commissionTax === 0)
+        if ($commissionTax === 0.0)
         {
             $entityType = $this->getSource()->getEntity();
 
@@ -961,7 +961,11 @@ class Calculator extends Base\Core
 
                     $taxValue = 2 * ((int) round(($calculationPercentage * $commissionFee) / 10000));
 
-                    return $taxValue;
+                    $commissionTax = $taxValue;
+
+                    $commissionFee += $commissionTax;
+
+                    break;
 
                 default:
 
@@ -975,6 +979,6 @@ class Calculator extends Base\Core
 
         }
 
-        return $commissionTax;
+        return [$commissionFee, $commissionTax];
     }
 }
