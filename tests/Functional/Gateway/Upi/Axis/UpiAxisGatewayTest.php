@@ -574,6 +574,56 @@ class UpiAxisGatewayTest extends TestCase
         $this->assertEquals('failed', $refund['status']);
     }
 
+    public function testVerifyRefund()
+    {
+        $payment = $this->testPayment();
+
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            $content['code'] = 'A79';
+        }, $this->gateway);
+
+        $this->refundPayment($payment->getPublicId());
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $response = $this->retryFailedRefund($refund['id']);
+
+        $this->assertEquals('failed', $response['status']);
+
+        $this->resetMockServer();
+
+        $response = $this->retryFailedRefund($refund['id']);
+
+        $this->assertEquals('processed', $response['status']);
+    }
+
+    public function testVerifyRefundFailed()
+    {
+        $payment = $this->testPayment();
+
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'refund'){
+                $content['code'] = '111';
+            }
+        }, $this->gateway);
+
+        $this->refundPayment($payment->getPublicId());
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+
+        $response = $this->retryFailedRefund($refund['id']);
+
+        $this->assertEquals('processed', $response['status']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('processed', $refund['status']);
+    }
+
     public function testRefundAndVerifyOnIntent()
     {
         $payment = $this->testIntentPayment();

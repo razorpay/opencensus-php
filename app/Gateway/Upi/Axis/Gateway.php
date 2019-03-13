@@ -273,22 +273,7 @@ class Gateway extends Base\Gateway
             'body'              => $responseBody,
         ];
 
-        try
-        {
-            $content = $this->jsonToArray($responseBody);
-
-            $trace['content'] = $content;
-
-            $this->trace->info(TraceCode::GATEWAY_RESPONSE, $trace);
-
-            return $content;
-        }
-        catch (\Throwable $exception)
-        {
-            $this->trace->error(TraceCode::GATEWAY_RESPONSE, $trace);
-
-            throw $exception;
-        }
+        return $this->parseResponse($responseBody, $trace);
     }
 
     private function checkResponseStatus($status, string $successStatus)
@@ -742,7 +727,100 @@ class Gateway extends Base\Gateway
             return true;
         }
 
-        parent::verifyRefund($input);
+        parent::action($input, Action::VERIFY_REFUND);
+
+        $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail($input['refund']['payment_id'], Action::AUTHORIZE);
+
+        $upiPaymentType = $gatewayEntity[Entity::TYPE];
+
+        $verifyRequestArray = $this->getVerifyRefundRequestArray($input, $upiPaymentType);
+
+        $content = json_encode($verifyRequestArray);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
+            [
+                'request'       => $request,
+                'refund_id'     => $input['refund']['id'],
+                'gateway'       => $this->gateway,
+                'plain_data'    => $verifyRequestArray,
+            ]);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $responseContent = $this->parseVerifyRefundResponse($response->body, $input);
+
+        return $this->checkRefundResponseStatus($responseContent);
+    }
+
+    public function parseVerifyRefundResponse($responseBody, $input)
+    {
+        $trace = [
+            'gateway'           => $this->gateway,
+            'action'            => $this->action,
+            'payment_id'        => $input['refund']['id'],
+            'terminal_id'       => $input['terminal']['id'],
+            'body'              => $responseBody,
+        ];
+
+        return $this->parseResponse($responseBody, $trace);
+    }
+
+    public function parseResponse($responseBody, array $trace)
+    {
+        try
+        {
+            $content = $this->jsonToArray($responseBody);
+
+            $trace['content'] = $content;
+
+            $this->trace->info(TraceCode::GATEWAY_RESPONSE, $trace);
+
+            return $content;
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->error(TraceCode::GATEWAY_RESPONSE, $trace);
+
+            throw $exception;
+        }
+    }
+
+    public function getVerifyRefundRequestArray($input, $upiPaymentType)
+    {
+        $data = [
+            Fields::MERCH_ID       => $this->getMerchantId(),
+            Fields::MERCH_CHAN_ID  => $this->getMerchantId2(),
+            Fields::UNQ_TXN_ID     => $input['refund']['payment_id'],
+            Fields::TXN_REFUND_ID  => $input['refund']['id'],
+        ];
+
+        if ($upiPaymentType === Base\Type::PAY)
+        {
+            $data[Fields::MERCH_ID] = $this->config['live_razorpay_merchant_id'];
+
+            $data[Fields::MERCH_CHAN_ID] = $this->config['live_razorpay_merchant_channel_id'];
+        }
+
+        $dataStr = implode('', $data);
+
+        $checksum = $this->encrypt($dataStr);
+
+        $data[Fields::CHECKSUM] = bin2hex($checksum);
+
+        return $data;
+    }
+
+    private function checkRefundResponseStatus($responseContent)
+    {
+        if ($responseContent[Fields::CODE] !== Status::REFUND_SUCCESS)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public function refund(array $input)

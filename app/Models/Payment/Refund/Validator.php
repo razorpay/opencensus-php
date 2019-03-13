@@ -75,7 +75,7 @@ class Validator extends Base\Validator
 
     protected static $verifyInternalRefundGateways = [
         Payment\Gateway::HDFC,
-        Payment\Gateway::AXIS_MIGS
+        Payment\Gateway::AXIS_MIGS,
     ];
 
     protected static $manualRefundGateways = [
