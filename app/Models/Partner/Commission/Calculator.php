@@ -624,27 +624,7 @@ class Calculator extends Base\Core
     {
         list($merchantFee, $merchantTax, $merchantFeesSplit) = $this->getMerchantFees();
 
-        try
-        {
-            list($partnerFee, $partnerTax, $partnerSplit) = $this->getPartnerPricing();
-        }
-        catch (LogicException $ex)
-        {
-            // If the exception is because a relevant pricing rule is not defined, do not block; assume zero.
-            if ($ex->getCode() === ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT)
-            {
-                $this->traceContext(
-                    TraceCode::COMMISSION_NOT_DEFINED,
-                    [
-                        'merchant_fees' => $merchantFee,
-                        'merchant_tax'  => $merchantTax,
-                    ]);
-
-                return;
-            }
-
-            throw $ex;
-        }
+        list($partnerFee, $partnerTax, $partnerFeesSplit) = $this->getPartnerPricingSplit();
 
         $this->setMerchantFee($merchantFee);
         $this->setMerchantTax($merchantTax);
@@ -743,6 +723,35 @@ class Calculator extends Base\Core
     }
 
     /**
+     * @return array
+     * @throws LogicException
+     */
+    protected function getPartnerPricingSplit(): array
+    {
+        // initialize - [partner fee, partner tax, partner feeSplit]
+        $partnerFeeSplit = [0, 0, new Base\PublicCollection];
+
+        try
+        {
+            $partnerFeeSplit = $this->calculatePartnerPricingSplit();
+        }
+        catch (LogicException $ex)
+        {
+            // If the exception is because a relevant pricing rule is not defined, do not block; assume zero.
+            if ($ex->getCode() === ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT)
+            {
+                $this->traceContext(TraceCode::COMMISSION_NOT_DEFINED);
+
+                return $partnerFeeSplit;
+            }
+
+            throw $ex;
+        }
+
+        return $partnerFeeSplit;
+    }
+
+    /**
      * Partner pricing refers to the base pricing at which Razorpay expects the payments from the partners'
      * sub-merchants. Anything additional, goes as a commission to the partner.
      *
@@ -755,7 +764,7 @@ class Calculator extends Base\Core
      *
      * @return array
      */
-    protected function getPartnerPricing(): array
+    protected function calculatePartnerPricingSplit(): array
     {
         $calculator = $this->getFeeCalculator();
 
