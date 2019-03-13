@@ -36,9 +36,10 @@ class Gateway extends Base\Gateway
     const CACHE_KEY = 'hitachi_%s_card_details';
     const CACHE_TTL = 20;
 
-    const TIME_FORMAT = 'His';
-    const DATE_FORMAT = 'md';
+    const TIME_FORMAT               = 'His';
+    const DATE_FORMAT               = 'md';
     const DYNAMIC_DESCRIPTOR_PREFIX = 'RAZ*';
+    const DEFAULT_CVV_VALUE         = '000';
 
     public function setGatewayParams($input, $mode, $terminal)
     {
@@ -898,6 +899,11 @@ class Gateway extends Base\Gateway
             RequestFields::CARD_NUMBER         => $input['card']['number'],
             RequestFields::EXPIRY_DATE         => $expiry,
         ];
+
+        if ($this->isPaysecureTransactionRequest($input) === true)
+        {
+            $data[RequestFields::CVV2] = self::DEFAULT_CVV_VALUE;
+        }
 
         if (($this->isSecondRecurringPaymentRequest($input) === false) and
             ($this->isMotoTransactionRequest($input) === false) and
