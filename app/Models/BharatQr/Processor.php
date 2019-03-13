@@ -273,7 +273,7 @@ class Processor extends VirtualAccount\Processor
 
         $card[Card\Entity::NUMBER] = $this->getLuhnValidCardNumber();
 
-        if (empty($this->gatewayInput[GatewayResponseParams::SENDER_NAME]) === false)
+        if (isset($this->gatewayInput[GatewayResponseParams::SENDER_NAME]) === true)
         {
             $senderName = $this->gatewayInput[GatewayResponseParams::SENDER_NAME];
 
