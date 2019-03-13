@@ -202,6 +202,13 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateLinkWithExpiryRequiredFeature()
+    {
+        $this->fixtures->merchant->addFeatures(['invoice_expire_by_reqd']);
+
+        $this->startTest();
+    }
+
     public function testCreateLinkWithInvalidSource()
     {
         $this->startTest();

@@ -4822,3 +4822,6 @@ ALTER TABLE transactions
 
 ALTER TABLE transactions
     ADD INDEX transactions_credit_index (credit);
+
+ALTER TABLE iins
+    ADD COLUMN recurring TINYINT(1) DEFAULT 0 AFTER locked;

@@ -157,7 +157,7 @@ class ResponseCodes
         'U45' => 'Form processing has been failed in UPI',
         'U46' => 'Request credit is not found',
         'U47' => 'Request debit is not found',
-        'U48' => 'Transaction is id not present',
+        'U48' => 'Transaction id not present',
         'U49' => 'Request message id is not present',
         'U50' => 'IFSC is not present',
         'U51' => 'Request refund is not found',

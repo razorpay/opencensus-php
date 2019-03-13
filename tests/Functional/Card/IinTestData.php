@@ -12,16 +12,37 @@ return [
             'url' => '/iins',
             'method' => 'post',
             'content' => [
-                'iin' => 112333,
-                'network' => 'RuPay',
-                'type' => 'debit',
+                'iin'       => 112333,
+                'network'   => 'RuPay',
+                'type'      => 'debit',
             ],
         ],
         'response' => [
             'content' => [
-                'iin' => 112333,
+                'iin'     => 112333,
                 'network' => 'RuPay',
-                'type' => 'debit',
+                'type'    => 'debit',
+            ],
+        ],
+    ],
+
+    'testAddIinWithRecurring' => [
+        'request' => [
+            'url' => '/iins',
+            'method' => 'post',
+            'content' => [
+                'iin'       => 112333,
+                'network'   => 'RuPay',
+                'type'      => 'debit',
+                'recurring' => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'iin'       => 112333,
+                'network'   => 'RuPay',
+                'type'      => 'debit',
+                'recurring' => true,
             ],
         ],
     ],

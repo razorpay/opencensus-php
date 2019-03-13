@@ -1,0 +1,83 @@
+<?php
+
+namespace RZP\Mail\Base;
+
+use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\Feature\Constants as Features;
+
+class OrgWiseConfig
+{
+    const HDFC  = 'hdfc';
+
+    /**
+     * If a mailer does not have entry here the it will be sent.
+     * If there is an entry then it will be sent if the merchant
+     * does not have the blocking feature for that mailer if the
+     * restriction applies to his org.
+     */
+    const CONFIG = [
+        \Rzp\Mail\User\AccountVerification::class            => [
+            Features::SELF_KYC_DISABLED => [self::HDFC]
+        ],
+        \Rzp\Mail\User\PasswordReset::class                  => [
+            Features::SELF_KYC_DISABLED => [self::HDFC]
+        ],
+        \RZP\Mail\Merchant\NotifyActivationSubmission::class => [
+            Features::SELF_KYC_DISABLED => [self::HDFC]
+        ],
+        \RZP\Mail\Merchant\Activation::class                 => [
+            Features::SELF_KYC_DISABLED => [self::HDFC]
+        ],
+        \RZP\Mail\Merchant\RequestNeedsClarification::class  => [
+            Features::SELF_KYC_DISABLED => [self::HDFC]
+        ],
+        \RZP\Mail\Merchant\RequestRejection::class           => [
+            Features::SELF_KYC_DISABLED => [self::HDFC]
+        ],
+        \RZP\Mail\Merchant\InstantActivation::class          => [
+            Features::SELF_KYC_DISABLED => [self::HDFC]
+        ],
+        \RZP\Mail\Payment\Captured::class                    => [
+            Features::PAYMENT_MAILS_DISABLED => [self::HDFC]
+        ],
+        \RZP\Mail\Payment\Authorized::class                  => [
+            Features::PAYMENT_MAILS_DISABLED => [self::HDFC]
+        ],
+        \RZP\Mail\Payment\Failed::class                      => [
+            Features::PAYMENT_MAILS_DISABLED => [self::HDFC]
+        ],
+        \RZP\Mail\Payment\FailedToAuthorized::class          => [
+            Features::PAYMENT_MAILS_DISABLED => [self::HDFC]
+        ],
+        \RZP\Mail\Payment\Refunded::class                    => [
+            Features::PAYMENT_MAILS_DISABLED => [self::HDFC]
+        ],
+        \RZP\Mail\Merchant\AuthorizedPaymentsReminder::class => [
+            Features::PAYMENT_MAILS_DISABLED => [self::HDFC]
+        ],
+        \RZP\Mail\Merchant\DailyReport::class                => [
+            Features::PAYMENT_MAILS_DISABLED => [self::HDFC]
+        ],
+        \RZP\Mail\Dispute\Creation::class                    => [
+            Features::DISPUTE_MAILS_DISABLED => [self::HDFC]
+        ],
+    ];
+
+    public static function getEmailEnabledForOrg(string $customCode, string $mailerClass, Merchant $merchant): bool
+    {
+        if (array_key_exists($mailerClass, self::CONFIG) === false)
+        {
+            // Send mail if mailer has no entry in org config
+            return true;
+        }
+
+        $blockingFeature = array_keys(self::CONFIG[$mailerClass])[0]; //[$mailerClass];
+
+        $orgRestricted = in_array($customCode, self::CONFIG[$mailerClass][$blockingFeature]);
+
+        $hasBlockingFeature = $merchant->isFeatureEnabled($blockingFeature);
+
+        // If merchant has the blocking feature return false, otherwise return true and let the mail be sent
+        return (($orgRestricted && $hasBlockingFeature) === false);
+    }
+}

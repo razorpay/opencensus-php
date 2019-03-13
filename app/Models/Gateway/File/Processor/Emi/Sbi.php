@@ -4,6 +4,7 @@ namespace RZP\Models\Gateway\File\Processor\Emi;
 
 use Carbon\Carbon;
 
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
@@ -11,6 +12,7 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
+use RZP\Constants\Environment;
 use RZP\Services\Beam\Service;
 use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
@@ -26,6 +28,8 @@ class Sbi extends Base
     const FILE_TYPE         = FileStore\Type::SBI_EMI_FILE;
     const FILE_NAME         = 'GGCMS1';
     const BEAM_FILE_TYPE    = 'emi';
+
+    const TEST_ENCRYPTION_KEY = 'T8DIATjuwS';
 
     /**
      * @var $file FileStore\Entity
@@ -56,6 +60,16 @@ class Sbi extends Base
         return $emiPaymentsForBank;
     }
 
+    public function generateEmiFilePassword()
+    {
+        if ($this->app->environment(Environment::TESTING))
+        {
+            return self::TEST_ENCRYPTION_KEY;
+        }
+
+        return bin2hex(openssl_random_pseudo_bytes(256));
+    }
+
     /**
      * Implements \RZP\Models\Gateway\File\Processor\Base::createFile($data).
      * @throws GatewayFileException
@@ -80,7 +94,13 @@ class Sbi extends Base
             $creator->extension(static::EXTENSION)
                     ->content($fileData)
                     ->name($fileName)
-                    ->store(FileStore\Store::LOCAL)
+                    ->store(FileStore\Store::S3)
+                    ->encrypt(
+                        Service::ENCRYPTION_TYPE,
+                        [
+                            'mode'   => Service::ENCRYPTION_MODE,
+                            'secret' => $data['password'],
+                        ])
                     ->type(static::FILE_TYPE)
                     ->entity($this->gatewayFile)
                     ->metadata($metadata);
@@ -96,10 +116,13 @@ class Sbi extends Base
         catch (\Throwable $e)
         {
             throw new GatewayFileException(
-                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE, [
-                    'id'        => $this->gatewayFile->getId(),
+            ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
+                [
+                    'id'      => $this->gatewayFile->getId(),
+                    'message' => $e->getMessage(),
                 ],
-                $e);
+                $e
+            );
         }
     }
 
@@ -184,6 +207,8 @@ class Sbi extends Base
 
                 $tenure = $emiPlan->getDuration();
 
+                $businessName = substr($merchantDetail[Detail\Entity::BUSINESS_NAME], 0, 40);
+
                 $body[] =
                     'DD' .    // record type always DD
                     'R' . $this->numpad($uniqueReferenceNum, 14) .
@@ -195,7 +220,7 @@ class Sbi extends Base
                     Carbon::createFromTimestamp($emiPayment['authorized_at'])->format('dmY') .
                     $this->strpad('Razor Pay', 40) .
                     $this->numpad($mid, 16) .
-                    $this->strpad($merchantDetail[Detail\Entity::BUSINESS_NAME], 40) .
+                    $this->strpad($businessName, 40) .
                     $this->strpad($tid, 8) .
                     str_pad($emiPlan->getRate(), 7, '0', STR_PAD_RIGHT) .
                     $this->strpad('', 40) .
@@ -257,6 +282,8 @@ class Sbi extends Base
 
     protected function sendEmiFile($data)
     {
+        // todo: Push to beam once decryption is handled at beam side
+        /*
         $fullFileName = $this->file->getName() . '.' . $this->file->getExtension();
 
         $fileInfo = [$fullFileName];
@@ -278,6 +305,7 @@ class Sbi extends Base
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+        */
     }
 
     protected function getFileToWriteName()

@@ -14,6 +14,7 @@ use RZP\Models\State;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\RequestJob;
 use RZP\Models\Merchant;
+use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
@@ -196,7 +197,7 @@ class Core extends Base\Core
             // The merchant entity returned by the '$merchantDetails->merchant' relation gets reloaded here.
             // The function autoUpdateMerchantCategoryDetailsIfApplicable() updates a few merchant attributes.
             // Since the $merchantDetails variable in saveInstantActivationDetails() is defined before updating these
-            // merchant entity attributes, these values will not be reflected in the relation unless explicitly 
+            // merchant entity attributes, these values will not be reflected in the relation unless explicitly
             // reloaded.
             //
             // This has been moved here because we want to reload the merchant even if the instant activations workflow
@@ -441,14 +442,9 @@ class Core extends Base\Core
 
         $this->adminNotifyActivationSubmission($merchantDetails);
 
-        // We also send over details to slack
-        $link = "<https://dashboard.razorpay.com/admin#/app/merchants/{$merchantId}/activation|See activation form>";
-
-        $this->logActionToSlack($merchant, SlackActions::SUBMIT_ACTIVATION, $customer, $link);
-
         $zapierData = $this->activationZapierData($customer, $merchant);
 
-        $this->postFormSubmissionToZapier($zapierData, 'submissions');
+        $this->postFormSubmissionToZapier($zapierData, 'submissions', $merchant);
     }
 
     protected function activationZapierData(array $customer, Merchant\Entity $merchant)
@@ -463,9 +459,11 @@ class Core extends Base\Core
         return $customer;
     }
 
-    public function postFormSubmissionToZapier($data, $zapierAction)
+    public function postFormSubmissionToZapier($data, $zapierAction, Merchant\Entity $merchant)
     {
-        if (Config::get('zapier.mock'))
+        // Don't send data to zapier for hdfc org.
+        // TODO:: Move the check to a feature flag after org level feature flags are implemented.
+        if ((Config::get('zapier.mock') === true) or ($merchant->getOrgId() === Org\Entity::HDFC_ORG_ID))
         {
             return;
         }

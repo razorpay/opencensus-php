@@ -543,7 +543,7 @@ class Gateway
             self::GO_LIVE_TIMESTAMP => 1550838065
         ],
         Payment\Gateway::WALLET_JIOMONEY   => [
-            self::GO_LIVE_TIMESTAMP => 1552303029
+            self::GO_LIVE_TIMESTAMP => 1552398662
         ]
     ];
 

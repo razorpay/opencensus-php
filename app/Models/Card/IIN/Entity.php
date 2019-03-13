@@ -26,6 +26,7 @@ class Entity extends Base\PublicEntity
 
     const INTERNATIONAL  = 'international';
     const MESSAGE_TYPE   = 'message_type';
+    const RECURRING      = 'recurring';
 
 
     const ID_LENGTH = 6;
@@ -57,6 +58,7 @@ class Entity extends Base\PublicEntity
         self::FLOWS,
         self::LOCKED,
         self::MESSAGE_TYPE,
+        self::RECURRING,
     ];
 
     protected $public = [
@@ -75,6 +77,7 @@ class Entity extends Base\PublicEntity
         self::FLOWS,
         self::LOCKED,
         self::MESSAGE_TYPE,
+        self::RECURRING,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -91,11 +94,13 @@ class Entity extends Base\PublicEntity
         self::ENABLED        => true,
         self::LOCKED         => false,
         self::MESSAGE_TYPE   => null,
+        self::RECURRING      => false,
     ];
 
     protected $casts = [
-        self::ENABLED => 'bool',
-        self::LOCKED  => 'bool'
+        self::ENABLED     => 'bool',
+        self::LOCKED      => 'bool',
+        self::RECURRING   => 'bool',
     ];
 
     public function supports($flows): bool
@@ -198,6 +203,11 @@ class Entity extends Base\PublicEntity
     public function isLocked()
     {
         return $this->getAttribute(self::LOCKED);
+    }
+
+    public function isRecurring()
+    {
+        return $this->getAttribute(self::RECURRING);
     }
 
     public function setTrivia($trivia)

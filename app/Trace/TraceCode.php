@@ -1499,6 +1499,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const GATEWAY_UNEXPECTED_PAYMENT_ERROR              = 'GATEWAY_UNEXPECTED_PAYMENT_ERROR';
 
+    const GATEWAY_REFUND_ENTITY_FETCH_ERROR             = 'GATEWAY_REFUND_ENTITY_FETCH_ERROR';
+
     const FTA_FAILURE_REPORT_INITIATED                  = 'FTA_FAILURE_REPORT_INITIATED';
     const FTA_FAILURE_REPORT_FILE_CREATED               = 'FTA_FAILURE_REPORT_FILE_CREATED';
 
@@ -1680,6 +1682,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AUTH_RULES_SEARCH_CRITERIA          = 'AUTH_RULES_SEARCH_CRITERIA';
     const AUTH_TERMINAL_SELECTION_FOR_RULE_GROUP   = 'AUTH_TERMINAL_SELECTION_FOR_RULE_GROUP';
 
+    const ORG_MAILER_BLOCKED                  = 'ORG_MAILER_BLOCKED';
+    const NO_MERCHANT_CONTEXT_MAIL            = 'NO_MERCHANT_CONTEXT_MAIL';
+
     const VAULT_TOKEN_ERROR                   = 'VAULT_TOKEN_ERROR';
     const VAULT_TOKEN_CREATE_INIT             = 'VAULT_TOKEN_CREATE_INIT';
     const VAULT_TOKEN_CREATE_COMPLETE         = 'VAULT_TOKEN_CREATE_COMPLETE';
@@ -1844,7 +1849,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
         self::BIN_ISSUER_VALIDATION_FAILED              => 'Bin Issuer Validation Failed',
 
-        self::EMANDATE_RECON_ROW_FAILED                 => 'E-mandate reconciliation failed for a row'
+        self::EMANDATE_RECON_ROW_FAILED                 => 'E-mandate reconciliation failed for a row',
+
+        self::ORG_MAILER_BLOCKED                        => 'Email blocked for given org',
+        self::NO_MERCHANT_CONTEXT_MAIL                  => 'The mail flow does not have merchant in auth context',
     ];
 
     /**
