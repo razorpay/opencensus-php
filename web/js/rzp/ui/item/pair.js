@@ -39,6 +39,10 @@ export const paidCount = {
 };
 export const paidOn = { title: 'Paid On', value: items.createdAt };
 export const createdAt = { title: 'Created At', value: items.createdAt };
+export const createdAtShort = {
+  title: createdAt.title,
+  value: items.createdAtShort,
+};
 export const attempts = { title: 'Attempts', value: item => item.attempts };
 export const receipt = { title: 'Receipt', value: item => item.receipt };
 export const totalCount = { title: 'Count', value: item => item.total_count };
