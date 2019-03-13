@@ -163,6 +163,24 @@ export default class User {
     };
   }
 
+  get internationalActivationFlow() {
+    return {
+      international_activation_flow: this.international_activation_flow,
+
+      get isWhitelistFlow() {
+        return this.international_activation_flow === 'whitelist';
+      },
+
+      get isBlacklistFlow() {
+        return this.international_activation_flow === 'blacklist';
+      },
+
+      get isGraylistFlow() {
+        return this.international_activation_flow === 'greylist';
+      },
+    };
+  }
+
   get isAccepted() {
     return this.activation_status === 'activated';
   }

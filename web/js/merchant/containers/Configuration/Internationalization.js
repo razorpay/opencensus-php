@@ -1,9 +1,10 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { updateFeatures } from 'merchant/modules/config';
+import { updateSession } from 'merchant/modules/session';
 import { showNotification } from 'rzp/modules/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
 import SwitchField from 'rzp/ui/Forms/SwitchField';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 const CUSTOM_MSG = {
   not_supported:
@@ -23,33 +24,10 @@ const CUSTOM_MSG = {
       features: state.config.features,
     };
   },
-  { updateFeatures, showNotification }
+  { updateSession, showNotification }
 )
 export default class FlashCheckout extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {};
-
-    if (props.features.length) {
-      const fcEnabled = this.getFlashCheckoutFlag(props.features);
-      this.state.fcEnabled = fcEnabled;
-    }
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (!this.props.features.length && nextProps.features.length) {
-      const fcEnabled = this.getFlashCheckoutFlag(nextProps.features);
-
-      this.setState({ fcEnabled });
-    }
-  }
-
-  getFlashCheckoutFlag(features) {
-    let noFlashCheckout =
-      features.find(feature => feature.feature === 'noflashcheckout') || {};
-
-    this.setState({ fcEnabled: !noFlashCheckout.value });
-  }
+  state = { internationalEnabled: this.props.user.international };
 
   analytics = action => {
     window.rzpAnalytics({
@@ -58,33 +36,32 @@ export default class FlashCheckout extends Component {
     });
   };
 
-  toggleInternationalization = () => {
-    let fcEnabled = this.state.fcEnabled;
-    let shouldSync = 1;
-    var data = {
-      features: {
-        noflashcheckout: fcEnabled ? 1 : 0,
-      },
-      should_sync: shouldSync,
-    };
+  toggleInternationalization = (enableInternational, cb) => {
+    this.analytics(enableInternational ? 'Enable' : 'Disable');
 
-    return this.props
-      .updateFeatures(data, this.props.user.current)
-      .then(res => {
-        if (fcEnabled) {
-          this.analytics('Disable');
+    return merchantFetch({
+      url: 'merchant/international',
+      method: 'PATCH',
+      data: {
+        international: enableInternational ? 1 : 0,
+      },
+    })
+      .then(resp => {
+        // Check if the response sets international as intended in this request
+        if (resp.data.international === !!enableInternational) {
+          cb(true);
+          this.setState({
+            internationalEnabled: !!enableInternational,
+          });
+
+          this.props.updateSession(resp.data);
         } else {
-          this.analytics('Enable');
+          throw 'Business category/subcategory must be set'; // This code is ideally unreachable as per business logic. However, since Api silently fails here, hence handling explicitly.
         }
-        this.props.showNotification({
-          type: 'success',
-          message: 'Your preference was saved',
-        });
-        this.setState({
-          fcEnabled: !fcEnabled,
-        });
       })
       .catch(err => {
+        cb(false);
+
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -93,17 +70,17 @@ export default class FlashCheckout extends Component {
   };
 
   render() {
-    let { fcEnabled } = this.state;
+    let { internationalEnabled } = this.state;
 
     let display_msg = '';
     const isInternationalAllowed =
-      true || (user.international || user.isWhitelistFlow);
+      user.international || user.internationalActivationFlow.isWhitelistFlow;
 
     if (isInternationalAllowed) {
       display_msg = CUSTOM_MSG['international_activated'];
-    } else if (user.isBlacklistFlow) {
+    } else if (user.internationalActivationFlow.isBlacklistFlow) {
       display_msg = CUSTOM_MSG['not_supported'];
-    } else if (user.isGraylistFlow) {
+    } else if (user.internationalActivationFlow.isGraylistFlow) {
       display_msg = CUSTOM_MSG['kyc_pending'];
     }
 
@@ -114,11 +91,13 @@ export default class FlashCheckout extends Component {
 
           <span className="toggler-btn">
             <SwitchField
-              defaultChecked={!!fcEnabled}
-              onChange={(isChecked, cb) => this.toggleFc(isChecked, cb)}
+              defaultChecked={!!internationalEnabled}
+              onChange={(isChecked, cb) =>
+                this.toggleInternationalization(isChecked, cb)
+              }
               type="prime"
             />
-            {fcEnabled ? (
+            {internationalEnabled ? (
               <b className="text-primary">Enabled</b>
             ) : (
               <b className="text-faded">Disabled</b>
