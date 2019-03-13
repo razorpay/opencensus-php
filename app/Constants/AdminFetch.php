@@ -798,6 +798,23 @@ class AdminFetch
                 'account_type' => [],
             ],
 
+            Entity::FUND_ACCOUNT_VALIDATION => [
+                'fund_account_id' => [
+                    Fetch::LABEL  => 'Fund Account Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'status' => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'created',
+                        'completed',
+                        'failed',
+                    ],
+                ],
+            ],
+
             Entity::FUND_TRANSFER_ATTEMPT => [
                 'batch_fund_transfer_id' => [
                     Fetch::LABEL  => 'Batch Fund Transfer Id',
