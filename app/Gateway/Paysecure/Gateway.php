@@ -214,7 +214,12 @@ class Gateway extends Base\Gateway
     {
         parent::capture($input);
 
-//        $this->setCardNumberAndCvv($input);
+        // todo: Uncomment this after UAT testing
+        // $this->setCardNumberAndCvv($input);
+
+        // todo: Remove this after UAT testing
+        // Added this because if we capture the payments on zeta, it'd try to fetch
+        // the card details from cache and fail.
         $this->setCardDetails($input);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
@@ -233,6 +238,7 @@ class Gateway extends Base\Gateway
         $this->getRepository()->saveOrFail($gatewayPayment);
     }
 
+    // todo: Remove this after UAT testing
     protected function setCardDetails(array & $input)
     {
         $paymentIdCardMap = [
@@ -341,8 +347,6 @@ class Gateway extends Base\Gateway
         ];
 
         $input['card']['number'] = $paymentIdCardMap[$input['payment']['id']];
-
-//        $input['card']['cvv'] = $this->app['encrypter']->decrypt($data['cvv']);
     }
 
     public function refund(array $input)
