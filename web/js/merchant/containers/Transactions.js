@@ -39,11 +39,7 @@ export default class TransactionsContainer extends Component {
           >
             <NavLink to="/payments/batchuploads">Batch Payments</NavLink>
           </ShowWhen>
-          <ShowWhen
-            featureEnabled="Batchrefunds"
-            additionalCondition={user => user.isAllowedView('refunds')}
-          >
-            ]
+          <ShowWhen additionalCondition={user => user.isAllowedView('refunds')}>
             <NavLink to="/refunds" exact>
               Refunds
             </NavLink>
