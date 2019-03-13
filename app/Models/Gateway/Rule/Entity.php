@@ -133,7 +133,6 @@ class Entity extends Base\PublicEntity
         self::GROUP,
         self::NETWORK,
         self::ISSUER,
-        self::AUTHENTICATION_GATEWAY,
     ];
 
     /**
@@ -695,11 +694,6 @@ class Entity extends Base\PublicEntity
 
     protected function comapreAuthTerminal($key, $terminal, $payment)
     {
-        if (empty($terminal[$key]) === true)
-        {
-            return true;
-        }
-
         return ($this->getAttribute($key) === $terminal[$key]);
     }
 
