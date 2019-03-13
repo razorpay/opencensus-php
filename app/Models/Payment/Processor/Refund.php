@@ -8,6 +8,7 @@ use RZP\Models\Batch;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Reversal;
 use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Models\Vpa\Core;
@@ -635,6 +636,7 @@ trait Refund
 
     public function refundPaymentViaMerchant($paymentId, $input)
     {
+        /** @var Payment\Entity $payment */
         $payment = $this->retrieve($paymentId);
 
         // From subscription service we will always refund authorized payments
@@ -644,13 +646,19 @@ trait Refund
         }
 
         //
-        // This check is here since only Merchant initiated refunds hit this function.
+        // The following checks are here since only Merchant initiated refunds hit this function.
         // Downstream functions such as `refundCapturePayment` are used by other cases where we will
         // actually need to refund captured payment always: like payment pages, or virtual accounts
         //
         if ($this->merchant->isFeatureEnabled(Feature::DISABLE_REFUNDS) === true)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REFUND_NOT_ALLOWED);
+        }
+
+        if (($this->merchant->isFeatureEnabled(Feature::DISABLE_CARD_REFUNDS) === true) and
+            ($payment->getMethod() === Payment\Method::CARD))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CARD_REFUND_NOT_ALLOWED);
         }
 
         return $this->refundCapturedPayment($payment, $input);
@@ -750,6 +758,64 @@ trait Refund
             ]);
 
         return $txn;
+    }
+
+    public function reverseRefund(Payment\Refund\Entity $refund)
+    {
+        $this->trace->info(
+            TraceCode::REFUND_REVERSAL_INITIATED,
+            [
+                'refund_id'  => $refund->getId(),
+                'payment_id' => $refund->getPaymentId(),
+                'gateway'    => $refund->getGateway()
+            ]);
+
+        if ($refund->getTransactionId() === null)
+        {
+            return null;
+        }
+
+        if ($refund->isStatusReversed() === true)
+        {
+            throw new Exception\LogicException(
+                'Attempted to reverse an already reversed refund',
+                [
+                    'refund_id'  => $refund->getId(),
+                    'status'     => $refund->getStatus(),
+                    'payment_id' => $refund->getPaymentId(),
+                    'gateway'    => $refund->getGateway()
+                ]);
+        }
+
+        try
+        {
+            $reversal = $this->repo->transaction(
+                function () use ($refund) {
+                    $reversal = (new Reversal\Core)->reverseForRefund($refund);
+
+                    $refund->setStatus(Payment\Refund\Status::REVERSED);
+
+                    $this->repo->saveOrFail($refund);
+
+                    return $reversal;
+                });
+        }
+        catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex,
+                    Trace::CRITICAL,
+                    TraceCode::REFUND_REVERSAL_FAILED,
+                    [
+                        'refund_id'  => $refund->getId(),
+                        'status'     => $refund->getStatus(),
+                        'payment_id' => $refund->getPaymentId(),
+                        'gateway'    => $refund->getGateway()
+                    ]);
+
+                return null;
+            }
+
+        return $reversal;
     }
 
     /**

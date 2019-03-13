@@ -8,6 +8,6 @@ class Url
     const LIVE_DOMAIN   = 'https://securegw.paytm.in';
 
     const PAY           = '/theia/processTransaction';
-    const VERIFY        = '/oltp/HANDLER_INTERNAL/TXNSTATUS';
-    const REFUND        = '/oltp/HANDLER_INTERNAL/REFUND';
+    const VERIFY        = '/merchant-status/getTxnStatus';
+    const REFUND        = '/refund/HANDLER_INTERNAL/REFUND';
 }

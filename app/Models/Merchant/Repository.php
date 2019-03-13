@@ -120,7 +120,7 @@ class Repository extends Base\Repository
                 ErrorCode::BAD_REQUEST_PRICING_NOT_DEFINED_FOR_MERCHANT);
         }
 
-        return (new Pricing\Repository)->getPricingPlanById($pricing, true, true);
+        return (new Pricing\Repository)->getPricingPlanByIdOrFailPublic($pricing);
     }
 
     public function fetchMerchantsWithPositiveBalance()

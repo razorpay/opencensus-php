@@ -60,6 +60,8 @@ class CreatePartnerConfigsTable extends Migration
                   ->nullable();
 
             $table->index(Entity::CREATED_AT);
+            $table->index(Entity::ENTITY_ID);
+            $table->index(Entity::ORIGIN_ID);
 
             $table->index([Entity::ENTITY_TYPE, Entity::ENTITY_ID]);
 

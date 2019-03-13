@@ -41,7 +41,7 @@ class RazorxController extends Controller
     const EXPERIMENT_ACTIVATE_ROUTE = 'EXPERIMENT_ACTIVATE_ROUTE';
 
     const WORKFLOW_REGEX_ROUTES = [
-        //self::EXPERIMENT_ACTIVATE_ROUTE => '/^experiments\/(\w+)\/activate$/',
+        self::EXPERIMENT_ACTIVATE_ROUTE => '/^experiments\/(\w+)\/activate$/',
     ];
 
     public function __construct()
@@ -117,7 +117,7 @@ class RazorxController extends Controller
     {
         $this->app['workflow']
              ->setEntityAndId('razorx_experiment_activate', $experimentId)
-             ->handle([], ['razorx_experiment_workflow_started']);
+             ->handle([], ['status' => 'razorx_experiment_workflow_started']);
     }
 
     protected function validateActivateRequest($experimentId, $requestParams)
@@ -231,5 +231,16 @@ class RazorxController extends Controller
         $adminEmail = $admin->getEmail();
 
         Request::merge([self::ACTION_ADMIN_EMAIL_PARAM_NAME => $adminEmail]);
+    }
+
+    public function getTreatment($id, $featureFlag)
+    {
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $result = app('razorx')->getTreatment($id, $featureFlag, $mode);
+
+        $response = ['result' => $result];
+
+        return $response;
     }
 }

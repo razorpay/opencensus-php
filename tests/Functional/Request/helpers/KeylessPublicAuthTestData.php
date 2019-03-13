@@ -98,6 +98,7 @@ return [
                 'order' => [
                     'partial_payment' => false,
                     'amount'          => 1000000,
+                    'currency'        => 'INR',
                     'amount_paid'     => 0,
                     'amount_due'      => 1000000,
                 ],

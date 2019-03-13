@@ -24,9 +24,23 @@ class Service extends Base\Service
 
     public function getMetaGstTaxes(): array
     {
+        $taxIdMapV2 = Gst\GstTaxIdMap::get();
+
+        // For backward compatibility, splits tax id map into 2 arrays for response
+        foreach ($taxIdMapV2 as $k => $v)
+        {
+            if (starts_with($k, 'DEPRECATED_') === true)
+            {
+                $taxIdMap[str_after($k, 'DEPRECATED_')] = $v;
+                unset($taxIdMapV2[$k]);
+            }
+        }
+
         return [
-            Entity::GST_TAX_SLABS  => Gst\Gst::TAX_SLABS,
-            Entity::GST_TAX_ID_MAP => Gst\GstTaxIdMap::get(),
+            Entity::GST_TAX_SLABS     => Gst\Gst::TAX_SLABS,
+            Entity::GST_TAX_SLABS_V2  => Gst\Gst::TAX_SLABS_V2,
+            Entity::GST_TAX_ID_MAP    => $taxIdMap,
+            Entity::GST_TAX_ID_MAP_V2 => $taxIdMapV2,
         ];
     }
 

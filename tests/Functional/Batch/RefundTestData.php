@@ -199,6 +199,33 @@ return [
         ],
     ],
 
+    'testProcessRefundFileCardRefundsDisabled' => [
+        'request'  => [
+            'url'     => '/batches/process',
+            'method'  => 'post',
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'           => 'batch',
+                        'status'           => 'processed',
+                        'amount'           => 8000,
+                        'processed_amount' => 4000,
+                        'success_count'    => 1,
+                        'failure_count'    => 1,
+                        'attempts'         => 1,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testProcessRefundFileWithRefundedBatch' => [
         'request'  => [
             'url'     => '/batches/process',

@@ -28,10 +28,15 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     /**
      * If we are not able to find refund id to reconcile,
      * this ratio defines the minimum proportion of columns to be filled in a valid row.
-     * In Axis MIS, last row has around 9 out of 34 columns as stats data and rest empty.
-     * Therefore, if less than 27% of data is present, we don't mark row as failure
+     * In Old Axis MIS format, last row has around 9 out of 34 columns as stats data and
+     * rest empty. (9/34)*100 = 26.47 %
+     *
+     * In new Axis MIS format, last row has around 10 out of 35 columns as stats data and
+     * rest empty. (10/35)*100 = 28.57 %
+     *
+     * Therefore, if less than 29% of data is present, we don't mark row as failure
      */
-    const MIN_ROW_FILLED_DATA_RATIO = 0.27;
+    const MIN_ROW_FILLED_DATA_RATIO = 0.29;
 
     protected function getRefundId(array $row)
     {

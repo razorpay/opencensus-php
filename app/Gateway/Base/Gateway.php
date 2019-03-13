@@ -1545,13 +1545,17 @@ class Gateway
         {
             return $responseBody;
         }
-        if (isset($this->gatewayPayment) === true)
+
+        if (empty($attributes) === false)
         {
-            $this->gatewayPayment = $this->updateGatewayPaymentEntity($this->gatewayPayment, $attributes, false);
-        }
-        else
-        {
-            $this->gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input);
+            if (isset($this->gatewayPayment) === true)
+            {
+                $this->gatewayPayment = $this->updateGatewayPaymentEntity($this->gatewayPayment, $attributes, false);
+            }
+            else
+            {
+                $this->gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input);
+            }
         }
 
        $this->checkErrorsAndThrowExceptionFromMozartResponse($responseBody);

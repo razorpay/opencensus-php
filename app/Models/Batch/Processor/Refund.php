@@ -4,6 +4,11 @@ namespace RZP\Models\Batch\Processor;
 
 use RZP\Models\Batch;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
+use RZP\Models\Payment\Method;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Refund extends Base
@@ -16,6 +21,18 @@ class Refund extends Base
         $payment = $this->repo->payment->findByPublicIdAndMerchant(
                                             $paymentId,
                                             $this->merchant);
+
+        if (($this->merchant->isFeatureEnabled(Feature::DISABLE_CARD_REFUNDS) === true) and
+            ($payment->getMethod() === Method::CARD))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_CARD_REFUND_NOT_ALLOWED,
+                Payment\Entity::METHOD,
+                [
+                    Payment\Entity::MERCHANT_ID => $this->merchant->getId(),
+                    RefundEntity::PAYMENT_ID    => $paymentId,
+                ]);
+        }
 
         $paymentProcessor = (new PaymentProcessor($this->merchant));
 

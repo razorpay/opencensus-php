@@ -13,7 +13,7 @@ class Validator extends Base\Validator
         Entity::EXPIRY_MONTH       => 'required|integer|digits_between:1,2|max:12|min:1',
         Entity::EXPIRY_YEAR        => 'required|integer|digits:4|non_past_year',
         Entity::CVV                => 'sometimes|numeric|digits_between:3,4|nullable',
-        Entity::NAME               => 'required|regex:(^[a-zA-Z. 0-9\']+$)|max:100',
+        Entity::NAME               => 'required|regex:(^[a-zA-Z.\- 0-9\']+$)|max:100',
         Entity::VAULT              => 'sometimes|string|in:tokenex,rzpvault',
         Entity::INTERNATIONAL      => 'sometimes',
     );
@@ -35,13 +35,14 @@ class Validator extends Base\Validator
         'limit'              => 'sometimes|numeric',
     ];
 
-    protected static $cardNumberRules = [
-        'card_number'              => 'required|numeric|luhn|digits_between:12,19',
-    ];
-
     protected static $createValidators = array(
         'expiry_date'
     );
+
+    protected static $createVaultTokenRules = [
+        'namespace' => 'required|max:30|in:nodal_certs',
+        'secret'    => 'required'
+    ];
 
     protected function validateExpiryDate($input)
     {

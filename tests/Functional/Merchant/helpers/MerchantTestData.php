@@ -709,6 +709,26 @@ return [
         ]
     ],
 
+    'testEditMerchantEmailUserExists' => [
+        'request' => [
+            'content' => [
+                'email' => 'newemail@razorpay.com',
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt/email',
+            'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => '1X4hRFHFx4UiXt',
+                'email' => 'newemail@razorpay.com'
+            ]
+        ]
+    ],
+
     'testEditMerchantUppercaseEmail' => [
         'request' => [
             'content' => [
@@ -2435,6 +2455,103 @@ return [
         ],
     ],
 
+    'testGetCardDowntimeForRupayGateways' => [
+        'request' => [
+            'url' => '/methods/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    'entity'     => 'method_downtime',
+                    'method'     => 'card',
+                    'end'        => null,
+                    'instrument' => [
+                        'network' => 'RUPAY',
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetNoCardDowntimeForSingleRupayGateway' => [
+        'request' => [
+            'url' => '/methods/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [
+                ],
+            ],
+        ],
+    ],
+
+    'testGetUpiDowntimeForAllGateways' => [
+        'request' => [
+            'url' => '/methods/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    'entity'     => 'method_downtime',
+                    'method'     => 'upi',
+                    'end'        => null,
+                    'instrument' => [
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetUpiDowntimeForIndividualGateways' => [
+        'request' => [
+            'url' => '/methods/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    'entity'     => 'method_downtime',
+                    'method'     => 'upi',
+                    'end'        => null,
+                    'instrument' => [
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetWalletDowntime' => [
+        'request' => [
+            'url' => '/methods/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    'entity'     => 'method_downtime',
+                    'method'     => 'wallet',
+                    'end'        => null,
+                    'instrument' => [
+                        'issuer' => 'airtelmoney'
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithCardDowntimeWithIssuerOrNetworkUnknown' => [
         'request' => [
             'url' => '/preferences',
@@ -3482,6 +3599,39 @@ return [
         ],
     ],
 
+    'testAggregatorInviteSubMerchantToManageDashEmailDifferent' => [
+        'request'  => [
+            'url'     => '/submerchant/user/10000000000040',
+            'method'  => 'POST',
+            'content' => ['email' => 'testnew@razorpay.com']
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testAggregatorInviteEmailDifferentSubLoginPartnerEmail' => [
+        'request'  => [
+            'url'     => '/submerchant/user/10000000000040',
+            'method'  => 'POST',
+            'content' => ['email' => 'test@razorpay.com']
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CANNOT_ADD_MERCHANT_USER,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testOldAggregatorInviteSubMerchantUserWithEmail' => [
         'request'   => [
             'url'     => '/submerchant/user/10000000000040',
@@ -3801,7 +3951,7 @@ return [
             'content' => []
         ],
     ],
-  
+
     'testGetCheckoutPreferencesForCardlessEmi' => [
         'request' => [
             'url' => '/preferences',

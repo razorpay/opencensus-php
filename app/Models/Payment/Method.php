@@ -75,7 +75,7 @@ class Method
     {
         if (self::isValid($method) === false)
         {
-            throw new Exception\InvalidArgumentException(
+            throw new Exception\BadRequestValidationFailureException(
                 'Not a valid Payment method: ' . $method);
         }
     }

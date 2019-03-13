@@ -26,32 +26,6 @@ return [
         ],
     ],
 
-    'testAddIinFailed' => [
-        'request'   => [
-            'url'     => '/iins',
-            'method'  => 'post',
-            'content' => [
-                'iin'     => 112333,
-                'network' => 'RuPay',
-                'type'    => 'credit',
-                'emi'     => 1,
-            ],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The issuer field is required when emi is 1.',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
     'testGetPaymentFlows' => [
         'request'  => [
             'url'     => '/payment/flows',
@@ -96,22 +70,23 @@ return [
         ],
     ],
 
-    'testEditIinFailed' => [
-        'request'   => [
+    'testEditIinFailedInvalidMessageType' => [
+        'request'     => [
             'url'     => '/iins/112333',
             'method'  => 'put',
             'content' => [
-                'country' => 'IN',
-                'emi'     => 1,
-                'network' => 'RuPay',
-                'type'    => 'credit'
+                'country'        => 'IN',
+                'emi'            => 1,
+                'network'        => 'RuPay',
+                'type'           => 'credit',
+                'message_type'   => 'ABC'
             ],
         ],
         'response'  => [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The issuer field is required when emi is 1.',
+                    'description' => 'Invalid Message type given',
                 ],
             ],
             'status_code' => 400,
@@ -127,23 +102,25 @@ return [
             'url' => '/iins/112333',
             'method' => 'put',
             'content' => [
-                'country' => 'IN',
-                'issuer' => 'HDFC',
-                'issuer_name' => 'HDFC',
-                'emi' => 1,
-                'network' => 'RuPay',
-                'type' => 'credit'
+                'country'        => 'IN',
+                'issuer'         => 'HDFC',
+                'issuer_name'    => 'HDFC',
+                'emi'            => 1,
+                'network'        => 'RuPay',
+                'type'           => 'credit',
+                'message_type'   => 'SMS',
             ],
         ],
         'response' => [
             'content' => [
-                'iin' => 112333,
-                'network' => 'RuPay',
-                'type' => 'credit',
-                'country' => 'IN',
-                'issuer' => 'HDFC',
-                'issuer_name' => 'HDFC',
-                'emi' => true,
+                'iin'            => 112333,
+                'network'        => 'RuPay',
+                'type'           => 'credit',
+                'country'        => 'IN',
+                'issuer'         => 'HDFC',
+                'issuer_name'    => 'HDFC',
+                'emi'            => true,
+                'message_type'   => 'SMS',
             ],
         ],
     ],
@@ -189,7 +166,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 22,
+                'count' => 23,
                 'items' => [
                     [
                     ]
@@ -199,6 +176,31 @@ return [
     ],
 
     'testImportIin' => [
+        'request' => [
+            'url' => '/iins',
+            'method' => 'post',
+            'files' => [
+                'file' => '',
+            ],
+            'content' => [
+                'network' => 'MasterCard',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'duplicates' => [],
+                'db_conflicts' => [],
+                'network_errors' => [
+                    '497522' => [
+                        8,
+                    ]
+                ],
+                'success' => 5,
+            ],
+        ],
+    ],
+
+    'testImportIinWithMessageType' => [
         'request' => [
             'url' => '/iins',
             'method' => 'post',
@@ -305,6 +307,23 @@ return [
             ],
         ],
     ],
+
+    'testGetCardPaymentFlowsFromIin' => [
+        'request'  => [
+            'url'     => '/payment/flows',
+            'content' => [
+                'iin' => '401200',
+            ],
+            'method'  => 'post',
+        ],
+        'response'  => [
+            'content' => [
+                'pin' => true,
+                'otp' => true,
+            ],
+        ],
+    ],
+
 
     'testGetCardPaymentFlows' => [
         'request'  => [

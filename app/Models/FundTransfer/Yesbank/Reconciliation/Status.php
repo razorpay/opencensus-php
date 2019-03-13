@@ -79,6 +79,14 @@ class Status extends BaseStatus
 
     const ACQUIRING_BANK_CBS_OFFLINE    = 'ACQUIRING_BANK_CBS_OFFLINE';
 
+    const INVALID_REQUEST               = 'INVALID_REQUEST';
+
+    const TECHNICAL_ERROR               = 'TECHNICAL_ERROR';
+
+    const IMPS_NOT_ENABLED_FOR_BENE     = 'IMPS_NOT_ENABLED_FOR_BENE';
+
+    const FUNDS_ON_HOLD                 = 'FUNDS_ON_HOLD';
+
     // Map to the derived state
     const STATUS_MAP = [
         self::SENT_TO_BENEFICIARY => [
@@ -87,7 +95,6 @@ class Status extends BaseStatus
         ],
         self::ON_HOLD             => self::WAIT_FOR_ONE_DAY,
         self::FAILED              => [
-            // Internal Errors
             'ns:E402'    => self::INSUFFICIENT_FUND,
             'ns:E405'    => self::INVALID_TRANSFER_TYPE,
             'ns:E429'    => self::REQUEST_LIMIT_REACHED,
@@ -99,8 +106,24 @@ class Status extends BaseStatus
             'sfms:E18'   => self::BAD_GATEWAY,
             'ns:E6001'   => self::BENE_NOT_REGISTERED,
             'ns:E2005'   => self::BENE_NOT_REGISTERED,
-
-            // Merchant Errors
+            'ns:E400'    => self::INVALID_REQUEST,
+            'ns:E2000'   => self::INVALID_REQUEST,
+            'ns:E6000'   => self::INVALID_REQUEST,
+            'ns:E6002'   => self::INVALID_REQUEST,
+            'ns:E6003'   => self::INVALID_REQUEST,
+            'ns:E6005'   => self::INVALID_REQUEST,
+            'ns:E6006'   => self::INVALID_REQUEST,
+            'ns:E6007'   => self::INVALID_REQUEST,
+            'ns:E6008'   => self::INVALID_REQUEST,
+            'ns:E502'    => self::TRANSFER_TIMEOUT,
+            'ns:E1001'   => self::TRANSFER_TIMEOUT,
+            'ns:E1002'   => self::TRANSFER_TIMEOUT,
+            'ns:E8000'   => self::TRANSFER_TIMEOUT,
+            'flex:E404'  => self::TRANSFER_TIMEOUT,
+            'ns:E504'    => self::TECHNICAL_ERROR,
+            'ns:E1004'   => self::INVALID_REQUEST,
+            'ns:E1005'   => self::INVALID_REQUEST,
+            'ns:E1006'   => self::INVALID_REQUEST,
             'ns:E406'    => self::BENEFICIARY_NOT_ACCEPTED,
             'flex:E449'  => self::BENEFICIARY_NOT_ACCEPTED,
             'flex:E8087' => self::INVALID_BENEFICIARY_DETAILS,
@@ -116,11 +139,11 @@ class Status extends BaseStatus
             'npci:EM3'   => self::BENE_ACCOUNT_BLOCKED,
             'ns:E1029'   => self::IMPS_NOT_ENABLED_FOR_REMITTER,
             'atom:E449'  => self::INVALID_BENEFICIARY_DETAILS,
-            'ns:E502'    => self::TRANSFER_TIMEOUT,
-            'ns:E1001'   => self::TRANSFER_TIMEOUT,
-            'ns:E1002'   => self::TRANSFER_TIMEOUT,
-            'ns:E8000'   => self::TRANSFER_TIMEOUT,
-            'flex:E404'  => self::TRANSFER_TIMEOUT,
+            'ns:E1028'   => self::IMPS_NOT_ENABLED_FOR_BENE,
+            'flex:E18'   => self::FUNDS_ON_HOLD,
+            'flex:E307'  => self::TECHNICAL_ERROR,
+            'flex:E8036' => self::INVALID_REQUEST,
+            'atom:E307'  => self::TECHNICAL_ERROR,
         ],
     ];
 
@@ -136,6 +159,7 @@ class Status extends BaseStatus
     // So this mapping will give the corresponding remark based on the sub status code
     //
     const FAILURE_CODE_INTERNAL_MAPPING = [
+        'ns:E400'    => 'Invalid request sent to bank',
         'ns:E402'    => 'Insufficient Balance in debit account, payment required',
         'ns:E405'    => 'Invalid Transfer Type',
         'ns:E429'    => '(Limit Daily/transaction/rate) exceeded',
@@ -185,6 +209,7 @@ class Status extends BaseStatus
     ];
 
     const FAILURE_CODE_PUBLIC_MAPPING = [
+        'ns:E400'    => 'Payout failed. Contact support for help.',
         'ns:E402'    => 'Payout failed. Contact support for help.',
         'ns:E405'    => 'Payout failed. Contact support for help.',
         'ns:E429'    => 'Payout failed. Contact support for help.',
@@ -263,6 +288,10 @@ class Status extends BaseStatus
             self::BAD_GATEWAY,
             self::ACQUIRING_BANK_CBS_OFFLINE,
             self::TRANSFER_TIMEOUT,
+            self::INVALID_REQUEST,
+            self::TECHNICAL_ERROR,
+            self::IMPS_NOT_ENABLED_FOR_BENE,
+            self::FUNDS_ON_HOLD,
         ];
     }
 
@@ -281,7 +310,9 @@ class Status extends BaseStatus
             self::BENE_NOT_REGISTERED,
             self::INVALID_ACCOUNT_DETAILS,
             self::IMPS_NOT_ENABLED_FOR_REMITTER,
-            self::ACQUIRING_BANK_CBS_OFFLINE
+            self::ACQUIRING_BANK_CBS_OFFLINE,
+            self::INVALID_REQUEST,
+            self::FUNDS_ON_HOLD,
         ];
     }
 
@@ -300,6 +331,7 @@ class Status extends BaseStatus
             self::INVALID_BENEFICIARY_DETAILS,
             self::BENEFICIARY_NOT_ACCEPTED,
             self::BENE_ACCOUNT_BLOCKED,
+            self::IMPS_NOT_ENABLED_FOR_BENE,
         ];
     }
 

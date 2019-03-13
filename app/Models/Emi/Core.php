@@ -10,6 +10,10 @@ class Core extends Base\Core
     {
         $emiPlan = (new Entity)->build($input);
 
+        $this->repo->merchant->findOrFailPublic($emiPlan->getMerchantId());
+
+        $emiPlan->getValidator()->validateExistingEmiPlan();
+
         $emiPlan->generateId();
 
         $this->repo->saveOrFail($emiPlan);

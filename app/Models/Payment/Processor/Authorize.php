@@ -429,7 +429,7 @@ trait Authorize
             $card = $payment->card;
             $redirectUrl = null;
 
-            if ($this->isRupayNetwork($payment) === false)
+            if (($this->isRupayNetwork($payment) === false) and ($payment->getGateway() !== Payment\Gateway::BAJAJ))
             {
                 $redirectUrl = $this->getPaymentRedirectTo3dsUrl();
             }
@@ -1127,7 +1127,7 @@ trait Authorize
         //
         if ($payment->isCard() === true)
         {
-            $this->validateRecurringForCard($payment);
+            $this->validateRecurringForCard($payment, $token);
         }
         else if ($payment->isEmandate() === true)
         {
@@ -1243,13 +1243,15 @@ trait Authorize
         }
     }
 
-    protected function validateRecurringForCard(Payment\Entity $payment)
+    protected function validateRecurringForCard(Payment\Entity $payment, Token\Entity $token)
     {
         if ($payment->card->isRecurringSupported() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED);
         }
+
+        $this->validateTokenExpiredAt($token);
     }
 
     protected function validateRecurringForEmandate(
@@ -1322,6 +1324,8 @@ trait Authorize
         $this->validateTokenRecurringStatus($token, $payment);
 
         $this->validateTokenMaxAmount($token, $payment);
+
+        $this->validateTokenExpiredAt($token);
     }
 
     protected function validateInitialRecurringForEmandate(Payment\Entity $payment, array $input)
@@ -1417,6 +1421,24 @@ trait Authorize
                          'payment' => $payment->toArray(),
                          'token'   => $token->toArray(),
                     ]);
+        }
+    }
+
+    protected function validateTokenExpiredAt(Token\Entity $token)
+    {
+        $currentTime = Carbon::now()->getTimestamp();
+
+        if (($token !== null) and
+            ($token->getExpiredAt() !== null) and
+            ($token->getExpiredAt() < $currentTime) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_RECURRING_TOKEN_EXPIRED,
+                null,
+                [
+                    Token\Entity::ID         => $token->getId(),
+                    Token\Entity::EXPIRED_AT => $token->getExpiredAt(),
+                ]);
         }
     }
 
@@ -2908,8 +2930,7 @@ trait Authorize
         $payment->setBank($iinEntity->getIssuer());
 
         // Set emi plan id
-        $emiPlan = $this->repo->emi_plan->fetchRelevantEmiPlan(
-                                            $iinEntity, $emiDuration);
+        $emiPlan = $this->getMerchantEmiPlans($iinEntity, $emiDuration, $payment->merchant);
 
         $payment->setEmiSubvention(Emi\Subvention::CUSTOMER);
 
@@ -3910,7 +3931,14 @@ trait Authorize
             }
             else if ($payment->hasInvoice() === true)
             {
-                assertTrue($payment->hasBeenCaptured() === true);
+                $invoice = $payment->invoice;
+
+                // No assert check if invoice is of subscription registration type.
+                // For emandate auth links, the payment wont be captured immediately.
+                if ($invoice->isTypeOfSubscriptionRegistration() === false)
+                {
+                    assertTrue($payment->hasBeenCaptured() === true);
+                }
 
                 $this->fillReturnDataWithInvoice($payment, $returnData);
             }
@@ -4222,6 +4250,12 @@ trait Authorize
                     }
                 }
 
+                if (($payment->getGateway() === Payment\Gateway::BAJAJ) and
+                    ($payment->isEmi() === true))
+                {
+                    return true;
+                }
+
                 if ($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP)
                 {
                     return true;
@@ -4374,6 +4408,17 @@ trait Authorize
      */
     protected function createCardEntity(array $cardInput, bool $vault, Merchant\Entity $merchant)
     {
+
+        // temp change.
+        $merchantIds = [
+            '8S0i1kWYyF2woQ', // swiggy
+        ];
+
+        if (in_array($merchant->getId(), $merchantIds, true) === true)
+        {
+            $vault = true;
+        }
+
         //
         // Creates card entity. Card number is vaulted if vault is true
         //
@@ -5142,13 +5187,16 @@ trait Authorize
         return $data;
     }
 
-    public function processRedirectToAuthorize(string $paymentId)
+    public function processRedirectToAuthorize(string $paymentId, string $trackId)
     {
         $payment = $this->retrieve($paymentId);
 
         $this->trace->info(
             TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_PAYMENT,
-            ['payment_id' => $payment->getId()]
+            [
+                'payment_id' => $payment->getId(),
+                'track_id'   => $trackId,
+            ]
         );
 
         $diff = Carbon::now(Timezone::IST)->getTimestamp() - $payment->getCreatedAt();
@@ -5226,5 +5274,30 @@ trait Authorize
         }
 
         return null;
+    }
+
+    // returns the emi plan which belongs to merchant, in case not present it returns the plan mapped to shared merchant
+    protected function getMerchantEmiPlans($iinEntity, $emiDuration, $merchant)
+    {
+
+        //fetches the emi plans for merchant as well as shared merchant
+        $emiPlans = $this->repo->emi_plan->fetchRelevantMerchantEmiPlan($iinEntity, $emiDuration, $merchant);
+
+        if ($emiPlans->count() == 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_EMI_PLAN_NOT_EXIST
+            );
+        }
+
+        foreach ($emiPlans as $plan)
+        {
+            if ($plan->getMerchantId() === $merchant->getId())
+            {
+                return $plan;
+            }
+        }
+
+        return $emiPlans[0];
     }
 }

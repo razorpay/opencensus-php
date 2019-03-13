@@ -10,9 +10,10 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity as Payment;
+use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 use RZP\Mail\Payment\Refunded as RefundedMail;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
+use RZP\Models\Payment\Refund\Status as RefundStatus;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 /**
@@ -88,6 +89,36 @@ class RefundTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
 
         $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment');
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+    }
+
+    public function testRefundWhenDisabledOnMerchantForCards()
+    {
+        $this->fixtures->merchant->addFeatures('disable_card_refunds');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment');
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+    }
+
+    public function testNetBankRefundWhenDisabledOnMerchantForCards()
+    {
+        $this->fixtures->merchant->addFeatures('disable_card_refunds');
+
+        $payment = $this->getDefaultNetbankingPaymentArray('CORP');
+
+        $this->setMockGatewayTrue();
+
+        $this->fixtures->create('terminal:shared_netbanking_corporation_terminal');
+
+        $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment');
 
@@ -1676,5 +1707,48 @@ class RefundTest extends TestCase
                         return true;
                 }),
                 Mockery::any());
+    }
+
+    public function testRefundReversal()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            if($action === 'refund')
+            {
+                $content['result'] = 'DENIED BY RISK';
+            }
+
+            return $content;
+        });
+
+        // Adding specific amount to refund - this is meant to test failed refunds on scrooge -
+        // in which case we have reversal of refund transactions as well
+        $refund = $this->refundPayment($payment['id'], 3459);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(false, $refund['gateway_refunded']);
+        $this->assertEquals(RefundStatus::REVERSED, $refund['status']);
+
+        $reversal = $this->getLastEntity('reversal', true);
+
+        $this->assertEquals($reversal['entity_type'], 'refund');
+        $this->assertEquals('rfnd_'.$reversal['entity_id'], $refund['id']);
+        $this->assertNotNull($reversal['balance_id']);
     }
 }

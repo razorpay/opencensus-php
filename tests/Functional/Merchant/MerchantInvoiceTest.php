@@ -7,19 +7,25 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Invoice;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
+use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 
 class MerchantInvoiceTest extends TestCase
 {
-    use PaymentTrait;
+    use AttemptTrait;
     use HeimdallTrait;
+    use AttemptReconcileTrait;
+    use FundAccountValidationTrait;
 
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/helpers/MerchantInvoiceTestData.php';
 
         parent::setUp();
+
+        $this->fixtures->merchant->addFeatures(['fund_account_validations']);
 
         $this->ba->publicAuth();
     }
@@ -163,7 +169,7 @@ class MerchantInvoiceTest extends TestCase
 
         $entities = $this->getEntities('merchant_invoice', [], true);
 
-        $this->assertEquals(3, $entities['count']);
+        $this->assertEquals(4, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -182,6 +188,7 @@ class MerchantInvoiceTest extends TestCase
         $this->assertArraySelectiveEquals($invoiceEntities['others'], $data['others']);
         $this->assertArraySelectiveEquals($invoiceEntities['card_gt_2k'], $data['card_gt_2k']);
         $this->assertArraySelectiveEquals($invoiceEntities['card_lte_2k'], $data['card_lte_2k']);
+        $this->assertArraySelectiveEquals($invoiceEntities['validation'], $data['validation']);
 
         $dateString = Carbon::createFromDate(
             $entities[0]['year'],
@@ -218,7 +225,7 @@ class MerchantInvoiceTest extends TestCase
         $entities = $this->getEntities('merchant_invoice', [], true);
 
         // checking for 3 because other merchants are inactive during this $oldDateTime
-        $this->assertEquals(3, $entities['count']);
+        $this->assertEquals(4, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -237,6 +244,7 @@ class MerchantInvoiceTest extends TestCase
         $this->assertArraySelectiveEquals($invoiceEntities['others'], $data['others']);
         $this->assertArraySelectiveEquals($invoiceEntities['card_gt_2k'], $data['card_gt_2k']);
         $this->assertArraySelectiveEquals($invoiceEntities['card_lte_2k'], $data['card_lte_2k']);
+        $this->assertArraySelectiveEquals($invoiceEntities['validation'], $data['validation']);
 
         Carbon::setTestNow();
     }
@@ -272,7 +280,7 @@ class MerchantInvoiceTest extends TestCase
 
         $entities = $this->getEntities('merchant_invoice', [], true);
 
-        $this->assertEquals(3, $entities['count']);
+        $this->assertEquals(4, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -291,6 +299,7 @@ class MerchantInvoiceTest extends TestCase
         $this->assertArraySelectiveEquals($invoiceEntities['others'], $data['others']);
         $this->assertArraySelectiveEquals($invoiceEntities['card_gt_2k'], $data['card_gt_2k']);
         $this->assertArraySelectiveEquals($invoiceEntities['card_lte_2k'], $data['card_lte_2k']);
+        $this->assertArraySelectiveEquals($invoiceEntities['validation'], $data['validation']);
 
         $dateString = Carbon::createFromDate(
             $entities[0]['year'],
@@ -434,7 +443,7 @@ class MerchantInvoiceTest extends TestCase
         $entities = $this->getEntities('merchant_invoice', [], true);
 
         // checking for 3 because invoice are generated only for one merchant
-        $this->assertEquals(3, $entities['count']);
+        $this->assertEquals(4, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -453,6 +462,7 @@ class MerchantInvoiceTest extends TestCase
         $this->assertArraySelectiveEquals($invoiceEntities['others'], $data['others']);
         $this->assertArraySelectiveEquals($invoiceEntities['card_gt_2k'], $data['card_gt_2k']);
         $this->assertArraySelectiveEquals($invoiceEntities['card_lte_2k'], $data['card_lte_2k']);
+        $this->assertArraySelectiveEquals($invoiceEntities['validation'], $data['validation']);
 
         Carbon::setTestNow();
     }
@@ -483,6 +493,10 @@ class MerchantInvoiceTest extends TestCase
                 'amount' => 1000,
             ]);
 
+        $this->ba->privateAuth();
+
+        $this->createValidationWithFundAccountEntity();
+        
         // Card payment less than 2k
         $p1  = $this->getDefaultPaymentArray();
 

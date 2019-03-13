@@ -95,6 +95,7 @@ class Validator extends Base\Validator
         Entity::APPROVAL_CODE        => 'sometimes|string|max:6',
         Entity::REFERENCE1           => 'sometimes|nullable|string',
         Entity::REFERENCE2           => 'sometimes|nullable|string',
+        Entity::REFERENCE16          => 'sometimes|nullable|string',
     ];
 
     protected static $captureRules = [
@@ -156,6 +157,11 @@ class Validator extends Base\Validator
         'iin'                       => 'required|numeric|digits:6',
         '_'                         => 'sometimes|array',
         'order_id'                  => 'sometimes|filled',
+    ];
+
+    protected static $postFlowsRules = [
+        'card_number'        => 'sometimes|numeric|luhn|digits_between:12,19',
+        'iin'                => 'sometimes|numeric|digits:6'
     ];
 
     protected static $pspAmountLimit = [

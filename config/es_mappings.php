@@ -97,6 +97,7 @@ return [
         'refund',
         'reversal',
         'transfer',
+        'commission',
         'virtual_account',
     ],
 
@@ -189,6 +190,36 @@ return [
             ],
             'entity_type' => [
                 'type'            => 'keyword',
+            ],
+        ],
+    ],
+
+    'commission_mapping'      => [
+        'properties' => [
+            'partner_id' => [
+                'type' => 'keyword',
+            ],
+            'source_type' => [
+                'type' => 'keyword',
+            ],
+            'source_id' => [
+                'type' => 'keyword',
+            ],
+            'status' => [
+                'type' => 'keyword',
+            ],
+            'transaction_id' => [
+                'type' => 'keyword',
+            ],
+            'partner_config_id' => [
+                'type' => 'keyword',
+            ],
+            'merchant' => [
+                'properties' => [
+                    'id' => [
+                        'type'  => 'keyword',
+                    ],
+                ],
             ],
         ],
     ],
@@ -397,6 +428,9 @@ return [
                 'analyzer'        => 'edge_ngram_analyzer',
                 'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
+            ],
+            'contact' => [
+                'type' => 'keyword',
             ],
             'type' => [
                 'type' => 'keyword',

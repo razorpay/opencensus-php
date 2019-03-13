@@ -7,6 +7,7 @@ use Excel;
 use Queue;
 Use Carbon\Carbon;
 
+use RZP\Error\Error;
 use RZP\Models\Feature;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
@@ -205,7 +206,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertNotNull($transaction['reconciled_at']);
     }
 
-    public function testRegisterReconRejected()
+    public function testPaymentSuccessRegisterFileRejected()
     {
         $payment                 = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
 
@@ -241,6 +242,56 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $transaction = $this->getDbLastEntityToArray('transaction');
 
         $this->assertNotNull($transaction['reconciled_at']);
+
+        $enach = $this->getDbLastEntityToArray('enach');
+
+        $this->assertEquals('M032', $enach['error_code']);
+        $this->assertEquals('Rejected as per customer confirmation', $enach['error_message']);
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertEquals('rejected', $token['recurring_status']);
+        $this->assertEquals('E-Mandate registration cancelled by the customer', $token['recurring_failure_reason']);
+    }
+
+    public function testPaymentFailedRegisterFileRejected()
+    {
+        $payment = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
+
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'yesb0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->mockRejectCallbackResponse();
+
+        $testData = $this->testData['testPaymentRejectResponse'];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $batchFile = $this->getBatchFileToUpload($payment, 'cancel', 'M032', 'Rejected as per customer confirmation');
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('created', $batch['status']);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('failed', $payment['status']);
 
         $enach = $this->getDbLastEntityToArray('enach');
 
@@ -376,6 +427,60 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals('REJECTED', $enach['status']);
     }
 
+    public function testRegisterReconLateAuth()
+    {
+        $payment                 = $this->getEmandatePaymentArray('YESB', 'netbanking', 0);
+
+        $payment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'yesb0000123',
+            'name'           => 'Test account',
+        ];
+
+        $order               = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->mockRejectCallbackResponse();
+
+        $testData = $this->testData['testPaymentRejectResponse'];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $batchFile = $this->getBatchFileToUpload($payment, 'Active');
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('created', $batch['status']);
+
+        $enach = $this->getDbLastEntityToArray('enach');
+
+        $this->assertNotNull($enach['umrn']);
+        $this->assertEquals('Active', $enach['registration_status']);
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertNotNull($token['gateway_token']);
+        $this->assertEquals('confirmed', $token['recurring_status']);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $transaction = $this->getDbLastEntityToArray('transaction');
+
+        $this->assertNotNull($transaction['reconciled_at']);
+    }
+
     protected function makeDebitPayment()
     {
         $payment                 = $this->getEmandatePaymentArray('UTIB', 'netbanking', 0);
@@ -482,35 +587,35 @@ class EnachNetbankingNpciGatewayTest extends TestCase
                 ],
                 'items'  => [
                     [
-                        'MANDATE DATE'    => Carbon::today(Timezone::IST)->format('m/d/Y'),
-                        'MANDATE ID'      => 'NEW',
+                        'MANDATE_DATE'    => Carbon::today(Timezone::IST)->format('m/d/Y'),
+                        'MANDATE_ID'      => 'NEW',
                         'UMRN'            => 'UTIB6000000005844847',
-                        'CUST REF NO'     => '',
-                        'SCH REF NO'      => '',
-                        'CUST NAME'       => 'User name',
+                        'CUST_REF_NO'     => '',
+                        'SCH_REF_NO'      => '',
+                        'CUST_NAME'       => 'User name',
                         'BANK'            => '',
                         'BRANCH'          => '',
-                        'BANK CODE'       => 'UTIB0000123',
-                        'AC TYPE'         => 'SAVINGS',
-                        'AC NO'            => '914010009305862',
+                        'BANK_CODE'       => 'UTIB0000123',
+                        'AC_TYPE'         => 'SAVINGS',
+                        'AC_NO'            => '914010009305862',
                         'AMOUNT'          => '99999',
                         'FREQUENCY'       => 'ADHO',
-                        'DEBIT TYPE'      => 'MAXIMUM AMOUNT',
-                        'START DATE'      => Carbon::now(Timezone::IST)->format('m/d/Y'),
-                        'END DATE'        => Carbon::now(Timezone::IST)->addYears(10)->format('m/d/Y'),
-                        'UNTIL CANCEL'    => 'N',
-                        'TEL NO'          => '',
-                        'MOBILE NO'       => '9999999999',
-                        'MAIL ID'         => '',
-                        'UPLOAD DATE'     => Carbon::now(Timezone::IST)->format('m/d/Y'),
-                        'RESPONSE DATE'   => Carbon::now(Timezone::IST)->addDays(2)->format('m/d/Y'),
-                        'UTILITY CODE'    => 'NACH00000000012323',
-                        'UTILITY NAME'    => 'RAZORPAY',
+                        'DEBIT_TYPE'      => 'MAXIMUM AMOUNT',
+                        'START_DATE'      => Carbon::now(Timezone::IST)->format('m/d/Y'),
+                        'END_DATE'        => Carbon::now(Timezone::IST)->addYears(10)->format('m/d/Y'),
+                        'UNTIL_CANCEL'    => 'N',
+                        'TEL_NO'          => '',
+                        'MOBILE_NO'       => '9999999999',
+                        'MAIL_ID'         => '',
+                        'UPLOAD_DATE'     => Carbon::now(Timezone::IST)->format('m/d/Y'),
+                        'RESPONSE_DATE'   => Carbon::now(Timezone::IST)->addDays(2)->format('m/d/Y'),
+                        'UTILITY_CODE'    => 'NACH00000000012323',
+                        'UTILITY_NAME'    => 'RAZORPAY',
                         'STATUS'          => $status,
-                        'STATUS CODE'     => $errorCode,
+                        'STATUS_CODE'     => $errorCode,
                         'REASON'          => $errorDesc,
-                        'MANDATE REQID'   => $payment['id'],
-                        'MESSAGE ID'      => $payment['id'],
+                        'MANDATE_REQID'   => $payment['id'],
+                        'MESSAGE_ID'      => $payment['id'],
                     ],
                 ],
             ],

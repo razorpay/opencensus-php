@@ -69,6 +69,7 @@ class Entity extends Base\PublicEntity
     const MODE                   = 'mode';
     const REFERENCE_ID           = 'reference_id';
     const NARRATION              = 'narration';
+    const FTS_TRANSFER_ID        = 'fts_transfer_id';
 
     // Public attribute
     const DESTINATION            = 'destination';
@@ -527,6 +528,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::USER_ID);
     }
 
+    public function getFTSTransferId()
+    {
+        return $this->getAttribute(self::FTS_TRANSFER_ID);
+    }
+
     public function setChannel($channel)
     {
         $this->setAttribute(self::CHANNEL, $channel);
@@ -642,6 +648,11 @@ class Entity extends Base\PublicEntity
     public function setType($onDemand)
     {
         $this->setAttribute(self::TYPE, $onDemand);
+    }
+
+    public function setFTSTransferId($ftsTransferId)
+    {
+        $this->setAttribute(self::FTS_TRANSFER_ID, $ftsTransferId);
     }
 
     public function incrementAttempts()
@@ -884,9 +895,11 @@ class Entity extends Base\PublicEntity
         $formattedLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $merchantBillingLabel);
 
         // If formattedLabel is non-empty, pick the first 30 chars, else fallback to 'Razorpay'
-        $formattedLabel = ($formattedLabel ? str_limit($formattedLabel, 30) : 'Razorpay');
+        $formattedLabel = ($formattedLabel ? $formattedLabel : 'Razorpay');
 
         $narration = $formattedLabel . ' Fund Transfer';
+
+        $narration = str_limit($narration, 30, '');
 
         $input[self::NARRATION] = $narration;
     }

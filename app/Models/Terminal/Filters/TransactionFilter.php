@@ -455,6 +455,10 @@ class TransactionFilter extends Terminal\Filter
         {
             $gateway = Gateway::AMEX;
         }
+        else if ($network === Network::BAJAJ)
+        {
+            $gateway = Gateway::BAJAJ;
+        }
         else
         {
             $gateway = Gateway::$emiBankToGatewayMap[$bank];

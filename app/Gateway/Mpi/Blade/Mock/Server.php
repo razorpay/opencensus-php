@@ -98,6 +98,9 @@ class Server extends Base\Mock\Server
             case CardNumber::INVALID_PARES:
                 $content['Message']['PARes'] = $responseClass->paresWithErrorCode();
                 break;
+            default:
+                $content['Message']['PARes'] = $responseClass->enrolledValidResponse($content);
+                break;
         }
         unset($content['Message']['PAReq']);
 
@@ -190,6 +193,12 @@ class Server extends Base\Mock\Server
                 break;
             case CardNumber::UNKNOWN_ENROLLED:
                 $content['Message']['VERes'] = $responseClass->unknownEnrolledResponse($paymentId);
+
+                break;
+            default:
+                $content['Message']['VERes'] = $responseClass->enrolledValidResponse($paymentId, $cardNo);
+
+                break;
         }
 
         return $content;

@@ -567,7 +567,7 @@ class Gateway extends Base\Gateway
         {
             $this->validateCallbackGatewayFields($input, $network);
 
-            $this->validatePares($input);
+            $this->validateParesAndPersistEci($input);
 
             $this->id = $input['payment']['id'];
 
@@ -1093,7 +1093,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function validatePares(array $input)
+    protected function validateParesAndPersistEci(array $input)
     {
         if (isset($input['gateway']['PaRes']) === false)
         {
@@ -1117,6 +1117,8 @@ class Gateway extends Base\Gateway
 
             return;
         }
+
+        $this->persistEci($PaRes);
 
         $this->checkForErrorInPares($PaRes, $input);
 
@@ -1172,9 +1174,19 @@ class Gateway extends Base\Gateway
                 Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
                 null,
                 null,
-                [],
+                [
+                    'txn_data' => $PaRes['Message']['PARes']['TX']
+                ],
                 null,
                 Base\Action::AUTHENTICATE);
+        }
+    }
+
+    protected function persistEci(array $PaRes)
+    {
+        if (isset($PaRes['Message']['PARes']['TX']['eci']) === true)
+        {
+            $this->authEnrolledResponse['data']['eci'] = $PaRes['Message']['PARes']['TX']['eci'];
         }
     }
 

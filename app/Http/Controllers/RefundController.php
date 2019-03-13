@@ -162,11 +162,11 @@ class RefundController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function markRefundProcessed(string $id)
+    public function updateScroogeRefundStatus(string $id)
     {
         $input = Request::all();
 
-        $data = $this->service()->markRefundProcessed($id, $input);
+        $data = $this->service()->updateScroogeRefundStatus($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -194,6 +194,13 @@ class RefundController extends Controller
         $response = $this->service()->createScroogeRefund($id);
 
         return ApiResponse::json($response);
+    }
+
+    public function getRefundEntity($id)
+    {
+        $refund = $this->service()->fetchEntity($id);
+
+        return ApiResponse::json($refund);
     }
 
     public function scroogeRefundCreateBulk()

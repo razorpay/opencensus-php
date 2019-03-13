@@ -24,15 +24,15 @@ class UserRolesScope
         $this->routeUserRoleMap = [
 
             // batch routes
-            'batch_create'         => Role::READER_ROLES,
-            'batch_download_file'  => Role::READER_ROLES,
-            'batch_fetch_by_id'    => Role::READER_ROLES,
-            'batch_fetch_multiple' => Role::READER_ROLES,
+            'batch_create'         => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR]),
+            'batch_download_file'  => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR]),
+            'batch_fetch_by_id'    => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR]),
+            'batch_fetch_multiple' => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR]),
 
             // payment routes
-            'payment_capture'        => Role::WRITER_ROLES,
-            'payment_fetch_by_id'    => Role::allExceptPaymentLinkRoles(),
-            'payment_fetch_multiple' => Role::allExceptPaymentLinkRoles(),
+            'payment_capture'        => array_merge(Role::WRITER_ROLES, [ROLE::RBL_SUPERVISOR]),
+            'payment_fetch_by_id'    => array_merge(Role::allExceptPaymentLinkRoles(), Role::RBL_ROLES),
+            'payment_fetch_multiple' => array_merge(Role::allExceptPaymentLinkRoles(), Role::RBL_ROLES),
             'payment_refund'         => Role::WRITER_ROLES,
 
             // refund routes
@@ -43,16 +43,16 @@ class UserRolesScope
             'payment_fetch_refund_by_id' => Role::allExceptPaymentLinkRoles(),
 
             // order routes
-            'order_fetch'       => Role::allExceptPaymentLinkRoles(),
-            'order_fetch_by_id' => Role::allExceptPaymentLinkRoles(),
-            'order_payments'    => Role::allExceptPaymentLinkRoles(),
+            'order_fetch'       => array_merge(Role::allExceptPaymentLinkRoles(), Role::RBL_ROLES),
+            'order_fetch_by_id' => array_merge(Role::allExceptPaymentLinkRoles(), Role::RBL_ROLES),
+            'order_payments'    => array_merge(Role::allExceptPaymentLinkRoles(), Role::RBL_ROLES),
 
             // invitation routes
-            'invitation_create' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
-            'invitation_delete' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
-            'invitation_edit'   => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
-            'invitation_resend' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
-            'invitation_fetch'  => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER],
+            'invitation_create' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
+            'invitation_delete' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
+            'invitation_edit'   => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
+            'invitation_resend' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
+            'invitation_fetch'  => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
 
             // profile routes
             'merchant_gst_fetch' => [Role::OWNER, Role::FINANCE],
@@ -91,20 +91,20 @@ class UserRolesScope
             'webhook_fetch_multiple' => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'webhook_edit'           => [Role::OWNER, Role::MANAGER, Role::ADMIN],
 
-            // settlemnets route
-            'setl_fetch_multiple' => array_merge(Role::READER_ROLES, Role::LINKED_ACCOUNT_ROLES),
-            'setl_fetch_by_id'    => array_merge(Role::READER_ROLES, Role::LINKED_ACCOUNT_ROLES),
+            // settlements route
+            'setl_fetch_multiple' => array_merge(Role::READER_ROLES,Role::LINKED_ACCOUNT_ROLES, [Role::RBL_SUPERVISOR]),
+            'setl_fetch_by_id'    => array_merge(Role::READER_ROLES,Role::LINKED_ACCOUNT_ROLES, [Role::RBL_SUPERVISOR]),
 
             // Invoice routes
-            'invoice_create'                    => array_merge(Role::WRITER_ROLES, Role::PL_ROLES),
-            'invoice_delete'                    => array_merge(Role::WRITER_ROLES, Role::PL_ROLES),
-            'invoice_update'                    => array_merge(Role::WRITER_ROLES, Role::PL_ROLES),
-            'invoice_issue'                     => array_merge(Role::WRITER_ROLES, Role::PL_ROLES),
-            'invoice_send_notification_private' => array_merge(Role::WRITER_ROLES, Role::PL_ROLES),
-            'invoice_cancel'                    => array_merge(Role::WRITER_ROLES, Role::PL_ROLES),
-            'invoice_fetch'                     => Role::ALL_ROLES,
-            'invoice_fetch_multiple'            => Role::ALL_ROLES,
-            'invoice_issue_by_batch'            => Role::WRITER_ROLES,
+            'invoice_create'                    => array_merge(Role::WRITER_ROLES,Role::PL_ROLES, [Role::RBL_SUPERVISOR]),
+            'invoice_delete'                    => array_merge(Role::WRITER_ROLES,Role::PL_ROLES, [Role::RBL_SUPERVISOR]),
+            'invoice_update'                    => array_merge(Role::WRITER_ROLES,Role::PL_ROLES, [Role::RBL_SUPERVISOR]),
+            'invoice_issue'                     => array_merge(Role::WRITER_ROLES,Role::PL_ROLES, Role::RBL_ROLES),
+            'invoice_send_notification_private' => array_merge(Role::WRITER_ROLES,Role::PL_ROLES, Role::RBL_ROLES),
+            'invoice_cancel'                    => array_merge(Role::WRITER_ROLES,Role::PL_ROLES, [Role::RBL_SUPERVISOR]),
+            'invoice_fetch'                     => array_merge(Role::ALL_ROLES, Role::RBL_ROLES),
+            'invoice_fetch_multiple'            => array_merge(Role::ALL_ROLES, Role::RBL_ROLES),
+            'invoice_issue_by_batch'            => array_merge(Role::WRITER_ROLES, [Role::RBL_SUPERVISOR]),
 
             // Payment link routes
             'payment_link_get'         => Role::WRITER_ROLES,
@@ -121,10 +121,10 @@ class UserRolesScope
             'customer_create'         => Role::WRITER_ROLES,
 
             // item routes
-            'item_create'         => Role::WRITER_ROLES,
-            'item_delete'         => Role::WRITER_ROLES,
-            'item_fetch_multiple' => Role::allExceptPaymentLinkRoles(),
-            'item_update'         => Role::WRITER_ROLES,
+            'item_create'         => array_merge(Role::WRITER_ROLES, [Role::RBL_SUPERVISOR]),
+            'item_delete'         => array_merge(Role::WRITER_ROLES, [Role::RBL_SUPERVISOR]),
+            'item_update'         => array_merge(Role::WRITER_ROLES, [Role::RBL_SUPERVISOR]),
+            'item_fetch_multiple' => array_merge(Role::allExceptPaymentLinkRoles(), [ROLE::RBL_SUPERVISOR]),
 
             // marketplace
             'transfer_fetch_multiple'      => Role::READER_ROLES,
@@ -171,6 +171,21 @@ class UserRolesScope
             // Partner routes
             'submerchants_fetch'          => Role::allExceptPaymentLinkRoles(),
             'submerchants_fetch_multiple' => Role::allExceptPaymentLinkRoles(),
+
+            // Reporting
+            'reporting_config_get'        => array_merge(Role::ALL_ROLES,Role::LINKED_ACCOUNT_ROLES, [Role::RBL_SUPERVISOR]),
+            'reporting_config_list'       => array_merge(Role::ALL_ROLES,Role::LINKED_ACCOUNT_ROLES, [Role::RBL_SUPERVISOR]),
+            'reporting_config_create'     => array_merge(Role::ALL_ROLES,Role::LINKED_ACCOUNT_ROLES, [Role::RBL_SUPERVISOR]),
+            'reporting_config_edit'       => array_merge(Role::ALL_ROLES,Role::LINKED_ACCOUNT_ROLES, [Role::RBL_SUPERVISOR]),
+            'reporting_config_delete'     => array_merge(Role::ALL_ROLES,Role::LINKED_ACCOUNT_ROLES, [Role::RBL_SUPERVISOR]),
+            'reporting_log_get'           => array_merge(Role::ALL_ROLES,Role::LINKED_ACCOUNT_ROLES, [Role::RBL_SUPERVISOR]),
+            'reporting_log_list'          => array_merge(Role::ALL_ROLES,Role::LINKED_ACCOUNT_ROLES, [Role::RBL_SUPERVISOR]),
+            'reporting_log_create'        => array_merge(Role::ALL_ROLES,Role::LINKED_ACCOUNT_ROLES, [Role::RBL_SUPERVISOR]),
+            'reporting_log_update'        => array_merge(Role::ALL_ROLES,Role::LINKED_ACCOUNT_ROLES, [Role::RBL_SUPERVISOR]),
+            'reporting_schedule_get'      => array_merge(Role::ALL_ROLES,Role::LINKED_ACCOUNT_ROLES, [Role::RBL_SUPERVISOR]),
+            'reporting_schedule_list'     => array_merge(Role::ALL_ROLES,Role::LINKED_ACCOUNT_ROLES, [Role::RBL_SUPERVISOR]),
+            'reporting_schedule_create'   => array_merge(Role::ALL_ROLES,Role::LINKED_ACCOUNT_ROLES, [Role::RBL_SUPERVISOR]),
+            'reporting_schedule_delete'   => array_merge(Role::ALL_ROLES,Role::LINKED_ACCOUNT_ROLES, [Role::RBL_SUPERVISOR]),
         ];
     }
 

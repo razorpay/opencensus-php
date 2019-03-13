@@ -11,6 +11,7 @@ use RZP\Models\Settlement\Channel;
 
 /**
  * @property mixed batchFundTransfer
+ * @property mixed bankAccount
  */
 class Entity extends Base\PublicEntity
 {
@@ -21,6 +22,7 @@ class Entity extends Base\PublicEntity
     const PURPOSE                = 'purpose';
     const BANK_ACCOUNT_ID        = 'bank_account_id';
     const VPA_ID                 = 'vpa_id';
+    const CARD_ID                = 'card_id';
     const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
     const CHANNEL                = 'channel';
     const VERSION                = 'version';
@@ -37,6 +39,7 @@ class Entity extends Base\PublicEntity
     const TXT_FILE_ID            = 'txt_file_id';
     const EXCEL_FILE_ID          = 'excel_file_id';
     const INITIATE_AT            = 'initiate_at';
+    const FTS_TRANSFER_ID        = 'fts_transfer_id';
 
     //Fund transfer retry constants
     const FILE                  = 'file';
@@ -64,6 +67,7 @@ class Entity extends Base\PublicEntity
         self::REMARKS,
         self::FAILURE_REASON,
         self::INITIATE_AT,
+        self::DATE_TIME,
     ];
 
     protected $visible = [
@@ -73,6 +77,7 @@ class Entity extends Base\PublicEntity
         self::PURPOSE,
         self::BANK_ACCOUNT_ID,
         self::VPA_ID,
+        self::CARD_ID,
         self::BATCH_FUND_TRANSFER_ID,
         self::CHANNEL,
         self::VERSION,
@@ -157,6 +162,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Vpa\Entity');
     }
 
+    public function card()
+    {
+        return $this->belongsTo('RZP\Models\Card\Entity');
+    }
+
     public function batchFundTransfer()
     {
         return $this->belongsTo('RZP\Models\FundTransfer\Batch\Entity');
@@ -169,6 +179,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::VPA_ID);
     }
 
+    public function getCardId()
+    {
+        return $this->getAttribute(self::CARD_ID);
+    }
+
     public function getBankAccountId()
     {
         return $this->getAttribute(self::BANK_ACCOUNT_ID);
@@ -177,6 +192,11 @@ class Entity extends Base\PublicEntity
     public function getChannel()
     {
         return $this->getAttribute(self::CHANNEL);
+    }
+
+    public function getPurpose()
+    {
+        return $this->getAttribute(self::PURPOSE);
     }
 
     public function getRemarks()
@@ -285,6 +305,11 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function getFTSTransferId()
+    {
+        return $this->getAttribute(self::FTS_TRANSFER_ID);
+    }
+
     public function hasBankAccount()
     {
         return ($this->isAttributeNotNull(self::BANK_ACCOUNT_ID));
@@ -293,6 +318,11 @@ class Entity extends Base\PublicEntity
     public function hasVpa()
     {
         return ($this->isAttributeNotNull(self::VPA_ID));
+    }
+
+    public function hasCard()
+    {
+        return ($this->isAttributeNotNull(self::CARD_ID));
     }
 
     // ------------------------------- setters ---------------------------------
@@ -350,6 +380,11 @@ class Entity extends Base\PublicEntity
     public function setInitiateAt($initiateAt)
     {
         $this->setAttribute(self::INITIATE_AT, $initiateAt);
+    }
+
+    public function setFTSTransferId($ftsTransferId)
+    {
+        $this->setAttribute(self::FTS_TRANSFER_ID, $ftsTransferId);
     }
 
     // ------------------------------ modifiers --------------------------------

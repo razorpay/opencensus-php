@@ -381,7 +381,6 @@ class Core extends Base\Core
     public function modifyEditInput(array $input): array
     {
         if (array_key_exists('category', $input))
-
         {
             $input['category'] = (string) $input['category'];
         }
@@ -827,9 +826,10 @@ class Core extends Base\Core
      * 3. The new email is unique so far
      *    Here, we just change the email of the original user(owner).
      *
-     * @param $merchant
-     * @param $originalEmail
-     * @param $newEmail
+     * @param Entity $merchant
+     * @param string $originalEmail
+     * @param string $newEmail
+     * @param string $product
      *
      * @return bool
      */
@@ -850,6 +850,15 @@ class Core extends Base\Core
 
         $oldOwner = $merchant->primaryOwner();
 
+        $traceData = [
+            'team_user' => empty($teamUser) ? null : $teamUser->getEmail(),
+            'existing_user' => empty($existingUser) ? null : $existingUser->getEmail(),
+            'self_user' => empty($selfUser) ? null : $selfUser->getEmail(),
+            'old_owner' => empty($oldOwner) ? null : $oldOwner->getEmail(),
+        ];
+
+        $this->trace->info(TraceCode::MERCHANT_USER_EMAIL_CHANGE, $traceData);
+
         if ((empty($oldOwner) === false) and ((empty($teamUser) === false) or (empty($existingUser) === false)))
         {
             // Assign Manager role to the old owner.
@@ -868,6 +877,7 @@ class Core extends Base\Core
                 'action'      => 'attach',
                 'role'        => 'owner',
                 'merchant_id' => $merchant->getId(),
+                'product'     => $product,
             ];
 
             (new User\Core)->updateUserMerchantMapping($existingUser, $userMerchantMappingInputData);
@@ -1865,7 +1875,8 @@ class Core extends Base\Core
     }
 
     /**
-     * Syncs merchant and merchant details website and business name
+     * Update merchant data like international based on business category
+     * and syncs merchant data with merchant_details website and business name
      *
      * @param Entity $merchant
      * @param array  $input
@@ -1876,6 +1887,15 @@ class Core extends Base\Core
     public function syncMerchantEntityFields(Merchant\Entity $merchant, array $input): Entity
     {
         $merchantInput = [];
+
+        $shouldEnableInternationalForMerchant = $this->shouldEnableInternationalForMerchant($merchant, $input);
+
+        if ($shouldEnableInternationalForMerchant === true)
+        {
+            $merchantInput[Entity::INTERNATIONAL] = true;
+
+            $merchantInput[Entity::CONVERT_CURRENCY] = false;
+        }
 
         if (isset($input[Detail\Entity::BUSINESS_WEBSITE]) === true)
         {
@@ -1902,5 +1922,65 @@ class Core extends Base\Core
         });
 
         return $merchant;
+    }
+
+    /**
+     * Checks and returns if the business category and subcategory are whitelisted.
+     * If merchant.website is empty return false
+     *
+     * @param Entity $merchant
+     * @param array $input
+     *
+     * @return bool
+     * @throws \Throwable
+     */
+    protected function shouldEnableInternationalForMerchant(Entity $merchant, array $input): bool
+    {
+        // If business_website is empty, then don't allow international by default
+        $businessWebsite = $merchant->getWebsite() ?? $input[Detail\Entity::BUSINESS_WEBSITE] ?? '';
+
+        if (($merchant->isInternational() === true) or
+            (empty($businessWebsite) === true))
+        {
+            return false;
+        }
+
+        $merchantDetails = (new Detail\Core)->getMerchantDetails($merchant);
+
+        $category = $merchantDetails->getBusinessCategory();
+
+        $subcategory = $merchantDetails->getBusinessSubCategory();
+
+        if ((empty($category) === false) and
+            (BusinessSubCategoryMetaData::isFeatureCategoryOrSubcategoryWhitelisted(
+                BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION, $category, $subcategory) === true))
+        {
+            $this->trace->info(
+                TraceCode::MERCHANT_UPDATE_INTERNATIONAL,
+                [
+                    'category'      => $category,
+                    'subcategory'   => $subcategory,
+                ]);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /*
+     * Returns the partner merchant from the partner app entity passed as an argument
+     *
+     * @param $partnerApp
+     *
+     * @return null
+     */
+    public function getPartnerFromApp($partnerApp)
+    {
+        $partnerId = $partnerApp->getMerchantId();
+
+        $partner = $this->repo->merchant->find($partnerId);
+
+        return $partner;
     }
 }

@@ -160,6 +160,50 @@ class Core extends Base\Core
         return $reversal;
     }
 
+    /**
+     * Create a full reversal for a refund
+     **
+     * @return Entity
+     */
+    public function reverseForRefund(Payment\Refund\Entity $refund): Entity
+    {
+        $reversalInput = [
+            Entity::AMOUNT   => $refund->getAmount() + $refund->getFees(),
+            Entity::CURRENCY => $refund->getCurrency(),
+        ];
+
+        $reversal = $this->create($reversalInput);
+
+        $reversal->setChannel($refund->getChannel());
+
+        $reversal->merchant()->associate($refund->merchant);
+        $reversal->entity()->associate($refund);
+
+        // Todo: change below line in refunds balance_id PR - currently refunds does not have any balance
+         $reversal->balance()->associate($refund->merchant->primaryBalance);
+
+        $reversal = $this->repo->transaction(function() use ($reversal)
+        {
+            $txn = (new Transaction\Core)->createFromRefundReversal($reversal);
+
+            $this->repo->saveOrFail($txn);
+
+            $this->repo->saveOrFail($reversal);
+
+            return $reversal;
+        });
+
+        $this->trace->info(
+            TraceCode::REFUND_REVERSAL_CREATED,
+            [
+                'refund_id'   => $refund->getId(),
+                'reversal_id' => $reversal->getId(),
+                'payment_id'  => $refund->getPaymentId()
+            ]);
+
+        return $reversal;
+    }
+
     protected function create(array $input) : Entity
     {
         $reversal = (new Entity)->build($input);

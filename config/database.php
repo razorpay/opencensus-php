@@ -73,9 +73,11 @@ return array(
              ],
             'heartbeat_check' => [
                 'driver'                => 'heartbeat',
+                'force_run'             => ConfigKey::HEARTBEAT_FORCE_RUN,
                 'enabled'               => ConfigKey::HEARTBEAT_ENABLED,
                 'mock'                  => ConfigKey::HEARTBEAT_MOCK,
                 'time_threshold'        => ConfigKey::HEARTBEAT_TIME_THRESHOLD,
+                'slave_time_threshold'  => ConfigKey::HEARTBEAT_SLAVE_TIME_THRESHOLD,
                 'routes'                => ConfigKey::HEARTBEAT_ROUTES,
                 'traffic_percentage'    => ConfigKey::HEARTBEAT_TRAFFIC_PERCENTAGE,
             ],
@@ -107,9 +109,11 @@ return array(
              ],
             'heartbeat_check' => [
                 'driver'                => 'heartbeat',
+                'force_run'             => ConfigKey::HEARTBEAT_FORCE_RUN,
                 'enabled'               => ConfigKey::HEARTBEAT_ENABLED,
                 'mock'                  => ConfigKey::HEARTBEAT_MOCK,
                 'time_threshold'        => ConfigKey::HEARTBEAT_TIME_THRESHOLD,
+                'slave_time_threshold'  => ConfigKey::HEARTBEAT_SLAVE_TIME_THRESHOLD,
                 'routes'                => ConfigKey::HEARTBEAT_ROUTES,
                 'traffic_percentage'    => ConfigKey::HEARTBEAT_TRAFFIC_PERCENTAGE,
             ],

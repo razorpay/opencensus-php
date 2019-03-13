@@ -4694,6 +4694,9 @@ ALTER TABLE payouts
 ALTER TABLE promotions
     MODIFY COLUMN credit_amount int(11) NOT NULL DEFAULT 0;
 
+ALTER TABLE `partner_configs` ADD INDEX `partner_configs_entity_id_index` (`entity_id`);
+ALTER TABLE `partner_configs` ADD INDEX `partner_configs_origin_id_index` (`origin_id`);
+
 ALTER TABLE gateway_rule
     ADD COLUMN authentication_gateway varchar(255) DEFAULT NULL AFTER category2,
     ADD COLUMN auth_type varchar(14) DEFAULT NULL AFTER authentication_gateway;
@@ -4722,7 +4725,15 @@ ALTER TABLE gateway_rules
 ALTER TABLE contacts
     ADD INDEX contacts_merchant_id_active_index (merchant_id, active);
 
+ALTER TABLE `pricing`
+    ADD COLUMN `type` varchar(255) NOT NULL DEFAULT 'pricing' after `feature`;
+
+ALTER TABLE iins
+    ADD COLUMN type_indicator varchar(255) DEFAULT NULL AFTER type;
+
 ALTER TABLE payments CHANGE `reference4` `cps_route` TINYINT(1);
+
+ALTER TABLE iins change type_indicator message_type varchar(255);
 
 ALTER TABLE bank_accounts
     ADD COLUMN fts_fund_account_id INTEGER DEFAULT NULL AFTER beneficiary_mobile,
@@ -4734,3 +4745,68 @@ ALTER TABLE vpas
 
 ALTER TABLE payouts
     ADD COLUMN narration VARCHAR(255) DEFAULT NULL AFTER reference_id;
+
+ALTER TABLE emi_plans
+    ADD COLUMN merchant_id char(14) DEFAULT NULL AFTER id,
+    ADD INDEX emi_plans_merchant_id_index (merchant_id);
+
+ALTER TABLE promotions
+    ADD COLUMN partner_id CHAR(14) DEFAULT NULL AFTER pricing_plan_id,
+    ADD INDEX promotions_partner_id_index (partner_id);
+
+ALTER table `commissions`
+    ADD COLUMN `type` varchar(255) NOT NULL DEFAULT 'implicit' after `partner_config_id`;
+
+ALTER TABLE subscriptions
+    ADD INDEX subscriptions_status_start_at_index (status, start_at);
+
+ALTER TABLE line_item_taxes
+    ADD INDEX line_item_taxes_line_item_id_index(line_item_id);
+
+ALTER TABLE webhooks
+    ADD INDEX webhooks_entity_id_entity_type_index (entity_id, entity_type);
+
+ALTER TABLE invoices
+    ADD INDEX invoices_user_id_merchant_id_type_entity_type_index (user_id, merchant_id, `type`, entity_type);
+
+ALTER TABLE hdfc
+    ADD INDEX hdfc_auth_index (auth);
+
+ALTER TABLE fund_transfer_attempts
+    ADD COLUMN fts_transfer_id INTEGER DEFAULT NULL AFTER status;
+    ADD INDEX `fund_transfer_attempts_fts_transfer_id_index` (`fts_transfer_id`);
+
+ALTER TABLE settlements
+    ADD COLUMN fts_transfer_id INTEGER DEFAULT NULL AFTER status;
+    ADD INDEX `settlements_fts_transfer_id_index` (`fts_transfer_id`);
+
+ALTER TABLE payouts
+    ADD COLUMN fts_transfer_id INTEGER DEFAULT NULL AFTER status;
+    ADD INDEX `payouts_fts_transfer_id_index` (`fts_transfer_id`);
+
+ALTER TABLE refunds
+    ADD COLUMN fts_transfer_id INTEGER DEFAULT NULL AFTER status;
+    ADD INDEX `refunds_fts_transfer_id_index` (`fts_transfer_id`);
+
+ALTER TABLE fund_account_validations
+    ADD COLUMN fts_transfer_id INTEGER DEFAULT NULL AFTER status;
+    ADD INDEX `fund_account_validations_fts_transfer_id_index` (`fts_transfer_id`);
+
+
+ALTER TABLE cards
+    ADD COLUMN global_fingerprint varchar(50) DEFAULT NULL AFTER vault_token;
+    ADD INDEX  `cards_global_fingerprint_index` (`global_fingerprint`);
+
+ALTER TABLE cards
+    ADD COLUMN reference1 TINYINT(1) NULL AFTER global_fingerprint,
+    ADD COLUMN reference2 INT(11)  DEFAULT NULL AFTER global_fingerprint,
+    ADD COLUMN reference3 VARCHAR(14) DEFAULT NULL AFTER reference2,
+    ADD COLUMN reference4 VARCHAR(255) DEFAULT NULL AFTER reference3;
+
+ALTER TABLE fund_transfer_attempts
+    ADD COLUMN card_id CHAR(14) DEFAULT NULL after vpa_id;
+
+ALTER TABLE batches
+    ADD COLUMN creator_id CHAR(14) DEFAULT NULL AFTER comment,
+    ADD COLUMN creator_type VARCHAR(255) DEFAULT NULL AFTER creator_id,
+    ADD INDEX batches_creator_id_index (creator_id);

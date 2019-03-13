@@ -157,6 +157,12 @@ class Holidays
             1 => [
                 26 => 'Republic Day',
             ],
+            2 => [
+                19 => 'Shivaji Jayanti',
+            ],
+            3 => [
+                4 => 'Maha Shivratri',
+            ],
             4 => [
                 1  => 'Annual closing of Banks',
                 19 => 'Good Friday',

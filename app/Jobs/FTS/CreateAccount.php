@@ -7,9 +7,13 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
+use RZP\Exception\RecordAlreadyExists;
+use RZP\Models\Settlement\SlackNotification;
 
 class CreateAccount extends Job
 {
+    const RETRY_PERIOD         = 30;
+
     const MAX_ALLOWED_ATTEMPTS = 10;
 
     /**
@@ -68,6 +72,10 @@ class CreateAccount extends Job
                 TraceCode::FTS_CREATE_ACCOUNT_COMPLETE,
                 $ftsResponse);
         }
+        catch (RecordAlreadyExists $e)
+        {
+            $this->delete();
+        }
         catch (\Throwable $e)
         {
             $data = [
@@ -85,7 +93,15 @@ class CreateAccount extends Job
             {
                 $this->delete();
 
+                $operation = 'fts create account job failed';
+
+                (new SlackNotification)->send($operation, $data, null, 1, 'fts_alerts');
+
                 return;
+            }
+            else
+            {
+                $this->release(self::RETRY_PERIOD);
             }
         }
     }

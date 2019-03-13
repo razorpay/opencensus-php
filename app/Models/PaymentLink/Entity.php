@@ -92,13 +92,6 @@ class Entity extends Base\PublicEntity
     ];
 
     /**
-     * Merchant having below tags have specific behavior -
-     * 1. Settings attribute is expected, if and only
-     * 2. New view is rendered for existing or new pages
-     */
-    const TAG_PAYMENT_PAGE_V2 = 'paymentpagesv2';
-
-    /**
      * expire_by has to be atleast 15 minutes from current timestamp
      */
     const MIN_EXPIRY_SECS = 900;
@@ -221,6 +214,28 @@ class Entity extends Base\PublicEntity
         self::SUPPORT_EMAIL      => null,
         self::TERMS              => null,
     ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::DESCRIPTION,
+    ];
+
+    /**
+     * Converting description to quill js object format for backward compatibility.
+     *
+     * @param array $array
+     */
+    public function setPublicDescriptionAttribute(array & $array)
+    {
+        $description = $array[Entity::DESCRIPTION];
+
+        // Newer values for description attribute are json encoded quilljs meta object.
+        if (($description !== null) and (json_decode($description) === null))
+        {
+            $array[Entity::DESCRIPTION] = Utility::convertTextToQuillFormat($description);
+        }
+    }
 
     // -------------------------------------- Relations -------------------------------
 

@@ -88,7 +88,6 @@
         <script src="https://cdn.razorpay.com/static/libs/jsoneditor.min.js"></script>
         <script>
             window.RZP.cleanHTML();
-            window.RZP.toggleTrimDescription(true);
 
             var editor = window.RZP.initJSONEditor();
 

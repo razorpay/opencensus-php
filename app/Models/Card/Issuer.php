@@ -16,4 +16,18 @@ class Issuer
     const KKBK = 'KKBK';    // Kotak Mahindra
     const PUNB = 'PUNB';
     const SBIN = 'SBIN';
+    const UTIB = 'UTIB';
+    const INDB = 'INDB';
+    const SCBL = 'SCBL';
+
+
+    const YESBANK_SUPPORTED_ISSUER = [
+        self::UTIB,
+        self::HDFC,
+        self::INDB,
+        self::KKBK,
+        self::SCBL,
+        self::ANDB,
+        self::ICIC
+    ];
 }

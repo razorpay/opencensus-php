@@ -5,6 +5,8 @@ namespace RZP\Services;
 use Requests;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Models\Card\Validator;
+
 
 class CardVault
 {
@@ -46,11 +48,20 @@ class CardVault
 
     public function tokenize($input)
     {
-        $input = [
-            self::SECRET => $input['card'],
-        ];
+        if (array_key_exists('card', $input) === true)
+        {
+            $input = [
+                self::SECRET => $input['card'],
+            ];
+        }
 
         $response = $this->sendRequest('tokenize', 'post', $input);
+
+        if (empty($response[self::TOKEN]) === true)
+        {
+            throw new Exception\RuntimeException(
+                'card vault request failed', ['data' => $response]);
+        }
 
         return $response[self::TOKEN];
     }
@@ -192,5 +203,18 @@ class CardVault
                 throw new Exception\RuntimeException('card vault request failed', $data);
             }
         }
+    }
+
+    public function createVaultToken(array $input): array
+    {
+        (new Validator)->validateInput('create_vault_token', $input);
+
+        $this->trace->info(TraceCode::VAULT_TOKEN_CREATE_INIT);
+
+        $response[self::TOKEN] = $this->tokenize($input);
+
+        $this->trace->info(TraceCode::VAULT_TOKEN_CREATE_COMPLETE);
+
+        return $response;
     }
 }

@@ -9,6 +9,7 @@ use RZP\Models\Batch\Type;
 use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Status;
+use RZP\Models\Batch\Constants;
 use RZP\Models\Batch\Helpers\RecurringCharge as Helper;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
@@ -23,6 +24,10 @@ class RecurringCharge extends Base
 
     protected $orderCore;
 
+    protected $conversionMap = [
+        Header::RECURRING_CHARGE_CURRENCY => Constants::TO_UPPER_CASE,
+    ];
+
     public function __construct(Entity $batch)
     {
         parent::__construct($batch);
@@ -34,6 +39,10 @@ class RecurringCharge extends Base
 
     protected function processEntry(array & $entry)
     {
+        $this->trimEntry($entry);
+
+        $this->processConvertCase($entry, $this->conversionMap);
+
         $this->paymentProcessor->flushPaymentObjects();
 
         $this->processCurrencyAndAmount($entry);
@@ -60,6 +69,17 @@ class RecurringCharge extends Base
 
     protected function getCustomer(array $entry): Customer\Entity
     {
+        if (empty($entry[Header::RECURRING_CHARGE_CUSTOMER_ID]) === true)
+        {
+            $tokenId = $entry[Header::RECURRING_CHARGE_TOKEN];
+
+            $token = $this->repo->token->findByPublicIdAndMerchant($tokenId, $this->merchant);
+
+            $customerId = $token->getCustomerId();
+
+            return $this->repo->customer->findByIdAndMerchant($customerId, $this->merchant);
+        }
+
         $customerId = $entry[Header::RECURRING_CHARGE_CUSTOMER_ID];
 
         return $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);

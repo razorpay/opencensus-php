@@ -2,11 +2,9 @@
 
 use RZP\Gateway\HdfcGateway\HdfcGatewayErrorCode;
 use RZP\Error\ErrorCode;
-use RZP\Error\PublicErrorCode;
-use RZP\Error\PublicErrorDescription;
 
 return [
-    'testAddEmiPlans' => [
+    'testAddEmiPlansWithoutMerchant' => [
         'request' => [
             'content' => [
                 'bank'       => 'HDFC',
@@ -18,6 +16,60 @@ return [
             'method' => 'POST',
             'url'    => '/emi',
         ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => ErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testDuplicateAddEmiPlans' => [
+        'request' => [
+            'content' => [
+                'bank'       => 'HDFC',
+                'duration'   => 9,
+                'rate'       => 1045,
+                'methods'    => 'card',
+                'min_amount' => 400000,
+                'merchant_id'=> '100000Razorpay',
+            ],
+            'method' => 'POST',
+            'url'    => '/emi',
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EMI_PLAN_EXIST
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => ErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testAddEmiPlansWithMerchant' => [
+        'request' => [
+            'content' => [
+                'bank'        => 'HDFC',
+                'duration'    => 3,
+                'rate'        => 1045,
+                'methods'     => 'card',
+                'min_amount'  => 400000,
+                'merchant_id' => '10000000000001',
+            ],
+            'method' => 'POST',
+            'url'    => '/emi',
+        ],
         'response' => [
             'content' => [
                 'bank'             => 'HDFC',
@@ -25,7 +77,8 @@ return [
                 'rate'             => 1045,
                 'methods'          => 'card',
                 'min_amount'       => 400000,
-                'merchant_payback' => 172
+                'merchant_payback' => 172,
+                'merchant_id'      => '10000000000001',
             ],
         ],
     ],
@@ -75,6 +128,12 @@ return [
                     'min_amount' => 300000,
                     'plans' => [
                         9 => 14,
+                    ],
+                ],
+                'HDFC' => [
+                    'min_amount' => 25000,
+                    'plans' => [
+                        6 => 12.5,
                     ],
                 ],
             ],
@@ -148,4 +207,5 @@ return [
             ],
         ],
     ],
+
 ];

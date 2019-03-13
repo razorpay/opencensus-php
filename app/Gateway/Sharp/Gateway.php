@@ -540,6 +540,27 @@ class Gateway extends Base\Gateway
                 $response['status_code']    = ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE;
                 break;
 
+            // Soft failure
+            case ($amount === 2111):
+
+                $response['result']         = 'Refund failed';
+                $response['status_code']    = ErrorCode::BAD_REQUEST_REFUND_FAILED;
+                break;
+
+            // Soft failure
+            case ($amount === 3111):
+
+                $response['result']         = 'Gateway response code mapping not found.';
+                $response['status_code']    = ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE;
+                break;
+
+            // Soft failure
+            case ($amount === 4111):
+
+                $response['result']         = 'Gateway system is busy, please retry.';
+                $response['status_code']    = ErrorCode::GATEWAY_ERROR_SYSTEM_BUSY;
+                break;
+
              // Request failure
             case ((($amount === 7777) or ($amount === 9999)) and ((int) $attempts === 0)):
                 $response['result']         = 'Request Timeout. Please try again.';
@@ -583,6 +604,20 @@ class Gateway extends Base\Gateway
 
         switch ($amount)
         {
+            // intermediate failure - no retry - waiting for recon
+            case ($amount === 1111):
+                $response['result']         = 'Gateway verify refund unexpected response';
+                $response['status_code']    = ErrorCode::GATEWAY_ERROR_UNEXPECTED_STATUS;
+
+                break;
+
+            // request failure
+            case ($amount === 2222):
+                $response['result']         = 'Request Timeout. Please try again.';
+                $response['status_code']    = ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT;
+
+                break;
+
             case (($amount === 8888) and ((int) $attempts === 0) and ($amount === $amountRefunded)):
                 $response['result']         = 'Request Timeout. Please try again.';
                 $response['status_code']    = ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT;

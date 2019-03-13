@@ -3,25 +3,27 @@
 namespace RZP\Gateway\Wallet\Olamoney;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
-use RZP\Constants\HashAlgo;
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Gateway\Base\Verify;
-use RZP\Gateway\Base\VerifyResult;
-use RZP\Gateway\Wallet\Base;
-use RZP\Gateway\Wallet\Base\Action;
-use RZP\Gateway\Wallet\Base\Entity;
-use RZP\Models\Customer\Token;
-use RZP\Models\Payment\Status as PaymentStatus;
-use RZP\Models\Payment\Processor;
-use RZP\Trace\TraceCode;
+use RZP\Constants\Mode;
 use phpseclib\Crypt\RSA;
 use phpseclib\Crypt\AES;
-use RZP\Constants\Entity as ConstantEntity;
+use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
+use RZP\Constants\HashAlgo;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Wallet\Base;
+use RZP\Models\Customer\Token;
+use RZP\Models\Payment\Processor;
 use RZP\Models\Payment as Payment;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Wallet\Base\Action;
+use RZP\Gateway\Wallet\Base\Entity;
+use RZP\Gateway\Base as GatewayBase;
+use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Models\Payment as PaymentModel;
+use RZP\Constants\Entity as ConstantEntity;
+use RZP\Models\Payment\Status as PaymentStatus;
 
 class Gateway extends Base\Gateway
 {
@@ -138,8 +140,17 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_REFUND_FAILED,
                 $content[ResponseFields::STATUS],
-                $message);
+                $message,
+                [
+                    Payment\Gateway::GATEWAY_RESPONSE  => json_encode($content),
+                    Payment\Gateway::GATEWAY_KEYS      => $this->getGatewayData($content)
+                ]);
         }
+
+        return [
+            PaymentModel\Gateway::GATEWAY_RESPONSE => json_encode($response->body),
+            PaymentModel\Gateway::GATEWAY_KEYS     => $this->getGatewayData($content)
+        ];
     }
 
     public function alreadyRefunded(array $input)
@@ -418,25 +429,35 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
+        $scroogeResponse = new GatewayBase\ScroogeResponse();
+
         $content = $this->sendRefundVerifyRequest($input);
+
+        $scroogeResponse->setGatewayVerifyResponse(json_encode($content))
+                        ->setGatewayKeys($this->getGatewayData($content));
 
         if ($content[ResponseFields::STATUS] === Status::COMPLETED)
         {
-            return true;
+            return $scroogeResponse->setSuccess(true)
+                                   ->toArray();
         }
         else if ($content[ResponseFields::STATUS] === Status::ERROR)
         {
-            return false;
+            return $scroogeResponse->setSuccess(false)
+                                   ->setStatusCode(ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
+                                   ->toArray();
         }
 
         throw new Exception\LogicException(
             'Unrecognized verify refund status',
-            null,
+            ErrorCode::GATEWAY_ERROR_UNEXPECTED_STATUS,
             [
+                PaymentModel\Gateway::GATEWAY_VERIFY_RESPONSE  => json_encode($content),
+                PaymentModel\Gateway::GATEWAY_KEYS             => [
                 'status'     => $content[ResponseFields::STATUS],
                 'payment_id' => $input['refund']['payment_id'],
                 'refund_id'  => $input['refund']['id'],
-            ]);
+            ]]);
     }
 
     protected function getDebitRequestArray(array $input)
@@ -928,7 +949,7 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function sendRefundVerifyRequest(array $input): array
+    protected function sendRefundVerifyRequest(array $input)
     {
         $request = $this->getVerifyRequestArray($input, 'refund');
 
@@ -1213,7 +1234,8 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
                 '',
-                'Invalid JSON in Response Body');
+                'Invalid JSON in Response Body',
+                ['Invalid JSON in Response Body']);
         }
 
         $content = $this->jsonToArray($response->body);
@@ -1224,6 +1246,22 @@ class Gateway extends Base\Gateway
     protected function getBalanceKeyForCache($payment)
     {
         return sprintf(self::BALANCE_CACHE_KEY, $payment['id']);
+    }
+
+    protected function getGatewayData(array $refundFields = [])
+    {
+        if (empty($refundFields) === false)
+        {
+            return [
+                ResponseFields::TYPE             => $refundFields[ResponseFields::TYPE] ?? null,
+                ResponseFields::STATUS           => $refundFields[ResponseFields::STATUS] ?? null,
+                ResponseFields::COMMENTS         => $refundFields[ResponseFields::COMMENTS] ?? null,
+                ResponseFields::TIMESTAMP        => $refundFields[ResponseFields::TIMESTAMP] ?? null,
+                ResponseFields::TRANSACTION_ID   => $refundFields[ResponseFields::TRANSACTION_ID] ?? null,
+                ResponseFields::UNIQUE_BILL_ID   => $refundFields[ResponseFields::UNIQUE_BILL_ID] ?? null,
+            ];
+        }
+        return [];
     }
 
     public function getSignature($id)

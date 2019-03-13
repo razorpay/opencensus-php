@@ -358,6 +358,7 @@ class Server extends Base\Mock\Server
             'TxnStatus'         => 'SUCCESS',
             'TxnInitDate'       => $initDate->format('Ymdhis'),
             'TxnCompletionDate' => $completeDate->format('Ymdhis'),
+            'originalBankRRN'   => '12345678987654321',
         ];
 
         $this->content($response);

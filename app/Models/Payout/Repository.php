@@ -72,9 +72,11 @@ class Repository extends Base\Repository
     {
         $id = $params[Entity::ID];
 
+        $idColumn = $this->dbColumn(Entity::ID);
+
         Entity::verifyIdAndStripSign($id);
 
-        $query->where(Entity::ID, $id);
+        $query->where($idColumn, $id);
     }
 
     public function addQueryParamDestination(BuilderEx $query, array $params)
@@ -252,7 +254,8 @@ class Repository extends Base\Repository
      */
     protected function modifyQueryForIndexing(BuilderEx $query)
     {
-        // Optimization: Eager load fund_account.contact. If not possible here then somewhere else.
+        // Eager loading relation is optimal during bulk indexing.
+        $query->with('fundAccount.contact');
     }
 
     /**

@@ -10,7 +10,6 @@ use Requests_Exception;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
-use RZP\Base\Common;
 
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -612,6 +611,12 @@ class Reporting implements ExternalService
         //
         $items = collect($configs['items'] ?? []);
 
+        $this->trace->info(TraceCode::REPORTING_SERVICE_UNFILTERED_CONFIGS,
+            [
+                'count'     => $items->count(),
+                'items'     => $items->pluck('name', 'id')->toArray(),
+            ]);
+
         $merchant = $this->ba->getMerchant();
 
         // Don't filter anything for non merchants
@@ -620,29 +625,42 @@ class Reporting implements ExternalService
             return $configs;
         }
 
+        $items = $this->filterOnReportTypeAndFeatures($merchant, $items);
+
+        $items = $this->filterOnReportTypeAndNameAndConsumer($merchant, $items);
+
+        $items = $this->filterForBusinessBanking($merchant, $items);
+
+        $this->trace->info(TraceCode::REPORTING_SERVICE_FILTERED_CONFIGS,
+            [
+                'count'     => $items->count(),
+                'items'     => $items->pluck('name', 'id')->toArray(),
+            ]);
+
+        $configs['items'] = $items->values()->all();
+        $configs['count'] = $items->count();
+
+        return $configs;
+    }
+
+    protected function filterOnReportTypeAndFeatures(Merchant\Entity $merchant, $items)
+    {
         $tags     = array_map('strtolower', $merchant->tagNames());
         $features = $merchant->getEnabledFeatures();
 
-        $hasPlTag                      = in_array('payment_link_report', $tags, true);
-        $hasMarketplaceTag             = in_array(Feature::MARKETPLACE, $features, true);
-        $hasOpenwalletTag              = in_array(Feature::OPENWALLET, $features, true);
-        $hasMarketplaceOrOpenwalletTag = ($hasMarketplaceTag or $hasOpenwalletTag);
-        $hasOfferTag                   = in_array(Feature::OFFERS, $features, true);
-        $hasChargeAtWillTag            = in_array(Feature::CHARGE_AT_WILL, $features, true);
-        $hasSubscriptionsTag           = in_array(Feature::SUBSCRIPTIONS, $features, true);
-        $hasGenericNotesTag            = in_array(Feature::REPORTING_GENRERIC_NOTES, $features, true);
-
-        $merchantInvoiceExperimentValue = $this->app->razorx->getTreatment(
-            $merchant->getId(),
-            'reporting_merchant_invoice',
-            $this->mode);
+        $hasPlTag                          = in_array('payment_link_report', $tags, true);
+        $hasMarketplaceFeature             = in_array(Feature::MARKETPLACE, $features, true);
+        $hasOpenwalletFeature              = in_array(Feature::OPENWALLET, $features, true);
+        $hasMarketplaceOrOpenwalletFeature = ($hasMarketplaceFeature or $hasOpenwalletFeature);
+        $hasChargeAtWillFeature            = in_array(Feature::CHARGE_AT_WILL, $features, true);
+        $hasSubscriptionsFeature           = in_array(Feature::SUBSCRIPTIONS, $features, true);
 
         $items = $items->filter(function ($value, $key) use (
             $hasPlTag,
-            $hasMarketplaceTag,
-            $hasMarketplaceOrOpenwalletTag,
-            $hasChargeAtWillTag,
-            $hasSubscriptionsTag)
+            $hasMarketplaceFeature,
+            $hasMarketplaceOrOpenwalletFeature,
+            $hasChargeAtWillFeature,
+            $hasSubscriptionsFeature)
         {
             switch ($value['type'])
             {
@@ -652,55 +670,105 @@ class Reporting implements ExternalService
 
                 // Keep transfer type only if one of marketplace or openwallet is enabled
                 case Table::TRANSFER:
-                    return $hasMarketplaceOrOpenwalletTag;
+                    return $hasMarketplaceOrOpenwalletFeature;
 
                 // Keep reversal type only if marketplace is enabled
                 case Table::REVERSAL:
-                    return $hasMarketplaceTag;
+                    return $hasMarketplaceFeature;
 
                 // Show token report to folks with charge_at_will feature only
                 case Table::TOKEN:
-                    return $hasChargeAtWillTag;
+                    return $hasChargeAtWillFeature;
 
                 case Table::SUBSCRIPTION:
-                    return $hasSubscriptionsTag;
+                    return $hasSubscriptionsFeature;
 
                 default:
                     return true;
             }
         });
 
-        $items = $items->filter(function ($value) use (
-            $hasOfferTag,
-            $hasGenericNotesTag,
-            $merchantInvoiceExperimentValue)
-        {
-            if (($value['name'] === 'Offer Payments') and
-                ($value['type'] === Table::PAYMENT) and
-                ($value['consumer'] === Account::SHARED_ACCOUNT))
+        return $items;
+    }
+
+    protected function filterOnReportTypeAndNameAndConsumer(Merchant\Entity $merchant, $items)
+    {
+        $features = $merchant->getEnabledFeatures();
+
+        $hasOfferTag        = in_array(Feature::OFFERS, $features, true);
+        $hasGenericNotesTag = in_array(Feature::REPORTING_GENRERIC_NOTES, $features, true);
+
+        $filterConditions = [
+            [
+                'name'      => 'Offer Payments',
+                'type'      => Table::PAYMENT,
+                'consumer'  => Account::SHARED_ACCOUNT,
+                'condition' => $hasOfferTag,
+            ],
+            [
+                'name'      => 'Custom Settlement Recon With Notes',
+                'type'      => Table::SETTLEMENT,
+                'consumer'  => Account::SHARED_ACCOUNT,
+                'condition' => $hasGenericNotesTag,
+            ],
+            [
+                'name'      => 'SubMerchant Report for Platform Partner',
+                'type'      => null,
+                'consumer'  => Account::SHARED_ACCOUNT,
+                'condition' => false,
+            ],
+            [
+                'name'      => 'SubMerchant Report for Non Platform Partner',
+                'type'      => null,
+                'consumer'  => Account::SHARED_ACCOUNT,
+                'condition' => false,
+            ],
+        ];
+
+        $items = $items->filter(function ($value) use ($filterConditions) {
+            foreach ($filterConditions as $filterCondition)
             {
-                return $hasOfferTag;
-            }
-            else if (($value['name'] === 'Custom Settlement Recon With Notes') and
-                     ($value['type'] === Table::SETTLEMENT) and
-                     ($value['consumer'] === Account::SHARED_ACCOUNT))
-            {
-                return $hasGenericNotesTag;
-            }
-            else if (($value['name'] === 'Merchant Invoice') and
-                     ($value['type'] === null) and
-                     ($value['consumer'] === Account::SHARED_ACCOUNT))
-            {
-                return ($merchantInvoiceExperimentValue === 'on');
+                if (($value['name'] === $filterCondition['name']) and
+                    ($value['type'] === $filterCondition['type']) and
+                    ($value['consumer'] === $filterCondition['consumer']))
+                {
+                    return $filterCondition['condition'];
+                }
             }
 
             return true;
         });
 
-        $configs['items'] = $items->values()->all();
-        $configs['count'] = $items->count();
+        return $items;
+    }
 
-        return $configs;
+    protected function filterForBusinessBanking(Merchant\Entity $merchant, $items)
+    {
+        // We don't use Business Banking attribute of merchant because we don't want
+        // to show these reports to the merchant on the PG dashboard. Hence, we use the
+        // header to figure out whether the request is coming from RX dashboard.
+        $isBusinessBanking = $this->ba->isProductBanking();
+
+        $items = $items->filter(
+            function($value) use ($isBusinessBanking)
+            {
+                $isBusinessBankingReport = (starts_with(strtolower($value['name']), 'rx') === true);
+
+                //
+                // If business banking, return only business banking reports.
+                // If not business banking, return all reports except business banking reports.
+                //
+                if ($isBusinessBanking === true)
+                {
+                    return ($isBusinessBankingReport === true);
+                }
+                else
+                {
+                    return ($isBusinessBankingReport === false);
+                }
+            });
+
+        return $items;
     }
 
     protected function traceReportingServiceRequest(array $request)

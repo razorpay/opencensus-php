@@ -235,6 +235,11 @@ class Repository extends Base\Repository
             $attributes['amount'] = $data['amt'];
         }
 
+        if (empty($data['eci']) === false)
+        {
+            $attributes['eci'] = $data['eci'];
+        }
+
         $model->fill($attributes);
 
         $this->saveOrFail($model);
@@ -338,6 +343,11 @@ class Repository extends Base\Repository
             'error_code2'   => $error['code'],
             'error_text'    => $error['text']
         ];
+
+        if (empty($authResponse['data']['eci']) === false)
+        {
+            $attributes['eci'] = $authResponse['data']['eci'];
+        }
 
         $model->fill($attributes);
 

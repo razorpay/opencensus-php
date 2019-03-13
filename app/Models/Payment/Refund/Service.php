@@ -306,6 +306,15 @@ class Service extends Base\Service
         return $this->repo->refund->fetchAndReturnPublicArray($id, $this->merchant);
     }
 
+    public function fetchEntity($id)
+    {
+        $refund = $this->repo->refund->findOrFailPublic($id);
+
+        $response = $refund->toArray();
+
+        return $response;
+    }
+
     public function fetchMultiple($input)
     {
         $refunds = $this->repo->refund->fetch($input, $this->merchant->getId());
@@ -975,12 +984,13 @@ class Service extends Base\Service
         ];
     }
 
-    public function markRefundProcessed(string $refundId, array $input)
+    public function updateScroogeRefundStatus(string $refundId, array $input)
     {
         $this->trace->info(
-            TraceCode::REFUND_MARK_PROCESSED_REQUEST,
+            TraceCode::REFUND_UPDATE_STATUS_REQUEST,
             [
                 'refund_id' => $refundId,
+                'status'    => $input['status'] ?? '',
             ]);
 
         try
@@ -991,12 +1001,19 @@ class Service extends Base\Service
 
             if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway) === true)
             {
-                $refund->getValidator()->validateMarkProcessed();
+                $refund->getValidator()->validateUpdateScroogeRefundStatus($input);
 
-                $this->updateRefund($refund, $input);
+                if ($input['status'] === Status::PROCESSED)
+                {
+                    $this->updateRefund($refund, $input);
 
-                $refund->setStatusProcessed();
-                $refund->setGatewayRefunded(true);
+                    $refund->setStatusProcessed();
+                    $refund->setGatewayRefunded(true);
+                }
+                else if ($input['status'] === Status::FAILED)
+                {
+                    $this->getNewProcessor($refund->merchant)->reverseRefund($refund);
+                }
 
                 $this->repo->saveOrFail($refund);
 
@@ -1005,7 +1022,7 @@ class Service extends Base\Service
             else
             {
                 $this->trace->error(
-                    TraceCode::REFUND_MARK_PROCESSED_NON_SCROOGE_GATEWAY,
+                    TraceCode::REFUND_UPDATE_STATUS_NON_SCROOGE_GATEWAY,
                     [
                         'refund_id' => $refund->getId(),
                         'status'    => $refund->getStatus(),

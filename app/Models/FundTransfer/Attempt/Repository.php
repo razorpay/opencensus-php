@@ -286,4 +286,11 @@ class Repository extends Base\Repository
 
         return $query->first();
     }
+
+    public function getAttemptByFTSTransferId($ftsTransferId): Entity
+    {
+        return $this->newQuery()
+                    ->where(Entity::FTS_TRANSFER_ID, $ftsTransferId)
+                    ->first();
+    }
 }

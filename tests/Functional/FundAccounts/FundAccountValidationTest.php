@@ -2,16 +2,12 @@
 
 namespace RZP\Tests\Functional\FundAccount;
 
-use Closure;
-use Mockery;
-
-use RZP\Models\Merchant\Webhook;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\FundAccount\Validation\Constants;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountTrait;
+use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 
 class FundAccountValidationTest extends TestCase
 {
@@ -19,6 +15,7 @@ class FundAccountValidationTest extends TestCase
     use FundAccountTrait;
     use DbEntityFetchTrait;
     use AttemptReconcileTrait;
+    use FundAccountValidationTrait;
 
     public function setUp()
     {
@@ -45,7 +42,7 @@ class FundAccountValidationTest extends TestCase
         $fundAccount = $this->getLastEntity('fund_account', true);
 
         $fav = $this->getLastEntity('fund_account_validation', true);
-        $this->assertEquals('created', $fav['status']);
+        $this->assertEquals('completed', $fav['status']);
         $this->assertEquals($fundAccount['id'], 'fa_'.$fav['fund_account_id']);
 
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
@@ -99,8 +96,6 @@ class FundAccountValidationTest extends TestCase
 
         $this->createValidationWithFundAccountEntity();
 
-        $this->initiateTransferAndReconcile();
-
         $fav = $this->getLastEntity('fund_account_validation', true);
         $this->assertEquals('completed', $fav['status']);
         $this->assertEquals('active', $fav['results']['account_status']);
@@ -125,6 +120,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationWhenFailedDuringRecon()
     {
+        $this->markTestSkipped();
+
         $this->addFeeCredits(['value' => 10000, 'campaign' => 'silent-ads']);
 
         $this->ba->privateAuth();
@@ -170,8 +167,6 @@ class FundAccountValidationTest extends TestCase
 
         $this->createValidationWithFundAccountEntity();
 
-        $this->initiateTransferAndReconcile();
-
         $fav = $this->getLastEntity('fund_account_validation', true);
         $this->assertEquals('completed', $fav['status']);
         $this->assertEquals('active', $fav['results']['account_status']);
@@ -198,8 +193,6 @@ class FundAccountValidationTest extends TestCase
     {
         $this->testCreateValidationForCustomerFeeBearer();
 
-        $this->initiateTransferAndReconcile();
-
         $fav = $this->getLastEntity('fund_account_validation', true);
         $this->assertEquals('completed', $fav['status']);
         $this->assertEquals('active', $fav['results']['account_status']);
@@ -225,8 +218,6 @@ class FundAccountValidationTest extends TestCase
     public function testFundAccValidationWithReconOnPostpaidModelWithNoFeeCredits()
     {
         $this->createValidationWithFundAccountEntity();
-
-        $this->initiateTransferAndReconcile();
 
         $fav = $this->getLastEntity('fund_account_validation', true);
         $this->assertEquals('completed', $fav['status']);
@@ -256,8 +247,6 @@ class FundAccountValidationTest extends TestCase
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
 
         $this->createValidationWithFundAccountEntity();
-
-        $this->initiateTransferAndReconcile();
 
         $fav = $this->getLastEntity('fund_account_validation', true);
         $this->assertEquals('completed', $fav['status']);
@@ -301,8 +290,6 @@ class FundAccountValidationTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $this->createValidationWithFundAccountEntity();
-
         $this->mockInfernoFire(function ($data) use ($testData)
         {
             $data['event'] = json_decode($data['event'], true);
@@ -314,49 +301,6 @@ class FundAccountValidationTest extends TestCase
             return true;
         });
 
-        $this->initiateTransferAndReconcile();
-    }
-
-    protected function initiateTransferAndReconcile()
-    {
-        $this->initiateTransferAndAssertSuccess('yesbank', 'penny_testing', 1, 'penny_testing');
-
-        $this->reconcileOnlineSettlements('yesbank', false);
-
-        $this->reconcileEntitiesForChannel('yesbank');
-    }
-
-    protected function createValidationWithFundAccountEntity(): array
-    {
-        $response = $this->startTest();
-
-        $bankAccount = $this->getLastEntity('bank_account', true);
-        $fundAccount = $this->getLastEntity('fund_account', true);
-
-        $fav = $this->getLastEntity('fund_account_validation', true);
-        $this->assertEquals('created', $fav['status']);
-        $this->assertEquals($fundAccount['id'], 'fa_'.$fav['fund_account_id']);
-
-        $fta = $this->getLastEntity('fund_transfer_attempt', true);
-        $this->assertEquals('penny_testing', $fta['purpose']);
-        $this->assertEquals($fav['id'], $fta['source']);
-        $this->assertEquals($bankAccount['id'], 'ba_'.$fta['bank_account_id']);
-
-        $this->assertNotNull($fta['narration']);
-
-        return $response;
-    }
-
-    protected function mockInfernoFire(Closure $closure)
-    {
-        $inferno = Mockery::mock(Webhook\Inferno::class, [])->makePartial();
-
-        $inferno->shouldReceive('fire')
-                ->once()
-                ->with(
-                    Mockery::type('RZP\Jobs\WebHook'),
-                    Mockery::on($closure));
-
-        $this->app->instance('webhook.inferno', $inferno);
+        $this->createValidationWithFundAccountEntity();
     }
 }

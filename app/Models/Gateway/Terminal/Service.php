@@ -3,15 +3,12 @@
 namespace RZP\Models\Gateway\Terminal;
 
 use App;
-
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Mode;
 use RZP\Gateway\Base\Terminal;
 use RZP\Constants\Environment;
-use RZP\Constants\Entity as Constants;
-use RZP\Models\Terminal\Repository as TerminalRepo;
+use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {
@@ -95,14 +92,8 @@ class Service extends Base\Service
                 }
                 catch (\Throwable $e)
                 {
-                    $this->trace->info(
-                        TraceCode::MERCHANT_ONBOARD_REQUEST_FAILED,
-                        [
-                            'merchant_id'   => $merchant->getId(),
-                            'gateway'       => $gateway,
-                            'gateway_input' => $gatewayInput,
-                            'error'         => $e->getMessage(),
-                        ]);
+                    $this->trace->traceException($e, Trace::ERROR, TraceCode::MERCHANT_ONBOARD_REQUEST_FAILED, $gatewayInput);
+
                     throw $e;
                 }
             },

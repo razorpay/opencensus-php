@@ -90,6 +90,12 @@ class PricingTest extends TestCase
 
     public function testBulkPricingPlan()
     {
+        // also asserts if multiple rules of same type can be added without error
+        $this->startTest();
+    }
+
+    public function testBulkPricingPlanOfMultipleTypes()
+    {
         $this->startTest();
     }
 
@@ -127,6 +133,25 @@ class PricingTest extends TestCase
     public function testAddPricingPlanNBRule()
     {
         $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddingPricingPlanNBRuleDifferentTypes()
+    {
+        // verifies that commission type pricing rules can be added
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddCommissionPlanNBRule()
+    {
+        $content = $this->createPricingPlan(['type' => 'commission']);
 
         $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
 
@@ -238,6 +263,15 @@ class PricingTest extends TestCase
         $rule = Pricing\Entity::withTrashed()->findOrFail($rule['id']);
 
         $this->assertNotNull($rule['deleted_at']);
+    }
+
+    public function testUpdateCommissionRule()
+    {
+        $content = $this->createPricingPlan2(['type' => 'commission']);
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule/' . $content['rules'][0]['id'];
+
+        $this->startTest($testData);
     }
 
     /**
@@ -371,6 +405,18 @@ class PricingTest extends TestCase
     {
         $this->createPricingPlan();
         $this->createPricingPlan2();
+
+        $this->ba->adminAuth('test');
+        $this->startTest();
+
+        $this->ba->adminAuth('live');
+        $this->startTest();
+    }
+
+    public function testGetPricingPlansTypeFilter()
+    {
+        $this->createPricingPlan();
+        $this->createPricingPlan2(['type' => 'commission']);
 
         $this->ba->adminAuth('test');
         $this->startTest();
@@ -718,6 +764,17 @@ class PricingTest extends TestCase
         $content = $this->startTest();
     }
 
+    public function testDeleteCommissionRule()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan2(['type' => 'commission']);
+
+        $testData['request']['url'] = '/pricing/' . $content['id'] . '/rule/' . $content['rules'][0]['id'];
+
+        $this->startTest($testData);
+    }
+
     /**
      * RZP Admin will have right to delete the pricing plan of other orgs as well.
      * Here, we are considering the case where RZP admin is deleting the pricing plan beloning to SBI org.
@@ -921,9 +978,12 @@ class PricingTest extends TestCase
             'payment_issuer'      => 'SBIN',
             'percent_rate'        => '275',
             'fixed_rate'          => 0,
+            'type'                => 'pricing',
             ];
 
         $planData = array_merge($planData, $pricingPlanData);
+
+        $type = $planData['type'];
 
         $pricingData = [
                 [
@@ -932,6 +992,7 @@ class PricingTest extends TestCase
                     'payment_network'     => 'DICL',
                     'payment_issuer'      => 'ICIC',
                     'percent_rate'        => 250,
+                    'type'                => $type,
                 ],
                 [
                     'payment_method'      => 'card',
@@ -939,6 +1000,7 @@ class PricingTest extends TestCase
                     'payment_network'     => 'MAES',
                     'payment_issuer'      => 'PUNB',
                     'percent_rate'        => 250,
+                    'type'                => $type,
                 ],
                 [
                     'payment_method'      => 'card',
@@ -946,6 +1008,7 @@ class PricingTest extends TestCase
                     'payment_network'     => 'MC',
                     'payment_issuer'      => 'AXIS',
                     'fixed_rate'          => 3000,
+                    'type'                => $type,
                 ],
             ];
 

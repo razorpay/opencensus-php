@@ -407,6 +407,7 @@ class Type
             self::YES_EMI_FILE_SFTP,
             self::RBL_ENACH_DEBIT,
             self::RBL_ENACH_REGISTER,
+            self::ENACH_NPCI_NB_DEBIT,
         ],
 
         self::RECON_BUCKET_CONFIG => [

@@ -39,10 +39,7 @@ class Service extends Base\Service
         $extra[Entity::SLUG] = $entity->getSlugFromShortUrl();
         $extra[Entity::CAPTURED_PAYMENTS_COUNT] = $entity->getCapturedPaymentsCount();
 
-        if ($this->merchant->isTagAdded(Entity::TAG_PAYMENT_PAGE_V2) === true)
-        {
-            $extra[Entity::SETTINGS] = (new ViewSerializer($entity))->serializeSettingsWithDefaults();
-        }
+        $extra[Entity::SETTINGS] = (new ViewSerializer($entity))->serializeSettingsWithDefaults();
 
         return $entity->toArrayPublic() + $extra;
     }
@@ -96,5 +93,20 @@ class Service extends Base\Service
         $view = $this->core->getHostedViewTemplate($paymentLink);
 
         return [$view, $viewPayload];
+    }
+
+    /**
+     * It uploads the images in S3 bucket and returns their location urls.
+     *
+     * @param array $input Includes images to be uploaded.
+     *
+     * @return array Image urls.
+     * @throws \RZP\Exception\ServerErrorException
+     */
+    public function upload(array $input): array
+    {
+        (new Validator)->validateInput('uploadImages', $input);
+
+        return $this->core->upload($input, $this->merchant);
     }
 }

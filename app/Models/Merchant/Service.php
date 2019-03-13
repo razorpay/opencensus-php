@@ -753,7 +753,12 @@ class Service extends Base\Service
 
         $pricingPlanId = $merchant->getPricingPlanId();
 
-        $plan = $this->repo->pricing->getPricingPlanById($pricingPlanId);
+        $plan = new Plan;
+
+        if(empty($pricingPlanId) === false)
+        {
+            $plan = $this->repo->pricing->getPricingPlanById($pricingPlanId);
+        }
 
         return $plan->toArrayPublic();
     }
@@ -2187,7 +2192,9 @@ class Service extends Base\Service
 
         $subEmailIsSameAsPartner = ($subMerchant->getEmail() === $partnerMerchant->getEmail());
 
-        $subMerchantHasLessThanTwoOwners = ($subMerchant->owners()->count() <= 2);
+        $subMerchantHasLessThanTwoOwners = ($subMerchant->owners()->count() < 2);
+
+        $inviteEmailSameAsSelf = ($input[User\Entity::EMAIL] === $subMerchant->getEmail());
 
         //
         // In case of a partner of type `aggregator`(only) having created a sub-merchant
@@ -2196,8 +2203,11 @@ class Service extends Base\Service
         // In both old aggregator and partners flow, we never expect the total number of
         // owners for a merchant to be greater than 2 (1 for partner and 1 for sub-merchant).
         //
+        // If the sub-merchant email is changed later then the invite may stil need to be
+        // sent for login but that should only be to the merchant email.
+        //
         if (($isAggregatorPartner === true) and
-            ($subEmailIsSameAsPartner === true) and
+            (($subEmailIsSameAsPartner or $inviteEmailSameAsSelf) === true) and
             ($subMerchantHasLessThanTwoOwners === true))
         {
             return $input[User\Entity::EMAIL];
@@ -2231,7 +2241,7 @@ class Service extends Base\Service
 
     public function getDummyRazorX()
     {
-        $variant = $this->app->razorx->getTreatment($this->merchant->getId(), 'dummy', $this->mode);
+        $variant = $this->app->razorx->getTreatment('123', 'dummy', 'mode');
 
         return ['variant' => $variant];
     }
@@ -2780,15 +2790,15 @@ class Service extends Base\Service
 
     public function switchProductMerchant($product = null)
     {
-        // Add Banking Role for the current merchant User.
-        (new User\Service)->addProductSwitchRole($product);
-
-        $merchant = $this->auth->getMerchant();
-
-        $this->enableBusinessBankingIfApplicable($merchant);
-
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        $this->repo->transactionOnLiveAndTest(function() use ($product)
         {
+            // Add Banking Role for the current merchant User.
+            (new User\Service)->addProductSwitchRole($product);
+
+            $merchant = $this->auth->getMerchant();
+
+            $this->enableBusinessBankingIfApplicable($merchant);
+
             $this->repo->saveOrFail($merchant);
 
             (new Activate)->activateBusinessBankingIfApplicable($merchant);
@@ -2850,6 +2860,13 @@ class Service extends Base\Service
 
         if (($isBanking === true) and ($merchant->isBusinessBankingEnabled() === false))
         {
+            $this->trace->info(
+                TraceCode::MERCHANT_EDIT,
+                [
+                    'business_banking' => $isBanking,
+                ]
+            );
+
             $merchant->setBusinessBanking(true);
         }
     }

@@ -202,7 +202,7 @@ class Fee extends Base\Core
         return self::DEFAULT_PRICING_PLAN_ID;
     }
 
-    protected function getProductForEntity(Base\PublicEntity $entity): string
+    public function getProductForEntity(Base\PublicEntity $entity): string
     {
         // Source entities which creates transaction on multiple balance have balance itself.
 

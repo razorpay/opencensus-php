@@ -323,7 +323,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateMarkProcessed()
+    public function validateUpdateScroogeRefundStatus($input)
     {
         $refund = $this->entity;
 
@@ -333,9 +333,10 @@ class Validator extends Base\Validator
         // Refund with initiated status can be marked as processed
         // after FTA recon calls scrooge and scrooge calls back to API.
         //
-        if (($refund->isCreated() === false) and
+        if ((($refund->isCreated() === false) and
             ($refund->isProcessed() === false) and
-            ($refund->isInitiated() === false))
+            ($refund->isInitiated() === false)) or
+            (isset($input['status']) === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_REFUND_INVALID_STATE_TO_PROCESSED,
@@ -343,6 +344,7 @@ class Validator extends Base\Validator
                 [
                     'refund_id' => $refund->getId(),
                     'status'    => $refund->getStatus(),
+                    'gateway'   => $refund->getGateway(),
                 ]);
         }
     }

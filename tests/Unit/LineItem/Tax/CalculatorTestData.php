@@ -25,7 +25,7 @@ return [
                 'attributes' => [
                     'name'      => 'Tax #1',
                     'rate_type' => 'percentage',
-                    'rate'      => 1000,
+                    'rate'      => 100000,
                 ],
                 'tax_amount'    => 1000,
             ],
@@ -48,7 +48,7 @@ return [
                 'attributes' => [
                     'name'      => 'Tax #1',
                     'rate_type' => 'percentage',
-                    'rate'      => 1000,
+                    'rate'      => 100000,
                 ],
                 'tax_amount'    => 5000,
             ],
@@ -94,7 +94,7 @@ return [
                 'attributes' => [
                     'name'      => 'Tax #1',
                     'rate_type' => 'percentage',
-                    'rate'      => 1000,
+                    'rate'      => 100000,
                 ],
                 'tax_amount'    => 909.1,
             ],
@@ -139,7 +139,7 @@ return [
             [
                 'attributes' => [
                     'name'      => 'Tax #2',
-                    'rate'      => 1500,
+                    'rate'      => 150000,
                     'rate_type' => 'percentage',
                 ],
                 'tax_amount'    => 5305.5,
@@ -147,7 +147,7 @@ return [
             [
                 'attributes' => [
                     'name'      => 'Tax #2',
-                    'rate'      => 2000,
+                    'rate'      => 200000,
                     'rate_type' => 'percentage',
                 ],
                 'tax_amount'    => 7074,

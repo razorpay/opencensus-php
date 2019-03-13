@@ -57,16 +57,20 @@ class Core extends Base\Core
         //
         Card\Entity::modifyNumber($input);
         Card\Entity::modifyMaestro($input);
+        Card\Entity::modifyBajajFinserv($input);
 
         $card = null;
 
-        if (isset($input[Entity::VAULT]))
+        if (isset($input[Entity::VAULT]) === true)
         {
             $newCard = (new Card\Entity)->build($input);
 
-            $card = $this->findExistingCards($newCard, $merchant);
+            if ($newCard->getVaultToken() !== null)
+            {
+                $card = $this->findExistingCards($newCard, $merchant);
 
-            $this->card = $card;
+                $this->card = $card;
+            }
         }
 
         if ($card === null)
@@ -244,10 +248,6 @@ class Core extends Base\Core
 
         if ($cards->count() > 0)
         {
-            // TODO: delete the other cards
-
-            $cards->sortBy(Card\Entity::ID);
-
             return $cards[0];
         }
 

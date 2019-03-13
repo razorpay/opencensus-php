@@ -22,6 +22,7 @@ class Type
     // These entities from transaction will not be considered for merchant invoice as we wont charge on these entities
     // - Payment also a part of this list because payment fee is calculated from payments table in different query.
     //   so no need to consider payments here
+    // - Fund Account Validation is also a part of this list because It is computed in different line item.
     //
     const IGNORE_ENTITIES_FROM_MERCHANT_INVOICE = [
         self::PAYMENT,
@@ -31,6 +32,7 @@ class Type
         self::SETTLEMENT,
         self::ADJUSTMENT,
         self::BANK_TRANSFER,
+        self::FUND_ACCOUNT_VALIDATION,
     ];
 
     public static function validateType(string $type)

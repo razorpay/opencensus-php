@@ -5,6 +5,7 @@ namespace RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Card\IIN;
 use RZP\Models\Card\Network;
+use RZP\Models\Merchant\Account;
 
 class Repository extends Base\Repository
 {
@@ -17,15 +18,17 @@ class Repository extends Base\Repository
         Entity::NETWORK         => 'sometimes|string|max:12',
     );
 
-    public function fetchEmiPlans()
+    public function fetchEmiPlansByMerchantId(string $merchantId)
     {
         return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->get();
     }
 
-    public function fetchRelevantEmiPlan(IIN\Entity $iin, int $duration)
+    public function fetchRelevantMerchantEmiPlan(IIN\Entity $iin, int $duration, $merchant)
     {
         $bank = $iin->getIssuer();
+
         $network = $iin->getNetworkCode();
 
         $query = $this->newQuery()
@@ -34,12 +37,16 @@ class Repository extends Base\Repository
         {
             $query->where(Entity::BANK, '=', $bank);
         }
-        else if ($network === Network::AMEX)
+        else if (($network === Network::AMEX) or ($network === Network::BAJAJ))
         {
             $query->where(Entity::NETWORK, '=', $network);
         }
 
-        return $query->firstOrFail();
+        $merchantIds = [$merchant->getId(), Account::SHARED_ACCOUNT];
+
+        $query->whereIn(Entity::MERCHANT_ID, $merchantIds);
+
+        return $query->get();
     }
 
     public function fetchByDurationsAndBankOrNetwork(array $durations = [], string $bank = null, string $network = null)

@@ -5,7 +5,6 @@ namespace RZP\Models\Batch;
 use App;
 use RZP\Base;
 use RZP\Models\User;
-use RZP\Models\Payout;
 use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -115,6 +114,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY     => 'required|string',
     ];
 
+    protected static $merchantOnboardingCreateRules = [
+        Entity::FILE    => 'required|file' . self::DEFAULT_MIME_RULE,
+        Entity::TYPE    => 'required|in:merchant_onboarding',
+        Entity::GATEWAY => 'required|string',
+    ];
+
     protected static $terminalCreateRules = [
         Entity::TYPE                 => 'required|custom',
         Entity::SUB_TYPE             => 'required|string|in:hitachi,netbanking_icici',
@@ -220,6 +225,13 @@ class Validator extends Base\Validator
         Entity::FILE_ID => 'required_without:file|public_id',
         Entity::OTP     => 'required|filled|min:4',
         Entity::TOKEN   => 'required|unsigned_id',
+    ];
+
+    protected static $payoutValidateRules = [
+        Entity::TYPE    => 'required|in:payout',
+        Entity::NAME    => 'filled|string|max:255',
+        Entity::FILE    => 'required_without:file_id|file|max:10240' . self::CSV_MIME_RULE,
+        Entity::FILE_ID => 'required_without:file|public_id',
     ];
 
     protected static $fundAccountTypeRowRules = [

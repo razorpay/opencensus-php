@@ -229,7 +229,7 @@ class EmiFile extends Base\Core
                 'channel'   => 'settlements',
                 'filetype'  => 'emi',
                 'subject'   => 'File Send failure',
-                'recipient' => Constants::MAIL_ADDRESSES[Constants::EMI]
+                'recipient' => Constants::MAIL_ADDRESSES[Constants::DEVELOPERS]
             ];
 
             $this->app['beam']->beamPush($data, $timelines, $mailInfo);

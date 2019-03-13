@@ -16,6 +16,8 @@ class NetworkName
     const UNKNOWN = 'Unknown';
     const VISA    = 'Visa';
     const UNP     = 'Union Pay';
+    const BAJAJ   = 'Bajaj Finserv';
+
 
     public static $codes = array(
         self::AMEX    => Network::AMEX,
@@ -28,6 +30,7 @@ class NetworkName
         self::UNKNOWN => Network::UNKNOWN,
         self::VISA    => Network::VISA,
         self::UNP     => Network::UNP,
+        self::BAJAJ   => Network::BAJAJ,
     );
 
     public static function isValidNetworkFullName($name)
