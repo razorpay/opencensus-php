@@ -1319,6 +1319,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_ACCOUNT_VALIDATION_CREATE_TRANSACTION    = 'FUND_ACCOUNT_VALIDATION_CREATE_TRANSACTION';
     const FUND_ACCOUNT_VALIDATION_TRANSACTION_FAILED    = 'FUND_ACCOUNT_VALIDATION_TRANSACTION_FAILED';
     const FUND_TRANSFER_ATTEMPT_STILL_INITIATED         = 'FUND_TRANSFER_ATTEMPT_STILL_INITIATED';
+    const FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR  = 'FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR';
 
     // Trace codes for Post FTA Processing
     const UPDATE_STATUS_AFTER_FTA_RECON                 = 'UPDATE_STATUS_AFTER_FTA_RECON';
@@ -1854,6 +1855,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
         self::ORG_MAILER_BLOCKED                        => 'Email blocked for given org',
         self::NO_MERCHANT_CONTEXT_MAIL                  => 'The mail flow does not have merchant in auth context',
+
+        self::FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR  => 'Fund Account Validation Failed due to critical reasons. We should retry.'
     ];
 
     /**

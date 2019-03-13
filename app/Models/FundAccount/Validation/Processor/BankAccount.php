@@ -198,10 +198,10 @@ class BankAccount extends Base
             'validation_status' => $this->validation->getStatus(),
         ];
 
-        $this->trace->error('Penny Testing Failed due to critical reasons. We should retry.', $traceArray);
+        $this->trace->error(TraceCode::FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR, $traceArray);
 
         $this->slack->queue(
-            'Penny Testing Failed due to critical reasons. We should retry.',
+            TraceCode::FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR,
             $traceArray,
             Constants::slackSettings()
         );
