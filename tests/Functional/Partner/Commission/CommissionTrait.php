@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Partner\Commission;
 
+use RZP\Models\Pricing\Calculator\Base;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 
@@ -39,6 +40,11 @@ trait CommissionTrait
 
     protected function getTax(int $amount, float $rate)
     {
+        if ($amount < Base::CARD_TAX_CUT_OFF)
+        {
+            return 0;
+        }
+
         return ($this->getFeeWithoutTax($amount, $rate) * Constants::GST_RATE / 100);
     }
 }
