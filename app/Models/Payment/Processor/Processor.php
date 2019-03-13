@@ -37,6 +37,7 @@ use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Base\CardCacheTrait;
+use RZP\Models\Admin\ConfigKey;
 
 class Processor
 {
@@ -1453,6 +1454,13 @@ class Processor
 
         $gatewayData['merchant'] = $this->payment->merchant;
 
+        if ($this->isRoutedThroughCps($gatewayData) === true)
+        {
+            $this->persistCardDetails($gateway, $action, $gatewayData);
+
+            $gatewayData['cps_route'] = true;
+        }
+
         $gatewayData['merchant_detail'] = $this->repo->merchant_detail->getByMerchantId($this->payment->merchant['id']);
 
         //
@@ -1485,6 +1493,38 @@ class Processor
             }
 
             throw $ex;
+        }
+    }
+
+    public function isRoutedThroughCps($input): bool
+    {
+        /**
+         * This checks if the current request has to be routed to
+         * core payment service or not. We are setting this flag(`cps_route`)
+         * for new payments based on variant returned by RazorX.
+         */
+        if (((bool) ConfigKey::get(ConfigKey::CPS_SERVICE_ENABLED, false) === true) and
+            (is_array($input) === true) and
+            (isset($input[E::PAYMENT]) === true) and
+            ($input[E::PAYMENT][Payment\Entity::CPS_ROUTE] === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function persistCardDetails($gatewayName, $action, &$input)
+    {
+        $action = snake_case($action);
+
+        if ($action === \RZP\Gateway\Base\Action::AUTHORIZE)
+        {
+            $this->persistCardDetailsTemporarily($input);
+        }
+        else if ($action === \RZP\Gateway\Base\Action::CALLBACK)
+        {
+            $this->setCardNumberAndCvv($input);
         }
     }
 
