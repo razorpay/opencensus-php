@@ -2011,6 +2011,14 @@ class AdminFetch
             ],
 
             Entity::COMMISSION     => [
+                Commission\Entity::TYPE => [
+                    Fetch::LABEL  => 'Commission Type',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        Commission\Type::IMPLICIT,
+                        Commission\Type::EXPLICIT,
+                    ],
+                ],
                 Commission\Entity::SOURCE_TYPE => [
                     Fetch::LABEL  => 'Source Type',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
