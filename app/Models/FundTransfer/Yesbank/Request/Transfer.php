@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundTransfer\Yesbank\Request;
 
+use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Gateway;
@@ -539,6 +540,17 @@ class Transfer extends Base
 
     protected function generateSyncMockFailureResponse(): string
     {
+        if (($this->entity->source instanceof Entity) and
+            ($this->entity->source->getReceipt() === 'failed_response_insufficient_funds'))
+        {
+            return $this->generateSyncMockFailureResponseForInsufficientFunds();
+        }
+
+        return $this->generateSyncMockFailureResponseForBeneficiaryNotAccepted();
+    }
+
+    protected function generateSyncMockFailureResponseForBeneficiaryNotAccepted(): string
+    {
         return json_encode([
             Constants::SYNC_TRANSFER_RESPONSE_IDENTIFIER => [
                 Constants::VERSION                      => self::VERSION,
@@ -551,6 +563,27 @@ class Transfer extends Base
                 Constants::TRANSACTION_STATUS           => [
                     Constants::STATUS_CODE              => Status::FAILED,
                     Constants::SUB_STATUS_CODE          => 'npci:E307',
+                    Constants::BANK_REFERENCE_NO        => PublicEntity::generateUniqueId(),
+                    Constants::BENEFICIARY_REFERENCE_NO => json_decode('{}'),
+                ]
+            ],
+        ]);
+    }
+
+    protected function generateSyncMockFailureResponseForInsufficientFunds(): string
+    {
+        return json_encode([
+            Constants::SYNC_TRANSFER_RESPONSE_IDENTIFIER => [
+                Constants::VERSION                      => self::VERSION,
+                Constants::REQUEST_REFERENCE_NO         => $this->entity->getId(),
+                Constants::NAME_WITH_BENEFICIARY_BANK   => '',
+                Constants::LOW_BALANCE_ALERT            => false,
+                Constants::TRANSFER_TYPE                => Mode::IMPS,
+                Constants::ATTEMPT_NO                   => 1,
+                Constants::UNIQUE_RESPONSE_NO           => PublicEntity::generateUniqueId(),
+                Constants::TRANSACTION_STATUS           => [
+                    Constants::STATUS_CODE              => Status::FAILED,
+                    Constants::SUB_STATUS_CODE          => 'ns:E402',
                     Constants::BANK_REFERENCE_NO        => PublicEntity::generateUniqueId(),
                     Constants::BENEFICIARY_REFERENCE_NO => json_decode('{}'),
                 ]
