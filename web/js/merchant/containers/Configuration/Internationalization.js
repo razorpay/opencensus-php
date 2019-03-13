@@ -116,12 +116,12 @@ export default class FlashCheckout extends Component {
             <SwitchField
               defaultChecked={!!fcEnabled}
               onChange={(isChecked, cb) => this.toggleFc(isChecked, cb)}
-              type="round"
+              type="prime"
             />
             {fcEnabled ? (
-              <b className="text-success">Enabled</b>
+              <b className="text-primary">Enabled</b>
             ) : (
-              <b className="text-danger">Disabled</b>
+              <b className="text-faded">Disabled</b>
             )}
           </span>
         </div>

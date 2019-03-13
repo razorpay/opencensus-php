@@ -60,6 +60,8 @@ export default class FlashCheckout extends Component {
     return this.props
       .updateFeatures(data, this.props.user.current)
       .then(res => {
+        cb(true);
+
         if (enableFC) {
           this.analytics('Enable');
         } else {
@@ -95,12 +97,12 @@ export default class FlashCheckout extends Component {
             <SwitchField
               defaultChecked={!!fcEnabled}
               onChange={(isChecked, cb) => this.toggleFc(isChecked, cb)}
-              type="round"
+              type="prime"
             />
             {fcEnabled ? (
-              <b class="text-success">Enabled</b>
+              <b class="text-primary">Enabled</b>
             ) : (
-              <b class="text-danger">Disabled</b>
+              <b className="text-faded">Disabled</b>
             )}
           </span>
         </div>
