@@ -312,9 +312,9 @@ class Gateway extends Base\Gateway
         switch($input['card'][Card\Entity::NETWORK_CODE])
         {
             case Card\Network::VISA:
-                if (isset($commerceIndicatorMap[Card\Entity::NETWORK_CODE][$eci]) == true)
+                if (isset($commerceIndicatorMap[Card\Network::VISA][$eci]) === true)
                 {
-                    return $commerceIndicatorMap[Card\Entity::NETWORK_CODE][$eci];
+                    return $commerceIndicatorMap[Card\Network::VISA][$eci];
                 }
                 else
                 {
