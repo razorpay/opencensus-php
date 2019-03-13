@@ -197,7 +197,7 @@ class Core extends Base\Core
             // The merchant entity returned by the '$merchantDetails->merchant' relation gets reloaded here.
             // The function autoUpdateMerchantCategoryDetailsIfApplicable() updates a few merchant attributes.
             // Since the $merchantDetails variable in saveInstantActivationDetails() is defined before updating these
-            // merchant entity attributes, these values will not be reflected in the relation unless explicitly 
+            // merchant entity attributes, these values will not be reflected in the relation unless explicitly
             // reloaded.
             //
             // This has been moved here because we want to reload the merchant even if the instant activations workflow
@@ -441,11 +441,6 @@ class Core extends Base\Core
         }
 
         $this->adminNotifyActivationSubmission($merchantDetails);
-
-        // We also send over details to slack
-        $link = "<https://dashboard.razorpay.com/admin#/app/merchants/{$merchantId}/activation|See activation form>";
-
-        $this->logActionToSlack($merchant, SlackActions::SUBMIT_ACTIVATION, $customer, $link);
 
         $zapierData = $this->activationZapierData($customer, $merchant);
 
