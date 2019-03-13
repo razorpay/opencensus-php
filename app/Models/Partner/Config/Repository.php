@@ -52,27 +52,27 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Fetch default and overridden configs of an application
+     * Fetch default and overridden configs of the OAuth applications
      *
-     * @param string $appId
+     * @param array $appIds
      *
      * @return mixed
      */
-    public function fetchAllConfigForApp(string $appId)
+    public function fetchAllConfigForApps(array $appIds)
     {
-        $defaultConfig = function ($query) use ($appId)
+        $defaultConfig = function ($query) use ($appIds)
         {
-            $query->where(Entity::ENTITY_ID, $appId)
+            $query->whereIn(Entity::ENTITY_ID, $appIds)
                   ->where(Entity::ENTITY_TYPE, Constants::APPLICATION)
                   ->whereNull(Entity::ORIGIN_ID)
                   ->whereNull(Entity::ORIGIN_TYPE);
         };
 
-        $overriddenConfig = function ($query) use ($appId)
+        $overriddenConfig = function ($query) use ($appIds)
         {
             $query->where(Entity::ENTITY_TYPE, Constants::MERCHANT)
                   ->where(Entity::ORIGIN_TYPE, Constants::APPLICATION)
-                  ->where(Entity::ORIGIN_ID, $appId);
+                  ->whereIn(Entity::ORIGIN_ID, $appIds);
         };
 
         return $this->newQuery()
