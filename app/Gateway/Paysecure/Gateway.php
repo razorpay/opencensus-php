@@ -214,7 +214,8 @@ class Gateway extends Base\Gateway
     {
         parent::capture($input);
 
-        $this->setCardNumberAndCvv($input);
+//        $this->setCardNumberAndCvv($input);
+        $this->setCardDetails($input);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
@@ -230,6 +231,118 @@ class Gateway extends Base\Gateway
         );
 
         $this->getRepository()->saveOrFail($gatewayPayment);
+    }
+
+    protected function setCardDetails(array & $input)
+    {
+        $paymentIdCardMap = [
+            'BqZf0zK2yMSE7w' => '6074819900004939',
+            'BqZeOVuQ3g7ZH4' => '6074829900004938',
+            'BqZe7tse4OlAVP' => '6074829900004938',
+            'BqZdsJitrfIdMc' => '6074829900004938',
+            'BqZdaMNTTlzQHd' => '6074829900004938',
+            'BqZdIyDoG9FmNU' => '6074829900004938',
+            'BqZcyipWUXhW3J' => '6074829900004938',
+            'BqZcj3LqhvuX3b' => '6074829900004938',
+            'BqZcSHO5qsY5dL' => '6074829900004938',
+            'BqZcBm7UyXiNzP' => '6074829900004938',
+            'BqZbquQhQn3KVe' => '6074829900004938',
+            'BqZba4EmvpgU5G' => '6074829900004938',
+            'BqZbHb8OvLZVyb' => '6074829900004938',
+            'BqZb0guvHi9DD4' => '6074829900004938',
+            'BqZadQnGvSOVQf' => '6074829900004938',
+            'BqZaLlw1cuJKjE' => '6074829900004938',
+            'BqZa4iJefRnsdn' => '6074829900004938',
+            'BqZZm0GWkzIjV8' => '6074829900004938',
+            'BqZZTyqtbAp2B7' => '6074829900004938',
+            'BqZZ4PJly0VyvA' => '6074829900004938',
+            'BqZItCEuF3jOVc' => '6074829900004938',
+            'BqZI1J7VpoquwY' => '6074819900004939',
+            'BqZHh1SXXNeCji' => '6074819900004939',
+            'BqZHOkTux8uJOa' => '6074819900004939',
+            'BqZH7MP0O65lAL' => '6074819900004939',
+            'BqZGmarmLrs7Qn' => '6074819900004939',
+            'BqZGCF57YPck05' => '6074819900004939',
+            'BqZFuqMWRA5CK2' => '6074819900004939',
+            'BqZFcJ9V4QUg9H' => '6074819900004939',
+            'BqZFMDH1cl5iXB' => '6074819900004939',
+            'BqZF1sV6PCvyQE' => '6074819900004939',
+            'BqZEf6Z9BoILqS' => '6074819900004939',
+            'BqZELSbsw1WPnT' => '6074819900004939',
+            'BqZE3y9aMEA8fI' => '6074819900004939',
+            'BqZDiRQ3hHKJ5F' => '6074819900004939',
+            'BqZDDY8BRi0Sem' => '6074819900004939',
+            'BqZCuZvaj8Xyeo' => '6074819900004939',
+            'BqZCdvEWyW0eoa' => '6074819900004939',
+            'BqZBho69VIGwiF' => '6074819900004939',
+            'BqBk9OXufis7z3' => '6074819900004939',
+            'BqB1psYpzvATLJ' => '6074819900004939',
+            'Bq9Pf7csmk1iBm' => '6074819900004939',
+            'Bq9IVMLrPxqYOi' => '6074819900004939',
+            'Bq98zEOrktxbkE' => '6074819900004939',
+            'Bq8auCFfun7VX6' => '6074819900004939',
+            'BppQ9mF1ITocd4' => '6074819900004939',
+            'BpMitWESw3bNaD' => '6074829900004946',
+            'BpMdy4dWqvCJbE' => '6074829900004946',
+            'BpMbvQcpW3tYmR' => '6074829900004946',
+            'BpMahNoBeFWXsy' => '6074829900004946',
+            'BpLwcpi99Q9Qlp' => '6074829900004946',
+            'BpLuuYGkNW0EQf' => '6074819900004939',
+            'BoGfhhGi2vqChx' => '6074829900004946',
+            'BoGRmlWWN3WLAB' => '6074819900004939',
+            'BoGQoOhV5JybvE' => '6074819900004939',
+            'BoGQ3EE17oRTB9' => '6074819900004939',
+            'BoF9j1lauJg9G9' => '6074819900004939',
+            'BoEtWl2TO8T1Rj' => '6074819900004939',
+            'BoArs5RKwxGPhi' => '6074819900004939',
+            'BoAfLLnKwHCt6h' => '6074819900004939',
+            'BntpJc6355mm59' => '6074819900004939',
+            'BiJuMlmbZnEFr1' => '6074819900004939',
+            'BhYuvDUI51D3Hv' => '6074819900004939',
+            'BhWGY94OGKSTVW' => '6074819900004939',
+            'BhVvgkvCMecI1t' => '6074819900004939',
+            'BhTw21ABCadrKY' => '6074819900004939',
+            'BhTEmvPFmOZVBT' => '6074819900004939',
+            'BhTBuxa9NchUu7' => '6074819900004939',
+            'BhS8gncw4X3b0m' => '6074819900004939',
+            'Bh98YHqAdFcovg' => '6074819900004939',
+            'Bh6Wv0mL0EwNkf' => '6074819900004939',
+            'BgKW1dBpuxAZO4' => '6074819900004939',
+            'BgJ89MR9kVJ4pu' => '6074819900004939',
+            'BfZTFPVIs0XHIH' => '6074819900004939',
+            'BfZR5PwXWfGOhV' => '6074819900004939',
+            'BfXuoonwGLLugf' => '6074819900004939',
+            'BeHnypW5KtudjP' => '6074819900004939',
+            'Bd9UBuvqTHtK9v' => '6074819900004939',
+            'Bd7wIJ4GLnTj0Y' => '6074819900004939',
+            'BZzPVqYMtLMi28' => '6074819900004939',
+            'BZzOR06DiAQd3q' => '6074819900004939',
+            'BZcUXz2Ict61Sq' => '6074819900004939',
+            'BZbqLaoHXK5uiP' => '6074819900004939',
+            'BZawtpWiTGTr5E' => '6074819900004939',
+            'BYmum47FEEC9S7' => '6074819900004939',
+            'BYmtsHqKWoKAus' => '6074819900004939',
+            'BXbM9tzoe41e07' => '6074819900004939',
+            'BXb0AMZJUhLxDg' => '6074819900004939',
+            'BXauO513bKTug6' => '6074819900004939',
+            'BqdJVZpA3hQofx' => '6073849700004947',
+            'BqdH1DebUvH8r5' => '6073849700004947',
+            'BqdFa3ATgot3nl' => '6073849700004947',
+            'BqdEJUt9h6qAOn' => '6073849700004947',
+            'BqdCG1SGjzgGjX' => '6073849700004947',
+            'BqdB1DLbfsmgaC' => '6073849700004947',
+            'Bqd89jCERDX8z4' => '6073849700004947',
+            'BqchsDR19SEiz8' => '6073849700004947',
+            'BqB9XU83uDrPD3' => '6074849900004936',
+            'Bpl0PRTRQDIiW4' => '6073849700004947',
+            'Bpkx8V2eGwqn7T' => '6074849900004936',
+            'Bd9dFDCdqNaOPn' => '6073849700004947',
+            'Bd7HQbZ0bSdz1n' => '6074849900004936',
+        ];
+
+        $input['card']['number'] = $paymentIdCardMap[$input['payment']['id']];
+
+//        $input['card']['cvv'] = $this->app['encrypter']->decrypt($data['cvv']);
     }
 
     public function refund(array $input)

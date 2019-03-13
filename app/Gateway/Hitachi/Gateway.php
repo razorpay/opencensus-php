@@ -900,12 +900,23 @@ class Gateway extends Base\Gateway
         ];
 
         if (($this->isSecondRecurringPaymentRequest($input) === false) and
-            ($this->isMotoTransactionRequest($input) === false))
+            ($this->isMotoTransactionRequest($input) === false) and
+            ($this->isPaysecureTransactionRequest($input) === false))
         {
             $data[RequestFields::CVV2] = $input['card']['cvv'];
         }
 
         return $data;
+    }
+
+    protected function isPaysecureTransactionRequest($input)
+    {
+        if ($input['payment']['gateway'] === Payment\Gateway::PAYSECURE)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function getCaptureRequestArray(array $input, Entity $gatewayPayment)
