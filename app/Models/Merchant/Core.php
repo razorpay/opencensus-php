@@ -571,7 +571,11 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($merchant);
 
-        $this->logActionToSlack($merchant, $action);
+        // pipe to slack if the action is defined
+        if (empty(SlackActions::$actionMsgMap[$action]) === false)
+        {
+            $this->logActionToSlack($merchant, $action);
+        }
 
         return $merchant;
     }

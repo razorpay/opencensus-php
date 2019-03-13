@@ -282,8 +282,6 @@ class Activate extends Base\Core
         $zapierData = (new Detail\Service)->getActivationZapierData($merchant);
 
         (new Detail\Core)->postFormSubmissionToZapier($zapierData, 'activations', $merchant);
-
-        $this->logActionToSlack($merchant, SlackActions::ACTIVATE);
     }
 
     /**
