@@ -133,5 +133,26 @@ class AuthenticationTerminals
             self::AUTH_TYPE                 => AuthType::_3DS,
             self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
         ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::CYBERSOURCE,
+            self::AUTHENTICATION_GATEWAY    => Gateway::MPI_BLADE,
+            self::AUTH_TYPE                 => AuthType::IVR,
+            self::GATEWAY_AUTH_TYPE         => AuthType::OTP,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::CYBERSOURCE,
+            self::AUTHENTICATION_GATEWAY    => Gateway::MPI_ENSTAGE,
+            self::AUTH_TYPE                 => AuthType::OTP,
+            self::GATEWAY_AUTH_TYPE         => AuthType::OTP,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::CYBERSOURCE,
+            self::AUTHENTICATION_GATEWAY    => Gateway::MPI_BLADE,
+            self::AUTH_TYPE                 => AuthType::HEADLESS_OTP,
+            self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
+        ],
     ];
 }
