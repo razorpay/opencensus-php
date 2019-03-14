@@ -5,6 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
+use RZP\Models\Batch\Entity as Batch;
 use RZP\Models\Contact\Entity as Contact;
 use RZP\Models\Merchant\Entity as Merchant;
 
@@ -25,6 +26,9 @@ class CreateContacts extends Migration
                   ->primary();
 
             $table->char(Contact::MERCHANT_ID, Merchant::ID_LENGTH);
+
+            $table->char(Contact::BATCH_ID, Batch::ID_LENGTH)
+                  ->nullable();
 
             $table->string(Contact::NAME, 255)
                   ->nullable();
@@ -70,9 +74,14 @@ class CreateContacts extends Migration
             $table->index(Contact::DELETED_AT);
 
             $table->foreign(Contact::MERCHANT_ID)
-                 ->references(Merchant::ID)
-                 ->on(Table::MERCHANT)
-                 ->on_delete('restrict');
+                  ->references(Merchant::ID)
+                  ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
+
+            $table->foreign(Contact::BATCH_ID)
+                  ->references(Batch::ID)
+                  ->on(Table::BATCH)
+                  ->on_delete('restrict');
         });
     }
 
@@ -86,6 +95,11 @@ class CreateContacts extends Migration
         Schema::table(Table::CONTACT, function($table)
         {
            $table->dropForeign(Table::CONTACT . '_' . Contact::MERCHANT_ID . '_foreign');
+        });
+
+        Schema::table(Table::CONTACT, function($table)
+        {
+            $table->dropForeign(Table::CONTACT . '_' . Contact::BATCH_ID . '_foreign');
         });
 
         Schema::drop(Table::CONTACT);

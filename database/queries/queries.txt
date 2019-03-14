@@ -4814,7 +4814,13 @@ ALTER TABLE iins
     ADD COLUMN recurring TINYINT(1) DEFAULT 0 AFTER locked;
 
 ALTER TABLE payouts
-    ADD COLUMN batch_id varchar(14) DEFAULT NULL AFTER fund_account_id;
+    ADD COLUMN batch_id varchar(14) DEFAULT NULL AFTER fund_account_id,
+    ADD index payouts_batch_id_index (batch_id);
 
 ALTER TABLE fund_accounts
-    ADD COLUMN batch_id varchar(14) DEFAULT NULL AFTER account_id;
+    ADD COLUMN batch_id varchar(14) DEFAULT NULL AFTER account_id,
+    ADD index fund_accounts_batch_id_index (batch_id);
+
+ALTER TABLE contacts
+    ADD COLUMN batch_id varchar(14) DEFAULT NULL AFTER merchant_id,
+    ADD index contacts_batch_id_index (batch_id);

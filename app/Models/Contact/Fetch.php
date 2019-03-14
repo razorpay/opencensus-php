@@ -23,6 +23,7 @@ class Fetch extends Base\Fetch
             Entity::ACCOUNT_NUMBER    => 'sometimes|alpha_num|between:5,22',
             Entity::ACTIVE            => 'sometimes|bool',
             Entity::TYPE              => 'sometimes|string',
+            Entity::BATCH_ID          => 'sometimes|string|min:14|max:20',
             EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
             EsRepository::SEARCH_HITS => 'sometimes|boolean',
         ],
@@ -43,6 +44,7 @@ class Fetch extends Base\Fetch
         ],
         AuthType::PROXY_AUTH => [
             Entity::ID,
+            Entity::BATCH_ID,
         ],
     ];
 
