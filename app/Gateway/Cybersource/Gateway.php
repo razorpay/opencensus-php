@@ -318,7 +318,7 @@ class Gateway extends Base\Gateway
     {
         $verifyContent['commerce_indicator']     = $this->getCommerceIndicator($input, $response);
         $verifyContent['authentication_status']  = $response[Mpi\Base\Entity::STATUS];
-        $verifyContent['eci']                    = $response[Mpi\Base\Entity::ECI];
+        $verifyContent['eci']                    = (int) $response[Mpi\Base\Entity::ECI];
         $verifyContent['xid']                    = $response[Mpi\Base\Entity::XID];
         $verifyContent['cavv']                   = $response[Mpi\Base\Entity::CAVV];
 
