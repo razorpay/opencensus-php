@@ -63,6 +63,6 @@ class Payout extends Base
     {
         $input = Batch\Helpers\Payout::getPayoutInput($entry, $fundAccount, $this->merchant);
 
-        return $this->payoutCore->createPayoutToFundAccount($input, $this->merchant);
+        return $this->payoutCore->createPayoutToFundAccount($input, $this->merchant, $this->batch);
     }
 }

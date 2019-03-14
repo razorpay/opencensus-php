@@ -3,6 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+use RZP\Models\Payout;
 use RZP\Models\Invoice;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
@@ -115,6 +116,14 @@ class CreateBatchTable extends Migration
                   ->on(Table::BATCH)
                   ->on_delete('restrict');
         });
+
+        Schema::table(Table::PAYOUT, function($table)
+        {
+            $table->foreign(Payout\Entity::BATCH_ID)
+                  ->references(Batch::ID)
+                  ->on(Table::BATCH)
+                  ->on_delete('restrict');
+        });
     }
 
     /**
@@ -134,6 +143,11 @@ class CreateBatchTable extends Migration
         Schema::table(Table::INVOICE, function($table)
         {
             $table->dropForeign(Table::INVOICE . '_' . Invoice\Entity::BATCH_ID . '_foreign');
+        });
+
+        Schema::table(Table::PAYOUT, function($table)
+        {
+            $table->dropForeign(Table::PAYOUT . '_' . Payout\Entity::BATCH_ID . '_foreign');
         });
 
         Schema::table(Table::BATCH, function($table)

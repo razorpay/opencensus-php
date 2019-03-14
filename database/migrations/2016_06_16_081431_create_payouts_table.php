@@ -4,6 +4,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Models\User;
+use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
@@ -52,6 +53,9 @@ class CreatePayoutsTable extends Migration
                   ->nullable();
 
             $table->char(Payout::USER_ID, User\Entity::ID_LENGTH)
+                  ->nullable();
+
+            $table->char(Payout::BATCH_ID, Batch\Entity::ID_LENGTH)
                   ->nullable();
 
             $table->char(Payout::PURPOSE, 30);

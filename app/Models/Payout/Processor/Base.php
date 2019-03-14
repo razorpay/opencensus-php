@@ -4,6 +4,7 @@ namespace RZP\Models\Payout\Processor;
 
 use RZP\Exception;
 use RZP\Models\Vpa;
+use RZP\Models\Batch;
 use RZP\Models\Payout;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -30,6 +31,11 @@ abstract class Base extends BaseCore
      * @var Merchant\Entity
      */
     protected $merchant;
+
+    /**
+     * @var Batch\Entity
+     */
+    protected $batch;
 
     /**
      * @var Customer\Entity
@@ -119,6 +125,13 @@ abstract class Base extends BaseCore
         return $this;
     }
 
+    public function setBatch(Batch\Entity $batch): self
+    {
+        $this->batch = $batch;
+
+        return $this;
+    }
+
     /**
      * Set the customer relation for the Payout.
      * To be used only for the customer wallet use case: customer_id is treated
@@ -177,6 +190,8 @@ abstract class Base extends BaseCore
         $payout->merchant()->associate($this->merchant);
 
         $payout->customer()->associate($this->customer);
+
+        $payout->batch()->associate($this->batch);
 
         $payout->setChannel($this->channel);
 
