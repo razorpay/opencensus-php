@@ -1260,6 +1260,7 @@ class Gateway
         IFSC::HDFC         => Gateway::NETBANKING_HDFC,
         IFSC::CORP         => Gateway::NETBANKING_CORPORATION,
         IFSC::AIRP         => Gateway::NETBANKING_AIRTEL,
+        IFSC::SIBL         => Gateway::NETBANKING_SIB,
         IFSC::FDRL         => Gateway::NETBANKING_FEDERAL,
         IFSC::INDB         => Gateway::NETBANKING_INDUSIND,
         IFSC::KKBK         => Gateway::NETBANKING_KOTAK,
