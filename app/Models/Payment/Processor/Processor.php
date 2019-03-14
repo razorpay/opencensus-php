@@ -2610,7 +2610,7 @@ class Processor
 
             $requestTime = $this->getDiffInMilliSecond($startTime);
 
-            (new Payment\Metric)->pushCreateRequestMetrics($payment, $currentRouteName, $requestTime);
+            (new Payment\Metric)->pushCreateRequestTimeMetrics($payment, $currentRouteName, $requestTime);
         }
         catch (\Throwable $e)
         {

@@ -84,7 +84,7 @@ class Metric extends Base\Core
         $this->trace->histogram(self::PAYMENT_AUTHORIZED, $authTime, $dimensions);
     }
 
-    public function pushCreateRequestMetrics(Entity $payment, string $route, int $requestTime)
+    public function pushCreateRequestTimeMetrics(Entity $payment, string $route, int $requestTime)
     {
         $dimensions = $this->getDefaultDimentions($payment);
 
