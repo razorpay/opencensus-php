@@ -125,7 +125,7 @@ abstract class Base extends BaseCore
         return $this;
     }
 
-    public function setBatch(Batch\Entity $batch): self
+    public function setBatch(Batch\Entity $batch = null): self
     {
         $this->batch = $batch;
 
