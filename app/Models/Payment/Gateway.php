@@ -42,6 +42,7 @@ class Gateway
     const HDFC                   = 'hdfc';
     const HITACHI                = 'hitachi';
     const MOBIKWIK               = 'mobikwik';
+    const NETBANKING_SIB         = 'netbanking_sib';
     const NETBANKING_AIRTEL      = 'netbanking_airtel';
     const NETBANKING_AXIS        = 'netbanking_axis';
     const NETBANKING_IDFC        = 'netbanking_idfc';
@@ -636,6 +637,7 @@ class Gateway
             self::BILLDESK,
             self::EBS,
             self::ATOM,
+            self::NETBANKING_SIB,
             self::NETBANKING_IDFC,
             self::NETBANKING_ICICI,
             self::NETBANKING_BOB,
