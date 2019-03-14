@@ -37,6 +37,7 @@ use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Base\CardCacheTrait;
+use RZP\Gateway\Base\Action;
 use RZP\Models\Admin\ConfigKey;
 
 class Processor
@@ -1352,7 +1353,7 @@ class Processor
         //
         if ($e instanceof Exception\GatewayErrorException)
         {
-            if (in_array($e->getAction(), \RZP\Gateway\Base\Action::$nonVerifiableActions, true) === true)
+            if (in_array($e->getAction(), Action::$nonVerifiableActions, true) === true)
             {
                 $payment->setNonVerifiable();
             }
@@ -1454,7 +1455,7 @@ class Processor
 
         $gatewayData['merchant'] = $this->payment->merchant;
 
-        if ($this->isRoutedThroughCps($gatewayData) === true)
+        if ($this->isRoutedThroughCps($action, $gatewayData) === true)
         {
             $this->persistCardDetails($gateway, $action, $gatewayData);
 
@@ -1496,7 +1497,7 @@ class Processor
         }
     }
 
-    public function isRoutedThroughCps($input): bool
+    public function isRoutedThroughCps($action, $input): bool
     {
         /**
          * This checks if the current request has to be routed to
@@ -1506,7 +1507,8 @@ class Processor
         if (((bool) ConfigKey::get(ConfigKey::CPS_SERVICE_ENABLED, false) === true) and
             (is_array($input) === true) and
             (isset($input[E::PAYMENT]) === true) and
-            ($input[E::PAYMENT][Payment\Entity::CPS_ROUTE] === true))
+            ($input[E::PAYMENT][Payment\Entity::CPS_ROUTE] === true) and
+            (in_array($action, Action::$cpsSupportedActions) === true))
         {
             return true;
         }
@@ -1518,11 +1520,11 @@ class Processor
     {
         $action = snake_case($action);
 
-        if ($action === \RZP\Gateway\Base\Action::AUTHORIZE)
+        if ($action === Action::AUTHORIZE)
         {
             $this->persistCardDetailsTemporarily($input);
         }
-        else if ($action === \RZP\Gateway\Base\Action::CALLBACK)
+        else if ($action === Action::CALLBACK)
         {
             $this->setCardNumberAndCvv($input);
         }
