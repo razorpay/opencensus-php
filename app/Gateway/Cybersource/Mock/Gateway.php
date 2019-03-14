@@ -34,6 +34,13 @@ class Gateway extends Cybersource\Gateway
 
     protected function putMockPaymentGatewayUrl(array & $request, $route)
     {
+        $url = $this->route->getUrl('mock_acs', ['gateway' => 'mpi_blade']);
+
+        if ($request['url'] === $url)
+        {
+            return;
+        }
+
         $url = $this->route->getUrl('mock_acs', ['gateway' => 'cybersource']);
 
         if ($request['method'] === 'get')

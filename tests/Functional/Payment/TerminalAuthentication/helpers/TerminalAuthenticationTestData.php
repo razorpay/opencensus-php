@@ -13,6 +13,7 @@ return [
             'auth_type'     => '3ds',
             'network'       => null,
             'step'          => 'authentication',
+            'authentication_gateway' => 'mpi_blade',
         ],
         [
             'method'        => 'card',
@@ -25,6 +26,7 @@ return [
             'auth_type'     => 'headless_otp',
             'network'       => 'MC',
             'step'          => 'authentication',
+            'authentication_gateway' => 'mpi_blade',
         ],
         [
             'method'        => 'card',
@@ -65,6 +67,7 @@ return [
             'auth_type'     => '3ds',
             'network'       => null,
             'step'          => 'authentication',
+            'authentication_gateway' => 'mpi_blade',
         ],
 
         [
@@ -78,6 +81,7 @@ return [
             'auth_type'     => 'headless_otp',
             'network'       => 'MC',
             'step'          => 'authentication',
+            'authentication_gateway' => 'mpi_blade',
         ],
         [
             'method'        => 'card',
@@ -118,6 +122,7 @@ return [
             'auth_type'     => '3ds',
             'network'       => null,
             'step'          => 'authentication',
+            'authentication_gateway' => 'mpi_blade',
         ],
 
         [
@@ -131,7 +136,7 @@ return [
             'auth_type'     => 'headless_otp',
             'network'       => 'MC',
             'step'          => 'authentication',
-
+            'authentication_gateway' => 'mpi_blade',
         ],
         [
             'method'        => 'card',
@@ -144,6 +149,7 @@ return [
             'auth_type'     => 'ivr',
             'network'       => 'MC',
             'step'          => 'authentication',
+            'authentication_gateway' => 'mpi_blade',
         ],
         [
             'method'        => 'card',
@@ -198,6 +204,7 @@ return [
             'auth_type'     => '3ds',
             'network'       => null,
             'step'          => 'authentication',
+            'authentication_gateway' => 'mpi_blade',
         ],
         [
             'method'        => 'card',
@@ -210,6 +217,7 @@ return [
             'auth_type'     => 'headless_otp',
             'network'       => 'MC',
             'step'          => 'authentication',
+            'authentication_gateway' => 'mpi_blade',
 
         ],
         [
@@ -223,6 +231,7 @@ return [
             'auth_type'     => 'ivr',
             'network'       => 'MC',
             'step'          => 'authentication',
+            'authentication_gateway' => 'mpi_blade',
 
         ],
         [
@@ -237,6 +246,7 @@ return [
             'network'       => null,
             'issuer'        => 'UTIB',
             'step'          => 'authentication',
+            'authentication_gateway' => 'mpi_enstage',
 
         ],
         [
@@ -289,7 +299,7 @@ return [
             'group'         => 'authentication',
             'auth_type'     => 'ivr',
             'network'       => 'MC',
-            'authentication_gateway' => 'mpi_blade',
+            'authentication_gateway' => 'mpi_enstage',
             'step'          => 'authentication',
         ],
     ],
@@ -361,6 +371,7 @@ return [
             'auth_type'     => '3ds',
             'network'       => null,
             'step'          => 'authentication',
+            'authentication_gateway' => 'mpi_blade',
         ],
         [
             'method'        => 'card',
@@ -372,6 +383,7 @@ return [
             'group'         => 'authentication',
             'auth_type'     => 'headless_otp',
             'step'          => 'authentication',
+            'authentication_gateway' => 'mpi_blade',
         ],
         [
             'method'        => 'card',
@@ -382,6 +394,47 @@ return [
             'load'          => 2,
             'group'         => 'authentication',
             'auth_type'     => 'headless_otp',
+            'network'       => null,
+            'authentication_gateway' => 'mpi_blade',
+            'step'          => 'authentication',
+        ],
+    ],
+
+    'testAuthenticationGatewayCyberSource' => [
+        [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'cybersource',
+            'type'          => 'filter',
+            'filter_type'   => 'select',
+            'min_amount'    => 0,
+            'group'         => 'authentication',
+            'auth_type'     => '3ds',
+            'network'       => null,
+            'step'          => 'authentication',
+        ],
+        [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'cybersource',
+            'type'          => 'filter',
+            'filter_type'   => 'select',
+            'min_amount'    => 0,
+            'group'         => 'authentication',
+            'auth_type'     => '3ds',
+            'network'       => null,
+            'step'          => 'authentication',
+            'authentication_gateway' => 'mpi_blade',
+        ],
+        [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'cybersource',
+            'type'          => 'sorter',
+            'filter_type'   => 'select',
+            'load'          => 10000,
+            'group'         => 'authentication',
+            'auth_type'     => '3ds',
             'network'       => null,
             'authentication_gateway' => 'mpi_blade',
             'step'          => 'authentication',

@@ -659,45 +659,42 @@ class Entity extends Base\PublicEntity
 
     public function isRecurringSupported()
     {
-        return $this->isRecurringSupportedOnNetworkAndIssuerAndType(
-                                                        $this->merchant,
-                                                        $this->getNetworkCode(),
-                                                        $this->getIssuer(),
-                                                        $this->getType());
+        $iin = $this->iinRelation;
+
+        return $this->isRecurringSupportedOnIIN($this->merchant, $iin);
     }
 
-    public function isRecurringSupportedOnNetworkAndIssuerAndType(
-                                                Merchant\Entity $merchant,
-                                                string $networkCode = null,
-                                                string $issuer = null,
-                                                string $type = null)
+    public function isRecurringSupportedOnIIN(Merchant\Entity $merchant, IIN\Entity $iin = null)
     {
-        $isSupportedNetwork = in_array($networkCode, Payment\Gateway::getNetworksSupportedForCardRecurring(), true);
-
-        $isSupportedDebitBank = in_array($issuer, Payment\Gateway::getIssuersSupportedForDebitCardRecurring(), true);
-
-        $debitCheck = false;
-
-        if (($type === Type::DEBIT) and
-            ($isSupportedNetwork === true))
+        if($iin === null)
         {
-            if ($issuer === IFSC::HDFC)
-            {
-                $debitCheck = (($merchant->isFeatureEnabled(Feature\Constants::HDFC_DEBIT_SI) === true) or
-                               ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) === true));
-            }
-            else if ($isSupportedDebitBank === true)
-            {
-                $debitCheck = (($merchant->isFeatureEnabled(Feature\Constants::ALLOW_DC_RECURRING) === true) or
-                               ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) === true));
-            }
+            return false;
         }
 
-        $creditCheck = (($type === Type::CREDIT) and
-                        ($isSupportedNetwork === true));
+        if ($iin->isRecurring() === false)
+        {
+            return false;
+        }
 
-        return (($debitCheck === true) or
-                ($creditCheck === true));
+        $type = $this->getType() ?? $iin->getType();
+
+        if ($type !== Type::DEBIT)
+        {
+            return true;
+        }
+
+        $issuer = $iin->getIssuer();
+
+        if ($issuer === IFSC::HDFC)
+        {
+            return (($merchant->isFeatureEnabled(Feature\Constants::HDFC_DEBIT_SI) === true) or
+                ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) === true));
+        }
+        else
+        {
+            return (($merchant->isFeatureEnabled(Feature\Constants::ALLOW_DC_RECURRING) === true) or
+                ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) === true));
+        }
     }
 
     public function isBlocked()

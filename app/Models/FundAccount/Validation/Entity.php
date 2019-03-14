@@ -256,6 +256,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FTS_TRANSFER_ID);
     }
 
+    public function getReceipt()
+    {
+        return $this->getAttribute(self::RECEIPT);
+    }
+
     // ------------ Mocked Setters ---------
 
     public function setUtr(string $value = null)

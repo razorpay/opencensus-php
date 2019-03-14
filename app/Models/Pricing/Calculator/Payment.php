@@ -126,7 +126,7 @@ class Payment extends Base
         // Right now if the receiver_type is present it needs to be selected no
         // matter what otherwise default type is used
         $filters1 = [
-            [Pricing\Entity::RECEIVER_TYPE,         $receiverType,  false,  null    ],
+            [Pricing\Entity::RECEIVER_TYPE,         $receiverType,  true,   null    ],
             [Pricing\Entity::INTERNATIONAL,         $international, false,  false   ],
             [Pricing\Entity::PAYMENT_NETWORK,       $network,       true,   null    ],
         ];

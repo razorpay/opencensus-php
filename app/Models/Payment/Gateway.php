@@ -559,6 +559,12 @@ class Gateway
         'BbaYzzPW541Aut',
         '80oXBj51MHGmwH',
         '94tLpgbojcR85O',
+        'C1fjEduvEkBUEK',
+        'C1fmOZYiZiezoD',
+        'C1fnUMHBmitlPB',
+        'C1fo6ARXco94tP',
+        'C1fp6DAnDH4YUz',
+        'C1fq8jgl8NRKnh',
     ];
 
     public static $channels = [

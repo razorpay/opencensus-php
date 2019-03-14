@@ -27,6 +27,7 @@ class CorePaymentService
     const ACTION    = 'action';
     const INPUT     = 'input';
     const DATA      = 'data';
+    const ERROR     = 'error';
 
     protected $baseUrl;
 
@@ -206,7 +207,7 @@ class CorePaymentService
 
         $responseBody = $this->jsonToArray($response->body);
 
-        if ($code === 200)
+        if ($this->isSuccessResponse($code, $responseBody))
         {
             return $responseBody[self::DATA];
         }
@@ -214,6 +215,17 @@ class CorePaymentService
         {
             $this->checkForErrors($responseBody);
         }
+    }
+
+    protected function isSuccessResponse($code, $responseBody)
+    {
+        if (($code === 200) and
+            (empty($responseBody[self::ERROR]) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function handleBadRequestErrors(array $error)
@@ -265,15 +277,15 @@ class CorePaymentService
         switch ($class)
         {
             case ErrorClass::GATEWAY:
-                $this->handleGatewayErrors($response['error']);
+                $this->handleGatewayErrors($response[self::ERROR]);
                 break;
 
             case ErrorClass::BAD_REQUEST:
-                $this->handleBadRequestErrors($response['error']);
+                $this->handleBadRequestErrors($response[self::ERROR]);
                 break;
 
             case ErrorClass::SERVER:
-                $this->handleInternalServerErrors($response['error']);
+                $this->handleInternalServerErrors($response[self::ERROR]);
                 break;
 
             default:

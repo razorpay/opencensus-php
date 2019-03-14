@@ -17,6 +17,7 @@ class Fields
     const EXPIRY                       = 'expiry';
     const S_ID                         = 'sId';
     const TXN_REFUND_ID                = 'txnRefundId';
+    const VERIFY_REFUND_ORDER_ID       = 'Orderid';
     const MOB_NO                       = 'mobNo';
     const TXN_REFUND_AMOUNT            = 'txnRefundAmount';
     const REFUND_REASON                = 'refundReason';

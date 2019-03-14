@@ -48,12 +48,14 @@ class Iin extends Base
                 'type'          => 'credit',
                 'country'       => 'IN',
                 'issuer_name'   => 'PUNJAB NATIONAL BANK',
-                'trivia'        => 'random trivia'
+                'trivia'        => 'random trivia',
+                'recurring'     => 1,
             ],
             [
                 'iin'           => '559300',
                 'network'       => 'MasterCard',
                 'type'          => 'credit',
+                'recurring'     => 1
             ],
             [
                 'iin'           => '607002',
@@ -82,7 +84,8 @@ class Iin extends Base
                 'issuer_name'   => 'KOTAK',
                 'issuer'        => 'HDFC',
                 'emi'           => 1,
-                'trivia'        => 'random trivia'
+                'trivia'        => 'random trivia',
+                'recurring'     => 1,
             ],
             [
                 'iin'           => '401200',
@@ -93,7 +96,8 @@ class Iin extends Base
                 'issuer_name'   => 'KOTAK',
                 'issuer'        => 'HDFC',
                 'emi'           => 1,
-                'trivia'        => 'random trivia'
+                'trivia'        => 'random trivia',
+                'recurring'     => 1,
             ],
             [
                 'iin'           => '401201',
@@ -104,7 +108,8 @@ class Iin extends Base
                 'issuer_name'   => 'JP MORGAIN CHASE',
                 'issuer'        => null,
                 'emi'           => 0,
-                'trivia'        => 'random trivia'
+                'trivia'        => 'random trivia',
+                'recurring'     => 1,
             ],
             [
                 'iin'           => '428095',
@@ -115,7 +120,8 @@ class Iin extends Base
                 'issuer_name'   => 'KOTAK MAHINDRA BANK, LTD.',
                 'issuer'        => 'KKBK',
                 'emi'           => 1,
-                'trivia'        => 'random trivia'
+                'trivia'        => 'random trivia',
+                'recurring'     => 1,
             ],
             [
                 'iin'           => '411146',
@@ -126,7 +132,8 @@ class Iin extends Base
                 'issuer_name'   => 'AXIS BANK, LTD.',
                 'issuer'        => 'UTIB',
                 'emi'           => 1,
-                'trivia'        => 'random trivia'
+                'trivia'        => 'random trivia',
+                'recurring'     => 1,
             ],
             [
                 'iin'           => '411111',
@@ -137,7 +144,8 @@ class Iin extends Base
                 'issuer_name'   => 'AXIS BANK, LTD.',
                 'issuer'        => 'HDFC',
                 'emi'           => 1,
-                'trivia'        => 'random trivia'
+                'trivia'        => 'random trivia',
+                'recurring'     => 1,
             ],
             [
                 'iin'           => '424512',
@@ -160,6 +168,7 @@ class Iin extends Base
                 'issuer'        => 'KKBK',
                 'emi'           => 0,
                 'trivia'        => null,
+                'recurring'     => 1,
             ],
             [
                 'iin'           => '469386',
@@ -181,7 +190,9 @@ class Iin extends Base
                 'issuer_name'   => 'INDUSIND BANK, LTD.',
                 'issuer'        => 'INDB',
                 'emi'           => 1,
-                'trivia'        => 'random trivia'
+                'trivia'        => 'random trivia',
+                'recurring'     => 1,
+
             ],
             [
                 'iin'           => '524373',
@@ -192,7 +203,9 @@ class Iin extends Base
                 'issuer_name'   => 'THE RATNAKAR BANK LIMITED',
                 'issuer'        => 'RATN',
                 'emi'           => 1,
-                'trivia'        => 'random trivia'
+                'trivia'        => 'random trivia',
+                'recurring'     => 1,
+
             ],
             [
                 'iin'           => '402874',
@@ -203,7 +216,9 @@ class Iin extends Base
                 'issuer_name'   => 'STANDARD CHARTERED BANK',
                 'issuer'        => 'SCBL',
                 'emi'           => 1,
-                'trivia'        => 'random trivia'
+                'trivia'        => 'random trivia',
+                'recurring'     => 1,
+
             ],
             [
                 'iin'           => '407651',
@@ -214,7 +229,8 @@ class Iin extends Base
                 'issuer_name'   => 'ICICI Bank',
                 'issuer'        => 'ICIC',
                 'emi'           => 1,
-                'trivia'        => 'random trivia'
+                'trivia'        => 'random trivia',
+                'recurring'     => 1,
             ],
             [
                 'iin'           => '531849',
@@ -225,7 +241,8 @@ class Iin extends Base
                 'issuer_name'   => 'YES Bank',
                 'issuer'        => 'YESB',
                 'emi'           => 1,
-                'trivia'        => 'random trivia'
+                'trivia'        => 'random trivia',
+                'recurring'     => 1,
             ],
             [
                 'iin'           => '203040',
@@ -237,7 +254,53 @@ class Iin extends Base
                 'issuer'        => null,
                 'emi'           => 1,
                 'trivia'        => 'random trivia'
-        ],
+            ],
+            [
+                'iin'           => '510510',
+                'category'      => 'PLATINUM',
+                'network'       => 'MasterCard',
+                'type'          => 'credit',
+                'country'       => 'IN',
+                'issuer_name'   => null,
+                'issuer'        => null,
+                'emi'           => 1,
+                'trivia'        => 'random trivia',
+                'recurring'     => 1,
+            ],
+            [
+                'iin'           => '400000',
+                'category'      => 'INFINITE',
+                'network'       => 'Visa',
+                'type'          => 'credit',
+                'country'       => 'IN',
+                'issuer_name'   => 'STANDARD CHARTERED BANK',
+                'issuer'        => 'SCBL',
+                'emi'           => 1,
+                'trivia'        => 'random trivia',
+                'recurring'     => 1,
+            ],
+            [
+                'iin'           => '401613',
+                'category'      => 'SIGNATURE',
+                'network'       => 'Visa',
+                'type'          => 'credit',
+                'country'       => 'IN',
+                'issuer_name'   => 'DBS BANK',
+                'issuer'        => 'DBS',
+                'emi'           => 1,
+                'recurring'     => 1,
+            ],
+            [
+                'iin'           => '525783',
+                'category'      => 'SIGNATURE',
+                'network'       => 'MasterCard',
+                'type'          => 'credit',
+                'country'       => 'IN',
+                'issuer_name'   => 'null',
+                'issuer'        => 'null',
+                'emi'           => 1,
+                'recurring'     => 1,
+            ],
         ];
 
     public function createDefaultIins()

@@ -101,12 +101,11 @@ class Validator extends Base\Validator
         Entity::MEDIUM => 'sometimes|filled|in:sms,email',
         Entity::ACTION => 'required|filled|in:verify_contact,create_payout,create_payout_batch',
 
-        // Temporary: Need to send these payloads for raven's sms content.
-        'amount'          => 'sometimes|integer|min:100|required_if:action,create_payout',
-        'account_number'  => 'sometimes|alpha_num|between:5,22|required_if:action,create_payout',
-        // Todo: Make followings required. For now handles backward compatibility.
-        'fund_account_id' => 'sometimes|public_id|size:17',
-        'purpose'         => 'sometimes|string|max:30|alpha_dash',
+        // Applicable to select actions: Need to send these payloads for raven's sms content.
+        'amount'          => 'required_if:action,create_payout|integer|min:100',
+        'account_number'  => 'required_if:action,create_payout,create_payout_batch|alpha_num|between:5,22',
+        'fund_account_id' => 'required_if:action,create_payout|public_id|size:17',
+        'purpose'         => 'required_if:action,create_payout|string|max:30|alpha_dash',
     ];
 
     protected static $verifyOtpRules = [

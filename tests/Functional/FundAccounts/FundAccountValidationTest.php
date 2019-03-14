@@ -45,6 +45,7 @@ class FundAccountValidationTest extends TestCase
         // Queue will be processed by now.
         $this->assertEquals('completed', $fav['status']);
         $this->assertEquals($fundAccount['id'], 'fa_'.$fav['fund_account_id']);
+        $this->assertEquals('active', $fav['results']['account_status']);
 
         // Fee and tax will be calculated at the time fund account validation is created.
         $this->assertEquals(354, $fav['fees']);
@@ -139,43 +140,48 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationWhenFailedDuringRecon()
     {
-        $this->markTestSkipped();
+        $fundAccountResponse = $this->createFundAccountBankAccount();
 
-        $this->addFeeCredits(['value' => 10000, 'campaign' => 'silent-ads']);
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+        $this->testData[__FUNCTION__]['request']['content']['receipt'] =  'failed_response';
 
-        $this->ba->privateAuth();
+        $response = $this->startTest();
 
-        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+        $bankAccount = $this->getLastEntity('bank_account', true);
+        $fundAccount = $this->getLastEntity('fund_account', true);
+        $fav         = $this->getLastEntity('fund_account_validation', true);
 
-        $this->createValidationWithFundAccountEntity();
-
-        $fta = $this->getLastEntity('fund_transfer_attempt', true);
-
-        // Right now we are charging even though failure reason could be internal.TODO: fix
-        $this->fixtures->merchant->editEntity('fund_transfer_attempt', $fta['id'], ['status' => 'initiated', 'bank_status_code' => 'FAILED']);
-
-        $this->reconcileEntitiesForChannel('yesbank');
-
-        $fav = $this->getLastEntity('fund_account_validation', true);
+        // Queue will be processed by now.
         $this->assertEquals('completed', $fav['status']);
+        $this->assertEquals($fundAccount['id'], 'fa_'.$fav['fund_account_id']);
         $this->assertEquals('invalid', $fav['results']['account_status']);
+
+        // Fee and tax will be calculated at the time fund account validation is created.
         $this->assertEquals(354, $fav['fees']);
         $this->assertEquals(54, $fav['tax']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals('penny_testing', $fta['purpose']);
+        $this->assertEquals($fav['id'], $fta['source']);
+        $this->assertEquals($bankAccount['id'], 'ba_'.$fta['bank_account_id']);
+        $this->assertNotNull($fta['narration']);
 
         $txn = $this->getLastEntity('transaction', true);
         $this->assertEquals($fav['id'], $txn['entity_id']);
         $this->assertEquals('fund_account_validation', $txn['type']);
         $this->assertEquals('platform', $txn['fee_bearer']);
-        $this->assertEquals('prepaid', $txn['fee_model']);
+        $this->assertEquals('postpaid', $txn['fee_model']);
         $this->assertEquals(true, $txn['settled']);
         $this->assertEquals(354, $txn['fee']);
         $this->assertEquals(354, $txn['mdr']);
         $this->assertEquals(54, $txn['tax']);
         $this->assertEquals(0, $txn['debit']);
         $this->assertEquals($fav['amount'], $txn['amount']);
-
-        $this->assertEquals(354, $txn['fee_credits']);
-        $this->assertEquals('fee', $txn['credit_type']);
+        // Note: because no fee credits are available
+        $this->assertEquals(1000000, $txn['balance']);
+        $this->assertEquals(0, $txn['fee_credits']);
+        $this->assertEquals('default', $txn['credit_type']);
+        return $response;
     }
 
     public function testFundAccValidationOnPostpaidModelWithFeeCredits()

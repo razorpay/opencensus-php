@@ -81,10 +81,10 @@ abstract class Base
             if (empty($terminal) === false)
             {
                 /*
-                 * head(array_values($terminal)), in the result we get a map with
+                 * in the result we get a map with
                  * index as key and terminal as value
                  */
-                array_push($selectedAuthTerminals, head(array_values($terminal)));
+                 $selectedAuthTerminals = array_merge($selectedAuthTerminals, array_values($terminal));
             }
         }
 

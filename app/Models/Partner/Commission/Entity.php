@@ -63,6 +63,7 @@ class Entity extends Base\PublicEntity
         self::PARTNER_ID,
         self::SOURCE_ID,
         self::SOURCE_TYPE,
+        self::CREATED_AT,
         self::MERCHANT,
     ];
 

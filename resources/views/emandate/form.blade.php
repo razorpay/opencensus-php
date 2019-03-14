@@ -441,6 +441,10 @@
         left: 0;
         transform: scale(0.8);
     }
+
+    .hidden {
+        display: none;
+    }
     </style>
   </head>
   <body>
@@ -470,7 +474,7 @@
           @include('emandate.commonFields')
         </div>
       </main>
-      <main>
+      <main class="hidden">
         <div class="heading">Please select Authentication method:</div>
         <div class="accordion-container">
           <div id="section1" class={{ in_array('netbanking', $data['request']['content']['bank_details']['auth_types']) ? '' : 'disabled'}}>
@@ -481,7 +485,7 @@
                 <div class="sub-title">Via Netbanking login</div>
               </span>
             </label>
-            <input type="radio" id="content1" name="auth_type" value="netbanking" hidden>
+            <input type="radio" id="content1" name="auth_type" value="netbanking" hidden checked>
             @if (in_array('netbanking', $data['request']['content']['bank_details']['auth_types']))
                 <span class="arrow"></span>
             @endif

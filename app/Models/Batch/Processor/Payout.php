@@ -53,7 +53,7 @@ class Payout extends Base
         }
         else
         {
-            return $this->fundAccountProcessor->processEntryAndGetEntity($entry);
+            return $this->fundAccountProcessor->processEntryForPayoutBatch($entry);
         }
     }
 

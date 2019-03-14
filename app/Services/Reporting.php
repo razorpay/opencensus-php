@@ -16,6 +16,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
+use RZP\Models\Partner\Config;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Feature\Constants as Feature;
@@ -698,6 +699,29 @@ class Reporting implements ExternalService
         $hasOfferTag        = in_array(Feature::OFFERS, $features, true);
         $hasGenericNotesTag = in_array(Feature::REPORTING_GENRERIC_NOTES, $features, true);
 
+        $showCommissionReports   = false;
+        $showTxnCommissionReport = false;
+
+        if ($merchant->isPartner() === true)
+        {
+            $partnerConfigs = (new Config\Core)->fetchAllConfigsByPartner($merchant);
+
+            $partnerConfigs = $partnerConfigs->filter(function ($partnerConfig) {
+                return ($partnerConfig->isCommissionsEnabled() === true);
+            });
+
+            // if at least one partner config is enabled, we show commission reports
+            if ($partnerConfigs->isNotEmpty() === true)
+            {
+                $showCommissionReports = true;
+            }
+
+            if (($showCommissionReports === true) and ($merchant->isResellerPartner() === false))
+            {
+                $showTxnCommissionReport = true;
+            }
+        }
+
         $filterConditions = [
             [
                 'name'      => 'Offer Payments',
@@ -722,6 +746,18 @@ class Reporting implements ExternalService
                 'type'      => null,
                 'consumer'  => Account::SHARED_ACCOUNT,
                 'condition' => false,
+            ],
+            [
+                'name'      => 'Per Transaction Commission Report',
+                'type'      => Table::COMMISSION,
+                'consumer'  => Account::SHARED_ACCOUNT,
+                'condition' => $showTxnCommissionReport,
+            ],
+            [
+                'name'      => 'Aggregate Transaction Commission Report',
+                'type'      => null,
+                'consumer'  => Account::SHARED_ACCOUNT,
+                'condition' => $showCommissionReports,
             ],
         ];
 

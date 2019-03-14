@@ -548,6 +548,14 @@ class PaymentCreateTest extends TestCase
 
     public function testPaymentRoutedThroughCps()
     {
+        $this->mockCardVault();
+
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->gateway = 'cybersource';
+
         $this->ba->adminAuth();
 
         $request = $this->testData[__FUNCTION__]['request'];

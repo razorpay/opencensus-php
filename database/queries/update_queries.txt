@@ -2457,5 +2457,23 @@ UPDATE line_item_taxes SET rate = rate * 100 WHERE rate_type = 'percentage' AND 
 # Result of above query ^. Some subscription cron created another entity using correct tax.rate value in between.
 UPDATE line_item_taxes SET rate = 180000 WHERE id = 'Bz6kYfEYhnonxn' LIMIT 1;
 
-# Manually marks a refund type batch as failed on support request.
+\# Manually marks a refund type batch as failed on support request.
 UPDATE batches SET status = "failed", processed_at = UNIX_TIMESTAMP(), comment = "Manually marked failed on support request" WHERE id IN ('C3cKCA0Qfma8Pr') AND processing = 0 LIMIT 1;
+
+UPDATE gateway_rules SET authentication_gateway = 'mpi_blade' where id in (
+"BuzxhgujsOGQxN",
+"BuzxiA9KD2S4O5",
+"BuzxiiiOfmuztA",
+"BuyiCsLnZY8JW5",
+"BuzsCOItIefyyK"
+) LIMIT 5;
+
+UPDATE gateway_rules SET authentication_gateway = 'mpi_enstage' where id = 'BuzskCmdfMRDd1' LIMIT 1;
+
+INSERT INTO gateway_rules (id, min_amount, method, merchant_id, type, filter_type, step, `group`, created_at, updated_at, gateway, auth_type, `load`, `authentication_gateway`) VALUES ('C6p3YN49ywpyPt', 0, 'card', '100000Razorpay', 'sorter', 'select', 'authentication', 'authentication', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'cybersource', '3ds', 0, 'mpi_blade');
+
+UPDATE gateway_rules SET type = 'filter' where id = 'C6p3YN49ywpyPt' limit 1;
+
+# Setting recurring feature at bin level | PAY-928
+UPDATE iins SET recurring = 1 WHERE type != 'debit' and network in ('MasterCard', 'Visa');
+UPDATE iins SET recurring = 1 WHERE type = 'debit' and network in ('MasteCard', 'Visa') and issuer in ('ICIC', 'CITI', 'KKBK', 'CNRB', 'HDFC');

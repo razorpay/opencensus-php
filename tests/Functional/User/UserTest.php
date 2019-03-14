@@ -17,12 +17,14 @@ use RZP\Mail\User\AccountVerification;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Fixtures\Entity\User as UserFixture;
 
 class UserTest extends TestCase
 {
-    use RequestResponseFlowTrait;
     use DbEntityFetchTrait;
+    use TestsBusinessBanking;
+    use RequestResponseFlowTrait;
 
     public function setUp()
     {
@@ -469,9 +471,14 @@ class UserTest extends TestCase
 
     public function testSendOtpViaMail()
     {
+        $this->createContact();
+        $this->createFundAccount();
+
         Mail::fake();
 
         $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $this->fundAccount->getPublicId();
 
         $response = $this->startTest();
 

@@ -25,4 +25,11 @@ class Action
     public static $nonVerifiableActions = [
         self::AUTHENTICATE
     ];
+
+    public static $cpsSupportedActions = [
+        self::AUTHORIZE,
+        self::CALLBACK,
+        self::CAPTURE,
+        self::VERIFY,
+    ];
 }

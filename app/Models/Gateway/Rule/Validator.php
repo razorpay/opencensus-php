@@ -33,7 +33,7 @@ class Validator extends Base\Validator
         Entity::METHOD                  => 'required|string|max:30',
         Entity::METHOD_TYPE             => 'filled|string|max:10',
         Entity::ISSUER                  => 'filled|string',
-        Entity::NETWORK                 => 'filled|string|max:10',
+        Entity::NETWORK                 => 'sometimes|string|max:10',
         Entity::MIN_AMOUNT              => 'filled|integer|min:0',
         Entity::MAX_AMOUNT              => 'filled|integer|min:1',
         Entity::EMI_DURATION            => 'required_only_if:method,emi|integer|in:3,6,9,12,18,24',
@@ -423,7 +423,7 @@ class Validator extends Base\Validator
         if (in_array($method, $allowedMethods, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                "iins should be sent only for card or emi rules");
+                'iins should be sent only for card or emi rules');
         }
 
         if (is_associative_array($iins) === true)

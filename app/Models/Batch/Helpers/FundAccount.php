@@ -11,12 +11,16 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class FundAccount
 {
-    public static function getFundAccountInput(array & $entry, ContactModel\Entity $contact): array
+    public static function getFundAccountInput(array & $entry, ContactModel\Entity $contact = null): array
     {
         $input = [
-            FundAccountModel\Entity::CONTACT_ID   => $contact->getPublicId(),
             FundAccountModel\Entity::ACCOUNT_TYPE => $entry[Header::FUND_ACCOUNT_TYPE],
         ];
+
+        if ($contact !== null)
+        {
+            $input[FundAccountModel\Entity::CONTACT_ID] = $contact->getPublicId();
+        }
 
         // Per fund account type, prepares details key input for fund account's core.
         switch ($entry[Header::FUND_ACCOUNT_TYPE])

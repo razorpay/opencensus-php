@@ -106,6 +106,15 @@ class Assertions extends TestCase
         $this->assertShouldNotCreateCommission($data);
     }
 
+    public function testMissingPartnerPricingRule(array $data)
+    {
+        $postAction = $data['post_action'];
+
+        $calculator = $postAction['calculator'];
+
+        $this->assertZeroCommission($calculator);
+    }
+
     protected function assertBasicCalculatorRules(Calculator $calculator)
     {
         $shouldCreateCommission = $this->invokePrivateMethod(
@@ -165,5 +174,25 @@ class Assertions extends TestCase
                                     'shouldCreateCommission');
 
         $this->assertTrue($shouldCreateCommission);
+    }
+
+    protected function assertZeroCommission(Calculator $calculator)
+    {
+        $shouldCreateCommission = $this->invokePrivateMethod(
+            $calculator,
+            Calculator::class,
+            'shouldCreateCommission');
+
+        $this->assertTrue($shouldCreateCommission);
+
+        $partnerFee    = $calculator->getPartnerFee();
+        $partnerTax    = $calculator->getPartnerTax();
+
+        $this->assertNotNull($calculator->getPartnerConfig());
+
+        $this->assertEquals(0, $partnerFee);
+        $this->assertEquals(0, $partnerTax);
+
+        $this->assertEmpty($calculator->getCommissions());
     }
 }

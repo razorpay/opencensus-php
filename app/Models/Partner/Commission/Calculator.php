@@ -9,6 +9,7 @@ use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Models\Base;
 use RZP\Models\Pricing;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -623,7 +624,7 @@ class Calculator extends Base\Core
     {
         list($merchantFee, $merchantTax, $merchantFeesSplit) = $this->getMerchantFees();
 
-        list($partnerFee, $partnerTax, $partnerSplit) = $this->getPartnerPricing();
+        list($partnerFee, $partnerTax, $partnerFeesSplit) = $this->getPartnerPricingSplit();
 
         $this->setMerchantFee($merchantFee);
         $this->setMerchantTax($merchantTax);
@@ -632,8 +633,9 @@ class Calculator extends Base\Core
 
         if ($partnerFee === 0)
         {
+            // The partner fee computed based on the implicit partner pricing is zero
             $this->traceContext(
-                TraceCode::COMMISSION_NOT_DEFINED,
+                TraceCode::COMMISSION_ZERO_PARTNER_FEES,
                 [
                     'merchant_fees' => $merchantFee,
                     'partner_fees'  => $partnerFee,
@@ -721,6 +723,35 @@ class Calculator extends Base\Core
     }
 
     /**
+     * @return array
+     * @throws LogicException
+     */
+    protected function getPartnerPricingSplit(): array
+    {
+        // initialize - [partner fee, partner tax, partner feeSplit]
+        $partnerFeeSplit = [0, 0, new Base\PublicCollection];
+
+        try
+        {
+            $partnerFeeSplit = $this->calculatePartnerPricingSplit();
+        }
+        catch (LogicException $ex)
+        {
+            // If the exception is because a relevant pricing rule is not defined, do not block; assume zero.
+            if ($ex->getCode() === ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT)
+            {
+                $this->traceContext(TraceCode::COMMISSION_NOT_DEFINED);
+
+                return $partnerFeeSplit;
+            }
+
+            throw $ex;
+        }
+
+        return $partnerFeeSplit;
+    }
+
+    /**
      * Partner pricing refers to the base pricing at which Razorpay expects the payments from the partners'
      * sub-merchants. Anything additional, goes as a commission to the partner.
      *
@@ -733,7 +764,7 @@ class Calculator extends Base\Core
      *
      * @return array
      */
-    protected function getPartnerPricing(): array
+    protected function calculatePartnerPricingSplit(): array
     {
         $calculator = $this->getFeeCalculator();
 
@@ -861,8 +892,6 @@ class Calculator extends Base\Core
 
     /**
      * No fallback pricing rules are required for commissions as of now.
-     *
-     * @todo: Does the calculation break if the required pricing rules are not added or does it ignore assuming 0?
      *
      * @param Plan $pricing
      *

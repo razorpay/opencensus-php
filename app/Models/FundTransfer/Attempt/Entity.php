@@ -51,6 +51,7 @@ class Entity extends Base\PublicEntity
      * Used to check if the FTA's source has balance ID
      */
     const BALANCE_ID            = 'balance_id';
+    const FUND_TRANSFER_ID      = 'fund_transfer_id';
 
     protected $entity = 'fund_transfer_attempt';
 

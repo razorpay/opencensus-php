@@ -19,9 +19,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'iin'     => 112333,
-                'network' => 'RuPay',
-                'type'    => 'debit',
+                'iin'       => 112333,
+                'network'   => 'RuPay',
+                'type'      => 'debit',
+                'recurring' => false,
             ],
         ],
     ],
@@ -57,8 +58,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'pin' => true,
-                'otp' => true,
+                'pin'       => true,
+                'otp'       => true,
+                'recurring' => false,
             ],
         ],
     ],
@@ -142,6 +144,7 @@ return [
                 'issuer_name'    => 'HDFC',
                 'emi'            => true,
                 'message_type'   => 'SMS',
+                'recurring'      => false,
             ],
         ],
     ],
@@ -187,7 +190,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 23,
+                'count' => 27,
                 'items' => [
                     [
                     ]

@@ -146,6 +146,12 @@ class Gateway extends Base\Gateway
                     return $authResponse;
                 }
 
+                $this->mpiEntity = $this->app['repo']
+                                        ->mpi
+                                        ->findByPaymentIdAndAction($input['payment']['id'], Base\Action::AUTHORIZE);
+
+                $this->validateEci($input, $this->mpiEntity);
+
                 return $this->authorizeNotEnrolled($input);
 
             default:
@@ -191,6 +197,42 @@ class Gateway extends Base\Gateway
                 $this->authorizeNotEnrolled($input);
                 break;
         }
+    }
+
+    public function otpGenerate(array $input)
+    {
+        if ((isset($input['otp_resend']) === true) and
+            ($input['otp_resend'] === true))
+        {
+            return $this->otpResend($input);
+        }
+
+        return $this->authorize($input);
+    }
+
+    public function otpResend(array $input)
+    {
+        parent::action($input, Base\Action::OTP_RESEND);
+
+        $mpiEntity = $this->app['repo']
+                          ->mpi
+                          ->findByPaymentIdAndActionOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
+
+        if ($mpiEntity->getGateway() !== Payment\Gateway::MPI_ENSTAGE)
+        {
+            //
+            // This error is consistent with error thrown in otpResend trait
+            throw new Exception\LogicException(
+                'Gateway does not support OTP resend',
+                null,
+                ['payment_id' => $input['payment']['id']]);
+        }
+
+        $authenticationGateway = $mpiEntity->getGateway();
+
+        $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
+
+        return $authResponse;
     }
 
     public function capture(array $input)
@@ -274,7 +316,7 @@ class Gateway extends Base\Gateway
 
     public function formatDataForMozart($input, $response)
     {
-        $verifyContent['commerce_indicator']     = $response[Mpi\Base\Entity::ECI];
+        $verifyContent['commerce_indicator']     = $this->getCommerceIndicator($input, $response);
         $verifyContent['authentication_status']  = $response[Mpi\Base\Entity::STATUS];
         $verifyContent['eci']                    = $response[Mpi\Base\Entity::ECI];
         $verifyContent['xid']                    = $response[Mpi\Base\Entity::XID];
@@ -286,6 +328,42 @@ class Gateway extends Base\Gateway
         $data['authenticate_init']               = $initContent;
 
         return $data;
+    }
+
+    protected function getCommerceIndicator($input, $response)
+    {
+        $eci = $response[Mpi\Base\Entity::ECI];
+
+        $commerceIndicatorMap = [
+            Card\Network::VISA => [
+                '5'  => 'vbv',
+                '05' => 'vbv',
+                '6'  => 'vbv_attempted',
+                '06' => 'vbv_attempted',
+                '7'  => 'internet',
+                '07' => 'internet',
+            ]
+        ];
+
+        switch($input['card'][Card\Entity::NETWORK_CODE])
+        {
+            case Card\Network::VISA:
+                if (isset($commerceIndicatorMap[Card\Network::VISA][$eci]) === true)
+                {
+                    return $commerceIndicatorMap[Card\Network::VISA][$eci];
+                }
+                else
+                {
+                    return '';
+                }
+            case Card\Network::MC:
+            case Card\Network::MAES:
+                return 'spa';
+            case Card\Network::AMEX:
+                return 'aesk';
+            default:
+                return '';
+        }
     }
 
     protected function decideAuthenticationGateway($input)
@@ -307,7 +385,17 @@ class Gateway extends Base\Gateway
         // not enrolled card. send authorize request using enroll response.
         parent::action($input, 'pay_init');
 
-        $input['gateway']['authenticate_init'] = $this->mapInReverseWay($this->gatewayPayment);
+        if (isset($this->mpiEntity) == true)
+        {
+            $input['gateway']['authenticate_init'] = $this->mapInReverseWay($this->mpiEntity);
+
+            $input['gateway']['authenticate_init']['commerce_indicator'] =
+                $this->getCommerceIndicator($input, $this->mpiEntity);
+        }
+        else
+        {
+            $input['gateway']['authenticate_init'] = $this->mapInReverseWay($this->gatewayPayment);
+        }
 
         $this->sendMozartRequest($input);
     }

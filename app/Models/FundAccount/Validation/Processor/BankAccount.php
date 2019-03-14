@@ -111,13 +111,6 @@ class BankAccount extends Base
 
             return;
         }
-
-        $traceArray = [
-            'input'             => $input,
-            'validation_status' => $this->validation->getStatus(),
-        ];
-
-        $this->trace->warn(TraceCode::BENEFICIARY_NAME_NOT_PRESENT, $traceArray);
     }
 
     /**
@@ -170,6 +163,22 @@ class BankAccount extends Base
     protected function updateValidationAfterFtaProcessed(array $input)
     {
         $this->markValidationAsCompleted(AccountStatus::ACTIVE);
+
+        if ($this->validation->getRegisteredName() === null)
+        {
+            $traceArray = [
+                'input'             => $input,
+                'validation_status' => $this->validation->getStatus(),
+            ];
+
+            $this->slack->queue(
+                TraceCode::BENEFICIARY_NAME_NOT_PRESENT,
+                $traceArray,
+                Constants::slackSettings()
+            );
+
+            $this->trace->warn(TraceCode::BENEFICIARY_NAME_NOT_PRESENT, $traceArray);
+        }
     }
 
     /**
@@ -189,10 +198,10 @@ class BankAccount extends Base
             'validation_status' => $this->validation->getStatus(),
         ];
 
-        $this->trace->error('Penny Testing Failed due to critical reasons. We should retry.', $traceArray);
+        $this->trace->error(TraceCode::FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR, $traceArray);
 
         $this->slack->queue(
-            'Penny Testing Failed due to critical reasons. We should retry.',
+            TraceCode::FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR,
             $traceArray,
             Constants::slackSettings()
         );
