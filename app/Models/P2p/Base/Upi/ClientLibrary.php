@@ -98,7 +98,7 @@ class ClientLibrary
     private function setBankAccountProperties(array & $array)
     {
         $array['account']             = $this->bankAccount->getMaskedAccountNumber();
-        $array['registration_format'] = $this->bankAccount->parentBank->getUpiFormat();
+        $array['registration_format'] = $this->bankAccount->bank->getUpiFormat();
 
         foreach ($this->bankAccount->getCreds() as $cred)
         {

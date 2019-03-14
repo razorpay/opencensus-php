@@ -16,8 +16,8 @@ class TransactionHelper extends P2pHelper
             'amount'        => 100,
             'currency'      => 'INR',
             'description'   => 'Initiate Pay Test',
-            'payer_id'      => 'vpa_' . Fixtures::CUSTOMER_1_VPA_1,
-            'payee_id'      => 'vpa_' . Fixtures::CUSTOMER_2_VPA_1,
+            'payer_id'      => $this->fixtures->vpa(Fixtures::DEVICE_1)->getPublicId(),
+            'payee_id'      => $this->fixtures->vpa(Fixtures::DEVICE_2)->getPublicId(),
         ];
 
         $this->content($request, $default, $content);
@@ -36,8 +36,8 @@ class TransactionHelper extends P2pHelper
             'currency'      => 'INR',
             'description'   => 'Initiate Pay Test',
             'expire_at'     => time() + 1000,
-            'payer_id'      => 'vpa_' . Fixtures::CUSTOMER_2_VPA_1,
-            'payee_id'      => 'vpa_' . Fixtures::CUSTOMER_1_VPA_1,
+            'payer_id'      => $this->fixtures->vpa(Fixtures::DEVICE_2)->getPublicId(),
+            'payee_id'      => $this->fixtures->vpa(Fixtures::DEVICE_1)->getPublicId(),
         ];
 
         $this->content($request, $default, $content);

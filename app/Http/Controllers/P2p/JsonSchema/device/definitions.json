@@ -1,0 +1,119 @@
+{
+    "device_request" : {
+        "ip" : {
+            "type" : "string",
+            "description" : "Device current IP"
+        },
+        "os" : {
+            "type" : "string",
+            "description" : "Device OS",
+            "examples" : ["android", "ios"]
+        },
+        "os_version" : {
+            "type" : "string",
+            "description" : "Device OS Version",
+            "examples" : ["5.0.1"]
+        },
+        "simslot" : {
+            "type" : "string",
+            "description": "Sim slot chosen by customer"
+        },
+        "simid" : {
+            "type" : "string",
+            "description" : "Sim reference id for the chosen sim"
+        },
+        "uuid" : {
+            "type" : "string",
+            "description" : "Unique device id for the device, could be IMEI numbers"
+        },
+        "geocode" : {
+            "type" : "string",
+            "description" : "Current device location in lat:long format"
+        },
+        "app_name" : {
+            "type" : "string",
+            "description" : "Package name on which SDK is installed"
+        }
+    },
+
+    "device_response" : {
+        "id" : {
+            "type" : "string",
+            "description": "Razorpay device id, can be cached and used for debugging"
+        },
+        "auth_token" : {
+            "type" : "string",
+            "description": "Auth token for the device, should be cached to be used in later APIs"
+        },
+        "status" : {
+            "type" : "string",
+            "description": "Status of current token"
+        }
+    },
+
+    "next" : {
+        "version" : {
+            "type" : "string",
+            "description": "Version for the API"
+        },
+        "type" : {
+            "type" : "string",
+            "description": "Type of the response",
+            "examples" : [
+                "sdk",
+                "poll",
+                "sms"
+            ]
+        },
+        "request" : {
+            "type" : "object",
+            "description": "Request to be made for given type of response",
+            "required" : [],
+            "properties" : {
+                "id" : {
+                    "type" : "string",
+                    "description": "Unique identifier for the action, used in Axis"
+                },
+                "sdk" : {
+                    "type" : "string",
+                    "description": "Identifier for SDK for [response.type = 'sdk']",
+                    "examples" : [
+                        "npci",
+                        "axis"
+                    ]
+                },
+                "destination" : {
+                    "type" : "string",
+                    "description": "Destination to send SMS for [response.type = 'sms']"
+                },
+                "url" : {
+                    "type" : "string",
+                    "description": "URL to poll for actual response for [response.type = 'poll']"
+                },
+                "action" : {
+                    "type" : "string",
+                    "description": "Name of SDK action to invode for [response.type = 'sdk']"
+                },
+                "content" : {
+                    "type" : ["string", "object"],
+                    "description": "Payload to be passed to SDK action for [response.type = 'sdk']"
+                },
+                "validate" : {
+                    "type" : "boolean",
+                    "description": "Whether RSDK needs to validate integrated SDK of not"
+                }
+            }
+        },
+        "callback" : {
+            "type" : "string",
+            "description": "Relative Url to post the callback response"
+        }
+    },
+
+    "sdk" : {
+        "sdk" : {
+            "type" : "object",
+            "description": "The actual response from SDK"
+        }
+    }
+}

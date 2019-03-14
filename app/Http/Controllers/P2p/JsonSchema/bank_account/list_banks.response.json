@@ -15,14 +15,15 @@
             "enum": [
                 "collection"
             ],
-            "default": null,
-            "pattern": "^(.*)$"
+            "description" : "For multiple resources the entity type will be collection"
         },
         "count": {
-            "type": "integer"
+            "type": "integer",
+            "description" : "Total number of items in the collection"
         },
         "items": {
             "type": "array",
+            "description" : "List of items",
             "items": {
                 "type": "object",
                 "required": [
@@ -37,21 +38,24 @@
                         "type": "string",
                         "enum": [
                             "bank"
-                        ]
+                        ],
+                        "description" : "Type of entity"
                     },
                     "ifsc": {
                         "type": "string",
-                        "pattern": "^(.*)$"
+                        "description" : "Unique identifier for the bank"
                     },
                     "name": {
                         "type": "string",
-                        "pattern": "^(.*)$"
+                        "description" : "Name of the bank"
                     },
                     "upi": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "description" : "Tells whether UPI is available on bank or not"
                     },
                     "active": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "description" : "Tells if bank is currently active or not"
                     }
                 }
             }

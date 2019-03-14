@@ -20,19 +20,25 @@ class CreateP2pBankTable extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->string(Entity::IFSC, 11)
+            $table->string(Entity::ID, Entity::ID_LENGTH)
                   ->primary();
 
             $table->string(Entity::NAME, 100);
 
+            $table->string(Entity::HANDLE, 50);
+
+            $table->text(Entity::GATEWAY_DATA);
+
+            $table->string(Entity::IFSC, 11)
+                  ->nullable();
+
             $table->string(Entity::UPI_IIN, 6)
                   ->nullable();
 
-            $table->string(Entity::UPI_FORMAT, 50);
+            $table->string(Entity::UPI_FORMAT, 50)
+                  ->nullable();
 
             $table->boolean(Entity::ACTIVE);
-
-            $table->text(Entity::SPOC);
 
             $table->integer(Entity::REFRESHED_AT);
 

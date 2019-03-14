@@ -2,6 +2,7 @@
 
 namespace RZP\Models\P2p\Base;
 
+use Crypt;
 use Illuminate\Support\Arr;
 use RZP\Exception\LogicException;
 use RZP\Gateway\P2p\Base\Response;
@@ -30,6 +31,11 @@ class Processor
     protected $gatewayInput = null;
 
     /**
+     * @var ArrayBag
+     */
+    protected $callbackInput = null;
+
+    /**
      * @var Response
      */
     protected $gatewayResponse = null;
@@ -56,7 +62,7 @@ class Processor
 
         // Initializing the gateway data
         $this->gatewayInput     = new ArrayBag();
-        $this->gatewayResponse  = new ArrayBag();
+        $this->callbackInput    = new ArrayBag();
     }
 
     protected function getNewEntity(): Entity
@@ -76,6 +82,13 @@ class Processor
     protected function getNewCore()
     {
         $className = str_replace('\Processor', '\Core', static::class);
+
+        return new $className;
+    }
+
+    protected function getNewAction()
+    {
+        $className = str_replace('\Processor', '\Action', static::class);
 
         return new $className;
     }
@@ -118,6 +131,10 @@ class Processor
         $action      = $this->getGatewayAction();
         $mode        = $this->mode();
 
+        // These two variables are passed directly to gateway and only gateway can validate these
+        $this->gatewayInput->put('sdk', $this->arrayBag($this->input->get('sdk', [])));
+        $this->gatewayInput->put('callback', $this->arrayBag($this->input->get('callback', [])));
+
         // Before passing input to gateway we will run basic check
         $this->modifyGatewayInput($this->gatewayInput);
 
@@ -145,9 +162,24 @@ class Processor
 
     protected function processGatewayResponse()
     {
-        $suffix = $this->gatewayResponse->isSuccess() ? 'Success' : 'Failure';
+        if ($this->gatewayResponse->isSuccess() === false)
+        {
+            return $this->handleGatewayFailure();
+        }
 
-        $method = $this->action . $suffix;
+        // If there if there is next request, we will handle that
+        if ($this->gatewayResponse->hasRequest())
+        {
+            return $this->generateNextRequest();
+        }
+
+        // Else we will consider it to be a success response
+        return $this->handleGatewaySuccess();
+    }
+
+    public function handleGatewaySuccess()
+    {
+        $method = $this->action . 'Success';
 
         if (method_exists($this, $method))
         {
@@ -157,8 +189,34 @@ class Processor
         throw new LogicException('Gateway response processor not found.', null , [
             'entity'    => $this->entity,
             'action'    => $this->action,
-            'suffix'    => $suffix,
+            'suffix'    => 'Success',
         ]);
+    }
+
+    public function handleGatewayFailure()
+    {
+        return [];
+    }
+
+    public function generateNextRequest()
+    {
+        $response = [
+            'version'   => 'v1',
+            'type'      => $this->gatewayResponse->requestType(),
+            'request'   => $this->gatewayResponse->request(),
+            'callback'  => $this->generateNextRequestCallback(),
+        ];
+
+        return $response;
+    }
+
+    protected function generateNextRequestCallback()
+    {
+        return [
+            'action'    => $this->action,
+            'input'     => $this->callbackInput->toArray(),
+            'gateway'   => $this->gatewayResponse->requestCallback(),
+        ];
     }
 
     /**

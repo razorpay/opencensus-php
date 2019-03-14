@@ -1,0 +1,32 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "title": "The Root Schema",
+    "description" : "Request to initiate verification",
+    "required": [
+        "customer_id",
+        "ip",
+        "os",
+        "os_version",
+        "simslot",
+        "simid",
+        "uuid",
+        "type",
+        "geocode",
+        "app_name"
+    ],
+    "properties": {
+        "allOf" : [
+            {
+                "customer_id" : {
+                    "type" : "string",
+                    "description" : "Razorpay customer id passed by merchant",
+                    "examples" : ["cust_RZP123abc678de"]
+                }
+            },
+            {"$ref" : "definitions.json#/device_request"}
+        ]
+    }
+}

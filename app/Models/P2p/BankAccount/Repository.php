@@ -12,7 +12,7 @@ class Repository extends Base\Repository
     public function fetchAllForBank(string $bank)
     {
         return $this->newP2pQuery()
-                    ->where(Entity::BANK, $bank)
+                    ->where(Entity::BANK_ID, $bank)
                     ->get();
     }
 }

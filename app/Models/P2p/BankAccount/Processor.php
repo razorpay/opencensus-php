@@ -18,7 +18,7 @@ class Processor extends Base\Processor
     {
         $this->initialize(Action::RETRIEVE, $input, true);
 
-        $bank = (new Bank\Core)->retrieveById($this->input->get(Entity::BANK));
+        $bank = (new Bank\Core)->find($this->input->get(Entity::BANK_ID));
 
         $this->gatewayInput->put(Entity::BANK, $bank->toArrayBag());
 
@@ -29,7 +29,7 @@ class Processor extends Base\Processor
     {
         $this->initialize(Action::RETRIEVE_SUCCESS, $input, true);
 
-        $bank = (new Bank\Core)->retrieveById($this->input->get(Entity::BANK));
+        $bank = (new Bank\Core)->fetch($this->input->get(Entity::BANK_ID));
 
         $bankAccounts = $this->core->createManyForBank($this->input->get(Entity::BANK_ACCOUNTS), $bank);
 
@@ -73,7 +73,7 @@ class Processor extends Base\Processor
         $bankAccount = $this->core->fetch($this->input->get(Entity::ID));
 
         $this->gatewayInput->put(Entity::BANK_ACCOUNT, $bankAccount);
-        $this->gatewayInput->put(Entity::BANK, $bankAccount->parentBank);
+        $this->gatewayInput->put(Entity::BANK_ID, $bankAccount->parentBank);
         $this->gatewayInput->put(Entity::REQUEST, $this->input);
 
         return $this->callGateway();
@@ -128,7 +128,7 @@ class Processor extends Base\Processor
         $bankAccount = $this->core->fetch($this->input->get(Entity::ID));
 
         $this->gatewayInput->put(Entity::BANK_ACCOUNT, $bankAccount);
-        $this->gatewayInput->put(Entity::BANK, $bankAccount->parentBank);
+        $this->gatewayInput->put(Entity::BANK_ID, $bankAccount->parentBank);
         $this->gatewayInput->put(Entity::REQUEST, $this->input);
 
         return $this->callGateway();

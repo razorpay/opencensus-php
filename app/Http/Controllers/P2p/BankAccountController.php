@@ -21,7 +21,7 @@ class BankAccountController extends Controller
 
     public function retrieve()
     {
-        $input[Entity::BANK] = $this->request()->route('bank_code');
+        $input[Entity::BANK_ID] = $this->request()->route('bank_id');
 
         $response = $this->service->retrieve($input);
 

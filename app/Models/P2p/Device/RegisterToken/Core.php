@@ -28,12 +28,6 @@ class Core extends Base\Core
         return $this->create([Entity::DEVICE_DATA => $input]);
     }
 
-    public function retrieveById(string $token): Entity
-    {
-        // We can add verify if pattern is decided
-        return $this->repo->newP2pQuery()->find($token);
-    }
-
     public function updateTokenCompleted(Entity $registerToken): Entity
     {
         $registerToken->setStatus(Status::COMPLETED);

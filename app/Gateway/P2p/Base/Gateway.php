@@ -23,6 +23,16 @@ class Gateway extends Base\Gateway
         $this->context = $context;
     }
 
+    public function getContextDevice()
+    {
+        return $this->context->getDevice()->toArrayBag();
+    }
+
+    public function getContextDeviceToken()
+    {
+        return $this->context->getDeviceToken()->toArrayBag();
+    }
+
     public function setActionAndInput(string $action, ArrayBag $input)
     {
         $this->action = $action;
