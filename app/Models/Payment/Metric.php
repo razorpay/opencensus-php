@@ -34,7 +34,7 @@ class Metric extends Base\Core
     const PAYMENT_CREATED                       = 'payment_created';
     const PAYMENT_AUTHORIZED                    = 'payment_authorized_v1';
     const PAYMENT_CAPTURED                      = 'payment_captured_v1';
-    const PAYMENT_CREATE_REQUEST_TIME           = 'payment_create_request_time_v1.';
+    const PAYMENT_CREATE_REQUEST_TIME           = 'payment_create_request_time';
     const PAYMENT_FAILED                        = 'payment_failed';
     const PAYMENT_PROCESS_FAILED                = 'payment_process_failed';
     const PAYMENT_CAPTURE_FAILED                = 'payment_capture_failed';
