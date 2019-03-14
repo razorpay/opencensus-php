@@ -102,4 +102,11 @@ class PayoutController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function cancelPayout(string $payoutId)
+    {
+        $data = $this->service()->cancelPayout($payoutId);
+
+        return ApiResponse::json($data);
+    }
 }

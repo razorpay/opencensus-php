@@ -164,6 +164,15 @@ class Service extends Base\Service
         return $summary;
     }
 
+    public function cancelPayout(string $payoutId)
+    {
+        $payout = $this->repo->payout->findByPublicIdAndMerchant($payoutId, $this->merchant);
+
+        $payout = $this->core->cancelPayout($payout);
+
+        return $payout->toArrayPublic();
+    }
+
     /**
      * We are allowing Fund Account payouts only on RX.
      * In RX, we always mandate account number.

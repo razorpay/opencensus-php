@@ -350,6 +350,24 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
     }
 
+    public function cancelPayout(Entity $payout)
+    {
+        return $this->mutex->acquireAndRelease(
+                $payout->getId(),
+                function() use ($payout)
+                {
+                    $payout->getValidator()->validateCancel();
+
+                    $payout->setStatus(Status::CANCELLED);
+
+                    $payout = $this->repo->saveOrFail($payout);
+
+                    return $payout;
+                },
+                self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+    }
+
     protected function dispatchApplicablePayouts(int $totalBalance, Base\PublicCollection $payouts)
     {
         foreach ($payouts as $payout)
