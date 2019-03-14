@@ -5,6 +5,8 @@ import { connect } from 'react-redux';
 import Spinner from 'rzp/ui/Spinner';
 import Time from 'rzp/ui/Time';
 import Definition from 'rzp/ui/Definition';
+import Amount from 'rzp/ui/Amount';
+import DualBreakup from 'rzp/ui/FeeBreakup';
 import Alert from 'rzp/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
@@ -32,7 +34,7 @@ export default class CommissionEntityContainer extends Component {
   render() {
     const { loading: isLoading, entity, error } = this.props;
     return (
-      <div class="content-wrapper content-sm txn-details">
+      <div class="content-wrapper content-sm txn-details Commission--Detail">
         {isLoading ? (
           <div class="page-spinner-container">
             <Spinner />
@@ -45,6 +47,13 @@ export default class CommissionEntityContainer extends Component {
               <div class="SliderPanel__Body">
                 <div class="panel-body">
                   <div class="list-group details-row-container">
+                    {/* earnings breakup */}
+                    <CommissionEarningBreakUp
+                      currency={entity.currency}
+                      total={entity.fee}
+                      gst={entity.tax}
+                      base={entity.fee - entity.tax}
+                    />
                     {/* merchant details */}
                     <EntityDetailRow label="Affiliate Account">
                       <Definition>
@@ -53,7 +62,7 @@ export default class CommissionEntityContainer extends Component {
                       </Definition>
                     </EntityDetailRow>
 
-                    <div className="pair-group-item">
+                    <div class="pair-group-item">
                       <strong>Transactions</strong>
                     </div>
 
@@ -74,4 +83,38 @@ export default class CommissionEntityContainer extends Component {
       </div>
     );
   }
+}
+
+function CommissionEarningBreakUp(props) {
+  return (
+    <>
+      <div class="pair-group-item">
+        <div class="pair-label">Earnings from Razorpay</div>
+      </div>
+      <div class="pair-group-item EarningsBreakup">
+        <div class="pair-value">
+          <DualBreakup>
+            <>
+              <div class="EarningsBreakup--Total">
+                <Amount value={props.total} currency={props.currency} />
+              </div>
+              <small>Total Earnings</small>
+            </>
+            <>
+              <div class="EarningsBreakup--Components">
+                <Amount value={props.base} currency={props.currency} />
+              </div>
+              <small>Base</small>
+            </>
+            <>
+              <div class="EarningsBreakup--Components">
+                <Amount value={props.gst} currency={props.currency} />
+              </div>
+              <small>GST</small>
+            </>
+          </DualBreakup>
+        </div>
+      </div>
+    </>
+  );
 }
