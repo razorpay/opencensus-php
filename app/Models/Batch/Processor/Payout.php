@@ -43,6 +43,32 @@ class Payout extends Base
         });
     }
 
+    protected function updateBatchPostValidation(array $entries, array $input)
+    {
+        parent::updateBatchPostValidation($entries, $input);
+
+        $totalAmount = array_sum(array_column($entries, Batch\Header::PAYOUT_AMOUNT));
+
+        $this->batch->setAmount($totalAmount);
+    }
+
+    protected function postProcessEntries(array & $entries)
+    {
+        parent::postProcessEntries($entries);
+
+        $processedAmount = 0;
+
+        foreach ($entries as $entry)
+        {
+            if ($entry[Batch\Header::STATUS] === Batch\Status::SUCCESS)
+            {
+                $processedAmount += $entry[Batch\Header::PAYOUT_AMOUNT];
+            }
+        }
+
+        $this->batch->setProcessedAmount($processedAmount);
+    }
+
     protected function processEntryForFundAccount(array & $entry): FundAccountModel\Entity
     {
         if (empty($entry[Batch\Header::FUND_ACCOUNT_ID]) === false)
