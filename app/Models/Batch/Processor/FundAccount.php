@@ -69,7 +69,7 @@ class FundAccount extends Base
 
         $contact = $this->processEntryForContact($entry);
 
-        return $this->fundAccountCore->create($fundAccountInput, $this->merchant, $contact);
+        return $this->fundAccountCore->create($fundAccountInput, $this->merchant, $contact, $this->batch);
     }
 
     public function processEntryAndGetEntity(array & $entry): FundAccountModel\Entity
@@ -99,6 +99,6 @@ class FundAccount extends Base
 
         $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetails($input, $this->merchant, $contact);
 
-        return $fundAccount ?: $this->fundAccountCore->create($input, $this->merchant, $contact);
+        return $fundAccount ?: $this->fundAccountCore->create($input, $this->merchant, $contact, $this->batch);
     }
 }
