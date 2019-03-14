@@ -244,6 +244,7 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYOUT_NOT_QUEUED_STATUS,
+                null,
                 [
                     'payout_id' => $payout->getId(),
                     'status'    => $payout->getStatus(),

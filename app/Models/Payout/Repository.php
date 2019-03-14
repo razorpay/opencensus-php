@@ -43,8 +43,7 @@ class Repository extends Base\Repository
     {
         $query = $this->newQuery()
                       ->with('balance')
-                      // TODO: Fix this before merging!
-                      ->status(Status::CREATED);
+                      ->status(Status::QUEUED);
 
         if (empty ($merchantIdsWhitelist) === false)
         {

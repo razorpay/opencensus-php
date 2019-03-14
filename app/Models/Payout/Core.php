@@ -327,6 +327,8 @@ class Core extends Base\Core
 
             $this->dispatchApplicablePayouts($remainingBalance, $payouts);
         }
+
+        // TODO: Form a summary and return that back from here
     }
 
     public function processQueuedPayout(string $payoutId): Entity
