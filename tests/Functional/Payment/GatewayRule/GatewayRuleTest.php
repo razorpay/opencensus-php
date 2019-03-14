@@ -39,6 +39,26 @@ class GatewayRuleTest extends TestCase
         }
     }
 
+    public function testCreateAuthenticationGatewayRule()
+    {
+        $this->ba->adminAuth();
+
+        $testCases = $this->testData[__FUNCTION__];
+
+        //
+        // All test cases have the below format
+        // [
+        //      'fixtures' => <any rules that neds to be created via fixtures
+        //      'request' => 'create request to be made'
+        //      'response' => expected response
+        // ]
+        //
+        foreach ($testCases as $test)
+        {
+            $this->runTestCase($test);
+        }
+    }
+
     public function testUpdateGatewayRule()
     {
         $this->ba->adminAuth();
