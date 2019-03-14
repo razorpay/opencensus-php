@@ -1691,6 +1691,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VAULT_TOKEN_CREATE_INIT             = 'VAULT_TOKEN_CREATE_INIT';
     const VAULT_TOKEN_CREATE_COMPLETE         = 'VAULT_TOKEN_CREATE_COMPLETE';
 
+    const PAYMENT_ERROR_LOGGING_METRIC        = 'PAYMENT_ERROR_LOGGING_METRIC';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',

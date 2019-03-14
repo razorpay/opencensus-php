@@ -246,6 +246,8 @@ class Processor
     {
         try
         {
+            $startTime = microtime();
+
             $this->setMethodForInput($input);
 
             $payment = $this->buildPaymentEntity($input);
@@ -273,6 +275,8 @@ class Processor
 
             // Creates an origin entity for the payment based on the auth used to initiate the payment.
             (new EntityOrigin\Core)->createEntityOrigin($payment);
+
+            $this->logRequestTime($payment, $startTime);
 
             return $paymentData;
         }
@@ -2596,5 +2600,42 @@ class Processor
                 ['key' => $key,
                  '$value' => $value]);
         }
+    }
+
+    protected function logRequestTime($payment, $startTime)
+    {
+        try
+        {
+            $currentRouteName = $this->route->getCurrentRouteName();
+
+            $requestTime = $this->getDiffInMilliSecond($startTime);
+
+            (new Payment\Metric)->pushCreateRequestMetrics($payment, $currentRouteName, $requestTime);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYMENT_ERROR_LOGGING_METRIC
+            );
+        }
+    }
+
+    protected function getDiffInMilliSecond($startTime)
+    {
+        $startTimes = explode(" ", $startTime);
+
+        $endTime = microtime();
+
+        $endTimes = explode(" ", $endTime);
+
+        $requestTime = ((int)$endTimes[1] - (int)$startTimes[1]) * 1000;
+
+        $startMillisecond = (float)$startTimes[0] * 1000;
+
+        $endMillisecond   = (float)$endTimes[0] * 1000;
+
+        return $requestTime + (int)($endMillisecond - $startMillisecond);
     }
 }
