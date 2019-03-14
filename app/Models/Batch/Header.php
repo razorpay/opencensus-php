@@ -461,6 +461,7 @@ class Header
     const PAYOUT_CURRENCY          = 'Payout Currency';
     const PAYOUT_MODE              = 'Payout Mode';
     const PAYOUT_PURPOSE           = 'Payout Purpose';
+    const PAYOUT_NARRATION         = 'Payout Narration';
     const PAYOUT_REFERENCE_ID      = 'Payout Reference Id';
     const PAYOUT_ID                = 'Payout Id';
 
@@ -1426,6 +1427,7 @@ class Header
                 self::PAYOUT_CURRENCY,
                 self::PAYOUT_MODE,
                 self::PAYOUT_PURPOSE,
+                self::PAYOUT_NARRATION,
                 self::PAYOUT_REFERENCE_ID,
                 self::FUND_ACCOUNT_ID,
                 self::FUND_ACCOUNT_TYPE,
@@ -1447,6 +1449,7 @@ class Header
                 self::PAYOUT_CURRENCY,
                 self::PAYOUT_MODE,
                 self::PAYOUT_PURPOSE,
+                self::PAYOUT_NARRATION,
                 self::PAYOUT_REFERENCE_ID,
                 self::FUND_ACCOUNT_ID,
                 self::FUND_ACCOUNT_TYPE,
