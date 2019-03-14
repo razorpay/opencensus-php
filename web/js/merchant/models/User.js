@@ -181,6 +181,11 @@ export default class User {
     };
   }
 
+  get isInternationalSupportRolledOut() {
+    return true;
+    return this.getExpStatus('international_roll_out');
+  }
+
   get isAccepted() {
     return this.activation_status === 'activated';
   }

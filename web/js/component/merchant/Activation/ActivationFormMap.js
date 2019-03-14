@@ -193,7 +193,13 @@ const businessModel = [
     className: 'Input-International-Payments',
     description:
       'Approval for international payments takes extra time to process. We will reach out to you as we may require some additional information.',
-    _when: excludeFor_Indiv,
+    _when: function(activation) {
+      const { props } = activation;
+      const isInternationalSupportRolledOut =
+        props.user.isInternationalSupportRolledOut;
+
+      return isInternationalSupportRolledOut && excludeFor_Indiv(activation);
+    },
   },
   [
     {

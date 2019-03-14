@@ -71,6 +71,7 @@ export default class FlashCheckout extends Component {
 
   render() {
     let { internationalEnabled } = this.state;
+    const { user } = this.props;
 
     let display_msg = '';
     const isInternationalAllowed =

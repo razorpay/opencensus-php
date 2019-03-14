@@ -67,7 +67,9 @@ export default class CongfigurationContainer extends Component {
             {this.props.user.isOrgAllowedFunctionality('flashcheckout') && (
               <FlashCheckout />
             )}
-            <Internationalization />
+            {this.props.user.isInternationalSupportRolledOut && (
+              <Internationalization />
+            )}
             <EmailNotifications form="configForm" onSave={this.saveConfig} />
           </div>
         )}
