@@ -243,13 +243,11 @@ class P2pHelper
      */
     protected function send(P2pRequest $request): array
     {
-        // TODO: Remove Before Merging
-        info('_LOGGER_ REQUEST', $request->trace());
+        if (env('P2P_LOG_REQUESTS')) info('_LOGGER_ REQUEST', $request->trace());
 
         $response = $request->send();
 
-        // TODO: Remove Before Merging
-        info('_LOGGER_ RESPONSE', [$response->json()]);
+        if (env('P2P_LOG_REQUESTS')) info('_LOGGER_ RESPONSE', $response->json());
 
         $this->runResponseCallbacks($response);
 
