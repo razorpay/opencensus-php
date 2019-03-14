@@ -1416,8 +1416,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const HEARTBEAT_CHECK_FAILED                        = 'HEARTBEAT_CHECK_FAILED';
     const HEARTBEAT_CHECK_COMPLETED                     = 'HEARTBEAT_CHECK_COMPLETED';
     const HEARTBEAT_CHECK_TIME_CONVERSION               = 'HEARTBEAT_CHECK_TIME_CONVERSION';
-    const HEARTBEAT_DATABASE_ROUTING                    = 'HEARTBEAT_DATABASE_ROUTING';
-    const WEIGHTED_DATABASE_ROUTING                     = 'WEIGHTED_DATABASE_ROUTING';
     const DB_DATA_INTEGRITY_ERROR                       = 'DB_DATA_INTEGRITY_ERROR';
     const DB_PIVOT_TABLE_ASSOCIATION_ERROR              = 'DB_PIVOT_TABLE_ASSOCIATION_ERROR';
     const DB_READ_CONN_SETUP_ERROR                      = 'DB_READ_CONN_SETUP_ERROR';

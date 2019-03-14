@@ -148,8 +148,6 @@ class HeartbeatLagChecker implements LagChecker
 
             // perform heartbeat check
             $useSlave = $this->shouldUseSlave($readPdo);
-
-            $this->traceConnectionSelection(TraceCode::HEARTBEAT_DATABASE_ROUTING, $useSlave);
         }
         catch (\Throwable $ex)
         {
