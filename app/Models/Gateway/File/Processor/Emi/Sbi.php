@@ -321,12 +321,12 @@ class Sbi extends Base
 
     protected function getEmiAmount($amount, $annualRate, $tenureInMonths)
     {
-        // $annualRate is rate/100, say .14
+        // $annualRate is rate/100, say a
         // $monthlyRate is a/12 i.e should be treated as .14/12
         // E = P x r x (1+r)^n/((1+r)^n – 1)
         // tenure in months
 
-        $monthlyRate = $annualRate / 1200;
+        $monthlyRate = ($annualRate / 100) / 12;
 
         $expression = pow((1 + $monthlyRate), $tenureInMonths);
 
