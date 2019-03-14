@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Gateway\MethodDowntime;
+namespace RZP\Models\Payment\Downtime;
 
 use RZP\Models\Base;
 use RZP\Constants\Entity as EntityConstants;
@@ -60,7 +60,7 @@ class Entity extends Base\PublicEntity
         self::END           => null,
     ];
 
-    protected $entity = EntityConstants::METHOD_DOWNTIME;
+    protected $entity = EntityConstants::PAYMENT_DOWNTIME;
 
     protected $generateIdOnCreate = true;
 }

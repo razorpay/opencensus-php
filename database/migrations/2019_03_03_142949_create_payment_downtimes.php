@@ -1,0 +1,53 @@
+<?php
+
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+use RZP\Constants\Table;
+use RZP\Models\Payment\Downtime\Entity as PaymentDowntime;
+
+class CreatePaymentDowntimes extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create(Table::PAYMENT_DOWNTIME, function(Blueprint $table)
+        {
+            $table->engine = 'InnoDB';
+
+            $table->char(PaymentDowntime::ID, PaymentDowntime::ID_LENGTH)
+                  ->primary();
+
+            $table->string(PaymentDowntime::METHOD, 30);
+
+            $table->integer(PaymentDowntime::BEGIN);
+
+            $table->integer(PaymentDowntime::END)
+                  ->nullable();
+
+            $table->integer(PaymentDowntime::CREATED_AT);
+
+            $table->integer(PaymentDowntime::UPDATED_AT);
+
+            $table->index(PaymentDowntime::BEGIN);
+            $table->index(PaymentDowntime::END);
+            $table->index(PaymentDowntime::METHOD);
+            $table->index(PaymentDowntime::CREATED_AT);
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::drop(Table::PAYMENT_DOWNTIME);
+    }
+}

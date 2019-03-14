@@ -2457,7 +2457,7 @@ return [
 
     'testGetCardDowntimeForRupayGateways' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtime',
             'method' => 'get',
         ],
         'response' => [
@@ -2465,7 +2465,7 @@ return [
                 'entity' => 'collection',
                 'count'  => 1,
                 'items'  => [
-                    'entity'     => 'method_downtime',
+                    'entity'     => 'payment.downtime',
                     'method'     => 'card',
                     'end'        => null,
                     'instrument' => [
@@ -2478,7 +2478,7 @@ return [
 
     'testGetNoCardDowntimeForSingleRupayGateway' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtime',
             'method' => 'get',
         ],
         'response' => [
@@ -2493,7 +2493,7 @@ return [
 
     'testGetUpiDowntimeForAllGateways' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtime',
             'method' => 'get',
         ],
         'response' => [
@@ -2501,7 +2501,7 @@ return [
                 'entity' => 'collection',
                 'count'  => 1,
                 'items'  => [
-                    'entity'     => 'method_downtime',
+                    'entity'     => 'payment.downtime',
                     'method'     => 'upi',
                     'end'        => null,
                     'instrument' => [
@@ -2513,7 +2513,7 @@ return [
 
     'testGetUpiDowntimeForIndividualGateways' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtime',
             'method' => 'get',
         ],
         'response' => [
@@ -2521,7 +2521,7 @@ return [
                 'entity' => 'collection',
                 'count'  => 1,
                 'items'  => [
-                    'entity'     => 'method_downtime',
+                    'entity'     => 'payment.downtime',
                     'method'     => 'upi',
                     'end'        => null,
                     'instrument' => [
@@ -2533,7 +2533,7 @@ return [
 
     'testGetWalletDowntime' => [
         'request' => [
-            'url' => '/methods/downtimes',
+            'url' => '/payments/downtime',
             'method' => 'get',
         ],
         'response' => [
@@ -2541,7 +2541,7 @@ return [
                 'entity' => 'collection',
                 'count'  => 1,
                 'items'  => [
-                    'entity'     => 'method_downtime',
+                    'entity'     => 'payment.downtime',
                     'method'     => 'wallet',
                     'end'        => null,
                     'instrument' => [

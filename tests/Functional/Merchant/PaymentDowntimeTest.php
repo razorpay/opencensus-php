@@ -8,7 +8,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Payment\Gateway;
 
-class MerchantMethodDowntimeTest extends TestCase
+class PaymentDowntimeTest extends TestCase
 {
     use PaymentTrait;
 
@@ -20,7 +20,7 @@ class MerchantMethodDowntimeTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $this->markTestSkipped('no code, lol');
+        // $this->markTestSkipped('no code, lol');
     }
 
     public function testGetCardDowntimeForRupayGateways()
