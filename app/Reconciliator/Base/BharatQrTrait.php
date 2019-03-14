@@ -48,7 +48,6 @@ trait BharatQrTrait
                 'info_code'      => InfoCode::PAYMENT_ABSENT,
                 'message'        => 'Unexpected Bharat Qr Payment',
                 'bank_reference' => $merchantReference,
-                'row'            => $row,
                 'gateway'        => $this->gateway
             ]);
     }

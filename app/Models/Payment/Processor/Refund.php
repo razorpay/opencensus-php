@@ -109,14 +109,6 @@ trait Refund
         }
     }
 
-    public function createRefundOnApiFromRecon(
-        Payment\Entity $payment,
-        string $refundId,
-        int $refundAmount)
-    {
-        $this->createRefundOnApiSeparately($payment, $refundId, $refundAmount);
-    }
-
     public function createRefundFromMerchantFile(Payment\Entity $payment, array $input, Batch\Entity $batch = null)
     {
         return $this->refund($payment, $input, $batch);
