@@ -1326,6 +1326,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_ACCOUNT_VALIDATION_CREATE_TRANSACTION            = 'FUND_ACCOUNT_VALIDATION_CREATE_TRANSACTION';
     const FUND_ACCOUNT_VALIDATION_TRANSACTION_FAILED            = 'FUND_ACCOUNT_VALIDATION_TRANSACTION_FAILED';
     const FUND_TRANSFER_ATTEMPT_STILL_INITIATED                 = 'FUND_TRANSFER_ATTEMPT_STILL_INITIATED';
+    const FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR    = 'FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR';
 
     // Trace codes for Post FTA Processing
     const UPDATE_STATUS_AFTER_FTA_RECON                         = 'UPDATE_STATUS_AFTER_FTA_RECON';
@@ -1627,6 +1628,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const COMMISSION_NOT_APPLICABLE_INVALID_FEE_MODEL           = 'COMMISSION_NOT_APPLICABLE_INVALID_FEE_MODEL';
     const COMMISSION_NOT_APPLICABLE_INVALID_FEE_BEARER          = 'COMMISSION_NOT_APPLICABLE_INVALID_FEE_BEARER';
     const COMMISSION_NOT_APPLICABLE_CONFIG_NOT_DEFINED          = 'COMMISSION_NOT_APPLICABLE_CONFIG_NOT_DEFINED';
+    const COMMISSION_ZERO_PARTNER_FEES                          = 'COMMISSION_ZERO_PARTNER_FEES';
 
     // redirect to authorize trace code
     const PAYMENT_CREATED_IN_REDIRECT_TO_AUTHORIZE_FLOW         = 'PAYMENT_CREATED_IN_REDIRECT_TO_AUTHORIZE_FLOW';
@@ -1693,6 +1695,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VAULT_TOKEN_ERROR                                     = 'VAULT_TOKEN_ERROR';
     const VAULT_TOKEN_CREATE_INIT                               = 'VAULT_TOKEN_CREATE_INIT';
     const VAULT_TOKEN_CREATE_COMPLETE                           = 'VAULT_TOKEN_CREATE_COMPLETE';
+
+    const ORG_MAILER_BLOCKED                                    = 'ORG_MAILER_BLOCKED';
+    const NO_MERCHANT_CONTEXT_MAIL                              = 'NO_MERCHANT_CONTEXT_MAIL';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                               => 'Request for new payment received',
@@ -1854,7 +1859,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
         self::BIN_ISSUER_VALIDATION_FAILED                      => 'Bin Issuer Validation Failed',
 
-        self::EMANDATE_RECON_ROW_FAILED                         => 'E-mandate reconciliation failed for a row'
+        self::EMANDATE_RECON_ROW_FAILED                         => 'E-mandate reconciliation failed for a row',
+        self::FUND_ACCOUNT_VALIDATION_TRANSACTION_FAILED        => 'Transaction failed to create for Fund Account validation',
+
+        self::FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR  => 'Fund Account Validation Failed due to critical reasons. We should retry.',
     ];
 
     /**

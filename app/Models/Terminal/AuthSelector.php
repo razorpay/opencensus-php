@@ -128,7 +128,7 @@ class AuthSelector extends Base\Core
             return ($rule->isSorter() === true);
         });
 
-        $sorterRules = $sorterRules->groupAuthRuleBySpecificityScore();
+        $sorterRules = $sorterRules->groupBySpecificityScore();
 
         return $sorterRules;
     }

@@ -64,6 +64,9 @@ class CreateIins extends Migration
             $table->tinyInteger(IIN\Entity::LOCKED)
                   ->default(0);
 
+            $table->tinyInteger(IIN\Entity::RECURRING)
+                  ->default(0);
+
             $table->index(IIN\Entity::OTP_READ);
             $table->index(IIN\Entity::EMI);
             $table->index(IIN\Entity::CREATED_AT);

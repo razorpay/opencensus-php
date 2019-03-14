@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Webhook;
 use RZP\Jobs;
 use RZP\Models;
 use RZP\Exception;
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Webhook;
@@ -85,11 +86,15 @@ class Core extends Base\Core
         String $event,
         Webhook\Entity $webhook) : array
     {
+        $signedAccountId = Merchant\Account\Entity::getSignedId($merchant->getId());
+
         $attributes = [
             Models\Event\Entity::EVENT      => $event,
-            Models\Event\Entity::ACCOUNT_ID => $merchant->getId(),
+            Models\Event\Entity::ACCOUNT_ID => $signedAccountId,
             Models\Event\Entity::CONTAINS   => array_keys($payload),
+            Models\Event\Entity::CREATED_AT => Carbon::now()->getTimestamp(),
         ];
+
         $event = new Models\Event\Entity($attributes);
 
         $event->setPayload($payload);
@@ -99,7 +104,7 @@ class Core extends Base\Core
         $data = [
             'mode'       => $this->app['rzp.mode'],
             'event'      => json_encode($event->toArrayPublic()),
-            'event_name' => $event,
+            'event_name' => $event->event,
             'webhook_id' => $webhook->getId()
         ];
 

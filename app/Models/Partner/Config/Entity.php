@@ -66,7 +66,7 @@ class Entity extends PublicEntity
     protected $defaults = [
         self::COMMISSIONS_ENABLED    => 0,
         self::EXPLICIT_REFUND_FEES   => 0,
-        self::EXPLICIT_SHOULD_CHARGE => 1,
+        self::EXPLICIT_SHOULD_CHARGE => 0,
     ];
 
     protected $casts = [

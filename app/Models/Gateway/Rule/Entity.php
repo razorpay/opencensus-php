@@ -133,7 +133,6 @@ class Entity extends Base\PublicEntity
         self::GROUP,
         self::NETWORK,
         self::ISSUER,
-        self::AUTHENTICATION_GATEWAY,
     ];
 
     /**
@@ -582,37 +581,14 @@ class Entity extends Base\PublicEntity
     {
         $totalScore = 0;
 
-        foreach (self::ATTRIBUTE_SCORES as $attr => $score)
-        {
-            //
-            // For certain attributes (iins, min / max amount) we need to do some
-            // special handling to get the score. In such cases we call the special
-            // method if defined.
-            //
-            $func = 'getScoreFor' . studly_case($attr);
+        $attributes = self::ATTRIBUTE_SCORES;
 
-            if (method_exists($this, $func) === true)
-            {
-                $totalScore += $this->$func();
-            }
-            //
-            // If the attribute value is not null, we add up the score of that
-            // attribute to the total score.
-            //
-            else if ($this->isAttributeNotNull($attr) === true)
-            {
-                $totalScore += $score;
-            }
+        if ($this->getStep() === self::AUTHENTICATION)
+        {
+            $attributes = self::AUTHENTICATION_ATTRIBUTE_SCORES;
         }
 
-        return $totalScore;
-    }
-
-    public function calculateSpecificityScoreForAuthTerminals() : int
-    {
-       $totalScore = 0;
-
-       foreach (self::AUTHENTICATION_ATTRIBUTE_SCORES as $attr => $score)
+        foreach ($attributes as $attr => $score)
         {
             //
             // For certain attributes (iins, min / max amount) we need to do some
@@ -678,7 +654,7 @@ class Entity extends Base\PublicEntity
     {
         foreach (self::AUTHENTICATION_COMPARISION_ATTRIBUTES as $key)
         {
-           if ((in_array($key, self::AUTHENTICATION_NULLABLE_ATTRIBUTES, true) === true) and
+            if ((in_array($key, self::AUTHENTICATION_NULLABLE_ATTRIBUTES, true) === true) and
                 ($this->isAttributeNull($key) === true))
             {
                 continue;
@@ -695,11 +671,6 @@ class Entity extends Base\PublicEntity
 
     protected function comapreAuthTerminal($key, $terminal, $payment)
     {
-        if (empty($terminal[$key]) === true)
-        {
-            return true;
-        }
-
         return ($this->getAttribute($key) === $terminal[$key]);
     }
 

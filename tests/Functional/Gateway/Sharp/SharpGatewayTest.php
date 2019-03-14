@@ -23,6 +23,18 @@ class SharpGatewayTest extends TestCase
 
         $this->gateway = 'sharp';
 
+        $this->fixtures->create('iin',
+            [
+                'iin'           => '400666',
+                'category'      => 'STANDARD',
+                'network'       => 'MasterCard',
+                'type'          => 'credit',
+                'country'       => 'IN',
+                'issuer_name'   => 'STATE BANK OF INDI',
+                'issuer'        => 'SBIN',
+                'recurring'     => '1'
+            ]);
+
         $this->mockCardVault();
     }
 

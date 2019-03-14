@@ -543,7 +543,7 @@ class Gateway
             self::GO_LIVE_TIMESTAMP => 1550838065
         ],
         Payment\Gateway::WALLET_JIOMONEY   => [
-            self::GO_LIVE_TIMESTAMP => 1552303029
+            self::GO_LIVE_TIMESTAMP => 1552398662
         ]
     ];
 
@@ -559,6 +559,12 @@ class Gateway
         'BbaYzzPW541Aut',
         '80oXBj51MHGmwH',
         '94tLpgbojcR85O',
+        'C1fjEduvEkBUEK',
+        'C1fmOZYiZiezoD',
+        'C1fnUMHBmitlPB',
+        'C1fo6ARXco94tP',
+        'C1fp6DAnDH4YUz',
+        'C1fq8jgl8NRKnh',
     ];
 
     public static $channels = [

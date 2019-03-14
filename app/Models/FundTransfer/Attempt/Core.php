@@ -321,16 +321,34 @@ class Core extends Base\Core
         {
             (new Validator)->validateInput('fts_status_update', $input);
 
-            $fta = $this->repo->fund_transfer_attempt->getAttemptByFTSTransferId($input['fund_transfer_id']);
+            $input[Entity::STATUS] = strtolower($input[Entity::STATUS]);
 
-            if(empty($input['utr']) === false)
+            $fta = $this->repo->fund_transfer_attempt->getAttemptByFTSTransferId($input[Entity::FUND_TRANSFER_ID]);
+
+            if($fta === null)
             {
-                $fta->setUtr($input['utr']);
+                $fta = $this->repo->fund_transfer_attempt->getAttemptBySourceId($input[Entity::SOURCE_ID]);
+
+                $fta->setFTSTransferId($input[Entity::FUND_TRANSFER_ID]);
+            }
+
+            if(empty($input[Entity::UTR]) === false)
+            {
+                $fta->setUtr($input[Entity::UTR]);
             }
 
             $fta->fill($input);
 
-            $this->repo->saveOrFail($fta);
+            $fta->source->setFTSTransferId($input[Entity::FUND_TRANSFER_ID]);
+
+            $fta->source->fill($input);
+
+            $this->repo->transaction(function() use ($fta){
+
+                $this->repo->fund_transfer_attempt->saveOrFail($fta);
+
+                $this->repo->saveOrFail($fta->source);
+            });
         }
         catch (\Throwable $e)
         {

@@ -12,16 +12,38 @@ return [
             'url' => '/iins',
             'method' => 'post',
             'content' => [
-                'iin' => 112333,
-                'network' => 'RuPay',
-                'type' => 'debit',
+                'iin'       => 112333,
+                'network'   => 'RuPay',
+                'type'      => 'debit',
             ],
         ],
         'response' => [
             'content' => [
-                'iin' => 112333,
-                'network' => 'RuPay',
-                'type' => 'debit',
+                'iin'       => 112333,
+                'network'   => 'RuPay',
+                'type'      => 'debit',
+                'recurring' => false,
+            ],
+        ],
+    ],
+
+    'testAddIinWithRecurring' => [
+        'request' => [
+            'url' => '/iins',
+            'method' => 'post',
+            'content' => [
+                'iin'       => 112333,
+                'network'   => 'RuPay',
+                'type'      => 'debit',
+                'recurring' => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'iin'       => 112333,
+                'network'   => 'RuPay',
+                'type'      => 'debit',
+                'recurring' => true,
             ],
         ],
     ],
@@ -36,8 +58,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'pin' => true,
-                'otp' => true,
+                'pin'       => true,
+                'otp'       => true,
+                'recurring' => false,
             ],
         ],
     ],
@@ -121,6 +144,7 @@ return [
                 'issuer_name'    => 'HDFC',
                 'emi'            => true,
                 'message_type'   => 'SMS',
+                'recurring'      => false,
             ],
         ],
     ],
@@ -166,7 +190,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 23,
+                'count' => 27,
                 'items' => [
                     [
                     ]

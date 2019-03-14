@@ -132,6 +132,7 @@ class Validator extends Base\Validator
         }
     }
 
+
     /**
      * Validates attribute for edit operation. Note that in edit we allow making of times_payable equal to number of
      * times_paid already and while doing so payment link goes to inactive status.

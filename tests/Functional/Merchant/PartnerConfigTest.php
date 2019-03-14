@@ -249,7 +249,6 @@ class PartnerConfigTest extends OAuthTestCase
                 'implicit_plan_id'       => '10ZeroPricingP',
                 'explicit_plan_id'       => '10ZeroPricingP',
                 'explicit_refund_fees'   => 1,
-                'explicit_should_charge' => 1,
             ]
         );
 

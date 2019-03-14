@@ -49,11 +49,9 @@ class Service extends Base\Service
             return [$responseKey => false];
         }
 
-        $recurring = (new Card\Entity)->isRecurringSupportedOnNetworkAndIssuerAndType(
+        $recurring = (new Card\Entity)->isRecurringSupportedOnIIN(
                                             $this->merchant,
-                                            $iinEntity->getNetworkCode(),
-                                            $iinEntity->getIssuer(),
-                                            $iinEntity->getType());
+                                            $iinEntity);
 
         return [$responseKey => $recurring];
     }

@@ -253,6 +253,7 @@ class Validator extends Base\Validator
     protected static $payoutTypeRowRules = [
         Header::RAZORPAYX_ACCOUNT_NUMBER    => 'required|string',
         Header::PAYOUT_PURPOSE              => 'required|string|max:30|alpha_dash',
+        Header::PAYOUT_NARRATION            => 'sometimes|nullable|string|max:30|alpha_space_num',
         Header::PAYOUT_AMOUNT               => 'required|integer|min:100|max:500000000',
         Header::PAYOUT_CURRENCY             => 'required|size:3|in:INR',
         Header::PAYOUT_MODE                 => 'sometimes|nullable|string',

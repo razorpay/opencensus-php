@@ -217,7 +217,6 @@ trait Capture
                     'payment_id' => $this->payment->getId(),
                 ]);
 
-
             return $this->mutex->acquireAndRelease(
                 $this->payment->getId(),
                 function() use ($data)
@@ -432,6 +431,14 @@ trait Capture
         }
         catch (\Throwable $ex)
         {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::PAYMENT_CAPTURE_FAILURE_EXCEPTION,
+                [
+                    'gateway'       => $data['payment']['gateway'],
+                ]);
+
             $this->handleExceptionOnCapture($data, $ex);
         }
     }

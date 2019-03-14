@@ -16,6 +16,8 @@ class Url
 
     const VERIFY            = '/WebPaymentS2S/Merchant/checkstatusV3';
 
+    const VERIFY_REFUND     = '/Merchant/OfflineRefund/status';
+
     const REFUND            = '/WebPaymentS2S/Merchant/refund';
 
     const PAY               = '/WebPaymentS2S/Merchant/MerchRefid';

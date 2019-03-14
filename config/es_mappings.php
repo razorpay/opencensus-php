@@ -196,6 +196,9 @@ return [
 
     'commission_mapping'      => [
         'properties' => [
+            'type' => [
+                'type' => 'keyword',
+            ],
             'partner_id' => [
                 'type' => 'keyword',
             ],

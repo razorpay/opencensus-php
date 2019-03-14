@@ -113,4 +113,12 @@ class CalculatorTest extends OAuthTestCase
     {
         $this->ruleEngine->execute(__FUNCTION__);
     }
+
+    /**
+     * Asserts that the calculator does not calculate implicit variable commission if the pricing rule is missing.
+     */
+    public function testMissingPartnerPricingRule()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
 }

@@ -383,7 +383,7 @@ return [
                 'implicit_plan_id'       => null,
                 'explicit_plan_id'       => null,
                 'explicit_refund_fees'   => true,
-                'explicit_should_charge' => true,
+                'explicit_should_charge' => false,
             ],
         ],
     ],

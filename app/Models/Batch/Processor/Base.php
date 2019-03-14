@@ -111,6 +111,8 @@ class Base extends BaseModel\Core
         $this->batch            = $batch;
         $this->merchant         = $batch->merchant;
         $this->settingsAccessor = Settings\Accessor::for($this->batch, Settings\Module::BATCH);
+
+        $this->app['basicauth']->setMerchant($this->merchant);
     }
 
     public function setParams(array $params = null)

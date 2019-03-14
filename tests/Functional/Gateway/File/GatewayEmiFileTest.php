@@ -239,7 +239,10 @@ class GatewayEmiFileTest extends TestCase
 
         Queue::fake();
 
-        $merchantId = $this->fixtures->create('merchant_detail:valid_fields')['merchant_id'];
+        $merchantId = $this->fixtures->create(
+            'merchant_detail:valid_fields',
+            ['business_name' => 'A long merchant name which is greater than forty characters']
+        )['merchant_id'];
         $this->fixtures->create('terminal:shared_hitachi_terminal');
 
         $this->fixtures->create('gateway_rule', [

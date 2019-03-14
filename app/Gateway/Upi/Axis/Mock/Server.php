@@ -170,6 +170,39 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($response, Action::VERIFY);
     }
 
+    public function verifyRefund($input)
+    {
+        parent::verifyRefund($input);
+
+        $input = $this->parseInput($input, Action::VERIFY);
+
+        $this->request($input, $this->action);
+
+        $app = App::getFacadeRoot();
+
+        $paymentId = $input['unqTxnId'];
+
+        $payment = $app['repo']->payment->find($paymentId);
+
+        $response = $this->getDefaultVerifyRefundResponse($input, $payment);
+
+        $this->content($response,'verify_refund');
+
+        return $this->makeResponse($response, Action::VERIFY);
+    }
+
+    protected function getDefaultVerifyRefundResponse(array $input, $payment): array
+    {
+        return [
+            Fields::CODE => "000",
+            Fields::RESULT => "REFUND REQUEST SUCCESSFUL",
+            Fields::DATA => [
+                Fields::VERIFY_REFUND_ORDER_ID => $payment['id'],
+                Fields::TXN_REFUND_ID => $input['txnRefundId']
+            ]
+        ];
+    }
+
     protected function getDefaultVerifyResponse(array $input, $payment): array
     {
         return [

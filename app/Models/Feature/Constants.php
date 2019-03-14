@@ -166,9 +166,19 @@ class Constants
      */
     const INVOICE_NO_EXPIRY_EMAIL       = 'invoice_no_expiry_email';
 
+    /**
+     * For RBL we have added this feature so that we can mandate expire by for their invoices.
+     */
+    const INVOICE_EXPIRE_BY_REQD        = 'invoice_expire_by_reqd';
+
     // Different actions for feature activation flow
     const CREATE           = 'create';
     const UPDATE           = 'update';
+
+    // Feature base email block
+    const SELF_KYC_DISABLED      = 'self_kyc_disabled';
+    const PAYMENT_MAILS_DISABLED = 'payment_mails_disabled';
+    const DISPUTE_MAILS_DISABLED = 'dispute_mails_disabled';
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -311,6 +321,10 @@ class Constants
         self::TOKEN_BANK_DETAILS              => true,
         self::INVOICE_RECEIPT_MANDATORY       => true,
         self::INVOICE_NO_EXPIRY_EMAIL         => true,
+        self::INVOICE_EXPIRE_BY_REQD          => true,
+        self::SELF_KYC_DISABLED               => true,
+        self::PAYMENT_MAILS_DISABLED          => true,
+        self::DISPUTE_MAILS_DISABLED          => true,
     ];
 
     // Entity type constants
@@ -403,6 +417,11 @@ class Constants
         self::INVOICE_RECEIPT_MANDATORY => [
             'feature'       => self::INVOICE_RECEIPT_MANDATORY,
             'display_name'  => 'Mandatory invoice receipt field',
+            'documentation' => '',
+        ],
+        self::INVOICE_EXPIRE_BY_REQD    => [
+            'feature'       => self::INVOICE_EXPIRE_BY_REQD,
+            'display_name'  => 'Mandatory invoice expire_by field',
             'documentation' => '',
         ],
     ];

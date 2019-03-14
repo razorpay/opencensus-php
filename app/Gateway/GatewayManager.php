@@ -8,7 +8,6 @@ use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Constants\Entity;
 use RZP\Models\Payment\Entity as PaymentEntity;
-use RZP\Models\Admin\ConfigKey;
 use RZP\Gateway\Base\Mock;
 
 class GatewayManager extends \Illuminate\Support\Manager
@@ -50,7 +49,9 @@ class GatewayManager extends \Illuminate\Support\Manager
 
             // This checks if the current request has to be routed
             // to core payment service or not
-            if ($this->shouldRouteToCps($input) === true)
+            if ((is_array($input) === true) and
+                (isset($input['cps_route']) === true) and
+                ($input['cps_route'] === true))
             {
                 $response = $this->app['cps']->action($gatewayName, $action, $input);
             }
@@ -120,24 +121,6 @@ class GatewayManager extends \Illuminate\Support\Manager
         $gateway->setMock($mock);
 
         return $gateway;
-    }
-
-    protected function shouldRouteToCps($input): bool
-    {
-        /**
-         * This checks if the current request has to be routed to
-         * core payment service or not. We are setting this flag(`cps_route`)
-         * for new payments based on variant returned by RazorX.
-         */
-        if (((bool) ConfigKey::get(ConfigKey::CPS_SERVICE_ENABLED, false) === true) and
-            (is_array($input) === true) and
-            (isset($input[Entity::PAYMENT]) === true) and
-            ($input[Entity::PAYMENT][PaymentEntity::CPS_ROUTE] === true))
-        {
-            return true;
-        }
-
-        return false;
     }
 
     protected function isMock($driver)
