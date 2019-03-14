@@ -199,6 +199,42 @@ class Gateway extends Base\Gateway
         }
     }
 
+    public function otpGenerate(array $input)
+    {
+        if ((isset($input['otp_resend']) === true) and
+            ($input['otp_resend'] === true))
+        {
+            return $this->otpResend($input);
+        }
+
+        return $this->authorize($input);
+    }
+
+    public function otpResend(array $input)
+    {
+        parent::action($input, Base\Action::OTP_RESEND);
+
+        $mpiEntity = $this->app['repo']
+                          ->mpi
+                          ->findByPaymentIdAndActionOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
+
+        if ($mpiEntity->getGateway() !== Payment\Gateway::MPI_ENSTAGE)
+        {
+            //
+            // This error is consistent with error thrown in otpResend trait
+            throw new Exception\LogicException(
+                'Gateway does not support OTP resend',
+                null,
+                ['payment_id' => $input['payment']['id']]);
+        }
+
+        $authenticationGateway = $mpiEntity->getGateway();
+
+        $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
+
+        return $authResponse;
+    }
+
     public function capture(array $input)
     {
         parent::action($input, Action::CAPTURE);
