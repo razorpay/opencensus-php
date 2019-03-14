@@ -5,6 +5,7 @@ namespace RZP\Models\Payout;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Pricing;
 use RZP\Services\Mutex;
 use RZP\Models\Customer;
 use RZP\Models\Reversal;
@@ -14,6 +15,7 @@ use RZP\Trace\TraceCode;
 use RZP\Jobs\FundTransfer;
 use RZP\Models\Settlement;
 use RZP\Models\FundAccount;
+use RZP\Jobs\QueuedPayouts;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
@@ -29,8 +31,6 @@ use RZP\Models\FundTransfer\Attempt;
  */
 class Core extends Base\Core
 {
-    const PAYOUT_RETRY                      = 'payout_retry_%s';
-
     const MUTEX_RESOURCE                    = 'PAYOUT_PROCESSING_%s_%s';
 
     const CUSTOMER_WALLET_MUTEX_RESOURCE    = 'CUSTOMER_WALLET_PAYOUT_%s_%s_%s';
@@ -234,7 +234,7 @@ class Core extends Base\Core
                 'payout' => $payout->toArray(),
             ]);
 
-        (new Validator)->validateRetryPayout($payout);
+        $payout->getValidator()->validateRetryPayout();
 
         if ($payout->hasFundAccount() === true)
         {
@@ -311,6 +311,95 @@ class Core extends Base\Core
         $payout->setFailureReason($failureReason);
 
         $this->repo->saveOrFail($payout);
+    }
+
+    public function processDispatchForQueuedPayouts(Base\PublicCollection $queuedPayouts)
+    {
+        $grouped = $queuedPayouts->groupBy(Entity::BALANCE_ID);
+
+        foreach ($grouped as $balance => $payouts)
+        {
+            // We get balance via payout since we would have already fetched balance entity
+            // when fetching the payouts list. Avoiding an extra DB query here by doing this.
+            $balance = $payouts->first()->balance;
+
+            $remainingBalance = $balance->getBalance();
+
+            $this->dispatchApplicablePayouts($remainingBalance, $payouts);
+        }
+    }
+
+    public function processQueuedPayout(string $payoutId): Entity
+    {
+        return $this->mutex->acquireAndRelease(
+                $payoutId,
+                function() use ($payoutId)
+                {
+                    /** @var Entity $payout */
+                    $payout = $this->repo->payout->findOrFail($payoutId);
+
+                    $payout->getValidator()->validateProcessingQueuedPayout();
+
+                    return $this->getProcessor('fund_account_payout')
+                                ->setMerchant($payout->merchant)
+                                ->processQueuedPayout($payout);
+                },
+                self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+    }
+
+    protected function dispatchApplicablePayouts(int $totalBalance, Base\PublicCollection $payouts)
+    {
+        foreach ($payouts as $payout)
+        {
+            $payoutAmount = $payout->getAmount();
+
+            // We have to explicitly calculate fees here since if it's queued, transaction wouldn't
+            // have been created and hence the fees also wouldn't have been calculated.
+            list($payoutFees, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payout);
+
+            $totalPayoutAmount = $payoutAmount + $payoutFees;
+
+            if ($totalBalance < $totalPayoutAmount)
+            {
+                continue;
+            }
+
+            $totalBalance -= $totalPayoutAmount;
+
+            $this->dispatchQueuedPayout($payout, $payoutFees, $totalBalance);
+         }
+    }
+
+    protected function dispatchQueuedPayout(Entity $payout, int $fees, int $currentBalance)
+    {
+        $payoutId = $payout->getId();
+
+        $traceInfo = [
+            'payout_id'         => $payoutId,
+            'amount'            => $payout->getAmount(),
+            'fees'              => $fees,
+            'current_balance'   => $currentBalance,
+        ];
+
+        try
+        {
+            $this->trace->info(TraceCode::PAYOUT_QUEUE_DISPATCH_INIT, $traceInfo);
+
+            QueuedPayouts::dispatch($this->mode, $payoutId);
+
+            $this->trace->info(TraceCode::PAYOUT_QUEUE_DISPATCH_COMPLETE, $traceInfo);
+        }
+        catch (\Throwable $e)
+        {
+            $data = $traceInfo + [ 'message' => $e->getMessage() ];
+
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYOUT_QUEUE_DISPATCH_FAILED,
+                $data);
+        }
     }
 
     protected function getRetryPayoutInputForMerchant(Entity $payout): array

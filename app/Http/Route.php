@@ -709,7 +709,7 @@ final class Route
         'payout_purpose_get'                       => ['get',      'payouts/purposes',                               'PayoutController@getPurposes'                                      ],
         'payout_purpose_post'                      => ['post',     'payouts/purposes',                               'PayoutController@postPurpose'                                      ],
         'payout_fetch_reversals'                   => ['get',      'payouts/{id}/reversals',                         'PayoutController@getPayoutReversal'                                ],
-        'payouts_process_queued'                   => ['post',     'payouts/process/queued',                         'PayoutController@processQueuedPayouts'                             ],
+        'payouts_process_queued'                   => ['post',     'payouts/process/queued',                         'PayoutController@processDispatchForQueuedPayouts'                  ],
         'transfer_fetch'                           => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
         'transfer_fetch_multiple'                  => ['get',      'transfers/',                                     'TransferController@getTransfers'                                   ],
 

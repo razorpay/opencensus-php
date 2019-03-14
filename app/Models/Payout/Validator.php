@@ -204,8 +204,11 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateRetryPayout(Entity $payout)
+    public function validateRetryPayout()
     {
+        /** @var Entity $payout */
+        $payout = $this->entity;
+
         if ($payout->hasPayment() === true)
         {
             throw new Exception\BadRequestException(
@@ -227,6 +230,40 @@ class Validator extends Base\Validator
                 [
                     'payout_id'     => $payout->getId(),
                     'payout_status' => $payoutStatus,
+                ]);
+        }
+    }
+
+    public function validateProcessingQueuedPayout()
+    {
+        /** @var Entity $payout */
+        $payout = $this->entity;
+
+        // Already processed by another queue job due to overlap of cron runs.
+        if ($payout->isStatusQueued() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_NOT_QUEUED_STATUS,
+                [
+                    'payout_id' => $payout->getId(),
+                    'status'    => $payout->getStatus(),
+                ]);
+        }
+
+        // Currently, we support queued concept only for Fund Account type and for RX
+        // If we are supporting for others, the processor call needs to be fixed in Core.
+        if (($payout->hasFundAccount() === false) or
+            ($payout->hasCustomer() === true) or
+            ($payout->balance->isTypeBanking() === false))
+        {
+            throw new Exception\LogicException(
+                'Payout is not of RX or not a proper fund_account type',
+                null,
+                [
+                    'payout_id'         => $payout->getId(),
+                    'balance_type'      => $payout->balance->getType(),
+                    'fund_account_id'   => $payout->getFundAccountId(),
+                    'customer_id'       => $payout->getCustomerId(),
                 ]);
         }
     }

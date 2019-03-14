@@ -20,20 +20,61 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->with('destination')
-                    ->where(Entity::CREATED_AT, '<', $timestamp)
-                    ->where(Entity::STATUS, '=', Status::CREATED)
+                    ->status(Status::CREATED)
                     ->where(Entity::METHOD, '=', $method)
+                    ->createdAtLessThan($timestamp)
                     ->orderBy(Entity::ID)
                     ->get();
+    }
+
+    public function fetchReversedPayouts(array $ids)
+    {
+        return $this->newQuery()
+                    ->with(['destination', 'fundAccount.account'])
+                    ->whereIn(Entity::ID, $ids)
+                    ->status(Status::REVERSED)
+                    ->get();
+    }
+
+    public function fetchQueuedPayouts(array $merchantIdsWhitelist,
+                                       array $merchantIdsBlacklist,
+                                       int $from = null,
+                                       int $to = null)
+    {
+        $query = $this->newQuery()
+                      ->with('balance')
+                      // TODO: Fix this before merging!
+                      ->status(Status::CREATED);
+
+        if (empty ($merchantIdsWhitelist) === false)
+        {
+            $query->whereIn(Entity::MERCHANT_ID, $merchantIdsWhitelist);
+        }
+
+        if (empty($merchantIdsBlacklist) === false)
+        {
+            $query->whereNotIn(Entity::MERCHANT_ID, $merchantIdsBlacklist);
+        }
+
+        if (empty($from) === false)
+        {
+            $query->where(Entity::CREATED_AT, '>', $from);
+        }
+
+        if (empty($to) === false)
+        {
+            $query->where(Entity::CREATED_AT, '<', $to);
+        }
+
+        return $query->get();
     }
 
     public function fetchPayoutsWithUtrNotNull($from, $to, $merchantId)
     {
         return $this->newQuery()
-                    ->where(Entity::CREATED_AT, '>', $from)
-                    ->where(Entity::CREATED_AT, '<', $to)
+                    ->betweenTime($from, $to)
                     ->whereNotNull(Entity::UTR)
-                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->merchantId(Entity::MERCHANT_ID, '=', $merchantId)
                     ->get();
     }
 
@@ -96,15 +137,6 @@ class Repository extends Base\Repository
         $mappedStatuses = Status::getInternalStatusFromPublicStatus($publicStatus);
 
         $query->whereIn($statusColumn, $mappedStatuses);
-    }
-
-    public function fetchReversedPayouts(array $ids)
-    {
-        return $this->newQuery()
-                    ->with(['destination', 'fundAccount.account'])
-                    ->whereIn(Entity::ID, $ids)
-                    ->where(Entity::STATUS, Status::REVERSED)
-                    ->get();
     }
 
     /**

@@ -147,25 +147,21 @@ class Service extends Base\Service
         return $reversals->toArrayPublic();
     }
 
-    public function processQueuedPayouts(array $input)
+    public function processDispatchForQueuedPayouts(array $input)
     {
-        //
-        // TODO: -> Set up a cron route to pick up all queued payouts: group by 1000
-        // -> Group by merchant ID and dispatch them in a queue. This is to avoid race conditions on balance.
-        // -> In this queue job, if there are more than 20, group them and dispatch them again
-        // -> Take a lock on merchant_id while processing each payout.
-        //    If lock is taken, wait for release and retry again.
-        // -> Also take a lock on payout_id while processing each payout. If lock is taken,
-        //    move ahead to the next payout. Do not retry again.
-        // -> Before starting processing on a payout, ensure you reload, to ensure that the
-        //    payout has not been processed already and is in queued status only.
-        //
-        // -> As part of processing, create an FTA entity and a TXN entity. If either of them fail due to any reason,
-        //    trace it as critical error and keep it in queued state only.
-        // -> Add some logic beforehand to see what all payouts of the merchant can be processed.
-        //    Do this at merchant grouping step itself. This way, number of failures due to insufficient balance should
-        //    reduce considerably.
-        //
+        $merchantIdsWhitelist = $input['merchant_ids'] ?? [];
+        $merchantIdsBlacklist = $input['merchant_ids_not'] ?? [];
+        $from = $input['from'] ?? null;
+        $to = $input['to'] ?? null;
+
+        $queuedPayouts = $this->repo->payout->fetchQueuedPayouts($merchantIdsWhitelist,
+                                                                 $merchantIdsBlacklist,
+                                                                 $from,
+                                                                 $to);
+
+        $summary = $this->core->processDispatchForQueuedPayouts($queuedPayouts);
+
+        return $summary;
     }
 
     /**

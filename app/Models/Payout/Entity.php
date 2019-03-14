@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\User;
+use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
@@ -990,6 +991,11 @@ class Entity extends Base\PublicEntity
         $this->removeRecursiveRelation();
 
         return parent::toArray();
+    }
+
+    public function scopeStatus(BuilderEx $query, string $status)
+    {
+        $query->where(Entity::STATUS, $status);
     }
 
     /**

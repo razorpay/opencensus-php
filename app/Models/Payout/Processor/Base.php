@@ -125,6 +125,31 @@ abstract class Base extends BaseCore
         return $payout;
     }
 
+    public function processQueuedPayout(Payout\Entity $payout): Payout\Entity
+    {
+        return $this->repo->transaction(
+                function () use ($payout)
+                {
+                    // Create merchant/customer transactions and link it to payout.
+                    $this->createTxns($payout);
+
+                    // Create a fund transfer entity where the fund transfers will be processed.
+                    $this->createFundTransferAttemptEntity($payout);
+
+                    $this->repo->saveOrFail($payout);
+
+                    $this->trace->info(
+                        TraceCode::QUEUED_PAYOUT_CREATED,
+                        [
+                            'payout_id'      => $payout->getId(),
+                            'transaction_id' => $payout->getTransactionId(),
+                            'payout_status'  => $payout->getStatus(),
+                        ]);
+
+                    return $payout;
+                });
+    }
+
     /**
      * Set the merchant context, always required.
      *
@@ -155,7 +180,7 @@ abstract class Base extends BaseCore
         return $this;
     }
 
-    public function fetchAndAssociatePayoutAccount(Payout\Entity $payout, array $input)
+    protected function fetchAndAssociatePayoutAccount(Payout\Entity $payout, array $input)
     {
         $fundAccountId = $input[Payout\Entity::FUND_ACCOUNT_ID];
 
