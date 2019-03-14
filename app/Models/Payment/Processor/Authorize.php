@@ -253,23 +253,6 @@ trait Authorize
 
                 break;
             }
-            catch (Exception\GatewayRequestException $e)
-            {
-                // record a failed payment for given terminal and continue
-                $terminalData['exception'] = $e;
-
-                $retryAttempts++;
-
-                $retry = $this->logAndCheckForAuthRetry($e, $payment);
-
-                if (($retry === true) and
-                    ($retryAttempts < $maxRetryAttempts))
-                {
-                    continue;
-                }
-
-                $this->updatePaymentAuthFailedAndThrowException($e);
-            }
             catch (Exception\BaseException $e)
             {
                 //
@@ -278,15 +261,23 @@ trait Authorize
                 //
                 $terminalData['exception'] = $e;
 
-                $this->updatePaymentAuthFailed($e);
+                $retryAttempts++;
 
-                $internalErrorCode = $payment->getInternalErrorCode();
+                $retry = $this->logAndCheckForAuthRetry($e, $payment);
 
-                $this->logRiskFailureForGateway($payment, $internalErrorCode);
+                $internalErrorCode = $e->getError()->getInternalErrorCode();
 
                 $this->disableIinFlowIfApplicable($payment, $internalErrorCode);
 
-                throw $e;
+                if (($retry === true) and
+                    ($retryAttempts < $maxRetryAttempts))
+                {
+                    continue;
+                }
+
+                $this->logRiskFailureForGateway($payment, $internalErrorCode);
+
+                $this->updatePaymentAuthFailedAndThrowException($e);
             }
             finally
             {
@@ -1516,8 +1507,8 @@ trait Authorize
     {
         try
         {
-            if (($payment->isMethodCardOrEmi()   === true) and
-                ($payment->isSecondRecurring()   === false) and
+            if (($payment->isMethodCardOrEmi() === true) and
+                ($payment->isSecondRecurring() === false) and
                 ($payment->isPushPaymentMethod() === false))
             {
                 $response = $this->app->razorx->getTreatment($payment->merchant->getId(), 'authentication_via_gateway_rules', $this->mode);
