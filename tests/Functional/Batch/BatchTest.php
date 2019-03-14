@@ -95,6 +95,7 @@ class BatchTest extends TestCase
         $this->assertCount(4, $payouts);
         $this->assertEquals(1300, $payouts->sum(Payout\Entity::AMOUNT));
         $this->assertEquals('1234567890', $payouts[0]->fundAccount->account->getAccountNumber());
+        $this->assertEquals('Custom narration by merchant', $payouts[0]->getNarration());
         $this->assertEquals($payouts[0]->fundAccount->getId(), $payouts[1]->fundAccount->getId());
         $this->assertEquals('Jitendra', $payouts[0]->fundAccount->contact->getName());
         $this->assertEquals('Jitendra', $payouts[1]->fundAccount->contact->getName());
@@ -102,6 +103,7 @@ class BatchTest extends TestCase
         $this->assertEquals($payouts[0]->fundAccount->contact->getId(), $payouts[2]->fundAccount->contact->getId());
         $this->assertEquals('fa_000000000test1', $payouts[3]->fundAccount->getPublicId());
         $this->assertEquals('test user', $payouts[3]->fundAccount->contact->getName());
+        $this->assertEquals('Test Merchant Fund Transfer', $payouts[3]->getNarration());
     }
 
     protected function getFileEntries(string $callee): array

@@ -22,6 +22,7 @@ class Payout
 
         $input = [
             PayoutModel\Entity::PURPOSE         => $entry[Header::PAYOUT_PURPOSE],
+            PayoutModel\Entity::NARRATION       => $entry[Header::PAYOUT_NARRATION],
             PayoutModel\Entity::AMOUNT          => $entry[Header::PAYOUT_AMOUNT],
             PayoutModel\Entity::CURRENCY        => $entry[Header::PAYOUT_CURRENCY],
             // Key balance_id got appended in above validation call.
