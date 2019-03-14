@@ -548,26 +548,28 @@ class Core extends Base\Core
     {
         $payload = [];
 
-        if (($input[Entity::ACTION] !== 'create_payout') or
-            (isset($input['amount'], $input['account_number']) === false))
-        {
-            return [];
-        }
+        // Note: Existence of various key in $input is(and must be) ensured at validation layer.
 
-        $payload = [
-            'amount'         => amount_format_IN($input['amount']),
-            'account_number' => mask_except_last4($input['account_number']),
-            'purpose'        => $input['purpose'] ?? '',
-        ];
-
-        if (isset($input['fund_account_id']) === true)
+        if ($input[Entity::ACTION] === 'create_payout')
         {
+            $payload += [
+                'amount'         => amount_format_IN($input['amount']),
+                'account_number' => mask_except_last4($input['account_number']),
+                'purpose'        => $input['purpose'],
+            ];
+
+            // Gets fund account entity and appends few more contact details in payload.
             $fa = $this->repo->fund_account->findByPublicIdAndMerchant($input['fund_account_id'], $merchant);
-
             $payload += [
                 'contact'             => $fa->contact->toArrayPublic(),
                 'account_destination' => $fa->getAccountDestinationAsText(),
                 'account_type'        => $fa->getAccountTypeAsText(),
+            ];
+        }
+        else if ($input[Entity::ACTION] === 'create_payout_batch')
+        {
+            $payload += [
+                'account_number' => mask_except_last4($input['account_number']),
             ];
         }
 
