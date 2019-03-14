@@ -1368,6 +1368,7 @@ class Gateway
 
     public static $onlyAuthorizationGateway = [
         Gateway::HITACHI,
+        Gateway::CYBERSOURCE,
         Gateway::ENACH_RBL,
     ];
 
