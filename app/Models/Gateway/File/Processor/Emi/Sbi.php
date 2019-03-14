@@ -135,7 +135,7 @@ class Sbi extends Base
         $totalTransactions = 0;
 
         // date 6 chars + time 4 chars + 4 seq numbers
-        $uniqueReferenceNum = Carbon::now()->format('mdyHi') . '0000';
+        $uniqueReferenceNum = Carbon::now()->setTimezone(Timezone::IST)->format('mdyHi') . '0000';
 
         /**
          * @var $emiPayment Payment\Entity
@@ -256,8 +256,8 @@ class Sbi extends Base
 
         $header = [
             'HH' .
-            Carbon::now()->format('dmY') .
-            Carbon::now()->format('His') .
+            Carbon::now()->setTimezone(Timezone::IST)->format('dmY') .
+            Carbon::now()->setTimezone(Timezone::IST)->format('His') .
             $this->numpad($totalTransactions, 5) .
             $this->numpad($totalAmount, 17) .
             'F' .
@@ -328,7 +328,7 @@ class Sbi extends Base
 
         $den = $expression - 1;
 
-        return round($num / $den);
+        return (round($num / $den) / 100);
     }
 
     //-------------------------- Helpers ------------------------------------//
