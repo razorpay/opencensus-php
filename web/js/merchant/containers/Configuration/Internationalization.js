@@ -1,19 +1,30 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { updateSession } from 'merchant/modules/session';
+import { Link } from 'react-router-dom';
 import { showNotification } from 'rzp/modules/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
 import SwitchField from 'rzp/ui/Forms/SwitchField';
 import { merchantFetch } from 'merchant/utils/ajax';
+import Alert from 'component/Alert';
 
 const CUSTOM_MSG = {
   not_supported:
-    'International card payments is not supported to your business model.',
-  kyc_pending:
-    'Your KYC has to be approved in-order to accept International card payments.',
-  activation_pending:
-    'You will have to fill your Activation form & KYC form to be eligible to receive International card payments.',
-  international_allowed:
+    'International card payments is not supported to your business model',
+  incomplete_forms: (
+    <span>
+      You will have to submit your <Link to="/activation">Activation form</Link>{' '}
+      & <Link to="/activation">KYC form</Link> in-order to accept international
+      payments
+    </span>
+  ),
+  kyc_pending: (
+    <span>
+      Your <Link to="/activation">KYC form</Link> has to be approved in-order to
+      accept International card payments.
+    </span>
+  ),
+  international_enabled:
     'Settlement cycle and transaction fee is higher for International payments. \n International card payments is currently available only for payment gateways and not for payment pages, payment links & invoices.',
 };
 
@@ -73,16 +84,46 @@ export default class FlashCheckout extends Component {
     let { internationalEnabled } = this.state;
     const { user } = this.props;
 
-    let display_msg = '';
-    const isInternationalAllowed =
-      user.international || user.internationalActivationFlow.isWhitelistFlow;
+    let displayMsg = '',
+      showToggler = false,
+      showBanner = false; // Default diplomatic message - for existing merchants
 
-    if (isInternationalAllowed) {
-      display_msg = CUSTOM_MSG['international_activated'];
-    } else if (user.internationalActivationFlow.isBlacklistFlow) {
-      display_msg = CUSTOM_MSG['not_supported'];
-    } else if (user.internationalActivationFlow.isGraylistFlow) {
-      display_msg = CUSTOM_MSG['kyc_pending'];
+    if (user.international) {
+      displayMsg = CUSTOM_MSG['international_enabled'];
+    } else {
+      // If international profiling(whitelist-blacklist-graylist) is set
+      if (user.international_activation_flow) {
+        /*
+        * For GrayList(international) if L1 submitted but not L2.
+        * */
+        if (
+          !user.submitted &&
+          user.internationalActivationFlow.isGraylistFlow
+        ) {
+          displayMsg = CUSTOM_MSG['kyc_pending'];
+        } else if (user.internationalActivationFlow.isBlacklistFlow) {
+          displayMsg = CUSTOM_MSG['not_supported'];
+        } else if (
+          user.internationalActivationFlow.isWhitelistFlow ||
+          (user.activated && user.internationalActivationFlow.isGraylistFlow)
+        ) {
+          // To show only for newly activated merchants (whitelist and activated graylist only)
+
+          showToggler = true;
+          displayMsg = CUSTOM_MSG['international_enabled'];
+        }
+      } else {
+        /*
+       * For both new and old merchants - whose profiling is not done, also haven't submitted their L1 or L2 form.
+       * Note: Here we're not checking international_activation_flow, cuz we just want to know if L1 form is filled or not.
+       * */
+
+        if (!user.activation_flow || !user.submitted) {
+          showBanner = true; // For these merchants, international will automatically be enabled for such merchants if eligible
+
+          displayMsg = CUSTOM_MSG['incomplete_forms'];
+        }
+      }
     }
 
     return (
@@ -90,33 +131,36 @@ export default class FlashCheckout extends Component {
         <div className="panel-heading">
           <span className="title">International card payments</span>
 
-          <span className="toggler-btn">
-            <SwitchField
-              defaultChecked={!!internationalEnabled}
-              onChange={(isChecked, cb) =>
-                this.toggleInternationalization(isChecked, cb)
-              }
-              type="prime"
-            />
-            {internationalEnabled ? (
-              <b className="text-primary">Enabled</b>
-            ) : (
-              <b className="text-faded">Disabled</b>
-            )}
-          </span>
+          {showToggler && (
+            <span className="toggler-btn">
+              <SwitchField
+                defaultChecked={!!internationalEnabled}
+                onChange={(isChecked, cb) =>
+                  this.toggleInternationalization(isChecked, cb)
+                }
+                type="prime"
+              />
+              {user.international ? (
+                <b className="text-primary">Enabled</b>
+              ) : (
+                <b className="text-faded">Disabled</b>
+              )}
+            </span>
+          )}
         </div>
 
         <div className="panel-body">
           <form className="form-horizontal">
-            {isInternationalAllowed && (
-              <banner className="info">
-                From <b>3rd of March</b> your account will be activated for
+            {showBanner && (
+              <Alert.Info>
+                From <b>1st April</b> your account will be activated for
                 international card payments, supporting 92 international
-                currencies.
-              </banner>
+                currencies. Your eligibility will depend upon your Activation
+                form and KYC form.
+              </Alert.Info>
             )}
 
-            <div className="description">{display_msg}</div>
+            <div className="description">{displayMsg}</div>
 
             <div className="form-group">
               <ShowWhen
