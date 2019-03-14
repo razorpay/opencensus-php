@@ -181,7 +181,7 @@ export default class User {
     };
   }
 
-  get isInternationalSupportRolledOut() {
+  get isInternationalFeatureRolledOut() {
     return true;
     return this.getExpStatus('international_roll_out');
   }

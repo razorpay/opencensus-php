@@ -26,7 +26,7 @@ export default class ActivationCard extends Component {
         onActive,
         track,
         international,
-        isInternationalSupportRolledOut,
+        isInternationalFeatureRolledOut,
       } = nextProps,
       {
         isL1Submitted,
@@ -56,7 +56,7 @@ export default class ActivationCard extends Component {
     } else if (isActivated) {
       title = 'Account Activated';
       status = possibleStatuses.done;
-      if (isInternationalSupportRolledOut) {
+      if (isInternationalFeatureRolledOut) {
         content =
           'You can now start accepting domestic' +
           (international ? 'and international' : '') +
