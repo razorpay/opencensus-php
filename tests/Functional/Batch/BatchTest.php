@@ -103,7 +103,7 @@ class BatchTest extends TestCase
         $this->assertEquals($payouts[0]->fundAccount->contact->getId(), $payouts[2]->fundAccount->contact->getId());
         $this->assertEquals('fa_000000000test1', $payouts[3]->fundAccount->getPublicId());
         $this->assertEquals('test user', $payouts[3]->fundAccount->contact->getName());
-        $this->assertEquals('Razorpay fund transfer', $payouts[0]->getNarration());
+        $this->assertEquals('Test Merchant Fund Transfer', $payouts[3]->getNarration());
     }
 
     protected function getFileEntries(string $callee): array
