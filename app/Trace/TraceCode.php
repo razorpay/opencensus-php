@@ -322,8 +322,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINAL_USED_BEFORE                          = 'TERMINAL_USED_BEFORE';
     const TERMINAL_BANK_FILTER_DIFF                     = 'TERMINAL_BANK_FILTER_DIFF';
 
+    // Alert trace code for when a request gets actually throttled.
     const THROTTLE_REQUEST_THROTTLED                    = 'THROTTLE_REQUEST_THROTTLED';
+    // Info trace code for when a request would have been throttled but didn't because it is mocked.
+    const THROTTLE_REQUEST_THROTTLED_MOCK               = 'THROTTLE_REQUEST_THROTTLED_MOCK';
+    // Alert trace code when a request is temporarily blocked.
     const THROTTLE_REQUEST_BLOCKED                      = 'THROTTLE_REQUEST_BLOCKED';
+    // Alert trace code when redis settings is missing for throttle, continues flow with code defaults.
     const THROTTLE_SETTINGS_MISSING                     = 'THROTTLE_SETTINGS_MISSING';
 
     const BANK_TRANSFER_TERMINAL_COUNT_GREATER_THEN_ONE = 'BANK_TRANSFER_TERMINAL_COUNT_GREATER_THEN_ONE';
