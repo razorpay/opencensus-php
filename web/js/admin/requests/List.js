@@ -24,7 +24,6 @@ export default class RequestList extends Component {
     filters: {
       duty: 'checker',
       type: 'requested',
-      exclude: 'razorx',
     },
   });
 
