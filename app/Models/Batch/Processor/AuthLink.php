@@ -43,6 +43,8 @@ class AuthLink extends Base
 
         $this->invoice = $this->createAuthLink($entry);
 
+        $this->processDatesForExcel($entry);
+
         $entry[Header::STATUS]                  = Status::SUCCESS;
 
         $entry[Header::AUTH_LINK_ID]            = $this->invoice->getPublicId();
@@ -52,6 +54,8 @@ class AuthLink extends Base
         $entry[HEADER::AUTH_LINK_STATUS]        = $this->invoice->getStatus();
 
         $entry[HEADER::AUTH_LINK_CREATED_AT]    = $this->invoice->getCreatedAt();
+
+
     }
 
     protected function createAuthLink(array & $entry) : Invoice\Entity
@@ -71,5 +75,26 @@ class AuthLink extends Base
         $invoice = $this->subrCore->createAuthLink($input, $this->merchant, $this->batch);
 
         return $invoice;
+    }
+
+    protected function processDatesForExcel(array & $entry)
+    {
+        $authLinkTokenExpiry = $entry[Header::AUTH_LINK_TOKEN_EXPIRE_BY];
+
+        if (is_numeric($authLinkTokenExpiry) === true) {
+
+            $authLinkTokenExpiry = Helpers\AuthLink::fromExcelToEpoch($authLinkTokenExpiry);
+
+            $entry[Header::AUTH_LINK_TOKEN_EXPIRE_BY] = date('d/m/Y', $authLinkTokenExpiry);
+        }
+
+        $authLinkExpiry = $entry[Header::AUTH_LINK_EXPIRE_BY];
+
+        if (is_numeric($authLinkExpiry) === true) {
+
+            $authLinkExpiry = Helpers\AuthLink::fromExcelToEpoch($authLinkExpiry);
+
+            $entry[Header::AUTH_LINK_EXPIRE_BY] = date('d/m/Y', $authLinkExpiry);
+        }
     }
 }
