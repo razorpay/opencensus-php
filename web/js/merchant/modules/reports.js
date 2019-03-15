@@ -23,7 +23,7 @@ const handleError = e => {
   return downloadReportErrorMsg;
 };
 
-const createLog = (data, accountId) => {
+export const createLog = (data, accountId) => {
   return merchantFetch({
     url: 'reporting/logs',
     method: 'post',
@@ -32,14 +32,14 @@ const createLog = (data, accountId) => {
   });
 };
 
-const getLog = (logId, accountId) => {
+export const getLog = (logId, accountId) => {
   return merchantFetch({
     url: `reporting/logs/${logId}`,
     ...(!!accountId && { accountId }),
   });
 };
 
-const getFile = (fileId, accountId) => {
+export const getFile = (fileId, accountId) => {
   return merchantFetch({
     url: `ufh/file/${fileId}/get-signed-url`,
     ...(!!accountId && { accountId }),
