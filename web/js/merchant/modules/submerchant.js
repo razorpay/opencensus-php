@@ -33,11 +33,11 @@ export const resendInvite = submerchantId => ({
   payload: new Submerchant().resendInvite(submerchantId),
 });
 
+const TIMEOUT = 5 * 60 * 1000; // 5 minutes;
 export const downloadSubmerchants = (isPurePlatform = false, generated_by) => {
   const errorObject = {
     error: true,
   };
-  const TIMEOUT = 5 * 60 * 1000; // 5 minutes;
   const startTime = new Date();
 
   /**
@@ -72,7 +72,8 @@ export const downloadSubmerchants = (isPurePlatform = false, generated_by) => {
         validator: validatorResp => {
           const timeElapsed = new Date() - startTime;
           return (
-            validatorResp.error || timeElapsed > TIMEOUT,
+            validatorResp.error ||
+            timeElapsed > TIMEOUT ||
             (validatorResp.data || {}).status !== 'created'
           );
         },
