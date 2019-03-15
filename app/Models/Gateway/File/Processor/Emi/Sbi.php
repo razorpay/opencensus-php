@@ -209,8 +209,6 @@ class Sbi extends Base
 
                 $emiAmount = $this->getEmiAmount($principalAmount, $rate, $tenure);
 
-                $emiAmount = number_format($emiAmount / 100, 2, '.', '');
-
                 $body[] =
                     'DD' .    // record type always DD
                     'R' . $this->numpad($uniqueReferenceNum, 14) .
@@ -265,7 +263,7 @@ class Sbi extends Base
             Carbon::now()->setTimezone(Timezone::IST)->format('dmY') .
             Carbon::now()->setTimezone(Timezone::IST)->format('His') .
             $this->numpad($totalTransactions, 5) .
-            $this->numpad($totalAmount / 100, 17) .
+            $this->numpad($totalAmount, 17) .
             'F' .
             $this->strpad('', 411)
         ];

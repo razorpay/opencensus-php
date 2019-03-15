@@ -480,7 +480,7 @@ class GatewayEmiFileTest extends TestCase
 
         foreach ($fileRows as $key => $row)
         {
-            $amount = (float)substr($row, 325, 17);
+            $amount = (int)substr($row, 325, 17);
             $amounts[$key] = $amount;
 
             $this->assertEquals(450, strlen($row));
@@ -490,8 +490,8 @@ class GatewayEmiFileTest extends TestCase
         {
             $this->assertArraySelectiveEquals(
                 [
-                    1 => 588.46,
-                    2 => 448.94,
+                    1 => 58846,
+                    2 => 44894,
                 ],
                 $amounts
             );
