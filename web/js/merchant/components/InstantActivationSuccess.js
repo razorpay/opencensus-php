@@ -13,7 +13,7 @@ export default ({
 }) => {
   let defaultSubtitle = 'Ready to accept domestic payments';
 
-  if (user.international && user.isInternationalFeatureRolledOut) {
+  if (user.international) {
     defaultSubtitle = 'Ready to accept domestic & international payments';
   }
 
@@ -29,9 +29,9 @@ export default ({
             <p>{content}</p>
           ) : (
             <p>
-              {user.isInternationalFeatureRolledOut
-                ? `Please note that your payments will be settled to your bank account upon successful KYC verification.`
-                : `Now you can start accepting payments from your customers. However, your payments will be settled to your account only after KYC verification.`}
+              Now you can start accepting payments from your customers. However,
+              your payments will be settled to your account only after KYC
+              verification.
             </p>
           )}
           <button className="btn btn-primary" onClick={onGoToDashboard}>

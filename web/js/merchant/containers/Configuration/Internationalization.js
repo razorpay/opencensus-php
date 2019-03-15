@@ -25,7 +25,7 @@ const CUSTOM_MSG = {
       accept International card payments.
     </span>
   ),
-  international_enabled:
+  generic_msg:
     'Settlement cycle and transaction fee is higher for International payments. \n International card payments is currently available only for payment gateways and not for payment pages, payment links & invoices.',
 };
 
@@ -96,7 +96,7 @@ export default class FlashCheckout extends Component {
       showBanner = false; // Default diplomatic message - for existing merchants
 
     if (user.international) {
-      displayMsg = CUSTOM_MSG['international_enabled'];
+      displayMsg = CUSTOM_MSG['generic_msg'];
 
       if (user.international_activation_flow) {
         showToggler = true;
@@ -116,23 +116,35 @@ export default class FlashCheckout extends Component {
           displayMsg = CUSTOM_MSG['not_supported'];
         } else if (
           user.internationalActivationFlow.isWhitelistFlow ||
-          (user.activated && user.internationalActivationFlow.isGraylistFlow)
+          (user.activation_status === 'activated' &&
+            user.internationalActivationFlow.isGraylistFlow)
         ) {
           // To show only for newly activated merchants (whitelist and activated graylist only)
 
           showToggler = true;
-          displayMsg = CUSTOM_MSG['international_enabled'];
+          displayMsg = CUSTOM_MSG['generic_msg'];
+        } else if (user.internationalActivationFlow.isGraylistFlow) {
+          // If not activated
+          if (user.activation_status !== 'activated') {
+            displayMsg = CUSTOM_MSG['generic_msg'];
+          }
+
+          // If L2 form submitted but KYC approval is pending.
+          if (user.submitted) {
+            displayMsg = CUSTOM_MSG['kyc_pending'];
+          }
         }
       } else {
         /*
-       * For both new and old merchants - whose profiling is not done, also haven't submitted their L1 or L2 form.
-       * Note: Here we're not checking international_activation_flow, cuz we just want to know if L1 form is filled or not.
-       * */
-
+         * For both new and old merchants - whose profiling is not done, also haven't submitted their L1 or L2 form.
+         * Note: Here we're not checking international_activation_flow, cuz we just want to know if L1 form is filled or not.
+         * */
         if (!user.activation_flow || !user.submitted) {
           showBanner = true; // For these merchants, international will automatically be enabled for such merchants if eligible
 
           displayMsg = CUSTOM_MSG['incomplete_forms'];
+        } else {
+          displayMsg = CUSTOM_MSG['generic_msg'];
         }
       }
     }
@@ -164,10 +176,9 @@ export default class FlashCheckout extends Component {
           <form className="form-horizontal">
             {showBanner && (
               <Alert.Info>
-                From <b>1st April</b> your account will be activated for
-                international card payments, supporting 92 international
-                currencies. Your eligibility will depend upon your Activation
-                form and KYC form.
+                From <b>1st April</b> your account will be activated to accept
+                international card payments based on your eligibility, with
+                support for 92 currencies
               </Alert.Info>
             )}
 
@@ -183,7 +194,7 @@ export default class FlashCheckout extends Component {
                   <a
                     className="highlight"
                     target="_blank"
-                    href="https://razorpay.com/"
+                    href="https://razorpay.com/payment-gateway/#go-international"
                   >
                     Know more
                     <i
