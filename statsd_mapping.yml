@@ -98,5 +98,5 @@ mappings:
 
 - match: api_payment_create_request_time.*
   timer_type: histogram
-  buckets: [60, 120, 300, 720, 1800, 3600, 7200, 14400, 21600, 43200, 86400, 172800]
+  buckets: [100, 200, 300, 500, 1000, 2000, 3000, 5000, 10000, 20000, 50000]
   name: "api_payment_create_request_time"
