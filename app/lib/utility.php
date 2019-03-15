@@ -773,3 +773,22 @@ if (! function_exists('dashboard_url'))
         return config('applications.dashboard.url') . str_after($path, '/');
     }
 }
+
+if (! function_exists('get_diff_in_millisecond'))
+{
+    /**
+     * Returns time diff in milliseconf for given startTime, and current time.
+     * @param  string $startTime
+     * @return int
+     */
+    function get_diff_in_millisecond($startTime): int
+    {
+        $endTime = microtime(true);
+
+        $requestTime = $endTime - $startTime;
+
+        $requestTime = $requestTime * 1000;
+
+        return (int) $requestTime;
+    }
+}

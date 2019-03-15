@@ -15,7 +15,6 @@ use RZP\Exception;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\BankAccount;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\Base\Utility;
 use RZP\Models\Card;
 use RZP\Models\Customer;
 use RZP\Models\EntityOrigin;
@@ -247,7 +246,7 @@ class Processor
     {
         try
         {
-            $startTime = microtime();
+            $startTime = microtime(true);
 
             $this->setMethodForInput($input);
 
@@ -2607,7 +2606,7 @@ class Processor
     {
         try
         {
-            $requestTime = (int) Utility::getDiffInMilliSecond($startTime);
+            $requestTime = (int) get_diff_in_millisecond($startTime);
 
             (new Payment\Metric)->pushCreateRequestTimeMetrics($payment, $requestTime);
         }

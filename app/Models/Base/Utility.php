@@ -87,21 +87,4 @@ class Utility
     {
         return date($format, $epoch);
     }
-
-    public static function getDiffInMilliSecond($startTime)
-    {
-        $startTimes = explode(" ", $startTime);
-
-        $endTime = microtime();
-
-        $endTimes = explode(" ", $endTime);
-
-        $requestTime = ((int)$endTimes[1] - (int)$startTimes[1]) * 1000;
-
-        $startMillisecond = (float)$startTimes[0] * 1000;
-
-        $endMillisecond   = (float)$endTimes[0] * 1000;
-
-        return $requestTime + $endMillisecond - $startMillisecond;
-    }
 }
