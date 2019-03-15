@@ -12,6 +12,8 @@ use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Gateway\File\Status;
 use RZP\Gateway\Upi\Sbi\RefundFile;
+use RZP\Models\Base\PublicCollection;
+use RZP\Services\Beam\Service as BeamService;
 use RZP\Services\Beam\Constants as BeamConstants;
 
 class UpiSbi extends Base
@@ -64,7 +66,7 @@ class UpiSbi extends Base
         {
             $fileData = $this->formatDataForFile($data);
 
-            $fileName = $this->getFileToWriteName();
+            $fileName = $this->getFileToWriteNameWithoutExt();
 
             $metadata = $this->getH2HMetadata();
 
@@ -97,15 +99,15 @@ class UpiSbi extends Base
         }
     }
 
-    protected function sendFile($data)
+    public function sendFile($data)
     {
         $fullFileName = $this->file->getName() . '.' . $this->file->getExtension();
 
         $fileInfo = [$fullFileName];
 
         $data =  [
-            Service::BEAM_PUSH_FILES   => $fileInfo,
-            Service::BEAM_PUSH_JOBNAME => BeamConstants::SBI_UPI_REFUND_FILE_JOB_NAME
+            BeamService::BEAM_PUSH_FILES   => $fileInfo,
+            BeamService::BEAM_PUSH_JOBNAME => BeamConstants::SBI_UPI_REFUND_FILE_JOB_NAME
         ];
 
         // In seconds
@@ -116,7 +118,7 @@ class UpiSbi extends Base
             'channel'   => 'settlements',
             'filetype'  => self::BEAM_FILE_TYPE,
             'subject'   => 'File Send failure',
-            'recipient' => Constants::MAIL_ADDRESSES[Constants::REFUND]
+            'recipient' => Constants::MAIL_ADDRESSES[Constants::REFUNDS]
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
