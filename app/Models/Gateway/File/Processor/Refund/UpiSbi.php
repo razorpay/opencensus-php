@@ -2,18 +2,25 @@
 
 namespace RZP\Models\Gateway\File\Processor\Refund;
 
+use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Mail\Base\Constants;
+use RZP\Models\Gateway\File\Status;
+use RZP\Gateway\Upi\Sbi\RefundFile;
+use RZP\Services\Beam\Constants as BeamConstants;
 
 class UpiSbi extends Base
 {
-    const FILE_NAME     = 'SBI_UPI';
-    const EXTENSION     = FileStore\Format::CSV;
-    const FILE_TYPE     = FileStore\Type::SBI_UPI_REFUND;
-    const GATEWAY       = Payment\Gateway::UPI_SBI;
+    const FILE_NAME       = 'SBI_UPI';
+    const EXTENSION       = FileStore\Format::CSV;
+    const FILE_TYPE       = FileStore\Type::SBI_UPI_REFUND;
+    const GATEWAY         = Payment\Gateway::UPI_SBI;
+    const BEAM_FILE_TYPE  = 'refund';
 
     public function fetchEntities(): PublicCollection
     {
@@ -33,13 +40,13 @@ class UpiSbi extends Base
         foreach ($data as $index => $row)
         {
             $formattedData[] = [
-                self::PG_MERCHANT_ID  => $row['gateway']['gateway_merchant_id'],
-                self::REFUND_REQ_NO   => $row['refund']['id'],
-                self::TRANS_REF_NO    => $row['gateway']['npci_reference_id'],
-                self::CUSTOMER_REF_NO => $row['gateway']['gateway_payment_id'],
-                self::ORDER_NO        => $row['payment']['id'],
-                self::REFUND_REQ_AMT  => $row['refund']['amount'] / 100,
-                self::REFUND_REMARK   => 'Refund for ' . $row['payment']['id'],
+                RefundFile::PG_MERCHANT_ID  => $row['gateway']['gateway_merchant_id'],
+                RefundFile::REFUND_REQ_NO   => $row['refund']['id'],
+                RefundFile::TRANS_REF_NO    => $row['gateway']['npci_reference_id'],
+                RefundFile::CUSTOMER_REF_NO => $row['gateway']['gateway_payment_id'],
+                RefundFile::ORDER_NO        => $row['payment']['id'],
+                RefundFile::REFUND_REQ_AMT  => $row['refund']['amount'] / 100,
+                RefundFile::REFUND_REMARK   => 'Refund for ' . $row['payment']['id'],
             ];
         }
 
@@ -80,14 +87,13 @@ class UpiSbi extends Base
         }
         catch (\Throwable $e)
         {
-            throw new GatewayFileException(
-            ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
+            throw new Exception\GatewayFileException(
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
                 [
                     'id'      => $this->gatewayFile->getId(),
                     'message' => $e->getMessage(),
                 ],
-                $e
-            );
+                $e);
         }
     }
 
@@ -110,7 +116,7 @@ class UpiSbi extends Base
             'channel'   => 'settlements',
             'filetype'  => self::BEAM_FILE_TYPE,
             'subject'   => 'File Send failure',
-            'recipient' => Constants::MAIL_ADDRESSES[Constants::EMI]
+            'recipient' => Constants::MAIL_ADDRESSES[Constants::REFUND]
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
