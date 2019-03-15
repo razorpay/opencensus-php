@@ -1596,7 +1596,7 @@ trait Authorize
                     if (($payment->isRecurring() === false) or
                         ($payment->isRecurringTypeInitial() === true))
                     {
-                        $gateway = Payment\Gateway::MPI_BLADE;
+                        $gateway = Payment\Gateway::authorizationToAuthenticationGateway($payment->getGateway(), Payment\Gateway::MPI_BLADE);
                         $authType = '3ds';
 
                         if ($this->canRunIvrFlow($payment) === true)
