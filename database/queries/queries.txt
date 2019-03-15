@@ -4792,7 +4792,6 @@ ALTER TABLE fund_account_validations
     ADD COLUMN fts_transfer_id INTEGER DEFAULT NULL AFTER status,
     ADD INDEX `fund_account_validations_fts_transfer_id_index` (`fts_transfer_id`);
 
-
 ALTER TABLE cards
     ADD COLUMN global_fingerprint varchar(50) DEFAULT NULL AFTER vault_token;
     ADD INDEX  `cards_global_fingerprint_index` (`global_fingerprint`);
@@ -4817,6 +4816,18 @@ ALTER TABLE iins
 ALTER TABLE batches
     MODIFY COLUMN amount BIGINT(20) UNSIGNED DEFAULT NULL AFTER attempts,
     MODIFY COLUMN processed_amount BIGINT(20) UNSIGNED DEFAULT 0 AFTER amount;
+
+ALTER TABLE payouts
+    ADD COLUMN batch_id varchar(14) DEFAULT NULL AFTER fund_account_id,
+    ADD index payouts_batch_id_index (batch_id);
+
+ALTER TABLE fund_accounts
+    ADD COLUMN batch_id varchar(14) DEFAULT NULL AFTER account_id,
+    ADD index fund_accounts_batch_id_index (batch_id);
+
+ALTER TABLE contacts
+    ADD COLUMN batch_id varchar(14) DEFAULT NULL AFTER merchant_id,
+    ADD index contacts_batch_id_index (batch_id);
 
 ALTER TABLE refunds
     ADD COLUMN is_scrooge TINYINT(1) NOT NULL DEFAULT 0 AFTER processed_at,

@@ -5,6 +5,7 @@ namespace RZP\Models\FundAccount;
 use RZP\Exception;
 use RZP\Models\Vpa;
 use RZP\Models\Base;
+use RZP\Models\Batch;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
@@ -18,28 +19,37 @@ use RZP\Exception\LogicException;
 class Core extends Base\Core
 {
     /**
-     * @param array $input
-     * @param Merchant\Entity $merchant
+     * @param array                  $input
+     * @param Merchant\Entity        $merchant
      * @param Base\PublicEntity|null $source
+     * @param Batch\Entity|null      $batch
+     *
      * @return Entity
      */
-    public function create(array $input, Merchant\Entity $merchant, Base\PublicEntity $source = null): Entity
+    public function create(array $input,
+                           Merchant\Entity $merchant,
+                           Base\PublicEntity $source = null,
+                           Batch\Entity $batch = null): Entity
     {
         $this->modifyRequestForBackwardCompatibility($input);
 
         $fundAccount = (new Entity)->build($input);
 
-        $this->repo->transaction(function() use ($input, $merchant, $source, $fundAccount) {
-            $account = $this->createAccount($input, $merchant, $source);
+        $this->repo->transaction(
+            function() use ($input, $merchant, $source, $fundAccount, $batch)
+            {
+                $account = $this->createAccount($input, $merchant, $source);
 
-            $fundAccount->merchant()->associate($merchant);
+                $fundAccount->merchant()->associate($merchant);
 
-            $fundAccount->source()->associate($source);
+                $fundAccount->source()->associate($source);
 
-            $fundAccount->account()->associate($account);
+                $fundAccount->account()->associate($account);
 
-            $this->repo->saveOrFail($fundAccount);
-        });
+                $fundAccount->batch()->associate($batch);
+
+                $this->repo->saveOrFail($fundAccount);
+            });
 
         return $fundAccount;
     }

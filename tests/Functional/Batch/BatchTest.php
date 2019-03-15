@@ -64,6 +64,9 @@ class BatchTest extends TestCase
         $batch = $this->getDbLastEntity('batch');
         $this->assertEquals('MerchantUser01', $batch->getCreatorId());
         $this->assertEquals('user', $batch->getCreatorType());
+
+        $fundAccounts = $this->getDbEntities('fund_account');
+        $this->assertEquals($batch->getId(), $fundAccounts[0]->getBatchId());
     }
 
     public function testCreateBatchOfPayoutType()
@@ -110,6 +113,7 @@ class BatchTest extends TestCase
 
         $this->assertEquals($payouts->sum(Payout\Entity::AMOUNT), $batch->getAmount());
         $this->assertEquals($payouts->sum(Payout\Entity::AMOUNT), $batch->getProcessedAmount());
+        $this->assertEquals($batch->getId(), $payouts[0]->getBatchId());
     }
 
     protected function getFileEntries(string $callee): array

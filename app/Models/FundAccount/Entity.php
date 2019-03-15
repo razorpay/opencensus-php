@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Models\Batch;
 use RZP\Models\Contact;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
@@ -24,6 +25,7 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_ID    = 'account_id';
     const SOURCE_TYPE   = 'source_type';
     const SOURCE_ID     = 'source_id';
+    const BATCH_ID      = 'batch_id';
     const ACTIVE        = 'active';
 
     // Relations
@@ -70,6 +72,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::SOURCE_ID,
         self::SOURCE,
+        self::BATCH_ID,
         self::DETAILS,
     ];
 
@@ -111,6 +114,11 @@ class Entity extends Base\PublicEntity
     public function getAccountId()
     {
         return $this->getAttribute(self::ACCOUNT_ID);
+    }
+
+    public function getBatchId()
+    {
+        return $this->getAttribute(self::BATCH_ID);
     }
 
     public function getActive(): bool
@@ -209,6 +217,13 @@ class Entity extends Base\PublicEntity
         $array[$accountType] = $publicAttributes;
     }
 
+    public function setPublicBatchIdAttribute(array & $attributes)
+    {
+        $batchId = $this->getAttribute(self::BATCH_ID);
+
+        $attributes[self::BATCH_ID] = Batch\Entity::getSignedIdOrNull($batchId);
+    }
+
     // ------------- End Setters -------------
 
     // --------------- Helpers ---------------
@@ -225,6 +240,11 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function batch()
+    {
+        return $this->belongsTo(Batch\Entity::class);
     }
 
     public function validations()

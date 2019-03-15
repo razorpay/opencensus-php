@@ -21,10 +21,11 @@ class Fetch extends BaseFetch
             Entity::UTR               => 'sometimes|string|max:255',
             Entity::CONTACT_NAME      => 'sometimes|string|max:50',
             Entity::CONTACT_PHONE     => 'sometimes|contact_syntax',
-            Entity::CONTACT_ID        => 'sometimes|public_id|size:19',
             Entity::CONTACT_EMAIL     => 'sometimes|email|max:50',
             Entity::CONTACT_TYPE      => 'sometimes|string',
+            Entity::CONTACT_ID        => 'sometimes|public_id|size:19',
             Entity::FUND_ACCOUNT_ID   => 'sometimes|public_id|size:17',
+            Entity::BATCH_ID          => 'sometimes|string|public_id|size:20',
             Entity::STATUS            => 'sometimes|string|custom',
             Entity::REFERENCE_ID      => 'sometimes|string|max:40',
             EsRepository::QUERY       => 'sometimes|string|min:2|max:50',
@@ -55,6 +56,7 @@ class Fetch extends BaseFetch
         ],
         AuthType::PROXY_AUTH     => [
             self::EXPAND_EACH,
+            Entity::BATCH_ID,
         ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::MERCHANT_ID,
@@ -69,6 +71,7 @@ class Fetch extends BaseFetch
         Entity::TRANSACTION_ID,
         Entity::CONTACT_ID,
         Entity::FUND_ACCOUNT_ID,
+        Entity::BATCH_ID,
     ];
 
     const ES_FIELDS = [
