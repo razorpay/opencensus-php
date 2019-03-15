@@ -258,7 +258,6 @@ class Core extends Base\Core
                 // This is because, this new payout was not created by the batch.
                 return $this->createPayoutToFundAccount($payoutInput, $payout->merchant);
             }
-
         }
         else
         {

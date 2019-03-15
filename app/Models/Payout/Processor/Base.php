@@ -191,8 +191,6 @@ abstract class Base extends BaseCore
 
         $payout->customer()->associate($this->customer);
 
-        $payout->batch()->associate($this->batch);
-
         $payout->setChannel($this->channel);
 
         $this->fetchAndAssociatePayoutAccount($payout, $input);
@@ -209,13 +207,15 @@ abstract class Base extends BaseCore
         $payout = $payout->build($input);
 
         //
-        // Doing only THIS association after build because
+        // Doing only user and batch association after build because
         // since it is present in $defaults, the association
         // gets overridden with the default value (null)
         // in the build function.
         // NOTE: Not sure why it does not happen with FundAccount. (todo: check)
         //
         $this->associateUserIfApplicable($payout);
+
+        $payout->batch()->associate($this->batch);
 
         //
         // Doing this after all the associations since

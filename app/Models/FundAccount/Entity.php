@@ -116,6 +116,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACCOUNT_ID);
     }
 
+    public function getBatchId()
+    {
+        return $this->getAttribute(self::BATCH_ID);
+    }
+
     public function getActive(): bool
     {
         return $this->getAttribute(self::ACTIVE);
