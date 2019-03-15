@@ -1,0 +1,106 @@
+import { Link } from 'react-router-dom';
+
+import ShowWhen from 'merchant/components/ShowWhen';
+import ProgressBar from 'rzp/ui/ProgressBar';
+
+import { classList } from 'common/util';
+
+export default function ActivationProgress(props) {
+  const {
+    user: {
+      showInstantActivation,
+      instantActivation: { isL1Submitted, isBlacklistFlow },
+      ...user
+    },
+    config,
+  } = props;
+
+  let actionCopy,
+    actionContent = null;
+
+  if (user.activation_progress < 100) {
+    // If user form is still unfilled
+    actionCopy = 'Activate your account';
+
+    if (isL1Submitted) {
+      actionCopy = user.isActivated ? 'Accept Payments' : 'Submit KYC';
+    }
+  } else if (user.isSubmitted) {
+    actionCopy = 'Form submitted';
+  } else if (user.activation_progress == 100) {
+    // Form is unfilled and Not submitted
+    actionCopy = 'Submit Form';
+  } else if (user.isActivated) {
+    actionCopy = 'Account Activated';
+  }
+
+  return !isBlacklistFlow ? (
+    <ShowWhen
+      additionalCondition={user =>
+        user.isAllowedEdit('activation') &&
+        !user.isPartner() &&
+        (!user.isSubmitted || !config.hasPersonalised)
+      }
+    >
+      <Link
+        className="activation-status-link"
+        to={!user.isSubmitted ? '/activation' : '/config'}
+        onClick={props.onSidebarBannerClick}
+      >
+        <div
+          className={classList(
+            'activation-status',
+            user.isSubmitted && !config.hasPersonalised
+              ? 'not-personalised'
+              : ''
+          )}
+        >
+          <div className="clearfix">
+            <div className="pull-left">{actionCopy}</div>
+            <div className="pull-right">
+              <i className="i i-chevron-right" />
+            </div>
+          </div>
+          {do {
+            if (showInstantActivation && !isL1Submitted) {
+              actionContent = (
+                <div className="activation-status-secondary">
+                  Form not Completed
+                </div>
+              );
+            } else {
+              actionContent = !user.isSubmitted ? (
+                <div className="activation-bar-content activation-status-secondary">
+                  {user.activation_progress < 100 &&
+                  isL1Submitted &&
+                  user.isActivated ? (
+                    <div className="activation-bar-text">
+                      Click here to know more
+                    </div>
+                  ) : (
+                    <>
+                      <div className="activation-bar-text">
+                        {user.activation_progress}% Complete
+                      </div>
+                      <div className="activation-bar">
+                        <ProgressBar
+                          type="success"
+                          max={100}
+                          value={user.activation_progress}
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="activation-status-secondary">
+                  Personalise your Account
+                </div>
+              );
+            }
+          }}
+        </div>
+      </Link>
+    </ShowWhen>
+  ) : null;
+}
