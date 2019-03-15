@@ -17,7 +17,7 @@ export default ({ disputes }) => {
           {Id(dispute)}
           <div>
             {titleCase(dispute.phase)},{' '}
-            <Amount value={dispute.amount} currency={'INR'} />
+            <Amount value={dispute.amount} currency={dispute.currency} />
           </div>
           <StatusLabel status={dispute.status} />
         </Definition>

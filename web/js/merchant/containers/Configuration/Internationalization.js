@@ -43,7 +43,7 @@ export default class FlashCheckout extends Component {
   analytics = action => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Settings',
-      eventAction: `${action} - Internationalization`,
+      eventAction: `${action} - International card payments`,
     });
   };
 

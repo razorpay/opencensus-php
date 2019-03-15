@@ -10,7 +10,7 @@ const currencies = {
 export default ({ value, currency = 'INR', className, ...attrs }) => {
   const amount = getFormattedAmount(value);
   const currencySymbolMapping =
-    window.currencyLib.displayCurrencies || currencies;
+    (window.currencyLib && window.currencyLib.displayCurrencies) || currencies;
   return (
     <span class={`rzp-amount ${className ? className : ''}`} {...attrs}>
       {currencySymbolMapping[currency]} {amount.split('.')[0]}

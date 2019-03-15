@@ -432,7 +432,11 @@ export default class TerminalForm extends Component {
 
           <SelectField name="currency" label="Currency" defaultValue="">
             <option value="" />
-            {Object.keys(window.currencyLib.displayCurrencies).map(k => (
+            {Object.keys(
+              (window.currencyLib && window.currencyLib.displayCurrencies) || [
+                'INR',
+              ]
+            ).map(k => (
               <option key={k} value={k}>
                 {k}
               </option>
