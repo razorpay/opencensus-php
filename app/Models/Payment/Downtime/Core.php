@@ -35,7 +35,7 @@ class Core extends Base\Core
         return $downtime;
     }
 
-    public function createFromGatewayDowntimes(array $input)
+    public function createFromGatewayDowntimes(array $input = [])
     {
         $gatewayDowntimes = $this->repo->gateway_downtime->fetchCurrentAndFutureDowntimes();
 

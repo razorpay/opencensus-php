@@ -2560,7 +2560,6 @@ final class Route
             'merchant_es_sync_cron',
             'entity_balance_id_update',
             'scrooge_refund_verify_bulk',
-            'merchant_methods_downtime_create',
         ],
 
         'subscriptions' => [
