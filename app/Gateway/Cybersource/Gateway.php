@@ -249,6 +249,11 @@ class Gateway extends Base\Gateway
         $this->sendMozartRequest($input);
     }
 
+    public function callbackOtpSubmit(array $input)
+    {
+        return $this->callback($input);
+    }
+
     public function callback(array $input)
     {
         $mpiEntity = $this->app['repo']
