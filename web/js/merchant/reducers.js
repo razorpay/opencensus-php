@@ -57,6 +57,7 @@ import {
   submerchantsReducer,
   authLinksReducer,
   tokensReducer,
+  commissionsReducer,
 } from 'merchant/modules/collection';
 
 import {
@@ -121,6 +122,7 @@ export default combineReducers({
   reports: reportsReducer,
   submerchants: submerchantsReducer,
   submerchant: submerchantReducer,
+  commisions: commissionsReducer,
   wysiwyg: wysiwygReducer,
   authLinks: authLinksReducer,
   authLink: authLinkReducer,

@@ -24,6 +24,7 @@ const INVOICES_ROUTES_REGEX = /^\/(invoices|items)/;
 const MARKETPLACE_ROUTES_REGEX = /^\/route\/(payments|transfers|reversals|accounts)/;
 const PAYMENTLINKS_ROUTES_REGEX = /^\/paymentlinks(\/batchuploads)?/;
 const SUBSCRIPTIONS_ROUTES_REGEX = /^\/(subscriptions(\/batchuploads)?|plans|addons|recurring_payments|tokens|authlinks)/;
+const PARTNER_DASHBOARD_REGEX = /^\/(submerchants(\/(applications|settings))?|commissions)/;
 
 const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
 
@@ -37,6 +38,7 @@ const BASE_ROUTES = {
   paymentpages: '/paymentpages',
   subscriptions: '/subscriptions',
   chargeAtWill: '/recurring_payments',
+  partnerDashboard: '/submerchants',
 };
 
 @withRouter
@@ -109,6 +111,9 @@ export default class Sidebar extends Component {
     } else if (PAYMENTLINKS_ROUTES_REGEX.test(pathname)) {
       routes.paymentlinks = pathname.match(PAYMENTLINKS_ROUTES_REGEX)[0];
       this.prevRoute = 'paymentlinks';
+    } else if (PARTNER_DASHBOARD_REGEX.test(pathname)) {
+      routes.partnerDashboard = pathname.match(PARTNER_DASHBOARD_REGEX)[0];
+      this.prevRoute = 'partnerDashboard';
     } else if (SUBSCRIPTIONS_ROUTES_REGEX.test(pathname)) {
       routes[
         user.isChargeAtWillEnabled ? 'chargeAtWill' : 'subscriptions'
@@ -266,7 +271,7 @@ export default class Sidebar extends Component {
                   <MainNavLink
                     label="Partner Dashboard"
                     icon="i i-partner text-success"
-                    to="/submerchants"
+                    to={routes.partnerDashboard}
                     additionalCondition={user => user.isPartner()}
                     exact
                   />

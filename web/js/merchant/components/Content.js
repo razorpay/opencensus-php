@@ -1,8 +1,7 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { NavLink, Switch, Route, withRouter, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import { classList } from 'common/util';
 import { matchDetail, matchModal, supportHashMapping } from 'merchant/routes';
 import Slider from 'rzp/ui/Slider';
 import { ModalMask } from 'component/Modal';
@@ -145,6 +144,12 @@ export default class Content extends Component {
             path="/submerchants"
             component={PartnerDashboard}
             additionalCondition={user => user.isPartner()}
+          />
+
+          <ShowWhenRoute
+            path="/commissions"
+            component={PartnerDashboard}
+            additionalCondition={user => !user.isPartner('reseller')}
           />
 
           <ShowWhenRoute
