@@ -28,8 +28,7 @@
                 "required": [
                     "entity",
                     "code",
-                    "bank",
-                    "bank_name"
+                    "bank"
                 ],
                 "properties": {
                     "entity": {

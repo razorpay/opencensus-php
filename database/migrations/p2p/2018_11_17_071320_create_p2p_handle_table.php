@@ -25,9 +25,9 @@ class CreateP2pHandleTable extends Migration
 
             $table->string(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
-            $table->string(Entity::BANK, 11);
-
             $table->string(Entity::ACQUIRER, 50);
+
+            $table->string(Entity::BANK, 11);
 
             $table->boolean(Entity::ACTIVE);
 

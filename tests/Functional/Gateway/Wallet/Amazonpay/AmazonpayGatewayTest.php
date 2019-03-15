@@ -371,6 +371,9 @@ class AmazonpayGatewayTest extends TestCase
 
         $refund = $this->getDbLastRefund();
 
+        // Amazonpay refunds are not processed via scrooge, so is_scrooge will be false
+        $this->assertFalse($refund->isScrooge());
+
         $this->assertTrue($refund->isProcessed());
 
         $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);

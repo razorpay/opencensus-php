@@ -4817,3 +4817,7 @@ ALTER TABLE iins
 ALTER TABLE batches
     MODIFY COLUMN amount BIGINT(20) UNSIGNED DEFAULT NULL AFTER attempts,
     MODIFY COLUMN processed_amount BIGINT(20) UNSIGNED DEFAULT 0 AFTER amount;
+
+ALTER TABLE refunds
+    ADD COLUMN is_scrooge TINYINT(1) NOT NULL DEFAULT 0 AFTER processed_at,
+    ADD INDEX refunds_is_scrooge_index (`is_scrooge`);

@@ -14,6 +14,9 @@ class Entity extends Base\PublicEntity
     const SUCCESS       = 'success';
     const DEVICE_ID     = 'device_id';
     const REFRESHED_AT  = 'refreshed_at';
+    const GATEWAY       = 'gateway';
+    const CALLBACK      = 'callback';
+    const SDK           = 'sdk';
     const UPI           = 'upi';
 
     /**

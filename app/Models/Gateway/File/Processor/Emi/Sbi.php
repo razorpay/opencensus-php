@@ -135,7 +135,7 @@ class Sbi extends Base
         $totalTransactions = 0;
 
         // date 6 chars + time 4 chars + 4 seq numbers
-        $uniqueReferenceNum = Carbon::now()->format('mdyHi') . '0000';
+        $uniqueReferenceNum = Carbon::now()->setTimezone(Timezone::IST)->format('mdyHi') . '0000';
 
         /**
          * @var $emiPayment Payment\Entity
@@ -201,13 +201,15 @@ class Sbi extends Base
 
                 $principalAmount = $emiPayment->getAmount();
 
-                $totalAmount = $totalAmount + $principalAmount;
-
                 $rate = $emiPlan->getRate() / 100;
 
                 $tenure = $emiPlan->getDuration();
 
                 $businessName = substr($merchantDetail[Detail\Entity::BUSINESS_NAME], 0, 40);
+
+                $emiAmount = $this->getEmiAmount($principalAmount, $rate, $tenure);
+
+                $emiAmount = number_format($emiAmount / 100, 2, '.', '');
 
                 $body[] =
                     'DD' .    // record type always DD
@@ -231,7 +233,7 @@ class Sbi extends Base
                     $this->numpad('0', 7) .
                     $this->strpad('GG0001' . substr($mid, -4), 20) .
                     $this->numpad('0', 17) .
-                    $this->numpad($this->getEmiAmount($principalAmount, $rate, $tenure), 17) .
+                    $this->numpad($emiAmount, 17) .
                     $this->strpad('', 108);
 
                 $rowLength = strlen(end($body));
@@ -247,6 +249,10 @@ class Sbi extends Base
                             'payment_id'    => $emiPayment['id'],
                         ]);
                 }
+
+                // If a row is not added in the file, then that row's principal amount
+                // must not be added to the total amount
+                $totalAmount = $totalAmount + $principalAmount;
             }
             catch (\Exception $e)
             {
@@ -256,10 +262,10 @@ class Sbi extends Base
 
         $header = [
             'HH' .
-            Carbon::now()->format('dmY') .
-            Carbon::now()->format('His') .
+            Carbon::now()->setTimezone(Timezone::IST)->format('dmY') .
+            Carbon::now()->setTimezone(Timezone::IST)->format('His') .
             $this->numpad($totalTransactions, 5) .
-            $this->numpad($totalAmount, 17) .
+            $this->numpad($totalAmount / 100, 17) .
             'F' .
             $this->strpad('', 411)
         ];
@@ -315,12 +321,12 @@ class Sbi extends Base
 
     protected function getEmiAmount($amount, $annualRate, $tenureInMonths)
     {
-        // $annualRate is rate/100, say .14
+        // $annualRate is rate/100, say a
         // $monthlyRate is a/12 i.e should be treated as .14/12
         // E = P x r x (1+r)^n/((1+r)^n – 1)
         // tenure in months
 
-        $monthlyRate = $annualRate / 12;
+        $monthlyRate = ($annualRate / 100) / 12;
 
         $expression = pow((1 + $monthlyRate), $tenureInMonths);
 
@@ -328,7 +334,7 @@ class Sbi extends Base
 
         $den = $expression - 1;
 
-        return round($num / $den);
+        return (round($num / $den));
     }
 
     //-------------------------- Helpers ------------------------------------//

@@ -476,9 +476,25 @@ class GatewayEmiFileTest extends TestCase
 
         $this->assertEquals($rowCount, count($fileRows));
 
-        foreach ($fileRows as $row)
+        $amounts = [];
+
+        foreach ($fileRows as $key => $row)
         {
+            $amount = (float)substr($row, 325, 17);
+            $amounts[$key] = $amount;
+
             $this->assertEquals(450, strlen($row));
+        }
+
+        if ($rowCount > 1)
+        {
+            $this->assertArraySelectiveEquals(
+                [
+                    1 => 588.46,
+                    2 => 448.94,
+                ],
+                $amounts
+            );
         }
 
         $expectedFileContent = [

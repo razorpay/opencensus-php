@@ -6,32 +6,43 @@ use RZP\Models\P2p;
 
 /**
  * @property  P2p\Device\Service $service
-*/
+ */
 class DeviceController extends Controller
 {
-    public function startVerification()
+    public function initiateVerification()
     {
         $input = $this->request()->all();
 
-        $response = $this->service->startVerification($input);
+        $response = $this->service->initiateVerification($input);
 
         return $this->response($response);
     }
 
-    public function getVerificationStatus()
+    public function verification()
     {
+        $input = $this->request()->all();
+
         $input['token'] = $this->request()->route('token');
 
-        $response = $this->service->getVerificationStatus($input);
+        $response = $this->service->verification($input);
 
         return $this->response($response);
     }
 
-    public function refreshClToken()
+    public function initiateGetToken()
     {
         $input = $this->request()->all();
 
-        $response = $this->service->refreshClToken($input);
+        $response = $this->service->initiateGetToken($input);
+
+        return $this->response($response);
+    }
+
+    public function getToken()
+    {
+        $input = $this->request()->all();
+
+        $response = $this->service->getToken($input);
 
         return $this->response($response);
     }

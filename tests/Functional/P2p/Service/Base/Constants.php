@@ -12,47 +12,73 @@ class Constants
     const DEMO_MERCHANT                                      = Account::DEMO_ACCOUNT;
     const SHARED_MERCHANT                                    = Account::SHARED_ACCOUNT;
 
-    // -------------------- HANDLES  -------------------
-
-    const RAZOR_SHARP                                       = 'razorsharp';
-    const RZP_SHARP                                         = 'rzpsharp';
-    const NORZP_SHARP                                       = 'norzpsharp';
-
     // --------------------- BANKS ---------------------
 
-    const ARZP                                              = 'ARZP';
-    const BRZP                                              = 'BRZP';
-    const CRZP                                              = 'CRZP';
-
-    // -------------------- GATEWAY --------------------
-
-    const P2P_UPI_SHARP                                     = 'p2p_upi_sharp';
-
-    // ------------------- CUSTOMERS -------------------
-
-    const RZP_LOCAL_CUSTOMER_1                               = 'ArzpLocalCust1';
-    const RZP_LOCAL_CUSTOMER_2                               = 'ArzpLocalCust2';
-
-    const CUSTOMER_1_DEVICE_1                                = 'ALC01device001';
-    const CUSTOMER_2_DEVICE_1                                = 'ALC02device001';
-
-    const CUSTOMER_1_DEVICE_TOKEN_1                          = 'ALC01DevTok001';
-    const CUSTOMER_1_DEVICE_TOKEN_2                          = 'ALC01DevTok002';
-
-    const CUSTOMER_2_DEVICE_TOKEN_1                          = 'ALC02DevTok001';
-    const CUSTOMER_2_DEVICE_TOKEN_2                          = 'ALC02DevTok002';
-
-    const CUSTOMER_1_BANK_ACCOUNT_1                          = 'ALC01bankAc001';
-    const CUSTOMER_2_BANK_ACCOUNT_1                          = 'ALC02bankAc001';
-
-    const CUSTOMER_1_VPA_1                                   = 'ALC01custVpa01';
-    const CUSTOMER_1_VPA_2                                   = 'ALC01custVpa02';
-    const CUSTOMER_2_VPA_1                                   = 'ALC02custVpa01';
-    const CUSTOMER_2_VPA_2                                   = 'ALC02custVpa02';
+    const ARZP                                              = 'ARZP0000000001';
+    const BRZP                                              = 'BRZP0000000001';
+    const CRZP                                              = 'CRZP0000000001';
 
     // ------------------------ TEST DEVICES ------------------------
 
     const DEVICE_1                                           = 'device_1';
     const DEVICE_2                                           = 'device_2';
 
+    // ------------------- CUSTOMERS -------------------
+
+    const RZP_LOCAL_CUSTOMER_1                               = 'ArzpLocalCust1';
+    const RZP_LOCAL_CUSTOMER_2                               = 'ArzpLocalCust2';
+
+    // ------------------- DEVICES ---------------------
+
+    const CUSTOMER_1_DEVICE_1                                = 'ALC01device001';
+    const CUSTOMER_2_DEVICE_1                                = 'ALC02device001';
+
+    // -------------------- GATEWAY --------------------
+
+    const P2P_UPI_SHARP                                     = 'p2p_upi_sharp';
+    const P2P_UPI_AXIS                                      = 'p2p_upi_axis';
+
+    // ------------------ DEVICE TOKEN ------------------
+
+    const CUSTOMER_1_DEVICE_TOKEN_1_SHARP                    = 'ALC01DevTok001';
+    const CUSTOMER_1_DEVICE_TOKEN_2_SHARP                    = 'ALC01DevTok002';
+
+    const CUSTOMER_2_DEVICE_TOKEN_1_SHARP                    = 'ALC02DevTok001';
+    const CUSTOMER_2_DEVICE_TOKEN_2_SHARP                    = 'ALC02DevTok002';
+
+    const CUSTOMER_1_DEVICE_TOKEN_1_AXIS                     = 'ALC01DevTok003';
+    const CUSTOMER_1_DEVICE_TOKEN_2_AXIS                     = 'ALC01DevTok004';
+
+    const CUSTOMER_2_DEVICE_TOKEN_1_AXIS                     = 'ALC02DevTok003';
+    const CUSTOMER_2_DEVICE_TOKEN_2_AXIS                     = 'ALC02DevTok004';
+
+    // --------------- BANK ACCOUNT -----------------------
+
+    const CUSTOMER_1_BANK_ACCOUNT_1_SHARP                    = 'ALC01bankAc001';
+    const CUSTOMER_2_BANK_ACCOUNT_1_SHARP                    = 'ALC02bankAc001';
+
+    const CUSTOMER_1_BANK_ACCOUNT_1_AXIS                     = 'ALC01bankAc002';
+    const CUSTOMER_2_BANK_ACCOUNT_1_AXIS                     = 'ALC02bankAc002';
+
+    // ----------------- VPA ------------------------------
+
+    const CUSTOMER_1_VPA_1_SHARP                             = 'ALC01custVpa01';
+    const CUSTOMER_1_VPA_2_SHARP                             = 'ALC01custVpa02';
+    const CUSTOMER_2_VPA_1_SHARP                             = 'ALC02custVpa01';
+    const CUSTOMER_2_VPA_2_SHARP                             = 'ALC02custVpa02';
+
+    const CUSTOMER_1_VPA_1_AXIS                              = 'ALC01custVpa03';
+    const CUSTOMER_1_VPA_2_AXIS                              = 'ALC01custVpa04';
+    const CUSTOMER_2_VPA_1_AXIS                              = 'ALC02custVpa03';
+    const CUSTOMER_2_VPA_2_AXIS                              = 'ALC02custVpa04';
+
+    // -------------------- HANDLES  -------------------
+
+    const RAZOR_SHARP                                       = 'razorsharp';
+    const RZP_SHARP                                         = 'rzpsharp';
+    const NORZP_SHARP                                       = 'norzpsharp';
+
+    const RAZOR_AXIS                                        = 'razoraxis';
+    const RZP_AXIS                                          = 'rzpaxis';
+    const NORZP_AXIS                                        = 'norzpaxis';
 }

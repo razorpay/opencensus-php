@@ -9,13 +9,13 @@ class BankAccountGateway extends Gateway implements Contracts\BankAccountGateway
 {
     public function retrieve(Response $response)
     {
-        $bank = $this->input->get('bank')->get('ifsc');
+        $bankIfsc = $this->input->get('bank')->get('ifsc');
 
         $response->setData([
-            'bank'          => $bank,
+            'bank_id'       => $this->input->get('bank')->get('id'),
             'bank_accounts' => [
                 [
-                    'ifsc'                  => $bank . '0000100',
+                    'ifsc'                  => $bankIfsc . '0000100',
                     'beneficiary_name'      => 'Sharp Customer',
                     'account_number'        => '97531086420',
                     'masked_account_number' => 'xxxxxx86420',
@@ -46,7 +46,7 @@ class BankAccountGateway extends Gateway implements Contracts\BankAccountGateway
         $bankAccount = $this->input->get('bank_account');
 
         $response->setData([
-            'bank'          => $bankAccount->get('bank'),
+            'bank_id'       => $this->input->get('bank_account')->get('bank_id'),
             'bank_account'  => [
                 'id'        => $bankAccount->get('id'),
                 'gateway_data'          => [
@@ -65,7 +65,7 @@ class BankAccountGateway extends Gateway implements Contracts\BankAccountGateway
         $bankAccount = $this->input->get('bank_account');
 
         $response->setData([
-            'bank'          => $bankAccount->get('bank'),
+            'bank_id'       => $this->input->get('bank_account')->get('bank_id'),
             'bank_account'  => [
                 'id'        => $bankAccount->get('id'),
             ],
@@ -78,7 +78,7 @@ class BankAccountGateway extends Gateway implements Contracts\BankAccountGateway
         $bankAccount = $this->input->get('bank_account');
 
         $response->setData([
-            'bank'          => $bankAccount->get('bank'),
+            'bank_id'       => $this->input->get('bank_account')->get('bank_id'),
             'bank_account'  => [
                 'id'        => $bankAccount->get('id'),
                 'gateway_data'          => [
@@ -97,7 +97,7 @@ class BankAccountGateway extends Gateway implements Contracts\BankAccountGateway
         $bankAccount = $this->input->get('bank_account');
 
         $response->setData([
-            'bank'          => $bankAccount->get('bank'),
+            'bank_id'       => $this->input->get('bank_account')->get('bank_id'),
             'bank_account'  => [
                 'id'        => $bankAccount->get('id'),
             ],

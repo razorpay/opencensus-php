@@ -30,7 +30,7 @@
                     "beneficiary_name",
                     "masked_account_number",
                     "creds",
-                    "cl",
+                    "sdk",
                     "refreshed_at",
                     "created_at"
                 ],
@@ -117,7 +117,7 @@
                             }
                         }
                     },
-                    "cl": {
+                    "sdk": {
                         "type": "object",
                         "required": [
                             "registration_format"

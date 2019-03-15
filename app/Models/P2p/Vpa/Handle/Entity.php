@@ -8,7 +8,6 @@ use RZP\Models\Merchant;
 
 class Entity extends Base\Entity
 {
-    use Base\Traits\HasBank;
     use Base\Traits\HasMerchant;
 
     const CODE         = 'code';
@@ -26,11 +25,6 @@ class Entity extends Base\Entity
     protected $primaryKey         = self::CODE;
     protected $generateIdOnCreate = false;
     protected static $generators  = [];
-
-    protected $publicSetters      = [
-        Entity::BANK_NAME,
-        Entity::ENTITY,
-    ];
 
     protected $dates = [
         Entity::CREATED_AT,
@@ -55,7 +49,6 @@ class Entity extends Base\Entity
         Entity::ENTITY,
         Entity::CODE,
         Entity::BANK,
-        Entity::BANK_NAME,
     ];
 
     protected $defaults = [
