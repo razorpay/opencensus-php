@@ -97,7 +97,12 @@ export default class extends React.Component {
     }
 
     openModal(
-      <ExperimentsModal data={this.state.data} onEdit={this.onEdit} JSONView />
+      <ExperimentsModal
+        data={this.state.data}
+        onEdit={this.onEdit}
+        isReadOnly={this.props.isReadOnly || this.state.data.activated_at}
+        JSONView
+      />
     );
   };
 
@@ -109,7 +114,7 @@ export default class extends React.Component {
 
   render() {
     const { isFetching, data, feature } = this.state;
-    const { id } = this.props;
+    const { id, isReadOnly } = this.props;
 
     let content;
 
@@ -136,6 +141,7 @@ export default class extends React.Component {
           terminate={this.terminate}
           showExperimentModal={this.showExperimentModal}
           showJSONModal={this.showJSONModal}
+          isReadOnly={isReadOnly}
         />
       );
     }
@@ -151,6 +157,7 @@ const Details = ({
   terminate,
   showExperimentModal,
   showJSONModal,
+  isReadOnly,
 }) => {
   const segments = getSegmentsGroupedByVariant(data.segments);
 
@@ -160,19 +167,23 @@ const Details = ({
         <span>
           <b>ID:</b> {data.id}
         </span>
-        {!data.activated_at &&
-          feature && (
-            <span class="to-right">
-              <a class="link text-bold" onClick={showExperimentModal}>
-                Edit Experiment
-              </a>{' '}
-              ({' '}
-              <a class="link text-bold" onClick={showJSONModal}>
-                RAW
-              </a>{' '}
-              )
-            </span>
-          )}
+        {feature && (
+          <span class="to-right">
+            {!data.activated_at &&
+              !isReadOnly && (
+                <>
+                  <a class="link text-bold" onClick={showExperimentModal}>
+                    Edit Experiment
+                  </a>{' '}
+                </>
+              )}
+            ({' '}
+            <a class="link text-bold" onClick={showJSONModal}>
+              RAW
+            </a>{' '}
+            )
+          </span>
+        )}
       </div>
 
       <div class="pad-highlight">

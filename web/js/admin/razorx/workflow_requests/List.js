@@ -147,17 +147,3 @@ const fields = [
 ];
 
 const href = item => '/requests/' + item.id;
-
-const entityMap = {
-  razorx_experiment_activate: 'experiments',
-};
-
-export function getEntityIdNugget(entityId, entityName) {
-  const url = `${entityMap[entityName]}/${entityId}`;
-
-  return (
-    <a class="link" href={`/razorx/${url}`} target="_blank">
-      {entityId}
-    </a>
-  );
-}
