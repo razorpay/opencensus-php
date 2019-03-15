@@ -20,7 +20,7 @@ class PaymentDowntimeTest extends TestCase
 
         $this->ba->privateAuth();
 
-        // $this->markTestSkipped('no code, lol');
+        $this->markTestSkipped('no code, lol');
     }
 
     public function testGetCardDowntimeForRupayGateways()

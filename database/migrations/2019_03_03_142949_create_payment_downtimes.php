@@ -23,11 +23,28 @@ class CreatePaymentDowntimes extends Migration
             $table->char(PaymentDowntime::ID, PaymentDowntime::ID_LENGTH)
                   ->primary();
 
+            $table->string(PaymentDowntime::STATUS);
+
+            $table->tinyInteger(PaymentDowntime::SCHEDULED)
+                  ->default(0);
+
             $table->string(PaymentDowntime::METHOD, 30);
 
             $table->integer(PaymentDowntime::BEGIN);
 
             $table->integer(PaymentDowntime::END)
+                  ->nullable();
+
+            $table->char(PaymentDowntime::ISSUER, 15)
+                  ->nullable();
+
+            $table->char(PaymentDowntime::TYPE, 10)
+                  ->nullable();
+
+            $table->char(PaymentDowntime::NETWORK, 10)
+                  ->nullable();
+
+            $table->char(PaymentDowntime::AUTH_TYPE, 10)
                   ->nullable();
 
             $table->integer(PaymentDowntime::CREATED_AT);

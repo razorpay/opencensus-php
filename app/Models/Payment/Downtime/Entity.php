@@ -7,26 +7,30 @@ use RZP\Constants\Entity as EntityConstants;
 
 class Entity extends Base\PublicEntity
 {
-    const ID            = 'id';
-    const METHOD        = 'method';
-    const BEGIN         = 'begin';
-    const END           = 'end';
-    const SEVERITY      = 'severity';
-    const ONGOING       = 'ongoing';
-    const CREATED_AT    = 'created_at';
-    const UPDATED_AT    = 'updated_at';
+    const ID         = 'id';
 
-    const ISSUER        = 'issuer';
-    const CARD_TYPE     = 'card_type';
-    const NETWORK       = 'network';
+    const STATUS     = 'status';
+    const SCHEDULED  = 'scheduled';
+    const METHOD     = 'method';
+    const BEGIN      = 'begin';
+    const END        = 'end';
+    const ISSUER     = 'issuer';
+    const TYPE       = 'type';
+    const NETWORK    = 'network';
+    const AUTH_TYPE  = 'auth_type';
+
+    const CREATED_AT = 'created_at';
+    const UPDATED_AT = 'updated_at';
+
+    const ONGOING    = 'ongoing';
 
     // the following 3 are for network, issuer and card_type
     // for the appropriate default values instead of null
-    const NA            = 'NA';
-    const UNKNOWN       = 'UNKNOWN';
-    const ALL           = 'ALL';
+    const NA         = 'NA';
+    const UNKNOWN    = 'UNKNOWN';
+    const ALL        = 'ALL';
 
-    const INSTRUMENT    = 'instrument';
+    const INSTRUMENT = 'instrument';
 
     protected $fillable = [
         self::BEGIN,

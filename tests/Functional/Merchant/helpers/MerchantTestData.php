@@ -2457,7 +2457,7 @@ return [
 
     'testGetCardDowntimeForRupayGateways' => [
         'request' => [
-            'url' => '/payments/downtime',
+            'url' => '/methods/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -2478,7 +2478,7 @@ return [
 
     'testGetNoCardDowntimeForSingleRupayGateway' => [
         'request' => [
-            'url' => '/payments/downtime',
+            'url' => '/methods/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -2493,7 +2493,7 @@ return [
 
     'testGetUpiDowntimeForAllGateways' => [
         'request' => [
-            'url' => '/payments/downtime',
+            'url' => '/methods/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -2513,7 +2513,7 @@ return [
 
     'testGetUpiDowntimeForIndividualGateways' => [
         'request' => [
-            'url' => '/payments/downtime',
+            'url' => '/methods/downtimes',
             'method' => 'get',
         ],
         'response' => [
@@ -2533,7 +2533,7 @@ return [
 
     'testGetWalletDowntime' => [
         'request' => [
-            'url' => '/payments/downtime',
+            'url' => '/methods/downtimes',
             'method' => 'get',
         ],
         'response' => [
