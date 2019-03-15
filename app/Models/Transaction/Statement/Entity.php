@@ -26,6 +26,7 @@ class Entity extends Transaction\Entity
     const CONTACT_PHONE   = 'contact_phone';
     const CONTACT_EMAIL   = 'contact_email';
     const CONTACT_TYPE    = 'contact_type';
+    const PAYOUT_PURPOSE  = 'payout_purpose';
     const MODE            = 'mode';
     const FUND_ACCOUNT_ID = 'fund_account_id';
     const UTR             = 'utr';
