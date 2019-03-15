@@ -19,7 +19,7 @@ class Entity extends Base\Entity
     const DEVICE_ID                = 'device_id';
     const HANDLE                   = 'handle';
     const GATEWAY_DATA             = 'gateway_data';
-    const BANK                     = 'bank';
+    const BANK_ID                  = 'bank_id';
     const IFSC                     = 'ifsc';
     const ACCOUNT_NUMBER           = 'account_number';
     const MASKED_ACCOUNT_NUMBER    = 'masked_account_number';
@@ -27,10 +27,10 @@ class Entity extends Base\Entity
     const CREDS                    = 'creds';
 
     /****************** Input Keys ***************/
+    const BANK                     = 'bank';
     const BANK_ACCOUNT             = 'bank_account';
     const BANK_ACCOUNTS            = 'bank_accounts';
     const BANK_NAME                = 'bank_name';
-    const CL                       = 'cl';
     const REGISTRATION_FORMAT      = 'registration_format';
     const BALANCE                  = 'balance';
     const CURRENCY                 = 'currency';
@@ -48,7 +48,7 @@ class Entity extends Base\Entity
         Entity::ID,
         Entity::BANK_NAME,
         Entity::ENTITY,
-        Entity::CL,
+        Entity::SDK,
     ];
 
     protected $dates = [
@@ -60,7 +60,7 @@ class Entity extends Base\Entity
 
     protected $fillable = [
         Entity::GATEWAY_DATA,
-        Entity::BANK,
+        Entity::BANK_ID,
         Entity::IFSC,
         Entity::ACCOUNT_NUMBER,
         Entity::MASKED_ACCOUNT_NUMBER,
@@ -73,12 +73,13 @@ class Entity extends Base\Entity
         Entity::DEVICE_ID,
         Entity::HANDLE,
         Entity::GATEWAY_DATA,
-        Entity::BANK,
+        Entity::BANK_ID,
         Entity::IFSC,
         Entity::ACCOUNT_NUMBER,
         Entity::MASKED_ACCOUNT_NUMBER,
         Entity::BENEFICIARY_NAME,
         Entity::CREDS,
+        Entity::SDK,
         Entity::REFRESHED_AT,
         Entity::CREATED_AT,
     ];
@@ -91,7 +92,7 @@ class Entity extends Base\Entity
         Entity::MASKED_ACCOUNT_NUMBER,
         Entity::BENEFICIARY_NAME,
         Entity::CREDS,
-        Entity::CL,
+        Entity::SDK,
         Entity::REFRESHED_AT,
         Entity::CREATED_AT,
     ];
@@ -104,20 +105,20 @@ class Entity extends Base\Entity
     ];
 
     protected $casts = [
-        Entity::ID                       => 'string',
-        Entity::DEVICE_ID                => 'string',
-        Entity::HANDLE                   => 'string',
-        Entity::GATEWAY_DATA             => 'array',
-        Entity::BANK                     => 'string',
-        Entity::IFSC                     => 'string',
-        Entity::ACCOUNT_NUMBER           => 'string',
-        Entity::MASKED_ACCOUNT_NUMBER    => 'string',
-        Entity::BENEFICIARY_NAME         => 'string',
-        Entity::CREDS                    => 'array',
-        Entity::REFRESHED_AT             => 'int',
-        Entity::DELETED_AT               => 'int',
-        Entity::CREATED_AT               => 'int',
-        Entity::UPDATED_AT               => 'int',
+        Entity::ID                    => 'string',
+        Entity::DEVICE_ID             => 'string',
+        Entity::HANDLE                => 'string',
+        Entity::GATEWAY_DATA          => 'array',
+        Entity::BANK_ID               => 'string',
+        Entity::IFSC                  => 'string',
+        Entity::ACCOUNT_NUMBER        => 'string',
+        Entity::MASKED_ACCOUNT_NUMBER => 'string',
+        Entity::BENEFICIARY_NAME      => 'string',
+        Entity::CREDS                 => 'array',
+        Entity::REFRESHED_AT          => 'int',
+        Entity::DELETED_AT            => 'int',
+        Entity::CREATED_AT            => 'int',
+        Entity::UPDATED_AT            => 'int',
     ];
 
     /***************** SETTERS *****************/
@@ -151,7 +152,7 @@ class Entity extends Base\Entity
      */
     public function setBank(string $bank)
     {
-        return $this->setAttribute(self::BANK, $bank);
+        return $this->setAttribute(self::BANK_ID, $bank);
     }
 
     /**
@@ -225,7 +226,7 @@ class Entity extends Base\Entity
      */
     public function getBank()
     {
-        return $this->getAttribute(self::BANK);
+        return $this->getAttribute(self::BANK_ID);
     }
 
     /**
@@ -270,10 +271,10 @@ class Entity extends Base\Entity
 
     /***************** MUTATORS *****************/
 
-    public function setPublicClAttribute(array & $array)
+    public function setPublicSdkAttribute(array & $array)
     {
-        $array[self::CL] = [
-            self::REGISTRATION_FORMAT => $this->parentBank->getUpiFormat(),
+        $array[self::SDK] = [
+            self::REGISTRATION_FORMAT => $this->bank->getUpiFormat(),
         ];
     }
 

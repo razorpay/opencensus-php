@@ -2197,7 +2197,9 @@ trait Authorize
     protected function setPreferredAuthIfApplicable(Payment\Entity $payment)
     {
         if (($payment->isMethodCardOrEmi() === false) or
-            ($payment->getAuthType() !== null))
+            ($payment->getAuthType() !== null) or
+            ($payment->isSecondRecurring() === true) or
+            ($payment->isPushPaymentMethod() === true))
         {
             return;
         }

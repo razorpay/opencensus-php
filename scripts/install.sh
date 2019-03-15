@@ -43,7 +43,7 @@ php $BASEDIR/scripts/clear_cli_opcache.php
 
 # DB Migrate
 echo  "== DB Migrate =="
-cd "$API_INSTALL_DIR" && php artisan migrate --force && php artisan migrate --database=test --force
+cd "$API_INSTALL_DIR" && php artisan migrate --force && php artisan migrate --database=test --force && php artisan migrate --path=database/migrations/p2p --force && php artisan migrate --path=database/migrations/p2p --database=test --force
 
 # Restart all queue worker processes
 if [[ ${DEPLOYMENT_GROUP_NAME} == "prod-api-dark" ]]; then

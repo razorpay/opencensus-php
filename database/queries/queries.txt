@@ -4824,3 +4824,7 @@ ALTER TABLE fund_accounts
 ALTER TABLE contacts
     ADD COLUMN batch_id varchar(14) DEFAULT NULL AFTER merchant_id,
     ADD index contacts_batch_id_index (batch_id);
+
+ALTER TABLE refunds
+    ADD COLUMN is_scrooge TINYINT(1) NOT NULL DEFAULT 0 AFTER processed_at,
+    ADD INDEX refunds_is_scrooge_index (`is_scrooge`);

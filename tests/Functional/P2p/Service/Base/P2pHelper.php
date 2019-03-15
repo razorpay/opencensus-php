@@ -243,17 +243,15 @@ class P2pHelper
      */
     protected function send(P2pRequest $request): array
     {
-        // TODO: Remove Before Merging
-        info('_LOGGER_ REQUEST', $request->trace());
+        if (env('P2P_LOG_REQUESTS')) info('_LOGGER_ REQUEST', $request->trace());
 
         $response = $request->send();
 
-        // TODO: Remove Before Merging
-        info('_LOGGER_ RESPONSE', [$response->content()]);
+        if (env('P2P_LOG_REQUESTS')) info('_LOGGER_ RESPONSE', $response->json());
 
         $this->runResponseCallbacks($response);
 
-        $this->validateResponseJsonSchema($response->content());
+        $this->validateResponseJsonSchema(json_decode($response->content()));
 
         return $response->json();
     }
@@ -277,21 +275,35 @@ class P2pHelper
      *
      * @param string $json
      */
-    protected function validateResponseJsonSchema(string $json)
+    protected function validateResponseJsonSchema(\stdClass $data)
     {
         if ($this->shouldValidateJsonSchema === false)
         {
             return;
         }
 
-        $jsonPath = app_path('Http/Controllers/P2p/JsonSchema/' . $this->validationJsonSchemaPath . '.json');
+        if ($this instanceof DeviceHelper)
+        {
+            $suffix = 'processed';
+
+            if (isset($data->type) and in_array($data->type, ['sdk', 'sms', 'poll'], true))
+            {
+                $suffix = 'next';
+            }
+
+            $jsonPath = app_path('Http/Controllers/P2p/JsonSchema/' .
+                $this->validationJsonSchemaPath . '.response.' . $suffix . '.json');
+        }
+        else
+        {
+            $jsonPath = app_path('Http/Controllers/P2p/JsonSchema/' .
+                $this->validationJsonSchemaPath . '.json');
+        }
 
         if (file_exists($jsonPath) === false)
         {
             $this->throwTestingException('Json schema file does not exists', [$jsonPath]);
         }
-
-        $data = json_decode($json);
 
         $validator = new JsonSchema\Validator;
 
@@ -313,6 +325,13 @@ class P2pHelper
 
     protected function makeUri(string $uri, array $parameters)
     {
+        $url = parse_url($uri);
+
+        if (empty($url['scheme']) === false)
+        {
+            return $uri;
+        }
+
         $prefix = 'v1/upi/';
 
         if ($this->isCustomerInContext === true)

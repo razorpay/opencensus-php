@@ -4,9 +4,10 @@ namespace RZP\Http\Controllers\P2p;
 
 class Requests
 {
-    const P2P_CUSTOMER_START_VERIFICATION                   = 'p2p_customer_start_verification';
-    const P2P_CUSTOMER_VERIFICATION_STATUS                  = 'p2p_customer_verification_status';
-    const P2P_CUSTOMER_REFRESH_TOKEN                        = 'p2p_customer_refresh_token';
+    const P2P_CUSTOMER_INITIATE_VERIFICATION                = 'p2p_customer_initiate_verification';
+    const P2P_CUSTOMER_VERIFICATION                         = 'p2p_customer_verification';
+    const P2P_CUSTOMER_INITIATE_GET_TOKEN                   = 'p2p_customer_initiate_get_token';
+    const P2P_CUSTOMER_GET_TOKEN                            = 'p2p_customer_get_token';
     const P2P_CUSTOMER_DEREGISTER                           = 'p2p_customer_deregister';
 
     const P2P_BANKS_FETCH_ALL                               = 'p2p_banks_fetch_all';

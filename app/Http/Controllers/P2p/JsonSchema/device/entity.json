@@ -86,9 +86,10 @@
         }
     },
     "actions" : [
-        "startVerification",
-        "getVerificationStatus",
-        "refreshClToken",
+        "initiateVerification",
+        "verification",
+        "initiateGetToken",
+        "getToken",
         "deregister"
     ]
 }
