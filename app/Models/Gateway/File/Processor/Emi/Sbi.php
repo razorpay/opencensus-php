@@ -205,7 +205,7 @@ class Sbi extends Base
 
                 $tenure = $emiPlan->getDuration();
 
-                $businessName = substr($merchantDetail[Detail\Entity::BUSINESS_NAME], 0, 40);
+                $businessName = $this->getBusinessName($merchantDetail);
 
                 $emiAmount = $this->getEmiAmount($principalAmount, $rate, $tenure);
 
@@ -271,6 +271,49 @@ class Sbi extends Base
         $textRows = array_merge($header, $body);
 
         return implode("\r\n", $textRows);
+    }
+
+    protected function getBusinessName($merchantDetails)
+    {
+        $replaceArray = [
+            '.',
+            '!',
+            '@',
+            '#',
+            '$',
+            '%',
+            '^',
+            '&',
+            '*',
+            '(',
+            ')',
+            '~',
+            '`',
+            '_',
+            '+',
+            '=',
+            '|',
+            '\\',
+            '\'',
+            ':',
+            ';',
+            '<',
+            '>',
+            '?',
+            '/',
+            '{',
+            '}',
+            '-',
+            '_',
+            '@',
+            ',',
+            '[',
+            ']',
+        ];
+
+        $name = str_replace($replaceArray, " ", $merchantDetails[Detail\Entity::BUSINESS_NAME]);
+
+        return substr($name, 0, 40);
     }
 
     // @codingStandardsIgnoreLine
