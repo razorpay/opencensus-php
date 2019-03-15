@@ -1267,6 +1267,8 @@ trait Refund
     {
         $data = $this->getGatewayDataForScroogeRefund($refund, $refund->payment, $data);
 
+        $refund->setIsScrooge(true);
+
         $refund->incrementAttempts();
 
         $this->repo->saveOrFail($refund);

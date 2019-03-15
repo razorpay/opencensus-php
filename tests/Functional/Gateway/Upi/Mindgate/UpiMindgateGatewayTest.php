@@ -626,6 +626,9 @@ class UpiMindgateGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
+        // Mindgate refunds are processed via scrooge, so is_scrooge will be true
+        $this->assertEquals($refund[RefundEntity::IS_SCROOGE], true);
+
         $this->assertNotNull($refund[PaymentEntity::ACQUIRER_DATA][RefundEntity::RRN]);
     }
 

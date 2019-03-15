@@ -4813,3 +4813,7 @@ ALTER TABLE batches
 
 ALTER TABLE iins
     ADD COLUMN recurring TINYINT(1) DEFAULT 0 AFTER locked;
+
+ALTER TABLE refunds
+    ADD COLUMN is_scrooge TINYINT(1) NOT NULL DEFAULT 0 AFTER processed_at,
+    ADD INDEX refunds_is_scrooge_index (`is_scrooge`);
