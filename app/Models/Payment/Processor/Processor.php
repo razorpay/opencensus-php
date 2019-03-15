@@ -15,6 +15,7 @@ use RZP\Exception;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\BankAccount;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Base\Utility;
 use RZP\Models\Card;
 use RZP\Models\Customer;
 use RZP\Models\EntityOrigin;
@@ -2606,7 +2607,7 @@ class Processor
     {
         try
         {
-            $requestTime = $this->getDiffInMilliSecond($startTime);
+            $requestTime = (int) Utility::getDiffInMilliSecond($startTime);
 
             (new Payment\Metric)->pushCreateRequestTimeMetrics($payment, $requestTime);
         }
@@ -2618,22 +2619,5 @@ class Processor
                 TraceCode::PAYMENT_ERROR_LOGGING_METRIC
             );
         }
-    }
-
-    protected function getDiffInMilliSecond($startTime)
-    {
-        $startTimes = explode(" ", $startTime);
-
-        $endTime = microtime();
-
-        $endTimes = explode(" ", $endTime);
-
-        $requestTime = ((int)$endTimes[1] - (int)$startTimes[1]) * 1000;
-
-        $startMillisecond = (float)$startTimes[0] * 1000;
-
-        $endMillisecond   = (float)$endTimes[0] * 1000;
-
-        return $requestTime + (int)($endMillisecond - $startMillisecond);
     }
 }
