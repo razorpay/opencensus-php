@@ -199,34 +199,36 @@ export default class SubMerchantsList extends ListContainer {
       <div class="sub-merchants-list">
         <div>
           <HeaderAction>
-            <button
-              class="btn btn-default"
-              onClick={this.onDownload}
-              disabled={this.state.affiliatesDownloading}
-            >
-              {!this.state.affiliatesDownloading ? (
-                <>
-                  <i className="i i-download" />
-                  <span>Export All (CSV)</span>
-                </>
-              ) : (
-                <>Exporting Affiliates...</>
-              )}
-            </button>
-            <ShowWhen
-              myRole="owner manager admin"
-              additionalCondition={user =>
-                user.isPartner() && !user.isPartner('pure_platform')
-              }
-            >
+            <>
               <button
-                class="btn btn-primary pull-right"
-                onClick={this.handleAddMerchant}
+                class="btn btn-default"
+                onClick={this.onDownload}
+                disabled={this.state.affiliatesDownloading}
               >
-                <i class="i i-plus" />
-                Add New Merchant
+                {!this.state.affiliatesDownloading ? (
+                  <>
+                    <i className="i i-download" />
+                    <span>Export All (CSV)</span>
+                  </>
+                ) : (
+                  <>Exporting Affiliates...</>
+                )}
               </button>
-            </ShowWhen>
+              <ShowWhen
+                myRole="owner manager admin"
+                additionalCondition={user =>
+                  user.isPartner() && !user.isPartner('pure_platform')
+                }
+              >
+                <button
+                  class="btn btn-primary pull-right m-l"
+                  onClick={this.handleAddMerchant}
+                >
+                  <i class="i i-plus" />
+                  Add New Merchant
+                </button>
+              </ShowWhen>
+            </>
           </HeaderAction>
         </div>
         <div class="content-wrapper">
