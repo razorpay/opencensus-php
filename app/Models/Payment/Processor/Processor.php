@@ -2606,11 +2606,9 @@ class Processor
     {
         try
         {
-            $currentRouteName = $this->route->getCurrentRouteName();
-
             $requestTime = $this->getDiffInMilliSecond($startTime);
 
-            (new Payment\Metric)->pushCreateRequestTimeMetrics($payment, $currentRouteName, $requestTime);
+            (new Payment\Metric)->pushCreateRequestTimeMetrics($payment, $requestTime);
         }
         catch (\Throwable $e)
         {

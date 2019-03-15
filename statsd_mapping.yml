@@ -96,7 +96,7 @@ mappings:
   buckets: [60, 120, 300, 720, 1800, 86400]
   name: "api_payment_captured_v1"
 
-- match: api_payment_create_request.*
+- match: api_payment_create_request_time.*
   timer_type: histogram
   buckets: [60, 120, 300, 720, 1800, 3600, 7200, 14400, 21600, 43200, 86400, 172800]
-  name: "api_payment_create_request"
+  name: "api_payment_create_request_time"
