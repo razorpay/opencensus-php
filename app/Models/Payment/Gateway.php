@@ -1368,7 +1368,13 @@ class Gateway
 
     public static $onlyAuthorizationGateway = [
         Gateway::HITACHI,
+        Gateway::CYBERSOURCE,
         Gateway::ENACH_RBL,
+    ];
+
+    public static $authorizationAuthenticationGatewayMap = [
+        Gateway::HITACHI     => Gateway::MPI_BLADE,
+        Gateway::CYBERSOURCE => Gateway::CYBERSOURCE,
     ];
 
     public static $subscriptionOverOneYearGateways = [
@@ -1432,6 +1438,11 @@ class Gateway
     public static function isOnlyAuthorizationGateway($gateway): bool
     {
         return in_array($gateway, self::$onlyAuthorizationGateway, true);
+    }
+
+    public static function authorizationToAuthenticationGateway($gateway, $default = null)
+    {
+        return self::$authorizationAuthenticationGatewayMap[$gateway] ?? $default;
     }
 
     public static function isZeroRupeeFlowSupported($bank): bool

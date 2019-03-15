@@ -1596,7 +1596,7 @@ trait Authorize
                     if (($payment->isRecurring() === false) or
                         ($payment->isRecurringTypeInitial() === true))
                     {
-                        $gateway = Payment\Gateway::MPI_BLADE;
+                        $gateway = Payment\Gateway::authorizationToAuthenticationGateway($payment->getGateway(), Payment\Gateway::MPI_BLADE);
                         $authType = '3ds';
 
                         if ($this->canRunIvrFlow($payment) === true)
@@ -4229,7 +4229,7 @@ trait Authorize
                 // Also, the order of the checks matter here since the second
                 // condition covers a superset.
                 //
-                if (($payment->getGateway() === Payment\Gateway::HITACHI) and
+                if ((Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true) and
                     ($this->isAuthTypeOtp($payment) === true))
                 {
                     if ($this->canRunAxisExpressPay($payment) === true)
