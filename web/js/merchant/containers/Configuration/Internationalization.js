@@ -7,6 +7,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import SwitchField from 'rzp/ui/Forms/SwitchField';
 import { merchantFetch } from 'merchant/utils/ajax';
 import Alert from 'component/Alert';
+import User from 'merchant/models/User';
 
 const CUSTOM_MSG = {
   not_supported:
@@ -65,7 +66,13 @@ export default class FlashCheckout extends Component {
             internationalEnabled: !!enableInternational,
           });
 
-          this.props.updateSession(resp.data);
+          // Update user in store
+          const user = new User({
+            ...this.props.user,
+            international: resp.data.international,
+          });
+
+          this.props.updateSession({ user });
         } else {
           throw 'Business category/subcategory must be set'; // This code is ideally unreachable as per business logic. However, since Api silently fails here, hence handling explicitly.
         }
@@ -90,6 +97,10 @@ export default class FlashCheckout extends Component {
 
     if (user.international) {
       displayMsg = CUSTOM_MSG['international_enabled'];
+
+      if (user.international_activation_flow) {
+        showToggler = true;
+      }
     } else {
       // If international profiling(whitelist-blacklist-graylist) is set
       if (user.international_activation_flow) {
