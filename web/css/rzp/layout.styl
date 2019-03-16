@@ -255,40 +255,51 @@ $sidebar-width = 200px;
     }
   }
 
-  .nav > a {
-    border-left: 4px solid transparent;
-    color: #b4b6bd;
-    display: block;
-    line-height: 40px;
-    padding: 0 15px;
-    @media (max-width $screen-sm-min) {
-      white-space: nowrap;
+  .nav {
+    .NavLinkGroup .Collapsible--title i {
+      line-height: 40px
     }
 
-    .badge {
-      margin-top: 13px;
-      font-size: 9px;
-      letter-spacing: 0.7px;
+    .NavLink {
+      display: block
     }
 
-    .i, .fa {
-      margin-right: 10px;
-      width: 16px;
-      text-align: center;
-    }
+    .NavLinkGroup--title,
+    .NavLink {
+      background-color: transparent;
+      border-left: 4px solid transparent;
+      color: #b4b6bd;
+      line-height: 40px;
+      padding: 0 15px;
+      @media (max-width $screen-sm-min) {
+        white-space: nowrap;
+      }
 
-    &:hover, &:focus {
-      background-color: #32374a;
-    }
+      .badge {
+        margin-top: 13px;
+        font-size: 9px;
+        letter-spacing: 0.7px;
+      }
 
-    &.active {
-      border-color: $primary-color;
-      color: #fff;
-      background-color: #252939;
-    }
+      .i, .fa {
+        margin-right: 10px;
+        width: 16px;
+        text-align: center;
+      }
 
-    .spin-loader {
-      margin-top: 10px
+      &:hover, &:focus {
+        background-color: #32374a;
+      }
+
+      &.active {
+        border-color: $primary-color;
+        color: #fff;
+        background-color: #252939;
+      }
+
+      .spin-loader {
+        margin-top: 10px
+      }
     }
   }
 
@@ -1451,9 +1462,8 @@ span.transfer-scheduled-text.text-warning span.label--primary {
 
 
 // support widget space issue for phone
-@media(max-width: 424px) 
-  .layout 
+@media(max-width: 424px)
+  .layout
     padding-bottom: 150px
-  .pagefooter 
+  .pagefooter
     bottom: 90px
-  

@@ -110,6 +110,7 @@ export default class MainNavLink extends Component {
           {...linkProps}
           isActive={this.setActivePageName}
           onClick={this.handleClick}
+          class="NavLink"
         >
           <i class={icon} />
           {label}
