@@ -964,6 +964,7 @@ final class Route
         'partner_config_edit'                      => ['put',      'partner_configs/{id}',                           'PartnerConfigController@update'                                    ],
 
         'commissions_get_multiple'                 => ['get',      'commissions',                                    'CommissionController@list'                                         ],
+        'commissions_get'                          => ['get',      'commissions/{id}',                               'CommissionController@get'                                           ],
 
         'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
         'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
@@ -1600,6 +1601,7 @@ final class Route
         'payout_create_with_otp',
         'payment_link_images',
         'commissions_get_multiple',
+        'commissions_get',
     ];
 
     // These will run on internal auth with the assurance
