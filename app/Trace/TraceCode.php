@@ -1691,6 +1691,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VAULT_TOKEN_CREATE_INIT             = 'VAULT_TOKEN_CREATE_INIT';
     const VAULT_TOKEN_CREATE_COMPLETE         = 'VAULT_TOKEN_CREATE_COMPLETE';
 
+    // P2P Traces
+    const P2P_REQUEST                                   = 'P2P_REQUEST';
+    const P2P_RESPONSE                                  = 'P2P_RESPONSE';
+    const P2P_GATEWAY_REQUEST                           = 'P2P_GATEWAY_REQUEST';
+    const P2P_GATEWAY_RESPONSE                          = 'P2P_GATEWAY_RESPONSE';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
