@@ -5,16 +5,6 @@ export default function MerchantNavLinks(props) {
   return (
     <>
       <MainNavLink
-        label="Partner Dashboard"
-        icon="i i-partner text-success"
-        to={routes.partnerDashboard}
-        additionalCondition={user => user.isPartner()}
-        exact
-      />
-
-      <div class="divider" />
-
-      <MainNavLink
         label="Home"
         icon="i i-chart text-info"
         to="/dashboard"

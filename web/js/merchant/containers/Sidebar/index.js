@@ -13,7 +13,10 @@ import {
 
 import ActivationProgress from './ActivationProgress';
 import { trackGoToActivation, trackGoToConfig } from './ga';
+
+import MainNavLinkGroup from './MainNavLinkGroup';
 import MerchantNavLinks from './MerchantNavLinks';
+import PartnerNavLinks from './PartnerNavLinks';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(profile|credits|addfunds|referrals)/;
@@ -157,6 +160,11 @@ export default class Sidebar extends Component {
     let routes = this.routes;
     const isMerchant = !!user.current;
 
+    const merchantNavLinkProps = {
+      routes,
+      isReportsPending,
+      isChargeAtWillEnabled: user.isChargeAtWillEnabled,
+    };
     return (
       <>
         <div class={`sidebar${showMobileMenu ? ' show-mobile-menu' : ''}`}>
@@ -174,11 +182,11 @@ export default class Sidebar extends Component {
                   config={config}
                 />
 
-                <MerchantNavLinks
-                  routes={routes}
-                  isReportsPending={isReportsPending}
-                  isChargeAtWillEnabled={user.isChargeAtWillEnabled}
-                />
+                {user.isPartner() ? (
+                  <PartnerSidebar merchantNavLinkProps={merchantNavLinkProps} />
+                ) : (
+                  <MerchantNavLinks {...merchantNavLinkProps} />
+                )}
               </div>
             )}
           </nav>
@@ -192,6 +200,41 @@ export default class Sidebar extends Component {
           shouldShow={this.props.showAcceptPayments}
           onClose={this.props.hideAcceptPaymentsModal}
         />
+      </>
+    );
+  }
+}
+
+class PartnerSidebar extends Component {
+  state = {
+    partnerOpen: true,
+  };
+
+  onToggle = () => {
+    this.setState({
+      partnerOpen: !this.state.partnerOpen,
+    });
+  };
+
+  render() {
+    const props = this.props;
+    return (
+      <>
+        <MainNavLinkGroup
+          title="Partner"
+          onToggleClick={this.onToggle}
+          value={this.state.partnerOpen}
+        >
+          <PartnerNavLinks />
+        </MainNavLinkGroup>
+
+        <MainNavLinkGroup
+          title="Merchant"
+          onToggleClick={this.onToggle}
+          value={!this.state.partnerOpen}
+        >
+          <MerchantNavLinks {...props.merchantNavLinkProps} />
+        </MainNavLinkGroup>
       </>
     );
   }
