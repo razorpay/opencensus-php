@@ -7,11 +7,28 @@ export default class Collapsible extends Component {
   };
 
   constructor(props) {
-    super();
+    super(props);
+    this.hasOwnValue = this.checkForValue();
     this.state = {
-      open: !!props.defaultOpen,
+      open: !!(this.hasOwnValue ? props.value : props.defaultOpen),
     };
   }
+
+  componentWillReceiveProps(nextProps) {
+    if (this.hasOwnValue) {
+      this.setState({
+        open: !!nextProps.value,
+      });
+    }
+  }
+
+  onToggleClick = (...args) => {
+    if (this.hasOwnValue) {
+      this.props.onToggleClick(...args);
+      return;
+    }
+    this.toggle(...args);
+  };
 
   toggle = () => {
     this.setState({
@@ -23,7 +40,7 @@ export default class Collapsible extends Component {
     const { state, props } = this;
     return (
       <div className={classList('Collapsible', props.className)}>
-        <header class="Collapsible--title" onClick={this.toggle}>
+        <header class="Collapsible--title" onClick={this.onToggleClick}>
           <span>{props.title}</span>
           <i
             class={classList(
@@ -38,4 +55,10 @@ export default class Collapsible extends Component {
       </div>
     );
   }
+
+  checkForValue = () => {
+    if (this.props.hasOwnProperty('value')) {
+      return true;
+    }
+  };
 }
