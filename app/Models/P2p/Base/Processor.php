@@ -3,6 +3,7 @@
 namespace RZP\Models\P2p\Base;
 
 use Crypt;
+use RZP\Trace\TraceCode;
 use Illuminate\Support\Arr;
 use RZP\Exception\LogicException;
 use RZP\Gateway\P2p\Base\Response;
@@ -128,7 +129,7 @@ class Processor
     protected function callGateway()
     {
         $gateway     = $this->getGateway();
-        $action      = $this->getGatewayAction();
+        $entity      = $this->getEntity();
         $mode        = $this->mode();
 
         // These two variables are passed directly to gateway and only gateway can validate these
@@ -138,12 +139,19 @@ class Processor
         // Before passing input to gateway we will run basic check
         $this->modifyGatewayInput($this->gatewayInput);
 
+        $this->trace()->info(TraceCode::P2P_REQUEST, [
+            'action'    => $this->action,
+            'entity'    => $entity,
+            'gateway'   => $gateway,
+            'input'     => $this->input,
+        ]);
+
         // We are using context directly to pass to gateway. This is experimental and may change in future.
         // We might need to reverse the logic where context will be put inside gateway input.
         $this->context()->setGatewayData($gateway, $this->action, $this->gatewayInput);
 
         // In spite of passing the gateway data, we are passing complete context object
-        $this->gatewayResponse = $this->app['gateway']->call($gateway, $action, $this->context(), $mode);
+        $this->gatewayResponse = $this->app['gateway']->call($gateway, $entity, $this->context(), $mode);
 
         return $this->processGatewayResponse();
     }
@@ -153,7 +161,7 @@ class Processor
         return $this->context()->getHandle()->getAcquirer();
     }
 
-    protected function getGatewayAction()
+    protected function getEntity()
     {
         $action = strtr(static::class, ['RZP\Models\P2p\\' => '', '\Processor' => '']);
 
@@ -164,17 +172,27 @@ class Processor
     {
         if ($this->gatewayResponse->isSuccess() === false)
         {
-            return $this->handleGatewayFailure();
+            $response = $this->handleGatewayFailure();
         }
-
-        // If there if there is next request, we will handle that
-        if ($this->gatewayResponse->hasRequest())
+        else if ($this->gatewayResponse->hasRequest())
         {
-            return $this->generateNextRequest();
+            // If there if there is next request, we will handle that
+            $response = $this->generateNextRequest();
+        }
+        else
+        {
+            // Else we will consider it to be a success response
+            $response = $this->handleGatewaySuccess();
         }
 
-        // Else we will consider it to be a success response
-        return $this->handleGatewaySuccess();
+        $this->trace()->info(TraceCode::P2P_RESPONSE, [
+            'action'    => $this->action,
+            'entity'    => $this->getEntity(),
+            'gateway'   => $this->getGateway(),
+            'response'  => $response,
+        ]);
+
+        return $response;
     }
 
     public function handleGatewaySuccess()

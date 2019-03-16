@@ -4,13 +4,13 @@ namespace RZP\Models\P2p\Base\Libraries;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Models\P2p\Base\MorphMap;
 use RZP\Models\P2p\Device;
 use RZP\Base\JitValidator;
 use Illuminate\Http\Request;
 use RZP\Models\P2p\Vpa\Handle;
+use RZP\Trace\P2pTraceProcessor;
+use RZP\Models\P2p\Base\MorphMap;
 use RZP\Exception\LogicException;
-use Illuminate\Foundation\Application;
 use RZP\Exception\BadRequestException;
 
 class Context
@@ -73,8 +73,6 @@ class Context
 
     public function loadWithRequest(Request $request)
     {
-        MorphMap::boot();
-
         // Setting the options first as options will be use to resolve the context
         $this->setOptions(ContextMap::resolveRequestHeaders($request));
 
@@ -111,6 +109,8 @@ class Context
         }
         // Note:: We are not putting application as instance variable
         // to ensure that context is independent of application container.
+
+        $this->registerServices();
     }
 
     /**
@@ -303,6 +303,12 @@ class Context
         return $this->handle->getCode();
     }
 
+    /**
+     * Validates whether the given merchant is in context
+     *
+     * @param Merchant\Entity $merchant
+     * @throws BadRequestException
+     */
     public function validateMerchant(Merchant\Entity $merchant)
     {
         if ($this->merchant->getId() !== $merchant->getId())
@@ -318,5 +324,18 @@ class Context
     public function throwContextException($message)
     {
         throw new BadRequestException(ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED, $message);
+    }
+
+    /**
+     * Normally these services are registered from Providers, but in case
+     * of P2P, these services may lead to conflicts. Thus only be called for P2P.
+     */
+    protected function registerServices()
+    {
+        // Morphing must only be handled within P2P requests
+        MorphMap::boot();
+
+        // We only want to register the P2P Trace Processor within P2P requests
+        app('trace')->pushProcessor(new P2pTraceProcessor($this));
     }
 }
