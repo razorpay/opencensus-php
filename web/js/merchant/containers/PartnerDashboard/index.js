@@ -30,7 +30,10 @@ export default function PartnerDashboard() {
           <NavLink to="/submerchants/applications">Applications</NavLink>
         </ShowWhen>
 
-        <ShowWhen featureEnabled="show_commissions">
+        <ShowWhen
+          additionalCondition={user => !user.isPartner('reseller')}
+          featureEnabled="show_commissions"
+        >
           <NavLink to="/commissions">Transactional Details</NavLink>
         </ShowWhen>
       </header>
@@ -62,7 +65,11 @@ export default function PartnerDashboard() {
             component={Applications}
           />
 
-          <ShowWhenRoute path="/commissions" component={Commissions} />
+          <ShowWhenRoute
+            additionalCondition={user => !user.isPartner('resller')}
+            path="/commissions"
+            component={Commissions}
+          />
 
           <Route path="/submerchants" component={SubMerchantList} />
         </Switch>

@@ -17,7 +17,9 @@ import EntityRow from 'ui/EntityRow';
 import ToggleEntityRow from 'ui/ToggleEntityRow';
 import Model from './model';
 import AsyncButton from 'ui/AsyncButton';
-import { isWorkflow } from 'common/util';
+import { isWorkflow, intersect } from 'common/util';
+import { isPresent } from 'rzp/utils/rzp-utils';
+
 import { isOrgHDFC } from 'admin/user';
 
 let parentProps, merchantId;
@@ -726,6 +728,15 @@ const ActionsList = ({ model, merchantId, actions }) => {
         </ShowWhen>
       </div>
 
+      <PartnerNavItems
+        isDetailsLoading={isDetailsLoading}
+        isPartnerRequestsLoading={isPartnerRequestsLoading}
+        isSubmerchantsLoading={isSubmerchantsLoading}
+        merchant={merchant}
+        actions={actions}
+        merchantId={merchantId}
+      />
+
       <div class="group">
         <div class="group-heading" />
 
@@ -743,45 +754,6 @@ const ActionsList = ({ model, merchantId, actions }) => {
             {isDetailsLoading && <div class="dot-loader">.</div>}
           </div>
         </ShowWhen>
-
-        {(function() {
-          const isLoading = isDetailsLoading || isPartnerRequestsLoading;
-          const action = merchant.details.partner_type ? 'Remove' : 'Mark';
-          return (
-            <ShowWhen permission="edit_merchant_requests">
-              <div onClick={isLoading ? null : actions.TogglePartnerType}>
-                {isLoading ? (
-                  <Fragment>
-                    Fetching Partner Status <div class="dot-loader">.</div>{' '}
-                  </Fragment>
-                ) : (
-                  <Fragment>{action} as partner</Fragment>
-                )}
-                <i class="pull-right i-partner" />
-              </div>
-            </ShowWhen>
-          );
-        })()}
-
-        {!isDetailsLoading &&
-          !!merchant.details.partner_type && (
-            <ShowWhen permission="edit_partners">
-              <div
-                onClick={isSubmerchantsLoading ? null : actions.LinkSubmerchant}
-              >
-                Link Submerchant
-                {isSubmerchantsLoading && <div class="dot-loader" />}
-                <i class="pull-right i-user-plus" />
-              </div>
-            </ShowWhen>
-          )}
-
-        {!!merchant.details.partner_type && (
-          <Link to={`/merchants/${merchantId}/partner_config`}>
-            Partner Config
-            <i class="pull-right i-partner" />
-          </Link>
-        )}
 
         <ShowWhen permission="edit_merchant_screenshot">
           <div onClick={actions.UploadScreenshots}>
@@ -807,3 +779,70 @@ const ActionsList = ({ model, merchantId, actions }) => {
     </aside>
   );
 };
+
+function PartnerNavItems({
+  isDetailsLoading,
+  isPartnerRequestsLoading,
+  isSubmerchantsLoading,
+  merchant,
+  actions,
+  merchantId,
+}) {
+  const partnerPermissions = [
+    'edit_merchant_requests',
+    'edit_partners',
+    'view_partners',
+  ];
+  return (
+    <ShowWhen
+      additionalCondition={user =>
+        isPresent(intersect(partnerPermissions, user.permissions))
+      }
+    >
+      <div class="group">
+        <div class="group-heading">Partners</div>
+
+        {(function() {
+          const isLoading = isDetailsLoading || isPartnerRequestsLoading;
+          const action = merchant.details.partner_type ? 'Remove' : 'Mark';
+          return (
+            <ShowWhen permission="edit_merchant_requests">
+              <div onClick={isLoading ? null : actions.TogglePartnerType}>
+                {isLoading ? (
+                  <>
+                    Fetching Partner Status <div class="dot-loader">.</div>{' '}
+                  </>
+                ) : (
+                  <>{action} as partner</>
+                )}
+                <i class="pull-right i-partner" />
+              </div>
+            </ShowWhen>
+          );
+        })()}
+
+        {!isDetailsLoading &&
+          !!merchant.details.partner_type && (
+            <ShowWhen permission="edit_partners">
+              <div
+                onClick={isSubmerchantsLoading ? null : actions.LinkSubmerchant}
+              >
+                Link Submerchant
+                {isSubmerchantsLoading && <div class="dot-loader" />}
+                <i class="pull-right i-user-plus" />
+              </div>
+            </ShowWhen>
+          )}
+
+        {!!merchant.details.partner_type && (
+          <ShowWhen permission="view_partners">
+            <Link to={`/merchants/${merchantId}/partner_config`}>
+              Partner Config
+              <i class="pull-right i-partner" />
+            </Link>
+          </ShowWhen>
+        )}
+      </div>
+    </ShowWhen>
+  );
+}
