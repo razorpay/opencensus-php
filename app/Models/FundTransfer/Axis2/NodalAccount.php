@@ -31,6 +31,8 @@ class NodalAccount extends NodalBase\FileProcessor
 
     const BEAM_FILE_TYPE      = 'settlement';
 
+    const BENE_DEFAULT_NAME      = 'Not Available';
+
     protected $id;
 
     protected $emptyRow;
@@ -263,10 +265,15 @@ class NodalAccount extends NodalBase\FileProcessor
 
             $normalizedString = preg_replace('/\s+/',' ', $normalizedNameWithSpaces);
 
+            if (strlen(trim($normalizedString)) === 0)
+            {
+                return self::BENE_DEFAULT_NAME;
+            }
+
             return substr($normalizedString, 0, 70);
         }
 
-        return $name;
+        return self::BENE_DEFAULT_NAME;
     }
 
     protected function getTransferMode($amount, Merchant\Entity $merchant): string
