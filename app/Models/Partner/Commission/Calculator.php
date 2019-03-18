@@ -17,8 +17,10 @@ use RZP\Models\EntityOrigin;
 use RZP\Models\Pricing\Plan;
 use RZP\Exception\LogicException;
 use RZP\Models\Partner\Commission;
+use RZP\Constants as BaseConstants;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Models\Pricing\Calculator as FeeCalculator;
+use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 
 /**
  * Class Calculator
@@ -115,6 +117,13 @@ class Calculator extends Base\Core
      * @var bool
      */
     protected $isPartnerOriginated = false;
+
+    /**
+     * Tax components - [IGST => 1800] or [CGST => 900, SGST => 900]
+     *
+     * @var array
+     */
+    protected $taxComponents = [];
 
     /**
      * Calculator constructor.
@@ -285,6 +294,11 @@ class Calculator extends Base\Core
         return $this->feeCalculator;
     }
 
+    public function getTaxComponents(): array
+    {
+        return $this->taxComponents;
+    }
+
     // ==================================== SETTERS ====================================
 
     /**
@@ -399,6 +413,14 @@ class Calculator extends Base\Core
         $this->isPartnerOriginated = $isPartnerOriginated;
     }
 
+    /**
+     * @param int $partnerTax
+     */
+    public function setTaxComponents(array $taxComponents)
+    {
+        $this->taxComponents = $taxComponents;
+    }
+
     // ====================================== END ======================================
 
     /**
@@ -417,6 +439,9 @@ class Calculator extends Base\Core
 
         // partner merchant
         $this->setPartnerContext();
+
+        // set tax components based on partner merchant's account details
+        $this->setTaxComponentsContext();
 
         // partner merchant's oauth application's configuration (overridden for this submerchant)
         $this->setPartnerConfigContext();
@@ -648,6 +673,9 @@ class Calculator extends Base\Core
 
         $commissionFee = $merchantFee - $partnerFee;
         $commissionTax = $merchantTax - $partnerTax;
+
+        list($commissionFee, $commissionTax) = $this->addTaxToCommissionIfApplicable($commissionFee, $commissionTax);
+
         $this->setCommissionFee($commissionFee);
         $this->setCommissionTax($commissionTax);
 
@@ -868,6 +896,18 @@ class Calculator extends Base\Core
         $this->setPartner($partner);
     }
 
+    protected function setTaxComponentsContext()
+    {
+        if ($this->getPartner() === null)
+        {
+            return;
+        }
+
+        $taxComponents = FeeCalculator\Base::getTaxComponents($this->getPartner());
+
+        $this->setTaxComponents($taxComponents);
+    }
+
     /**
      * Fetch the relevant partner config for the application-submerchant mapping.
      * The defined config could be blanket app-level configuration or a submerchant-level overridden configuration.
@@ -921,13 +961,98 @@ class Calculator extends Base\Core
                             $this->getCommissions());
 
         return [
-            'source_type'    => optional($this->getSource())->getId(),
-            'source_id'      => optional($this->getSource())->getEntityName(),
-            'submerchant'    => optional($this->getSubMerchant())->getId(),
-            'partner'        => optional($this->getPartner())->getId(),
-            'partner_app'    => optional($this->getPartnerApp())->getId(),
-            'partner_config' => optional($this->getPartnerConfig())->getId(),
-            'commissions'    => $commissionIds,
+            'source_type'       => optional($this->getSource())->getEntityName(),
+            'source_id'         => optional($this->getSource())->getId(),
+            'submerchant_id'    => optional($this->getSubMerchant())->getId(),
+            'partner_id'        => optional($this->getPartner())->getId(),
+            'partner_app_id'    => optional($this->getPartnerApp())->getId(),
+            'partner_config_id' => optional($this->getPartnerConfig())->getId(),
+            'commission_ids'    => $commissionIds,
         ];
+    }
+
+    /**
+     * As per RBI guidelines, for card payments < 2K INR, no GST is charged.
+     * The commission calculator internally uses the merchant fee calculator to calculate commission.
+     * Hence for card payments < 2K INR, the commission calculated will always have zero tax.
+     *
+     * This function adds tax to the commission calculation if the tax calculated so far is zero.
+     *
+     * Example:
+     *  For payment amount = 1000 * 100 and variable commission with partner pricing as 1.8% & merchant pricing as 2%,
+     *  Partner fees and tax                                        = 1800, 0
+     *  Merchant fees and tax                                       = 2000, 0
+     *  Commission fees and tax as per calculation (difference)     = 200 , 0
+     *  Commission fees and tax after adding commission explicitly  = 236 , 36
+     *
+     * @param int $commissionFee
+     * @param int $commissionTax
+     *
+     * @return array
+     * @throws LogicException
+     */
+    protected function addTaxToCommissionIfApplicable(int $commissionFee, int $commissionTax): array
+    {
+        if ($commissionTax !== 0)
+        {
+            return [$commissionFee, $commissionTax];
+        }
+
+        $entityType = $this->getSource()->getEntity();
+
+        switch ($entityType)
+        {
+            case BaseConstants\Entity::PAYMENT:
+
+                return $this->addTaxToCommissionForPayment($commissionFee);
+
+            default:
+
+                $traceData = $this->getTraceData();
+
+                throw new LogicException(
+                    'The GST calculation on commission for ' . $entityType . ' is not handled',
+                    null,
+                    $traceData);
+        }
+    }
+
+    /**
+     * This function calculates GST over the commission fee for a payment, and returns the commission fee and tax.
+     *
+     * @param int $commissionFee
+     *
+     * @return array
+     */
+    protected function addTaxToCommissionForPayment(int $commissionFee): array
+    {
+        $taxValue   = 0;
+        $totalTaxes = 0;
+
+        $taxComponents = $this->getTaxComponents();
+
+        foreach ($taxComponents as $name => $percentage)
+        {
+            if (in_array($name, [FeeBreakupName::CGST, FeeBreakupName::SGST], true) === true)
+            {
+                $taxValue = ((int) round(($percentage * $commissionFee) / 10000));
+            }
+            else if ($name === FeeBreakupName::IGST)
+            {
+                // Calculate as per cgst percentage, and double it to get the exact tax value.
+                // We do this so that if this value needs to be split later into sgst+cgst, it is an even value
+                $calculationPercentage = FeeCalculator\Base::CGST_PERCENTAGE;
+
+                $taxValue = 2 * ((int) round(($calculationPercentage * $commissionFee) / 10000));
+            }
+
+            $totalTaxes += $taxValue;
+        }
+
+        $commissionTax = $totalTaxes;
+
+        $commissionFee += $commissionTax;
+
+        return [$commissionFee, $commissionTax];
     }
 }

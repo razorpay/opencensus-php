@@ -22,6 +22,8 @@ class Assertions extends TestCase
 
         $this->assertBasicCalculatorRules($calculator);
 
+        $this->assertNonZeroFeeTaxes($calculator);
+
         $commissions = $calculator->getCommissions();
 
         $amount          = 400000; // INR 4000
@@ -42,6 +44,8 @@ class Assertions extends TestCase
         $calculator = $postAction['calculator'];
 
         $this->assertBasicCalculatorRules($calculator);
+
+        $this->assertNonZeroFeeTaxes($calculator);
 
         $commissions = $calculator->getCommissions();
 
@@ -115,6 +119,27 @@ class Assertions extends TestCase
         $this->assertZeroCommission($calculator);
     }
 
+    public function testGSTOnCommissionForPaymentWithNoGST(array $data)
+    {
+        $postAction = $data['post_action'];
+
+        $calculator = $postAction['calculator'];
+
+        $this->assertBasicCalculatorRules($calculator);
+
+        $commissions = $calculator->getCommissions();
+
+        $amount          = 100000; // INR 1000
+        $merchantPricing = 2; // 2% base pricing
+
+        $this->assertEquals($this->getFee($amount, $merchantPricing), $calculator->getMerchantFee());
+        $this->assertEquals($this->getTax($amount, $merchantPricing), $calculator->getMerchantTax());
+
+        $this->assertEquals(1, count($commissions));
+        $this->assertEquals(236, $commissions[0]->fee);
+        $this->assertEquals(36, $commissions[0]->tax);
+    }
+
     protected function assertBasicCalculatorRules(Calculator $calculator)
     {
         $shouldCreateCommission = $this->invokePrivateMethod(
@@ -128,10 +153,22 @@ class Assertions extends TestCase
         $commissionTax = $calculator->getCommissionTax();
         $merchantFee   = $calculator->getMerchantFee();
         $merchantTax   = $calculator->getMerchantFee();
-        $partnerFee    = $calculator->getPartnerFee();
-        $partnerTax    = $calculator->getPartnerTax();
 
         $this->assertNotNull($calculator->getPartnerConfig());
+
+        $this->assertTrue($commissionFee < $merchantFee);
+        $this->assertTrue($commissionTax < $merchantTax);
+
+        $this->assertNotEmpty($calculator->getCommissions());
+    }
+
+    protected function assertNonZeroFeeTaxes(Calculator $calculator)
+    {
+        $merchantFee   = $calculator->getMerchantFee();
+        $merchantTax   = $calculator->getMerchantFee();
+        $partnerFee    = $calculator->getPartnerFee();
+        $partnerTax    = $calculator->getPartnerTax();
+        $commissionTax = $calculator->getCommissionTax();
 
         $this->assertNotEquals(0, $merchantFee);
         $this->assertNotEquals(0, $partnerFee);
@@ -141,11 +178,6 @@ class Assertions extends TestCase
         $this->assertNotEquals(0, $partnerTax);
         $this->assertNotEquals($partnerTax, $merchantTax);
         $this->assertNotEquals(0, $commissionTax);
-
-        $this->assertTrue($commissionFee < $merchantFee);
-        $this->assertTrue($commissionTax < $merchantTax);
-
-        $this->assertNotEmpty($calculator->getCommissions());
     }
 
     protected function assertShouldNotCreateCommission(array $data)
