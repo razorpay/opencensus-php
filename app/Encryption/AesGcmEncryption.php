@@ -2,9 +2,25 @@
 
 namespace RZP\Encryption;
 
-class AesGcmEncryption extends AESEncryption
+class AesGcmEncryption extends Encryption
 {
     const CIPHER = 'aes-256-gcm';
+
+    const SECRET         = 'secret';
+    const IV             = 'iv';
+
+    protected $secret;
+
+    protected $iv;
+
+    public function __construct(array $params)
+    {
+        parent::__construct($params);
+
+        $this->iv = $params[self::IV] ?? '';
+
+        $this->secret = $params[self::SECRET];
+    }
 
     public function encrypt(string $data): string
     {
@@ -20,5 +36,10 @@ class AesGcmEncryption extends AESEncryption
         $data = substr($data, 0, -16);
 
         return openssl_decrypt($data, self::CIPHER, $this->secret, 0, $this->iv, $tag);
+    }
+
+    protected function validateParams(array $params)
+    {
+        (new Validator)->validateInput('aes_gcm_encryption', $params);
     }
 }
