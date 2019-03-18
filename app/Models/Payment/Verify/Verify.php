@@ -285,13 +285,13 @@ class Verify extends Base\Core
         return $this->verifyMultiplePayments($payments, $filter, $bucketFilter, $verifiableCount, $verifyFetchTime);
     }
 
-    public function verifyAllPayments($timestamp, $gateway, $count)
+    public function verifyAllPayments($timestamps, $gateway, $count)
     {
         $verifyFetchStartTime = time();
 
         $disabledGateways = $this->getBlockedGateways();
 
-        $payments = $this->repo->payment->getPaymentsToVerifyByGatewayAndTime($timestamp, $gateway, $count, $disabledGateways);
+        $payments = $this->repo->payment->getPaymentsToVerifyByGatewayAndTime($timestamps, $gateway, $count, $disabledGateways);
 
         $verifyFetchEndTime = time();
 

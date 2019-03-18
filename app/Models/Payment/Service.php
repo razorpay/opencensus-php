@@ -1296,9 +1296,11 @@ class Service extends Base\Service
 
         $count = $input['count'] ?? 200;
 
-        $timestamp = Carbon::now(Timezone::IST)->subSeconds($delay)->getTimestamp();
+        $end = Carbon::now(Timezone::IST)->subSeconds($delay)->getTimestamp();
 
-        return (new Verify)->verifyAllPayments($timestamp, $gateway, $count);
+        $start = $this->getStartTimestamp($delay);
+
+        return (new Verify)->verifyAllPayments([$start, $end], $gateway, $count);
     }
 
     public function verifyPaymentsInBulk(array $input)
@@ -1644,5 +1646,19 @@ class Service extends Base\Service
         $this->app['cache']->put($key, $data, $cacheTtl);
 
         return $token;
+    }
+
+    // verify to fetch the payments between certain duration 
+    protected function getStartTimestamp(int $delay)
+    {
+        $delay = 3 * $delay;
+
+        // keeping the min fetch window to 5 mins
+        if ($delay < 300)
+        {
+            $delay = 300;
+        }
+        
+        return Carbon::now(Timezone::IST)->subSeconds($delay)->getTimestamp();
     }
 }

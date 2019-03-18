@@ -392,10 +392,10 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getPaymentsToVerifyByGatewayAndTime($timestamp, $gateway, $count, $disabledGateways)
+    public function getPaymentsToVerifyByGatewayAndTime(array $timestamps, $gateway, $count, $disabledGateways)
     {
         $query = $this->newQuery()
-                      ->where(Payment\Entity::VERIFY_AT, '<', $timestamp);
+                      ->whereBetween(Payment\Entity::VERIFY_AT, $timestamps);
 
         if ($gateway !== null)
         {
