@@ -32,6 +32,102 @@ return [
         ],
     ],
 
+    'testImplicitFixed' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'    => 'BptVjGnFv6ITBm',
+                'type'  => 'fully_managed',
+            ],
+            'create_plans'       => [
+                [
+                    'plan_id'      => '200MerchantPln',
+                    'percent_rate' => 200,
+                ],
+                [
+                    'plan_id'      => '003PartnerPlan',
+                    'percent_rate' => 30,
+                    'type'         => 'commission',
+                ],
+            ],
+            'attach_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'pricing_plan_id' => '200MerchantPln',
+            ],
+            'define_config'      => [
+                'type'             => 'partner',
+                'implicit_plan_id' => '003PartnerPlan',
+            ],
+            'create_payment'     => [
+                'amount' => 4000 * 100, // paise
+                'auth'   => 'partner',
+            ],
+        ],
+    ],
+
+    'testImplicitFixedCommissionGreaterThanMerchantFees' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'    => 'BptVjGnFv6ITBm',
+                'type'  => 'fully_managed',
+            ],
+            'create_plans'       => [
+                [
+                    'plan_id'      => '200MerchantPln',
+                    'percent_rate' => 200,
+                ],
+                [
+                    'plan_id'      => '003PartnerPlan',
+                    'percent_rate' => 300,
+                    'type'         => 'commission',
+                ],
+            ],
+            'attach_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'pricing_plan_id' => '200MerchantPln',
+            ],
+            'define_config'      => [
+                'type'             => 'partner',
+                'implicit_plan_id' => '003PartnerPlan',
+            ],
+            'create_payment'     => [
+                'amount' => 4000 * 100, // paise
+                'auth'   => 'partner',
+            ],
+        ],
+    ],
+
+    'testImplicitFixedCommissionIsZero' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'    => 'BptVjGnFv6ITBm',
+                'type'  => 'fully_managed',
+            ],
+            'create_plans'       => [
+                [
+                    'plan_id'      => '200MerchantPln',
+                    'percent_rate' => 200,
+                ],
+                [
+                    'plan_id'      => '003PartnerPlan',
+                    'percent_rate' => 0,
+                    'type'         => 'commission',
+                ],
+            ],
+            'attach_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'pricing_plan_id' => '200MerchantPln',
+            ],
+            'define_config'      => [
+                'type'             => 'partner',
+                'implicit_plan_id' => '003PartnerPlan',
+            ],
+            'create_payment'     => [
+                'amount' => 4000 * 100, // paise
+                'auth'   => 'partner',
+            ],
+        ],
+    ],
+
     'testInvalidSource' => [
         'setup'  => [
             'create_transfer' => [],

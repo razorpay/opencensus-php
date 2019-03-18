@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Partner;
 use RZP\Models\Merchant;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Partner\Config as PartnerConfig;
+use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use RZP\Tests\Functional\Fixtures\Entity\Org as Org;
 
 trait PartnerTrait
@@ -75,7 +76,10 @@ trait PartnerTrait
 
     protected function getDefaultPartnerConfigAttributes()
     {
-        return ['commissions_enabled' => 1];
+        return [
+            'commissions_enabled' => 1,
+            'default_plan_id'     => Pricing::DEFAULT_PRICING_PLAN_ID,
+        ];
     }
 
     public function createSubMerchant($merchant, $app, $subMerchantAttributes = [])

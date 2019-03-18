@@ -28,6 +28,22 @@ trait CommissionTrait
         return $commissions;
     }
 
+    public function createEntityOrigin($entityType,
+                                       $entityId,
+                                       $originType = 'application',
+                                       $originId = Constants::DEFAULT_PLATFORM_APP_ID)
+    {
+        return $this->fixtures->create(
+            'entity_origin',
+            [
+                'entity_type'     => $entityType,
+                'entity_id'       => $entityId,
+                'origin_type'     => $originType,
+                'origin_id'       => $originId,
+            ]
+        );
+    }
+
     protected function getFee(int $amount, float $rate)
     {
         return ($this->getFeeWithoutTax($amount, $rate) + $this->getTax($amount, $rate));

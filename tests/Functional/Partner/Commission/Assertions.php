@@ -3,10 +3,10 @@
 namespace RZP\Tests\Functional\Partner\Commission;
 
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Partner\Commission;
 use RZP\Models\Partner\Commission\Calculator;
 use RZP\Tests\Functional\Helpers\PrivateMethodTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use RZP\Tests\Functional\Partner\Commission\CommissionTrait;
 
 class Assertions extends TestCase
 {
@@ -19,6 +19,8 @@ class Assertions extends TestCase
         $postAction = $data['post_action'];
 
         $calculator = $postAction['calculator'];
+
+        $this->assertImplicitPlanType($calculator, 'implicit_variable');
 
         $this->assertBasicCalculatorRules($calculator);
 
@@ -35,6 +37,52 @@ class Assertions extends TestCase
         $this->assertEquals(1, count($commissions));
         $this->assertEquals(944, $commissions[0]->fee);
         $this->assertEquals(144, $commissions[0]->tax);
+    }
+
+    public function testImplicitFixed(array $data)
+    {
+        $calculator = $data['post_action']['calculator'];
+
+        $this->assertImplicitPlanType($calculator, 'implicit_fixed');
+
+        $this->assertBasicCalculatorRules($calculator);
+
+        $commissions = $calculator->getCommissions();
+
+        $amount          = 400000; // INR 4000
+        $merchantPricing = 2; // 2% pricing
+
+        $this->assertEquals($this->getFee($amount, $merchantPricing), $calculator->getMerchantFee());
+        $this->assertEquals($this->getTax($amount, $merchantPricing), $calculator->getMerchantTax());
+
+        $this->assertEquals(1, count($commissions));
+
+        $commissionPricing = 0.3;
+
+        $this->assertEquals($this->getFee($amount, $commissionPricing), $commissions[0]->fee);
+        $this->assertEquals($this->getTax($amount, $commissionPricing), $commissions[0]->tax);
+    }
+
+    public function testImplicitFixedCommissionGreaterThanMerchantFees(array $data)
+    {
+        $calculator = $data['post_action']['calculator'];
+
+        $this->assertImplicitPlanType($calculator, 'implicit_fixed');
+
+        $commissions = $calculator->getCommissions();
+
+        $this->assertEmpty($commissions);
+    }
+
+    public function testImplicitFixedCommissionIsZero(array $data)
+    {
+        $calculator = $data['post_action']['calculator'];
+
+        $this->assertImplicitPlanType($calculator, 'implicit_fixed');
+
+        $commissions = $calculator->getCommissions();
+
+        $this->assertEmpty($commissions);
     }
 
     public function testImplicitVariableMultiplePricingRules(array $data)
@@ -149,34 +197,62 @@ class Assertions extends TestCase
 
         $this->assertTrue($shouldCreateCommission);
 
-        $commissionFee = $calculator->getCommissionFee();
-        $commissionTax = $calculator->getCommissionTax();
+        $commissions   = $calculator->getCommissions();
+
+        $this->assertNotEmpty($commissions);
+        $commission    = $commissions[0];
+
+        $this->assertEquals($commission->getType(), Commission\Type::IMPLICIT);
+
+        $commissionFee = $commission->getFee();
         $merchantFee   = $calculator->getMerchantFee();
-        $merchantTax   = $calculator->getMerchantFee();
+
+        $isVariableCommission = $this->invokePrivateMethod(
+            $calculator,
+            Calculator::class,
+            'isImplicitCommissionVariable');
 
         $this->assertNotNull($calculator->getPartnerConfig());
 
-        $this->assertTrue($commissionFee < $merchantFee);
-        $this->assertTrue($commissionTax < $merchantTax);
+        $this->assertNotEquals(0, $merchantFee);
+        $this->assertNotEquals(0, $commissionFee);
 
-        $this->assertNotEmpty($calculator->getCommissions());
+        if ($isVariableCommission === true)
+        {
+            $partnerFee    = $calculator->getPartnerFee();
+
+            $this->assertNotEquals(0, $partnerFee);
+            $this->assertNotEquals($partnerFee, $merchantFee);
+        }
+
+        $this->assertTrue($commissionFee < $merchantFee);
     }
 
     protected function assertNonZeroFeeTaxes(Calculator $calculator)
     {
-        $merchantFee   = $calculator->getMerchantFee();
-        $merchantTax   = $calculator->getMerchantFee();
-        $partnerFee    = $calculator->getPartnerFee();
-        $partnerTax    = $calculator->getPartnerTax();
-        $commissionTax = $calculator->getCommissionTax();
+        $merchantTax   = $calculator->getMerchantTax();
 
-        $this->assertNotEquals(0, $merchantFee);
-        $this->assertNotEquals(0, $partnerFee);
-        $this->assertNotEquals($partnerFee, $merchantFee);
+        $commissions   = $calculator->getCommissions();
+
+        $this->assertNotEmpty($commissions);
+        $commission    = $commissions[0];
+
+        $commissionTax = $commission->getTax();
+
+        $isVariableCommission = $this->invokePrivateMethod(
+            $calculator,
+            Calculator::class,
+            'isImplicitCommissionVariable');
+
+        if ($isVariableCommission === true)
+        {
+            $partnerTax    = $calculator->getPartnerTax();
+
+            $this->assertNotEquals(0, $partnerTax);
+            $this->assertNotEquals($partnerTax, $merchantTax);
+        }
+
         $this->assertNotEquals(0, $merchantTax);
-
-        $this->assertNotEquals(0, $partnerTax);
-        $this->assertNotEquals($partnerTax, $merchantTax);
         $this->assertNotEquals(0, $commissionTax);
     }
 
@@ -206,6 +282,28 @@ class Assertions extends TestCase
                                     'shouldCreateCommission');
 
         $this->assertTrue($shouldCreateCommission);
+    }
+
+    protected function assertImplicitPlanType(Calculator $calculator, string $type)
+    {
+        $condition = false;
+
+        if ($type === 'implicit_variable')
+        {
+            $condition = $this->invokePrivateMethod(
+                $calculator,
+                Calculator::class,
+                'isImplicitCommissionVariable');
+        }
+        else if ($type === 'implicit_fixed')
+        {
+            $condition = $this->invokePrivateMethod(
+                $calculator,
+                Calculator::class,
+                'isImplicitCommissionFixed');
+        }
+
+        $this->assertTrue($condition);
     }
 
     protected function assertZeroCommission(Calculator $calculator)

@@ -156,7 +156,7 @@ class Core extends Base\Core
             return null;
         }
 
-        $pricingPlan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($pricingPlanId);
+        $pricingPlan = $this->repo->pricing->getPlan($pricingPlanId);
 
         if (empty($pricingPlan) === true)
         {
