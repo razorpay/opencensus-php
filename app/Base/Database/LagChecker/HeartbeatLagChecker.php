@@ -383,7 +383,7 @@ class HeartbeatLagChecker implements LagChecker
      * @param string $connectionIdentifier
      * @return bool
      */
-    private function finalizeResult(bool $useSlave, string $currentRoute = '', string $connectionIdentifier = ''): bool
+    private function finalizeResult(bool $useSlave, $currentRoute = '', $connectionIdentifier = ''): bool
     {
         // Adding it before mock check because of the mock is enabled heartbeat result will be master always
         // which will not give a proper result of heartbeat evaluation
