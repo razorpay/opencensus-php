@@ -149,7 +149,7 @@ class Type
     const MOCK_RECONCILIATION_FILE              = 'mock_reconciliation_file';
     const CUSTOMER_BUCKET_CONFIG                = 'customer_bucket_config';
     const H2H_DEFAULT_BUCKET_CONFIG             = 'h2h_default_bucket_config';
-    const ENCRYPTED_FILES_BUCKET_CONFIG         = 'encrypted_files_bucket_config';
+    const BEAM_BUCKET_CONFIG                    = 'beam_bucket_config';
 
     // File contants required for merchant feature onboarding
     const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
@@ -418,7 +418,7 @@ class Type
             self::FUND_TRANSFER_DEFAULT
         ],
 
-        self::ENCRYPTED_FILES_BUCKET_CONFIG => [
+        self::BEAM_BUCKET_CONFIG => [
             self::SBI_EMI_FILE,
         ],
     ];
