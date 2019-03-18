@@ -26,7 +26,6 @@ class Issuer
         self::HDFC,
         self::INDB,
         self::KKBK,
-        self::SCBL,
         self::ANDB,
         self::ICIC,
     ];
