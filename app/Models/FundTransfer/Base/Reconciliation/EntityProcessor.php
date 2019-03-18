@@ -262,20 +262,6 @@ abstract class EntityProcessor extends Base\Core
             (empty($utr) === false))
         {
             $status = Attempt\Status::PROCESSED;
-
-            // This should ideally be the time this request was sent to the bank.
-            // Needs to be changed to initiated_at when we have that column.
-            $recordDate = Carbon::createFromTimestamp($this->fta->getCreatedAt(), Timezone::IST);
-
-            $now = Carbon::now(Timezone::IST)->getTimestamp();
-
-            $tenTenPm = $recordDate->hour(22)->minute(10)->getTimestamp();
-
-            if (($this->fta->getSourceType() !== Attempt\Type::PAYOUT) and
-                ($now < $tenTenPm) and ($this->env !== 'testing'))
-            {
-                $status = $this->fta->getStatus();
-            }
         }
         else if (in_array($bankStatusCode, $failureStatuses, true) === true)
         {
