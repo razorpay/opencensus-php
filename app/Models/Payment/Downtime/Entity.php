@@ -15,6 +15,7 @@ class Entity extends Base\PublicEntity
     const BEGIN      = 'begin';
     const END        = 'end';
     const ISSUER     = 'issuer';
+    const SEVERITY   = 'severity';
     const TYPE       = 'type';
     const NETWORK    = 'network';
     const AUTH_TYPE  = 'auth_type';

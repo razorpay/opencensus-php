@@ -35,6 +35,8 @@ class CreatePaymentDowntimes extends Migration
             $table->integer(PaymentDowntime::END)
                   ->nullable();
 
+            $table->char(PaymentDowntime::SEVERITY, 10);
+
             $table->char(PaymentDowntime::ISSUER, 15)
                   ->nullable();
 
