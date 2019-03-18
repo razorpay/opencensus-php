@@ -34,6 +34,9 @@ class Sbi extends Base
 
     const TEST_ENCRYPTION_IV = '123456789012';
 
+    // todo: Change directory as required when going live
+    const S3_PATH = 'sbi_emi/';
+
     /**
      * @var $file FileStore\Entity
      */
@@ -97,8 +100,7 @@ class Sbi extends Base
         {
             $fileData = $this->formatDataForFile($data);
 
-            // todo: Change the directory as required when going live
-            $fileName = 'sbi_emi/' . $this->getFileToWriteName();
+            $fileName = self::S3_PATH . $this->getFileToWriteName();
 
             $metadata = $this->getH2HMetadata();
 

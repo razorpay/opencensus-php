@@ -25,8 +25,6 @@ class Service
 
     const BEAM_TEST_JOBNAME = 'test_pass';
 
-    const ENCRYPTION_TYPE   = 'aes-256-gcm';
-
     const BEAM_PUSH_BUCKET_NAME = 'bucket_name';
 
     const BEAM_PUSH_DECRYPTION  = 'decryption';
