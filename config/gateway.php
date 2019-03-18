@@ -563,9 +563,19 @@ return [
     ],
 
     'netbanking_kotak' => [
-        'live_hash_secret'     => env('NETBANKING_KOTAK_GATEWAY_LIVE_HASH_SECRET'),
-        'test_hash_secret'     => env('NETBANKING_KOTAK_GATEWAY_TEST_HASH_SECRET'),
-        'live_hash_secret_tpv' => env('NETBANKING_KOTAK_GATEWAY_SEC_LIVE_HASH_SECRET'),
+        'live_hash_secret'          => env('NETBANKING_KOTAK_GATEWAY_LIVE_HASH_SECRET'),
+        'test_hash_secret'          => env('NETBANKING_KOTAK_GATEWAY_TEST_HASH_SECRET'),
+        'live_hash_secret_tpv'      => env('NETBANKING_KOTAK_GATEWAY_SEC_LIVE_HASH_SECRET'),
+
+        'live_encrypt_hash_secret'  => env('NETBANKING_KOTAK_GATEWAY_LIVE_ENCRYPT_HASH_SECRET'),
+        'test_encrypt_hash_secret'  => env('NETBANKING_KOTAK_GATEWAY_TEST_ENCRYPT_HASH_SECRET'),
+
+        'test_verify_hash_secret'   => env('NETBANKING_KOTAK_GATEWAY_TEST_VERIFY_HASH_SECRET'),
+
+        'test_token_client_id'      => env('NETBANKING_KOTAK_GATEWAY_TEST_TOKEN_CLIENT_ID'),
+        'test_token_client_secret'  => env('NETBANKING_KOTAK_GATEWAY_TEST_TOKEN_SECRET'),
+        'live_token_client_id'      => env('NETBANKING_KOTAK_GATEWAY_LIVE_TOKEN_CLIENT_ID'),
+        'live_token_client_secret'  => env('NETBANKING_KOTAK_GATEWAY_LIVE_TOKEN_SECRET'),
     ],
 
     'netbanking_bob' => [
