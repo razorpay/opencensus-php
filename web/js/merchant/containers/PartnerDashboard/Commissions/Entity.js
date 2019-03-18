@@ -50,9 +50,9 @@ export default class CommissionEntityContainer extends Component {
                     {/* earnings breakup */}
                     <CommissionEarningBreakUp
                       currency={entity.currency}
-                      total={entity.fee}
+                      total={entity.credit}
                       gst={entity.tax}
-                      base={entity.fee - entity.tax}
+                      base={entity.credit - entity.tax}
                     />
                     {/* merchant details */}
                     <EntityDetailRow label="Affiliate Account">
@@ -60,6 +60,10 @@ export default class CommissionEntityContainer extends Component {
                         <>{entity.merchant.name}</>
                         <>{entity.merchant.id}</>
                       </Definition>
+                    </EntityDetailRow>
+
+                    <EntityDetailRow label="Created At">
+                      <Time value={entity.created_at} format="ll" />
                     </EntityDetailRow>
 
                     <div class="pair-group-item">
@@ -70,10 +74,6 @@ export default class CommissionEntityContainer extends Component {
                       label="Type"
                       value={capitalize(entity.source_type)}
                     />
-
-                    <EntityDetailRow label="Created At">
-                      <Time value={entity.created_at} format="ll" />
-                    </EntityDetailRow>
                   </div>
                 </div>
               </div>
