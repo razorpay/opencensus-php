@@ -2,7 +2,10 @@
 
 namespace RZP\Models\Payment\Downtime;
 
+use Carbon\Carbon;
+
 use RZP\Models\Base;
+use RZP\Models\Base\PublicCollection;
 
 class Repository extends Base\Repository
 {

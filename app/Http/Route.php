@@ -32,8 +32,7 @@ final class Route
         // TODO: Check Splunk and remove the write here
         'merchant_methods'                         => ['get',      'methods',                                        'MerchantController@getPaymentMethods'                              ],
         'merchant_methods_downtime'                => ['get',      'methods/downtime',                               'MerchantController@getPublicGatewayDowntimeData'                   ],
-        'merchant_methods_downtime_private'        => ['get',      'methods/downtimes',                              'MerchantController@getMethodDowntimeData'                          ],
-        'merchant_methods_downtime_create'         => ['post',     'methods/downtimes/create',                       'DowntimeController@createFromGatewayDowntimes'                     ],
+        'merchant_methods_downtime_private'        => ['get',      'methods/downtimes',                              'DowntimeController@getMethodDowntimeData'                          ],
         'merchant_checkout_preferences'            => ['get',      'preferences',                                    'MerchantController@getCheckoutPreferences'                         ],
         'payment_create'                           => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'                         ],
         // @todo: Require feature S2S for payment_create_private route.

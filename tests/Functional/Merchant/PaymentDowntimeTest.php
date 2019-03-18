@@ -49,14 +49,37 @@ class PaymentDowntimeTest extends TestCase
 
     public function testGetUpiDowntimeForAllGateways()
     {
-        $this->fixtures->create('gateway_downtime:upi', [
-            'begin'     => Carbon::now()->subMinutes(30)->timestamp,
-            'end'       => null,
-            'gateway'   => 'ALL',
-            'scheduled' => false,
-        ]);
+        $request = [
+            'content' => [
+                'gateway'     => 'upi_mindgate',
+                'method'      => 'upi',
+                'source'      => 'dummy',
+                'reason_code' => 'OTHER',
+                'begin'       => Carbon::now()->subMinutes(60)->timestamp
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/dummy/webhook'
+        ];
 
-        $this->createMethodDowntimes();
+        $this->ba->appAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $request = [
+            'content' => [
+                'gateway'     => 'upi_icici',
+                'method'      => 'upi',
+                'source'      => 'dummy',
+                'reason_code' => 'ISSUER_DOWN',
+                'begin'       => Carbon::now()->subMinutes(60)->timestamp
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/dummy/webhook'
+        ];
+
+        $this->ba->appAuth();
+
+        $this->makeRequestAndGetContent($request);
 
         $this->ba->privateAuth();
 
