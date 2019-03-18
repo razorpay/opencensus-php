@@ -79,6 +79,7 @@ class Constants
     const HDFC_DEBIT_SI                   = 'hdfc_debit_si';
     const AXIS_EXPRESS_PAY                = 'axis_express_pay';
     const BANK_TRANSFER_REFUND            = 'bank_transfer_refund';
+    const CARD_TRANSFER_REFUND            = 'card_transfer_refund';
     const LOG_RESPONSE                    = 'log_response';
     const EXCESS_ORDER_AMOUNT             = 'excess_order_amount';
     const SUBSCRIPTION_V2                 = 'subscription_v2';
@@ -281,6 +282,7 @@ class Constants
         self::AXIS_EXPRESS_PAY                => true,
         self::PRE_AUTH_SHIELD_INTG            => true,
         self::BANK_TRANSFER_REFUND            => true,
+        self::CARD_TRANSFER_REFUND            => true,
         self::LOG_RESPONSE                    => true,
         self::EXCESS_ORDER_AMOUNT             => true,
         self::SUBSCRIPTION_V2                 => true,

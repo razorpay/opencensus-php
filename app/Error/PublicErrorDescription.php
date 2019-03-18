@@ -203,6 +203,7 @@ class PublicErrorDescription
     const BAD_REQUEST_REFUND_INVALID_STATE_UPDATE                               = 'Refund can not be updated to this state';
     const BAD_REQUEST_REFUND_NOT_SCROOGE                                        = 'Gateway refund cannot be called for non-scrooge gateway';
     const BAD_REQUEST_REFUND_ALREADY_PROCESSED                                  = 'Refund has already been processed';
+    const BAD_REQUEST_ALL_FTA_NOT_FAILED                                        = 'All FTAs for the refund are not in failed state.';
     const BAD_REQUEST_REFUND_NOT_IN_CREATED                                     = 'Refund is not in created state';
     const BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD                                    = 'This operation is not allowed. Please contact Razorpay support for details.';
     const BAD_REQUEST_MERCHANT_FUNDS_ALREADY_ON_HOLD                            = 'The merchant funds are already on hold';
