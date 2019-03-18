@@ -56,13 +56,17 @@ class Status extends Base
      */
     public function requestBody(): string
     {
-        return json_encode([
+        $body = [
             Constants::STATUS_REQUEST_IDENTIFIER => [
                 Constants::VERSION              => self::VERSION,
                 Constants::CUSTOMER_ID          => $this->customerId,
                 Constants::REQUEST_REFERENCE_NO => $this->entity->getId(),
             ],
-        ]);
+        ];
+
+        $this->requestTrace = $body;
+
+        return json_encode($body);
     }
 
     public function getRequestInputForGateway(): array

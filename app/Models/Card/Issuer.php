@@ -28,6 +28,6 @@ class Issuer
         self::KKBK,
         self::SCBL,
         self::ANDB,
-        self::ICIC
+        self::ICIC,
     ];
 }

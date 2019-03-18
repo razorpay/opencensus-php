@@ -77,6 +77,8 @@ abstract class ApiProcessor extends NodalAccount
      */
     protected $useLogging = true;
 
+    public $requestTrace;
+
     public function method(string $method): self
     {
         $this->method = $method;
@@ -147,16 +149,13 @@ abstract class ApiProcessor extends NodalAccount
         }
         catch (\Throwable $e)
         {
-            if ($this->isLogEnabled() === true)
-            {
-                $this->trace->traceException(
-                    $e,
-                    Trace::ERROR,
-                    TraceCode::NODAL_REQUEST_FAILED,
-                    [
-                        'request'  => ($gateway === false) ? $this->requestBody() : $this->getRequestInputForGateway(),
-                    ]);
-            }
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::NODAL_REQUEST_FAILED,
+                [
+                    'request'  => $this->requestTrace,
+                ]);
         }
 
         return $parsedResponse;
@@ -196,16 +195,13 @@ abstract class ApiProcessor extends NodalAccount
             }
             catch (\Throwable $e)
             {
-                if ($this->isLogEnabled() === true)
-                {
-                    $this->trace->traceException(
-                        $e,
-                        Trace::ERROR,
-                        TraceCode::NODAL_REQUEST_FAILED,
-                        [
-                            'request' => $this->body,
-                        ]);
-                }
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::NODAL_REQUEST_FAILED,
+                    [
+                        'request' => $this->requestTrace,
+                    ]);
             }
         }
 
@@ -243,16 +239,13 @@ abstract class ApiProcessor extends NodalAccount
             }
             catch (\Throwable $e)
             {
-                if ($this->isLogEnabled() === true)
-                {
-                    $this->trace->traceException(
-                        $e,
-                        Trace::ERROR,
-                        TraceCode::NODAL_REQUEST_FAILED,
-                        [
-                            'request' => $requestInput,
-                        ]);
-                }
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::NODAL_REQUEST_FAILED,
+                    [
+                        'request' => $this->requestTrace,
+                    ]);
             }
         }
 
@@ -281,28 +274,22 @@ abstract class ApiProcessor extends NodalAccount
      */
     private function traceResponse(\Requests_Response $response)
     {
-        if ($this->isLogEnabled() === true)
-        {
-            $this->trace->info(
-                $this->responseTraceCode,
-                [
-                    'channel'       => $this->channel,
-                    'response_body' => $response->body,
-                ]);
-        }
+        $this->trace->info(
+            $this->responseTraceCode,
+            [
+                'channel'       => $this->channel,
+                'response_body' => $response->body,
+            ]);
     }
 
     private function traceGatewayResponse(array $response)
     {
-        if ($this->isLogEnabled() === true)
-        {
-            $this->trace->info(
-                $this->responseTraceCode,
-                [
-                    'channel'   => $this->channel,
-                    'response'  => $response,
-                ]);
-        }
+        $this->trace->info(
+            $this->responseTraceCode,
+            [
+                'channel'   => $this->channel,
+                'response'  => $response,
+            ]);
     }
 
     /**
@@ -311,16 +298,13 @@ abstract class ApiProcessor extends NodalAccount
      */
     private function traceRequest()
     {
-        if ($this->isLogEnabled() === true)
-        {
-            $this->trace->info(
-                $this->requestTraceCode,
-                [
-                    'channel' => $this->channel,
-                    'method'  => $this->method,
-                    'request' => $this->body,
-                ]);
-        }
+        $this->trace->info(
+            $this->requestTraceCode,
+            [
+                'channel' => $this->channel,
+                'method'  => $this->method,
+                'request' => $this->requestTrace,
+            ]);
     }
 
     /**

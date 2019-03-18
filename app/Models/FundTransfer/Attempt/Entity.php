@@ -3,15 +3,18 @@
 namespace RZP\Models\FundTransfer\Attempt;
 
 use RZP\Models\Base;
+use RZP\Models\Card;
+use RZP\Models\Card\Issuer;
 use RZP\Constants\Entity as E;
 use RZP\Models\FundTransfer\Mode;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt\Type;
 use RZP\Models\FundTransfer\Yesbank\NodalAccount;
-use RZP\Models\Settlement\Channel;
 
 /**
  * @property mixed batchFundTransfer
  * @property mixed bankAccount
+ * @property Card\Entity card
  */
 class Entity extends Base\PublicEntity
 {
@@ -509,5 +512,21 @@ class Entity extends Base\PublicEntity
         }
 
         return true;
+    }
+
+    public function shouldUseGateway(): bool
+    {
+        if ($this->hasVpa() === true)
+        {
+            return true;
+        }
+
+        if (($this->hasCard() === true) and
+            ($this->card->getIssuer() === Issuer::ICIC))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

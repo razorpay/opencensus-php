@@ -79,6 +79,23 @@ class Transfer extends Base
 
         $requestData = $this->getRequestData();
 
+        $this->requestTrace = $requestData;
+
+        if ($this->isLogEnabled() === false)
+        {
+            $this->requestTrace[$this->requestIdentifier]
+            [Constants::BENEFICIARY]
+            [Constants::BENEFICIARY_DETAILS]
+            [Constants::BENEFICIARY_ACCOUNT_NO]
+                = mask_except_last4($this->requestTrace
+                                           [$this->requestIdentifier]
+                                           [Constants::BENEFICIARY]
+                                           [Constants::BENEFICIARY_DETAILS]
+                                           [Constants::BENEFICIARY_ACCOUNT_NO],
+                            'x'
+                  );
+        }
+
         $jsonRequest  = json_encode($requestData);
 
         ini_restore('serialize_precision');
@@ -172,14 +189,13 @@ class Transfer extends Base
             $cardNum = $this->app['card.cardVault']->detokenize($cardObj->getVaultToken());
 
             $vpa = 'CCPAY.' . $cardNum . '@icici';
-
         }
         else
         {
             $vpa = $fta->vpa->getAddress();
         }
 
-        return [
+        $gatewayRequest = [
             'terminal' => $terminal->toArray(),
             'merchant' => $source->merchant->toArrayPublic(),
             'gateway_input' => [
@@ -189,6 +205,15 @@ class Transfer extends Base
                 'narration' => $this->getNarration($fta),
             ]
         ];
+
+        if ($this->isLogEnabled() === false)
+        {
+            $this->requestTrace = $gatewayRequest;
+
+            $this->requestTrace['gateway_input']['vpa'] = mask_except_last4($this->requestTrace['gateway_input']['vpa'], 'x');
+        }
+
+        return $gatewayRequest;
     }
 
     public function getActionForGateway(): string
