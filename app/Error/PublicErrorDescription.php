@@ -771,7 +771,7 @@ class PublicErrorDescription
     const BAD_REQUEST_FORBIDDEN_TRANSACTION_ON_VPA                                  = 'Payment failed because transactions are not allowed on this VPA';
     const BAD_REQUEST_FORBIDDEN_BUSINESS_BANKING_NOT_ENABLED                        = 'Access to requested resource not available';
 
-    const BENEFICIARY_REGISTRATION_FAILED_RESPONSE                                  = 'Beneficiary registration failed due to error';
+    const NODAL_BENEFICIARY_REGISTRATION_FAILED_RESPONSE                            = 'Beneficiary registration failed due to error';
     const BAD_REQUEST_PSP_DOESNT_EXIST                                              = 'Invalid VPA. Please enter a valid Virtual Payment Address';
     const BAD_REQUEST_PSP_ERROR                                                     = 'Payment failed at PSP';
     const BAD_REQUEST_UPI_INVALID_DEVICE_FINGERPRINT                                = 'Payment Failed due to issue with your UPI App. Please try again with another app or payment method';
