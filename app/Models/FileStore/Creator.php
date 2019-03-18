@@ -517,17 +517,6 @@ class Creator extends Base\Core
         return $this;
     }
 
-    /**
-     * The AES GCM encryption generates a tag while encryption
-     * which would be used  during decryption
-     *
-     * @return mixed
-     */
-    public function getEncryptionTag()
-    {
-        return $this->encryptionHandler->getEncryptionTag();
-    }
-
     protected function deleteLocalFileIfRequired()
     {
         $filePath = $this->getFullFilePath();

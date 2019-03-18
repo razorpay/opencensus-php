@@ -39,8 +39,6 @@ class Sbi extends Base
 
     protected $iv;
 
-    protected $tag;
-
     /**
      * Implements \RZP\Models\Gateway\File\Processor\Base::fetchEntities().
      */
@@ -75,8 +73,15 @@ class Sbi extends Base
         return bin2hex(openssl_random_pseudo_bytes(256));
     }
 
+    // Don't send the encryption key over email
+    protected function sendEmiPassword($data)
+    {
+        return;
+    }
+
     /**
      * Implements \RZP\Models\Gateway\File\Processor\Base::createFile($data).
+     * @param $data
      * @throws GatewayFileException
      */
     public function createFile($data)
@@ -101,7 +106,7 @@ class Sbi extends Base
 
             $encryptionParams = [
                 Encryption\AesGcmEncryption::SECRET => $data['password'],
-                Encryption\AesGcmEncryption::IV => $this->iv,
+                Encryption\AesGcmEncryption::IV     => $this->iv,
             ];
 
             $creator->extension(static::EXTENSION)
@@ -117,8 +122,6 @@ class Sbi extends Base
                     ->metadata($metadata);
 
             $creator->save();
-
-            $this->tag = $creator->getEncryptionTag();
 
             $this->file = $creator->getFileInstance();
 
@@ -343,14 +346,21 @@ class Sbi extends Base
     protected function sendEmiFile($data)
     {
         // todo: Push to beam once decryption is handled at beam side
-        /*
         $fullFileName = $this->file->getName() . '.' . $this->file->getExtension();
 
         $fileInfo = [$fullFileName];
 
         $data =  [
             Service::BEAM_PUSH_FILES   => $fileInfo,
-            Service::BEAM_PUSH_JOBNAME => BeamConstants::SBI_EMI_FILE_JOB_NAME
+            Service::BEAM_PUSH_JOBNAME => BeamConstants::SBI_EMI_FILE_JOB_NAME,
+            // todo: Change this later
+            Service::BEAM_PUSH_BUCKET_NAME => 'sample bucket name',
+            Service::BEAM_PUSH_DECRYPTION => [
+                Service::BEAM_PUSH_DECRYPTION_TYPE => Service::BEAM_PUSH_DECRYPTION_TYPE_AES256,
+                Service::BEAM_PUSH_DECRYPTION_MODE => Service::BEAM_PUSH_DECRYPTION_MODE_GCM,
+                Service::BEAM_PUSH_DECRYPTION_KEY  => bin2hex($data['password']),
+                Service::BEAM_PUSH_DECRYPTION_IV   => bin2hex($this->iv),
+            ]
         ];
 
         // In seconds
@@ -365,7 +375,6 @@ class Sbi extends Base
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
-        */
     }
 
     protected function getFileToWriteName()

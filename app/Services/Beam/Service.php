@@ -25,9 +25,19 @@ class Service
 
     const BEAM_TEST_JOBNAME = 'test_pass';
 
-    const ENCRYPTION_TYPE   = Type::AES_ENCRYPTION;
+    const ENCRYPTION_TYPE   = 'aes-256-gcm';
 
-    const ENCRYPTION_MODE   = \phpseclib\Crypt\Base::MODE_CBC;
+    const BEAM_PUSH_BUCKET_NAME = 'bucket_name';
+
+    const BEAM_PUSH_DECRYPTION  = 'decryption';
+
+    const BEAM_PUSH_DECRYPTION_TYPE = 'type';
+    const BEAM_PUSH_DECRYPTION_MODE = 'mode';
+    const BEAM_PUSH_DECRYPTION_KEY  = 'key';
+    const BEAM_PUSH_DECRYPTION_IV   = 'iv';
+
+    const BEAM_PUSH_DECRYPTION_TYPE_AES256 = 'aes256';
+    const BEAM_PUSH_DECRYPTION_MODE_GCM    = 'gcm';
 
     protected $mode;
 
