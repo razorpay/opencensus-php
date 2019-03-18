@@ -12,10 +12,6 @@ class Handler
 
     protected $type;
 
-    protected $encryptionSupportsTag = [
-        Type::AES_GCM_ENCRYPTION,
-    ];
-
     public function __construct(string $type, array $params)
     {
         $this->params = $params;
@@ -42,20 +38,6 @@ class Handler
     public function decrypt(string $data)
     {
         return $this->cipher->decrypt($data);
-    }
-
-    /**
-     * @return mixed|string
-     * @throws Exception\LogicException
-     */
-    public function getEncryptionTag()
-    {
-        if (in_array($this->type, $this->encryptionSupportsTag) === true)
-        {
-            return $this->cipher->getTag();
-        }
-
-        throw new Exception\LogicException('Encryption does not support tag');
     }
 
     protected function getCipher(string $type)

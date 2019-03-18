@@ -32,6 +32,8 @@ class Sbi extends Base
 
     const TEST_ENCRYPTION_KEY = 'T8DIATjuwS';
 
+    const TEST_ENCRYPTION_IV = '123456789012';
+
     /**
      * @var $file FileStore\Entity
      */
@@ -65,7 +67,7 @@ class Sbi extends Base
 
     public function generateEmiFilePassword()
     {
-        if ($this->app->environment(Environment::TESTING))
+        if ($this->app->environment(Environment::TESTING) === true)
         {
             return self::TEST_ENCRYPTION_KEY;
         }
@@ -103,6 +105,11 @@ class Sbi extends Base
             $creator = new FileStore\Creator;
 
             $this->iv = openssl_random_pseudo_bytes(12);
+
+            if ($this->app->environment(Environment::TESTING) === true)
+            {
+                $this->iv = self::TEST_ENCRYPTION_IV;
+            }
 
             $encryptionParams = [
                 Encryption\AesGcmEncryption::SECRET => $data['password'],
