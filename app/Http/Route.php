@@ -999,6 +999,7 @@ final class Route
 
         // Fund Account Validation
         'fund_account_validate'                    => ['post',     'fund_accounts/validations',                      'FundAccountValidationController@create'                            ],
+        'fund_account_validation_retry'            => ['post',     'fund_accounts/validations/retry',                'FundAccountValidationController@retry'                            ],
         'fund_account_validate_fetch'              => ['get',      'fund_accounts/validations',                      'FundAccountValidationController@list'                              ],
         'fund_account_validate_fetch_by_id'        => ['get',      'fund_accounts/validations/{id}',                 'FundAccountValidationController@get'                               ],
 
@@ -1383,6 +1384,7 @@ final class Route
         'scrooge_refund_verify_bulk',
         'update_fts_nodal_beneficiary',
         'update_fts_fund_transfer',
+        'fund_account_validation_retry',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.

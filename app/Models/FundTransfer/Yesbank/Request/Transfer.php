@@ -2,7 +2,6 @@
 
 namespace RZP\Models\FundTransfer\Yesbank\Request;
 
-use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Gateway;
@@ -13,7 +12,7 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Yesbank\Mode;
 use RZP\Models\Card\Entity as CardVault;
 use RZP\Models\Settlement\SlackNotification;
-use RZP\Services\CardVault as CardVaultService;
+use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\FundTransfer\Yesbank\NodalAccount;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\Status;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\GatewayStatus;
