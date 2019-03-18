@@ -135,21 +135,15 @@ export default class Content extends Component {
         <Switch location={this.baseLocation}>
           <Route path="/dashboard" component={Home} />
           <Redirect
-            to={user.isPartner() ? 'submerchants' : '/dashboard'}
+            to={user.isPartner() ? 'partners' : '/dashboard'}
             from="/"
             exact
           />
 
           <ShowWhenRoute
-            path="/submerchants"
+            path="/partners"
             component={PartnerDashboard}
             additionalCondition={user => user.isPartner()}
-          />
-
-          <ShowWhenRoute
-            path="/commissions"
-            component={PartnerDashboard}
-            additionalCondition={user => !user.isPartner('reseller')}
           />
 
           <ShowWhenRoute
