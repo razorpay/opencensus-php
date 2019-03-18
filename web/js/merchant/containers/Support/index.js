@@ -31,36 +31,6 @@ export default class Support extends Component {
         this.setState({ notifyCount: response.count });
       });
     }
-
-    //bind events for smooch if available
-    if (window.Smooch) {
-      window.Smooch.on('widget:opened', () => {
-        this.handleVisibility(true);
-      });
-      window.Smooch.on('widget:closed', () => {
-        // smooch doesn't update notification count when chat is opened
-        this.setState({ notifyCount: 0 });
-
-        this.handleVisibility(false);
-      });
-      window.Smooch.on('unreadCount', unreadCount => {
-        this.setState({ notifyCount: unreadCount });
-      });
-
-      window.Smooch.on('ready', () => {
-        try {
-          // hide smooch's iframe messenger button when a notifcation arrives
-          let smoochIframe = document.getElementById('web-messenger-container');
-
-          smoochIframe.contentWindow.document.getElementById(
-            'messenger-button'
-          ).style.display =
-            'none';
-        } catch (err) {
-          console.log('Failed to hide smooch icon: ', err);
-        }
-      });
-    }
   };
 
   handleToggle = () => {
@@ -80,10 +50,6 @@ export default class Support extends Component {
   };
 
   handleChat = () => {
-    if (window.Smooch) {
-      window.Smooch.open();
-    }
-
     if (window.fcWidget) {
       window.fcWidget.open();
     }
