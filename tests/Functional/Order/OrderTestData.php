@@ -364,6 +364,27 @@ return [
         ],
     ],
 
+    'testCreateTPVOrderUpiBankInconsitentIfsc' => [
+        'request' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'account_number' => '040304030403040',
+                'bank'           => 'PUNB_R',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
+
     'testCreateTPVOrderInvalidMethod' => [
         'request' => [
             'content' => [
