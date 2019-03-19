@@ -1694,7 +1694,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VAULT_TOKEN_CREATE_INIT             = 'VAULT_TOKEN_CREATE_INIT';
     const VAULT_TOKEN_CREATE_COMPLETE         = 'VAULT_TOKEN_CREATE_COMPLETE';
 
-    const PAYMENT_ERROR_LOGGING_METRIC        = 'PAYMENT_ERROR_LOGGING_METRIC';
+    const PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC     = 'PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC';
     // P2P Traces
     const P2P_REQUEST                                   = 'P2P_REQUEST';
     const P2P_RESPONSE                                  = 'P2P_RESPONSE';

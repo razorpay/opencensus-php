@@ -2606,7 +2606,7 @@ class Processor
     {
         try
         {
-            $requestTime = (int) get_diff_in_millisecond($startTime);
+            $requestTime = get_diff_in_millisecond($startTime);
 
             (new Payment\Metric)->pushCreateRequestTimeMetrics($payment, $requestTime);
         }
@@ -2615,7 +2615,7 @@ class Processor
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::PAYMENT_ERROR_LOGGING_METRIC
+                TraceCode::PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC
             );
         }
     }
