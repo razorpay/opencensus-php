@@ -109,6 +109,8 @@ class Payment extends Base
 
         $network = Card\Network::getCode($payment->card->getNetwork());
 
+        $issuer = $payment->card->getIssuer();
+
         // Current Implementation
         // * Filter based on receiver type
         // * Filter based on international
@@ -143,6 +145,7 @@ class Payment extends Base
         $filters2 = [
             [Pricing\Entity::PAYMENT_METHOD_TYPE,   $cardType,      true,   null    ],
             [Pricing\Entity::AUTH_TYPE,             $authType,      true,   null    ],
+            [Pricing\Entity::PAYMENT_ISSUER,        $issuer,        true,   null    ],
         ];
 
         $rules = $this->applyFiltersOnRules($rules, $filters2);

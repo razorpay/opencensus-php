@@ -732,6 +732,7 @@ class Gateway
         self::ENACH_RBL,
         self::NETBANKING_HDFC,
         self::NETBANKING_AXIS,
+        self::ENACH_NPCI_NETBANKING,
     ];
 
     /**

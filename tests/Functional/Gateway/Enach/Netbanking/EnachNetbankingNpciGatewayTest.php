@@ -7,24 +7,31 @@ use Excel;
 use Queue;
 Use Carbon\Carbon;
 
-use RZP\Error\Error;
+use RZP\Jobs\BeamJob;
 use RZP\Models\Feature;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
-use RZP\Jobs\BeamJob;
 use RZP\Models\Customer\Token;
+use RZP\Models\Payment\Refund;
+use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Payment\Entity as Payment;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use Illuminate\Http\Testing\File as TestingFile;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Tests\Functional\FundTransfer\AttemptTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
+
+
+
 
 class EnachNetbankingNpciGatewayTest extends TestCase
 {
-    use PaymentTrait;
     use FileHandlerTrait;
     use DbEntityFetchTrait;
+    use AttemptTrait;
+    use AttemptReconcileTrait;
 
     public function setUp()
     {
@@ -730,5 +737,91 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         ];
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    public function testDebitFileReconciliationRefund()
+    {
+        $this->makeDebitPayment();
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $fileStatuses = [
+            'status'     => 'ACCEPTED',
+            'error_code' => '',
+            'error_desc' => '',
+        ];
+
+        Carbon::setTestNow(Carbon::now()->addDays(10));
+
+        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('processed', $batch['status']);
+
+        $payment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $transaction = $payment->transaction;
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        $response = $this->refundPayment('pay_' . $payment['id']);
+
+        $refund  = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($response['id'], $refund['id']);
+
+        $this->assertEquals('pay_' . $payment['id'], $refund['payment_id']);
+
+        $this->assertEquals('initiated', $refund['status']);
+
+        $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fundTransferAttempt['source'], $refund['id']);
+
+        $this->assertEquals('yesbank', $fundTransferAttempt['channel']);
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $this->assertEquals('UTIB0000123', $bankAccount['ifsc_code']);
+
+        $this->assertEquals('test', $bankAccount['beneficiary_name']);
+
+        $this->assertEquals('914010009305862', $bankAccount['account_number']);
+
+        $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
+
+        $this->assertEquals('refund', $bankAccount['type']);
+    }
+
+    public function testDebitFileReconciliationRefundBankTransfer()
+    {
+        $this->testDebitFileReconciliationRefund();
+
+        $channel = Channel::YESBANK;
+
+        $content = $this->initiateTransfer(
+            $channel,
+            Attempt\Purpose::REFUND);
+
+        $data = $this->reconcileOnlineSettlements($channel, false);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertNotNull($attempt['utr']);
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt[Attempt\Entity::STATUS]);
+
+        // Process entities
+        $this->reconcileEntitiesForChannel($channel);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+        $this->assertNotNull($attempt['utr']);
     }
 }
