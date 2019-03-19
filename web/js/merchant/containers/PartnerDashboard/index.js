@@ -1,12 +1,11 @@
-import { Route, Switch, NavLink } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
 
-import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
-import Applications from 'merchant/containers/Applications';
-import ApplicationEntity from 'merchant/containers/Applications/new';
+import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 
 import SubMerchantList from './SubMerchant/List';
 import Settings from './Settings';
 import Commissions from './Commissions/List';
+import Applications from './Applications';
 
 export default function PartnerDashboard() {
   return (
@@ -15,35 +14,23 @@ export default function PartnerDashboard() {
         additionalCondition={user =>
           user.isPartner('aggregator', 'fully_managed')
         }
-        path="settings"
+        path="/partners/settings"
         component={Settings}
       />
 
       <ShowWhenRoute
         additionalCondition={user => user.isPartner('pure_platform')}
-        path="applications/new"
-        component={ApplicationEntity}
-      />
-
-      <ShowWhenRoute
-        additionalCondition={user => user.isPartner('pure_platform')}
-        path="applications/:id"
-        component={ApplicationEntity}
-      />
-
-      <ShowWhenRoute
-        additionalCondition={user => user.isPartner('pure_platform')}
-        path="applications"
+        path="/partners/applications"
         component={Applications}
       />
 
       <ShowWhenRoute
         additionalCondition={user => !user.isPartner('resller')}
-        path="earnings"
+        path="/partners/earnings"
         component={Commissions}
       />
 
-      <Route path="submerchants" component={SubMerchantList} />
+      <Route path="/partners/submerchants" component={SubMerchantList} />
     </Switch>
   );
 }
