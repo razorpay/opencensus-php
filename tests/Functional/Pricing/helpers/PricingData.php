@@ -1650,9 +1650,9 @@ return [
                 'rules' => [
                     [
                         'payment_method'      => 'card',
-                        'payment_method_type' => 'credit',
+                        'payment_method_type' => 'debit',
                         'payment_network'     => 'VISA',
-                        'payment_issuer'      => 'ICIC',
+                        'payment_issuer'      => 'hdfc',
                         'percent_rate'        => 1000,
                         'fixed_rate'          => 10000,
                         'international'       => false,

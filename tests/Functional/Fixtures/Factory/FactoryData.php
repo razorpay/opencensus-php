@@ -174,6 +174,20 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Pricing\Entity::class, [
+            'id' => $faker->uniqueid,
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'card',
+            'payment_method_type' => 'debit',
+            'payment_network' => 'VISA',
+            'payment_issuer' => 'hdfc',
+            'percent_rate' => 1000,
+            'fixed_rate' => 10000,
+            'org_id'    => '100000razorpay',
+        ]);
+
+        $factory(\RZP\Models\Pricing\Entity::class, [
             'id'                  => $faker->uniqueid,
             'plan_id'             => '1ycviEdCgurrFI',
             'plan_name'           => 'testFixturePlan',
