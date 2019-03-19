@@ -1146,10 +1146,12 @@ class Service extends Base\Service
         return ['count' => $count];
     }
 
-    public function timeoutOldPayments()
+    public function timeoutOldPayments(array $input)
     {
         $count = 0;
         $error = 0;
+
+        $limit = $input['limit'] ?? 1000;
 
         $startTime = microtime(true);
 
@@ -1157,7 +1159,7 @@ class Service extends Base\Service
         $now = time();
         $timestamp = $now - Payment\Entity::PAYMENT_TIMEOUT_DEFAULT_OLD;
 
-        $payments = $this->repo->payment->fetchOldCreatedPaymentsForTimeout($timestamp);
+        $payments = $this->repo->payment->fetchOldCreatedPaymentsForTimeout($timestamp, $limit);
 
         foreach ($payments as $payment)
         {
@@ -1648,7 +1650,7 @@ class Service extends Base\Service
         return $token;
     }
 
-    // verify to fetch the payments between certain duration 
+    // verify to fetch the payments between certain duration
     protected function getStartTimestamp(int $delay)
     {
         $delay = 3 * $delay;
@@ -1658,7 +1660,7 @@ class Service extends Base\Service
         {
             $delay = 300;
         }
-        
+
         return Carbon::now(Timezone::IST)->subSeconds($delay)->getTimestamp();
     }
 }

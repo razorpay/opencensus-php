@@ -208,7 +208,9 @@ class PaymentController extends Controller
 
     public function postTimeout()
     {
-        $data = $this->service()->timeoutOldPayments();
+        $input = Request::all();
+
+        $data = $this->service()->timeoutOldPayments($input);
 
         return ApiResponse::json($data);
     }
