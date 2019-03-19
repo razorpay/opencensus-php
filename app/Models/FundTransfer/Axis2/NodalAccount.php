@@ -126,7 +126,7 @@ class NodalAccount extends NodalBase\FileProcessor
 
             $mode     = Axis2Constants::MODE_MAPPING[$mode];
 
-            $beneName = $this->normalizeBeneficiaryName($ba->getBeneficiaryName());
+            $beneName = (new Beneficiary)->normalizeBeneficiaryName($ba->getBeneficiaryName());
 
             $record[Headings::IDENTIFIER]                 = Axis2Constants::IDENTIFIER;
             $record[Headings::PAYMENT_MODE]               = $mode;
@@ -249,31 +249,6 @@ class NodalAccount extends NodalBase\FileProcessor
         $serialNum = $timeNow->format('his');
 
         return Axis2Constants::CORP_CODE . '_H2H_' . $date . '_' . $serialNum;
-    }
-
-    /* Normalizes beneficiary name should have length of max 70
-     * Allowed characters  a-z A-Z \s \d () , : . / -
-     *
-     * @param $name
-     * @return string
-     */
-    protected function normalizeBeneficiaryName($name): string
-    {
-        if($name !== null)
-        {
-            $normalizedNameWithSpaces =  preg_replace('/[^a-zA-Z\/\-\:\(\).,\s\d]/', '', $name);
-
-            $normalizedString = preg_replace('/\s+/',' ', $normalizedNameWithSpaces);
-
-            if (strlen(trim($normalizedString)) === 0)
-            {
-                return self::BENE_DEFAULT_NAME;
-            }
-
-            return substr($normalizedString, 0, 70);
-        }
-
-        return self::BENE_DEFAULT_NAME;
     }
 
     protected function getTransferMode($amount, Merchant\Entity $merchant): string
