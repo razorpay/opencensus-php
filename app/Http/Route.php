@@ -134,6 +134,7 @@ final class Route
         'refund_verify_failed_bulk'                => ['post',     'refunds/retry/bulk',                             'RefundController@postRefundRetryBulk'                              ],
         'refund_without_verify_bulk'               => ['post',     'refunds/retry/direct/bulk',                      'RefundController@postRefundDirectRetryBulk'                        ],
         'refund_verify'                            => ['get',      'refunds/{id}/verify',                            'RefundController@postRefundVerify'                                 ],
+        'refund_verify_bulk'                       => ['post',     'refunds/verify/bulk',                            'RefundController@postVerifyRefundsBulk'                            ],
         // We will change this in the future when we want to update more things than just marking it as processed.
         'refund_update_status'                     => ['put',      'refunds/{id}/update_status',                     'RefundController@updateScroogeRefundStatus'                        ],
         'refund_fetch_status'                      => ['get',      'refunds/{id}/status',                            'RefundController@getRefundEntity'                                  ],
@@ -1722,6 +1723,7 @@ final class Route
         'dispute_reason_create',
         'merchant_tags_bulk',
         'refund_verify',
+        'refund_verify_bulk',
         'merchant_edit',
         'adj_add_bulk',
         'adj_add_reverse',
@@ -2118,6 +2120,7 @@ final class Route
         'merchant_edit_bank_account'               => Permission::EDIT_MERCHANT_BANK_DETAIL,
         'merchant_edit_email'                      => Permission::MERCHANT_EMAIL_EDIT,
         'refund_verify'                            => Permission::VERIFY_REFUND,
+        'refund_verify_bulk'                       => Permission::VERIFY_REFUND,
         'pricing_get_plans'                        => Permission::MERCHANT_PRICING_PLANS,
         'pricing_get_gateway_plans'                => '*',
         'pricing_delete_plan_rule_force'           => Permission::UPDATE_PRICING_PLAN,
