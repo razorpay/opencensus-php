@@ -108,7 +108,7 @@ export default class RequestEntity extends Component {
     if (mapping) {
       url = mapping.url;
     } else {
-      url = `entity/${data.entity_id}`;
+      url = `entity/${data.entity_name}`;
     }
 
     return (
