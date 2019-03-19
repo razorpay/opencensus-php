@@ -9,7 +9,7 @@ class Url
     const TEST_DOMAIN        = 'https://netbank.uat.kotak.com';
 
     const TEST_AUTHORIZE     = '/pgx/ksecLogin.jsp';
-    const LIVE_AUTHORIZE     = '/pg/ksecLogin.jsp';
+    const LIVE_AUTHORIZE     = '/pmtgt/ksecLogin.jsp';
 
     const LIVE_API_GW_DOMAIN = 'https://apigw.kotak.com:8444';
     const TEST_API_GW_DOMAIN = 'https://apigwuat.kotak.com:8443';
