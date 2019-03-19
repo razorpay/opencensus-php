@@ -215,7 +215,7 @@ class Gateway extends Base\Gateway
         parent::capture($input);
 
         // todo: Uncomment this after UAT testing
-        // $this->setCardNumberAndCvv($input);
+         $this->setCardNumberAndCvv($input);
 
         // todo: Remove this after UAT testing
         // Added this because if we capture the payments on zeta, it'd try to fetch

@@ -1305,15 +1305,15 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantId()
     {
-        // For Paysecure, we're the acquirer. Hence, we will be onboarded on NPCI using
-        // Razorpay merchant id as MID. So, when calling Advice message to Hitachi for Paysecure,
-        // we'd have to send our merchant id.
+        $merchantId = $this->getLiveMerchantId();
+
+        // For all Paysecure requests, use hitachi's shared mid on live mode
         if ($this->input['payment']['gateway'] === Payment\Gateway::PAYSECURE)
         {
-            return $this->input['merchant']['id'];
+            // todo: Change later as required.
+            // For PVT, we would be using shared Hitachi merchant
+            $merchantId = '38RR00000000001';
         }
-
-        $merchantId = $this->getLiveMerchantId();
 
         if ($this->mode === Mode::TEST)
         {
@@ -1326,6 +1326,14 @@ class Gateway extends Base\Gateway
     protected function getTerminalId()
     {
         $terminalId = $this->terminal['gateway_terminal_id'];
+
+        // For all Paysecure requests, use hitachi's shared tid on live mode
+        if ($this->input['payment']['gateway'] === Payment\Gateway::PAYSECURE)
+        {
+            // todo: Change later as required.
+            // For PVT, we would be using shared Hitachi terminal
+            return '38R00001';
+        }
 
         if ($this->mode === Mode::TEST)
         {
