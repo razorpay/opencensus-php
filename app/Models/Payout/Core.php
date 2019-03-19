@@ -350,7 +350,7 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
     }
 
-    public function cancelPayout(Entity $payout)
+    public function cancelPayout(Entity $payout): Entity
     {
         return $this->mutex->acquireAndRelease(
                 $payout->getId(),
@@ -360,7 +360,7 @@ class Core extends Base\Core
 
                     $payout->setStatus(Status::CANCELLED);
 
-                    $payout = $this->repo->saveOrFail($payout);
+                    $this->repo->saveOrFail($payout);
 
                     return $payout;
                 },
