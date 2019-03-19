@@ -262,6 +262,7 @@ trait RequestHandlerTrait
                 'command'    => $command,
                 'parameters' => $params,
                 'gateway'    => $this->gateway,
+                'url'        => $this->getUrl(),
             ],
             $this->input
         );
