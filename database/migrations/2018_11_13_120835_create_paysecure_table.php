@@ -64,9 +64,6 @@ class CreatePaysecureTable extends Migration
             $table->string(Paysecure::APPRCODE, 10)
                   ->nullable();
 
-            $table->tinyInteger(Paysecure::SETTLED)
-                  ->default(0);
-
             $table->integer(Paysecure::CREATED_AT);
 
             $table->integer(Paysecure::UPDATED_AT);
