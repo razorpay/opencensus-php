@@ -9,7 +9,7 @@ use Razorpay\Trace\Logger as Trace;
 
 class ScroogeRefundUpdate extends Job
 {
-    const MAX_JOB_ATTEMPTS = 10;
+    const MAX_JOB_ATTEMPTS = 5;
     const JOB_RELEASE_WAIT = 300;
 
     //
