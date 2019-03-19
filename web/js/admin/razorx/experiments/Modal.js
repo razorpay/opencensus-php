@@ -234,7 +234,7 @@ export default class extends React.Component {
   };
 
   render() {
-    const { data, feature, JSONView } = this.props;
+    const { data, feature, JSONView, isReadOnly } = this.props;
     const isEdit = !!(data && data.id);
 
     let header = data ? `Edit Experiment – ${data.id}` : 'Create Experiment';
@@ -254,6 +254,7 @@ export default class extends React.Component {
             <JSONEdit
               initialJSON={this.JSONObj}
               validatorJSON={validatorJSON}
+              isReadOnly={isReadOnly}
             />
           ) : (
             <React.Fragment>
@@ -325,10 +326,12 @@ export default class extends React.Component {
             </React.Fragment>
           )}
           <div class="footer">
-            <button class="btn btn--primary" disabled={!this.isValid()}>
-              {isEdit ? 'Update' : 'Create'}
-              <span class="spin-btn" />
-            </button>
+            {!isReadOnly && (
+              <button class="btn btn--primary" disabled={!this.isValid()}>
+                {isEdit ? 'Update' : 'Create'}
+                <span class="spin-btn" />
+              </button>
+            )}
           </div>
         </Form>
       </ModalContent>
