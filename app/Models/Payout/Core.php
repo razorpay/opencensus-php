@@ -342,6 +342,8 @@ class Core extends Base\Core
 
                     $payout->getValidator()->validateProcessingQueuedPayout();
 
+                    // Currently, we support queued concept only for Fund Account type.
+                    // If we are supporting for others, the processor call needs to be fixed here.
                     return $this->getProcessor('fund_account_payout')
                                 ->setMerchant($payout->merchant)
                                 ->processQueuedPayout($payout);

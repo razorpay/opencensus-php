@@ -251,11 +251,10 @@ class Validator extends Base\Validator
                 ]);
         }
 
-        // Currently, we support queued concept only for Fund Account type and for RX
+        // Currently, we support queued concept only for Fund Account type.
         // If we are supporting for others, the processor call needs to be fixed in Core.
         if (($payout->hasFundAccount() === false) or
-            ($payout->hasCustomer() === true) or
-            ($payout->balance->isTypeBanking() === false))
+            ($payout->hasCustomer() === true))
         {
             throw new Exception\LogicException(
                 'Payout is not of RX or not a proper fund_account type',
