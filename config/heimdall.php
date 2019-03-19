@@ -331,6 +331,10 @@ return [
                 'description' => 'Reset user password on associated merchant page',
                 'assignable'  => true,
             ],
+            Permission::VIEW_OPERATIONS_REPORT => [
+                'description' => 'View Operations Reports',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::SETTLEMENT => [
@@ -379,6 +383,10 @@ return [
         PermissionCategory::ENTITY   => [
             Permission::VIEW_ALL_ENTITY => [
                 'description' => 'view all entity',
+            ],
+            Permission::VIEW_SCROOGE_REFUNDS => [
+                'description' => 'view scrooge refunds dashboard',
+                'assignable'  => true,
             ],
         ],
 

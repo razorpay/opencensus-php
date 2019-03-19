@@ -221,6 +221,8 @@ class Name
     const RAZORX_APPROVERS                    = 'razorx_approvers';
     const USER_PASSWORD_RESET                 = 'user_password_reset';
     const MODIFY_SUBSCRIPTION_DATA            = 'modify_subscription_data';
+    const VIEW_OPERATIONS_REPORT              = 'view_operations_report';
+    const VIEW_SCROOGE_REFUNDS                = 'view_scrooge_refunds';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,
