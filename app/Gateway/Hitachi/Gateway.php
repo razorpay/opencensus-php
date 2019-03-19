@@ -130,6 +130,11 @@ class Gateway extends Base\Gateway
 
         $this->setCardNumberAndCvv($input);
 
+        if ($input['card'][Card\Entity::NETWORK_CODE] === Network::RUPAY)
+        {
+            return $this->callAuthenticationGateway($input, Payment\Gateway::PAYSECURE);
+        }
+
         $mpiEntity = $this->app['repo']
                           ->mpi
                           ->findByPaymentIdAndActionGetLastOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
@@ -364,7 +369,11 @@ class Gateway extends Base\Gateway
 
     protected function decideAuthenticationGateway($input)
     {
-        if ((isset($input['authenticate']['gateway']) === true) and
+        if ($input['card'][Card\Entity::NETWORK_CODE] === Network::RUPAY)
+        {
+            $authenticationGateway = Payment\Gateway::PAYSECURE;
+        }
+        else if ((isset($input['authenticate']['gateway']) === true) and
             ($input['authenticate']['gateway'] === Payment\Gateway::MPI_ENSTAGE))
         {
             $authenticationGateway = Payment\Gateway::MPI_ENSTAGE;

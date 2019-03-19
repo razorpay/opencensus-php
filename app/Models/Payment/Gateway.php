@@ -886,6 +886,7 @@ class Gateway
             Network::MC,
             Network::VISA,
             Network::MAES,
+            Network::RUPAY,
         ],
         self::FIRST_DATA => [
             Network::MC,
@@ -898,9 +899,6 @@ class Gateway
             Network::VISA,
             Network::RUPAY,
         ],
-        self::PAYSECURE => [
-            Network::RUPAY,
-        ]
     ];
 
     public static $bharatQrCardNetwork = [

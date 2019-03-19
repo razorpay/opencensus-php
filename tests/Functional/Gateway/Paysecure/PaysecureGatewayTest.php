@@ -20,7 +20,16 @@ class PaysecureGatewayTest extends TestCase
 
         $this->fixtures->terminal->disableTerminal('1n25f6uN5S1Z5a');
 
-        $this->fixtures->create('terminal:shared_paysecure_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' =>
+                [
+                    'non_recurring' => '1',
+                    'recurring_3ds' => '1',
+                    'recurring_non_3ds' => '1'
+                ],
+            'gateway_merchant_id' => 'sample_hitachi_mid',
+            'gateway_terminal_id' => 'sample_hitachi_tid',
+        ]);
 
         $merchantDetailArray = [
             'contact_name'                => 'rzp',
@@ -48,7 +57,7 @@ class PaysecureGatewayTest extends TestCase
             ],
         ]);
 
-        $this->gateway = 'paysecure';
+        $this->gateway = 'hitachi';
 
         $this->setMockGatewayTrue();
 
@@ -471,7 +480,7 @@ class PaysecureGatewayTest extends TestCase
 
         $payment['card'] = array(
             'number'            => '6073849700004947',
-            'name'              => 'Praveen',
+            'name'              => 'Test user',
             'expiry_month'      => '12',
             'expiry_year'       => '2024',
             'cvv'               => '566',
