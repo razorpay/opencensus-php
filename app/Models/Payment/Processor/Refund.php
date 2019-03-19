@@ -18,6 +18,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Jobs\ScroogeRefund;
 use RZP\Models\BankTransfer;
+use RZP\Models\Card\Issuer;
 use RZP\Jobs\ScroogeRefundRetry;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RefundSource;
@@ -1267,6 +1268,8 @@ trait Refund
     {
         $data = $this->getGatewayDataForScroogeRefund($refund, $refund->payment, $data);
 
+        $refund->setIsScrooge(true);
+
         $refund->incrementAttempts();
 
         $this->repo->saveOrFail($refund);
@@ -1413,8 +1416,12 @@ trait Refund
             return $refund->getStatus();
         }
 
+        //
+        // Enabling refund retry on created state and initiated state.
+        // Refund is stuck in these state means refund is failed at some stage.
+        //
         if ((Payment\Gateway::isScroogeGatewayAndMerchant($refund->getGateway()) === true) and
-            ($refund->isCreated() === true))
+            (($refund->isCreated() === true) or ($refund->isInitiated() === true)))
         {
             $this->callRefundRetryFunctionOnScrooge($refund, $data);
         }
@@ -1660,6 +1667,15 @@ trait Refund
         {
             $scroogeData['fta_data']['vpa'] = $input['vpa'];
         }
+        else if ($this->isPaymentCardAndCardTransferRefund($payment) === true)
+        {
+            $cardInput = $this->getCardIdInput($payment, $input);
+
+            if (empty($cardInput) === false)
+            {
+                $scroogeData['fta_data']['card_transfer'] = $cardInput;
+            }
+        }
         else
         {
             $bankAccountInput = $this->getBankAccountInput($payment, $input);
@@ -1895,6 +1911,10 @@ trait Refund
             {
                 $fta = $this->refundViaFundTransferToVpa($data, $fundTransferAttemptInput);
             }
+            else if ($this->isPaymentCardAndCardTransferRefund($payment))
+            {
+                $fta = $this->refundViaFundTransferToCard($payment, $data, $fundTransferAttemptInput);
+            }
             else
             {
                 $fta = $this->refundViaFundTransferToBankAccount($payment, $data, $fundTransferAttemptInput);
@@ -1981,11 +2001,32 @@ trait Refund
         });
     }
 
+    protected function refundViaFundTransferToCard(Payment\Entity $payment,
+                                                          array $data,
+                                                          array $fundTransferAttemptInput): FundTransferAttempt\Entity
+    {
+        $input = $this->getCardIdInput($payment, $data);
+
+        return $this->repo->transaction(function () use ($input, $payment, $fundTransferAttemptInput)
+        {
+            $fta = (new FundTransferAttempt\Core)->createWithCard($this->refund,
+                $payment->card,
+                $fundTransferAttemptInput);
+
+            return $fta;
+        });
+    }
+
     protected function isFundTransferAttemptRefund(Payment\Entity $payment, array $data = []): bool
     {
+        //
         // Refund is explicitly being attempted towards a new bank account or vpa
+        // Bank account or vpa input can come from dashboard also, but card_transfer will not come from dashboard.
+        // It can come via scrooge only if card refund is applicable on the payment.
+        //
         if ((isset($data['bank_account']) === true) or
-            (isset($data['vpa']) === true))
+            (isset($data['vpa']) === true) or
+            (isset($data['card_transfer']) === true))
         {
             return true;
         }
@@ -1993,7 +2034,8 @@ trait Refund
         // Certain types of payments have refunds routed via bank transfers
         if (($payment->isBankTransfer() === true) or
             ($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true) or
-            ($this->isPaymentTpvAndBankTransferRefund($payment) === true))
+            ($this->isPaymentTpvAndBankTransferRefund($payment) === true) or
+            ($this->isPaymentCardAndCardTransferRefund($payment) === true))
         {
             return true;
         }
@@ -2023,6 +2065,54 @@ trait Refund
         }
 
         return false;
+    }
+
+    /**
+     * Checking if a card payment is valid to be refunded by Card instantly.
+     * If card_transfer_refund feature is present for the merchant,
+     * refund will be made on card. Card should be credit card, should have vault token stored and
+     * should belong to supported issuers.
+     *
+     * @param Payment\Entity $payment
+     * @return bool
+     */
+    protected function isPaymentCardAndCardTransferRefund(Payment\Entity $payment): bool
+    {
+        if (($payment->hasCard() === true) and ($payment->card->isCredit() === true) and
+            ($payment->card->getVaultToken() !== null) and
+            ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true) and
+            (in_array($payment->card->getIssuer(), Issuer::YESBANK_SUPPORTED_ISSUER) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * `card_transfer` will be set for scrooge refunds.
+     *  Because when refund creation request is sent to scrooge, and if card refund is applicable, card_id will sent as
+     * fta data.
+     *
+     * This is different from bank_account or vpa because card_id will never come from dashboard input.
+     * It will always be read from database based on feature and issuers.
+     *
+     * @param Payment\Entity $payment
+     * @param array $data
+     * @return mixed
+     */
+    protected function getCardIdInput(Payment\Entity $payment, array $data = [])
+    {
+        if (isset($data['card_transfer']) === true)
+        {
+            $input = $data['card_transfer'];
+        }
+        else
+        {
+            $input['card_id'] = $payment->getCardId();
+        }
+
+        return $input;
     }
 
     protected function getBankAccountInput(Payment\Entity $payment, array $data = [])
@@ -2114,6 +2204,8 @@ trait Refund
         $vpa = (new Core)->createVpa($vpaInput);
 
         $this->refund->vpa()->associate($vpa);
+
+        $this->refund->saveOrFail();
     }
 
     protected function createAndAssociateBankAccount(array $bankAccountInput)
@@ -2126,6 +2218,8 @@ trait Refund
                 );
 
         $this->refund->bankAccount()->associate($bankAccount);
+
+        $this->refund->saveOrFail();
     }
 
     /**

@@ -10,6 +10,8 @@ class Gateway extends Upi\Gateway
     const RZPSHARP      = 'rzpsharp';
     const NORZPSHARP    = 'norzpsharp';
 
+    protected $gateway = 'p2p_razor_sharp';
+
     protected function shouldMockResponse(): bool
     {
         //All request for Sharp Gateway will have mocked response

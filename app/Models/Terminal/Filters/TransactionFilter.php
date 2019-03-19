@@ -643,7 +643,7 @@ class TransactionFilter extends Terminal\Filter
                             // IVR is supported only on on Hitachi.
                             // Hence, it should be enabled only for all the IVR enabled iins.
                             //
-                            if (($gateway === Payment\Gateway::HITACHI) and
+                            if ((Payment\Gateway::isOnlyAuthorizationGateway($gateway) === true) and
                                 (($iin->supports(Flow::IVR) === true) or
                                  ($iin->supports(Flow::OTP) === true)))
                             {

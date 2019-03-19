@@ -171,6 +171,7 @@ class Table
     // Terminal Performance
     const TERMINAL_ACTION       = 'terminal_action_logs';
     const GATEWAY_DOWNTIME      = 'gateway_downtimes';
+    const PAYMENT_DOWNTIME      = 'payment_downtimes';
 
     const GATEWAY_RULE          = 'gateway_rules';
     const GATEWAY_FILE          = 'gateway_files';

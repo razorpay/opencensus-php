@@ -56,6 +56,10 @@ return [
                 'description' => 'Edit Merchant Email',
                 'assignable'  => true,
             ],
+            Permission::MERCHANT_PRICING_PLANS => [
+                'description' => 'List all the merchant pricing plans',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::MERCHANT_REQUEST => [
@@ -177,6 +181,10 @@ return [
             Permission::VIEW_MERCHANT_CREDITS_LOG           => '',
             Permission::ADD_MERCHANT_CREDITS                => [
                 'assignable' => true,
+            ],
+            Permission::EDIT_MERCHANT_CREDITS => [
+                'description' => 'Ability to merchant edit credits',
+                'assignable'  => true,
             ],
             Permission::DELETE_MERCHANT_CREDITS             => '',
             Permission::EDIT_MERCHANT_SCREENSHOT            => [
@@ -323,6 +331,10 @@ return [
                 'description' => 'Reset user password on associated merchant page',
                 'assignable'  => true,
             ],
+            Permission::VIEW_OPERATIONS_REPORT => [
+                'description' => 'View Operations Reports',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::SETTLEMENT => [
@@ -371,6 +383,10 @@ return [
         PermissionCategory::ENTITY   => [
             Permission::VIEW_ALL_ENTITY => [
                 'description' => 'view all entity',
+            ],
+            Permission::VIEW_SCROOGE_REFUNDS => [
+                'description' => 'view scrooge refunds dashboard',
+                'assignable'  => true,
             ],
         ],
 

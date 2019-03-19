@@ -892,6 +892,7 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED,
+                null,
                 [
                     'payment_id'    => $payment->getId(),
                     'status'        => $payment->getStatus(),

@@ -17,7 +17,6 @@ class Upi
     const APMC = 'APMC';
     const ASBL = 'ASBL';
     const BACB = 'BACB';
-    const BARB = 'BARB';
     const BDBL = 'BDBL';
     const BKDN = 'BKDN';
     const BKID = 'BKID';
@@ -60,7 +59,6 @@ class Upi
     const KLGB = 'KLGB';
     const KVBL = 'KVBL';
     const KVGB = 'KVGB';
-    const LAVB = 'LAVB';
     const MAHB = 'MAHB';
     const MAHG = 'MAHG';
     const MCBL = 'MCBL';
@@ -73,7 +71,6 @@ class Upi
     const PMCB = 'PMCB';
     const PRTH = 'PRTH';
     const PSIB = 'PSIB';
-    const PUNB = 'PUNB';
     const PYTM = 'PYTM';
     const RATN = 'RATN';
     const RNSB = 'RNSB';
@@ -99,6 +96,9 @@ class Upi
     const VSBL = 'VSBL';
     const VVSB = 'VVSB';
     const YESB = 'YESB';
+    const BARB_R = 'BARB_R';
+    const PUNB_R = 'PUNB_R';
+    const LAVB_R = 'LAVB_R';
 
 
     protected static $supportedUpiBanks = [
@@ -112,7 +112,6 @@ class Upi
         self::APMC,
         self::ASBL,
         self::BACB,
-        self::BARB,
         self::BDBL,
         self::BKDN,
         self::BKID,
@@ -155,7 +154,6 @@ class Upi
         self::KLGB,
         self::KVBL,
         self::KVGB,
-        self::LAVB,
         self::MAHB,
         self::MAHG,
         self::MCBL,
@@ -168,7 +166,6 @@ class Upi
         self::PMCB,
         self::PRTH,
         self::PSIB,
-        self::PUNB,
         self::PYTM,
         self::RATN,
         self::RNSB,
@@ -194,6 +191,10 @@ class Upi
         self::VSBL,
         self::VVSB,
         self::YESB,
+        self::BARB_R,
+        self::PUNB_R,
+        self::LAVB_R,
+
     ];
 
     public static function exists($bank)

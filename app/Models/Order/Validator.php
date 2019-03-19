@@ -339,7 +339,7 @@ class Validator extends Base\Validator
         switch ($method)
         {
             case Payment\Method::UPI:
-                $tpvBanks = Netbanking::getSupportedBanks();
+                $tpvBanks = Payment\Processor\Upi::getAllUpiBanks();
                 break;
 
             case Payment\Method::NETBANKING:

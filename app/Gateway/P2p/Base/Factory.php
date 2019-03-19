@@ -31,6 +31,10 @@ class Factory
             case 'p2p_upi_sharp':
                 $namespace = Upi\Sharp::class;
                 break;
+
+            case 'p2p_upi_axis':
+                $namespace = Upi\Axis::class;
+                break;
         }
 
         $className = $namespace . '\\' . class_basename($interface);

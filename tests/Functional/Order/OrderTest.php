@@ -208,6 +208,13 @@ class OrderTest extends TestCase
         return $order;
     }
 
+    public function testCreateTPVOrderUpiBankInconsitentIfsc()
+    {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
     public function testCreateTPVOrderInvalidMethod()
     {
         $order = $this->startTest();

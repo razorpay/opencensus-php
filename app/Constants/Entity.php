@@ -91,6 +91,7 @@ class Entity
     const VIRTUAL_ACCOUNT           = 'virtual_account';
     const MERCHANT_DETAIL           = 'merchant_detail';
     const TERMINAL_ACTION           = 'terminal_action';
+    const PAYMENT_DOWNTIME          = 'payment_downtime';
     const MERCHANT_REQUEST          = 'merchant_request';
     const CUSTOMER_BALANCE          = 'customer_balance';
     const GATEWAY_DOWNTIME          = 'gateway_downtime';
@@ -221,6 +222,7 @@ class Entity
 
     // P2P Gateways
     const P2P_UPI_SHARP          = 'p2p_upi_sharp';
+    const P2P_UPI_AXIS           = 'p2p_upi_axis';
 
     // Tax and Tax Groups
     const TAX                   = 'tax';
@@ -334,6 +336,7 @@ class Entity
         self::MERCHANT_REQUEST          => \RZP\Models\Merchant\Request::class,
         self::CUSTOMER_BALANCE          => \RZP\Models\Customer\Balance::class,
         self::GATEWAY_DOWNTIME          => \RZP\Models\Gateway\Downtime::class,
+        self::PAYMENT_DOWNTIME          => \RZP\Models\Payment\Downtime::class,
         self::GATEWAY_RULE              => \RZP\Models\Gateway\Rule::class,
         self::GATEWAY_FILE              => \RZP\Models\Gateway\File::class,
         self::MERCHANT_EMAIL            => \RZP\Models\Merchant\Email::class,
@@ -456,6 +459,7 @@ class Entity
         self::P2P_TRANSACTION       => \RZP\Models\P2p\Transaction::class,
 
         self::P2P_UPI_SHARP         => \RZP\Gateway\P2p\Upi::class,
+        self::P2P_UPI_AXIS          => \RZP\Gateway\P2p\Upi::class,
 
         self::COMMISSION            => \RZP\Models\Partner\Commission::class,
     ];

@@ -119,8 +119,6 @@ class MerchantDetail extends Base
             "promoter_address_url"          => "124",
         ];
 
-        array_replace($return, $attributes);
-
-        return $return;
+        return array_replace($return, $attributes);
     }
 }

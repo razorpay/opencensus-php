@@ -2465,7 +2465,7 @@ return [
                 'entity' => 'collection',
                 'count'  => 1,
                 'items'  => [
-                    'entity'     => 'method_downtime',
+                    'entity'     => 'payment.downtime',
                     'method'     => 'card',
                     'end'        => null,
                     'instrument' => [
@@ -2501,7 +2501,7 @@ return [
                 'entity' => 'collection',
                 'count'  => 1,
                 'items'  => [
-                    'entity'     => 'method_downtime',
+                    'entity'     => 'payment.downtime',
                     'method'     => 'upi',
                     'end'        => null,
                     'instrument' => [
@@ -2521,7 +2521,7 @@ return [
                 'entity' => 'collection',
                 'count'  => 1,
                 'items'  => [
-                    'entity'     => 'method_downtime',
+                    'entity'     => 'payment.downtime',
                     'method'     => 'upi',
                     'end'        => null,
                     'instrument' => [
@@ -2541,7 +2541,7 @@ return [
                 'entity' => 'collection',
                 'count'  => 1,
                 'items'  => [
-                    'entity'     => 'method_downtime',
+                    'entity'     => 'payment.downtime',
                     'method'     => 'wallet',
                     'end'        => null,
                     'instrument' => [

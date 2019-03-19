@@ -22,6 +22,7 @@ class Netbanking
 
     // These are the IFSC's that are to be used for these
     // banks even if we integrate them directly.
+    // if we add new ifsc, please add it in RZP\Models\Payment\Processor\Upi
     const BARB_R = 'BARB_R';
     const PUNB_R = 'PUNB_R';
     const LAVB_R = 'LAVB_R';

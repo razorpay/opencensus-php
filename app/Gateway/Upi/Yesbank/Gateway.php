@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use Illuminate\Support\Str;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Upi\Mindgate;
 use RZP\Gateway\Upi\Base\Entity;
@@ -123,6 +124,15 @@ class Gateway extends Mindgate\Gateway
 
             $request = $this->getPayoutRequest($input);
 
+            $logRequest = $request;
+
+            if (Str::startsWith($logRequest[Fields::PAYEE_VPA], 'CCPAY') === true)
+            {
+                $logRequest[Fields::PAYEE_VPA] = mask_except_last4($logRequest[Fields::PAYEE_VPA], 'x');
+            }
+
+            $maskedRequest = implode('|', $logRequest);
+
             $content = implode('|', $request);
 
             $encryptedContent = $this->encryptRequest($content);
@@ -137,7 +147,7 @@ class Gateway extends Mindgate\Gateway
             $this->traceGatewayPaymentRequest(
                 [
                     'request'           => $request,
-                    'decrypted_content' => $content
+                    'decrypted_content' => $maskedRequest
                 ],
                 $input,
                 TraceCode::VPA_PAYOUT_REQUEST

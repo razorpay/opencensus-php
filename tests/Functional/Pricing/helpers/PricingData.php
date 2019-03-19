@@ -1111,9 +1111,12 @@ return [
         ],
         'response' => [
             'content' => [
-                'count' => 7,
+                'count' => 8,
                 'entity' => 'collection',
                 'items' => [
+                    [
+                        'name' => 'CommDefaultPlan',
+                    ],
                     [
                         'name' => 'Banking default plan',
                     ],
@@ -1223,7 +1226,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'count' => 1,
+                'count' => 2,
                 'items' => [
                     [
                         'rules' => [
@@ -1244,9 +1247,12 @@ return [
         ],
         'response' => [
             'content' => [
-                'count'  => 7,
+                'count'  => 8,
                 'entity' => 'collection',
                 'items'  => [
+                    [
+                        'name' => 'CommDefaultPlan',
+                    ],
                     [
                         'name' => 'Banking default plan',
                     ],

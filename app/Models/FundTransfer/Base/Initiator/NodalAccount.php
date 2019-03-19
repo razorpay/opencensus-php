@@ -428,7 +428,7 @@ abstract class NodalAccount extends Base\Core
         }
     }
 
-    public function getPaymentModeForCard(Entity $attempt, $amount): string
+    public function getPaymentModeForCard(Attempt\Entity $attempt, $amount): string
     {
         if ($attempt->hasMode() === true)
         {

@@ -15,7 +15,7 @@ class Core extends Base\Core
 {
     public function createManyForBank(array $bankAccounts, Bank\Entity $bank): PublicCollection
     {
-        $existingBankAccounts = $this->repo->fetchAllForBank($bank->getIfsc());
+        $existingBankAccounts = $this->repo->fetchAllForBank($bank->getId());
 
         foreach ($bankAccounts as $bankAccount)
         {
@@ -40,7 +40,7 @@ class Core extends Base\Core
 
         $bankAccount->build($input);
 
-        $bankAccount->parentBank()->associate($bank);
+        $bankAccount->bank()->associate($bank);
 
         $this->repo->saveOrFail($bankAccount);
 
