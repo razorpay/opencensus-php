@@ -102,7 +102,7 @@ export default class RequestEntity extends Component {
     const shouldShowTick = ['approved', 'executed'].indexOf(data.state) !== -1;
     const { id } = this.props.match.params;
 
-    const mapping = entityMap[data.entity_id];
+    const mapping = entityMap[data.entity_name];
     let url;
 
     if (mapping) {
