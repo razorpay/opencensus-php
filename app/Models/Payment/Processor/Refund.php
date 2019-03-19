@@ -364,13 +364,17 @@ trait Refund
 
     /**
      * Using to verify UPI refunds for all previous attempts to check if any of the attempt was successful.
+     * bulkRefundVerify param is used for returning response in the required format for `verifyRefundsInBulk` function.
      *
      * @param $refund
      * @param int $attempts
-     * @return array
+     * @param bool $bulkRefundVerify
+     * @return array (1D / 2D)
      */
-    public function verifyScroogeRefundWithAttempts($refund, int $attempts)
+    public function verifyScroogeRefundWithAttempts($refund, int $attempts, $bulkRefundVerify = false)
     {
+        $fileData = [];
+
         $payment = $refund->payment;
 
         $this->setPaymentAndRefundInfo($refund, $payment);
@@ -401,6 +405,17 @@ trait Refund
                         'verify_response'   => $verifyResponse,
                     ]);
 
+                if ($bulkRefundVerify === true)
+                {
+                    $fileData[] = [
+                        'refund_id'         => $refund->getId(),
+                        'attempt_number'    => $attempt,
+                        'success'           => ($success) ? 'true' : 'false',
+                        'payment_id'        => $payment->getId(),
+                        'verify_response'   => json_encode($verifyResponse)
+                    ];
+                }
+
                 ($success === true) ? ($successCount += 1 and $successAttempt[] = $attempt) : $refundFailedCount += 1;
 
                 if (($success === true) and ($refund->getAmount() === $payment->getAmount()))
@@ -419,8 +434,24 @@ trait Refund
                         'exception'         => $ex->getMessage(),
                     ]);
 
+                if ($bulkRefundVerify === true)
+                {
+                    $fileData[] = [
+                        'refund_id'         => $refund->getId(),
+                        'attempt_number'    => $attempt,
+                        'success'           => "Unexpected Failure",
+                        'payment_id'        => $payment->getId(),
+                        'verify_response'   => $ex->getMessage()
+                    ];
+                }
+
                 $failureCount += 1;
             }
+        }
+
+        if ($bulkRefundVerify === true)
+        {
+            return $fileData;
         }
 
         return [

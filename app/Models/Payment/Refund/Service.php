@@ -33,6 +33,8 @@ class Service extends Base\Service
 
     const MAX_REFUND_RETRY_ATTEMPTS = 3;
 
+    const MAX_REFUND_VERIFY_REQUESTS = 20;
+
     protected $mutex;
 
     public function __construct()
@@ -1574,5 +1576,108 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::BULK_SCROOGE_REFUND_VERIFY_JOB_DISPATCHED, $traceData);
 
         return $traceData;
+    }
+
+    public function validateInputForVerifyRefundsInBulk(array $input)
+    {
+        $data = [
+            'refund_data'     => [],
+            'invalid_refunds' => [],
+            'refund_count'    => 0
+        ];
+
+        foreach ($input['refund_data'] as $refundEntity)
+        {
+            $refundArray = explode (':', $refundEntity);
+
+            $refundId = $refundArray[0];
+
+            try
+            {
+                Refund\Entity::verifyIdAndStripSign($refundId);
+
+                $refund = $this->repo->refund->findOrFailPublic($refundId);
+
+                $payment = $refund->payment;
+
+                $attempts = 1;
+
+                if (($payment->isUpi() === true) and (isset($refundArray[1]) === true))
+                {
+                    $attempts = (int)$refundArray[1];
+                }
+
+                $data['refund_count'] += $attempts;
+
+                $data['refund_data'][] = [
+                    'refund'               => $refund,
+                    RefundEntity::ATTEMPTS => $attempts
+                ];
+            }
+            catch (\Throwable $ex)
+            {
+                $data['invalid_refunds'][] = [
+                    RefundEntity::ID       => $refundId,
+                    'failure_message'      => 'Verify Refund Not Called. Error : ' . $ex->getMessage()
+                ];
+            }
+        }
+
+        return $data;
+    }
+
+    public function verifyRefundsInBulk(array $input)
+    {
+        $this->trace->info(TraceCode::BULK_REFUND_VERIFY_REQUEST, $input);
+
+        $data = $this->validateInputForVerifyRefundsInBulk($input);
+
+        $response = [
+            'message'    => 'Request Processed Successfully',
+            'result'     => []
+        ];
+
+        if ($data['refund_count'] > self::MAX_REFUND_VERIFY_REQUESTS)
+        {
+            $response['message'] = 'Maximum refunds that can be verified at once is ' . self::MAX_REFUND_VERIFY_REQUESTS;
+
+            return $response;
+        }
+
+        $fileData = [];
+
+        $refundEntities = $data['refund_data'];
+
+        if (empty($refundEntities) === false)
+        {
+            foreach ($refundEntities as $refundEntity)
+            {
+                $merchant = $refundEntity['refund']->merchant;
+
+                $results = $this->getNewProcessor($merchant)->verifyScroogeRefundWithAttempts($refundEntity['refund'],
+                                                                                              $refundEntity[RefundEntity::ATTEMPTS],
+                                                                                              true);
+
+                array_push($fileData, ...$results);
+            }
+        }
+
+        if (empty($data['invalid_refunds']) === false)
+        {
+            foreach ($data['invalid_refunds'] as $invalidRefund)
+            {
+                $fileData[] = [
+                    'refund_id'         => $invalidRefund[RefundEntity::ID],
+                    'attempt_number'    => 'NA',
+                    'success'           => 'NA',
+                    'payment_id'        => 'NA',
+                    'verify_response'   => $invalidRefund['failure_message']
+                ];
+            }
+        }
+
+        $response['result'] = $fileData;
+
+        return $response;
     }
 }
