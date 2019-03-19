@@ -677,6 +677,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_SOAP_ERROR                        = 'GATEWAY_SOAP_ERROR';
     const GATEWAY_SOAP_FAULT                        = 'GATEWAY_SOAP_FAULT';
     const GATEWAY_REQUEST_TIMEOUT                   = 'GATEWAY_REQUEST_TIMEOUT';
+    const GATEWAY_REQUEST_ERROR                     = 'GATEWAY_REQUEST_ERROR';
     const GATEWAY_INVALID_PARES_SIGNATURE_ERROR     = 'GATEWAY_INVALID_PARES_SIGNATURE_ERROR';
     const GATEWAY_RUPAY_CALLBACK                    = 'GATEWAY_RUPAY_CALLBACK';
     const GATEWAY_HDFC_CALLBACK_EMPTY               = 'GATEWAY_HDFC_CALLBACK_EMPTY';
