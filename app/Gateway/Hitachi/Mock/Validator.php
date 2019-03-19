@@ -17,6 +17,7 @@ class Validator extends Base\Validator
         RequestFields::EXPIRY_DATE              => 'required|numeric',
         RequestFields::CVV2                     => 'required_if:transaction_type,00|numeric',
         RequestFields::MERCHANT_ID              => 'required|string',
+        RequestFields::TERMINAL_ID              => 'required_if:transaction_type,RU|string',
         RequestFields::MERCHANT_REF_NUMBER      => 'required|alpha_num|size:14',
         RequestFields::AUTH_STATUS              => 'sometimes|string',
         RequestFields::ECI                      => 'sometimes|numeric',
