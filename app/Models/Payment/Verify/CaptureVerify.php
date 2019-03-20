@@ -112,8 +112,9 @@ class CaptureVerify extends Verify
             // Otherwise raise an alert if verify bucket is last bucket
             if ((($payment->getVerifyBucket() >= 4) and
                 (($result === Result::ERROR) or
-                ($result === Result::UNKNOWN))) or
-                ($payment->getVerifyBucket() == 9))
+                 ($result === Result::UNKNOWN))) or
+                (($payment->getVerifyBucket() == 9) and
+                 ($result !== Result::SUCCESS)))
             {
                 // Put the settlement on hold if verification has failed
                 // $payment->setOnHold(true);
