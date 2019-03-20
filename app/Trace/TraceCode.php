@@ -1610,6 +1610,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_RECONCILIATION_JOB_RELEASED     = 'FTA_RECONCILIATION_JOB_RELEASED';
 
     // Commission trace codes
+    const COMMISSION_SAVED                              = 'COMMISSION_SAVED';
     const COMMISSION_LOGGED                             = 'COMMISSION_LOGGED';
     const COMMISSION_CREATED                            = 'COMMISSION_CREATED';
     const COMMISSION_NOT_ENABLED                        = 'COMMISSION_NOT_ENABLED';
