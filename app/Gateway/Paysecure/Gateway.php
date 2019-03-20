@@ -61,12 +61,7 @@ class Gateway extends Base\Gateway
     {
         parent::setGatewayParams($input, $mode, $terminal);
 
-        $this->wsdlDetails['wsdl_file'] = dirname(__FILE__) . '/rupay.wsdl.test';
-
-        if ($this->mode === Mode::LIVE)
-        {
-            $this->wsdlDetails['wsdl_file'] = dirname(__FILE__) . '/rupay.wsdl';
-        }
+        $this->wsdlDetails['wsdl_file'] = dirname(__FILE__) . '/rupay.wsdl';
 
         $this->secureCacheDriver = $this->getDriver($input);
     }
@@ -460,6 +455,8 @@ class Gateway extends Base\Gateway
 
         $headers = $this->getRequestHeaders();
 
+        $soapClient->__setLocation($this->getUrl());
+
         $soapClient->__setSoapHeaders($headers);
 
         return $soapClient;
@@ -576,5 +573,12 @@ class Gateway extends Base\Gateway
                 'gateway'    => $this->gateway,
                 'payment_id' => $input['payment']['id'],
             ]);
+    }
+
+    protected function getUrl($type = null)
+    {
+        $urlClass = $this->getGatewayNamespace() . '\Url';
+
+        return constant($urlClass . '::' .strtoupper($this->mode));
     }
 }

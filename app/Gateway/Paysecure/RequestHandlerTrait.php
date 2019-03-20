@@ -181,7 +181,7 @@ trait RequestHandlerTrait
             return '38RR00000000001';
         }
 
-        $this->app['config']['hitachi']['test_merchant_id'];
+        return $this->app['config']->get('gateway.hitachi.test_merchant_id');
     }
 
     // Since we're the acquirer, we can pass our own internal terminal id
@@ -200,7 +200,7 @@ trait RequestHandlerTrait
             return '38R00001';
         }
 
-        $this->app['config']['hitachi']['test_terminal_id'];
+        return $this->app['config']->get('gateway.hitachi.test_terminal_id');
     }
 
     protected function generateRrn($stan)
@@ -262,6 +262,7 @@ trait RequestHandlerTrait
                 'command'    => $command,
                 'parameters' => $params,
                 'gateway'    => $this->gateway,
+                'url'        => $this->getUrl(),
             ],
             $this->input
         );
