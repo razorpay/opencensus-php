@@ -19,6 +19,7 @@ export default class extends React.PureComponent {
     this.flask = new window.CodeFlask('#json-edit-view', {
       language: 'js',
       defaultTheme: false,
+      readonly: !!this.props.isReadOnly,
     });
 
     const ta = document.getElementsByClassName('codeflask__textarea')[0];
@@ -123,6 +124,7 @@ export default class extends React.PureComponent {
           name="json-value"
           value={this.flask ? this.state.jsonValue : ''}
           class="hide"
+          readOnly={this.props.isReadOnly}
         />
         <div id="json-edit-view" />
         <div class={classList('error', !this.state.isInValid && 'hidden')}>

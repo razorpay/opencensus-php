@@ -3,11 +3,12 @@ import { observable, extendObservable, action } from 'mobx';
 import { observer } from 'mobx-react';
 import { openModal, notifySuccess, notifyDone } from 'common/modal';
 import { adminFetch, adminPut } from 'common/fetch';
-import DiffContent from './DiffContent';
-import Comments from './Comments';
-import RequestForm from './RequestForm';
-import RequestActions from './RequestActions';
+import Comments from 'admin/requests/Comments';
+import RequestForm from 'admin/requests/RequestForm';
+import RequestActions from 'admin/requests/RequestActions';
 import { formatDate, titleCase } from 'common/util';
+
+import ExperimentsEntity from '../experiments/Entity';
 
 @observer
 export default class RequestEntity extends Component {
@@ -102,41 +103,32 @@ export default class RequestEntity extends Component {
     const shouldShowTick = ['approved', 'executed'].indexOf(data.state) !== -1;
     const { id } = this.props.match.params;
 
-    const mapping = entityMap[data.entity_name];
-    let url;
-
-    if (mapping) {
-      url = mapping.url;
-    } else {
-      url = `entity/${data.entity_name}`;
-    }
+    const url = `${entityMap[data.entity_name]}/${data.entity_id}`;
 
     return (
-      <div class="requests-container">
-        <header class="heading">
-          {data.permission.description &&
-            titleCase(data.permission.description)}{' '}
-          <a
-            className="link"
-            href={`/admin/${url}/${data.entity_id}`}
-            target="_blank"
-          >
+      <div class="parent-container requests-container">
+        <div class="header">
+          <span class="title">
+            {data.permission.description &&
+              titleCase(data.permission.description)}{' '}
+          </span>
+          <a className="link" href={`/razorx/${url}`} target="_blank">
             {data.entity_id}
           </a>
-        </header>
-        <div class="box-container">
-          <main class="container requests-content">
-            <div class="box container">
+        </div>
+        <div class="container-group requests-content">
+          <div class="list-container">
+            <div className="box container">
               {/* Header */}
-              <div class="heading">
+              <div className="heading">
                 {data.maker.name && <strong>{data.maker.name}</strong>}
                 {data.created_at ? (
-                  <span class="secondary-label">
+                  <span className="secondary-label">
                     {` performed this action on `}
                     {formatDate(data.created_at)}
                   </span>
                 ) : null}
-                <span class={`pill ${RequestState[data.state]} m-l`}>
+                <span className={`pill ${RequestState[data.state]} m-l`}>
                   {data.state}
                 </span>
               </div>
@@ -150,7 +142,7 @@ export default class RequestEntity extends Component {
               />
 
               {/* Steps Assigned to */}
-              <div class="container levels-container">
+              <div className="container levels-container">
                 <label>
                   <b>Assigned To:</b>
                 </label>
@@ -159,19 +151,21 @@ export default class RequestEntity extends Component {
                     kdx++;
                     return (
                       <div
-                        class={`m-t m-b level ${
+                        className={`m-t m-b level ${
                           kdx != data.current_level ? 'inactive' : ''
                         }`}
                         key={key}
                       >
                         {kdx < data.current_level ||
                         (kdx == data.current_level && shouldShowTick) ? (
-                          <i class="i-yes text-success" />
+                          <i className="i-yes text-success" />
                         ) : null}
 
-                        <span class="square-pills no-color">STEP {key}</span>
+                        <span className="square-pills no-color">
+                          STEP {key}
+                        </span>
                         {levels[key].map((item, idx) => (
-                          <span class="square-pills" key={idx}>
+                          <span className="square-pills" key={idx}>
                             {item}
                           </span>
                         ))}
@@ -181,14 +175,22 @@ export default class RequestEntity extends Component {
               </div>
             </div>
 
-            <div class="box">
-              <div class="heading">
-                <b>Changes</b>
+            {/*Workflow Actions*/}
+            {['open', 'approved'].indexOf(data.state) > -1 && (
+              <div className="box container">
+                <div className="heading">
+                  <b>Actions:</b>
+                </div>
+
+                <RequestActions
+                  id={data.id}
+                  onUpdateAction={this.handleActionUpdate}
+                  requestState={data.state}
+                  checkers={checkers}
+                  hideTitle
+                />
               </div>
-              <div>
-                <DiffContent id={id} />
-              </div>
-            </div>
+            )}
 
             {/* Comments container */}
             <Comments
@@ -197,15 +199,9 @@ export default class RequestEntity extends Component {
               id={data.id}
               onCommentAdd={this.handleCommentAdd}
             />
-          </main>
+          </div>
 
-          {/* Workflow Actions */}
-          <RequestActions
-            id={data.id}
-            onUpdateAction={this.handleActionUpdate}
-            requestState={data.state}
-            checkers={checkers}
-          />
+          <ExperimentsEntity id={data.entity_id} isReadOnly />
         </div>
       </div>
     );
@@ -223,27 +219,6 @@ const RequestState = {
   open: 'open-state',
 };
 
-/* entities in this will have redirection to 'merchants/{id}', otherwise to '/entity/{entity_name/{id}' */
 const entityMap = {
-  merchant: {
-    url: 'merchants',
-  },
-  merchant_detail: {
-    url: 'merchants',
-  },
-  credits: {
-    url: 'merchants',
-  },
-  methods: {
-    url: 'merchants',
-  },
-  adjustment: {
-    url: 'merchants',
-  },
-  schedule_task: {
-    url: 'merchants',
-  },
-  feature: {
-    url: 'merchants',
-  },
+  razorx_experiment_activate: 'experiments',
 };
