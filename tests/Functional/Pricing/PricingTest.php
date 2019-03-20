@@ -812,7 +812,6 @@ class PricingTest extends TestCase
     public function testDeleteUsedPricingPlanRule()
     {
         $payment = $this->doAuthAndCapturePayment();
-        s($payment);die;
 
         $txn = $this->getLastEntity('transaction', true);
 
