@@ -331,7 +331,12 @@ class Processor
     {
         assert($this->subscription->isExternal() === true);
 
-        if (($this->subscription->isActive() === true) or ($this->subscription->isHalted() === true))
+        // For subscription card change, we donot need to add order id
+        // for the following subscription states. (For these states, we will be
+        // using default auth amount as card change amount)
+        if (($this->subscription->isActive() === true) or
+            ($this->subscription->isHalted() === true) or
+            ($this->subscription->isAuthenticated() === true))
         {
             $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
 

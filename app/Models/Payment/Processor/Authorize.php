@@ -2040,7 +2040,9 @@ trait Authorize
             {
                 $this->associateSubscriptionToPayment($payment, $input);
             }
-
+            // Even if external subscription, we can add customerId to input only here.
+            // This function has to be called only after checkAndFillSavedAppToken.
+            // Otherwise user session will not be set.
             $this->addCustomerIdToSubscriptionInput($input);
 
             $this->addTestSuccessFlagToGatewayInput($input, $gatewayInput);
