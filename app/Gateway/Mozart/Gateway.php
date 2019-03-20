@@ -277,6 +277,11 @@ class Gateway extends Base\Gateway
             $input['gateway'][$prevStep] = $this->getPreviousData($input, $prevStep);
         }
 
+        if ($this->action === Action::PAY_INIT and $input['payment']['gateway'] === Payment\Gateway::NETBANKING_SIB)
+        {
+            $input['gateway']['payment']['callbackUrl'] = $input['callbackUrl'];
+        }
+
         $content['entities'] = $input;
 
         $baseUrl = $this->app['config']->get('applications.mozart.url');
@@ -311,6 +316,11 @@ class Gateway extends Base\Gateway
                 Action::VERIFY => Action::PAY_VERIFY,
                 Action::REFUND => Action::PAY_VERIFY,
                 Action::VERIFY_REFUND => Action::REFUND,
+            ],
+            Payment\Gateway::NETBANKING_SIB => [
+                Action::PAY_INIT => null,
+                Action::PAY_VERIFY => Action::PAY_INIT,
+                Action::VERIFY => Action::PAY_VERIFY
             ],
         ];
 
