@@ -12,6 +12,7 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Customer\Token;
 use RZP\Models\Plan\Subscription;
 
 class External extends Base
@@ -78,7 +79,7 @@ class External extends Base
         {
             if (strpos($input[Payment\Entity::TOKEN], 'token_') === false)
             {
-                $input[Payment\Entity::TOKEN] = "token_".$input[Payment\Entity::TOKEN];
+                $input[Payment\Entity::TOKEN] = Token\Entity::getSignedId($input[Payment\Entity::TOKEN]);
             }
 
             $requestBody[Payment\Entity::TOKEN] = $input[Payment\Entity::TOKEN];

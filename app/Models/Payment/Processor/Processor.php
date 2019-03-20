@@ -309,7 +309,7 @@ class Processor
             return;
         }
 
-        $appTokenPresent = $this->checkIfAppTokenPresent();
+        $appTokenPresent = $this->isAppTokenPresent();
 
         $this->subscription = $this->app['module']
                                    ->subscription
@@ -324,8 +324,6 @@ class Processor
             $payment->setRecurringType($subscriptionPaymentRecurringType);
 
             $this->addOrderIdToInputForExternalSubscription($input);
-
-            //$this->addCustomerIdToInputForExternalSubscription($input);
         }
     }
 
@@ -2639,7 +2637,7 @@ class Processor
         }
     }
 
-    protected function checkIfAppTokenPresent(): bool
+    protected function isAppTokenPresent(): bool
     {
         if ($this->request->hasSession() === false)
         {
