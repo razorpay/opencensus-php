@@ -91,7 +91,8 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     {
         $refundId = $this->getRefundIdForFss($row);
 
-        $refundId = substr($refundId, 5);
+        // Isg file will contain refund id in format - 'razorrfnd{id}'
+        $refundId = substr($refundId, 9);
 
         return $refundId;
     }

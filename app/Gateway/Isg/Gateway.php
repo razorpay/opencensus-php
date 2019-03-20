@@ -24,7 +24,7 @@ use ApiResponse;
 class Gateway extends Base\Gateway
 {
     // adding the below prefix in refund id as bank expects the id to be atleast 16 characters.
-    const REFUND_ID_PREFIX = 'rfnd_';
+    const REFUND_ID_PREFIX = 'razorrfnd';
 
     protected $gateway = 'isg';
 

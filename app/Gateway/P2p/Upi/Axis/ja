@@ -1,0 +1,46 @@
+package main
+
+import (
+	"crypto"
+	"crypto/sha256"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
+	"fmt"
+		"encoding/hex"
+
+)
+
+func main() {
+	const pubPEM = `
+-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvSQQLS2gUqcLeBMqLlqVUJLx/GrPl0ESOaUnlbUS3YixSfI1ZhxHQQBbqVP3rMkFEmXWjrhfErIEbGNp6UCJkHODbuXkS5jYgc9pjRk7IPjpYxbDUeACAR7so82toNqP2DHENpXUT97+EeKSXQFbclr+/eIoe0N+m4204I+kglK9vPLYUtKsEFUHqTzcsZRV6mrvWszeD+DscCvFZiHFXHhGzfzLOSWpOIcknZVmwhJOrB6RIAcNBGtnufEjuPj9Wbs2fOsdlMbro4/a9NorLvqN1ZkqXYB4vhOW6vEYIskJEonoTKu/th8097tzJaWfD9ow5M7kHPPzABtSJCd7lQIDAQAB
+-----END PUBLIC KEY-----`
+
+	block, _ := pem.Decode([]byte(pubPEM))
+	if block == nil {
+		panic("failed to parse PEM block containing the public key")
+	}
+
+	pub, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		panic("failed to parse DER encoded public key: " + err.Error())
+	}
+
+
+		rsaPublickey, _ := pub.(*rsa.PublicKey)
+
+signature,_:=hex.DecodeString("ba611c04667fd7cb07df74c15618ac83a8c444aefe7d9083b7e5a55db15a49527704ae01e83a0d70f886472390c48715c52c45b27f8d47b79931a9f25aff9a608a3480bf3dba10dc3497a5d7434d971073275235f33e6a62420dcbeb8fb22024af39519fdebe808456b3a4d14d199358851e92d0a4426956298ad6f5c803369a1e193c8f4c4787332fc3d08fddc70ca09b5a112dc3f96481c40917aacaad5905a7c0f39bae8462430143b1023a8b653b52d181848365b116e0ffad736a4de591c91222130941dd4723c0fb0c2d2fe5627c4695a1fd2a4346d6b9eb9b3199c88cae2324ff48a227259eeed70de0800e3f2f8209b30ec827f88d6da48e2510c49b")
+
+			message := []byte("message to be signed")
+hashed := sha256.Sum256(message)
+
+
+	err := rsa.VerifyPKCS1v15(rsaPublickey, crypto.SHA256, hashed[:], signature)
+if err != nil {
+fmt.Println("uouo")
+        return
+}
+
+
+}

@@ -1623,11 +1623,13 @@ class ReconciliationFileTest extends TestCase
 
         $entries[] = $this->testData['facades']['hdfc'];
 
-        $entries[0]['merchant_trackid'] = $refund['id'];
+        $entries[0]['merchant_trackid'] = 'razorrfnd' . substr($refund['id'], 5);
 
         $entries[0]['rec_fmt'] = 'CVD';
 
         $entries[0]['domestic_amt'] = '1.00';
+
+        $entries[0]['card_type'] = 'BHARAT QR';
 
         $file = $this->writeToExcelFile($entries, 'HDFC-MPR');
 

@@ -17,7 +17,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $refundRules = [
-        Field::RFD_TXN_ID        => 'required|string',
+        Field::RFD_TXN_ID        => 'required|string|size:23',
         Field::TXN_ID            => 'required|string',
         Field::MERCHANT_PAN      => 'required|string|size:16',
         Field::TXN_DATE          => 'required',

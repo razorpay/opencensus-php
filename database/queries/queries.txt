@@ -4755,7 +4755,7 @@ ALTER TABLE promotions
     ADD INDEX promotions_partner_id_index (partner_id);
 
 ALTER TABLE isg
-    MODIFY bank_reference_no CHAR(30);
+    MODIFY bank_reference_no VARCHAR(64);
 
 ALTER table `commissions`
     ADD COLUMN `type` varchar(255) NOT NULL DEFAULT 'implicit' after `partner_config_id`;
