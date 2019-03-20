@@ -573,4 +573,42 @@ return [
             ],
         ],
     ],
+
+    //
+    // Customer fee bearer model creates a payment with amount inclusive of the tax.
+    // The fee attribute needs to be set explicitly because while calculating the fees on the a mount,
+    // the fee gets deducted from the amount if the merchant is on a customer fee bearer model.
+    //
+    'testImplicitCustomerFeeBearer' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'   => 'BptVjGnFv6ITBm',
+                'type' => 'fully_managed',
+            ],
+            'create_plans'       => [
+                [
+                    'plan_id'      => '200MerchantPln',
+                    'percent_rate' => '200',
+                ],
+                [
+                    'plan_id'      => '180PartnerPlan',
+                    'percent_rate' => '180',
+                ],
+            ],
+            'attach_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'pricing_plan_id' => '200MerchantPln',
+                'fee_bearer'      => 'customer',
+            ],
+            'define_config'      => [
+                'type'             => 'partner',
+                'implicit_plan_id' => '180PartnerPlan',
+            ],
+            'create_payment'     => [
+                'amount' => (4000 * 100) + (4000 * 100 * 18 / 100), // amount+fee
+                'auth'   => 'partner',
+                'fee'    => (4000 * 100 * 18 / 100),
+            ],
+        ],
+    ],
 ];
