@@ -27,22 +27,6 @@ class Constants
             ]
         ],
         [
-            'title'       => 'Prices Slashed',
-            'description' =>
-                'Start transacting with us and enjoy our 1.75% slashed pricing, valid only until 31st of January, 2019',
-            'start_ts'    => 1541565000,
-            'end_ts'      => 1548959399,
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/offer.png',
-            'buttons'     => [
-                [
-                    'type'  => 'link',
-                    'label' => 'View T&Cs',
-                    'url'   => 'https://razorpay.com/pricing/',
-                ],
-            ],
-            'filters'     => []
-        ],
-        [
             'title'       => 'RazorpayX',
             'description' => 'With RazorpayX, track, automate and accelerate every aspect of your financial payouts',
             'start_ts'    => 1545625800,
