@@ -459,8 +459,7 @@ class Rule extends CollectionItem {
   }
 
   paymentMethodTypeField() {
-    var data;
-    var fieldLabel = 'Type';
+    var data, fieldLabel = 'Type';
 
     if (this.payment_method === 'card' && this.international == 0) {
       data = options.payment_method_type;
