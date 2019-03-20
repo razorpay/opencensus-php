@@ -388,7 +388,7 @@ abstract class NodalAccount extends Base\Core
         switch (true)
         {
             case $attempt->isOfBanking():
-                return Attempt\Type::BANKIING;
+                return Attempt\Type::BANKING;
 
             case $attempt->isPennyTesting():
                 return Attempt\Type::SYNC;

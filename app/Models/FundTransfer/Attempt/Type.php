@@ -15,7 +15,7 @@ class Type
     // Request Types to the bank
     // based on these type interaction with nodal account may differ
     const PRIMARY       = 'primary';
-    const BANKIING      = 'banking';
+    const BANKING       = 'banking';
     const SYNC          = 'sync';
 
     protected static $validTypes = [

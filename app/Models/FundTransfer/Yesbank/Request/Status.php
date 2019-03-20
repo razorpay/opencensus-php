@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundTransfer\Yesbank\Request;
 
+use Config;
 use Carbon\Carbon;
 
 use RZP\Trace\TraceCode;
@@ -10,6 +11,7 @@ use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\FundTransfer\Mode;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\GatewayStatus;
@@ -28,9 +30,32 @@ class Status extends Base
 
     protected $responseIdentifier = Constants::STATUS_RESPONSE_IDENTIFIER;
 
-    public function __construct(string $type = null)
+    public function __construct(string $type = null, $useCurrentAccount = false)
     {
         parent::__construct($type);
+
+        if ($useCurrentAccount === true)
+        {
+            $this->channel = Channel::YESBANK;
+
+            $this->config = Config::get('nodal.yesbank.banking_ca');
+
+            $this->appId = $this->config['app_id'];
+
+            $this->accountNumber = $this->config['account_number'];
+
+            $this->baseUrl = $this->config['url'];
+
+            $this->appId = $this->config['app_id'];
+
+            $this->customerId = $this->config['customer_id'];
+
+            $this->method = 'POST';
+
+            $this->version = '1';
+
+            $this->init();
+        }
 
         $this->urlIdentifier = $this->config['payment_status_url_suffix'];
     }

@@ -46,6 +46,27 @@ return [
             'fund_transfer_url_suffix'    => env('YESBANK_FUND_TRANSFER_URL_SUFFIX'),
             'payment_status_url_suffix'   => env('YESBANK_PAYMENT_STATUS_URL_SUFFIX')
         ],
+
+        'banking_ca' => [
+            'mock'                        => env('MOCK_NODAL_REQUEST', false),
+            'url'                         => env('YESBANK_BASE_URL'),
+            'app_id'                      => env('YESBANK_SYNC_APP_ID'),
+            'username'                    => env('YESBANK_SYNC_USERNAME'),
+            'password'                    => env('YESBANK_SYNC_PASSWORD'),
+            'client_id'                   => env('YESBANK_SYNC_CLIENT_ID'),
+            'customer_id'                 => env('YESBANK_SYNC_CUSTOMER_ID'),
+            'account_number'              => env('YESBANK_RX_ACCOUNT_NUMBER'),
+            'client_password'             => env('YESBANK_SYNC_CLIENT_PASSWORD'),
+            'client_certificate'          => env('YESBANK_SYNC_CLIENT_CERTIFICATE'),
+            'client_certificate_key'      => env('YESBANK_SYNC_CLIENT_CERTIFICATE_KEY'),
+            'certificate_name'            => env('YESBANK_SYNC_CERTIFICATE_NAME'),
+            'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
+            'certificate_key_name'        => env('YESBANK_SYNC_CERTIFICATE_KEY_NAME'),
+            'ben_add_url_suffix'          => env('YESBANK_BEN_ADD_URL_SUFFIX'),
+            'fund_transfer_url_suffix'    => env('YESBANK_FUND_TRANSFER_URL_SUFFIX'),
+            'payment_status_url_suffix'   => env('YESBANK_SYNC_STATUS_URL_SUFFIX'),
+        ],
+
         'banking' => [
             'mock'                        => env('MOCK_NODAL_REQUEST', false),
             'url'                         => env('YESBANK_BASE_URL'),

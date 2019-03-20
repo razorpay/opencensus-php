@@ -7,11 +7,11 @@ use Config;
 use Carbon\Carbon;
 
 
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card\Type;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
-use RZP\Models\Card\Issuer;
 use RZP\Models\Payment\Gateway;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
@@ -73,7 +73,9 @@ class NodalAccount extends NodalBase\NodalAccount
 
             $type = $this->getRequestType($attempt);
 
-            $transfer = new Transfer($this->purpose, $type);
+            $useCurrentAccount = $attempt->merchant->isFeatureEnabled(Feature\Constants::DUMMY);
+
+            $transfer = new Transfer($this->purpose, $type, $useCurrentAccount);
 
             if ($attempt->hasCard() === true)
             {
