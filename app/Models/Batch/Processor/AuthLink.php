@@ -41,9 +41,12 @@ class AuthLink extends Base
 
         $this->processConvertCase($entry, $this->conversionMap);
 
-        $this->invoice = $this->createAuthLink($entry);
-
-        $this->processDatesForExcel($entry);
+        try {
+            $this->invoice = $this->createAuthLink($entry);
+        }
+        finally {
+            $this->processDatesForExcel($entry);
+        }
 
         $entry[Header::STATUS]                  = Status::SUCCESS;
 
