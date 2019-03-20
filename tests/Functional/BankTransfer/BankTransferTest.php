@@ -1146,6 +1146,8 @@ class BankTransferTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $expectedResponse = [
+            'id'                 => $bankTransfer['id'],
+            'entity'             => 'bank_transfer',
             'payment_id'         => $payment['id'],
             'virtual_account_id' => $virtualAccount['id'],
             'amount'             => 5000000,
