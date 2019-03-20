@@ -160,4 +160,9 @@ class ScheduleLibraryTest extends TestCase
     {
         return Carbon::createFromTimestamp($timestamp, Timezone::IST);
     }
+
+    public function testMinuteSchedule()
+    {
+        $this->startScheduleLibraryTest();
+    }
 }
