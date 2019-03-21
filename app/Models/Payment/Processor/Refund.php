@@ -2053,11 +2053,10 @@ trait Refund
         //
         // Refund is explicitly being attempted towards a new bank account or vpa
         // Bank account or vpa input can come from dashboard also, but card_transfer will not come from dashboard.
-        // It can come via scrooge only if card refund is applicable on the payment.
+        // Not keeping check for card_transfer so that every time, we will evaluate if it is card_transfer refund.
         //
         if ((isset($data['bank_account']) === true) or
-            (isset($data['vpa']) === true) or
-            (isset($data['card_transfer']) === true))
+            (isset($data['vpa']) === true))
         {
             return true;
         }
