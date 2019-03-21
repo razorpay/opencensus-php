@@ -327,6 +327,7 @@ class Verify extends Base\Core
             Result::TIMEOUT       => 0,
             Result::ERROR         => 0,
             Result::UNKNOWN       => 0,
+            Result::REQUEST_ERROR => 0,
         ];
 
         $notApplicable = $locked = 0;
@@ -574,6 +575,7 @@ class Verify extends Base\Core
             Result::TIMEOUT       => 0,
             Result::ERROR         => 0,
             Result::UNKNOWN       => 0,
+            Result::REQUEST_ERROR => 0,
         ];
 
         $notApplicable = 0;
