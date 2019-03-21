@@ -148,11 +148,6 @@ class Assertions extends TestCase
         $this->assertShouldNotCreateCommission($data);
     }
 
-    public function testCustomerFeeBearer(array $data)
-    {
-        $this->assertShouldNotCreateCommission($data);
-    }
-
     public function testPostpaidFeeModel(array $data)
     {
         $this->assertShouldNotCreateCommission($data);
