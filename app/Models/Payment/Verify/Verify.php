@@ -896,6 +896,8 @@ class Verify extends Base\Core
 
         $requestErrorPaymentsCount = (int) $this->redis->incr($key);
 
+        $this->redis->expire($key, self::GATEWAY_TIMEOUT_BUCKET_INTERVAL);
+
         if ($requestErrorPaymentsCount >= $threshold)
         {
             $this->blockGatewayForVerify($gateway);
