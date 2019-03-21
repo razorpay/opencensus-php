@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Base;
 
+use Config;
+
 class Entity extends \RZP\Base\EloquentEx
 {
     /**
@@ -13,6 +15,25 @@ class Entity extends \RZP\Base\EloquentEx
      * Keeps the current action value here to be set by the entity updater
      */
     protected $auditAction = [];
+
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+
+        $this->setQueryTimeoutFromConfig();
+    }
+
+    // This fetches the query timeout in config/env
+    // and updates it if the value is non-null.
+    private function setQueryTimeoutFromConfig()
+    {
+        $timeout = Config::get('database.db_mysql_query_timeout');
+
+        if (! is_null($timeout))
+        {
+            $this->setQueryTimeout($timeout);
+        }
+    }
 
     protected function asDateTime($value)
     {

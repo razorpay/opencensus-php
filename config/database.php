@@ -161,6 +161,16 @@ return array(
     ],
 
     /*
+      |--------------------------------------------------------------------------
+      | DB Query Timeout Config -- Milliseconds
+      |--------------------------------------------------------------------------
+      |
+      | This is the query-timeout limit for all select queries. Value is in
+      | milliseconds.
+    */
+    'db_mysql_query_timeout' => env(DB_MYSQL_QUERY_TIMEOUT),
+
+    /*
     |--------------------------------------------------------------------------
     | Migration Repository Table
     |--------------------------------------------------------------------------
