@@ -917,4 +917,50 @@ trait SettlementTrait
                'memory_peak_usage_allocated'    => $memoryPeakUsageAllocated,
             ]);
     }
+
+    /**
+     * @param $txns
+     * @param $merchantId
+     * @return array
+     */
+    protected function processMerchantSettlement($txns, $merchantId): array
+    {
+        $filterGroupedTxns       = [];
+
+        $transactionSkipCount    = 0;
+
+        $transactionsSettleCount = 0;
+
+        $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENTS_TXNS_GROUP_BY_MERCHANT_START);
+
+        foreach ($txns as $txn)
+        {
+            $skipForRefundAuthTxn = $this->skipForRefundAuthTxn($txn);
+
+            if ($skipForRefundAuthTxn === true)
+            {
+                $transactionSkipCount++;
+
+                continue;
+            }
+
+            $filterGroupedTxns[$merchantId] = ($filterGroupedTxns[$merchantId] ?? (new Base\PublicCollection));
+
+            $filterGroupedTxns[$merchantId]->push($txn);
+
+            $txn = null;
+        }
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_TRANSACTIONS_SKIPPED,
+            [
+                'transactions_skip_count'   => $transactionSkipCount,
+                'transactions_settle_count' => $transactionsSettleCount
+            ]
+        );
+
+        $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENTS_TXNS_GROUP_BY_MERCHANT_END);
+
+        return $filterGroupedTxns;
+    }
 }
