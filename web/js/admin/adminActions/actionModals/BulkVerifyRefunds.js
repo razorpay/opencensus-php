@@ -43,7 +43,7 @@ export default function BulkVerifyRefunds() {
               },
             }).then(response => {
               if (response.result.length) {
-                notifySuccess(response.msg);
+                notifySuccess(response.message);
                 closeModal();
                 openModal(
                   <ModalContent header="Bulk Verify Response" noPadding>
@@ -51,7 +51,7 @@ export default function BulkVerifyRefunds() {
                   </ModalContent>
                 );
               } else {
-                notifyError(response.msg);
+                notifyError(response.message);
               }
             });
           } else {
