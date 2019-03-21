@@ -778,10 +778,10 @@ if (! function_exists('get_diff_in_millisecond'))
 {
     /**
      * Returns time diff in milliseconf for given startTime, and current time.
-     * @param  string $startTime
+     * @param  float $startTime, unit is seconds
      * @return int
      */
-    function get_diff_in_millisecond($startTime): int
+    function get_diff_in_millisecond(float $startTime): int
     {
         $endTime = microtime(true);
 

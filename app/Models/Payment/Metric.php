@@ -86,15 +86,12 @@ class Metric extends Base\Core
 
     public function pushCreateRequestTimeMetrics(Entity $payment, int $requestTime)
     {
-        $dimensions = $this->getDefaultDimentions($payment);
-
         $route  = $this->app['api.route']->getCurrentRouteName();
 
-        $extraDimensions = [
+        $dimensions = [
+            self::LABEL_PAYMENT_METHOD  => $payment->getMethod(),
             self::PAYMENT_REQUEST_ROUTE => $route,
         ];
-
-        $dimensions = array_merge($dimensions, $extraDimensions);
 
         $this->trace->histogram(self::PAYMENT_CREATE_REQUEST_TIME, $requestTime, $dimensions);
     }
