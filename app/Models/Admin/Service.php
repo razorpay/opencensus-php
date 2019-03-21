@@ -246,11 +246,11 @@ class Service extends Base\Service
 
             foreach ($data as $pricingType => $pricingValue)
             {
-                $key = 'espricing:' . $mid . '_' . $pricingType . '_es_pricing';
+                $key = $mid . '_' . $pricingType . '_es_pricing';
 
                 $pricing = round($pricingValue / 100, 2);
 
-                Cache::put($key, $pricing, $defaultExpiry);
+                Cache::put('espricing:' . $key, $pricing, $defaultExpiry);
 
                 $this->trace->info(
                     TraceCode::ES_PRICING_MERCHANT_KEY_SET,
