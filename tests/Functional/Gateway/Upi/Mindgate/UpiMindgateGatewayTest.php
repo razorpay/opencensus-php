@@ -267,7 +267,7 @@ class UpiMindgateGatewayTest extends TestCase
         $this->payment['_']['flow'] = 'intent';
 
         // Adding current merchant for test only
-        \Cache::forever('npci_upi_demo',
+        \Cache::forever('config:npci_upi_demo',
                         [
                             'merchants' => [
                                 '10000000000000' => 'https://cdn.razorpay.com/i?',
@@ -276,7 +276,7 @@ class UpiMindgateGatewayTest extends TestCase
 
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
 
-        \Cache::forget('npci_upi_demo');
+        \Cache::forget('config:npci_upi_demo');
 
         // Co Proto must be working
         $this->assertEquals('intent', $response['type']);

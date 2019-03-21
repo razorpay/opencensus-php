@@ -493,7 +493,7 @@ class SharpGatewayTest extends TestCase
 
     protected function setupCacheMock($paymentId)
     {
-        $key = 'upi.polling.' . $paymentId . '.status';
+        $key = 'payment:upi.polling.' . $paymentId . '.status';
 
          Cache::shouldReceive('get')
             ->once()
@@ -535,7 +535,7 @@ class SharpGatewayTest extends TestCase
 
     protected function setupCacheMissMock($paymentId)
     {
-        $key = 'upi.polling.' . $paymentId . '.status';
+        $key = 'payment:upi.polling.' . $paymentId . '.status';
 
         Cache::shouldReceive('get')
             ->once()

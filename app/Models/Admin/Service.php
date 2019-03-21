@@ -246,7 +246,7 @@ class Service extends Base\Service
 
             foreach ($data as $pricingType => $pricingValue)
             {
-                $key = $mid . '_' . $pricingType . '_es_pricing';
+                $key = 'espricing:' . $mid . '_' . $pricingType . '_es_pricing';
 
                 $pricing = round($pricingValue / 100, 2);
 

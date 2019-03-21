@@ -660,6 +660,11 @@ trait Authorize
         $this->validateCardlessEmiIfApplicable($payment, $input);
     }
 
+    Public function getDataFromEC($key)
+    {
+        return $this->app['elasticcache']->get($key);
+    }
+
     protected function validateCardlessEmiIfApplicable(Payment\Entity $payment, $input)
     {
         if ($payment->isCardlessEmi() === false)
@@ -670,6 +675,11 @@ trait Authorize
         $key = Payment\Entity::getCardlessEmiOnetimeTokenCacheKey($input['ott']);
 
         $cardlessEmiData = $this->app['cache']->get($key);
+
+        if (empty($cardlessEmiData) === true)
+        {
+            $cardlessEmiData = $this->getDataFromEC($key);
+        }
 
         if ($cardlessEmiData === null)
         {
@@ -2128,9 +2138,16 @@ trait Authorize
 
             $cacheKey = strtoupper($input['provider']) . '_' . $contact . '_' . $merchantId;
 
-            $cacheKey = sprintf('emi_plans_%s', $cacheKey);
+            $newCacheKey = sprintf('gateway:emi_plans_%s', $cacheKey);
 
-            $emiPlans = (array) $this->app['cache']->get($cacheKey, null);
+            $oldCacheKey = sprintf('emi_plans_%s', $cacheKey);
+
+            $emiPlans = (array) $this->app['cache']->get($newCacheKey, null);
+
+            if (empty($emiPlans) === true)
+            {
+                $emiPlans = (array) $this->getDataFromEC($oldCacheKey);
+            }
 
             $key = array_search($input['emi_duration'], array_column($emiPlans, 'duration'));
 
@@ -5112,6 +5129,7 @@ trait Authorize
         }
 
         $this->cache->put($key, $input, $ttl);
+        $this->app['elasticcache']->put($key, $input, $ttl);
     }
 
     protected function validateAndReturnRedirectResponseIfApplicable(Payment\Entity $payment)
@@ -5154,6 +5172,8 @@ trait Authorize
         $key = Payment\Entity::getRedirectToAuthorizeTrackIdKey($trackId);
 
         $this->cache->put($key, $encryptedPayload, self::REDIRECT_CACHE_TTL);
+
+        $this->app['elasticcache']->put($key, $encryptedPayload, self::REDIRECT_CACHE_TTL);
 
         $redirectUrl = $this->route->getUrl('payment_redirect_to_authorize_get', ['id' => $trackId]);
 
@@ -5205,6 +5225,11 @@ trait Authorize
         $key = $payment->getCacheRedirectInputKey();
 
         $inputDetails = $this->cache->get($key);
+
+        if (empty($inputDetails) === true)
+        {
+            $inputDetails = $this->getDataFromEC($key);
+        }
 
         if ($inputDetails === null)
         {

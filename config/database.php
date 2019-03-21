@@ -189,11 +189,14 @@ return array(
         'cluster' => false,
 
         'default' => [
-            'host'     => env('REDIS_HOST'),
-            'port'     => env('REDIS_PORT'),
-            'database' => env('REDIS_DB'),
+            'host'     => env('REDIS_LABS_HOST'),
+            'port'     => env('REDIS_LABS_PORT'),
             'timeout'  => 30,
+            'options'  => [
+                'parameters' => (empty(env('REDIS_LABS_PASSWORD')) === false) ? ['password' => env('REDIS_LABS_PASSWORD')] : [],
+            ]
         ],
+
 
         'secure' => [
             'host'     => env('SECURE_REDIS_HOST'),
@@ -249,6 +252,15 @@ return array(
                 'prefix'             => 'session:',
                 'parameters' => (empty(env('REDIS_LABS_PASSWORD')) === false) ? ['password' => env('REDIS_LABS_PASSWORD')] : [],
             ]
+        ],
+        'ec' => [
+            'host'     => env('REDIS_HOST'),
+            'port'     => env('REDIS_PORT'),
+            'database' => env('REDIS_DB'),
+            'timeout'  => 30,
+            'options'  => [
+                'prefix'    => 'laravel:',
+            ],
         ],
     ],
 

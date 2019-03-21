@@ -144,17 +144,17 @@ class Verify extends Base\Core
     /**
      * Cache key prefix for storing gateway timeout values
      */
-    const GATEWAY_TIMEOUT_CACHE_KEY_PREFIX = 'verify_timeout_block';
+    const GATEWAY_TIMEOUT_CACHE_KEY_PREFIX = 'verify:verify_timeout_block';
 
     /**
      * Cache key prefix for storing gateway timeout values
      */
-    const GATEWAY_REQUEST_ERROR_CACHE_KEY_PREFIX = 'verify_request_error_block';
+    const GATEWAY_REQUEST_ERROR_CACHE_KEY_PREFIX = 'verify:verify_request_error_block';
 
     /**
      * Cache key used to store gateway block info in hash map
      */
-    const GATEWAY_BLOCK_CACHE_KEY = 'gateway_block_cache';
+    const GATEWAY_BLOCK_CACHE_KEY = 'verify:gateway_block_cache';
 
     /**
      * Constant to signify that Verify Bucket should be updated with next boundary value

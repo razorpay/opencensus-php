@@ -548,13 +548,17 @@ class Core extends Base\Core
     {
         $temporaryId = Base\UniqueIdEntity::generateUniqueId();
 
+        $key = 'temp_session:' . $temporaryId;
+
         $sessionData = [
             'session_id' => $this->app['request']->session()->getId(),
             'user_agent' => $this->app['request']->userAgent(),
             'ip'         => $this->app['request']->ip(),
         ];
 
-        $this->app['cache']->put($temporaryId, $sessionData, self::TEMPORARY_SESSION_TIME);
+        $this->app['cache']->put($key, $sessionData, self::TEMPORARY_SESSION_TIME);
+
+        $this->app['elasticcache']->put($temporaryId, $sessionData, self::TEMPORARY_SESSION_TIME);
 
         return $temporaryId;
     }

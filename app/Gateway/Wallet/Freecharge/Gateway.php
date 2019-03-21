@@ -28,7 +28,9 @@ class Gateway extends Base\Gateway
 
     const DEFAULT_TXN_CHANNEL = 'WEB';
 
-    const BALANCE_CACHE_KEY = 'freecharge_balance_';
+    const BALANCE_CACHE_KEY = 'gateway:freecharge_balance_';
+
+    const OLD_BALANCE_CACHE_KEY = 'freecharge_balance_';
 
     const ENCRYPTION_MODE     = 'aes-128-ecb';
 
@@ -845,9 +847,13 @@ class Gateway extends Base\Gateway
         {
             $key = $this->getBalanceKeyForCache($input['payment']);
 
+            $oldKey = $this->getOldBalanceKeyForCache($input['payment']);
+
             $walletBalance = (int) ($content[ResponseFields::WALLET_BALANCE] * 100);
 
             $this->app['cache']->put($key, $walletBalance, self::PAYMENT_TTL);
+
+            $this->app['elasticcache']->put($oldKey, $walletBalance, self::PAYMENT_TTL);
 
             return $walletBalance;
         }
@@ -987,8 +993,15 @@ class Gateway extends Base\Gateway
     {
         $key = $this->getBalanceKeyForCache($input['payment']);
 
+        $oldKey = $this->getOldBalanceKeyForCache($input['payment']);
+
         // Wallet Balance is in paise
         $walletBalance = $this->app['cache']->get($key, 0);
+
+        if ($walletBalance === 0)
+        {
+            $walletBalance = $this->app['elasticcache']->get($oldKey) ?? 0;
+        }
 
         $topupAmount = ($input['payment']['amount'] - $walletBalance) / 100;
 
@@ -1367,6 +1380,11 @@ class Gateway extends Base\Gateway
     protected function getBalanceKeyForCache($payment)
     {
         return self::BALANCE_CACHE_KEY . $payment['id'];
+    }
+
+    protected function getOldBalanceKeyForCache($payment)
+    {
+        return self::OLD_BALANCE_CACHE_KEY . $payment['id'];
     }
 
     protected function validateRefundOnSuccess(WalletEntity $wallet)

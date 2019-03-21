@@ -1468,8 +1468,8 @@ class Service extends Base\Service
     {
         $mid = $this->merchant->getId();
 
-        $key1 = $mid . '_on_demand_es_pricing';
-        $key2 = $mid . '_scheduled_es_pricing';
+        $key1 = 'espricing:' . $mid . '_on_demand_es_pricing';
+        $key2 = 'espricing:' . $mid . '_scheduled_es_pricing';
 
         return [
             $key1 => Cache::get($key1) ?? 0.3,
