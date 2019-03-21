@@ -25,10 +25,6 @@ class Gateway extends Base\Gateway
 
     const LOAN_URL_CACHE_KEY = 'gateway:loan_url_%s';
 
-    const OLD_EMI_PLAN_CACHE_KEY = 'emi_plans_%s';
-
-    const OLD_LOAN_URL_CACHE_KEY = 'loan_url_%s';
-
     protected $map = [
         ResponseFields::PROVIDER_PAYMENT_ID   => Entity::GATEWAY_REFERENCE_ID,
         RequestFields::PAYMENT_ID             => Entity::PAYMENT_ID,
@@ -97,19 +93,11 @@ class Gateway extends Base\Gateway
 
         $emiPlanKey = sprintf(self::EMI_PLAN_CACHE_KEY, $cacheKey);
 
-        $oldEmiPlanKey = sprintf(self::OLD_EMI_PLAN_CACHE_KEY, $cacheKey);
-
         $loanUrlKey = sprintf(self::LOAN_URL_CACHE_KEY, $cacheKey);
-
-        $oldLoanUrlKey = sprintf(self::OLD_LOAN_URL_CACHE_KEY, $cacheKey);
 
         $this->app['cache']->put($emiPlanKey, $emiPlans, self::CACHE_TTL);
 
-        $this->app['elasticcache']->put($oldEmiPlanKey, $emiPlans, self::CACHE_TTL);
-
         $this->app['cache']->put($loanUrlKey, $loanUrl, self::CACHE_TTL);
-
-        $this->app['elasticcache']->put($oldLoanUrlKey, $loanUrl, self::CACHE_TTL);
 
         return;
     }
@@ -511,25 +499,11 @@ class Gateway extends Base\Gateway
 
         $emiPlanKey = sprintf(self::EMI_PLAN_CACHE_KEY, $cacheKey );
 
-        $oldEmiPlanKey = sprintf(self::OLD_EMI_PLAN_CACHE_KEY, $cacheKey );
-
         $loanUrlKey = sprintf(self::LOAN_URL_CACHE_KEY, $cacheKey);
-
-        $oldLoanUrlKey = sprintf(self::OLD_LOAN_URL_CACHE_KEY, $cacheKey);
 
         $emiPlans = $this->app['cache']->get($emiPlanKey);
 
-        if ($emiPlans === null)
-        {
-            $emiPlans = $this->app['elasticcache']->get($oldEmiPlanKey);
-        }
-
         $loanUrl = $this->app['cache']->get($loanUrlKey);
-
-        if ($loanUrl === null)
-        {
-            $loanUrl = $this->app['elasticcache']->get($oldLoanUrlKey);
-        }
 
         if ($emiPlans === null)
         {

@@ -289,12 +289,6 @@ class Service extends Base\Service
 
         $encryptedText = $this->app['cache']->get($key);
 
-
-        if (empty($encryptedText) === true)
-        {
-            $encryptedText = $this->app['elasticcache']->get($key);
-        }
-
         if ($encryptedText === null)
         {
             throw new Exception\BadRequestException(
@@ -1652,8 +1646,6 @@ class Service extends Base\Service
         ];
 
         $this->app['cache']->put($key, $data, $cacheTtl);
-
-        $this->app['elasticcache']->put($key, $data, $cacheTtl);
 
         return $token;
     }

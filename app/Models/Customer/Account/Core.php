@@ -558,8 +558,6 @@ class Core extends Base\Core
 
         $this->app['cache']->put($key, $sessionData, self::TEMPORARY_SESSION_TIME);
 
-        $this->app['elasticcache']->put($temporaryId, $sessionData, self::TEMPORARY_SESSION_TIME);
-
         return $temporaryId;
     }
 

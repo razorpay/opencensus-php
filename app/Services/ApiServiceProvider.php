@@ -268,8 +268,6 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerFTSRegisterAccount();
 
         $this->registerFTSFundTransfer();
-
-        $this->registerElasticCacheHelper();
     }
 
     /**
@@ -360,14 +358,6 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return new RedisDualWrite($app);
-        });
-    }
-
-    protected function registerElasticCacheHelper()
-    {
-        $this->app->singleton('elasticcache', function($app)
-        {
-            return new ElasticCacheHelper($app);
         });
     }
 

@@ -2515,11 +2515,6 @@ class Processor
 
         $inputDetails = $this->cache->get($key);
 
-        if (empty($inputDetails) === true)
-        {
-            $inputDetails = $this->getDataFromEC($key);
-        }
-
         if ($inputDetails === null)
         {
             throw new Exception\BadRequestException(

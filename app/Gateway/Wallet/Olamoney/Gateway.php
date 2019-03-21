@@ -31,8 +31,6 @@ class Gateway extends Base\Gateway
 
     const BALANCE_CACHE_KEY = 'gateway:olamoney_balance_%s';
 
-    const OLD_BALANCE_CACHE_KEY = 'olamoney_balance_%s';
-
     // 8 hours - 8 * 60 * 60 = 28
     const WALLET_ACCESS_TOKEN_EXPIRY = 28800;
 
@@ -358,11 +356,7 @@ class Gateway extends Base\Gateway
 
             $key = $this->getBalanceKeyForCache($input['payment']);
 
-            $oldKey = $this->getOldBalanceKeyForCache($input['payment']);
-
             $this->app['cache']->put($key, $userBalance, self::PAYMENT_TTL);
-
-            $this->app['elasticcache']->put($oldKey, $userBalance, self::PAYMENT_TTL);
         }
 
         if ($input['payment']['amount'] > $userBalance)
@@ -669,15 +663,8 @@ class Gateway extends Base\Gateway
     {
         $key = $this->getBalanceKeyForCache($input['payment']);
 
-        $oldKey = $this->getOldBalanceKeyForCache($input['payment']);
-
         // Wallet Balance is in paise
         $walletBalance = $this->app['cache']->get($key, 0);
-
-        if ($walletBalance === 0)
-        {
-            $walletBalance = $this->app['elasticcache']->get($oldKey) ?? 0;
-        }
 
         $topupAmount = ($input['payment']['amount'] - $walletBalance);
 
@@ -1259,12 +1246,6 @@ class Gateway extends Base\Gateway
     protected function getBalanceKeyForCache($payment)
     {
         return sprintf(self::BALANCE_CACHE_KEY, $payment['id']);
-    }
-
-
-    protected function getOldBalanceKeyForCache($payment)
-    {
-        return sprintf(self::OLD_BALANCE_CACHE_KEY, $payment['id']);
     }
 
     protected function getGatewayData(array $refundFields = [])

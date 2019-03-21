@@ -33,11 +33,6 @@ class TemporaryStartSession
                     try
                     {
                         $sessionData = $app['cache']->get('temp_session:' . $temporarySessionId);
-
-                        if (empty($sessionData) === true)
-                        {
-                            $sessionData = $app['elasticcache']->get($temporarySessionId);
-                        }
                     }
                     catch (\Throwable $e)
                     {
