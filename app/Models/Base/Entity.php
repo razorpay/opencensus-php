@@ -29,7 +29,7 @@ class Entity extends \RZP\Base\EloquentEx
     {
         $timeout = Config::get('database.db_mysql_query_timeout');
 
-        if (! is_null($timeout))
+        if (! empty($timeout))
         {
             $this->setQueryTimeout($timeout);
         }
