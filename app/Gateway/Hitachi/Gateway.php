@@ -816,6 +816,8 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::AUTH_ID] = $input['paysecure']['apprcode'];
 
+        $content[RequestFields::RETRIEVAL_REF_NUM] = $paysecureEntity['rrn'];
+
         $traceContent = $content;
 
         $content += $this->getCardDataForAuthorizeRequestArray($input);
