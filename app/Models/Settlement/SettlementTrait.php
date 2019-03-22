@@ -931,8 +931,6 @@ trait SettlementTrait
 
         $transactionsSettleCount = 0;
 
-        $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENTS_TXNS_GROUP_BY_MERCHANT_START);
-
         foreach ($txns as $txn)
         {
             $skipForRefundAuthTxn = $this->skipForRefundAuthTxn($txn);
@@ -947,8 +945,6 @@ trait SettlementTrait
             $filterGroupedTxns[$merchantId] = ($filterGroupedTxns[$merchantId] ?? (new Base\PublicCollection));
 
             $filterGroupedTxns[$merchantId]->push($txn);
-
-            $txn = null;
         }
 
         $this->trace->info(
@@ -958,8 +954,6 @@ trait SettlementTrait
                 'transactions_settle_count' => $transactionsSettleCount
             ]
         );
-
-        $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENTS_TXNS_GROUP_BY_MERCHANT_END);
 
         return $filterGroupedTxns;
     }

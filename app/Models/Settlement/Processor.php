@@ -743,6 +743,8 @@ class Processor extends Base\Core
 
                 if ($merchant->getHoldFunds() === true)
                 {
+                    $this->trace->info(TraceCode::SETTLEMENT_MERCHANT_ON_HOLD, ['merchant_id' => $merchant->getId()]);
+
                     continue;
                 }
 
@@ -754,6 +756,8 @@ class Processor extends Base\Core
 
                 if (isset($filteredTxns[$mid]) === false)
                 {
+                    $this->trace->info(TraceCode::SETTLEMENT_MERCHANT_SKIPPED, ['merchant_id' => $mid]);
+
                     continue;
                 }
 

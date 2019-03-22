@@ -17,6 +17,7 @@ use RZP\Gateway\Billdesk;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
 use RZP\Constants\Entity as ConstantEntity;
 
@@ -138,7 +139,7 @@ class Repository extends Base\Repository
 
         if ($useLimit === true)
         {
-            $limit = (int) Cache::get("transaction_limit");
+            $limit = (int) Cache::get(ConfigKey::SETTLEMENT_TRANSACTION_LIMIT);
 
             if ($limit !== 0)
             {
