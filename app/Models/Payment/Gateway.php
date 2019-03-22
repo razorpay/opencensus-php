@@ -720,7 +720,6 @@ class Gateway
         self::AMEX,
         self::CYBERSOURCE,
         self::FIRST_DATA,
-        self::PAYSECURE,
     ];
 
     const SHARED_NETBANKING_GATEWAYS_LIVE = [
