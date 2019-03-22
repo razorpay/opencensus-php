@@ -397,12 +397,7 @@ class Gateway extends Base\Gateway
 
     protected function isRupayTransaction($input): bool
     {
-        if ($input['card'][Card\Entity::NETWORK_CODE] === Network::RUPAY)
-        {
-            return true;
-        }
-
-        return false;
+        return ($input['card'][Card\Entity::NETWORK_CODE] === Network::RUPAY);
     }
 
     protected function authorizeMoto(array $input)
