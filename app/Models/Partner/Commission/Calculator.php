@@ -39,7 +39,7 @@ use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
  * Partner pricing refers to commission the partner will get from the sub-merchant transaction.
  *
  * Ex: When the partner pricing is 0.2% and
- * sub-merchant A's pricing is 2% => commission is 0.2% and RZP gets 1.8%
+ * sub-merchant A's pricing is 2%   => commission is 0.2% and RZP gets 1.8%
  * sub-merchant A's pricing is 2.5% => commission is 0.2% and RZP gets 2.3%
  *
  * @package RZP\Models\Partner\Commission
@@ -526,13 +526,6 @@ class Calculator extends Base\Core
 
         // Blocks create commission if the conditions are not supported, from here -
 
-        if ($this->isCustomerFeeBearer() === true)
-        {
-            $this->traceContext(TraceCode::COMMISSION_NOT_APPLICABLE_INVALID_FEE_BEARER);
-
-            return false;
-        }
-
         if ($this->getSubMerchant()->isPrepaid() === false)
         {
             $this->traceContext(TraceCode::COMMISSION_NOT_APPLICABLE_INVALID_FEE_MODEL);
@@ -661,7 +654,7 @@ class Calculator extends Base\Core
             return;
         }
 
-        list($commissionFee, $commissionTax) = $this->getFeesByPlan($this->getImplicitPricingPlan());
+        list($commissionFee, $commissionTax) = $this->calculateFees($this->getImplicitPricingPlan());
 
         list($commissionFee, $commissionTax) = $this->addTaxToCommissionIfApplicable($commissionFee, $commissionTax);
 
@@ -704,7 +697,7 @@ class Calculator extends Base\Core
         $merchantFee = $this->getMerchantFee();
         $merchantTax = $this->getMerchantTax();
 
-        list($partnerFee, $partnerTax) = $this->getFeesByPlan($this->getImplicitPricingPlan());
+        list($partnerFee, $partnerTax) = $this->calculateFees($this->getImplicitPricingPlan());
 
         $this->setPartnerFee($partnerFee);
         $this->setPartnerTax($partnerTax);
@@ -810,7 +803,7 @@ class Calculator extends Base\Core
      * @return array
      * @throws LogicException
      */
-    protected function getFeesByPlan(Plan $pricing): array
+    protected function calculateFees(Plan $pricing): array
     {
         $calculator = $this->getFeeCalculator();
 
