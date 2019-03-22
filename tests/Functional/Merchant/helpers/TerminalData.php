@@ -1784,4 +1784,26 @@ return [
             'status_code'   => 400,
         ]
     ],
+
+    'testQueryCacheforTerminals' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'upi_mindgate',
+                'gateway_merchant_id'       => '12345',
+                'gateway_merchant_id2'      => '12345678',
+                'gateway_terminal_password' => '12345678',
+                'upi'                       => '1',
+                'tpv'                       => '2'
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id'  => '12345',
+                'gateway_merchant_id2' => '12345678',
+                'enabled'              => true,
+                'tpv'                  => 2
+            ]
+        ]
+    ],
 ];
