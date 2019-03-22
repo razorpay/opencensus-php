@@ -608,27 +608,22 @@ class Calculator extends Base\Core
 
         foreach ($this->commissions as $commission)
         {
-            // @todo remove once logs are verified
-            if ($commission->getType() === Type::IMPLICIT)
+            if ($this->isImplicitCommissionVariable() === true)
             {
-                if (($this->isImplicitCommissionVariable() === true) or ($this->isImplicitCommissionFixed() === true))
-                {
-                    $commissionData = $commission->toArrayPublic();
+                $this->repo->saveOrFail($commission);
 
-                    // merchant relation need not be logged
-                    unset($commissionData['merchant']);
+                $this->traceContext(TraceCode::COMMISSION_SAVED, ['commission_id' => $commission->getId()]);
 
-                    $this->traceContext(TraceCode::COMMISSION_LOGGED, ['commissions' => $commissionData]);
-
-                    continue;
-                }
-            }
-            else
-            {
                 continue;
             }
 
-            $this->repo->saveOrFail($commission);
+            // @todo remove once logs are verified
+            $commissionData = $commission->toArrayPublic();
+
+            // merchant relation need not be logged
+            unset($commissionData['merchant']);
+
+            $this->traceContext(TraceCode::COMMISSION_LOGGED, ['commissions' => $commissionData]);
         }
     }
 
@@ -638,7 +633,7 @@ class Calculator extends Base\Core
         // @todo: Add a check. Implicit commissions must be set processed once picked up, and, the status for the
         // explicit commissions must be updated based on the explicit_should_charge flag. Also, add fn description.
         //
-        $commission->setStatus(Status::RECORDED);
+        // $commission->setStatus(Status::CREATED);
     }
 
     /**
@@ -671,6 +666,7 @@ class Calculator extends Base\Core
             Entity::TYPE     => Type::IMPLICIT,
             Entity::DEBIT    => 0,
             Entity::CREDIT   => $commissionFee,
+            Entity::STATUS   => Status::CREATED,
             Entity::CURRENCY => $this->getSource()->getCurrency(),
         ];
 
