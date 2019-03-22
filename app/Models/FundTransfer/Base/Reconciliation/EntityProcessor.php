@@ -239,7 +239,7 @@ abstract class EntityProcessor extends Base\Core
         // sense for us to reconcile these, or check the error codes and stuff.
         //
         if (($this->fta->getChannel() === Channel::YESBANK) and
-            ($this->fta->hasVpa() === true))
+            ($this->fta->shouldUseGateway() === true))
         {
             $statusCode = $this->fta->getBankResponseCode();
 
@@ -366,7 +366,7 @@ abstract class EntityProcessor extends Base\Core
     {
         $channel = $fta->getChannel();
 
-        if ($fta->hasVpa() === true)
+        if ($fta->shouldUseGateway() === true)
         {
              return '\\RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\GatewayStatus';
         }
