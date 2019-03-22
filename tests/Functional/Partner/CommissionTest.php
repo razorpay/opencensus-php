@@ -164,6 +164,9 @@ class CommissionTest extends OAuthTestCase
     {
         $expected = [
             [
+                'source'      => [
+                    'id' => $source->getPublicId(),
+                ],
                 'merchant'    => [
                     'id' => $subMerchant->getId(),
                 ],

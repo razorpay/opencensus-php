@@ -66,6 +66,7 @@ class Entity extends Base\PublicEntity
         self::SOURCE_TYPE,
         self::CREATED_AT,
         self::MERCHANT,
+        self::SOURCE,
     ];
 
     protected $publicSetters = [
