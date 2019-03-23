@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f889be5dce79a52944aa5e1572f7d33d",
+    "content-hash": "ef5d30e4317fa659ef2d06bd0cb96ea7",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -5869,16 +5869,16 @@
         },
         {
             "name": "razorpay/oauth",
-            "version": "dev-updated_spine",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/oauth.git",
-                "reference": "e163190f9ca4efc38d06b9f8dec161c54f343f45"
+                "reference": "521be74b741e7ba9a1af1103aace319927a46a49"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/oauth/zipball/e163190f9ca4efc38d06b9f8dec161c54f343f45",
-                "reference": "e163190f9ca4efc38d06b9f8dec161c54f343f45",
+                "url": "https://api.github.com/repos/razorpay/oauth/zipball/521be74b741e7ba9a1af1103aace319927a46a49",
+                "reference": "521be74b741e7ba9a1af1103aace319927a46a49",
                 "shasum": ""
             },
             "require": {
@@ -5914,10 +5914,10 @@
                 "service"
             ],
             "support": {
-                "source": "https://github.com/razorpay/oauth/tree/updated_spine",
+                "source": "https://github.com/razorpay/oauth/tree/master",
                 "issues": "https://github.com/razorpay/oauth/issues"
             },
-            "time": "2019-03-21T17:37:53+00:00"
+            "time": "2019-03-23T06:32:04+00:00"
         },
         {
             "name": "razorpay/razorpay",
@@ -6083,12 +6083,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/spine.git",
-                "reference": "16f040f40d86f69d5a495f49e7105d5559ba6134"
+                "reference": "2c12612dbe80ea7c3215aa1949b1661749a81e22"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/spine/zipball/16f040f40d86f69d5a495f49e7105d5559ba6134",
-                "reference": "16f040f40d86f69d5a495f49e7105d5559ba6134",
+                "url": "https://api.github.com/repos/razorpay/spine/zipball/2c12612dbe80ea7c3215aa1949b1661749a81e22",
+                "reference": "2c12612dbe80ea7c3215aa1949b1661749a81e22",
                 "shasum": ""
             },
             "require": {
