@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ef5d30e4317fa659ef2d06bd0cb96ea7",
+    "content-hash": "ab37bd88da5a60116e7f9a0e60312310",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -5869,7 +5869,7 @@
         },
         {
             "name": "razorpay/oauth",
-            "version": "dev-master",
+            "version": "0.1.0",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/oauth.git",
@@ -10284,7 +10284,6 @@
         "razorpay/upi-clients": 20,
         "razorpay/ufh-sdk-php": 20,
         "razorpay/hodor": 20,
-        "razorpay/oauth": 20,
         "codacy/coverage": 20,
         "symfony/phpunit-bridge": 20
     },
