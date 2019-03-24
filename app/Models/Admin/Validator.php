@@ -76,7 +76,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $updateConfigKeyRules = [
-        'key'   => 'required|in:merchant_enach_configs,settlement_transaction_limit',
+        'key'   => 'required|in:merchant_enach_configs',
         'path'  => 'required|string',
         'value' => 'required|string',
     ];
