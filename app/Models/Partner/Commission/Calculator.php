@@ -39,7 +39,7 @@ use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
  * Partner pricing refers to commission the partner will get from the sub-merchant transaction.
  *
  * Ex: When the partner pricing is 0.2% and
- * sub-merchant A's pricing is 2% => commission is 0.2% and RZP gets 1.8%
+ * sub-merchant A's pricing is 2%   => commission is 0.2% and RZP gets 1.8%
  * sub-merchant A's pricing is 2.5% => commission is 0.2% and RZP gets 2.3%
  *
  * @package RZP\Models\Partner\Commission
@@ -526,13 +526,6 @@ class Calculator extends Base\Core
 
         // Blocks create commission if the conditions are not supported, from here -
 
-        if ($this->isCustomerFeeBearer() === true)
-        {
-            $this->traceContext(TraceCode::COMMISSION_NOT_APPLICABLE_INVALID_FEE_BEARER);
-
-            return false;
-        }
-
         if ($this->getSubMerchant()->isPrepaid() === false)
         {
             $this->traceContext(TraceCode::COMMISSION_NOT_APPLICABLE_INVALID_FEE_MODEL);
@@ -615,27 +608,22 @@ class Calculator extends Base\Core
 
         foreach ($this->commissions as $commission)
         {
-            // @todo remove once logs are verified
-            if ($commission->getType() === Type::IMPLICIT)
+            if ($this->isImplicitCommissionVariable() === true)
             {
-                if (($this->isImplicitCommissionVariable() === true) or ($this->isImplicitCommissionFixed() === true))
-                {
-                    $commissionData = $commission->toArrayPublic();
+                $this->repo->saveOrFail($commission);
 
-                    // merchant relation need not be logged
-                    unset($commissionData['merchant']);
+                $this->traceContext(TraceCode::COMMISSION_SAVED, ['commission_id' => $commission->getId()]);
 
-                    $this->traceContext(TraceCode::COMMISSION_LOGGED, ['commissions' => $commissionData]);
-
-                    continue;
-                }
-            }
-            else
-            {
                 continue;
             }
 
-            $this->repo->saveOrFail($commission);
+            // @todo remove once logs are verified
+            $commissionData = $commission->toArrayPublic();
+
+            // merchant relation need not be logged
+            unset($commissionData['merchant']);
+
+            $this->traceContext(TraceCode::COMMISSION_LOGGED, ['commissions' => $commissionData]);
         }
     }
 
@@ -645,7 +633,7 @@ class Calculator extends Base\Core
         // @todo: Add a check. Implicit commissions must be set processed once picked up, and, the status for the
         // explicit commissions must be updated based on the explicit_should_charge flag. Also, add fn description.
         //
-        $commission->setStatus(Status::RECORDED);
+        // $commission->setStatus(Status::CREATED);
     }
 
     /**
@@ -661,7 +649,7 @@ class Calculator extends Base\Core
             return;
         }
 
-        list($commissionFee, $commissionTax) = $this->getFeesByPlan($this->getImplicitPricingPlan());
+        list($commissionFee, $commissionTax) = $this->calculateFees($this->getImplicitPricingPlan());
 
         list($commissionFee, $commissionTax) = $this->addTaxToCommissionIfApplicable($commissionFee, $commissionTax);
 
@@ -678,6 +666,7 @@ class Calculator extends Base\Core
             Entity::TYPE     => Type::IMPLICIT,
             Entity::DEBIT    => 0,
             Entity::CREDIT   => $commissionFee,
+            Entity::STATUS   => Status::CREATED,
             Entity::CURRENCY => $this->getSource()->getCurrency(),
         ];
 
@@ -704,7 +693,7 @@ class Calculator extends Base\Core
         $merchantFee = $this->getMerchantFee();
         $merchantTax = $this->getMerchantTax();
 
-        list($partnerFee, $partnerTax) = $this->getFeesByPlan($this->getImplicitPricingPlan());
+        list($partnerFee, $partnerTax) = $this->calculateFees($this->getImplicitPricingPlan());
 
         $this->setPartnerFee($partnerFee);
         $this->setPartnerTax($partnerTax);
@@ -810,7 +799,7 @@ class Calculator extends Base\Core
      * @return array
      * @throws LogicException
      */
-    protected function getFeesByPlan(Plan $pricing): array
+    protected function calculateFees(Plan $pricing): array
     {
         $calculator = $this->getFeeCalculator();
 

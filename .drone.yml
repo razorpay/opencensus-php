@@ -776,6 +776,46 @@ pipeline:
         event:
           exclude: [push]
           include: [deployment]
+  deploy-deployments-prod-api-cde-blue:
+      group: PROD_DEPLOY
+      image: razorpay/drone-kubernetes
+      pull: true
+      secrets:
+        - docker_username
+        - docker_password
+        - server_url_cdeblue
+        - client_key_cdeblue
+        - server_cert_cdeblue
+        - client_cert_cdeblue
+      user: drone
+      cluster: cde-blue
+      auth_mode: client-cert
+      deployment:
+        - api-web
+        - api-sqs-es-sync
+        - api-sqs-gen-test
+        - api-sqs-invoice-email
+        - api-sqs-invoice-reports
+        - api-sqs-batch
+        - api-sqs-emails
+        - api-sqs-gen-live
+        - api-sqs-shield
+        - api-sqs-main
+        - api-sqs-webhooks-failure
+        - api-sqs-webhooks-live
+        - api-sqs-webhooks-test
+        - api-sqs-settlements-test
+        - api-sqs-settlements-live
+      repo: razorpay/api
+      namespace: api
+      tag:
+        - ${DRONE_COMMIT_SHA}
+      when:
+        environment: prod-api
+        branch: master
+        event:
+          exclude: [push]
+          include: [deployment]
   deploy-deployments-prod-api-canary:
     group: PROD_DEPLOY
     image: razorpay/drone-kubernetes
@@ -789,6 +829,34 @@ pipeline:
       - client_cert_klusterapi
     user: drone
     cluster: kluster-api
+    auth_mode: client-cert
+    deployment:
+      - api-canary-web
+    repo: razorpay/api
+    namespace: api
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment:
+        - prod-api
+        - prod-api-canary
+      branch: [master, canary]
+      event:
+        exclude: [push]
+        include: [deployment]
+  deploy-deployments-cde-blue-canary:
+    group: PROD_DEPLOY
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_cdeblue
+      - client_key_cdeblue
+      - server_cert_cdeblue
+      - client_cert_cdeblue
+    user: drone
+    cluster: cde-blue
     auth_mode: client-cert
     deployment:
       - api-canary-web

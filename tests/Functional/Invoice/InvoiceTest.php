@@ -1917,6 +1917,8 @@ class InvoiceTest extends TestCase
 
     public function testGetLinkView()
     {
+        config(['app.query_cache.mock' => false]);
+
         $this->createMetricsMock()
              ->expects($this->at(4))
              ->method('count')
@@ -1938,6 +1940,8 @@ class InvoiceTest extends TestCase
 
     public function testGetLinkViewDraft()
     {
+        config(['app.query_cache.mock' => false]);
+
         $this->createMetricsMock()
              ->expects($this->at(4))
              ->method('count')

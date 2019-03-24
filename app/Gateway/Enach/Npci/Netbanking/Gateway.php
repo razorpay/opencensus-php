@@ -210,7 +210,7 @@ class Gateway extends Base\Gateway
             RequestNpciTags::FIRST_COLLECTION_DATE => $date,
             RequestNpciTags::FINAL_COLLECTION_DATE => $finalCollection,
             RequestNpciTags::COLLECTION_AMOUNT     => '',
-            RequestNpciTags::MAX_AMOUNT            => $input['token']->getMaxAmount() / 100,
+            RequestNpciTags::MAX_AMOUNT            => number_format($input['token']->getMaxAmount() / 100, 2, '.', ''),
         ];
     }
 

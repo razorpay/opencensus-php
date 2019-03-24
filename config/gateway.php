@@ -741,6 +741,36 @@ return [
             'gateway_merchant_name'         => 'Goomo_Axis_Expay',
         ],
 
+        'C1fjEduvEkBUEK' => [
+            'gateway_merchant_id'           => 'Wibmo_Razor_Flipkart_Axis_Expay',
+            'gateway_merchant_name'         => 'Flipkart'
+        ],
+
+        'C1fmOZYiZiezoD' => [
+            'gateway_merchant_id'           => 'Wibmo_Razor_Flipkart_Axis_Expay',
+            'gateway_merchant_name'         => 'Flipkart'
+        ],
+
+        'C1fnUMHBmitlPB' => [
+            'gateway_merchant_id'           => 'Wibmo_Razor_Flipkart_Axis_Expay',
+            'gateway_merchant_name'         => 'Flipkart'
+        ],
+
+        'C1fo6ARXco94tP' => [
+            'gateway_merchant_id'           => 'Wibmo_Razor_Flipkart_Axis_Expay',
+            'gateway_merchant_name'         => 'Flipkart'
+        ],
+
+        'C1fp6DAnDH4YUz' => [
+            'gateway_merchant_id'           => 'Wibmo_Razor_Flipkart_Axis_Expay',
+            'gateway_merchant_name'         => 'Flipkart'
+        ],
+
+        'C1fq8jgl8NRKnh' => [
+            'gateway_merchant_id'           => 'Wibmo_Razor_Flipkart_Axis_Expay',
+            'gateway_merchant_name'         => 'Flipkart'
+        ],
+
         'test_acq_bin'                      => env('ENSTAGE_TEST_GATEWAY_ACQUIRER_BIN'),
         'test_secret_key'                   => env('ENSTAGE_TEST_SECRET_KEY_ID'),
         'test_encryption_key'               => env('ENSTAGE_TEST_ENCRYPTION_KEY'),

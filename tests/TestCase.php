@@ -55,6 +55,8 @@ class TestCase extends IlluminateTestCase
         // Load test data
         $this->loadTestData();
 
+        config(['app.query_cache.mock' => true]);
+
         $this->config = $this->app['config'];
     }
 

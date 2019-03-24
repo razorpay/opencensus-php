@@ -71,11 +71,6 @@ class CalculatorTest extends OAuthTestCase
         $this->ruleEngine->execute(__FUNCTION__);
     }
 
-    public function testCustomerFeeBearer()
-    {
-        $this->ruleEngine->execute(__FUNCTION__);
-    }
-
     public function testPostpaidFeeModel()
     {
         $this->ruleEngine->execute(__FUNCTION__);
@@ -142,6 +137,14 @@ class CalculatorTest extends OAuthTestCase
      * Asserts that the commission gets created if implicit pricing is expired and but explicit pricing is defined.
      */
     public function testGSTOnCommissionForPaymentWithNoGST()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    /**
+     * Asserts that the implicit commission gets created if the merchant is on a customer fee bearer model
+     */
+    public function testImplicitCustomerFeeBearer()
     {
         $this->ruleEngine->execute(__FUNCTION__);
     }

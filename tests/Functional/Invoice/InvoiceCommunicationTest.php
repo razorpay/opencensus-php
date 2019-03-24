@@ -30,6 +30,8 @@ class InvoiceCommunicationTest extends TestCase
 
     public function testSmsAndEmailNotify()
     {
+        config(['app.query_cache.mock' => false]);
+
         $metrics = $this->createMetricsMock();
 
         $metrics->expects($this->at(8))

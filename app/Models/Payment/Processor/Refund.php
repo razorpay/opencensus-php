@@ -1684,7 +1684,8 @@ trait Refund
             'payment_amount'            => $payment->getAmount(),
             'payment_base_amount'       => $payment->getBaseAmount(),
             'payment_created_at'        => $payment->getCreatedAt(),
-            'payment_gateway_captured'  => $payment->getGatewayCaptured()
+            'payment_gateway_captured'  => $payment->getGatewayCaptured(),
+            'gateway_acquirer'          => $payment->terminal->getGatewayAcquirer() ?? $payment->getGateway(),
         ];
 
         $scroogeData = array_merge($refundData, $extraData);

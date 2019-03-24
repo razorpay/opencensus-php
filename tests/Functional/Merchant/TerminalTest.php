@@ -2,6 +2,12 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Event;
+use Illuminate\Cache\Events\CacheHit;
+use Illuminate\Cache\Events\KeyWritten;
+use Illuminate\Cache\Events\CacheMissed;
+use Illuminate\Cache\Events\KeyForgotten;
+
 use RZP\Models\Terminal;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -957,5 +963,65 @@ class TerminalTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest();
+    }
+
+    public function testQueryCacheforTerminals()
+    {
+        config(['app.query_cache.mock' => false]);
+
+        Event::fake(false);
+
+        $url = '/merchants/10000000000000/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest($this->testData);
+
+        Event::assertDispatched(KeyForgotten::class);
+
+        $this->defaultAuthPayment();
+
+        Event::assertDispatched(CacheMissed::class, function ($e)
+        {
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, 'terminal') === true)
+                {
+                    $this->assertEquals('terminal_10000000000000', $tag);
+                }
+            }
+
+            return true;
+        });
+
+        Event::assertDispatched(KeyWritten::class, function ($e)
+        {
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, 'terminal') === true)
+                {
+                    $this->assertEquals('terminal_10000000000000', $tag);
+                }
+            }
+
+            return true;
+        });
+
+        Event::assertNotDispatched(CacheHit::class);
+
+        $this->defaultAuthPayment();
+
+        Event::assertDispatched(CacheHit::class, function ($e)
+        {
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, 'terminal') === true)
+                {
+                    $this->assertEquals('terminal_10000000000000', $tag);
+                }
+            }
+
+            return true;
+        });
     }
 }
