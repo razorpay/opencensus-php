@@ -13,12 +13,16 @@ class Gateway extends Base\Gateway
     {
         $gateway = Factory::make($context, Contracts\DeviceGateway::class);
 
+        $this->handleGatewaySwitch($gateway, __FUNCTION__);
+
         return $gateway->response();
     }
 
     public function bankAccount(Context $context)
     {
         $gateway = Factory::make($context, Contracts\BankAccountGateway::class);
+
+        $this->handleGatewaySwitch($gateway, __FUNCTION__);
 
         return $gateway->response();
     }
@@ -27,6 +31,8 @@ class Gateway extends Base\Gateway
     {
         $gateway = Factory::make($context, Contracts\VpaGateway::class);
 
+        $this->handleGatewaySwitch($gateway, __FUNCTION__);
+
         return $gateway->response();
     }
 
@@ -34,6 +40,49 @@ class Gateway extends Base\Gateway
     {
         $gateway = Factory::make($context, Contracts\TransactionGateway::class);
 
+        $this->handleGatewaySwitch($gateway, __FUNCTION__);
+
         return $gateway->response();
+    }
+
+    protected function sendGatewayRequest($request)
+    {
+        if ($this->mock === true)
+        {
+            return $this->mockSendGatewayRequest($request);
+        }
+
+        return parent::sendGatewayRequest($request);
+    }
+
+    protected function mockSendGatewayRequest(array $request)
+    {
+        $server = $this->getMockServer();
+
+        // If server already has gateway server, we will use it.
+        // It will be preset when it's running on test cases.
+        if ($server->hasGatewayServer() === false)
+        {
+            $class = Factory::getServerClass($this->gateway);
+
+            $server->setGatewayServer(new $class);
+        }
+
+        $gatewayServer = $server->getGatewayServer();
+
+        $content = $gatewayServer->setMockRequest($request);
+
+        $server->setGatewayServer($gatewayServer);
+
+        $action = camel_case($this->entity . '_' . $this->action);
+
+        $response = $gatewayServer->{$action}($content);
+
+        return $response;
+    }
+
+    protected function getMockServer(): Mock\Server
+    {
+        return $this->app['gateway']->server($this->gateway);
     }
 }

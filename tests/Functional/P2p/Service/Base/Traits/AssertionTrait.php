@@ -23,4 +23,9 @@ trait AssertionTrait
             }
         }
     }
+
+    public function assertUpiPinSet(bool $set, $bankAccount)
+    {
+        $this->assertSame($set, $bankAccount['creds']['upipin']);
+    }
 }

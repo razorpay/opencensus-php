@@ -15,6 +15,7 @@ class Entity extends Base\Entity
     use Base\Traits\HasBank;
     use Base\Traits\HasHandle;
     use Base\Traits\HasDevice;
+    use Base\Traits\SoftDeletes;
 
     const DEVICE_ID                = 'device_id';
     const HANDLE                   = 'handle';
@@ -34,6 +35,7 @@ class Entity extends Base\Entity
     const REGISTRATION_FORMAT      = 'registration_format';
     const BALANCE                  = 'balance';
     const CURRENCY                 = 'currency';
+    const CARD                     = 'card';
 
     /************** Entity Properties ************/
 
@@ -46,9 +48,9 @@ class Entity extends Base\Entity
 
     protected $publicSetters      = [
         Entity::ID,
-        Entity::BANK_NAME,
+        Entity::BANK,
         Entity::ENTITY,
-        Entity::SDK,
+        Entity::CREDS,
     ];
 
     protected $dates = [
@@ -79,7 +81,7 @@ class Entity extends Base\Entity
         Entity::MASKED_ACCOUNT_NUMBER,
         Entity::BENEFICIARY_NAME,
         Entity::CREDS,
-        Entity::SDK,
+        Entity::BANK,
         Entity::REFRESHED_AT,
         Entity::CREATED_AT,
     ];
@@ -92,7 +94,7 @@ class Entity extends Base\Entity
         Entity::MASKED_ACCOUNT_NUMBER,
         Entity::BENEFICIARY_NAME,
         Entity::CREDS,
-        Entity::SDK,
+        Entity::BANK,
         Entity::REFRESHED_AT,
         Entity::CREATED_AT,
     ];
@@ -195,6 +197,17 @@ class Entity extends Base\Entity
         return $this->setAttribute(self::CREDS, $creds);
     }
 
+    public function setCredsUpiPin(bool $set)
+    {
+        $creds = new Credentials($this->getCreds());
+
+        $creds->mergeCred(Credentials::UPI_PIN, [
+            Credentials::SET => $set
+        ]);
+
+        return $this->setCreds($creds->toArray());
+    }
+
     /***************** GETTERS *****************/
 
     /**
@@ -269,15 +282,6 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::CREDS);
     }
 
-    /***************** MUTATORS *****************/
-
-    public function setPublicSdkAttribute(array & $array)
-    {
-        $array[self::SDK] = [
-            self::REGISTRATION_FORMAT => $this->bank->getUpiFormat(),
-        ];
-    }
-
     /***************** Accessors *****************/
 
     public function getCredsAttribute($json)
@@ -285,5 +289,16 @@ class Entity extends Base\Entity
         $creds = new Credentials(json_decode($json, true));
 
         return $creds->toArray();
+    }
+
+    public function setPublicCredsAttribute(& $array)
+    {
+        $creds = array_map(
+            function($cred)
+            {
+                return array_get($cred, Credentials::SET);
+            }, $this->getCreds());
+
+        $array[self::CREDS] = $creds;
     }
 }

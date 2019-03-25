@@ -156,6 +156,9 @@ class P2pSeeder extends Seeder
                 Constants::ARZP,
                 Constants::BRZP,
                 Constants::CRZP,
+                Constants::ARZP_AXIS,
+                Constants::BRZP_AXIS,
+                Constants::CRZP_AXIS,
             ])->delete();
 
         factory(P2p\BankAccount\Bank\Entity::class)->create(
@@ -174,6 +177,24 @@ class P2pSeeder extends Seeder
             [
                 'id'                    => Constants::CRZP,
                 'handle'                => Constants::RAZOR_SHARP,
+            ]);
+
+        factory(P2p\BankAccount\Bank\Entity::class)->create(
+            [
+                'id'                    => Constants::ARZP_AXIS,
+                'handle'                => Constants::RAZOR_AXIS,
+            ]);
+
+        factory(P2p\BankAccount\Bank\Entity::class)->create(
+            [
+                'id'                    => Constants::BRZP_AXIS,
+                'handle'                => Constants::RAZOR_AXIS,
+            ]);
+
+        factory(P2p\BankAccount\Bank\Entity::class)->create(
+            [
+                'id'                    => Constants::CRZP_AXIS,
+                'handle'                => Constants::RAZOR_AXIS,
             ]);
     }
 
@@ -209,15 +230,23 @@ class P2pSeeder extends Seeder
                 'id'                    => Constants::CUSTOMER_1_BANK_ACCOUNT_1_AXIS,
                 'device_id'             => Constants::CUSTOMER_1_DEVICE_1,
                 'handle'                => Constants::RAZOR_AXIS,
-                'bank_id'               => Constants::ARZP
+                'bank_id'               => Constants::ARZP_AXIS,
+                'gateway_data'          => [
+                    'id'                => Constants::CUSTOMER_1_BANK_ACCOUNT_1_AXIS,
+                    'referenceId'       => Constants::CUSTOMER_1_BANK_ACCOUNT_1_AXIS,
+                ],
             ]);
 
         factory(P2p\BankAccount\Entity::class)->create(
             [
                 'id'                    => Constants::CUSTOMER_2_BANK_ACCOUNT_1_AXIS,
                 'device_id'             => Constants::CUSTOMER_2_DEVICE_1,
-                'handle'                => Constants::RAZOR_SHARP,
-                'bank_id'               => Constants::BRZP
+                'handle'                => Constants::RAZOR_AXIS,
+                'bank_id'               => Constants::BRZP_AXIS,
+                'gateway_data'          => [
+                    'id'                => Constants::CUSTOMER_2_BANK_ACCOUNT_1_AXIS,
+                    'referenceId'       => Constants::CUSTOMER_2_BANK_ACCOUNT_1_AXIS,
+                ],
             ]);
     }
 

@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\P2p\Service\UpiAxis\Device;
 
+use RZP\Models\P2p\Device;
 use RZP\Gateway\P2p\Upi\Axis\Fields;
 use RZP\Tests\P2p\Service\UpiAxis\TestCase;
 use RZP\Tests\P2p\Service\Base\Fixtures\Fixtures;
@@ -119,5 +120,28 @@ class DeviceTest extends TestCase
                 Fields::UDF_PARAMETERS            => [],
             ]
         ]);
+    }
+
+    public function testDeregister()
+    {
+        $helper = $this->getDeviceHelper();
+
+        $helper->withSchemaValidated();
+
+        $this->mockActionContentFunction([
+            Device\Action::DEREGISTER => function(& $content)
+            {
+                //$content['status'] = 'FAILURE';
+            }]);
+
+        $deviceToken = $this->fixtures->deviceToken(self::DEVICE_1);
+        $bankAccount = $this->fixtures->bankAccount(self::DEVICE_1);
+        $vpa         = $this->fixtures->vpa(self::DEVICE_1);
+
+        $helper->deregisterDevice();
+
+        $this->assertTrue($deviceToken->refresh()->trashed());
+        $this->assertTrue($bankAccount->refresh()->trashed());
+        $this->assertTrue($vpa->refresh()->trashed());
     }
 }

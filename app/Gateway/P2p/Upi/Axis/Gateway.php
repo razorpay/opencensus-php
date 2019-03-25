@@ -8,9 +8,20 @@ use phpseclib\Crypt\RSA;
 use RZP\Gateway\P2p\Upi;
 use RZP\Constants\Timezone;
 use RZP\Gateway\P2p\Upi\Axis\Sdk;
+use RZP\Models\P2p\Base\Libraries\ArrayBag;
 
 class Gateway extends Upi\Gateway
 {
+    const X_MERCHANT_ID = 'X-Merchant-Id';
+
+    const X_MERCHANT_CHANNEL_ID = 'X-Merchant-Channel-Id';
+
+    const X_TIMESTAMP = 'X-Timestamp';
+
+    const CONTENT_TYPE = 'Content-Type';
+
+    const X_MERCHANT_SIGNATURE = 'X-Merchant-Signature';
+
     protected $actionMap = [];
 
     protected $gateway = 'p2p_upi_axis';
@@ -43,6 +54,29 @@ class Gateway extends Upi\Gateway
         return $request;
     }
 
+    protected function handleInputSdk(): ArrayBag
+    {
+        if ($this->isSdkFailure() === true)
+        {
+            $this->throwP2pGatewayException();
+        }
+
+        return $this->input->get(Fields::SDK);
+    }
+
+    protected function isSdkFailure(): bool
+    {
+        return $this->input->get(Fields::SDK)->get(Fields::STATUS) != 'SUCCESS';
+    }
+
+    protected function handleGatewayResponse(ArrayBag $sdk)
+    {
+        if ($sdk->get(Fields::GATEWAY_RESPONSE_CODE) !== '00')
+        {
+            $this->throwP2pGatewayException();
+        }
+    }
+
     protected function getTimeStamp()
     {
         return (string) (Carbon::now(Timezone::IST)->getTimestamp() * 1000);
@@ -53,6 +87,11 @@ class Gateway extends Upi\Gateway
         $booleanValue = filter_var($value, FILTER_VALIDATE_BOOLEAN);
 
         return $booleanValue;
+    }
+
+    protected function toPaisa($value)
+    {
+        return round(floatval($value) * 100);
     }
 
     protected function getMerchantId()
@@ -84,5 +123,44 @@ class Gateway extends Upi\Gateway
     protected function getSdkRequestId()
     {
         return str_random(14);
+    }
+
+    protected function getUpiRequestId()
+    {
+        $prefix = $this->config['merchant_unique_prefix'] ?? 'BJJ';
+
+        return $prefix . strtolower(str_random(32));
+    }
+
+    protected function sendGatewayRequest($request)
+    {
+        $headers = [
+            self::X_MERCHANT_ID          => $this->getMerchantId(),
+            self::X_MERCHANT_CHANNEL_ID  => $this->getMerchantChannelId(),
+            self::X_TIMESTAMP            => $this->getTimeStamp(),
+        ];
+
+        $request['headers'] = $headers;
+
+        $request['headers'][self::CONTENT_TYPE] = 'application/json';
+
+        $signer = $this->getMerchantSigner();
+
+        $str = $this->getSignatureString($headers);
+
+        $signature = bin2hex($signer->sign($str));
+
+        $request['headers'][self::X_MERCHANT_SIGNATURE] = $signature;
+
+        $request['content'] = json_encode($request['content']);
+
+        return parent::sendGatewayRequest($request);
+    }
+
+    protected function getSignatureString($content)
+    {
+        $str = implode($content, '');
+
+        return $str;
     }
 }
