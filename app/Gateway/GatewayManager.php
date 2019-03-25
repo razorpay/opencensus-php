@@ -54,6 +54,8 @@ class GatewayManager extends \Illuminate\Support\Manager
                 ($input['cps_route'] === true))
             {
                 $response = $this->app['cps']->action($gatewayName, $action, $input);
+
+                return $response;
             }
             else
             {

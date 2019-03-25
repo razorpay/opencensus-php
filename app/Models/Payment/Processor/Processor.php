@@ -779,8 +779,15 @@ class Processor
      * This method sets the flag that this payment should be processed via
      * Core payment service
      */
-    protected function setPaymentRoutedThroughCpsIfApplicable(Payment\Entity $payment)
+    protected function setPaymentRoutedThroughCpsIfApplicable(Payment\Entity $payment, $gatewayInput)
     {
+        // Check if AuthN gateway is not the AuthZ
+        if ((empty($gatewayInput['authenticate']['gateway']) === false) and
+            ($gatewayInput['authenticate']['gateway'] !== $payment->getGateway()))
+        {
+            return;
+        }
+
         if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::CPS_SERVICE_ENABLED, false) === true)
         {
             $featureFlag = self::CPS_FEATURE_FLAG_PREFIX. '_' .$payment->getGateway();

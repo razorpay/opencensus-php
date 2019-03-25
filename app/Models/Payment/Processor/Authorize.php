@@ -1464,7 +1464,7 @@ trait Authorize
     {
         $this->setAuthAndAuthenticationGateway($payment, $gatewayInput);
 
-        $this->setPaymentRoutedThroughCpsIfApplicable($payment);
+        $this->setPaymentRoutedThroughCpsIfApplicable($payment, $gatewayInput);
 
         $this->repo->saveOrFail($payment);
 

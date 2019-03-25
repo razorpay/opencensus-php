@@ -548,6 +548,8 @@ class PaymentCreateTest extends TestCase
 
     public function testPaymentRoutedThroughCps()
     {
+        $this->markTestSkipped();
+
         $this->mockCardVault();
 
         $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
