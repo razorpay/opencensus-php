@@ -149,6 +149,9 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    /**
+     * check that commission plan can be added to rzp org
+     */
     public function testAddCommissionPlanNBRule()
     {
         $content = $this->createPricingPlan(['type' => 'commission']);
@@ -300,6 +303,16 @@ class PricingTest extends TestCase
         $rule = Pricing\Entity::withTrashed()->findOrFail($rule['id']);
 
         $this->assertNotNull($rule['deleted_at']);
+    }
+
+    /**
+     * Asserts that commission plan cannot be added for non-rzp org
+     */
+    public function testCreateCommissionPlanBySBIOrg()
+    {
+        $this->ba->adminAuth('test', null, null, null, 'org_' . Org::SBIN_ORG);
+
+        $this->startTest();
     }
 
     /**

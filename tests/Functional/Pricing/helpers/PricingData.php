@@ -943,6 +943,40 @@ return [
         ],
     ],
 
+    'testCreateCommissionPlanBySBIOrg' => [
+        'request' => [
+            'content' => [
+                'plan_name' => 'TestPlan1',
+                'rules'     => [
+                    [
+                        'payment_method'        => 'card',
+                        'payment_method_type'   => 'credit',
+                        'payment_network'       => 'DICL',
+                        'payment_issuer'        => 'HDFC',
+                        'percent_rate'          => 1000,
+                        'international'         => '0',
+                        'type'                  => 'commission',
+                    ],
+                ],
+            ],
+            'url' => '/pricing',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PRICING_TYPE_COMMISSION_INVALID_FOR_NON_RZP_ORG,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_TYPE_COMMISSION_INVALID_FOR_NON_RZP_ORG,
+        ],
+    ],
+
     'testUpdatePricingPlanRuleBySBIAdmin' => [
         'request'   => [
             'content' => [
