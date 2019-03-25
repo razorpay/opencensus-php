@@ -420,7 +420,10 @@ class Service extends Base\Service
                     $data['experiments']['paymentpagesv2'] = $merchantService->getTreatment('paymentpagesv2');
                     $data['experiments']['capital_announcement'] = $merchantService->getTreatment('capital_announcement');
                     $data['experiments']['capital_banner'] = $merchantService->getTreatment('capital_banner');
-                    
+                    $data['experiments']['subscriptions_live'] = $merchantService->getTreatment('subscriptions_live');
+                    $data['experiments']['subscriptions_approved_notlive'] = $merchantService->getTreatment('subscriptions_approved_notlive');
+                    $data['experiments']['non_subscriptions'] = $merchantService->getTreatment('non_subscriptions');
+
                     $data['current'] = $currentMerchantId;
 
                     $data['tags'] = $merchantService->getMerchantTags($currentMerchantId);
