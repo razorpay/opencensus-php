@@ -8,4 +8,13 @@ use ApiResponse;
 class FundAccountValidationController extends Controller
 {
     use Traits\HasCrudMethods;
+
+    public function retry()
+    {
+        $input = Request::all();
+
+        $entities = $this->service()->retry($input);
+
+        return ApiResponse::json($entities);
+    }
 }

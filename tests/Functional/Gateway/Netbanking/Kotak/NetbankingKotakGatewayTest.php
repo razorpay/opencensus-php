@@ -165,7 +165,8 @@ class NetbankingKotakGatewayTest extends TestCase
         {
             if ($action === 'verify_action')
             {
-                $content = '0521|21012019133808|OSRAZORECM|154805727845548|1|Y|0074864190|1858831011';
+                // Decrypted string is '0520|12032019150624|OSRAZOR|155238338329361|500|Y|123456|3210708649'
+                $content = 'HrEkFDECV6ZHX8zlc8RZZAcU+cnRDaeEOYBT3oSCIvk0wPTef+qGC+uSMYaR2CocJmRNSFhCgbBcapaT6xbOGoPGB7PfQi7aedT7mxks0QBj0pOYVKcXrCcUGkNghMyj';
             }
         });
 

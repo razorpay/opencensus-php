@@ -37,6 +37,16 @@ class IinsTableSeeder extends Seeder
         }
 
         DB::table(Table::IIN)->insert($assocRecords);
+
+        DB::table(Table::IIN)->insert([[
+            IIN\Entity::IIN          => '607481',
+            IIN\Entity::NETWORK      => 'RuPay',
+            IIN\Entity::TYPE         => 'debit',
+            IIN\Entity::COUNTRY      => 'IN',
+            IIN\Entity::MESSAGE_TYPE => 'SMS',
+            IIN\Entity::CREATED_AT   => time(),
+            IIN\Entity::UPDATED_AT   => time(),
+        ]]);
     }
 
     /**

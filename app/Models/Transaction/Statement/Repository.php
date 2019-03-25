@@ -296,6 +296,33 @@ class Repository extends Transaction\Repository
      *                ON payouts.id = transactions.entity_id
      *                   AND transactions.type = 'payout'
      * WHERE  transactions.merchant_id = '10000000000000'
+     *        AND payouts.purpose = 'refund'
+     *        AND transactions.balance_id = 'xbalance000000'
+     * ORDER  BY created_at DESC,
+     *           id DESC
+     * LIMIT  10
+     *
+     * @param BuilderEx $query
+     * @param array     $params
+     */
+    protected function addQueryParamPayoutPurpose(BuilderEx $query, array $params)
+    {
+        $payoutPurpose       = $params[Entity::PAYOUT_PURPOSE];
+        $payoutPurposeColumn = $this->repo->payout->dbColumn(Payout\Entity::PURPOSE);
+
+        $query->select($this->getTableName(). '.*');
+        $this->joinQueryPayout($query);
+
+        $query->where($payoutPurposeColumn, $payoutPurpose);
+    }
+
+    /**
+     * SELECT transactions.*
+     * FROM   transactions
+     *        INNER JOIN payouts
+     *                ON payouts.id = transactions.entity_id
+     *                   AND transactions.type = 'payout'
+     * WHERE  transactions.merchant_id = '10000000000000'
      *        AND payouts.fund_account_id = 'BXV5GAmaJEcGr1'
      *        AND transactions.balance_id = 'xbalance000000'
      * ORDER  BY created_at DESC,

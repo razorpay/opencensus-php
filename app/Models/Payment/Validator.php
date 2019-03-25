@@ -98,6 +98,10 @@ class Validator extends Base\Validator
         Entity::REFERENCE16          => 'sometimes|nullable|string',
     ];
 
+    protected static $notesRules = [
+        Entity::NOTES                => 'sometimes|notes',
+    ];
+
     protected static $captureRules = [
         Entity::AMOUNT               => 'required|integer',
         Entity::CURRENCY             => 'required|custom',
@@ -892,6 +896,7 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED,
+                null,
                 [
                     'payment_id'    => $payment->getId(),
                     'status'        => $payment->getStatus(),

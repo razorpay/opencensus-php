@@ -169,21 +169,38 @@ trait RequestHandlerTrait
     // Since we're the acquirer, we can pass our own internal merchant id
     protected function getMerchantId()
     {
+//        todo: Revert this later if required based on discussion
+//        if ($this->mode === Mode::LIVE)
+//        {
+//            return $this->input['merchant']['id'];
+//        }
+//
+//        return $this->config['merchant_id'];
         if ($this->mode === Mode::LIVE)
         {
-            return $this->input['merchant']['id'];
+            return '38RR00000000001';
         }
-        return $this->config['merchant_id'];
+
+        return $this->app['config']->get('gateway.hitachi.test_merchant_id');
     }
 
     // Since we're the acquirer, we can pass our own internal terminal id
     protected function getTerminalId()
     {
+//        todo: Revert this later if required based on discussion
+//        if ($this->mode === Mode::LIVE)
+//        {
+//            return $this->input['terminal']['id'];
+//        }
+//
+//        return $this->config['terminal_id'];
+
         if ($this->mode === Mode::LIVE)
         {
-            return $this->input['terminal']['id'];
+            return '38R00001';
         }
-        return $this->config['terminal_id'];
+
+        return $this->app['config']->get('gateway.hitachi.test_terminal_id');
     }
 
     protected function generateRrn($stan)
@@ -245,6 +262,7 @@ trait RequestHandlerTrait
                 'command'    => $command,
                 'parameters' => $params,
                 'gateway'    => $this->gateway,
+                'url'        => $this->getUrl(),
             ],
             $this->input
         );

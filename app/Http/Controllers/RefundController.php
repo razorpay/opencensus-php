@@ -221,6 +221,15 @@ class RefundController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function editNotes($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->editNotes($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function putRefundMarkProcessedBulk()
     {
         $input = Request::all();
@@ -271,6 +280,15 @@ class RefundController extends Controller
         $input = Request::all();
 
         $data = $this->service()->verifyScroogeRefundsBulk($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postVerifyRefundsBulk()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->verifyRefundsInBulk($input);
 
         return ApiResponse::json($data);
     }

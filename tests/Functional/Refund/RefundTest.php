@@ -1751,4 +1751,27 @@ class RefundTest extends TestCase
         $this->assertEquals('rfnd_'.$reversal['entity_id'], $refund['id']);
         $this->assertNotNull($reversal['balance_id']);
     }
+
+    public function testRefundEditNotes()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $refund = $this->refund(
+            [
+                'payment_id' => $payment['id'],
+                'notes'      => [
+                    'key' => 'value',
+                ],
+                'receipt'    => '2544325',
+            ]);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/refunds/' . $refund['id'] . '/notes';
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+    }
 }

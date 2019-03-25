@@ -121,7 +121,7 @@ class Beneficiary extends Base
 
             if($data[Constants::ERROR] !== self::RECORD_EXIST)
             {
-                throw new LogicException($data[Constants::ERROR], ErrorCode::BENEFICIARY_REGISTRATION_FAILED_RESPONSE, $data);
+                throw new LogicException($data[Constants::ERROR], ErrorCode::NODAL_BENEFICIARY_REGISTRATION_FAILED_RESPONSE, $data);
             }
             else
             {

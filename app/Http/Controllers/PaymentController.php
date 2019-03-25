@@ -208,7 +208,9 @@ class PaymentController extends Controller
 
     public function postTimeout()
     {
-        $data = $this->service()->timeoutOldPayments();
+        $input = Request::all();
+
+        $data = $this->service()->timeoutOldPayments($input);
 
         return ApiResponse::json($data);
     }
@@ -307,6 +309,15 @@ class PaymentController extends Controller
         $input = Request::all();
 
         $data = $this->service()->addPaymentMetadata($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function editNotes($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->editNotes($id, $input);
 
         return ApiResponse::json($data);
     }

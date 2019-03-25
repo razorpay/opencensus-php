@@ -388,7 +388,7 @@ abstract class NodalAccount extends Base\Core
         switch (true)
         {
             case $attempt->isOfBanking():
-                return Attempt\Type::BANKIING;
+                return Attempt\Type::BANKING;
 
             case $attempt->isPennyTesting():
                 return Attempt\Type::SYNC;
@@ -428,7 +428,7 @@ abstract class NodalAccount extends Base\Core
         }
     }
 
-    public function getPaymentModeForCard(Entity $attempt, $amount): string
+    public function getPaymentModeForCard(Attempt\Entity $attempt, $amount): string
     {
         if ($attempt->hasMode() === true)
         {

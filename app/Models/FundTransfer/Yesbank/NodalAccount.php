@@ -7,10 +7,11 @@ use Config;
 use Carbon\Carbon;
 
 
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
+use RZP\Models\Card\Type;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
-use RZP\Models\Card\Issuer;
 use RZP\Models\Payment\Gateway;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
@@ -66,17 +67,32 @@ class NodalAccount extends NodalBase\NodalAccount
                 continue;
             }
 
-            $gateway = $this->shouldUseGateway($attempt);
+            $gateway = $attempt->shouldUseGateway();
 
             $this->doRequiredChecks($gateway);
 
             $type = $this->getRequestType($attempt);
 
-            $transfer = new Transfer($this->purpose, $type);
+            $useCurrentAccount = $attempt->merchant->isFeatureEnabled(Feature\Constants::DUMMY);
+
+            $transfer = new Transfer($this->purpose, $type, $useCurrentAccount);
 
             if ($attempt->hasCard() === true)
             {
-                 $transfer->disableLogs();
+                if ($attempt->card->getType() === Type::CREDIT)
+                {
+                    $transfer->disableLogs();
+                }
+                else
+                {
+                    $this->trace->info(TraceCode::UNSUPPORTED_CARD_TYPE_FOR_TRANSFER,
+                        [
+                            'channel'       => $this->channel,
+                            'attempt_id'    => $attempt->getId(),
+                        ]);
+
+                    continue;
+                }
             }
 
             try
@@ -126,15 +142,12 @@ class NodalAccount extends NodalBase\NodalAccount
             }
             catch (\Throwable $e)
             {
-                if ($transfer->isLogEnabled() === true)
-                {
-                    $this->trace->traceException(
-                        $e,
-                        Trace::ERROR,
-                        TraceCode::NODAL_TRANSFER_STATUS_UPDATE_FAILED,
-                        $response
-                    );
-                }
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::NODAL_TRANSFER_STATUS_UPDATE_FAILED,
+                    $response
+                );
             }
 
             if ($lowBalanceAlert === true)
@@ -272,22 +285,6 @@ class NodalAccount extends NodalBase\NodalAccount
                 'banking_start_time'    => $this->bankingStartTime,
                 'banking_ending_time'   => $this->bankingEndTime,
             ]);
-
-        return false;
-    }
-
-    protected function shouldUseGateway(Attempt\Entity $attempt): bool
-    {
-        if ($attempt->hasVpa() === true)
-        {
-            return true;
-        }
-
-        if (($attempt->hasCard() === true) and
-            ($attempt->card->getIssuer() === Issuer::ICIC))
-        {
-            return true;
-        }
 
         return false;
     }

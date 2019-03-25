@@ -51,7 +51,7 @@ class Format
     const VALID_EXTENSION_MIME_MAP = [
         self::CSV   => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values',
                         'text/plain', 'inode/x-empty', 'application/octet-stream', 'application/pgp'],
-        self::ENC   => ['application/octet-stream', 'application/pgp'],
+        self::ENC   => ['application/octet-stream', 'application/pgp', 'application/zlib'],
         self::JPG   => ['image/jpeg', 'application/pgp'],
         self::JPEG  => ['image/jpeg', 'application/pgp'],
         self::PDF   => ['application/pdf', 'application/x-pdf', 'application/pgp'],

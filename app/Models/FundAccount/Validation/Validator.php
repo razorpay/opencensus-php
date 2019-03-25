@@ -13,4 +13,9 @@ class Validator extends Base\Validator
         Entity::CURRENCY                  => 'filled|string|in:INR',
         Entity::RECEIPT                   => 'sometimes|string|min:1|max:40',
     ];
+
+    protected static $retryRules = [
+        Entity::FUND_ACCOUNT_VALIDATION_IDS              => 'required|array|min:1',
+        Entity::FUND_ACCOUNT_VALIDATION_IDS.".*"         => 'required|public_id',
+    ];
 }

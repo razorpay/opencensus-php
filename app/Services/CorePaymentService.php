@@ -6,6 +6,8 @@ use Requests;
 use Requests_Session;
 
 use RZP\Exception;
+use RZP\Constants\Entity;
+use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Error\ErrorClass;
@@ -66,6 +68,11 @@ class CorePaymentService
 
     public function action(string $gateway, string $action, array $input)
     {
+        if (empty($input[Entity::TERMINAL]) === false)
+        {
+            $input[Entity::TERMINAL] = $input[Entity::TERMINAL]->toArrayWithPassword();
+        }
+
         $content = [
             self::ACTION  => $action,
             self::GATEWAY => $gateway,
@@ -178,7 +185,11 @@ class CorePaymentService
     protected function traceRequest(array $request)
     {
         unset($request['options']['auth']);
-        unset($request['content']['card']);
+        unset($request['content'][self::INPUT]['card']);
+        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD]);
+        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD2]);
+        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET]);
+        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET2]);
 
         $this->trace->info(TraceCode::CORE_PAYMENT_SERVICE_REQUEST, $request);
     }
@@ -270,7 +281,7 @@ class CorePaymentService
 
     protected function checkForErrors($response)
     {
-        $errorCode = $response['internal_error_code'];
+        $errorCode = $response[self::ERROR]['internal_error_code'];
 
         $class = $this->getErrorClassFromErrorCode($errorCode);
 

@@ -376,6 +376,76 @@ class RecurringPaymentTest extends TestCase
         $this->assertEquals($paymentEntity[Payment::TWO_FACTOR_AUTH], 'skipped');
     }
 
+    public function testRecurringOtpFix()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+        $this->fixtures->merchant->addFeatures([Feature::ALLOW_DC_RECURRING]);
+        $this->fixtures->merchant->addFeatures(['axis_express_pay', 'otp_auth_default']);
+
+        $this->fixtures->iin->create([
+            'iin'     => '402400',
+            'country' => 'IN',
+            'issuer'  => 'UTIB',
+            'network' => 'Visa',
+            'type'    => 'debit',
+            'recurring' => 1,
+            'flows'   => [
+                '3ds' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+        $payment['card']['number'] = '4024001104457538';
+
+
+        $terminal = $this->fixtures->create('terminal:hitachi_recurring_terminal_with_both_recurring_types', ['merchant_id' => '10000000000000']);
+
+
+        $this->doAuthPayment($payment);
+
+        $this->fixtures->terminal->disableTerminal('HitcRcg3DSN3DS');
+
+        $this->fixtures->merchant->addFeatures([Feature::ALLOW_ALL_DC_RECURRING]);
+
+        $this->doAuthPayment($payment);
+        sd();
+        $paymentEntity = $this->getLastPayment(true);
+
+        $this->assertEquals('initial', $paymentEntity['recurring_type']);
+
+        $this->fixtures->edit('iin', 402400, ['flows' => [
+            '3ds' => '1',
+            'otp' => '1',
+        ]]);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $tokenEntity   = $this->getLastEntity('token', true);
+
+        $this->assertEquals(true, $tokenEntity[Token::RECURRING]);
+
+        $tokenId = $paymentEntity[Payment::TOKEN_ID];
+
+        unset($payment[Payment::CARD]);
+        unset($payment[Payment::BANK]);
+
+        $payment[Payment::TOKEN] = $tokenId;
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->terminal->edit($terminal->getId(), ['type' => ['recurring_non_3ds' => 1]]);
+
+        $content = $this->doS2SRecurringPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+        $this->assertNull($paymentEntity[Payment::AUTH_TYPE]);
+        $this->assertEquals($paymentEntity[Payment::TERMINAL_ID], '2RecurringTerm');
+        $this->assertEquals('auto', $paymentEntity['recurring_type']);
+        $this->assertEquals($paymentEntity[Payment::TWO_FACTOR_AUTH], 'skipped');
+    }
+
     public function testRecurringSecondPaymentCreatePublicAuthWithoutRecurringToken()
     {
         $this->ba->publicAuth();

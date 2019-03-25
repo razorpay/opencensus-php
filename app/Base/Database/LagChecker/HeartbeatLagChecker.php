@@ -148,8 +148,6 @@ class HeartbeatLagChecker implements LagChecker
 
             // perform heartbeat check
             $useSlave = $this->shouldUseSlave($readPdo);
-
-            $this->traceConnectionSelection(TraceCode::HEARTBEAT_DATABASE_ROUTING, $useSlave);
         }
         catch (\Throwable $ex)
         {
@@ -186,11 +184,10 @@ class HeartbeatLagChecker implements LagChecker
         {
             $useSlave = true;
 
-            return $this->finalizeResult($useSlave);
+            return $useSlave;
         }
 
         $currentRoute = $this->reqCtx->getRoute();
-
         $connectionIdentifier = $this->redis->hget($this->config['routes'], $currentRoute);
 
         //
@@ -198,21 +195,13 @@ class HeartbeatLagChecker implements LagChecker
         //
         if (isset($this->connectionResolver[$connectionIdentifier]) === false)
         {
-            return $this->finalizeResult($useSlave);
+            return $this->finalizeResult($useSlave, $currentRoute, $connectionIdentifier);
         }
 
         //
         // call connection resolved for given connection identifier
         //
         $useSlave = $this->connectionResolver[$connectionIdentifier]($readPdo);
-
-        $this->traceConnectionSelection(
-            TraceCode::HEARTBEAT_CHECK_COMPLETED,
-            $useSlave,
-            [
-                'route_name'            => $currentRoute,
-                'connection_identifier' => $connectionIdentifier,
-            ]);
 
         //
         // if the random weight is greater than threshold then move traffic to master
@@ -221,10 +210,10 @@ class HeartbeatLagChecker implements LagChecker
         {
             $useSlave = false;
 
-            return $this->finalizeResult($useSlave);
+            return $this->finalizeResult($useSlave, $currentRoute, $connectionIdentifier);
         }
 
-        return $this->finalizeResult($useSlave);
+        return $this->finalizeResult($useSlave, $currentRoute, $connectionIdentifier);
     }
 
     /**
@@ -389,11 +378,23 @@ class HeartbeatLagChecker implements LagChecker
 
     /**
      * It will do a mock check based on this it sends whether to use slave or master
-     * @param bool $useSlave
+     * @param bool   $useSlave
+     * @param string $currentRoute
+     * @param string $connectionIdentifier
      * @return bool
      */
-    private function finalizeResult(bool $useSlave): bool
+    private function finalizeResult(bool $useSlave, $currentRoute = '', $connectionIdentifier = ''): bool
     {
+        // Adding it before mock check because of the mock is enabled heartbeat result will be master always
+        // which will not give a proper result of heartbeat evaluation
+        $this->traceConnectionSelection(
+            TraceCode::HEARTBEAT_CHECK_COMPLETED,
+            $useSlave,
+            [
+                'route_name'            => $currentRoute,
+                'connection_identifier' => $connectionIdentifier,
+            ]);
+
         // If mock flag is set then ignore the heartbeat result
         if ($this->mock === true)
         {

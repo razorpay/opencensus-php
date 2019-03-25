@@ -10,6 +10,7 @@ return [
             'url'    => '/payments/verify/all',
             'method' => 'post',
             'content' => [
+                'delay' => 300
             ],
         ],
         'response' => [

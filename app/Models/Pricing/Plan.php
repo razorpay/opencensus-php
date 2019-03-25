@@ -21,9 +21,10 @@ class Plan extends PublicCollection
 
     public function getType()
     {
-        if (count($this->items) > 0)
+        // one plan can contain rules of one type only
+        if ($this->isNotEmpty() === true)
         {
-            return $this->items[0]->getType();
+            return $this->first()->getType();
         }
 
         // The pricing plan has no rules
@@ -32,14 +33,12 @@ class Plan extends PublicCollection
 
     public function isTypePricing(): bool
     {
-        // @todo: Later refer to pricing.type column which can have values - pricing, commission
-        return true;
+        return ($this->getType() === Type::PRICING);
     }
 
     public function isTypeCommission(): bool
     {
-        // @todo: Later refer to pricing.type column which can have values - pricing, commission
-        return false;
+        return ($this->getType() === Type::COMMISSION);
     }
 
     /**

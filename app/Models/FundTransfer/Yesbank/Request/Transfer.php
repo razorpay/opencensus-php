@@ -2,18 +2,20 @@
 
 namespace RZP\Models\FundTransfer\Yesbank\Request;
 
-use RZP\Models\FundAccount\Validation\Entity;
+use Config;
+
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Base as BaseModel;
 use RZP\Models\Base\PublicEntity;
 use RZP\Exception\LogicException;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Yesbank\Mode;
 use RZP\Models\Card\Entity as CardVault;
 use RZP\Models\Settlement\SlackNotification;
-use RZP\Services\CardVault as CardVaultService;
+use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\FundTransfer\Yesbank\NodalAccount;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\Status;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\GatewayStatus;
@@ -23,25 +25,59 @@ class Transfer extends Base
 {
     const VERSION = "1";
 
+    const IFSC_CODE = 'YESB0000022';
+
     protected $requestType;
 
     protected $entity = null;
 
     public $transferType = '';
 
+    public $typesWithoutPurposeCode = false;
+
     protected $requestTraceCode = TraceCode::NODAL_TRANSFER_REQUEST;
 
     protected $responseTraceCode = TraceCode::NODAL_TRANSFER_RESPONSE;
 
-    public function __construct(string $purpose, string $type = null)
+    public function __construct(string $purpose, string $type = null, $useCurrentAccount = false)
     {
         parent::__construct($type);
+
+        if ($useCurrentAccount === true)
+        {
+            $this->channel = Channel::YESBANK;
+
+            $this->config = Config::get('nodal.yesbank.banking_ca');
+
+            $this->appId = $this->config['app_id'];
+
+            $this->accountNumber = $this->config['account_number'];
+
+            $this->baseUrl = $this->config['url'];
+
+            $this->appId = $this->config['app_id'];
+
+            $this->customerId = $this->config['customer_id'];
+
+            $this->method = 'POST';
+
+            $this->version = '1';
+
+            $this->init();
+        }
 
         $this->requestType = $type;
 
         $this->purpose = $purpose;
 
         $this->urlIdentifier = $this->config['fund_transfer_url_suffix'];
+
+        $this->typesWithoutPurposeCode = (in_array($type, [Attempt\Type::BANKING, Attempt\Type::SYNC], true)  === true);
+
+        if (($type === Attempt\Type::BANKING) and ($useCurrentAccount === false))
+        {
+            $this->typesWithoutPurposeCode = false;
+        }
 
         $this->setRequestResponseIdentifiers();
     }
@@ -79,6 +115,23 @@ class Transfer extends Base
         ini_set('serialize_precision', -1);
 
         $requestData = $this->getRequestData();
+
+        $this->requestTrace = $requestData;
+
+        if ($this->isLogEnabled() === false)
+        {
+            $this->requestTrace[$this->requestIdentifier]
+            [Constants::BENEFICIARY]
+            [Constants::BENEFICIARY_DETAILS]
+            [Constants::BENEFICIARY_ACCOUNT_NO]
+                = mask_except_last4($this->requestTrace
+                                           [$this->requestIdentifier]
+                                           [Constants::BENEFICIARY]
+                                           [Constants::BENEFICIARY_DETAILS]
+                                           [Constants::BENEFICIARY_ACCOUNT_NO],
+                            'x'
+                  );
+        }
 
         $jsonRequest  = json_encode($requestData);
 
@@ -139,9 +192,9 @@ class Transfer extends Base
         ];
 
         //
-        // Purpose is required for async mode transfers
+        // Purpose is required for transfers from nodal accounts
         //
-        if ($this->requestType === Attempt\Type::SYNC)
+        if ($this->typesWithoutPurposeCode === true)
         {
             unset($data[$this->requestIdentifier][Constants::PURPOSE_CODE]);
         }
@@ -173,23 +226,33 @@ class Transfer extends Base
             $cardNum = $this->app['card.cardVault']->detokenize($cardObj->getVaultToken());
 
             $vpa = 'CCPAY.' . $cardNum . '@icici';
-
         }
         else
         {
             $vpa = $fta->vpa->getAddress();
         }
 
-        return [
+        $gatewayRequest = [
             'terminal' => $terminal->toArray(),
             'merchant' => $source->merchant->toArrayPublic(),
             'gateway_input' => [
-                'amount'    => $amount,
-                'vpa'       => $vpa,
-                'ref_id'    => $fta->getId(),
-                'narration' => $this->getNarration($fta),
+                'amount'         => $amount,
+                'vpa'            => $vpa,
+                'ref_id'         => $fta->getId(),
+                'narration'      => $this->getNarration($fta),
+                'account_number' => $this->accountNumber,
+                'ifsc_code'      => self::IFSC_CODE,
             ]
         ];
+
+        if ($this->isLogEnabled() === false)
+        {
+            $this->requestTrace = $gatewayRequest;
+
+            $this->requestTrace['gateway_input']['vpa'] = mask_except_last4($this->requestTrace['gateway_input']['vpa'], 'x');
+        }
+
+        return $gatewayRequest;
     }
 
     public function getActionForGateway(): string
@@ -267,7 +330,7 @@ class Transfer extends Base
         // Beneficiary details are required when the request is of purpose `refund` or
         // the request has to be made using sync API
         if (($attempt->isRefund() === true) or
-            ($this->requestType === Attempt\Type::SYNC))
+            ($this->typesWithoutPurposeCode === true))
         {
             $beneName = $this->entity->bankAccount->getBeneficiaryName();
 

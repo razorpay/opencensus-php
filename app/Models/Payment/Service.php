@@ -35,6 +35,8 @@ class Service extends Base\Service
 
     protected $slack;
 
+    protected $mutex;
+
     public function __construct()
     {
         parent::__construct();
@@ -42,6 +44,8 @@ class Service extends Base\Service
         $this->core = new Payment\Core;
 
         $this->slack = $this->app['slack'];
+
+        $this->mutex = $this->app['api.mutex'];
     }
 
     /**
@@ -938,6 +942,27 @@ class Service extends Base\Service
         return [];
     }
 
+    public function editNotes($id, $input)
+    {
+        $paymentId = Entity::verifyIdAndStripSign($id);
+
+        $payment = $this->mutex->acquireAndRelease($paymentId,
+            function() use ($paymentId, $input)
+            {
+                $payment = $this->repo->payment->findByIdAndMerchant($paymentId, $this->merchant);
+
+                $payment->edit($input, 'notes');
+
+                $this->repo->saveOrFail($payment);
+
+                return $payment;
+            },
+            20,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+
+        return $payment->toArrayPublic();
+    }
+
     /**
      * This method is triggered by a CRON job.
      *
@@ -1146,10 +1171,12 @@ class Service extends Base\Service
         return ['count' => $count];
     }
 
-    public function timeoutOldPayments()
+    public function timeoutOldPayments(array $input)
     {
         $count = 0;
         $error = 0;
+
+        $limit = $input['limit'] ?? 1000;
 
         $startTime = microtime(true);
 
@@ -1157,7 +1184,7 @@ class Service extends Base\Service
         $now = time();
         $timestamp = $now - Payment\Entity::PAYMENT_TIMEOUT_DEFAULT_OLD;
 
-        $payments = $this->repo->payment->fetchOldCreatedPaymentsForTimeout($timestamp);
+        $payments = $this->repo->payment->fetchOldCreatedPaymentsForTimeout($timestamp, $limit);
 
         foreach ($payments as $payment)
         {
@@ -1296,9 +1323,11 @@ class Service extends Base\Service
 
         $count = $input['count'] ?? 200;
 
-        $timestamp = Carbon::now(Timezone::IST)->subSeconds($delay)->getTimestamp();
+        $end = Carbon::now(Timezone::IST)->subSeconds($delay)->getTimestamp();
 
-        return (new Verify)->verifyAllPayments($timestamp, $gateway, $count);
+        $start = $this->getStartTimestamp($delay);
+
+        return (new Verify)->verifyAllPayments([$start, $end], $gateway, $count);
     }
 
     public function verifyPaymentsInBulk(array $input)
@@ -1644,5 +1673,19 @@ class Service extends Base\Service
         $this->app['cache']->put($key, $data, $cacheTtl);
 
         return $token;
+    }
+
+    // verify to fetch the payments between certain duration
+    protected function getStartTimestamp(int $delay)
+    {
+        $delay = 3 * $delay;
+
+        // keeping the min fetch window to 5 mins
+        if ($delay < 300)
+        {
+            $delay = 300;
+        }
+
+        return Carbon::now(Timezone::IST)->subSeconds($delay)->getTimestamp();
     }
 }

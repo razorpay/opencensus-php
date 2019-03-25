@@ -8,10 +8,20 @@ use RZP\Models\Base;
 use RZP\Models\BankAccount;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class Service extends Base\Service
 {
+    protected $mutex;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
+
     public function create(array $input)
     {
         $merchant = $this->merchant;
@@ -224,5 +234,26 @@ class Service extends Base\Service
         $payments = $this->repo->payment->fetch($input, $this->merchant->getId());
 
         return $payments->toArrayPublic();
+    }
+
+    public function editNotes(string $id, array $input): array
+    {
+        $orderId = Entity::verifyIdAndStripSign($id);
+
+        $order = $this->mutex->acquireAndRelease($orderId,
+            function() use ($orderId, $input)
+            {
+                $order = $this->repo->order->findByIdAndMerchant($orderId, $this->merchant);
+
+                $order->edit($input, 'notes');
+
+                $this->repo->saveOrFail($order);
+
+                return $order;
+            },
+            20,
+            ErrorCode::BAD_REQUEST_ORDER_ANOTHER_OPERATION_IN_PROGRESS);
+
+        return $order->toArrayPublic();
     }
 }

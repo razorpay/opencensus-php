@@ -246,6 +246,8 @@ class Processor
     {
         try
         {
+            $startTime = microtime(true);
+
             $this->setMethodForInput($input);
 
             $payment = $this->buildPaymentEntity($input);
@@ -273,6 +275,8 @@ class Processor
 
             // Creates an origin entity for the payment based on the auth used to initiate the payment.
             (new EntityOrigin\Core)->createEntityOrigin($payment);
+
+            $this->logRequestTime($payment, $startTime);
 
             return $paymentData;
         }
@@ -775,8 +779,15 @@ class Processor
      * This method sets the flag that this payment should be processed via
      * Core payment service
      */
-    protected function setPaymentRoutedThroughCpsIfApplicable(Payment\Entity $payment)
+    protected function setPaymentRoutedThroughCpsIfApplicable(Payment\Entity $payment, $gatewayInput)
     {
+        // Check if AuthN gateway is not the AuthZ
+        if ((empty($gatewayInput['authenticate']['gateway']) === false) and
+            ($gatewayInput['authenticate']['gateway'] !== $payment->getGateway()))
+        {
+            return;
+        }
+
         if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::CPS_SERVICE_ENABLED, false) === true)
         {
             $featureFlag = self::CPS_FEATURE_FLAG_PREFIX. '_' .$payment->getGateway();
@@ -2595,6 +2606,24 @@ class Processor
                 TraceCode::UPI_CACHE_STORE_ERROR,
                 ['key' => $key,
                  '$value' => $value]);
+        }
+    }
+
+    protected function logRequestTime($payment, $startTime)
+    {
+        try
+        {
+            $requestTime = get_diff_in_millisecond($startTime);
+
+            (new Payment\Metric)->pushCreateRequestTimeMetrics($payment, $requestTime);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC
+            );
         }
     }
 }

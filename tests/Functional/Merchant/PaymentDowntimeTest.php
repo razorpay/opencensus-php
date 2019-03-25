@@ -8,7 +8,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Payment\Gateway;
 
-class MerchantMethodDowntimeTest extends TestCase
+class PaymentDowntimeTest extends TestCase
 {
     use PaymentTrait;
 

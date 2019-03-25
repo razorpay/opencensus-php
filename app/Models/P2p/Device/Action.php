@@ -4,18 +4,41 @@ namespace RZP\Models\P2p\Device;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;
+use RZP\Http\Controllers\P2p\Requests;
 
 class Action extends Base\Action
 {
-    const START_VERIFICATION                = 'startVerification';
-    const START_VERIFICATION_SUCCESS        = 'startVerificationSuccess';
+    const INITIATE_VERIFICATION            = 'initiateVerification';
+    const INITIATE_VERIFICATION_SUCCESS    = 'initiateVerificationSuccess';
+    const INITIATE_VERIFICATION_FAILURE    = 'initiateVerificationFailure';
 
-    const GET_VERIFICATION_STATUS           = 'getVerificationStatus';
-    const GET_VERIFICATION_STATUS_SUCCESS   = 'getVerificationStatusSuccess';
+    const VERIFICATION                     = 'verification';
+    const VERIFICATION_SUCCESS             = 'verificationSuccess';
+    const VERIFICATION_FAILURE             = 'verificationFailure';
 
-    const REFRESH_CL_TOKEN                  = 'refreshClToken';
-    const REFRESH_CL_TOKEN_SUCCESS          = 'refreshClTokenSuccess';
+    const INITIATE_GET_TOKEN               = 'initiateGetToken';
+    const INITIATE_GET_TOKEN_SUCCESS       = 'initiateGetTokenSuccess';
+    const INITIATE_GET_TOKEN_FAILURE       = 'initiateGetTokenFailure';
 
-    const DEREGISTER                        = 'deregister';
-    const DEREGISTER_SUCCESS                = 'deregisterSuccess';
+    const GET_TOKEN                        = 'getToken';
+    const GET_TOKEN_SUCCESS                = 'getTokenSuccess';
+    const GET_TOKEN_FAILURE                = 'getTokenFailure';
+
+    const DEREGISTER                       = 'deregister';
+    const DEREGISTER_SUCCESS               = 'deregisterSuccess';
+    const DEREGISTER_FAILURE               = 'deregisterFailure';
+
+    protected $actionToRoute = [
+        self::INITIATE_VERIFICATION            => Requests::P2P_CUSTOMER_VERIFICATION,
+        self::INITIATE_VERIFICATION_SUCCESS    => Requests::P2P_CUSTOMER_VERIFICATION,
+
+        self::VERIFICATION                     => Requests::P2P_CUSTOMER_VERIFICATION,
+        self::VERIFICATION_SUCCESS             => Requests::P2P_CUSTOMER_VERIFICATION,
+
+        self::INITIATE_GET_TOKEN               => Requests::P2P_CUSTOMER_GET_TOKEN,
+        self::INITIATE_GET_TOKEN_SUCCESS       => Requests::P2P_CUSTOMER_GET_TOKEN,
+
+        self::GET_TOKEN                        => Requests::P2P_CUSTOMER_GET_TOKEN,
+        self::GET_TOKEN_SUCCESS                => Requests::P2P_CUSTOMER_GET_TOKEN,
+    ];
 }

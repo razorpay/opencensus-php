@@ -46,6 +46,10 @@ class Validator extends Base\Validator
         Entity::DISCOUNT,
     ];
 
+    protected static $notesRules = [
+        Entity::NOTES => 'sometimes|notes'
+    ];
+
     protected function validateAmount($input)
     {
         $amount = $input['amount'];
@@ -339,7 +343,7 @@ class Validator extends Base\Validator
         switch ($method)
         {
             case Payment\Method::UPI:
-                $tpvBanks = Netbanking::getSupportedBanks();
+                $tpvBanks = Payment\Processor\Upi::getAllUpiBanks();
                 break;
 
             case Payment\Method::NETBANKING:

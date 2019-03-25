@@ -706,13 +706,13 @@ return [
             'method'  => 'PUT',
             'url'     => '/config/keys',
             'content' => [
-                'terminal_selection_log_verbose'        => '1',
-                'pricing_rule_selection_log_verbose'    => '1',
+                'config:terminal_selection_log_verbose'        => '1',
+                'config:pricing_rule_selection_log_verbose'    => '1',
             ],
         ],
         'response' => [
             [
-                'key'       => 'terminal_selection_log_verbose',
+                'key'       => 'config:terminal_selection_log_verbose',
                 'new_value' => '1',
             ],
         ],
@@ -724,8 +724,8 @@ return [
             'url'     => '/config/keys',
         ],
         'response' => [
-            'terminal_selection_log_verbose'        => '1',
-            'pricing_rule_selection_log_verbose'    => '1',
+            'config:terminal_selection_log_verbose'        => '1',
+            'config:pricing_rule_selection_log_verbose'    => '1',
         ],
     ],
 

@@ -32,7 +32,7 @@ class TemporaryStartSession
 
                     try
                     {
-                        $sessionData = $app['cache']->get($temporarySessionId);
+                        $sessionData = $app['cache']->get('temp_session:' . $temporarySessionId);
                     }
                     catch (\Throwable $e)
                     {

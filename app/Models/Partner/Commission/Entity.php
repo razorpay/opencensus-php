@@ -44,6 +44,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::FEE,
         self::TAX,
+        self::TYPE,
         self::DEBIT,
         self::NOTES,
         self::CREDIT,
@@ -65,6 +66,7 @@ class Entity extends Base\PublicEntity
         self::SOURCE_TYPE,
         self::CREATED_AT,
         self::MERCHANT,
+        self::SOURCE,
     ];
 
     protected $publicSetters = [
@@ -142,5 +144,20 @@ class Entity extends Base\PublicEntity
     public function getStatus(): string
     {
         return $this->getAttribute(self::STATUS);
+    }
+
+    public function getFee(): int
+    {
+        return $this->getAttribute(self::FEE);
+    }
+
+    public function getTax(): int
+    {
+        return $this->getAttribute(self::TAX);
+    }
+
+    public function getType(): string
+    {
+        return $this->getAttribute(self::TYPE);
     }
 }

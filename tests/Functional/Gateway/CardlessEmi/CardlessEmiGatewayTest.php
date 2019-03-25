@@ -35,9 +35,9 @@ class CardlessEmiGatewayTest extends TestCase
 
         $this->checkAccount($data);
 
-        $emiPlans = $this->app['cache']->get(sprintf('emi_plans_EARLYSALARY_%s', $contact . '_10000000000000'), 0);
+        $emiPlans = $this->app['cache']->get(sprintf('gateway:emi_plans_EARLYSALARY_%s', $contact . '_10000000000000'), 0);
 
-        $loanUrl = $this->app['cache']->get(sprintf('loan_url_EARLYSALARY_%s', $contact . '_10000000000000'), 0);
+        $loanUrl = $this->app['cache']->get(sprintf('gateway:loan_url_EARLYSALARY_%s', $contact . '_10000000000000'), 0);
 
         $this->assertTestResponse($emiPlans, 'testEmiPlans');
 
@@ -87,7 +87,7 @@ class CardlessEmiGatewayTest extends TestCase
             function()
             {
                 $payment = $this->getDefaultCardlessEmiPaymentArray(self::PROVIDER);
-
+                $payment['contact'] = '+91' . $payment['contact'];
                 $this->doAuthPayment($payment);
             });
     }
@@ -95,6 +95,8 @@ class CardlessEmiGatewayTest extends TestCase
     public function testPayment()
     {
         $payment = $this->getDefaultCardlessEmiPaymentArray(self::PROVIDER);
+
+        $payment['contact'] = '+91' . $payment['contact'];
 
         $this->setOtp('123456');
 
@@ -126,15 +128,19 @@ class CardlessEmiGatewayTest extends TestCase
         $this->runRequestResponseFlow($data,
             function()
             {
-            $payment = $this->getDefaultCardlessEmiPaymentArray(self::PROVIDER);
+                $payment = $this->getDefaultCardlessEmiPaymentArray(self::PROVIDER);
 
-             $this->doAuthPayment($payment);
+                $payment['contact'] = '+91' . $payment['contact'];
+
+                $this->doAuthPayment($payment);
             });
     }
 
     public function testPaymentVerify()
     {
         $payment = $this->getDefaultCardlessEmiPaymentArray(self::PROVIDER);
+
+        $payment['contact'] = '+91' . $payment['contact'];
 
         $authPayment = $this->doAuthPayment($payment);
 
@@ -165,6 +171,8 @@ class CardlessEmiGatewayTest extends TestCase
             {
                 $payment = $this->getDefaultCardlessEmiPaymentArray(self::PROVIDER);
 
+                $payment['contact'] = '+91' . $payment['contact'];
+
                 $authPayment = $this->doAuthPayment($payment);
 
                 $this->verifyPayment($authPayment['razorpay_payment_id']);
@@ -178,6 +186,7 @@ class CardlessEmiGatewayTest extends TestCase
     public function testCapturePayment()
     {
         $payment = $this->getDefaultCardlessEmiPaymentArray(self::PROVIDER);
+        $payment['contact'] = '+91' . $payment['contact'];
 
         $this->doAuthPayment($payment);
 
@@ -219,6 +228,7 @@ class CardlessEmiGatewayTest extends TestCase
             function()
             {
                 $payment = $this->getDefaultCardlessEmiPaymentArray(self::PROVIDER);
+                $payment['contact'] = '+91' . $payment['contact'];
 
                 $this->doAuthPayment($payment);
 
@@ -231,6 +241,7 @@ class CardlessEmiGatewayTest extends TestCase
     public function testRefundPayment()
     {
         $payment = $this->getDefaultCardlessEmiPaymentArray(self::PROVIDER);
+        $payment['contact'] = '+91' . $payment['contact'];
 
         $this->doAuthPayment($payment);
 
@@ -265,6 +276,7 @@ class CardlessEmiGatewayTest extends TestCase
         });
 
         $payment = $this->getDefaultCardlessEmiPaymentArray(self::PROVIDER);
+        $payment['contact'] = '+91' . $payment['contact'];
 
         $this->doAuthPayment($payment);
 
@@ -300,6 +312,7 @@ class CardlessEmiGatewayTest extends TestCase
             function()
             {
                 $payment = $this->getDefaultCardlessEmiPaymentArray(self::PROVIDER);
+                $payment['contact'] = '+91' . $payment['contact'];
 
                 $this->doAuthPayment($payment);
             });

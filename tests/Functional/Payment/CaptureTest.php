@@ -1294,6 +1294,66 @@ class CaptureTest extends TestCase
         $this->assertEquals($transaction['fee_model'], 'postpaid');
     }
 
+    public function testTransactionOnCaptureForIssuerBasedPricing()
+    {
+        $this->fixtures->create('pricing',[
+            'id'                  => '1nvp2XPMmaRLxd',
+            'plan_id'             => '1hDYlICobzOCYt',
+            'plan_name'           => 'testDefaultPlan',
+            'feature'             => 'payment',
+            'payment_method'      => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'percent_rate'        => 0,
+            'fixed_rate'          => 200,
+            'international'       => 0,
+            'org_id'              => '100000razorpay',
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'HDFC',
+            'network' => 'MasterCard',
+            'type'    => 'credit',
+            'flows'   => [
+                '3ds' => '1',
+                'ivr' => '1',
+                'otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+
+        $this->doAuthAndCapturePayment($payment);
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(200, $transaction['fee']);
+
+        $this->fixtures->create('pricing',[
+            'id'                  => '1nvp2XPMmaRLxc',
+            'plan_id'             => '1hDYlICobzOCYt',
+            'plan_name'           => 'testDefaultPlan',
+            'feature'             => 'payment',
+            'payment_method'      => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network'     => null,
+            'payment_issuer'      => 'HDFC',
+            'percent_rate'        => 0,
+            'fixed_rate'          => 500,
+            'international'       => 0,
+            'org_id'              => '100000razorpay',
+        ]);
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(500, $transaction['fee']);
+    }
+
     public function startBulkTest(array $payments)
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

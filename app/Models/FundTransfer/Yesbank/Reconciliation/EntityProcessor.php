@@ -3,6 +3,7 @@
 namespace RZP\Models\FundTransfer\Yesbank\Reconciliation;
 
 use RZP\Constants\Entity;
+use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Transaction\ReconciledType;
 use RZP\Models\FundTransfer\Base\Reconciliation\EntityProcessor as BaseEntityProcessor;
 
@@ -12,7 +13,7 @@ class EntityProcessor extends BaseEntityProcessor
     {
         $bankStatusCode = $this->fta->getBankStatusCode();
 
-        if ($this->fta->hasVpa() === true)
+        if ($this->fta->shouldUseGateway() === true)
         {
             $merchantFailures = GatewayStatus::getMerchantFailures();
         }

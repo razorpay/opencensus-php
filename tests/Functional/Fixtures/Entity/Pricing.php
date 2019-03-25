@@ -7,7 +7,8 @@ use RZP\Tests\Functional\Partner\Constants;
 
 class Pricing extends Base
 {
-    const DEFAULT_PRICING_PLAN_ID = '1hDYlICobzOCYt';
+    const DEFAULT_PRICING_PLAN_ID    = '1hDYlICobzOCYt';
+    const DEFAULT_COMMISSION_PLAN_ID = 'C6rNP3xJcsMXQY';
 
     public function createDefaultPlan()
     {
@@ -573,6 +574,36 @@ class Pricing extends Base
         ];
 
         $this->addPricingRulesToDb([$row]);
+    }
+
+    public function createDefaultCommissionPlan()
+    {
+        $rows = [
+            [
+                'id'             => 'C6rNP4gZXcnZWM',
+                'plan_id'        => self::DEFAULT_COMMISSION_PLAN_ID,
+                'plan_name'      => 'CommDefaultPlan',
+                'feature'        => 'payment',
+                'type'           => 'commission',
+                'payment_method' => 'card',
+                'percent_rate'   => 20, // 0.2%
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+            ],
+            [
+                'id'             => 'C6rNP7QE0mIzpW',
+                'plan_id'        => self::DEFAULT_COMMISSION_PLAN_ID,
+                'plan_name'      => 'CommDefaultPlan',
+                'feature'        => 'payment',
+                'type'           => 'commission',
+                'payment_method' => 'netbanking',
+                'percent_rate'   => 20,
+                'fixed_rate'     => 0,
+                'org_id'         => '100000razorpay',
+            ],
+        ];
+
+        $this->addPricingRulesToDb($rows);
     }
 
     public function createPricingPlanForDifferentOrg($orgId)

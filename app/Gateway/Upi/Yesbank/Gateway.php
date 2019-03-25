@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use Illuminate\Support\Str;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Upi\Mindgate;
 use RZP\Gateway\Upi\Base\Entity;
@@ -123,6 +124,15 @@ class Gateway extends Mindgate\Gateway
 
             $request = $this->getPayoutRequest($input);
 
+            $logRequest = $request;
+
+            if (Str::startsWith($logRequest[Fields::PAYEE_VPA], 'CCPAY') === true)
+            {
+                $logRequest[Fields::PAYEE_VPA] = mask_except_last4($logRequest[Fields::PAYEE_VPA], 'x');
+            }
+
+            $maskedRequest = implode('|', $logRequest);
+
             $content = implode('|', $request);
 
             $encryptedContent = $this->encryptRequest($content);
@@ -137,7 +147,7 @@ class Gateway extends Mindgate\Gateway
             $this->traceGatewayPaymentRequest(
                 [
                     'request'           => $request,
-                    'decrypted_content' => $content
+                    'decrypted_content' => $maskedRequest
                 ],
                 $input,
                 TraceCode::VPA_PAYOUT_REQUEST
@@ -354,8 +364,8 @@ class Gateway extends Mindgate\Gateway
             Fields::PAYEE_NAME          => 'Razorpay Customer',
             Fields::PAYEE_ADDRESS       => '',
             Fields::PAYEE_EMAIL         => '',
-            Fields::PAYER_ACCNO         => '',
-            Fields::PAYER_IFSC          => '',
+            Fields::PAYER_ACCNO         => $input[Fields::GATEWAY_INPUT][Fields::ACCOUNT_NUMBER] ?? '',
+            Fields::PAYER_IFSC          => $input[Fields::GATEWAY_INPUT][Fields::IFSC_CODE] ?? '',
             Fields::PAYER_MB_NO         => '',
             Fields::PAYYE_VPA_TYPE      => Type::VPA,
             Fields::ADD1                => '',

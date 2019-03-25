@@ -40,4 +40,13 @@ class OrderController extends Controller
 
         return ApiResponse::json($payments);
     }
+
+    public function editNotes($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->editNotes($id, $input);
+
+        return ApiResponse::json($data);
+    }
 }

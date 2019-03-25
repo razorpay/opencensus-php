@@ -233,12 +233,12 @@ class Base extends BaseProcessor
 
     protected function getEmiAmount($amount, $annualRate, $tenureInMonths)
     {
-        // $annualRate is rate/100, say .14
-        // $monthlyRate is a/12 i.e should be treated as .14/12
+        // $annualRate is a
+        // $monthlyRate is a/12 i.e should be treated as 13/1200
         // E = P x r x (1+r)^n/((1+r)^n – 1)
         // tenure in months
 
-        $monthlyRate = $annualRate / 12;
+        $monthlyRate = $annualRate / 1200;
 
         $expression = pow((1 + $monthlyRate), $tenureInMonths);
 
@@ -246,6 +246,6 @@ class Base extends BaseProcessor
 
         $den = $expression - 1;
 
-        return (floor($num / $den) / 100);
+        return (floor($num / $den));
     }
 }

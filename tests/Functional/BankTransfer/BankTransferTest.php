@@ -1146,6 +1146,8 @@ class BankTransferTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $expectedResponse = [
+            'id'                 => $bankTransfer['id'],
+            'entity'             => 'bank_transfer',
             'payment_id'         => $payment['id'],
             'virtual_account_id' => $virtualAccount['id'],
             'amount'             => 5000000,
@@ -1270,7 +1272,7 @@ class BankTransferTest extends TestCase
             'method'  => 'PUT',
             'url'     => '/config/keys',
             'content' => [
-                'block_bank_transfers_for_crypto' => '1',
+                'config:block_bank_transfers_for_crypto' => '1',
             ],
         ]);
 

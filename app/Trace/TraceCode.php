@@ -281,6 +281,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BULK_SCROOGE_REFUND_VERIFY_QUEUE_SUCCESS      = 'BULK_SCROOGE_REFUND_VERIFY_QUEUE_SUCCESS';
     const BULK_SCROOGE_REFUND_VERIFY_JOB_FAILED         = 'BULK_SCROOGE_REFUND_VERIFY_JOB_FAILED';
     const BULK_SCROOGE_REFUND_VERIFY_JOB_DISPATCHED     = 'BULK_SCROOGE_REFUND_VERIFY_JOB_DISPATCHED';
+    const BULK_REFUND_VERIFY_REQUEST                    = 'BULK_REFUND_VERIFY_REQUEST';
 
     const REQUESTS_JOB_REQUEST                          = 'REQUESTS_JOB_REQUEST';
     const REQUESTS_JOB_RESPONSE                         = 'REQUESTS_JOB_RESPONSE';
@@ -322,8 +323,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINAL_USED_BEFORE                          = 'TERMINAL_USED_BEFORE';
     const TERMINAL_BANK_FILTER_DIFF                     = 'TERMINAL_BANK_FILTER_DIFF';
 
+    // Alert trace code for when a request gets actually throttled.
     const THROTTLE_REQUEST_THROTTLED                    = 'THROTTLE_REQUEST_THROTTLED';
+    // Info trace code for when a request would have been throttled but didn't because it is mocked.
+    const THROTTLE_REQUEST_THROTTLED_MOCK               = 'THROTTLE_REQUEST_THROTTLED_MOCK';
+    // Alert trace code when a request is temporarily blocked.
     const THROTTLE_REQUEST_BLOCKED                      = 'THROTTLE_REQUEST_BLOCKED';
+    // Alert trace code when redis settings is missing for throttle, continues flow with code defaults.
     const THROTTLE_SETTINGS_MISSING                     = 'THROTTLE_SETTINGS_MISSING';
 
     const BANK_TRANSFER_TERMINAL_COUNT_GREATER_THEN_ONE = 'BANK_TRANSFER_TERMINAL_COUNT_GREATER_THEN_ONE';
@@ -506,6 +512,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BAD_REQUEST_API_SECRET_NOT_PROVIDED           = 'BAD_REQUEST_API_SECRET_NOT_PROVIDED';
     const BAD_REQUEST_INVALID_CLIENT_KEY                = 'BAD_REQUEST_INVALID_CLIENT_KEY';
     const BAD_REQUEST_INVALID_ACCOUNT_HEADER            = 'BAD_REQUEST_INVALID_ACCOUNT_HEADER';
+    const UNSUPPORTED_CARD_TYPE_FOR_TRANSFER            = 'UNSUPPORTED_CARD_TYPE_FOR_TRANSFER';
 
     const RUNTIME_ERROR                                 = 'RUNTIME_ERROR';
 
@@ -676,6 +683,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_SOAP_ERROR                        = 'GATEWAY_SOAP_ERROR';
     const GATEWAY_SOAP_FAULT                        = 'GATEWAY_SOAP_FAULT';
     const GATEWAY_REQUEST_TIMEOUT                   = 'GATEWAY_REQUEST_TIMEOUT';
+    const GATEWAY_REQUEST_ERROR                     = 'GATEWAY_REQUEST_ERROR';
     const GATEWAY_INVALID_PARES_SIGNATURE_ERROR     = 'GATEWAY_INVALID_PARES_SIGNATURE_ERROR';
     const GATEWAY_RUPAY_CALLBACK                    = 'GATEWAY_RUPAY_CALLBACK';
     const GATEWAY_HDFC_CALLBACK_EMPTY               = 'GATEWAY_HDFC_CALLBACK_EMPTY';
@@ -1315,10 +1323,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_ACCOUNT_DELETE_REQUEST                   = 'FUND_ACCOUNT_DELETE_REQUEST';
     // Trace codes for Fund Account Validation
     const FUND_ACCOUNT_VALIDATION_REQUEST               = 'FUND_ACCOUNT_VALIDATION_REQUEST';
+    const FUND_ACCOUNT_VALIDATION_RETRY_REQUEST         = 'FUND_ACCOUNT_VALIDATION_RETRY_REQUEST';
+    const FUND_ACCOUNT_VALIDATION_RETRY_FAILED          = 'FUND_ACCOUNT_VALIDATION_RETRY_FAILED';
     const BENEFICIARY_NAME_NOT_PRESENT                  = 'BENEFICIARY_NAME_NOT_PRESENT';
     const FUND_ACCOUNT_VALIDATION_CREATE_TRANSACTION    = 'FUND_ACCOUNT_VALIDATION_CREATE_TRANSACTION';
     const FUND_ACCOUNT_VALIDATION_TRANSACTION_FAILED    = 'FUND_ACCOUNT_VALIDATION_TRANSACTION_FAILED';
     const FUND_TRANSFER_ATTEMPT_STILL_INITIATED         = 'FUND_TRANSFER_ATTEMPT_STILL_INITIATED';
+    const FUND_ACCOUNT_VALIDATION_FTA_CREATION_FAILED   = 'FUND_ACCOUNT_VALIDATION_FTA_CREATION_FAILED';
     const FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR  = 'FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR';
 
     // Trace codes for Post FTA Processing
@@ -1416,8 +1427,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const HEARTBEAT_CHECK_FAILED                        = 'HEARTBEAT_CHECK_FAILED';
     const HEARTBEAT_CHECK_COMPLETED                     = 'HEARTBEAT_CHECK_COMPLETED';
     const HEARTBEAT_CHECK_TIME_CONVERSION               = 'HEARTBEAT_CHECK_TIME_CONVERSION';
-    const HEARTBEAT_DATABASE_ROUTING                    = 'HEARTBEAT_DATABASE_ROUTING';
-    const WEIGHTED_DATABASE_ROUTING                     = 'WEIGHTED_DATABASE_ROUTING';
     const DB_DATA_INTEGRITY_ERROR                       = 'DB_DATA_INTEGRITY_ERROR';
     const DB_PIVOT_TABLE_ASSOCIATION_ERROR              = 'DB_PIVOT_TABLE_ASSOCIATION_ERROR';
     const DB_READ_CONN_SETUP_ERROR                      = 'DB_READ_CONN_SETUP_ERROR';
@@ -1606,9 +1615,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_RECONCILIATION_JOB_RELEASED     = 'FTA_RECONCILIATION_JOB_RELEASED';
 
     // Commission trace codes
+    const COMMISSION_SAVED                              = 'COMMISSION_SAVED';
     const COMMISSION_LOGGED                             = 'COMMISSION_LOGGED';
     const COMMISSION_CREATED                            = 'COMMISSION_CREATED';
-    const COMMISSION_COMPUTED                           = 'COMMISSION_COMPUTED';
     const COMMISSION_NOT_ENABLED                        = 'COMMISSION_NOT_ENABLED';
     const COMMISSION_NOT_DEFINED                        = 'COMMISSION_NOT_DEFINED';
     const COMMISSION_COMPUTED_ZERO                      = 'COMMISSION_COMPUTED_ZERO';
@@ -1621,6 +1630,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const COMMISSION_NOT_APPLICABLE_INVALID_FEE_MODEL   = 'COMMISSION_NOT_APPLICABLE_INVALID_FEE_MODEL';
     const COMMISSION_NOT_APPLICABLE_INVALID_FEE_BEARER  = 'COMMISSION_NOT_APPLICABLE_INVALID_FEE_BEARER';
     const COMMISSION_NOT_APPLICABLE_CONFIG_NOT_DEFINED  = 'COMMISSION_NOT_APPLICABLE_CONFIG_NOT_DEFINED';
+    const COMMISSION_COMPUTED_GREATER_THAN_MERCHANT_FEE = 'COMMISSION_COMPUTED_GREATER_THAN_MERCHANT_FEE';
 
     // redirect to authorize trace code
     const PAYMENT_CREATED_IN_REDIRECT_TO_AUTHORIZE_FLOW  = 'PAYMENT_CREATED_IN_REDIRECT_TO_AUTHORIZE_FLOW';
@@ -1690,6 +1700,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VAULT_TOKEN_ERROR                   = 'VAULT_TOKEN_ERROR';
     const VAULT_TOKEN_CREATE_INIT             = 'VAULT_TOKEN_CREATE_INIT';
     const VAULT_TOKEN_CREATE_COMPLETE         = 'VAULT_TOKEN_CREATE_COMPLETE';
+
+    const PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC     = 'PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC';
+    // P2P Traces
+    const P2P_REQUEST                                   = 'P2P_REQUEST';
+    const P2P_RESPONSE                                  = 'P2P_RESPONSE';
+    const P2P_GATEWAY_REQUEST                           = 'P2P_GATEWAY_REQUEST';
+    const P2P_GATEWAY_RESPONSE                          = 'P2P_GATEWAY_RESPONSE';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
@@ -1856,7 +1873,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::ORG_MAILER_BLOCKED                        => 'Email blocked for given org',
         self::NO_MERCHANT_CONTEXT_MAIL                  => 'The mail flow does not have merchant in auth context',
 
-        self::FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR  => 'Fund Account Validation Failed due to critical reasons. We should retry.'
+        self::FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR  => 'Fund Account Validation Failed due to critical reasons. We should retry.',
+        self::FUND_ACCOUNT_VALIDATION_FTA_CREATION_FAILED         => 'Failed to create Fund Transfer Attempt for Fund Account Validation. We should retry.'
     ];
 
     /**

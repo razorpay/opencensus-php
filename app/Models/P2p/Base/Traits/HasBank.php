@@ -21,16 +21,16 @@ trait HasBank
 
     public function scopeBank(BuilderEx $query, Bank\Entity $handle)
     {
-        return $query->where(self::BANK, $handle->getCode());
+        return $query->where(self::BANK_ID, $handle->getCode());
     }
 
-    public function parentBank()
+    public function bank()
     {
-        return $this->belongsTo(Bank\Entity::class, self::BANK);
+        return $this->belongsTo(Bank\Entity::class, self::BANK_ID);
     }
 
     public function setPublicBankNameAttribute(array & $array)
     {
-        $array[self::BANK_NAME] = $this->parentBank->getName();
+        $array[self::BANK_NAME] = $this->bank->getName();
     }
 }

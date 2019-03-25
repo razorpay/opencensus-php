@@ -3,7 +3,10 @@
 namespace RZP\Models\FundAccount\Validation\Processor;
 
 use RZP\Exception;
+use Monolog\Logger;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Constants\Entity as Table;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundAccount\Validation\Status;
 use RZP\Models\FundAccount\Validation\Constants;
@@ -18,6 +21,36 @@ class BankAccount extends Base
         parent::__construct($validation);
     }
 
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public function validateRetry()
+    {
+        if ($this->validation->getStatus() !== Status::CREATED)
+        {
+            $e = [
+                'validation'    => $this->validation->getId(),
+                'status'        => $this->validation->getStatus()
+            ];
+
+            throw new Exception\BadRequestException(
+                ErrorCode::FUND_ACCOUNT_VALIDATION_ALREADY_PROCESSED, null, $e);
+        }
+
+        $notFailedFTAs = $this->repo->fund_transfer_attempt->getAttemptBySourceIdAndNotFailed($this->validation->getId(), Table::FUND_ACCOUNT_VALIDATION);
+
+        if ($notFailedFTAs->count() !== 0)
+        {
+            $e = [
+                'validation'    => $this->validation->getId(),
+                'active_ftas'   => $notFailedFTAs->toArray(),
+            ];
+
+            throw new Exception\BadRequestException(
+                ErrorCode::FUND_ACCOUNT_VALIDATION_HAS_ACTIVE_FTA, null, $e);
+        }
+    }
+
     public function getAccount(): BankAccountEntity
     {
         return $this->account;
@@ -25,9 +58,33 @@ class BankAccount extends Base
 
     public function preProcessValidation()
     {
-        $this->repo->assertTransactionActive();
+        try
+        {
+            $this->createFundTransferAttempt();
+        }
+        catch (\Throwable $e)
+        {
+            // If for any reason we failed to create fund account validation.
+            // We should not revert the created Fund Account Validation.
+            // Rather we should retry creating FTA.
 
-        $this->createFundTransferAttempt();
+            $traceArray = [
+                'fund_account_validation_id'    => $this->validation->getId()
+            ];
+
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::FUND_ACCOUNT_VALIDATION_FTA_CREATION_FAILED,
+                $traceArray
+            );
+
+            $this->slack->queue(
+                TraceCode::FUND_ACCOUNT_VALIDATION_FTA_CREATION_FAILED,
+                $traceArray,
+                Constants::slackSettings()
+            );
+        }
     }
 
     /**
@@ -205,6 +262,5 @@ class BankAccount extends Base
             $traceArray,
             Constants::slackSettings()
         );
-
     }
 }

@@ -435,6 +435,8 @@ class MerchantTest extends TestCase
 
     public function testEditMerchantEmail()
     {
+        config(['app.query_cache.mock' => false]);
+
         $content = $this->createMerchant();
 
         $this->fixtures->user->createUserForMerchant($content['id'], ['email' => $content['email']]);
@@ -463,6 +465,8 @@ class MerchantTest extends TestCase
 
     public function testEditMerchantEmailUserExists()
     {
+        config(['app.query_cache.mock' => false]);
+
         $content = $this->createMerchant();
 
         $this->fixtures->user->createUserForMerchant($content['id'], ['email' => $content['email']]);

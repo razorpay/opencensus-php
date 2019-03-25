@@ -10,10 +10,13 @@ class ErrorClass
 
     const SERVER = 'SERVER';
 
+    const NODAL = 'NODAL';
+
     // List of all critical classes
     protected static $criticalErrorClasses = [
         self::GATEWAY,
-        self::SERVER
+        self::SERVER,
+        self::NODAL,
     ];
 
     public static function isCritical($errorClass)

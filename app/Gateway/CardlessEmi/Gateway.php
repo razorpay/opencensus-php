@@ -21,9 +21,9 @@ class Gateway extends Base\Gateway
 
     protected $provider;
 
-    const EMI_PLAN_CACHE_KEY = 'emi_plans_%s';
+    const EMI_PLAN_CACHE_KEY = 'gateway:emi_plans_%s';
 
-    const LOAN_URL_CACHE_KEY = 'loan_url_%s';
+    const LOAN_URL_CACHE_KEY = 'gateway:loan_url_%s';
 
     protected $map = [
         ResponseFields::PROVIDER_PAYMENT_ID   => Entity::GATEWAY_REFERENCE_ID,

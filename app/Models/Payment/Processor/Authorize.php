@@ -1464,7 +1464,7 @@ trait Authorize
     {
         $this->setAuthAndAuthenticationGateway($payment, $gatewayInput);
 
-        $this->setPaymentRoutedThroughCpsIfApplicable($payment);
+        $this->setPaymentRoutedThroughCpsIfApplicable($payment, $gatewayInput);
 
         $this->repo->saveOrFail($payment);
 
@@ -1596,7 +1596,7 @@ trait Authorize
                     if (($payment->isRecurring() === false) or
                         ($payment->isRecurringTypeInitial() === true))
                     {
-                        $gateway = Payment\Gateway::MPI_BLADE;
+                        $gateway = Payment\Gateway::authorizationToAuthenticationGateway($payment->getGateway(), Payment\Gateway::MPI_BLADE);
                         $authType = '3ds';
 
                         if ($this->canRunIvrFlow($payment) === true)
@@ -2128,7 +2128,7 @@ trait Authorize
 
             $cacheKey = strtoupper($input['provider']) . '_' . $contact . '_' . $merchantId;
 
-            $cacheKey = sprintf('emi_plans_%s', $cacheKey);
+            $cacheKey = sprintf('gateway:emi_plans_%s', $cacheKey);
 
             $emiPlans = (array) $this->app['cache']->get($cacheKey, null);
 
@@ -2197,7 +2197,9 @@ trait Authorize
     protected function setPreferredAuthIfApplicable(Payment\Entity $payment)
     {
         if (($payment->isMethodCardOrEmi() === false) or
-            ($payment->getAuthType() !== null))
+            ($payment->getAuthType() !== null) or
+            ($payment->isSecondRecurring() === true) or
+            ($payment->isPushPaymentMethod() === true))
         {
             return;
         }
@@ -4227,7 +4229,7 @@ trait Authorize
                 // Also, the order of the checks matter here since the second
                 // condition covers a superset.
                 //
-                if (($payment->getGateway() === Payment\Gateway::HITACHI) and
+                if ((Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true) and
                     ($this->isAuthTypeOtp($payment) === true))
                 {
                     if ($this->canRunAxisExpressPay($payment) === true)
