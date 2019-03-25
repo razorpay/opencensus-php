@@ -1463,10 +1463,12 @@ return [
                 [
                     'plan_name'   => 'CommDefaultPlan',
                     'rules_count' => 2,
+                    'type'        => 'commission',
                 ],
                 [
                     'plan_name'   => 'TestPlan9',
                     'rules_count' => 1,
+                    'type'        => 'commission',
                 ],
             ],
         ],
