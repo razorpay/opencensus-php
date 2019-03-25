@@ -1016,6 +1016,7 @@ class Gateway
         self::UPI_SBI,
         self::UPI_YESBANK,
         self::UPI_MINDGATE,
+        self::UPI_ICICI,
         self::BAJAJ,
     ];
 
