@@ -1457,28 +1457,63 @@ return [
         'response' => [
             'content' => [
                 [
+                    'plan_name'   => 'CommDefaultPlan',
+                    'rules_count' => 2,
+                    'type'        => 'commission',
+                ],
+                [
                     'plan_name'   => 'Banking default plan',
                     'rules_count' => 6,
+                    'type'        => 'pricing',
                 ],
                 [
                     'plan_name'   => 'testDefaultEmiPlan',
                     'rules_count' => 1,
+                    'type'        => 'pricing',
                 ],
                 [
                     'plan_name'   => 'testDefaultQrPlan',
                     'rules_count' => 2,
+                    'type'        => 'pricing',
                 ],
                 [
                     'plan_name'   => 'TestPlan2',
                     'rules_count' => 4,
+                    'type'        => 'pricing',
                 ],
                 [
                     'plan_name'   => 'TestPlan1',
                     'rules_count' => 2,
+                    'type'        => 'pricing',
                 ],
                 [
                     'plan_name'   => 'testDefaultPlan',
                     'rules_count' => 20,
+                    'type'        => 'pricing',
+                ],
+            ],
+        ],
+    ],
+
+    'testGetMerchantPlansWithFilters' => [
+        'request' => [
+            'url' => '/pricing/merchants',
+            'method' => 'GET',
+            'content' => [
+                'type' => 'commission'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'plan_name'   => 'CommDefaultPlan',
+                    'rules_count' => 2,
+                    'type'        => 'commission',
+                ],
+                [
+                    'plan_name'   => 'TestPlan9',
+                    'rules_count' => 1,
+                    'type'        => 'commission',
                 ],
             ],
         ],
@@ -1492,28 +1527,39 @@ return [
         'response' => [
             'content' => [
                 [
+                    'plan_name'   => 'CommDefaultPlan',
+                    'rules_count' => 2,
+                    'type'        => 'commission',
+                ],
+                [
                     'plan_name'   => 'Banking default plan',
                     'rules_count' => 6,
+                    'type'        => 'pricing',
                 ],
                 [
                     'plan_name'   => 'testDefaultEmiPlan',
                     'rules_count' => 1,
+                    'type'        => 'pricing',
                 ],
                 [
                     'plan_name'   => 'testDefaultQrPlan',
                     'rules_count' => 2,
+                    'type'        => 'pricing',
                 ],
                 [
                     'plan_name'   => 'TestPlan2',
                     'rules_count' => 4,
+                    'type'        => 'pricing',
                 ],
                 [
                     'plan_name'   => 'TestPlan1',
                     'rules_count' => 1,
+                    'type'        => 'pricing',
                 ],
                 [
                     'plan_name'   => 'testDefaultPlan',
                     'rules_count' => 20,
+                    'type'        => 'pricing',
                 ],
             ],
         ],

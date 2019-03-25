@@ -509,6 +509,17 @@ class PricingTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetMerchantPlansWithFilters()
+    {
+        $this->createPricingPlan();
+
+        $this->createCommissionPlan();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     /**
      * RZP admin has access to pricing plans of all orgs due to cross route feature enabled.
      */
@@ -941,7 +952,33 @@ class PricingTest extends TestCase
             'payment_issuer'      => 'HDFC',
             'percent_rate'        => 1000,
             'fixed_rate'          => 0,
-            'org_id'              => '100000razorpay'
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+        ];
+
+        $pricingPlan = array_merge($defaultPricingPlan, $pricingPlan);
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $plan = $plan->toArray();
+
+        $plan['id'] = $plan['plan_id'];
+
+        return $plan;
+    }
+
+    protected function createCommissionPlan($pricingPlan = [])
+    {
+        $defaultPricingPlan = [
+            'plan_name'           => 'TestPlan9',
+            'payment_method'      => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network'     => 'DICL',
+            'payment_issuer'      => 'HDFC',
+            'percent_rate'        => 1000,
+            'fixed_rate'          => 0,
+            'org_id'              => '100000razorpay',
+            'type'                => 'commission',
         ];
 
         $pricingPlan = array_merge($defaultPricingPlan, $pricingPlan);
