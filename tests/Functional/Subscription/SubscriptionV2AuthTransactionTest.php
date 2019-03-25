@@ -72,6 +72,8 @@ class SubscriptionV2AuthTransactionTest extends TestCase
 
         Queue::fake();
 
+        $this->mockSession();
+
         $response = $this->doAuthPayment($paymentRequest);
 
         $actualSignature = $response['razorpay_signature'];
@@ -127,6 +129,8 @@ class SubscriptionV2AuthTransactionTest extends TestCase
 
         $this->registerMockedClient($requestMock);
 
+        $this->mockSession();
+
         $this->doAuthPayment($paymentRequest);
 
         $invoice = $this->getDbLastEntityPublic('invoice');
@@ -166,6 +170,8 @@ class SubscriptionV2AuthTransactionTest extends TestCase
         $requestMock->expects($this->exactly(2))->method('request')->will($this->returnValue($mockSuccessResponse));
 
         $this->registerMockedClient($requestMock);
+
+        $this->mockSession();
 
         $this->doAuthPayment($paymentRequest);
 
@@ -212,6 +218,8 @@ class SubscriptionV2AuthTransactionTest extends TestCase
 
         $this->registerMockedClient($requestMock);
 
+        $this->mockSession();
+
         $this->doAuthPayment($paymentRequest);
 
         $invoice = $this->getLastEntity('invoice', true);
@@ -257,6 +265,8 @@ class SubscriptionV2AuthTransactionTest extends TestCase
         $this->registerMockedClient($requestMock);
 
         // Basically, it should not throw any exception even if recurring flag is not set
+        $this->mockSession();
+
         $this->doAuthPayment($paymentRequest);
     }
 
@@ -288,6 +298,8 @@ class SubscriptionV2AuthTransactionTest extends TestCase
 
         $this->registerMockedClient($requestMock);
 
+        $this->mockSession();
+
         $this->makeRequestAndCatchException(function () use ($paymentRequest)
         {
             $this->doAuthPayment($paymentRequest);
@@ -316,6 +328,8 @@ class SubscriptionV2AuthTransactionTest extends TestCase
         $subscription = $this->getDbLastEntity('subscription');
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription->toArrayPublic());
+
+        $this->mockSession();
 
         $this->makeRequestAndCatchException(function () use ($paymentRequest)
         {
@@ -358,6 +372,8 @@ class SubscriptionV2AuthTransactionTest extends TestCase
         $subscription = $this->getDbLastEntity('subscription');
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription->toArrayPublic());
+
+        $this->mockSession();
 
         $this->makeRequestAndCatchException(function () use ($paymentRequest)
         {
