@@ -112,7 +112,7 @@ class CacheEventListener
 
     protected function getQueryCacheDimensions()
     {
-        if (preg_match('/^rememberable:(?<version>.*):(?<entity>.*):.*$/', $this->event->key, $matches) === 1)
+        if (preg_match('/^rememberable:(?<version>[^:]*):(?<entity>[^:]*).*$/', $this->event->key, $matches) === 1)
         {
             return array_only($matches, ['version', 'entity']);
         }

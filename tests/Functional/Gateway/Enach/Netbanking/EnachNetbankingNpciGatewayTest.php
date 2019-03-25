@@ -23,9 +23,6 @@ use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 
-
-
-
 class EnachNetbankingNpciGatewayTest extends TestCase
 {
     use FileHandlerTrait;

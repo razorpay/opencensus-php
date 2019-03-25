@@ -75,6 +75,7 @@ class ProviderCode
     const INDIANBK           = 'indianbk';
     const INDUS              = 'indus';
     const IOB                = 'iob';
+    const JIO                = 'jio';
     const JKB                = 'jkb';
     const JSB                = 'jsb';
     const KARB               = 'karb';
@@ -199,6 +200,7 @@ class ProviderCode
         self::INDIANBK           => IFSC::IDIB,
         self::INDUS              => IFSC::INDB,
         self::IOB                => IFSC::IOBA,
+        self::JIO                => 'NPCI',
         self::JSB                => IFSC::JSBP,
         self::JKB                => IFSC::JAKA,
         self::KARB               => IFSC::KARB,

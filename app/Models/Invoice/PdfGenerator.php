@@ -17,7 +17,7 @@ class PdfGenerator extends Base\Core
 {
     // Following is cache key to get which holds templates data
 
-    const INVOICE_PDF_TEMPLATES_KEY = 'invoices.pdf.templates';
+    const INVOICE_PDF_TEMPLATES_KEY = 'invoice:invoices.pdf.templates';
 
     const CACHE_DEFAULT_TTL         = 15; // In minutes
 

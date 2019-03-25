@@ -1472,8 +1472,8 @@ class Service extends Base\Service
         $key2 = $mid . '_scheduled_es_pricing';
 
         return [
-            $key1 => Cache::get($key1) ?? 0.3,
-            $key2 => Cache::get($key2) ?? 0.2
+            $key1 => Cache::get('espricing:' . $key1) ?? 0.3,
+            $key2 => Cache::get('espricing:' . $key2) ?? 0.2
         ];
     }
 

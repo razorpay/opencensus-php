@@ -12,7 +12,7 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    const EXCLUDED_PSPS = 'excluded_psps';
+    const EXCLUDED_PSPS = 'upi:excluded_psps';
 
     protected $customerService;
 

@@ -404,7 +404,7 @@ class Gateway extends Base\Gateway
     {
         $str = $str . '|' . $this->getSecret();
 
-        return str_pad((crc32($str)), 8, '0', STR_PAD_LEFT);
+        return (string)(crc32($str));
     }
 
     protected function getHashOfArray($content)

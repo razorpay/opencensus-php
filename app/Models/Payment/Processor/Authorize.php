@@ -2128,7 +2128,7 @@ trait Authorize
 
             $cacheKey = strtoupper($input['provider']) . '_' . $contact . '_' . $merchantId;
 
-            $cacheKey = sprintf('emi_plans_%s', $cacheKey);
+            $cacheKey = sprintf('gateway:emi_plans_%s', $cacheKey);
 
             $emiPlans = (array) $this->app['cache']->get($cacheKey, null);
 

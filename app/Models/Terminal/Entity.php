@@ -9,10 +9,12 @@ use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Method;
+use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\TpvType;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal\BankingType;
+use RZP\Models\Base\QueryCache\Cacheable;
 use RZP\Models\Payment\Processor\Netbanking;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Emi\Subvention as EmiSubvention;
@@ -20,6 +22,7 @@ use RZP\Models\Emi\Subvention as EmiSubvention;
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
+    use Cacheable;
 
     const ID                            = 'id';
     const MERCHANT_ID                   = 'merchant_id';
@@ -342,6 +345,11 @@ class Entity extends Base\PublicEntity
     public function isUsed()
     {
         return $this->getAttribute(self::USED);
+    }
+
+    public function getMerchantId(): string
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
     }
 
     public function getCategory()
@@ -1165,5 +1173,10 @@ class Entity extends Base\PublicEntity
         }
 
         return parent::toArrayAdmin();
+    }
+
+    public static function getCacheTag($merchantId)
+    {
+        return implode('_', [E::TERMINAL, $merchantId]);
     }
 }

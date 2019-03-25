@@ -1802,10 +1802,7 @@ class Entity extends Base\PublicEntity
             $data[IIN\Constants::OTP] = true;
         }
 
-        if ($this->isFeatureEnabled(Feature\Constants::CHARGE_AT_WILL) === true)
-        {
-            $data[IIN\Entity::RECURRING] = (new Card\Entity)->isRecurringSupportedOnIIN($this, $iin);
-        }
+        $data[IIN\Entity::RECURRING] = (new Card\Entity)->isRecurringSupportedOnIIN($this, $iin);
 
         return $data;
     }

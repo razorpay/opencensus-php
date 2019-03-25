@@ -144,17 +144,17 @@ class Verify extends Base\Core
     /**
      * Cache key prefix for storing gateway timeout values
      */
-    const GATEWAY_TIMEOUT_CACHE_KEY_PREFIX = 'verify_timeout_block';
+    const GATEWAY_TIMEOUT_CACHE_KEY_PREFIX = 'verify:verify_timeout_block';
 
     /**
      * Cache key prefix for storing gateway timeout values
      */
-    const GATEWAY_REQUEST_ERROR_CACHE_KEY_PREFIX = 'verify_request_error_block';
+    const GATEWAY_REQUEST_ERROR_CACHE_KEY_PREFIX = 'verify:verify_request_error_block';
 
     /**
      * Cache key used to store gateway block info in hash map
      */
-    const GATEWAY_BLOCK_CACHE_KEY = 'gateway_block_cache';
+    const GATEWAY_BLOCK_CACHE_KEY = 'verify:gateway_block_cache';
 
     /**
      * Constant to signify that Verify Bucket should be updated with next boundary value
@@ -327,6 +327,7 @@ class Verify extends Base\Core
             Result::TIMEOUT       => 0,
             Result::ERROR         => 0,
             Result::UNKNOWN       => 0,
+            Result::REQUEST_ERROR => 0,
         ];
 
         $notApplicable = $locked = 0;
@@ -574,6 +575,7 @@ class Verify extends Base\Core
             Result::TIMEOUT       => 0,
             Result::ERROR         => 0,
             Result::UNKNOWN       => 0,
+            Result::REQUEST_ERROR => 0,
         ];
 
         $notApplicable = 0;
@@ -893,6 +895,8 @@ class Verify extends Base\Core
         $key .= '_' . $gateway . '_' . $currentTimestampBucket;
 
         $requestErrorPaymentsCount = (int) $this->redis->incr($key);
+
+        $this->redis->expire($key, self::GATEWAY_TIMEOUT_BUCKET_INTERVAL);
 
         if ($requestErrorPaymentsCount >= $threshold)
         {

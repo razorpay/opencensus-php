@@ -3000,7 +3000,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         parent::verifyIdAndStripSign($id);
 
-        return 'upi.polling.' . $id . '.status';
+        return 'payment:upi.polling.' . $id . '.status';
     }
 
     public static function getCardlessEmiOnetimeTokenCacheKey(string $token): string

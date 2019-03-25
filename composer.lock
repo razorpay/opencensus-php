@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5024c0716e376f905650aa3fd972ddb3",
+    "content-hash": "ef5d30e4317fa659ef2d06bd0cb96ea7",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -5747,12 +5747,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/hodor.git",
-                "reference": "c66b4ef8d405c1816e838d898dbaf9051fc54b14"
+                "reference": "fa66e183387644faa4e7cbd9fa16d37242a66004"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/hodor/zipball/c66b4ef8d405c1816e838d898dbaf9051fc54b14",
-                "reference": "c66b4ef8d405c1816e838d898dbaf9051fc54b14",
+                "url": "https://api.github.com/repos/razorpay/hodor/zipball/fa66e183387644faa4e7cbd9fa16d37242a66004",
+                "reference": "fa66e183387644faa4e7cbd9fa16d37242a66004",
                 "shasum": ""
             },
             "require": {
@@ -5760,7 +5760,8 @@
                 "predis/predis": "^1.1"
             },
             "require-dev": {
-                "phpunit/phpunit": "^6.5"
+                "phpunit/phpunit": "^6.5",
+                "squizlabs/php_codesniffer": "^3.3"
             },
             "type": "library",
             "autoload": {
@@ -5780,7 +5781,7 @@
                 "source": "https://github.com/razorpay/hodor/tree/master",
                 "issues": "https://github.com/razorpay/hodor/issues"
             },
-            "time": "2018-03-29T11:42:00+00:00"
+            "time": "2019-03-21T08:38:18+00:00"
         },
         {
             "name": "razorpay/ifsc",
@@ -5873,19 +5874,19 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/oauth.git",
-                "reference": "809156f8d0cbb9efcf039d26b0ba23c72f4955b9"
+                "reference": "ebff6f611fb9e16dc647f1c6b1ccadf854f6934e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/oauth/zipball/809156f8d0cbb9efcf039d26b0ba23c72f4955b9",
-                "reference": "809156f8d0cbb9efcf039d26b0ba23c72f4955b9",
+                "url": "https://api.github.com/repos/razorpay/oauth/zipball/ebff6f611fb9e16dc647f1c6b1ccadf854f6934e",
+                "reference": "ebff6f611fb9e16dc647f1c6b1ccadf854f6934e",
                 "shasum": ""
             },
             "require": {
                 "laravel/framework": "^5.0",
                 "league/oauth2-server": "^6.0",
                 "php": ">=5.6",
-                "razorpay/spine": "dev-master",
+                "razorpay/spine": "0.1.2",
                 "zendframework/zend-diactoros": "^1.4"
             },
             "require-dev": {
@@ -5917,7 +5918,7 @@
                 "source": "https://github.com/razorpay/oauth/tree/master",
                 "issues": "https://github.com/razorpay/oauth/issues"
             },
-            "time": "2019-01-04T09:48:32+00:00"
+            "time": "2019-03-23T07:30:00+00:00"
         },
         {
             "name": "razorpay/razorpay",
@@ -6079,16 +6080,16 @@
         },
         {
             "name": "razorpay/spine",
-            "version": "dev-master",
+            "version": "0.1.2",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/spine.git",
-                "reference": "40e55f9b2f5868a93a37ce3d69c3f45cbcf593c6"
+                "reference": "5d2a7cd15c02853ceaa9a3464fe03396b0a5b3bf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/spine/zipball/40e55f9b2f5868a93a37ce3d69c3f45cbcf593c6",
-                "reference": "40e55f9b2f5868a93a37ce3d69c3f45cbcf593c6",
+                "url": "https://api.github.com/repos/razorpay/spine/zipball/5d2a7cd15c02853ceaa9a3464fe03396b0a5b3bf",
+                "reference": "5d2a7cd15c02853ceaa9a3464fe03396b0a5b3bf",
                 "shasum": ""
             },
             "require": {
@@ -6123,10 +6124,10 @@
                 "spine"
             ],
             "support": {
-                "source": "https://github.com/razorpay/spine/tree/master",
+                "source": "https://github.com/razorpay/spine/tree/0.1.2",
                 "issues": "https://github.com/razorpay/spine/issues"
             },
-            "time": "2018-04-06T04:48:19+00:00"
+            "time": "2019-03-21T13:56:02+00:00"
         },
         {
             "name": "razorpay/trace",
@@ -7233,7 +7234,7 @@
                 },
                 {
                     "name": "Gert de Pagter",
-                    "email": "backendtea@gmail.com"
+                    "email": "BackEndTea@gmail.com"
                 }
             ],
             "description": "Symfony polyfill for ctype functions",
@@ -10281,7 +10282,6 @@
     "minimum-stability": "stable",
     "stability-flags": {
         "razorpay/razorpay": 20,
-        "razorpay/spine": 20,
         "razorpay/upi-clients": 20,
         "razorpay/ufh-sdk-php": 20,
         "razorpay/hodor": 20,

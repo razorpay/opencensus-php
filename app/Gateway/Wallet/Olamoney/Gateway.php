@@ -29,7 +29,7 @@ class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
 
-    const BALANCE_CACHE_KEY = 'olamoney_balance_%s';
+    const BALANCE_CACHE_KEY = 'gateway:olamoney_balance_%s';
 
     // 8 hours - 8 * 60 * 60 = 28
     const WALLET_ACCESS_TOKEN_EXPIRY = 28800;

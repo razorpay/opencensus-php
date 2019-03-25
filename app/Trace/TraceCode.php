@@ -323,8 +323,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINAL_USED_BEFORE                          = 'TERMINAL_USED_BEFORE';
     const TERMINAL_BANK_FILTER_DIFF                     = 'TERMINAL_BANK_FILTER_DIFF';
 
+    // Alert trace code for when a request gets actually throttled.
     const THROTTLE_REQUEST_THROTTLED                    = 'THROTTLE_REQUEST_THROTTLED';
+    // Info trace code for when a request would have been throttled but didn't because it is mocked.
+    const THROTTLE_REQUEST_THROTTLED_MOCK               = 'THROTTLE_REQUEST_THROTTLED_MOCK';
+    // Alert trace code when a request is temporarily blocked.
     const THROTTLE_REQUEST_BLOCKED                      = 'THROTTLE_REQUEST_BLOCKED';
+    // Alert trace code when redis settings is missing for throttle, continues flow with code defaults.
     const THROTTLE_SETTINGS_MISSING                     = 'THROTTLE_SETTINGS_MISSING';
 
     const BANK_TRANSFER_TERMINAL_COUNT_GREATER_THEN_ONE = 'BANK_TRANSFER_TERMINAL_COUNT_GREATER_THEN_ONE';
@@ -1610,6 +1615,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_RECONCILIATION_JOB_RELEASED     = 'FTA_RECONCILIATION_JOB_RELEASED';
 
     // Commission trace codes
+    const COMMISSION_SAVED                              = 'COMMISSION_SAVED';
     const COMMISSION_LOGGED                             = 'COMMISSION_LOGGED';
     const COMMISSION_CREATED                            = 'COMMISSION_CREATED';
     const COMMISSION_NOT_ENABLED                        = 'COMMISSION_NOT_ENABLED';
@@ -1695,6 +1701,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VAULT_TOKEN_CREATE_INIT             = 'VAULT_TOKEN_CREATE_INIT';
     const VAULT_TOKEN_CREATE_COMPLETE         = 'VAULT_TOKEN_CREATE_COMPLETE';
 
+    const PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC     = 'PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC';
     // P2P Traces
     const P2P_REQUEST                                   = 'P2P_REQUEST';
     const P2P_RESPONSE                                  = 'P2P_RESPONSE';

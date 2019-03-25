@@ -1272,7 +1272,7 @@ class BankTransferTest extends TestCase
             'method'  => 'PUT',
             'url'     => '/config/keys',
             'content' => [
-                'block_bank_transfers_for_crypto' => '1',
+                'config:block_bank_transfers_for_crypto' => '1',
             ],
         ]);
 

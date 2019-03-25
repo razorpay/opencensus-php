@@ -383,6 +383,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REFERENCE1);
     }
 
+    public function getReference2()
+    {
+        return $this->getAttribute(self::REFERENCE2);
+    }
+
     public function getSettledBy()
     {
         $settledBy = $this->getAttribute(self::SETTLED_BY);
@@ -629,7 +634,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::REFERENCE1, $value);
     }
 
-    public function setRemarks(string $value)
+    public function setRemarks(string $value = null)
     {
         $this->setAttribute(self::REFERENCE2, $value);
     }
