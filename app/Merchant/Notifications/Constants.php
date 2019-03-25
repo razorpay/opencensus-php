@@ -116,10 +116,11 @@ class Constants
             ],
         ],
         [
-            'title'       => 'Onboard users instantly via Subscription links',
-            'description' => 'Say hello to Subscription Links! Onboard Subscribers via unique links, created from the dashboard.',
+            'title'       => 'Say hello to Subscription Links!',
+            'description' => 'Onboard Subscribers via unique links, created from the dashboard.',
             'start_ts'    => 1553491800,
             'end_ts'      => 1554874200,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/subscriptions.svg',
             'buttons'     => [
                 [
                     'type'  => 'button',
@@ -135,10 +136,11 @@ class Constants
             ],
         ],
         [
-            'title'       => 'Onboard users instantly via Subscription links',
-            'description' => 'Say hello to Subscription Links! Onboard Subscribers via unique links, created from the dashboard. Start now, integrate with API later.',
+            'title'       => 'Say hello to Subscription Links!',
+            'description' => 'Onboard Subscribers via unique links, created from the dashboard. Start now, integrate with API later.',
             'start_ts'    => 1553491800,
             'end_ts'      => 1554874200,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/subscriptions.svg',
             'buttons'     => [
                 [
                     'type'  => 'button',
@@ -154,10 +156,11 @@ class Constants
             ],
         ],
         [
-            'title'       => 'Introducing Subscription Links - Onboard users',
+            'title'       => 'Introducing Subscription Links!',
             'description' => 'Say hello to Subscription Links! Onboard Subscribers via unique links, created from the dashboard. Start now, integrate with API later.',
             'start_ts'    => 1553664600,
             'end_ts'      => 1554874200,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/subscriptions.svg',
             'buttons'     => [
                 [
                     'type'  => 'button',
