@@ -69,10 +69,12 @@ class Repository extends Base\Repository
             return;
         }
 
-        // Else finds gets latest fund account entity with this account and contact(optionally).
+        // Else gets latest fund account entity with this account and contact(optionally).
         $query = $this->newQuery()
+                      ->merchantId($merchant->getId())
                       ->where(Entity::ACCOUNT_ID, $account->getId())
-                      ->where(Entity::ACCOUNT_TYPE, $account->getEntity());
+                      ->where(Entity::ACCOUNT_TYPE, $account->getEntity())
+                      ->latest();
 
         if ($contact !== null)
         {
