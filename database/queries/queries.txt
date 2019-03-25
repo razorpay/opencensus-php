@@ -4861,4 +4861,4 @@ ALTER TABLE invoices
     DROP FOREIGN KEY invoices_batch_id_foreign;
 
 ALTER TABLE paysecure
-    MODIFY rrn CHAR(12) DEFAULT NULL;
+    MODIFY rrn varchar(255) DEFAULT NULL;
