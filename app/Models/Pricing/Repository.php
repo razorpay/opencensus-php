@@ -237,7 +237,11 @@ class Repository extends Base\Repository
                        Pricing\Entity::ORG_ID . ','.
                        Pricing\Entity::TYPE . ','.
                        'COUNT(*) AS rules_count')
-                     ->groupBy(Pricing\Entity::PLAN_ID, Pricing\Entity::PLAN_NAME, Pricing\Entity::ORG_ID)
+                     ->groupBy(
+                         Pricing\Entity::PLAN_ID,
+                         Pricing\Entity::PLAN_NAME,
+                         Pricing\Entity::ORG_ID,
+                         Pricing\Entity::TYPE)
                      ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
                      ->get();
     }
