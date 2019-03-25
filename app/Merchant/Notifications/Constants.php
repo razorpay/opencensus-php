@@ -172,7 +172,7 @@ class Constants
                 'experiments' => ['non_subscriptions'],
             ],
             'ga'          => [
-                'action' => 'Subscription Links - Announcement - Not Live',
+                'action' => 'Subscription Links - Announcement - Non Subscriptions',
             ],
         ],
     ];
