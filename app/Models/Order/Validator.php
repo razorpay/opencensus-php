@@ -46,6 +46,10 @@ class Validator extends Base\Validator
         Entity::DISCOUNT,
     ];
 
+    protected static $notesRules = [
+        Entity::NOTES => 'sometimes|notes'
+    ];
+
     protected function validateAmount($input)
     {
         $amount = $input['amount'];

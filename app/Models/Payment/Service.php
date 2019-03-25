@@ -35,6 +35,8 @@ class Service extends Base\Service
 
     protected $slack;
 
+    protected $mutex;
+
     public function __construct()
     {
         parent::__construct();
@@ -42,6 +44,8 @@ class Service extends Base\Service
         $this->core = new Payment\Core;
 
         $this->slack = $this->app['slack'];
+
+        $this->mutex = $this->app['api.mutex'];
     }
 
     /**
@@ -936,6 +940,27 @@ class Service extends Base\Service
         }
 
         return [];
+    }
+
+    public function editNotes($id, $input)
+    {
+        $paymentId = Entity::verifyIdAndStripSign($id);
+
+        $payment = $this->mutex->acquireAndRelease($paymentId,
+            function() use ($paymentId, $input)
+            {
+                $payment = $this->repo->payment->findByIdAndMerchant($paymentId, $this->merchant);
+
+                $payment->edit($input, 'notes');
+
+                $this->repo->saveOrFail($payment);
+
+                return $payment;
+            },
+            20,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+
+        return $payment->toArrayPublic();
     }
 
     /**

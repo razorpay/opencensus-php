@@ -986,6 +986,27 @@ class Service extends Base\Service
         ];
     }
 
+    public function editNotes($id, array $input)
+    {
+        $refundId = Entity::verifyIdAndStripSign($id);
+
+        $refund = $this->mutex->acquireAndRelease($refundId,
+            function() use ($refundId, $input)
+            {
+                $refund = $this->repo->refund->findByIdAndMerchant($refundId, $this->merchant);
+
+                $refund->edit($input, 'notes');
+
+                $this->repo->saveOrFail($refund);
+
+                return $refund;
+            },
+            20,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+
+        return $refund->toArrayPublic();
+    }
+
     public function updateScroogeRefundStatus(string $refundId, array $input)
     {
         $this->trace->info(

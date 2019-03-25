@@ -1064,5 +1064,26 @@ return [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ]
-    ]
+    ],
+
+    'testOrderEditNotes' => [
+        'request'  => [
+            'content' => [
+                'notes' => [
+                    'key1' => 'value1',
+                    'key2' => 'value2',
+                ],
+            ],
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'notes' => [
+                    'key1' => 'value1',
+                    'key2' => 'value2',
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

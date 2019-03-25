@@ -27,6 +27,10 @@ class Validator extends Base\Validator
         Entity::REFERENCE1      => 'sometimes|string|max:255',
     ];
 
+    protected static $notesRules = [
+        Entity::NOTES => 'sometimes|notes'
+    ];
+
     protected static $directRules = [
         'payment_id'    => 'required',
         'amount'        => 'sometimes|integer|min:100',

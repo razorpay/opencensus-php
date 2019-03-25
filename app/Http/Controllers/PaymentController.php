@@ -313,6 +313,15 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function editNotes($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->editNotes($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postCaptureVerify($id)
     {
         $data = $this->service()->verifyCapture($id);

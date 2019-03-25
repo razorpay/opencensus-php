@@ -98,6 +98,10 @@ class Validator extends Base\Validator
         Entity::REFERENCE16          => 'sometimes|nullable|string',
     ];
 
+    protected static $notesRules = [
+        Entity::NOTES                => 'sometimes|notes',
+    ];
+
     protected static $captureRules = [
         Entity::AMOUNT               => 'required|integer',
         Entity::CURRENCY             => 'required|custom',

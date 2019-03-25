@@ -1031,4 +1031,55 @@ class PaymentCreateTest extends TestCase
 
         return $payment;
     }
+
+    public function testPaymentEditNotes()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['notes'] = [
+            'key' => 'value',
+        ];
+
+        $payment = $this->doAuthAndGetPayment($payment);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/' . $payment['id'] . '/notes';
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+    }
+
+    public function testPaymentFailedEditNotesMoreThan15Entries()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['notes'] = [
+            'key' => 'value',
+        ];
+
+        $payment = $this->doAuthAndGetPayment($payment);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/' . $payment['id'] . '/notes';
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+    }
+
+    public function testPaymentFailedEditNotesArrayValue()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['notes'] = [
+            'key' => 'value',
+        ];
+
+        $payment = $this->doAuthAndGetPayment($payment);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/' . $payment['id'] . '/notes';
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+    }
 }

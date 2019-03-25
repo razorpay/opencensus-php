@@ -1669,4 +1669,21 @@ class OrderTest extends TestCase
 
         $this->assertEquals('captured', $payment['status']);
     }
+
+    public function testOrderEditNotes()
+    {
+        $requestContent = $this->testData['testCreateOrder']['request']['content'];
+
+        $this->testData['testCreateOrder']['request']['content'] = array_merge($requestContent, [
+            'notes' => ['key' => 'value'],
+        ]);
+
+        $order = $this->testCreateOrder();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/orders/' . $order['id'] . '/notes';
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+    }
 }
