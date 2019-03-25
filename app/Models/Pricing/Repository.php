@@ -222,7 +222,7 @@ class Repository extends Base\Repository
                      ->get();
     }
 
-    public function getMerchantPricingPlansSummary(array $input)
+    public function getMerchantPricingPlansSummary(array $input = [])
     {
         $query = $this->newQueryWitOrgIdParam();
 
