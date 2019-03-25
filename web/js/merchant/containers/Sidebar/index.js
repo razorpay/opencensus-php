@@ -221,7 +221,11 @@ class PartnerSidebar extends Component {
     return (
       <>
         <MainNavLinkGroup
-          title="Partner"
+          title={
+            <>
+              <i class="i i-partner text-primary" />Partner
+            </>
+          }
           onToggleClick={this.onToggle}
           value={this.state.partnerOpen}
         >
@@ -229,7 +233,11 @@ class PartnerSidebar extends Component {
         </MainNavLinkGroup>
 
         <MainNavLinkGroup
-          title="Merchant"
+          title={
+            <>
+              <i class="i i-products text-success" />Merchant
+            </>
+          }
           onToggleClick={this.onToggle}
           value={!this.state.partnerOpen}
         >

@@ -5,7 +5,7 @@ export default function PartnerNavLinks() {
     <>
       <MainNavLink
         label="Affiliated Accounts"
-        icon="i i-done-all text-success"
+        icon="i i-account-balance text-success"
         to="/partners/submerchants"
         additionalCondition={user => user.isAllowedView('submerchants')}
         exact
@@ -13,7 +13,7 @@ export default function PartnerNavLinks() {
 
       <MainNavLink
         label="Earnings"
-        icon="i i-done-all text-success"
+        icon="i i-earnings text-primary"
         to="/partners/earnings"
         featureEnabled="show_commissions"
         additionalCondition={user => user.isAllowedView('earnings')}
