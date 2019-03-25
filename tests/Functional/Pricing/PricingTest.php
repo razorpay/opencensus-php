@@ -149,6 +149,9 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    /**
+     * check that commission plan can be added to rzp org
+     */
     public function testAddCommissionPlanNBRule()
     {
         $content = $this->createPricingPlan(['type' => 'commission']);
@@ -300,6 +303,16 @@ class PricingTest extends TestCase
         $rule = Pricing\Entity::withTrashed()->findOrFail($rule['id']);
 
         $this->assertNotNull($rule['deleted_at']);
+    }
+
+    /**
+     * Asserts that commission plan cannot be added for non-rzp org
+     */
+    public function testCreateCommissionPlanBySBIOrg()
+    {
+        $this->ba->adminAuth('test', null, null, null, 'org_' . Org::SBIN_ORG);
+
+        $this->startTest();
     }
 
     /**
@@ -493,6 +506,17 @@ class PricingTest extends TestCase
         $this->startTest();
 
         $this->ba->adminAuth('live');
+        $this->startTest();
+    }
+
+    public function testGetMerchantPlansWithFilters()
+    {
+        $this->createPricingPlan();
+
+        $this->createCommissionPlan();
+
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
@@ -928,7 +952,33 @@ class PricingTest extends TestCase
             'payment_issuer'      => 'HDFC',
             'percent_rate'        => 1000,
             'fixed_rate'          => 0,
-            'org_id'              => '100000razorpay'
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+        ];
+
+        $pricingPlan = array_merge($defaultPricingPlan, $pricingPlan);
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $plan = $plan->toArray();
+
+        $plan['id'] = $plan['plan_id'];
+
+        return $plan;
+    }
+
+    protected function createCommissionPlan($pricingPlan = [])
+    {
+        $defaultPricingPlan = [
+            'plan_name'           => 'TestPlan9',
+            'payment_method'      => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network'     => 'DICL',
+            'payment_issuer'      => 'HDFC',
+            'percent_rate'        => 1000,
+            'fixed_rate'          => 0,
+            'org_id'              => '100000razorpay',
+            'type'                => 'commission',
         ];
 
         $pricingPlan = array_merge($defaultPricingPlan, $pricingPlan);

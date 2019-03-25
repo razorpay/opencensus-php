@@ -309,9 +309,11 @@ class Processor
             return;
         }
 
+        $appTokenPresent = $this->isAppTokenPresent();
+
         $this->subscription = $this->app['module']
                                    ->subscription
-                                   ->fetchSubscriptionInfo($input, $payment->merchant);
+                                   ->fetchSubscriptionInfo($input, $payment->merchant, false, $appTokenPresent);
 
         if ($this->subscription->isExternal() === true)
         {
@@ -322,14 +324,27 @@ class Processor
             $payment->setRecurringType($subscriptionPaymentRecurringType);
 
             $this->addOrderIdToInputForExternalSubscription($input);
-
-            $this->addCustomerIdToInputForExternalSubscription($input);
         }
     }
 
     protected function addOrderIdToInputForExternalSubscription(array & $input)
     {
         assert($this->subscription->isExternal() === true);
+
+        // For subscription card change, we donot need to add order id
+        // for the following subscription states. (For these states, we will be
+        // using default auth amount as card change amount)
+        if (($this->subscription->isActive() === true) or
+            ($this->subscription->isHalted() === true) or
+            ($this->subscription->isAuthenticated() === true))
+        {
+            $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
+
+            if ($cardChange === true)
+            {
+                return;
+            }
+        }
 
         if (($this->subscription->hasCurrentInvoice() === true) and
             (isset($input[Payment\Entity::ORDER_ID]) === false))
@@ -2625,5 +2640,24 @@ class Processor
                 TraceCode::PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC
             );
         }
+    }
+
+    protected function isAppTokenPresent(): bool
+    {
+        if ($this->request->hasSession() === false)
+        {
+            return false;
+        }
+
+        $key = $this->mode . '_app_token';
+
+        $appToken = $this->request->session()->get($key);
+
+        if ($appToken !== null)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

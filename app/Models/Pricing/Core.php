@@ -30,6 +30,8 @@ class Core extends Base\Core
 
         $rule->getValidator()->validateTypeMatch($plan);
 
+        $rule->getValidator()->validatePlanTypeForOrg();
+
         $rule->setAuditAction(Action::CREATE_PRICING_PLAN_RULE);
 
         $this->app['workflow']
@@ -62,6 +64,8 @@ class Core extends Base\Core
         $ruleOrgId = Entity::stripDefaultSign($ruleOrgId);
 
         $rule->setAttribute(Entity::ORG_ID, $ruleOrgId);
+
+        $rule->getValidator()->validatePlanTypeForOrg();
 
         $rule->setAuditAction(Action::CREATE_MERCHANT_PRICING_PLAN);
 

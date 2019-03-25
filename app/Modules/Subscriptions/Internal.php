@@ -13,7 +13,7 @@ use RZP\Models\Merchant;
  */
 class Internal extends Base
 {
-    public function fetchSubscriptionInfo(array $input = [], Merchant\Entity $merchant, $callback = false)
+    public function fetchSubscriptionInfo(array $input = [], Merchant\Entity $merchant, $callback = false, $appTokenPresent = false)
     {
         $subscription = $this->repo
                              ->subscription

@@ -1708,6 +1708,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const P2P_GATEWAY_REQUEST                           = 'P2P_GATEWAY_REQUEST';
     const P2P_GATEWAY_RESPONSE                          = 'P2P_GATEWAY_RESPONSE';
 
+    const SUBSCRIPTION_PAYMENT_NOTIFY       = "SUBSCRIPTION_PAYMENT_NOTIFY";
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
