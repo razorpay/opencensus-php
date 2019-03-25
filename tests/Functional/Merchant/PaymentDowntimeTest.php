@@ -14,7 +14,7 @@ class PaymentDowntimeTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/MerchantTestData.php';
+        $this->testDataFilePath = __DIR__.'/helpers/PaymentDowntimeTestData.php';
 
         parent::setUp();
 
@@ -51,7 +51,7 @@ class PaymentDowntimeTest extends TestCase
     {
         $request = [
             'content' => [
-                'gateway'     => 'upi_mindgate',
+                'gateway'     => 'ALL',
                 'method'      => 'upi',
                 'source'      => 'dummy',
                 'reason_code' => 'OTHER',
@@ -65,12 +65,28 @@ class PaymentDowntimeTest extends TestCase
 
         $this->makeRequestAndGetContent($request);
 
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+    }
+
+    public function testGetUpiDowntimeForIndividualGateways()
+    {
+        $this->createUpiAllGatewayDowntime();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetNoUpiDowntimeForSingleGateway()
+    {
         $request = [
             'content' => [
-                'gateway'     => 'upi_icici',
+                'gateway'     => 'upi_mindgate',
                 'method'      => 'upi',
                 'source'      => 'dummy',
-                'reason_code' => 'ISSUER_DOWN',
+                'reason_code' => 'OTHER',
                 'begin'       => Carbon::now()->subMinutes(60)->timestamp
             ],
             'method' => 'POST',
@@ -80,50 +96,6 @@ class PaymentDowntimeTest extends TestCase
         $this->ba->appAuth();
 
         $this->makeRequestAndGetContent($request);
-
-        $this->ba->privateAuth();
-
-        $this->startTest();
-    }
-
-    public function testGetUpiDowntimeForIndividualGateways()
-    {
-        $this->createUpiAllGatewayDowntime();
-
-        $this->createMethodDowntimes();
-
-        $this->ba->privateAuth();
-
-        $this->startTest();
-    }
-
-    public function testGetNoUpiDowntimeForSingleGateway()
-    {
-        $this->fixtures->create('gateway_downtime:upi', [
-            'begin'     => Carbon::now()->subMinutes(30)->timestamp,
-            'end'       => null,
-            'gateway'   => 'upi_mindgate',
-            'scheduled' => false,
-        ]);
-
-        $this->createMethodDowntimes();
-
-        $this->ba->privateAuth();
-
-        $this->startTest();
-    }
-
-    public function testGetSingleUpiDowntimeForMultipleDowntimeCreations()
-    {
-        $this->fixtures->create('gateway_downtime:upi', [
-            'begin'     => Carbon::now()->subMinutes(30)->timestamp,
-            'end'       => null,
-            'gateway'   => 'ALL',
-            'scheduled' => false,
-        ]);
-
-        $this->createMethodDowntimes();
-        $this->createMethodDowntimes();
 
         $this->ba->privateAuth();
 
@@ -168,25 +140,21 @@ class PaymentDowntimeTest extends TestCase
     {
         foreach (Gateway::$methodMap['upi'] as $gateway)
         {
-            $this->fixtures->create('gateway_downtime:upi', [
-                'begin'     => Carbon::now()->subMinutes(30)->timestamp,
-                'end'       => null,
-                'gateway'   => $gateway,
-                'scheduled' => false,
-            ]);
+            $request = [
+                'content' => [
+                    'gateway'     => $gateway,
+                    'method'      => 'upi',
+                    'source'      => 'dummy',
+                    'reason_code' => 'OTHER',
+                    'begin'       => Carbon::now()->subMinutes(60)->timestamp
+                ],
+                'method' => 'POST',
+                'url' => '/gateway/downtimes/dummy/webhook'
+            ];
+
+            $this->ba->appAuth();
+
+            $this->makeRequestAndGetContent($request);
         }
-    }
-
-    protected function createMethodDowntimes()
-    {
-        $request = [
-            'method'  => 'POST',
-            'url'     => '/methods/downtimes/create',
-            'content' => [],
-        ];
-
-        $this->ba->cronAuth();
-
-        $this->makeRequestAndGetContent($request);
     }
 }

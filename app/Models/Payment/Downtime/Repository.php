@@ -6,10 +6,11 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Models\Base\PublicCollection;
+use RZP\Constants\Entity as EntityConstants;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'payment_downtime';
+    protected $entity = EntityConstants::PAYMENT_DOWNTIME;
 
     public function fetchCurrentAndFutureDowntimes(): PublicCollection
     {

@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Payment\Downtime;
 
-use Carbon\Carbon;
-
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
@@ -11,6 +9,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\Downtime\Severity;
 use RZP\Models\Gateway\Downtime\ReasonCode;
+use RZP\Constants\Entity as EntityConstants;
 use Illuminate\Database\Eloquent\Collection;
 use RZP\Models\Gateway\Downtime\Entity as GatewayDowntime;
 
@@ -72,13 +71,11 @@ class UpiProcessor extends Base\Core
 
         $severity = $this->calculateDowntimeSeverity($gatewayDowntimes);
 
-        $status = Carbon::now()->getTimestamp() < $begin ? Status::SCHEDULED : Status::STARTED;
-
         $input = [
             Entity::METHOD    => self::UPI,
             Entity::BEGIN     => $begin,
             Entity::END       => $end,
-            Entity::STATUS    => $status,
+            Entity::STATUS    => Status::SCHEDULED,
             Entity::SCHEDULED => $scheduled,
             Entity::SEVERITY  => $severity,
         ];
@@ -118,6 +115,11 @@ class UpiProcessor extends Base\Core
 
     protected function getDuplicate(array $input)
     {
-        return $this->repo->payment_downtime->getDuplicate($input);
+        return $this->getPaymentDowntimeRepository()->getDuplicate($input);
+    }
+
+    protected function getPaymentDowntimeRepository()
+    {
+        return $this->repo->getCustomDriver(EntityConstants::PAYMENT_DOWNTIME);
     }
 }
