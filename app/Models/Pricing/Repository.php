@@ -222,18 +222,23 @@ class Repository extends Base\Repository
                      ->get();
     }
 
-    public function getMerchantPricingPlansSummary()
+    public function getMerchantPricingPlansSummary(array $input)
     {
-        return $this->newQueryWitOrgIdParam()
-                    ->selectRaw(
+        $query = $this->newQueryWitOrgIdParam();
+
+        if (empty($input[Entity::TYPE]) === false)
+        {
+            $query->where(Pricing\Entity::TYPE, $input[Entity::TYPE]);
+        }
+
+        return $query->selectRaw(
                        Pricing\Entity::PLAN_ID . ','.
                        Pricing\Entity::PLAN_NAME . ','.
                        Pricing\Entity::ORG_ID . ','.
                        'COUNT(*) AS rules_count')
-                    ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
-                    ->groupBy(Pricing\Entity::PLAN_ID, Pricing\Entity::PLAN_NAME, Pricing\Entity::ORG_ID)
-                    ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
-                    ->get();
+                     ->groupBy(Pricing\Entity::PLAN_ID, Pricing\Entity::PLAN_NAME, Pricing\Entity::ORG_ID)
+                     ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
+                     ->get();
     }
 
     public function getGatewayPricingPlans()

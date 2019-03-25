@@ -61,9 +61,9 @@ class Service extends Base\Service
         return $plans->toArrayMultiplePlansPublic();
     }
 
-    public function getMerchantPricingPlans()
+    public function getMerchantPricingPlans(array $input): array
     {
-        $pricingPlans = $this->repo->pricing->getMerchantPricingPlansSummary();
+        $pricingPlans = $this->repo->pricing->getMerchantPricingPlansSummary($input);
 
         $pricingPlans->map(function ($plan)
         {
