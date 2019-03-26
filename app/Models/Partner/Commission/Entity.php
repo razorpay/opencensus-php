@@ -160,4 +160,30 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::TYPE);
     }
+
+    /**
+     * Defining this function helps us to add a filter for merchant_id in a query -
+     * Eg: $this->newQuery()->merchantId($merchant->getId())
+     *
+     * This function overrides the function defined in Base\EloquentEx class.
+     * The base function is used for fetching entities which have merchant_id. It is tightly
+     * coupled with RepositoryFetch class's fetch(), fetchByIdAndMerchantId() etc methods.
+     *
+     * The same behaviour is required for commissions but instead of adding a filter
+     * for merchant_id, the filter is required for partner_id. Defining a separate function named
+     * scopePartnerId and usage $this->newQuery()->partnerId($partnerMerchant->getId()) would have
+     * been an ideal case, but would require the new function to be supported in all the above
+     * mentioned functions of RepositoryFetch class. Hence, overriding the function definition here.
+     *
+     * Though the name is scopeMerchantId, it actually adds a filter for partner_id.
+     *
+     * @param $query
+     * @param $merchantId
+     */
+    public function scopeMerchantId($query, $merchantId)
+    {
+        $parentIdColumn = $this->dbColumn(Entity::PARTNER_ID);
+
+        $query->where($parentIdColumn, '=', $merchantId);
+    }
 }

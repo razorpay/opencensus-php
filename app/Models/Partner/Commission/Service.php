@@ -2,10 +2,7 @@
 
 namespace RZP\Models\Partner\Commission;
 
-use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
-use RZP\Error\ErrorCode;
 
 class Service extends Base\Service
 {
@@ -23,20 +20,16 @@ class Service extends Base\Service
         return $commissions->toArrayPublic();
     }
 
-    public function fetch(string $id, $input): array
+    public function fetch(string $id): array
     {
-        $input[Entity::ID] = $id;
+        $partner = $this->merchant;
 
-        $commissions = $this->core()->list($this->merchant, $input);
+        //
+        // findByPublicIdAndMerchant() function here, filters by partner_id.
+        // Refer Commission\Entity::scopeMerchantId() for more details.
+        //
+        $commission = $this->repo->commission->findByPublicIdAndMerchant($id, $partner);
 
-        if (count($commissions) === 0)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
-        }
-        else
-        {
-            return $commissions[0]->toArrayPublic();
-        }
-
+        return $commission->toArrayPublic();
     }
 }
