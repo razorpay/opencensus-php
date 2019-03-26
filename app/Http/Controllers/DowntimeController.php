@@ -6,7 +6,6 @@ use Request;
 use ApiResponse;
 
 use RZP\Constants\Entity as E;
-use RZP\Models\Gateway\MethodDowntime;
 
 class DowntimeController extends Controller
 {
