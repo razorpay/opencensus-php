@@ -154,5 +154,12 @@ class AuthenticationTerminals
             self::AUTH_TYPE                 => AuthType::HEADLESS_OTP,
             self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
         ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::AXIS_MIGS,
+            self::AUTHENTICATION_GATEWAY    => Gateway::MPI_BLADE,
+            self::AUTH_TYPE                 => AuthType::HEADLESS_OTP,
+            self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
+        ],
     ];
 }

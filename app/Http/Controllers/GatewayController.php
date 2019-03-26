@@ -332,6 +332,7 @@ class GatewayController extends Controller
 
         return Redirect::to($url);
     }
+
     public function callbackCanara()
     {
         $input = Request::all();
