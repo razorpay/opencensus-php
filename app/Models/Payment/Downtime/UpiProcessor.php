@@ -36,8 +36,18 @@ class UpiProcessor extends Base\Core
 
         $upiGateways = Gateway::$methodMap[self::UPI];
 
-        if ((in_array(GatewayDowntime::ALL, $gatewaysDown, true) === true) or
-            (empty(array_diff($upiGateways, $gatewaysDown)) === true))
+        if (in_array(GatewayDowntime::ALL, $gatewaysDown, true) === true)
+        {
+            return true;
+        }
+
+        list($begin, $end) = $this->calculateDowntimePeriod($gatewayDowntimes);
+
+        // The time check exists because there could be two non-overlapping
+        // but mutually exhaustive downtimes in the future
+        if ((empty(array_diff($upiGateways, $gatewaysDown)) === true) and
+            ((($end === null) or
+             ($begin < $end))))
         {
             return true;
         }

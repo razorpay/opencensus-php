@@ -699,10 +699,10 @@ class Gateway
         Method::UPI => [
             self::UPI_MINDGATE,
             self::UPI_ICICI,
-            // self::UPI_AXIS,
-            // self::UPI_SBI,
-            // self::UPI_HULK,
-            // self::UPI_YESBANK,
+            self::UPI_AXIS,
+            self::UPI_SBI,
+            self::UPI_HULK,
+            self::UPI_YESBANK,
         ],
 
         Method::AEPS => [
