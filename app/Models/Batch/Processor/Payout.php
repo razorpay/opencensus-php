@@ -56,15 +56,8 @@ class Payout extends Base
     {
         parent::postProcessEntries($entries);
 
-        $processedAmount = 0;
-
-        foreach ($entries as $entry)
-        {
-            if ($entry[Batch\Header::STATUS] === Batch\Status::SUCCESS)
-            {
-                $processedAmount += $entry[Batch\Header::PAYOUT_AMOUNT];
-            }
-        }
+        $processedAmount = collect($entries)->where(Batch\Header::STATUS, Batch\Status::SUCCESS)
+                                            ->sum(Batch\Header::PAYOUT_AMOUNT);
 
         $this->batch->setProcessedAmount($processedAmount);
     }
