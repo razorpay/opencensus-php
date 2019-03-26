@@ -2413,6 +2413,13 @@ final class Route
     ];
 
     /**
+     * List of routes, required to check DeDuplication or Idempotency
+     */
+    public static $idempotent = [
+        'invoice_create',
+    ];
+
+    /**
      * These are all the applications we have
      * If you add something here, add it to $internal as well
      * Nothing here should be in private or admin auth
@@ -3065,6 +3072,11 @@ final class Route
         if (in_array($name, self::$session, true) === true)
         {
             $route->middleware('web');
+        }
+
+        if (in_array($name, self::$idempotent, true) === true)
+        {
+            $route->middleware('idempotent');
         }
     }
 
