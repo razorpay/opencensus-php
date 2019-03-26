@@ -62,6 +62,7 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_TYPE,
         self::DETAILS,
         self::BANK_ACCOUNT,
+        self::BATCH_ID,
         self::VPA,
         self::ACTIVE,
         self::CREATED_AT,

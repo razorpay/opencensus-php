@@ -28,6 +28,7 @@ class Fetch extends Base\Fetch
     const SIGNED_IDS = [
         Entity::CUSTOMER_ID,
         Entity::CONTACT_ID,
+        Entity::BATCH_ID,
     ];
 
     const ACCESSES = [

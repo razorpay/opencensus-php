@@ -67,5 +67,6 @@ class Fetch extends Base\Fetch
 
     const SIGNED_IDS = [
         Entity::FUND_ACCOUNT_ID,
+        Entity::BATCH_ID,
     ];
 }

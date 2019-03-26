@@ -5,6 +5,7 @@ namespace RZP\Models\Payout;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Card;
+use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\FundAccount;
@@ -37,8 +38,12 @@ class Validator extends Base\Validator
         Entity::NARRATION       => 'sometimes|nullable|string|max:30',
     ];
 
+    /**
+     * @see Batch\Validator Need to change for payout rules if any changes are done here
+     * @var array
+     */
     protected static $fundAccountPayoutRules = [
-        Entity::PURPOSE         => 'required|filled|string|max:30|alpha_dash',
+        Entity::PURPOSE         => 'required|filled|string|max:30|alpha_dash_space',
         Entity::AMOUNT          => 'required|integer|min:100|max:500000000',
         Entity::CURRENCY        => 'required|size:3|in:INR',
         Entity::NOTES           => 'sometimes|notes',
