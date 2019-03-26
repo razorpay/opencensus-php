@@ -20,6 +20,8 @@ class Action extends Base\Action
     const ASSIGN_BANK_ACCOUNT           = 'assignBankAccount';
     const ASSIGN_BANK_ACCOUNT_SUCCESS   = 'assignBankAccountSuccess';
 
+    const INITIATE_CHECK_AVAILABILITY   = 'initiateCheckAvailability';
+
     const CHECK_AVAILABILITY            = 'checkAvailability';
     const CHECK_AVAILABILITY_SUCCESS    = 'checkAvailabilitySuccess';
 

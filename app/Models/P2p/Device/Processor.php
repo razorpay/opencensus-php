@@ -139,6 +139,14 @@ class Processor extends Base\Processor
     {
         $this->initialize(Action::DEREGISTER, $input, true);
 
+        // TODO: Make sure this is done on either of Private/AppAuth
+        if ($this->input->get('force'))
+        {
+            return $this->deregisterSuccess([
+                Entity::SUCCESS => true
+            ]);
+        }
+
         return $this->callGateway();
     }
 
