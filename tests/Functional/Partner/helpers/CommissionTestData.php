@@ -28,6 +28,22 @@ return [
         ],
     ],
 
+    'testGetCommissionById' => [
+        'request'  => [
+            'url'    => '/commissions/{id}',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'commission',
+                'status'      => 'created',
+                'currency'    => 'INR',
+                'partner_id'  => 'DefaultPartner',
+                'source_type' => 'payment',
+            ],
+        ],
+    ],
+
     'testGettingCommissionsByFilters' => [
         'request'  => [
             'url'     => '/commissions',
