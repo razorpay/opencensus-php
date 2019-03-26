@@ -170,6 +170,8 @@ const fields = [
     </React.Fragment>,
   ],
   item => ['Bank', item.bank],
+  item => ['Refund Gateway', item.refund_gateway],
+  item => ['Gateway Acquirer', item.gateway_acquirer],
   item => ['On Hold Reason', item.on_hold_reason],
 ];
 
