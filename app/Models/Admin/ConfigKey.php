@@ -33,6 +33,7 @@ class ConfigKey
     const HITACHI_DYNAMIC_DESCR_ENABLED         = self::PREFIX . 'hitachi_dynamic_descr_enabled';
     const FTS_CHANNELS                          = self::PREFIX . 'fts_channels';
     const CPS_SERVICE_ENABLED                   = self::PREFIX . 'cps_service_enabled';
+    const SETTLEMENT_TRANSACTION_LIMIT          = self::PREFIX . 'settlement_transaction_limit';
 
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
@@ -55,6 +56,7 @@ class ConfigKey
         self::BLOCK_AADHAAR_REG,
         self::HITACHI_DYNAMIC_DESCR_ENABLED,
         self::CPS_SERVICE_ENABLED,
+        self::SETTLEMENT_TRANSACTION_LIMIT,
     ];
 
     public static function isSensitive(string $key)

@@ -348,6 +348,7 @@ final class Route
         'setl_delete_file'                         => ['delete',   'settlements/file/{setlFileType}',                'SettlementController@deleteSettlementFile'                         ],
         'setl_initiate'                            => ['post',     'settlements/initiate/{channel?}',                'SettlementController@postSettlementInitiate'                       ],
         'setl_initiate_daily'                      => ['post',     'settlements/initiate_daily',                     'SettlementController@processDailySettlements'                      ],
+        'setl_initiate_adhoc'                      => ['post',     'settlements/initiate_adhoc',                     'SettlementController@processAdhocSettlements'                      ],
         'setl_retry'                               => ['post',     'settlements/retry',                              'SettlementController@postSettlementRetry'                          ],
         'setl_file_generate'                       => ['post',     'settlements/file/generate',                      'SettlementController@postSettlementFileGenerate'                   ],
         'setl_reconcile_generate'                  => ['post',     'settlements/reconcile/generate/{channel}',       'SettlementController@postSettlementReconcileFileGenerate'          ],
@@ -1392,6 +1393,7 @@ final class Route
         'update_fts_nodal_beneficiary',
         'update_fts_fund_transfer',
         'fund_account_validation_retry',
+        'setl_initiate_adhoc',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2530,6 +2532,7 @@ final class Route
             'merchant_es_sync_cron',
             'entity_balance_id_update',
             'scrooge_refund_verify_bulk',
+            'setl_initiate_adhoc',
         ],
 
         'subscriptions' => [
