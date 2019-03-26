@@ -182,8 +182,8 @@ class Entity extends Base\PublicEntity
      */
     public function scopeMerchantId($query, $merchantId)
     {
-        $parentIdColumn = $this->dbColumn(Entity::PARTNER_ID);
+        $partnerIdColumn = $this->dbColumn(Entity::PARTNER_ID);
 
-        $query->where($parentIdColumn, '=', $merchantId);
+        $query->where($partnerIdColumn, $merchantId);
     }
 }
