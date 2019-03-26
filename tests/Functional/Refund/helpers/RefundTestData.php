@@ -715,7 +715,7 @@ return [
                     'key2' => 'value2',
                 ],
             ],
-            'method'  => 'PUT',
+            'method'  => 'PATCH',
         ],
         'response' => [
             'content' => [

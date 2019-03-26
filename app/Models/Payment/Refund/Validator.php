@@ -27,7 +27,7 @@ class Validator extends Base\Validator
         Entity::REFERENCE1      => 'sometimes|string|max:255',
     ];
 
-    protected static $notesRules = [
+    protected static $editRules = [
         Entity::NOTES => 'sometimes|notes'
     ];
 
