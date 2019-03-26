@@ -1,10 +1,12 @@
 import { Component } from 'react';
+import { Link } from 'react-router-dom';
 
 import Collection from 'model/collection';
 
 import Form from 'ui/Form';
 import Field, { SelectField } from 'ui/Field';
 import { PageTable } from 'ui/Table';
+import EntityRow from 'ui/EntityRow';
 import { ModalContent } from 'component/Modal';
 
 import { isPresent, pickProps, without } from 'rzp/utils/rzp-utils';
@@ -22,7 +24,10 @@ export default class PartnerConfigList extends Component {
         loading: false,
         data: [],
       },
-      merchant: {},
+      merchant: {
+        loading: true,
+        data: {},
+      },
     };
   }
 
@@ -91,13 +96,14 @@ export default class PartnerConfigList extends Component {
       },
     }).then(data => {
       const purePlatform = isPurePlatform(data);
+      const partnerDetails = pickProps(data, ['name', 'id']);
       if (purePlatform) {
         this.fetchApps();
       } else {
         this.fetchConfigAndSubs({ partner_id: this.merchantId });
       }
       this.setState({
-        merchant: { purePlatform },
+        merchant: { loading: false, data: { purePlatform, ...partnerDetails } },
       });
     });
   };
@@ -142,49 +148,72 @@ export default class PartnerConfigList extends Component {
   fetchSubmerhants = params => {
     return adminFetch({
       url: `live_${this.merchantId}/submerchants`,
+      params,
     });
   };
 
   render() {
     const { applications, merchant, configsAndSubsFetched } = this.state;
     return (
-      <div className="list-container">
-        <div className="box">
-          <header>Partner Commission Settings</header>
-          <Form class="full-span full-elements" style={{ width: '85%' }}>
-            {merchant.purePlatform &&
-              (applications.loading ? (
-                <Field
-                  value="Loading Applications..."
-                  label="Application"
-                  disabled
-                />
-              ) : (
-                <SelectField label="Application" onChange={this.onAppChange}>
-                  <option value="">Select Application</option>
-                  {applications.data.map(app => (
-                    <option key={app.id} value={app.id}>
-                      {app.name} - {app.id}
-                    </option>
+      <div class="list-container">
+        <div class="box">
+          {!merchant.loading ? (
+            <>
+              <header>Partner Commission Settings</header>
+              <div class="heading">Partner Details</div>
+              <EntityRow
+                label="Partner Id"
+                value={() => (
+                  <Link to={`/merchants/${merchant.data.id}`} class="link">
+                    {merchant.data.id}
+                  </Link>
+                )}
+              />
+              <EntityRow label="Partner Name" value={merchant.data.name} />
+              <Form>
+                {merchant.data.purePlatform &&
+                  (applications.loading ? (
+                    <EntityRow
+                      label={<em>Fetching Applications...</em>}
+                      value={' '}
+                    />
+                  ) : (
+                    <SelectField
+                      label="Select Application"
+                      onChange={this.onAppChange}
+                    >
+                      <option value="">Not Selected</option>
+                      {applications.data.map(app => (
+                        <option key={app.id} value={app.id}>
+                          {app.name} - {app.id}
+                        </option>
+                      ))}
+                    </SelectField>
                   ))}
-                </SelectField>
-              ))}
-            {isPresent(configsAndSubsFetched) &&
-              configsAndSubsFetched === true && (
-                <div className="field">
-                  <label>Default Config</label>
-                  <button
-                    class="btn"
-                    type="button"
-                    onClick={this.onWriteConfig({
-                      config: this.defaultConfigs[0],
-                    })}
-                  >
-                    {isPresent(this.defaultConfigs) ? 'Update' : 'Create'}
-                  </button>
-                </div>
-              )}
-          </Form>
+                {isPresent(configsAndSubsFetched) &&
+                  configsAndSubsFetched === true && (
+                    <div class="field">
+                      <button
+                        class="btn"
+                        type="button"
+                        style={{ marginBottom: '0' }}
+                        onClick={this.onWriteConfig({
+                          config: this.defaultConfigs[0],
+                        })}
+                      >
+                        {`${
+                          isPresent(this.defaultConfigs) ? 'Update' : 'Create'
+                        } Default Config`}
+                      </button>
+                    </div>
+                  )}
+              </Form>
+            </>
+          ) : (
+            <div class="box">
+              <div class="spinner center" />
+            </div>
+          )}
         </div>
         {isPresent(configsAndSubsFetched) &&
           (configsAndSubsFetched === true ? (
@@ -198,8 +227,8 @@ export default class PartnerConfigList extends Component {
               info={false}
             />
           ) : (
-            <div className="box">
-              <div className="spinner center" />
+            <div class="box">
+              <div class="spinner center" />
             </div>
           ))}
       </div>
@@ -214,7 +243,14 @@ function isPurePlatform(merchant = {}) {
 var getSubmerchantFields = ({ write, defaultConfig }) => [
   [
     'Submerchant ID',
-    item => <span className="link">{item.submerchant.id}</span>,
+    item => (
+      <Link
+        to={`/merchants/${item.submerchant.id.replace('acc_', '')}`}
+        class="link"
+      >
+        {item.submerchant.id}
+      </Link>
+    ),
   ],
   ['Submerchant Name', item => item.submerchant.name],
   [
