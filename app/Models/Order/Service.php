@@ -236,7 +236,7 @@ class Service extends Base\Service
         return $payments->toArrayPublic();
     }
 
-    public function editNotes(string $id, array $input): array
+    public function update(string $id, array $input): array
     {
         $orderId = Entity::verifyIdAndStripSign($id);
 
@@ -245,7 +245,7 @@ class Service extends Base\Service
             {
                 $order = $this->repo->order->findByIdAndMerchant($orderId, $this->merchant);
 
-                $order->edit($input, 'notes');
+                $order->edit($input);
 
                 $this->repo->saveOrFail($order);
 

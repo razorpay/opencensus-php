@@ -836,8 +836,8 @@ trait SettlementTrait
     {
         RuntimeManager::setMemoryLimit('6144M');
 
-        // Time limit of 9 mins 55 seconds
-        RuntimeManager::setTimeLimit(599);
+        // Time limit of 30 mins
+        RuntimeManager::setTimeLimit(1500);
     }
 
     /**
@@ -916,5 +916,45 @@ trait SettlementTrait
                'memory_peak_usage'              => $memoryPeakUsage,
                'memory_peak_usage_allocated'    => $memoryPeakUsageAllocated,
             ]);
+    }
+
+    /**
+     * @param $txns
+     * @param $merchantId
+     * @return array
+     */
+    protected function processMerchantSettlement($txns, $merchantId): array
+    {
+        $filterGroupedTxns       = [];
+
+        $transactionSkipCount    = 0;
+
+        $transactionsSettleCount = 0;
+
+        foreach ($txns as $txn)
+        {
+            $skipForRefundAuthTxn = $this->skipForRefundAuthTxn($txn);
+
+            if ($skipForRefundAuthTxn === true)
+            {
+                $transactionSkipCount++;
+
+                continue;
+            }
+
+            $filterGroupedTxns[$merchantId] = ($filterGroupedTxns[$merchantId] ?? (new Base\PublicCollection));
+
+            $filterGroupedTxns[$merchantId]->push($txn);
+        }
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_TRANSACTIONS_SKIPPED,
+            [
+                'transactions_skip_count'   => $transactionSkipCount,
+                'transactions_settle_count' => $transactionsSettleCount
+            ]
+        );
+
+        return $filterGroupedTxns;
     }
 }

@@ -1768,7 +1768,7 @@ class RefundTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/refunds/' . $refund['id'] . '/notes';
+        $this->testData[__FUNCTION__]['request']['url'] = '/refunds/' . $refund['id'];
 
         $this->ba->privateAuth();
 

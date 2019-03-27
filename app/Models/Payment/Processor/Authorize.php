@@ -4847,7 +4847,7 @@ trait Authorize
         {
             if (isset($data['acquirer']) === true)
             {
-                $payment->edit($data['acquirer']);
+                $payment->edit($data['acquirer'], 'edit_acquirer');
             }
         }
         catch (\Throwable $e)

@@ -7,6 +7,8 @@ use Request;
 
 class RefundController extends Controller
 {
+    use Traits\HasCrudMethods;
+
     public function postRefundCreate()
     {
         $input = Request::all();
@@ -217,15 +219,6 @@ class RefundController extends Controller
         $input = Request::all();
 
         $data = $this->service()->editStatus($id, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function editNotes($id)
-    {
-        $input = Request::all();
-
-        $data = $this->service()->editNotes($id, $input);
 
         return ApiResponse::json($data);
     }

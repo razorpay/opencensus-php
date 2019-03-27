@@ -109,6 +109,7 @@ class Constants
     const CALLBACK_URL_VALIDATION         = 'callback_url_validation';
     const REPORTING_GENRERIC_NOTES        = 'report_notes_to_column';
     const S2S_OTP_JSON                    = 's2s_otp_json';
+    const ADHOC_SETTLEMENT                = 'adhoc_settlement';
 
     /**
      * This will control if the bank details will be returned in the fetch token response.
@@ -327,6 +328,7 @@ class Constants
         self::SELF_KYC_DISABLED               => true,
         self::PAYMENT_MAILS_DISABLED          => true,
         self::DISPUTE_MAILS_DISABLED          => true,
+        self::ADHOC_SETTLEMENT                => true,
     ];
 
     // Entity type constants

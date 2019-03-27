@@ -55,6 +55,7 @@ class Validator extends Base\Validator
         ConfigKey::HEARTBEAT_SLAVE_TIME_THRESHOLD     => 'filled|integer',
         ConfigKey::HITACHI_DYNAMIC_DESCR_ENABLED      => 'filled|boolean',
         ConfigKey::CPS_SERVICE_ENABLED                => 'filled|boolean',
+        ConfigKey::SETTLEMENT_TRANSACTION_LIMIT       => 'filled|integer',
     ];
 
     protected static $setRedisKeysRules = [
@@ -81,7 +82,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $getConfigKeyRules = [
-        'key'   => 'required|in:merchant_enach_configs,GATEWAY_UNPROCESSED_REFUNDS'
+        'key'   => 'required|in:merchant_enach_configs,GATEWAY_UNPROCESSED_REFUNDS,settlement_transaction_limit'
     ];
 
     protected static $deleteConfigKeyRules = [

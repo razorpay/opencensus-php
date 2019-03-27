@@ -46,7 +46,7 @@ class Validator extends Base\Validator
         Entity::DISCOUNT,
     ];
 
-    protected static $notesRules = [
+    protected static $editRules = [
         Entity::NOTES => 'sometimes|notes'
     ];
 
