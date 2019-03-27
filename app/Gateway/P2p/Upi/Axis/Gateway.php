@@ -12,16 +12,6 @@ use RZP\Models\P2p\Base\Libraries\ArrayBag;
 
 class Gateway extends Upi\Gateway
 {
-    const X_MERCHANT_ID = 'X-Merchant-Id';
-
-    const X_MERCHANT_CHANNEL_ID = 'X-Merchant-Channel-Id';
-
-    const X_TIMESTAMP = 'X-Timestamp';
-
-    const CONTENT_TYPE = 'Content-Type';
-
-    const X_MERCHANT_SIGNATURE = 'X-Merchant-Signature';
-
     protected $actionMap = [];
 
     protected $gateway = 'p2p_upi_axis';
@@ -135,14 +125,14 @@ class Gateway extends Upi\Gateway
     protected function sendGatewayRequest($request)
     {
         $headers = [
-            self::X_MERCHANT_ID          => $this->getMerchantId(),
-            self::X_MERCHANT_CHANNEL_ID  => $this->getMerchantChannelId(),
-            self::X_TIMESTAMP            => $this->getTimeStamp(),
+            S2s::X_MERCHANT_ID          => $this->getMerchantId(),
+            S2s::X_MERCHANT_CHANNEL_ID  => $this->getMerchantChannelId(),
+            S2s::X_TIMESTAMP            => $this->getTimeStamp(),
         ];
 
         $request['headers'] = $headers;
 
-        $request['headers'][self::CONTENT_TYPE] = 'application/json';
+        $request['headers'][S2s::CONTENT_TYPE] = 'application/json';
 
         $signer = $this->getMerchantSigner();
 
@@ -150,7 +140,7 @@ class Gateway extends Upi\Gateway
 
         $signature = bin2hex($signer->sign($str));
 
-        $request['headers'][self::X_MERCHANT_SIGNATURE] = $signature;
+        $request['headers'][S2s::X_MERCHANT_SIGNATURE] = $signature;
 
         $request['content'] = json_encode($request['content']);
 

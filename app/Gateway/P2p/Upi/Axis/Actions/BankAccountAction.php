@@ -22,17 +22,23 @@ class BankAccountAction extends Action
         ],
         self::SET_MPIN => [
             self::VALIDATOR => [
-
+                Fields::CUSTOMER_VPA          => 'required',
+                Fields::CARD                  => 'required',
+                Fields::EXPIRY                => 'required',
+                Fields::ACCOUNT_REFERENCE_ID  => 'required',
+                Fields::UPI_REQUEST_ID        => 'required'
             ]
         ],
         self::CHANGE_MPIN => [
             self::VALIDATOR => [
-
+                    Fields::ACCOUNT_REFERENCE_ID  => 'required',
+                    Fields::UPI_REQUEST_ID        => 'required'
             ]
         ],
         self::CHECK_BALANCE => [
             self::VALIDATOR => [
-
+                Fields::ACCOUNT_REFERENCE_ID => 'required',
+                Fields::UPI_REQUEST_ID       => 'required'
             ]
         ]
     ];

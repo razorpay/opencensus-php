@@ -55,12 +55,19 @@ class Gateway extends Base\Gateway
         return parent::sendGatewayRequest($request);
     }
 
+    /*
+     * This method is responsible for calling the actual mock server of the gateway
+     * It first checks whether the gateway server is set. If not it will
+     * get the respective gateway server and attach it to Upi/Mock/Server.
+     * The respective action will be invoked on the gateway mock server,
+     * which will return the actual response.
+     * The gateway server will be preset when it's running on test cases
+     */
+
     protected function mockSendGatewayRequest(array $request)
     {
         $server = $this->getMockServer();
 
-        // If server already has gateway server, we will use it.
-        // It will be preset when it's running on test cases.
         if ($server->hasGatewayServer() === false)
         {
             $class = Factory::getServerClass($this->gateway);

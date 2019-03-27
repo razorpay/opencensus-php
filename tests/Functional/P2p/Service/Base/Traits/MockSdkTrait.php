@@ -23,6 +23,10 @@ trait MockSdkTrait
         return $this->mockedSdk;
     }
 
+    /*
+     * This method makes a call to Mock Sdk class, which returns the mocked response for sdk calls.
+     * This response is then used to make subsequent call to api for next action
+     */
     protected function handleSdkRequest(array $request)
     {
         $this->assertSame('sdk', $request['type']);

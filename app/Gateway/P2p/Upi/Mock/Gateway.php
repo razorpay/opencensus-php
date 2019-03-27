@@ -12,6 +12,10 @@ class Gateway extends P2p\Upi\Gateway
     {
         parent::handleGatewaySwitch($gateway, $entity);
 
+        // incase mock is set to true, this gateway will be invoked.
+        // We are explicitly setting mock to true here as we do not want to
+        // give control to any class to change the mock, which could
+        // alter the way requests will be sent.
         $gateway->setMock(true);
     }
 }
