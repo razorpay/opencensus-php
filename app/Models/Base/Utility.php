@@ -18,6 +18,11 @@ class Utility
         'd-m-Y H:i:s',
         'd-m-Y H:i',
         'd-m-Y',
+        'd-m-y',
+        'd/m/Y H:i:s',
+        'd/m/Y H:i',
+        'd/m/Y',
+        'd/m/y',
     ];
 
     public static function isUpdatedAndroidSdk($input)

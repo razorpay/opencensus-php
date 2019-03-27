@@ -11,6 +11,8 @@ use RZP\Trace\TraceCode;
 
 class PaymentController extends Controller
 {
+    use Traits\HasCrudMethods;
+
     public function getPayment($id)
     {
         $input = Request::all();
@@ -309,15 +311,6 @@ class PaymentController extends Controller
         $input = Request::all();
 
         $data = $this->service()->addPaymentMetadata($id, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function editNotes($id)
-    {
-        $input = Request::all();
-
-        $data = $this->service()->editNotes($id, $input);
 
         return ApiResponse::json($data);
     }

@@ -24,6 +24,7 @@ class ErrorCode
     const GATEWAY_ERROR_FATAL_ERROR                                                 = 'GATEWAY_ERROR_FATAL_ERROR';
     const GATEWAY_ERROR_REQUEST_ERROR                                               = 'GATEWAY_ERROR_REQUEST_ERROR';
     const GATEWAY_ERROR_GENERIC_ERROR                                               = 'GATEWAY_ERROR_GENERIC_ERROR';
+    const GATEWAY_ERROR_PAYMENT_FAILED                                              = 'GATEWAY_ERROR_PAYMENT_FAILED';
 
     const GATEWAY_ERROR_REQUEST_TIMEOUT                                             = 'GATEWAY_ERROR_REQUEST_TIMEOUT';
     const GATEWAY_ERROR_DENIED_BY_RISK                                              = 'GATEWAY_ERROR_DENIED_BY_RISK';
@@ -652,6 +653,7 @@ class ErrorCode
     const BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS                           = 'BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS';
     const BAD_REQUEST_BATCH_NOTIFICATIONS_SENT_ALREADY                              = 'BAD_REQUEST_BATCH_NOTIFICATIONS_SENT_ALREADY';
     const BAD_REQUEST_BATCH_STATS_NOT_SUPPORTED_FOR_TYPE                            = 'BAD_REQUEST_BATCH_STATS_NOT_SUPPORTED_FOR_TYPE';
+    const BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS                                 = 'BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS';
 
     const BAD_REQUEST_LAMBDA_ANOTHER_OPERATION_IN_PROGRESS                          = 'BAD_REQUEST_LAMBDA_ANOTHER_OPERATION_IN_PROGRESS';
 

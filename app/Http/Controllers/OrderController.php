@@ -7,6 +7,8 @@ use Request;
 
 class OrderController extends Controller
 {
+    use Traits\HasCrudMethods;
+
     public function createOrder()
     {
         $input = Request::all();
@@ -39,14 +41,5 @@ class OrderController extends Controller
         $payments = $this->service()->fetchPaymentsFor($id, $input);
 
         return ApiResponse::json($payments);
-    }
-
-    public function editNotes($id)
-    {
-        $input = Request::all();
-
-        $data = $this->service()->editNotes($id, $input);
-
-        return ApiResponse::json($data);
     }
 }

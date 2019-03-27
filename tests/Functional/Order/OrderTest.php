@@ -1680,7 +1680,7 @@ class OrderTest extends TestCase
 
         $order = $this->testCreateOrder();
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/orders/' . $order['id'] . '/notes';
+        $this->testData[__FUNCTION__]['request']['url'] = '/orders/' . $order['id'];
 
         $this->ba->privateAuth();
 

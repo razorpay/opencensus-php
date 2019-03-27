@@ -16,6 +16,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base as GatewayBase;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Upi\Axis\ErrorCodes\ErrorCodes;
 
 
 class Gateway extends Base\Gateway
@@ -99,7 +100,8 @@ class Gateway extends Base\Gateway
 
         $collectResponse[Fields::W_COLLECT_TXN_ID] = $collectResponse[Fields::DATA][Fields::W_COLLECT_TXN_ID];
 
-        $this->checkResponseStatus($collectResponse[Fields::CODE], Status::COLLECT_SUCCESS);
+        $this->checkResponseStatus($collectResponse[Fields::CODE], Status::COLLECT_SUCCESS,
+            $collectResponse);
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $collectResponse);
 
@@ -277,11 +279,11 @@ class Gateway extends Base\Gateway
         return $this->parseResponse($responseBody, $trace);
     }
 
-    private function checkResponseStatus($status, string $successStatus)
+    private function checkResponseStatus($status, string $successStatus, $content)
     {
         if ($status !== $successStatus)
         {
-            $errorCode = ErrorCodeMap::getApiErrorCode($status);
+            $errorCode = ErrorCodes::getErrorCode($status, $content);
 
             throw new Exception\GatewayErrorException(
                 $errorCode,
@@ -468,7 +470,8 @@ class Gateway extends Base\Gateway
 
         $this->assertAmount($expectedAmount, $actualAmount);
 
-        $this->checkResponseStatus($content[Fields::GATEWAY_RESPONSE_CODE], Status::CALLBACK_SUCCESS);
+        $this->checkResponseStatus($content[Fields::GATEWAY_RESPONSE_CODE], Status::CALLBACK_SUCCESS,
+            $content);
 
         $this->updateGatewayPaymentResponse($gatewayPayment, $content);
 
@@ -896,7 +899,7 @@ class Gateway extends Base\Gateway
         {
             $code = $response[Fields::CODE];
 
-            $errorCode = ErrorCodeMap::getApiErrorCode($code);
+            $errorCode = ErrorCodes::getErrorCode($code, $response);
 
             throw new Exception\GatewayErrorException(
                 $errorCode,

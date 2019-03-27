@@ -986,7 +986,7 @@ class Service extends Base\Service
         ];
     }
 
-    public function editNotes($id, array $input)
+    public function update($id, array $input)
     {
         $refundId = Entity::verifyIdAndStripSign($id);
 
@@ -995,7 +995,7 @@ class Service extends Base\Service
             {
                 $refund = $this->repo->refund->findByIdAndMerchant($refundId, $this->merchant);
 
-                $refund->edit($input, 'notes');
+                $refund->edit($input);
 
                 $this->repo->saveOrFail($refund);
 

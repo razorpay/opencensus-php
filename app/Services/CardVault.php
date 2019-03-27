@@ -15,6 +15,7 @@ class CardVault
     const VALUE             = 'value';
     const SECRET            = 'secret';
     const SUCCESS           = 'success';
+    const SCHEME            = 'scheme';
     const TOKENEX_TOKEN     = 'tokenex_token';
     const TOKENEX_TOKENS    = 'tokenex_tokens';
     const X_RAZORPAY_TASKID = 'X-Razorpay-TaskId';
@@ -50,12 +51,17 @@ class CardVault
     {
         if (array_key_exists('card', $input) === true)
         {
-            $input = [
+            $payload = [
                 self::SECRET => $input['card'],
             ];
         }
 
-        $response = $this->sendRequest('tokenize', 'post', $input);
+        if (array_key_exists(self::SCHEME, $input) === true)
+        {
+            $payload[self::SCHEME] = $input[self::SCHEME];
+        }
+
+        $response = $this->sendRequest('tokenize', 'post', $payload);
 
         if (empty($response[self::TOKEN]) === true)
         {
