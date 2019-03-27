@@ -32,7 +32,12 @@ class Factory
             else
             {
                 // Used for subscription authentication payment
-                $merchantFeatureCheck = $merchant->isFeatureEnabled(Feature\Constants::SUBSCRIPTION_AUTH_V2);
+                $response = app()->razorx->getTreatment($merchant->getId(), 'auth_flow_redirect_to_subserv', app()['rzp.mode']);
+
+                if (strtolower($response) === 'on')
+                {
+                    $merchantFeatureCheck = true;
+                }
             }
         }
 
