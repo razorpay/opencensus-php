@@ -1413,6 +1413,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QUERY_CACHE_STORE_ERROR                       = 'QUERY_CACHE_STORE_ERROR';
     const QUERY_CACHE_FLUSH_ERROR                       = 'QUERY_CACHE_FLUSH_ERROR';
     const METRIC_CACHE_EVENT_ERROR                      = 'METRIC_CACHE_EVENT_ERROR';
+    const TOKEN_CACHE_READ_ERROR                        = 'TOKEN_CACHE_READ_ERROR';
+    const TOKEN_CACHE_STORE_ERROR                       = 'TOKEN_CACHE_STORE_ERROR';
 
     //upi status cache
     const UPI_CACHE_STORE_ERROR                         = 'UPI_CACHE_STORE_ERROR';
