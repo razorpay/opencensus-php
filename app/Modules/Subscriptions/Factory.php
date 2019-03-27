@@ -29,13 +29,13 @@ class Factory
 
         if ($merchant !== null)
         {
-                // Used for subscription authentication payment
-                $response = app()->razorx->getTreatment($merchant->getId(), 'auth_flow_redirect_to_subserv', app()['rzp.mode']);
+            // Used for subscription authentication payment
+            $response = app()->razorx->getTreatment($merchant->getId(), 'auth_flow_redirect_to_subserv', app()['rzp.mode']);
 
-                if (strtolower($response) === 'on')
-                {
-                    return true;
-                }
+            if (strtolower($response) === 'on')
+            {
+                return true;
+            }
         }
 
         return false;
