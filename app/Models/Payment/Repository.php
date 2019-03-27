@@ -644,6 +644,15 @@ class Repository extends Base\Repository
         string $gateway,
         bool $corporate = false)
     {
+        if ($corporate === true)
+        {
+            $corpValues = [Terminal\BankingType::CORPORATE_ONLY, Terminal\BankingType::BOTH];
+        }
+        else
+        {
+            $corpValues = [Terminal\BankingType::RETAIL_ONLY];
+        }
+
         $paymentAttrs = $this->dbColumn('*');
 
         $terminalRepo = $this->repo->terminal;
@@ -667,7 +676,7 @@ class Repository extends Base\Repository
                     ->where($pAuthorizedAt, '<=', $to)
                     ->where($pGateway, $gateway)
                     ->whereNotNull($pAuthorizedAt)
-                    ->where($tCorp, $corporate)
+                    ->whereIn($tCorp, $corpValues)
                     ->get();
     }
 
