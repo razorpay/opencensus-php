@@ -12,6 +12,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestContext;
 use RZP\Base\Database\Metric;
+use RZP\Jobs\Context as WorkerContext;
 
 /**
  * Checks replication lag by querying heartbeat table on the
@@ -33,6 +34,11 @@ class HeartbeatLagChecker implements LagChecker
      * @var RequestContext
      */
     protected $reqCtx;
+
+    /**
+     * @var WorkerContext
+     */
+    protected $workerContext;
 
     /**
      * @var array
@@ -128,6 +134,8 @@ class HeartbeatLagChecker implements LagChecker
 
         $this->cache = $app['cache'];
 
+        $this->workerContext = $app['worker.ctx'];
+
         $this->initializeConnectionResolvers();
     }
 
@@ -187,7 +195,8 @@ class HeartbeatLagChecker implements LagChecker
             return $useSlave;
         }
 
-        $currentRoute = $this->reqCtx->getRoute();
+        $currentRoute = $this->reqCtx->getRoute() ?? $this->workerContext->getJobName();
+
         $connectionIdentifier = $this->redis->hget($this->config['routes'], $currentRoute);
 
         //

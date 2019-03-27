@@ -53,6 +53,7 @@ iframe {
     background: #fff;
     height: 40px;
     width: 100px;
+    z-index: 2;
   }
   iframe {
     z-index: 5;

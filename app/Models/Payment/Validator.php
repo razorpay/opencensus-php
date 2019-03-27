@@ -90,7 +90,7 @@ class Validator extends Base\Validator
         'ott'                           => 'sometimes_if:method,cardless_emi|string',
     ];
 
-    protected static $editRules = [
+    protected static $editAcquirerRules = [
         Entity::VPA                  => 'sometimes|string|max:100',
         Entity::APPROVAL_CODE        => 'sometimes|string|max:6',
         Entity::REFERENCE1           => 'sometimes|nullable|string',
@@ -98,7 +98,7 @@ class Validator extends Base\Validator
         Entity::REFERENCE16          => 'sometimes|nullable|string',
     ];
 
-    protected static $notesRules = [
+    protected static $editRules = [
         Entity::NOTES                => 'sometimes|notes',
     ];
 

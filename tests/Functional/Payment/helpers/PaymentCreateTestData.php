@@ -260,7 +260,7 @@ return [
                     'key2' => 'value2',
                 ],
             ],
-            'method'  => 'PUT',
+            'method'  => 'PATCH',
         ],
         'response' => [
             'content' => [
@@ -295,7 +295,7 @@ return [
                     'key16' => 'value16',
                 ],
             ],
-            'method'  => 'PUT',
+            'method'  => 'PATCH',
         ],
         'response' => [
             'content' => [
@@ -320,7 +320,7 @@ return [
                     'key3' => ['k' => 'v'],
                 ],
             ],
-            'method'  => 'PUT',
+            'method'  => 'PATCH',
         ],
         'response' => [
             'content' => [

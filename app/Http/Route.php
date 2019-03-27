@@ -98,7 +98,7 @@ final class Route
         'payment_authorize_refund'                 => ['post',     'payments/{id}/authorize_refund',                 'PaymentController@postRefundAuthorized'                            ],
         'payments_multiple_authorize_refund'       => ['post',     'payments/authorize_refund/bulk',                 'PaymentController@postRefundAuthorizedInBulk'                      ],
         'payment_add_metadata'                     => ['post',     'payments/{x_entity_id}/metadata',                'PaymentController@postPaymentMetadata'                             ],
-        'payment_edit_notes'                       => ['put',      'payments/{id}/notes',                            'PaymentController@editNotes'                                       ],
+        'payment_edit'                             => ['patch',    'payments/{id}',                                  'PaymentController@update'                                          ],
         'payment_fetch_by_id'                      => ['get',      'payments/{id}',                                  'PaymentController@getPayment'                                      ],
         'payment_fetch_multiple'                   => ['get',      'payments',                                       'PaymentController@getPayments'                                     ],
         'payment_fetch_card_details'               => ['get',      'payments/{id}/card',                             'PaymentController@getCardForPayment'                               ],
@@ -122,7 +122,7 @@ final class Route
         'payment_validate_vpa'                     => ['post',     'payment/validate/vpa',                           'PaymentController@postPaymentValidateVpa'                          ],
         'refund_create'                            => ['post',     'refunds',                                        'RefundController@postRefundCreate'                                 ],
         'refund_edit_status'                       => ['put',      'refunds/{id}/status',                            'RefundController@putRefundStatus'                                  ],
-        'refund_edit_notes'                        => ['put',      'refunds/{id}/notes',                             'RefundController@editNotes'                                        ],
+        'refund_edit'                              => ['patch',    'refunds/{id}',                                   'RefundController@update'                                           ],
         'refund_mark_processed_bulk'               => ['put',      'refunds/status/processed',                       'RefundController@putRefundMarkProcessedBulk'                       ],
         'refund_fetch_by_id'                       => ['get',      'refunds/{id}',                                   'RefundController@getRefund'                                        ],
         'refund_fetch_multiple'                    => ['get',      'refunds',                                        'RefundController@getRefunds'                                       ],
@@ -461,7 +461,7 @@ final class Route
         'order_fetch_by_id'                        => ['get',      'orders/{id}',                                    'OrderController@fetchOrderById'                                    ],
         'order_payments'                           => ['get',      'orders/{id}/payments',                           'OrderController@fetchPayments'                                     ],
         'order_refund_multiple_authorized'         => ['post',     'orders/payments/refund',                         'PaymentController@postRefundAuthorizedPaymentsOfPaidOrders'        ],
-        'order_edit_notes'                         => ['put',      'orders/{id}/notes',                              'OrderController@editNotes'                                         ],
+        'order_edit'                               => ['patch',    'orders/{id}',                                    'OrderController@update'                                            ],
         'reports_transaction_broking'              => ['get',      'reports/transaction/broking',                    'MerchantController@getBrokerTransactionReport'                     ],
         'reports_transaction_dsp'                  => ['get',      'reports/transaction/dsp',                        'MerchantController@getDSPTransactionReport'                        ],
         'reports_order_rpp'                        => ['get',      'reports/order/rpp',                              'MerchantController@getRPPOrderReport'                              ],
@@ -1147,18 +1147,18 @@ final class Route
         'payment_fetch_card_details',
         'payment_payout',
         'payment_validate_vpa',
-        'payment_edit_notes',
+        'payment_edit',
         'refund_create',
         'refund_fetch_by_id',
         'refund_fetch_multiple',
-        'refund_edit_notes',
+        'refund_edit',
         'card_check_recurring',
         'card_fetch_by_id',
         'iin_list_by_flow',
         'order_create',
         'order_fetch',
         'order_fetch_by_id',
-        'order_edit_notes',
+        'order_edit',
         'order_payments',
         'feature_dummy',
         'razorx_dummy',
@@ -2413,6 +2413,13 @@ final class Route
     ];
 
     /**
+     * List of routes, required to check DeDuplication or Idempotency
+     */
+    public static $idempotent = [
+        'invoice_create',
+    ];
+
+    /**
      * These are all the applications we have
      * If you add something here, add it to $internal as well
      * Nothing here should be in private or admin auth
@@ -2797,8 +2804,8 @@ final class Route
         'addon_delete',
         'subscription_create_addon',
         'subscription_fetch_due_addons',
-        //'subscription_test_charge',
-        //'subscription_manual_retry',
+        'subscription_test_charge',
+        'subscription_manual_retry',
         // Crons
         'subscriptions_expire',
         // 'subscriptions_charge_invoices',
@@ -3065,6 +3072,11 @@ final class Route
         if (in_array($name, self::$session, true) === true)
         {
             $route->middleware('web');
+        }
+
+        if (in_array($name, self::$idempotent, true) === true)
+        {
+            $route->middleware('idempotent');
         }
     }
 

@@ -942,7 +942,7 @@ class Service extends Base\Service
         return [];
     }
 
-    public function editNotes($id, $input)
+    public function update($id, $input)
     {
         $paymentId = Entity::verifyIdAndStripSign($id);
 
@@ -951,7 +951,7 @@ class Service extends Base\Service
             {
                 $payment = $this->repo->payment->findByIdAndMerchant($paymentId, $this->merchant);
 
-                $payment->edit($input, 'notes');
+                $payment->edit($input);
 
                 $this->repo->saveOrFail($payment);
 

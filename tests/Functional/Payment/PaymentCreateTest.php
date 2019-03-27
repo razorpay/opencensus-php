@@ -1044,7 +1044,7 @@ class PaymentCreateTest extends TestCase
 
         $payment = $this->doAuthAndGetPayment($payment);
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/payments/' . $payment['id'] . '/notes';
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/' . $payment['id'];
 
         $this->ba->privateAuth();
 
@@ -1061,7 +1061,7 @@ class PaymentCreateTest extends TestCase
 
         $payment = $this->doAuthAndGetPayment($payment);
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/payments/' . $payment['id'] . '/notes';
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/' . $payment['id'];
 
         $this->ba->privateAuth();
 
@@ -1078,7 +1078,7 @@ class PaymentCreateTest extends TestCase
 
         $payment = $this->doAuthAndGetPayment($payment);
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/payments/' . $payment['id'] . '/notes';
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/' . $payment['id'];
 
         $this->ba->privateAuth();
 
