@@ -144,7 +144,6 @@ export default class Refunds extends Component {
       ['Merchant ID', item => item.merchant_id],
       ['Status', item => item.status],
       ['Gateway', item => item.gateway],
-      ['Refund Gateway', item => item.refund_gateway],
       ['Method', item => item.method],
       ['Attempts', item => item.attempts],
       ['Refund Amount', item => showAmount(item.currency, item.amount)],
@@ -152,7 +151,6 @@ export default class Refunds extends Component {
         'Payment Amount',
         item => showAmount(item.currency, item.payment_amount),
       ],
-      ['Gateway Acquirer', item => item.gateway_acquirer],
       ['Refund Created At', item => formatDate(item.created_at)],
       ['Payment Created At', item => formatDate(item.payment_created_at)],
     ];

@@ -125,7 +125,7 @@ class Constants
                 [
                     'type'  => 'button',
                     'label' => 'Start Today',
-                    'url'   => 'https://dashboard.razorpay.com/#/app/subscriptions/',
+                    'url'   => '/subscriptions/',
                 ],
             ],
             'filters'     => [
@@ -145,7 +145,7 @@ class Constants
                 [
                     'type'  => 'button',
                     'label' => 'Get Started',
-                    'url'   => 'https://dashboard.razorpay.com/#/app/subscriptions/',
+                    'url'   => '/subscriptions/',
                 ],
             ],
             'filters'     => [
@@ -165,14 +165,14 @@ class Constants
                 [
                     'type'  => 'button',
                     'label' => 'Get Started',
-                    'url'   => 'https://dashboard.razorpay.com/#/app/subscriptions/',
+                    'url'   => '/subscriptions/',
                 ],
             ],
             'filters'     => [
                 'experiments' => ['non_subscriptions'],
             ],
             'ga'          => [
-                'action' => 'Subscription Links - Announcement - Non Subscriptions',
+                'action' => 'Subscription Links - Announcement - Not Live',
             ],
         ],
     ];
