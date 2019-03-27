@@ -216,9 +216,16 @@ class Entity extends Base\PublicEntity
 
     protected function generateVaultToken($input)
     {
-        if (isset($input[self::VAULT]))
+        if (isset($input[self::VAULT]) === true)
         {
             $tempInput['card'] = $input['number'];
+
+            $tempInput['scheme'] = Card\Vault::RZP_VAULT_SCHEME;
+
+            if ($input[self::VAULT] === Card\Vault::RZP_ENCRYPTION)
+            {
+                $tempInput['scheme'] = Card\Vault::RZP_ENCRYPTION_SCHEME;
+            }
 
             $vaultToken = (new Card\CardVault)->getVaultToken($tempInput);
 

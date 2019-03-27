@@ -2804,8 +2804,8 @@ final class Route
         'addon_delete',
         'subscription_create_addon',
         'subscription_fetch_due_addons',
-        //'subscription_test_charge',
-        //'subscription_manual_retry',
+        'subscription_test_charge',
+        'subscription_manual_retry',
         // Crons
         'subscriptions_expire',
         // 'subscriptions_charge_invoices',

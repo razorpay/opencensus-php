@@ -35,13 +35,13 @@ trait BatchTestTrait
         $this->testData[$callee]['request']['files']['file'] = $uploadedFile;
     }
 
-    public function createUploadedFile(string $url): UploadedFile
+    public function createUploadedFile(string $url, $fileName = 'file.xlsx'): UploadedFile
     {
         $mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
         return new UploadedFile(
                         $url,
-                        'file.xlsx',
+                        $fileName,
                         $mime,
                         filesize($url),
                         null,

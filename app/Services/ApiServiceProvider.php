@@ -64,10 +64,13 @@ class ApiServiceProvider extends BaseServiceProvider
     {
         foreach (E::CACHED_ENTITIES as $entity => $_)
         {
-            $entityClass = E::getEntityClass($entity);
-            $entityObserverClass = E::getEntityObserverClass($entity);
+            if ($entity !== E::AUTH_TOKEN)
+            {
+                $entityClass = E::getEntityClass($entity);
+                $entityObserverClass = E::getEntityObserverClass($entity);
 
-            $entityClass::observe($entityObserverClass);
+                $entityClass::observe($entityObserverClass);
+            }
         }
 
         // attaching payment observer since its invalidates
