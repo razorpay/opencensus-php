@@ -51,7 +51,11 @@ export default class PartnerConfigList extends Component {
 
     openModal(
       <div style={{ width: '1050px' }}>
-        <ModalContent header="Partner Config">
+        <ModalContent
+          header={`${
+            isPresent(submerchant) ? 'Override Submerchant' : ''
+          } Partner Config`}
+        >
           <Write
             values={{
               ...values,
@@ -62,6 +66,7 @@ export default class PartnerConfigList extends Component {
             submit={!!(config || {}).id ? adminPut : adminPost}
             buttonText={!!(config || {}).id ? 'Update' : 'Create'}
             submerchant={submerchant}
+            config_id={(config || {}).id}
           />
         </ModalContent>
       </div>
