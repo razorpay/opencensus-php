@@ -261,8 +261,7 @@ class GatewayController extends Controller
 
         $payment = $this->repo->payment->findOrFailPublic($paymentId);
 
-        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
-        $publicKey = $keys->first()->getPublicKey($mode);
+        $publicKey = $this->getMerchantPublicKey($payment->getMerchantId(), $mode);
 
         $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
 
@@ -323,9 +322,7 @@ class GatewayController extends Controller
 
         $payment = $this->repo->payment->findOrFailPublic($paymentId);
 
-        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
-
-        $publicKey = $keys->first()->getPublicKey($mode);
+        $publicKey = $this->getMerchantPublicKey($payment->getMerchantId(), $mode);
 
         $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
 
@@ -372,9 +369,7 @@ class GatewayController extends Controller
 
         $payment = $this->repo->payment->findOrFailPublic($paymentId);
 
-        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
-
-        $publicKey = $keys->first()->getPublicKey($mode);
+        $publicKey = $this->getMerchantPublicKey($payment->getMerchantId(), $mode);
 
         $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
 
@@ -480,8 +475,7 @@ class GatewayController extends Controller
         $payment = $this->repo->payment->findOrFailPublic($paymentId);
         $publicPaymentId = $payment->getPublicId();
 
-        $keys = $this->repo->key->getKeysForMerchant($payment->getMerchantId());
-        $publicKey = $keys->first()->getPublicKey($mode);
+        $publicKey = $this->getMerchantPublicKey($payment->getMerchantId(), $mode);
 
         switch ($responseFormat)
         {
@@ -756,5 +750,18 @@ class GatewayController extends Controller
                 'exception' => $exc->getMessage(),
             ]);
         }
+    }
+
+    protected function getMerchantPublicKey(string $merchantId, string $mode)
+    {
+        $keys = $this->repo->key->getKeysForMerchant($merchantId);
+
+        if ($keys->count() > 0)
+        {
+            return $keys->first()->getPublicKey($mode);
+        }
+
+        // Route class check on empty string
+        return '';
     }
 }

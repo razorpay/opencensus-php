@@ -9,6 +9,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Constants\Entity as ConstantsEntity;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Exception\PaymentVerificationException;
 use RZP\Gateway\Wallet\Amazonpay\RequestFields;
 use RZP\Gateway\Wallet\Amazonpay\ResponseFields;
@@ -19,6 +20,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 class AmazonpayGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use PartnerTrait;
     use DbEntityFetchTrait;
 
     private $payment;
@@ -96,6 +98,55 @@ class AmazonpayGatewayTest extends TestCase
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
         $this->assertEquals(Payment\Status::CAPTURED, $payment[Payment\Entity::STATUS]);
+        $this->assertEquals(Wallet::AMAZONPAY, $payment[Payment\Entity::WALLET]);
+
+        $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
+
+        $this->assertTestResponse($wallet, 'testPayment');
+
+        $this->assertNotNull($wallet[WalletEntity::DATE]);
+    }
+
+    public function testPartnerPayment()
+    {
+        list($clientId, $submerchantId) = $this->setUpPartnerAuthForPayment();
+
+        $response = $this->doPartnerAuthPayment($this->payment, $clientId, $submerchantId);
+
+        $payment = $this->getDbEntityById(ConstantsEntity::PAYMENT, $response['razorpay_payment_id']);
+
+        $this->assertEquals(Payment\Status::AUTHORIZED, $payment[Payment\Entity::STATUS]);
+        $this->assertEquals(Wallet::AMAZONPAY, $payment[Payment\Entity::WALLET]);
+
+        $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
+
+        $this->assertTestResponse($wallet, 'testPayment');
+
+        $this->assertNotNull($wallet[WalletEntity::DATE]);
+    }
+
+    public function testPartnerPaymentAjaxRoute()
+    {
+        list($clientId, $submerchantId) = $this->setUpPartnerAuthForPayment();
+
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'amazonpay_change_callback')
+                {
+                    $callbackUrl = $this->route->getUrl(
+                        'gateway_payment_callback_amazonpay',
+                        ['ajax' => 'ajax']);
+
+                    $content[RequestFields::REDIRECT_URL] = $callbackUrl;
+                }
+            });
+
+        $response = $this->doPartnerAuthPayment($this->payment, $clientId, $submerchantId);
+
+        $payment = $this->getDbEntityById(ConstantsEntity::PAYMENT, $response['razorpay_payment_id']);
+
+        $this->assertEquals(Payment\Status::AUTHORIZED, $payment[Payment\Entity::STATUS]);
         $this->assertEquals(Wallet::AMAZONPAY, $payment[Payment\Entity::WALLET]);
 
         $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
