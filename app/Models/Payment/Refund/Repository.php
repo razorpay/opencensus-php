@@ -568,6 +568,15 @@ class Repository extends Base\Repository
         //   AND `refunds`.`gateway` = $gateway
         //   AND `terminals`.`corporate` = $tpvEnabled
 
+        if ($corporate === true)
+        {
+            $corpValues = [Terminal\BankingType::CORPORATE_ONLY, Terminal\BankingType::BOTH];
+        }
+        else
+        {
+            $corpValues = [Terminal\BankingType::RETAIL_ONLY];
+        }
+
         $attrs = $this->dbColumn('*');
 
         $pRepo = $this->repo->payment;
@@ -596,7 +605,7 @@ class Repository extends Base\Repository
                     ->where($rCreatedAt, '<=', $to)
                     ->where($pType, '=', $gatewayCode)
                     ->where($rGateway, '=', $gateway)
-                    ->where($tCorp, '=', $corporate)
+                    ->whereIn($tCorp, $corpValues)
                     ->where($rBaseAmount, '!=', 0)
                     ->with('payment')
                     ->get();

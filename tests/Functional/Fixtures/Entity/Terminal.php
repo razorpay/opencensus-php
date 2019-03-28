@@ -1791,7 +1791,7 @@ class Terminal extends Base
     {
         $attributes = [
             'id'                => Shared::NETBANKING_AXIS_CRP_TERMINAL,
-            'corporate'         => 1,
+            'corporate'         => 2,
         ];
 
         return $this->createSharedNetbankingAxisTerminal($attributes);
