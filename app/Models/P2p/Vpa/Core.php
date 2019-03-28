@@ -3,7 +3,9 @@
 namespace RZP\Models\P2p\Vpa;
 
 use RZP\Exception;
+use RZP\Constants\Mode;
 use RZP\Models\P2p\Base;
+use RZP\Constants\Environment;
 use RZP\Models\P2p\BankAccount;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
 
@@ -13,9 +15,29 @@ use RZP\Models\P2p\Base\Libraries\ArrayBag;
  */
 class Core extends Base\Core
 {
+    /**
+     * @return Entity
+     */
+    public function getDefaultVpa()
+    {
+        return $this->repo->newP2pQuery()
+                          ->where(Entity::DEFAULT, true)
+                          ->first();
+    }
+
+    /**
+     * @return Entity
+     */
+    public function getAttachedVpa(BankAccount\Entity $bankAccount)
+    {
+        return $this->repo->newP2pQuery()
+                          ->where(Entity::BANK_ACCOUNT_ID, $bankAccount->getId())
+                          ->first();
+    }
+
     public function checkLocalAvailability(string $username): bool
     {
-        $vpa = $this->repo->fetchByUsername($username);
+        $vpa = $this->repo->fetchByUsername($username, true);
 
         return ($vpa instanceof Entity);
     }
@@ -42,6 +64,31 @@ class Core extends Base\Core
         $this->repo->saveOrFail($vpa);
 
         return $vpa;
+    }
+
+    public function suggestUsername(BankAccount\Entity $bankAccount)
+    {
+        // Last 10 character of phone number
+        $username = substr($bankAccount->device->getContact(), -10);
+
+        // For production and
+        if (($this->mode() === Mode::LIVE) and
+            ($this->environment() === Environment::PRODUCTION))
+        {
+            return $username;
+        }
+
+        $prefix = $this->environment();
+
+        // TODO: Remove the random part in milestone 3
+        $username = $prefix . '.' . $username . '.' . strtolower(random_alpha_string(4));
+
+        return $username;
+    }
+
+    public function delete()
+    {
+        return $this->repo->newP2pQuery()->delete();
     }
 
     /**

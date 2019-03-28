@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Payment\TerminalAuthenitcation;
 use Redis;
 
 use RZP\Services\RazorXClient;
+use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Terminal\Options as TerminalOptions;
@@ -376,6 +377,60 @@ class TerminalAuthenticationTest extends TestCase
         self::assertEquals('headless_otp', $payment['auth_type']);
         self::assertEquals('hitachi', $payment['gateway']);
         self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
+    }
+
+    // boost cyber source mpi gateway
+    public function testAuthenticationGatewayCyberSource()
+    {
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+
+        TerminalOptions::setTestChance(1000);
+
+        $this->createGatewayRules($this->testData[__FUNCTION__]);
+
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal', [
+            'type' => [
+                'non_recurring' => '1'
+            ]
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin' => '556763',
+            'country' => 'IN',
+            'issuer' => 'ICIC',
+            'network' => 'MasterCard',
+            'flows' => [
+                '3ds' => '1',
+            ]
+        ]);
+
+        $this->otpFlow = false;
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['preferred_auth'] = ['3ds', 'otp'];
+
+        $this->fixtures->merchant->addFeatures(['headless']);
+        $this->mockCardVault();
+        $this->mockOtpElf();
+
+        $response = $this->doAuthPayment($payment);
+
+        self::assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        self::assertEquals('authorized', $payment['status']);
     }
 
     protected function createGatewayRules($rules)

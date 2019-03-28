@@ -72,6 +72,7 @@ class Gateway
     const UPI_YESBANK            = 'upi_yesbank';
     const AEPS_ICICI             = 'aeps_icici';
     const ISG                    = 'isg';
+    const PAYSECURE              = 'paysecure';
 
     const CARD_FSS               = 'card_fss';
 
@@ -107,6 +108,7 @@ class Gateway
 
     // this is a dummy gateway. this is required to save MIDs & TIDs of a merchant.
     const EMI_SBI            = 'emi_sbi';
+    const BAJAJFINSERV       = 'bajajfinserv';
 
     const GO_LIVE_TIMESTAMP = 'go_live_timestamp';
 
@@ -131,6 +133,8 @@ class Gateway
     // the below gateway would be used
     //
     const DEFAULT_ESIGNER_GATEWAY = self::ESIGNER_DIGIO;
+
+    const BAJAJ = 'bajajfinserv';
 
     const GATEWAY_ACQUIRERS = [
         self::AXIS_MIGS    => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
@@ -219,6 +223,7 @@ class Gateway
         self::WALLET_OPENWALLET,
         self::CARDLESS_EMI,
         self::ENACH_NPCI_NETBANKING,
+        self::NETBANKING_CORPORATION,
 
         // UPI HULK is TEMPORARY, As payment are still failed on hulk and we can't do much there,
         //If you are seeing this after Sep'18, Please report to gateway payments team
@@ -272,6 +277,7 @@ class Gateway
         IFSC::IDFB,
         IFSC::UTIB,
         IFSC::CBIN,
+        Netbanking::BARB_R
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [
@@ -529,7 +535,7 @@ class Gateway
             self::GO_LIVE_TIMESTAMP => 1546597864
         ],
         Payment\Gateway::UPI_MINDGATE   => [
-            self::GO_LIVE_TIMESTAMP => 1540826221
+            self::GO_LIVE_TIMESTAMP => 1540830393
         ],
         Payment\Gateway::HITACHI   => [
             self::GO_LIVE_TIMESTAMP => 1550746997
@@ -537,6 +543,9 @@ class Gateway
         Payment\Gateway::WALLET_OLAMONEY   => [
             self::GO_LIVE_TIMESTAMP => 1550838065
         ],
+        Payment\Gateway::WALLET_JIOMONEY   => [
+            self::GO_LIVE_TIMESTAMP => 1552398662
+        ]
     ];
 
     /**
@@ -551,6 +560,12 @@ class Gateway
         'BbaYzzPW541Aut',
         '80oXBj51MHGmwH',
         '94tLpgbojcR85O',
+        'C1fjEduvEkBUEK',
+        'C1fmOZYiZiezoD',
+        'C1fnUMHBmitlPB',
+        'C1fo6ARXco94tP',
+        'C1fp6DAnDH4YUz',
+        'C1fq8jgl8NRKnh',
     ];
 
     public static $channels = [
@@ -592,6 +607,7 @@ class Gateway
         self::AEPS_ICICI          => Settlement\Channel::KOTAK,
         self::CYBERSOURCE         => Settlement\Channel::KOTAK,
         self::HITACHI             => Settlement\Channel::KOTAK,
+        self::PAYSECURE           => Settlement\Channel::KOTAK,
     ];
 
     /**
@@ -608,6 +624,7 @@ class Gateway
             self::PAYTM,
             self::AMEX,
             self::CYBERSOURCE,
+            self::PAYSECURE,
             self::FIRST_DATA,
             self::MPI_BLADE,
             self::MPI_ENSTAGE,
@@ -703,6 +720,7 @@ class Gateway
         self::AMEX,
         self::CYBERSOURCE,
         self::FIRST_DATA,
+        self::PAYSECURE,
     ];
 
     const SHARED_NETBANKING_GATEWAYS_LIVE = [
@@ -715,6 +733,7 @@ class Gateway
         self::ENACH_RBL,
         self::NETBANKING_HDFC,
         self::NETBANKING_AXIS,
+        self::ENACH_NPCI_NETBANKING,
     ];
 
     /**
@@ -730,6 +749,7 @@ class Gateway
         self::AXIS_MIGS             => [],
         self::AMEX                  => [],
         self::CYBERSOURCE           => [],
+        self::PAYSECURE             => [],
         self::FIRST_DATA            => [
             self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY]
         ],
@@ -834,6 +854,9 @@ class Gateway
         self::AMEX => [
             Network::AMEX
         ],
+        self::BAJAJ => [
+            Network::BAJAJ
+        ],
         self::MPI_BLADE => [
             Network::MC,
             Network::VISA
@@ -875,6 +898,9 @@ class Gateway
             Network::VISA,
             Network::RUPAY,
         ],
+        self::PAYSECURE => [
+            Network::RUPAY,
+        ]
     ];
 
     public static $bharatQrCardNetwork = [
@@ -955,6 +981,7 @@ class Gateway
         self::WALLET_PAYZAPP,
         self::FIRST_DATA,
         self::CYBERSOURCE,
+        self::PAYSECURE,
         self::WALLET_PAYUMONEY,
         self::WALLET_AIRTELMONEY,
         self::WALLET_OLAMONEY,
@@ -982,6 +1009,15 @@ class Gateway
         self::CYBERSOURCE,
         self::FIRST_DATA,
         self::CARD_FSS,
+        self::HDFC,
+        self::UPI_AXIS,
+        self::UPI_HULK,
+        self::UPI_RBL,
+        self::UPI_SBI,
+        self::UPI_YESBANK,
+        self::UPI_MINDGATE,
+        self::UPI_ICICI,
+        self::BAJAJ,
     ];
 
     /**
@@ -1335,7 +1371,13 @@ class Gateway
 
     public static $onlyAuthorizationGateway = [
         Gateway::HITACHI,
+        Gateway::CYBERSOURCE,
         Gateway::ENACH_RBL,
+    ];
+
+    public static $authorizationAuthenticationGatewayMap = [
+        Gateway::HITACHI     => Gateway::MPI_BLADE,
+        Gateway::CYBERSOURCE => Gateway::CYBERSOURCE,
     ];
 
     public static $subscriptionOverOneYearGateways = [
@@ -1399,6 +1441,11 @@ class Gateway
     public static function isOnlyAuthorizationGateway($gateway): bool
     {
         return in_array($gateway, self::$onlyAuthorizationGateway, true);
+    }
+
+    public static function authorizationToAuthenticationGateway($gateway, $default = null)
+    {
+        return self::$authorizationAuthenticationGatewayMap[$gateway] ?? $default;
     }
 
     public static function isZeroRupeeFlowSupported($bank): bool

@@ -111,6 +111,8 @@ class Base extends BaseModel\Core
         $this->batch            = $batch;
         $this->merchant         = $batch->merchant;
         $this->settingsAccessor = Settings\Accessor::for($this->batch, Settings\Module::BATCH);
+
+        $this->app['basicauth']->setMerchant($this->merchant);
     }
 
     public function setParams(array $params = null)
@@ -1282,5 +1284,52 @@ class Base extends BaseModel\Core
     protected function shouldEncrypt()
     {
         return false;
+    }
+
+    protected function trimEntry(array & $entry)
+    {
+        foreach ($entry as $key => $row)
+        {
+            if ((is_array($row) === false) and (is_string($row) === true))
+            {
+                $entry[$key] = trim($row);
+            }
+        }
+    }
+
+    protected function processConvertCase(array & $entry, array $conversionMap)
+    {
+        foreach ($entry as $key => $row)
+        {
+            if ($row === null)
+            {
+                continue;
+            }
+
+            if (in_array($key, array_keys($conversionMap)) === true)
+            {
+                $entry[$key] = $this->convertCase($row, $conversionMap[$key]);
+            }
+        }
+    }
+
+    protected function convertCase(string $caseSensitiveString, int $type)
+    {
+        switch ($type)
+        {
+            case Batch\Constants::TO_UPPER_CASE:
+
+                $caseSensitiveString = strtoupper($caseSensitiveString);
+
+                break;
+
+            case Batch\Constants::TO_LOWER_CASE:
+
+                $caseSensitiveString = strtolower($caseSensitiveString);
+
+                break;
+        }
+
+        return $caseSensitiveString;
     }
 }

@@ -22,7 +22,7 @@ use RZP\Jobs\AttemptStatusCheck as AttemptStatusCheckJob;
 
 class Initiator extends Base\Core
 {
-    const MUTEX_RESOURCE        = 'FUND_TRANSFER_PROCESSING_%s_%s';
+    const MUTEX_RESOURCE        = 'FUND_TRANSFER_PROCESSING_%s_%s_%s';
     const MUTEX_LOCK_TIMEOUT    = 900;
 
     const FTA_PURPOSE = 'settlement';
@@ -58,7 +58,23 @@ class Initiator extends Base\Core
             ];
         }
 
-        $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode, $channel);
+        $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode, $channel, self::FTA_PURPOSE);
+
+        if ($channel === Channel::YESBANK)
+        {
+            if ((isset($input[Entity::PURPOSE]) === true) and (Purpose::isValid($input[Entity::PURPOSE])))
+            {
+                $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode, $channel, $input[Entity::PURPOSE]);
+            }
+            else
+            {
+                return [
+                    'channel'   => $channel,
+                    'count'     => 0,
+                    'message'   => 'Invalid purpose for fund transfer'
+                ];
+            }
+        }
 
         return $this->mutex->acquireAndRelease(
             $mutexResource,

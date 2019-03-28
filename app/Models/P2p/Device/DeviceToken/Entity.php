@@ -11,12 +11,15 @@ class Entity extends Base\Entity
 {
     use Base\Traits\HasDevice;
     use Base\Traits\HasHandle;
+    use Base\Traits\SoftDeletes;
 
     const DEVICE_ID        = 'device_id';
     const HANDLE           = 'handle';
     const GATEWAY_DATA     = 'gateway_data';
-    const CL               = 'cl';
     const STATUS           = 'status';
+
+    /***************** Input Keys ****************/
+    const EXPIRE_AT        = 'expire_at';
 
     /************** Entity Properties ************/
 
@@ -37,7 +40,6 @@ class Entity extends Base\Entity
     protected $fillable = [
         Entity::GATEWAY_DATA,
         Entity::STATUS,
-        Entity::CL,
     ];
 
     protected $visible = [
@@ -46,7 +48,6 @@ class Entity extends Base\Entity
         Entity::HANDLE,
         Entity::GATEWAY_DATA,
         Entity::STATUS,
-        Entity::CL,
         Entity::REFRESHED_AT,
         Entity::CREATED_AT,
     ];
@@ -57,7 +58,6 @@ class Entity extends Base\Entity
         Entity::HANDLE,
         Entity::GATEWAY_DATA,
         Entity::STATUS,
-        Entity::CL,
         Entity::REFRESHED_AT,
         Entity::CREATED_AT,
     ];
@@ -65,7 +65,6 @@ class Entity extends Base\Entity
     protected $defaults = [
         Entity::GATEWAY_DATA     => [],
         Entity::STATUS           => RegisterToken\Status::VERIFIED,
-        Entity::CL               => [],
     ];
 
     protected $casts = [
@@ -74,7 +73,6 @@ class Entity extends Base\Entity
         Entity::HANDLE           => 'string',
         Entity::GATEWAY_DATA     => 'array',
         Entity::STATUS           => 'string',
-        Entity::CL               => 'array',
         Entity::REFRESHED_AT     => 'int',
         Entity::DELETED_AT       => 'int',
         Entity::CREATED_AT       => 'int',
@@ -94,22 +92,6 @@ class Entity extends Base\Entity
     /**
      * @return $this
      */
-    public function setHandle(string $handle)
-    {
-        return $this->setAttribute(self::HANDLE, $handle);
-    }
-
-    /**
-     * @return $this
-     */
-    public function setGatewayData(array $gatewayData)
-    {
-        return $this->setAttribute(self::GATEWAY_DATA, $gatewayData);
-    }
-
-    /**
-     * @return $this
-     */
     public function setStatus(string $status)
     {
         return $this->setAttribute(self::STATUS, $status);
@@ -123,22 +105,6 @@ class Entity extends Base\Entity
         return $this->setStatus(RegisterToken\Status::EXPIRED);
     }
 
-    /**
-     * @return $this
-     */
-    public function setCl(array $cl)
-    {
-        return $this->setAttribute(self::CL, $cl);
-    }
-
-    /**
-     * @return $this
-     */
-    public function mergeCl(array $cl)
-    {
-        return $this->setCl(array_merge($this->getCl(), $cl));
-    }
-
     /***************** GETTERS *****************/
 
     /**
@@ -147,22 +113,6 @@ class Entity extends Base\Entity
     public function getDeviceId()
     {
         return $this->getAttribute(self::DEVICE_ID);
-    }
-
-    /**
-     * @return string self::HANDLE
-     */
-    public function getHandle()
-    {
-        return $this->getAttribute(self::HANDLE);
-    }
-
-    /**
-     * @return array self::GATEWAY_DATA
-     */
-    public function getGatewayData()
-    {
-        return $this->getAttribute(self::GATEWAY_DATA);
     }
 
     /**
@@ -178,12 +128,13 @@ class Entity extends Base\Entity
         return ($this->getStatus() === RegisterToken\Status::EXPIRED);
     }
 
-    /**
-     * @return string self::CL
-     */
-    public function getCl()
+    public function getExpireAt()
     {
-        return $this->getAttribute(self::CL);
+        // By Default we are considering 9 minutes as for axis is 10 minutes
+        $defaultExpireAt = $this->getRefreshedAt() + 540;
+
+        // Expire at is gateway dependent, thus we can store in gateway_data
+        return ($this->getGatewayData()[self::EXPIRE_AT] ?? $defaultExpireAt);
     }
 
     /***************** SCOPES *****************/

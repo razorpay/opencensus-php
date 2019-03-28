@@ -2,15 +2,22 @@
 
 namespace RZP\Tests\Functional\OAuth;
 
+use Event;
 use Carbon\Carbon;
 use Razorpay\OAuth\Client;
 use Razorpay\OAuth\Application;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Cache\Events\CacheHit;
+use Illuminate\Cache\Events\CacheMissed;
 
 use RZP\Models\Feature;
 use RZP\Constants\Timezone;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
+use RZP\Http\OAuthCache;
+use Illuminate\Cache\Events\KeyWritten;
 
 /**
  * @group dns-sensitive
@@ -18,6 +25,7 @@ use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 class OAuthBearerAuthTest extends OAuthTestCase
 {
     use OAuthTrait;
+    use OAuthCache;
     use PaymentTrait;
     use MocksDnsTrait;
     use VirtualAccountTrait;
@@ -275,14 +283,13 @@ class OAuthBearerAuthTest extends OAuthTestCase
         $payment['card']['number'] = '5567630000002004';
         $payment['auth_type'] = 'otp';
 
-
         $testData = $this->testData[__FUNCTION__];
 
         $testData['request']['content'] = $payment;
 
         $this->ba->oauthBearerAuth($accessToken);
 
-        $response = $this->startTest($testData);
+        $this->startTest($testData);
     }
 
     /**
@@ -627,5 +634,81 @@ class OAuthBearerAuthTest extends OAuthTestCase
         $this->fixtures->create('payment', ['id' => '10000000000000']);
 
         $this->startTest();
+    }
+
+    public function testCacheHitForBearerToken()
+    {
+        config(['app.query_cache.mock' => false]);
+
+        Event::fake();
+        $accessToken = $this->generateOAuthAccessToken();
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $tokenTag = $this->getCacheTagsForToken($accessToken);
+
+        $this->fixtures->create('payment', ['id' => '10000000000000']);
+
+        $this->startTest();
+
+        //
+        // Asserts cache should not have been hit the first time
+        //
+        Event::assertDispatched(CacheMissed::class, function($e) use ($tokenTag)
+        {
+            foreach ($e->tags as $tag) {
+                if (starts_with($tag, 'token_') and !starts_with($tag, 'token_id_'))
+                {
+                    $this->assertEquals($tokenTag, $tag);
+                }
+            }
+            return true;
+        });
+
+        //
+        // Asserts that key is found in cache on subsequent attempts
+        //
+        Event::assertDispatched(KeyWritten::class, function($e) use ($tokenTag)
+        {
+            foreach ($e->tags as $tag) {
+                if (starts_with($tag, 'token_') and !starts_with($tag, 'token_id_'))
+                {
+                    $this->assertEquals($tokenTag, $tag);
+                }
+            }
+            return true;
+        });
+
+        Event::assertNotDispatched(CacheHit::class, function ($e)
+        {
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, 'token_') and !starts_with($tag, 'token_id_'))
+                {
+                    $this->assertEquals($tokenTag, $tag);
+                }
+            }
+            return false;
+        });
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $this->fixtures->create('payment', ['id' => '10000000000001']);
+
+        $this->startTest();
+
+        //
+        // Asserts that key is found in cache on subsequent attempts
+        //
+        Event::assertDispatched(CacheHit::class, function($e) use ($tokenTag)
+        {
+            foreach ($e->tags as $tag) {
+                if (starts_with($tag, 'token_') and !starts_with($tag, 'token_id_'))
+                {
+                    $this->assertEquals($tokenTag, $tag);
+                }
+            }
+            return true;
+        });
     }
 }

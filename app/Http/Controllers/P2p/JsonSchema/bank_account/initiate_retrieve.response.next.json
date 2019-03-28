@@ -1,0 +1,32 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "title": "The Root Schema",
+    "required": [
+        "version",
+        "type",
+        "request",
+        "callback"
+    ],
+    "properties": {
+        "version" : {"$ref" : "definitions.json#/next/version"},
+        "type" : {"$ref" : "definitions.json#/next/type"},
+        "request" : {
+            "allOf" : [
+                {"$ref" : "definitions.json#/next/request"},
+                {
+                    "properties" : {
+                        "action" : {
+                            "examples" : [
+                                "GET_ACCOUNTS"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "callback" : {"$ref" : "definitions.json#/next/callback"}
+    }
+}

@@ -121,4 +121,15 @@ class Repository extends Base\Repository
 
         $query->whereIn($typeAttribute, $params[Entity::TYPES]);
     }
+
+    protected function addQueryParamId(BuilderEx $query, array $params)
+    {
+        $id = $params[Entity::ID];
+
+        $idColumn = $this->dbColumn(Entity::ID);
+
+        Entity::verifyIdAndStripSign($id);
+
+        $query->where($idColumn, $id);
+    }
 }

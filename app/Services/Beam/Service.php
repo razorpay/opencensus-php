@@ -7,6 +7,7 @@ use App;
 use RZP\Jobs\BeamJob;
 use RZP\Constants\Mode;
 use RZP\Constants\Beam;
+use RZP\Encryption\Type;
 use RZP\Trace\TraceCode;
 use RZP\Foundation\Application;
 
@@ -23,6 +24,10 @@ class Service
     const BEAM_PUSH_JOBNAME = 'job_name';
 
     const BEAM_TEST_JOBNAME = 'test_pass';
+
+    const ENCRYPTION_TYPE   = Type::AES_ENCRYPTION;
+
+    const ENCRYPTION_MODE   = \phpseclib\Crypt\Base::MODE_CBC;
 
     protected $mode;
 

@@ -7,9 +7,12 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
+use RZP\Models\Settlement\SlackNotification;
 
 class RegisterAccount extends Job
 {
+    const RETRY_PERIOD         = 30;
+
     const MAX_ALLOWED_ATTEMPTS = 10;
 
     /**
@@ -51,7 +54,9 @@ class RegisterAccount extends Job
                     'channel' => $this->channel,
                 ]);
 
-            $ftsResponse = App::getFacadeRoot()['fts_register_account']->registerFundAccount($this->channel, $this->ids);
+            $ftsResponse = App::getFacadeRoot()['fts_register_account']->registerFundAccount(
+                $this->channel,
+                $this->ids);
 
             $this->trace->info(
                 TraceCode::FTS_REGISTER_ACCOUNT_COMPLETE,
@@ -73,7 +78,15 @@ class RegisterAccount extends Job
             {
                 $this->delete();
 
+                $operation = 'fts register account job failed';
+
+                (new SlackNotification)->send($operation, $data, null, 1, 'fts_alerts');
+
                 return;
+            }
+            else
+            {
+                $this->release(self::RETRY_PERIOD);
             }
         }
     }

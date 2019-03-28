@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="https://paysecure/merchant.soap/" xmlns:s1="https://paysecure/merchant.soap.header/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" targetNamespace="https://paysecure/merchant.soap/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="https://paysecure/merchant.soap/">
+      <s:element name="CallPaySecure">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="strCommand" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="strXML" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CallPaySecureResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CallPaySecureResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CallPaySecureForEnrollment">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:EnrollmentDetails" />
+            <s:element minOccurs="0" maxOccurs="1" name="strCommand" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="strXML" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="EnrollmentDetails">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="IWSURL" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="IWSTimeout" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="IWSVersion" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="IWSUserName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="IWSPassword" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="CallPaySecureForEnrollmentResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CallPaySecureForEnrollmentResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CallPaySecureForOTP">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="credentials" type="tns:EnrollmentDetails" />
+            <s:element minOccurs="0" maxOccurs="1" name="strCommand" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="strXML" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CallPaySecureForOTPResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CallPaySecureForOTPResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="VersionInfo">
+        <s:complexType />
+      </s:element>
+      <s:element name="VersionInfoResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="VersionInfoResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+    </s:schema>
+    <s:schema elementFormDefault="qualified" targetNamespace="https://paysecure/merchant.soap.header/">
+      <s:element name="RequestorCredentials" type="s1:RequestorCredentials" />
+      <s:complexType name="RequestorCredentials">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Token" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Version" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="CallerID" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="UserCredentials" type="s1:UserIdPassword" />
+        </s:sequence>
+        <s:anyAttribute />
+      </s:complexType>
+      <s:complexType name="UserIdPassword">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="UserID" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Password" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="CallPaySecureSoapIn">
+    <wsdl:part name="parameters" element="tns:CallPaySecure" />
+  </wsdl:message>
+  <wsdl:message name="CallPaySecureSoapOut">
+    <wsdl:part name="parameters" element="tns:CallPaySecureResponse" />
+  </wsdl:message>
+  <wsdl:message name="CallPaySecureRequestorCredentials">
+    <wsdl:part name="RequestorCredentials" element="s1:RequestorCredentials" />
+  </wsdl:message>
+  <wsdl:message name="CallPaySecureForEnrollmentSoapIn">
+    <wsdl:part name="parameters" element="tns:CallPaySecureForEnrollment" />
+  </wsdl:message>
+  <wsdl:message name="CallPaySecureForEnrollmentSoapOut">
+    <wsdl:part name="parameters" element="tns:CallPaySecureForEnrollmentResponse" />
+  </wsdl:message>
+  <wsdl:message name="CallPaySecureForOTPSoapIn">
+    <wsdl:part name="parameters" element="tns:CallPaySecureForOTP" />
+  </wsdl:message>
+  <wsdl:message name="CallPaySecureForOTPSoapOut">
+    <wsdl:part name="parameters" element="tns:CallPaySecureForOTPResponse" />
+  </wsdl:message>
+  <wsdl:message name="VersionInfoSoapIn">
+    <wsdl:part name="parameters" element="tns:VersionInfo" />
+  </wsdl:message>
+  <wsdl:message name="VersionInfoSoapOut">
+    <wsdl:part name="parameters" element="tns:VersionInfoResponse" />
+  </wsdl:message>
+  <wsdl:portType name="MerchantWebServiceSoap">
+    <wsdl:operation name="CallPaySecure">
+      <wsdl:input message="tns:CallPaySecureSoapIn" />
+      <wsdl:output message="tns:CallPaySecureSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CallPaySecureForEnrollment">
+      <wsdl:input message="tns:CallPaySecureForEnrollmentSoapIn" />
+      <wsdl:output message="tns:CallPaySecureForEnrollmentSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CallPaySecureForOTP">
+      <wsdl:input message="tns:CallPaySecureForOTPSoapIn" />
+      <wsdl:output message="tns:CallPaySecureForOTPSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="VersionInfo">
+      <wsdl:input message="tns:VersionInfoSoapIn" />
+      <wsdl:output message="tns:VersionInfoSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="MerchantWebServiceSoap" type="tns:MerchantWebServiceSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="CallPaySecure">
+      <soap:operation soapAction="https://paysecure/merchant.soap/CallPaySecure" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:CallPaySecureRequestorCredentials" part="RequestorCredentials" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CallPaySecureForEnrollment">
+      <soap:operation soapAction="https://paysecure/merchant.soap/CallPaySecureForEnrollment" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CallPaySecureForOTP">
+      <soap:operation soapAction="https://paysecure/merchant.soap/CallPaySecureForOTP" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="VersionInfo">
+      <soap:operation soapAction="https://paysecure/merchant.soap/VersionInfo" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="MerchantWebServiceSoap12" type="tns:MerchantWebServiceSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="CallPaySecure">
+      <soap12:operation soapAction="https://paysecure/merchant.soap/CallPaySecure" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:CallPaySecureRequestorCredentials" part="RequestorCredentials" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CallPaySecureForEnrollment">
+      <soap12:operation soapAction="https://paysecure/merchant.soap/CallPaySecureForEnrollment" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CallPaySecureForOTP">
+      <soap12:operation soapAction="https://paysecure/merchant.soap/CallPaySecureForOTP" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="VersionInfo">
+      <soap12:operation soapAction="https://paysecure/merchant.soap/VersionInfo" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="MerchantWebService">
+    <wsdl:port name="MerchantWebServiceSoap" binding="tns:MerchantWebServiceSoap">
+      <soap:address location="https://mwsrec.npci.org.in/MWS/MerchantWebService.asmx" />
+    </wsdl:port>
+    <wsdl:port name="MerchantWebServiceSoap12" binding="tns:MerchantWebServiceSoap12">
+      <soap12:address location="https://mwsrec.npci.org.in/MWS/MerchantWebService.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

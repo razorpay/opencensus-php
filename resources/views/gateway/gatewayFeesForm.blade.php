@@ -154,7 +154,7 @@
     var btn = document.querySelector('.btn');
     btn.disabled = true;
     btn.innerHTML = 'Processing';
-    let span = document.createElement('span');
+    var span = document.createElement('span');
     span.className = 'spin';
     btn.appendChild(span);
   }

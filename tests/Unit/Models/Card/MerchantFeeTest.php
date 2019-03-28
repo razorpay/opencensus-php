@@ -825,8 +825,6 @@ class MerchantFeeTest extends TestCase
 
         $this->runMerchantFeeTest('200100', 'Visa', ['payment' => '1nvp2XPMmaRLxx'], Card\Type::CREDIT);
 
-         $this->expectException(\RZP\Exception\LogicException::class);
-
         $this->runMerchantFeeTest('200100', 'Visa', ['payment' => '1nvp2XPMmaRLxx'], Card\Type::CREDIT, false, false, 'qr_code');
     }
 

@@ -38,12 +38,14 @@ trait PaymentTrait
     use PaymentAxisMigsTrait;
     use PaymentBilldeskTrait;
     use PaymentFirstDataTrait;
+    use PaymentPaysecureTrait;
     use PaymentAxisGeniusTrait;
     use PaymentNetbankingTrait;
     use PaymentFreechargeTrait;
     use PaymentTraitMpiEnstage;
     use PaymentCybersourceTrait;
     use PaymentCardlessEmiTrait;
+    use PaymentBajajFinservTrait;
     use PaymentWalletAmazonpayTrait;
     use PaymentWalletAirtelMoneyTrait;
 
@@ -1181,7 +1183,12 @@ trait PaymentTrait
     {
         $this->ba->appAuth();
 
-        $request = array('url' => '/payments/timeout');
+        $request = [
+            'url'     => '/payments/timeout',
+            'content' => [
+                'limit' => 10,
+            ],
+        ];
 
         return $this->makeRequestAndGetContent($request);
     }

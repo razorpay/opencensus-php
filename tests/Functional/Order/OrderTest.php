@@ -208,6 +208,13 @@ class OrderTest extends TestCase
         return $order;
     }
 
+    public function testCreateTPVOrderUpiBankInconsitentIfsc()
+    {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
     public function testCreateTPVOrderInvalidMethod()
     {
         $order = $this->startTest();
@@ -1661,5 +1668,22 @@ class OrderTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals('captured', $payment['status']);
+    }
+
+    public function testOrderEditNotes()
+    {
+        $requestContent = $this->testData['testCreateOrder']['request']['content'];
+
+        $this->testData['testCreateOrder']['request']['content'] = array_merge($requestContent, [
+            'notes' => ['key' => 'value'],
+        ]);
+
+        $order = $this->testCreateOrder();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/orders/' . $order['id'];
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
     }
 }

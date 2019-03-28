@@ -239,7 +239,7 @@ abstract class EntityProcessor extends Base\Core
         // sense for us to reconcile these, or check the error codes and stuff.
         //
         if (($this->fta->getChannel() === Channel::YESBANK) and
-            ($this->fta->hasVpa() === true))
+            ($this->fta->shouldUseGateway() === true))
         {
             $statusCode = $this->fta->getBankResponseCode();
 
@@ -262,20 +262,6 @@ abstract class EntityProcessor extends Base\Core
             (empty($utr) === false))
         {
             $status = Attempt\Status::PROCESSED;
-
-            // This should ideally be the time this request was sent to the bank.
-            // Needs to be changed to initiated_at when we have that column.
-            $recordDate = Carbon::createFromTimestamp($this->fta->getCreatedAt(), Timezone::IST);
-
-            $now = Carbon::now(Timezone::IST)->getTimestamp();
-
-            $tenTenPm = $recordDate->hour(22)->minute(10)->getTimestamp();
-
-            if (($this->fta->getSourceType() !== Attempt\Type::PAYOUT) and
-                ($now < $tenTenPm) and ($this->env !== 'testing'))
-            {
-                $status = $this->fta->getStatus();
-            }
         }
         else if (in_array($bankStatusCode, $failureStatuses, true) === true)
         {
@@ -380,7 +366,7 @@ abstract class EntityProcessor extends Base\Core
     {
         $channel = $fta->getChannel();
 
-        if ($fta->hasVpa() === true)
+        if ($fta->shouldUseGateway() === true)
         {
              return '\\RZP\\Models\\FundTransfer\\' . ucfirst($channel) . '\\Reconciliation\\GatewayStatus';
         }

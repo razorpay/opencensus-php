@@ -72,6 +72,13 @@ abstract class ApiProcessor extends NodalAccount
      */
     protected $requestTraceCode = TraceCode::SETTLEMENT_API_REQUEST;
 
+    /**
+     * @var bool
+     */
+    protected $useLogging = true;
+
+    public $requestTrace;
+
     public function method(string $method): self
     {
         $this->method = $method;
@@ -147,7 +154,7 @@ abstract class ApiProcessor extends NodalAccount
                 Trace::ERROR,
                 TraceCode::NODAL_REQUEST_FAILED,
                 [
-                    'request'  => ($gateway === false) ? $this->requestBody() : $this->getRequestInputForGateway(),
+                    'request'  => $this->requestTrace,
                 ]);
         }
 
@@ -193,7 +200,7 @@ abstract class ApiProcessor extends NodalAccount
                     Trace::ERROR,
                     TraceCode::NODAL_REQUEST_FAILED,
                     [
-                        'request' => $this->body,
+                        'request' => $this->requestTrace,
                     ]);
             }
         }
@@ -237,7 +244,7 @@ abstract class ApiProcessor extends NodalAccount
                     Trace::ERROR,
                     TraceCode::NODAL_REQUEST_FAILED,
                     [
-                        'request' => $requestInput,
+                        'request' => $this->requestTrace,
                     ]);
             }
         }
@@ -296,7 +303,7 @@ abstract class ApiProcessor extends NodalAccount
             [
                 'channel' => $this->channel,
                 'method'  => $this->method,
-                'request' => $this->body,
+                'request' => $this->requestTrace,
             ]);
     }
 
@@ -477,4 +484,30 @@ abstract class ApiProcessor extends NodalAccount
     public abstract function processResponse(\Requests_Response $response): array;
 
     public abstract function processGatewayResponse(array $response): array;
+
+    /**
+     * Sets the flag for logging data
+     */
+    public function enableLogs()
+    {
+        $this->useLogging = true;
+    }
+
+    /**
+     * Unset the flag for logging data
+     */
+    public function disableLogs()
+    {
+        $this->useLogging = false;
+    }
+
+    /**
+     * Checks logging status
+     *
+     * @return bool
+     */
+    public function isLogEnabled(): bool
+    {
+        return $this->useLogging;
+    }
 }

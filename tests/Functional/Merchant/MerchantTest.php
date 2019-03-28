@@ -435,6 +435,8 @@ class MerchantTest extends TestCase
 
     public function testEditMerchantEmail()
     {
+        config(['app.query_cache.mock' => false]);
+
         $content = $this->createMerchant();
 
         $this->fixtures->user->createUserForMerchant($content['id'], ['email' => $content['email']]);
@@ -463,6 +465,8 @@ class MerchantTest extends TestCase
 
     public function testEditMerchantEmailUserExists()
     {
+        config(['app.query_cache.mock' => false]);
+
         $content = $this->createMerchant();
 
         $this->fixtures->user->createUserForMerchant($content['id'], ['email' => $content['email']]);
@@ -3424,7 +3428,7 @@ class MerchantTest extends TestCase
     {
         $this->fixtures->create('merchant',[
             'id'     => '10000000000040',
-            'email'  => 'test1@razorpay.com',
+            'email'  => 'test@razorpay.com',
         ]);
 
         $user = $this->fixtures->user->createUserForMerchant('10000000000000', ['email' => 'test@razorpay.com']);
@@ -3457,6 +3461,73 @@ class MerchantTest extends TestCase
         $this->fixtures->user->createUserForMerchant('10000000000000', ['email' => 'test@razorpay.com']);
 
         $this->fixtures->user->createUserForMerchant('10000000000040', ['email' => 'invite.owner@razorpay.com']);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner']);
+
+        $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * Sub-merchant's registered email is different from partner but does not
+     * have user with the same email as registered email, invite using
+     * registered email.
+     */
+    public function testAggregatorInviteSubMerchantToManageDashEmailDifferent()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('merchant',[
+            'id'     => '10000000000040',
+            'email'  => 'testnew@razorpay.com',
+        ]);
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['email' => 'test@razorpay.com']);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        $this->createOAuthApplication(['id' => '10000000000App', 'type' => 'partner']);
+
+        $this->fixtures->create('merchant_access_map', ['merchant_id' => '10000000000040']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(PasswordResetMail::class, function ($mailable)
+        {
+            $mailData = $mailable->viewData;
+
+            $this->assertNotEmpty($mailData['token']);
+
+            $this->assertNotEmpty($mailData['org']);
+
+            $this->assertTrue($mailable->hasTo('testnew@razorpay.com'));
+
+            return true;
+        });
+
+        Mail::assertNotQueued(MappedToAccount::class);
+    }
+
+    /**
+     * Submerchant's email is different from partner and partner email is invited
+     * for login as owner. Any other email would also fail, test emphasizes that
+     * even partner email is not allowed in these cases.
+     */
+    public function testAggregatorInviteEmailDifferentSubLoginPartnerEmail()
+    {
+        $this->fixtures->create('merchant',[
+            'id'     => '10000000000040',
+            'email'  => 'testnew@razorpay.com',
+        ]);
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['email' => 'test@razorpay.com']);
 
         $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
 

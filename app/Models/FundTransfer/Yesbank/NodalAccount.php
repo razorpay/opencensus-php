@@ -7,7 +7,9 @@ use Config;
 use Carbon\Carbon;
 
 
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
+use RZP\Models\Card\Type;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Gateway;
@@ -65,13 +67,33 @@ class NodalAccount extends NodalBase\NodalAccount
                 continue;
             }
 
-            $gateway = ($attempt->hasVpa() === true);
+            $gateway = $attempt->shouldUseGateway();
 
             $this->doRequiredChecks($gateway);
 
             $type = $this->getRequestType($attempt);
 
-            $transfer = new Transfer($this->purpose, $type);
+            $useCurrentAccount = $attempt->merchant->isFeatureEnabled(Feature\Constants::DUMMY);
+
+            $transfer = new Transfer($this->purpose, $type, $useCurrentAccount);
+
+            if ($attempt->hasCard() === true)
+            {
+                if ($attempt->card->getType() === Type::CREDIT)
+                {
+                    $transfer->disableLogs();
+                }
+                else
+                {
+                    $this->trace->info(TraceCode::UNSUPPORTED_CARD_TYPE_FOR_TRANSFER,
+                        [
+                            'channel'       => $this->channel,
+                            'attempt_id'    => $attempt->getId(),
+                        ]);
+
+                    continue;
+                }
+            }
 
             try
             {
@@ -202,7 +224,8 @@ class NodalAccount extends NodalBase\NodalAccount
      */
     protected function isTransferAllowedToday(Attempt\Entity $attempt):  bool
     {
-        if ($attempt->hasVpa() === true)
+        if (($attempt->hasVpa() === true) or
+            ($attempt->hasCard() === true))
         {
             return true;
         }

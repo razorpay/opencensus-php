@@ -46,7 +46,17 @@ class Core extends Base\Core
                         Entity::STATUS      => Status::FAILED,
                         // Reference1 is set as part of FTA row processor (status cron)
                         Entity::REFERENCE1  => $refund->getReference1(),
+                        Entity::REFERENCE2  => $refund->getReference2(),
                     ];
+
+                    //
+                    // If fta gets failed, resetting fta related data here. This can be processed by payment gateway
+                    // later.
+                    //
+                    $refund->setBatchFundTransferId(null);
+                    $refund->setUtr(null);
+                    $refund->setRemarks(null);
+                    $this->repo->saveOrFail($refund);
 
                     (new Service)->makeScroogeEditRefundRequest($refund, $data, 'file_init_event');
                 }
@@ -93,6 +103,13 @@ class Core extends Base\Core
                 'source_original'   => $entity->getOriginalAttributesAgainstDirty(),
                 'source_dirty'      => $entity->getDirty(),
             ]);
+
+        $this->repo->saveOrFail($entity);
+    }
+
+    public function updateEntityWithFtsTransferId(Entity $entity, $ftsTransferId)
+    {
+        $entity->setFTSTransferId($ftsTransferId);
 
         $this->repo->saveOrFail($entity);
     }

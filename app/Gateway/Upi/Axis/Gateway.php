@@ -15,6 +15,7 @@ use RZP\Gateway\Upi\Base\Entity;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Upi\Axis\ErrorCodes\ErrorCodes;
 
 
 class Gateway extends Base\Gateway
@@ -98,7 +99,8 @@ class Gateway extends Base\Gateway
 
         $collectResponse[Fields::W_COLLECT_TXN_ID] = $collectResponse[Fields::DATA][Fields::W_COLLECT_TXN_ID];
 
-        $this->checkResponseStatus($collectResponse[Fields::CODE], Status::COLLECT_SUCCESS);
+        $this->checkResponseStatus($collectResponse[Fields::CODE], Status::COLLECT_SUCCESS,
+            $collectResponse);
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $collectResponse);
 
@@ -273,29 +275,14 @@ class Gateway extends Base\Gateway
             'body'              => $responseBody,
         ];
 
-        try
-        {
-            $content = $this->jsonToArray($responseBody);
-
-            $trace['content'] = $content;
-
-            $this->trace->info(TraceCode::GATEWAY_RESPONSE, $trace);
-
-            return $content;
-        }
-        catch (\Throwable $exception)
-        {
-            $this->trace->error(TraceCode::GATEWAY_RESPONSE, $trace);
-
-            throw $exception;
-        }
+        return $this->parseResponse($responseBody, $trace);
     }
 
-    private function checkResponseStatus($status, string $successStatus)
+    private function checkResponseStatus($status, string $successStatus, $content)
     {
         if ($status !== $successStatus)
         {
-            $errorCode = ErrorCodeMap::getApiErrorCode($status);
+            $errorCode = ErrorCodes::getErrorCode($status, $content);
 
             throw new Exception\GatewayErrorException(
                 $errorCode,
@@ -482,7 +469,8 @@ class Gateway extends Base\Gateway
 
         $this->assertAmount($expectedAmount, $actualAmount);
 
-        $this->checkResponseStatus($content[Fields::GATEWAY_RESPONSE_CODE], Status::CALLBACK_SUCCESS);
+        $this->checkResponseStatus($content[Fields::GATEWAY_RESPONSE_CODE], Status::CALLBACK_SUCCESS,
+            $content);
 
         $this->updateGatewayPaymentResponse($gatewayPayment, $content);
 
@@ -742,7 +730,100 @@ class Gateway extends Base\Gateway
             return true;
         }
 
-        parent::verifyRefund($input);
+        parent::action($input, Action::VERIFY_REFUND);
+
+        $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail($input['refund']['payment_id'], Action::AUTHORIZE);
+
+        $upiPaymentType = $gatewayEntity[Entity::TYPE];
+
+        $verifyRequestArray = $this->getVerifyRefundRequestArray($input, $upiPaymentType);
+
+        $content = json_encode($verifyRequestArray);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
+            [
+                'request'       => $request,
+                'refund_id'     => $input['refund']['id'],
+                'gateway'       => $this->gateway,
+                'plain_data'    => $verifyRequestArray,
+            ]);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $responseContent = $this->parseVerifyRefundResponse($response->body, $input);
+
+        return $this->checkRefundResponseStatus($responseContent);
+    }
+
+    public function parseVerifyRefundResponse($responseBody, $input)
+    {
+        $trace = [
+            'gateway'           => $this->gateway,
+            'action'            => $this->action,
+            'payment_id'        => $input['refund']['id'],
+            'terminal_id'       => $input['terminal']['id'],
+            'body'              => $responseBody,
+        ];
+
+        return $this->parseResponse($responseBody, $trace);
+    }
+
+    public function parseResponse($responseBody, array $trace)
+    {
+        try
+        {
+            $content = $this->jsonToArray($responseBody);
+
+            $trace['content'] = $content;
+
+            $this->trace->info(TraceCode::GATEWAY_RESPONSE, $trace);
+
+            return $content;
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->error(TraceCode::GATEWAY_RESPONSE, $trace);
+
+            throw $exception;
+        }
+    }
+
+    public function getVerifyRefundRequestArray($input, $upiPaymentType)
+    {
+        $data = [
+            Fields::MERCH_ID       => $this->getMerchantId(),
+            Fields::MERCH_CHAN_ID  => $this->getMerchantId2(),
+            Fields::UNQ_TXN_ID     => $input['refund']['payment_id'],
+            Fields::TXN_REFUND_ID  => $input['refund']['id'],
+        ];
+
+        if ($upiPaymentType === Base\Type::PAY)
+        {
+            $data[Fields::MERCH_ID] = $this->config['live_razorpay_merchant_id'];
+
+            $data[Fields::MERCH_CHAN_ID] = $this->config['live_razorpay_merchant_channel_id'];
+        }
+
+        $dataStr = implode('', $data);
+
+        $checksum = $this->encrypt($dataStr);
+
+        $data[Fields::CHECKSUM] = bin2hex($checksum);
+
+        return $data;
+    }
+
+    private function checkRefundResponseStatus($responseContent)
+    {
+        if ($responseContent[Fields::CODE] !== Status::REFUND_SUCCESS)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public function refund(array $input)
@@ -784,7 +865,7 @@ class Gateway extends Base\Gateway
         {
             $code = $response[Fields::CODE];
 
-            $errorCode = ErrorCodeMap::getApiErrorCode($code);
+            $errorCode = ErrorCodes::getErrorCode($code, $response);
 
             throw new Exception\GatewayErrorException(
                 $errorCode,

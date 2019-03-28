@@ -62,6 +62,7 @@ class Shared
     const HITACHI_TERMINAL                   = '100HitachiTmnl';
     const HITACHI_DIRECT_TERMINAL            = '100HitaDirTmnl';
     const FIRST_DATA_RAZORPAY_TERMINAL       = '1000FrstDataTl';
+    const PAYSECURE_RAZORPAY_TERMINAL        = '1000PaySecurTl';
     const UPI_MINDGATE_RAZORPAY_TERMINAL     = '100UPIMindgate';
     const UPI_MINDGATE_BQR_TERMINAL          = '100UPIMndgBqrT';
     const UPI_MINDGATE_INTENT_TERMINAL       = '1UpiIntMndgate';
@@ -133,6 +134,7 @@ class Shared
         self::CYBERSOURCE_AXIS_TERMINAL,
         self::HITACHI_TERMINAL,
         self::FIRST_DATA_RAZORPAY_TERMINAL,
+        self::PAYSECURE_RAZORPAY_TERMINAL,
         self::UPI_MINDGATE_RAZORPAY_TERMINAL,
         self::UPI_MINDGATE_TPV_TERMINAL,
         self::UPI_ICICI_RAZORPAY_TERMINAL,
@@ -197,6 +199,7 @@ class Shared
         self::SBIBUDDY_RAZORPAY_TERMINAL         => Gateway::WALLET_SBIBUDDY,
         self::SHARP_RAZORPAY_TERMINAL            => Gateway::SHARP,
         self::FIRST_DATA_RAZORPAY_TERMINAL       => Gateway::FIRST_DATA,
+        self::PAYSECURE_RAZORPAY_TERMINAL        => Gateway::PAYSECURE,
         self::AEPS_ICICI_RAZORPAY_TERMINAL       => Gateway::AEPS_ICICI,
         self::UPI_MINDGATE_RAZORPAY_TERMINAL     => Gateway::UPI_MINDGATE,
         self::UPI_MINDGATE_SBI_RAZORPAY_TERMINAL => Gateway::UPI_SBI,

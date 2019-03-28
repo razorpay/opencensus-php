@@ -62,9 +62,21 @@ class Gateway extends Base\Gateway
                 $xmlData[ResponseXmlTags::REJECTION_BY]
             ];
 
+            $decryptedChecksum = $this->crypto->decrypt($input['gateway'][ResponseFields::CHECKSUM]);
+
+            $this->trace->info(
+                TraceCode::GATEWAY_MANDATE_RESPONSE,
+                [
+                    'payment_id'            => $input['payment']['id'],
+                    'gateway'               => $this->gateway,
+                    'decrypted checksum'    => $decryptedChecksum,
+                    'mandate response data' => $xmlData,
+                ]);
+
             $this->validateCallbackChecksum(
                 $this->generateHash($secureData),
-                $input
+                $decryptedChecksum,
+                $input['payment']['id']
             );
 
             $attributes = $this->getResponseGatewayAttributes($xmlData);
@@ -73,16 +85,16 @@ class Gateway extends Base\Gateway
         {
             $xmlData = $this->getDataFromErrorResponse($responseArray);
 
+            $this->trace->info(
+                TraceCode::GATEWAY_MANDATE_RESPONSE,
+                [
+                    'payment_id'            => $input['payment']['id'],
+                    'gateway'               => $this->gateway,
+                    'mandate response data' => $xmlData,
+                ]);
+
             $attributes = $this->getErrorResponseGatewayAttributes($xmlData);
         }
-
-        $this->trace->info(
-            TraceCode::GATEWAY_MANDATE_RESPONSE,
-            [
-                'payment_id'            => $input['payment']['id'],
-                'gateway'               => $this->gateway,
-                'mandate response data' => $xmlData,
-            ]);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
@@ -198,7 +210,7 @@ class Gateway extends Base\Gateway
             RequestNpciTags::FIRST_COLLECTION_DATE => $date,
             RequestNpciTags::FINAL_COLLECTION_DATE => $finalCollection,
             RequestNpciTags::COLLECTION_AMOUNT     => '',
-            RequestNpciTags::MAX_AMOUNT            => $input['token']->getMaxAmount() / 100,
+            RequestNpciTags::MAX_AMOUNT            => number_format($input['token']->getMaxAmount() / 100, 2, '.', ''),
         ];
     }
 
@@ -539,7 +551,12 @@ class Gateway extends Base\Gateway
 
         $errorCode = $gatewayPayment->getErrorCode();
 
-        $recurringFailureReason = ErrorCodes\NetbankingErrorCodes::getEmandateRegisterErrorDescriptionFromCode($errorCode);
+        $recurringFailureReason = null;
+
+        if ($recurringStatus === Token\RecurringStatus::REJECTED)
+        {
+            $recurringFailureReason = ErrorCodes\NetbankingErrorCodes::getEmandateRegisterErrorDescriptionFromCode($errorCode);
+        }
 
         $recurringData = [
             Token\Entity::RECURRING_STATUS         => $recurringStatus,
@@ -550,17 +567,15 @@ class Gateway extends Base\Gateway
         return $recurringData;
     }
 
-    protected function validateCallbackChecksum($expectedChecksum, $input)
+    protected function validateCallbackChecksum($calculated, $expected, $paymentId)
     {
-        $calculated = $input['gateway'][ResponseFields::CHECKSUM];
-
-        if ($calculated !== $expectedChecksum)
+        if ($calculated !== $expected)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Failed checksum verification',
                 '',
                 [
-                    'payment_id'            => $input['payment']['id'],
+                    'payment_id'            => $paymentId,
                     'gateway'               => $this->gateway,
                 ]);
         }

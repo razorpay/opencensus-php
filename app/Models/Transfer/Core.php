@@ -305,15 +305,10 @@ class Core extends Base\Core
 
         $txn = $transfer->transaction;
 
-        // Fetch customer balance and credit
-        $balance = (new Customer\Balance\Core)->fetchOrCreate($to, $merchant);
-
-        (new Customer\Balance\Core)->credit($balance, $txn->getAmount());
-
-        $customerTxn = (new Customer\Transaction\Core)
-                            ->createForCustomerCredit($transfer, $input['amount'], $to->getId(), $merchant);
-
-        $this->repo->saveOrFail($customerTxn);
+        (new Customer\Transaction\Core)->createForCustomerCredit($transfer,
+                                                                 $txn->getAmount(),
+                                                                 $to->getId(),
+                                                                 $merchant);
 
         return $transfer;
     }

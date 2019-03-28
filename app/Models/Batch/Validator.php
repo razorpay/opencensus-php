@@ -227,6 +227,13 @@ class Validator extends Base\Validator
         Entity::TOKEN   => 'required|unsigned_id',
     ];
 
+    protected static $payoutValidateRules = [
+        Entity::TYPE    => 'required|in:payout',
+        Entity::NAME    => 'filled|string|max:255',
+        Entity::FILE    => 'required_without:file_id|file|max:10240' . self::CSV_MIME_RULE,
+        Entity::FILE_ID => 'required_without:file|public_id',
+    ];
+
     protected static $fundAccountTypeRowRules = [
         Header::FUND_ACCOUNT_TYPE         => 'required|string|in:bank_account,vpa',
         Header::FUND_ACCOUNT_NAME         => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
@@ -245,7 +252,8 @@ class Validator extends Base\Validator
     // This is not a copy paste of above ^ rules!
     protected static $payoutTypeRowRules = [
         Header::RAZORPAYX_ACCOUNT_NUMBER    => 'required|string',
-        Header::PAYOUT_PURPOSE              => 'required|string|max:30|alpha_dash',
+        Header::PAYOUT_PURPOSE              => 'required|string|max:30|alpha_dash_space',
+        Header::PAYOUT_NARRATION            => 'sometimes|nullable|string|max:30|alpha_space_num',
         Header::PAYOUT_AMOUNT               => 'required|integer|min:100|max:500000000',
         Header::PAYOUT_CURRENCY             => 'required|size:3|in:INR',
         Header::PAYOUT_MODE                 => 'sometimes|nullable|string',

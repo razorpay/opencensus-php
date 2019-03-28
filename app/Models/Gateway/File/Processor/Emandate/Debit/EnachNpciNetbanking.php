@@ -2,13 +2,18 @@
 
 namespace RZP\Models\Gateway\File\Processor\EMandate\Debit;
 
+Use Config;
+
 use RZP\Gateway\Enach;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Base as ModelBase;
+use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
+use RZP\Exception\GatewayFileException;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Services\Beam\Service as BeamService;
 use RZP\Services\Beam\Constants as BeamConstants;
@@ -26,7 +31,7 @@ class EnachNpciNetbanking extends Base
 
     const FILE_TYPE = FileStore\Type::ENACH_NPCI_NB_DEBIT;
 
-    const FILE_NAME = 'NACH_DR_{$date}_{$utilityCode}_RAZORPAY_001';
+    const FILE_NAME = 'yesbank/nach/input_file/NACH_DR_{$date}_{$utilityCode}_RAZORPAY_001';
 
     protected $utilityCode;
 
@@ -57,7 +62,7 @@ class EnachNpciNetbanking extends Base
             {
                 $paymentId = $token['payment_id'];
 
-                $debitDate = Carbon::createFromTimestamp($token['payment_created_at'], Timezone::IST)->format('dmY');
+                $debitDate = Carbon::today(Timezone::IST)->format('dmY');
 
                 $row = [
                     Headings::PAYMENT_ID              => $paymentId,
@@ -144,9 +149,9 @@ class EnachNpciNetbanking extends Base
     public function sendFile($data)
     {
         $file = $this->gatewayFile
-                ->files()
-                ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
-                ->first();
+                     ->files()
+                     ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
+                     ->first();
 
         $fullFileName = $file->getName() . '.' . $file->getExtension();
 
@@ -170,5 +175,15 @@ class EnachNpciNetbanking extends Base
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+    }
+
+    public function createFile($data)
+    {
+
+        Config::set('excel.csv.enclosure', '');
+
+        parent::createFile($data);
+
+        Config::set('excel.csv.enclosure', '"');
     }
 }

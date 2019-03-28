@@ -21,6 +21,8 @@ class Role
     const OWNER                 = 'owner';
     const LINKED_ACCOUNT_OWNER  = 'linked_account_owner';
     const LINKED_ACCOUNT_ADMIN  = 'linked_account_admin';
+    const RBL_SUPERVISOR        = 'rbl_supervisor';
+    const RBL_AGENT             = 'rbl_agent';
 
     // Payment Link Agent - not publicly available
     const AGENT                 = 'agent';
@@ -67,11 +69,16 @@ class Role
         self::ADMIN
     ];
 
+    const RBL_ROLES = [
+        self::RBL_SUPERVISOR,
+        self::RBL_AGENT
+    ];
+
     public function setProductRoles()
     {
         $this->productRoles = [
-            Product::PRIMARY => array_merge(self::ALL_ROLES, self::LINKED_ACCOUNT_ROLES),
-            Product::BANKING => self::BANKING_ROLES
+            Product::PRIMARY => array_merge(self::ALL_ROLES, self::LINKED_ACCOUNT_ROLES, self::RBL_ROLES),
+            Product::BANKING => self::BANKING_ROLES,
         ];
     }
 

@@ -9,6 +9,7 @@ class Type
 {
     const VPA          = Entity::VPA;
     const BANK_ACCOUNT = Entity::BANK_ACCOUNT;
+    const CARD         = Entity::CARD;
 
     public static function isValid(string $type): bool
     {

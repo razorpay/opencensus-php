@@ -24,6 +24,11 @@ class Entity extends Base\PublicEntity
     const PAYMENT_METHOD_TYPE  = 'payment_method_type';
     const PAYMENT_NETWORK      = 'payment_network';
     const INTERNATIONAL        = 'international';
+
+    //
+    // By default, all the rules are of type pricing
+    // commission type pricing is used in partners to specify partner fixed commission or explicit commission
+    //
     const TYPE                 = 'type';
 
     // Humanized name of the payment network

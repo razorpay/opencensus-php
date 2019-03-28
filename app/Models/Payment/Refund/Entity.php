@@ -38,6 +38,7 @@ class Entity extends Base\PublicEntity
     const INTERNAL_ERROR_CODE    = 'internal_error_code';
     const ERROR_DESCRIPTION      = 'error_description';
     const NOTES                  = 'notes';
+    const FTS_TRANSFER_ID        = 'fts_transfer_id';
 
     //merchant reference number for refund if provided by merchant
     const RECEIPT                = 'receipt';
@@ -126,6 +127,7 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS,
         self::LAST_ATTEMPTED_AT,
         self::PROCESSED_AT,
+        self::IS_SCROOGE,
         self::REFERENCE1,
         self::BANK_ACCOUNT_ID,
         self::VPA_ID,
@@ -164,6 +166,7 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS          => null,
         self::LAST_ATTEMPTED_AT => null,
         self::PROCESSED_AT      => null,
+        self::IS_SCROOGE        => 0,
         self::RECEIPT           => null,
     ];
 
@@ -171,6 +174,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT           => 'int',
         self::BASE_AMOUNT      => 'int',
         self::GATEWAY_REFUNDED => 'bool',
+        self::IS_SCROOGE       => 'bool',
     ];
 
     protected $publicSetters = [
@@ -379,6 +383,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REFERENCE1);
     }
 
+    public function getReference2()
+    {
+        return $this->getAttribute(self::REFERENCE2);
+    }
 
     public function getSettledBy()
     {
@@ -452,6 +460,21 @@ class Entity extends Base\PublicEntity
         return (new Dictionary($acquirerData));
     }
 
+    public function getFTSTransferId()
+    {
+        return $this->getAttribute(self::FTS_TRANSFER_ID);
+    }
+
+    /**
+     * Returns true for refunds which are processed by Scrooge Service
+     *
+     * @return bool
+     */
+    public function isScrooge()
+    {
+        return ($this->getAttribute(self::IS_SCROOGE) === true);
+    }
+
     /**
      * Used by FTA reconciliation
      */
@@ -480,6 +503,11 @@ class Entity extends Base\PublicEntity
     public function setSettledBy($settledBy)
     {
         $this->setAttribute(self::SETTLED_BY, $settledBy);
+    }
+
+    public function setFTSTransferId($ftsTransferId)
+    {
+        $this->setAttribute(self::FTS_TRANSFER_ID, $ftsTransferId);
     }
 
     public function pushStatusChangeMetrics($statusToChange)
@@ -606,7 +634,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::REFERENCE1, $value);
     }
 
-    public function setRemarks(string $value)
+    public function setRemarks(string $value = null)
     {
         $this->setAttribute(self::REFERENCE2, $value);
     }
@@ -614,6 +642,17 @@ class Entity extends Base\PublicEntity
     public function setBatchFundTransferId($value)
     {
         $this->setAttribute(self::BATCH_FUND_TRANSFER_ID, $value);
+    }
+
+    /**
+     * Setting is_scrooge attribute of refund entity to true or false.
+     * True means refund is processed by Scrooge Service.
+     *
+     * @param bool $isScrooge
+     */
+    public function setIsScrooge($isScrooge = false)
+    {
+        $this->setAttribute(self::IS_SCROOGE, $isScrooge);
     }
 
     /**

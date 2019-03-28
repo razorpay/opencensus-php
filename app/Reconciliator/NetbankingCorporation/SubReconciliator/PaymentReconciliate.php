@@ -60,4 +60,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         return (strtolower($row[ReconciliationFields::STATUS]) === 's') ? Status::AUTHORIZED : Status::FAILED;
     }
+
+    protected function getInputForForceAuthorize($row)
+    {
+        return [
+            'gateway_payment_id' => $row[ReconciliationFields::BANK_TXN_ID],
+        ];
+    }
 }

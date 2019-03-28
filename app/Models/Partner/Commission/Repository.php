@@ -13,6 +13,8 @@ class Repository extends BaseRepository
     protected $merchantIdRequiredForMultipleFetch = false;
 
     protected $proxyFetchParamRules = [
+        Entity::ID                => 'filled|string|size:19',
+        Entity::TYPE              => 'filled|string|in:'. Type::IMPLICIT .','. Type::EXPLICIT,
         Entity::STATUS            => 'filled|string|custom',
         Entity::SOURCE_ID         => 'sometimes|string|min:14|max:19',
         Entity::PARTNER_ID        => 'required|string|size:14',
@@ -79,16 +81,18 @@ class Repository extends BaseRepository
         //
         // the parent function strips sign from each parameter only if the param is a valid entity
         // since source is not a valid entity, we are stripping the sign for source_id here
-        //
-        if (empty($input[Entity::SOURCE_ID]) === false)
-        {
-            $input[Entity::SOURCE_ID] = PublicEntity::stripDefaultSign($input[Entity::SOURCE_ID]);
-        }
-
         // merchant id can be searched using acc_{id} in case of partners
-        if (empty($input[Entity::MERCHANT_ID]) === false)
+        // id is not picked up parent function
+        //
+
+        $params = [Entity::SOURCE_ID, Entity::MERCHANT_ID, Entity::ID];
+
+        foreach ($params as $param)
         {
-            $input[Entity::MERCHANT_ID] = PublicEntity::stripDefaultSign($input[Entity::MERCHANT_ID]);
+            if (empty($input[$param]) === false)
+            {
+                $input[$param] = PublicEntity::stripDefaultSign($input[$param]);
+            }
         }
 
         parent::modifyFetchParams($input);

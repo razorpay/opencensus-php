@@ -8,6 +8,7 @@ return [
     'testSaveGatewayPriority' => [
         'request' => [
             'content' => [
+                'paysecure'   => '60',
                 'hdfc'        => '50',
                 'axis_migs'   => '40',
                 'amex'        => '30',
@@ -33,11 +34,12 @@ return [
     'testSaveGatewayPriorityWithException' => [
         'request' => [
             'content' => [
+                'paysecure'   => '60',
                 'hdfc'        => '50',
                 'axis_migs'   => '40',
                 'amex'        => '30',
                 'cybersource' => '20',
-                'first_data'  => '10'
+                'first_data'  => '10',
             ],
             'url' => '/gateway/priorities/card',
             'method' => 'POST'
@@ -65,6 +67,7 @@ return [
         'response' => [
             'content' => [
                 'card' => [
+                    'paysecure'   => '60',
                     'hdfc'        => '50',
                     'axis_migs'   => '40',
                     'amex'        => '30',

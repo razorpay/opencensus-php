@@ -43,7 +43,6 @@ class Entity extends Base\Entity
     ];
 
     protected $fillable = [
-        Entity::CUSTOMER_ID,
         Entity::CONTACT,
         Entity::SIMID,
         Entity::UUID,
@@ -53,7 +52,6 @@ class Entity extends Base\Entity
         Entity::APP_NAME,
         Entity::IP,
         Entity::GEOCODE,
-        Entity::AUTH_TOKEN,
     ];
 
     protected $visible = [

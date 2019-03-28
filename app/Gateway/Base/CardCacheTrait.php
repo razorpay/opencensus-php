@@ -42,12 +42,21 @@ trait CardCacheTrait
             'vault_token' => $vaultToken
         ];
 
-        $this->app['cache']->store($this->secureCacheDriver)->put($key, $data, static::CACHE_TTL);
+        // If this is set to 0, set the cache forever
+        if (static::CACHE_TTL === 0)
+        {
+            $this->app['cache']->store($this->secureCacheDriver)->forever($key, $data);
+        }
+        else
+        {
+            $this->app['cache']->store($this->secureCacheDriver)->put($key, $data, static::CACHE_TTL);
+        }
     }
 
     /**
      * This method gets the cached card detail and sets it in the input.
      * @param array $input
+     * @throws \Exception
      */
     protected function setCardNumberAndCvv(array & $input)
     {

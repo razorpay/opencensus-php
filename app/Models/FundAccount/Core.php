@@ -5,6 +5,7 @@ namespace RZP\Models\FundAccount;
 use RZP\Exception;
 use RZP\Models\Vpa;
 use RZP\Models\Base;
+use RZP\Models\Batch;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
@@ -18,41 +19,76 @@ use RZP\Exception\LogicException;
 class Core extends Base\Core
 {
     /**
-     * @param array $input
-     * @param Merchant\Entity $merchant
+     * @param array                  $input
+     * @param Merchant\Entity        $merchant
      * @param Base\PublicEntity|null $source
+     * @param Batch\Entity|null      $batch
+     *
      * @return Entity
-     * @throws Exception\BaseException
      */
-    public function create(array $input, Merchant\Entity $merchant, Base\PublicEntity $source = null): Entity
+    public function create(array $input,
+                           Merchant\Entity $merchant,
+                           Base\PublicEntity $source = null,
+                           Batch\Entity $batch = null): Entity
     {
-        $this->modifyValidationRequestToOldFormat($input);
+        $this->modifyRequestForBackwardCompatibility($input);
 
         $fundAccount = (new Entity)->build($input);
 
-        $this->repo->transaction(function() use ($input, $merchant, $source, $fundAccount) {
-            $account = $this->createAccount($input, $merchant, $source);
+        $this->repo->transaction(
+            function() use ($input, $merchant, $source, $fundAccount, $batch)
+            {
+                $account = $this->createAccount($input, $merchant, $source);
 
-            $fundAccount->merchant()->associate($merchant);
+                $fundAccount->merchant()->associate($merchant);
 
-            $fundAccount->source()->associate($source);
+                $fundAccount->source()->associate($source);
 
-            $fundAccount->account()->associate($account);
+                $fundAccount->account()->associate($account);
 
-            $this->repo->saveOrFail($fundAccount);
-        });
+                $fundAccount->batch()->associate($batch);
+
+                $this->repo->saveOrFail($fundAccount);
+            });
 
         return $fundAccount;
     }
 
-    protected function modifyValidationRequestToOldFormat(array & $input)
+    /**
+     * We were accepting the account details object in the `details` key, and then changed to accept this in a
+     * key with a name corresponding to the account_type -> `bank_account` or `vpa`.
+     *
+     * This function handles this backward compatibilty modification of the request.
+     *
+     * Consumers can send the details in either `bank_account`|`vpa` or `details`.
+     *
+     * @param array $input
+     */
+    protected function modifyRequestForBackwardCompatibility(array & $input)
     {
-        if (isset($input[Validation\FundAccountType::BANK_ACCOUNT]))
+        //
+        // If the `details` key is unset, we assume the details are present in the new structure
+        // under `bank_account` or `vpa`
+        //
+        if (isset($input[Entity::DETAILS]) === false)
         {
-            $input[Entity::DETAILS] = $input[Validation\FundAccountType::BANK_ACCOUNT];
-
-            unset($input[Validation\FundAccountType::BANK_ACCOUNT]);
+            return;
         }
+
+        //
+        // `account_type` is a required field, so if unset we just return and let this fail at the Entity
+        // build validation stage.
+        //
+        if (isset($input[Entity::ACCOUNT_TYPE]) === false)
+        {
+            return;
+        }
+
+        $accountType = $input[Entity::ACCOUNT_TYPE];
+
+        $input[$accountType] = $input[Entity::DETAILS];
+
+        unset($input[Entity::DETAILS]);
     }
 
     protected function createAccount(array $input,
@@ -61,7 +97,7 @@ class Core extends Base\Core
     {
         $accountType = $input[Entity::ACCOUNT_TYPE];
 
-        $accountInput = $input[Entity::DETAILS];
+        $accountInput = $input[$accountType];
 
         $account = null;
 

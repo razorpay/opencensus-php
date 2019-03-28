@@ -442,95 +442,18 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
         }
         catch (\Exception $ex)
         {
-            $refundSuccess = $this->createRefundOnApi($row, $refundId, $ex);
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'    => TraceCode::RECON_MISMATCH,
+                    'info_code'     => Base\InfoCode::REFUND_ABSENT,
+                    'refund_id'     => $refundId,
+                    'gateway'       => $this->gateway,
+                ]);
 
-            if ($refundSuccess === false)
-            {
-                $this->messenger->raiseReconAlert(
-                    [
-                        'trace_code'    => TraceCode::RECON_MISMATCH,
-                        'message'       => 'Unable to create a refund on API after finding it missing',
-                        'row'           => $row,
-                        'refund_id'     => $refundId,
-                        'gateway'       => $this->gateway,
-                    ]);
-
-                return null;
-            }
-
-            $this->refund = $this->repo->refund->findOrFail($refundId);
+            return null;
         }
 
         return $this->refund;
-    }
-
-    /**
-     * This will create a refund on the API side. It will also check that
-     * the refund on the gateway side is already created.
-     *
-     * The created refund and the refund id in the transaction entity
-     * will have the refund ID set explicitly.
-     *
-     * Each gateway needs to implement this on its own.
-     *
-     * @param array      $row
-     * @param string     $refundId
-     * @param \Exception $ex
-     *
-     * @return bool returns true if successfully created. False otherwise.
-     */
-    protected function createRefundOnApi(array $row, string $refundId, \Exception $ex)
-    {
-        $this->messenger->raiseReconAlert(
-            [
-                'trace_code' => TraceCode::RECON_INFO_ALERT,
-                'message'    => 'Refund not found in DB. -> ' . $ex->getMessage(),
-                'row'        => $row,
-                'refund_id'  => $refundId,
-                'gateway'    => $this->gateway
-            ]);
-
-        $paymentId = $this->getPaymentId($row);
-
-        $refundAmount = $this->getReconRefundAmount($row);
-
-        //
-        // Checking refundAmount with `empty` because there should
-        // never be 0 refund amount if the flow has reached here.
-        //
-        if (($paymentId === null) or (empty($refundAmount) === true))
-        {
-            $this->trace->info(
-                TraceCode::RECON_INFO_ALERT,
-                [
-                    'row'           => $row,
-                    'message'       => 'Unable to get the payment ID or amount from the refund recon file',
-                    'refund_id'     => $refundId,
-                    'refund_amount' => $refundAmount,
-                    'payment_id'    => $paymentId,
-                ]);
-
-            return false;
-        }
-
-        $payment = $this->repo->payment->findOrFail($paymentId);
-
-        $merchant = $payment->merchant;
-
-        $processor = new Payment\Processor\Processor($merchant);
-
-        try
-        {
-            $processor->createRefundOnApiFromRecon($payment, $refundId, $refundAmount);
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->traceException($ex);
-
-            return false;
-        }
-
-        return true;
     }
 
     /**
@@ -624,15 +547,16 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
         if (empty($rowDetails[BaseReconciliate::ARN]) === true)
         {
-            if ($refund->getStatus() === Refund\Status::FAILED)
+            if ($refund->getStatus() !== Refund\Status::PROCESSED)
             {
                 $this->trace->info(
                     TraceCode::RECON_INFO_ALERT,
                     [
-                        'info_code'     => Base\InfoCode::FAILED_REFUND_ARN_ABSENT,
-                        'message'       => 'ARN absent for a failed refund, not marked processed.',
+                        'info_code'     => Base\InfoCode::UNPROCESSED_REFUND_ARN_ABSENT,
+                        'message'       => 'ARN absent for an unprocessed refund, not marked as processed.',
                         'payment_id'    => $this->payment->getId(),
-                        'refund_id'     => $this->refund->getId(),
+                        'refund_id'     => $refund->getId(),
+                        'refund_status' => $refund->getStatus(),
                         'gateway'       => $this->gateway
                     ]);
             }

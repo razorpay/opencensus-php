@@ -56,6 +56,7 @@ class Name
     const VIEW_MERCHANT_COMPANY_INFO          = 'view_merchant_company_info';
     const VIEW_MERCHANT_CREDITS_LOG           = 'view_merchant_credits_log';
     const ADD_MERCHANT_CREDITS                = 'add_merchant_credits';
+    const EDIT_MERCHANT_CREDITS               = 'edit_merchant_credits';
     const DELETE_MERCHANT_CREDITS             = 'delete_merchant_credits';
     const EDIT_MERCHANT_SCREENSHOT            = 'edit_merchant_screenshot';
     const VIEW_PAYMENT_VERIFY                 = 'view_payment_verify';
@@ -78,6 +79,8 @@ class Name
     const SETTLEMENT_BULK_UPDATE              = 'settlement_bulk_update';
     const CREATE_NODAL_ACCOUNT_TRANSFER       = 'create_nodal_account_transfer';
     const MERCHANT_INVOICE_EDIT               = 'merchant_invoice_edit';
+    const MERCHANT_EMAIL_EDIT                 = 'merchant_edit_email';
+    const MERCHANT_PRICING_PLANS              = 'merchant_pricing_plans';
     const CREATE_RECONCILIATE                 = 'create_reconciliate';
     const VIEW_ACTIVATION_FORM                = 'view_activation_form';
     const EDIT_MERCHANT_LOCK_ACTIVATION       = 'edit_merchant_lock_activation';
@@ -104,6 +107,8 @@ class Name
     const ADD_SETTLEMENT_RECONCILIATION       = 'add_settlement_reconciliation';
     const SEND_NEWSLETTER                     = 'send_newsletter';
     const TRIGGER_DUMMY_ERROR                 = 'trigger_dummy_error';
+    const CREATE_GATEWAY_FILE                 = 'create_gateway_file';
+    const UPDATE_CONFIG_KEY                   = 'update_config_key';
     const MAKE_API_CALL                       = 'make_api_call';
     const SCHEDULE_CREATE                     = 'schedule_create';
     const SCHEDULE_FETCH                      = 'schedule_fetch';
@@ -175,9 +180,19 @@ class Name
     const CREATE_WALLET_CONFIG                = 'create_wallet_config';
     const EDIT_WALLET_CONFIG                  = 'edit_wallet_config';
     const MERCHANT_BATCH_UPLOAD               = 'merchant_batch_upload';
+    const MERCHANT_BENEFICIARY_UPLOAD         = 'merchant_beneficiary_upload';
     const CREATE_DISPUTE_REASON               = 'create_dispute_reason';
     const MANAGE_ONBOARDING_SUBMISSIONS       = 'manage_onboarding_submissions';
+    const MANAGE_BULK_FEATURE_MAPPING         = 'manage_bulk_feature_mapping';
+    const MANAGE_IINS                         = 'manage_iins';
+    const MANAGE_EMI_PLANS                    = 'manage_emi_plans';
     const MANAGE_RAZORX_OPERATIONS            = 'manage_razorx_operations';
+    const GENERATE_REFUND_EXCEL               = 'generate_refund_excel';
+    const GENERATE_EMI_EXCEL                  = 'generate_emi_excel';
+    const CONFIRM_USER                        = 'confirm_user';
+    const AUTHORIZE_PAYMENT                   = 'authorize_payment';
+    const VERIFY_PAYMENT                      = 'verify_payment';
+    const VERIFY_REFUND                       = 'verify_refund';
     const EDIT_MERCHANT_RISK_THRESHOLD        = 'edit_merchant_risk_threshold';
     const RETRY_BATCH                         = 'retry_batch';
     const VIEW_SHIELD_RULES                   = 'view_shield_rules';
@@ -205,6 +220,9 @@ class Name
     const CREATE_PROMOTION_COUPON             = 'create_promotion_coupon';
     const RAZORX_APPROVERS                    = 'razorx_approvers';
     const USER_PASSWORD_RESET                 = 'user_password_reset';
+    const MODIFY_SUBSCRIPTION_DATA            = 'modify_subscription_data';
+    const VIEW_OPERATIONS_REPORT              = 'view_operations_report';
+    const VIEW_SCROOGE_REFUNDS                = 'view_scrooge_refunds';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,

@@ -10,7 +10,23 @@ final class Constants
 
     const TYPE                          = 'type';
 
+    const MODE                          = 'mode';
+
     const HANDLE                        = 'handle';
+
+    const AMOUNT                        = 'amount';
+
+    const STATUS                        = 'status';
+
+    const PAYOUT                        = 'payout';
+
+    const SAVING                        = 'saving';
+
+    const REFUND                        = 'refund';
+
+    const ACCOUNT                       = 'account';
+
+    const TRANSFER                      = 'transfer';
 
     const PRODUCT                       = 'product';
 
@@ -18,11 +34,27 @@ final class Constants
 
     const IFSC_CODE                     = 'ifsc_code';
 
+    const NARRATION                     = 'narration';
+
+    const ENTITY_ID                     = 'entity_id';
+
+    const SOURCE_ID                     = 'source_id';
+
+    const MODE_IMPS                     = 'IMPS';
+
+    const SETTLEMENT                    = 'settlement';
+
+    const SOURCE_TYPE                   = 'source_type';
+
+    const INITIATE_AT                   = 'initiate_at';
+
     const MERCHANT_ID                   = 'merchant_id';
 
     const BANK_ACCOUNT                  = 'bank_account';
 
     const ACCOUNT_TYPE                  = 'account_type';
+
+    const STATUS_CREATED                = 'created';
 
     const ACCOUNT_NUMBER                = 'account_number';
 
@@ -32,11 +64,17 @@ final class Constants
 
     const BENEFICIARY_PIN               = 'beneficiary_pin';
 
+    const STATUS_INITIATED              = 'initiated';
+
     const BENEFICIARY_NAME              = 'beneficiary_name';
 
     const BENEFICIARY_CODE              = 'beneficiary_code';
 
     const BENEFICIARY_CITY              = 'beneficiary_city';
+
+    const FUND_TRANSFER_ID              = 'fund_transfer_id';
+
+    const PREFERRED_CHANNEL             = 'preferred_channel';
 
     const BENEFICIARY_EMAIL             = 'beneficiary_email';
 
@@ -51,4 +89,6 @@ final class Constants
     const BENEFICIARY_COUNTRY           = 'beneficiary_country';
 
     const BENEFICIARY_BANK_NAME         = 'beneficiary_bank_name';
+
+    const FUND_ACCOUNT_VALIDATION       = 'fund_account_validation';
 }

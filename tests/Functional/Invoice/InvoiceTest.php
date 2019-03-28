@@ -202,6 +202,13 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateLinkWithExpiryRequiredFeature()
+    {
+        $this->fixtures->merchant->addFeatures(['invoice_expire_by_reqd']);
+
+        $this->startTest();
+    }
+
     public function testCreateLinkWithInvalidSource()
     {
         $this->startTest();
@@ -1910,6 +1917,8 @@ class InvoiceTest extends TestCase
 
     public function testGetLinkView()
     {
+        config(['app.query_cache.mock' => false]);
+
         $this->createMetricsMock()
              ->expects($this->at(4))
              ->method('count')
@@ -1931,6 +1940,8 @@ class InvoiceTest extends TestCase
 
     public function testGetLinkViewDraft()
     {
+        config(['app.query_cache.mock' => false]);
+
         $this->createMetricsMock()
              ->expects($this->at(4))
              ->method('count')

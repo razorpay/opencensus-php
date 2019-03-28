@@ -18,6 +18,11 @@ use RZP\Models\Payment\Analytics\Metadata;
 
 trait HeadlessOtp
 {
+    public static $errorCodeToFlow = [
+        TraceCode::HEADLESS_OTP_ELF_FAILURE => IIN\Flow::HEADLESS_OTP,
+        ErrorCode::GATEWAY_ERROR_IVR_AUTHENTICATION_NOT_AVAILABLE => IIN\Flow::IVR,
+    ];
+
     protected function getNextOtpAction(array $actions)
     {
         $map = [
@@ -269,19 +274,21 @@ trait HeadlessOtp
 
     protected function disableIinFlowIfApplicable($payment, $code)
     {
-        if ($code !== TraceCode::HEADLESS_OTP_ELF_FAILURE)
+        if (empty(self::$errorCodeToFlow[$code]) === true)
         {
             return;
         }
+
+        $flow = self::$errorCodeToFlow[$code];
 
         $iin = $payment->card->getIin();
 
         $this->trace->info(TraceCode::IIN_FLOW_DISABLE, [
             'iin' => $iin,
-            'flow'  => 'headless_otp',
+            'flow'  => $flow,
         ]);
 
-        (new IIN\Service)->disableIinFlow($iin, 'headless_otp');
+        (new IIN\Service)->disableIinFlow($iin, $flow);
     }
 
     protected function isRupayNetwork($payment)

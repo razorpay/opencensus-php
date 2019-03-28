@@ -4774,3 +4774,82 @@ ALTER TABLE invoices
 
 ALTER TABLE hdfc
     ADD INDEX hdfc_auth_index (auth);
+
+ALTER TABLE fund_transfer_attempts
+    ADD COLUMN fts_transfer_id INTEGER DEFAULT NULL AFTER status,
+    ADD INDEX `fund_transfer_attempts_fts_transfer_id_index` (`fts_transfer_id`);
+
+ALTER TABLE settlements
+    ADD COLUMN fts_transfer_id INTEGER DEFAULT NULL AFTER status,
+    ADD INDEX `settlements_fts_transfer_id_index` (`fts_transfer_id`);
+
+ALTER TABLE payouts
+    ADD COLUMN fts_transfer_id INTEGER DEFAULT NULL AFTER status,
+    ADD INDEX `payouts_fts_transfer_id_index` (`fts_transfer_id`);
+
+ALTER TABLE refunds
+    ADD COLUMN fts_transfer_id INTEGER DEFAULT NULL AFTER status,
+    ADD INDEX `refunds_fts_transfer_id_index` (`fts_transfer_id`);
+
+ALTER TABLE fund_account_validations
+    ADD COLUMN fts_transfer_id INTEGER DEFAULT NULL AFTER status,
+    ADD INDEX `fund_account_validations_fts_transfer_id_index` (`fts_transfer_id`);
+
+ALTER TABLE cards
+    ADD COLUMN global_fingerprint varchar(50) DEFAULT NULL AFTER vault_token;
+    ADD INDEX  `cards_global_fingerprint_index` (`global_fingerprint`);
+
+ALTER TABLE cards
+    ADD COLUMN reference1 TINYINT(1) NULL AFTER global_fingerprint,
+    ADD COLUMN reference2 INT(11)  DEFAULT NULL AFTER global_fingerprint,
+    ADD COLUMN reference3 VARCHAR(14) DEFAULT NULL AFTER reference2,
+    ADD COLUMN reference4 VARCHAR(255) DEFAULT NULL AFTER reference3;
+
+ALTER TABLE fund_transfer_attempts
+    ADD COLUMN card_id CHAR(14) DEFAULT NULL after vpa_id;
+
+ALTER TABLE batches
+    ADD COLUMN creator_id CHAR(14) DEFAULT NULL AFTER comment,
+    ADD COLUMN creator_type VARCHAR(255) DEFAULT NULL AFTER creator_id,
+    ADD INDEX batches_creator_id_index (creator_id);
+
+ALTER TABLE payouts
+    MODIFY COLUMN purpose VARCHAR(255) NOT NULL;
+
+ALTER TABLE payouts
+    ADD INDEX payouts_purpose_index (purpose);
+
+ALTER TABLE transactions
+    ADD INDEX transactions_debit_index (debit);
+
+ALTER TABLE transactions
+    ADD INDEX transactions_credit_index (credit);
+
+ALTER TABLE iins
+    ADD COLUMN recurring TINYINT(1) DEFAULT 0 AFTER locked;
+
+ALTER TABLE batches
+    MODIFY COLUMN amount BIGINT(20) UNSIGNED DEFAULT NULL AFTER attempts,
+    MODIFY COLUMN processed_amount BIGINT(20) UNSIGNED DEFAULT 0 AFTER amount;
+
+ALTER TABLE payouts
+    ADD COLUMN batch_id varchar(14) DEFAULT NULL AFTER fund_account_id,
+    ADD index payouts_batch_id_index (batch_id);
+
+ALTER TABLE fund_accounts
+    ADD COLUMN batch_id varchar(14) DEFAULT NULL AFTER account_id,
+    ADD index fund_accounts_batch_id_index (batch_id);
+
+ALTER TABLE contacts
+    ADD COLUMN batch_id varchar(14) DEFAULT NULL AFTER merchant_id,
+    ADD index contacts_batch_id_index (batch_id);
+
+ALTER TABLE refunds
+    ADD COLUMN is_scrooge TINYINT(1) NOT NULL DEFAULT 0 AFTER processed_at,
+    ADD INDEX refunds_is_scrooge_index (`is_scrooge`);
+
+ALTER TABLE reversals
+    ADD COLUMN customer_id VARCHAR(14) DEFAULT NULL AFTER merchant_id,
+    ADD COLUMN transaction_type VARCHAR(255) DEFAULT NULL after transaction_id;
+
+ALTER TABLE reversals DROP FOREIGN KEY reversals_transaction_id_foreign;

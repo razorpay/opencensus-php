@@ -5,6 +5,8 @@ namespace RZP\Services;
 use Requests;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Models\Card\Validator;
+
 
 class CardVault
 {
@@ -13,6 +15,7 @@ class CardVault
     const VALUE             = 'value';
     const SECRET            = 'secret';
     const SUCCESS           = 'success';
+    const SCHEME            = 'scheme';
     const TOKENEX_TOKEN     = 'tokenex_token';
     const TOKENEX_TOKENS    = 'tokenex_tokens';
     const X_RAZORPAY_TASKID = 'X-Razorpay-TaskId';
@@ -46,11 +49,19 @@ class CardVault
 
     public function tokenize($input)
     {
-        $input = [
-            self::SECRET => $input['card'],
-        ];
+        if (array_key_exists('card', $input) === true)
+        {
+            $payload = [
+                self::SECRET => $input['card'],
+            ];
+        }
 
-        $response = $this->sendRequest('tokenize', 'post', $input);
+        if (array_key_exists(self::SCHEME, $input) === true)
+        {
+            $payload[self::SCHEME] = $input[self::SCHEME];
+        }
+
+        $response = $this->sendRequest('tokenize', 'post', $payload);
 
         if (empty($response[self::TOKEN]) === true)
         {
@@ -198,5 +209,18 @@ class CardVault
                 throw new Exception\RuntimeException('card vault request failed', $data);
             }
         }
+    }
+
+    public function createVaultToken(array $input): array
+    {
+        (new Validator)->validateInput('create_vault_token', $input);
+
+        $this->trace->info(TraceCode::VAULT_TOKEN_CREATE_INIT);
+
+        $response[self::TOKEN] = $this->tokenize($input);
+
+        $this->trace->info(TraceCode::VAULT_TOKEN_CREATE_COMPLETE);
+
+        return $response;
     }
 }

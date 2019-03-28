@@ -5,6 +5,7 @@ namespace RZP\Models\Contact;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
+use RZP\Models\Batch;
 use RZP\Models\Merchant;
 use RZP\Models\Base\Traits\NotesTrait;
 
@@ -25,6 +26,7 @@ class Entity extends Base\PublicEntity
     const CONTACT      = 'contact';
     const EMAIL        = 'email';
     const TYPE         = 'type';
+    const BATCH_ID     = 'batch_id';
 
     //
     // Reference ID is metadata set by the merchant, this does not
@@ -58,6 +60,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::TYPE,
         self::REFERENCE_ID,
+        self::BATCH_ID,
         self::ACTIVE,
         self::NOTES,
         self::CREATED_AT,
@@ -80,6 +83,12 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::BATCH_ID,
     ];
 
     protected static $sign = 'cont';
@@ -113,6 +122,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REFERENCE_ID);
     }
 
+    public function getBatchId()
+    {
+        return $this->getAttribute(self::BATCH_ID);
+    }
+
     public function getActive()
     {
         return $this->getAttribute(self::ACTIVE);
@@ -129,6 +143,17 @@ class Entity extends Base\PublicEntity
 
     // ------------- End Setters -------------
 
+    // ----------- Public Setters ------------
+
+    public function setPublicBatchIdAttribute(array & $attributes)
+    {
+        $batchId = $this->getAttribute(self::BATCH_ID);
+
+        $attributes[self::BATCH_ID] = Batch\Entity::getSignedIdOrNull($batchId);
+    }
+
+    // --------- End Public Setters ----------
+
     // --------------- Helpers ---------------
 
     public function isActive(): bool
@@ -143,6 +168,11 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function batch()
+    {
+        return $this->belongsTo(Batch\Entity::class);
     }
 
     // ------------ End Relations ------------

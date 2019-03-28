@@ -414,7 +414,6 @@ class Selector extends Base\Core
             $this->trace->info(
                 TraceCode::PAYMENT_TERMINAL_CREATION_ERROR,
                 [
-                    'terminals'  => $allTerminals,
                     'message'    => $e->getMessage(),
                 ]);
         }

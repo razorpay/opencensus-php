@@ -16,7 +16,6 @@ use RZP\Models\Payment\Gateway;
 use Exception as BaseException;
 use RZP\Models\Gateway\Downtime;
 use RZP\Gateway\Upi\Base\ProviderCode;
-use RZP\Gateway\Netbanking\Corporation;
 use RZP\Jobs\DynamicNetBankingUrlUpdater;
 use RZP\Gateway\Enach\Npci\Netbanking as EnachNb;
 use RZP\Models\Gateway\Priority as GatewayPriority;

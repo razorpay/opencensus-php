@@ -57,6 +57,7 @@ class Core extends Base\Core
         //
         Card\Entity::modifyNumber($input);
         Card\Entity::modifyMaestro($input);
+        Card\Entity::modifyBajajFinserv($input);
 
         $card = null;
 
@@ -77,11 +78,14 @@ class Core extends Base\Core
             $card = $this->create($input, $merchant);
         }
 
+        $messageType = $card->iinRelation ? $card->iinRelation['message_type'] : null;
+
         return array_merge(
             $card->toArray(),
             [
-                'number' => $input['number'],
-                'cvv' => $input['cvv']
+                'number'       => $input['number'],
+                'cvv'          => $input['cvv'],
+                'message_type' => $messageType,
             ]);
     }
 

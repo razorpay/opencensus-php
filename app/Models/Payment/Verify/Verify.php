@@ -136,14 +136,25 @@ class Verify extends Base\Core
     const GATEWAY_TIMEOUT_THRESHOLD = 10;
 
     /**
+     * No of Request Error that should occur in GATEWAY_TIMEOUT_BUCKET_INTERVAL
+     * for gateway to be blocked
+     */
+    const GATEWAY_REQUEST_ERROR_THRESHOLD = 100;
+
+    /**
      * Cache key prefix for storing gateway timeout values
      */
-    const GATEWAY_TIMEOUT_CACHE_KEY_PREFIX = 'verify_timeout_block';
+    const GATEWAY_TIMEOUT_CACHE_KEY_PREFIX = 'verify:verify_timeout_block';
+
+    /**
+     * Cache key prefix for storing gateway timeout values
+     */
+    const GATEWAY_REQUEST_ERROR_CACHE_KEY_PREFIX = 'verify:verify_request_error_block';
 
     /**
      * Cache key used to store gateway block info in hash map
      */
-    const GATEWAY_BLOCK_CACHE_KEY = 'gateway_block_cache';
+    const GATEWAY_BLOCK_CACHE_KEY = 'verify:gateway_block_cache';
 
     /**
      * Constant to signify that Verify Bucket should be updated with next boundary value
@@ -285,13 +296,13 @@ class Verify extends Base\Core
         return $this->verifyMultiplePayments($payments, $filter, $bucketFilter, $verifiableCount, $verifyFetchTime);
     }
 
-    public function verifyAllPayments($timestamp, $gateway, $count)
+    public function verifyAllPayments($timestamps, $gateway, $count)
     {
         $verifyFetchStartTime = time();
 
         $disabledGateways = $this->getBlockedGateways();
 
-        $payments = $this->repo->payment->getPaymentsToVerifyByGatewayAndTime($timestamp, $gateway, $count, $disabledGateways);
+        $payments = $this->repo->payment->getPaymentsToVerifyByGatewayAndTime($timestamps, $gateway, $count, $disabledGateways);
 
         $verifyFetchEndTime = time();
 
@@ -316,6 +327,7 @@ class Verify extends Base\Core
             Result::TIMEOUT       => 0,
             Result::ERROR         => 0,
             Result::UNKNOWN       => 0,
+            Result::REQUEST_ERROR => 0,
         ];
 
         $notApplicable = $locked = 0;
@@ -563,6 +575,7 @@ class Verify extends Base\Core
             Result::TIMEOUT       => 0,
             Result::ERROR         => 0,
             Result::UNKNOWN       => 0,
+            Result::REQUEST_ERROR => 0,
         ];
 
         $notApplicable = 0;
@@ -826,18 +839,32 @@ class Verify extends Base\Core
                     break;
             }
         }
-        catch (Exception\GatewayTimeoutException $e)
+        catch (Exception\GatewayRequestException $e)
         {
-            $this->checkForPreviousTimeoutAndBlockGatewayIfApplicable($payment);
+            if ($e instanceof Exception\GatewayTimeoutException)
+            {
+                $result = Result::TIMEOUT;
+
+                $this->checkForPreviousRequestErrorAndBlockGatewayIfApplicable($payment,
+                    self::GATEWAY_TIMEOUT_THRESHOLD,
+                    self::GATEWAY_TIMEOUT_CACHE_KEY_PREFIX);
+
+                $this->trace->info(TraceCode::GATEWAY_REQUEST_TIMEOUT,
+                                   ['payment_id' => $payment->getId()]);
+            }
+            else
+            {
+                $result = Result::REQUEST_ERROR;
+
+                $this->checkForPreviousRequestErrorAndBlockGatewayIfApplicable($payment,
+                    self::GATEWAY_REQUEST_ERROR_THRESHOLD,
+                    self::GATEWAY_REQUEST_ERROR_CACHE_KEY_PREFIX);
+
+                $this->trace->info(TraceCode::GATEWAY_REQUEST_ERROR,
+                                   ['payment_id' => $payment->getId()]);
+            }
 
             $this->updateVerifyBucket($payment, $filter, self::NEXT);
-
-            $this->trace->info(
-                TraceCode::GATEWAY_REQUEST_TIMEOUT,
-                ['payment_id' => $payment->getId()]);
-
-            // Just continue
-            $result = Result::TIMEOUT;
         }
         catch (\Throwable $e)
         {
@@ -857,7 +884,7 @@ class Verify extends Base\Core
         return $result;
     }
 
-    protected function checkForPreviousTimeoutAndBlockGatewayIfApplicable(Payment\Entity $payment)
+    protected function checkForPreviousRequestErrorAndBlockGatewayIfApplicable(Payment\Entity $payment, int $threshold, string $key)
     {
         $currentTimestamp = Carbon::now()->getTimestamp();
 
@@ -865,13 +892,13 @@ class Verify extends Base\Core
 
         $gateway = $payment->getGateway();
 
-        $key = self::GATEWAY_TIMEOUT_CACHE_KEY_PREFIX;
-
         $key .= '_' . $gateway . '_' . $currentTimestampBucket;
 
-        $timedOutPaymentsCount = (int) $this->redis->incr($key);
+        $requestErrorPaymentsCount = (int) $this->redis->incr($key);
 
-        if ($timedOutPaymentsCount >= self::GATEWAY_TIMEOUT_THRESHOLD)
+        $this->redis->expire($key, self::GATEWAY_TIMEOUT_BUCKET_INTERVAL);
+
+        if ($requestErrorPaymentsCount >= $threshold)
         {
             $this->blockGatewayForVerify($gateway);
         }
@@ -1104,6 +1131,11 @@ class Verify extends Base\Core
         }
 
         $diff = Carbon::now()->getTimestamp() - $payment->getCreatedAt();
+
+        if ($filter === Filter::PAYMENTS_CAPTURED)
+        {
+            $diff = Carbon::now()->getTimestamp() - $payment->getCapturedAt();
+        }
 
         // Payments which are less than X minutes old should always be picked by cron
         // Payments older than X minutes should follow the bucket logic

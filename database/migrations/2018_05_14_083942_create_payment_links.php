@@ -78,7 +78,7 @@ class CreatePaymentLinks extends Migration
             $table->string(Entity::SUPPORT_EMAIL, 255)
                   ->nullable();
 
-            $table->text(Entity::TERMS, 255)
+            $table->text(Entity::TERMS)
                   ->nullable();
 
             $table->integer(Entity::CREATED_AT);

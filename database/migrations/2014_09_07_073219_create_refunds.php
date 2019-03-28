@@ -42,6 +42,9 @@ class CreateRefunds extends Migration
             $table->string(Refund::STATUS)
                   ->nullable();
 
+            $table->integer(Refund::FTS_TRANSFER_ID)
+                  ->nullable();
+
             $table->string(Payment::ERROR_CODE, 128)
                   ->nullable();
 
@@ -109,6 +112,9 @@ class CreateRefunds extends Migration
             $table->char(Refund::REVERSAL_ID, Reversal::ID_LENGTH)
                   ->nullable();
 
+            $table->tinyInteger(Refund::IS_SCROOGE)
+                  ->default(0);
+
             $table->integer(Refund::CREATED_AT);
             $table->integer(Refund::UPDATED_AT);
 
@@ -122,6 +128,8 @@ class CreateRefunds extends Migration
             $table->index(Refund::REFERENCE1);
             $table->index(Refund::UPDATED_AT);
             $table->index([Refund::MERCHANT_ID, Refund::CREATED_AT]);
+            $table->index(Refund::FTS_TRANSFER_ID);
+            $table->index(Refund::IS_SCROOGE);
 
             $table->unique([Refund::MERCHANT_ID, Refund::RECEIPT]);
 

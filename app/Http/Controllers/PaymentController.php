@@ -11,6 +11,8 @@ use RZP\Trace\TraceCode;
 
 class PaymentController extends Controller
 {
+    use Traits\HasCrudMethods;
+
     public function getPayment($id)
     {
         $input = Request::all();
@@ -208,7 +210,9 @@ class PaymentController extends Controller
 
     public function postTimeout()
     {
-        $data = $this->service()->timeoutOldPayments();
+        $input = Request::all();
+
+        $data = $this->service()->timeoutOldPayments($input);
 
         return ApiResponse::json($data);
     }

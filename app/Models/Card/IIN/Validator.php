@@ -15,13 +15,14 @@ class Validator extends Base\Validator
         Entity::TYPE           => 'required',
         Entity::COUNTRY        => 'sometimes|nullable|size:2',
         Entity::CATEGORY       => 'sometimes',
-        Entity::ISSUER         => 'required_if:emi,1',
+        Entity::ISSUER         => 'sometimes',
         Entity::TRIVIA         => 'sometimes',
         Entity::ISSUER_NAME    => 'sometimes',
         Entity::EMI            => 'sometimes|integer|in:0,1',
         Entity::ENABLED        => 'sometimes|integer|in:0,1',
         Entity::FLOWS          => 'sometimes|array|custom',
         Entity::MESSAGE_TYPE   => 'sometimes|string|custom',
+        Entity::RECURRING      => 'sometimes|integer|in:0,1',
     );
 
     protected static $editRules = array(
@@ -29,7 +30,7 @@ class Validator extends Base\Validator
         Entity::TYPE           => 'sometimes',
         Entity::COUNTRY        => 'sometimes|nullable|size:2',
         Entity::CATEGORY       => 'sometimes',
-        Entity::ISSUER         => 'required_if:emi,1',
+        Entity::ISSUER         => 'sometimes',
         Entity::TRIVIA         => 'sometimes',
         Entity::ISSUER_NAME    => 'sometimes',
         Entity::EMI            => 'sometimes|integer|in:0,1',
@@ -37,6 +38,7 @@ class Validator extends Base\Validator
         Entity::FLOWS          => 'sometimes|array|filled|custom',
         Entity::LOCKED         => 'sometimes|integer|in:0,1',
         Entity::MESSAGE_TYPE   => 'sometimes|string|custom',
+        Entity::RECURRING      => 'sometimes|integer|in:0,1',
     );
 
     protected static $binIssuerValidationRules = [

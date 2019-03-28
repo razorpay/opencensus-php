@@ -17,25 +17,30 @@ use RZP\Models\Bank\IFSC;
  */
 class Entity extends Base\PublicEntity
 {
-    const ID             = 'id';
-    const MERCHANT_ID    = 'merchant_id';
-    const GLOBAL_CARD_ID = 'global_card_id';
-    const NAME           = 'name';
-    const EXPIRY_MONTH   = 'expiry_month';
-    const EXPIRY_YEAR    = 'expiry_year';
-    const IIN            = 'iin';
-    const LAST4          = 'last4';
-    const LENGTH         = 'length';
-    const NETWORK        = 'network';
-    const TYPE           = 'type';
-    const EMI            = 'emi';
-    const ISSUER         = 'issuer';
-    const COUNTRY        = 'country';
-    const INTERNATIONAL  = 'international';
-    const VAULT_TOKEN    = 'vault_token';
-    const VAULT          = 'vault';
-    const TRIVIA         = 'trivia';
-    const FLOWS          = 'flows';
+    const ID                  = 'id';
+    const MERCHANT_ID         = 'merchant_id';
+    const GLOBAL_CARD_ID      = 'global_card_id';
+    const NAME                = 'name';
+    const EXPIRY_MONTH        = 'expiry_month';
+    const EXPIRY_YEAR         = 'expiry_year';
+    const IIN                 = 'iin';
+    const LAST4               = 'last4';
+    const LENGTH              = 'length';
+    const NETWORK             = 'network';
+    const TYPE                = 'type';
+    const EMI                 = 'emi';
+    const ISSUER              = 'issuer';
+    const COUNTRY             = 'country';
+    const INTERNATIONAL       = 'international';
+    const VAULT_TOKEN         = 'vault_token';
+    const VAULT               = 'vault';
+    const TRIVIA              = 'trivia';
+    const FLOWS               = 'flows';
+    const GLOBAL_FINGERPRINT  = 'global_fingerprint';
+    const REFERENCE1          = 'reference1';
+    const REFERENCE2          = 'reference2';
+    const REFERENCE3          = 'reference3';
+    const REFERENCE4          = 'reference4';
 
     /**
      * Number and cvv are never saved in the database
@@ -76,12 +81,18 @@ class Entity extends Base\PublicEntity
         self::ISSUER,
         self::VAULT_TOKEN,
         self::VAULT,
+        self::GLOBAL_FINGERPRINT,
         self::INTERNATIONAL,
     ];
 
     protected $guarded = [self::ID];
 
-    protected static $modifiers = ['expiry_year', 'expiry_month', 'number'];
+    protected static $modifiers = [
+        self::EXPIRY_YEAR,
+        self::EXPIRY_MONTH,
+        self::NUMBER,
+        self::NAME,
+    ];
 
     protected static $generators = [
         self::ID,
@@ -89,7 +100,8 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::LAST4,
         self::LENGTH,
-        self::VAULT_TOKEN];
+        self::VAULT_TOKEN
+    ];
 
     protected $hidden = [];
 
@@ -112,6 +124,7 @@ class Entity extends Base\PublicEntity
         self::FLOWS,
         self::VAULT_TOKEN,
         self::VAULT,
+        self::GLOBAL_FINGERPRINT,
         self::NETWORK_CODE,
         self::TRIVIA,
         self::CREATED_AT,
@@ -203,9 +216,16 @@ class Entity extends Base\PublicEntity
 
     protected function generateVaultToken($input)
     {
-        if (isset($input[self::VAULT]))
+        if (isset($input[self::VAULT]) === true)
         {
             $tempInput['card'] = $input['number'];
+
+            $tempInput['scheme'] = Card\Vault::RZP_VAULT_SCHEME;
+
+            if ($input[self::VAULT] === Card\Vault::RZP_ENCRYPTION)
+            {
+                $tempInput['scheme'] = Card\Vault::RZP_ENCRYPTION_SCHEME;
+            }
 
             $vaultToken = (new Card\CardVault)->getVaultToken($tempInput);
 
@@ -234,6 +254,31 @@ class Entity extends Base\PublicEntity
             {
                 $input[Entity::CVV] = self::DUMMY_CVV;
             }
+        }
+    }
+
+    public static function modifyBajajFinserv(& $input)
+    {
+        $iin         = substr($input['number'] ?? null, 0, 6);
+
+        $cardNetwork = Network::detectNetwork($iin);
+
+        if ($cardNetwork === Network::BAJAJ)
+        {
+            $input[Entity::EXPIRY_YEAR]    = self::DUMMY_EXPIRY_YEAR;
+            $input[Entity::EXPIRY_MONTH]   = self::DUMMY_EXPIRY_MONTH;
+            $input[Entity::CVV]            = self::DUMMY_CVV;
+        }
+    }
+
+    public function modifyName(& $input)
+    {
+        // Don't want empty strings of varying length
+        // in the DB, replacing them all with null
+        if ((isset($input[self::NAME]) === true) and
+            (trim($input[self::NAME]) === ''))
+        {
+            $input[self::NAME] = '';
         }
     }
 
@@ -373,6 +418,11 @@ class Entity extends Base\PublicEntity
                      ->getTimestamp();
     }
 
+    public function getGlobalFingerPrint()
+    {
+        return $this->getAttribute(self::GLOBAL_FINGERPRINT);
+    }
+
     public function getTypeElseDefault()
     {
         // Fee based on the method type
@@ -399,6 +449,11 @@ class Entity extends Base\PublicEntity
     public function setNetwork($network)
     {
         $this->setAttribute(self::NETWORK, $network);
+    }
+
+    public function setGlobalFingerprint($globalFingerPrint)
+    {
+        $this->setAttribute(self::GLOBAL_FINGERPRINT, $globalFingerPrint);
     }
 
     public function setType($type)
@@ -627,45 +682,42 @@ class Entity extends Base\PublicEntity
 
     public function isRecurringSupported()
     {
-        return $this->isRecurringSupportedOnNetworkAndIssuerAndType(
-                                                        $this->merchant,
-                                                        $this->getNetworkCode(),
-                                                        $this->getIssuer(),
-                                                        $this->getType());
+        $iin = $this->iinRelation;
+
+        return $this->isRecurringSupportedOnIIN($this->merchant, $iin);
     }
 
-    public function isRecurringSupportedOnNetworkAndIssuerAndType(
-                                                Merchant\Entity $merchant,
-                                                string $networkCode = null,
-                                                string $issuer = null,
-                                                string $type = null)
+    public function isRecurringSupportedOnIIN(Merchant\Entity $merchant, IIN\Entity $iin = null)
     {
-        $isSupportedNetwork = in_array($networkCode, Payment\Gateway::getNetworksSupportedForCardRecurring(), true);
-
-        $isSupportedDebitBank = in_array($issuer, Payment\Gateway::getIssuersSupportedForDebitCardRecurring(), true);
-
-        $debitCheck = false;
-
-        if (($type === Type::DEBIT) and
-            ($isSupportedNetwork === true))
+        if($iin === null)
         {
-            if ($issuer === IFSC::HDFC)
-            {
-                $debitCheck = (($merchant->isFeatureEnabled(Feature\Constants::HDFC_DEBIT_SI) === true) or
-                               ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) === true));
-            }
-            else if ($isSupportedDebitBank === true)
-            {
-                $debitCheck = (($merchant->isFeatureEnabled(Feature\Constants::ALLOW_DC_RECURRING) === true) or
-                               ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) === true));
-            }
+            return false;
         }
 
-        $creditCheck = (($type === Type::CREDIT) and
-                        ($isSupportedNetwork === true));
+        if ($iin->isRecurring() === false)
+        {
+            return false;
+        }
 
-        return (($debitCheck === true) or
-                ($creditCheck === true));
+        $type = $this->getType() ?? $iin->getType();
+
+        if ($type !== Type::DEBIT)
+        {
+            return true;
+        }
+
+        $issuer = $iin->getIssuer();
+
+        if ($issuer === IFSC::HDFC)
+        {
+            return (($merchant->isFeatureEnabled(Feature\Constants::HDFC_DEBIT_SI) === true) or
+                ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) === true));
+        }
+        else
+        {
+            return (($merchant->isFeatureEnabled(Feature\Constants::ALLOW_DC_RECURRING) === true) or
+                ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) === true));
+        }
     }
 
     public function isBlocked()

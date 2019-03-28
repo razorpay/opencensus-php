@@ -36,9 +36,10 @@ class Gateway extends Base\Gateway
     const CACHE_KEY = 'hitachi_%s_card_details';
     const CACHE_TTL = 20;
 
-    const TIME_FORMAT = 'His';
-    const DATE_FORMAT = 'md';
+    const TIME_FORMAT               = 'His';
+    const DATE_FORMAT               = 'md';
     const DYNAMIC_DESCRIPTOR_PREFIX = 'RAZ*';
+    const DEFAULT_CVV_VALUE         = '000';
 
     public function setGatewayParams($input, $mode, $terminal)
     {
@@ -171,10 +172,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-                            $input['payment']['id'], Base\Action::AUTHORIZE);
-
-        $request = $this->getRefundRequestArray($input, $gatewayPayment);
+        $request = $this->getRefundRequestArray($input);
 
         $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_REFUND_REQUEST);
 
@@ -186,7 +184,7 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getAttributesFromRefundReverseResponse($response);
 
-        $refundEntity = $this->updateGatewayRefundEntity($refundEntity, $attributes, false);
+        $this->updateGatewayRefundEntity($refundEntity, $attributes, false);
 
         $this->checkErrorsAndThrowException($response);
 
@@ -230,6 +228,13 @@ class Gateway extends Base\Gateway
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    public function advice(array $input)
+    {
+        parent::advice($input);
+
+        return $this->advicePaysecure($input);
     }
 
     public function preProcessServerCallback($input, $isBharatQr = false): array
@@ -371,6 +376,21 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request);
 
         $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_MOTO_AUTH_RESPONSE);
+
+        $attributes = $this->getAttributesFromAuthResponse($response);
+
+        $this->createGatewayPaymentEntity($input, $attributes, Base\Action::AUTHORIZE);
+
+        $this->checkErrorsAndThrowException($response);
+    }
+
+    protected function advicePaysecure(array $input)
+    {
+        $request = $this->getAdviceRequestArrayForPaysecure($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_PAYSECURE_AUTH_RESPONSE);
 
         $attributes = $this->getAttributesFromAuthResponse($response);
 
@@ -743,6 +763,37 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    protected function getAdviceRequestArrayForPaysecure(array $input)
+    {
+        $content = $this->getDefaultAuthorizeRequestArray($input);
+
+        $content[RequestFields::TRANSACTION_TYPE] = TransactionType::RUPAY;
+
+        $content[RequestFields::ECI] = '07';
+
+        $content[RequestFields::TRANSACTION_DATE] = $input['paysecure']['tran_date'];
+
+        $content[RequestFields::TRANSACTION_TIME] = $input['paysecure']['tran_time'];
+
+        $traceContent = $content;
+
+        $content += $this->getCardDataForAuthorizeRequestArray($input);
+
+        $request = $traceRequest = $this->getStandardRequestArray($content);
+
+        $traceRequest['content'] = $traceContent;
+
+        $this->trace->info(TraceCode::GATEWAY_PAYSECURE_AUTH_REQUEST,
+            [
+                'request'     => $traceRequest,
+                'gateway'     => 'hitachi',
+                'payment_id'  => $input['payment']['id'],
+                'terminal_id' => $input['terminal']['id'],
+            ]);
+
+        return $request;
+    }
+
     protected function getAuthorizeRequestArrayForNotEnrolled(array $input)
     {
         $content = $this->getDefaultAuthorizeRequestArray($input);
@@ -849,8 +900,14 @@ class Gateway extends Base\Gateway
             RequestFields::EXPIRY_DATE         => $expiry,
         ];
 
+        if ($this->isPaysecureTransactionRequest($input) === true)
+        {
+            $data[RequestFields::CVV2] = self::DEFAULT_CVV_VALUE;
+        }
+
         if (($this->isSecondRecurringPaymentRequest($input) === false) and
-            ($this->isMotoTransactionRequest($input) === false))
+            ($this->isMotoTransactionRequest($input) === false) and
+            ($this->isPaysecureTransactionRequest($input) === false))
         {
             $data[RequestFields::CVV2] = $input['card']['cvv'];
         }
@@ -858,9 +915,18 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
+    protected function isPaysecureTransactionRequest($input)
+    {
+        if ($input['payment']['gateway'] === Payment\Gateway::PAYSECURE)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     protected function getCaptureRequestArray(array $input, Entity $gatewayPayment)
     {
-        $createdAt = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST);
         $time = Carbon::now(Timezone::IST)->format(self::TIME_FORMAT);
         $date = Carbon::now(Timezone::IST)->format(self::DATE_FORMAT);
 
@@ -878,8 +944,16 @@ class Gateway extends Base\Gateway
         return $this->getStandardRequestArray($content);
     }
 
-    protected function getRefundRequestArray(array $input, Entity $gatewayPayment)
+    protected function getRefundRequestArray(array $input)
     {
+        if ($input['payment']['gateway'] === Payment\Gateway::PAYSECURE)
+        {
+            return $this->getPaysecureRefundRequestArray($input);
+        }
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], Base\Action::AUTHORIZE);
+
         $createdAt = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST);
 
         $time = $createdAt->format(self::TIME_FORMAT);
@@ -893,6 +967,28 @@ class Gateway extends Base\Gateway
             RequestFields::RETRIEVAL_REF_NUM   => $gatewayPayment->getRrn(),
             RequestFields::MERCHANT_ID         => $this->getMerchantId(),
             RequestFields::TERMINAL_ID         => $this->getTerminalId(),
+            RequestFields::MERCHANT_REF_NUMBER => $input['refund']['id'],
+            RequestFields::REQUEST_ID          => UniqueIdEntity::generateUniqueId(),
+        ];
+
+        return $this->getStandardRequestArray($content);
+    }
+
+    protected function getPaysecureRefundRequestArray(array $input)
+    {
+        $createdAt = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST);
+
+        $time = $createdAt->format(self::TIME_FORMAT);
+        $date = $createdAt->format('dmY');
+
+        $content = [
+            RequestFields::TRANSACTION_TYPE    => TransactionType::REFUND,
+            RequestFields::TRANSACTION_AMOUNT  => $this->getFormattedAmount($input['refund']['amount']),
+            RequestFields::TRANSACTION_TIME    => $time,
+            RequestFields::TRANSACTION_DATE    => $date,
+            RequestFields::RETRIEVAL_REF_NUM   => $input['paysecure']['rrn'],
+            RequestFields::MERCHANT_ID         => $input['merchant']['id'],
+            RequestFields::TERMINAL_ID         => $input['terminal']['id'],
             RequestFields::MERCHANT_REF_NUMBER => $input['refund']['id'],
             RequestFields::REQUEST_ID          => UniqueIdEntity::generateUniqueId(),
         ];
@@ -1211,6 +1307,14 @@ class Gateway extends Base\Gateway
     {
         $merchantId = $this->getLiveMerchantId();
 
+        // For all Paysecure requests, use hitachi's shared mid on live mode
+        if ($this->input['payment']['gateway'] === Payment\Gateway::PAYSECURE)
+        {
+            // todo: Change later as required.
+            // For PVT, we would be using shared Hitachi merchant
+            $merchantId = '38RR00000000001';
+        }
+
         if ($this->mode === Mode::TEST)
         {
             $merchantId = $this->getTestMerchantId();
@@ -1222,6 +1326,14 @@ class Gateway extends Base\Gateway
     protected function getTerminalId()
     {
         $terminalId = $this->terminal['gateway_terminal_id'];
+
+        // For all Paysecure requests, use hitachi's shared tid on live mode
+        if ($this->input['payment']['gateway'] === Payment\Gateway::PAYSECURE)
+        {
+            // todo: Change later as required.
+            // For PVT, we would be using shared Hitachi terminal
+            return '38R00001';
+        }
 
         if ($this->mode === Mode::TEST)
         {

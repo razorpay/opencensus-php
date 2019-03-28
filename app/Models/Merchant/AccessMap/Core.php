@@ -229,6 +229,29 @@ class Core extends Base\Core
     }
 
     /**
+     * Returns the internal partner oauth app associated with the submerchant.
+     * Since we are querying for only non pure-platform partners here, at most one merchant access map should exist.
+     *
+     * @param Merchant\Entity $subMerchant
+     *
+     * @return mixed
+     */
+    public function getNonPurePlatformPartnerApp(Merchant\Entity $subMerchant)
+    {
+        //
+        // Check if a reseller / aggregator / bank / fully managed partner exists for the submerchant
+        // and fetch the internal OAuth application linked to the partner merchant account.
+        //
+        $accessMap = $this->repo
+                          ->merchant_access_map
+                          ->getNonPurePlatformPartnerMapping($subMerchant->getId());
+
+        $partnerApp = optional($accessMap)->entity;
+
+        return $partnerApp;
+    }
+
+    /**
      * @param Merchant\Entity    $merchant
      * @param Application\Entity $app
      *

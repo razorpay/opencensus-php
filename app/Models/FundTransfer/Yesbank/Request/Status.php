@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundTransfer\Yesbank\Request;
 
+use Config;
 use Carbon\Carbon;
 
 use RZP\Trace\TraceCode;
@@ -10,7 +11,9 @@ use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\FundTransfer\Mode;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\GatewayStatus;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\Status as ValidStatus;
 use RZP\Models\FundTransfer\Base\Reconciliation\Constants as ReconConstants;
@@ -27,9 +30,32 @@ class Status extends Base
 
     protected $responseIdentifier = Constants::STATUS_RESPONSE_IDENTIFIER;
 
-    public function __construct(string $type = null)
+    public function __construct(string $type = null, $useCurrentAccount = false)
     {
         parent::__construct($type);
+
+        if ($useCurrentAccount === true)
+        {
+            $this->channel = Channel::YESBANK;
+
+            $this->config = Config::get('nodal.yesbank.banking_ca');
+
+            $this->appId = $this->config['app_id'];
+
+            $this->accountNumber = $this->config['account_number'];
+
+            $this->baseUrl = $this->config['url'];
+
+            $this->appId = $this->config['app_id'];
+
+            $this->customerId = $this->config['customer_id'];
+
+            $this->method = 'POST';
+
+            $this->version = '1';
+
+            $this->init();
+        }
 
         $this->urlIdentifier = $this->config['payment_status_url_suffix'];
     }
@@ -55,13 +81,17 @@ class Status extends Base
      */
     public function requestBody(): string
     {
-        return json_encode([
+        $body = [
             Constants::STATUS_REQUEST_IDENTIFIER => [
                 Constants::VERSION              => self::VERSION,
                 Constants::CUSTOMER_ID          => $this->customerId,
                 Constants::REQUEST_REFERENCE_NO => $this->entity->getId(),
             ],
-        ]);
+        ];
+
+        $this->requestTrace = $body;
+
+        return json_encode($body);
     }
 
     public function getRequestInputForGateway(): array
@@ -162,7 +192,10 @@ class Status extends Base
         //
 
         $ftaId = $response[Constants::UPI_REQUEST_REFERENCE_NUMBER] ?? null;
+
         $utr = $response[Constants::UPI_UNIQUE_RESPONSE_NUMBER] ?? null;
+        $utr = (strtolower($utr) !== 'na')? $utr : null;
+
         $bankReferenceNumber = $response[Constants::UPI_BANK_REFERENCE_NUMBER] ?? null;
 
         $statusCode = $response[Constants::UPI_STATUS_CODE] ?? null;
@@ -176,7 +209,6 @@ class Status extends Base
         $remark = $response[Constants::UPI_STATUS_DESCRIPTION] ?? null;
 
         $publicFailureReason = GatewayStatus::getPublicFailureReason($finalResponseCode);
-
 
         return [
             ReconConstants::PAYMENT_REF_NO        => $this->getNullOnEmpty($ftaId),
@@ -246,6 +278,30 @@ class Status extends Base
      */
     protected function mockGenerateFailedResponse(): string
     {
+        if (($this->entity->source instanceof Entity) and
+            ($this->entity->source->getReceipt() === 'failed_response_insufficient_funds'))
+        {
+            $source = $this->entity->source;
+
+            $amount = ($source->getAmount() / 100);
+
+            return json_encode([
+                $this->responseIdentifier => [
+                    Constants::VERSION                => "2.0",
+                    Constants::TRANSFER_TYPE          => Constants::DEFAULT_TRANSFER_TYPE,
+                    Constants::REQ_TRANSFER_TYPE      => Constants::DEFAULT_TRANSFER_TYPE,
+                    Constants::TRANSACTION_DATE       => Carbon::now(Timezone::IST)->format('Y-m-d H:i:s'),
+                    Constants::TRANSFER_AMOUNT        => $amount,
+                    Constants::TRANSFER_CURRENCY_CODE => Constants::DEFAULT_CURRENCY,
+                    Constants::TRANSACTION_STATUS     => [
+                        Constants::STATUS_CODE              => ValidStatus::FAILED,
+                        Constants::SUB_STATUS_CODE          => 'ns:E402',
+                        Constants::BANK_REFERENCE_NO        => PublicEntity::generateUniqueId(),
+                        Constants::BENEFICIARY_REFERENCE_NO => PublicEntity::generateUniqueId(),
+                    ],
+                ],
+            ]);
+        }
         return json_encode([
             Constants::FAULT_RESPONSE_IDENTIFIER => [
                 Constants::CODE   => [

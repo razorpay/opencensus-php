@@ -5,6 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Vpa\Entity as Vpa;
+use RZP\Models\Card\Entity as Card;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Models\FundTransfer\Batch\Entity as BatchFundTransfer;
@@ -38,6 +39,9 @@ class CreateFundTransferAttemptsTable extends Migration
                   ->nullable();
 
             $table->char(FundTransferAttempt::VPA_ID, Vpa::ID_LENGTH)
+                  ->nullable();
+
+            $table->char(FundTransferAttempt::CARD_ID, Card::ID_LENGTH)
                   ->nullable();
 
             $table->string(FundTransferAttempt::CHANNEL, 8);
@@ -85,6 +89,9 @@ class CreateFundTransferAttemptsTable extends Migration
 
             $table->index(FundTransferAttempt::STATUS);
 
+            $table->integer(FundTransferAttempt::FTS_TRANSFER_ID)
+                  ->nullable();
+
             $table->index([FundTransferAttempt::SOURCE_ID, FundTransferAttempt::SOURCE_TYPE]);
 
             $table->index(FundTransferAttempt::CHANNEL);
@@ -92,6 +99,8 @@ class CreateFundTransferAttemptsTable extends Migration
             $table->index(FundTransferAttempt::INITIATE_AT);
 
             $table->index(FundTransferAttempt::CREATED_AT);
+
+            $table->index(FundTransferAttempt::FTS_TRANSFER_ID);
 
             $table->foreign(FundTransferAttempt::MERCHANT_ID)
                   ->references(Merchant::ID)

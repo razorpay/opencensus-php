@@ -407,6 +407,7 @@ class Type
             self::YES_EMI_FILE_SFTP,
             self::RBL_ENACH_DEBIT,
             self::RBL_ENACH_REGISTER,
+            self::ENACH_NPCI_NB_DEBIT,
         ],
 
         self::RECON_BUCKET_CONFIG => [
@@ -416,6 +417,7 @@ class Type
         self::H2H_DEFAULT_BUCKET_CONFIG => [
             self::FUND_TRANSFER_DEFAULT
         ],
+        // todo: Add a bucket config for EMI
     ];
 
     /**

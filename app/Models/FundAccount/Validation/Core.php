@@ -2,11 +2,13 @@
 
 namespace RZP\Models\FundAccount\Validation;
 
+use App;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger;
 use RZP\Models\FundAccount;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\FundTransfer\Attempt;
@@ -15,10 +17,13 @@ class Core extends Base\Core
 {
 
     protected $fundAccountCore;
+    private $mutex;
 
     public function __construct()
     {
         parent::__construct();
+
+        $this->mutex = App::getFacadeRoot()['api.mutex'];
 
         $this->fundAccountCore = new FundAccount\Core();
     }
@@ -53,6 +58,69 @@ class Core extends Base\Core
         }
 
         return $validation;
+    }
+
+    public function retry(array $input): array
+    {
+        (new Validator())->validateInput('retry', $input);
+
+        $favIds = $input[Entity::FUND_ACCOUNT_VALIDATION_IDS];
+
+        $processed = [];
+        $failed    = [];
+
+        foreach ($favIds as $favId)
+        {
+            try
+            {
+                $this->retryFundAccountValidation($favId);
+
+                $processed[] = $favId;
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Logger::ERROR,
+                    TraceCode::FUND_ACCOUNT_VALIDATION_RETRY_FAILED,
+                    [
+                        'fund_account_validation_id' =>  $favId
+                    ]);
+
+                $failed[] = $favId;
+            }
+        }
+
+        return [
+            'processed'         => $processed,
+            'failed'            => $failed,
+        ];
+    }
+
+    /**
+     * @param $favId
+     * @return bool
+     * @throws Exception\BaseException
+     */
+    protected function retryFundAccountValidation($favId): bool
+    {
+        return $this->mutex->acquireAndRelease(
+            $favId,
+            function () use ($favId)
+            {
+                // We are fetching entity inside the transaction because it could have been updated by another such process.
+                $fundAccountValidation = $this->repo->fund_account_validation->findByPublicId($favId);
+
+                $processor = Processor\Factory::get($fundAccountValidation);
+
+                $processor->validateRetry();
+
+                $processor->preProcessValidation();
+
+                return true;
+            },
+            18000,
+            ErrorCode::FUND_ACCOUNT_VALIDATION_RETRY_IN_PROGRESS);
     }
 
     /**
@@ -108,7 +176,7 @@ class Core extends Base\Core
     {
         $validation = $this->buildValidationEntity($input, $merchant);
 
-        return $this->repo->transaction(function () use ($input, $validation, $callback, $merchant)
+        $validation = $this->repo->transaction(function () use ($input, $validation, $callback, $merchant)
         {
             $fundAccount = $this->createOrGetFundAccount($input, $merchant);
 
@@ -118,14 +186,44 @@ class Core extends Base\Core
 
             $processor->setDefaultValuesForValidation();
 
+            // We are saving here because when when creating transaction,
+            // it is assumed that source already exist.
+            $this->repo->saveOrFail($validation);
+
             $this->verifyFeesLessThanApplicableBalance($validation, $merchant);
+
+            // Transaction might fail because of concurrent request verifying and changing balance at the same time.
+            try
+            {
+                $txn = $processor->createTransaction();
+            }
+            catch (Exception\LogicException $e)
+            {
+                if ($e->getMessage() === 'Something very wrong is happening! Balance is going negative')
+                {
+                    $this->trace->info(TraceCode::UPDATE_STATUS_AFTER_FTA_INITIATED, $e->getData());
+
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INSUFFICIENT_BALANCE,
+                        null,
+                        null);
+                }
+
+                throw $e;
+            }
+
+            $validation->setFees($txn->getFee());
+
+            $validation->setTax($txn->getTax());
 
             $this->repo->saveOrFail($validation);
 
-            call_user_func($callback, $validation);
-
             return $validation;
         });
+
+        call_user_func($callback, $validation);
+
+        return $validation;
     }
 
     /**
@@ -213,5 +311,12 @@ class Core extends Base\Core
                     'fee_credits'    =>  $balance->getFeeCredits(),
                     'balance'    =>  $balance->getBalance(),
                 ]);
+    }
+
+    public function updateEntityWithFtsTransferId(Entity $entity, $ftsTransferId)
+    {
+        $entity->setFTSTransferId($ftsTransferId);
+
+        $this->repo->saveOrFail($entity);
     }
 }

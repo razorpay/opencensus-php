@@ -5,11 +5,13 @@ namespace RZP\Tests\Functional\Card;
 use RZP\Models\Card\IIN;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class IinTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use IinTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -25,15 +27,8 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
-    public function testAddIinFailed()
+    public function testAddIinWithRecurring()
     {
-        $this->startTest();
-    }
-
-    public function testEditIinFailed()
-    {
-        $this->testAddIin();
-
         $this->startTest();
     }
 
@@ -83,7 +78,7 @@ class IinTest extends TestCase
 
         $this->fixtures->edit('iin', 112333, ['flows' => $flows]);
 
-        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'headless']);
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth', 'headless', 'charge_at_will']);
 
         $this->startTest();
     }
@@ -136,6 +131,24 @@ class IinTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest();
+    }
+
+    public function testImportIinWithMessageType()
+    {
+        $this->ba->adminAuth();
+
+        $file = $this->getUploadedIinFile(false, true);
+
+        $testData = &$this->testData['testImportIinWithMessageType'];
+
+        $testData['request']['files']['file'] = $file;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $iin = $this->getDbEntityById('iin', '559300')->toArray();
+        $this->assertEquals('DMS', $iin['message_type']);
     }
 
     public function testImportIinWithIssuer()

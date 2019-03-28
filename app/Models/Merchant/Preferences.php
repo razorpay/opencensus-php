@@ -36,9 +36,13 @@ class Preferences
     const MID_AMIT_RBLCARD          = 'BcVn9Oy1aSkcOa';
     const MID_AMIT_RBLLOAN          = 'BcVzB5W2m4noKJ';
     const MID_RBLCARD               = 'BYUXW3iBH0P0zU';
+    const MID_DELINQUENT_LOANS      = 'C3oXor5gWBUoWB';
     const MID_RBLLOAN               = 'BUjzZmAEXnXVJs';
+    const MID_RBLBFL                = 'BjdSExY3hArAHm';
+    const MID_RBL_TOTAL_BASE        = 'BoccLxCbqWFXmU';
     const MID_DMI_FINANCE           = 'BU4wKuO2IisLWY';
     const MID_VARTHANA_FINANCE      = 'BpqmTAX1XcFMvB';
+    const MID_INDIABULLS_FINANCE    = 'BXdV62dMAbb869';
 
     const DEMO_ACCOUNT         = '100DemoAccount';
     const MID_ENDURANCE        = [

@@ -38,14 +38,16 @@ class Core extends Base\Core
     /**
      * Credit an amount to customer_balance account
      *
-     * @param Entity $balance
+     * @param string $customerId
      * @param int    $amount
      * @param bool   $isRefund
      *
      * @return Entity
      */
-    public function credit(Entity $balance, int $amount, bool $isRefund = false) : Entity
+    public function credit(string $customerId, int $amount, bool $isRefund = false) : Entity
     {
+        $balance = $this->repo->customer_balance->lockForUpdate($customerId);
+
         //
         // 11/10/2018: Decided to stop all validation on wallet max balance, since we will only
         // support closed PPI wallets for the foreseeable future.
@@ -105,11 +107,7 @@ class Core extends Base\Core
      */
     public function refund(string $customerId, int $amount) : Entity
     {
-        $balance = $this->repo
-                        ->customer_balance
-                        ->lockForUpdate($customerId);
-
-        return $this->credit($balance, $amount, true);
+        return $this->credit($customerId, $amount, true);
     }
 
     /**

@@ -405,6 +405,7 @@ class Notifier extends Base\Core
                 break;
 
             case Preferences::MID_RBLLOAN:
+            case Preferences::MID_DELINQUENT_LOANS:
             case Preferences::MID_AMIT_RBLLOAN:
 
                 $template = 'sms.custom_invoice.rbl_loan';
@@ -417,9 +418,30 @@ class Notifier extends Base\Core
 
                 break;
 
+            case Preferences::MID_RBLBFL:
+                $template = 'sms.custom_invoice.rbl_bfl';
+                $sender   = 'SPRCRD';
+                $params   = [
+                    'receipt'      => $receipt,
+                    'invoice_link' => $invoiceLink,
+                    'amount'       => $this->invoice->getAmount() / 100,
+                ];
+
+                break;
+
             case Preferences::MID_DMI_FINANCE:
 
                 $template = 'sms.custom_invoice.dmi_finance';
+                $params   = [
+                    'receipt'      => $receipt,
+                    'invoice_link' => $invoiceLink,
+                ];
+
+                break;
+
+            case Preferences::MID_INDIABULLS_FINANCE:
+
+                $template = 'sms.custom_invoice.indiabulls_finance';
                 $params   = [
                     'receipt'      => $receipt,
                     'invoice_link' => $invoiceLink,

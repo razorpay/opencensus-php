@@ -1,0 +1,73 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/root.json",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "entity",
+        "count",
+        "items"
+    ],
+    "properties": {
+        "entity": {
+            "type": "string",
+            "enum": [
+                "collection"
+            ],
+            "default": null,
+            "pattern": "^(.*)$"
+        },
+        "count": {
+            "type": "integer"
+        },
+        "items": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "entity",
+                    "address",
+                    "username",
+                    "handle",
+                    "created_at"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "default": null,
+                        "pattern": "^vpa_[\\w]{14}$"
+                    },
+                    "entity": {
+                        "type": "string",
+                        "enum": [
+                            "vpa"
+                        ],
+                        "default": null,
+                        "pattern": "^(.*)$"
+                    },
+                    "address": {
+                        "type": "string",
+                        "default": null,
+                        "pattern": "^(.*)@(.*)$"
+                    },
+                    "username": {
+                        "type": "string",
+                        "pattern": "^(.*)$"
+                    },
+                    "handle": {
+                        "type": "string",
+                        "pattern": "^(.*)$"
+                    },
+                    "bank": {
+                        "type": ["object", "null"]
+                    },
+                    "created_at": {
+                        "type": "integer"
+                    }
+                }
+            }
+        }
+    }
+}

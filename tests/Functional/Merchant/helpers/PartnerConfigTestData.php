@@ -371,13 +371,19 @@ return [
             'content' => [
                 'default_plan_id'        => '10ZeroPricingP',
                 'commissions_enabled'    => 0,
+                'implicit_plan_id'       => null,
+                'explicit_plan_id'       => null,
             ],
         ],
         'response' => [
             'content' => [
-                'entity_id'           => Constants::DEFAULT_NON_PLATFORM_APP_ID,
-                'default_plan_id'     => '10ZeroPricingP',
-                'commissions_enabled' => false,
+                'entity_id'              => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+                'default_plan_id'        => '10ZeroPricingP',
+                'commissions_enabled'    => false,
+                'implicit_plan_id'       => null,
+                'explicit_plan_id'       => null,
+                'explicit_refund_fees'   => true,
+                'explicit_should_charge' => false,
             ],
         ],
     ],

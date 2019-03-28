@@ -4,13 +4,13 @@ namespace RZP\Models\P2p\Base\Libraries;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Models\P2p\Base\MorphMap;
 use RZP\Models\P2p\Device;
 use RZP\Base\JitValidator;
 use Illuminate\Http\Request;
 use RZP\Models\P2p\Vpa\Handle;
+use RZP\Trace\P2pTraceProcessor;
+use RZP\Models\P2p\Base\MorphMap;
 use RZP\Exception\LogicException;
-use Illuminate\Foundation\Application;
 use RZP\Exception\BadRequestException;
 
 class Context
@@ -73,8 +73,6 @@ class Context
 
     public function loadWithRequest(Request $request)
     {
-        MorphMap::boot();
-
         // Setting the options first as options will be use to resolve the context
         $this->setOptions(ContextMap::resolveRequestHeaders($request));
 
@@ -86,10 +84,11 @@ class Context
         // We are only going to set the context entities if the are available in basic auth.
         $basicAuth = app('basicauth');
 
-        if ($basicAuth->getMerchant() instanceof Merchant\Entity)
+        if (($basicAuth->getMerchant() instanceof Merchant\Entity) === false)
         {
-            $this->setMerchant($basicAuth->getMerchant());
+            $this->throwContextException('Merchant has be context');
         }
+        $this->setMerchant($basicAuth->getMerchant());
 
         if ($basicAuth->getDevice() instanceof Device\Entity)
         {
@@ -110,6 +109,8 @@ class Context
         }
         // Note:: We are not putting application as instance variable
         // to ensure that context is independent of application container.
+
+        $this->registerServices();
     }
 
     /**
@@ -149,7 +150,7 @@ class Context
         // Basic auth already takes care of device owner, here we are only enforcing it.
         if ($this->merchant->getId() !== $device->getMerchantId())
         {
-            throw new LogicException('Device does not belong to merchant in context');
+            $this->throwContextException('Device does not belong to merchant in context');
         }
 
         $this->device = $device;
@@ -303,11 +304,38 @@ class Context
     }
 
     /**
+     * Validates whether the given merchant is in context
+     *
+     * @param Merchant\Entity $merchant
+     * @throws BadRequestException
+     */
+    public function validateMerchant(Merchant\Entity $merchant)
+    {
+        if ($this->merchant->getId() !== $merchant->getId())
+        {
+            $this->throwContextException('Wrong merchant in context');
+        }
+    }
+
+    /**
      * @param $message
      * @throws BadRequestException
      */
     public function throwContextException($message)
     {
         throw new BadRequestException(ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED, $message);
+    }
+
+    /**
+     * Normally these services are registered from Providers, but in case
+     * of P2P, these services may lead to conflicts. Thus only be called for P2P.
+     */
+    protected function registerServices()
+    {
+        // Morphing must only be handled within P2P requests
+        MorphMap::boot();
+
+        // We only want to register the P2P Trace Processor within P2P requests
+        app('trace')->pushProcessor(new P2pTraceProcessor($this));
     }
 }

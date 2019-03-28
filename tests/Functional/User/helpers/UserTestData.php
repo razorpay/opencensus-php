@@ -358,10 +358,13 @@ return [
             'url'     => '/users/otp/send',
             'method'  => 'POST',
             'content' => [
-                'medium'         => 'email',
-                'action'         => 'create_payout',
-                'amount'         => 10000,
-                'account_number' => '1234567890',
+                'medium'          => 'email',
+                'action'          => 'create_payout',
+                'amount'          => 10000,
+                'account_number'  => '1234567890',
+                // Filled from test method.
+                // 'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'refund',
             ],
         ],
         'response' => [
@@ -472,8 +475,12 @@ return [
             'url'     => '/users/otp/send',
             'method'  => 'POST',
             'content' => [
-                'medium' => 'sms',
-                'action' => 'create_payout',
+                'medium'          => 'sms',
+                'action'          => 'create_payout',
+                'amount'          => 10000,
+                'account_number'  => '1234567890',
+                'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'refund',
             ],
         ],
         'response'  => [

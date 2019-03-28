@@ -58,30 +58,35 @@ class Core extends Base\Core
     /**
      * Create customer_transaction on payment transfer.
      *
-     * @param Transfer\Entity $transfer
-     * @param  int            $amount
-     * @param string          $customerId
-     * @param Merchant\Entity $merchant
+     * @param Base\PublicEntity $source
+     * @param  int              $amount
+     * @param string            $customerId
+     * @param Merchant\Entity   $merchant
      *
      * @return Entity
      */
     public function createForCustomerCredit(
-        Transfer\Entity $transfer,
+        Base\PublicEntity $source,
         int $amount,
         string $customerId,
         Merchant\Entity $merchant) : Entity
     {
-        $customerTxn = $this->createEntityForType(Entity::CREDIT, $this->merchant, $amount, $customerId);
+        $customerTxn = $this->createEntityForType(Entity::CREDIT, $merchant, $amount, $customerId);
 
-        $customerTxn->entity()->associate($transfer);
+        $customerTxn->entity()->associate($source);
 
-        $balance = $this->repo
-                        ->customer_balance
-                        ->findByIdAndMerchant($customerId, $merchant);
+        $customerTxn->setType($source->getEntityName());
 
-        $customerTxn->setBalance($balance->getBalance());
+        return $this->repo->transaction(function() use ($customerId, $customerTxn)
+        {
+            $customerBalance = (new Customer\Balance\Core)->credit($customerId, $customerTxn->getAmount());
 
-        return $customerTxn;
+            $customerTxn->setBalance($customerBalance->getBalance());
+
+            $this->repo->saveOrFail($customerTxn);
+
+            return $customerTxn;
+        });
     }
 
     /**

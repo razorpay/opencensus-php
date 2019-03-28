@@ -88,7 +88,7 @@ class Gateway
 
     /**
      * Trace instance for tracing
-     * @var Trace\Trace
+     * @var $trace Trace
      */
     protected $trace;
 
@@ -303,6 +303,19 @@ class Gateway
     {
         $this->input = $input;
         $this->action = Action::CAPTURE;
+
+        if ($input['payment']['status'] !== Status::AUTHORIZED)
+        {
+            throw new Exception\RuntimeException(
+                'Payment status should be authorized',
+                ['payment_id' => $input['payment']['id']]);
+        }
+    }
+
+    public function advice(array $input)
+    {
+        $this->input = $input;
+        $this->action = Action::ADVICE;
 
         if ($input['payment']['status'] !== Status::AUTHORIZED)
         {
@@ -799,6 +812,32 @@ class Gateway
                 'pretransfer_time'   => $info['pretransfer_time'],
                 'starttransfer_time' => $info['starttransfer_time'],
             ]);
+
+        try
+        {
+            $metricsDriver = app('trace')->metricsDriver(Metric::DOGSTATSD_DRIVER);
+
+            /**
+             * @var $metricsDriver \Razorpay\Metrics\Drivers\Driver
+             */
+            $metricsDriver->histogram('gateway_request_total_time_ms',
+                $info['total_time'] * 1000,
+                [
+                    'gateway' => $this->gateway ?? 'none',
+                    'action'  => $this->action ?? 'none',
+                ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::GATEWAY_METRIC_DIMENSION_PUSH_FAILED,
+                [
+                    'gateway' => $this->gateway ?? 'none',
+                    'action'  => $this->action ?? 'none',
+                ]);
+        }
     }
 
     /**
@@ -1545,13 +1584,17 @@ class Gateway
         {
             return $responseBody;
         }
-        if (isset($this->gatewayPayment) === true)
+
+        if (empty($attributes) === false)
         {
-            $this->gatewayPayment = $this->updateGatewayPaymentEntity($this->gatewayPayment, $attributes, false);
-        }
-        else
-        {
-            $this->gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input);
+            if (isset($this->gatewayPayment) === true)
+            {
+                $this->gatewayPayment = $this->updateGatewayPaymentEntity($this->gatewayPayment, $attributes, false);
+            }
+            else
+            {
+                $this->gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input);
+            }
         }
 
        $this->checkErrorsAndThrowExceptionFromMozartResponse($responseBody);

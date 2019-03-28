@@ -2,13 +2,20 @@
 
 namespace RZP\Models\FundTransfer\Yesbank\Request;
 
+use Config;
+
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Base as BaseModel;
 use RZP\Models\Base\PublicEntity;
+use RZP\Exception\LogicException;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Yesbank\Mode;
+use RZP\Models\Card\Entity as CardVault;
+use RZP\Models\Settlement\SlackNotification;
+use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\FundTransfer\Yesbank\NodalAccount;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\Status;
 use RZP\Models\FundTransfer\Yesbank\Reconciliation\GatewayStatus;
@@ -18,25 +25,59 @@ class Transfer extends Base
 {
     const VERSION = "1";
 
+    const IFSC_CODE = 'YESB0000022';
+
     protected $requestType;
 
     protected $entity = null;
 
     public $transferType = '';
 
+    public $typesWithoutPurposeCode = false;
+
     protected $requestTraceCode = TraceCode::NODAL_TRANSFER_REQUEST;
 
     protected $responseTraceCode = TraceCode::NODAL_TRANSFER_RESPONSE;
 
-    public function __construct(string $purpose, string $type = null)
+    public function __construct(string $purpose, string $type = null, $useCurrentAccount = false)
     {
         parent::__construct($type);
+
+        if ($useCurrentAccount === true)
+        {
+            $this->channel = Channel::YESBANK;
+
+            $this->config = Config::get('nodal.yesbank.banking_ca');
+
+            $this->appId = $this->config['app_id'];
+
+            $this->accountNumber = $this->config['account_number'];
+
+            $this->baseUrl = $this->config['url'];
+
+            $this->appId = $this->config['app_id'];
+
+            $this->customerId = $this->config['customer_id'];
+
+            $this->method = 'POST';
+
+            $this->version = '1';
+
+            $this->init();
+        }
 
         $this->requestType = $type;
 
         $this->purpose = $purpose;
 
         $this->urlIdentifier = $this->config['fund_transfer_url_suffix'];
+
+        $this->typesWithoutPurposeCode = (in_array($type, [Attempt\Type::BANKING, Attempt\Type::SYNC], true)  === true);
+
+        if (($type === Attempt\Type::BANKING) and ($useCurrentAccount === false))
+        {
+            $this->typesWithoutPurposeCode = false;
+        }
 
         $this->setRequestResponseIdentifiers();
     }
@@ -74,6 +115,23 @@ class Transfer extends Base
         ini_set('serialize_precision', -1);
 
         $requestData = $this->getRequestData();
+
+        $this->requestTrace = $requestData;
+
+        if ($this->isLogEnabled() === false)
+        {
+            $this->requestTrace[$this->requestIdentifier]
+            [Constants::BENEFICIARY]
+            [Constants::BENEFICIARY_DETAILS]
+            [Constants::BENEFICIARY_ACCOUNT_NO]
+                = mask_except_last4($this->requestTrace
+                                           [$this->requestIdentifier]
+                                           [Constants::BENEFICIARY]
+                                           [Constants::BENEFICIARY_DETAILS]
+                                           [Constants::BENEFICIARY_ACCOUNT_NO],
+                            'x'
+                  );
+        }
 
         $jsonRequest  = json_encode($requestData);
 
@@ -134,9 +192,9 @@ class Transfer extends Base
         ];
 
         //
-        // Purpose is required for async mode transfers
+        // Purpose is required for transfers from nodal accounts
         //
-        if ($this->requestType === Attempt\Type::SYNC)
+        if ($this->typesWithoutPurposeCode === true)
         {
             unset($data[$this->requestIdentifier][Constants::PURPOSE_CODE]);
         }
@@ -161,16 +219,40 @@ class Transfer extends Base
         //
         $terminal = $this->repo->terminal->findByGatewayAndTerminalData(Gateway::UPI_YESBANK);
 
-        return [
+        if ($fta->hasCard() === true)
+        {
+            $cardObj = $fta->card;
+
+            $cardNum = $this->app['card.cardVault']->detokenize($cardObj->getVaultToken());
+
+            $vpa = 'CCPAY.' . $cardNum . '@icici';
+        }
+        else
+        {
+            $vpa = $fta->vpa->getAddress();
+        }
+
+        $gatewayRequest = [
             'terminal' => $terminal->toArray(),
             'merchant' => $source->merchant->toArrayPublic(),
             'gateway_input' => [
-                'amount'    => $amount,
-                'vpa'       => $fta->vpa->getAddress(),
-                'ref_id'    => $fta->getId(),
-                'narration' => $this->getNarration($fta),
+                'amount'         => $amount,
+                'vpa'            => $vpa,
+                'ref_id'         => $fta->getId(),
+                'narration'      => $this->getNarration($fta),
+                'account_number' => $this->accountNumber,
+                'ifsc_code'      => self::IFSC_CODE,
             ]
         ];
+
+        if ($this->isLogEnabled() === false)
+        {
+            $this->requestTrace = $gatewayRequest;
+
+            $this->requestTrace['gateway_input']['vpa'] = mask_except_last4($this->requestTrace['gateway_input']['vpa'], 'x');
+        }
+
+        return $gatewayRequest;
     }
 
     public function getActionForGateway(): string
@@ -221,7 +303,16 @@ class Transfer extends Base
             return Mode::IMPS;
         }
 
-        $mode = (new NodalAccount)->getPaymentModeForBankAccount($attempt, $amount);
+        $nodalAccount = new NodalAccount;
+
+        if ($attempt->hasCard() === true)
+        {
+            $mode = $nodalAccount->getPaymentModeForCard($attempt, $amount);
+        }
+        else
+        {
+            $mode = $nodalAccount->getPaymentModeForBankAccount($attempt, $amount);
+        }
 
         return Mode::getExternalModeFromInternalMode($mode);
     }
@@ -230,10 +321,16 @@ class Transfer extends Base
     {
         $attempt = $this->entity;
 
+        if (($attempt->isRefund() === true) and
+            ($attempt->hasCard() === true))
+        {
+            return $this->fetchCardInfoAndPurposeData();
+        }
+
         // Beneficiary details are required when the request is of purpose `refund` or
         // the request has to be made using sync API
         if (($attempt->isRefund() === true) or
-            ($this->requestType === Attempt\Type::SYNC))
+            ($this->typesWithoutPurposeCode === true))
         {
             $beneName = $this->entity->bankAccount->getBeneficiaryName();
 
@@ -410,7 +507,10 @@ class Transfer extends Base
         //
 
         $ftaId = $response[Constants::UPI_REQUEST_REFERENCE_NUMBER] ?? null;
+
         $utr = $response[Constants::UPI_UNIQUE_RESPONSE_NUMBER] ?? null;
+        $utr = (strtolower($utr) !== 'na')? $utr : null;
+
         $bankReferenceNumber = $response[Constants::UPI_BANK_REFERENCE_NUMBER] ?? null;
 
         $statusCode = $response[Constants::UPI_STATUS_CODE] ?? null;
@@ -503,6 +603,17 @@ class Transfer extends Base
 
     protected function generateSyncMockFailureResponse(): string
     {
+        if (($this->entity->source instanceof Entity) and
+            ($this->entity->source->getReceipt() === 'failed_response_insufficient_funds'))
+        {
+            return $this->generateSyncMockFailureResponseForInsufficientFunds();
+        }
+
+        return $this->generateSyncMockFailureResponseForBeneficiaryNotAccepted();
+    }
+
+    protected function generateSyncMockFailureResponseForBeneficiaryNotAccepted(): string
+    {
         return json_encode([
             Constants::SYNC_TRANSFER_RESPONSE_IDENTIFIER => [
                 Constants::VERSION                      => self::VERSION,
@@ -515,6 +626,27 @@ class Transfer extends Base
                 Constants::TRANSACTION_STATUS           => [
                     Constants::STATUS_CODE              => Status::FAILED,
                     Constants::SUB_STATUS_CODE          => 'npci:E307',
+                    Constants::BANK_REFERENCE_NO        => PublicEntity::generateUniqueId(),
+                    Constants::BENEFICIARY_REFERENCE_NO => json_decode('{}'),
+                ]
+            ],
+        ]);
+    }
+
+    protected function generateSyncMockFailureResponseForInsufficientFunds(): string
+    {
+        return json_encode([
+            Constants::SYNC_TRANSFER_RESPONSE_IDENTIFIER => [
+                Constants::VERSION                      => self::VERSION,
+                Constants::REQUEST_REFERENCE_NO         => $this->entity->getId(),
+                Constants::NAME_WITH_BENEFICIARY_BANK   => '',
+                Constants::LOW_BALANCE_ALERT            => false,
+                Constants::TRANSFER_TYPE                => Mode::IMPS,
+                Constants::ATTEMPT_NO                   => 1,
+                Constants::UNIQUE_RESPONSE_NO           => PublicEntity::generateUniqueId(),
+                Constants::TRANSACTION_STATUS           => [
+                    Constants::STATUS_CODE              => Status::FAILED,
+                    Constants::SUB_STATUS_CODE          => 'ns:E402',
                     Constants::BANK_REFERENCE_NO        => PublicEntity::generateUniqueId(),
                     Constants::BENEFICIARY_REFERENCE_NO => json_decode('{}'),
                 ]
@@ -551,5 +683,45 @@ class Transfer extends Base
     {
         // TODO: Return stuff
         return [];
+    }
+
+    protected function fetchCardInfoAndPurposeData()
+    {
+        $cardObj = $this->entity->card;
+
+        $response = $this->app['card.cardVault']->detokenize($cardObj->getVaultToken());
+
+        $beneName = $this->normalizeBeneficiaryName($cardObj->getName());
+
+        return [
+            Constants::BENEFICIARY_DETAILS => [
+                Constants::BENEFICIARY_NAME       => [
+                    Constants::FULL_NAME => $beneName,
+                ],
+                Constants::BENEFICIARY_CONTACT    => json_decode('{}'),
+                Constants::BENEFICIARY_ACCOUNT_NO => $response,
+                Constants::BENEFICIARY_IFSC       => $this->getIfscCodeUsingCardInfo($cardObj),
+            ],
+        ];
+    }
+
+    protected function getIfscCodeUsingCardInfo(CardVault $cardObj)
+    {
+        $cardIssuer = trim($cardObj->getIssuer());
+
+        if (in_array($cardIssuer, array_keys(Constants::BANK_IFSC), true) === true )
+        {
+            return Constants::BANK_IFSC[$cardIssuer];
+        }
+        else
+        {
+            (new SlackNotification)->send('Card payout not supported for issuer',
+                [
+                    'id'     => $this->entity->getId(),
+                    'issuer' => $cardIssuer,
+                ], null, 1);
+
+            new LogicException('Ifsc code does not exist for this card issuer');
+        }
     }
 }

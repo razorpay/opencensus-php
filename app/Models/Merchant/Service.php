@@ -749,15 +749,19 @@ class Service extends Base\Service
 
     public function getPricingPlan($id)
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
+        $orgId = $this->auth->getOrgId();
+
+        $merchant = $this->repo->merchant->findByIdAndOrgId($id, $orgId);
 
         $pricingPlanId = $merchant->getPricingPlanId();
 
         $plan = new Plan;
 
-        if(empty($pricingPlanId) === false)
+        if (empty($pricingPlanId) === false)
         {
-            $plan = $this->repo->pricing->getPricingPlanById($pricingPlanId);
+            Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+            $plan = $this->repo->pricing->getPricingPlanByIdAndOrgId($pricingPlanId, $orgId);
         }
 
         return $plan->toArrayPublic();
@@ -1468,8 +1472,8 @@ class Service extends Base\Service
         $key2 = $mid . '_scheduled_es_pricing';
 
         return [
-            $key1 => Cache::get($key1) ?? 0.3,
-            $key2 => Cache::get($key2) ?? 0.2
+            $key1 => Cache::get('espricing:' . $key1) ?? 0.3,
+            $key2 => Cache::get('espricing:' . $key2) ?? 0.2
         ];
     }
 
@@ -2192,7 +2196,9 @@ class Service extends Base\Service
 
         $subEmailIsSameAsPartner = ($subMerchant->getEmail() === $partnerMerchant->getEmail());
 
-        $subMerchantHasLessThanTwoOwners = ($subMerchant->owners()->count() <= 2);
+        $subMerchantHasLessThanTwoOwners = ($subMerchant->owners()->count() < 2);
+
+        $inviteEmailSameAsSelf = ($input[User\Entity::EMAIL] === $subMerchant->getEmail());
 
         //
         // In case of a partner of type `aggregator`(only) having created a sub-merchant
@@ -2201,8 +2207,11 @@ class Service extends Base\Service
         // In both old aggregator and partners flow, we never expect the total number of
         // owners for a merchant to be greater than 2 (1 for partner and 1 for sub-merchant).
         //
+        // If the sub-merchant email is changed later then the invite may stil need to be
+        // sent for login but that should only be to the merchant email.
+        //
         if (($isAggregatorPartner === true) and
-            ($subEmailIsSameAsPartner === true) and
+            (($subEmailIsSameAsPartner or $inviteEmailSameAsSelf) === true) and
             ($subMerchantHasLessThanTwoOwners === true))
         {
             return $input[User\Entity::EMAIL];

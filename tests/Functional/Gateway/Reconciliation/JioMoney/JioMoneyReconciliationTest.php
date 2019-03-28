@@ -11,6 +11,7 @@ use RZP\Models\Batch\Status;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Reconciliator\RequestProcessor\Base;
+use RZP\Gateway\Wallet\Jiomoney\ResponseFields;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
@@ -85,6 +86,15 @@ class JioMoneyReconciliationTest extends TestCase
         $this->makePaymentsSince($createdAt, 1);
 
         $payment = $this->getLastEntity('payment', true);
+
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'checkpaymentstatus')
+            {
+                $content[ResponseFields::RESPONSE][ResponseFields::GETREQUESTSTATUS][ResponseFields::TXN_STATUS] = 'error';
+            }
+            return $content;
+        });
 
         $refund = $this->refundPayment($payment['id']);
 
@@ -176,6 +186,15 @@ class JioMoneyReconciliationTest extends TestCase
         $payment = $this->capturePayment($paymentEntity['id'], $paymentEntity['amount']);
 
         $this->assertEquals('captured', $payment['status']);
+
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'checkpaymentstatus')
+            {
+                $content[ResponseFields::RESPONSE][ResponseFields::GETREQUESTSTATUS][ResponseFields::TXN_STATUS] = 'error';
+            }
+            return $content;
+        });
 
         $this->refundPayment($payment['id']);
 

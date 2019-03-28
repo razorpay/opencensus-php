@@ -73,7 +73,12 @@
         var respPaymentId = requestParams.razorpay_payment_id;
         var amountPaid = data.payment_link.amount;
 
-        document.getElementById('success-msg').innerHTML = 'You\'ve successfully paid ₹' + (amountPaid/100).toFixed(2);
+        var successMsg = 'Your payment is successful';
+
+        if (amountPaid) {
+            successMsg = 'You\'ve successfully paid ₹' + (amountPaid/100).toFixed(2);
+        }
+        document.getElementById('success-msg').innerHTML = successMsg;
         document.getElementById('payment-id').innerHTML = 'Payment ID: ' + respPaymentId;
     }
 </script>

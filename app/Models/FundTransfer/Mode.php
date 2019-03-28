@@ -32,6 +32,12 @@ class Mode
         Type::VPA => [
             self::UPI,
         ],
+        Type::CARD => [
+            self::RTGS,
+            self::IMPS,
+            self::NEFT,
+            self::IFT,
+        ]
     ];
 
     public static function validateModeOfAccountType($mode, $accountType) {

@@ -42,6 +42,13 @@ class Repository extends Base\Repository
         $query->orderBy(Entity::MERCHANT_ID, 'desc');
     }
 
+    public function getByMerchantId($merchantId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->first();
+    }
+
     public function getMerchantDetailsToBeMigrated($count = 1000, $skip = 0)
     {
         return $this->newQuery()

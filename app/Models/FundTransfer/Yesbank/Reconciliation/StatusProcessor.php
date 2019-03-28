@@ -2,11 +2,12 @@
 
 namespace RZP\Models\FundTransfer\Yesbank\Reconciliation;
 
-use RZP\Error\ErrorCode;
-use RZP\Models\FundTransfer\Base\Reconciliation\Constants;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Yesbank\Mode;
+use RZP\Models\FundTransfer\Base\Reconciliation\Constants;
 use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
 use RZP\Models\FundTransfer\Attempt\Status as FundTransferStatus;
 use RZP\Models\FundTransfer\Yesbank\Request\Status as StatusRequest;
@@ -38,14 +39,16 @@ class StatusProcessor extends BaseRowProcessor
      */
     protected function processRow()
     {
-        $gateway = ($this->row->hasVpa() === true);
+        $gateway = $this->row->shouldUseGateway();
 
         $type = $this->getRequestType($this->row);
 
         $makeRequest = $this->shouldMakeStatusRequestCall($gateway);
 
-        $statusRequestProcessor = (new StatusRequest($type))->init()
-                                                            ->setEntity($this->row);
+        $useCurrentAccount = $this->row->merchant->isFeatureEnabled(Feature\Constants::DUMMY);
+
+        $statusRequestProcessor = (new StatusRequest($type, $useCurrentAccount))->init()
+                                                                                ->setEntity($this->row);
 
         if ($makeRequest === true)
         {

@@ -109,6 +109,8 @@ class Payment extends Base
 
         $network = Card\Network::getCode($payment->card->getNetwork());
 
+        $issuer = $payment->card->getIssuer();
+
         // Current Implementation
         // * Filter based on receiver type
         // * Filter based on international
@@ -126,7 +128,7 @@ class Payment extends Base
         // Right now if the receiver_type is present it needs to be selected no
         // matter what otherwise default type is used
         $filters1 = [
-            [Pricing\Entity::RECEIVER_TYPE,         $receiverType,  false,  null    ],
+            [Pricing\Entity::RECEIVER_TYPE,         $receiverType,  true,   null    ],
             [Pricing\Entity::INTERNATIONAL,         $international, false,  false   ],
             [Pricing\Entity::PAYMENT_NETWORK,       $network,       true,   null    ],
         ];
@@ -143,6 +145,7 @@ class Payment extends Base
         $filters2 = [
             [Pricing\Entity::PAYMENT_METHOD_TYPE,   $cardType,      true,   null    ],
             [Pricing\Entity::AUTH_TYPE,             $authType,      true,   null    ],
+            [Pricing\Entity::PAYMENT_ISSUER,        $issuer,        true,   null    ],
         ];
 
         $rules = $this->applyFiltersOnRules($rules, $filters2);

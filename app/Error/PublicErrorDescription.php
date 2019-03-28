@@ -80,7 +80,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_UNDER_DISPUTE_CANNOT_BE_REFUNDED                  = 'The refund on this payment is blocked due to ongoing dispute investigation';
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT                       = 'Minimum transaction amount allowed is Re. 1';
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_10_MIN_AMOUNT                    = 'Minimum transaction amount allowed is Rs 10';
-    const BAD_REQUEST_PAYMENT_AMOUNT_TOO_HIGH                                   = 'The amount may not be greater than 50000000.';
+    const BAD_REQUEST_PAYMENT_AMOUNT_TOO_HIGH                                   = 'The amount entered is too high';
+    const BAD_REQUEST_PAYMENT_AMOUNT_TOO_HIGH_DECLINED_BY_ISSUER                = 'The amount entered is too high. Declined by issuing bank';
     const BAD_REQUEST_PAYMENT_ATOM_NET_BANKING_MIN_AMOUNT_FIFTY                 = 'Minimum amount allowed for net banking transaction for the merchant is INR 50';
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT_FOR_EMI               = 'Minimum transaction amount allowed is Rs 2000';
     const BAD_REQUEST_PAYMENT_CARD_IS_NOT_ARRAY                                 = 'Card provided is not a dictionary';
@@ -184,7 +185,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH                             = 'Payment amount provided does not match with the amount in order';
     const BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE                 = 'Payment amount is greater than the amount due for order';
     const BAD_REQUEST_PAYMENT_UPI_MULTIPLE_ACCOUNTS_LINKED                      = 'Payment failed since account linked with multiple names';
-    const BAD_REQUEST_UPI_INVALID_ATM_PIN                                       = 'Invalid ATM PIN entered';
+    const BAD_REQUEST_UPI_INVALID_ATM_PIN                                       = 'Invalid PIN entered.';
+
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MINIMUM_ALLOWED_AMOUNT           = 'Payment amount is lesser than the minimum amount allowed';
     const BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH                           = 'Payment currency provided does not match with the currency in order';
     const BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID                                = 'Payment already done for this order.';
@@ -201,6 +203,7 @@ class PublicErrorDescription
     const BAD_REQUEST_REFUND_INVALID_STATE_UPDATE                               = 'Refund can not be updated to this state';
     const BAD_REQUEST_REFUND_NOT_SCROOGE                                        = 'Gateway refund cannot be called for non-scrooge gateway';
     const BAD_REQUEST_REFUND_ALREADY_PROCESSED                                  = 'Refund has already been processed';
+    const BAD_REQUEST_ALL_FTA_NOT_FAILED                                        = 'All FTAs for the refund are not in failed state.';
     const BAD_REQUEST_REFUND_NOT_IN_CREATED                                     = 'Refund is not in created state';
     const BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD                                    = 'This operation is not allowed. Please contact Razorpay support for details.';
     const BAD_REQUEST_MERCHANT_FUNDS_ALREADY_ON_HOLD                            = 'The merchant funds are already on hold';
@@ -249,6 +252,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PRICING_FIELD_NOT_REQUIRED_FOR_NB                         = 'The field should be null for net-banking';
     const BAD_REQUEST_PRICING_RULE_FOR_AMEX_NOT_PRESENT                         = 'Amex pricing rule not present for merchant';
     const BAD_REQUEST_PRICING_PLAN_CANNOT_HAVE_MULTIPLE_TYPES                   = 'Pricing Plan cannot have rules of multiple types';
+    const BAD_REQUEST_PRICING_TYPE_COMMISSION_INVALID_FOR_NON_RZP_ORG           = 'Commission plan cannot be posted for this org';
     const BAD_REQUEST_PRICING_RULE_FOR_CARD_NETWORK_NOT_PRESENT                 = 'Pricing rule not present for merchant with this card network';
     const BAD_REQUEST_PRICING_RULE_FOR_AMOUNT_RANGE_OVERLAP                     = 'Pricing rule amount range collides with another existing rule\'s amount range.';
     const BAD_REQUEST_UNKNOWN_SCHEDULE                                          = 'Schedule not found in database.';
@@ -330,6 +334,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_NOT_ENROLLED_FOR_3DSECURE                    = 'Payment processing failed because card is not enrolled for the required 3dsecure authentication';
     const BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED             = 'Payment processing failed because OTP validation attempts limit exceeded';
     const BAD_REQUEST_PAYMENT_OTP_INCORRECT                                     = 'Payment processing failed because of incorrect OTP';
+    const BAD_REQUEST_PAYMENT_OTP_INCORRECT_OR_EXPIRED                          = 'Payment processing failed because of incorrect or expired OTP';
     const BAD_REQUEST_PAYMENT_OTP_EXPIRED                                       = 'Payment processing failed because of expired OTP';
     const BAD_REQUEST_PAYMENT_PARES_XML_SIGNATURE_ERROR                         = 'Payment processing failed because of card authentication failure';
     const BAD_REQUEST_PAYMENT_ABORTED                                           = 'Payment processing aborted';
@@ -362,6 +367,7 @@ class PublicErrorDescription
     const BAD_REQUEST_ORDER_INVALID_OFFER                                       = 'Offer applied not valid for order';
     const BAD_REQUEST_ORDER_MULTIPLE_OFFERS                                     = 'Multiple offers cannot be applied on a single order.';
     const BAD_REQUEST_ORDER_CURRENCY_NOT_SUPPORTED                              = 'Currency is not supported';
+    const BAD_REQUEST_ORDER_ANOTHER_OPERATION_IN_PROGRESS                       = 'Request failed because another order operation is in progress';
     const BAD_REQUEST_UNSUPPORTED_CHARACTER_SET                                 = 'Error occurred because of invalid data';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_HASH                                 = 'Hash Data is invalid.';
     const BAD_REQUEST_BATCH_UPLOAD_INVALID_TOKEN                                = 'Token expired or invalid';
@@ -767,7 +773,7 @@ class PublicErrorDescription
     const BAD_REQUEST_FORBIDDEN_TRANSACTION_ON_VPA                                  = 'Payment failed because transactions are not allowed on this VPA';
     const BAD_REQUEST_FORBIDDEN_BUSINESS_BANKING_NOT_ENABLED                        = 'Access to requested resource not available';
 
-    const BENEFICIARY_REGISTRATION_FAILED_RESPONSE                                  = 'Beneficiary registration failed due to error';
+    const NODAL_BENEFICIARY_REGISTRATION_FAILED_RESPONSE                            = 'Beneficiary registration failed due to error';
     const BAD_REQUEST_PSP_DOESNT_EXIST                                              = 'Invalid VPA. Please enter a valid Virtual Payment Address';
     const BAD_REQUEST_PSP_ERROR                                                     = 'Payment failed at PSP';
     const BAD_REQUEST_UPI_INVALID_DEVICE_FINGERPRINT                                = 'Payment Failed due to issue with your UPI App. Please try again with another app or payment method';
@@ -785,4 +791,6 @@ class PublicErrorDescription
     const BAD_REQUEST_APPLICATION_SUBMERCHANT_CONFIG_EXISTS                         = 'Application/submerchant config already exists';
 
     const BAD_REQUEST_PAYMENT_CANNOT_REDIRECT_TO_AUTHORIZE                          = 'Payment failed';
+
+    const BAD_REQUEST_RECURRING_TOKEN_EXPIRED                                       = 'Token has expired and cannot be used for recurring payments';
 }

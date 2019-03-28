@@ -2,6 +2,8 @@
 
 namespace RZP\Models\P2p\Base;
 
+use Crypt;
+use RZP\Trace\TraceCode;
 use Illuminate\Support\Arr;
 use RZP\Exception\LogicException;
 use RZP\Gateway\P2p\Base\Response;
@@ -10,6 +12,9 @@ use RZP\Models\P2p\Base\Libraries\Context;
 use RZP\Models\P2p\Base\Traits\ApplicationTrait;
 
 /**
+ * @property Core $core
+ * @property Entity $entity
+ * @property Validator $validator
  *
  * Class Processor
  * @package RZP\Models\P2p\Base
@@ -28,6 +33,11 @@ class Processor
      * @var ArrayBag
      */
     protected $gatewayInput = null;
+
+    /**
+     * @var ArrayBag
+     */
+    protected $callbackInput = null;
 
     /**
      * @var Response
@@ -56,7 +66,7 @@ class Processor
 
         // Initializing the gateway data
         $this->gatewayInput     = new ArrayBag();
-        $this->gatewayResponse  = new ArrayBag();
+        $this->callbackInput    = new ArrayBag();
     }
 
     protected function getNewEntity(): Entity
@@ -76,6 +86,13 @@ class Processor
     protected function getNewCore()
     {
         $className = str_replace('\Processor', '\Core', static::class);
+
+        return new $className;
+    }
+
+    protected function getNewAction()
+    {
+        $className = str_replace('\Processor', '\Action', static::class);
 
         return new $className;
     }
@@ -115,18 +132,29 @@ class Processor
     protected function callGateway()
     {
         $gateway     = $this->getGateway();
-        $action      = $this->getGatewayAction();
+        $entity      = $this->getEntity();
         $mode        = $this->mode();
+
+        // These two variables are passed directly to gateway and only gateway can validate these
+        $this->gatewayInput->put('sdk', $this->arrayBag($this->input->get('sdk', [])));
+        $this->gatewayInput->put('callback', $this->arrayBag($this->input->get('callback', [])));
 
         // Before passing input to gateway we will run basic check
         $this->modifyGatewayInput($this->gatewayInput);
+
+        $this->trace()->info(TraceCode::P2P_REQUEST, [
+            'action'    => $this->action,
+            'entity'    => $entity,
+            'gateway'   => $gateway,
+            'input'     => $this->input,
+        ]);
 
         // We are using context directly to pass to gateway. This is experimental and may change in future.
         // We might need to reverse the logic where context will be put inside gateway input.
         $this->context()->setGatewayData($gateway, $this->action, $this->gatewayInput);
 
         // In spite of passing the gateway data, we are passing complete context object
-        $this->gatewayResponse = $this->app['gateway']->call($gateway, $action, $this->context(), $mode);
+        $this->gatewayResponse = $this->app['gateway']->call($gateway, $entity, $this->context(), $mode);
 
         return $this->processGatewayResponse();
     }
@@ -136,7 +164,7 @@ class Processor
         return $this->context()->getHandle()->getAcquirer();
     }
 
-    protected function getGatewayAction()
+    protected function getEntity()
     {
         $action = strtr(static::class, ['RZP\Models\P2p\\' => '', '\Processor' => '']);
 
@@ -145,9 +173,34 @@ class Processor
 
     protected function processGatewayResponse()
     {
-        $suffix = $this->gatewayResponse->isSuccess() ? 'Success' : 'Failure';
+        if ($this->gatewayResponse->isSuccess() === false)
+        {
+            $response = $this->handleGatewayFailure();
+        }
+        else if ($this->gatewayResponse->hasRequest())
+        {
+            // If there if there is next request, we will handle that
+            $response = $this->generateNextRequest();
+        }
+        else
+        {
+            // Else we will consider it to be a success response
+            $response = $this->handleGatewaySuccess();
+        }
 
-        $method = $this->action . $suffix;
+        $this->trace()->info(TraceCode::P2P_RESPONSE, [
+            'action'    => $this->action,
+            'entity'    => $this->getEntity(),
+            'gateway'   => $this->getGateway(),
+            'response'  => $response,
+        ]);
+
+        return $response;
+    }
+
+    public function handleGatewaySuccess()
+    {
+        $method = $this->action . 'Success';
 
         if (method_exists($this, $method))
         {
@@ -157,8 +210,34 @@ class Processor
         throw new LogicException('Gateway response processor not found.', null , [
             'entity'    => $this->entity,
             'action'    => $this->action,
-            'suffix'    => $suffix,
+            'suffix'    => 'Success',
         ]);
+    }
+
+    public function handleGatewayFailure()
+    {
+        return [];
+    }
+
+    public function generateNextRequest()
+    {
+        $response = [
+            'version'   => 'v1',
+            'type'      => $this->gatewayResponse->requestType(),
+            'request'   => $this->gatewayResponse->request(),
+            'callback'  => $this->generateNextRequestCallback(),
+        ];
+
+        return $response;
+    }
+
+    protected function generateNextRequestCallback()
+    {
+        return [
+            'action'    => $this->action,
+            'input'     => $this->callbackInput->toArray(),
+            'gateway'   => $this->gatewayResponse->requestCallback(),
+        ];
     }
 
     /**

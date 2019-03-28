@@ -180,12 +180,16 @@ class ApiEventSubscriber extends Base\Core
 
         $merchant = $this->getMerchantFromEntity($payment);
 
-        if (($payment->hasSubscription() === true) and
-            ($merchant->isFeatureEnabled(Feature\Constants::SUBSCRIPTION_AUTH_V2) === true))
+        if ($payment->hasSubscription() === true)
         {
-            $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
+            $response = $this->app->razorx->getTreatment($merchant->getId(), 'auth_flow_redirect_to_subserv', $this->mode);
 
-            SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
+            if (strtolower($response) === 'on')
+            {
+                $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
+
+                SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
+            }
         }
 
         $this->prepareAndDispatchWebhook($payload);
@@ -197,11 +201,16 @@ class ApiEventSubscriber extends Base\Core
 
         $merchant = $this->getMerchantFromEntity($payment);
 
-        if (($payment->hasSubscription() === true) and
-            ($merchant->isFeatureEnabled(Feature\Constants::SUBSCRIPTION_AUTH_V2) === true))
+        if ($payment->hasSubscription() === true)
         {
-            $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
-            SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
+            $response = $this->app->razorx->getTreatment($merchant->getId(), 'auth_flow_redirect_to_subserv', $this->mode);
+
+            if (strtolower($response) === 'on')
+            {
+                $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
+
+                SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
+            }
         }
 
         $this->prepareAndDispatchWebhook($payload);

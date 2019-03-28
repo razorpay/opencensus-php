@@ -66,7 +66,7 @@ class Entity extends PublicEntity
     protected $defaults = [
         self::COMMISSIONS_ENABLED    => 0,
         self::EXPLICIT_REFUND_FEES   => 0,
-        self::EXPLICIT_SHOULD_CHARGE => 1,
+        self::EXPLICIT_SHOULD_CHARGE => 0,
     ];
 
     protected $casts = [
@@ -140,5 +140,19 @@ class Entity extends PublicEntity
             // current time + 1 year
             $this->setAttribute(self::REVISIT_AT, Carbon::now()->addYear()->getTimestamp());
         }
+    }
+
+    public function setImplicitPlanIdAttribute($value)
+    {
+        $value = $value ?: null;
+
+        $this->attributes[self::IMPLICIT_PLAN_ID] = $value;
+    }
+
+    public function setExplicitPlanIdAttribute($value)
+    {
+        $value = $value ?: null;
+
+        $this->attributes[self::EXPLICIT_PLAN_ID] = $value;
     }
 }

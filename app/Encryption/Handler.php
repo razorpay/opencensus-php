@@ -31,6 +31,11 @@ class Handler
         return $this->cipher->encrypt($data);
     }
 
+    public function decrypt(string $data)
+    {
+        return $this->cipher->decrypt($data);
+    }
+
     protected function getCipher(string $type)
     {
         switch ($type)

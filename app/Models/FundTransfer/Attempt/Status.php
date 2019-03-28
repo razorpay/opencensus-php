@@ -8,6 +8,7 @@ class Status
     const INITIATED     = 'initiated';
     const FAILED        = 'failed';
     const PROCESSED     = 'processed';
+    const REVERSED      = 'reversed';
 
     const PENDING_RECONCILIATION = self::INITIATED;
 
@@ -15,7 +16,8 @@ class Status
         self::FAILED,
         self::PROCESSED,
         self::INITIATED,
-        self::CREATED
+        self::CREATED,
+        self::REVERSED,
     ];
 
     public static function isValidForBulkUpdate(string $status) : bool

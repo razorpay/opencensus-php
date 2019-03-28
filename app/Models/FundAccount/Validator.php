@@ -22,7 +22,8 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID  => 'sometimes|public_id',
         Entity::CONTACT_ID   => 'sometimes|public_id',
         Entity::ACCOUNT_TYPE => 'required|string|custom',
-        Entity::DETAILS      => 'required|associative_array',
+        Entity::VPA          => 'required_without:bank_account|associative_array',
+        Entity::BANK_ACCOUNT => 'required_without:vpa|associative_array',
     ];
 
     protected static $beforeCreateRules = [

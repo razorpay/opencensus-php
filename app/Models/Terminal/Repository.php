@@ -10,9 +10,12 @@ use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Base\QueryCache\CacheQueries;
 
 class Repository extends Base\Repository
 {
+    use CacheQueries;
+
     protected $entity = 'terminal';
 
     protected $appFetchParamRules = array(
@@ -141,10 +144,15 @@ class Repository extends Base\Repository
     {
         $merchantIds = [$merchant->getId(), Merchant\Account::SHARED_ACCOUNT];
 
+        $cachetag = Entity::getCacheTag($merchant->getId());
+
         $query = $this->newQuery()
                       ->enabled();
 
         $this->addMerchantWhereCondition($query, $merchantIds);
+
+        $query->remember($this->getCacheTtl())
+              ->cachetags($cachetag);
 
         return $query->get();
     }

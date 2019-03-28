@@ -7,6 +7,7 @@ use Carbon\Carbon;
 
 use RZP\Jobs\BeamJob;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
@@ -264,5 +265,103 @@ class AttemptTest extends TestCase
         $this->assertEquals(1, $content[$channel]['count']);
         $this->assertEquals(0, $content[$channel]['success']);
         $this->assertEquals(1, $content[$channel]['failed']);
+    }
+
+    public function testYesbankRefundToCreditCard()
+    {
+        $channel = Channel::YESBANK;
+
+        $purpose = Attempt\Purpose::REFUND;
+
+        $now = Carbon::create(2018, 8, 14, 20, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
+        $this->fixtures->edit('balance', '10000000000000', ['balance' => 40000000]);
+
+        $payment = $this->fixtures->create('payment');
+
+        $refund = $this->fixtures->create(
+            'refund',
+            [
+                'payment_id'  => $payment->getId(),
+                'merchant_id' => Account::TEST_ACCOUNT,
+                'amount'      => $payment->getAmount(),
+                'base_amount' => $payment->getAmount(),
+                'gateway'     => 'upi_axis',
+            ]);
+
+        $card = $this->fixtures->create('card', ['type' => 'credit']);
+
+        $this->fixtures->create(
+            'fund_transfer_attempt',
+            [
+                'channel'                   => $channel,
+                'source_id'                 => $refund->getId(),
+                'card_id'                   => $card->getId(),
+                'merchant_id'               => $refund->getMerchantId(),
+                'purpose'                   => $purpose,
+                'status'                    => Attempt\Status::CREATED,
+                'source_type'               => Attempt\Type::REFUND,
+                'initiate_at'               => Carbon::now(Timezone::IST)->getTimestamp(),
+            ]);
+
+        $content = $this->initiateTransfer($channel, $purpose, false);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals(1, $content[$channel]['count']);
+        $this->assertEquals(1, $content[$channel]['success']);
+        $this->assertEquals(0, $content[$channel]['failed']);
+        $this->assertEquals(Attempt\Status::INITIATED, $fta['status']);
+    }
+
+    public function testYesbankRefundToInvalidCard()
+    {
+        $channel = Channel::YESBANK;
+
+        $purpose = Attempt\Purpose::REFUND;
+
+        $now = Carbon::create(2018, 8, 14, 20, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
+        $this->fixtures->edit('balance', '10000000000000', ['balance' => 40000000]);
+
+        $payment = $this->fixtures->create('payment');
+
+        $refund = $this->fixtures->create(
+            'refund',
+            [
+                'payment_id'  => $payment->getId(),
+                'merchant_id' => Account::TEST_ACCOUNT,
+                'amount'      => $payment->getAmount(),
+                'base_amount' => $payment->getAmount(),
+                'gateway'     => 'upi_axis',
+            ]);
+
+        $card = $this->fixtures->create('card');
+
+        $this->fixtures->create(
+            'fund_transfer_attempt',
+            [
+                'channel'                   => $channel,
+                'source_id'                 => $refund->getId(),
+                'card_id'                   => $card->getId(),
+                'merchant_id'               => $refund->getMerchantId(),
+                'purpose'                   => $purpose,
+                'status'                    => Attempt\Status::CREATED,
+                'source_type'               => Attempt\Type::REFUND,
+                'initiate_at'               => Carbon::now(Timezone::IST)->getTimestamp(),
+            ]);
+
+        $content = $this->initiateTransfer($channel, $purpose, false);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals(1, $content[$channel]['count']);
+        $this->assertEquals(0, $content[$channel]['success']);
+        $this->assertEquals(1, $content[$channel]['failed']);
+        $this->assertEquals(Attempt\Status::CREATED, $fta['status']);
     }
 }

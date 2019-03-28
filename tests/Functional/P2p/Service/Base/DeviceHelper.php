@@ -4,15 +4,15 @@ namespace RZP\Tests\P2p\Service\Base;
 
 class DeviceHelper extends P2pHelper
 {
-    public function startVerification(array $content = [])
+    public function initiateVerification(array $content = [])
     {
-        $this->validationJsonSchemaPath = 'device/start_verification';
+        $this->validationJsonSchemaPath = 'device/initiate_verification';
 
         // This API work on public auth
         $this->setCustomerInContext(false);
         $this->setDeviceInContext(false);
 
-        $request = $this->request('customers/verification/start');
+        $request = $this->request('customers/verification/initiate');
 
         $this->resetContexts();
 
@@ -21,15 +21,12 @@ class DeviceHelper extends P2pHelper
             'ip'               => '179.0.0.1',
             'os'               => 'android',
             'os_version'       => '5.0.1',
-            'simid'           => '683729232343',
+            'simid'            => '683729232343',
             'uuid'             => '5637293534543',
             'type'             => 'mobile',
-            'geocode'         => '12.971599,77.594566',
+            'geocode'          => '12.971599,77.594566',
             'app_name'         => 'com.razorpay',
-            'cl'               => [
-                'capability'       => '52000002000100040006',
-                'challenge'        => 'AUnhIkGYnGBK=='
-            ]
+            'sdk'              => []
         ];
 
         $this->content($request, $default, $content);
@@ -37,32 +34,58 @@ class DeviceHelper extends P2pHelper
         return $this->post($request);
     }
 
-    public function fetchVerificationStatus(string $token)
+    public function verification(string $callback, array $content = [])
     {
-        $this->validationJsonSchemaPath = 'device/verification_status';
+        $this->validationJsonSchemaPath = 'device/verification';
 
         // This API work on public auth
         $this->setCustomerInContext(false);
         $this->setDeviceInContext(false);
 
-        $request = $this->request('customers/verification/%s', [$token]);
+        $request = $this->request($callback);
 
         $this->resetContexts();
 
-        return $this->get($request);
+        $default = [
+            'sdk'   => []
+        ];
+
+        $this->content($request, $default, $content);
+
+        return $this->post($request);
     }
 
-    public function refreshClToken(array $content = [])
+    public function initiateGetToken(array $content = [])
     {
-        $this->validationJsonSchemaPath = 'device/cl_refresh_token';
+        $this->validationJsonSchemaPath = 'device/initiate_get_token';
 
-        $request = $this->request('cl_token_refresh');
+        $request = $this->request('token/initiate');
 
         $default = [
-            'cl' => [
-                'capability'    => '52000002000100040006',
-                'challenge'     => 'AUnhIkGYnGBK=='
-            ]
+            'ip'               => '179.0.0.1',
+            'os'               => 'android',
+            'os_version'       => '5.0.1',
+            'simid'            => '683729232343',
+            'uuid'             => '5637293534543',
+            'type'             => 'mobile',
+            'geocode'          => '12.971599,77.594566',
+            'app_name'         => 'com.razorpay',
+            'sdk' => []
+        ];
+
+        $this->content($request, $default, $content);
+
+        return $this->post($request);
+    }
+
+    public function getToken(string $callback, array $content = [])
+    {
+        $this->validationJsonSchemaPath = 'device/get_token';
+
+        $request = $this->request($callback);
+
+        $default = [
+            'sdk'              => []
         ];
 
         $this->content($request, $default, $content);

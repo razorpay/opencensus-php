@@ -286,4 +286,27 @@ class Repository extends Base\Repository
 
         return $query->first();
     }
+
+    public function getAttemptByFTSTransferId($ftsTransferId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::FTS_TRANSFER_ID, $ftsTransferId)
+                    ->first();
+    }
+
+    public function getAttemptBySourceId($sourceId): Entity
+    {
+        return $this->newQuery()
+                    ->where(Entity::SOURCE_ID, $sourceId)
+                    ->first();
+    }
+
+    public function getAttemptBySourceIdAndNotFailed($sourceId, $sourceType)
+    {
+        return $this->newQuery()
+                    ->where(Entity::SOURCE_ID, $sourceId)
+                    ->where(Entity::SOURCE_TYPE, $sourceType)
+                    ->where(Entity::STATUS, '!=' ,Status::FAILED)
+                    ->get();
+    }
 }

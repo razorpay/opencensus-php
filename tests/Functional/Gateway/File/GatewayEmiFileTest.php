@@ -7,7 +7,9 @@ use Excel;
 use Queue;
 
 use Carbon\Carbon;
+use RZP\Encryption;
 use RZP\Jobs\BeamJob;
+use RZP\Services\Beam;
 use RZP\Models\Payment;
 use RZP\Models\Gateway\File;
 use RZP\Mail\Emi as EmiMail;
@@ -237,7 +239,10 @@ class GatewayEmiFileTest extends TestCase
 
         Queue::fake();
 
-        $merchantId = $this->fixtures->create('merchant_detail:valid_fields')['merchant_id'];
+        $merchantId = $this->fixtures->create(
+            'merchant_detail:valid_fields',
+            ['business_name' => 'A weird merch@nt name\' w!th special chars and > 40 chars']
+        )['merchant_id'];
         $this->fixtures->create('terminal:shared_hitachi_terminal');
 
         $this->fixtures->create('gateway_rule', [
@@ -304,31 +309,17 @@ class GatewayEmiFileTest extends TestCase
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-        $file = $this->getLastEntity('file_store', true);
+        Mail::assertQueued(EmiMail\Password::class);
 
-        $fileContent = file_get_contents('storage/files/filestore/' . $file['location']);
+        $amountData = [58846,44894];
+        $merchantNames = ['A WEIRD MERCH NT NAME  W TH SPECIAL CHAR'];
 
-        $fileRows = explode("\r\n", $fileContent);
+        $this->assertSbiEmiFileData($content, 3, $amountData, $merchantNames);
 
-        $this->assertEquals(3, count($fileRows));
+        // todo: Uncomment when beam changes are done
+        // Queue::assertPushed(BeamJob::class, 1);
 
-        foreach ($fileRows as $row)
-        {
-            $this->assertEquals(450, strlen($row));
-        }
-
-        $expectedFileContent = [
-            'type'        => 'sbi_emi_file',
-            'entity_type' => 'gateway_file',
-            'entity_id'   => $content['id'],
-            'extension'   => 'txt',
-        ];
-
-        $this->assertArraySelectiveEquals($expectedFileContent, $file);
-
-        Queue::assertPushed(BeamJob::class, 1);
-
-        Queue::assertPushedOn('general_test', BeamJob::class);
+        // Queue::assertPushedOn('general_test', BeamJob::class);
     }
 
     public function testGenerateEmiFileForSbiWithDuplicateSbiEmiTerminal()
@@ -404,31 +395,13 @@ class GatewayEmiFileTest extends TestCase
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-        $file = $this->getLastEntity('file_store', true);
+        Mail::assertQueued(EmiMail\Password::class);
 
-        $fileContent = file_get_contents('storage/files/filestore/' . $file['location']);
+        $this->assertSbiEmiFileData($content, 1);
 
-        $fileRows = explode("\n", $fileContent);
+        // Queue::assertPushed(BeamJob::class, 1);
 
-        $this->assertEquals(1, count($fileRows));
-
-        foreach ($fileRows as $row)
-        {
-            $this->assertEquals(450, strlen($row));
-        }
-
-        $expectedFileContent = [
-            'type'        => 'sbi_emi_file',
-            'entity_type' => 'gateway_file',
-            'entity_id'   => $content['id'],
-            'extension'   => 'txt',
-        ];
-
-        $this->assertArraySelectiveEquals($expectedFileContent, $file);
-
-        Queue::assertPushed(BeamJob::class, 1);
-
-        Queue::assertPushedOn('general_test', BeamJob::class);
+        // Queue::assertPushedOn('general_test', BeamJob::class);
     }
 
     public function testGenerateEmiFileForSbiWithNoSbiEmiTerminal()
@@ -479,17 +452,67 @@ class GatewayEmiFileTest extends TestCase
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
+        Mail::assertQueued(EmiMail\Password::class);
+
+        $this->assertSbiEmiFileData($content, 1);
+
+        // Queue::assertPushed(BeamJob::class, 1);
+
+        // Queue::assertPushedOn('general_test', BeamJob::class);
+    }
+
+    protected function assertSbiEmiFileData($content, $rowCount, $amountData = [], $merchantNames = [])
+    {
         $file = $this->getLastEntity('file_store', true);
 
         $fileContent = file_get_contents('storage/files/filestore/' . $file['location']);
 
-        $fileRows = explode("\n", $fileContent);
+        $encryptor = new Encryption\Handler(
+            Beam\Service::ENCRYPTION_TYPE,
+            [
+                'mode'   => Beam\Service::ENCRYPTION_MODE,
+                'secret' => File\Processor\Emi\Sbi::TEST_ENCRYPTION_KEY,
+            ]
+        );
 
-        $this->assertEquals(1, count($fileRows));
+        $fileContent = $encryptor->decrypt($fileContent);
 
-        foreach ($fileRows as $row)
+        $fileRows = explode("\r\n", $fileContent);
+
+        $this->assertEquals($rowCount, count($fileRows));
+
+        $amounts = [];
+        $names = [];
+
+        // Remove header
+        unset($fileRows[0]);
+        $fileRows = array_values($fileRows);
+
+        foreach ($fileRows as $key => $row)
         {
+            $amount = (int)substr($row, 325, 17);
+            $amounts[] = $amount;
+
+            $names[] = substr($row, 166, 40);
             $this->assertEquals(450, strlen($row));
+        }
+
+        // Assert that the amounts in each rows are correct
+        if (empty($amountData) !== true)
+        {
+            $this->assertArraySelectiveEquals(
+                $amountData,
+                $amounts
+            );
+        }
+
+        // Assert that the merchant name in each row does not contain invalid characters
+        if (empty($merchantNames) !== true)
+        {
+            $this->assertArraySelectiveEquals(
+                $merchantNames,
+                $names
+            );
         }
 
         $expectedFileContent = [
@@ -500,10 +523,6 @@ class GatewayEmiFileTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
-
-        Queue::assertPushed(BeamJob::class, 1);
-
-        Queue::assertPushedOn('general_test', BeamJob::class);
     }
 
     public function testGenerateEmiFileForScbl()

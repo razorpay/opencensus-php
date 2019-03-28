@@ -109,7 +109,7 @@
                         </td>
                         <td class="content" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E;">
                             <div class="footerRZP" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; text-align: right; padding-left: 10%; padding-bottom: 24px; font-size: 10px; color: #9B9B9B;">
-                                Sign up for <a href="http://bit.ly/2IxmWRC" target="_blank" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E;">Early Access</a> to create Payment pages and accept payments for your business.
+                                Create customised payment pages to collect payments from your customers. <a href="https://razorpay.com/payment-pages/?utm_source=email&utm_medium=footer&utm_campaign=paymentpage" target="_blank" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E;"> Know more</a>.
                             </div>
                         </td>
                     </tr></tbody></table>
