@@ -130,6 +130,14 @@ const ActionsList = ({ model, merchantId, actions }) => {
     .length;
   const isSubmerchantsLoading = !merchant.submerchants;
 
+  // Get bussiness banking account number
+  let account_number = '';
+  if (!isDetailsLoading) {
+    const bankingAccount = toJS(merchant.details).merchant_details
+      .banking_account;
+    account_number = bankingAccount && bankingAccount.account_number;
+  }
+
   // If user has no permission, then don't wait for this
   if (!user.permissions.find(perm => perm === 'view_all_admin')) {
     isAdminsLoading = false;
@@ -398,7 +406,14 @@ const ActionsList = ({ model, merchantId, actions }) => {
         <ShowWhen permission="view_merchant_analytics">
           {!isDetailsLoading &&
             merchant.details.activated && (
-              <Link to={`/merchants/${merchantId}/stats`}>
+              <Link
+                to={{
+                  pathname: `/merchants/${merchantId}/stats`,
+                  search: merchant.details.business_banking
+                    ? `?account_number=${account_number}`
+                    : '',
+                }}
+              >
                 See Merchant Analytics Stats
               </Link>
             )}
