@@ -31,7 +31,6 @@
                     "address",
                     "username",
                     "handle",
-                    "bank_account_id",
                     "created_at"
                 ],
                 "properties": {
@@ -61,10 +60,8 @@
                         "type": "string",
                         "pattern": "^(.*)$"
                     },
-                    "bank_account_id": {
-                        "type": "string",
-                        "default": null,
-                        "pattern": "^ba_[\\w]{14}$"
+                    "bank": {
+                        "type": ["object", "null"]
                     },
                     "created_at": {
                         "type": "integer"

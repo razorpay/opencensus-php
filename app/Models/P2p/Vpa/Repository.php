@@ -13,10 +13,17 @@ class Repository extends Base\Repository
      * @param string $username
      * @return Entity
      */
-    public function fetchByUsername(string $username)
+    public function fetchByUsername(string $username, bool $trashed = false)
     {
-        return $this->newP2pQuery()
-                    ->where(Entity::USERNAME, $username)
-                    ->first();
+        $query = $this->newQuery()
+                      ->where(Entity::HANDLE, $this->context()->handleCode())
+                      ->where(Entity::USERNAME, $username);
+
+        if ($trashed)
+        {
+            $query->withTrashed();
+        }
+
+        return $query->first();
     }
 }

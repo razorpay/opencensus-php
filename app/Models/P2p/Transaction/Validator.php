@@ -69,9 +69,6 @@ class Validator extends Base\Validator
         $credRules = Credentials::rules()->with([
             Credentials::TYPE           => 'required',
             Credentials::SUB_TYPE       => 'required',
-            Credentials::STRING         => 'required',
-            Credentials::CODE           => 'required',
-            Credentials::KI             => 'required',
         ]);
 
         return $credRules->wrapRules(Credentials::CREDS, true)

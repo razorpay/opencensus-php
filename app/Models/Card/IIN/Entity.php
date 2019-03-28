@@ -270,6 +270,15 @@ class Entity extends Base\PublicEntity
         $this->setFlows($bitmap);
     }
 
+    public function enableFlow($flow)
+    {
+        $flows = $this->getFlows();
+
+        $bitmap = Flow::enableFlow($flows, $flow);
+
+        $this->setFlows($bitmap);
+    }
+
     protected function getOtpReadAttribute()
     {
         return (bool) $this->attributes[self::OTP_READ];

@@ -157,7 +157,7 @@ class Fixtures extends Constants
      */
     public function bankAccount(string $deviceSetId): P2p\BankAccount\Entity
     {
-        return $this->deviceSet($deviceSetId)->bankAccount;
+        return $this->deviceSet($deviceSetId)->bank_account;
     }
 
     /**

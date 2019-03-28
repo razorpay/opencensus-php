@@ -7,6 +7,8 @@ use RZP\Gateway\P2p\Base\GatewayInterface;
 
 interface BankAccountGateway extends GatewayInterface
 {
+    public function initiateRetrieve(Response $response);
+
     public function retrieve(Response $response);
 
     public function initiateSetUpiPin(Response $response);

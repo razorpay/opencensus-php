@@ -18,6 +18,11 @@ class Gateway extends Base\Gateway
      */
     protected $input;
 
+    /**
+     * @var string
+     */
+    protected $entity;
+
     public function setContext(Context $context)
     {
         $this->context = $context;
@@ -38,6 +43,18 @@ class Gateway extends Base\Gateway
         $this->action = $action;
 
         $this->input = $input;
+    }
+
+    public function setEntity(string $entity)
+    {
+        $this->entity = $entity;
+    }
+
+    protected function handleGatewaySwitch(Gateway $gateway, string $entity)
+    {
+        $gateway->setMode($this->mode);
+
+        $gateway->setEntity($entity);
     }
 
     protected function getRepository()

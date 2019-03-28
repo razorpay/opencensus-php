@@ -2,6 +2,7 @@
 
 namespace RZP\Models\P2p\Base;
 
+use RZP\Exception\LogicException;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\P2p\Base\Traits\ApplicationTrait;
 

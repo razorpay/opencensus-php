@@ -419,7 +419,8 @@ class Validator extends Base\Validator
                        Entity::STATUS,
                        [
                            'refund_id'  => $refund->getId(),
-                           'status'     => $refund->getStatus()
+                           'status'     => $refund->getStatus(),
+                           'fta_status' => $fundTransferAttempt->getStatus()
                        ]);
                }
            }

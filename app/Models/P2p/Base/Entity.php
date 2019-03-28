@@ -18,6 +18,8 @@ class Entity extends Base\PublicEntity
     const CALLBACK      = 'callback';
     const SDK           = 'sdk';
     const UPI           = 'upi';
+    const ACTION        = 'action';
+    const DATA          = 'data';
 
     /**
      * Generator for refreshed at

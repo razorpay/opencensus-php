@@ -2,11 +2,25 @@
 
 namespace RZP\Gateway\P2p\Upi\Sharp;
 
+use RZP\Gateway\P2p\Base\Request;
 use RZP\Gateway\P2p\Base\Response;
 use RZP\Gateway\P2p\Upi\Contracts;
 
 class VpaGateway extends Gateway implements Contracts\VpaGateway
 {
+    public function initiateAdd(Response $response)
+    {
+        $request = new Request();
+
+        $request->setUrl(null);
+
+        $request->setContent([
+            'username'          => $this->input->get('username')
+        ]);
+
+        $response->setRequest($request);
+    }
+
     public function add(Response $response)
     {
         $response->setData([

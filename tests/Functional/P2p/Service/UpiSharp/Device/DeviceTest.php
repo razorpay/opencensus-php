@@ -53,9 +53,15 @@ class DeviceTest extends TestCase
 
         $helper->withSchemaValidated();
 
+        $deviceToken = $this->fixtures->deviceToken(self::DEVICE_1);
+        $bankAccount = $this->fixtures->bankAccount(self::DEVICE_1);
+        $vpa         = $this->fixtures->vpa(self::DEVICE_1);
+
         $helper->deregisterDevice();
 
-        $this->assertTrue($this->fixtures->deviceToken(self::DEVICE_1, false)->isExpired());
+        $this->assertTrue($deviceToken->refresh()->trashed());
+        $this->assertTrue($bankAccount->refresh()->trashed());
+        $this->assertTrue($vpa->refresh()->trashed());
     }
 
     public function testEditSameDevide()

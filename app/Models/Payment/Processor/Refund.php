@@ -13,6 +13,7 @@ use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Models\Vpa\Core;
 use RZP\Error\ErrorCode;
+use RZP\Models\Card\Type;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
@@ -2110,12 +2111,24 @@ trait Refund
      */
     protected function isPaymentCardAndCardTransferRefund(Payment\Entity $payment): bool
     {
-        if (($payment->hasCard() === true) and ($payment->card->isCredit() === true) and
-            ($payment->card->getVaultToken() !== null) and
+        if (($payment->hasCard() === true) and
             ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true) and
-            (in_array($payment->card->getIssuer(), Issuer::YESBANK_SUPPORTED_ISSUER) === true))
+            ($payment->card->getVaultToken() !== null))
         {
-            return true;
+            $iin = $payment->card->iinRelation;
+
+            if ($iin !== null)
+            {
+                $cardType = strtolower($iin->getType());
+
+                $cardIssuer = $iin->getIssuer();
+
+                if (($cardType === Type::CREDIT) and
+                    (in_array($cardIssuer, Issuer::YESBANK_SUPPORTED_ISSUER) === true))
+                {
+                    return true;
+                }
+            }
         }
 
         return false;

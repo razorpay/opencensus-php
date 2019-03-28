@@ -74,9 +74,16 @@ class Controller extends Controllers\Controller
         {
             $route = $this->action->toRoute($response['callback']['action']);
 
-            $gateway = http_build_query(['callback' => $response['callback']['gateway']]);
+            // First remove their is any data set in callback
+            $data = $response['callback']['input']['data'] ?? [];
+            unset($response['callback']['input']['data']);
 
-            $response['callback'] = route($route, $response['callback']['input']) . '?' . $gateway;
+            // Now merge gateway specific callback data in this
+            $data['callback']= $response['callback']['gateway'];
+
+            $query = http_build_query($data);
+
+            $response['callback'] = route($route, $response['callback']['input']) . '?' . $query;
         }
 
         return $response;

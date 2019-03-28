@@ -15,6 +15,9 @@ class ClientLibrary
     const TOKEN             = 'token';
     const PAYLOAD           = 'payload';
     const FORMAT            = 'format';
+    const CODE              = 'code';
+    const STRING            = 'string';
+    const KI                = 'ki';
 
     /**
      * @var Transaction\Entity

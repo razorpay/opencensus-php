@@ -48,6 +48,14 @@
         "status" : {
             "type" : "string",
             "description": "Status of current token"
+        },
+        "expire_at" : {
+            "type" : "integer",
+            "description": "Unix timestamp in seconds"
+        },
+        "vpa" : {
+            "type" : ["object", "null"],
+            "description": "Default VPA for this device on the given handle"
         }
     },
 

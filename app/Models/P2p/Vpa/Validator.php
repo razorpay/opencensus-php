@@ -7,6 +7,7 @@ use RZP\Models\P2p\Base;
 
 class Validator extends Base\Validator
 {
+    protected static $initiateAddRules;
     protected static $addRules;
     protected static $addSuccessRules;
     protected static $assignBankAccountRules;
@@ -65,11 +66,19 @@ class Validator extends Base\Validator
         ]);
     }
 
+    public function makeInitiateAddRules()
+    {
+        return $this->makeRules([
+            Entity::USERNAME        => 'sometimes',
+            Entity::BANK_ACCOUNT_ID => 'required',
+        ]);
+    }
+
     public function makeAddRules()
     {
         $rules = $this->makeRules([
             Entity::USERNAME        => 'required',
-            Entity::BANK_ACCOUNT_ID => 'sometimes',
+            Entity::BANK_ACCOUNT_ID => 'required',
         ]);
 
         return $rules;
