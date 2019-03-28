@@ -407,6 +407,7 @@ class Core extends Base\Core
         {
             throw new Exception\LogicException(
                 'Attempted to reverse an already reversed payout',
+                null,
                 [
                     'payout_id'         => $payout->getId(),
                     'status'            => $payout->getStatus(),
@@ -446,7 +447,7 @@ class Core extends Base\Core
                 ($merchantBalance < $input[Entity::BUFFER_AMOUNT]))
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    "merchant balance is less than buffer amount",
+                    'merchant balance is less than buffer amount',
                     Entity::BUFFER_AMOUNT,
                     [
                         'merchant_id' => $merchantId,
@@ -464,7 +465,7 @@ class Core extends Base\Core
             ($amount < $input[Entity::MIN_AMOUNT]))
         {
             throw new Exception\BadRequestValidationFailureException(
-                "amount is less than min amount",
+                'amount is less than min amount',
                 Entity::MIN_AMOUNT,
                 [
                     'merchant_id' => $merchantId,

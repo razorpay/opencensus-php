@@ -4844,3 +4844,9 @@ ALTER TABLE contacts
 ALTER TABLE refunds
     ADD COLUMN is_scrooge TINYINT(1) NOT NULL DEFAULT 0 AFTER processed_at,
     ADD INDEX refunds_is_scrooge_index (`is_scrooge`);
+
+ALTER TABLE reversals
+    ADD COLUMN customer_id VARCHAR(14) DEFAULT NULL AFTER merchant_id,
+    ADD COLUMN transaction_type VARCHAR(255) DEFAULT NULL after transaction_id;
+
+ALTER TABLE reversals DROP FOREIGN KEY reversals_transaction_id_foreign;

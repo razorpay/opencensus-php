@@ -101,11 +101,12 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    public function getAsyncCallbackContent(array $upiEntity, array $payment, string $status = '00')
+    public function getAsyncCallbackContent(array $upiEntity, array $payment, string $status = '00',
+                                            string $result = 'Success')
     {
         $this->action = Action::CALLBACK;
 
-        $content = $this->callbackResponseContent($upiEntity, $payment, $status);
+        $content = $this->callbackResponseContent($upiEntity, $payment, $status, $result);
 
         $this->content($content,'callback');
 
@@ -114,7 +115,7 @@ class Server extends Base\Mock\Server
         return ['data' => $content];
     }
 
-    protected function callbackResponseContent(array $upiEntity, array $payment, string $status)
+    protected function callbackResponseContent(array $upiEntity, array $payment, string $status, string $result)
     {
          $data = [
             Fields::CUSTOMER_VPA                => $upiEntity['vpa'] ?? self::DEFAULT_VPA,
@@ -125,7 +126,7 @@ class Server extends Base\Mock\Server
             Fields::TRANSACTION_AMOUNT          => $this->formatAmount($upiEntity['amount']),
             Fields::GATEWAY_TRANSACTION_ID      => 'AXIS00090439839',
             Fields::GATEWAY_RESPONSE_CODE       => $status,
-            Fields::GATEWAY_RESPONSE_MESSAGE    => 'Success',
+            Fields::GATEWAY_RESPONSE_MESSAGE    => $result,
             Fields::RRN                         => '714513318376',
             Fields::CHECKSUM                    => 'CHECKSUM NOT REQUIRED'
         ];

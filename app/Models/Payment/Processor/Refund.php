@@ -803,6 +803,7 @@ trait Refund
         {
             throw new Exception\LogicException(
                 'Attempted to reverse an already reversed refund',
+                null,
                 [
                     'refund_id'  => $refund->getId(),
                     'status'     => $refund->getStatus(),

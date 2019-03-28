@@ -562,6 +562,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FEE_ADJUSTMENT_CREATE_REQUEST                 = 'FEE_ADJUSTMENT_CREATE_REQUEST';
     const DISPUTE_ADJUSTMENT_CREATE_REQUEST             = 'DISPUTE_ADJUSTMENT_CREATE_REQUEST';
     const PAYOUT_ADJUSTMENT_CREATE_REQUEST              = 'PAYOUT_ADJUSTMENT_CREATE_REQUEST';
+    const REVERSAL_ADJUSTMENT_CREATE_REQUEST            = 'REVERSAL_ADJUSTMENT_CREATE_REQUEST';
     const ADJUSTMENT_CREATE_SUCCESS                     = 'ADJUSTMENT_CREATE_SUCCESS';
     const ADJUSTMENT_SPLIT_REQUEST                      = 'ADJUSTMENT_SPLIT_REQUEST';
     const ADJUSTMENT_SPLIT_ERROR                        = 'ADJUSTMENT_SPLIT_ERROR';
@@ -1413,6 +1414,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QUERY_CACHE_STORE_ERROR                       = 'QUERY_CACHE_STORE_ERROR';
     const QUERY_CACHE_FLUSH_ERROR                       = 'QUERY_CACHE_FLUSH_ERROR';
     const METRIC_CACHE_EVENT_ERROR                      = 'METRIC_CACHE_EVENT_ERROR';
+    const TOKEN_CACHE_READ_ERROR                        = 'TOKEN_CACHE_READ_ERROR';
+    const TOKEN_CACHE_STORE_ERROR                       = 'TOKEN_CACHE_STORE_ERROR';
 
     //upi status cache
     const UPI_CACHE_STORE_ERROR                         = 'UPI_CACHE_STORE_ERROR';

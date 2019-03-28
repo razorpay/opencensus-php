@@ -105,7 +105,7 @@ class Validator extends Base\Validator
         'amount'          => 'required_if:action,create_payout|integer|min:100',
         'account_number'  => 'required_if:action,create_payout,create_payout_batch|alpha_num|between:5,22',
         'fund_account_id' => 'required_if:action,create_payout|public_id|size:17',
-        'purpose'         => 'required_if:action,create_payout|string|max:30|alpha_dash',
+        'purpose'         => 'required_if:action,create_payout|string|max:30|alpha_dash_space',
     ];
 
     protected static $verifyOtpRules = [
