@@ -342,7 +342,8 @@ class Gateway extends Base\Gateway
 
     protected function getMozartRequest($content, $gateway)
     {
-        $baseUrl = $this->app['config']->get('applications.mozart.url');
+        // temporary change
+        $baseUrl = 'https://zeta-mozart.stage.razorpay.in/';
 
         $url =  $baseUrl . 'payments/' . $gateway . '/v1/' . $this->action;
 
