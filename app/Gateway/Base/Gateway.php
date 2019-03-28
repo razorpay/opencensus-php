@@ -88,7 +88,7 @@ class Gateway
 
     /**
      * Trace instance for tracing
-     * @var Trace\Trace
+     * @var $trace Trace
      */
     protected $trace;
 
@@ -812,6 +812,32 @@ class Gateway
                 'pretransfer_time'   => $info['pretransfer_time'],
                 'starttransfer_time' => $info['starttransfer_time'],
             ]);
+
+        try
+        {
+            $metricsDriver = app('trace')->metricsDriver(Metric::DOGSTATSD_DRIVER);
+
+            /**
+             * @var $metricsDriver \Razorpay\Metrics\Drivers\Driver
+             */
+            $metricsDriver->histogram('gateway_request_total_time_ms',
+                $info['total_time'] * 1000,
+                [
+                    'gateway' => $this->gateway ?? 'none',
+                    'action'  => $this->action ?? 'none',
+                ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::GATEWAY_METRIC_DIMENSION_PUSH_FAILED,
+                [
+                    'gateway' => $this->gateway ?? 'none',
+                    'action'  => $this->action ?? 'none',
+                ]);
+        }
     }
 
     /**
