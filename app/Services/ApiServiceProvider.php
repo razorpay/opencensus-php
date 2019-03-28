@@ -659,7 +659,7 @@ class ApiServiceProvider extends BaseServiceProvider
     {
         $this->app->bind('fts_create_account', function($app)
         {
-            $mock = $app['config']->get('applications.fts.mock');
+            $mock = $app['config']->get('applications.fts.bene_mock');
 
             $implementation = $mock ? Mock\FTS\CreateAccount::class : FTS\CreateAccount::class;
 
@@ -671,7 +671,7 @@ class ApiServiceProvider extends BaseServiceProvider
     {
         $this->app->bind('fts_register_account', function($app)
         {
-            $mock = $app['config']->get('applications.fts.mock');
+            $mock = $app['config']->get('applications.fts.bene_mock');
 
             $implementation = $mock ? Mock\FTS\RegisterAccount::class : FTS\RegisterAccount::class;
 
@@ -683,7 +683,7 @@ class ApiServiceProvider extends BaseServiceProvider
     {
         $this->app->bind('fts_fund_transfer', function($app)
         {
-            $mock = $app['config']->get('applications.fts.mock');
+            $mock = $app['config']->get('applications.fts.transfer_mock');
 
             $implementation = $mock ? Mock\FTS\FundTransfer::class : FTS\FundTransfer::class;
 
