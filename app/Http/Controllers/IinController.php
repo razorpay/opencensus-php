@@ -64,6 +64,15 @@ class IinController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function editIinFlowsBulk()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->editIinFlowsBulk($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postIinGenerate()
     {
         $input = Request::all();
