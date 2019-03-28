@@ -159,6 +159,8 @@ class Gateway extends Base\Gateway
         if ($this->isRupayTransaction($input) === true)
         {
             $this->advicePaysecure($input);
+
+            return;
         }
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
@@ -954,11 +956,6 @@ class Gateway extends Base\Gateway
                 RequestFields::CARD_NUMBER         => $input['card']['number'],
                 RequestFields::EXPIRY_DATE         => $expiry,
             ];
-        }
-
-        if ($this->isRupayTransaction($input) === true)
-        {
-            $data[RequestFields::CVV2] = self::DEFAULT_CVV_VALUE;
         }
 
         if (($this->isSecondRecurringPaymentRequest($input) === false) and
