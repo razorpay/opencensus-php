@@ -495,7 +495,7 @@ function _getPayoutFields() {
     ],
     item => [
       'Last Updated At',
-      item.payouts_count && item.payouts_count.last_updated_at
+      (item.payouts_count || {}).last_updated_at
         ? formatDate(item.payouts_count.last_updated_at)
         : '--',
     ],
