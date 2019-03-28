@@ -12,6 +12,9 @@ use RZP\Models\P2p\Base\Libraries\Context;
 use RZP\Models\P2p\Base\Traits\ApplicationTrait;
 
 /**
+ * @property Core $core
+ * @property Entity $entity
+ * @property Validator $validator
  *
  * Class Processor
  * @package RZP\Models\P2p\Base

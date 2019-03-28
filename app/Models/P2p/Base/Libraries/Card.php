@@ -14,7 +14,8 @@ class Card
         return new Rules([
             self::EXPIRY_YEAR   => 'integer|min:18|max:99',
             self::EXPIRY_MONTH  => 'integer|min:1|max:12',
-            self::LAST6         => 'integer|max:999999',
+            self::LAST6         => 'string|size:6' .
+                '',
         ]);
     }
 }

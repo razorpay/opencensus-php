@@ -62,6 +62,11 @@ trait ApplicationTrait
         return $this->app['rzp.mode'];
     }
 
+    protected function environment()
+    {
+        return $this->app->environment();
+    }
+
     protected function repo(): RepositoryManager
     {
         return $this->app['repo'];

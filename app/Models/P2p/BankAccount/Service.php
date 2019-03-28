@@ -12,6 +12,13 @@ use RZP\Models\P2p\Base;
  */
 class Service extends Base\Service
 {
+    public function initiateRetrieve(array $input): array
+    {
+        $response = $this->processor->initiateRetrieve($input);
+
+        return $response;
+    }
+
     public function retrieve(array $input): array
     {
         $response = $this->processor->retrieve($input);

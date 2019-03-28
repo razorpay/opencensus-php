@@ -13,7 +13,9 @@ class Factory
         $action = $context->getGatewayData()->get('action');
         $input  = $context->getGatewayData()->get('input');
 
-        $gateway = self::getGatewayClass($name, $interface);
+        $class = self::getGatewayClass($name, class_basename($interface));
+
+        $gateway = new $class;
 
         $gateway->setContext($context);
 
@@ -22,7 +24,7 @@ class Factory
         return $gateway;
     }
 
-    public static function getGatewayClass(string $gateway, string $interface): Gateway
+    public static function getGatewayClass(string $gateway, string $append)
     {
         $namespace = static::class;
 
@@ -37,8 +39,13 @@ class Factory
                 break;
         }
 
-        $className = $namespace . '\\' . class_basename($interface);
+        $className = $namespace . '\\' . $append;
 
-        return new $className;
+        return $className;
+    }
+
+    public static function getServerClass(string $gateway)
+    {
+        return self::getGatewayClass($gateway, 'Mock\\Server');
     }
 }

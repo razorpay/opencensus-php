@@ -6,7 +6,7 @@ class VpaHelper extends P2pHelper
 {
     public function fetchHandles()
     {
-        $this->validationJsonSchemaPath = 'vpa/handle/fetch_all';
+        $this->validationJsonSchemaPath = 'vpa/list_handles';
         // This API work on public auth
         $this->setCustomerInContext(false);
         $this->setDeviceInContext(false);
@@ -18,11 +18,11 @@ class VpaHelper extends P2pHelper
         return $this->get($request);
     }
 
-    public function createVpa(array $content = [])
+    public function intiateCreateVpa(array $content = [])
     {
-        $this->validationJsonSchemaPath = 'vpa/create';
+        $this->validationJsonSchemaPath = 'vpa/initiate_add';
 
-        $request = $this->request('vpa');
+        $request = $this->request('vpa/initiate');
 
         $default = [
             'username'        => 'random',
@@ -34,9 +34,24 @@ class VpaHelper extends P2pHelper
         return $this->post($request);
     }
 
+    public function createVpa(string $callback, array $content = [])
+    {
+        $this->validationJsonSchemaPath = 'vpa/add';
+
+        $request = $this->request($callback);
+
+        $default = [
+            'sdk'   => []
+        ];
+
+        $this->content($request, $default, $content);
+
+        return $this->post($request);
+    }
+
     public function assignBankAccount($vpaId, $bankId)
     {
-        $this->validationJsonSchemaPath = 'vpa/create';
+        $this->validationJsonSchemaPath = 'vpa/add';
 
         $request = $this->request('vpa/%s/assign/%s',[$vpaId, $bankId]);
 
@@ -75,7 +90,7 @@ class VpaHelper extends P2pHelper
 
     public function fetchVpa(string $vpaId)
     {
-        $this->validationJsonSchemaPath = 'vpa/create';
+        $this->validationJsonSchemaPath = 'vpa/add';
 
         $request = $this->request('vpa/%s', [$vpaId]);
 

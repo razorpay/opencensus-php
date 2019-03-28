@@ -17,13 +17,24 @@ class VpaTest extends TestCase
         $this->assertCollection($handles, 4);
     }
 
-    public function testCreateVpa()
+    public function testInitiateCreateVpa()
     {
         $helper = $this->getVpaHelper();
 
         $helper->withSchemaValidated();
 
-        $helper->createVpa();
+        $helper->intiateCreateVpa();
+    }
+
+    public function testCreateVpa()
+    {
+        $helper = $this->getVpaHelper();
+
+        $request = $helper->intiateCreateVpa();
+
+        $helper->withSchemaValidated();
+
+        $helper->createVpa($request['callback']);
     }
 
     public function testFetchVpa()

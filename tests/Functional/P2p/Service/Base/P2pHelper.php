@@ -282,11 +282,13 @@ class P2pHelper
             return;
         }
 
-        if ($this instanceof DeviceHelper)
+        if (($this instanceof DeviceHelper) or
+            ($this instanceof BankAccountHelper) or
+            ($this instanceof VpaHelper))
         {
             $suffix = 'processed';
 
-            if (isset($data->type) and in_array($data->type, ['sdk', 'sms', 'poll'], true))
+            if (isset($data->type) and in_array($data->type, ['sdk', 'sms', 'post'], true))
             {
                 $suffix = 'next';
             }

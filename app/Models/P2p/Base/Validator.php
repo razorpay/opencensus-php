@@ -92,18 +92,22 @@ class Validator extends Base\Validator
         return $prepended;
     }
 
-    public function makeEntityIdRules()
+    public function makeEntityIdRules(array $with = [])
     {
-        return $this->makeRules([
+        $default = [
             Entity::ID => 'required|string'
-        ]);
+        ];
+
+        return $this->makeRules(array_merge($with, $default));
     }
 
-    public function makePublicIdRules()
+    public function makePublicIdRules(array $with = [])
     {
-        return $this->makeRules([
+        $default = [
             Entity::ID => 'required|string|custom',
-        ]);
+        ];
+
+        return $this->makeRules(array_merge($with, $default));
     }
 
     public function makeFetchAllRules()

@@ -2,11 +2,22 @@
 
 namespace RZP\Gateway\P2p\Upi\Sharp;
 
+use RZP\Gateway\P2p\Base\Request;
 use RZP\Gateway\P2p\Base\Response;
 use RZP\Gateway\P2p\Upi\Contracts;
 
 class BankAccountGateway extends Gateway implements Contracts\BankAccountGateway
 {
+    public function initiateRetrieve(Response $response)
+    {
+        $request = new Request();
+
+        $request->setUrl(null);
+        $request->setAction('retrieve');
+
+        $response->setRequest($request);
+    }
+
     public function retrieve(Response $response)
     {
         $bankIfsc = $this->input->get('bank')->get('ifsc');
@@ -45,19 +56,17 @@ class BankAccountGateway extends Gateway implements Contracts\BankAccountGateway
     {
         $bankAccount = $this->input->get('bank_account');
 
-        $response->setData([
-            'bank_id'       => $this->input->get('bank_account')->get('bank_id'),
-            'bank_account'  => [
-                'id'        => $bankAccount->get('id'),
-                'gateway_data'          => [
-                    'id'                => 'SRPA000000001',
-                ],
-            ],
-            'txn'   => [
-                'id'    => 'SRP' .str_random(32),
-                'note'  => 'Set UPI PIN',
-            ]
+        $request = new Request();
+
+        $request->setSdk('npci');
+
+        $request->setContent([
+            'id'    => 'SRP' .str_random(32),
+            'note'  => 'Set UPI PIN',
         ]);
+        $request->setAction('set_upi_pin');
+
+        $response->setRequest($request);
     }
 
     public function setUpiPin(Response $response)
@@ -65,11 +74,7 @@ class BankAccountGateway extends Gateway implements Contracts\BankAccountGateway
         $bankAccount = $this->input->get('bank_account');
 
         $response->setData([
-            'bank_id'       => $this->input->get('bank_account')->get('bank_id'),
-            'bank_account'  => [
-                'id'        => $bankAccount->get('id'),
-            ],
-            'txn'           => $this->input->get('request')->get('txn'),
+            'id'    => $bankAccount->get('id'),
         ]);
     }
 
@@ -77,19 +82,17 @@ class BankAccountGateway extends Gateway implements Contracts\BankAccountGateway
     {
         $bankAccount = $this->input->get('bank_account');
 
-        $response->setData([
-            'bank_id'       => $this->input->get('bank_account')->get('bank_id'),
-            'bank_account'  => [
-                'id'        => $bankAccount->get('id'),
-                'gateway_data'          => [
-                    'id'                => 'SRPA000000001',
-                ],
-            ],
-            'txn'   => [
-                'id'    => 'SRP' .str_random(32),
-                'note'  => 'Balance Enquiry',
-            ]
+        $request = new Request();
+
+        $request->setSdk('npci');
+
+        $request->setContent([
+            'id'    => 'SRP' .str_random(32),
+            'note'  => 'Fetch Balance',
         ]);
+        $request->setAction('fetch_balance');
+
+        $response->setRequest($request);
     }
 
     public function fetchBalance(Response $response)
@@ -97,11 +100,7 @@ class BankAccountGateway extends Gateway implements Contracts\BankAccountGateway
         $bankAccount = $this->input->get('bank_account');
 
         $response->setData([
-            'bank_id'       => $this->input->get('bank_account')->get('bank_id'),
-            'bank_account'  => [
-                'id'        => $bankAccount->get('id'),
-            ],
-            'txn'           => $this->input->get('request')->get('txn'),
+            'id'            => $bankAccount->get('id'),
             'response'      => [
                 'balance'   => 2928200,
                 'currency'  => 'INR',

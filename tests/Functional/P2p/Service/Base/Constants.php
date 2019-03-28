@@ -18,6 +18,10 @@ class Constants
     const BRZP                                              = 'BRZP0000000001';
     const CRZP                                              = 'CRZP0000000001';
 
+    const ARZP_AXIS                                         = 'ARZP0000000002';
+    const BRZP_AXIS                                         = 'BRZP0000000002';
+    const CRZP_AXIS                                         = 'CRZP0000000002';
+
     // ------------------------ TEST DEVICES ------------------------
 
     const DEVICE_1                                           = 'device_1';

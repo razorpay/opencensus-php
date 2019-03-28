@@ -10,9 +10,13 @@ class TestCase extends Functional\TestCase
     const DEVICE_1 = 'device_1';
     const DEVICE_2 = 'device_2';
 
+    use Traits\MockSdkTrait;
     use Traits\AssertionTrait;
     use Traits\ExceptionTrait;
+    use Traits\MockServerTrait;
     use Traits\DbEntityFetchTrait;
+
+    protected $gateway = null;
 
     /**
      * Each Gateway Implementation will have its own device set map
@@ -30,6 +34,15 @@ class TestCase extends Functional\TestCase
         parent::setUp();
 
         $this->fixtures = new Base\Fixtures\Fixtures($this->deviceSetMap);
+
+        $this->resetMockServer();
+    }
+
+    public function tearDown()
+    {
+        $this->checkForMockedActions();
+
+        parent::tearDown();
     }
 
     protected function getCustomerHelper(): Base\CustomerHelper

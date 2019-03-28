@@ -10,7 +10,7 @@
         "address",
         "username",
         "handle",
-        "bank_account_id",
+        "bank_account",
         "active",
         "validated",
         "verified",
@@ -42,10 +42,8 @@
             "type": "string",
             "pattern": "^(.*)$"
         },
-        "bank_account_id": {
-            "type": ["string", "null"],
-            "default": null,
-            "pattern": "^ba_[\\w]{14}$"
+        "bank_account": {
+            "type": ["object", "null"]
         },
         "active": {
             "type": "boolean"
