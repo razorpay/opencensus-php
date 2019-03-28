@@ -3010,3 +3010,6 @@ update payments set `vpa` = '9601697728@ybl' where `id` = 'AZvc6Nla36Qb6U';
 update payments set `vpa` = 'nikhil2809@okaxis' where `id` = 'AzVqGbTd9oNXP4';
 update payments set `vpa` = 'shilpadabhade1234@okhdfcbank' where `id` = 'B0jhRx7jY8Tgrc';
 update payments set `vpa` = '7879765279@ybl' where `id` = 'B18mxMNOhL9PqP';
+
+# Backfill query for making transaction column in reversals as ploymorphic
+update reversals set transaction_type = 'transaction',updated_at = UNIX_TIMESTAMP() where transaction_type is null and customer_id is null limit 10000;

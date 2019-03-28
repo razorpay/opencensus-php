@@ -7,4 +7,5 @@ class Type
     const TRANSFER      = 'transfer';
     const REFUND        = 'refund';
     const WITHDRAWAL    = 'withdrawal';
+    const REVERSAL      = 'reversal';
 }
