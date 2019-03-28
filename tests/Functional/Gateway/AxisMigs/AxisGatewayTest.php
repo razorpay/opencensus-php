@@ -805,15 +805,17 @@ class AxisGatewayTest extends TestCase
 
         $card = $this->getDbLastEntity('card');
 
-        $this->assertEquals($card['type'], 'credit');
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->assertEquals($iin['type'], 'credit');
+
+        $this->assertEquals($iin['issuer'], 'HDFC');
 
         $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
 
-        $this->fixtures->card->edit($payment['card_id'], ['issuer' => 'UTIB']);
-
         $refund = $this->refundPayment($payment['id']);
 
-        $response = $this->scroogeRefund($refund);
+        $this->scroogeRefund($refund);
 
         // Assert for fta created for given refund
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
@@ -835,13 +837,11 @@ class AxisGatewayTest extends TestCase
 
         $card = $this->getDbLastEntity('card');
 
-        $this->fixtures->card->edit($card['id'], ['type' => 'debit']);
-
-        $this->fixtures->card->edit($payment['card_id'], ['issuer' => 'UTIB']);
+        $this->fixtures->iin->edit($card['iin'], ['type' => 'debit']);
 
         $refund = $this->refundPayment($payment['id']);
 
-        $response = $this->scroogeRefund($refund);
+        $this->scroogeRefund($refund);
 
         // Assert for fta not created for given refund
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
