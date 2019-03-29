@@ -2,15 +2,66 @@
 
 namespace RZP\Gateway\P2p\Upi\Axis;
 
+use RZP\Models\P2p\Base\Libraries\ArrayBag;
+
 class S2s
 {
-    const X_MERCHANT_ID = 'X-Merchant-Id';
+    const AXIS = 'axis';
 
-    const X_MERCHANT_CHANNEL_ID = 'X-Merchant-Channel-Id';
+    const METHOD = 'method';
 
-    const X_TIMESTAMP = 'X-Timestamp';
+    protected $action;
 
-    const CONTENT_TYPE = 'Content-Type';
+    protected $actionMap;
 
-    const X_MERCHANT_SIGNATURE = 'X-Merchant-Signature';
+    protected $content;
+
+    protected $signer;
+
+    protected $udf;
+
+    protected $config;
+
+    protected $request;
+
+    public function source()
+    {
+        return $this->actionMap[Actions\Action::SOURCE];
+    }
+
+    public function setActionMap(string $action, $map)
+    {
+        $this->action = $action;
+
+        $this->actionMap = $map;
+
+        $this->udf = [];
+    }
+
+    public function setConfig(array $config)
+    {
+        $this->config = $config;
+    }
+
+    public function setSigner($signer)
+    {
+        $this->signer = $signer;
+    }
+
+    public function merge(array $attributes)
+    {
+        if ($this->content === null)
+        {
+            $this->content = new ArrayBag($attributes);
+        }
+
+        $this->content = $this->content->merge($attributes);
+
+        return $this;
+    }
+
+    public function finish()
+    {
+        return $this->request;
+    }
 }

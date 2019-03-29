@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Vpa;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;
+use RZP\Error\P2p\ErrorCode;
 use RZP\Models\P2p\BankAccount;
 
 /**
@@ -29,7 +30,9 @@ class Processor extends Base\Processor
 
         if ($this->core->checkLocalAvailability($username))
         {
-            throw new \Exception('Change the exception and message');
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_DUPLICATE_VPA, [
+                Entity::USERNAME    => $username,
+            ]);
         }
 
         $this->gatewayInput->put(Entity::USERNAME, $username);
@@ -49,7 +52,9 @@ class Processor extends Base\Processor
 
         if ($this->core->checkLocalAvailability($this->input->get(Entity::USERNAME)))
         {
-            throw new \Exception('Change the exception and message');
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_DUPLICATE_VPA, [
+                Entity::USERNAME    => $username,
+            ]);
         }
 
         $this->gatewayInput->put(Entity::USERNAME, $this->input->get(Entity::USERNAME));
@@ -66,7 +71,7 @@ class Processor extends Base\Processor
         return $this->callGateway();
     }
 
-    public function addSuccess(array $input): array
+    protected function addSuccess(array $input): array
     {
         $this->initialize(Action::ADD_SUCCESS, $input, true);
 
@@ -99,7 +104,7 @@ class Processor extends Base\Processor
         return $this->callGateway();
     }
 
-    public function assignBankAccountSuccess(array $input): array
+    protected function assignBankAccountSuccess(array $input): array
     {
         $this->initialize(Action::ASSIGN_BANK_ACCOUNT_SUCCESS, $input, true);
 
@@ -127,7 +132,7 @@ class Processor extends Base\Processor
         return $this->callGateway();
     }
 
-    public function checkAvailabilitySuccess(array $input): array
+    protected function checkAvailabilitySuccess(array $input): array
     {
         $this->initialize(Action::CHECK_AVAILABILITY_SUCCESS, $input, true);
 
@@ -149,7 +154,7 @@ class Processor extends Base\Processor
         return $this->callGateway();
     }
 
-    public function deleteSuccess(array $input): array
+    protected function deleteSuccess(array $input): array
     {
         $this->initialize(Action::DELETE_SUCCESS, $input, true);
 
