@@ -642,17 +642,8 @@ class Repository extends Base\Repository
         int $from,
         int $to,
         string $gateway,
-        bool $corporate = false)
+        string $bankCode)
     {
-        if ($corporate === true)
-        {
-            $corpValues = [Terminal\BankingType::CORPORATE_ONLY, Terminal\BankingType::BOTH];
-        }
-        else
-        {
-            $corpValues = [Terminal\BankingType::RETAIL_ONLY];
-        }
-
         $paymentAttrs = $this->dbColumn('*');
 
         $terminalRepo = $this->repo->terminal;
@@ -663,11 +654,11 @@ class Repository extends Base\Repository
 
         $pTerminalId = $this->dbColumn(Entity::TERMINAL_ID);
 
+        $pBankCode = $this->dbColumn(Entity::BANK);
+
         $tId = $terminalRepo->dbColumn(Terminal\Entity::ID);
 
         $pAuthorizedAt = $this->dbColumn(Entity::AUTHORIZED_AT);
-
-        $tCorp = $terminalRepo->dbColumn(Terminal\Entity::CORPORATE);
 
         return $this->newQuery()
                     ->select($paymentAttrs)
@@ -676,7 +667,7 @@ class Repository extends Base\Repository
                     ->where($pAuthorizedAt, '<=', $to)
                     ->where($pGateway, $gateway)
                     ->whereNotNull($pAuthorizedAt)
-                    ->whereIn($tCorp, $corpValues)
+                    ->where($pBankCode, $bankCode)
                     ->get();
     }
 
