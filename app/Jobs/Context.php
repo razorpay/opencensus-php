@@ -45,6 +45,14 @@ class Context
     /**
      * @return string|null
      */
+    public function getMode()
+    {
+        return $this->mode;
+    }
+
+    /**
+     * @return string|null
+     */
     public function getJobName()
     {
         return $this->jobName;

@@ -53,10 +53,10 @@ class MySqlConnection extends BaseMySqlConnection
 
     /**
      * if set to true it'll make sure that readPdo method is called on parent
-     * 
+     *
      * @var bool
      */
-    static $callParent = false;
+    protected static $callParent = false;
 
     /**
      * Holds the previously established read pdo connection if any, for usage later once replication lag is resolved.
@@ -104,7 +104,7 @@ class MySqlConnection extends BaseMySqlConnection
             case 'heartbeat':
                 $heartbeat = new LagChecker\HeartbeatLagChecker($config);
 
-                $heartbeat->setReconnector(function (\Exception $e)
+                $heartbeat->setReconnector(function (\Exception $e, $mode)
                 {
                     if ($this->causedByLostConnection($e) === true)
                     {
@@ -112,7 +112,7 @@ class MySqlConnection extends BaseMySqlConnection
                         // Else it will stuck in recursion
                         static::$callParent = true;
 
-                        $connection = App::getFacadeRoot()['db']->reconnect();
+                        $connection = App::getFacadeRoot()['db']->reconnect($mode);
 
                         return $connection->readPdo;
                     }

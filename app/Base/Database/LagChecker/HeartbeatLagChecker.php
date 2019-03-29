@@ -119,6 +119,11 @@ class HeartbeatLagChecker implements LagChecker
      */
     private $trafficPercent;
 
+    /**
+     * @var string
+     */
+    protected $mode;
+
     public function __construct(array $config)
     {
         $this->config = $config;
@@ -173,7 +178,7 @@ class HeartbeatLagChecker implements LagChecker
             $this->trace->info(
                 TraceCode::HEARTBEAT_CHECK_FAILED,
                 [
-                    'exception' => $ex,
+                    'exception' => $ex->getMessage(),
                 ]);
         }
 
@@ -206,6 +211,11 @@ class HeartbeatLagChecker implements LagChecker
 
             return $useSlave;
         }
+
+        // Mode will be empty for callbacks and workers
+        // So is mode is not set we take it from worker if its a worker
+        // else mode will be set to null
+        $this->mode = $this->mode ??  $this->workerContext->getMode();
 
         $currentRoute = $this->reqCtx->getRoute() ?? $this->workerContext->getJobName();
 
@@ -266,7 +276,7 @@ class HeartbeatLagChecker implements LagChecker
         }
         catch (\Exception $e)
         {
-            $pdo = call_user_func($this->reconnecter, $e);
+            $pdo = call_user_func($this->reconnecter, $e, $this->mode);
 
             $this->trace->info(TraceCode::HEARTBEAT_RECONNECT, [
                 'connected' => ($pdo !== null),
