@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\OAuth;
 
 use Event;
+use Cache as apiCache;
 use Carbon\Carbon;
 use Razorpay\OAuth\Client;
 use Razorpay\OAuth\Application;
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\CacheMissed;
 
+use Rzp\Models\Base\PublicCollection;
 use RZP\Models\Feature;
 use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
@@ -238,6 +240,100 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
     public function testAppBlacklistedFeatureEnabledOnAppHeadlessOtp()
     {
+
+        $client = factory(Client\Entity::class)->create();
+
+        $accessToken = $this->generateOAuthAccessToken(
+            [
+                'scopes' => ['read_write'],
+                'client_id' => $client->getId()
+            ]);
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $client->application_id,
+                'name'        => 's2s'
+            ]);
+
+        $this->fixtures->merchant->addFeatures(['s2s', 'headless', 's2s_otp_json']);
+
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1'
+            ]
+        ]);
+
+        $this->mockCardVault();
+        $this->mockOtpElf();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['auth_type'] = 'otp';
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = $payment;
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $this->startTest($testData);
+    }
+
+    public function testAppBlacklistedFeatureEnabledOnAppHeadlessOtpCacheCheck()
+    {
+        $key = 'live_merchant_relation_10000000000000';
+
+        $store = Cache::store();
+
+        apiCache::shouldReceive('store')
+            ->andReturnUsing(function() use ($store)
+            {
+                return $store;
+            });
+
+        apiCache::shouldReceive('put')
+            ->andReturnUsing(function()
+            {
+                return null;
+            });
+
+        apiCache::shouldReceive('remember')
+            ->times(2)
+            ->andReturnUsing(function()
+            {
+                return new PublicCollection;
+            });
+
+        apiCache::shouldReceive('delete')
+            ->times(2)
+            ->with('live_merchant_relation_100000Razorpay')
+            ->andReturnUsing(function()
+            {
+                return null;
+            });
+
+        apiCache::shouldReceive('delete')
+            ->times(1)
+            ->with($key)
+            ->andReturnUsing(function()
+            {
+                return null;
+            });
 
         $client = factory(Client\Entity::class)->create();
 

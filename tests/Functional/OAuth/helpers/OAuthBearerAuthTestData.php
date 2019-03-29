@@ -151,6 +151,18 @@ return [
         ],
     ],
 
+    'testAppBlacklistedFeatureEnabledOnAppHeadlessOtpCacheCheck' => [
+        'request'  => [
+            'url'     => '/payments/create/redirect',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200
+        ],
+    ],
+
     'testAppBlacklistedFeatureEnabledOnAppAndMerchant' => [
         'request'  => [
             'url'     => '/payments/create/redirect',

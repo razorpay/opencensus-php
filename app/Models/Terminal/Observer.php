@@ -30,9 +30,16 @@ class Observer extends BaseObserver
     {
         $cachetagsArray = $this->getCacheTags($terminal);
 
+        $merchantRelationArray = $this->getMerchantRelationKeys($terminal);
+
         foreach ($cachetagsArray as $cachetag)
         {
             $terminal->flushCache($cachetag);
+        }
+
+        foreach ($merchantRelationArray as $merchantRelation)
+        {
+            Cache::delete($merchantRelation);
         }
     }
 
@@ -47,6 +54,24 @@ class Observer extends BaseObserver
         }
     }
 
+    protected function getMerchantRelationKeys(Entity $terminal): array
+    {
+        $merchantTagArray = [];
+
+        $merchantIds = $terminal->merchants()->pluck(Entity::ID)->toArray();
+
+        $merchantIds[] = $terminal->getMerchantId();
+
+        $finalMerchantsIds = array_unique($merchantIds);
+
+        foreach ($finalMerchantsIds as $merchantId)
+        {
+            $merchantTagArray[] = Entity::getMerchantRelationKey($merchantId);
+        }
+
+        return $merchantTagArray;
+    }
+
     protected function getCachetags(Entity $terminal): array
     {
         $cachetagsArray = [];
@@ -59,7 +84,7 @@ class Observer extends BaseObserver
 
         foreach ($finalMerchantsIds as $merchantId)
         {
-            $cachetagsArray[] = Entity::getCacheTag($merchantId);
+            $cachetagsArray[] =  Entity::getCacheTag($merchantId);
         }
 
         return $cachetagsArray;
