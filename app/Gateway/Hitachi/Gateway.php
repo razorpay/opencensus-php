@@ -1265,7 +1265,7 @@ class Gateway extends Base\Gateway
         $request['headers']['Content-Type'] = 'application/json';
 
         $request['options'] = [
-            'timeout'         => 30,
+            'timeout'         => 60,
             'connect_timeout' => 10,
             'verify'          => false,
         ];
