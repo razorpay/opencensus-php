@@ -24,6 +24,8 @@ class S2s
 
     protected $request;
 
+    protected $headers;
+
     public function source()
     {
         return $this->actionMap[Actions\Action::SOURCE];
@@ -46,6 +48,11 @@ class S2s
     public function setSigner($signer)
     {
         $this->signer = $signer;
+    }
+
+    public function setHeaders($headers)
+    {
+        $this->headers = $headers;
     }
 
     public function merge(array $attributes)

@@ -160,6 +160,14 @@ class Gateway extends Upi\Gateway
         {
             case Actions\Action::DIRECT:
                 $request = new S2sDirect($accessor, $this->getUrl($action));
+
+                $request->setSigner($this->getMerchantSigner());
+
+                $request->setHeaders([
+                    S2sDirect::X_MERCHANT_ID            => $this->getMerchantId(),
+                    S2sDirect::X_MERCHANT_CHANNEL_ID    => $this->getMerchantChannelId(),
+                    S2sDirect::X_TIMESTAMP              => $this->getTimeStamp(),
+                ]);
         }
 
         $request->setActionMap($action, $this->actionMap[$action]);

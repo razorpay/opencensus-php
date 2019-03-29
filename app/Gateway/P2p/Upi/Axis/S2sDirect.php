@@ -50,25 +50,15 @@ class S2sDirect extends S2s
 
     protected function getHeaders()
     {
-        $accessor = $this->accessor;
+        $toSign = implode('', $this->headers) . $this->content->toJson();
 
-        $headers = [
-            self::X_MERCHANT_ID          => $accessor('getMerchantId'),
-            self::X_MERCHANT_CHANNEL_ID  => $accessor('getMerchantChannelId'),
-            self::X_TIMESTAMP            => $accessor('getTimeStamp'),
-        ];
+        $signature = bin2hex($this->signer->sign($toSign));
 
-        $toSign = implode('', $headers) . $this->content->toJson();
+        $this->headers[self::CONTENT_TYPE] = 'application/json';
 
-        $signer = $accessor('getMerchantSigner');
+        $this->headers[self::X_MERCHANT_SIGNATURE] = $signature;
 
-        $signature = bin2hex($signer->sign($toSign));
-
-        $headers[self::CONTENT_TYPE] = 'application/json';
-
-        $headers[self::X_MERCHANT_SIGNATURE] = $signature;
-
-        return $headers;
+        return $this->headers;
     }
 
 }
