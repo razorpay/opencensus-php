@@ -32,12 +32,7 @@ class BankAccountGateway extends Gateway implements Contracts\BankAccountGateway
 
     public function retrieve(Response $response)
     {
-        $sdk = $this->input->get('sdk');
-
-        if ($this->isSdkFailure())
-        {
-            $this->throwP2pGatewayException();
-        }
+        $sdk = $this->handleInputSdk();
 
         $bankAccounts = [];
 

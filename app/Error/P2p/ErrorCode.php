@@ -1,0 +1,24 @@
+<?php
+
+namespace RZP\Error\P2p;
+
+class ErrorCode extends \RZP\Error\ErrorCode
+{
+    // @codingStandardsIgnoreStart
+
+    const SERVER_ERROR_CONTEXT_MERCHANT_REQUIRED                    = 'SERVER_ERROR_CONTEXT_MERCHANT_REQUIRED';
+    const SERVER_ERROR_CONTEXT_DEVICE_REQUIRED                      = 'SERVER_ERROR_CONTEXT_DEVICE_REQUIRED';
+    const SERVER_ERROR_CONTEXT_HANDLE_REQUIRED                      = 'SERVER_ERROR_CONTEXT_HANDLE_REQUIRED';
+
+    // We are going to list already added codes, to give better visibility
+    const BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET                      = 'BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET';
+
+    const BAD_REQUEST_DEVICE_NOT_ATTACHED_TO_HANDLE                 = 'BAD_REQUEST_DEVICE_NOT_ATTACHED_TO_HANDLE';
+    const BAD_REQUEST_MERCHANT_NOT_ALLOWED_ON_HANDLE                = 'BAD_REQUEST_MERCHANT_NOT_ALLOWED_ON_HANDLE';
+    const BAD_REQUEST_DEVICE_DOES_NOT_BELONG_TO_MERCHANT            = 'BAD_REQUEST_DEVICE_DOES_NOT_BELONG_TO_MERCHANT';
+    const BAD_REQUEST_INVALID_MERCHANT_IN_CONTEXT                   = 'BAD_REQUEST_INVALID_MERCHANT_IN_CONTEXT';
+
+    const GATEWAY_ERROR_DEVICE_INVALID_TOKEN                        = 'GATEWAY_ERROR_DEVICE_INVALID_TOKEN';
+
+    // @codingStandardsIgnoreEnd
+}
