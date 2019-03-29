@@ -2,9 +2,7 @@
 
 namespace RZP\Models\Terminal;
 
-use App;
 use Crypt;
-use Cache;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
@@ -115,10 +113,6 @@ class Entity extends Base\PublicEntity
     const BANK                          = 'bank';
 
     const CATEGORY_LENGTH               = 4;
-
-    const MERCHANT_RELATION_TTL         = 30;
-
-    const MERCHANT_RELATION_KEY         = 'merchant_relation_';
 
     protected $fillable = [
         self::GATEWAY,
@@ -492,7 +486,7 @@ class Entity extends Base\PublicEntity
 
         if ($result === false)
         {
-            $result = $this->merchantsRelationData()->contains(function ($subMerchant) use ($merchant)
+            $result = $this->merchants->contains(function ($subMerchant) use ($merchant)
             {
                 return ($merchant->getId() === $subMerchant[Merchant\Entity::ID]);
             });
@@ -960,13 +954,6 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
-    public function merchantsRelationData()
-    {
-        return Cache::remember(self::getMerchantRelationKey($this->getMerchantId()), self::MERCHANT_RELATION_TTL, function () {
-            return $this->merchants()->get();
-        });
-    }
-
     public function merchants()
     {
         return $this->belongsToMany('RZP\Models\Merchant\Entity', Table::MERCHANT_TERMINAL);
@@ -1191,14 +1178,5 @@ class Entity extends Base\PublicEntity
     public static function getCacheTag($merchantId)
     {
         return implode('_', [E::TERMINAL, $merchantId]);
-    }
-
-    public static function getMerchantRelationKey($merchantId)
-    {
-        $app = App::getFacadeRoot();
-
-        $mode = $app['rzp.mode'] ?? 'live';
-
-        return $mode . '_' . self::MERCHANT_RELATION_KEY . $merchantId;
     }
 }

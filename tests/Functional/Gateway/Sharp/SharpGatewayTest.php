@@ -540,13 +540,6 @@ class SharpGatewayTest extends TestCase
             {
                 return null;
             });
-
-         Cache::shouldReceive('delete')
-            ->once()
-            ->andReturnUsing(function()
-            {
-                return null;
-            });
     }
 
     protected function setupCacheMissMock($paymentId)
