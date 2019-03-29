@@ -416,6 +416,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function toggleInternational()
+    {
+        $data = $this->service()->toggleInternational($this->input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getMerchantWebhooks($id)
     {
         $data = $this->service()->getMerchantWebhooks($id);

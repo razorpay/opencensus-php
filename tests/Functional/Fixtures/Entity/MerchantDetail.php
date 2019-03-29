@@ -35,7 +35,7 @@ class MerchantDetail extends Base
 
     public function createInvalidFields(array $attributes = array())
     {
-        $merchantDetailArray = $this->createMerchantDetail();
+        $merchantDetailArray = $this->createMerchantDetail($attributes);
 
         unset($merchantDetailArray["contact_name"]);
 
@@ -119,6 +119,8 @@ class MerchantDetail extends Base
             "promoter_address_url"          => "124",
         ];
 
-        return array_replace($return, $attributes);
+        $return = array_replace($return, $attributes);
+
+        return $return;
     }
 }

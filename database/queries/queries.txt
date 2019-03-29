@@ -4825,6 +4825,9 @@ ALTER TABLE transactions
 ALTER TABLE iins
     ADD COLUMN recurring TINYINT(1) DEFAULT 0 AFTER locked;
 
+ALTER TABLE merchant_details
+    ADD COLUMN international_activation_flow VARCHAR (255) AFTER activation_flow;
+
 ALTER TABLE batches
     MODIFY COLUMN amount BIGINT(20) UNSIGNED DEFAULT NULL AFTER attempts,
     MODIFY COLUMN processed_amount BIGINT(20) UNSIGNED DEFAULT 0 AFTER amount;
