@@ -303,6 +303,9 @@ class Core extends Base\Core
         // Create a transfer its corresponding txn - debits the merchant
         $transfer = $this->createTransfer($source, $to, $input, $merchant);
 
+        // Create customer balance if it doesn't exist.
+        (new Customer\Balance\Core)->fetchOrCreate($to, $merchant);
+
         $txn = $transfer->transaction;
 
         (new Customer\Transaction\Core)->createForCustomerCredit($transfer,
