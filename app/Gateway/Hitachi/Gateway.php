@@ -433,13 +433,17 @@ class Gateway extends Base\Gateway
     {
         $request = $this->getAuthorizeRequestArrayForEnrolled($input, $authResponse);
 
+        $gatewayEntity = $this->createGatewayPaymentEntity($input,[],Base\Action::AUTHORIZE);
+
         $response = $this->sendGatewayRequest($request);
 
         $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_AUTHORIZE_RESPONSE);
 
         $attributes = $this->getAttributesFromAuthResponse($response);
 
-        $gatewayEntity = $this->createGatewayPaymentEntity($input, $attributes, Base\Action::AUTHORIZE);
+        $gatewayEntity->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayEntity);
 
         $this->checkErrorsAndThrowException($response);
 
