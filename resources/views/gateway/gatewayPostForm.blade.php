@@ -275,6 +275,11 @@ body{
             currentXhr.send('key=MC40OTMwNzgyMDM3MDgwNjI3Nw9YnGzW&data=' +
                 encodeURIComponent(btoa(JSON.stringify({
                     context: { user_agent: null },
+                    addons: [{
+                        name: 'ua_parser',
+                        input_key: 'user_agent',
+                        output_key: 'user_agent_parsed'
+                    }],
                     events: [{
                     event: eventName,
                     properties: {
