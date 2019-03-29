@@ -174,6 +174,7 @@ export default class ActivationWizard extends React.Component {
       activation_status,
       activation_flow,
       submitted,
+      international
     } = data;
 
     // Updating % activation_progress (side bar) and other important activation fields
@@ -183,6 +184,7 @@ export default class ActivationWizard extends React.Component {
       activated,
       activation_status,
       activation_flow,
+      international,
       submitted: +submitted,
     }));
 
@@ -193,6 +195,7 @@ export default class ActivationWizard extends React.Component {
   }
 
   submitForm = () => {
+    
     const data = this.formData;
 
     return merchantFetch({

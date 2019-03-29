@@ -11,7 +11,7 @@ import User from 'merchant/models/User';
 
 const CUSTOM_MSG = {
   not_supported:
-    'International card payments is not supported to your business model',
+    'International card payments is not supported for your business model',
   incomplete_forms: (
     <span>
       You will have to submit your <Link to="/activation">Activation form</Link>{' '}
@@ -26,7 +26,7 @@ const CUSTOM_MSG = {
     </span>
   ),
   generic_msg:
-    'Settlement cycle and transaction fee is higher for International payments. \n International card payments is currently available only for payment gateways and not for payment pages, payment links & invoices.',
+    'Settlement cycle and transaction fee is higher for International payments. \n International card payments is currently available only for payment gateway and not for payment pages, payment links & invoices.',
 };
 
 @connect(
@@ -74,7 +74,7 @@ export default class FlashCheckout extends Component {
 
           this.props.updateSession({ user });
         } else {
-          throw 'Business category/subcategory must be set'; // This code is ideally unreachable as per business logic. However, since Api silently fails here, hence handling explicitly.
+          throw 'We are unable to process this request. Please reach out to support@razorpay.com'; // This code is ideally unreachable as per business logic. However, since Api silently fails here, hence handling explicitly.
         }
       })
       .catch(err => {
@@ -82,7 +82,7 @@ export default class FlashCheckout extends Component {
 
         this.props.showNotification({
           type: 'error',
-          message: err.errors,
+          message: err.errors || err,
         });
       });
   };
@@ -140,7 +140,8 @@ export default class FlashCheckout extends Component {
          * Note: Here we're not checking international_activation_flow, cuz we just want to know if L1 form is filled or not.
          * */
         if (!user.activation_flow || !user.submitted) {
-          showBanner = true; // For these merchants, international will automatically be enabled for such merchants if eligible
+          // not needed, enable later
+          // showBanner = true; // For these merchants, international will automatically be enabled for such merchants if eligible
 
           displayMsg = CUSTOM_MSG['incomplete_forms'];
         } else {
@@ -154,57 +155,74 @@ export default class FlashCheckout extends Component {
         <div className="panel-heading">
           <span className="title">International card payments</span>
 
-          {showToggler && (
-            <span className="toggler-btn">
-              <SwitchField
-                defaultChecked={!!internationalEnabled}
-                onChange={(isChecked, cb) =>
-                  this.toggleInternationalization(isChecked, cb)
-                }
-                type="prime"
-              />
-              {user.international ? (
-                <b className="text-primary">Enabled</b>
-              ) : (
-                <b className="text-faded">Disabled</b>
-              )}
-            </span>
-          )}
+          {
+            user.has_key_access && (
+              <>
+                {showToggler && (
+                  <span className="toggler-btn">
+                    <SwitchField
+                      defaultChecked={!!internationalEnabled}
+                      onChange={(isChecked, cb) =>
+                        this.toggleInternationalization(isChecked, cb)
+                      }
+                      type="prime"
+                    />
+                    {user.international ? (
+                      <b className="text-primary">Enabled</b>
+                    ) : (
+                      <b className="text-faded">Disabled</b>
+                    )}
+                  </span>
+                )}
+              </>
+            ) 
+          }
+
         </div>
 
         <div className="panel-body">
           <form className="form-horizontal">
-            {showBanner && (
-              <Alert.Info>
-                From <b>1st April</b> your account will be activated to accept
-                international card payments based on your eligibility, with
-                support for 92 currencies
-              </Alert.Info>
-            )}
+            {
+              user.has_key_access ? (
+                <>
+                  {showBanner && (
+                    <Alert.Info>
+                      From <b>1st April</b> your account will be activated to accept
+                      international card payments based on your eligibility, with
+                      support for 92 currencies
+                    </Alert.Info>
+                  )}
 
-            <div className="description">{displayMsg}</div>
+                  <div className="description">{displayMsg}</div>
 
-            <div className="form-group">
-              <ShowWhen
-                additionalCondition={user =>
-                  user.isOrgAllowedFunctionality('external_links')
-                }
-              >
-                <div className="col-sm-10">
-                  <a
-                    className="highlight"
-                    target="_blank"
-                    href="https://razorpay.com/payment-gateway/#go-international"
-                  >
-                    Know more
-                    <i
-                      className="i i-external-link"
-                      style={{ marginLeft: '5px' }}
-                    />
-                  </a>
-                </div>
-              </ShowWhen>
-            </div>
+                  <div className="form-group">
+                    <ShowWhen
+                      additionalCondition={user =>
+                        user.isOrgAllowedFunctionality('external_links')
+                      }
+                    >
+                      <div className="col-sm-10">
+                        <a
+                          className="highlight"
+                          target="_blank"
+                          href="https://razorpay.com/payment-gateway/#go-international"
+                        >
+                          Know more
+                          <i
+                            className="i i-external-link"
+                            style={{ marginLeft: '5px' }}
+                          />
+                        </a>
+                      </div>
+                    </ShowWhen>
+                  </div>                
+                </> 
+                ) : (
+                  <div class="description">
+                    International card payments are currently available only for payment gateway [which requires website integeration] and not for payment pages, payment links & invoices. We are working on bringing the international support to other products soon
+                  </div>
+                )
+            }
           </form>
         </div>
       </div>

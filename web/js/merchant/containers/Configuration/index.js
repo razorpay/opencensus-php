@@ -13,6 +13,7 @@ import EmailNotifications from './EmailNotifications';
     return {
       user: state.session.user,
       configState: state.config,
+      mode: state.session.mode,
     };
   },
   { ...ConfigActions, ...NotificationActions }
@@ -67,7 +68,12 @@ export default class CongfigurationContainer extends Component {
             {this.props.user.isOrgAllowedFunctionality('flashcheckout') && (
               <FlashCheckout />
             )}
-            <Internationalization />
+            {/* temporarily hide internationalization for test mode due to inconsistency in db */}
+            {
+              this.props.mode === 'live' && (
+                <Internationalization />
+              )
+            }
             <EmailNotifications form="configForm" onSave={this.saveConfig} />
           </div>
         )}
