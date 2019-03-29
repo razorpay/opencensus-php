@@ -51,6 +51,13 @@ class HeartbeatLagChecker implements LagChecker
     protected $randomTrafficPercent;
 
     /**
+     * can be used to reconnect the db in case of connection failure
+     *
+     * @var Closure
+     */
+    protected $reconnecter;
+
+    /**
      * @var RedisManager
      */
     protected $redis;
@@ -64,7 +71,6 @@ class HeartbeatLagChecker implements LagChecker
      * @var Trace
      */
     protected $trace;
-
 
     /**
      * @var int
@@ -139,6 +145,11 @@ class HeartbeatLagChecker implements LagChecker
         $this->initializeConnectionResolvers();
     }
 
+    public function setReconnector($reconnector)
+    {
+        $this->reconnecter = $reconnector;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -159,10 +170,11 @@ class HeartbeatLagChecker implements LagChecker
         }
         catch (\Throwable $ex)
         {
-            $this->trace->traceException(
-                $ex,
-                Trace::CRITICAL,
-                TraceCode::HEARTBEAT_CHECK_FAILED);
+            $this->trace->info(
+                TraceCode::HEARTBEAT_CHECK_FAILED,
+                [
+                    'exception' => $ex,
+                ]);
         }
 
         // If should skip slave, return null so master connection is used, else resolve $readPdo and return
@@ -242,13 +254,33 @@ class HeartbeatLagChecker implements LagChecker
         // as it also calls this flow to get the connection
         //
         $query = 'SELECT ROUND(( ROUND(UNIX_TIMESTAMP(Now(6)) * 1000000) - ( 
-                            UNIX_TIMESTAMP(SUBSTR(ts, 1, 19)) * 1000000 + 
-                            SUBSTR(ts, 21, 6) ) 
-                         ) / 1000) AS replica_lag_milli, ts 
-                    FROM   heartbeat.heartbeat
-                    LIMIT  1';
+                        UNIX_TIMESTAMP(SUBSTR(ts, 1, 19)) * 1000000 + 
+                        SUBSTR(ts, 21, 6) ) 
+                     ) / 1000) AS replica_lag_milli, ts 
+                FROM   heartbeat.heartbeat
+                LIMIT  1';
 
-        $result = $pdo->query($query)->fetch();
+        try
+        {
+            $result = $pdo->query($query)->fetch();
+        }
+        catch (\Exception $e)
+        {
+            $pdo = call_user_func($this->reconnecter, $e);
+
+            $this->trace->info(TraceCode::HEARTBEAT_RECONNECT, [
+                'connected' => ($pdo !== null),
+            ]);
+
+            // If we can not find reconnect to the server then
+            // consider this as lag, so that we can use master connection for these
+            if ($pdo === null)
+            {
+                return true;
+            }
+
+            $result = $pdo->query($query)->fetch();
+        }
 
         $this->lag = $result['replica_lag_milli'];
 

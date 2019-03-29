@@ -52,6 +52,13 @@ class MySqlConnection extends BaseMySqlConnection
     protected $heartbeatForceRun = false;
 
     /**
+     * if set to true it'll make sure that readPdo method is called on parent
+     * 
+     * @var bool
+     */
+    static $callParent = false;
+
+    /**
      * Holds the previously established read pdo connection if any, for usage later once replication lag is resolved.
      * @var mixed
      */
@@ -60,6 +67,8 @@ class MySqlConnection extends BaseMySqlConnection
     public function __construct($pdo, $database = '', $tablePrefix = '', array $config = [])
     {
         parent::__construct($pdo, $database, $tablePrefix, $config);
+
+        $this->trace = TraceFacade::getFacadeRoot();
 
         $lagCheckConfig = $config['lag_check'];
 
@@ -73,13 +82,16 @@ class MySqlConnection extends BaseMySqlConnection
 
         $this->heartbeatLagChecker = $this->getLagChecker($heartbeatCheckConfig);
 
-        $this->trace = TraceFacade::getFacadeRoot();
-
         $this->forceCheckReplicaLag = false;
 
         $this->previousReadPdo = null;
     }
 
+    /**
+     * @param array $config
+     * @return LagChecker\HeartbeatLagChecker|LagChecker\RedisLagChecker
+     * @throws LogicException
+     */
     protected function getLagChecker(array $config)
     {
         $driver = $config['driver'];
@@ -90,7 +102,25 @@ class MySqlConnection extends BaseMySqlConnection
                 return new LagChecker\RedisLagChecker($config);
 
             case 'heartbeat':
-                return new LagChecker\HeartbeatLagChecker($config);
+                $heartbeat = new LagChecker\HeartbeatLagChecker($config);
+
+                $heartbeat->setReconnector(function (\Exception $e)
+                {
+                    if ($this->causedByLostConnection($e) === true)
+                    {
+                        // make sure that it calls parent getReadPdo from reconnect method
+                        // Else it will stuck in recursion
+                        static::$callParent = true;
+
+                        $connection = App::getFacadeRoot()['db']->reconnect();
+
+                        return $connection->readPdo;
+                    }
+
+                    return null;
+                });
+
+                return $heartbeat;
 
             default:
                 throw new LogicException('LagChecker driver not implemented: ' . $driver);
@@ -101,6 +131,16 @@ class MySqlConnection extends BaseMySqlConnection
     {
         try
         {
+            // currently this is done to avoid doing recursive call
+            // We are calling getReadPdo while we reconnect which might go into recursion
+            // Only in case of reconnect this will be set to true
+            if (static::$callParent === true)
+            {
+                static::$callParent = false;
+
+                return parent::getReadPdo();
+            }
+
             //
             // If there is an active transaction, we always want
             // to use the master connection.

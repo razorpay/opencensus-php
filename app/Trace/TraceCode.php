@@ -1449,14 +1449,15 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LAMBDA_REQUEST                                        = 'LAMBDA_REQUEST';
     const LAMBDA_FILE_DETAILS                                   = 'LAMBDA_FILE_DETAILS';
     const LAMBDA_BATCH_FAILURE                                  = 'LAMBDA_BATCH_FAILURE';
-
-    const REDIS_LAG_CHECK_FAILED                                = 'REDIS_LAG_CHECK_FAILED';
-    const HEARTBEAT_CHECK_FAILED                                = 'HEARTBEAT_CHECK_FAILED';
-    const HEARTBEAT_CHECK_COMPLETED                             = 'HEARTBEAT_CHECK_COMPLETED';
-    const HEARTBEAT_CHECK_TIME_CONVERSION                       = 'HEARTBEAT_CHECK_TIME_CONVERSION';
-    const DB_DATA_INTEGRITY_ERROR                               = 'DB_DATA_INTEGRITY_ERROR';
-    const DB_PIVOT_TABLE_ASSOCIATION_ERROR                      = 'DB_PIVOT_TABLE_ASSOCIATION_ERROR';
-    const DB_READ_CONN_SETUP_ERROR                              = 'DB_READ_CONN_SETUP_ERROR';
+    
+    const REDIS_LAG_CHECK_FAILED                        = 'REDIS_LAG_CHECK_FAILED';
+    const HEARTBEAT_CHECK_FAILED                        = 'HEARTBEAT_CHECK_FAILED';
+    const HEARTBEAT_CHECK_COMPLETED                     = 'HEARTBEAT_CHECK_COMPLETED';
+    const HEARTBEAT_RECONNECT                           = 'HEARTBEAT_RECONNECT';
+    const HEARTBEAT_CHECK_TIME_CONVERSION               = 'HEARTBEAT_CHECK_TIME_CONVERSION';
+    const DB_DATA_INTEGRITY_ERROR                       = 'DB_DATA_INTEGRITY_ERROR';
+    const DB_PIVOT_TABLE_ASSOCIATION_ERROR              = 'DB_PIVOT_TABLE_ASSOCIATION_ERROR';
+    const DB_READ_CONN_SETUP_ERROR                      = 'DB_READ_CONN_SETUP_ERROR';
 
     const AWS_CREDS_CACHE_SET                                   = 'AWS_CREDS_CACHE_SET';
 
