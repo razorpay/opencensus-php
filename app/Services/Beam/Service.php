@@ -76,9 +76,21 @@ class Service
 
         $data[self::BEAM_PUSH_JOBNAME] = $pushData[self::BEAM_PUSH_JOBNAME];
 
+        if (isset($pushData[self::BEAM_PUSH_BUCKET_NAME]) === true)
+        {
+            $data[self::BEAM_PUSH_BUCKET_NAME] = $pushData[self::BEAM_PUSH_BUCKET_NAME];
+        }
+
+        if (isset($pushData[self::BEAM_PUSH_DECRYPTION]) === true)
+        {
+            $data[self::BEAM_PUSH_DECRYPTION] = $pushData[self::BEAM_PUSH_DECRYPTION];
+        }
+
         $route = self::PUSH_ROUTE;
 
-        if ($this->mode === Mode::TEST)
+        // todo: Revert after testing on zeta
+        if (($this->mode === Mode::TEST) and
+            ($data[self::BEAM_PUSH_JOBNAME] !== "sbi_emi"))
         {
            $route = self::TEST_ROUTE;
 

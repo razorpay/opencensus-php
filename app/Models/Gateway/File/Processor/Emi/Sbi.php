@@ -4,7 +4,6 @@ namespace RZP\Models\Gateway\File\Processor\Emi;
 
 use Carbon\Carbon;
 
-use RZP\Constants\Mode;
 use RZP\Encryption;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
@@ -20,6 +19,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
+use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Services\Beam\Constants as BeamConstants;
 
 class Sbi extends Base
@@ -359,11 +359,12 @@ class Sbi extends Base
 
         $fileInfo = [$fullFileName];
 
+        $bucketConfig = $this->getBucketConfig();
+
         $data =  [
             Service::BEAM_PUSH_FILES   => $fileInfo,
             Service::BEAM_PUSH_JOBNAME => BeamConstants::SBI_EMI_FILE_JOB_NAME,
-            // todo: Change this later
-            Service::BEAM_PUSH_BUCKET_NAME => 'sample bucket name',
+            Service::BEAM_PUSH_BUCKET_NAME => $bucketConfig['name'],
             Service::BEAM_PUSH_DECRYPTION => [
                 Service::BEAM_PUSH_DECRYPTION_TYPE => Service::BEAM_PUSH_DECRYPTION_TYPE_AES256,
                 Service::BEAM_PUSH_DECRYPTION_MODE => Service::BEAM_PUSH_DECRYPTION_MODE_GCM,
@@ -372,7 +373,6 @@ class Sbi extends Base
             ]
         ];
 
-        // In seconds
         $timelines = [];
 
         $mailInfo = [
@@ -384,6 +384,17 @@ class Sbi extends Base
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+    }
+
+    protected function getBucketConfig()
+    {
+        $config = $this->app['config']->get('filestore.aws');
+
+        $bucketType = Bucket::getBucketConfigName(static::FILE_TYPE, $this->env);
+
+        $bucketConfig = $config[$bucketType];
+
+        return $bucketConfig;
     }
 
     protected function getFileToWriteName()

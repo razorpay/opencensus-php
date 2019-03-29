@@ -360,7 +360,6 @@ class Type
             self::INDUSIND_EMI_FILE,
             self::KOTAK_EMI_FILE,
             self::RBL_EMI_FILE,
-            self::SBI_EMI_FILE,
             self::CITI_EMI_FILE,
             self::SCBL_EMI_FILE,
             self::YES_EMI_FILE_MAIL,
