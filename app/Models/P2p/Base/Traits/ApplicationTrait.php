@@ -10,6 +10,7 @@ use Illuminate\Contracts\Foundation\Application;
 
 trait ApplicationTrait
 {
+    use ExceptionTrait;
     /**
      * @var Application
      */

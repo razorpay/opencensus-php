@@ -9,6 +9,7 @@ use RZP\Gateway\P2p\Upi;
 use RZP\Constants\Timezone;
 use RZP\Gateway\P2p\Upi\Axis\Sdk;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
+use RZP\Exception\P2p\GatewayErrorException;
 
 class Gateway extends Upi\Gateway
 {
@@ -48,9 +49,17 @@ class Gateway extends Upi\Gateway
     {
         if ($this->isSdkFailure() === true)
         {
-            $this->throwP2pGatewayException();
+            $gatewayCode = $this->inputSdk()->get(Fields::ERROR_CODE, ErrorMap::NOT_AVAILABLE);
+            $gatewayDesc = $this->inputSdk()->get(Fields::ERROR_DESCRIPTION, ErrorMap::NOT_AVAILABLE);
+
+            throw $this->p2pGatewayException($gatewayCode, $gatewayDesc);
         }
 
+        return $this->inputSdk();
+    }
+
+    protected function inputSdk(): ArrayBag
+    {
         return $this->input->get(Fields::SDK);
     }
 
@@ -108,6 +117,16 @@ class Gateway extends Upi\Gateway
     {
         // .Todo Need to fix the implementation
         throw new \Exception('Hi!');
+    }
+
+    protected function p2pGatewayException(
+        string $gatewayCode,
+        string $gatewayDesc,
+        array $data = [])
+    {
+        $code = ErrorMap::map($gatewayCode);
+
+        return new GatewayErrorException($code, $gatewayCode, $gatewayDesc, $data);
     }
 
     protected function getSdkRequestId()

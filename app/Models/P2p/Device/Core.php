@@ -55,6 +55,6 @@ class Core extends Base\Core
             Customer\Entity::verifyIdAndStripSign($customerId);
         }
 
-        return $this->repo()->customer->findOrFailPublic($customerId);
+        return $this->repo()->customer->findByIdAndMerchant($customerId, $this->context()->getMerchant());
     }
 }

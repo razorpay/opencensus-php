@@ -29,9 +29,16 @@ class TestCase extends Functional\TestCase
      */
     protected $fixtures;
 
+    /**
+     * @var $exceptionHandler Base\MockExceptionHandler
+     */
+    protected $exceptionHandler;
+
     public function setUp()
     {
         parent::setUp();
+
+        $this->registerMockExceptionHandler();
 
         $this->fixtures = new Base\Fixtures\Fixtures($this->deviceSetMap);
 
@@ -47,31 +54,42 @@ class TestCase extends Functional\TestCase
 
     protected function getCustomerHelper(): Base\CustomerHelper
     {
-        return new Base\CustomerHelper($this->fixtures);
+        return new Base\CustomerHelper($this->fixtures, $this->exceptionHandler);
     }
 
     protected function getDeviceHelper(): Base\DeviceHelper
     {
-        return new Base\DeviceHelper($this->fixtures);
+        return new Base\DeviceHelper($this->fixtures, $this->exceptionHandler);
     }
 
     protected function getBankAccountHelper(): Base\BankAccountHelper
     {
-        return new Base\BankAccountHelper($this->fixtures);
+        return new Base\BankAccountHelper($this->fixtures, $this->exceptionHandler);
     }
 
     protected function getVpaHelper(): Base\VpaHelper
     {
-        return new Base\VpaHelper($this->fixtures);
+        return new Base\VpaHelper($this->fixtures, $this->exceptionHandler);
     }
 
     protected function getBeneficiaryHelper(): Base\BeneficiaryHelper
     {
-        return new Base\BeneficiaryHelper($this->fixtures);
+        return new Base\BeneficiaryHelper($this->fixtures, $this->exceptionHandler);
     }
 
     protected function getTransactionHelper(): Base\TransactionHelper
     {
-        return new Base\TransactionHelper($this->fixtures);
+        return new Base\TransactionHelper($this->fixtures, $this->exceptionHandler);
+    }
+
+    protected function registerMockExceptionHandler()
+    {
+        $this->exceptionHandler = $this->app->make(Base\MockExceptionHandler::class);
+
+        $this->app->bind(\Illuminate\Contracts\Debug\ExceptionHandler::class,
+            function()
+            {
+                return $this->exceptionHandler;
+            });
     }
 }
