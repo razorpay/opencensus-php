@@ -282,8 +282,7 @@ return [
     ],
 
     'fts' => [
-        'bene_mock'       => env('FTS_BENE_MOCK',false),
-        'transfer_mock'   => env('FTS_TRANSFER_MOCK', false),
+        'mock'   => env('FTS_MOCK', false),
         'secret' => env('APP_FTS_SECRET'),
         'test'   => [
             'url'               => env('FTS_URL_TEST'),

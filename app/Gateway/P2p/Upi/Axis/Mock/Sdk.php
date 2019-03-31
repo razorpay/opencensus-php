@@ -9,6 +9,7 @@ class Sdk
 {
     protected $action;
     protected $input;
+    protected $errors = [];
 
     public function setMockedRequest($request)
     {
@@ -18,8 +19,25 @@ class Sdk
         $this->input    = $request['content'];
     }
 
+    public function withError(string $code)
+    {
+        $response = $this->initiateResponse(true);
+
+        $response[Fields::ERROR_CODE] = $code;
+        $response[Fields::ERROR_DESCRIPTION] = str_replace('_', ' ', $code);
+
+        $this->errors[] = $response;
+
+        return $this;
+    }
+
     public function call()
     {
+        if (count($this->errors) > 0)
+        {
+            return array_pop($this->errors);
+        }
+
         $action = camel_case(strtolower('SDK_' . $this->action));
 
         $content = $this->{$action}();

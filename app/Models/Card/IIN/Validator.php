@@ -9,6 +9,10 @@ use RZP\Models\Card;
 
 class Validator extends Base\Validator
 {
+    const ACTION  = 'action';
+    const IINS    = 'iins';
+    const FlOW    = 'flow';
+
     protected static $createRules = array(
         Entity::IIN            => 'required|numeric|digits:6',
         Entity::NETWORK        => 'required',
@@ -41,6 +45,12 @@ class Validator extends Base\Validator
         Entity::RECURRING      => 'sometimes|integer|in:0,1',
     );
 
+    protected static $updateIinFlowBulkRules = [
+        self::ACTION           => 'required|string|in:enable,disable',
+        self::FlOW             => 'required|string|custom',
+        self::IINS             => 'required|array',
+    ];
+
     protected static $binIssuerValidationRules = [
         Entity::NUMBER       => 'required|numeric|digits_between:6,19',
     ];
@@ -58,7 +68,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $binListValidationRules = [
-        'flow'             => 'required|string|in:otp',
+        self::FlOW             => 'required|string|in:otp',
     ];
 
     protected function validateCreateNetwork($input)
@@ -136,6 +146,17 @@ class Validator extends Base\Validator
                 throw new Exception\BadRequestValidationFailureException(
                     'Invalid flow in input: ' . $flow);
             }
+        }
+    }
+
+    protected function validateFlow($attribute, $flow)
+    {
+        $validFlows = Flow::getValid();
+
+        if (in_array($flow, $validFlows) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid flow in input: ' . $flow);
         }
     }
 

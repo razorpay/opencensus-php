@@ -850,6 +850,7 @@ class Service extends Base\Service
             [
                 'merchant_id' => $id,
             ]);
+
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         if ($merchant->isActivated() === false)
@@ -876,6 +877,23 @@ class Service extends Base\Service
         $this->repo->saveOrFail($merchant);
 
         $this->logActionToSlack($merchant, 'disable');
+
+        return $merchant->toArrayPublic();
+    }
+
+    public function toggleInternational($input)
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_INTERNATIONAL_TOGGLE_REQUEST,
+            [
+                'input'     => $input,
+            ]);
+
+        (new Validator)->validateInput('toggleInternational', $input);
+
+        $toggleValue = (bool) ($input['international'] ?? false);
+
+        $merchant = $this->core()->toggleInternational($this->merchant, $toggleValue);
 
         return $merchant->toArrayPublic();
     }

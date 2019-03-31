@@ -227,7 +227,6 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
-
     public function testGetBulkFlows()
     {
         $flows = [
@@ -261,7 +260,7 @@ class IinTest extends TestCase
 
         $this->assertEquals([401200], $response['iins']);
 
-         $flows = [
+        $flows = [
             'pin' => '1',
             'headless_otp' => '1',
         ];
@@ -273,6 +272,52 @@ class IinTest extends TestCase
         $this->assertEquals(1, $response['count']);
 
         $this->assertEquals([401200], $response['iins']);
+    }
+
+    public function testBulkFlowsUpdateEnable()
+    {
+        $flows = [
+            'pin' => '1',
+            'otp' => '1',
+        ];
+
+        $this->fixtures->edit('iin', 401200, ['flows' => $flows]);
+
+        $flows = [
+            'pin' => '1',
+        ];
+
+        $this->fixtures->edit('iin', 401201, ['flows' => $flows]);
+
+        $this->ba->adminAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('234567', $response);
+
+    }
+
+    public function testBulkFlowsUpdateDisable()
+    {
+        $flows = [
+            'pin' => '1',
+            'otp' => '1',
+        ];
+
+        $this->fixtures->edit('iin', 401200, ['flows' => $flows]);
+
+        $flows = [
+            'pin' => '1',
+        ];
+
+        $this->fixtures->edit('iin', 401201, ['flows' => $flows]);
+
+        $this->ba->adminAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('234567', $response);
+
     }
 
     public function startTest($testDataToReplace = [])

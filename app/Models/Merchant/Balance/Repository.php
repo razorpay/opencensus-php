@@ -144,6 +144,11 @@ class Repository extends Base\Repository
         $balance->saveOrFail();
     }
 
+    public function updateBalanceDirectly($balance, $amount)
+    {
+        $balance->increment(Entity::BALANCE, $amount);
+    }
+
     public function createBalance($balance)
     {
         assertTrue ($balance->exists === false);

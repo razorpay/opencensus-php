@@ -113,8 +113,9 @@ class Core extends Base\Core
     }
 
     /**
-     * fetches activation flow from business category and subcategory and
-     * updates merchant activation flow
+     * fetches activation_flow and international_activation value
+     * using business category and subcategory, then updates in
+     * merchant_details table
      *
      * @param Entity $merchantDetails
      *
@@ -128,6 +129,14 @@ class Core extends Base\Core
         $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
 
         $merchantDetails->setActivationFlow($subcategoryMetaData[Entity::ACTIVATION_FLOW]);
+
+        $isExperimentEnabled = (new Merchant\Core)->isInternationalActivationsExperimentEnabled($this->merchant);
+
+        if ($isExperimentEnabled === true)
+        {
+            $merchantDetails->setInternationalActivationFlow(
+                $subcategoryMetaData[BusinessSubCategoryMetaData::INTERNATIONAL_ACTIVATION]);
+        }
     }
 
     /**
@@ -192,19 +201,6 @@ class Core extends Base\Core
 
             // Sync few input fields to merchant entity
             $merchant = (new Merchant\Core)->syncMerchantEntityFields($merchant, $input);
-
-            //
-            // The merchant entity returned by the '$merchantDetails->merchant' relation gets reloaded here.
-            // The function autoUpdateMerchantCategoryDetailsIfApplicable() updates a few merchant attributes.
-            // Since the $merchantDetails variable in saveInstantActivationDetails() is defined before updating these
-            // merchant entity attributes, these values will not be reflected in the relation unless explicitly
-            // reloaded.
-            //
-            // This has been moved here because we want to reload the merchant even if the instant activations workflow
-            // is not triggered, this is useful for activating international payments.
-            // Which is done in function syncMerchantEntityFields()
-            //
-            $merchantDetails->load('merchant');
 
             // $activationFlow will be an instance of the ActivationFlowInterface
             $activationFlow = ActivationFlow\Factory::getActivationFlowImpl($merchantDetails);
@@ -948,10 +944,9 @@ class Core extends Base\Core
             $response['can_submit'] = true;
         }
 
-        $response[Merchant\Entity::ACTIVATED]        = (int) $merchant->isActivated();
-        $response[Merchant\Entity::LIVE]             = $merchant->isLive();
-        $response[Entity::ACTIVATION_FLOW]           = $merchantDetails->getActivationFlow();
-        $response[Merchant\Entity::INTERNATIONAL]    = $merchant->isInternational();
+        $response[Merchant\Entity::ACTIVATED]                   = (int) $merchant->isActivated();
+        $response[Merchant\Entity::LIVE]                        = $merchant->isLive();
+        $response[Merchant\Entity::INTERNATIONAL]               = $merchant->isInternational();
 
         $response = $this->appendBankingSpecificDetails($response, $merchant);
 

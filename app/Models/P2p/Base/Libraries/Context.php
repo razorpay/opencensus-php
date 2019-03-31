@@ -2,19 +2,21 @@
 
 namespace RZP\Models\P2p\Base\Libraries;
 
-use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\P2p\Device;
 use RZP\Base\JitValidator;
+use RZP\Error\P2p\ErrorCode;
 use Illuminate\Http\Request;
 use RZP\Models\P2p\Vpa\Handle;
+use RZP\Models\P2p\Base\Traits;
 use RZP\Trace\P2pTraceProcessor;
 use RZP\Models\P2p\Base\MorphMap;
-use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
 
-class Context
+class Context extends ArrayObject
 {
+    use Traits\ExceptionTrait;
+
     const APPLICATION               = 'application';
 
     const MERCHANT                  = 'merchant';
@@ -86,7 +88,8 @@ class Context
 
         if (($basicAuth->getMerchant() instanceof Merchant\Entity) === false)
         {
-            $this->throwContextException('Merchant has be context');
+            // Merchant must be in basic auth as the auth is either public or device
+            throw $this->logicException(ErrorCode::SERVER_ERROR_CONTEXT_MERCHANT_REQUIRED);
         }
         $this->setMerchant($basicAuth->getMerchant());
 
@@ -101,7 +104,7 @@ class Context
             // If there is no device token found, the context will fail
             if (($deviceToken instanceof Device\DeviceToken\Entity) === false)
             {
-                $this->throwContextException('Device is not verified on given handle');
+                throw $this->badRequestException(ErrorCode::BAD_REQUEST_DEVICE_NOT_ATTACHED_TO_HANDLE);
             }
 
             // Setting the device token with the device
@@ -128,7 +131,7 @@ class Context
     {
         if ($this->handle->isAllowedToMerchant($merchant->getId()) === false)
         {
-            throw new LogicException('Merchant is not allowed to use the handle');
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NOT_ALLOWED_ON_HANDLE);
         }
 
         $this->merchant = $merchant;
@@ -150,7 +153,7 @@ class Context
         // Basic auth already takes care of device owner, here we are only enforcing it.
         if ($this->merchant->getId() !== $device->getMerchantId())
         {
-            $this->throwContextException('Device does not belong to merchant in context');
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_DEVICE_DOES_NOT_BELONG_TO_MERCHANT);
         }
 
         $this->device = $device;
@@ -235,7 +238,6 @@ class Context
 
     /**
      * @return string
-     * @throws BadRequestException
      */
     public function getContextType()
     {
@@ -257,14 +259,13 @@ class Context
             return self::MERCHANT;
         }
 
-        $this->throwContextException('Could not resolve context type');
+        throw $this->logicException(ErrorCode::SERVER_ERROR_CONTEXT_MERCHANT_REQUIRED);
     }
 
     /**
      * Check if context is Application
      *
      * @return bool
-     * @throws BadRequestException
      */
     public function isContextApplication(): bool
     {
@@ -275,7 +276,6 @@ class Context
      * Check if context is Merchant
      *
      * @return bool
-     * @throws BadRequestException
      */
     public function isContextMerchant(): bool
     {
@@ -286,7 +286,6 @@ class Context
      * Check if context is Device
      *
      * @return bool
-     * @throws BadRequestException
      */
     public function isContextDevice(): bool
     {
@@ -307,23 +306,13 @@ class Context
      * Validates whether the given merchant is in context
      *
      * @param Merchant\Entity $merchant
-     * @throws BadRequestException
      */
-    public function validateMerchant(Merchant\Entity $merchant)
+    public function validateMerchant(Merchant\Entity $merchant, string $code)
     {
         if ($this->merchant->getId() !== $merchant->getId())
         {
-            $this->throwContextException('Wrong merchant in context');
+            throw $this->badRequestException($code);
         }
-    }
-
-    /**
-     * @param $message
-     * @throws BadRequestException
-     */
-    public function throwContextException($message)
-    {
-        throw new BadRequestException(ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED, $message);
     }
 
     /**

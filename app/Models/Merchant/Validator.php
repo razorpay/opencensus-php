@@ -240,6 +240,10 @@ class Validator extends Base\Validator
         'contact' => 'required|contact_syntax',
     ];
 
+    protected static $toggleInternationalRules = [
+        Entity::INTERNATIONAL => 'required|boolean'
+    ];
+
     protected function validateIsTestAccount(array $input)
     {
         $merchant = $this->entity;
