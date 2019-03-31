@@ -618,8 +618,10 @@ class Entity extends Base\PublicEntity
      * Evaluates if a rule's terminal related attributes match those of
      * given terminal
      *
-     * @param  Terminal\Entity $terminal Terminal entity to compare against
-     * @param  Merchant\Entity $merchant
+     * @param  Terminal\Entity           $terminal Terminal entity to compare against
+     *
+     * @param Payment\Entity|null        $payment
+     * @param Base\PublicCollection|null $gatewayTokens
      *
      * @return bool whether rule matches terminal
      *
@@ -627,7 +629,6 @@ class Entity extends Base\PublicEntity
      */
     public function matches(
         Terminal\Entity $terminal,
-        Merchant\Entity $merchant,
         Payment\Entity $payment = null,
         Base\PublicCollection $gatewayTokens = null): bool
     {
@@ -641,7 +642,7 @@ class Entity extends Base\PublicEntity
                 continue;
             }
 
-            if ($this->compare($key, $terminal, $merchant, $payment, $gatewayTokens) === false)
+            if ($this->compare($key, $terminal, $payment, $gatewayTokens) === false)
             {
                 return false;
             }
@@ -696,7 +697,6 @@ class Entity extends Base\PublicEntity
     protected function compare(
         string $key,
         Terminal\Entity $terminal,
-        Merchant\Entity $merchant,
         Payment\Entity $payment = null,
         Base\PublicCollection $gatewayTokens = null): bool
     {
@@ -704,13 +704,13 @@ class Entity extends Base\PublicEntity
 
         if (method_exists($this, $compareFunc) === true)
         {
-            return $this->$compareFunc($terminal, $merchant, $payment, $gatewayTokens);
+            return $this->$compareFunc($terminal, $payment, $gatewayTokens);
         }
 
         return ($this->getAttribute($key) === $terminal->getAttribute($key));
     }
 
-    protected function compareMethod(Terminal\Entity $terminal, Merchant\Entity $merchant, Payment\Entity $payment = null): bool
+    protected function compareMethod(Terminal\Entity $terminal, Payment\Entity $payment = null): bool
     {
         $method = $this->getMethod();
 
@@ -755,7 +755,6 @@ class Entity extends Base\PublicEntity
 
     protected function compareRecurringType(
         Terminal\Entity $terminal,
-        Merchant\Entity $merchant,
         Payment\Entity $payment,
         Base\PublicCollection $gatewayTokens): bool
     {
@@ -798,7 +797,7 @@ class Entity extends Base\PublicEntity
             if ((empty(array_diff($applicableTypes, $terminal->getType())) === true) or
                 ($terminal->isNo2Fa() === true))
             {
-                return (($terminal->isFallbackApplicable($merchant) === true) and
+                return (($terminal->isFallbackApplicable() === true) and
                         ($payment->isCard() === true));
             }
 
@@ -806,7 +805,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    protected function compareEmiSubvention(Terminal\Entity $terminal, Merchant\Entity $merchant, Payment\Entity $payment = null): bool
+    protected function compareEmiSubvention(Terminal\Entity $terminal, Payment\Entity $payment = null): bool
     {
         if (isset($payment) === true)
         {
@@ -846,14 +845,13 @@ class Entity extends Base\PublicEntity
      * - Terminal assigned to some other merchant with given merchant as a submerchant
      *
      * @param  Terminal\Entity $terminal Terminal to check against
-     * @param  Merchant\Entity $merchant Merchant making the payment
      * @return bool                      Comparison result
      */
-    protected function compareSharedTerminal(Terminal\Entity $terminal, Merchant\Entity $merchant): bool
+    protected function compareSharedTerminal(Terminal\Entity $terminal): bool
     {
         $isApplicableForSharedTerminal = $this->getAttribute(self::SHARED_TERMINAL);
 
-        return ($isApplicableForSharedTerminal !== $terminal->isDirectForMerchant($merchant)) ? true : false;
+        return ($isApplicableForSharedTerminal !== $terminal->isDirectForMerchant()) ? true : false;
     }
 
     /**

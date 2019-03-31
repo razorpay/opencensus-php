@@ -120,7 +120,7 @@ class Service extends Base\Service
         {
             $response = $this->app->razorx->getTreatment($merchantId, 'merchant_onboard_terminal', $this->mode);
 
-            if (($response === 'control') or 
+            if (($response === 'control') or
                 ($response === 'off'))
             {
                 return false;
@@ -133,12 +133,12 @@ class Service extends Base\Service
     public function checkDirectTerminalForGateway(array $terminals, $gateway, $merchant, $currency):bool
     {
         $category = $merchant->getCategory();
-        
+
         foreach ($terminals as $terminal)
         {
             if (($terminal->getGateway() === $gateway) and
-                ($terminal->getCurrency() === $currency) and 
-                ($terminal->isDirectForMerchant($merchant) === true) and 
+                ($terminal->getCurrency() === $currency) and
+                ($terminal->isDirectForMerchant() === true) and
                 ($terminal->getCategory() === $category))
             {
                 return true;

@@ -289,6 +289,8 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
     ];
 
+    protected $direct = false;
+
     protected static function boot()
     {
         parent::boot();
@@ -473,32 +475,21 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * For a given merchant, checks if the terminal can be considered direct
-     * for the merchant based on the below two cases
-     * - terminal's primary merchant is given merchant
-     * - any of the sub-merchants of the terminal has this merchant
+     * NOTE: This function must be used with caution.
+     * Any function using this must also use the standard
+     * repo function `addMerchantWhereCondition` and should
+     * also SET the terminal entity's `direct` attribute.
      *
-     * @param  Merchant\Entity $merchant    Merchant entity for which we want to check
-     * @return boolean
+     * @return bool
      */
-    public function isDirectForMerchant(Merchant\Entity $merchant): bool
+    public function isDirectForMerchant(): bool
     {
-        $result = ($merchant->getId() === $this->getAttribute(self::MERCHANT_ID));
+        return ($this->direct === true);
+    }
 
-        if ($result === false)
-        {
-            if ($merchant->isFeatureEnabled(Feature\Constants::SUB_TERMINAL_OPTIMIZE) === true)
-            {
-                return ($this->getAttribute(self::MERCHANT_ID) !== Merchant\Account::SHARED_ACCOUNT);
-            }
-
-            $result = $this->merchants->contains(function ($subMerchant) use ($merchant)
-            {
-                return ($merchant->getId() === $subMerchant[Merchant\Entity::ID]);
-            });
-        }
-
-        return $result;
+    public function setDirect(bool $direct)
+    {
+        $this->direct = $direct;
     }
 
     /**
@@ -507,18 +498,16 @@ class Entity extends Base\PublicEntity
      * Hitachi is an exception where we are okay with
      * shared terminals also being used for fallback.
      *
-     * @param Merchant\Entity $merchant
-     *
      * @return bool
      */
-    public function isFallbackApplicable(Merchant\Entity $merchant): bool
+    public function isFallbackApplicable(): bool
     {
         if ($this->getGateway() === Payment\Gateway::HITACHI)
         {
             return true;
         }
 
-        return $this->isDirectForMerchant($merchant);
+        return $this->isDirectForMerchant();
     }
 
     /**
