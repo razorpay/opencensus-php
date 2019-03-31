@@ -6,6 +6,7 @@ use Crypt;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Method;
@@ -486,6 +487,11 @@ class Entity extends Base\PublicEntity
 
         if ($result === false)
         {
+            if ($merchant->isFeatureEnabled(Feature\Constants::SUB_TERMINAL_OPTIMIZE) === true)
+            {
+                return ($this->getAttribute(self::MERCHANT_ID) !== Merchant\Account::SHARED_ACCOUNT);
+            }
+
             $result = $this->merchants->contains(function ($subMerchant) use ($merchant)
             {
                 return ($merchant->getId() === $subMerchant[Merchant\Entity::ID]);

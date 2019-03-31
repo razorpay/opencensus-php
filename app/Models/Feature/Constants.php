@@ -110,6 +110,7 @@ class Constants
     const REPORTING_GENRERIC_NOTES        = 'report_notes_to_column';
     const S2S_OTP_JSON                    = 's2s_otp_json';
     const ADHOC_SETTLEMENT                = 'adhoc_settlement';
+    const SUB_TERMINAL_OPTIMIZE           = 'sub_terminal_optimize';
 
     /**
      * This will control if the bank details will be returned in the fetch token response.
@@ -329,6 +330,7 @@ class Constants
         self::PAYMENT_MAILS_DISABLED          => true,
         self::DISPUTE_MAILS_DISABLED          => true,
         self::ADHOC_SETTLEMENT                => true,
+        self::SUB_TERMINAL_OPTIMIZE           => true,
     ];
 
     // Entity type constants
