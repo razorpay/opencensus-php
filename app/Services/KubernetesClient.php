@@ -194,7 +194,7 @@ class KubernetesClient
                                         'memory' => '150Mi'
                                     ],
                                     'limits' => [
-                                        'cpu' => '250m',
+                                        'cpu' => '500m',
                                         'memory' => '2048Mi'
                                     ]
                                 ],
