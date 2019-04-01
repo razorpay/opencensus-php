@@ -124,7 +124,7 @@ class TerminalLoadSorter extends Terminal\Sorter
 
             foreach ($terminals as $terminal)
             {
-                if ($rule->matches($terminal) === true)
+                if ($rule->matches($terminal, $this->input['merchant']) === true)
                 {
                     $boostedTerminals[] = $terminal;
                 }

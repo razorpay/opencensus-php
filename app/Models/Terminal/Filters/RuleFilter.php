@@ -85,7 +85,7 @@ class RuleFilter extends Terminal\Filter
         {
             foreach ($rules as $rule)
             {
-                $match = $rule->matches($terminal, $payment, $gatewayTokens);
+                $match = $rule->matches($terminal, $this->input['merchant'], $payment, $gatewayTokens);
 
                 if ($match === true)
                 {

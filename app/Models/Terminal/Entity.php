@@ -493,9 +493,11 @@ class Entity extends Base\PublicEntity
      * Hitachi is an exception where we are okay with
      * shared terminals also being used for fallback.
      *
+     * @param Merchant\Entity $merchant
+     *
      * @return bool
      */
-    public function isFallbackApplicable(): bool
+    public function isFallbackApplicable(Merchant\Entity $merchant): bool
     {
         if ($this->getGateway() === Payment\Gateway::HITACHI)
         {
