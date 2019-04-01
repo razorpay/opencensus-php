@@ -27,7 +27,7 @@ class Validator extends Base\Validator
         Entity::DEFAULT_PLAN_ID        => 'sometimes|alpha_num|size:14',
         Entity::IMPLICIT_PLAN_ID       => 'sometimes|alpha_num|size:14|nullable',
         Entity::EXPLICIT_PLAN_ID       => 'sometimes|alpha_num|size:14|nullable',
-        Entity::IMPLICIT_EXPIRY_AT     => 'sometimes|integer',
+        Entity::IMPLICIT_EXPIRY_AT     => 'sometimes|integer|nullable',
         Entity::COMMISSIONS_ENABLED    => 'sometimes|boolean',
         Entity::EXPLICIT_REFUND_FEES   => 'sometimes|boolean',
         Entity::EXPLICIT_SHOULD_CHARGE => 'sometimes|boolean',
