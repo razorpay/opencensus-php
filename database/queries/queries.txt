@@ -4856,3 +4856,7 @@ ALTER TABLE reversals
     ADD COLUMN transaction_type VARCHAR(255) DEFAULT NULL after transaction_id;
 
 ALTER TABLE reversals DROP FOREIGN KEY reversals_transaction_id_foreign;
+
+ALTER TABLE invoices
+    DROP FOREIGN KEY invoices_batch_id_foreign;
+    

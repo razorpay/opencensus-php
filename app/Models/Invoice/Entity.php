@@ -1056,6 +1056,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SUBSCRIPTION_ID, $subscriptionId);
     }
 
+    public function setBatchId(string $batchId)
+    {
+        $this->setAttribute(self::BATCH_ID,$batchId);
+    }
+
     public function setShortUrl(string $shortUrl)
     {
         $this->setAttribute(self::SHORT_URL, $shortUrl);

@@ -88,6 +88,18 @@ class InvoiceTest extends TestCase
         $this->assertEquals('29kjsngjk213922', $invoice->getMerchantGstin());
     }
 
+    public function testCreateInvoiceWithBatchIdInHeader()
+    {
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
     public function testCreateInvoiceWithExistingCustomer()
     {
         $response = $this->startTest();
