@@ -1676,7 +1676,7 @@ class Service extends Base\Service
         return $token;
     }
 
-    public function fetchForSubscription($paymentId, $subscriptionId)
+    public function fetchForSubscription(string $paymentId, string $subscriptionId): array
     {
         $payment = $this->repo->payment->fetchByIdandSubscriptionId($paymentId, $subscriptionId);
 
