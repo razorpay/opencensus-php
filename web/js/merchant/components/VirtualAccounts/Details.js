@@ -42,7 +42,12 @@ export default props => {
               <div style={{ margin: '24px 0' }}>
                 <EntityDetailRow
                   label="Amount Paid"
-                  value={() => <Amount value={virtualaccount.amount_paid} />}
+                  value={() => (
+                    <Amount
+                      value={virtualaccount.amount_paid}
+                      currency={'INR'}
+                    />
+                  )}
                 />
 
                 <EntityDetailRow

@@ -87,7 +87,7 @@ export default ({ payment, card = {}, bankTransfer = {} }) => {
           <span> {emiPlan.rate / 100}%</span>
           <span>
             {' '}
-            (<Amount value={emi} />)
+            (<Amount value={emi} currency={payment.currency} />)
           </span>
         </span>
       ),

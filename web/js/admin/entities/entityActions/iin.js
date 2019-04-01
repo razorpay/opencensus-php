@@ -22,7 +22,8 @@ export default ({ entity, updateEntity, mode }) => {
       type: body.type,
       enabled: body.enabled,
       flows: body.flows,
-      locked: body.locked
+      locked: body.locked,
+      recurring: body.recurring
     };
 
     // Lets remove all the empty variables
@@ -176,6 +177,12 @@ const EditIINForm = ({ entity, handleSubmit }) => {
             label="Headless OTP"
             name="flows[headless_otp]"
             defaultChecked={entity.flows.indexOf('headless_otp') !== -1}
+          />
+
+          <CheckField
+            label="Recurring"
+            name="recurring"
+            defaultChecked={entity.recurring}
           />
         </div>
 

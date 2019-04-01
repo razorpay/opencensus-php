@@ -110,7 +110,7 @@ export default class extends React.Component {
     return (
       <div>
         <ModalHeader
-          title="Create Embed Button"
+          title="Create Payment Button"
           onCloseClick={() => {
             closeModal();
             trackCreateButtonCancel();

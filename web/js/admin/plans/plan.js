@@ -141,6 +141,7 @@ export const options = {
     '': 'All',
     HDFC: 'HDFC',
     ICIC: 'ICICI',
+    AXIS: 'UTIB',
     zestmoney: 'ZESTMONEY',
     earlysalary: 'EARLYSALARY',
   },
@@ -459,7 +460,8 @@ class Rule extends CollectionItem {
   }
 
   paymentMethodTypeField() {
-    var data;
+    var data, fieldLabel = 'Type';
+
     if (this.payment_method === 'card' && this.international == 0) {
       data = options.payment_method_type;
     } else if (this.payment_method === 'emandate') {
@@ -469,12 +471,22 @@ class Rule extends CollectionItem {
         aadhaar_fp: 'Aadhaar Fingerprint',
         netbanking: 'Netbanking',
       };
+    } else if (this.payment_method === 'fund_transfer') {
+      data = {
+        '': 'All',
+        NEFT: 'NEFT',
+        IMPS: 'IMPS',
+        RTGS: 'RTGS',
+        IFT: 'IFT',
+      };
+
+      fieldLabel = 'Mode'
     }
 
     if (data) {
       var field = this.selectField('payment_method_type', data);
       if (field) {
-        return <div>Type {field}</div>;
+        return <div>{fieldLabel} {field}</div>;
       }
     }
   }

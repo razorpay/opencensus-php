@@ -61,31 +61,32 @@ export default class RefundsList extends Component {
           )}
         </main>
         <aside class="container">
-          {this.data && !this.state.loading && (
-            <div>
-              <div class="header">
-                <b>ACTIONS</b>
-              </div>
-              {this.data.status === 'file_init' && (
-                <AsyncButton
-                  confirm="Perform this action?"
-                  class="btn btn-default"
-                  pendingClass="btn btn-default btn-pending"
-                  onClick={this.retry}
-                >
-                  <span class="spin-btn" style={{ marginRight: -18 }} />
-                  Retry Refund
-                </AsyncButton>
-              )}
-              <ShowWhen permission="edit_refund">
-                {this.data.status !== 'processed' && (
-                  <button class="btn btn-default" onClick={this.statusModal}>
-                    Update Status
-                  </button>
+          {this.data &&
+            !this.state.loading && (
+              <div>
+                <div class="header">
+                  <b>ACTIONS</b>
+                </div>
+                {this.data.status === 'file_init' && (
+                  <AsyncButton
+                    confirm="Perform this action?"
+                    class="btn btn-default"
+                    pendingClass="btn btn-default btn-pending"
+                    onClick={this.retry}
+                  >
+                    <span class="spin-btn" style={{ marginRight: -18 }} />
+                    Retry Refund
+                  </AsyncButton>
                 )}
-              </ShowWhen>
-            </div>
-          )}
+                <ShowWhen permission="edit_refund">
+                  {this.data.status !== 'processed' && (
+                    <button class="btn btn-default" onClick={this.statusModal}>
+                      Update Status
+                    </button>
+                  )}
+                </ShowWhen>
+              </div>
+            )}
         </aside>
       </div>
     );
@@ -170,6 +171,8 @@ const fields = [
     </React.Fragment>,
   ],
   item => ['Bank', item.bank],
+  item => ['Refund Gateway', item.refund_gateway],
+  item => ['Gateway Acquirer', item.gateway_acquirer],
   item => ['On Hold Reason', item.on_hold_reason],
 ];
 
