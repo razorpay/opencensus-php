@@ -95,26 +95,86 @@ class Constants
             ]
         ],
         [
-          'title'       => 'Razorpay Capital',
-          'description' =>
-              'Get loans up to Rs 10 Lakhs for your business and repay from your Razorpay settlements with ease. ',
-          'start_ts'    => 1551673800,
-          'end_ts'      => 1559305800,
-          'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/capital.svg',
-          'buttons'     => [
-              [
-                  'type'  => 'button',
-                  'label' => 'I\'m Interested',
-                  'url'   => 'https://razorpay.com/capital/?get-in-touch&utm_source=signup&utm_medium=banner&utm_campaign=businessloans_febs2',
-              ],
-          ],
-          'filters'     => [
-              'experiments'         => ['capital_announcement'],
-          ],
-          'ga'          => [
-              'action'        => 'Capital - Announcement'
-          ]
-      ],        
+            'title'       => 'Razorpay Capital',
+            'description' =>
+                'Get loans up to Rs 10 Lakhs for your business and repay from your Razorpay settlements with ease. ',
+            'start_ts'    => 1551673800,
+            'end_ts'      => 1559305800,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/capital.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'I\'m Interested',
+                    'url'   => 'https://razorpay.com/capital/?get-in-touch&utm_source=signup&utm_medium=banner&utm_campaign=businessloans_febs2',
+                ],
+            ],
+            'filters'     => [
+                'experiments' => ['capital_announcement'],
+            ],
+            'ga'          => [
+                'action' => 'Capital - Announcement',
+            ],
+        ],
+        [
+            'title'       => 'Say hello to Subscription Links!',
+            'description' => 'Onboard Subscribers via unique links, created from the dashboard.',
+            'start_ts'    => 1553491800,
+            'end_ts'      => 1554874200,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/subscriptions.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Start Today',
+                    'url'   => '/subscriptions/',
+                ],
+            ],
+            'filters'     => [
+                'experiments' => ['subscriptions_live'],
+            ],
+            'ga'          => [
+                'action' => 'Subscription Links - Announcement',
+            ],
+        ],
+        [
+            'title'       => 'Say hello to Subscription Links!',
+            'description' => 'Onboard Subscribers via unique links, created from the dashboard. Start now, integrate with API later.',
+            'start_ts'    => 1553491800,
+            'end_ts'      => 1554874200,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/subscriptions.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Get Started',
+                    'url'   => '/subscriptions/',
+                ],
+            ],
+            'filters'     => [
+                'experiments' => ['subscriptions_approved_notlive'],
+            ],
+            'ga'          => [
+                'action' => 'Subscription Links - Announcement - Not Live',
+            ],
+        ],
+        [
+            'title'       => 'Introducing Subscription Links!',
+            'description' => 'Say hello to Subscription Links! Onboard Subscribers via unique links, created from the dashboard. Start now, integrate with API later.',
+            'start_ts'    => 1553664600,
+            'end_ts'      => 1554874200,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/subscriptions.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Get Started',
+                    'url'   => '/subscriptions/',
+                ],
+            ],
+            'filters'     => [
+                'experiments' => ['non_subscriptions'],
+            ],
+            'ga'          => [
+                'action' => 'Subscription Links - Announcement - Not Live',
+            ],
+        ],
     ];
 
     public static function getNotifications(): array

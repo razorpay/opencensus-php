@@ -17,15 +17,17 @@ function refundLink(item, when) {
     count = item.aging[when].count;
 
     query = {
-      status: ['file_init'],
-      attempts: {
-        gte: 1,
-      },
-      gateway: [item.gateway],
-      method: [item.method],
-      created_at: {
-        gte: item.aging[when].from,
-        lt: item.aging[when].to,
+      refunds: {
+        status: ['file_init'],
+        attempts: {
+          gte: 1,
+        },
+        gateway: [item.gateway],
+        method: [item.method],
+        created_at: {
+          gte: item.aging[when].from,
+          lt: item.aging[when].to,
+        },
       },
     };
   }
@@ -94,10 +96,12 @@ export default class RefundsList extends Component {
         ...data,
         data: {
           query: {
-            attempts: {
-              gt: 0,
+            refunds: {
+              attempts: {
+                gt: 0,
+              },
+              status: ['file_init'],
             },
-            status: ['file_init'],
           },
         },
       }).then(d => d.data),

@@ -20,6 +20,7 @@ import TransferDetails from 'merchant/containers/Marketplace/Transfers/Details';
 import ReversalDetails from 'merchant/containers/Marketplace/Reversals/Details';
 import DisputeDetails from 'merchant/containers/Disputes/Details';
 import SubmerchantDetails from 'merchant/containers/PartnerDashboard/SubMerchant/Entity';
+import CommissionDetails from 'merchant/containers/PartnerDashboard/Commissions/Entity';
 import AuthLink from 'merchant/containers/Subscriptions/AuthLinks/Entity';
 
 import Token from 'merchant/containers/Subscriptions/Tokens/Entity';
@@ -107,6 +108,7 @@ const entityDetailsMap = {
 
   '/submerchants/:id(acc_.+)/:appId': { component: SubmerchantDetails },
   '/submerchants/:id(acc_.+)': { component: SubmerchantDetails },
+  '/commissions/:id(comm_.+)': { component: CommissionDetails },
   '/disputes/:id(disp_.+)': {
     component: DisputeDetails,
     additionalCondition: user => user.isAllowedView('payments'),
