@@ -141,6 +141,7 @@ export const options = {
     '': 'All',
     HDFC: 'HDFC',
     ICIC: 'ICICI',
+    AXIS: 'UTIB',
     zestmoney: 'ZESTMONEY',
     earlysalary: 'EARLYSALARY',
   },
