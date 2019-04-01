@@ -19,6 +19,7 @@ use App\Providers\GenericUser;
 use App\Session as SessionTable;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Foundation\Application;
+use Razorpay\Api\Errors\BadRequestError;
 
 
 class Service extends Base\Service
@@ -592,5 +593,23 @@ class Service extends Base\Service
         ]);
 
         return $data;
+    }
+
+    public function generateJWT()
+    {
+        $user = Auth::user();
+
+        $currentMerchantId = $user->currentMerchant() ? $user->currentMerchant()->id : null;
+
+        if ((empty($user) === true) or ($currentMerchantId === null))
+        {
+            throw new BadRequestError(
+                "Merchant context not present in user",
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+
+        return [[], ["token" => "dummy"]];
     }
 }

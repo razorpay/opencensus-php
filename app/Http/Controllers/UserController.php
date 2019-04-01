@@ -242,4 +242,15 @@ class UserController extends Controller
 
         return $response;
     }
+
+    /**
+     * Generates a JWT token with the context and returns the token to the client.
+     * https://github.com/lcobucci/jwt
+     */
+    public function generateJWT()
+    {
+        list($error, $result) = (new User\Service)->generateJWT();
+
+        return AppResponse::jsonResponse($error, $result);
+    }
 }
