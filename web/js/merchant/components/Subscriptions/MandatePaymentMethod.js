@@ -32,7 +32,7 @@ export default function MandatePaymentMethod({ mandate }) {
         {/* max amount of mandate */}
         {!!mandate.max_amount && (
           <>
-            Max Amount: <Amount value={mandate.max_amount} />{' '}
+            Max Amount: <Amount value={mandate.max_amount} currency={'INR'} />{' '}
           </>
         )}
       </Definition>

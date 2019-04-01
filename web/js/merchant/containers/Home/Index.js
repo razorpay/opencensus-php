@@ -66,7 +66,12 @@ const getPreviousDates = ({ startDate, endDate }) => {
   };
 };
 
-const KycFormSuccess = ({ onClose, onGoToDashboard, isWhitelistFlow }) => (
+const KycFormSuccess = ({
+  onClose,
+  onGoToDashboard,
+  isWhitelistFlow,
+  user,
+}) => (
   <InstantActivationSuccess
     title="KYC under review"
     subtitle="Your KYC Form has been submitted"
@@ -83,6 +88,7 @@ const KycFormSuccess = ({ onClose, onGoToDashboard, isWhitelistFlow }) => (
     }
     onClose={onClose}
     onGoToDashboard={onGoToDashboard}
+    user={user}
   />
 );
 
@@ -765,6 +771,7 @@ export default class HomeContainer extends Component {
               iaActivations.trackGoToDashboard();
               this.onInstantActivationSuccess();
             }}
+            user={user}
           />
         )}
         {showKYCActivationSuccess && (
@@ -778,6 +785,7 @@ export default class HomeContainer extends Component {
               this.onInstantActivationSuccess();
             }}
             isWhitelistFlow={user.instantActivation.isWhitelistFlow}
+            user={user}
           />
         )}
         {showKYCDetails && (

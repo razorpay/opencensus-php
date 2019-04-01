@@ -7,8 +7,9 @@ export default ({ onActivate, onClose }) => (
     <h1 className="welcome-title welcome-subtitle">Razorpay Dashboard</h1>
     <p>Get started with accepting payments right away.</p>
     <p>
-      You are just one step away form activating your account to accept domestic
-      payments from your customers. We just need a few more details.
+      You are just one step away from activating your account to accept domestic
+      and international payments from your customers. We just need a few more
+      details.
     </p>
     <div className="welcome-modal-actions">
       <Link to="/activation" onClick={onActivate} className="btn btn-primary">

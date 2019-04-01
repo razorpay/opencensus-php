@@ -11,9 +11,6 @@ import { adminFetch, adminPost, adminFormUpload2 } from 'common/fetch';
 import AsyncButton from 'ui/AsyncButton';
 import MultiSelectField from 'ui/MultiSelectField';
 
-// TODO: import currency data in a better way
-import CurrencyData from './currency.json';
-
 const gatewayMapping = {
   hdfc: 'HDFC',
   amex: 'Amex',
@@ -435,8 +432,14 @@ export default class TerminalForm extends Component {
 
           <SelectField name="currency" label="Currency" defaultValue="">
             <option value="" />
-            {CurrencyData.data.map(({ code }) => (
-              <option value={code}>{code}</option>
+            {Object.keys(
+              (window.currencyLib && window.currencyLib.displayCurrencies) || [
+                'INR',
+              ]
+            ).map(k => (
+              <option key={k} value={k}>
+                {k}
+              </option>
             ))}
           </SelectField>
 
