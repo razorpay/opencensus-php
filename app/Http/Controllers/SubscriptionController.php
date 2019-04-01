@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
+use RZP\Exception\LogicException;
 use View;
 use Request;
 use ApiResponse;
@@ -206,7 +207,7 @@ class SubscriptionController extends Controller
         //We are proxying this API request to subserv
         //This should not come here at all, added this method to make sure
         // that api does not break on not finding this method
-        throw new BadRequestException(ErrorCode::BAD_REQUEST_SUBSCRIPTION_UNEXPECTED_ROUTE_HIT);
+        throw new LogicException(null,ErrorCode::BAD_REQUEST_SUBSCRIPTION_UNEXPECTED_ROUTE_HIT);
     }
 
     public function postPaymentProcess(string $subscriptionId)
@@ -214,6 +215,6 @@ class SubscriptionController extends Controller
         //We are proxying this API request to subserv
         //This should not come here at all, added this method to make sure
         // that api does not break on not finding this method
-        throw new BadRequestException(ErrorCode::BAD_REQUEST_SUBSCRIPTION_UNEXPECTED_ROUTE_HIT);
+        throw new LogicException(null,ErrorCode::BAD_REQUEST_SUBSCRIPTION_UNEXPECTED_ROUTE_HIT);
     }
 }
