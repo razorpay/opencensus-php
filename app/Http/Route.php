@@ -2441,6 +2441,16 @@ final class Route
     ];
 
     /**
+     * Throttling middleware (and hence, rate limiting) is applied for all routes, except for the ones
+     * defined here
+     *
+     * @var array
+     */
+    public static $skipThrottling = [
+        'checkout_public',
+    ];
+
+    /**
      * These are all the applications we have
      * If you add something here, add it to $internal as well
      * Nothing here should be in private or admin auth
@@ -3106,6 +3116,12 @@ final class Route
         if (in_array($name, self::$idempotent, true) === true)
         {
             $route->middleware('idempotent');
+        }
+
+        // Add the 'throttle' middleware to all routes, EXCEPT those defined in the `$skipThrottling` array
+        if (in_array($name, self::$skipThrottling, true) === false)
+        {
+            $route->middleware('throttle');
         }
     }
 
