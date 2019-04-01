@@ -111,13 +111,36 @@ class NetbankingAxisCombinedFileTest extends TestCase
         });
     }
 
-    public function testNetbankingAxisCombinedFileForCorporate()
+    public function testNetbankingAxisCombinedFileWithTermTypeCorp()
     {
         Mail::fake();
 
         $this->fixtures->create('terminal:shared_netbanking_axis_corp_terminal');
         $this->fixtures->merchant->addFeatures('corporate_banks');
 
+        $testData = $this->testData['testNetbankingAxisCombinedFileForCorporate'];
+
+        $this->axisNbCombinedTestForCorporate($testData);
+    }
+
+    public function testNetbankingAxisCombinedFileWithTermTypeBoth()
+    {
+        Mail::fake();
+
+        $this->fixtures->create(
+            'terminal:shared_netbanking_axis_corp_terminal',
+            ['corporate' => 2]
+        );
+
+        $this->fixtures->merchant->addFeatures('corporate_banks');
+
+        $testData = $this->testData['testNetbankingAxisCombinedFileForCorporate'];
+
+        $this->axisNbCombinedTestForCorporate($testData);
+    }
+
+    protected function axisNbCombinedTestForCorporate($testData)
+    {
         $payment = $this->getDefaultNetbankingPaymentArray('UTIB_C');
 
         $this->mockServerContentFunction(
@@ -131,11 +154,11 @@ class NetbankingAxisCombinedFileTest extends TestCase
 
         $payment = $this->doAuthAndCapturePayment($payment);
 
-        $refund = $this->refundPayment($payment['id']);
+        $this->refundPayment($payment['id']);
 
         $this->ba->adminAuth();
 
-        $content = $this->startTest();
+        $content = $this->startTest($testData);
 
         $content = $content['items'][0];
 

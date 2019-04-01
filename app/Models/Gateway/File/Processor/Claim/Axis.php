@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
+use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicCollection;
 use RZP\Gateway\Netbanking\Axis\Constants;
@@ -35,11 +36,13 @@ class Axis extends Base
     {
         $corporate = $this->gatewayFile->getCorporate();
 
+        $bankCode = (($corporate === true) ? Payment\Processor\Netbanking::UTIB_C : IFSC::UTIB);
+
         $claims = $this->repo->payment->fetchCorporatePaymentsWithStatus(
             $begin,
             $end,
             static::GATEWAY,
-            $corporate
+            $bankCode
         );
 
         $claims = $claims->reject(function($claim)
