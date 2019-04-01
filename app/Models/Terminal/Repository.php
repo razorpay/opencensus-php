@@ -204,15 +204,16 @@ class Repository extends Base\Repository
         $query->whereIn(Entity::MERCHANT_ID, $merchantIds);
 
         $terminalMerchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+        $terminalAllColumn = $this->dbColumn('*');
 
         // IF(terminals.merchant_id != '100000Razorpay', 1, 0) AS direct
         $queryDirectCol = 'IF(' . $terminalMerchantIdColumn . ' != "' . Account::SHARED_ACCOUNT . '", 1, 0) AS direct';
 
-        $query->select('terminals.*', DB::raw($queryDirectCol));
+        $query->select($terminalAllColumn, DB::raw($queryDirectCol));
 
         $newQueryDirectCol = '1 AS direct';
 
-        $unionQuery = $newQuery->select($this->getTableName() . '.*', DB::raw($newQueryDirectCol))
+        $unionQuery = $newQuery->select($terminalAllColumn, DB::raw($newQueryDirectCol))
                                ->join(Table::MERCHANT_TERMINAL, Entity::TERMINAL_ID, Entity::ID)
                                ->where(function ($q) use ($merchantIds)
                                {
