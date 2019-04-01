@@ -4754,6 +4754,9 @@ ALTER TABLE promotions
     ADD COLUMN partner_id CHAR(14) DEFAULT NULL AFTER pricing_plan_id,
     ADD INDEX promotions_partner_id_index (partner_id);
 
+ALTER TABLE isg
+    MODIFY bank_reference_no VARCHAR(64);
+
 ALTER table `commissions`
     ADD COLUMN `type` varchar(255) NOT NULL DEFAULT 'implicit' after `partner_config_id`;
 
@@ -4853,3 +4856,7 @@ ALTER TABLE reversals
     ADD COLUMN transaction_type VARCHAR(255) DEFAULT NULL after transaction_id;
 
 ALTER TABLE reversals DROP FOREIGN KEY reversals_transaction_id_foreign;
+
+ALTER TABLE invoices
+    DROP FOREIGN KEY invoices_batch_id_foreign;
+    

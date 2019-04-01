@@ -14,12 +14,12 @@ class IdempotentTest  extends TestCase
         $this->testDataFilePath = __DIR__ . '/helpers/IdempotentTestData.php';
 
         parent::setUp();
-
-        $this->ba->privateAuth();
     }
 
     public function testCreateInvoiceWithIdempotentKey()
     {
+        $this->ba->batchAuth();
+
         //X-Idempotent-Key
         $headers = [
             'HTTP_X_Idempotent_Key'    => 'idempotentId',
@@ -43,6 +43,8 @@ class IdempotentTest  extends TestCase
             'HTTP_X_Idempotent_Key'    => 'idempotentId',
         ];
 
+        $this->ba->batchAuth();
+
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
 
@@ -52,6 +54,30 @@ class IdempotentTest  extends TestCase
         $this->testData[__FUNCTION__]['request']['content']['receipt'] = '00000000000002';
 
         $this->testData[__FUNCTION__]['request']['server'] = [];
+
+        $responseSecond = $this->startTest();
+
+        $this->assertNotEquals($responseFirst['id'],$responseSecond['id']);
+    }
+
+    public function testCreateInvoiceWithIdempotentKeyAndPrivateAuth()
+    {
+        //X-Idempotent-Key
+        $headers = [
+            'HTTP_X_Idempotent_Key'    => 'idempotentId',
+        ];
+
+        $this->ba->privateAuth();
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $responseFirst = $this->startTest();
+
+        // calling different request with same idempotent Key
+        $this->testData[__FUNCTION__]['request']['content']['receipt'] = '00000000000002';
+
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
 
         $responseSecond = $this->startTest();
 

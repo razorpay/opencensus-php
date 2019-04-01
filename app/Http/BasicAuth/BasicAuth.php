@@ -1371,6 +1371,11 @@ class BasicAuth
         return ($this->getInternalApp() === 'subscriptions');
     }
 
+    public function isBatchApp(): bool
+    {
+        return ($this->getInternalApp() === 'batch');
+    }
+
     public function getOAuthApplicationId()
     {
         return $this->applicationId;

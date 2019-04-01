@@ -60,6 +60,12 @@ class IdempotentHandler
 
     public function handle(Request $request, Closure $next)
     {
+        // Only internal Apps/services can pass X-Idempotent-Key
+        if ($this->app['basicauth']->getInternalApp() === null)
+        {
+            return $next($request);
+        }
+
         $idempotentId = $request->headers->get(RequestHeader::X_IDEMPOTENT_KEY);
 
         if ($idempotentId === null)

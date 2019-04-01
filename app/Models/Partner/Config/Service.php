@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Account;
 
 use Razorpay\OAuth\Application as OAuthApp;
 
@@ -57,7 +58,11 @@ class Service extends Base\Service
         }
         else if (empty($input[Constants::PARTNER_ID]) === false)
         {
-            $partnerMerchant = $this->repo->merchant->findOrFailPublic($input[Constants::PARTNER_ID]);
+            $partnerMerchantId = $input[Constants::PARTNER_ID];
+
+            $partnerMerchantId = Account\Entity::verifyIdAndSilentlyStripSign($partnerMerchantId);
+
+            $partnerMerchant = $this->repo->merchant->findOrFailPublic($partnerMerchantId);
 
             // Block non partners
             (new Merchant\Validator)->validateIsPartner($partnerMerchant);
@@ -95,7 +100,11 @@ class Service extends Base\Service
 
         if (empty($input[Constants::SUBMERCHANT_ID]) === false)
         {
-            $subMerchant = $this->repo->merchant->findOrFailPublic($input[Constants::SUBMERCHANT_ID]);
+            $subMerchantId = $input[Constants::SUBMERCHANT_ID];
+
+            $subMerchantId = Account\Entity::verifyIdAndSilentlyStripSign($subMerchantId);
+
+            $subMerchant = $this->repo->merchant->findOrFailPublic($subMerchantId);
         }
 
         return $subMerchant;

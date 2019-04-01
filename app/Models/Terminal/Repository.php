@@ -90,7 +90,6 @@ class Repository extends Base\Repository
                     ->findOrFailPublic($id);
     }
 
-
     public function getByMerchantId($mid)
     {
         $query = $this->newQuery()

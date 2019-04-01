@@ -26,6 +26,7 @@ class Validator extends Base\Validator
         RequestFields::UCAF                     => 'sometimes|string',
         RequestFields::CURRENCY_CODE            => 'sometimes|string',
         RequestFields::DYNAMIC_MERCHANT_NAME    => 'sometimes|string|max:23',
+        RequestFields::AUTH_ID                  => 'required_if:transaction_type,RU|numeric',
     ];
 
     protected static $verifyRules = [

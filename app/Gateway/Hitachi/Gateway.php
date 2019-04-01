@@ -787,6 +787,8 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::TRANSACTION_TIME] = $input['paysecure']['tran_time'];
 
+        $content[RequestFields::AUTH_ID] = $input['paysecure']['apprcode'];
+
         $traceContent = $content;
 
         $content += $this->getCardDataForAuthorizeRequestArray($input);

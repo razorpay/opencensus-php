@@ -1789,10 +1789,12 @@ class Terminal extends Base
 
     public function createSharedNetbankingAxisCorpTerminal(array $attributes = [])
     {
-        $attributes = [
+        $defaults = [
             'id'                => Shared::NETBANKING_AXIS_CRP_TERMINAL,
             'corporate'         => 1,
         ];
+
+        $attributes = array_merge($defaults, $attributes);
 
         return $this->createSharedNetbankingAxisTerminal($attributes);
     }

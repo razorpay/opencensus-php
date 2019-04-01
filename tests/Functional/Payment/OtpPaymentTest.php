@@ -16,6 +16,7 @@ use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Customer\Token\Entity as Token;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Card\IIN;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -24,6 +25,7 @@ use RZP\Services\OtpElf;
 class OtpPaymentTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     protected $otpFlow = null;
 
@@ -523,6 +525,23 @@ class OtpPaymentTest extends TestCase
             ]
         ]);
 
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+         $this->app->razorx->method('getTreatment')
+                        ->will($this->returnCallback(
+                            function ($mid, $feature, $mode) {
+                                if ($feature === 'redirect_terminal_cache')
+                                {
+                                    return 'on';
+                                }
+                                return 'off';
+                            }));
+
         $this->fixtures->merchant->addFeatures(['s2s', 'headless', 'otp_auth_default']);
         $this->mockCardVault();
         $this->mockOtpElf();
@@ -552,6 +571,18 @@ class OtpPaymentTest extends TestCase
         $this->ba->privateAuth();
 
         $response = $this->makeRequestParent($request);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $key = $payment->getCacheRedirectInputKey();
+
+        $data = Cache::get($key);
+
+        $this->assertArrayHasKey('gateway_input', $data);
+
+        $gatewayInput =  $data['gateway_input'];
+
+        $this->assertArrayHasKey('selected_terminals_ids', $gatewayInput);
 
         $this->assertTrue($this->isRedirectToAuthorizeUrl($response->getTargetUrl()));
 

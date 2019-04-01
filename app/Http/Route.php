@@ -2634,6 +2634,10 @@ final class Route
             'update_fts_nodal_beneficiary',
             'update_fts_fund_transfer',
         ],
+
+        'batch' => [
+            'invoice_create'
+        ],
     ];
 
     //
