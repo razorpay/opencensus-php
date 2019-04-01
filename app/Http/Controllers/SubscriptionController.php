@@ -206,7 +206,7 @@ class SubscriptionController extends Controller
         //We are proxying this API request to subserv
         //This should not come here at all, added this method to make sure
         // that api does not break on not finding this method
-        throw new LogicException(null,ErrorCode::BAD_REQUEST_SUBSCRIPTION_UNEXPECTED_ROUTE_HIT);
+        throw new LogicException("The request should not have reached here");
     }
 
     public function postPaymentProcess(string $subscriptionId)
@@ -214,6 +214,7 @@ class SubscriptionController extends Controller
         //We are proxying this API request to subserv
         //This should not come here at all, added this method to make sure
         // that api does not break on not finding this method
-        throw new LogicException(null,ErrorCode::BAD_REQUEST_SUBSCRIPTION_UNEXPECTED_ROUTE_HIT);
+        throw new LogicException("The request should not have reached here");
+
     }
 }
