@@ -53,6 +53,11 @@ class MySqlConnection extends BaseMySqlConnection
 
     /**
      * if set to true it'll make sure that readPdo method is called on parent
+     * using static variable to hold this information as
+     * in case of reconnect laravel creates new instance of MySqlConnection
+     *
+     * Currently reconnect happens only in case if heartbeat so
+     * in reconnect is happens then its for a read replica connection to check the lag
      *
      * @var bool
      */
@@ -108,11 +113,19 @@ class MySqlConnection extends BaseMySqlConnection
                 {
                     if ($this->causedByLostConnection($e) === true)
                     {
-                        // make sure that it calls parent getReadPdo from reconnect method
-                        // Else it will stuck in recursion
+                        //
+                        // Make sure that it calls parent::getReadPdo() from reconnect method
+                        // Else it will get stuck in recursion
+                        //
                         static::$callParent = true;
 
-                        $connection = App::getFacadeRoot()['db']->reconnect($mode);
+                        $connection = app('db')->reconnect($mode);
+
+                        $this->trace->info(TraceCode::DATABASE_RECONNECT, [
+                            'mode'      => $mode,
+                            'exception' => $e->getMessage(),
+                            'connected' => ($connection->readPdo !== null),
+                        ]);
 
                         return $connection->readPdo;
                     }
@@ -131,16 +144,6 @@ class MySqlConnection extends BaseMySqlConnection
     {
         try
         {
-            // currently this is done to avoid doing recursive call
-            // We are calling getReadPdo while we reconnect which might go into recursion
-            // Only in case of reconnect this will be set to true
-            if (static::$callParent === true)
-            {
-                static::$callParent = false;
-
-                return parent::getReadPdo();
-            }
-
             //
             // If there is an active transaction, we always want
             // to use the master connection.
@@ -180,6 +183,19 @@ class MySqlConnection extends BaseMySqlConnection
                 {
                     $this->readPdo = $this->previousReadPdo;
                 }
+
+                //
+                // Currently this is done to avoid doing recursive call
+                // We are calling getReadPdo while we reconnect which might go into recursion
+                // Only in case of reconnect this will be set to true
+                //
+                if (static::$callParent === true)
+                {
+                    static::$callParent = false;
+
+                    return parent::getReadPdo();
+                }
+
 
                 $result = $this->shouldUseSlave($this->readPdo);
 

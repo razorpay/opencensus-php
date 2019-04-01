@@ -150,7 +150,7 @@ class HeartbeatLagChecker implements LagChecker
         $this->initializeConnectionResolvers();
     }
 
-    public function setReconnector($reconnector)
+    public function setReconnector(Closure $reconnector)
     {
         $this->reconnecter = $reconnector;
     }
@@ -175,11 +175,10 @@ class HeartbeatLagChecker implements LagChecker
         }
         catch (\Throwable $ex)
         {
-            $this->trace->info(
-                TraceCode::HEARTBEAT_CHECK_FAILED,
-                [
-                    'exception' => $ex->getMessage(),
-                ]);
+            $this->trace->traceException(
+                $ex,
+                Trace::CRITICAL,
+                TraceCode::HEARTBEAT_CHECK_FAILED);
         }
 
         // If should skip slave, return null so master connection is used, else resolve $readPdo and return
@@ -212,9 +211,11 @@ class HeartbeatLagChecker implements LagChecker
             return $useSlave;
         }
 
+        //
         // Mode will be empty for callbacks and workers
         // So is mode is not set we take it from worker if its a worker
         // else mode will be set to null
+        //
         $this->mode = $this->mode ??  $this->workerContext->getMode();
 
         $currentRoute = $this->reqCtx->getRoute() ?? $this->workerContext->getJobName();
@@ -254,6 +255,7 @@ class HeartbeatLagChecker implements LagChecker
      * @param $threshold
      *
      * @return bool
+     * @throws \Exception
      */
     protected function isSlaveLagging($readPdo, $threshold): bool
     {
@@ -278,15 +280,13 @@ class HeartbeatLagChecker implements LagChecker
         {
             $pdo = call_user_func($this->reconnecter, $e, $this->mode);
 
-            $this->trace->info(TraceCode::HEARTBEAT_RECONNECT, [
-                'connected' => ($pdo !== null),
-            ]);
-
+            //
             // If we can not find reconnect to the server then
             // consider this as lag, so that we can use master connection for these
+            //
             if ($pdo === null)
             {
-                return true;
+                throw $e;
             }
 
             $result = $pdo->query($query)->fetch();

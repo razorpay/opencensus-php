@@ -1453,7 +1453,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REDIS_LAG_CHECK_FAILED                        = 'REDIS_LAG_CHECK_FAILED';
     const HEARTBEAT_CHECK_FAILED                        = 'HEARTBEAT_CHECK_FAILED';
     const HEARTBEAT_CHECK_COMPLETED                     = 'HEARTBEAT_CHECK_COMPLETED';
-    const HEARTBEAT_RECONNECT                           = 'HEARTBEAT_RECONNECT';
+    const DATABASE_RECONNECT                            = 'DATABASE_RECONNECT';
     const HEARTBEAT_CHECK_TIME_CONVERSION               = 'HEARTBEAT_CHECK_TIME_CONVERSION';
     const DB_DATA_INTEGRITY_ERROR                       = 'DB_DATA_INTEGRITY_ERROR';
     const DB_PIVOT_TABLE_ASSOCIATION_ERROR              = 'DB_PIVOT_TABLE_ASSOCIATION_ERROR';
