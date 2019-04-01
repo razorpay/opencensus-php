@@ -438,6 +438,16 @@ class Header
     const ICIC_NB_SECTOR       = 'Sector';
     const ICIC_NB_TERMINAL_ID  = 'Terminal ID';
 
+    //
+    // HDFC netbanking bulk terminal creation headers
+    //
+    const HDFC_NB_MERCHANT_ID          = 'Merchant ID';
+    const HDFC_NB_GATEWAY_MERCHANT_ID  = 'HDFC Merchant ID';
+    const HDFC_NB_CATEGORY             = 'Category';
+    const HDFC_NB_TPV                  = 'Tpv';
+    const HDFC_NB_TERMINAL_ID          = 'Terminal ID';
+
+
     // Contact Headers
     const CONTACT_ID                  = 'Contact Id';
     const CONTACT_TYPE                = 'Contact Type';
@@ -1311,6 +1321,23 @@ class Header
                 self::ICIC_NB_SECTOR,
                 self::ICIC_NB_SUB_IDS,
                 self::ICIC_NB_TERMINAL_ID,
+                self::STATUS,
+                self::FAILURE_REASON
+            ]
+        ],
+
+        'terminal_netbanking_hdfc' => [
+            self::INPUT => [
+                self::HDFC_NB_MERCHANT_ID,
+                self::HDFC_NB_GATEWAY_MERCHANT_ID,
+                self::HDFC_NB_CATEGORY,
+                self::HDFC_NB_TPV
+            ],
+            self::OUTPUT => [
+                self::HDFC_NB_MERCHANT_ID,
+                self::HDFC_NB_TERMINAL_ID,
+                self::HDFC_NB_CATEGORY,
+                self::HDFC_NB_TPV,
                 self::STATUS,
                 self::FAILURE_REASON
             ]
