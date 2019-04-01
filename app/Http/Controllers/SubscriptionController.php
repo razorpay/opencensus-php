@@ -2,11 +2,13 @@
 
 namespace RZP\Http\Controllers;
 
+use View;
 use Request;
 use ApiResponse;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
 use RZP\Exception\BaseException;
-use View;
+use RZP\Exception\BadRequestException;
 
 class SubscriptionController extends Controller
 {
@@ -211,5 +213,7 @@ class SubscriptionController extends Controller
         //We are proxying this API request to subserv
         //This should not come here at all, added this method to make sure
         // that api does not break on not finding this method
+
+        throw new BadRequestException(ErrorCode::BAD_REQUEST_SUBSCRIPTION_UNEXPECTED_ROUTE_HIT);
     }
 }
