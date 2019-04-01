@@ -48,6 +48,27 @@ return array(
 
     /*
     |--------------------------------------------------------------------------
+    | JWT expiry
+    |--------------------------------------------------------------------------
+    |
+    | Here you may specify the number of minutes that you wish the session
+    | to be allowed to remain idle before it asks user to generate the token again.
+    |
+    */
+    'jwt_expiry' => 1,
+
+    /*
+    |--------------------------------------------------------------------------
+    | JWT encryption key
+    |--------------------------------------------------------------------------
+    |
+    | Here you can specify the encryption key which is used to generate the jwt token.
+    |
+    */
+    'jwt_encryption_key' => env('JWT_ENCRYPTION_KEY', 'superSecret'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Session File Location
     |--------------------------------------------------------------------------
     |
