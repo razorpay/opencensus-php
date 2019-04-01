@@ -87,7 +87,6 @@ class RouteServiceProvider extends ServiceProvider
                 'auth',
                 'admin_access',
                 'user_access',
-                'subscription_proxy',
                 'workflow',
                 'merchant_ip_filter',
                 'event_tracker',

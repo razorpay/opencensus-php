@@ -3123,6 +3123,12 @@ final class Route
         {
             $route->middleware('throttle');
         }
+
+        // Add the subscription_proxy middleware only for SUBSCRIPTION_PROXY_ROUTES
+        if (in_array($name, self::SUBSCRIPTION_PROXY_ROUTES, true) === true)
+        {
+            $route->middleware('subscription_proxy');
+        }
     }
 
     public function defineAllExtraRoutes()
