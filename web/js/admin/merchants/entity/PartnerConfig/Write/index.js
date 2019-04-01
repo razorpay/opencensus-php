@@ -3,7 +3,7 @@ import { Component } from 'react';
 import { adminFetch } from 'common/fetch';
 import { closeModal, notifySuccess } from 'common/modal';
 import { stringToObj } from 'common/util';
-import { isPresent, pickProps, without } from 'rzp/utils/rzp-utils';
+import { isPresent, pickProps, without, isBlank } from 'rzp/utils/rzp-utils';
 
 import Form from 'ui/Form';
 import { DateField, SwitchField } from 'ui/Field';
@@ -32,28 +32,44 @@ export default class WritePartnerConfig extends Component {
   }
 
   componentWillMount() {
-    this.fetchPricingPlans({ type: 'commission' });
-    this.fetchPricingPlans({ type: 'pricing' });
+    Promise.all([
+      this.fetchPricingPlans({ type: 'commission' }),
+      this.fetchPricingPlans({ type: 'pricing' }),
+    ]).then(plans => {
+      const { implicit_plan_id } = this.state.values;
+      const target = {
+        dataset: { name: '_commission_mode' },
+      };
+      if (!this.state.values.implicit_plan_id) {
+        target.value = '';
+      } else {
+        target.value = getCommissionType(implicit_plan_id, plans);
+      }
+
+      this.handleChange({ target });
+    });
   }
 
   fetchPricingPlans = params => {
-    adminFetch({
-      url: 'live/pricing',
+    return adminFetch({
+      url: 'live/pricing/merchants',
       params,
     }).then(data => {
       const fetchedPlans = {
         pending: false,
-        data: formatPlanData(data.items),
+        data: formatPlanData(data),
       };
       const plans = stringToObj(params.type, fetchedPlans, this.state.plans);
       this.setState({ plans });
+      return data;
     });
   };
 
   handleSearchableChange = name => ({ option }) => {
+    const value = (option || {}).value;
     const target = {
       name,
-      value: option.id,
+      value,
     };
     this.handleChange({ target });
   };
@@ -68,7 +84,6 @@ export default class WritePartnerConfig extends Component {
 
   handleChange = ({ target }) => {
     const name = target.name || target.dataset.name;
-
     let value = target.value;
     value = isPresent(value) && isNaN(value) ? value : Number(value);
 
@@ -87,10 +102,16 @@ export default class WritePartnerConfig extends Component {
           let newValues = {};
           switch (name) {
             case 'explicit_plan_id':
-              newValues = { explicit_should_charge: 0 };
+              newValues = {
+                explicit_should_charge: 0,
+                explicit_refund_fees: 0,
+              };
               break;
             case 'explicit_should_charge':
               newValues = { explicit_refund_fees: 0 };
+              break;
+            case '_commission_mode':
+              newValues = { implicit_plan_id: null };
               break;
             default:
               return;
@@ -107,7 +128,13 @@ export default class WritePartnerConfig extends Component {
   };
 
   handleSubmitClick = body => {
-    let { values, internals } = this.state;
+    let { values } = this.state;
+
+    // need to fixed from api
+    if (values.submerchant_id) {
+      values.submerchant_id = values.submerchant_id.replace('acc_', '');
+    }
+
     const { submit, config_id } = this.props;
     values = {
       ...values,
@@ -120,7 +147,10 @@ export default class WritePartnerConfig extends Component {
 
     return submit({
       url: 'live/partner_configs' + (config_id ? `/${config_id}` : ''),
-      data: without(values, 'id'),
+      data: without(values, ['id', 'application_id']),
+      headers: {
+        'content-type': 'application/json',
+      },
     }).then(partnerConfig => {
       if (partnerConfig) {
         notifySuccess('Partner Config updated successfully');
@@ -131,6 +161,7 @@ export default class WritePartnerConfig extends Component {
 
   renderForm = () => {
     const { values, internals, plans } = this.state;
+    const { submerchant, config_id } = this.props;
 
     return (
       !!values && (
@@ -149,6 +180,8 @@ export default class WritePartnerConfig extends Component {
             onSearchableChange={this.handleSearchableChange}
             internals={internals}
             values={values}
+            showSubmerchantPricing={isBlank(submerchant)}
+            isUpdate={!!config_id}
           />
 
           <DateField
@@ -176,6 +209,7 @@ export default class WritePartnerConfig extends Component {
             disabledLabel="No"
             onChange={this.handleChange}
             defaultValue={values.explicit_should_charge}
+            value={values.explicit_should_charge}
             disabled={!values.explicit_plan_id}
           />
 
@@ -235,10 +269,21 @@ export default class WritePartnerConfig extends Component {
 function formatPlanData(data) {
   return data.map(plan => ({
     ...plan,
-    value: plan.id,
+    name: plan.plan_name,
+    value: plan.plan_id,
+    label: `${plan.plan_name} - (${plan.plan_id})`,
   }));
 }
 
 function getDefaultDateVal(unixTime) {
   return unixTime ? moment(unixTime, 'X') : null;
+}
+
+function getCommissionType(plan_id, [commissions, pricings]) {
+  if (commissions.find(plan => plan_id === plan.plan_id)) {
+    return 'fixed';
+  } else if (pricings.find(plan => plan_id === plan.plan_id)) {
+    return 'variable';
+  }
+  return '';
 }
