@@ -68,6 +68,7 @@ class Entity extends Base\PublicEntity
     const NETWORK_CATEGORY              = 'network_category';
     const TYPE                          = 'type';
     const MODE                          = 'mode';
+    const DIRECT                        = 'direct';
 
     // Used for allowing gateway level changes for corporate netbanking payments.
     const CORPORATE                     = 'corporate';
@@ -277,11 +278,12 @@ class Entity extends Base\PublicEntity
         self::USED                      => 'boolean',
         self::ENABLED_BANKS             => 'array',
         self::CARDLESS_EMI              => 'boolean',
+        self::DIRECT                    => 'boolean',
     ];
 
     protected $appends = [
         self::SHARED,
-        self::BANKING_TYPES
+        self::BANKING_TYPES,
     ];
 
     protected $publicSetters = [
@@ -482,7 +484,7 @@ class Entity extends Base\PublicEntity
      */
     public function isDirectForMerchant(): bool
     {
-        return ($this->getAttribute('direct') === true);
+        return ($this->getAttribute(self::DIRECT) === true);
     }
 
     /**
