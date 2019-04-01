@@ -8,8 +8,10 @@ class Commission extends Base
 {
     public function createCommissionAndSyncEs(array $attributes = [])
     {
-        parent::create($attributes);
+        $commission = parent::create($attributes);
 
         Artisan::call('rzp:index', ['mode' => 'test', 'entity' => 'commission']);
+
+        return $commission;
     }
 }
