@@ -26,7 +26,7 @@ export default class AccountsListContainer extends ListContainer {
   };
 
   onToggleDashboardAccess = (account, checked, cb) => {
-    this.context
+    return this.context
       .confirm({
         header: `${checked ? 'Enable' : 'Disable'} Dashboard Access?`,
         message: () => (
@@ -48,6 +48,8 @@ export default class AccountsListContainer extends ListContainer {
               accountId: account.id,
             })
             .then(resp => {
+              cb(true);
+
               if (resp) {
                 this.props.showNotification({
                   type: 'success',

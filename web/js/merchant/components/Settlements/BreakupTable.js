@@ -7,7 +7,7 @@ const Breakup = ({ breakup }) => {
     <tr>
       <td>{titleCase(breakup.component)}</td>
       <td>
-        <Amount value={breakup.amount} />
+        <Amount value={breakup.amount} currency={'INR'} />
       </td>
       <td>{breakup.count}</td>
       <td>{titleCase(breakup.type)}</td>

@@ -1,9 +1,10 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import AsyncButton from 'react-async-button';
 import { updateFeatures } from 'merchant/modules/config';
 import { showNotification } from 'rzp/modules/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
+import SwitchField from 'rzp/ui/Forms/SwitchField';
+
 @connect(
   state => {
     return {
@@ -14,27 +15,30 @@ import ShowWhen from 'merchant/components/ShowWhen';
   { updateFeatures, showNotification }
 )
 export default class FlashCheckout extends Component {
-  state = {
-    fcEnabled: false,
-  };
+  constructor(props) {
+    super(props);
+    this.state = {};
 
-  componentDidMount() {
-    if (this.props.features.length) {
-      this.setFlashCheckoutFlag(this.props.features);
+    if (props.features.length) {
+      const fcEnabled = this.getFlashCheckoutFlag(props.features);
+      this.state.fcEnabled = fcEnabled;
     }
   }
 
   componentWillReceiveProps(nextProps) {
     if (!this.props.features.length && nextProps.features.length) {
-      this.setFlashCheckoutFlag(nextProps.features);
+      const fcEnabled = this.getFlashCheckoutFlag(nextProps.features);
+
+      this.setState({ fcEnabled });
     }
   }
 
-  setFlashCheckoutFlag(features) {
+  getFlashCheckoutFlag(features) {
     let noFlashCheckout =
       features.find(feature => feature.feature === 'noflashcheckout') || {};
 
-    this.setState({ fcEnabled: !noFlashCheckout.value });
+    const fcEnabled = !noFlashCheckout.value;
+    return fcEnabled;
   }
 
   analytics = action => {
@@ -44,12 +48,11 @@ export default class FlashCheckout extends Component {
     });
   };
 
-  toggleFc = () => {
-    let fcEnabled = this.state.fcEnabled;
+  toggleFc = (enableFC, cb) => {
     let shouldSync = 1;
     var data = {
       features: {
-        noflashcheckout: fcEnabled ? 1 : 0,
+        noflashcheckout: enableFC ? 0 : 1,
       },
       should_sync: shouldSync,
     };
@@ -57,20 +60,24 @@ export default class FlashCheckout extends Component {
     return this.props
       .updateFeatures(data, this.props.user.current)
       .then(res => {
-        if (fcEnabled) {
-          this.analytics('Disable');
-        } else {
+        cb(true);
+
+        if (enableFC) {
           this.analytics('Enable');
+        } else {
+          this.analytics('Disable');
         }
         this.props.showNotification({
           type: 'success',
           message: 'Your preference was saved',
         });
         this.setState({
-          fcEnabled: !fcEnabled,
+          fcEnabled: enableFC,
         });
       })
       .catch(err => {
+        cb(false);
+
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -84,22 +91,28 @@ export default class FlashCheckout extends Component {
     return (
       <div class="panel panel-default">
         <div class="panel-heading">
-          <span>Flash Checkout</span>
-          <label class="pull-right">
+          <span class="title">Flash Checkout</span>
+
+          <span class="toggler-btn">
+            <SwitchField
+              defaultChecked={!!fcEnabled}
+              onChange={(isChecked, cb) => this.toggleFc(isChecked, cb)}
+              type="prime"
+            />
             {fcEnabled ? (
-              <span class="text-success">ENABLED</span>
+              <b class="text-primary">Enabled</b>
             ) : (
-              <span class="text-danger">DISABLED</span>
+              <b className="text-faded">Disabled</b>
             )}
-          </label>
+          </span>
         </div>
 
         <div class="panel-body">
           <form class="form-horizontal">
-            <span class="help-block">
+            <div class="description">
               Securely save the card details of your customers, with Razorpay's
               Flash Checkout.
-            </span>
+            </div>
 
             <div class="form-group">
               <ShowWhen
@@ -113,7 +126,7 @@ export default class FlashCheckout extends Component {
                     target="_blank"
                     href="https://razorpay.com/flashcheckout/"
                   >
-                    Know more about Flash Checkout
+                    Know more
                     <i
                       class="i i-external-link"
                       style={{ marginLeft: '5px' }}
@@ -121,18 +134,6 @@ export default class FlashCheckout extends Component {
                   </a>
                 </div>
               </ShowWhen>
-              <div class="col-sm-2">
-                <AsyncButton
-                  class="btn btn-default pull-right"
-                  text={
-                    fcEnabled
-                      ? 'Disable Flash Checkout'
-                      : 'Enable Flash Checkout'
-                  }
-                  pendingText={fcEnabled ? 'Disabling...' : 'Enabling...'}
-                  onClick={this.toggleFc}
-                />
-              </div>
             </div>
           </form>
         </div>

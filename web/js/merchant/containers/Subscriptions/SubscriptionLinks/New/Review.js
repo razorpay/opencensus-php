@@ -63,7 +63,7 @@ export default function NewSubscriptionLinkReview({
               </EntityDetailRow>
               {!!addOnAmount && (
                 <EntityDetailRow label="Upfront Amount">
-                  <Amount value={addOnAmount} />
+                  <Amount value={addOnAmount} currency={'INR'} />
                 </EntityDetailRow>
               )}
             </div>

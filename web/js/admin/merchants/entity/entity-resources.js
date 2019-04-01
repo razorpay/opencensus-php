@@ -580,6 +580,13 @@ export function getDetailsViewMap(model) {
         : '--',
     },
     {
+      label: 'International Activation Flow',
+      value: details.merchant_details
+        ? () =>
+            statusPill(details.merchant_details.international_activation_flow)
+        : '--',
+    },
+    {
       label: 'Rejection Reason',
       children:
         details.merchant_details && details.merchant_details.rejection_reasons

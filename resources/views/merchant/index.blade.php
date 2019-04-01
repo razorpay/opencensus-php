@@ -64,6 +64,7 @@
     <script src="{{$cdnDashboardUrl}}/dist/raven-entry.js"></script>
   @endif
   <script src="{{$cdnDashboardUrl}}/dist/merchant-entry.js"></script>
+  <script src="https://cdn.razorpay.com/static/assets/currency.js"></script>
 @else
   <script src='{{$cdnDashboardUrl}}/js/generated/signup.js'></script>
   @if(!$isOrgHDFC)

@@ -67,7 +67,7 @@ export default class ScheduleModal extends Component {
       method: body.method,
       schedule_id: body.schedule_id,
       type: body.type,
-      international: body.international,
+      international: body.international || '0',
     };
 
     return adminPost({
@@ -92,11 +92,10 @@ export default class ScheduleModal extends Component {
       });
   };
 
-  handleMethodChange = event => {
+  handleMethodChange = e => {
     this.setState({
-      defaultSchedule: this.getCurrentSchedule(
-        event.currentTarget.value || null
-      ),
+      selectedMethod: e.currentTarget.value,
+      defaultSchedule: this.getCurrentSchedule(e.currentTarget.value || null),
     });
   };
 
@@ -129,11 +128,13 @@ export default class ScheduleModal extends Component {
             ))}
           </SelectField>
 
-          <SwitchField
-            label="International"
-            name="international"
-            defaultValue="0"
-          />
+          {['card'].indexOf(this.state.selectedMethod) > -1 && (
+            <SwitchField
+              label="International"
+              name="international"
+              defaultValue="0"
+            />
+          )}
 
           {this.state.pending ? (
             <Field label="Schedules" defaultValue="Loading..." disabled />
