@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Payment\Downtime;
 
+use Carbon\Carbon;
+
 use RZP\Models\Base;
 use RZP\Constants\Entity as EntityConstants;
 
@@ -112,5 +114,10 @@ class Entity extends Base\PublicEntity
     public function setPublicInstrumentAttribute(array & $array)
     {
         $array[self::INSTRUMENT] = [];
+    }
+
+    public function setEndNow()
+    {
+        $this->setAttribute(self::END, Carbon::now()->getTimestamp());
     }
 }

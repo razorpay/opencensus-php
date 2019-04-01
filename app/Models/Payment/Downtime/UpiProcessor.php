@@ -21,13 +21,15 @@ class UpiProcessor extends Base\Core
     {
         $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::METHOD, '=', self::UPI);
 
-        if (($gatewayDowntimes->isEmpty() === true) or
-            ($this->impliesUpiDowntime($gatewayDowntimes) === false))
+        if ($this->impliesUpiDowntime($gatewayDowntimes) === true)
         {
-            return;
+            $this->createPaymentDowntime($gatewayDowntimes);
         }
 
-        return $this->createPaymentDowntime($gatewayDowntimes);
+        if ($gatewayDowntimes->isEmpty() === true)
+        {
+            $this->endOngoingDowntimes();
+        }
     }
 
     protected function impliesUpiDowntime(Collection $gatewayDowntimes)
@@ -53,6 +55,18 @@ class UpiProcessor extends Base\Core
         }
 
         return false;
+    }
+
+    protected function endOngoingDowntimes()
+    {
+        $ongoingDowntimes = $this->getRepo()->fetchOngoingDowntimes();
+
+        foreach ($ongoingDowntimes as $downtime)
+        {
+            $downtime->setEndNow();
+
+            $this->getRepo()->saveOrFail($downtime);
+        }
     }
 
     protected function createPaymentDowntime(Collection $gatewayDowntimes): Entity
@@ -125,10 +139,10 @@ class UpiProcessor extends Base\Core
 
     protected function getDuplicate(array $input)
     {
-        return $this->getPaymentDowntimeRepository()->getDuplicate($input);
+        return $this->getRepo()->getDuplicate($input);
     }
 
-    protected function getPaymentDowntimeRepository()
+    protected function getRepo()
     {
         return $this->repo->getCustomDriver(EntityConstants::PAYMENT_DOWNTIME);
     }

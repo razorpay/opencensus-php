@@ -14,7 +14,7 @@ class Service extends Base\Service
 
     public function createFromGatewayDowntimes(array $input)
     {
-        $this->core()->createFromGatewayDowntimes($input);
+        return $this->core()->createFromGatewayDowntimes($input);
     }
 
     public function getMethodDowntimeDataForMerchant(array $input): array

@@ -70,6 +70,28 @@ class PaymentDowntimeTest extends TestCase
         $response = $this->startTest();
     }
 
+    public function testGetUpiDowntimeWithEndtime()
+    {
+        $this->testGetUpiDowntimeForAllGateways();
+
+        $gatewayDowntime = $this->getLastEntity('gateway_downtime', true);
+
+        $request = [
+            'content' => [
+                'end' => Carbon::now()->subMinutes(30)->timestamp,
+            ],
+            'method' => 'PUT',
+            'url' => '/gateway/downtimes/'.$gatewayDowntime['id']
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $downtime = $this->getLastEntity('payment.downtime', true);
+        $this->assertNotNull($downtime['end']);
+    }
+
     public function testGetUpiDowntimeForIndividualGateways()
     {
         $this->createUpiAllGatewayDowntime();

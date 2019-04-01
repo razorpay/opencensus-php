@@ -25,6 +25,16 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    public function fetchOngoingDowntimes(): PublicCollection
+    {
+        $query = $this->newQuery();
+
+        $query->whereNull(Entity::END)
+              ->where(Entity::BEGIN, '<=', Carbon::now()->getTimestamp());
+
+        return $query->get();
+    }
+
     public function getDuplicate(array $input)
     {
         $query = $this->newQuery()
