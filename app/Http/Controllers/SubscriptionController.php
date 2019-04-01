@@ -2,14 +2,13 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Exception\LogicException;
 use View;
 use Request;
 use ApiResponse;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
 use RZP\Exception\BaseException;
-use RZP\Exception\BadRequestException;
+use RZP\Exception\LogicException;
 
 class SubscriptionController extends Controller
 {
