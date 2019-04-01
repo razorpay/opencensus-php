@@ -766,6 +766,15 @@ class PublicErrorDescription
     const BAD_REQUEST_EMI_PLANS_DO_NOT_EXIST                                        = 'Emi plans do not exist';
     const BAD_REQUEST_CARDLESS_EMI_USER_DOES_NOT_EXIST                              = 'User does not have an account with the selected provider';
     const BAD_REQUEST_CARDLESS_EMI_INVALID_TOKEN                                    = 'Invalid token set for cardless emi';
+    const BAD_REQUEST_CARDLESS_EMI_INVALID_MERCHANT_NAME                            = 'Invalid merchant name for cardless emi';
+    const BAD_REQUEST_CARDLESS_EMI_INVALID_EMI_PLAN_ID                              = 'Invalid Emi plan id selected';
+    const BAD_REQUEST_CARDLESS_EMI_MINIMUM_AMOUNT_REQUIRED                          = 'Amount less than minimum amount required';
+    const BAD_REQUEST_CARDLESS_EMI_MAXIMUM_AMOUNT_LIMIT                             = 'Amount more than the maximum amount limit';
+    const GATEWAY_ERROR_CARDLESS_EMI_PAYMENT_FAILED_PARTNER                         = 'Cardless Emi payment failed by the provider';
+    const BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_EXHAUSTED                           = 'Cardless Emi credit limit of customer has exhausted';
+    const BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_NOT_ACTIVATED                       = 'Cardless Emi credit limit of customer not activated';
+    const BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_NOT_APPROVED                        = 'Cardless Emi credit limit of customer not approved';
+    const BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_EXPIRED                             = 'Cardless Emi credit limit of customer has expired';
 
     const BAD_REQUEST_UPI_MPIN_NOT_SET                                              = 'Payment failed because UPI PIN is not set';
     const BAD_REQUEST_REGISTERED_MOBILE_NUMBER_NOT_FOUND                            = 'Registered Mobile number linked to the account has been changed/removed';

@@ -268,9 +268,10 @@ class Gateway extends Base\Gateway
         if ((isset($response[ResponseFields::ERROR_CODE]) === true) and
             ($response[ResponseFields::ERROR_CODE] !== 'OK'))
         {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_CARDLESS_EMI_USER_DOES_NOT_EXIST,
-                $response[ResponseFields::ERROR_CODE]);
+            $errorCode = ErrorCodes::getInternalErrorCode($response[ResponseFields::ERROR_CODE],
+                ErrorCode::BAD_REQUEST_CARDLESS_EMI_USER_DOES_NOT_EXIST);
+
+            throw new Exception\GatewayErrorException($errorCode, $response[ResponseFields::ERROR_CODE]);
         }
     }
 
