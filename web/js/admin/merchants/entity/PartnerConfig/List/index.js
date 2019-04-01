@@ -48,11 +48,13 @@ export default class PartnerConfigList extends Component {
   };
 
   onWriteConfig = ({ submerchant, config }) => () => {
-    const values = {
-      partner_id: !this.applicationId ? this.merchantId : undefined,
-      application_id: this.applicationId,
-      submerchant_id: (submerchant || {}).id,
-    };
+    if (!config.id) {
+      values = {
+        partner_id: !this.applicationId ? this.merchantId : undefined,
+        application_id: this.applicationId,
+        submerchant_id: (submerchant || {}).id,
+      };
+    }
 
     openModal(
       <div style={{ width: '1050px' }}>
@@ -76,6 +78,8 @@ export default class PartnerConfigList extends Component {
         </ModalContent>
       </div>
     );
+
+    var values;
   };
 
   onFilterSubmit = filters => {
@@ -142,7 +146,9 @@ export default class PartnerConfigList extends Component {
     ]).then(([configs, submerchants]) => {
       const overridenConfigs = getOverridenConfigs(configs);
 
-      this.defaultConfigs = getDefaultConfigs(configs);
+      this.setState({
+        defaultConfigs: getDefaultConfigs(configs),
+      });
 
       const items = submerchants.items.map(
         combineWithSubmerchants(overridenConfigs)
@@ -183,9 +189,9 @@ export default class PartnerConfigList extends Component {
                   />
                 )}
 
-                {!!this.defaultConfigs && (
+                {!!this.state.defaultConfigs && (
                   <WriteConfigButton
-                    defaultConfigs={this.defaultConfigs}
+                    defaultConfigs={this.state.defaultConfigs}
                     onWriteConfig={this.onWriteConfig}
                   />
                 )}
@@ -195,7 +201,7 @@ export default class PartnerConfigList extends Component {
               <SubmerchantsList
                 model={this.submerchants}
                 onWriteConfig={this.onWriteConfig}
-                defaultConfigs={this.defaultConfigs}
+                defaultConfigs={this.state.defaultConfigs}
               />
             </>
           ) : (
