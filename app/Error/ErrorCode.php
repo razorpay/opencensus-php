@@ -223,6 +223,7 @@ class ErrorCode
     const GATEWAY_ERROR_URL_DECODE_ERROR                                            = 'GATEWAY_ERROR_URL_DECODE_ERROR';
     const GATEWAY_ERROR_INVALID_CARD_TYPE                                           = 'GATEWAY_ERROR_INVALID_CARD_TYPE';
     const GATEWAY_ERROR_NOT_AUTHORIZED_EXCESSIVE_REFUNDS                            = 'GATEWAY_ERROR_NOT_AUTHORIZED_EXCESSIVE_REFUNDS';
+    const GATEWAY_ERROR_NO_RECORDS_FOUND                                            = 'GATEWAY_ERROR_NO_RECORDS_FOUND';
 
     // UPI (NPCI) response codes mapping
     const GATEWAY_ERROR_TRANSACTION_PENDING                                         = 'GATEWAY_ERROR_TRANSACTION_PENDING';

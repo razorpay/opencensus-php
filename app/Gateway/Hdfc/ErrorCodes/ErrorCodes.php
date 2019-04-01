@@ -659,7 +659,7 @@ class ErrorCodes extends Cards\ErrorCodes
         '51' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE,
         '54' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_EXPIRED,
         '55' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_PIN,
-        '56' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
+        '56' => ErrorCode::GATEWAY_ERROR_NO_RECORDS_FOUND,
         '57' => ErrorCode::GATEWAY_ERROR_TRANSACTION_DECLINED,
         '61' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_LIMITS_EXCEEDED,
         '62' => ErrorCode::BAD_REQUEST_CARD_FROZEN,
