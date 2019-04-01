@@ -100,6 +100,7 @@ final class Route
         'payment_add_metadata'                     => ['post',     'payments/{x_entity_id}/metadata',                'PaymentController@postPaymentMetadata'                             ],
         'payment_edit'                             => ['patch',    'payments/{id}',                                  'PaymentController@update'                                          ],
         'payment_fetch_by_id'                      => ['get',      'payments/{id}',                                  'PaymentController@getPayment'                                      ],
+        'subscription_payment_fetch_by_id'         => ['get',      'payments/{paymentId}/subscriptions/{subId}',     'PaymentController@getPaymentForSubscription'                       ],
         'payment_fetch_multiple'                   => ['get',      'payments',                                       'PaymentController@getPayments'                                     ],
         'payment_fetch_card_details'               => ['get',      'payments/{id}/card',                             'PaymentController@getCardForPayment'                               ],
         'payment_fetch_refunds'                    => ['get',      'payments/{id}/refunds',                          'PaymentController@getRefundsForPayment'                            ],
@@ -1599,6 +1600,7 @@ final class Route
         'payout_create_with_otp',
         'payment_link_images',
         'commissions_get_multiple',
+        'subscription_payment_fetch_by_id',
     ];
 
     // These will run on internal auth with the assurance
@@ -2562,6 +2564,7 @@ final class Route
             'merchant_fetch_config_internal',
             'subscription_manual_retry',
             'token_fetch_card',
+            'subscription_payment_fetch_by_id',
         ],
 
         'kotak' => [

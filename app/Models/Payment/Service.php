@@ -16,6 +16,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Offer;
+use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Models\Transaction;
@@ -1673,6 +1674,47 @@ class Service extends Base\Service
         $this->app['cache']->put($key, $data, $cacheTtl);
 
         return $token;
+    }
+
+    public function fetchForSubscription($paymentId, $subscriptionId)
+    {
+        $payment = $this->repo->payment->fetchByIdandSubscriptionId($paymentId, $subscriptionId);
+
+        $payload = $payment->toArrayAdmin();
+
+        $payload['merchant'] = [
+            Merchant\Entity::BILLING_LABEL => $payment->merchant->getBillingLabel(),
+            Merchant\Entity::WEBSITE       => $payment->merchant->getWebsite(),
+            Merchant\Entity::EMAIL         => $payment->merchant->getTransactionReportEmail(),
+        ];
+
+        $payload['customer'] = [
+            'email' => $payment->customer->getEmail(),
+            'phone' => $payment->customer->getContact(),
+        ];
+
+        if ($payment->hasCard() === true)
+        {
+            $card = $payment->card;
+            $expiryMonth = str_pad($card->getExpiryMonth(), 2, '0', STR_PAD_LEFT);
+
+            $payload['card'] = [
+                'number'  => '**** **** **** ' . $card->getLast4(),
+                'expiry'  => $expiryMonth . '/' . $card->getExpiryYear(),
+                'network' => $card->getNetworkCode(),
+                'color'   => $card->getNetworkColorCode()
+            ];
+        }
+
+        if ($payment->hasInvoice() === true)
+        {
+            $payload['invoice'] = [
+                Invoice\Entity::BILLING_START => $payment->invoice->getBillingStart(),
+                Invoice\Entity::BILLING_END   => $payment->invoice->getBillingEnd()
+            ];
+        }
+
+        return $payload;
     }
 
     // verify to fetch the payments between certain duration

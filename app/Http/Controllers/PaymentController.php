@@ -22,6 +22,13 @@ class PaymentController extends Controller
         return ApiResponse::json($payment);
     }
 
+    public function getPaymentForSubscription($paymentId, $subscriptionId)
+    {
+        $payment = $this->service()->fetchForSubscription($paymentId, $subscriptionId);
+
+        return ApiResponse::json($payment);
+    }
+
     /**
      * Retrieves payment details
      */
