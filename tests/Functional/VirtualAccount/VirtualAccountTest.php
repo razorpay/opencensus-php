@@ -4,6 +4,8 @@ namespace RZP\Tests\Functional\VirtualAccount;
 
 use Mockery;
 use Closure;
+use Illuminate\Database\Eloquent\Factory;
+
 use RZP\Models\BankTransfer;
 use RZP\Models\Terminal\Type;
 use RZP\Models\Payment\Gateway;
@@ -64,11 +66,24 @@ class VirtualAccountTest extends TestCase
         $this->fixtures->on('test');
 
         $this->setupMockDns();
+
+        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->app->make(Factory::class)->load($factoryPath);
     }
 
     public function testCreateVirtualAccount()
     {
         $response = $this->createVirtualAccount();
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
+    public function testCreateVirtualAccountPartnerAuth()
+    {
+        $response = $this->createVirtualAccountPartnerAuth();
 
         $expectedResponse = $this->testData[__FUNCTION__];
 
