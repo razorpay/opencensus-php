@@ -1702,4 +1702,75 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function isScroogeBackFill(array $input)
+    {
+        if (isset($input['limit']) === true)
+        {
+            $limit = intval($input['limit']);
+        }
+        else
+        {
+            $limit = 5000;
+        }
+
+        $updatedCount = 0;
+
+        if (empty($input['timestamps']) === false)
+        {
+            foreach ($input['timestamps'] as $gateways)
+            {
+                if ($limit <= 0)
+                {
+                    break;
+                }
+
+                $isScrooge = (empty($gateways['is_scrooge']) === false) ? ($gateways['is_scrooge'] === 'true') : true;
+
+                $toTime = (empty($gateways['to']) === false) ? (int) $gateways['to'] : time();
+
+                $data = [
+                    'gateway'    => $gateways['gateway'],
+                    'from'       => $gateways['from'],
+                    'to'         => $toTime,
+                    'is_scrooge' => $isScrooge,
+                    'limit'      => $limit
+                ];
+
+                $count = $this->repo->refund->backfillIsScrooge($data, true);
+
+                $updatedCount += $count;
+
+                $limit -= $count;
+            }
+        }
+
+        if (empty($input['refunds']) === false)
+        {
+            foreach ($input['refunds'] as $refundId)
+            {
+                if ($limit <= 0)
+                {
+                    break;
+                }
+
+                $isScrooge = (empty($refundId['is_scrooge']) === false) ? ($refundId['is_scrooge'] === 'true') : true;
+
+                $data = [
+                    'refund_id'  => $refundId['refund_id'],
+                    'is_scrooge' => $isScrooge,
+                ];
+
+                $count = $this->repo->refund->backfillIsScrooge($data, false);
+
+                $updatedCount += $count;
+
+                $limit -= $count;
+            }
+        }
+
+        return [
+            'Refunds Updated' => $updatedCount
+        ];
+    }
 }
