@@ -157,13 +157,17 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input, TraceCode::PAYMENT_CAPTURE_REQUEST);
 
+        $captureEntity = $this->createGatewayPaymentEntity($input, [], Base\Action::CAPTURE);
+
         $response = $this->sendGatewayRequest($request);
 
         $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_CAPTURE_RESPONSE);
 
         $attributes = $this->getAttributesFromCaptureResponse($response);
 
-        $this->createGatewayPaymentEntity($input, $attributes);
+        $captureEntity->fill($attributes);
+
+        $this->repo->saveOrFail($captureEntity);
 
         $this->checkErrorsAndThrowException($response);
     }
@@ -201,6 +205,8 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
                             $input['payment']['id'], Base\Action::AUTHORIZE);
 
+        $reverseEntity = $this->createGatewayPaymentEntity($input, [], Base\Action::REVERSE);
+
         $request = $this->getReverseRequestArray($input, $gatewayPayment);
 
         $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_REVERSE_REQUEST);
@@ -211,7 +217,9 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getAttributesFromRefundReverseResponse($response);
 
-        $this->createGatewayRefundEntity($input, $attributes);
+        $reverseEntity->fill($attributes);
+
+        $this->repo->saveOrFail($reverseEntity);
 
         $this->checkErrorsAndThrowException($response);
 
@@ -433,13 +441,17 @@ class Gateway extends Base\Gateway
     {
         $request = $this->getAuthorizeRequestArrayForEnrolled($input, $authResponse);
 
+        $gatewayEntity = $this->createGatewayPaymentEntity($input,[],Base\Action::AUTHORIZE);
+
         $response = $this->sendGatewayRequest($request);
 
         $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_AUTHORIZE_RESPONSE);
 
         $attributes = $this->getAttributesFromAuthResponse($response);
 
-        $gatewayEntity = $this->createGatewayPaymentEntity($input, $attributes, Base\Action::AUTHORIZE);
+        $gatewayEntity->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayEntity);
 
         $this->checkErrorsAndThrowException($response);
 
@@ -1261,7 +1273,7 @@ class Gateway extends Base\Gateway
         $request['headers']['Content-Type'] = 'application/json';
 
         $request['options'] = [
-            'timeout'         => 30,
+            'timeout'         => 60,
             'connect_timeout' => 10,
             'verify'          => false,
         ];

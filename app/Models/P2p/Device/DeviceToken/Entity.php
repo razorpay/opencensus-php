@@ -11,11 +11,15 @@ class Entity extends Base\Entity
 {
     use Base\Traits\HasDevice;
     use Base\Traits\HasHandle;
+    use Base\Traits\SoftDeletes;
 
     const DEVICE_ID        = 'device_id';
     const HANDLE           = 'handle';
     const GATEWAY_DATA     = 'gateway_data';
     const STATUS           = 'status';
+
+    /***************** Input Keys ****************/
+    const EXPIRE_AT        = 'expire_at';
 
     /************** Entity Properties ************/
 
@@ -122,6 +126,15 @@ class Entity extends Base\Entity
     public function isExpired()
     {
         return ($this->getStatus() === RegisterToken\Status::EXPIRED);
+    }
+
+    public function getExpireAt()
+    {
+        // By Default we are considering 9 minutes as for axis is 10 minutes
+        $defaultExpireAt = $this->getRefreshedAt() + 540;
+
+        // Expire at is gateway dependent, thus we can store in gateway_data
+        return ($this->getGatewayData()[self::EXPIRE_AT] ?? $defaultExpireAt);
     }
 
     /***************** SCOPES *****************/

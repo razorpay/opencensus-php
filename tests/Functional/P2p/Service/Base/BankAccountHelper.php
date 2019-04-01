@@ -6,7 +6,7 @@ class BankAccountHelper extends P2pHelper
 {
     public function fetchBanks()
     {
-        $this->validationJsonSchemaPath = 'bank_account/list_banks.response';
+        $this->validationJsonSchemaPath = 'bank_account/list_banks';
 
         $this->setCustomerInContext(false);
         $this->setDeviceInContext(false);
@@ -18,13 +18,28 @@ class BankAccountHelper extends P2pHelper
         return $this->get($request);
     }
 
-    public function retrieve(string $ifsc)
+    public function initiateRetrieve(string $bankId)
+    {
+        $this->validationJsonSchemaPath = 'bank_account/initiate_retrieve';
+
+        $request = $this->request('bank_accounts/retrieve/%s/initiate', [$bankId]);
+
+        return $this->post($request);
+    }
+
+    public function retrieve(string $callback, array $content = [])
     {
         $this->validationJsonSchemaPath = 'bank_account/retrieve';
 
-        $request = $this->request('bank_accounts/bank/%s', [$ifsc]);
+        $request = $this->request($callback);
 
-        return $this->get($request);
+        $default = [
+            'sdk'   => []
+        ];
+
+        $this->content($request, $default, $content);
+
+        return $this->post($request);
     }
 
     public function fetchAll()
@@ -45,31 +60,18 @@ class BankAccountHelper extends P2pHelper
         return $this->get($request);
     }
 
-    public function setUpiPin(string $bankId, array $content = [])
+    public function initiateSetUpiPin(string $bankAccountId, array $content = [])
     {
-        $this->validationJsonSchemaPath = 'bank_account/set_upi_pin';
+        $this->validationJsonSchemaPath = 'bank_account/initiate_set_upi_pin';
 
-        $request = $this->request('bank_accounts/%s/upi_pin', [$bankId]);
+        $request = $this->request('bank_accounts/%s/upipin/initiate', [$bankAccountId]);
 
         $default = [
-            'sdk'   => [
-                'creds' => [
-                    [
-                        'code'     => 'NPCI',
-                        'ki'       => '20150822',
-                        'string'   => '2.0|QNSo1fHj5iTFseh6RlfZh9u/bX5AyYiVYCTUMYXzd+g==',
-                        'sub_type' => 'MPIN',
-                        'type'     => 'PIN'
-                    ],
-                ],
-            ],
-            'card' => [
-                'expiry_month' => 2,
-                'expiry_year'  => 19,
-                'last6'        => '123456'
-            ],
-            'txn' => [
-                'id'    => 'RAZ18FCE7E4597443C7963B999CCD70C869',
+            'action'    => 'set',
+            'card'      => [
+                'last6'         => '666666',
+                'expiry_month'  => '1',
+                'expiry_year'   => '99'
             ],
         ];
 
@@ -78,13 +80,19 @@ class BankAccountHelper extends P2pHelper
         return $this->post($request);
     }
 
-    public function initiateSetUpiPin(string $bankId)
+    public function setUpiPin(string $callback, array $content = [])
     {
-        $this->validationJsonSchemaPath = 'bank_account/initiate_set_upi_pin';
+        $this->validationJsonSchemaPath = 'bank_account/set_upi_pin';
 
-        $request = $this->request('bank_accounts/%s/upipin/initiate', [$bankId]);
+        $request = $this->request($callback);
 
-        return $this->get($request);
+        $default = [
+            'sdk'   => []
+        ];
+
+        $this->content($request, $default, $content);
+
+        return $this->post($request);
     }
 
     public function initiateFetchBalance(string $bankId)
@@ -93,30 +101,17 @@ class BankAccountHelper extends P2pHelper
 
         $request = $this->request('bank_accounts/%s/balance/initiate', [$bankId]);
 
-        return $this->get($request);
+        return $this->post($request);
     }
 
-    public function fetchBalance(string $bankId, array $content = [])
+    public function fetchBalance(string $callback, array $content = [])
     {
         $this->validationJsonSchemaPath = 'bank_account/fetch_balance';
 
-        $request = $this->request('bank_accounts/%s/balance', [$bankId]);
+        $request = $this->request($callback);
 
         $default = [
-            'sdk'   => [
-                'creds' => [
-                    [
-                        'code'     => 'NPCI',
-                        'ki'       => '20150822',
-                        'string'   => '2.0|QNSo1fHj5iTFseh6RlfZh9u/bX5AyYiVYCTUMYXzd+g==',
-                        'sub_type' => 'MPIN',
-                        'type'     => 'PIN'
-                    ],
-                ],
-            ],
-            'txn' => [
-                'id'    => 'RAZ18FCE7E4597443C7963B999CCD70C869',
-            ],
+            'sdk' => [],
         ];
 
         $this->content($request, $default, $content);

@@ -69,12 +69,45 @@ class Payment extends Base
 
     protected function shouldUpdateBalance()
     {
+        //
+        // ======================================================================================
+        // NOTE: DO READ THIS COMPLETELY AND UNDERSTAND WHAT IS BEING DONE BEFORE MAKING CHANGES!
+        // ======================================================================================
+        //
+        // In some flows, we would have taken a transaction and closed it after a lot
+        // of things. This causes an issue since in this flow, we take a lock on balance
+        // and we don't release the lock until the transaction is complete. So, we might
+        // want to take the lock on balance and do the necessary updates during the
+        // transaction closure time instead of doing it here.
+        //
+        //
+        // When we are doing this, ensure that the source handles `shouldUpdateBalance` also.
+        // In case of payments, we are setting this flag only on capture. Hence, not an issue.
+        // Needs to be done source-by-source basis (see what I did there?)
+        //
+        // Any changes being done in this block, we should do it in the other places also
+        // where we are updating the balance at the end of the transaction.
+        //
+
+        //
+        // If authorized is false, it means that the payment is captured since
+        // we create payment transaction only in two flows - authorized and captured.
+        // If it's captured, we decide whether to do lateBalanceUpdate or not based
+        // on some conditions.
+        //
         if ($this->source->isAuthorized() === true)
         {
             return false;
         }
+        else
+        {
+            if ($this->source->isLateBalanceUpdate() === true)
+            {
+                return false;
+            }
 
-        return true;
+            return true;
+        }
     }
 
     protected function fillEmptyTxnFeesAndAmount()

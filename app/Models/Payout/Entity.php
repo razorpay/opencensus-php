@@ -414,7 +414,12 @@ class Entity extends Base\PublicEntity
 
     public function isOfMerchantTransaction(): bool
     {
-        return $this->getAttribute(self::TRANSACTION_TYPE) === Constants\Entity::TRANSACTION;
+        return ($this->getAttribute(self::TRANSACTION_TYPE) === Constants\Entity::TRANSACTION);
+    }
+
+    public function isCustomerPayout(): bool
+    {
+        return ($this->getAttribute(self::TRANSACTION_TYPE) === Constants\Entity::CUSTOMER_TRANSACTION);
     }
 
     /**

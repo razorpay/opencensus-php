@@ -151,7 +151,7 @@ class PublicController extends Controller
     {
         $meta = [];
 
-        if ($this->ba->authCreds->getMerchant()->getOrgId() === 'org_6dLbNSpv5XbCOG') {
+        if ($this->ba->authCreds->getMerchant()->getOrgId() === '6dLbNSpv5XbCOG') {
             $meta['type'] = 'hdfcvas';
         }
 

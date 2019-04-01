@@ -120,4 +120,21 @@ class Flow
 
         return $bitmap;
     }
+
+    public static function enableFlow($bitmap, $flow)
+    {
+        if (self::isValidFlow($flow) === false)
+        {
+            return $bitmap;
+        }
+
+        $flowbit = self::$flows[$flow];
+
+        if ((~$bitmap & $flowbit) === $flowbit)
+        {
+            $bitmap = ($bitmap | ($flowbit));
+        }
+
+        return $bitmap;
+    }
 }

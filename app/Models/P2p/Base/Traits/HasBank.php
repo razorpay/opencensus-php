@@ -6,7 +6,7 @@ use RZP\Base\BuilderEx;
 use RZP\Models\P2p\BankAccount\Bank;
 
 /**
- * @property Bank\Entity $parentBank
+ * @property Bank\Entity $bank
  *
  * Trait HasBank
  * @package RZP\Models\P2p\Base\Traits
@@ -29,8 +29,12 @@ trait HasBank
         return $this->belongsTo(Bank\Entity::class, self::BANK_ID);
     }
 
-    public function setPublicBankNameAttribute(array & $array)
+    public function setPublicBankAttribute(array & $array)
     {
-        $array[self::BANK_NAME] = $this->bank->getName();
+        $array[self::BANK] = [
+            Bank\Entity::NAME       => $this->bank->getName(),
+            Bank\Entity::IFSC       => $this->bank->getIfsc(),
+            Bank\Entity::UPI_FORMAT => $this->bank->getUpiFormat()
+        ];
     }
 }

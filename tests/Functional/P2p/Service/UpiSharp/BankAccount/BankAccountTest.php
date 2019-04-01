@@ -19,7 +19,7 @@ class BankAccountTest extends TestCase
         $this->assertCollection($banks, 3);
     }
 
-    public function testRetrieve()
+    public function testInitiateRetrieve()
     {
         $id = 'bank_' . Base\Constants::ARZP;
 
@@ -27,7 +27,20 @@ class BankAccountTest extends TestCase
 
         $helper->withSchemaValidated();
 
-        $helper->retrieve($id);
+        $helper->initiateRetrieve($id);
+    }
+
+    public function testRetrieve()
+    {
+        $id = 'bank_' . Base\Constants::ARZP;
+
+        $helper = $this->getBankAccountHelper();
+
+        $request = $helper->initiateRetrieve($id);
+
+        $helper->withSchemaValidated();
+
+        $helper->retrieve($request['callback']);
     }
 
     public function testFetchAll()
@@ -71,9 +84,11 @@ class BankAccountTest extends TestCase
 
         $helper = $this->getBankAccountHelper();
 
+        $request = $helper->initiateSetUpiPin($bankAccountId);
+
         $helper->withSchemaValidated();
 
-        $helper->setUpiPin($bankAccountId);
+        $helper->setUpiPin($request['callback']);
     }
 
     public function testInitiateFetchBalance()
@@ -93,8 +108,22 @@ class BankAccountTest extends TestCase
 
         $helper = $this->getBankAccountHelper();
 
+        $request = $helper->initiateFetchBalance($bankAccountId);
+
         $helper->withSchemaValidated();
 
-        $helper->fetchBalance($bankAccountId);
+        $helper->fetchBalance($request['callback'], [
+            'sdk'   => [
+                'creds' => [
+                    [
+                        'code'     => 'NPCI',
+                        'ki'       => '20150822',
+                        'string'   => '2.0|QNSo1fHj5iTFseh6RlfZh9u/bX5AyYiVYCTUMYXzd+g==',
+                        'sub_type' => 'MPIN',
+                        'type'     => 'PIN'
+                    ],
+                ],
+            ]
+        ]);
     }
 }

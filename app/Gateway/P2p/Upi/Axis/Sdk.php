@@ -56,6 +56,11 @@ class Sdk extends Base\Request
            $this->content->put(Fields::MERCHANT_SIGNATURE, $sign);
         }
 
+        // Merging action to callback
+        $callback = $this->callback();
+        $callback[Fields::ACTION] = $this->action;
+        $this->setCallback($callback);
+
         $this->setRequestCommonProperties();
 
         return parent::finish();

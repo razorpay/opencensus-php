@@ -130,7 +130,30 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
 
     public function deregister(Response $response)
     {
+        $device = $this->getContextDevice();
 
+        $content = [
+            Fields::MERCHANT_CUSTOMER_ID    => $device->get(Device\Entity::CUSTOMER_ID),
+            Fields::CUSTOMER_MOBILE_NUMBER  => $device->get(Device\Entity::CONTACT),
+            Fields::UDF_PARAMETERS          => '{}',
+        ];
+
+        $request = $this->getStandardRequestArray($content);
+
+        $s2sResponse = $this->sendGatewayRequest($request);
+
+        $content = $this->jsonToArray($s2sResponse->body);
+
+        if ($this->isS2sFailure($content))
+        {
+            $this->throwP2pGatewayException();
+        }
+
+        $response->setData([
+            'success' => true,
+        ]);
+
+        return $response;
     }
 
     /*** PRIVATE METHODS ***/
@@ -245,11 +268,6 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
         return $request;
     }
 
-    private function isSdkFailure(): bool
-    {
-        return $this->input->get(Fields::SDK)->get(Fields::STATUS) != 'SUCCESS';
-    }
-
     private function isDeviceBound(ArrayBag $sdk): bool
     {
         return $sdk->get(Fields::IS_DEVICE_BOUND) === 'true';
@@ -258,5 +276,10 @@ class DeviceGateway extends Gateway implements Contracts\DeviceGateway
     private function isDeviceActivated(ArrayBag $sdk): bool
     {
         return $sdk->get(Fields::IS_DEVICE_ACTIVATED) === 'true';
+    }
+
+    private function isS2sFailure($input): bool
+    {
+        return $input[Fields::STATUS] != 'SUCCESS';
     }
 }

@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Base;
 
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
+use RZP\Error\P2p\ErrorCode;
 use RZP\Models\P2p\Base\Traits\ApplicationTrait;
 
 class Repository extends Base\Repository
@@ -25,7 +26,7 @@ class Repository extends Base\Repository
         {
             if ($this->context()->isContextDevice() === false)
             {
-                $this->context()->throwContextException('Device is required for action.');
+                throw $this->logicException(ErrorCode::SERVER_ERROR_CONTEXT_DEVICE_REQUIRED);
             }
 
             $entity->associateDevice($this->context()->getDevice());
@@ -35,7 +36,7 @@ class Repository extends Base\Repository
         {
             if ($this->context()->isContextMerchant() === false)
             {
-                $this->context()->throwContextException('Merchant is required for action.');
+                throw $this->logicException(ErrorCode::SERVER_ERROR_CONTEXT_MERCHANT_REQUIRED);
             }
 
             $entity->associateMerchant($this->context()->getMerchant());
@@ -58,7 +59,7 @@ class Repository extends Base\Repository
         {
             if ($this->context()->isContextDevice() === false)
             {
-                $this->context()->throwContextException('Device is required for action.');
+                throw $this->logicException(ErrorCode::SERVER_ERROR_CONTEXT_DEVICE_REQUIRED);
             }
 
             $query->device($this->context()->getDevice());
@@ -68,7 +69,7 @@ class Repository extends Base\Repository
         {
             if ($this->context()->isContextMerchant() === false)
             {
-                $this->context()->throwContextException('Merchant is required for action.');
+                throw $this->logicException(ErrorCode::SERVER_ERROR_CONTEXT_MERCHANT_REQUIRED);
             }
 
             $query->merchant($this->context()->getMerchant());

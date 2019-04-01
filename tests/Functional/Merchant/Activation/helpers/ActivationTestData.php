@@ -1532,7 +1532,7 @@ return [
         'status_code' => 200,
     ],
 
-    'testInternationalWithWhitelistedCategory' => [
+    'testWhitelistInternational' => [
         'request'     => [
             'method'  => 'POST',
             'url'     => '/merchant/instant_activation',
@@ -1564,7 +1564,7 @@ return [
         'status_code' => 200,
     ],
 
-    'testInternationalWithWhitelistedCategoryAndNoWebsite' => [
+    'testWhitelistInternationalWithNoWebsite' => [
         'request'     => [
             'method'  => 'POST',
             'url'     => '/merchant/instant_activation',
@@ -1596,7 +1596,7 @@ return [
         'status_code' => 200,
     ],
 
-    'testInternationalWithWhitelistedCategoryAndWebsiteAlreadySet' => [
+    'testWhitelistInternationalWithWebsiteAlreadySet' => [
         'request'     => [
             'method'  => 'POST',
             'url'     => '/merchant/instant_activation',
@@ -1608,7 +1608,6 @@ return [
                 'business_dba'         => 'test123',
                 'business_type'        => 1,
                 'business_model'       => '1245',
-                'business_website'     => '',
             ],
         ],
         'response'    => [
@@ -1628,7 +1627,7 @@ return [
         'status_code' => 200,
     ],
 
-    'testInternationalWithWhitelistedCategoryAndNoWebsiteAlreadySet' => [
+    'testWhitelistInternationalWithNoWebsiteAlreadySet' => [
         'request'     => [
             'method'  => 'POST',
             'url'     => '/merchant/instant_activation',
@@ -1660,13 +1659,13 @@ return [
         'status_code' => 200,
     ],
 
-    'testInternationalWithBlacklistedCategory' => [
+    'testBlacklistInternational' => [
         'request'     => [
             'method'  => 'POST',
             'url'     => '/merchant/instant_activation',
             'content' => [
-                'business_category'    => 'housing',
-                'business_subcategory' => 'realestate_classifieds',
+                'business_category'    => 'healthcare',
+                'business_subcategory' => 'pharmacy',
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
@@ -1680,19 +1679,51 @@ return [
                 'promoter_pan'         => 'ABCDE0000Z',
                 'gstin'                => null,
                 'p_gstin'              => null,
-                'business_category'    => 'housing',
-                'business_subcategory' => 'realestate_classifieds',
+                'business_category'    => 'healthcare',
+                'business_subcategory' => 'pharmacy',
                 'international'        => false,
                 'archived'             => 0,
                 'submitted_at'         => null,
                 'can_submit'           => false,
-                'activated'            => 1,
+                'activated'            => 0,
             ],
         ],
         'status_code' => 200,
     ],
 
-    'testInternationalWithGreylistedCategory' => [
+    'testGreylistInternational' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'it_and_software',
+                'business_subcategory' => 'web_development',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
+                'business_website'     => 'https://example.com',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'         => 'ABCDE0000Z',
+                'gstin'                => null,
+                'p_gstin'              => null,
+                'business_category'    => 'it_and_software',
+                'business_subcategory' => 'web_development',
+                'international'        => false,
+                'archived'             => 0,
+                'submitted_at'         => null,
+                'can_submit'           => false,
+                'activated'            => 0,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
+    'testGreylistInternationalInstantlyActivated' => [
         'request'     => [
             'method'  => 'POST',
             'url'     => '/merchant/instant_activation',
@@ -1724,7 +1755,7 @@ return [
         'status_code' => 200,
     ],
 
-    'testInternationalWithGreylistedCategoryAndNonInstantActivation' => [
+    'testGreylistInternationalNonInstantActivation' => [
         'request'     => [
             'method'  => 'POST',
             'url'     => '/merchant/instant_activation',
@@ -1746,6 +1777,102 @@ return [
                 'p_gstin'              => null,
                 'business_category'    => 'not_for_profit',
                 'business_subcategory' => 'charity',
+                'international'        => false,
+                'archived'             => 0,
+                'submitted_at'         => null,
+                'can_submit'           => false,
+                'activated'            => 0,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
+    'testWhitelistInternationalExperimentOff' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'accounting',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
+                'business_website'     => 'https://example.com',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'         => 'ABCDE0000Z',
+                'gstin'                => null,
+                'p_gstin'              => null,
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'accounting',
+                'international'        => false,
+                'archived'             => 0,
+                'submitted_at'         => null,
+                'can_submit'           => false,
+                'activated'            => 1,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
+    'testGreylistInternationalExperimentOff' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'it_and_software',
+                'business_subcategory' => 'web_development',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
+                'business_website'     => 'https://example.com',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'         => 'ABCDE0000Z',
+                'gstin'                => null,
+                'p_gstin'              => null,
+                'business_category'    => 'it_and_software',
+                'business_subcategory' => 'web_development',
+                'international'        => false,
+                'archived'             => 0,
+                'submitted_at'         => null,
+                'can_submit'           => false,
+                'activated'            => 0,
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
+    'testBlacklistInternationalExperimentOff' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/instant_activation',
+            'content' => [
+                'business_category'    => 'healthcare',
+                'business_subcategory' => 'pharmacy',
+                'promoter_pan'         => 'ABCDE0000Z',
+                'business_name'        => 'business_name',
+                'business_dba'         => 'test123',
+                'business_type'        => 1,
+                'business_model'       => '1245',
+                'business_website'     => 'https://example.com',
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'promoter_pan'         => 'ABCDE0000Z',
+                'gstin'                => null,
+                'p_gstin'              => null,
+                'business_category'    => 'healthcare',
+                'business_subcategory' => 'pharmacy',
                 'international'        => false,
                 'archived'             => 0,
                 'submitted_at'         => null,

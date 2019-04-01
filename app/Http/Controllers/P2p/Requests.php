@@ -11,6 +11,7 @@ class Requests
     const P2P_CUSTOMER_DEREGISTER                           = 'p2p_customer_deregister';
 
     const P2P_BANKS_FETCH_ALL                               = 'p2p_banks_fetch_all';
+    const P2P_CUSTOMER_BA_INITIATE_RETRIEVE                 = 'p2p_customer_ba_initiate_retrieve';
     const P2P_CUSTOMER_BA_RETRIEVE                          = 'p2p_customer_ba_retrieve';
     const P2P_CUSTOMER_BA_FETCH_ALL                         = 'p2p_customer_ba_fetch_all';
     const P2P_CUSTOMER_BA_FETCH                             = 'p2p_customer_ba_fetch';
@@ -20,6 +21,7 @@ class Requests
     const P2P_CUSTOMER_BA_FETCH_BALANCE                     = 'p2p_customer_ba_fetch_balance';
 
     const P2P_HANDLES_FETCH_ALL                             = 'p2p_handles_fetch_all';
+    const P2P_CUSTOMER_VPA_INITIATE_CREATE                  = 'p2p_customer_vpa_initiate_create';
     const P2P_CUSTOMER_VPA_CREATE                           = 'p2p_customer_vpa_create';
     const P2P_CUSTOMER_VPA_FETCH_ALL                        = 'p2p_customer_vpa_fetch_all';
     const P2P_CUSTOMER_VPA_FETCH                            = 'p2p_customer_vpa_fetch';

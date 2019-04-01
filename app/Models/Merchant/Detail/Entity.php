@@ -110,6 +110,7 @@ class Entity extends Base\PublicEntity
     const REVIEWER                           = 'reviewer';
     const MERCHANTS                          = 'merchants';
     const ACTIVATION_FLOW                    = 'activation_flow';
+    const INTERNATIONAL_ACTIVATION_FLOW      = 'international_activation_flow';
 
     // fields_pending field is used in new Account APIs.
     const FIELDS_PENDING                     = 'fields_pending';
@@ -292,6 +293,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::ACTIVATION_FLOW,
+        self::INTERNATIONAL_ACTIVATION_FLOW
     ];
 
     protected $defaults = [
@@ -565,6 +567,16 @@ class Entity extends Base\PublicEntity
     public function getActivationFlow()
     {
         return $this->getAttribute(self::ACTIVATION_FLOW);
+    }
+
+    public function setInternationalActivationFlow(string $internationalActivationFlow)
+    {
+        $this->setAttribute(self::INTERNATIONAL_ACTIVATION_FLOW, $internationalActivationFlow);
+    }
+
+    public function getInternationalActivationFlow()
+    {
+        return $this->getAttribute(self::INTERNATIONAL_ACTIVATION_FLOW);
     }
 
     public function setActivationProgress($activationProgress)

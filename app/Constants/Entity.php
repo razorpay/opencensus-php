@@ -65,6 +65,7 @@ class Entity
     const PROMOTION                 = 'promotion';
     const LINE_ITEM                 = 'line_item';
     const APP_TOKEN                 = 'app_token';
+    const AUTH_TOKEN                = 'auth_token';
     const INVITATION                = 'invitation';
     const ADJUSTMENT                = 'adjustment';
     const FILE_STORE                = 'file_store';
@@ -261,6 +262,10 @@ class Entity
         self::TERMINAL  => [
             QueryCacheConstants::VERSION => 'v1',
             QueryCacheConstants::TTL     => 15,
+        ],
+        self::AUTH_TOKEN  => [
+            QueryCacheConstants::VERSION => 'v1',
+            QueryCacheConstants::TTL     => 5,
         ],
     ];
 

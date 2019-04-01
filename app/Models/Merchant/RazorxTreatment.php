@@ -12,4 +12,7 @@ final class RazorxTreatment
 
     // Decide whom to send new design mailers
     const MJML_BASED_MAILERS = 'mjml_based_mailers';
+
+    // Decide whom to activate on international payments
+    const INTERNATIONAL_ACTIVATIONS = 'international_activations';
 }

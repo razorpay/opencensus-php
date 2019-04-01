@@ -13,6 +13,7 @@ class Fields
     const VALIDATE                  = 'validate';
     const API_ACTION                = 'api_action';
     const TOKEN                     = 'token';
+    const UPI_REQUEST_ID            = 'upiRequestId';
 
     // --------------------------- DEVICE --------------- //
     const SIM_ID                        = 'simId';
@@ -40,4 +41,33 @@ class Fields
     const CURRENCY                      = 'currency';
     const MCC                           = 'mcc';
     const MERCHANT_CHANNEL_ID           = 'merchantChannelId';
+
+    // --------------- RESPONSE FIELDS --------------- //
+    const RESPONSE_CODE                 = 'responseCode';
+    const RESPONSE_MESSAGE              = 'responseMessage';
+    const GATEWAY_RESPONSE_CODE         = 'gatewayResponseCode';
+    const GATEWAY_RESPONSE_MESSAGE      = 'gatewayResponseMessage';
+
+    // ------------------ BANK ACCOUNT --------------- //
+    const BANK_CODE                     = 'bankCode';
+    const BANK_NAME                     = 'bankName';
+    const MASKED_ACCOUNT_NUMBER         = 'maskedAccountNumber';
+    const MPIN_LENGTH                   = 'mpinLength';
+    const MPIN_SET                      = 'mpinSet';
+    const REFERENCE_ID                  = 'referenceId';
+    const TYPE                          = 'type';
+    const IFSC                          = 'ifsc';
+    const NAME                          = 'name';
+    const BRANCH_NAME                   = 'branchName';
+    const BANK_ACCOUNT_UNIQUE_ID        = 'bankAccountUniqueId';
+    const OTP_LENGTH                    = 'otpLength';
+    const ATM_PIN_LENGTH                = 'atmPinLength';
+    const ACCOUNT_REFERENCE_ID          = 'accountReferenceId';
+    const CARD                          = 'card';
+    const EXPIRY                        = 'expiry';
+    const BALANCE                       = 'balance';
+
+    // --------------------- VPA -------------------- //
+    const CUSTOMER_VPA                  = 'customerVpa';
+    const AVAILABLE                     = 'available';
 }

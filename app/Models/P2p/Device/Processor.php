@@ -3,7 +3,11 @@
 namespace RZP\Models\P2p\Device;
 
 use RZP\Exception;
+use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Base;
+use RZP\Error\P2p\ErrorCode;
+
+use RZP\Models\P2p\BankAccount;
 
 /**
  * @property Core $core
@@ -20,8 +24,6 @@ class Processor extends Base\Processor
         $this->initialize(Action::INITIATE_VERIFICATION, $input, true);
 
         $customer = $this->core->getDeviceCustomer($input[Entity::CUSTOMER_ID]);
-
-        $this->context()->validateMerchant($customer->merchant);
 
         $this->input->put(Entity::CUSTOMER_ID, $customer->getId());
 
@@ -98,11 +100,7 @@ class Processor extends Base\Processor
         // Now we can update the register token
         (new RegisterToken\Core)->updateTokenCompleted($registerToken);
 
-        return [
-            Entity::ID                      => $device->getPublicId(),
-            DeviceToken\Entity::STATUS      => $deviceToken->getStatus(),
-            Entity::AUTH_TOKEN              => $device->getAuthToken(),
-        ];
+        return $this->makeTokenResponse($deviceToken);
     }
 
     public function initiateGetToken(array $input): array
@@ -132,16 +130,9 @@ class Processor extends Base\Processor
 
         $deviceToken = $this->context()->getDeviceToken();
 
-        $deviceToken->mergeGatewayData($this->input->get(DeviceToken\Entity::GATEWAY_DATA, []));
-        $deviceToken->generateRefreshedAt();
+        (new DeviceToken\Core)->update($deviceToken, $this->input->get(Entity::DEVICE_TOKEN));
 
-        $this->repo()->saveOrFail($deviceToken);
-
-        return [
-            Entity::ID                      => $deviceToken->device->getPublicId(),
-            DeviceToken\Entity::STATUS      => $deviceToken->getStatus(),
-            Entity::AUTH_TOKEN              => $deviceToken->device->getAuthToken(),
-        ];
+        return $this->makeTokenResponse($deviceToken);
     }
 
     public function deregister(array $input): array
@@ -155,10 +146,29 @@ class Processor extends Base\Processor
     {
         $this->initialize(Action::DEREGISTER_SUCCESS, $input, true);
 
-        (new DeviceToken\Core)->expire();
+        $this->repo()->transaction(
+            function()
+            {
+                (new Vpa\Core)->delete();
+                (new BankAccount\Core)->delete();
+                (new DeviceToken\Core)->delete();
+            });
 
         return [
             Entity::SUCCESS => true,
+        ];
+    }
+
+    protected function makeTokenResponse(DeviceToken\Entity $deviceToken)
+    {
+        $defaultVpa = (new Vpa\Core)->getDefaultVpa();
+
+        return [
+            Entity::ID                      => $deviceToken->device->getPublicId(),
+            DeviceToken\Entity::STATUS      => $deviceToken->getStatus(),
+            Entity::AUTH_TOKEN              => $deviceToken->device->getAuthToken(),
+            DeviceToken\Entity::EXPIRE_AT   => $deviceToken->getExpireAt(),
+            Vpa\Entity::VPA                 => $defaultVpa ? $defaultVpa->toArrayPublic() : null,
         ];
     }
 }

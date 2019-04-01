@@ -97,13 +97,6 @@ class SubscriptionV2AuthTransactionTest extends TestCase
         $this->assertEquals($subscription->getPublicId(), $payment['subscription_id']);
         $this->assertEquals('authorized', $payment['status']);
         $this->assertEquals(500, $payment['amount']);
-
-        Queue::assertPushed(SubscriptionPaymentHandler::class, function ($job) use ($payment)
-        {
-            $this->assertEquals($payment['id'], $job->getPaymentData()['id']);
-
-            return true;
-        });
     }
 
     public function testSubscriptionV2AuthTxnNormalWithoutStartAt()

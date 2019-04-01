@@ -42,6 +42,13 @@ class Core extends Base\Core
                 if (Gateway::isScroogeGatewayLiveAtGivenTimestamp($refund->getGateway(),
                         $refund->getCreatedAt()) === true)
                 {
+                    $data = [
+                        Entity::STATUS      => Status::FAILED,
+                        // Reference1 is set as part of FTA row processor (status cron)
+                        Entity::REFERENCE1  => $refund->getReference1(),
+                        Entity::REFERENCE2  => $refund->getReference2(),
+                    ];
+
                     //
                     // If fta gets failed, resetting fta related data here. This can be processed by payment gateway
                     // later.
@@ -50,13 +57,6 @@ class Core extends Base\Core
                     $refund->setUtr(null);
                     $refund->setRemarks(null);
                     $this->repo->saveOrFail($refund);
-
-                    $data = [
-                        Entity::STATUS      => Status::FAILED,
-                        // Reference1 is set as part of FTA row processor (status cron)
-                        Entity::REFERENCE1  => $refund->getReference1(),
-                        Entity::REFERENCE2  => $refund->getReference2(),
-                    ];
 
                     (new Service)->makeScroogeEditRefundRequest($refund, $data, 'file_init_event');
                 }

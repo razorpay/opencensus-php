@@ -712,9 +712,6 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * UPI Axis doesn't have verify refund. Returning true or false so that refund can be processed based on
-     * GATEWAY_UNPROCESSED_REFUNDS config value
-     *
      * @param array $input
      * @return array $scroogeResponse
      * @throws Exception\LogicException

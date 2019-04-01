@@ -8,6 +8,8 @@ use phpseclib\Crypt\RSA;
 use RZP\Gateway\P2p\Upi;
 use RZP\Constants\Timezone;
 use RZP\Gateway\P2p\Upi\Axis\Sdk;
+use RZP\Models\P2p\Base\Libraries\ArrayBag;
+use RZP\Exception\P2p\GatewayErrorException;
 
 class Gateway extends Upi\Gateway
 {
@@ -43,6 +45,37 @@ class Gateway extends Upi\Gateway
         return $request;
     }
 
+    protected function handleInputSdk(): ArrayBag
+    {
+        if ($this->isSdkFailure() === true)
+        {
+            $gatewayCode = $this->inputSdk()->get(Fields::ERROR_CODE, ErrorMap::NOT_AVAILABLE);
+            $gatewayDesc = $this->inputSdk()->get(Fields::ERROR_DESCRIPTION, ErrorMap::NOT_AVAILABLE);
+
+            throw $this->p2pGatewayException($gatewayCode, $gatewayDesc);
+        }
+
+        return $this->inputSdk();
+    }
+
+    protected function inputSdk(): ArrayBag
+    {
+        return $this->input->get(Fields::SDK);
+    }
+
+    protected function isSdkFailure(): bool
+    {
+        return $this->input->get(Fields::SDK)->get(Fields::STATUS) != 'SUCCESS';
+    }
+
+    protected function handleGatewayResponse(ArrayBag $sdk)
+    {
+        if ($sdk->get(Fields::GATEWAY_RESPONSE_CODE) !== '00')
+        {
+            $this->throwP2pGatewayException();
+        }
+    }
+
     protected function getTimeStamp()
     {
         return (string) (Carbon::now(Timezone::IST)->getTimestamp() * 1000);
@@ -53,6 +86,11 @@ class Gateway extends Upi\Gateway
         $booleanValue = filter_var($value, FILTER_VALIDATE_BOOLEAN);
 
         return $booleanValue;
+    }
+
+    protected function toPaisa($value)
+    {
+        return round(floatval($value) * 100);
     }
 
     protected function getMerchantId()
@@ -81,8 +119,57 @@ class Gateway extends Upi\Gateway
         throw new \Exception('Hi!');
     }
 
+    protected function p2pGatewayException(
+        string $gatewayCode,
+        string $gatewayDesc,
+        array $data = [])
+    {
+        $code = ErrorMap::map($gatewayCode);
+
+        return new GatewayErrorException($code, $gatewayCode, $gatewayDesc, $data);
+    }
+
     protected function getSdkRequestId()
     {
         return str_random(14);
+    }
+
+    protected function getUpiRequestId()
+    {
+        $prefix = $this->config['merchant_unique_prefix'] ?? 'BJJ';
+
+        return $prefix . strtolower(str_random(32));
+    }
+
+    protected function sendGatewayRequest($request)
+    {
+        $headers = [
+            S2s::X_MERCHANT_ID          => $this->getMerchantId(),
+            S2s::X_MERCHANT_CHANNEL_ID  => $this->getMerchantChannelId(),
+            S2s::X_TIMESTAMP            => $this->getTimeStamp(),
+        ];
+
+        $request['headers'] = $headers;
+
+        $request['headers'][S2s::CONTENT_TYPE] = 'application/json';
+
+        $signer = $this->getMerchantSigner();
+
+        $str = $this->getSignatureString($headers);
+
+        $signature = bin2hex($signer->sign($str));
+
+        $request['headers'][S2s::X_MERCHANT_SIGNATURE] = $signature;
+
+        $request['content'] = json_encode($request['content']);
+
+        return parent::sendGatewayRequest($request);
+    }
+
+    protected function getSignatureString($content)
+    {
+        $str = implode($content, '');
+
+        return $str;
     }
 }

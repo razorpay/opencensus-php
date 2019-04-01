@@ -2,7 +2,6 @@
 
 namespace RZP\Models\P2p\Vpa;
 
-use Illuminate\Support\Str;
 use RZP\Base\BuilderEx;
 use RZP\Models\P2p\Base;
 
@@ -10,6 +9,7 @@ class Entity extends Base\Entity
 {
     use Base\Traits\HasDevice;
     use Base\Traits\HasHandle;
+    use Base\Traits\SoftDeletes;
     use Base\Traits\HasBankAccount;
 
     const DEVICE_ID        = 'device_id';
@@ -44,8 +44,7 @@ class Entity extends Base\Entity
     protected $publicSetters      = [
         self::ENTITY,
         self::ID,
-        self::BANK_ACCOUNT_ID,
-        self::ADDRESS,
+        self::BANK_ACCOUNT,
     ];
 
     protected $dates = [
@@ -72,7 +71,9 @@ class Entity extends Base\Entity
         Entity::HANDLE,
         Entity::GATEWAY_DATA,
         Entity::USERNAME,
+        Entity::ADDRESS,
         Entity::BANK_ACCOUNT_ID,
+        Entity::BANK_ACCOUNT,
         Entity::BENEFICIARY_NAME,
         Entity::PERMISSIONS,
         Entity::FREQUENCY,
@@ -89,7 +90,7 @@ class Entity extends Base\Entity
         Entity::ADDRESS,
         Entity::HANDLE,
         Entity::USERNAME,
-        Entity::BANK_ACCOUNT_ID,
+        Entity::BANK_ACCOUNT,
         Entity::ACTIVE,
         Entity::VALIDATED,
         Entity::VERIFIED,
@@ -122,6 +123,10 @@ class Entity extends Base\Entity
         Entity::DELETED_AT       => 'int',
         Entity::CREATED_AT       => 'int',
         Entity::UPDATED_AT       => 'int',
+    ];
+
+    protected $appends = [
+        Entity::ADDRESS,
     ];
 
     /**************** GENERATORS ***************/
@@ -343,10 +348,5 @@ class Entity extends Base\Entity
     public function getAddressAttribute()
     {
         return implode(self::AEROBASE, [$this->getUsername(), $this->getHandle()]);
-    }
-
-    public function setPublicAddressAttribute(array & $array)
-    {
-        $array[self::ADDRESS] = $this->getAddress();
     }
 }

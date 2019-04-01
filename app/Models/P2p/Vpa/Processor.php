@@ -14,6 +14,35 @@ use RZP\Models\P2p\BankAccount;
  */
 class Processor extends Base\Processor
 {
+    public function initiateAdd(array $input): array
+    {
+        $this->initialize(Action::INITIATE_ADD, $input, true);
+
+        $bankAccount = (new BankAccount\Core)->find($this->input->get(Entity::BANK_ACCOUNT_ID));
+
+        $username = $this->input->get(Entity::USERNAME);
+
+        if (empty($username) === true)
+        {
+            $username = $this->core->suggestUsername($bankAccount);
+        }
+
+        if ($this->core->checkLocalAvailability($username))
+        {
+            throw new \Exception('Change the exception and message');
+        }
+
+        $this->gatewayInput->put(Entity::USERNAME, $username);
+        $this->gatewayInput->put(Entity::BANK_ACCOUNT, $bankAccount);
+
+        $this->callbackInput->put(Entity::DATA, [
+            Entity::USERNAME            => $username,
+            Entity::BANK_ACCOUNT_ID     => $bankAccount->getPublicId(),
+        ]);
+
+        return $this->callGateway();
+    }
+
     public function add(array $input): array
     {
         $this->initialize(Action::ADD, $input, true);
@@ -25,12 +54,14 @@ class Processor extends Base\Processor
 
         $this->gatewayInput->put(Entity::USERNAME, $this->input->get(Entity::USERNAME));
 
-        if ($this->input->has(Entity::BANK_ACCOUNT_ID))
-        {
-            $bankAccount = (new BankAccount\Core)->fetch($this->input->get(Entity::BANK_ACCOUNT_ID));
+        $bankAccount = (new BankAccount\Core)->find($this->input->get(Entity::BANK_ACCOUNT_ID));
 
-            $this->gatewayInput->put(Entity::BANK_ACCOUNT, $bankAccount);
-        }
+        $this->gatewayInput->put(Entity::BANK_ACCOUNT, $bankAccount);
+
+        $this->callbackInput->put(Entity::DATA, [
+            Entity::USERNAME            => $this->input->get(Entity::USERNAME),
+            Entity::BANK_ACCOUNT_ID     => $this->input->get(Entity::BANK_ACCOUNT_ID),
+        ]);
 
         return $this->callGateway();
     }
