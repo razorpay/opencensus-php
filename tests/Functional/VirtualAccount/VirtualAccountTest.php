@@ -79,15 +79,28 @@ class VirtualAccountTest extends TestCase
         $expectedResponse = $this->testData[__FUNCTION__];
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->verifyEntityOrigin('merchant', '10000000000000');
     }
 
     public function testCreateVirtualAccountPartnerAuth()
     {
-        $response = $this->createVirtualAccountPartnerAuth();
+        list($response, $submerchantId, $client) = $this->createVirtualAccountPartnerAuth();
 
         $expectedResponse = $this->testData[__FUNCTION__];
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->verifyEntityOrigin('application', $client->getApplicationId());
+    }
+
+    private function verifyEntityOrigin($originType, $originId)
+    {
+        $entityOrigin = $this->getDbLastEntity('entity_origin');
+
+        $this->assertEquals($originType, $entityOrigin['origin_type']);
+
+        $this->assertEquals($originId, $entityOrigin['origin_id']);
     }
 
     public function testCreateVirtualAccountForOrder()

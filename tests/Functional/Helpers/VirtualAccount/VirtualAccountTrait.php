@@ -63,7 +63,7 @@ trait VirtualAccountTrait
 
         $response = $this->makeRequestAndGetContent($request);
 
-        return $response;
+        return [$response, $subMerchantId, $client];
     }
 
     private function createPartnerEnv()
