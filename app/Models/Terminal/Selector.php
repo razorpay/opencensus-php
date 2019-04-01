@@ -231,12 +231,6 @@ class Selector extends Base\Core
 
         $payment = $this->input['payment'];
 
-        foreach ($merchantTerminals as $merchantTerminal)
-        {
-            // `$merchantTerminal->direct` returns back 0 or 1.
-            $merchantTerminal->setDirect(boolval($merchantTerminal->direct));
-        }
-
         //
         // For second recurring payments, the payment must go through a designated
         // terminal, even if the merchant has since been unassigned from it. This

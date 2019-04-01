@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Terminal;
 
+use DB;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
@@ -205,13 +206,13 @@ class Repository extends Base\Repository
         $terminalMerchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
 
         // IF(terminals.merchant_id != '100000Razorpay', 1, 0) AS direct
-        $querySelect = "IF(" . $terminalMerchantIdColumn . " != '" . Account::SHARED_ACCOUNT . "', 1, 0) AS direct";
+        $queryDirectCol = 'IF(' . $terminalMerchantIdColumn . ' != "' . Account::SHARED_ACCOUNT . '", 1, 0) AS direct';
 
-        $query->selectRaw("terminals.*, $querySelect");
+        $query->select('terminals.*', DB::raw($queryDirectCol));
 
-        $newQuerySelect = "1 AS direct";
+        $newQueryDirectCol = '1 AS direct';
 
-        $unionQuery = $newQuery->selectRaw($this->getTableName() . '.*' . ", $newQuerySelect")
+        $unionQuery = $newQuery->select($this->getTableName() . '.*', DB::raw($newQueryDirectCol))
                                ->join(Table::MERCHANT_TERMINAL, Entity::TERMINAL_ID, Entity::ID)
                                ->where(function ($q) use ($merchantIds)
                                {

@@ -289,8 +289,6 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
     ];
 
-    protected $direct = false;
-
     protected static function boot()
     {
         parent::boot();
@@ -484,12 +482,7 @@ class Entity extends Base\PublicEntity
      */
     public function isDirectForMerchant(): bool
     {
-        return ($this->direct === true);
-    }
-
-    public function setDirect(bool $direct)
-    {
-        $this->direct = $direct;
+        return ($this->getAttribute('direct') === true);
     }
 
     /**
