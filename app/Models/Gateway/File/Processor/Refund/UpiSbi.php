@@ -115,9 +115,9 @@ class UpiSbi extends Base
 
         $mailInfo = [
             'fileInfo'  => $fileInfo,
-            'channel'   => 'settlements',
+            'channel'   => 'refunds',
             'filetype'  => self::BEAM_FILE_TYPE,
-            'subject'   => 'File Send failure',
+            'subject'   => 'UPI SBI Refund File Send failure',
             'recipient' => Constants::MAIL_ADDRESSES[Constants::REFUNDS]
         ];
 
