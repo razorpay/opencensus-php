@@ -15,9 +15,8 @@ use RZP\Models\Merchant;
 use RZP\Models\LineItem;
 use RZP\Models\Settings;
 use RZP\Models\FileStore;
-use RZP\Models\Plan\Subscription;
 use RZP\Base\RuntimeManager;
-use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Plan\Subscription;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -445,7 +444,10 @@ class Core extends Base\Core
      */
     protected function expireInvoice(Entity $invoice)
     {
-        $invoice->getValidator()->validateOperation(__FUNCTION__);
+        /** @var Validator $validator */
+        $validator = $invoice->getValidator();
+
+        $validator->validateOperation(__FUNCTION__);
 
         $this->repo->transaction(
             function () use ($invoice)
@@ -499,8 +501,12 @@ class Core extends Base\Core
         string $invoiceId,
         Merchant\Entity $merchant): array
     {
+        /** @var Entity $invoice */
         $invoice = $this->repo->invoice->findByPublicIdAndMerchant($invoiceId, $merchant);
-        $invoice->getValidator()->validateInvoicePayable();
+
+        /** @var Validator $validator */
+        $validator = $invoice->getValidator();
+        $validator->validateInvoicePayable();
 
         $orderId       = $invoice->getOrderId();
         $publicOrderId = Order\Entity::getSignedId($orderId);
