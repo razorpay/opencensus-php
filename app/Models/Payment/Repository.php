@@ -508,8 +508,7 @@ class Repository extends Base\Repository
     {
         $query = $this->newQuery()
                       ->whereIn(Payment\Entity::ID, $paymentIds)
-                      ->whereNotIn(Payment\Entity::GATEWAY, $disabledGateways)
-                      ->whereNull(Payment\Entity::AUTHORIZED_AT);
+                      ->whereNotIn(Payment\Entity::GATEWAY, $disabledGateways);
 
         $verifiableCount = $query->count();
 
