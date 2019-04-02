@@ -14,7 +14,7 @@ class Idfc extends Base
 {
     use FileHandler;
 
-    static $filename = 'IDN_REFUND';
+    static $filename = 'Razorpay_REFUND';
 
     const FILE_TYPE              = FileStore\Type::IDFC_NETBANKING_REFUND;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
