@@ -263,6 +263,10 @@ class Entity
             QueryCacheConstants::VERSION => 'v1',
             QueryCacheConstants::TTL     => 15,
         ],
+        self::PRICING  => [
+            QueryCacheConstants::VERSION => 'v1',
+            QueryCacheConstants::TTL     => 15,
+        ],
         self::AUTH_TOKEN  => [
             QueryCacheConstants::VERSION => 'v1',
             QueryCacheConstants::TTL     => 5,
