@@ -6,6 +6,7 @@ use Str;
 use Carbon\Carbon;
 use Requests_Hooks;
 
+use RZP\Gateway\Mpi;
 use RZP\Constants\Timezone;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
@@ -27,6 +28,8 @@ class Gateway extends Base\Gateway
     protected $gateway = 'axis_migs';
 
     protected $authorize = true;
+
+    protected $secureCacheDriver;
 
     const CHECKSUM_ATTRIBUTE = 'vpc_SecureHash';
 
@@ -125,9 +128,13 @@ class Gateway extends Base\Gateway
 
     protected function authorizeEnrolled(array $input, array $authResponse)
     {
+        $input['callbackUrl'] = 'dummy_callback';
+
         $content = $this->getPaymentAuthorizeRequestContent($input);
 
         $this->addAuthenticationData($content, $authResponse);
+
+        $gatewayEntity = $this->createGatewayPaymentEntity($content, $input);
 
         $response = $this->postAmaTransactionRequestAndGetContent($content, $input);
 
@@ -136,9 +143,9 @@ class Gateway extends Base\Gateway
 
         $response['received'] = '1';
 
-        $this->gatewayEntity->fill($response);
+        $gatewayEntity->fill($response);
 
-        $this->repo->saveOrFail($this->gatewayEntity);
+        $this->repo->saveOrFail($gatewayEntity);
 
         $this->checkTransactionResponse($response, $input);
     }
@@ -151,14 +158,13 @@ class Gateway extends Base\Gateway
         $content['vpc_3DSstatus'] = $authResponse[Mpi\Base\Entity::STATUS];
         $content['vpc_VerToken'] = $authResponse[Mpi\Base\Entity::CAVV];
         $content['vpc_VerType'] = '3DS';
+
+        unset($content['vpc_ReturnURL'], $content['vpc_gateway']);
     }
 
     public function callback(array $input)
     {
         parent::callback($input);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_CALLBACK, [$input['gateway']]);
 
         $mpiEntity = $this->app['repo']
                           ->mpi
@@ -1008,11 +1014,15 @@ class Gateway extends Base\Gateway
 
         unset($traceContent['vpc_CardNum']);
         unset($traceContent['vpc_CardExp']);
+        unset($traceContent['vpc_CardSecurityCode']);
 
         $this->trace->info(
             TraceCode::GATEWAY_SUPPORT_REQUEST,
-            ['action' => 'Support action request array',
-            'content' => $traceContent]);
+            [
+                'gateway' => 'axis_migs',
+                'action' => 'Support action request array',
+                'content' => $traceContent
+            ]);
 
         $this->addAmaTransactionFields($content, $input);
 
@@ -1323,5 +1333,14 @@ class Gateway extends Base\Gateway
         }
 
         return $authenticationGateway;
+    }
+
+    protected function callAuthenticationGateway(array $input, $authenticationGateway)
+    {
+        return $this->app['gateway']->call(
+            $authenticationGateway,
+            $this->action,
+            $input,
+            $this->mode);
     }
 }
