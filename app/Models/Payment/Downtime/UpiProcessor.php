@@ -59,7 +59,7 @@ class UpiProcessor extends Base\Core
 
     protected function endOngoingDowntimes()
     {
-        $ongoingDowntimes = $this->getRepo()->fetchOngoingDowntimes();
+        $ongoingDowntimes = $this->getRepo()->fetchOngoingDowntimesByMethod(self::UPI);
 
         foreach ($ongoingDowntimes as $downtime)
         {

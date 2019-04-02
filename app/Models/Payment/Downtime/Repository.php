@@ -25,11 +25,12 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function fetchOngoingDowntimes(): PublicCollection
+    public function fetchOngoingDowntimesByMethod(string $method): PublicCollection
     {
         $query = $this->newQuery();
 
-        $query->whereNull(Entity::END)
+        $query->where(Entity::METHOD, $method)
+              ->whereNull(Entity::END)
               ->where(Entity::BEGIN, '<=', Carbon::now()->getTimestamp());
 
         return $query->get();

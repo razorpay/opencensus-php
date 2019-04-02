@@ -56,7 +56,10 @@ class Repository extends Base\Repository
 
         // Every update of gateway downtimes table should
         // queue a refresh of the payment downtimes table
-        PaymentDowntime::dispatch($this->app['rzp.mode']);
+        //
+        // Commenting this out till PaymentDowntime logic is more thoroughly tested.
+        // TODO: Enable
+        // PaymentDowntime::dispatch($this->app['rzp.mode']);
     }
 
     public function isMerchantIdRequiredForFetch()
