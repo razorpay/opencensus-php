@@ -6,6 +6,7 @@ use App;
 use Crypt;
 use Cache;
 use Requests;
+use RZP\Models\Admin\ConfigKey;
 use Symfony\Component\DomCrawler\Crawler;
 
 use RZP\Exception;
@@ -1310,7 +1311,7 @@ class Gateway
 
     protected function getProcessedRefunds()
     {
-        $refunds = $this->cache->get('GATEWAY_PROCESSED_REFUNDS');
+        $refunds = $this->cache->get(ConfigKey::GATEWAY_PROCESSED_REFUNDS);
 
         if (empty($refunds) === true)
         {
@@ -1322,7 +1323,7 @@ class Gateway
 
     protected function getUnprocessedRefunds()
     {
-        $refunds = $this->cache->get('GATEWAY_UNPROCESSED_REFUNDS');
+        $refunds = $this->cache->get(ConfigKey::GATEWAY_UNPROCESSED_REFUNDS);
 
         if (empty($refunds) === true)
         {
