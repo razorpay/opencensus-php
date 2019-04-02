@@ -54,4 +54,11 @@ class ScroogeController extends Controller
 
         return ApiResponse::json($response['body'], $response['code']);
     }
+
+    public function downloadGatewayRefundsFile()
+    {
+        $response = $this->app['scrooge']->downloadGatewayRefundsFile($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
 }

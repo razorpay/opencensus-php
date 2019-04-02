@@ -146,6 +146,7 @@ final class Route
         'scrooge_refund_create'                    => ['post',     'refunds/{id}/scrooge_create',                    'RefundController@scroogeRefundCreate'                              ],
         'scrooge_refund_create_bulk'               => ['post',     'refunds/scrooge_create/bulk',                    'RefundController@scroogeRefundCreateBulk'                          ],
         'scrooge_refund_verify_bulk'               => ['post',     'refunds/scrooge_verify/bulk',                    'RefundController@scroogeRefundVerifyBulk'                          ],
+        'scrooge_entities'                         => ['post',      'scrooge/entities',                              'RefundController@scroogeFetchEntities'                             ],
         'billdesk_create_cancelled_refunds'        => ['post',     'refunds/billdesk/cancelled',                     'RefundController@postCreateBilldeskCancelledRefunds'               ],
         'refund_create_gateway_record'             => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
         'gateway_validate_unknown_refund'          => ['post',     'refunds/{gateway}/validate',                     'RefundController@postGatewayValidateRefund'                        ],
@@ -822,6 +823,7 @@ final class Route
         'scrooge_refunds_update'                   => ['post',     'scrooge/refunds/{id}/status-update',             'ScroogeController@statusUpdate'                                    ],
         'scrooge_refunds_download'                 => ['post',     'scrooge/refunds/download',                       'ScroogeController@downloadRefunds'                                 ],
         'scrooge_refunds_enqueue'                  => ['post',     'scrooge/refunds/enqueue',                        'ScroogeController@enqueue'                                         ],
+        'scrooge_refunds_download_gateway_file'    => ['post',     'scrooge/refunds/download-gateway-file',          'ScroogeController@downloadGatewayRefundsFile'                      ],
 
         // Dispute routes
         'payment_dispute_create'                   => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
@@ -1353,6 +1355,7 @@ final class Route
         'refund_gateway_call',
         'refund_verify_call',
         'refund_fetch_status',
+        'scrooge_entities',
         'schedule_migration',
         'schedule_process_tasks',
         'scorecard',
@@ -1914,6 +1917,7 @@ final class Route
         'scrooge_refunds_download',
         'scrooge_refunds_get',
         'scrooge_refunds_update',
+        'scrooge_refunds_download_gateway_file',
 
         'scrooge_refund_create',
         'scrooge_refund_create_bulk',
@@ -2232,6 +2236,7 @@ final class Route
         'scrooge_refunds_enqueue'                  => Permission::EDIT_REFUND,
         'scrooge_refunds_get_multiple'             => Permission::VIEW_SCROOGE_REFUNDS,
         'scrooge_refunds_download'                 => Permission::VIEW_SCROOGE_REFUNDS,
+        'scrooge_refunds_download_gateway_file'    => Permission::VIEW_SCROOGE_REFUNDS,
         'scrooge_refunds_get'                      => Permission::VIEW_SCROOGE_REFUNDS,
         'scrooge_refunds_update'                   => Permission::EDIT_REFUND,
         'scrooge_refund_create'                    => Permission::RETRY_REFUND,
@@ -2607,7 +2612,8 @@ final class Route
             'scrooge_refund_create',
             'scrooge_refund_create_bulk',
             'refund_verify_call',
-            'refund_fetch_status'
+            'refund_fetch_status',
+            'scrooge_entities'
         ],
 
         'hosted' => [

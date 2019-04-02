@@ -33,6 +33,9 @@ class Service extends Base\Service
 
     const MAX_REFUND_RETRY_ATTEMPTS = 3;
 
+    const ENTITIES   = 'entities';
+    const REFUND_IDS = 'refund_ids';
+
     const MAX_REFUND_VERIFY_REQUESTS = 20;
 
     protected $mutex;
@@ -315,6 +318,92 @@ class Service extends Base\Service
         $response = $refund->toArray();
 
         return $response;
+    }
+
+    public function scroogeFetchEntities($input)
+    {
+        $responseArray = [];
+
+        $skippedRefunds = [];
+
+        if (isset($input[self::REFUND_IDS]) === true)
+        {
+            foreach ($input[self::REFUND_IDS] as $id)
+            {
+                try
+                {
+                    $refund = $this->repo->refund->findOrFailPublic($id);
+
+                    $refundEntity = $refund->toArrayGateway();
+
+                    $payment = $refund->payment;
+
+                    $paymentEntity = $payment->toArrayGateway();
+
+                    $response = [];
+
+                    if (isset($input[Constants\Entity::REFUND]) === true)
+                    {
+                        $map = [];
+
+                        foreach ($input[Constants\Entity::REFUND] as $value)
+                        {
+                            $map[$value] = $refundEntity[$value];
+                        }
+
+                        $response[self::ENTITIES][Constants\Entity::REFUND] = $map;
+                    }
+
+                    if (isset($input[Constants\Entity::PAYMENT]) === true)
+                    {
+                        $map = [];
+
+                        foreach ($input[Constants\Entity::PAYMENT] as $value)
+                        {
+                            $map[$value] = $paymentEntity[$value];
+                        }
+
+                        $response[self::ENTITIES][Constants\Entity::PAYMENT] = $map;
+                    }
+
+                    if (isset($input[self::ENTITIES]) === true)
+                    {
+                        foreach ($input[self::ENTITIES] as $key => $values)
+                        {
+                            $entity = $payment->$key;
+
+                            $map = [];
+
+                            foreach ($values as $value)
+                            {
+                                $map[$value] = $entity[$value];
+                            }
+
+                            $response[self::ENTITIES][$key] = $map;
+                        }
+                    }
+                    $responseArray[$id] = $response;
+                }
+                catch (\Exception $ex)
+                {
+                    array_push($skippedRefunds, [
+                        $id =>
+                            [
+                                'code'    => $ex->getCode(),
+                                'message' => $ex->getMessage()
+                            ]
+                    ]);
+                }
+            }
+        }
+
+        $traceData = [
+            'skipped_refunds'   => $skippedRefunds,
+        ];
+
+        $this->trace->info(TraceCode::SCROOGE_FETCH_ENTITIES_SKIPPED_REFUNDS, $traceData);
+
+        return $responseArray;
     }
 
     public function fetchMultiple($input)
