@@ -1654,10 +1654,10 @@ class Repository extends Base\Repository
         return null;
     }
 
-    public function fetchByIdandSubscriptionId(string $paymentId, string $susbcriptionId)
+    public function fetchByIdandSubscriptionId(string $paymentId, string $subscriptionId)
     {
         return $this->newQuery()
-                    ->where(Entity::SUBSCRIPTION_ID, $susbcriptionId)
+                    ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
                     ->findOrFailPublic($paymentId);
     }
 
