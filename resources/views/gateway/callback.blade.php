@@ -13,7 +13,7 @@ body{background:#fff;font-family:ubuntu,helvetica,verdana,sans-serif;margin:0;pa
 .text {transition: 0.2s opacity; position: absolute; top: 0; width: 100%; opacity: 0; transition-delay: 0.2s;}
 .show-early .early, .show-late .late {opacity: 1}
 .show-early .late, .show-late .early {opacity: 0}
-#proceed-btn {color: #528ff0; text-decoration: underline; cursor: pointer}
+#proceed-btn {color: #528ff0; text-decoration: underline; cursor: pointer; -webkit-tap-highlight-color: transparent;}
 </style>
 <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
 </head><body>
