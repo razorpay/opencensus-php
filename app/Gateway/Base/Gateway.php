@@ -1527,7 +1527,7 @@ class Gateway
     {
         $metricObj = new Netbanking\Base\Metric\DynamicUrlChangeMetric;
 
-        $metricObj->pushDimensions($input, $oldUrl, $newUrl);
+        $metricObj->pushDimensions($input, $this->gateway, $oldUrl, $newUrl);
     }
 
     public static function getNetbankingUrlCacheKey($bank)
