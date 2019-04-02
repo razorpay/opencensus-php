@@ -267,6 +267,10 @@ class Entity
             QueryCacheConstants::VERSION => 'v1',
             QueryCacheConstants::TTL     => 5,
         ],
+        self::METHODS  => [
+            QueryCacheConstants::VERSION => 'v1',
+            QueryCacheConstants::TTL     => 15,
+        ],
     ];
 
     /**
