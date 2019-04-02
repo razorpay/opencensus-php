@@ -1654,6 +1654,17 @@ class Repository extends Base\Repository
         return null;
     }
 
+    public function fetchByIdandSubscriptionId(string $paymentId, string $subscriptionId)
+    {
+        Entity::verifyIdAndStripSign($paymentId);
+
+        $subscriptionId = Base\PublicEntity::stripDefaultSign($subscriptionId);
+
+        return $this->newQuery()
+                    ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
+                    ->findOrFailPublic($paymentId);
+    }
+
     /**
      * Overriding newQuery to always have conditions for payment method
      * and bank in case of restricted orgs like SBI. For now this is a
