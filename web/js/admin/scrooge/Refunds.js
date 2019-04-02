@@ -685,7 +685,9 @@ const getFilterValue = (filters, filter, currentValue, semiColonSplit) => {
 const statuses = [
   { name: 'Init', value: 'init' },
   { name: 'File Init', value: 'file_init' },
-  { name: 'Attempt Failed', value: 'attempt_failed' },
+  { name: 'File Sent', value: 'file_sent' },
+  { name: 'FTA Pending', value: 'fta_pending' },
+  { name: 'Failed', value: 'failed' },
   { name: 'Processed', value: 'processed' },
   { name: 'On Hold', value: 'on_hold' },
 ];
