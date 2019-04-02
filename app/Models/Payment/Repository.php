@@ -1656,6 +1656,10 @@ class Repository extends Base\Repository
 
     public function fetchByIdandSubscriptionId(string $paymentId, string $subscriptionId)
     {
+        Entity::verifyIdAndStripSign($paymentId);
+
+        $subscriptionId = Base\PublicEntity::stripDefaultSign($subscriptionId);
+
         return $this->newQuery()
                     ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
                     ->findOrFailPublic($paymentId);
