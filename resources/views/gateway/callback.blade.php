@@ -9,10 +9,20 @@ body{background:#fff;font-family:ubuntu,helvetica,verdana,sans-serif;margin:0;pa
 #text.s #icon{background:#61BC6D}
 #text.f{color:#EF6050;}
 #text.f #icon{background:#EF6050}
+#delayed-prompt {position: fixed; top:70%; left: 0; right: 0;}
+.text {transition: 0.2s opacity; position: absolute; top: 0; width: 100%; opacity: 0; min-width: 320px; margin: 0 auto; line-height: 28px}
+.late {transition-delay: 0.2s}
+.show-early .early, .show-late .late {opacity: 1}
+.show-early .late, .show-late .early {opacity: 0}
+#proceed-btn {color: #528ff0; text-decoration: underline; cursor: pointer}
 </style>
 <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
 </head><body>
 <div id="text"><div id="icon"></div><br>Payment<br>
+</div>
+<div id="delayed-prompt">
+  <div class="early text">Redirecting...</div>
+  <div class="late text" id="proceed-btn">Click here to proceed</div>
 </div>
 <script>
 
@@ -27,7 +37,16 @@ var s = 'razorpay_payment_id' in data;
 data = JSON.stringify(data);
 if (window.CheckoutBridge) {
   if (typeof CheckoutBridge.oncomplete == 'function') {
-    CheckoutBridge.oncomplete(data);
+    function onComplete() { CheckoutBridge.oncomplete(data); }
+    setTimeout(onComplete, 30);
+    setTimeout(function () {
+      g('delayed-prompt').classList.add('show-early');
+    }, 500);
+    setTimeout(function () {
+      g('delayed-prompt').classList.add('show-late');
+      g('delayed-prompt').classList.remove('show-early');
+    }, 2000);
+    g('proceed-btn').onclick = onComplete;
   }
 } else {
   document.cookie =
