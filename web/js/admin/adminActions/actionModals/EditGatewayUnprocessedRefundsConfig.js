@@ -18,7 +18,7 @@ export default function EditGatewayUnprocessedRefundsConfig() {
       let payload = {
         url: `live/config/keys`,
         data: {
-          GATEWAY_UNPROCESSED_REFUNDS: splitAndFilter(body.refund_ids, ','),
+         'config:GATEWAY_UNPROCESSED_REFUNDS': splitAndFilter(body.refund_ids, ','),
         },
       };
 
