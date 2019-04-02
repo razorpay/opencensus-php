@@ -50,6 +50,7 @@ class Kernel extends HttpKernel {
         'slack'         => 'App\Http\Middleware\Slack',
         'admin_access'  => 'App\Http\Middleware\AdminAccess',
         'verified'      => 'App\Http\Middleware\Verified',
+        'jwt'           => 'App\Http\Middleware\JWTValidate',
         'auth.oauth'    => 'App\Http\Middleware\OAuth',
         'guest.generic' => 'App\Http\Middleware\GuestGeneric',
     ];

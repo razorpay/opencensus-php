@@ -22,6 +22,9 @@ use Illuminate\Contracts\Cache\Store;
 use Illuminate\Foundation\Application;
 use Lcobucci\JWT\Builder as JWTBuilder;
 use Razorpay\Api\Errors\BadRequestError;
+use Lcobucci\JWT\Parser as JWTParser;
+use Lcobucci\JWT\ValidationData as JWTValidation;
+use Illuminate\Auth\Access\AuthorizationException;
 
 
 class Service extends Base\Service
@@ -646,5 +649,45 @@ class Service extends Base\Service
                                    ->getToken();
 
         return [[], ["token" => (string) $token]];
+    }
+
+    public function validateJWT($token)
+    {
+        if (empty($token) === null)
+        {
+            throw new BadRequestError(
+                'Token context not present in the request',
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400);
+        }
+
+        $token = (new JWTParser())->parse((string) $token);
+
+        $signer = new Sha256();
+
+        $validationData = new JWTValidation();
+
+        $issuer = parse_url(config('app.url'), PHP_URL_HOST);
+
+        $sessionConfig = $this->app['config']['session'];
+
+        $jwtEncryptionKey = $sessionConfig['jwt_encryption_key'];
+
+        $validationData->setIssuer($issuer);
+
+        $validationData->setAudience(self::EXTENSION);
+
+        $validToken = $token->validate($validationData);
+
+        $validSignature = $token->verify($signer, $jwtEncryptionKey);
+
+        if (($validToken === false) or ($validSignature === false))
+        {
+            throw new AuthorizationException(
+                'Invalid Token',
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                403);
+        }
+
     }
 }
