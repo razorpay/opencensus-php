@@ -18,6 +18,11 @@ class GenericController extends Controller
         'x-cross-org-id',
     ];
 
+    const WHITELISTED_ROUTES_EXTENSION = [
+        '/invoices',
+
+    ];
+
     public function handleAny($mode, $path)
     {
         $allRequestHeaders = Request::header();
@@ -43,5 +48,15 @@ class GenericController extends Controller
         list($error, $data) = $request->send($path, $method);
 
         return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function handleAnyExtension($mode, $path)
+    {
+        if (in_array($path, self::WHITELISTED_ROUTES_EXTENSION, true) === true)
+        {
+            return $this->handleAny($mode, $path);
+        }
+
+        return AppResponse::unauthorizedResponse('Unauthorized.', Request::route()->getName(), $path);
     }
 }

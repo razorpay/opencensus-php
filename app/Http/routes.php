@@ -66,6 +66,11 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/extension/generate_token', 'UserController@generateJWT')->name('extension_generate_token')
             ->middleware(['jwt']);
 
+        Route::any('/extension/api/{mode}/{path}', 'GenericController@handleAnyExtension')
+            ->where(['path' => '.*'])
+            ->name('extension_merchant')
+            ->middleware(['jwt']);
+
         Route::put('/{mode}/users/{id}/detach', 'MerchantController@removeUser')->name('remove_user');
 
         // Account Routes

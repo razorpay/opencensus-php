@@ -689,5 +689,6 @@ class Service extends Base\Service
                 403);
         }
 
+        return $token;
     }
 }

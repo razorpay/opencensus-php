@@ -21,6 +21,8 @@ class JWTValidate
         $jwtToken = Request::header(Headers::JWT_TOKEN);
 
         (new User\Service())->validateJWT($jwtToken);
+
+        return $next($request);
     }
 }
 
