@@ -180,6 +180,13 @@ class KubernetesClient
                     'spec' => [
                         'containers' => [
                             [
+                                'envFrom' => [
+                                    [
+                                        'secretRef' => [
+                                            'name' => 'aws-secret'
+                                        ]
+                                    ]
+                                ],
                                 'env' => [
                                     [
                                         'name' => 'APP_MODE',
