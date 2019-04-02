@@ -10,8 +10,7 @@ body{background:#fff;font-family:ubuntu,helvetica,verdana,sans-serif;margin:0;pa
 #text.f{color:#EF6050;}
 #text.f #icon{background:#EF6050}
 #delayed-prompt {position: fixed; top:70%; left: 0; right: 0;}
-.text {transition: 0.2s opacity; position: absolute; top: 0; width: 100%; opacity: 0; min-width: 320px; margin: 0 auto; line-height: 28px}
-.late {transition-delay: 0.2s}
+.text {transition: 0.2s opacity; position: absolute; top: 0; width: 100%; opacity: 0; transition-delay: 0.2s;}
 .show-early .early, .show-late .late {opacity: 1}
 .show-early .late, .show-late .early {opacity: 0}
 #proceed-btn {color: #528ff0; text-decoration: underline; cursor: pointer}
