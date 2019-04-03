@@ -9,6 +9,7 @@ class EsRepository extends Base\EsRepository
 {
     protected $indexedFields = [
         Entity::ID,
+        Entity::TYPE,
         Entity::NOTES,
         Entity::STATUS,
         Entity::SOURCE_ID,
@@ -21,6 +22,7 @@ class EsRepository extends Base\EsRepository
 
     protected $esFetchParams = [
         Entity::ID,
+        Entity::TYPE,
         Entity::STATUS,
         Entity::SOURCE_ID,
         Entity::PARTNER_ID,
@@ -38,6 +40,11 @@ class EsRepository extends Base\EsRepository
     public function getMerchantFields(): array
     {
         return $this->merchantFields;
+    }
+
+    public function buildQueryForId(array & $query, string $value)
+    {
+        $this->addTermFilter($query, Entity::ID, $value);
     }
 
     public function buildQueryForSourceId(array & $query, string $value)
@@ -75,5 +82,10 @@ class EsRepository extends Base\EsRepository
     public function buildQueryForPartnerConfigId(array &$query, string $value)
     {
         $this->addTermFilter($query, Entity::PARTNER_CONFIG_ID, $value);
+    }
+
+    public function buildQueryForType(array &$query, string $value)
+    {
+        $this->addTermFilter($query, Entity::TYPE, $value);
     }
 }

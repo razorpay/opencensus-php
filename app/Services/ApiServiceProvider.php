@@ -13,6 +13,7 @@ use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\MySqlConnection as IlluminateMySqlConnection;
 
 use RZP\Models\Vpa;
+use RZP\Models\User;
 use RZP\Services\FTS;
 use RZP\Models\Batch;
 use RZP\Models\Order;
@@ -63,10 +64,13 @@ class ApiServiceProvider extends BaseServiceProvider
     {
         foreach (E::CACHED_ENTITIES as $entity => $_)
         {
-            $entityClass = E::getEntityClass($entity);
-            $entityObserverClass = E::getEntityObserverClass($entity);
+            if ($entity !== E::AUTH_TOKEN)
+            {
+                $entityClass = E::getEntityClass($entity);
+                $entityObserverClass = E::getEntityObserverClass($entity);
 
-            $entityClass::observe($entityObserverClass);
+                $entityClass::observe($entityObserverClass);
+            }
         }
 
         // attaching payment observer since its invalidates
@@ -442,6 +446,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'admin'                     => Admin\Admin\Entity::class,
             'role'                      => Admin\Role\Entity::class,
             'permission'                => Admin\Permission\Entity::class,
+
+            'user'                      => User\Entity::class,
 
             // line items
             'invoice'                   => Invoice\Entity::class,

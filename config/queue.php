@@ -209,6 +209,10 @@ return [
         'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
         'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
     ],
+    'subscriptions_payment_notify' => [
+        'test'       => env('AWS_SUBSCRIPTIONS_PAYMENT_NOTIFY_QUEUE'),
+        'live'       => env('AWS_SUBSCRIPTIONS_PAYMENT_NOTIFY_QUEUE'),
+    ],
     /*
      | Lists various queues to be used per mailable
      */

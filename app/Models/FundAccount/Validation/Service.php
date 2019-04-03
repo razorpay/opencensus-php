@@ -3,6 +3,7 @@
 namespace RZP\Models\FundAccount\Validation;
 
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Models\Base\Traits;
 
 class Service extends Base\Service
@@ -26,5 +27,16 @@ class Service extends Base\Service
         $this->core = new Core();
 
         $this->entityRepo = $this->repo->fund_account_validation;
+    }
+
+    public function retry(array $input): array
+    {
+        $this->trace->info(TraceCode::FUND_ACCOUNT_VALIDATION_RETRY_REQUEST, [
+            'input' => $input
+        ]);
+
+        $response = $this->core->retry($input);
+
+        return $response;
     }
 }

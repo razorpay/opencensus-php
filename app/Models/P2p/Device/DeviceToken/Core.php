@@ -42,7 +42,18 @@ class Core extends Base\Core
         return $deviceToken;
     }
 
-    public function expire()
+    public function update(Entity $deviceToken, $input): Entity
+    {
+        $deviceToken->mergeGatewayData(array_get($input, Entity::GATEWAY_DATA, []));
+
+        $deviceToken->generateRefreshedAt();
+
+        $this->repo->saveOrFail($deviceToken);
+
+        return $deviceToken;
+    }
+
+    public function expire(): Entity
     {
         $deviceToken = $this->context()->getDeviceToken();
 
@@ -51,5 +62,10 @@ class Core extends Base\Core
         $this->repo->saveOrFail($deviceToken);
 
         return $deviceToken;
+    }
+
+    public function delete()
+    {
+        return $this->repo->newP2pQuery()->delete();
     }
 }

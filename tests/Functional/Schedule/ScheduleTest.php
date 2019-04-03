@@ -503,6 +503,8 @@ class ScheduleTest extends TestCase
             'bank_account_number' => '0002020000304030434',
             'bank_account_name'   => 'random name',
             'contact_mobile'      => '9999999999',
+            'business_category'   => 'financial_services',
+            'business_subcategory'=> 'accounting',
         ]);
 
         $this->fixtures->on('test')->edit('merchant_detail', $merchantId, [
@@ -511,6 +513,8 @@ class ScheduleTest extends TestCase
             'bank_account_number' => '0002020000304030434',
             'bank_account_name'   => 'random name',
             'contact_mobile'      => '9999999999',
+            'business_category'   => 'financial_services',
+            'business_subcategory'=> 'accounting',
         ]);
 
         $activationRequest = [

@@ -242,10 +242,13 @@ class PartnerConfigTest extends OAuthTestCase
         $this->fixtures->create(
             'partner_config',
             [
-                'id'                  => Constants::DEFAULT_PARTNER_CONFIGS_ID,
-                'entity_id'           => Constants::DEFAULT_NON_PLATFORM_APP_ID,
-                'default_plan_id'     => Pricing::DEFAULT_PRICING_PLAN_ID,
-                'commissions_enabled' => 1,
+                'id'                     => Constants::DEFAULT_PARTNER_CONFIGS_ID,
+                'entity_id'              => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+                'default_plan_id'        => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'commissions_enabled'    => 1,
+                'implicit_plan_id'       => '10ZeroPricingP',
+                'explicit_plan_id'       => '10ZeroPricingP',
+                'explicit_refund_fees'   => 1,
             ]
         );
 

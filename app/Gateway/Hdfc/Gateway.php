@@ -106,7 +106,7 @@ class Gateway extends Base\Gateway
         'headers' => ['Content-Type' => 'text/xml'],
         'data' => [],
         'options' => [
-            'timeout' => 5
+            'timeout' => 10,
         ]];
 
     /**

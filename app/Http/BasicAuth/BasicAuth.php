@@ -11,6 +11,7 @@ use Illuminate\Routing\Router;
 use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Models\Key;
+use RZP\Models\Admin;
 use RZP\Models\Device;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -162,6 +163,13 @@ class BasicAuth
      * through adminAuth
      */
     private $isAdmin = false;
+
+    /**
+     * current Admin entity
+     *
+     * @var Admin\Admin\Entity
+     */
+    protected $admin = null;
 
     /**
      * During app authentication, the app
@@ -1361,6 +1369,11 @@ class BasicAuth
     public function isSubscriptionsApp()
     {
         return ($this->getInternalApp() === 'subscriptions');
+    }
+
+    public function isBatchApp(): bool
+    {
+        return ($this->getInternalApp() === 'batch');
     }
 
     public function getOAuthApplicationId()

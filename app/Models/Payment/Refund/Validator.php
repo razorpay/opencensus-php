@@ -27,6 +27,10 @@ class Validator extends Base\Validator
         Entity::REFERENCE1      => 'sometimes|string|max:255',
     ];
 
+    protected static $editRules = [
+        Entity::NOTES => 'sometimes|notes'
+    ];
+
     protected static $directRules = [
         'payment_id'    => 'required',
         'amount'        => 'sometimes|integer|min:100',
@@ -41,6 +45,8 @@ class Validator extends Base\Validator
         'bank_account.beneficiary_name'     => 'required_with:bank_account|between:4,120|string',
         'vpa'                               => 'sometimes|associative_array',
         'vpa.address'                       => 'required_with:vpa|filled|string',
+        'card_transfer'                     => 'sometimes|associative_array',
+        'card_transfer.card_id'             => 'required_with:card_transfer|filled|unsigned_id',
 
     ];
 
@@ -75,7 +81,7 @@ class Validator extends Base\Validator
 
     protected static $verifyInternalRefundGateways = [
         Payment\Gateway::HDFC,
-        Payment\Gateway::AXIS_MIGS
+        Payment\Gateway::AXIS_MIGS,
     ];
 
     protected static $manualRefundGateways = [
@@ -104,6 +110,8 @@ class Validator extends Base\Validator
         'fta_data.bank_account.beneficiary_name'    => 'required_with:bank_account|between:4,120|string',
         'fta_data.vpa'                              => 'sometimes|associative_array',
         'fta_data.vpa.address'                      => 'required_with:vpa|filled|string',
+        'fta_data.card_transfer'                    => 'sometimes|associative_array',
+        'fta_data.card_transfer.card_id'            => 'required_with:card_transfer|filled|unsigned_id',
     ];
 
     protected static $createScroogeRefundBulkRules = [
@@ -396,11 +404,34 @@ class Validator extends Base\Validator
         }
 
         //
+        // If refund is in initiated state that means fund transfer attempt was done on this refund.
+        // Check if any of the attempts is not in failed state. If any of fta is in created or completed,
+        // retry should not be possible.
+        //
+        else if ($refund->isInitiated() === true)
+        {
+           foreach ($refund->fundTransferAttempts as $fundTransferAttempt)
+           {
+               if ($fundTransferAttempt->isStatusFailed() === false)
+               {
+                   throw new Exception\BadRequestException(
+                       ErrorCode::BAD_REQUEST_ALL_FTA_NOT_FAILED,
+                       Entity::STATUS,
+                       [
+                           'refund_id'  => $refund->getId(),
+                           'status'     => $refund->getStatus(),
+                           'fta_status' => $fundTransferAttempt->getStatus()
+                       ]);
+               }
+           }
+        }
+
+        //
         // Scrooge should be calling gateway refund only if the refund is still
         // in created state. On refund failure, Scrooge will call the gateway
         // refund again, but in that case refund would still be in created state.
         //
-        if ($refund->isCreated() === false)
+        else if ($refund->isCreated() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_REFUND_NOT_IN_CREATED,

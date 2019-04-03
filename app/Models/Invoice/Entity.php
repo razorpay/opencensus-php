@@ -1056,6 +1056,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SUBSCRIPTION_ID, $subscriptionId);
     }
 
+    public function setBatchId(string $batchId)
+    {
+        $this->setAttribute(self::BATCH_ID,$batchId);
+    }
+
     public function setShortUrl(string $shortUrl)
     {
         $this->setAttribute(self::SHORT_URL, $shortUrl);
@@ -1090,11 +1095,6 @@ class Entity extends Base\PublicEntity
     public function setAmount(int $amount)
     {
         $this->setAttribute(self::AMOUNT, $amount);
-    }
-
-    public function setUserId(string $userId)
-    {
-        $this->setAttribute(self::USER_ID, $userId);
     }
 
     public function setMerchantGstin(string $gstin = null)

@@ -3,11 +3,12 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+use RZP\Constants\Table;
+use RZP\Models\Customer;
+use RZP\Models\Merchant;
+use RZP\Models\Transaction;
 use RZP\Models\Reversal\Entity;
 use RZP\Models\Base\PublicEntity;
-use RZP\Constants\Table;
-use RZP\Models\Transaction;
-use RZP\Models\Merchant;
 
 class CreateReversals extends Migration
 {
@@ -26,6 +27,9 @@ class CreateReversals extends Migration
                   ->primary();
 
             $table->char(Entity::MERCHANT_ID, Merchant\Entity::ID_LENGTH);
+
+            $table->string(Entity::CUSTOMER_ID, Customer\Entity::ID_LENGTH)
+                  ->nullable();
 
             $table->char(Entity::ENTITY_ID, PublicEntity::ID_LENGTH);
 
@@ -48,6 +52,9 @@ class CreateReversals extends Migration
 
             $table->char(Entity::TRANSACTION_ID, Transaction\Entity::ID_LENGTH);
 
+            $table->string(Entity::TRANSACTION_TYPE, 255)
+                  ->nullable();
+
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);
@@ -65,9 +72,9 @@ class CreateReversals extends Migration
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
 
-            $table->foreign(Entity::TRANSACTION_ID)
-                  ->references(Transaction\Entity::ID)
-                  ->on(Table::TRANSACTION)
+            $table->foreign(Entity::CUSTOMER_ID)
+                  ->references(Customer\Entity::ID)
+                  ->on(Table::CUSTOMER)
                   ->on_delete('restrict');
         });
     }
@@ -81,15 +88,9 @@ class CreateReversals extends Migration
     {
         Schema::table(Table::REVERSAL, function($table)
         {
-            $table->dropForeign
-            (
-                Table::REVERSAL . '_' . Entity::TRANSACTION_ID . '_foreign'
-            );
+            $table->dropForeign(Table::REVERSAL . '_' . Entity::MERCHANT_ID . '_foreign');
 
-            $table->dropForeign
-            (
-                Table::REVERSAL . '_' . Entity::MERCHANT_ID . '_foreign'
-            );
+            $table->dropForeign(Table::REVERSAL . '_' . Entity::CUSTOMER_ID . '_foreign');
         });
 
         Schema::drop(Table::REVERSAL);

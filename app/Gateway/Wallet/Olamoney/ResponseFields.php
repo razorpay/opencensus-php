@@ -21,6 +21,7 @@ class ResponseFields
     const ACCESS_TOKEN              = 'accessToken';
     const REFRESH_TOKEN             = 'refreshToken';
     const BALANCE_TYPE              = 'balanceType';
+    const GLOBAL_MERCHANT_ID        = 'globalMerchantId';
 
     const VERIFY_FAILED_STATUS      = [Status::INITIATED, Status::FAILED];
 

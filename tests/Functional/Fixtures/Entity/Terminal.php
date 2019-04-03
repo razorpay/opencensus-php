@@ -1789,10 +1789,12 @@ class Terminal extends Base
 
     public function createSharedNetbankingAxisCorpTerminal(array $attributes = [])
     {
-        $attributes = [
+        $defaults = [
             'id'                => Shared::NETBANKING_AXIS_CRP_TERMINAL,
             'corporate'         => 1,
         ];
+
+        $attributes = array_merge($defaults, $attributes);
 
         return $this->createSharedNetbankingAxisTerminal($attributes);
     }
@@ -2445,6 +2447,23 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedPaysecureTerminal(array $attributes)
+    {
+        $termId = Shared::PAYSECURE_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => Account::SHARED_ACCOUNT,
+            'gateway'                   => Gateway::PAYSECURE,
+            'card'                      => 1,
+            'shared'                    => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createDirectTerminalForNonTestMerchant(array $attributes)
     {
         $defaultValues = [
@@ -2546,6 +2565,50 @@ class Terminal extends Base
         $attributes = array_merge($defaultValues, $attributes);
 
         return $this->create($attributes);
+    }
+
+    public function createBajajFinservTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => 'BajajFinservTrm',
+            'gateway'                   => 'bajajfinserv',
+            'card'                      => 1,
+            'netbanking'                => 0,
+            'shared'                    => 0,
+            'gateway_merchant_id'       => 'BajajFinserv',
+            'gateway_secure_secret'     => 'BajajFinserv',
+            'gateway_secure_secret2'    => 'BajajFinservKey',
+            'gateway_access_code'       => 'BajajFinservIv',
+            'emi'                       => 1,
+            'emi_duration'              => 9,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedBajajFinservTerminal(array $attributes = [])
+    {
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+        $defaultValues = [
+            'id'                        => 'ShrdBajajFinservTrm',
+            'merchant_id'               => $sharedMerchantAccount,
+            'gateway'                   => 'bajajfinserv',
+            'card'                      => 1,
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'BajajFinserv',
+            'gateway_secure_secret'     => 'BajajFinserv',
+            'gateway_secure_secret2'    => 'BajajFinservKey',
+            'gateway_access_code'       => 'BajajFinservIv',
+            'emi'                       => 1,
+            'emi_duration'              => 9,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
 }

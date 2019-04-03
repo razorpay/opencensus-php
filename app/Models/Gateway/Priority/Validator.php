@@ -14,6 +14,7 @@ class Validator extends Base\Validator
     protected static $validPaymentMethods = [Method::CARD, Method::NETBANKING];
 
     protected static $addPriorityRules = [
+        Gateway::PAYSECURE   => 'sometimes|numeric|min:0|max:100',
         Gateway::HDFC        => 'sometimes|numeric|min:0|max:100',
         Gateway::ATOM        => 'sometimes|numeric|min:0|max:100',
         Gateway::AXIS_MIGS   => 'sometimes|numeric|min:0|max:100',

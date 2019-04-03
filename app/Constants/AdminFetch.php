@@ -265,6 +265,39 @@ class AdminFetch
                 ],
             ],
 
+            Entity::PAYSECURE => [
+                'payment_id'         => Fetch::FIELD_PAYMENT_ID,
+                'gateway_transaction_id'    => [
+                    Fetch::LABEL => 'Gateway Transaction Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'apprcode' => [
+                    Fetch::LABEL => 'Bank reference number',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'flow' => [
+                    Fetch::LABEL => 'Payment flow',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'redirect',
+                        'iframe',
+                    ],
+                ],
+                'rrn' => [
+                    Fetch::LABEL => 'RRN',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+
+                'received' => [
+                    Fetch::LABEL => 'Received',
+                    Fetch::TYPE  => Fetch::TYPE_BOOLEAN
+                ],
+                'status' => [
+                    Fetch::LABEL => 'Status',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+            ],
+
             Entity::AXIS_GENIUS => [
                 'payment_id' => Fetch::FIELD_PAYMENT_ID,
                 'received' => [
@@ -763,6 +796,23 @@ class AdminFetch
             Entity::FUND_ACCOUNT => [
                 'source_id'    => [],
                 'account_type' => [],
+            ],
+
+            Entity::FUND_ACCOUNT_VALIDATION => [
+                'fund_account_id' => [
+                    Fetch::LABEL  => 'Fund Account Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'status' => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'created',
+                        'completed',
+                        'failed',
+                    ],
+                ],
             ],
 
             Entity::FUND_TRANSFER_ATTEMPT => [
@@ -1961,6 +2011,14 @@ class AdminFetch
             ],
 
             Entity::COMMISSION     => [
+                Commission\Entity::TYPE => [
+                    Fetch::LABEL  => 'Commission Type',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        Commission\Type::IMPLICIT,
+                        Commission\Type::EXPLICIT,
+                    ],
+                ],
                 Commission\Entity::SOURCE_TYPE => [
                     Fetch::LABEL  => 'Source Type',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,

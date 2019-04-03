@@ -6,6 +6,8 @@ use Requests;
 use Requests_Session;
 
 use RZP\Exception;
+use RZP\Constants\Entity;
+use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Error\ErrorClass;
@@ -27,6 +29,7 @@ class CorePaymentService
     const ACTION    = 'action';
     const INPUT     = 'input';
     const DATA      = 'data';
+    const ERROR     = 'error';
 
     protected $baseUrl;
 
@@ -65,6 +68,11 @@ class CorePaymentService
 
     public function action(string $gateway, string $action, array $input)
     {
+        if (empty($input[Entity::TERMINAL]) === false)
+        {
+            $input[Entity::TERMINAL] = $input[Entity::TERMINAL]->toArrayWithPassword();
+        }
+
         $content = [
             self::ACTION  => $action,
             self::GATEWAY => $gateway,
@@ -177,7 +185,11 @@ class CorePaymentService
     protected function traceRequest(array $request)
     {
         unset($request['options']['auth']);
-        unset($request['content']['card']);
+        unset($request['content'][self::INPUT]['card']);
+        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD]);
+        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_PASSWORD2]);
+        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET]);
+        unset($request['content'][self::INPUT][Entity::TERMINAL][Terminal\Entity::GATEWAY_SECURE_SECRET2]);
 
         $this->trace->info(TraceCode::CORE_PAYMENT_SERVICE_REQUEST, $request);
     }
@@ -206,7 +218,7 @@ class CorePaymentService
 
         $responseBody = $this->jsonToArray($response->body);
 
-        if ($code === 200)
+        if ($this->isSuccessResponse($code, $responseBody))
         {
             return $responseBody[self::DATA];
         }
@@ -214,6 +226,17 @@ class CorePaymentService
         {
             $this->checkForErrors($responseBody);
         }
+    }
+
+    protected function isSuccessResponse($code, $responseBody)
+    {
+        if (($code === 200) and
+            (empty($responseBody[self::ERROR]) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function handleBadRequestErrors(array $error)
@@ -258,22 +281,22 @@ class CorePaymentService
 
     protected function checkForErrors($response)
     {
-        $errorCode = $response['internal_error_code'];
+        $errorCode = $response[self::ERROR]['internal_error_code'];
 
         $class = $this->getErrorClassFromErrorCode($errorCode);
 
         switch ($class)
         {
             case ErrorClass::GATEWAY:
-                $this->handleGatewayErrors($response['error']);
+                $this->handleGatewayErrors($response[self::ERROR]);
                 break;
 
             case ErrorClass::BAD_REQUEST:
-                $this->handleBadRequestErrors($response['error']);
+                $this->handleBadRequestErrors($response[self::ERROR]);
                 break;
 
             case ErrorClass::SERVER:
-                $this->handleInternalServerErrors($response['error']);
+                $this->handleInternalServerErrors($response[self::ERROR]);
                 break;
 
             default:

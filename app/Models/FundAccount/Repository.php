@@ -24,12 +24,15 @@ class Repository extends Base\Repository
 
     /**
      * Get fund account if exists with similar details.
-     * @param  array           $input
-     * @param  Merchant\Entity $merchant
-     * @param  Contact\Entity  $merchant
+     * @param  array               $input
+     * @param  Merchant\Entity     $merchant
+     * @param  Contact\Entity|null $contact
      * @return Entity|null
      */
-    public function getFundAccountWithSimilarDetails(array $input, Merchant\Entity $merchant, Contact\Entity $contact)
+    public function getFundAccountWithSimilarDetails(
+        array $input,
+        Merchant\Entity $merchant,
+        Contact\Entity $contact = null)
     {
         // Finds account (bank account/vpa) against input details.
         switch ($input[Entity::ACCOUNT_TYPE])
@@ -60,16 +63,26 @@ class Repository extends Base\Repository
                 break;
         }
 
-        // If account exists then returns first fund account against this account and given contact.
-        if ($account !== null)
+        // If no underlying account (bank account/vpa) found, return null.
+        if ($account === null)
         {
-            return $this->newQuery()
-                        ->where(Entity::ACCOUNT_ID, $account->getId())
-                        ->where(Entity::ACCOUNT_TYPE, $account->getEntity())
-                        ->where(Entity::SOURCE_ID, $contact->getId())
-                        ->where(Entity::SOURCE_TYPE, $contact->getEntity())
-                        ->first();
+            return;
         }
+
+        // Else gets latest fund account entity with this account and contact(optionally).
+        $query = $this->newQuery()
+                      ->merchantId($merchant->getId())
+                      ->where(Entity::ACCOUNT_ID, $account->getId())
+                      ->where(Entity::ACCOUNT_TYPE, $account->getEntity())
+                      ->latest();
+
+        if ($contact !== null)
+        {
+            $query->where(Entity::SOURCE_ID, $contact->getId())
+                  ->where(Entity::SOURCE_TYPE, $contact->getEntity());
+        }
+
+        return $query->first();
     }
 
     protected function addQueryParamCustomerId($query, $params)

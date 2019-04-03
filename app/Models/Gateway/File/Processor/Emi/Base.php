@@ -104,6 +104,10 @@ class Base extends BaseProcessor
         }
     }
 
+    /**
+     * @param $data
+     * @throws GatewayFileException
+     */
     public function sendFile($data)
     {
         try
@@ -119,10 +123,10 @@ class Base extends BaseProcessor
         catch (\Throwable $e)
         {
             throw new GatewayFileException(
-                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE, [
-                    'id'        => $this->gatewayFile->getId(),
-                ],
-                $e);
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE,
+                ['id' => $this->gatewayFile->getId()],
+                $e
+            );
         }
     }
 
@@ -229,12 +233,12 @@ class Base extends BaseProcessor
 
     protected function getEmiAmount($amount, $annualRate, $tenureInMonths)
     {
-        // $annualRate is rate/100, say .14
-        // $monthlyRate is a/12 i.e should be treated as .14/12
+        // $annualRate is a
+        // $monthlyRate is a/12 i.e should be treated as 13/1200
         // E = P x r x (1+r)^n/((1+r)^n – 1)
         // tenure in months
 
-        $monthlyRate = $annualRate / 12;
+        $monthlyRate = $annualRate / 1200;
 
         $expression = pow((1 + $monthlyRate), $tenureInMonths);
 
@@ -242,6 +246,6 @@ class Base extends BaseProcessor
 
         $den = $expression - 1;
 
-        return (floor($num / $den) / 100);
+        return (floor($num / $den));
     }
 }

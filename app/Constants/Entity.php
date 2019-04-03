@@ -65,6 +65,7 @@ class Entity
     const PROMOTION                 = 'promotion';
     const LINE_ITEM                 = 'line_item';
     const APP_TOKEN                 = 'app_token';
+    const AUTH_TOKEN                = 'auth_token';
     const INVITATION                = 'invitation';
     const ADJUSTMENT                = 'adjustment';
     const FILE_STORE                = 'file_store';
@@ -91,6 +92,7 @@ class Entity
     const VIRTUAL_ACCOUNT           = 'virtual_account';
     const MERCHANT_DETAIL           = 'merchant_detail';
     const TERMINAL_ACTION           = 'terminal_action';
+    const PAYMENT_DOWNTIME          = 'payment_downtime';
     const MERCHANT_REQUEST          = 'merchant_request';
     const CUSTOMER_BALANCE          = 'customer_balance';
     const GATEWAY_DOWNTIME          = 'gateway_downtime';
@@ -161,6 +163,7 @@ class Entity
     const AXIS_GENIUS            = 'axis_genius';
     const NETBANKING             = 'netbanking';
     const CYBERSOURCE            = 'cybersource';
+    const PAYSECURE              = 'paysecure';
     const AEPS_ICICI             = 'aeps_icici';
     const UPI_MINDGATE           = 'upi_mindgate';
     const UPI_SBI                = 'upi_sbi';
@@ -203,6 +206,8 @@ class Entity
     const WALLET_MPESA           = 'wallet_mpesa';
     const WALLET_AMAZONPAY       = 'wallet_amazonpay';
     const CARDLESS_EMI           = 'cardless_emi';
+    const MOZART                 = 'mozart';
+    const BAJAJFINSERV           = 'bajajfinserv';
 
     // P2P Service Entities
     const P2P_DEVICE             = 'p2p_device';
@@ -218,6 +223,7 @@ class Entity
 
     // P2P Gateways
     const P2P_UPI_SHARP          = 'p2p_upi_sharp';
+    const P2P_UPI_AXIS           = 'p2p_upi_axis';
 
     // Tax and Tax Groups
     const TAX                   = 'tax';
@@ -252,6 +258,18 @@ class Entity
         self::ACCOUNT  => [
             QueryCacheConstants::VERSION => 'v1',
             QueryCacheConstants::TTL     => 1,
+        ],
+        self::TERMINAL  => [
+            QueryCacheConstants::VERSION => 'v1',
+            QueryCacheConstants::TTL     => 15,
+        ],
+        self::AUTH_TOKEN  => [
+            QueryCacheConstants::VERSION => 'v1',
+            QueryCacheConstants::TTL     => 5,
+        ],
+        self::METHODS  => [
+            QueryCacheConstants::VERSION => 'v1',
+            QueryCacheConstants::TTL     => 15,
         ],
     ];
 
@@ -331,6 +349,7 @@ class Entity
         self::MERCHANT_REQUEST          => \RZP\Models\Merchant\Request::class,
         self::CUSTOMER_BALANCE          => \RZP\Models\Customer\Balance::class,
         self::GATEWAY_DOWNTIME          => \RZP\Models\Gateway\Downtime::class,
+        self::PAYMENT_DOWNTIME          => \RZP\Models\Payment\Downtime::class,
         self::GATEWAY_RULE              => \RZP\Models\Gateway\Rule::class,
         self::GATEWAY_FILE              => \RZP\Models\Gateway\File::class,
         self::MERCHANT_EMAIL            => \RZP\Models\Merchant\Email::class,
@@ -378,6 +397,7 @@ class Entity
         self::NETBANKING             => \RZP\Gateway\Netbanking\Base::class,
         self::AXIS_GENIUS            => \RZP\Gateway\AxisGenius::class,
         self::CYBERSOURCE            => \RZP\Gateway\Cybersource::class,
+        self::PAYSECURE              => \RZP\Gateway\Paysecure::class,
         self::CARD_FSS               => \RZP\Gateway\Card\Fss::class,
         self::ENACH                  => \RZP\Gateway\Enach\Base::class,
         self::ENACH_RBL              => \RZP\Gateway\Enach\Rbl::class,
@@ -417,6 +437,8 @@ class Entity
         self::MPI_ENSTAGE            => \RZP\Gateway\Mpi\Enstage::class,
         self::WALLET_AMAZONPAY       => \RZP\Gateway\Wallet\Amazonpay::class,
         self::CARDLESS_EMI           => \RZP\Gateway\CardlessEmi::class,
+        self::MOZART                 => \RZP\Gateway\Mozart::class,
+        self::BAJAJFINSERV           => \RZP\Gateway\Mozart::class,
 
         // heimdall
         self::ORG                   => \RZP\Models\Admin\Org::class,
@@ -450,6 +472,7 @@ class Entity
         self::P2P_TRANSACTION       => \RZP\Models\P2p\Transaction::class,
 
         self::P2P_UPI_SHARP         => \RZP\Gateway\P2p\Upi::class,
+        self::P2P_UPI_AXIS          => \RZP\Gateway\P2p\Upi::class,
 
         self::COMMISSION            => \RZP\Models\Partner\Commission::class,
     ];

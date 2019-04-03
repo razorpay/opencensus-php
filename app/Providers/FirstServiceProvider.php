@@ -8,6 +8,7 @@ use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\ServiceProvider;
 
 use RZP\Models\P2p;
+use RZP\Jobs\Context;
 use RZP\Http\RequestContext;
 use RZP\Trace\ApiTraceProcessor;
 
@@ -36,6 +37,8 @@ class FirstServiceProvider extends ServiceProvider
         $this->registerRequestGetTaskIdMacro();
 
         $this->registerRequestContext();
+
+        $this->registerWorkerContext();
 
         $this->registerP2pContext();
     }
@@ -134,6 +137,11 @@ class FirstServiceProvider extends ServiceProvider
     protected function registerRequestContext()
     {
         $this->app->singleton('request.ctx', function($app) { return new RequestContext($app); });
+    }
+
+    protected function registerWorkerContext()
+    {
+        $this->app->singleton('worker.ctx', function($app) { return new Context($app); });
     }
 
     protected function registerP2pContext()

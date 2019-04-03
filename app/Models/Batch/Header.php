@@ -438,6 +438,16 @@ class Header
     const ICIC_NB_SECTOR       = 'Sector';
     const ICIC_NB_TERMINAL_ID  = 'Terminal ID';
 
+    //
+    // HDFC netbanking bulk terminal creation headers
+    //
+    const HDFC_NB_MERCHANT_ID          = 'Merchant ID';
+    const HDFC_NB_GATEWAY_MERCHANT_ID  = 'HDFC Merchant ID';
+    const HDFC_NB_CATEGORY             = 'Category';
+    const HDFC_NB_TPV                  = 'Tpv';
+    const HDFC_NB_TERMINAL_ID          = 'Terminal ID';
+
+
     // Contact Headers
     const CONTACT_ID                  = 'Contact Id';
     const CONTACT_TYPE                = 'Contact Type';
@@ -461,6 +471,7 @@ class Header
     const PAYOUT_CURRENCY          = 'Payout Currency';
     const PAYOUT_MODE              = 'Payout Mode';
     const PAYOUT_PURPOSE           = 'Payout Purpose';
+    const PAYOUT_NARRATION         = 'Payout Narration';
     const PAYOUT_REFERENCE_ID      = 'Payout Reference Id';
     const PAYOUT_ID                = 'Payout Id';
 
@@ -1276,8 +1287,6 @@ class Header
                 self::AUTH_LINK_ID,
                 self::AUTH_LINK_SHORT_URL,
                 self::AUTH_LINK_STATUS,
-                self::AUTH_LINK_MAIL_SENT,
-                self::AUTH_LINK_SMS_SENT,
                 self::AUTH_LINK_CREATED_AT,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
@@ -1312,6 +1321,23 @@ class Header
                 self::ICIC_NB_SECTOR,
                 self::ICIC_NB_SUB_IDS,
                 self::ICIC_NB_TERMINAL_ID,
+                self::STATUS,
+                self::FAILURE_REASON
+            ]
+        ],
+
+        'terminal_netbanking_hdfc' => [
+            self::INPUT => [
+                self::HDFC_NB_MERCHANT_ID,
+                self::HDFC_NB_GATEWAY_MERCHANT_ID,
+                self::HDFC_NB_CATEGORY,
+                self::HDFC_NB_TPV
+            ],
+            self::OUTPUT => [
+                self::HDFC_NB_MERCHANT_ID,
+                self::HDFC_NB_TERMINAL_ID,
+                self::HDFC_NB_CATEGORY,
+                self::HDFC_NB_TPV,
                 self::STATUS,
                 self::FAILURE_REASON
             ]
@@ -1428,6 +1454,7 @@ class Header
                 self::PAYOUT_CURRENCY,
                 self::PAYOUT_MODE,
                 self::PAYOUT_PURPOSE,
+                self::PAYOUT_NARRATION,
                 self::PAYOUT_REFERENCE_ID,
                 self::FUND_ACCOUNT_ID,
                 self::FUND_ACCOUNT_TYPE,
@@ -1449,6 +1476,7 @@ class Header
                 self::PAYOUT_CURRENCY,
                 self::PAYOUT_MODE,
                 self::PAYOUT_PURPOSE,
+                self::PAYOUT_NARRATION,
                 self::PAYOUT_REFERENCE_ID,
                 self::FUND_ACCOUNT_ID,
                 self::FUND_ACCOUNT_TYPE,

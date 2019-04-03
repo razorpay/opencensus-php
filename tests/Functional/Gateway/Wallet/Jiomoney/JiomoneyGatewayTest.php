@@ -2,18 +2,19 @@
 
 namespace RZP\Tests\Functional\Gateway\Wallet\Jiomoney;
 
-use RZP\Gateway\Wallet\Jiomoney\RequestFields;
-use RZP\Gateway\Wallet\Jiomoney\ResponseFields;
+use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Wallet\Jiomoney\StatusCode;
 use RZP\Gateway\Wallet\Jiomoney\TestAmount;
-use RZP\Http\Route;
+use RZP\Gateway\Wallet\Jiomoney\RequestFields;
+use RZP\Gateway\Wallet\Jiomoney\ResponseFields;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Payment\Refund\Status as RefundStatus;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Tests\Functional\TestCase;
 
 class JiomoneyGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -144,6 +145,15 @@ class JiomoneyGatewayTest extends TestCase
 
         $capturePayment = $this->doAuthAndCapturePayment($payment);
 
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'checkpaymentstatus')
+            {
+                $content[ResponseFields::RESPONSE][ResponseFields::GETREQUESTSTATUS][ResponseFields::TXN_STATUS] = 'error';
+            }
+            return $content;
+        });
+
         $this->refundPayment($capturePayment['id']);
 
         $refund = $this->getLastEntity('wallet', true);
@@ -190,19 +200,29 @@ class JiomoneyGatewayTest extends TestCase
                 $content[ResponseFields::RESPONSE_CODE] = 'FAILED';
                 $content[ResponseFields::RESPONSE_DESCRIPTION] = 'NA';
             }
+
+            if ($action === 'checkpaymentstatus')
+            {
+                $content[ResponseFields::RESPONSE][ResponseFields::GETREQUESTSTATUS][ResponseFields::TXN_STATUS] = 'error';
+            }
+            return $content;
         });
 
         $capturePayment = $this->doAuthAndCapturePayment($payment);
 
         $capturePaymentId = $capturePayment['id'];
 
-        $data = $this->testData[__FUNCTION__];
-
         $refund = $this->refundPayment($capturePaymentId);
 
         $gatewayRefundEntity = $this->getLastEntity('wallet', true);
 
         $this->assertTestResponse($gatewayRefundEntity, 'testRefundFailedPaymentEntity');
+
+        $refundEntity = $this->getDbLastRefund();
+
+        $this->assertEquals($refund['id'], 'rfnd_'.$refundEntity['id']);
+
+        $this->assertEquals('created', $refundEntity['status']);
 
         return $refund;
     }
@@ -346,9 +366,15 @@ class JiomoneyGatewayTest extends TestCase
     {
         $refund = $this->testRefundFailedPayment();
 
-        $response = $this->retryFailedRefund($refund['id']);
+        $this->clearMockFunction();
 
-        $this->assertEquals(RefundStatus::PROCESSED, $response['status']);
+        $this->retryFailedRefund($refund['id'], $refund['payment_id']);
+
+        $refundEntity = $this->getDbLastRefund();
+
+        $this->assertEquals($refund['id'], 'rfnd_'.$refundEntity['id']);
+
+        $this->assertEquals(RefundStatus::PROCESSED, $refundEntity['status']);
     }
 
     public function testVerifyRefundFailedOnGateway()
@@ -357,6 +383,11 @@ class JiomoneyGatewayTest extends TestCase
 
         $this->mockServerContentFunction(function (& $content, $action = null)
         {
+            if ($action === 'checkpaymentstatus')
+            {
+                $content[ResponseFields::RESPONSE][ResponseFields::GETREQUESTSTATUS][ResponseFields::TXN_STATUS] = 'error';
+            }
+
             if ($action === 'validateRefund')
             {
                 unset($content['RESPONSE']['GETREQUESTSTATUS']);
@@ -365,9 +396,15 @@ class JiomoneyGatewayTest extends TestCase
             }
         });
 
-        $response = $this->retryFailedRefund($refund['id']);
+        $this->clearMockFunction();
 
-        $this->assertEquals(RefundStatus::PROCESSED, $response['status']);
+        $this->retryFailedRefund($refund['id'], $refund['payment_id']);
+
+        $refundEntity = $this->getDbLastRefund();
+
+        $this->assertEquals($refund['id'], 'rfnd_'.$refundEntity['id']);
+
+        $this->assertEquals(RefundStatus::PROCESSED, $refundEntity['status']);
     }
 
     public function testAuthorizedPaymentRefund()

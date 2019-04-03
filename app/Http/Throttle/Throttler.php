@@ -103,6 +103,7 @@ class Throttler
 
         if (empty(array_filter($settings)) === true)
         {
+            // Alert for manual action if no configuration exists, continues the flow with code defaults.
             $this->trace->critical(TraceCode::THROTTLE_SETTINGS_MISSING);
         }
 
@@ -207,7 +208,8 @@ class Throttler
                 throw new ThrottleException($response->retryAfter, $payload);
             }
 
-            $this->trace->critical(TraceCode::THROTTLE_REQUEST_THROTTLED, $payload);
+            // For metrics purpose traces same info if throttling is mocked i.e. to not throw 429 actually.
+            $this->trace->info(TraceCode::THROTTLE_REQUEST_THROTTLED_MOCK, $payload);
         }
     }
 

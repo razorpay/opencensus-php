@@ -72,7 +72,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             'message'       => 'Unexpected bank transfer',
             'info_code'     => Base\InfoCode::PAYMENT_ABSENT,
             'utr'           => $row[self::COLUMN_UTR],
-            'row'           => $row,
+            'payee_account' => $row[self::COLUMN_PAYEE_ACCOUNT],
         ]);
 
         $this->app['slack']->queue(
@@ -91,7 +91,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 'message'       => 'Unexpected bank transfer',
                 'info_code'     => Base\InfoCode::PAYMENT_ABSENT,
                 'utr'           => $row[self::COLUMN_UTR],
-                'row'           => $row,
+                'payee_account' => $row[self::COLUMN_PAYEE_ACCOUNT],
             ]);
     }
 

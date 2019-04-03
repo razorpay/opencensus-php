@@ -12,43 +12,39 @@ return [
             'url' => '/iins',
             'method' => 'post',
             'content' => [
-                'iin' => 112333,
-                'network' => 'RuPay',
-                'type' => 'debit',
+                'iin'       => 112333,
+                'network'   => 'RuPay',
+                'type'      => 'debit',
             ],
         ],
         'response' => [
             'content' => [
-                'iin' => 112333,
-                'network' => 'RuPay',
-                'type' => 'debit',
+                'iin'       => 112333,
+                'network'   => 'RuPay',
+                'type'      => 'debit',
+                'recurring' => false,
             ],
         ],
     ],
 
-    'testAddIinFailed' => [
-        'request'   => [
-            'url'     => '/iins',
-            'method'  => 'post',
+    'testAddIinWithRecurring' => [
+        'request' => [
+            'url' => '/iins',
+            'method' => 'post',
             'content' => [
-                'iin'     => 112333,
-                'network' => 'RuPay',
-                'type'    => 'credit',
-                'emi'     => 1,
+                'iin'       => 112333,
+                'network'   => 'RuPay',
+                'type'      => 'debit',
+                'recurring' => 1,
             ],
         ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The issuer field is required when emi is 1.',
-                ],
+        'response' => [
+            'content' => [
+                'iin'       => 112333,
+                'network'   => 'RuPay',
+                'type'      => 'debit',
+                'recurring' => true,
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
@@ -62,8 +58,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'pin' => true,
-                'otp' => true,
+                'pin'       => true,
+                'otp'       => true,
+                'recurring' => false,
             ],
         ],
     ],
@@ -93,32 +90,6 @@ return [
             'content' => [
                 'otp' => true,
             ],
-        ],
-    ],
-
-    'testEditIinFailed' => [
-        'request'   => [
-            'url'     => '/iins/112333',
-            'method'  => 'put',
-            'content' => [
-                'country' => 'IN',
-                'emi'     => 1,
-                'network' => 'RuPay',
-                'type'    => 'credit'
-            ],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The issuer field is required when emi is 1.',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
@@ -173,6 +144,7 @@ return [
                 'issuer_name'    => 'HDFC',
                 'emi'            => true,
                 'message_type'   => 'SMS',
+                'recurring'      => false,
             ],
         ],
     ],
@@ -218,7 +190,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 22,
+                'count' => 27,
                 'items' => [
                     [
                     ]
@@ -228,6 +200,31 @@ return [
     ],
 
     'testImportIin' => [
+        'request' => [
+            'url' => '/iins',
+            'method' => 'post',
+            'files' => [
+                'file' => '',
+            ],
+            'content' => [
+                'network' => 'MasterCard',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'duplicates' => [],
+                'db_conflicts' => [],
+                'network_errors' => [
+                    '497522' => [
+                        8,
+                    ]
+                ],
+                'success' => 5,
+            ],
+        ],
+    ],
+
+    'testImportIinWithMessageType' => [
         'request' => [
             'url' => '/iins',
             'method' => 'post',
@@ -378,6 +375,52 @@ return [
         ],
         'response' => [
             'content' => [
+            ],
+        ],
+    ],
+
+    'testBulkFlowsUpdateEnable' => [
+        'request' => [
+            'url'     => '/iins/flows/bulk',
+            'method'  => 'PUT',
+            'content' => [
+                'flow'   => 'otp',
+                'iins'   => ['401200', '401201', '234567'],
+                'action' => 'enable'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                '401200' => [
+                                "pin",
+                                "otp",
+                            ],
+                '401201' => [
+                                "pin",
+                                "otp",
+                            ],
+            ],
+        ],
+    ],
+
+    'testBulkFlowsUpdateDisable' => [
+        'request' => [
+            'url'     => '/iins/flows/bulk',
+            'method'  => 'PUT',
+            'content' => [
+                'flow'   => 'otp',
+                'iins'   => ['401200', '401201', '234567'],
+                'action' => 'disable'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                    '401200' => [
+                                    "pin",
+                    ],
+                    '401201' => [
+                                    "pin",
+                    ],
             ],
         ],
     ]

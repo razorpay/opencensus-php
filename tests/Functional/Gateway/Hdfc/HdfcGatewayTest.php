@@ -258,9 +258,10 @@ class HdfcGatewayTest extends TestCase
 
         $this->fixtures->create('iin',
                                 [
-                                    'iin'    => '607466',
-                                    'issuer' => 'HDFC',
-                                    'type'   => 'debit',
+                                    'iin'       => '607466',
+                                    'issuer'    => 'HDFC',
+                                    'type'      => 'debit',
+                                    'recurring' => 1,
                                 ]);
 
         $payment['card']['number'] = '6074661038443336';
@@ -330,9 +331,10 @@ class HdfcGatewayTest extends TestCase
 
         $this->fixtures->create('iin',
             [
-                'iin'    => '607466',
-                'issuer' => 'HDFC',
-                'type'   => 'debit',
+                'iin'       => '607466',
+                'issuer'    => 'HDFC',
+                'type'      => 'debit',
+                'recurring' => 1,
             ]);
 
         $payment['card']['number'] = '6074661038443336';

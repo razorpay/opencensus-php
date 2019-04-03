@@ -1,0 +1,61 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/root.json",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "id",
+        "entity",
+        "address",
+        "username",
+        "handle",
+        "bank_account",
+        "active",
+        "validated",
+        "verified",
+        "created_at"
+    ],
+    "properties": {
+        "id": {
+            "type": "string",
+            "default": null,
+            "pattern": "^vpa_[\\w]{14}$"
+        },
+        "entity": {
+            "type": "string",
+            "enum": [
+                "vpa"
+            ],
+            "pattern": "^(.*)$"
+        },
+        "address": {
+            "type": "string",
+            "default": null,
+            "pattern": "^(.*)@(.*)$"
+        },
+        "username": {
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "handle": {
+            "type": "string",
+            "pattern": "^(.*)$"
+        },
+        "bank_account": {
+            "type": ["object", "null"]
+        },
+        "active": {
+            "type": "boolean"
+        },
+        "validated": {
+            "type": "boolean"
+        },
+        "verified": {
+            "type": "boolean"
+        },
+        "created_at": {
+            "type": "integer"
+        }
+    }
+}

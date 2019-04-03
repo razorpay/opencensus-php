@@ -19,6 +19,15 @@ class VpaController extends Controller
         return $this->response($response);
     }
 
+    public function initiateCreate()
+    {
+        $input = $this->request()->all();
+
+        $response = $this->service->initiateAdd($input);
+
+        return $this->response($response);
+    }
+
     public function create()
     {
         $input = $this->request()->all();

@@ -89,6 +89,8 @@ class Activate extends Base\Core
         $this->app['workflow']
              ->handle();
 
+        (new Merchant\Core)->activateInternationalIfApplicable($merchant, $merchantDetail);
+
         (new Merchant\Core)->createBalance($merchant, 'live');
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetail)
@@ -135,6 +137,8 @@ class Activate extends Base\Core
 
         $merchant->activate();
 
+        (new Merchant\Core)->activateInternationalIfApplicable($merchant, $merchantDetails);
+
         $merchant->holdFunds();
 
         $originProduct = $this->app['basicauth']->getRequestOriginProduct();
@@ -153,7 +157,6 @@ class Activate extends Base\Core
         $detailCore->addLogForDebugging($merchant, $merchantDetails, TraceCode::MERCHANT_INSTANT_ACTIVATION_AFTER_DB_SAVE);
 
         $this->trace->info(TraceCode::MERCHANT_ACCOUNT_INSTANTLY_ACTIVATED);
-
 
         //
         // If a merchant does not have website or app, we would need to activate them
@@ -203,6 +206,8 @@ class Activate extends Base\Core
         // Triggering workflow for the activation_status change in merchantDetail entity
         $this->app['workflow']
              ->handle();
+
+        (new Merchant\Core)->activateInternationalIfApplicable($merchant, $merchantDetail);
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetail)
         {
@@ -288,7 +293,7 @@ class Activate extends Base\Core
 
         $zapierData = (new Detail\Service)->getActivationZapierData($merchant);
 
-        (new Detail\Core)->postFormSubmissionToZapier($zapierData, 'activations');
+        (new Detail\Core)->postFormSubmissionToZapier($zapierData, 'activations', $merchant);
 
         $this->logActionToSlack($merchant, SlackActions::ACTIVATE);
     }

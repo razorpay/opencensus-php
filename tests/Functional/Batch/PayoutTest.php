@@ -23,6 +23,7 @@ class PayoutTest extends TestCase
 
     public function testCreateBatchOfPayoutType()
     {
-        // TODO: Besides basis tests in BatchTest for this tpye, specific tests cases to be added in next pr.
+        $this->markTestSkipped('Test is not written for thi');
+        // TODO: Besides basis tests in BatchTest for this type, specific tests cases to be added in next pr.
     }
 }

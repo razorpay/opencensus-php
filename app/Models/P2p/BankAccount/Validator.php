@@ -9,7 +9,9 @@ use RZP\Models\P2p\Base\Libraries\Card;
 
 class Validator extends Base\Validator
 {
+    protected static $editRules;
     protected static $fetchBanksRules;
+    protected static $initiateRetrieveRules;
     protected static $retrieveRules;
     protected static $retrieveSuccessRules;
     protected static $fetchAllRules;
@@ -26,15 +28,15 @@ class Validator extends Base\Validator
     public function rules()
     {
         $rules = [
-            Entity::DEVICE_ID                => 'string',
-            Entity::HANDLE                   => 'string',
-            Entity::GATEWAY_DATA             => 'array',
-            Entity::BANK                     => 'string',
-            Entity::IFSC                     => 'string',
-            Entity::ACCOUNT_NUMBER           => 'string',
-            Entity::MASKED_ACCOUNT_NUMBER    => 'string',
-            Entity::BENEFICIARY_NAME         => 'string',
-            Entity::CREDS                    => 'array',
+            Entity::DEVICE_ID             => 'string',
+            Entity::HANDLE                => 'string',
+            Entity::GATEWAY_DATA          => 'array',
+            Entity::BANK_ID               => 'string',
+            Entity::IFSC                  => 'string',
+            Entity::ACCOUNT_NUMBER        => 'string',
+            Entity::MASKED_ACCOUNT_NUMBER => 'string',
+            Entity::BENEFICIARY_NAME      => 'string',
+            Entity::CREDS                 => 'array',
         ];
 
         return $rules;
@@ -59,56 +61,9 @@ class Validator extends Base\Validator
         $credRules = Credentials::rules()->with([
             Credentials::TYPE           => 'required',
             Credentials::SUB_TYPE       => 'required',
-            Credentials::FORMAT         => 'required',
-            Credentials::LENGTH         => 'required',
         ]);
 
         $rules->arrayRules(Credentials::CREDS, $credRules->toArray(), true);
-
-        return $rules;
-    }
-
-    public function makeCredBlockRules()
-    {
-        $rules = $this->makeRules();
-
-        $credRules = Credentials::rules()->with([
-            Credentials::TYPE           => 'required',
-            Credentials::SUB_TYPE       => 'required',
-            Credentials::STRING         => 'required',
-            Credentials::CODE           => 'required',
-            Credentials::KI             => 'required',
-        ]);
-
-        $rules->arrayRules(Credentials::CREDS, $credRules->toArray(), true);
-
-        return $rules;
-    }
-
-    public function makeCardRules()
-    {
-        $rules = $this->makeRules();
-
-        $cardRules = Card::rules()->with([
-            Card::EXPIRY_YEAR       => 'required',
-            Card::EXPIRY_MONTH      => 'required',
-            Card::LAST6             => 'required',
-        ]);
-
-        $rules->arrayRules(Card::CARD, $cardRules->toArray());
-
-        return $rules;
-    }
-
-    public function makeTxnRules()
-    {
-        $rules = $this->makeRules();
-
-        $txnRules = Txn::rules()->with([
-            Txn::ID     => 'required',
-        ]);
-
-        $rules->arrayRules(Txn::TXN, $txnRules->toArray());
 
         return $rules;
     }
@@ -130,6 +85,13 @@ class Validator extends Base\Validator
         return $rules;
     }
 
+    public function makeEditRules()
+    {
+        $rules = $this->makeRules([]);
+
+        return $rules;
+    }
+
     public function makeFetchBanksRules()
     {
         $rules = $this->makeRules([]);
@@ -137,10 +99,19 @@ class Validator extends Base\Validator
         return $rules;
     }
 
+    public function makeInitiateRetrieveRules()
+    {
+        $rules = $this->makeRules([
+            Entity::BANK_ID => 'required',
+        ]);
+
+        return $rules;
+    }
+
     public function makeRetrieveRules()
     {
         $rules = $this->makeRules([
-            Entity::BANK        => 'required',
+            Entity::BANK_ID => 'required',
         ]);
 
         return $rules;
@@ -149,7 +120,7 @@ class Validator extends Base\Validator
     public function makeRetrieveSuccessRules()
     {
         $rules = $this->makeRules([
-            Entity::BANK    => 'required',
+            Entity::BANK_ID => 'required',
         ]);
 
         $rules->arrayRules(Entity::BANK_ACCOUNTS,
@@ -159,23 +130,11 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    public function makeFetchAllRules()
-    {
-        $rules = $this->makeRules([]);
-
-        return $rules;
-    }
-
-    public function makeFetchRules()
-    {
-        $rules = $this->makePublicIdRules();
-
-        return $rules;
-    }
-
     public function makeInitiateSetUpiPinRules()
     {
         $rules = $this->makePublicIdRules();
+
+        $rules->merge(Credentials::actionRules());
 
         return $rules;
     }
@@ -183,14 +142,12 @@ class Validator extends Base\Validator
     public function makeInitiateSetUpiPinSuccessRules()
     {
         $rules = $this->makeRules([
-            Entity::BANK        => 'required',
+            Entity::BANK_ID => 'required',
         ]);
 
         $rules->arrayRules(Entity::BANK_ACCOUNT, [
             Entity::ID          => 'required|string'
         ]);
-
-        $rules->merge($this->makeTxnRules());
 
         return $rules;
     }
@@ -199,24 +156,12 @@ class Validator extends Base\Validator
     {
         $rules = $this->makePublicIdRules();
 
-        $rules->arrayRules(Entity::CL, $this->makeCredBlockRules()->toArray());
-        $rules->merge($this->makeCardRules());
-        $rules->merge($this->makeTxnRules());
-
         return $rules;
     }
 
     public function makeSetUpiPinSuccessRules()
     {
-        $rules = $this->makeRules([
-            Entity::BANK        => 'required',
-        ]);
-
-        $rules->arrayRules(Entity::BANK_ACCOUNT, [
-            Entity::ID          => 'required|string'
-        ]);
-
-        $rules->merge($this->makeTxnRules());
+        $rules = $this->makeEntityIdRules();
 
         return $rules;
     }
@@ -231,14 +176,12 @@ class Validator extends Base\Validator
     public function makeInitiateFetchBalanceSuccessRules()
     {
         $rules = $this->makeRules([
-            Entity::BANK        => 'required',
+            Entity::BANK_ID => 'required',
         ]);
 
         $rules->arrayRules(Entity::BANK_ACCOUNT, [
             Entity::ID          => 'required|string'
         ]);
-
-        $rules->merge($this->makeTxnRules());
 
         return $rules;
     }
@@ -247,23 +190,12 @@ class Validator extends Base\Validator
     {
         $rules = $this->makePublicIdRules();
 
-        $rules->arrayRules(Entity::CL, $this->makeCredBlockRules()->toArray());
-        $rules->merge($this->makeTxnRules());
-
         return $rules;
     }
 
     public function makeFetchBalanceSuccessRules()
     {
-        $rules = $this->makeRules([
-            Entity::BANK        => 'required',
-        ]);
-
-        $rules->arrayRules(Entity::BANK_ACCOUNT, [
-            Entity::ID          => 'required|string'
-        ]);
-
-        $rules->merge($this->makeTxnRules());
+        $rules = $this->makeEntityIdRules();
 
         $rules->arrayRules(Entity::RESPONSE, [
             Entity::BALANCE     => 'required|integer',

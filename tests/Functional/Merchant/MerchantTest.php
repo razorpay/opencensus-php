@@ -19,6 +19,7 @@ use RZP\Jobs\EsSync;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
+use RZP\Services\RazorXClient;
 use RZP\Mail\User\MappedToAccount;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
@@ -435,6 +436,8 @@ class MerchantTest extends TestCase
 
     public function testEditMerchantEmail()
     {
+        config(['app.query_cache.mock' => false]);
+
         $content = $this->createMerchant();
 
         $this->fixtures->user->createUserForMerchant($content['id'], ['email' => $content['email']]);
@@ -463,6 +466,8 @@ class MerchantTest extends TestCase
 
     public function testEditMerchantEmailUserExists()
     {
+        config(['app.query_cache.mock' => false]);
+
         $content = $this->createMerchant();
 
         $this->fixtures->user->createUserForMerchant($content['id'], ['email' => $content['email']]);
@@ -3997,6 +4002,121 @@ class MerchantTest extends TestCase
     public function testGetMerchantPartnerStatusExtraInput()
     {
         $this->ba->directAuth();
+
+        $this->startTest();
+    }
+
+    public function testInternationalEnable()
+    {
+        // Mock Razorx
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('On');
+
+        $merchantDetailsData = [
+            'business_category'     => 'not_for_profit',
+            'business_subcategory'  => 'charity',
+            'activation_status'     => 'activated',
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $merchantDetailsData);
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $merchantData = [
+            'international'     => 0,
+            'activated'         => 1,
+            'convert_currency'  => null,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
+    public function testInternationalEnableWhenAlreadyActive()
+    {
+        $merchantData = [
+            'international'     => 1,
+            'activated'         => 1,
+            'convert_currency'  => false,
+        ];
+
+        $merchant = $this->fixtures->create('merchant', $merchantData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
+
+        $this->startTest();
+    }
+
+    public function testInternationalEnableWhenWebsiteNotSet()
+    {
+        $merchantData = [
+            'international'     => 0,
+            'activated'         => 1,
+            'convert_currency'  => null,
+            'website'           => ''
+        ];
+
+        $merchant = $this->fixtures->create('merchant', $merchantData);
+
+        $merchantDetailsData =[
+            'merchant_id'      => $merchant['id'],
+            'business_website' => '',
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $merchantDetailsData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
+
+        $this->startTest();
+    }
+
+    public function testInternationalDisable()
+    {
+        $merchantData = [
+            'international'     => 1,
+            'activated'         => 1,
+            'convert_currency'  => false,
+        ];
+
+        $merchant = $this->fixtures->create('merchant', $merchantData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
+
+        $this->startTest();
+    }
+
+    public function testInternationalDisableWhenAlreadyInActive()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchantData = [
+            'international'     => 0,
+            'activated'         => 1,
+            'convert_currency'  => false,
+        ];
+
+        $this->fixtures->edit('merchant', $merchant['id'], $merchantData);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
+
+        $this->startTest();
+    }
+
+    public function testInternationalToggleWithInvalidValue()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
 
         $this->startTest();
     }

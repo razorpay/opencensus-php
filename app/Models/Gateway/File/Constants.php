@@ -20,6 +20,7 @@ class Constants
     const SCBL             = 'scbl';
     const UPI_ICICI        = 'upi_icici';
     const UPI_MINDGATE     = 'upi_mindgate';
+    const UPI_SBI          = 'upi_sbi';
     const AIRTEL_MONEY     = 'airtel_money';
     const CSB              = 'csb';
     const AXIS_MIGS        = 'axis_migs';
@@ -50,6 +51,7 @@ class Constants
             self::ALLA,
             self::ISG,
             self::HDFC_EMANDATE,
+            self::UPI_SBI,
         ],
         Type::CLAIM => [
         ],
@@ -118,6 +120,7 @@ class Constants
             self::HDFC_EMANDATE => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
             self::ICICI         => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
             self::ISG           => ['settlements@razorpay.com'],
+            self::UPI_SBI       => ['refunds@razorpay.com'],
         ],
 
         Type::COMBINED => [
@@ -156,7 +159,7 @@ class Constants
             self::KOTAK    => ['kotakcards.emi@razorpay.com'],
             self::RBL      => ['Rblcards.emi@razorpay.com'],
             self::SCBL     => ['scbl.emi@razorpay.com'],
-            self::SBI      => [''],
+            self::SBI      => ['albin.george@razorpay.com', 'vivek.kumar@razorpay.com'],
             // todo: Add the recepients to the bank group
             self::CITI     => ['citibank.emi@razorpay.com'],
         ],

@@ -196,6 +196,9 @@ return [
 
     'commission_mapping'      => [
         'properties' => [
+            'type' => [
+                'type' => 'keyword',
+            ],
             'partner_id' => [
                 'type' => 'keyword',
             ],
@@ -362,7 +365,7 @@ return [
                 'search_analyzer' => 'standard',
             ],
             'balance' => [
-                'type' => 'integer',
+                'type' => 'long',
             ]
         ],
     ],
@@ -475,6 +478,9 @@ return [
                 'type'  => 'keyword',
             ],
             'status' => [
+                'type'  => 'keyword',
+            ],
+            'purpose' => [
                 'type'  => 'keyword',
             ],
             'created_at' => [

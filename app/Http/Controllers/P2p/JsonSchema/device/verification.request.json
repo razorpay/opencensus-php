@@ -1,0 +1,16 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "title": "The Root Schema",
+    "description" : "Request to check verification response",
+    "required": [
+        "sdk"
+    ],
+    "properties": {
+        "allOf" : [
+            {"$ref" : "definitions.json#/sdk"}
+        ]
+    }
+}

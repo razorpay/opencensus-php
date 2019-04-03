@@ -17,6 +17,8 @@ class InvoiceMetricTest extends TestCase
 
         parent::setUp();
 
+        config(['app.query_cache.mock' => false]);
+
         $this->ba->privateAuth();
     }
 

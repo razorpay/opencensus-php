@@ -615,7 +615,7 @@ class Service extends Base\Service
 
             $zapierData = $this->getZapierData($this->merchant, $input);
 
-            (new Core)->postFormSubmissionToZapier($zapierData, 'signups');
+            (new Core)->postFormSubmissionToZapier($zapierData, 'signups', $this->merchant);
         }
 
         $preSignupDetails = $this->getPreSignupDetails();

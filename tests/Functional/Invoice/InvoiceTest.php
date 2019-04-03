@@ -88,6 +88,18 @@ class InvoiceTest extends TestCase
         $this->assertEquals('29kjsngjk213922', $invoice->getMerchantGstin());
     }
 
+    public function testCreateInvoiceWithBatchIdInHeader()
+    {
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
     public function testCreateInvoiceWithExistingCustomer()
     {
         $response = $this->startTest();
@@ -199,6 +211,13 @@ class InvoiceTest extends TestCase
 
     public function testCreateLinkWithSource()
     {
+        $this->startTest();
+    }
+
+    public function testCreateLinkWithExpiryRequiredFeature()
+    {
+        $this->fixtures->merchant->addFeatures(['invoice_expire_by_reqd']);
+
         $this->startTest();
     }
 
@@ -1910,6 +1929,8 @@ class InvoiceTest extends TestCase
 
     public function testGetLinkView()
     {
+        config(['app.query_cache.mock' => false]);
+
         $this->createMetricsMock()
              ->expects($this->at(4))
              ->method('count')
@@ -1931,6 +1952,8 @@ class InvoiceTest extends TestCase
 
     public function testGetLinkViewDraft()
     {
+        config(['app.query_cache.mock' => false]);
+
         $this->createMetricsMock()
              ->expects($this->at(4))
              ->method('count')

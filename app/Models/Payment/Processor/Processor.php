@@ -37,6 +37,8 @@ use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Base\CardCacheTrait;
+use RZP\Gateway\Base\Action;
+use RZP\Models\Admin\ConfigKey;
 
 class Processor
 {
@@ -244,6 +246,8 @@ class Processor
     {
         try
         {
+            $startTime = microtime(true);
+
             $this->setMethodForInput($input);
 
             $payment = $this->buildPaymentEntity($input);
@@ -271,6 +275,8 @@ class Processor
 
             // Creates an origin entity for the payment based on the auth used to initiate the payment.
             (new EntityOrigin\Core)->createEntityOrigin($payment);
+
+            $this->logRequestTime($payment, $startTime);
 
             return $paymentData;
         }
@@ -303,9 +309,11 @@ class Processor
             return;
         }
 
+        $appTokenPresent = $this->isAppTokenPresent();
+
         $this->subscription = $this->app['module']
                                    ->subscription
-                                   ->fetchSubscriptionInfo($input, $payment->merchant);
+                                   ->fetchSubscriptionInfo($input, $payment->merchant, false, $appTokenPresent);
 
         if ($this->subscription->isExternal() === true)
         {
@@ -316,14 +324,27 @@ class Processor
             $payment->setRecurringType($subscriptionPaymentRecurringType);
 
             $this->addOrderIdToInputForExternalSubscription($input);
-
-            $this->addCustomerIdToInputForExternalSubscription($input);
         }
     }
 
     protected function addOrderIdToInputForExternalSubscription(array & $input)
     {
         assert($this->subscription->isExternal() === true);
+
+        // For subscription card change, we donot need to add order id
+        // for the following subscription states. (For these states, we will be
+        // using default auth amount as card change amount)
+        if (($this->subscription->isActive() === true) or
+            ($this->subscription->isHalted() === true) or
+            ($this->subscription->isAuthenticated() === true))
+        {
+            $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
+
+            if ($cardChange === true)
+            {
+                return;
+            }
+        }
 
         if (($this->subscription->hasCurrentInvoice() === true) and
             (isset($input[Payment\Entity::ORDER_ID]) === false))
@@ -773,8 +794,15 @@ class Processor
      * This method sets the flag that this payment should be processed via
      * Core payment service
      */
-    protected function setPaymentRoutedThroughCpsIfApplicable(Payment\Entity $payment)
+    protected function setPaymentRoutedThroughCpsIfApplicable(Payment\Entity $payment, $gatewayInput)
     {
+        // Check if AuthN gateway is not the AuthZ
+        if ((empty($gatewayInput['authenticate']['gateway']) === false) and
+            ($gatewayInput['authenticate']['gateway'] !== $payment->getGateway()))
+        {
+            return;
+        }
+
         if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::CPS_SERVICE_ENABLED, false) === true)
         {
             $featureFlag = self::CPS_FEATURE_FLAG_PREFIX. '_' .$payment->getGateway();
@@ -1351,7 +1379,7 @@ class Processor
         //
         if ($e instanceof Exception\GatewayErrorException)
         {
-            if (in_array($e->getAction(), \RZP\Gateway\Base\Action::$nonVerifiableActions, true) === true)
+            if (in_array($e->getAction(), Action::$nonVerifiableActions, true) === true)
             {
                 $payment->setNonVerifiable();
             }
@@ -1453,6 +1481,15 @@ class Processor
 
         $gatewayData['merchant'] = $this->payment->merchant;
 
+        if ($this->isRoutedThroughCps($action, $gatewayData) === true)
+        {
+            $this->persistCardDetails($gateway, $action, $gatewayData);
+
+            $gatewayData['cps_route'] = true;
+        }
+
+        $gatewayData['merchant_detail'] = $this->repo->merchant_detail->getByMerchantId($this->payment->merchant['id']);
+
         //
         // This data was earlier picked up from env by gateways themselves.
         // With the migration to CPS, it will become necessary for API to pick
@@ -1483,6 +1520,39 @@ class Processor
             }
 
             throw $ex;
+        }
+    }
+
+    public function isRoutedThroughCps($action, $input): bool
+    {
+        /**
+         * This checks if the current request has to be routed to
+         * core payment service or not. We are setting this flag(`cps_route`)
+         * for new payments based on variant returned by RazorX.
+         */
+        if (((bool) ConfigKey::get(ConfigKey::CPS_SERVICE_ENABLED, false) === true) and
+            (is_array($input) === true) and
+            (isset($input[E::PAYMENT]) === true) and
+            ($input[E::PAYMENT][Payment\Entity::CPS_ROUTE] === true) and
+            (in_array($action, Action::$cpsSupportedActions) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function persistCardDetails($gatewayName, $action, &$input)
+    {
+        $action = snake_case($action);
+
+        if ($action === Action::AUTHORIZE)
+        {
+            $this->persistCardDetailsTemporarily($input);
+        }
+        else if ($action === Action::CALLBACK)
+        {
+            $this->setCardNumberAndCvv($input);
         }
     }
 
@@ -2552,5 +2622,42 @@ class Processor
                 ['key' => $key,
                  '$value' => $value]);
         }
+    }
+
+    protected function logRequestTime($payment, $startTime)
+    {
+        try
+        {
+            $requestTime = get_diff_in_millisecond($startTime);
+
+            (new Payment\Metric)->pushCreateRequestTimeMetrics($payment, $requestTime);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC
+            );
+        }
+    }
+
+    protected function isAppTokenPresent(): bool
+    {
+        if ($this->request->hasSession() === false)
+        {
+            return false;
+        }
+
+        $key = $this->mode . '_app_token';
+
+        $appToken = $this->request->session()->get($key);
+
+        if ($appToken !== null)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

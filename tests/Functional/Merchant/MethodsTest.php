@@ -2,11 +2,18 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Event;
+
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
+use RZP\Constants\Entity as E;
 use RZP\Tests\Functional\TestCase;
+use Illuminate\Cache\Events\CacheHit;
+use Illuminate\Cache\Events\KeyWritten;
+use Illuminate\Cache\Events\CacheMissed;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Base\QueryCache\Constants as CacheConstants;
 
 class MethodsTest extends TestCase
 {
@@ -313,5 +320,74 @@ class MethodsTest extends TestCase
         $this->assertFalse($merchantMethods->isJcbEnabled());
 
         $this->assertFalse($merchantMethods->isDinersEnabled());
+    }
+
+    public function testQueryCacheHitForMethods()
+    {
+        config(['app.query_cache.mock' => false]);
+
+        Event::fake();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthPayment($payment);
+
+        //
+        // Asserts that key is not present initially in cache
+        //
+        Event::assertDispatched(CacheMissed::class, function ($e)
+        {
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, E::METHODS) === true)
+                {
+                    $this->assertContains(E::METHODS, $tag);
+                }
+            }
+            return true;
+        });
+
+        //
+        // Asserts that key is inserted into cache
+        //
+        Event::assertDispatched(KeyWritten::class, function ($e)
+        {
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, E::METHODS) === true)
+                {
+                    $this->assertContains(E::METHODS, $tag);
+                }
+            }
+            return true;
+        });
+
+        //
+        // Asserts cache should not have been hit the first time
+        //
+        Event::assertNotDispatched(CacheHit::class);
+
+        $this->doAuthPayment($payment);
+
+        //
+        // Asserts that key is found in cache on subsequent attempts
+        //
+        Event::assertDispatched(CacheHit::class, function ($e)
+        {
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, E::METHODS) === true)
+                {
+                    $this->assertContains(
+                        implode(':', [
+                            CacheConstants::QUERY_CACHE_PREFIX,
+                            CacheConstants::DEFAULT_QUERY_CACHE_VERSION,
+                            E::METHODS]),
+                        $e->key
+                    );
+                }
+            }
+            return true;
+        });
     }
 }

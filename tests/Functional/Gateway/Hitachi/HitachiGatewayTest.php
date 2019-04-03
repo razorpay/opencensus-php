@@ -101,6 +101,14 @@ class HitachiGatewayTest extends TestCase
 
         $payment['card']['number'] = CardNumber::VALID_VISA_NOT_ENROLLED;
 
+        $this->fixtures->iin->create([
+            'iin'       => '402400',
+            'country'   => 'IN',
+            'network'   => 'Visa',
+            'issuer'    => 'KKBK',
+            'recurring' => 1
+        ]);
+
         $response = $this->doAuthPayment($payment);
         $paymentId = $response['razorpay_payment_id'];
 
@@ -720,7 +728,7 @@ class HitachiGatewayTest extends TestCase
 
         );
 
-        $this->createIin('402400', 'Visa');
+        $this->createIin('402400', 'Visa', 1);
 
         //Selecting Axis Card
         $this->payment['card']['number'] = '4024001104457538';
@@ -970,13 +978,14 @@ class HitachiGatewayTest extends TestCase
         $this->assertTrue($this->otpFlow);
     }
 
-    public function createIin($iin, $network)
+    public function createIin($iin, $network, $recurring = 0)
     {
         $this->fixtures->iin->create([
-            'iin'     => $iin,
-            'country' => 'IN',
-            'issuer'  => 'UTIB',
-            'network' => $network,
+            'iin'       => $iin,
+            'country'   => 'IN',
+            'issuer'    => 'UTIB',
+            'network'   => $network,
+            'recurring' => $recurring,
             'flows'   => [
                 'otp' => '1',
                 '3ds' => '1',

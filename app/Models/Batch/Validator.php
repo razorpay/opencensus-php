@@ -122,7 +122,7 @@ class Validator extends Base\Validator
 
     protected static $terminalCreateRules = [
         Entity::TYPE                 => 'required|custom',
-        Entity::SUB_TYPE             => 'required|string|in:hitachi,netbanking_icici',
+        Entity::SUB_TYPE             => 'required|string|in:hitachi,netbanking_icici,netbanking_hdfc',
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
     ];
@@ -252,7 +252,8 @@ class Validator extends Base\Validator
     // This is not a copy paste of above ^ rules!
     protected static $payoutTypeRowRules = [
         Header::RAZORPAYX_ACCOUNT_NUMBER    => 'required|string',
-        Header::PAYOUT_PURPOSE              => 'required|string|max:30|alpha_dash',
+        Header::PAYOUT_PURPOSE              => 'required|string|max:30|alpha_dash_space',
+        Header::PAYOUT_NARRATION            => 'sometimes|nullable|string|max:30|alpha_space_num',
         Header::PAYOUT_AMOUNT               => 'required|integer|min:100|max:500000000',
         Header::PAYOUT_CURRENCY             => 'required|size:3|in:INR',
         Header::PAYOUT_MODE                 => 'sometimes|nullable|string',
@@ -269,6 +270,13 @@ class Validator extends Base\Validator
         Header::CONTACT_MOBILE_2            => 'sometimes|nullable|string',
         Header::CONTACT_REFERENCE_ID        => 'sometimes|nullable|string',
         Header::NOTES                       => 'sometimes|nullable|notes',
+    ];
+
+    protected static $terminalNetbankingHdfcRules = [
+        Header::HDFC_NB_MERCHANT_ID          => 'required|string|size:14',
+        Header::HDFC_NB_GATEWAY_MERCHANT_ID  => 'required|string|max:30|alpha_dash_space',
+        Header::HDFC_NB_CATEGORY             => 'required',
+        Header::HDFC_NB_TPV                  => 'sometimes|nullable|in:0,1,2',
     ];
 
     protected function validateType($attribute, $value)
@@ -345,6 +353,14 @@ class Validator extends Base\Validator
         if (method_exists($this, $validatorMethodName) === true)
         {
             $this->$validatorMethodName($entries, $params, $merchant);
+        }
+    }
+
+    public function validateTerminalNetbankingHdfcEntries($entries, array $params, $merchant)
+    {
+        foreach ($entries as $entry)
+        {
+            $this->validateInput('terminal_netbanking_hdfc', $entry);
         }
     }
 

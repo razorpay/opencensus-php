@@ -88,6 +88,10 @@ class Entity extends Base\PublicEntity
         self::BALANCE       => 'int',
     ];
 
+    protected $ignoredRelations = [
+        self::ENTITY
+    ];
+
     // -------------------- Relations ---------------------------
 
     public function customer()

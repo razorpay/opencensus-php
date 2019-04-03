@@ -41,10 +41,14 @@ trait Callback
      */
     public function callback($id, $hash, array $gatewayInput)
     {
+        $gatewayInputLog = $gatewayInput;
+
+        unset($gatewayInputLog['otp']);
+
         $this->trace->info(
             TraceCode::PAYMENT_CALLBACK_REQUEST,
             [
-                'gateway_input' => $gatewayInput,
+                'gateway_input' => $gatewayInputLog,
                 'payment_id'    => $id,
             ]);
 
@@ -353,6 +357,19 @@ trait Callback
         {
             $input['gateway'] = $this->submitHeadlessOtp($payment, $input['gateway']);
         }
+
+        if(($payment->isMethod(Payment\Method::EMI) === true) and ($payment->getGateway() === Payment\Gateway::BAJAJ))
+        {
+            $input['emi'] = $this->repo->emi_plan->findOrFail($payment->getEmiPlanId());
+
+            $input['payment_analytics'] = $this->repo->payment_analytics->findForPayment($payment->getId())[0];
+
+            $card = $this->repo->card->findOrFail($payment->getCardId());
+
+            $input['card'] = array();
+
+            $input['card']['number'] = $this->getCardNumber($card);
+        }
     }
 
     protected function postPaymentOtpCallbackProcessing(array &$input, $data)
@@ -520,5 +537,19 @@ trait Callback
     protected function getCallbackMutexResource(Payment\Entity $payment): string
     {
         return 'callback_' . $payment->getId();
+    }
+
+    protected function getCardNumber($card)
+    {
+        if ($card->globalCard !== null)
+        {
+            $card = $card->globalCard;
+        }
+
+        $cardToken = $card->getVaultToken();
+
+        $cardNumber = (new Card\CardVault)->getCardNumber($cardToken);
+
+        return $cardNumber;
     }
 }

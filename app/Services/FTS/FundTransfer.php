@@ -117,15 +117,21 @@ class FundTransfer extends Base
      */
     protected function addTransferBlock(array $request): array
     {
+        $mode = $this->fta->getMode();
+
+        if(empty($mode) === true)
+        {
+            $mode = Constants::MODE_IMPS;
+        }
 
         $request[Constants::TRANSFER] = [
-            Constants::MODE              => $this->fta->getMode(),
+            Constants::MODE              => $mode,
             Constants::AMOUNT            => $this->source->getAmount(),
-            Constants::CHANNEL           => $this->fta->getChannel(),
             Constants::NARRATION         => $this->fta->getNarration(),
             Constants::SOURCE_ID         => $this->fta->getSourceId(),
             Constants::SOURCE_TYPE       => $this->fta->getSourceType(),
             Constants::INITIATE_AT       => $this->fta->getInitiateAt(),
+            Constants::PREFERRED_CHANNEL => $this->fta->getChannel(),
         ];
 
         return $request;
@@ -142,10 +148,17 @@ class FundTransfer extends Base
 
     public function addBankAccountDetails(array $request):array
     {
+        $accountType = $this->fta->bankAccount->getAccountType();
+
+        if(empty($accountType) === true)
+        {
+            $accountType = Constants::SAVING;
+        }
+
         $request[Constants::ACCOUNT] = [
                 Constants::BANK_ACCOUNT => [
                         Constants::IFSC_CODE                  => $this->fta->bankAccount->getIfscCode(),
-                        Constants::ACCOUNT_TYPE               => $this->fta->bankAccount->getAccountType(),
+                        Constants::ACCOUNT_TYPE               => $accountType,
                         Constants::ACCOUNT_NUMBER             => $this->fta->bankAccount->getAccountNumber(),
                         Constants::BENEFICIARY_NAME           => $this->fta->bankAccount->getBeneficiaryName(),
                         Constants::BENEFICIARY_CITY           => $this->fta->bankAccount->getBeneficiaryCity(),
@@ -208,7 +221,14 @@ class FundTransfer extends Base
     {
         $ftsTransferId = $responseBody[Constants::FUND_TRANSFER_ID];
 
-        $this->FTACore->updateFTA($this->fta, $ftsTransferId, $responseBody['status']);
+        $responseBody[Constants::STATUS] = strtolower($responseBody[Constants::STATUS]);
+
+        if(strcasecmp($responseBody[Constants::STATUS], Constants::STATUS_CREATED) === 0)
+        {
+            $responseBody[Constants::STATUS] = Constants::STATUS_INITIATED;
+        }
+
+        $this->FTACore->updateFTA($this->fta, $ftsTransferId, $responseBody[Constants::STATUS]);
 
         $this->updateSource($ftsTransferId);
     }

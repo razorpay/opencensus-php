@@ -1,18 +1,35 @@
 <?php
 
-namespace RZP\Gateway\CardlessEmi\ErrorCodes;
+namespace RZP\Gateway\CardlessEmi;
+
+use RZP\Error\ErrorCode;
 
 class ErrorCodes
 {
-    const USER_DNE                = 'User Does Not Exist With Provider';
-    const INV_TOKEN               = 'Token provided is invalid';
-    const INV_MERCHANT_NAME       = 'Merchant name is invalid';
-    const INV_EMI_PLAN_ID         = 'Emi plan selected is invalid';
-    const MIN_AMT_REQ             = 'Minimum amount required for transaction';
-    const MAX_AMT_LMT             = 'Maximum amount limit exhausted';
-    const PAYMENT_TIMED_OUT       = 'Payment timed out';
-    const PAYMENT_CANCELLED       = 'Payment cancelled by user';
-    const PAYMENT_FAILED_PARTNER  = 'Payment failed by partner due to some internal error';
-    const CREDIT_LIMIT_EXHAUSTED  = 'Credit Limit of customer has exhausted';
-    const INV_CAPTURE_AMT         = 'Capture Amount greater than Authorized Amount';
+    public static $errorCodeMap = [
+        'USER_DNE'                         => ErrorCode::BAD_REQUEST_CARDLESS_EMI_USER_DOES_NOT_EXIST,
+        'INV_TOKEN'                        => ErrorCode::BAD_REQUEST_CARDLESS_EMI_INVALID_TOKEN,
+        'INV_MERCHANT_NAME'                => ErrorCode::BAD_REQUEST_CARDLESS_EMI_INVALID_MERCHANT_NAME,
+        'INV_EMI_PLAN_ID'                  => ErrorCode::BAD_REQUEST_CARDLESS_EMI_INVALID_EMI_PLAN_ID,
+        'MIN_AMT_REQ'                      => ErrorCode::BAD_REQUEST_CARDLESS_EMI_MINIMUM_AMOUNT_REQUIRED,
+        'MAX_AMT_LMT'                      => ErrorCode::BAD_REQUEST_CARDLESS_EMI_MAXIMUM_AMOUNT_LIMIT,
+        'PAYMENT_TIMED_OUT'                => ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT,
+        'PAYMENT_CANCELLED'                => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED,
+        'PAYMENT_FAILED_PARTNER'           => ErrorCode::GATEWAY_ERROR_CARDLESS_EMI_PAYMENT_FAILED_PARTNER,
+        'CREDIT_LIMIT_EXHAUSTED'           => ErrorCode::BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_EXHAUSTED,
+        'INV_CAPTURE_AMT'                  => ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH,
+        'CUST_CREDIT_LIMIT_NOT_ACTIVATED'  => ErrorCode::BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_NOT_ACTIVATED,
+        'CUST_CREDIT_LIMIT_NOT_APPROVED'   => ErrorCode::BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_NOT_APPROVED,
+        'CUST_CREDIT_LIMIT_EXPIRED'        => ErrorCode::BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_EXPIRED,
+    ];
+
+    public static function getInternalErrorCode($errorCode, $defaultErrorCode)
+    {
+        if (isset(self::$errorCodeMap[$errorCode]) === true)
+        {
+            return self::$errorCodeMap[$errorCode];
+        }
+
+        return $defaultErrorCode;
+    }
 }

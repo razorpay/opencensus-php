@@ -60,6 +60,7 @@ class Generator extends Base\Core
      * @var Batch\Entity
      */
     protected $batch;
+    protected $batchId;
 
     /**
      * Flag to check if duplicate invoice creation with same internal_ref is allowed
@@ -124,13 +125,20 @@ class Generator extends Base\Core
     }
 
     /**
-     * @param null|Batch\Entity $batch
+     * @param null $batch
      *
-     * @return Generator
+     * @return $this
      */
-    public function setBatch(Batch\Entity $batch = null)
+    public function setBatch($batch = null)
     {
-        $this->batch = $batch;
+        if (($batch instanceof Batch\Entity) === true)
+        {
+            $this->batch = $batch;
+        }
+        else if (is_string($batch) === true)
+        {
+            $this->batchId = $batch;
+        }
 
         return $this;
     }
@@ -197,10 +205,15 @@ class Generator extends Base\Core
             $this->invoice->setSubscriptionId($this->subscriptionId);
         }
 
-        if ($this->batch !== null)
+        if ($this->batchId != null)
+        {
+            $this->invoice->setBatchId($this->batchId);
+        }
+        else if ($this->batch !== null)
         {
             $this->invoice->batch()->associate($this->batch);
         }
+
 
         $this->createLineItems($input);
     }
@@ -324,7 +337,7 @@ class Generator extends Base\Core
         $invoice->generateId();
 
         // Capture dashboard user id from dashboard headers if applies
-        $this->setInvoiceUserIdFromDashboardHeadersIfAvailable($invoice);
+        $this->setInvoiceCreator($invoice);
 
         // Saves merchant specific details in invoice as copy e.g. merchant label & gstin to use
         $invoice->setMerchantGstin($this->merchant->getGstin());
@@ -385,13 +398,20 @@ class Generator extends Base\Core
         $this->setShortUrl();
     }
 
-    protected function setInvoiceUserIdFromDashboardHeadersIfAvailable(Entity $invoice)
+    protected function setInvoiceCreator(Entity $invoice)
     {
-        $headers = $this->app['basicauth']->getDashboardHeaders();
-
-        if (array_key_exists(Entity::USER_ID, $headers) === true)
+        // If the creation is via batch get the batch creator and associate conditionally.
+        if ($this->batch !== null)
         {
-            $invoice->setUserId($headers[Entity::USER_ID]);
+            if ($this->batch->isCreatorTypeUser() === true)
+            {
+                $invoice->user()->associate($this->batch->creator);
+            }
+        }
+        // Else just associates the authenticated user.
+        else
+        {
+            $invoice->user()->associate($this->app->basicauth->getUser());
         }
     }
 

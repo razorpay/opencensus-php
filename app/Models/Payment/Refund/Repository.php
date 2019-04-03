@@ -555,8 +555,7 @@ class Repository extends Base\Repository
         string $gatewayCode,
         int $from,
         int $to,
-        string $gateway,
-        bool $corporate = false)
+        string $gateway)
     {
         // SELECT `refunds`.*
         // FROM `refunds`
@@ -566,7 +565,6 @@ class Repository extends Base\Repository
         //   AND `refunds`.`created_at` < $to
         //   AND `payments`.`bank` = $gatewayCode
         //   AND `refunds`.`gateway` = $gateway
-        //   AND `terminals`.`corporate` = $tpvEnabled
 
         $attrs = $this->dbColumn('*');
 
@@ -596,7 +594,6 @@ class Repository extends Base\Repository
                     ->where($rCreatedAt, '<=', $to)
                     ->where($pType, '=', $gatewayCode)
                     ->where($rGateway, '=', $gateway)
-                    ->where($tCorp, '=', $corporate)
                     ->where($rBaseAmount, '!=', 0)
                     ->with('payment')
                     ->get();

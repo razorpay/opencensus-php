@@ -6,6 +6,7 @@ use Requests;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Http\OAuthCache;
 
 use Razorpay\OAuth\Token;
 use Razorpay\OAuth\Client;
@@ -13,7 +14,9 @@ use Razorpay\OAuth\Application;
 
 class AuthService
 {
+    use OAuthCache;
     const REQUEST_TIMEOUT = 30; // In seconds
+    const ID = 'id';
 
     protected $baseUrl;
 
@@ -36,6 +39,7 @@ class AuthService
         $this->config  = $app['config']->get('applications.auth_service');
         $this->baseUrl = $this->config['url'];
         $this->secret  = $this->config['secret'];
+        $this->cache   = $app['cache'];
     }
 
     public function createApplication(array $input, string $merchantId, string $type = null) : array
@@ -124,6 +128,12 @@ class AuthService
     {
         $input[Token\Entity::MERCHANT_ID] = $merchantId;
 
+        $tokenTag = $this->getCacheTagsForTokenId($id);
+        $cacheTag = $this->cache->tags($tokenTag)->get($id);
+
+        $this->cache->tags($cacheTag)->flush();
+        $this->cache->tags($tokenTag)->flush();
+
         return $this->sendRequest('tokens/' . $id, Requests::PUT, $input);
     }
 
@@ -180,7 +190,6 @@ class AuthService
     protected function parseAndReturnResponse($res)
     {
         $code = $res->status_code;
-
         //
         // If returned status code is 2XX, everything is fine
         // and just return the decoded JSON body.

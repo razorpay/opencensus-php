@@ -1,0 +1,67 @@
+{
+    "next" : {
+        "version" : {
+            "type" : "string",
+            "description": "Version for the API"
+        },
+        "type" : {
+            "type" : "string",
+            "description": "Type of the response",
+            "examples" : [
+                "sdk",
+                "poll",
+                "sms"
+            ]
+        },
+        "request" : {
+            "type" : "object",
+            "description": "Request to be made for given type of response",
+            "required" : [],
+            "properties" : {
+                "id" : {
+                    "type" : "string",
+                    "description": "Unique identifier for the action, used in Axis"
+                },
+                "sdk" : {
+                    "type" : "string",
+                    "description": "Identifier for SDK for [response.type = 'sdk']",
+                    "examples" : [
+                        "npci",
+                        "axis"
+                    ]
+                },
+                "destination" : {
+                    "type" : "string",
+                    "description": "Destination to send SMS for [response.type = 'sms']"
+                },
+                "url" : {
+                    "type" : "string",
+                    "description": "URL to poll for actual response for [response.type = 'poll']"
+                },
+                "action" : {
+                    "type" : "string",
+                    "description": "Name of SDK action to invode for [response.type = 'sdk']"
+                },
+                "content" : {
+                    "type" : ["string", "object"],
+                    "description": "Payload to be passed to SDK action for [response.type = 'sdk']"
+                },
+                "validate" : {
+                    "type" : "boolean",
+                    "description": "Whether RSDK needs to validate integrated SDK of not"
+                }
+            }
+        },
+        "callback" : {
+            "type" : "string",
+            "description": "Relative Url to post the callback response"
+        }
+    },
+
+    "sdk" : {
+        "sdk" : {
+            "type" : "object",
+            "description": "The actual response from SDK"
+        }
+    }
+}

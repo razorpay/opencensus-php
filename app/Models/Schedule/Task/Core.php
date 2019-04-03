@@ -351,24 +351,43 @@ class Core extends Base\Core
 
     protected function traceAndNotifyScheduleAssignment($scheduleTask)
     {
+        $schedule = $scheduleTask->schedule;
+
+        $scheduleType = ucfirst($scheduleTask->getType());
+
+        $scheduleName = $schedule->getName();
+
+        $scheduleId = $schedule->getId();
+
+        $merchantId = $scheduleTask->getMerchantId();
+
+        $method = $scheduleTask->getMethod() ?? "ALL";
+
         $data = [
-            Entity::MERCHANT_ID => $scheduleTask->getMerchantId(),
-            Entity::SCHEDULE_ID => $scheduleTask->getScheduleId(),
-            Entity::TYPE        => $scheduleTask->getType(),
-            Entity::METHOD      => $scheduleTask->getMethod(),
+            Entity::MERCHANT_ID => $merchantId,
+            Entity::SCHEDULE_ID => $scheduleId,
+            Entity::TYPE        => $scheduleType,
+            Entity::METHOD      => $method,
         ];
 
         $this->trace->info(TraceCode::SCHEDULE_ASSIGNED, $data);
 
         $user = $this->getInternalUsernameOrEmail();
 
-        $this->app['slack']->queue(
-            "Schedule assigned to Merchant by $user",
-            $data,
-            [
-                'channel'  => Config::get('slack.channels.operations_log'),
-                'username' => 'Jordan Belfort',
-                'icon'     => ':boom:',
-            ]);
+        $message = "$scheduleType schedule $scheduleName($scheduleId) assigned to $merchantId for method(s) $method by $user";
+
+        // on sign up we dont need to log to slack, default schedule assignment are logged to slack
+        if ($user !== "DASHBOARD_INTERNAL")
+        {
+            $this->app['slack']->queue(
+                $message,
+                [],
+                [
+                    'channel'  => Config::get('slack.channels.operations_log'),
+                    'username' => 'Jordan Belfort',
+                    'icon'     => ':boom:',
+                ]);
+        }
+
     }
 }

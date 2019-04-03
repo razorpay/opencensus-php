@@ -86,6 +86,25 @@ class SubscriptionRegistrationTest extends TestCase
         $this->assertStatusesWithLastEntity(['sms_status' => 'sent', 'email_status' => 'sent']);
     }
 
+    public function testAuthLinkHostedPage()
+    {
+        $this->testCreateAuthLinkWithBankAccount();
+
+        $invoice = $this->getDbLastEntity('invoice');
+
+        $invoiceId = $invoice->getPublicId();
+
+        $this->ba->publicAuth();
+
+        $response = $this->call('GET', "/v1/t/$invoiceId", ['key_id' => $this->ba->getKey()]);
+
+        $response->assertStatus(200);
+
+        $testData = '"order":{"status":"created"}}';
+
+        $this->assertContains($testData, $response->getContent());
+    }
+
     public function testCreateAuthLinkWithIncompleteBankData()
     {
         $this->startTest();
@@ -264,6 +283,27 @@ class SubscriptionRegistrationTest extends TestCase
         $this->assertEquals($payment->getNotesJson(), $invoice->getNotesJson());
     }
 
+    public function testFutureTokenConfirmedEmandateLinks()
+    {
+        $this->startTest();
+
+        $order = $this->getDbLastEntity('order');
+
+        $payment = $this->setupHdfcEmandateAndGetPaymentRequest();
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getDbLastEntity("payment");
+
+        $order = $this->getDbEntityById('order', $order->getPublicId());
+
+        $this->assertEquals($payment->getStatus(), "authorized");
+
+        $this->assertEquals($order->getStatus(), "attempted");
+    }
+
     public function testPayAuthLink()
     {
         $this->startTest();
@@ -368,5 +408,39 @@ class SubscriptionRegistrationTest extends TestCase
         $invoice = $this->getDbLastEntity('invoice');
 
         $this->assertArraySelectiveEquals($expected, $invoice->toArrayPublic());
+    }
+
+    protected function setupHdfcEmandateAndGetPaymentRequest()
+    {
+        $this->mockCardVault();
+
+        $this->fixtures->create('terminal:shared_emandate_hdfc_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
+
+        $this->fixtures->merchant->enableEmandate();
+
+        $payment = $this->getEmandateNetbankingRecurringPaymentArray("HDFC", "0");
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $payment['bank_account'] = [
+            'account_number'    => '123123123',
+            'name'              => 'test name',
+            'ifsc'              => 'HDFC0001233'
+        ];
+
+        $expireBy = Carbon::now(Timezone::IST)->addDays(10)->getTimestamp();
+
+        $payment['recurring_token'] = [
+            'max_amount' => 3000,
+            'expire_by' => $expireBy,
+        ];
+
+        return $payment;
     }
 }

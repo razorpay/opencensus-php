@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use Mail;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
@@ -9,6 +10,9 @@ use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
+use RZP\Mail\Payment\Refunded as RefundedMail;
+use RZP\Mail\Payment\Captured as CapturedMail;
+use RZP\Mail\Payment\Authorized as AuthorizedMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class PaymentCreateTest extends TestCase
@@ -470,6 +474,27 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($card['international'], true);
     }
 
+    public function testPaymentEmails()
+    {
+        $dummyOrg = $this->fixtures->create('org', ['custom_code' => 'dummy']);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['org_id' => $dummyOrg['id']]);
+
+        $this->fixtures->merchant->addFeatures(['dummy']);
+
+        Mail::fake();
+
+        Mail::setFakeConfig();
+
+        $this->doAuthCaptureAndRefundPayment($this->payment);
+
+        Mail::assertQueued(CapturedMail::class);
+
+        Mail::assertNotQueued(AuthorizedMail::class);
+
+        Mail::assertQueued(RefundedMail::class);
+    }
+
     public function testIntlPaymentWhenNotAllowed()
     {
         $this->fixtures->merchant->disableInternational();
@@ -523,6 +548,16 @@ class PaymentCreateTest extends TestCase
 
     public function testPaymentRoutedThroughCps()
     {
+        $this->markTestSkipped();
+
+        $this->mockCardVault();
+
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->gateway = 'cybersource';
+
         $this->ba->adminAuth();
 
         $request = $this->testData[__FUNCTION__]['request'];
@@ -997,5 +1032,56 @@ class PaymentCreateTest extends TestCase
         $payment['order_id'] = $order->getPublicId();
 
         return $payment;
+    }
+
+    public function testPaymentEditNotes()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['notes'] = [
+            'key' => 'value',
+        ];
+
+        $payment = $this->doAuthAndGetPayment($payment);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/' . $payment['id'];
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+    }
+
+    public function testPaymentFailedEditNotesMoreThan15Entries()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['notes'] = [
+            'key' => 'value',
+        ];
+
+        $payment = $this->doAuthAndGetPayment($payment);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/' . $payment['id'];
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+    }
+
+    public function testPaymentFailedEditNotesArrayValue()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['notes'] = [
+            'key' => 'value',
+        ];
+
+        $payment = $this->doAuthAndGetPayment($payment);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/' . $payment['id'];
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
     }
 }

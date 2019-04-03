@@ -61,12 +61,16 @@ class Core extends Base\Core
     /**
      * Creates invoice
      *
-     * @param array               $input
-     * @param Merchant\Entity     $merchant
-     * @param Subscription\Entity $subscription - If created via subscription, this
-     *                                            is passed for associations.
-     * @param Batch\Entity        $batch        - If created via batch flow, this
-     *                                            is passed for association.
+     * @param array                    $input
+     * @param Merchant\Entity          $merchant
+     * @param Subscription\Entity|null $subscription   - If created via subscription,
+     *                                                 this is passed for associations
+     * @param Batch\Entity|null        $batch
+     * @param Base\Entity|null         $externalEntity
+     * @param string|null              $batchId        - This is passed by batchService
+     *                                                 and kept for backward compatible
+     *                                                 and also by batch upload in API
+     *                                                 till we migrate completely
      *
      * @return Entity
      */
@@ -75,7 +79,8 @@ class Core extends Base\Core
         Merchant\Entity $merchant,
         Subscription\Entity $subscription = null,
         Batch\Entity $batch = null,
-        Base\Entity $externalEntity = null): Entity
+        Base\Entity $externalEntity = null,
+        string $batchId = null): Entity
     {
         $this->trace->info(TraceCode::INVOICE_CREATE_REQUEST, $input);
 
@@ -98,10 +103,12 @@ class Core extends Base\Core
             unset($input[Entity::SUBSCRIPTION_ID]);
         }
 
+        $batchIdOrBatch = $batchId === null ? $batch:$batchId;
+
         $invoice = (new Generator($merchant))
                         ->setSubscription($subscription)
                         ->setExternalEntity($externalEntity)
-                        ->setBatch($batch)
+                        ->setBatch($batchIdOrBatch)
                         ->setShouldFailOnDuplicateInternalRef($shouldFailOnDuplicateInternalRef)
                         ->generate($input);
 

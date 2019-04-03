@@ -4,6 +4,7 @@ namespace RZP\Models\Payout\Processor;
 
 use RZP\Exception;
 use RZP\Models\Vpa;
+use RZP\Models\Batch;
 use RZP\Models\Payout;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -30,6 +31,11 @@ abstract class Base extends BaseCore
      * @var Merchant\Entity
      */
     protected $merchant;
+
+    /**
+     * @var Batch\Entity
+     */
+    protected $batch;
 
     /**
      * @var Customer\Entity
@@ -119,6 +125,13 @@ abstract class Base extends BaseCore
         return $this;
     }
 
+    public function setBatch(Batch\Entity $batch = null): self
+    {
+        $this->batch = $batch;
+
+        return $this;
+    }
+
     /**
      * Set the customer relation for the Payout.
      * To be used only for the customer wallet use case: customer_id is treated
@@ -194,13 +207,15 @@ abstract class Base extends BaseCore
         $payout = $payout->build($input);
 
         //
-        // Doing only THIS association after build because
+        // Doing only user and batch association after build because
         // since it is present in $defaults, the association
         // gets overridden with the default value (null)
         // in the build function.
         // NOTE: Not sure why it does not happen with FundAccount. (todo: check)
         //
         $this->associateUserIfApplicable($payout);
+
+        $payout->batch()->associate($this->batch);
 
         //
         // Doing this after all the associations since

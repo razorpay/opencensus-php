@@ -388,7 +388,7 @@ abstract class NodalAccount extends Base\Core
         switch (true)
         {
             case $attempt->isOfBanking():
-                return Attempt\Type::BANKIING;
+                return Attempt\Type::BANKING;
 
             case $attempt->isPennyTesting():
                 return Attempt\Type::SYNC;
@@ -426,5 +426,29 @@ abstract class NodalAccount extends Base\Core
                 []
             );
         }
+    }
+
+    public function getPaymentModeForCard(Attempt\Entity $attempt, $amount): string
+    {
+        if ($attempt->hasMode() === true)
+        {
+            return $attempt->getMode();
+        }
+
+        if ($amount < self::MAX_IMPS_AMOUNT)
+        {
+            return Mode::IMPS;
+        }
+
+        $now = Carbon::now(Timezone::IST)->getTimestamp();
+
+        if ((($now >= $this->bankingStartTimeRtgs) and
+                ($now <= $this->bankingEndTimeRtgs)) and
+            ($amount >= self::MIN_RTGS_AMOUNT))
+        {
+            return Mode::RTGS;
+        }
+
+        return Mode::NEFT;
     }
 }

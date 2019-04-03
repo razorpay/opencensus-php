@@ -103,6 +103,13 @@ class Server extends Base\Core
         $this->input = $input;
     }
 
+    protected function advice($input)
+    {
+        $this->action = Action::ADVICE;
+
+        $this->input = $input;
+    }
+
     protected function verifyRefund($input)
     {
         $this->action = Action::VERIFY_REFUND;

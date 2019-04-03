@@ -48,8 +48,8 @@ trait CommissionTrait
 
         $commissionAttributes = array_merge($defaultCommissionAttributes, $commissionAttributes);
 
-        $this->fixtures->create('commission:commission_and_sync_es', $commissionAttributes);
+        $commission = $this->fixtures->create('commission:commission_and_sync_es', $commissionAttributes);
 
-        return [$partner, $subMerchant, $payment, $config];
+        return [$partner, $subMerchant, $payment, $config, $commission];
     }
 }

@@ -102,6 +102,15 @@ class PaymentLinkTest extends TestCase
 
         Mail::assertSent(BatchPaymentLinkFileMail::class);
 
+        // Asserts association of creator for batch.
+        $batch = $this->getDbLastEntity('batch');
+        $this->assertEquals('MerchantUser01', $batch->getCreatorId());
+        $this->assertEquals('user', $batch->getCreatorType());
+
+        // Asserts that invoice created via batch have the same user id as of batch.
+        $invoices = $this->getDbEntities('invoice');
+        $this->assertEquals(['MerchantUser01'], $invoices->pluck(Invoice\Entity::USER_ID)->unique()->all());
+
         // TODO:
         // - Open and verify output file contents with expectations
     }

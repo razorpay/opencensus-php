@@ -26,6 +26,13 @@ return [
     'permissions' => [
         PermissionCategory::GENERAL => [
             Permission::VIEW_HOMEPAGE => 'View Dashboard Home',
+            Permission::UPDATE_CONFIG_KEY  => [
+                'description' => 'update config keys',
+                'assignable'  => true,
+            ],
+            Permission::CONFIRM_USER => [
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::RAZORX => [
@@ -44,7 +51,15 @@ return [
             Permission::MANAGE_ONBOARDING_SUBMISSIONS => [
                 'description' => 'View and update product onboarding submissions and the activation statuses',
                 'assignable'  => true,
-            ]
+            ],
+            Permission::MERCHANT_EMAIL_EDIT           => [
+                'description' => 'Edit Merchant Email',
+                'assignable'  => true,
+            ],
+            Permission::MERCHANT_PRICING_PLANS => [
+                'description' => 'List all the merchant pricing plans',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::MERCHANT_REQUEST => [
@@ -112,6 +127,12 @@ return [
             Permission::EDIT_MERCHANT_FEATURES              => [
                 'assignable' => true,
             ],
+            Permission::MANAGE_BULK_FEATURE_MAPPING         => [
+                'assignable' => true,
+            ],
+            Permission::MERCHANT_BENEFICIARY_UPLOAD         => [
+                'assignable' => true,
+            ],
             Permission::EDIT_MERCHANT_FEATURES              => '',
             Permission::EDIT_MERCHANT_BANK_DETAIL           => '',
             Permission::EDIT_IIN_RULE                       => '',
@@ -161,6 +182,10 @@ return [
             Permission::ADD_MERCHANT_CREDITS                => [
                 'assignable' => true,
             ],
+            Permission::EDIT_MERCHANT_CREDITS => [
+                'description' => 'Ability to merchant edit credits',
+                'assignable'  => true,
+            ],
             Permission::DELETE_MERCHANT_CREDITS             => '',
             Permission::EDIT_MERCHANT_SCREENSHOT            => [
                 'assignable' => true,
@@ -171,6 +196,15 @@ return [
             Permission::EDIT_AUTHORIZED_FAILED_PAYMENT      => '',
             Permission::VIEW_REFUND_PAYMENTS                => '',
             Permission::EDIT_AUTHORIZED_REFUND_PAYMENT      => '',
+            Permission::AUTHORIZE_PAYMENT                   => [
+                'assignable'  => true,
+            ],
+            Permission::VERIFY_PAYMENT                      => [
+                'assignable'  => true,
+            ],
+            Permission::VERIFY_REFUND                       => [
+                'assignable'  => true,
+            ],
             Permission::RETRY_REFUND_FAILED                 => '',
             Permission::EDIT_REFUND                         => [
                 'description' => 'edit_refund_permission',
@@ -178,6 +212,12 @@ return [
             ],
             Permission::RETRY_REFUND                        => [
                 'description' => 'Retry refunds',
+                'assignable'  => true,
+            ],
+            Permission::GENERATE_REFUND_EXCEL               => [
+                'assignable'  => true,
+            ],
+            Permission::GENERATE_EMI_EXCEL                  => [
                 'assignable'  => true,
             ],
             Permission::EDIT_PAYMENT_REFUND                 => '',
@@ -189,6 +229,9 @@ return [
             Permission::CREATE_BENEFICIARY_FILE             => '',
             Permission::CREATE_NETBANKING_REFUND            => '',
             Permission::CREATE_EMI_FILES                    => '',
+            Permission::MANAGE_EMI_PLANS                    => [
+                'assignable' => true,
+            ],
             Permission::CREATE_SETTLEMENT_INITIATE          => '',
             Permission::DELETE_TERMINAL                     => '',
             Permission::EDIT_TERMINAL                       => '',
@@ -288,6 +331,10 @@ return [
                 'description' => 'Reset user password on associated merchant page',
                 'assignable'  => true,
             ],
+            Permission::VIEW_OPERATIONS_REPORT => [
+                'description' => 'View Operations Reports',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::SETTLEMENT => [
@@ -336,6 +383,10 @@ return [
         PermissionCategory::ENTITY   => [
             Permission::VIEW_ALL_ENTITY => [
                 'description' => 'view all entity',
+            ],
+            Permission::VIEW_SCROOGE_REFUNDS => [
+                'description' => 'view scrooge refunds dashboard',
+                'assignable'  => true,
             ],
         ],
 
@@ -540,6 +591,17 @@ return [
             ],
         ],
 
+        PermissionCategory::GATEWAY => [
+            Permission::CREATE_GATEWAY_FILE => [
+                'description' => 'create_gateway_file',
+                'assignable'  => true,
+            ],
+            Permission::MANAGE_IINS => [
+                'description' => 'manage_iins',
+                'assignable'  => true,
+            ]
+        ],
+
         PermissionCategory::GATEWAY_RULE  => [
             Permission::CREATE_GATEWAY_RULE => [
                 'description' => 'create_gateway_rule',
@@ -628,6 +690,13 @@ return [
         PermissionCategory::REPORTING => [
             Permission::CREATE_SELF_SERVE_REPORT => 'Create Self Serve reporting configs',
         ],
+
+        PermissionCategory::SUBSCRIPTIONS => [
+            Permission::MODIFY_SUBSCRIPTION_DATA => [
+                'description' => 'Modify subscriptions form admin dashboard',
+                'assignable'  => true
+            ]
+        ]
     ],
 
     'workflows' => [

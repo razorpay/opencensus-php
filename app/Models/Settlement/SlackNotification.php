@@ -41,8 +41,9 @@ class SlackNotification extends Base\Core
      * @param $data
      * @param $e
      * @param int $failureCount
+     * @param string $slackChannel
      */
-    public function send(string $operation, array $data, $e = null, $failureCount = 0)
+    public function send(string $operation, array $data, $e = null, $failureCount = 0, string $slackChannel = null)
     {
         try
         {
@@ -75,6 +76,11 @@ class SlackNotification extends Base\Core
                     'exception_class'   => get_class($e),
                     'exception_message' => $e->getMessage(),
                 ];
+            }
+
+            if($slackChannel !== null)
+            {
+                $channel = Config::get('slack.channels.' . $slackChannel);
             }
 
             // Send Slack Notification only for Live mode in Production

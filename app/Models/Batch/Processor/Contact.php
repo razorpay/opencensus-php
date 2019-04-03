@@ -36,6 +36,6 @@ class Contact extends Base
 
         $contact = $this->repo->contact->getContactWithSimilarDetails($input, $this->merchant);
 
-        return $contact ?: $this->core->create($input, $this->merchant);
+        return $contact ?: $this->core->create($input, $this->merchant, $this->batch);
     }
 }

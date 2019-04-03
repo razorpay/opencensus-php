@@ -87,6 +87,36 @@ class InvitationTest extends TestCase
         $this->startTest();
     }
 
+    public function testPostSendInvitationByRBLSupervisorToValidRole()
+    {
+        $nonOwnerUser = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+                                                             'merchant_id' => '10000000000000',
+                                                             'user_id'     => $nonOwnerUser->id,
+                                                             'role'        => 'rbl_supervisor',
+                                                         ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $nonOwnerUser->id);
+
+        $this->startTest();
+    }
+
+    public function testPostSendInvitationByRBLSupervisorToInvalidRole()
+    {
+        $nonOwnerUser = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+                                                             'merchant_id' => '10000000000000',
+                                                             'user_id'     => $nonOwnerUser->id,
+                                                             'role'        => 'rbl_supervisor',
+                                                         ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $nonOwnerUser->id);
+
+        $this->startTest();
+    }
+
     public function testPostResendInvitation()
     {
         $invitation = $this->fixtures->create('invitation');

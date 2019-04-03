@@ -8,9 +8,10 @@ use SoapVar;
 use SoapFault;
 use SoapClient;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
+
 use RZP\Exception;
 use RZP\Constants;
+use RZP\Gateway\Mpi;
 use RZP\Gateway\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
@@ -20,6 +21,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Utility;
 use RZP\Base\JitValidator;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Cybersource\Fields as F;
@@ -129,51 +131,108 @@ class Gateway extends Base\Gateway
             return $this->sendMozartRequest($input);
         }
 
-        // send enroll request to check status of enrollment of card.
-        parent::action($input, 'authenticate_init');
+        $authenticationGateway = $this->decideAuthenticationGateway($input);
 
-        $input['gateway']['payment'] = [
-            'callbackUrl' => $input['callbackUrl'],
-        ];
-
-        $request = $this->sendMozartRequest($input);
-
-        $authenticateInit = $this->gatewayPayment;
-
-        // some unexpected enrollment status. not taking the call to go ahead with pay_init
-        if (in_array($authenticateInit['veresEnrolled'], ['Y', 'N'], true) === false)
+        switch ($authenticationGateway)
         {
-            $this->updateGatewayPaymentEntity($this->gatewayPayment, [
-                'action'    => 'authorize',
-                'status'    => Status::AUTHORIZE_FAILED,
-            ], false);
+            case Payment\Gateway::MPI_BLADE:
+            case Payment\Gateway::MPI_ENSTAGE:
+                $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
 
+                if ($authResponse !== null)
+                {
+                    $this->persistCardDetailsTemporarily($input);
+
+                    return $authResponse;
+                }
+
+                $this->mpiEntity = $this->app['repo']
+                                        ->mpi
+                                        ->findByPaymentIdAndAction($input['payment']['id'], Base\Action::AUTHORIZE);
+
+                $this->validateEci($input, $this->mpiEntity);
+
+                return $this->authorizeNotEnrolled($input);
+
+            default:
+                // send enroll request to check status of enrollment of card.
+                parent::action($input, 'authenticate_init');
+
+                $input['gateway']['payment'] = [
+                    'callbackUrl' => $input['callbackUrl'],
+                ];
+
+                $request = $this->sendMozartRequest($input);
+
+                $authenticateInit = $this->gatewayPayment;
+
+                // some unexpected enrollment status. not taking the call to go ahead with pay_init
+                if (in_array($authenticateInit['veresEnrolled'], ['Y', 'N'], true) === false)
+                {
+                    $this->updateGatewayPaymentEntity($this->gatewayPayment, [
+                        'action'    => 'authorize',
+                        'status'    => Status::AUTHORIZE_FAILED,
+                    ], false);
+
+                    throw new Exception\LogicException(
+                        'Unexpected response',
+                        null,
+                        [
+                            'payment_id'        => $input['payment']['id'],
+                            'reason_code'       => $authenticateInit['reason_code'],
+                            'enrollment_status' => $authenticateInit['veresEnrolled'],
+                        ]);
+                }
+
+                // enrolled card. return OTP page request.
+                if ($request !== null)
+                {
+                    $this->persistCardDetailsTemporarily($input);
+
+                    return $request;
+                }
+
+                $this->validateEci($input, $authenticateInit);
+
+                $this->authorizeNotEnrolled($input);
+                break;
+        }
+    }
+
+    public function otpGenerate(array $input)
+    {
+        if ((isset($input['otp_resend']) === true) and
+            ($input['otp_resend'] === true))
+        {
+            return $this->otpResend($input);
+        }
+
+        return $this->authorize($input);
+    }
+
+    public function otpResend(array $input)
+    {
+        parent::action($input, Base\Action::OTP_RESEND);
+
+        $mpiEntity = $this->app['repo']
+                          ->mpi
+                          ->findByPaymentIdAndActionOrFail($input['payment']['id'], Base\Action::AUTHORIZE);
+
+        if ($mpiEntity->getGateway() !== Payment\Gateway::MPI_ENSTAGE)
+        {
+            //
+            // This error is consistent with error thrown in otpResend trait
             throw new Exception\LogicException(
-                'Unexpected response',
+                'Gateway does not support OTP resend',
                 null,
-                [
-                    'payment_id'        => $input['payment']['id'],
-                    'reason_code'       => $authenticateInit['reason_code'],
-                    'enrollment_status' => $authenticateInit['veresEnrolled'],
-                ]);
+                ['payment_id' => $input['payment']['id']]);
         }
 
-        // enrolled card. return OTP page request.
-        if ($request !== null)
-        {
-            $this->persistCardDetailsTemporarily($input);
+        $authenticationGateway = $mpiEntity->getGateway();
 
-            return $request;
-        }
+        $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
 
-        $this->validateEci($input, $authenticateInit);
-
-        // not enrolled card. send authorize request using enroll response.
-        parent::action($input, 'pay_init');
-
-        $input['gateway']['authenticate_init'] = $this->mapInReverseWay($authenticateInit);
-
-        $this->sendMozartRequest($input);
+        return $authResponse;
     }
 
     public function capture(array $input)
@@ -190,41 +249,169 @@ class Gateway extends Base\Gateway
         $this->sendMozartRequest($input);
     }
 
+    public function callbackOtpSubmit(array $input)
+    {
+        return $this->callback($input);
+    }
+
     public function callback(array $input)
     {
-        parent::action($input, 'authenticate_verify');
+        $mpiEntity = $this->app['repo']
+                          ->mpi
+                          ->findByPaymentIdAndAction($input['payment']['id'], Base\Action::AUTHORIZE);
 
-        $input['gateway']['redirect'] = $input['gateway'];
+        $authenticationGateway = Payment\Gateway::CYBERSOURCE;
 
-        $authenticateInit = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], 'authorize');
+        if ($mpiEntity !== null)
+        {
+            $authenticationGateway = $mpiEntity->getGateway() ?: Payment\Gateway::MPI_BLADE;
+        }
 
-        $this->gatewayPayment = $authenticateInit;
+        switch ($authenticationGateway)
+        {
+            case Payment\Gateway::MPI_BLADE:
+            case Payment\Gateway::MPI_ENSTAGE:
+                parent::callback($input);
 
+                $authResponse = $this->callAuthenticationGateway($input, $authenticationGateway);
+
+                $dataForMozart = $this->formatDataForMozart($input, $authResponse);
+
+                $input['gateway'] = $dataForMozart;
+                break;
+
+            default:
+                parent::action($input, 'authenticate_verify');
+
+                $input['gateway']['redirect'] = $input['gateway'];
+
+                $authenticateInit = $this->repo->findByPaymentIdAndActionOrFail(
+                    $input['payment']['id'], 'authorize');
+
+                $this->gatewayPayment = $authenticateInit;
+
+                $input['gateway']['authenticate_init'] = $this->mapInReverseWay($authenticateInit);
+
+                $authenticateInit = $this->gatewayPayment->toArrayAdmin();
+
+                $this->sendMozartRequest($input);
+
+                $authenticateVerify = $this->gatewayPayment;
+
+                $this->validateEci($input, $authenticateVerify);
+
+                $this->validateXid($authenticateInit, $authenticateVerify);
+
+                $input['gateway']['authenticate_verify'] = $this->mapInReverseWay($authenticateVerify);
+                break;
+        }
+
+        //setting card number & cvv now as it is required in pay_init step
         $this->setCardNumberAndCvv($input);
-
-        $input['gateway']['authenticate_init'] = $this->mapInReverseWay($authenticateInit);
-
-        $authenticateInit = $this->gatewayPayment->toArrayAdmin();
-
-        $this->sendMozartRequest($input);
-
-        $authenticateVerify = $this->gatewayPayment;
-
-        $this->validateEci($input, $authenticateVerify);
-
-        $this->validateXid($authenticateInit, $authenticateVerify);
 
         // callback data verified. now send actual authorize request
         parent::action($input, 'pay_init');
-
-        $input['gateway']['authenticate_verify'] = $this->mapInReverseWay($authenticateVerify);
 
         $this->sendMozartRequest($input);
 
         $acquirerData = $this->getAcquirerData($input, $this->gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
+    }
+
+    public function formatDataForMozart($input, $response)
+    {
+        $verifyContent['commerce_indicator']     = $this->getCommerceIndicator($input, $response);
+        $verifyContent['authentication_status']  = $response[Mpi\Base\Entity::STATUS];
+        $verifyContent['eci']                    = (int) $response[Mpi\Base\Entity::ECI];
+        $verifyContent['xid']                    = $response[Mpi\Base\Entity::XID];
+        $verifyContent['cavv']                   = $response[Mpi\Base\Entity::CAVV];
+
+        $initContent['enrollment_status']        = $response[Mpi\Base\Entity::ENROLLED];
+
+        $data['authenticate_verify']             = $verifyContent;
+        $data['authenticate_init']               = $initContent;
+
+        return $data;
+    }
+
+    protected function getCommerceIndicator($input, $response)
+    {
+        $eci = $response[Mpi\Base\Entity::ECI];
+
+        $commerceIndicatorMap = [
+            Card\Network::VISA => [
+                '5'  => 'vbv',
+                '05' => 'vbv',
+                '6'  => 'vbv_attempted',
+                '06' => 'vbv_attempted',
+                '7'  => 'internet',
+                '07' => 'internet',
+            ]
+        ];
+
+        switch($input['card'][Card\Entity::NETWORK_CODE])
+        {
+            case Card\Network::VISA:
+                if (isset($commerceIndicatorMap[Card\Network::VISA][$eci]) === true)
+                {
+                    return $commerceIndicatorMap[Card\Network::VISA][$eci];
+                }
+                else
+                {
+                    return '';
+                }
+            case Card\Network::MC:
+            case Card\Network::MAES:
+                return 'spa';
+            case Card\Network::AMEX:
+                return 'aesk';
+            default:
+                return '';
+        }
+    }
+
+    protected function decideAuthenticationGateway($input)
+    {
+        if (empty($input['authenticate']['gateway']) === false)
+        {
+            $authenticationGateway = $input['authenticate']['gateway'];
+        }
+        else
+        {
+            $authenticationGateway = Payment\Gateway::CYBERSOURCE;
+        }
+
+        return $authenticationGateway;
+    }
+
+    protected function authorizeNotEnrolled($input)
+    {
+        // not enrolled card. send authorize request using enroll response.
+        parent::action($input, 'pay_init');
+
+        if (isset($this->mpiEntity) == true)
+        {
+            $input['gateway']['authenticate_init'] = $this->mapInReverseWay($this->mpiEntity);
+
+            $input['gateway']['authenticate_init']['commerce_indicator'] =
+                $this->getCommerceIndicator($input, $this->mpiEntity);
+        }
+        else
+        {
+            $input['gateway']['authenticate_init'] = $this->mapInReverseWay($this->gatewayPayment);
+        }
+
+        $this->sendMozartRequest($input);
+    }
+
+    protected function callAuthenticationGateway(array $input, $authenticationGateway)
+    {
+        return $this->app['gateway']->call(
+            $authenticationGateway,
+            $this->action,
+            $input,
+            $this->mode);
     }
 
     public function verify(array $input)

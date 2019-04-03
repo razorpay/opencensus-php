@@ -34,7 +34,9 @@ class PricingController extends Controller
 
     public function getMerchantPricingPlans()
     {
-        $data = $this->service()->getMerchantPricingPlans();
+        $input = Request::all();
+
+        $data = $this->service()->getMerchantPricingPlans($input);
 
         return ApiResponse::json($data);
     }

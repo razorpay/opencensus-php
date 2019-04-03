@@ -4,6 +4,7 @@ namespace RZP\Models\Payout;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Services\Mutex;
 use RZP\Models\Customer;
@@ -116,10 +117,13 @@ class Core extends Base\Core
      *
      * @param array           $input
      * @param Merchant\Entity $merchant
+     * @param Batch\Entity    $batch
      *
      * @return Entity
      */
-    public function createPayoutToFundAccount(array $input, Merchant\Entity $merchant): Entity
+    public function createPayoutToFundAccount(array $input,
+                                              Merchant\Entity $merchant,
+                                              Batch\Entity $batch = null): Entity
     {
         $this->trace->info(
             TraceCode::PAYOUT_TO_FUND_ACCOUNT_CREATE_REQUEST,
@@ -131,10 +135,11 @@ class Core extends Base\Core
 
         $payout = $this->mutex->acquireAndRelease(
             $mutexResource,
-            function() use ($input, $merchant)
+            function() use ($input, $merchant, $batch)
             {
                 return $this->getProcessor('fund_account_payout')
                             ->setMerchant($merchant)
+                            ->setBatch($batch)
                             ->createPayout($input);
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
@@ -248,9 +253,11 @@ class Core extends Base\Core
             {
                 $payoutInput = $this->getRetryPayoutInputForFundAccount($payout);
 
+                // Note that if the payout was created by batch,
+                // the information is not percolated to the new payout.
+                // This is because, this new payout was not created by the batch.
                 return $this->createPayoutToFundAccount($payoutInput, $payout->merchant);
             }
-
         }
         else
         {
@@ -274,7 +281,6 @@ class Core extends Base\Core
 
             case Attempt\Status::CREATED:
             case Attempt\Status::INITIATED:
-                $this->handleFtaProcessing($payout);
                 break;
 
             default:
@@ -316,11 +322,31 @@ class Core extends Base\Core
 
     protected function getRetryPayoutInputForMerchant(Entity $payout): array
     {
-        return [
-            Entity::AMOUNT      => $payout->getAmount(),
+        $type = $payout->getPayoutType();
+
+        $amount = $payout->getAmount();
+
+        $payoutInput = [
+            Entity::TYPE        => $type,
+            Entity::AMOUNT      => $amount,
             Entity::CURRENCY    => $payout->getCurrency(),
-            Entity::TYPE        => $payout->getPayoutType()
         ];
+
+        //
+        // If the merchant makes an on_demand payout request with 100rs,
+        // we actually create the payout entity with amount 98rs. We do
+        // this only for on_demand payouts. Hence, when retrying, we
+        // add the fees and amount to create a payout request of the
+        // original amount which the merchant would have sent initially.
+        //
+        if ($type === Entity::ON_DEMAND)
+        {
+            $fees = $payout->getFees();
+
+            $payoutInput[Entity::AMOUNT] = $amount + $fees;
+        }
+
+        return $payoutInput;
     }
 
     protected function getRetryPayoutInputForFundAccount(Entity $payout): array
@@ -362,13 +388,6 @@ class Core extends Base\Core
         $this->app->events->fire('api.payout.processed', [$payout]);
     }
 
-    protected function handleFtaProcessing(Entity $payout)
-    {
-        $payout->setStatus(Status::PROCESSING);
-
-        $this->repo->saveOrFail($payout);
-    }
-
     protected function handleFtaFailed(Entity $payout, string $ftaFailureReason = null)
     {
         $this->reversePayout($payout, $ftaFailureReason);
@@ -388,6 +407,7 @@ class Core extends Base\Core
         {
             throw new Exception\LogicException(
                 'Attempted to reverse an already reversed payout',
+                null,
                 [
                     'payout_id'         => $payout->getId(),
                     'status'            => $payout->getStatus(),
@@ -427,7 +447,7 @@ class Core extends Base\Core
                 ($merchantBalance < $input[Entity::BUFFER_AMOUNT]))
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    "merchant balance is less than buffer amount",
+                    'merchant balance is less than buffer amount',
                     Entity::BUFFER_AMOUNT,
                     [
                         'merchant_id' => $merchantId,
@@ -445,7 +465,7 @@ class Core extends Base\Core
             ($amount < $input[Entity::MIN_AMOUNT]))
         {
             throw new Exception\BadRequestValidationFailureException(
-                "amount is less than min amount",
+                'amount is less than min amount',
                 Entity::MIN_AMOUNT,
                 [
                     'merchant_id' => $merchantId,

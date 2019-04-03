@@ -4,6 +4,7 @@ namespace RZP\Models\Gateway\File\Processor\Emi;
 
 use Carbon\Carbon;
 
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
@@ -11,6 +12,7 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
+use RZP\Constants\Environment;
 use RZP\Services\Beam\Service;
 use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
@@ -26,6 +28,8 @@ class Sbi extends Base
     const FILE_TYPE         = FileStore\Type::SBI_EMI_FILE;
     const FILE_NAME         = 'GGCMS1';
     const BEAM_FILE_TYPE    = 'emi';
+
+    const TEST_ENCRYPTION_KEY = 'T8DIATjuwS';
 
     /**
      * @var $file FileStore\Entity
@@ -56,6 +60,16 @@ class Sbi extends Base
         return $emiPaymentsForBank;
     }
 
+    public function generateEmiFilePassword()
+    {
+        if ($this->app->environment(Environment::TESTING))
+        {
+            return self::TEST_ENCRYPTION_KEY;
+        }
+
+        return bin2hex(openssl_random_pseudo_bytes(256));
+    }
+
     /**
      * Implements \RZP\Models\Gateway\File\Processor\Base::createFile($data).
      * @throws GatewayFileException
@@ -80,7 +94,13 @@ class Sbi extends Base
             $creator->extension(static::EXTENSION)
                     ->content($fileData)
                     ->name($fileName)
-                    ->store(FileStore\Store::LOCAL)
+                    ->store(FileStore\Store::S3)
+                    ->encrypt(
+                        Service::ENCRYPTION_TYPE,
+                        [
+                            'mode'   => Service::ENCRYPTION_MODE,
+                            'secret' => $data['password'],
+                        ])
                     ->type(static::FILE_TYPE)
                     ->entity($this->gatewayFile)
                     ->metadata($metadata);
@@ -96,10 +116,13 @@ class Sbi extends Base
         catch (\Throwable $e)
         {
             throw new GatewayFileException(
-                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE, [
-                    'id'        => $this->gatewayFile->getId(),
+            ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
+                [
+                    'id'      => $this->gatewayFile->getId(),
+                    'message' => $e->getMessage(),
                 ],
-                $e);
+                $e
+            );
         }
     }
 
@@ -112,7 +135,7 @@ class Sbi extends Base
         $totalTransactions = 0;
 
         // date 6 chars + time 4 chars + 4 seq numbers
-        $uniqueReferenceNum = Carbon::now()->format('mdyHi') . '0000';
+        $uniqueReferenceNum = Carbon::now()->setTimezone(Timezone::IST)->format('mdyHi') . '0000';
 
         /**
          * @var $emiPayment Payment\Entity
@@ -178,11 +201,13 @@ class Sbi extends Base
 
                 $principalAmount = $emiPayment->getAmount();
 
-                $totalAmount = $totalAmount + $principalAmount;
-
                 $rate = $emiPlan->getRate() / 100;
 
                 $tenure = $emiPlan->getDuration();
+
+                $businessName = $this->getBusinessName($merchantDetail);
+
+                $emiAmount = $this->getEmiAmount($principalAmount, $rate, $tenure);
 
                 $body[] =
                     'DD' .    // record type always DD
@@ -195,7 +220,7 @@ class Sbi extends Base
                     Carbon::createFromTimestamp($emiPayment['authorized_at'])->format('dmY') .
                     $this->strpad('Razor Pay', 40) .
                     $this->numpad($mid, 16) .
-                    $this->strpad($merchantDetail[Detail\Entity::BUSINESS_NAME], 40) .
+                    $this->strpad($businessName, 40) .
                     $this->strpad($tid, 8) .
                     str_pad($emiPlan->getRate(), 7, '0', STR_PAD_RIGHT) .
                     $this->strpad('', 40) .
@@ -206,7 +231,7 @@ class Sbi extends Base
                     $this->numpad('0', 7) .
                     $this->strpad('GG0001' . substr($mid, -4), 20) .
                     $this->numpad('0', 17) .
-                    $this->numpad($this->getEmiAmount($principalAmount, $rate, $tenure), 17) .
+                    $this->numpad($emiAmount, 17) .
                     $this->strpad('', 108);
 
                 $rowLength = strlen(end($body));
@@ -222,6 +247,10 @@ class Sbi extends Base
                             'payment_id'    => $emiPayment['id'],
                         ]);
                 }
+
+                // If a row is not added in the file, then that row's principal amount
+                // must not be added to the total amount
+                $totalAmount = $totalAmount + $principalAmount;
             }
             catch (\Exception $e)
             {
@@ -231,8 +260,8 @@ class Sbi extends Base
 
         $header = [
             'HH' .
-            Carbon::now()->format('dmY') .
-            Carbon::now()->format('His') .
+            Carbon::now()->setTimezone(Timezone::IST)->format('dmY') .
+            Carbon::now()->setTimezone(Timezone::IST)->format('His') .
             $this->numpad($totalTransactions, 5) .
             $this->numpad($totalAmount, 17) .
             'F' .
@@ -242,6 +271,49 @@ class Sbi extends Base
         $textRows = array_merge($header, $body);
 
         return implode("\r\n", $textRows);
+    }
+
+    protected function getBusinessName($merchantDetails)
+    {
+        $replaceArray = [
+            '.',
+            '!',
+            '@',
+            '#',
+            '$',
+            '%',
+            '^',
+            '&',
+            '*',
+            '(',
+            ')',
+            '~',
+            '`',
+            '_',
+            '+',
+            '=',
+            '|',
+            '\\',
+            '\'',
+            ':',
+            ';',
+            '<',
+            '>',
+            '?',
+            '/',
+            '{',
+            '}',
+            '-',
+            '_',
+            '@',
+            ',',
+            '[',
+            ']',
+        ];
+
+        $name = str_replace($replaceArray, " ", $merchantDetails[Detail\Entity::BUSINESS_NAME]);
+
+        return substr($name, 0, 40);
     }
 
     // @codingStandardsIgnoreLine
@@ -257,6 +329,8 @@ class Sbi extends Base
 
     protected function sendEmiFile($data)
     {
+        // todo: Push to beam once decryption is handled at beam side
+        /*
         $fullFileName = $this->file->getName() . '.' . $this->file->getExtension();
 
         $fileInfo = [$fullFileName];
@@ -278,6 +352,7 @@ class Sbi extends Base
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+        */
     }
 
     protected function getFileToWriteName()
@@ -287,12 +362,12 @@ class Sbi extends Base
 
     protected function getEmiAmount($amount, $annualRate, $tenureInMonths)
     {
-        // $annualRate is rate/100, say .14
+        // $annualRate is rate/100, say a
         // $monthlyRate is a/12 i.e should be treated as .14/12
         // E = P x r x (1+r)^n/((1+r)^n – 1)
         // tenure in months
 
-        $monthlyRate = $annualRate / 12;
+        $monthlyRate = ($annualRate / 100) / 12;
 
         $expression = pow((1 + $monthlyRate), $tenureInMonths);
 
@@ -300,7 +375,7 @@ class Sbi extends Base
 
         $den = $expression - 1;
 
-        return round($num / $den);
+        return (round($num / $den));
     }
 
     //-------------------------- Helpers ------------------------------------//

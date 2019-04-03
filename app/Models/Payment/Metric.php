@@ -34,9 +34,11 @@ class Metric extends Base\Core
     const PAYMENT_CREATED                       = 'payment_created';
     const PAYMENT_AUTHORIZED                    = 'payment_authorized_v1';
     const PAYMENT_CAPTURED                      = 'payment_captured_v1';
+    const PAYMENT_CREATE_REQUEST_TIME           = 'payment_create_request_time';
     const PAYMENT_FAILED                        = 'payment_failed';
     const PAYMENT_PROCESS_FAILED                = 'payment_process_failed';
     const PAYMENT_CAPTURE_FAILED                = 'payment_capture_failed';
+    const PAYMENT_REQUEST_ROUTE                 = 'payment_request_route';
 
     public function pushCreateMetrics(Entity $payment)
     {
@@ -80,6 +82,18 @@ class Metric extends Base\Core
         $authTime = ($payment->getAuthorizeTimestamp() - $payment->getCreatedAt());
 
         $this->trace->histogram(self::PAYMENT_AUTHORIZED, $authTime, $dimensions);
+    }
+
+    public function pushCreateRequestTimeMetrics(Entity $payment, int $requestTime)
+    {
+        $route  = $this->app['api.route']->getCurrentRouteName();
+
+        $dimensions = [
+            self::LABEL_PAYMENT_METHOD  => $payment->getMethod(),
+            self::PAYMENT_REQUEST_ROUTE => $route,
+        ];
+
+        $this->trace->histogram(self::PAYMENT_CREATE_REQUEST_TIME, $requestTime, $dimensions);
     }
 
     public function pushCapturedMetrics(Entity $payment)

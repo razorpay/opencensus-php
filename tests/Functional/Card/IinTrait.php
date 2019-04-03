@@ -11,9 +11,9 @@ trait IinTrait
         $data = [
             ["MASTER BIN Report ","","","","",""],
             ["","","","","",""],
-            ["BIN","BIN_LOW","BIN_HIGH","CARD_TYPE","CARD_BRAND","TYPE"],
+            ["BIN","BIN_LOW","BIN_HIGH","CARD_TYPE","CARD_BRAND","TYPE","MESSAGE_TYPE"],
             ["","","","","",""],
-            ["510128","5101280000000000000","5101289999999999999","MCG","CLASSIC","FC"],
+            ["510128","5101280000000000000","5101289999999999999","MCG","CLASSIC","FC","DMS"],
             ["510135","5101350000000000000","5101359999999999999","MCT","CLASSIC","DC"],
             ["511665","5116650000000000000","5116659999999999999","MRW","PREMIUM","FD"],
             ["511666","5116660000000000000","5116664999999999999","MRW","PREMIUM","DD"],
@@ -50,6 +50,28 @@ trait IinTrait
         return $data;
     }
 
+    protected function generateExcelDataWithMessageType()
+    {
+        $data = [
+            ["MASTER BIN Report ","","","","",""],
+            ["","","","","",""],
+            ["BIN","BIN_LOW","BIN_HIGH","CARD_TYPE","CARD_BRAND","TYPE","MESSAGE_TYPE"],
+            ["","","","","",""],
+            ["510128","5101280000000000000","5101289999999999999","MCG","CLASSIC","FC","SMS"],
+            ["510135","5101350000000000000","5101359999999999999","MCT","CLASSIC","DC","SMS"],
+            ["511665","5116650000000000000","5116659999999999999","MRW","PREMIUM","FD","SMS"],
+            ["511666","5116660000000000000","5116664999999999999","MRW","PREMIUM","DD","SMS"],
+            ["511666","5116665000000000000","5116669999999999999","MRW","PREMIUM","DD","SMS"],
+            ["513456","5134560000000000000","5134565999999999999","MRW","PREMIUM","DD","SMS"],
+            ["513456","5134566000000000000","5116669999999999999","MRW","CLASSIC","DD","SMS"],
+            ["549752","5497520000000000000","5497529999999999999","MCG","STANDARD","DC","SMS"],
+            ["497522","4975220000000000000","4975229999999999999","MGC","CLASSIC","DC","SMS"],
+            ["559300","5593000000000000000","5593009999999999999","MCW","PREMIUM","DC","DMS"],
+        ];
+
+        return $data;
+    }
+
     protected function generateIinFile($data)
     {
         $request = array(
@@ -62,13 +84,19 @@ trait IinTrait
         return $file;
     }
 
-    protected function getUploadedIinFile($withIssuer = false)
+    protected function getUploadedIinFile($withIssuer = false, $withMessageType = false)
     {
-        $data = $this->generateExcelData();
-
         if ($withIssuer === true)
         {
             $data = $this->generateExcelDataWithIssuer();
+        }
+        else if ($withMessageType === true)
+        {
+            $data = $this->generateExcelDataWithMessageType();
+        }
+        else
+        {
+            $data = $this->generateExcelData();
         }
 
         $file = $this->generateIinFile($data);

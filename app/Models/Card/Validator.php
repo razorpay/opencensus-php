@@ -13,7 +13,7 @@ class Validator extends Base\Validator
         Entity::EXPIRY_MONTH       => 'required|integer|digits_between:1,2|max:12|min:1',
         Entity::EXPIRY_YEAR        => 'required|integer|digits:4|non_past_year',
         Entity::CVV                => 'sometimes|numeric|digits_between:3,4|nullable',
-        Entity::NAME               => 'required|regex:(^[a-zA-Z.\- 0-9\']+$)|max:100',
+        Entity::NAME               => 'sometimes|regex:(^[a-zA-Z.\- 0-9\']+$)|max:100',
         Entity::VAULT              => 'sometimes|string|in:tokenex,rzpvault',
         Entity::INTERNATIONAL      => 'sometimes',
     );

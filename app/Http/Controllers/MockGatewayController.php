@@ -309,6 +309,17 @@ class MockGatewayController extends Controller
         return $server->authorize($input);
     }
 
+    public function postPaysecurePayment()
+    {
+        $input = Request::all();
+
+        $driver = 'paysecure';
+
+        $server = $this->gateway->server($driver);
+
+        return $server->authorize($input);
+    }
+
     public function generateGatewayReconciliationFile(string $gateway)
     {
         $input = Request::all();

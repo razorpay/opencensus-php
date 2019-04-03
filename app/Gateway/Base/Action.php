@@ -5,6 +5,7 @@ namespace RZP\Gateway\Base;
 class Action
 {
     const PURCHASE      = 'purchase';
+    const ADVICE        = 'advice';
     const AUTHENTICATE  = 'authenticate';
     const AUTHORIZE     = 'authorize';
     const CAPTURE       = 'capture';
@@ -23,5 +24,12 @@ class Action
 
     public static $nonVerifiableActions = [
         self::AUTHENTICATE
+    ];
+
+    public static $cpsSupportedActions = [
+        self::AUTHORIZE,
+        self::CALLBACK,
+        self::CAPTURE,
+        self::VERIFY,
     ];
 }

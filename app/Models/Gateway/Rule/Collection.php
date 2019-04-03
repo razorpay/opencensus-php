@@ -59,27 +59,4 @@ class Collection extends Base\PublicCollection
 
         return $array;
     }
-
-    public function groupAuthRuleBySpecificityScore(): array
-    {
-        $array = [];
-
-        foreach ($this->items as $rule)
-        {
-            $score = $rule->calculateSpecificityScoreForAuthTerminals();
-
-            if (isset($array[$score]) === false)
-            {
-                $array[$score] = new Collection([$rule]);
-            }
-            else
-            {
-                $array[$score]->push($rule);
-            }
-        }
-
-        krsort($array);
-
-        return $array;
-    }
 }

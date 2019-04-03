@@ -9,7 +9,7 @@ use RZP\Gateway\Hitachi\TerminalFields;
 class Validator extends Base\Validator
 {
     protected static $authRules = [
-        RequestFields::TRANSACTION_TYPE         => 'required|in:00,SI,MT|string',
+        RequestFields::TRANSACTION_TYPE         => 'required|in:00,SI,MT,RU|string',
         RequestFields::TRANSACTION_AMOUNT       => 'required|numeric',
         RequestFields::TRANSACTION_TIME         => 'required|string|date_format:His',
         RequestFields::TRANSACTION_DATE         => 'required|string|date_format:md',
@@ -26,6 +26,7 @@ class Validator extends Base\Validator
         RequestFields::UCAF                     => 'sometimes|string',
         RequestFields::CURRENCY_CODE            => 'sometimes|string',
         RequestFields::DYNAMIC_MERCHANT_NAME    => 'sometimes|string|max:23',
+        RequestFields::AUTH_ID                  => 'required_if:transaction_type,RU|numeric',
     ];
 
     protected static $verifyRules = [

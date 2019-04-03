@@ -17,7 +17,9 @@ use Razorpay\Trace\Logger as Trace;
 
 class OAuth
 {
+    use OAuthCache;
     const PUBLIC_TOKEN_LENGTH = 29;
+    const ID = 'id';
 
     protected $app;
 
@@ -31,6 +33,8 @@ class OAuth
     protected $router;
 
     protected $trace;
+
+    protected $cache;
 
     /**
      * @var string
@@ -46,6 +50,7 @@ class OAuth
         $this->router  = $app['router'];
         $this->request = $app['request'];
         $this->trace   = $app['trace'];
+        $this->cache   = $app['cache'];
     }
 
     /**
@@ -110,11 +115,39 @@ class OAuth
      */
     public function resolveBearerToken(string $token)
     {
+        $response = [];
+        $storeCache = false;
         try
         {
-            $oauthServer = new OAuthServer($this->app['env']);
+            $cacheKey = $this->getCacheKey($token);
 
-            $response = $oauthServer->authenticateWithBearerToken($token);
+            // When a request is authenticated, only bearer token is available
+            // So the cacheTag needs to be the hash of the bearer token itself.
+            $cacheTags = $this->getCacheTagsForToken($token);
+            $response = $this->cache->tags($cacheTags)->get($cacheKey) ?? [];
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::INFO,
+                TraceCode::TOKEN_CACHE_READ_ERROR
+            );
+        }
+
+        try
+        {
+
+            if (empty($response) === true)
+            {
+                $oauthServer = new OAuthServer($this->app['env']);
+
+                $response = $oauthServer->authenticateWithBearerToken($token);
+
+                $storeCache =  true;
+
+            }
+
         }
         catch (\Exception $exception)
         {
@@ -126,6 +159,28 @@ class OAuth
             );
 
             return ApiResponse::generateErrorResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED_OAUTH_TOKEN_INVALID);
+        }
+
+        try {
+            if ($storeCache === true)
+            {
+                list($ttl, $key) = $this->getCacheInfo($token);
+
+                $this->cache->tags($cacheTags)->put($key, $response, $ttl);
+
+                // Similarly, when a token is being revoked the only attribute available is the ID of the token.
+                // Hence we use the ID as key to cache the tokentag
+                $tokenTag = $this->getCacheTagsForTokenId($response['id']);
+                $this->cache->tags($tokenTag)->put($response['id'], $key);
+            }
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::INFO,
+                TraceCode::TOKEN_CACHE_STORE_ERROR
+            );
         }
 
         return $this->parseOAuthServerResponse($response, AuthType::PRIVATE_AUTH);
@@ -149,11 +204,38 @@ class OAuth
             throw new LogicException('OAuth: publicToken property was not set in the Authenticate middleware');
         }
 
+        $response = [];
+        $storeCache = false;
         try
         {
-            $oauthServer = new OAuthServer($this->app['env']);
+            $token = $this->publicToken;
+            $cacheKey = $this->getCacheKey($token);
 
-            $response = $oauthServer->authenticateWithPublicToken($this->publicToken);
+            // When a request is authenticated, only bearer token is available
+            // So the cacheTag needs to be the hash of the bearer token itself.
+            $cacheTags = $this->getCacheTagsForToken($token);
+            $response = $this->cache->tags($cacheTags)->get($cacheKey) ?? [];
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::INFO,
+                TraceCode::TOKEN_CACHE_READ_ERROR
+            );
+        }
+
+        try
+        {
+            if (empty($response) === true)
+            {
+                $oauthServer = new OAuthServer($this->app['env']);
+
+                $response = $oauthServer->authenticateWithPublicToken($this->publicToken);
+
+                $storeCache = true;
+            }
+
         }
         catch (\Exception $exception)
         {
@@ -165,6 +247,31 @@ class OAuth
             );
 
             return ApiResponse::generateErrorResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED_OAUTH_TOKEN_INVALID);
+        }
+
+        try
+        {
+
+            if ($storeCache === true)
+            {
+                list($ttl, $key) = $this->getCacheInfo($this->publicToken);
+
+                $this->cache->tags($cacheTags)->put($key, $response, $ttl);
+
+                // Similarly, when a token is being revoked the only attribute available is the ID of the token.
+                // Hence we use the ID as key to cache the tokentag
+                $tokenTag = $this->getCacheTagsForTokenId($response['id']);
+                $this->cache->tags($tokenTag)->put($response['id'], $key);
+            }
+
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::INFO,
+                TraceCode::TOKEN_CACHE_STORE_ERROR
+            );
         }
 
         return $this->parseOAuthServerResponse($response);

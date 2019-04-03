@@ -195,6 +195,7 @@ class Server extends Base\Mock\Server
                 ],
                 'GETREQUESTSTATUS' => [
                     'JM_TRAN_REF_NO' => '1001',
+                    'TRAN_REF_NO'    => NULL,
                     'TXN_STATUS'     => 'SUCCESS',
                     'TXN_AMOUNT'     => '50000',
                     'REFUND_AMOUNT'  => '50000',

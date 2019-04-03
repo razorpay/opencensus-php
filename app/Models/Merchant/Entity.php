@@ -11,6 +11,7 @@ use Conner\Tagging\Taggable;
 use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\User;
+use RZP\Models\Card;
 use RZP\Models\State;
 use RZP\Models\Feature;
 use RZP\Models\Pricing;
@@ -1800,6 +1801,8 @@ class Entity extends Base\PublicEntity
         {
             $data[IIN\Constants::OTP] = true;
         }
+
+        $data[IIN\Entity::RECURRING] = (new Card\Entity)->isRecurringSupportedOnIIN($this, $iin);
 
         return $data;
     }

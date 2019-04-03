@@ -65,17 +65,32 @@ class CaptureVerify extends Verify
                     break;
             }
         }
-        catch (Exception\GatewayTimeoutException $e)
+        catch (Exception\GatewayRequestException $e)
         {
-            $result = Result::TIMEOUT;
+            if ($e instanceof Exception\GatewayTimeoutException)
+            {
+                $result = Result::TIMEOUT;
 
-            $this->checkForPreviousTimeoutAndBlockGatewayIfApplicable($payment);
+                $this->checkForPreviousRequestErrorAndBlockGatewayIfApplicable($payment,
+                    self::GATEWAY_TIMEOUT_THRESHOLD,
+                    self::GATEWAY_TIMEOUT_CACHE_KEY_PREFIX);
+
+                $this->trace->info(TraceCode::GATEWAY_REQUEST_TIMEOUT,
+                                   ['payment_id' => $payment->getId()]);
+            }
+            else
+            {
+                $result = Result::REQUEST_ERROR;
+
+                $this->checkForPreviousRequestErrorAndBlockGatewayIfApplicable($payment,
+                    self::GATEWAY_REQUEST_ERROR_THRESHOLD,
+                    self::GATEWAY_REQUEST_ERROR_CACHE_KEY_PREFIX);
+
+                $this->trace->info(TraceCode::GATEWAY_REQUEST_ERROR,
+                                   ['payment_id' => $payment->getId()]);
+            }
 
             $this->updateVerifyBucket($payment, $filter, self::NEXT);
-
-            $this->trace->info(
-                TraceCode::GATEWAY_REQUEST_TIMEOUT,
-                ['payment_id' => $payment->getId()]);
         }
         catch (\Throwable $e)
         {
@@ -92,9 +107,14 @@ class CaptureVerify extends Verify
         }
         finally
         {
-            if (($payment->getVerifyBucket() >= 4) and
+            // Raise an alert if current bucket is greater than equal to 4
+            // and error result is error or unknown.
+            // Otherwise raise an alert if verify bucket is last bucket
+            if ((($payment->getVerifyBucket() >= 4) and
                 (($result === Result::ERROR) or
-                ($result === Result::UNKNOWN)))
+                 ($result === Result::UNKNOWN))) or
+                (($payment->getVerifyBucket() == 9) and
+                 ($result !== Result::SUCCESS)))
             {
                 // Put the settlement on hold if verification has failed
                 // $payment->setOnHold(true);

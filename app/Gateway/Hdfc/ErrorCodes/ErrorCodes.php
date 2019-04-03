@@ -659,7 +659,7 @@ class ErrorCodes extends Cards\ErrorCodes
         '51' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE,
         '54' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_EXPIRED,
         '55' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_PIN,
-        '56' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
+        '56' => ErrorCode::GATEWAY_ERROR_NO_RECORDS_FOUND,
         '57' => ErrorCode::GATEWAY_ERROR_TRANSACTION_DECLINED,
         '61' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_LIMITS_EXCEEDED,
         '62' => ErrorCode::BAD_REQUEST_CARD_FROZEN,
@@ -713,7 +713,8 @@ class ErrorCodes extends Cards\ErrorCodes
         'P6' => ErrorCode::BAD_REQUEST_CARD_CREDIT_LIMIT_REACHED, //Over limit table
         'P7' => ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT, //Advance less than minimum
         'P8' => ErrorCode::GATEWAY_ERROR_TIMED_OUT, //Time out
-        'P9' => ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_TOO_HIGH, //Enter lesser amount
+        //Enter lesser amount. As per bank communication, this is declined by issuer
+        'P9' => ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_TOO_HIGH_DECLINED_BY_ISSUER,
 
         'Q0' => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_TRANSACTION_DATE, //Invalid transaction date
         'Q1' => ErrorCode::GATEWAY_ERROR_CARD_INVALID_EXPIRY_DATE, //Invalid Expiration Date
