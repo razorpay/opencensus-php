@@ -136,8 +136,8 @@ return [
         'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
     ],
     'queued_payouts' => [
-        'test'       => env('AWS_GENERAL_TEST_QUEUE'),
-        'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
+        'test'       => env('AWS_PAYOUTS_TEST_QUEUE'),
+        'live'       => env('AWS_PAYOUTS_LIVE_QUEUE'),
     ],
     'es_sync' => [
         'test'       => env('AWS_ES_SYNC_QUEUE'),
