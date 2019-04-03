@@ -149,7 +149,7 @@ class NetbankingReconciliationTest extends TestCase
 
         $netbankingentity = $this->getLastEntity('netbanking', true);
 
-        $this->assertEquals($netbankingentity['bank_payment_id'], 99999);
+        $this->assertEquals($netbankingentity['reference1'], 99999);
 
     }
 
@@ -183,7 +183,7 @@ class NetbankingReconciliationTest extends TestCase
 
         $netbankingEntity = $this->getDbLastEntityToArray('netbanking');
 
-        $this->assertNotNull($netbankingEntity['bank_payment_id']);
+        $this->assertEquals($netbankingEntity['reference1'], 99999);
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
