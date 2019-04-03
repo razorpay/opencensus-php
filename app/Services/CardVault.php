@@ -215,7 +215,7 @@ class CardVault
     {
         (new Validator)->validateInput('create_vault_token', $input);
 
-        $this->trace->info(TraceCode::VAULT_TOKEN_CREATE_INIT, $input);
+        $this->trace->info(TraceCode::VAULT_TOKEN_CREATE_INIT);
 
         $input[self::SECRET] = str_replace(array("\r", "\n"), '', $input[self::SECRET]);
 
