@@ -109,14 +109,6 @@ class CreateBatchTable extends Migration
                   ->on_delete('restrict');
         });
 
-        Schema::table(Table::INVOICE, function($table)
-        {
-            $table->foreign(Invoice\Entity::BATCH_ID)
-                  ->references(Batch::ID)
-                  ->on(Table::BATCH)
-                  ->on_delete('restrict');
-        });
-
         Schema::table(Table::PAYOUT, function($table)
         {
             $table->foreign(Payout\Entity::BATCH_ID)
@@ -138,11 +130,6 @@ class CreateBatchTable extends Migration
             $table->dropForeign(Table::REFUND . '_' . Refund\Entity::BATCH_ID . '_foreign');
 
             $table->dropColumn(Refund\Entity::BATCH_ID);
-        });
-
-        Schema::table(Table::INVOICE, function($table)
-        {
-            $table->dropForeign(Table::INVOICE . '_' . Invoice\Entity::BATCH_ID . '_foreign');
         });
 
         Schema::table(Table::PAYOUT, function($table)

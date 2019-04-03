@@ -113,7 +113,7 @@ class NetbankingIdfcCombinedFileTest extends TestCase
         $date  = Carbon::today(Timezone::IST)->format('Ymd');
 
         $testData = [
-            'name' => "IDN_REFUND_$date.xlsx"
+            'name' => "Razorpay_REFUND_$date.xlsx"
         ];
 
         $this->assertArraySelectiveEquals($testData, $refundFileData);
@@ -121,10 +121,10 @@ class NetbankingIdfcCombinedFileTest extends TestCase
 
     protected function checkClaimsFile(array $claimFileData)
     {
-        $date  = Carbon::today(Timezone::IST)->format('dmY');
+        $time = Carbon::now(Timezone::IST)->format('Ymd');
 
         $testData = [
-            'name' => "IDFC_RAZORPAY_RECON_$date.xlsx"
+            'name' => $time . '_' . 'Razorpay.txt'
         ];
 
         $this->assertArraySelectiveEquals($testData, $claimFileData);

@@ -32,7 +32,7 @@ final class Route
         // TODO: Check Splunk and remove the write here
         'merchant_methods'                         => ['get',      'methods',                                        'MerchantController@getPaymentMethods'                              ],
         'merchant_methods_downtime'                => ['get',      'methods/downtime',                               'MerchantController@getPublicGatewayDowntimeData'                   ],
-        'merchant_methods_downtime_private'        => ['get',      'methods/downtimes',                              'MerchantController@getMethodDowntimeData'                          ],
+        'merchant_methods_downtime_private'        => ['get',      'methods/downtimes',                              'DowntimeController@getMethodDowntimeData'                          ],
         'merchant_checkout_preferences'            => ['get',      'preferences',                                    'MerchantController@getCheckoutPreferences'                         ],
         'payment_create'                           => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'                         ],
         // @todo: Require feature S2S for payment_create_private route.
@@ -100,6 +100,7 @@ final class Route
         'payment_add_metadata'                     => ['post',     'payments/{x_entity_id}/metadata',                'PaymentController@postPaymentMetadata'                             ],
         'payment_edit'                             => ['patch',    'payments/{id}',                                  'PaymentController@update'                                          ],
         'payment_fetch_by_id'                      => ['get',      'payments/{id}',                                  'PaymentController@getPayment'                                      ],
+        'subscription_payment_fetch_by_id'         => ['get',      'payments/{paymentId}/subscriptions/{subId}',     'PaymentController@getPaymentForSubscription'                       ],
         'payment_fetch_multiple'                   => ['get',      'payments',                                       'PaymentController@getPayments'                                     ],
         'payment_fetch_card_details'               => ['get',      'payments/{id}/card',                             'PaymentController@getCardForPayment'                               ],
         'payment_fetch_refunds'                    => ['get',      'payments/{id}/refunds',                          'PaymentController@getRefundsForPayment'                            ],
@@ -137,7 +138,7 @@ final class Route
         'refund_without_verify_bulk'               => ['post',     'refunds/retry/direct/bulk',                      'RefundController@postRefundDirectRetryBulk'                        ],
         'refund_verify'                            => ['get',      'refunds/{id}/verify',                            'RefundController@postRefundVerify'                                 ],
         'refund_verify_bulk'                       => ['post',     'refunds/verify/bulk',                            'RefundController@postVerifyRefundsBulk'                            ],
-        'update_is_scrooge_status'                 => ['post',     'refunds/update_is_scrooge_status',               'RefundController@updateIsScroogeStatus'                            ],
+        'scrooge_tagging_backfill'                 => ['post',     'refunds/scrooge_tagging_backfill',               'RefundController@scroogeTaggingBackfill'                           ],
         // We will change this in the future when we want to update more things than just marking it as processed.
         'refund_update_status'                     => ['put',      'refunds/{id}/update_status',                     'RefundController@updateScroogeRefundStatus'                        ],
         'refund_fetch_status'                      => ['get',      'refunds/{id}/status',                            'RefundController@getRefundEntity'                                  ],
@@ -146,6 +147,7 @@ final class Route
         'scrooge_refund_create'                    => ['post',     'refunds/{id}/scrooge_create',                    'RefundController@scroogeRefundCreate'                              ],
         'scrooge_refund_create_bulk'               => ['post',     'refunds/scrooge_create/bulk',                    'RefundController@scroogeRefundCreateBulk'                          ],
         'scrooge_refund_verify_bulk'               => ['post',     'refunds/scrooge_verify/bulk',                    'RefundController@scroogeRefundVerifyBulk'                          ],
+        'scrooge_entities'                         => ['post',      'scrooge/entities',                              'RefundController@scroogeFetchEntities'                             ],
         'billdesk_create_cancelled_refunds'        => ['post',     'refunds/billdesk/cancelled',                     'RefundController@postCreateBilldeskCancelledRefunds'               ],
         'refund_create_gateway_record'             => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
         'gateway_validate_unknown_refund'          => ['post',     'refunds/{gateway}/validate',                     'RefundController@postGatewayValidateRefund'                        ],
@@ -585,7 +587,8 @@ final class Route
         'subscription_cancel_due'                  => ['post',     'subscriptions/cancel/due',                       'SubscriptionController@postCancelDueSubscriptions'                 ],
         'subscription_create_addon'                => ['post',     'subscriptions/{subscriptionId}/addons',          'SubscriptionController@postAddonForSubscription'                   ],
         'subscription_fetch_due_addons'            => ['get',      'subscriptions/{subscriptionId}/addons/due',      'SubscriptionController@getDueAddonsForSubscription'                ],
-        'subscription_update_data'                 => ['post',    'subscriptions/{subscriptionId}/update_data',      'SubscriptionController@postUpdateData'                             ],
+        'subscription_update_data'                 => ['post',     'subscriptions/{subscriptionId}/update_data',     'SubscriptionController@postUpdateData'                             ],
+        'subscription_payment_process'             => ['post',     'subscriptions/{subscriptionId}/payment_process', 'SubscriptionController@postPaymentProcess'                         ],
         'subscription_view_live'                   => ['get',      'l/subscriptions/{id}',                           'SubscriptionController@getSubscriptionView'                        ],
         'subscription_view_test'                   => ['get',      't/subscriptions/{id}',                           'SubscriptionController@getSubscriptionView'                        ],
         'subscription_view_live_post'              => ['post',     'l/subscriptions/{id}',                           'SubscriptionController@getSubscriptionView'                        ],
@@ -603,6 +606,7 @@ final class Route
         'offer_fetch_by_id'                        => ['get',      'offers/{id}',                                    'OfferController@fetchOfferById'                                    ],
         'offer_deactivate'                         => ['patch',    'offers/deactivate',                              'OfferController@deactivateOffers'                                  ],
         'currency_update_rates'                    => ['post',     'currency/{currency}/rates',                      'CurrencyController@postCurrencyRates'                              ],
+        'currency_fetch_all'                       => ['get',      'currency/all',                                   'CurrencyController@getAllCurrency'                                 ],
         'currency_update_rates_multiple'           => ['post',     'currency/rates',                                 'CurrencyController@postCurrencyRatesMultiple'                      ],
         'currency_fetch_rates'                     => ['get',      'currency/{currency}/rates',                      'CurrencyController@getCurrencyRates'                               ],
         'reports_fetch_multiple'                   => ['get',      'reports',                                        'ReportController@getReports'                                       ],
@@ -820,6 +824,7 @@ final class Route
         'scrooge_refunds_update'                   => ['post',     'scrooge/refunds/{id}/status-update',             'ScroogeController@statusUpdate'                                    ],
         'scrooge_refunds_download'                 => ['post',     'scrooge/refunds/download',                       'ScroogeController@downloadRefunds'                                 ],
         'scrooge_refunds_enqueue'                  => ['post',     'scrooge/refunds/enqueue',                        'ScroogeController@enqueue'                                         ],
+        'scrooge_refunds_download_gateway_file'    => ['post',     'scrooge/refunds/download-gateway-file',          'ScroogeController@downloadGatewayRefundsFile'                      ],
 
         // Dispute routes
         'payment_dispute_create'                   => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
@@ -964,6 +969,7 @@ final class Route
         'partner_config_edit'                      => ['put',      'partner_configs/{id}',                           'PartnerConfigController@update'                                    ],
 
         'commissions_get_multiple'                 => ['get',      'commissions',                                    'CommissionController@list'                                         ],
+        'commissions_get'                          => ['get',      'commissions/{id}',                               'CommissionController@get'                                           ],
 
         'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
         'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
@@ -1091,6 +1097,7 @@ final class Route
         'merchant_methods_downtime',
         'virtual_account_order_create',
         'payment_redirect_3ds',
+        'currency_fetch_all',
     ];
 
     public static $device = [
@@ -1349,6 +1356,7 @@ final class Route
         'refund_gateway_call',
         'refund_verify_call',
         'refund_fetch_status',
+        'scrooge_entities',
         'schedule_migration',
         'schedule_process_tasks',
         'scorecard',
@@ -1600,6 +1608,8 @@ final class Route
         'payout_create_with_otp',
         'payment_link_images',
         'commissions_get_multiple',
+        'subscription_payment_fetch_by_id',
+        'commissions_get',
     ];
 
     // These will run on internal auth with the assurance
@@ -1736,7 +1746,7 @@ final class Route
         'merchant_tags_bulk',
         'refund_verify',
         'refund_verify_bulk',
-        'update_is_scrooge_status',
+        'scrooge_tagging_backfill',
         'merchant_edit',
         'adj_add_bulk',
         'adj_add_reverse',
@@ -1909,6 +1919,7 @@ final class Route
         'scrooge_refunds_download',
         'scrooge_refunds_get',
         'scrooge_refunds_update',
+        'scrooge_refunds_download_gateway_file',
 
         'scrooge_refund_create',
         'scrooge_refund_create_bulk',
@@ -1948,7 +1959,8 @@ final class Route
         'vault_token_create',
 
         //Admin route for fixing subscriptio data
-        'subscription_update_data'
+        'subscription_update_data',
+        'subscription_payment_process',
     ];
 
     public static $routePermission = [
@@ -2136,7 +2148,6 @@ final class Route
         'merchant_edit_email'                      => Permission::MERCHANT_EMAIL_EDIT,
         'refund_verify'                            => Permission::VERIFY_REFUND,
         'refund_verify_bulk'                       => Permission::VERIFY_REFUND,
-        'update_is_scrooge_status'                 => '*',
         'pricing_get_plans'                        => Permission::MERCHANT_PRICING_PLANS,
         'pricing_get_gateway_plans'                => '*',
         'pricing_delete_plan_rule_force'           => Permission::UPDATE_PRICING_PLAN,
@@ -2227,6 +2238,7 @@ final class Route
         'scrooge_refunds_enqueue'                  => Permission::EDIT_REFUND,
         'scrooge_refunds_get_multiple'             => Permission::VIEW_SCROOGE_REFUNDS,
         'scrooge_refunds_download'                 => Permission::VIEW_SCROOGE_REFUNDS,
+        'scrooge_refunds_download_gateway_file'    => Permission::VIEW_SCROOGE_REFUNDS,
         'scrooge_refunds_get'                      => Permission::VIEW_SCROOGE_REFUNDS,
         'scrooge_refunds_update'                   => Permission::EDIT_REFUND,
         'scrooge_refund_create'                    => Permission::RETRY_REFUND,
@@ -2340,7 +2352,8 @@ final class Route
         'partner_config_edit'                      => '*',
         'vault_token_create'                       => Permission::MAKE_API_CALL,
         'merchant_user_reset_password'             => Permission::USER_PASSWORD_RESET,
-        'subscription_update_data'                 => Permission::MODIFY_SUBSCRIPTION_DATA
+        'subscription_update_data'                 => Permission::MODIFY_SUBSCRIPTION_DATA,
+        'subscription_payment_process'             => Permission::MODIFY_SUBSCRIPTION_DATA,
     ];
 
     public static $direct = [
@@ -2472,6 +2485,10 @@ final class Route
         ],
 
         'cron' => [
+            // Not actually a cron, but added in this list
+            // so the cron app has access to the route.
+            'setcronjob_webhook',
+            // The rest are crons
             'entity_tax_update',
             'setl_initiate',
             'setl_initiate_daily',
@@ -2537,9 +2554,6 @@ final class Route
             'refund_processed_at_backfill',
             'refund_reference1_backfill',
             'refund_reference1_bulk_update',
-            // Not actually a cron, but added in this list
-            // so the cron app has access to the route.
-            'setcronjob_webhook',
             'admin_mdr_update',
             'merchant_post_beneficiary_api',
             'setl_verify',
@@ -2547,7 +2561,7 @@ final class Route
             'merchant_es_sync_cron',
             'entity_balance_id_update',
             'scrooge_refund_verify_bulk',
-            'setl_initiate_adhoc',
+            'scrooge_tagging_backfill'
         ],
 
         'subscriptions' => [
@@ -2565,6 +2579,7 @@ final class Route
             'merchant_fetch_config_internal',
             'subscription_manual_retry',
             'token_fetch_card',
+            'subscription_payment_fetch_by_id',
         ],
 
         'kotak' => [
@@ -2600,7 +2615,8 @@ final class Route
             'scrooge_refund_create',
             'scrooge_refund_create_bulk',
             'refund_verify_call',
-            'refund_fetch_status'
+            'refund_fetch_status',
+            'scrooge_entities'
         ],
 
         'hosted' => [
@@ -2636,6 +2652,10 @@ final class Route
         'fts'  => [
             'update_fts_nodal_beneficiary',
             'update_fts_fund_transfer',
+        ],
+
+        'batch' => [
+            'invoice_create'
         ],
     ];
 
@@ -2818,7 +2838,8 @@ final class Route
         'subscriptions_expire',
         // 'subscriptions_charge_invoices',
         // 'subscriptions_retry',
-        'subscription_update_data'
+        'subscription_update_data',
+        'subscription_payment_process',
     ];
 
     // These routes are redirected after a feature check

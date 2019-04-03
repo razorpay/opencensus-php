@@ -295,4 +295,8 @@ return [
             'fts_secret'        => env('FTS_SECRET_LIVE'),
         ],
     ],
+
+    'batch' => [
+        'secret'   => env('BATCH_API_SECRET'),
+    ],
 ];

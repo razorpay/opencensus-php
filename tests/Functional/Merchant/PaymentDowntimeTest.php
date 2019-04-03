@@ -14,7 +14,7 @@ class PaymentDowntimeTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/MerchantTestData.php';
+        $this->testDataFilePath = __DIR__.'/helpers/PaymentDowntimeTestData.php';
 
         parent::setUp();
 
@@ -47,19 +47,77 @@ class PaymentDowntimeTest extends TestCase
 
     public function testGetUpiDowntimeForAllGateways()
     {
-        $this->fixtures->create('gateway_downtime:upi', [
-            'begin'     => Carbon::now()->subMinutes(30)->timestamp,
-            'end'       => null,
-            'gateway'   => 'ALL',
-            'scheduled' => false,
-        ]);
+        $request = [
+            'content' => [
+                'gateway'     => 'ALL',
+                'method'      => 'upi',
+                'source'      => 'dummy',
+                'reason_code' => 'OTHER',
+                'begin'       => Carbon::now()->subMinutes(60)->timestamp
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/dummy/webhook'
+        ];
 
-        $this->startTest();
+        $this->ba->appAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+    }
+
+    public function testGetUpiDowntimeWithEndtime()
+    {
+        $this->testGetUpiDowntimeForAllGateways();
+
+        $gatewayDowntime = $this->getLastEntity('gateway_downtime', true);
+
+        $request = [
+            'content' => [
+                'end' => Carbon::now()->subMinutes(30)->timestamp,
+            ],
+            'method' => 'PUT',
+            'url' => '/gateway/downtimes/'.$gatewayDowntime['id']
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $downtime = $this->getLastEntity('payment.downtime', true);
+        $this->assertNotNull($downtime['end']);
     }
 
     public function testGetUpiDowntimeForIndividualGateways()
     {
         $this->createUpiAllGatewayDowntime();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetNoUpiDowntimeForSingleGateway()
+    {
+        $request = [
+            'content' => [
+                'gateway'     => 'upi_mindgate',
+                'method'      => 'upi',
+                'source'      => 'dummy',
+                'reason_code' => 'OTHER',
+                'begin'       => Carbon::now()->subMinutes(60)->timestamp
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/dummy/webhook'
+        ];
+
+        $this->ba->appAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->ba->privateAuth();
 
         $this->startTest();
     }
@@ -98,12 +156,21 @@ class PaymentDowntimeTest extends TestCase
     {
         foreach (Gateway::$methodMap['upi'] as $gateway)
         {
-            $this->fixtures->create('gateway_downtime:upi', [
-                'begin'     => Carbon::now()->subMinutes(30)->timestamp,
-                'end'       => null,
-                'gateway'   => $gateway,
-                'scheduled' => false,
-            ]);
+            $request = [
+                'content' => [
+                    'gateway'     => $gateway,
+                    'method'      => 'upi',
+                    'source'      => 'dummy',
+                    'reason_code' => 'OTHER',
+                    'begin'       => Carbon::now()->subMinutes(60)->timestamp
+                ],
+                'method' => 'POST',
+                'url' => '/gateway/downtimes/dummy/webhook'
+            ];
+
+            $this->ba->appAuth();
+
+            $this->makeRequestAndGetContent($request);
         }
     }
 }

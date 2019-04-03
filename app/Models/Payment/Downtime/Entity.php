@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Payment\Downtime;
 
+use Carbon\Carbon;
+
 use RZP\Models\Base;
 use RZP\Constants\Entity as EntityConstants;
 
@@ -14,8 +16,8 @@ class Entity extends Base\PublicEntity
     const METHOD     = 'method';
     const BEGIN      = 'begin';
     const END        = 'end';
-    const ISSUER     = 'issuer';
     const SEVERITY   = 'severity';
+    const ISSUER     = 'issuer';
     const TYPE       = 'type';
     const NETWORK    = 'network';
     const AUTH_TYPE  = 'auth_type';
@@ -37,23 +39,55 @@ class Entity extends Base\PublicEntity
         self::BEGIN,
         self::END,
         self::METHOD,
+        self::STATUS,
+        self::SCHEDULED,
+        self::SEVERITY,
+        self::ISSUER,
+        self::TYPE,
+        self::NETWORK,
+        self::AUTH_TYPE,
     ];
 
     protected $visible = [
         self::ID,
+        self::ENTITY,
         self::METHOD,
         self::BEGIN,
         self::END,
+        self::STATUS,
+        self::SCHEDULED,
+        self::SEVERITY,
+        self::ISSUER,
+        self::TYPE,
+        self::NETWORK,
+        self::AUTH_TYPE,
+        self::INSTRUMENT,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
 
     protected $public = [
+        self::ID,
+        self::ENTITY,
+        self::METHOD,
+        self::BEGIN,
+        self::END,
+        self::STATUS,
+        self::SCHEDULED,
+        self::SEVERITY,
+        // self::ISSUER,
+        // self::TYPE,
+        // self::NETWORK,
+        // self::AUTH_TYPE,
+        self::INSTRUMENT,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected $casts = [
         self::BEGIN     => 'int',
         self::END       => 'int',
+        self::SCHEDULED => 'bool',
     ];
 
     protected $dates = [
@@ -61,11 +95,29 @@ class Entity extends Base\PublicEntity
         self::END,
     ];
 
-    protected $defaults = [
-        self::END           => null,
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::INSTRUMENT,
     ];
+
+    protected $defaults = [
+        self::END => null,
+    ];
+
+    protected static $sign = 'down';
 
     protected $entity = EntityConstants::PAYMENT_DOWNTIME;
 
     protected $generateIdOnCreate = true;
+
+    public function setPublicInstrumentAttribute(array & $array)
+    {
+        $array[self::INSTRUMENT] = [];
+    }
+
+    public function setEndNow()
+    {
+        $this->setAttribute(self::END, Carbon::now()->getTimestamp());
+    }
 }

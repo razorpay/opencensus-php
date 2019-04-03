@@ -17,6 +17,7 @@ use RZP\Models\Payment\Refund;
 use RZP\Gateway\Wallet\Freecharge;
 use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
 
 class Repository extends Base\Repository
 {
@@ -951,23 +952,23 @@ class Repository extends Base\Repository
         if ($withTimestamps === true)
         {
             $count += $this->newQuery()
-                ->where(Table::REFUND . '.' . Refund\Entity::GATEWAY, $data['gateway'])
+                ->where(Table::REFUND . '.' . RefundEntity::GATEWAY, $data[RefundEntity::GATEWAY])
                 ->where(Refund\Entity::CREATED_AT, '>=', $data['from'])
                 ->where(Refund\Entity::CREATED_AT, '<=', $data['to'])
-                ->where(Refund\Entity::IS_SCROOGE, '!=', $data['is_scrooge'])
+                ->where(Refund\Entity::IS_SCROOGE, '!=', $data[RefundEntity::IS_SCROOGE])
                 ->orderBy(Refund\Entity::CREATED_AT)
                 ->limit($data['limit'])
                 ->update([
-                    Refund\Entity::IS_SCROOGE => $data['is_scrooge']
+                    Refund\Entity::IS_SCROOGE => $data[RefundEntity::IS_SCROOGE]
                 ]);
         }
         else
         {
             $count += $this->newQuery()
-                ->where(Table::REFUND . '.' . Refund\Entity::ID, $data['refund_id'])
-                ->where(Refund\Entity::IS_SCROOGE, '!=', $data['is_scrooge'])
+                ->where(Table::REFUND . '.' . RefundEntity::ID, $data[RefundEntity::ID])
+                ->where(Refund\Entity::IS_SCROOGE, '!=', $data[RefundEntity::IS_SCROOGE])
                 ->update([
-                    Refund\Entity::IS_SCROOGE => $data['is_scrooge']
+                    Refund\Entity::IS_SCROOGE => $data[RefundEntity::IS_SCROOGE]
                 ]);
         }
 

@@ -508,8 +508,7 @@ class Repository extends Base\Repository
     {
         $query = $this->newQuery()
                       ->whereIn(Payment\Entity::ID, $paymentIds)
-                      ->whereNotIn(Payment\Entity::GATEWAY, $disabledGateways)
-                      ->whereNull(Payment\Entity::AUTHORIZED_AT);
+                      ->whereNotIn(Payment\Entity::GATEWAY, $disabledGateways);
 
         $verifiableCount = $query->count();
 
@@ -1652,6 +1651,17 @@ class Repository extends Base\Repository
         $this->connection(null);
 
         return null;
+    }
+
+    public function fetchByIdandSubscriptionId(string $paymentId, string $subscriptionId)
+    {
+        Entity::verifyIdAndStripSign($paymentId);
+
+        $subscriptionId = Base\PublicEntity::stripDefaultSign($subscriptionId);
+
+        return $this->newQuery()
+                    ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
+                    ->findOrFailPublic($paymentId);
     }
 
     /**
