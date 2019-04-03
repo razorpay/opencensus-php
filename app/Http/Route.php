@@ -2577,6 +2577,7 @@ final class Route
             'subscription_manual_retry',
             'token_fetch_card',
             'subscription_payment_fetch_by_id',
+            'merchant_fetch_keys',
         ],
 
         'kotak' => [
