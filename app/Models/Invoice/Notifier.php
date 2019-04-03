@@ -390,7 +390,7 @@ class Notifier extends Base\Core
         return $request;
     }
 
-    protected function  getCustomRavenTemplateAndParams(Merchant\Entity $merchant): array
+    protected function getCustomRavenTemplateAndParams(Merchant\Entity $merchant): array
     {
         $template = $params = $sender = null;
 

@@ -121,12 +121,12 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BANK);
     }
 
-    public function isMethodCard()
+    public function isMethodCard(): bool
     {
         return ($this->getMethod() === self::METHOD_TYPE_CARD);
     }
 
-    public function isMethodEmandate()
+    public function isMethodEmandate(): bool
     {
         return ($this->getMethod() === self::METHOD_TYPE_EMANDATE);
     }
