@@ -1455,8 +1455,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const HEARTBEAT_CHECK_FAILED                                = 'HEARTBEAT_CHECK_FAILED';
     const HEARTBEAT_CHECK_COMPLETED                             = 'HEARTBEAT_CHECK_COMPLETED';
     const HEARTBEAT_CHECK_TIME_CONVERSION                       = 'HEARTBEAT_CHECK_TIME_CONVERSION';
-    const HEARTBEAT_DATABASE_ROUTING                            = 'HEARTBEAT_DATABASE_ROUTING';
-    const WEIGHTED_DATABASE_ROUTING                             = 'WEIGHTED_DATABASE_ROUTING';
     const DB_DATA_INTEGRITY_ERROR                               = 'DB_DATA_INTEGRITY_ERROR';
     const DB_PIVOT_TABLE_ASSOCIATION_ERROR                      = 'DB_PIVOT_TABLE_ASSOCIATION_ERROR';
     const DB_READ_CONN_SETUP_ERROR                              = 'DB_READ_CONN_SETUP_ERROR';
@@ -1648,7 +1646,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Commission trace codes
     const COMMISSION_LOGGED                                     = 'COMMISSION_LOGGED';
     const COMMISSION_CREATED                                    = 'COMMISSION_CREATED';
-    const COMMISSION_COMPUTED                                   = 'COMMISSION_COMPUTED';
     const COMMISSION_NOT_ENABLED                                = 'COMMISSION_NOT_ENABLED';
     const COMMISSION_NOT_DEFINED                                = 'COMMISSION_NOT_DEFINED';
     const COMMISSION_COMPUTED_ZERO                              = 'COMMISSION_COMPUTED_ZERO';
@@ -1839,7 +1836,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::TRANSACTION_CREATED_IN_VERIFY_CAPTURE                 => 'Transaction created for a failed capture',
         self::REFUND_RETRY_INITIATED                                => 'Retry of failed refunds initiated',
         self::REFUND_RETRY_RESULT                                   => 'Result of failed refunds retry.',
-        self::FUND_ACCOUNT_VALIDATION_FAILED_CRITICAL_ERROR         => 'Fund Account Validation Failed due to critical reasons. We should retry.',
         self::FUND_ACCOUNT_VALIDATION_TRANSACTION_FAILED            => 'Transaction failed to create for Fund Account validation',
         self::TRANSACTION_MIGRATION_TAX_MISTMATCH                   => 'Mismatch in the tax calculation during migration',
         self::TRANSACTION_MIGRATION_FEE_MISTMATCH                   => 'Mismatch in the fees calculation during migration',
