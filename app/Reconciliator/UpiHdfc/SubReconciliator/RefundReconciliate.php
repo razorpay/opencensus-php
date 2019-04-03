@@ -76,6 +76,8 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
                     'gateway'    => $this->gateway
                 ]);
 
+            $this->setFailUnprocessedRow(false);
+
             return true;
         }
 

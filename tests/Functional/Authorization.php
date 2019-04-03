@@ -98,6 +98,13 @@ class Authorization
         $this->proxy = true;
     }
 
+    public function batchAuth()
+    {
+        $this->appAuth('rzp_test_10000000000000', \Config::get('applications.batch')['secret']);
+
+        $this->proxy = true;
+    }
+
     public function addAppAuthHeaders($hostName)
     {
         if ($hostName === null)

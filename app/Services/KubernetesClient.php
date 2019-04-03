@@ -172,12 +172,21 @@ class KubernetesClient
                             'name' => 'batch-job',
                         ],
                         'annotations' => [
-                            'iam.amazonaws.com/role' => $this->iamRole
+                            'iam.amazonaws.com/role' => $this->iamRole,
+                            'k8s.rzp.io/logger' => 'efk',
+                            'k8s.rzp.io/logs' => 'true'
                         ]
                     ],
                     'spec' => [
                         'containers' => [
                             [
+                                'envFrom' => [
+                                    [
+                                        'secretRef' => [
+                                            'name' => 'aws-secret'
+                                        ]
+                                    ]
+                                ],
                                 'env' => [
                                     [
                                         'name' => 'APP_MODE',
@@ -190,6 +199,10 @@ class KubernetesClient
                                     'requests' => [
                                         'cpu' => '100m',
                                         'memory' => '150Mi'
+                                    ],
+                                    'limits' => [
+                                        'cpu' => '500m',
+                                        'memory' => '2048Mi'
                                     ]
                                 ],
                                 'livenessProbe' => [

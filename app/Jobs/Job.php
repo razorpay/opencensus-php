@@ -74,7 +74,15 @@ class Job implements ShouldQueue
 
         $app = App::getFacadeRoot();
 
-        $this->previousMode = $app['basicauth']->getMode();
+        $previousMode = $app['basicauth']->getMode();
+
+        if (isset($this->app['rzp.mode']) === true)
+        {
+            $previousMode = $this->app['rzp.mode'];
+        }
+
+        $this->previousMode = $previousMode;
+
         $this->taskId       = $app['request']->getTaskId();
         $this->jobName      = snake_case(class_basename($this));
     }

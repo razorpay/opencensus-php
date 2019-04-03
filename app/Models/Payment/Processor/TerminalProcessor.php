@@ -53,6 +53,16 @@ class TerminalProcessor extends Base\Core
         return $terminalsSelected;
     }
 
+    public function getTerminalFromTerminalIds(array $terminalIds)
+    {
+        $terminals = $this->repo->terminal->findMany($terminalIds);
+
+        return $terminals->sortBy(function($terminal) use ($terminalIds)
+        {
+            return array_search($terminal->getId(), $terminalIds);
+        });
+    }
+
     public function setAuthenticationGateway(Payment\Entity $payment, array & $gatewayInput)
     {
         $this->payment = $payment;

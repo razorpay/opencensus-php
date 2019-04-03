@@ -8,6 +8,7 @@ use RZP\Models\QrCode;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
+use RZP\Models\Merchant;
 use RZP\Models\Card\Network;
 use RZP\Models\BharatQr\Tags;
 use RZP\Models\Base\PublicEntity;
@@ -344,6 +345,12 @@ class Provider
 
     protected function getCardIdentifiers(QrCode\Entity $qrCode): array
     {
+        // If cards aren't enabled at all, we skip addition of card identifiers
+        if ($this->isMethodEnabledForMerchant(Payment\Method::CARD, $qrCode->merchant) === false)
+        {
+            return [];
+        }
+
         $identifiers = [];
 
         $bharatQrNetworks = Payment\Gateway::getBharatQrCardNetworks();
@@ -394,6 +401,12 @@ class Provider
 
     protected function getUpiIdentifier(QrCode\Entity $qrCode): array
     {
+        // If UPI isn't enabled at all, we skip addition of UPI identifiers
+        if ($this->isMethodEnabledForMerchant(Payment\Method::UPI, $qrCode->merchant) === false)
+        {
+            return [];
+        }
+
         $terminal = $this->getTerminalForMethod(Payment\Method::UPI, $qrCode);
 
         if ($terminal !== null)
@@ -404,6 +417,13 @@ class Provider
         $identifier[Terminal\Entity::VPA] = $vpa ?? null;
 
         return $identifier;
+    }
+
+    protected function isMethodEnabledForMerchant(string $method, Merchant\Entity $merchant)
+    {
+        $methods = $merchant->getMethods();
+
+        return $methods->isMethodEnabled($method);
     }
 
     /**

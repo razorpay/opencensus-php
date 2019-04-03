@@ -9,6 +9,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
+use RZP\Models\Gateway\File;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Payment\Gateway;
@@ -509,40 +510,20 @@ class UpiSbiGatewayTest extends TestCase
 
         $data = $this->generateRefundsExcelForSbiUpi();
 
-        $this->assertArrayHasKey(Payment\Gateway::UPI_SBI, $data);
+        $content = $data['items'][0];
 
-        $this->assertEquals(3, $data[Payment\Gateway::UPI_SBI][Constants::COUNT]);
-        $this->assertTrue(file_exists($data[Payment\Gateway::UPI_SBI][Constants::FILE]));
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-        $sheet = Excel::load($data[Payment\Gateway::UPI_SBI][Constants::FILE])->all()->toArray();
+        $file = $this->getLastEntity('file_store', true);
 
-        $key = str_replace(' ', '_', strtolower(RefundFile::REFUND_REQ_AMT));
+        $time = Carbon::now(Timezone::IST)->format('dmY_Hi');
 
-        $count = [
-            500 => 0,
-            100 => 0,
-        ];
-
-        foreach ($sheet as $refund)
-        {
-            $refundAmount = $refund[$key];
-
-            $count[$refundAmount]++;
-        }
-
-        // We assert that there are 2 refunds of 500 rupees, and 1 of 100
-        $this->assertEquals(2, $count[500]);
-        $this->assertEquals(1, $count[100]);
-
-        // We pull out the filestore entity created while creating the refund file
-        $file = $this->getLastEntity(ConstantsEntity::FILE_STORE, true);
-
-        // Asserting the properties of the fileStore object that was created and uploaded into the S3 bucket
-        $this->assertEquals(FileStore\Type::SBI_UPI_REFUND, $file[FileStore\Entity::TYPE]);
-        $this->assertEquals(FileStore\Store::S3, $file[FileStore\Entity::STORE]);
-        $this->assertEquals(FileStore\Format::CSV, $file[FileStore\Entity::EXTENSION]);
-
-        unlink($data[Payment\Gateway::UPI_SBI][Constants::FILE]);
+        $this->assertEquals('file_store', $file['entity']);
+        $this->assertEquals('SBI_UPI_' . $time .'.csv', $file['location']);
+        $this->assertEquals('SBI_UPI_' . $time, $file['name']);
     }
 
     public function testUpiResponseAssertionFailure()
@@ -613,12 +594,13 @@ class UpiSbiGatewayTest extends TestCase
         $this->ba->appAuth();
 
         $request = [
-            'url' => '/refunds/excel',
-            'method' => 'post',
+            'url' => '/gateway/files',
+            'method' => 'POST',
             'content' => [
-                'method'    => Method::UPI,
-                'bank'      => Payment\Processor\Upi::SBIN,
-                'frequency' => Constants::FREQUENCY_DAILY
+                'type'    => 'refund',
+                'targets' => ['upi_sbi'],
+                'begin'    => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'      => Carbon::tomorrow(Timezone::IST)->getTimestamp()
             ],
         ];
 

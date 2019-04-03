@@ -53,8 +53,7 @@ class Axis extends Base
             $gatewayCode,
             $begin,
             $end,
-            static::GATEWAY,
-            $corporate
+            static::GATEWAY
         );
 
         return $refunds;
