@@ -158,6 +158,11 @@ class SubscriptionProxy
 
     protected function parseResponse($response)
     {
+        if ($this->isHostedPageUrl() === true)
+        {
+            return $this->parseAsHtml($response);
+        }
+
         $code = $response->status_code;
         $body = json_decode($response->body, true);
 
@@ -167,6 +172,21 @@ class SubscriptionProxy
         ]);
 
         return ApiResponse::json($body, $code);
+    }
+
+    protected function parseAsHtml($response)
+    {
+
+        $code = $response->status_code;
+
+        $body = $response->body;
+
+        $this->trace->info(TraceCode::SUBSCRIPTION_SERVICE_PROXY_RESPONSE, [
+            'code' => $code,
+            'body' => $body,
+        ]);
+
+        return \Response::make($body);
     }
 
     protected function hasRequestTimedOut(\Requests_Exception $e): bool
@@ -250,5 +270,18 @@ class SubscriptionProxy
         $isFeatureEnabled = optional($this->ba->getMerchant())->isFeatureEnabled(Feature\Constants::SUBSCRIPTION_V2);
 
         return ($isFeatureEnabled === true);
+    }
+
+    protected function isHostedPageUrl(): bool
+    {
+        $currentRoute = $this->route->getCurrentRouteName();
+
+        if (($currentRoute === 'subscription_view_test') or
+            ($currentRoute === 'subscription_view_live'))
+        {
+            return true;
+        }
+
+        return false;
     }
 }
