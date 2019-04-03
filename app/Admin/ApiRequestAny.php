@@ -63,7 +63,7 @@ class ApiRequestAny
         {
             $routeName = Route::currentRouteName();
 
-            if (in_array($routeName, ['merchant', 'admin'], true) === false)
+            if (in_array($routeName, ['merchant', 'admin', 'extension_merchant'], true) === false)
             {
                 // Default
                 $this->clientType = 'user';

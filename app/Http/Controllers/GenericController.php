@@ -19,8 +19,7 @@ class GenericController extends Controller
     ];
 
     const WHITELISTED_ROUTES_EXTENSION = [
-        '/invoices',
-
+        'invoices',
     ];
 
     public function handleAny($mode, $path)

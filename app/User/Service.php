@@ -683,10 +683,7 @@ class Service extends Base\Service
 
         if (($validToken === false) or ($validSignature === false))
         {
-            throw new AuthorizationException(
-                'Invalid Token',
-                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
-                403);
+            throw new AuthorizationException('Invalid Token');
         }
 
         return $token;

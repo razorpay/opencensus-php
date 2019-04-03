@@ -29,7 +29,7 @@ Route::group(['middleware' => ['web']], function () {
         ->where(['path' => '.*'])
         ->name('user');
 
-    Route::any('/extension/api/{mode}/{path}', 'GenericController@handleAnyExtension')
+    Route::any('/extension/api/{mode}/{path?}', 'GenericController@handleAnyExtension')
         ->where(['path' => '.*'])
         ->name('extension_merchant')
         ->middleware(['jwt']);
@@ -72,8 +72,7 @@ Route::group(['middleware' => ['web']], function () {
             ->where(['path' => '.*'])
             ->name('merchant');
 
-        Route::post('/extension/generate_token', 'UserController@generateJWT')->name('extension_generate_token')
-            ->middleware(['jwt']);
+        Route::post('/extension/generate_token', 'UserController@generateJWT')->name('extension_generate_token');
 
         Route::put('/{mode}/users/{id}/detach', 'MerchantController@removeUser')->name('remove_user');
 

@@ -55,7 +55,7 @@ return array(
     | to be allowed to remain idle before it asks user to generate the token again.
     |
     */
-    'jwt_expiry' => 1,
+    'jwt_expiry' => 100,
 
     /*
     |--------------------------------------------------------------------------
