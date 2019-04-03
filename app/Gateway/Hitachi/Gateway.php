@@ -816,7 +816,7 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::TRANSACTION_TIME] = $paysecureEntity['tran_time'];
 
-        $content[RequestFields::AUTH_ID] = $input['paysecure']['apprcode'];
+        $content[RequestFields::AUTH_ID] = $paysecureEntity['apprcode'];
 
         $content[RequestFields::RETRIEVAL_REF_NUM] = $paysecureEntity['rrn'];
 
