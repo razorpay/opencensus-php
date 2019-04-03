@@ -118,25 +118,13 @@ trait RequestHandlerTrait
 
         $rrn = $this->generateRrn($systemTraceAuditNumber);
 
+        $messageType = 'SMS';
+
         if ((isset($this->input['card']['message_type']) === true) and
             ($this->input['card']['message_type'] !== null))
         {
             $messageType = $this->input['card']['message_type'];
         }
-        else
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
-                null,
-                null,
-                [
-                    'message'    => "Message type missing for IIN",
-                    'payment_id' => $this->input['payment']['id'],
-                    'iin'        => $this->input['card']['iin'],
-                ]
-            );
-        }
-
 
         $requestArray = [
             Fields::CARD_NO                           => $card['number'],
