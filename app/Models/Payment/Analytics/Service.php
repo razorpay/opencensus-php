@@ -26,7 +26,7 @@ class Service extends Base\Service
     // set the payment request as s2s for analytics
     public function setMetadataForS2SPayment(array $input)
     {
-        $input['_'] = isset($input['_']) ? $input['_'] : [];
+        $input['_'] = $input['_'] ?? [];
 
         if (isset($input['_'][Entity::LIBRARY]) === false)
         {
