@@ -1192,14 +1192,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_PRICING_BULK_EXCEPTION                       = 'MERCHANT_PRICING_BULK_EXCEPTION';
     const MERCHANT_PRICING_BULK_ALL_FAILED_IDS                  = 'MERCHANT_PRICING_BULK_ALL_FAILED_IDS';
 
-// Trace codes for Heimdall
+    // Trace codes for Heimdall
+
     const HEIMDALL_EVENT_RECORD                                 = 'HEIMDALL_EVENT_RECORD';
     const HEIMDALL_AUDIT_LOG                                    = 'HEIMDALL_AUDIT_LOG';
     const HEIMDALL_AUDIT_LOG_FAIL                               = 'HEIMDALL_AUDIT_LOG_FAIL';
     const HEIMDALL_AUDIT_LOG_SEARCH_FAIL                        = 'HEIMDALL_AUDIT_LOG_SEARCH_FAIL';
     const HEIMDALL_ACTION_LOG_FAIL                              = 'HEIMDALL_ACTION_LOG_FAIL';
 
-// Trace for Payment/Transfers
+    // Trace for Payment/Transfers
+
     const PAYMENT_TRANSFER_REQUEST                              = 'PAYMENT_TRANSFER_REQUEST';
     const PAYMENT_UPDATE_AMOUNT_TRANSFERRED                     = 'PAYMENT_UPDATE_AMOUNT_TRANSFERRED';
     const PAYMENT_TRANSFER_SUCCESS                              = 'PAYMENT_TRANSFER_SUCCESS';
@@ -1215,7 +1217,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REVERSAL_REFUND_NOT_AVAILABLE                         = 'REVERSAL_REFUND_NOT_AVAILABLE';
     const REVERSAL_REFUND_AVAILABLE                             = 'REVERSAL_REFUND_AVAILABLE';
 
-// Trace Code for Gateway Absence StatusCake
+    // Trace Code for Gateway Absence StatusCake
+
     const GATEWAY_DOWNTIME_STATUSCODE_MISSING_TOKEN             = 'GATEWAY_DOWNTIME_STATUSCODE_MISSING_TOKEN';
     const GATEWAY_DOWNTIME_STATUSCAKE_INVALID_TOKEN             = 'GATEWAY_DOWNTIME_STATUSCAKE_INVALID_TOKEN';
     const GATEWAY_DOWNTIME_STATUSCAKE_INVALID_ISSUER            = 'GATEWAY_DOWNTIME_STATUSCAKE_INVALID_ISSUER';
@@ -1234,14 +1237,15 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const STATUSCAKE_CONNECTION_FAILED                          = 'STATUSCAKE_CONNECTION_FAILED';
     const STATUSCAKE_CRON_FAILED                                = 'STATUSCAKE_CRON_FAILED';
 
-// Trace code for Merchant Details
+    // Trace code for Merchant Details
     const MERCHANT_DETAIL_DOES_NOT_EXIST                        = 'MERCHANT_DETAIL_DOES_NOT_EXIST';
     const CREATE_MERCHANT_DETAIL                                = 'CREATE_MERCHANT_DETAIL';
     const CREATE_MERCHANT_DETAIL_FAILED                         = 'CREATE_MERCHANT_DETAIL_FAILED';
     const MERCHANT_DETAIL_MIGRATE_FAILED                        = 'MERCHANT_DETAIL_MIGRATE_FAILED';
     const MERCHANT_DETAIL_MIGRATE_INFO                          = 'MERCHANT_DETAIL_MIGRATE_INFO';
 
-// Trace codes for offers
+    // Trace codes for offers
+
     const OFFER_CREATE_REQUEST                                  = 'OFFER_CREATE_REQUEST';
     const OFFER_DISCOUNT_CREATED                                = 'OFFER_DISCOUNT_CREATED';
     const OFFER_IIN_DOES_NOT_EXISTS                             = 'OFFER_IIN_DOES_NOT_EXISTS';
@@ -1272,7 +1276,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARD_GATEWAY_PRIORITY                                 = 'CARD_GATEWAY_PRIORITY';
     const NETBANKING_GATEWAY_PRIORITY                           = 'NETBANKING_GATEWAY_PRIORITY';
 
-// Trace codes for Merchant Reports
+    // Trace codes for Merchant Reports
 
     const REPORT_CREATE_REQUEST                                 = 'REPORT_CREATE_REQUEST';
     const REPORT_QUEUE_JOB_FAILED                               = 'REPORT_QUEUE_JOB_FAILED';
@@ -1285,7 +1289,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USERS_SEND_SMS_OTP_FAILED                             = 'USERS_SEND_SMS_OTP_FAILED';
     const USERS_SEND_EMAIL_OTP_FAILED                           = 'USERS_SEND_EMAIL_OTP_FAILED';
 
-// Trace code for Invitation
+    // Trace code for Invitation
     const INVITATION_CREATE                                     = 'INVITATION_CREATE';
     const INVITATION_EDIT                                       = 'INVITATION_EDIT';
     const INVITATION_ACCEPT                                     = 'INVITATION_ACCEPT';
