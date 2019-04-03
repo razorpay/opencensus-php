@@ -497,12 +497,12 @@ class Notifier extends Base\Core
 
                 if ($subscriptionRegistration->isMethodCard() === true)
                 {
-                    $template = 'sms.custom_invoice.subscription_registration_card';
+                    $template = 'sms.custom_invoice.subr_card';
                 }
 
                 if ($subscriptionRegistration->isMethodEmandate() === true)
                 {
-                    $template = 'sms.custom_invoice.subscription_registration_emandate';
+                    $template = 'sms.custom_invoice.subr_emandate';
                 }
 
                 $params   = [
