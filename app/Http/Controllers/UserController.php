@@ -253,4 +253,30 @@ class UserController extends Controller
 
         return AppResponse::jsonResponse($error, $result);
     }
+
+    /**
+     * On extension logout if their is any user available we should log the user out.
+     *
+     * @return mixed
+     */
+    public function getExtensionLogout()
+    {
+        $user = Auth::guard('user');
+
+        if (empty($user) === false)
+        {
+            $userDetails = $user->user();
+
+            $traceData = [
+                'id'          => $userDetails->id,
+                'email'       => $userDetails->email,
+            ];
+
+            $this->trace->info(TraceCode::USER_LOGOUT, $traceData);
+
+            $user->logout();
+        }
+
+        return AppResponse::jsonResponse([]);
+    }
 }

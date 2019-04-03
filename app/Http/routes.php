@@ -34,6 +34,10 @@ Route::group(['middleware' => ['web']], function () {
         ->name('extension_merchant')
         ->middleware(['jwt']);
 
+    Route::get('/extension/logout', 'UserController@getExtensionLogout')
+        ->name('extension_user')
+        ->middleware(['jwt']);
+
     // Org
     Route::group(['prefix' => 'admin'], function () {
         Route::get('/org', 'AdminController@getOrg');
