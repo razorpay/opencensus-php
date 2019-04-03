@@ -68,9 +68,7 @@ class Gateway extends Base\Gateway
                     return $authResponse;
                 }
 
-                $this->authorizeNotEnrolled($content);
-
-                return;
+                return $this->authorizeNotEnrolled($content, $input);
                 break;
             default:
                 $request = $this->getAuthRequestArray($content);
