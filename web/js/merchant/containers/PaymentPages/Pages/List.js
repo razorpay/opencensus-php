@@ -200,7 +200,7 @@ export default class PaymentPagesContainer extends ListContainer {
                         {item.title}
                       </NavLink>
                     </td>
-                    <td>
+                    <td class="text-right">
                       {item.amount ? (
                         <Amount value={item.amount} currency={item.currency} />
                       ) : (
@@ -216,7 +216,7 @@ export default class PaymentPagesContainer extends ListContainer {
                         : 'No Limit'}
                     </td>
 
-                    <td>
+                    <td className="text-right">
                       <Amount
                         value={item.total_amount_paid}
                         currency={item.currency}
