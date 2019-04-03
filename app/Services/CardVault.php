@@ -215,9 +215,17 @@ class CardVault
     {
         (new Validator)->validateInput('create_vault_token', $input);
 
-        $this->trace->info(TraceCode::VAULT_TOKEN_CREATE_INIT);
+        $this->trace->info(TraceCode::VAULT_TOKEN_CREATE_INIT, $input);
 
-        $response[self::TOKEN] = $this->tokenize($input);
+        $input[self::SECRET] = str_replace(array("\r", "\n"), '', $input[self::SECRET]);
+
+        $response = $this->sendRequest('tokenize', 'post', $input);
+
+        if (empty($response[self::TOKEN]) === true)
+        {
+            throw new Exception\RuntimeException(
+                'Tokenize request failed', ['data' => $response]);
+        }
 
         $this->trace->info(TraceCode::VAULT_TOKEN_CREATE_COMPLETE);
 
