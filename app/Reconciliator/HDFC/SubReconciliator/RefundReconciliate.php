@@ -89,12 +89,12 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
     protected function getRefundIdForIsg(array $row)
     {
-        //
-        // Currently, the way to get refundId for a Cybersource
-        // refund is the same as for FSS refund. Keeping two
-        // different functions for clarity sake and easy reading.
-        //
-        return $this->getRefundIdForFss($row);
+        $refundId = $this->getRefundIdForFss($row);
+
+        // Isg file will contain refund id in format - 'razorrfnd{id}'
+        $refundId = substr($refundId, 9);
+
+        return $refundId;
     }
 
     /**

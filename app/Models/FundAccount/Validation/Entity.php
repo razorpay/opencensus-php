@@ -41,6 +41,9 @@ class Entity extends Base\PublicEntity
     // Key for the response
     const FUND_ACCOUNT          = 'fund_account';
 
+    // Key for retry API
+    const FUND_ACCOUNT_VALIDATION_IDS   = 'fund_account_validation_ids';
+
     protected $entity = Constants\Entity::FUND_ACCOUNT_VALIDATION;
 
     const PUBLIC_ENTITY_NAME = 'fund_account.validation';

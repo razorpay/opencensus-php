@@ -171,6 +171,7 @@ class Table
     // Terminal Performance
     const TERMINAL_ACTION       = 'terminal_action_logs';
     const GATEWAY_DOWNTIME      = 'gateway_downtimes';
+    const PAYMENT_DOWNTIME      = 'payment_downtimes';
 
     const GATEWAY_RULE          = 'gateway_rules';
     const GATEWAY_FILE          = 'gateway_files';
@@ -209,6 +210,7 @@ class Table
         Entity::WALLET_PAYUMONEY    => self::WALLET,
         Entity::MPI_BLADE           => self::BLADE,
         Entity::MPI_ENSTAGE         => self::BLADE,
+        Entity::PAYMENT_DOWNTIME    => self::PAYMENT_DOWNTIME,
     ];
 
     public static function getTableNameForEntity(string $entity)

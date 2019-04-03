@@ -300,4 +300,13 @@ class Repository extends Base\Repository
                     ->where(Entity::SOURCE_ID, $sourceId)
                     ->first();
     }
+
+    public function getAttemptBySourceIdAndNotFailed($sourceId, $sourceType)
+    {
+        return $this->newQuery()
+                    ->where(Entity::SOURCE_ID, $sourceId)
+                    ->where(Entity::SOURCE_TYPE, $sourceType)
+                    ->where(Entity::STATUS, '!=' ,Status::FAILED)
+                    ->get();
+    }
 }

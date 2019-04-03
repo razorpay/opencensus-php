@@ -2455,82 +2455,6 @@ return [
         ],
     ],
 
-    'testGetCardDowntimeForRupayGateways' => [
-        'request' => [
-            'url' => '/methods/downtimes',
-            'method' => 'get',
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'collection',
-                'count'  => 1,
-                'items'  => [
-                    'entity'     => 'method_downtime',
-                    'method'     => 'card',
-                    'end'        => null,
-                    'instrument' => [
-                        'network' => 'RUPAY',
-                    ]
-                ],
-            ],
-        ],
-    ],
-
-    'testGetNoCardDowntimeForSingleRupayGateway' => [
-        'request' => [
-            'url' => '/methods/downtimes',
-            'method' => 'get',
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'collection',
-                'count'  => 0,
-                'items'  => [
-                ],
-            ],
-        ],
-    ],
-
-    'testGetUpiDowntimeForAllGateways' => [
-        'request' => [
-            'url' => '/methods/downtimes',
-            'method' => 'get',
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'collection',
-                'count'  => 1,
-                'items'  => [
-                    'entity'     => 'method_downtime',
-                    'method'     => 'upi',
-                    'end'        => null,
-                    'instrument' => [
-                    ]
-                ],
-            ],
-        ],
-    ],
-
-    'testGetUpiDowntimeForIndividualGateways' => [
-        'request' => [
-            'url' => '/methods/downtimes',
-            'method' => 'get',
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'collection',
-                'count'  => 1,
-                'items'  => [
-                    'entity'     => 'method_downtime',
-                    'method'     => 'upi',
-                    'end'        => null,
-                    'instrument' => [
-                    ]
-                ],
-            ],
-        ],
-    ],
-
     'testGetWalletDowntime' => [
         'request' => [
             'url' => '/methods/downtimes',
@@ -2541,7 +2465,7 @@ return [
                 'entity' => 'collection',
                 'count'  => 1,
                 'items'  => [
-                    'entity'     => 'method_downtime',
+                    'entity'     => 'payment.downtime',
                     'method'     => 'wallet',
                     'end'        => null,
                     'instrument' => [
@@ -4067,6 +3991,132 @@ return [
         'exception' => [
             'class' => RZP\Exception\ExtraFieldsException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
+
+    'testInternationalEnableWhenAlreadyActive' => [
+        'request'  => [
+            'url'     => '/merchant/international',
+            'method'  => 'patch',
+            'content' => [
+                'international' => true
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_ALREADY_INTERNATIONAL,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_INTERNATIONAL,
+        ],
+    ],
+
+    'testInternationalEnableWhenWebsiteNotSet' => [
+        'request'  => [
+            'url'     => '/merchant/international',
+            'method'  => 'patch',
+            'content' => [
+                'international' => true
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_WEBSITE_NOT_SET,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_NOT_SET,
+        ],
+    ],
+
+    'testInternationalEnable' => [
+        'request'  => [
+            'url'     => '/merchant/international',
+            'method'  => 'patch',
+            'content' => [
+                'international' => true
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'international'     => true,
+                'convert_currency'  => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testInternationalDisableWhenAlreadyInActive' => [
+        'request'  => [
+            'url'     => '/merchant/international',
+            'method'  => 'patch',
+            'content' => [
+                'international' => 0 // send false
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_INTERNATIONAL,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_INTERNATIONAL,
+        ],
+    ],
+
+    'testInternationalDisable' => [
+        'request'  => [
+            'url'     => '/merchant/international',
+            'method'  => 'patch',
+            'content' => [
+                'international' => 0 // send false
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'international'     => false,
+                'convert_currency'  => null,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testInternationalToggleWithInvalidValue' => [
+        'request'  => [
+            'url'     => '/merchant/international',
+            'method'  => 'patch',
+            'content' => [
+                'international' => 'abc'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The international field must be true or false.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 ];

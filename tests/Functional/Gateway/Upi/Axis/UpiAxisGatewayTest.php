@@ -604,7 +604,8 @@ class UpiAxisGatewayTest extends TestCase
 
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
-            if ($action === 'refund'){
+            if ($action === 'refund')
+            {
                 $content['code'] = '111';
             }
         }, $this->gateway);
@@ -670,5 +671,59 @@ class UpiAxisGatewayTest extends TestCase
         $status = $response['status'];
 
         $this->assertEquals($expectedStatus, $status);
+    }
+
+    public function testDuplicateErrorCode()
+    {
+        $this->fixtures->create('terminal:shared_upi_axis_intent_terminal');
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $upi = $this->getDBLastEntity('upi');
+
+        $payment = $this->getDbLastPayment();
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upi->toArray(), $payment->toArray(), '111',
+            'TOKEN NOT FOUND');
+
+        $this->makeS2SCallbackAndGetContent($content);
+
+        $payment->reload();
+
+        $this->assertEquals('GATEWAY_ERROR_TOKEN_NOT_FOUND', $payment['internal_error_code']);
+        $this->assertEquals('Payment processing failed due to error at bank or wallet gateway',
+            $payment['error_description']);
+    }
+
+    public function testDuplicateErrorCode2()
+    {
+        $this->fixtures->create('terminal:shared_upi_axis_intent_terminal');
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $upi = $this->getDBLastEntity('upi');
+
+        $payment = $this->getDbLastPayment();
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upi->toArray(), $payment->toArray(), '111',
+            'DUPLICATE TOKEN');
+
+        $this->makeS2SCallbackAndGetContent($content);
+
+        $payment->reload();
+
+        $this->assertEquals('GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST', $payment['internal_error_code']);
+        $this->assertEquals('Payment processing failed due to error at bank or wallet gateway',
+            $payment['error_description']);
     }
 }

@@ -345,4 +345,13 @@ class Service extends Base\Service
 
         return (new $reconNamepsace)->notifyH2HErrors($input);
     }
+
+    public function processAdhocSettlements($input, $channel = null)
+    {
+        $data = (new Settlement\Processor)->processAdhocSettlements($input);
+
+        return $data;
+    }
+
+
 }

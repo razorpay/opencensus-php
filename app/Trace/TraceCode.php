@@ -516,6 +516,18 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CHECKOUT_PREFERENCES_REQUEST                          = 'CHECKOUT_PREFERENCES_REQUEST';
     const CHECKOUT_PREFERENCES_COOKIE_CHECK                     = 'CHECKOUT_PREFERENCES_COOKIE_CHECK';
 
+    const BULK_REFUND_VERIFY_REQUEST                            = 'BULK_REFUND_VERIFY_REQUEST';
+    const SCROOGE_FETCH_ENTITIES_SKIPPED_REFUNDS                = 'SCROOGE_FETCH_ENTITIES_SKIPPED_REFUNDS';
+
+
+    const SETTLEMENT_MERCHANT_ON_HOLD                           = 'SETTLEMENT_MERCHANT_ON_HOLD';
+    const SETTLEMENT_MERCHANT_SKIPPED                           = 'SETTLEMENT_MERCHANT_SKIPPED';
+
+    // Info trace code for when a request would have been throttled but didn't because it is mocked.
+    const THROTTLE_REQUEST_THROTTLED_MOCK                       = 'THROTTLE_REQUEST_THROTTLED_MOCK';
+
+    const UNSUPPORTED_CARD_TYPE_FOR_TRANSFER                    = 'UNSUPPORTED_CARD_TYPE_FOR_TRANSFER';
+
     // Card Saving related
     const PAYMENT_FILL_SAVED_APP_TOKEN                          = 'PAYMENT_FILL_SAVED_APP_TOKEN';
     const PAYMENT_GET_CUSTOMER                                  = 'PAYMENT_GET_CUSTOMER';
@@ -1017,6 +1029,20 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const HARVESTER_RESPONSE                                    = 'HARVESTER_RESPONSE';
 
     const SHIELD_INTEGRATION_ERROR                              = 'SHIELD_INTEGRATION_ERROR';
+    const REVERSAL_ADJUSTMENT_CREATE_REQUEST                    = 'REVERSAL_ADJUSTMENT_CREATE_REQUEST';
+
+
+    // Gateway component error messages
+
+    const GATEWAY_REQUEST_ERROR                                 = 'GATEWAY_REQUEST_ERROR';
+    const METHOD_DOWNTIME_CREATE                                = 'METHOD_DOWNTIME_CREATE';
+    const METHOD_DOWNTIME_EDIT                                  = 'METHOD_DOWNTIME_EDIT';
+    const PAYMENT_DOWNTIME_CREATE_JOB                           = 'PAYMENT_DOWNTIME_CREATE_JOB';
+
+    const ADHOC_SETTLEMENT_CREATE_FAILED                        = 'ADHOC_SETTLEMENT_CREATE_FAILED';
+    const ADHOC_SETTLEMENT_ENTITIES_CREATED                     = 'ADHOC_SETTLEMENT_ENTITIES_CREATED';
+
+    const MERCHANT_INTERNATIONAL_TOGGLE_REQUEST                 = 'MERCHANT_INTERNATIONAL_TOGGLE_REQUEST';
 
     // ES related trace codes
     const ES_DEBUG_RESPONSE                                     = 'ES_DEBUG_RESPONSE';
@@ -1327,6 +1353,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_ACCOUNT_VALIDATION_TRANSACTION_FAILED            = 'FUND_ACCOUNT_VALIDATION_TRANSACTION_FAILED';
     const FUND_TRANSFER_ATTEMPT_STILL_INITIATED                 = 'FUND_TRANSFER_ATTEMPT_STILL_INITIATED';
     const FUND_ACCOUNT_VALIDATION_FAILED_CRITICAL_ERROR         = 'FUND_ACCOUNT_VALIDATION_FAILED_CRITICAL_ERROR';
+    const FUND_ACCOUNT_VALIDATION_RETRY_REQUEST                 = 'FUND_ACCOUNT_VALIDATION_RETRY_REQUEST';
+    const FUND_ACCOUNT_VALIDATION_RETRY_FAILED                  = 'FUND_ACCOUNT_VALIDATION_RETRY_FAILED';
+    const FUND_ACCOUNT_VALIDATION_FTA_CREATION_FAILED           = 'FUND_ACCOUNT_VALIDATION_FTA_CREATION_FAILED';
+    const FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR    = 'FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR';
 
     // Trace codes for Post FTA Processing
     const UPDATE_STATUS_AFTER_FTA_RECON                         = 'UPDATE_STATUS_AFTER_FTA_RECON';
@@ -1405,6 +1435,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QUERY_CACHE_STORE_ERROR                               = 'QUERY_CACHE_STORE_ERROR';
     const QUERY_CACHE_FLUSH_ERROR                               = 'QUERY_CACHE_FLUSH_ERROR';
     const METRIC_CACHE_EVENT_ERROR                              = 'METRIC_CACHE_EVENT_ERROR';
+    const TOKEN_CACHE_READ_ERROR                                = 'TOKEN_CACHE_READ_ERROR';
+    const TOKEN_CACHE_STORE_ERROR                               = 'TOKEN_CACHE_STORE_ERROR';
 
     //upi status cache
     const UPI_CACHE_STORE_ERROR                                 = 'UPI_CACHE_STORE_ERROR';
@@ -1629,6 +1661,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const COMMISSION_NOT_APPLICABLE_INVALID_FEE_BEARER          = 'COMMISSION_NOT_APPLICABLE_INVALID_FEE_BEARER';
     const COMMISSION_NOT_APPLICABLE_CONFIG_NOT_DEFINED          = 'COMMISSION_NOT_APPLICABLE_CONFIG_NOT_DEFINED';
     const COMMISSION_ZERO_PARTNER_FEES                          = 'COMMISSION_ZERO_PARTNER_FEES';
+    const COMMISSION_SAVED                                      = 'COMMISSION_SAVED';
+    const COMMISSION_COMPUTED_GREATER_THAN_MERCHANT_FEE         = 'COMMISSION_COMPUTED_GREATER_THAN_MERCHANT_FEE';
 
     // redirect to authorize trace code
     const PAYMENT_CREATED_IN_REDIRECT_TO_AUTHORIZE_FLOW         = 'PAYMENT_CREATED_IN_REDIRECT_TO_AUTHORIZE_FLOW';
@@ -1699,172 +1733,162 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ORG_MAILER_BLOCKED                                    = 'ORG_MAILER_BLOCKED';
     const NO_MERCHANT_CONTEXT_MAIL                              = 'NO_MERCHANT_CONTEXT_MAIL';
 
+    const PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC             = 'PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC';
+    // P2P Traces
+    const P2P_REQUEST                                           = 'P2P_REQUEST';
+    const P2P_RESPONSE                                          = 'P2P_RESPONSE';
+    const P2P_GATEWAY_REQUEST                                   = 'P2P_GATEWAY_REQUEST';
+    const P2P_GATEWAY_RESPONSE                                  = 'P2P_GATEWAY_RESPONSE';
+
+    const SUBSCRIPTION_PAYMENT_NOTIFY                           = "SUBSCRIPTION_PAYMENT_NOTIFY";
+
+    const SELECTED_TERMINAL_IDS                                 = "SELECTED_TERMINAL_IDS";
+
     protected static $messages = [
-        self::PAYMENT_NEW_REQUEST                               => 'Request for new payment received',
-        self::PAYMENT_CREATED                                   => 'New payment created',
-        self::PAYMENT_CREATE_FAILED                             => 'Payment creation failed',
-        self::PAYMENT_AUTH_SUCCESS                              => 'Payment authenticated successfully',
-        self::PAYMENT_AUTH_FAILURE                              => 'Payment auth failed',
-        self::PAYMENT_FAILED                                    => 'Payment failed',
-        self::PAYMENT_CANCELLED                                 => 'Payment cancelled by user',
-        self::PAYMENT_REFUND_SUCCESS                            => 'Payment refunded successfully',
-        self::PAYMENT_REFUND_FAILURE                            => 'Payment refund failed',
-        self::PAYMENT_CAPTURE_SUCCESS                           => 'Payment captured successfully',
-        self::PAYMENT_CAPTURE_FAILURE                           => 'Payment capture failed',
-        self::PAYMENT_VERIFY_FAILED                             => 'Payment verification with gateway failed',
-        self::PAYMENT_FAILED_TO_AUTHORIZED                      => 'Payment failed but which succeeded on gateway, converting it to authorized',
-        self::PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND             => 'Payment request does not have checkout id',
-        self::PAYMENT_QUEUE_CAPTURE_REQUEST                     => 'Payment capture request via queue',
-        self::PAYMENT_QUEUE_CAPTURE_SUCCESS                     => 'Payment captured successfully via queue',
-        self::PAYMENT_QUEUE_CAPTURE_FAILURE                     => 'Payment failed to capture via queue',
-        self::PAYMENT_CAPTURE_FAILURE_EXCEPTION                 => 'Payment failed to capture because of an exception',
-        self::PAYMENT_QUEUE_CAPTURE_DELETE                      => 'Deleting the capture request from the queue',
-        self::PAYMENT_CAPTURE_REQUEST                           => 'Payment capture request received',
-        self::PAYMENT_CAPTURE_ADD_TO_QUEUE                      => 'Adding capture request to queue',
-        self::PAYMENT_CAPTURE_CREATE_TRANSACTION                => 'Create transaction on payment capture',
-        self::PAYMENT_TRANSFER_CREATE_TRANSACTION               => 'Create transaction on payment transfer',
-        self::PAYMENT_TRANSFER_TO_ACCOUNT                       => 'Process payment transfer to marketplace account',
-        self::PAYMENT_TRANSFER_TO_CUSTOMER                      => 'Process payment transfer to customer account',
-        self::PAYMENT_NOT_CAPTURED_CREATE_TRANSACTION           => 'Create transaction on payment failed capture',
-        self::PAYMENT_CAPTURE_UPDATE_TRANSACTION                => 'Update existing transaction on payment capture',
-        self::PAYMENT_CAPTURE_ORDER_UPDATE                      => 'Update corresponding order on payment capture',
-        self::PAYMENT_TRANSACTION_OLD                           => 'Updating/Creating transaction of an old payment',
-        self::TRANSACTION_AMOUNT_CREDITS                        => 'Using amount credits for the payment',
-        self::PAYMENT_HOLD_TOGGLE_UPDATE_TRANSACTION            => 'Updating transaction after the payment hold was toggled',
-        self::PAYMENT_VERIFY_CAPTURE_FAILURE                    => 'Issue while performing verify for capture',
-        self::VERIFY_CAPTURE_RESPONSE                           => 'Response received on verify capture',
-        self::PAYMENT_AUTO_CAPTURE_NOT_AUTHORIZED               => 'Payment cannot be auto captured since it is not in authorized state',
-        self::INVOICE_PAYMENT_AUTO_CAPTURE_NOT_ALLOWED          => 'Invoice payment cannot be auto captured since it is either past due date or is not in issued state',
-        self::PAYMENT_ANALYTICS_UNRECOGNIZED_DATA               => 'Unrecognized data found in payment analytics log',
-        self::PAYMENT_ANALYTICS_INCORRECT_DATA                  => 'Incorrect data found in payment analytics log',
-        self::VERIFY_REFUND_TRANSACTION_CREATED                 => 'Refund transaction created in verify refund',
-        self::MANUAL_GATEWAY_REFUND_RESPONSE                    => 'Response received on manual gateway refund',
-        self::MANUAL_GATEWAY_ALL_REFUNDS_RESPONSE               => 'Response received for all refunds on manual gateway refund',
-        self::MANUAL_GATEWAY_REFUND_FAILURE                     => 'Failed while trying to refund from gateway',
-        self::MANUAL_GATEWAY_REFUND_INITIATED                   => 'Manual gateway refund has been initiated for this refund id',
-        self::REFUND_GATEWAY_REQUIRED                           => 'Traces whether the gateway refund is required or not',
-        self::ORDER_MULTIPLE_CAPTURED_PAYMENTS                  => 'Found more than one captured payment for an order.',
-        self::PAYMENT_AUTO_REFUND_FAILURE                       => 'Refund failed while trying to auto-refund',
-        self::GATEWAY_REFUND_ABSENT                             => 'Refund not done on the gateway side.',
-
-        self::QUEUE_INVALID_CONFIG                              => 'Invalid Config used for Queue name and connection fetching',
-
-        self::ADDRESS_PRIMARY_SWITCH                            => 'Switching primary address of an entity and address type',
-
-        self::BAD_REQUEST_INVALID_API_KEY                       => 'The api key provided is invalid',
-        self::BAD_REQUEST_INVALID_API_SECRET                    => 'The api secret provided is invalid',
-        self::BAD_REQUEST_INVALID_ACCOUNT_HEADER                => 'The Account ID provided is invalid',
-        self::BAD_REQUEST_API_SECRET_NOT_PROVIDED               => 'API secret is not provided',
-
-        self::PAYMENT_VERIFY_ALREADY_AUTHORIZED                 => 'Payment being authorized is actually already authorized by some other thread',
-
-        self::RUNTIME_ERROR                                     => 'The request failed at runtime',
-
-        self::GATEWAY_ENROLL_REQUEST                            => 'Request for enrollment sent',
-        self::GATEWAY_ENROLL_RESPONSE                           => 'Enrollment response received',
-        self::GATEWAY_ENROLL_ERROR                              => 'Error in enrollment',
-        self::GATEWAY_NOT_ENROLLED_REQUEST                      => 'Request for not-enrolled card sent',
-        self::GATEWAY_NOT_ENROLLED_RESPONSE                     => 'Response for not-enrolled card received',
-        self::GATEWAY_NOT_ENROLLED_ERROR                        => 'Error occured for not-enrolled card',
-        self::GATEWAY_ENROLLED_AUTH_REQUEST                     => 'Authentication request sent for enrolled card',
-        self::GATEWAY_ENROLLED_AUTH_RESPONSE                    => 'Authentication response received for enrolled card',
-        self::GATEWAY_ENROLLED_AUTH_ERROR                       => 'Authentication error occured for enrolled card',
-        self::GATEWAY_SUPPORT_REQUEST                           => 'Support request sent',
-        self::GATEWAY_SUPPORT_RESPONSE                          => 'Support response received',
-        self::GATEWAY_SUPPORT_ERROR                             => 'Error in support',
-        self::GATEWAY_UNKNOWN_ERROR                             => 'Unknown gateway error',
-        self::GATEWAY_PAYMENT_VERIFY_UNEXPECTED                 => 'Unexpected state of events in verify flow',
-        self::GATEWAY_UNSUPPORTED_CARD_NETWORK                  => 'Card network not supported',
-        self::GATEWAY_VERIFY_INVALID_HEADER                     => 'Gateway Verify invalid header',
-
-        self::ERROR_EXCEPTION                                   => 'Unhandled critical exception occured',
-        self::RECOVERABLE_EXCEPTION                             => 'Recoverable exception occurred',
-        self::MISC_TRACE_CODE                                   => 'Miscellaneous trace code',
-        self::ES_BULK_UPDATE_FAILED                             => 'Failed while bulk updating in ES',
-
-        self::RECON_ALERT                                       => 'Alert raised for reconciliation',
-        self::RECON_FILE_SKIP                                   => 'Skipping a reconciliation file',
-        self::RECON_MISMATCH                                    => 'Mismatch between the data present in DB and recon file',
-        self::RECON_PARSE_ERROR                                 => 'Not able to parse some content of the recon file',
-        self::RECON_FAILURE                                     => 'Reconciliation could not happen',
-        self::RECON_FAILED_VERIFY                               => 'Payment verify and authorize was unsuccessful',
-        self::RECON_FILE_DELETE_FAILURE                         => 'Deleting local file during reconciliation',
-        self::RECON_INFO_ALERT                                  => 'Info alert raised for reconciliation',
-        self::RECON_CRITICAL_ALERT                              => 'Critical alert raised for reconciliation',
-        self::RECON_REQUEST                                     => 'Request made for reconciliation',
-        self::RECON_FILE_ROW                                    => 'Row in the reconciliation file that is being reconciled',
-        self::RECON_FILE_DETAILS                                => 'Details of all the files collected in the request',
-        self::IIN_INSERT_FAILED                                 => 'Inserting into Iin failed for given Iin',
-        self::RECON_INFO                                        => 'General recon info',
-        self::REFUND_TRANSACTION_FAILED                         => 'Transaction failed to create for refund',
-        self::CREDITS_TRANSACTION_FAILED                        => 'Credits transaction failed on payment capture',
-        self::RECON_INFO_SUMMARY                                => 'Summary of the reconciliation of the files',
-        self::TRANSACTION_CREATED_IN_VERIFY_CAPTURE             => 'Transaction created for a failed capture',
-        self::REFUND_RETRY_INITIATED                            => 'Retry of failed refunds initiated',
-        self::REFUND_RETRY_RESULT                               => 'Result of failed refunds retry.',
-
-        //Fund Account Validation Messages
-        self::FUND_ACCOUNT_VALIDATION_TRANSACTION_FAILED        => 'Transaction failed to create for Fund Account validation',
-
-        self::TRANSACTION_MIGRATION_TAX_MISTMATCH               => 'Mismatch in the tax calculation during migration',
-        self::TRANSACTION_MIGRATION_FEE_MISTMATCH               => 'Mismatch in the fees calculation during migration',
-        self::PRICING_RULE_MISTMATCH                            => 'Mismatch in the pricing rule during migration',
-        self::PRICING_RULE_DOES_NOT_EXISTS                      => 'Pricing Plan does not exist for this merchant',
-
-        self::BATCH_CREATED                                     => 'Batch created',
-        self::BATCH_UPLOAD_FILE                                 => 'Uploaded batch file',
-        self::BATCH_ALREADY_PROCESSED                           => 'Batch File already processed',
-        self::BATCH_PROCESSING_ERROR                            => 'Error in processing batch',
-        self::EMANDATE_RECON_FORCE_AUTH_RESPONSE                => 'response received for force auth of emandate recon',
-        self::FEATURE_DELETE_REQUEST                            => 'Feature delete request initiated',
-        self::FEATURE_MIGRATION_EXCEPTION                       => 'Exception while creating features for merchant',
-        self::FEATURE_ASSIGNMENT_EXCEPTION                      => 'Exception assigning feature to merchant',
-        self::MERCHANT_FEATURE_EDIT_REQUEST                     => 'Edit merchant features request initiated',
-        self::MERCHANT_DETAIL_DOES_NOT_EXIST                    => 'Merchant Detail does not exists',
-        self::CREATE_MERCHANT_DETAIL                            => 'Creating Merchant Detail',
-        self::PAYMENT_TRANSFER_VALIDATION_FAILED                => 'Transfer failed while validating transfer amount',
-        self::CREATE_MERCHANT_DETAIL_FAILED                     => 'Merchant Detail creation failed',
-        self::MERCHANT_ONBOARD_REQUEST                          => 'Merchant onboarding request initiated',
-        self::MERCHANT_ONBOARD_REQUEST_FAILED                   => 'Merchant onboarding request failed',
-        self::MERCHANT_ONBOARD_INDEX_ABOVE_THRESHOLD            => 'Merchant onboarding index above the set threshold',
-        self::PAYMENT_TERMINAL_CREATION_ERROR                   => 'Payments terminal creation error',
-        self::SUBSCRIPTION_PAYMENT_AUTHORIZE_FAILED             => 'Subscription payment authorization failed',
-        self::SUBSCRIPTION_STATE_UNEXPECTED                     => 'Unexpected state of subscription',
-        self::SUBSCRIPTION_LATE_AUTH_NO_AUTO_CAPTURE            => 'Not capturing late auth subscription payment',
-        self::SUBSCRIPTION_PAYMENT_CAPTURE_FAILED               => 'Unable to capture subscription payment',
-        self::SUBSCRIPTION_ERROR_STATUS_UNEXPECTED              => 'Unexpected error status of subscription',
-        self::SUBSCRIPTION_INVOICE_ALREADY_PAID                 => 'Subscription invoice has already been paid for',
-        self::SUBSCRIPTION_INVOICE_HALTED                       => 'Subscription invoice is now in halted state',
-        self::SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_RECEIVED        => 'Payment request data received via queue via subscription',
-        self::SUBSCRIPTION_PAYMENT_FAILED                       => 'Subscription payment failed with an exception',
-
-        self::MERCHANT_DETAIL_MIGRATE_FAILED                    => 'Failed to migrate Merchant Detail',
-
-        self::MERCHANT_ORG_NOT_GIVEN                            => 'Merchant Org Id is not passed to API on creation',
-
-        self::MERCHANT_PAYOUT_SKIPPED                           => 'Skipped Merchant Payout',
-
-        self::OFFER_IIN_DOES_NOT_EXISTS                         => 'IIN does not exists for the offer create request',
-        self::OFFER_DEACTIVATE                                  => 'Deactivating the expired offer',
-
-        self::GRATIS_TO_POSTPAID_INPUT                          => 'Mark gratis transactions as postpaid request',
-        self::GRATIS_TO_POSTPAID_FAILED                         => 'Transaction conversion from gratis to postpaid failed',
-        self::GRATIS_TO_POSTPAID_RESPONSE                       => 'Gratis to postpaid response',
-
-        self::GATEWAY_METRIC_DIMENSION_PUSH_FAILED              => 'Exception fetching metric dimensions',
-
-        self::TRANSACTIONS_TO_POSTPAID_INPUT                    => 'Mark transactions as postpaid request',
-        self::TRANSACTIONS_TO_POSTPAID_FAILED                   => 'Transaction conversion from to postpaid failed',
-        self::TRANSACTIONS_TO_POSTPAID_RESPONSE                 => 'Transaction to postpaid response',
-
-        self::BIN_ISSUER_VALIDATION_FAILED                      => 'Bin Issuer Validation Failed',
-
-        self::EMANDATE_RECON_ROW_FAILED                         => 'E-mandate reconciliation failed for a row',
-
-        self::ORG_MAILER_BLOCKED                                => 'Email blocked for given org',
-        self::NO_MERCHANT_CONTEXT_MAIL                          => 'The mail flow does not have merchant in auth context',
-
-        self::FUND_ACCOUNT_VALIDATION_FAILED_CRITICAL_ERROR     => 'Fund Account Validation Failed due to critical reasons. We should retry.',
+        self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
+        self::PAYMENT_CREATED                                       => 'New payment created',
+        self::PAYMENT_CREATE_FAILED                                 => 'Payment creation failed',
+        self::PAYMENT_AUTH_SUCCESS                                  => 'Payment authenticated successfully',
+        self::PAYMENT_AUTH_FAILURE                                  => 'Payment auth failed',
+        self::PAYMENT_FAILED                                        => 'Payment failed',
+        self::PAYMENT_CANCELLED                                     => 'Payment cancelled by user',
+        self::PAYMENT_REFUND_SUCCESS                                => 'Payment refunded successfully',
+        self::PAYMENT_REFUND_FAILURE                                => 'Payment refund failed',
+        self::PAYMENT_CAPTURE_SUCCESS                               => 'Payment captured successfully',
+        self::PAYMENT_CAPTURE_FAILURE                               => 'Payment capture failed',
+        self::PAYMENT_VERIFY_FAILED                                 => 'Payment verification with gateway failed',
+        self::PAYMENT_FAILED_TO_AUTHORIZED                          => 'Payment failed but which succeeded on gateway, converting it to authorized',
+        self::PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND                 => 'Payment request does not have checkout id',
+        self::PAYMENT_QUEUE_CAPTURE_REQUEST                         => 'Payment capture request via queue',
+        self::PAYMENT_QUEUE_CAPTURE_SUCCESS                         => 'Payment captured successfully via queue',
+        self::PAYMENT_QUEUE_CAPTURE_FAILURE                         => 'Payment failed to capture via queue',
+        self::PAYMENT_CAPTURE_FAILURE_EXCEPTION                     => 'Payment failed to capture because of an exception',
+        self::PAYMENT_QUEUE_CAPTURE_DELETE                          => 'Deleting the capture request from the queue',
+        self::PAYMENT_CAPTURE_REQUEST                               => 'Payment capture request received',
+        self::PAYMENT_CAPTURE_ADD_TO_QUEUE                          => 'Adding capture request to queue',
+        self::PAYMENT_CAPTURE_CREATE_TRANSACTION                    => 'Create transaction on payment capture',
+        self::PAYMENT_TRANSFER_CREATE_TRANSACTION                   => 'Create transaction on payment transfer',
+        self::PAYMENT_TRANSFER_TO_ACCOUNT                           => 'Process payment transfer to marketplace account',
+        self::PAYMENT_TRANSFER_TO_CUSTOMER                          => 'Process payment transfer to customer account',
+        self::PAYMENT_NOT_CAPTURED_CREATE_TRANSACTION               => 'Create transaction on payment failed capture',
+        self::PAYMENT_CAPTURE_UPDATE_TRANSACTION                    => 'Update existing transaction on payment capture',
+        self::PAYMENT_CAPTURE_ORDER_UPDATE                          => 'Update corresponding order on payment capture',
+        self::PAYMENT_TRANSACTION_OLD                               => 'Updating/Creating transaction of an old payment',
+        self::TRANSACTION_AMOUNT_CREDITS                            => 'Using amount credits for the payment',
+        self::PAYMENT_HOLD_TOGGLE_UPDATE_TRANSACTION                => 'Updating transaction after the payment hold was toggled',
+        self::PAYMENT_VERIFY_CAPTURE_FAILURE                        => 'Issue while performing verify for capture',
+        self::VERIFY_CAPTURE_RESPONSE                               => 'Response received on verify capture',
+        self::PAYMENT_AUTO_CAPTURE_NOT_AUTHORIZED                   => 'Payment cannot be auto captured since it is not in authorized state',
+        self::INVOICE_PAYMENT_AUTO_CAPTURE_NOT_ALLOWED              => 'Invoice payment cannot be auto captured since it is either past due date or is not in issued state',
+        self::PAYMENT_ANALYTICS_UNRECOGNIZED_DATA                   => 'Unrecognized data found in payment analytics log',
+        self::PAYMENT_ANALYTICS_INCORRECT_DATA                      => 'Incorrect data found in payment analytics log',
+        self::VERIFY_REFUND_TRANSACTION_CREATED                     => 'Refund transaction created in verify refund',
+        self::MANUAL_GATEWAY_REFUND_RESPONSE                        => 'Response received on manual gateway refund',
+        self::MANUAL_GATEWAY_ALL_REFUNDS_RESPONSE                   => 'Response received for all refunds on manual gateway refund',
+        self::MANUAL_GATEWAY_REFUND_FAILURE                         => 'Failed while trying to refund from gateway',
+        self::MANUAL_GATEWAY_REFUND_INITIATED                       => 'Manual gateway refund has been initiated for this refund id',
+        self::REFUND_GATEWAY_REQUIRED                               => 'Traces whether the gateway refund is required or not',
+        self::ORDER_MULTIPLE_CAPTURED_PAYMENTS                      => 'Found more than one captured payment for an order.',
+        self::PAYMENT_AUTO_REFUND_FAILURE                           => 'Refund failed while trying to auto-refund',
+        self::GATEWAY_REFUND_ABSENT                                 => 'Refund not done on the gateway side.',
+        self::QUEUE_INVALID_CONFIG                                  => 'Invalid Config used for Queue name and connection fetching',
+        self::ADDRESS_PRIMARY_SWITCH                                => 'Switching primary address of an entity and address type',
+        self::BAD_REQUEST_INVALID_API_KEY                           => 'The api key provided is invalid',
+        self::BAD_REQUEST_INVALID_API_SECRET                        => 'The api secret provided is invalid',
+        self::BAD_REQUEST_INVALID_ACCOUNT_HEADER                    => 'The Account ID provided is invalid',
+        self::BAD_REQUEST_API_SECRET_NOT_PROVIDED                   => 'API secret is not provided',
+        self::PAYMENT_VERIFY_ALREADY_AUTHORIZED                     => 'Payment being authorized is actually already authorized by some other thread',
+        self::RUNTIME_ERROR                                         => 'The request failed at runtime',
+        self::GATEWAY_ENROLL_REQUEST                                => 'Request for enrollment sent',
+        self::GATEWAY_ENROLL_RESPONSE                               => 'Enrollment response received',
+        self::GATEWAY_ENROLL_ERROR                                  => 'Error in enrollment',
+        self::GATEWAY_NOT_ENROLLED_REQUEST                          => 'Request for not-enrolled card sent',
+        self::GATEWAY_NOT_ENROLLED_RESPONSE                         => 'Response for not-enrolled card received',
+        self::GATEWAY_NOT_ENROLLED_ERROR                            => 'Error occured for not-enrolled card',
+        self::GATEWAY_ENROLLED_AUTH_REQUEST                         => 'Authentication request sent for enrolled card',
+        self::GATEWAY_ENROLLED_AUTH_RESPONSE                        => 'Authentication response received for enrolled card',
+        self::GATEWAY_ENROLLED_AUTH_ERROR                           => 'Authentication error occured for enrolled card',
+        self::GATEWAY_SUPPORT_REQUEST                               => 'Support request sent',
+        self::GATEWAY_SUPPORT_RESPONSE                              => 'Support response received',
+        self::GATEWAY_SUPPORT_ERROR                                 => 'Error in support',
+        self::GATEWAY_UNKNOWN_ERROR                                 => 'Unknown gateway error',
+        self::GATEWAY_PAYMENT_VERIFY_UNEXPECTED                     => 'Unexpected state of events in verify flow',
+        self::GATEWAY_UNSUPPORTED_CARD_NETWORK                      => 'Card network not supported',
+        self::GATEWAY_VERIFY_INVALID_HEADER                         => 'Gateway Verify invalid header',
+        self::ERROR_EXCEPTION                                       => 'Unhandled critical exception occured',
+        self::RECOVERABLE_EXCEPTION                                 => 'Recoverable exception occurred',
+        self::MISC_TRACE_CODE                                       => 'Miscellaneous trace code',
+        self::ES_BULK_UPDATE_FAILED                                 => 'Failed while bulk updating in ES',
+        self::RECON_ALERT                                           => 'Alert raised for reconciliation',
+        self::RECON_FILE_SKIP                                       => 'Skipping a reconciliation file',
+        self::RECON_MISMATCH                                        => 'Mismatch between the data present in DB and recon file',
+        self::RECON_PARSE_ERROR                                     => 'Not able to parse some content of the recon file',
+        self::RECON_FAILURE                                         => 'Reconciliation could not happen',
+        self::RECON_FAILED_VERIFY                                   => 'Payment verify and authorize was unsuccessful',
+        self::RECON_FILE_DELETE_FAILURE                             => 'Deleting local file during reconciliation',
+        self::RECON_INFO_ALERT                                      => 'Info alert raised for reconciliation',
+        self::RECON_CRITICAL_ALERT                                  => 'Critical alert raised for reconciliation',
+        self::RECON_REQUEST                                         => 'Request made for reconciliation',
+        self::RECON_FILE_ROW                                        => 'Row in the reconciliation file that is being reconciled',
+        self::RECON_FILE_DETAILS                                    => 'Details of all the files collected in the request',
+        self::IIN_INSERT_FAILED                                     => 'Inserting into Iin failed for given Iin',
+        self::RECON_INFO                                            => 'General recon info',
+        self::REFUND_TRANSACTION_FAILED                             => 'Transaction failed to create for refund',
+        self::CREDITS_TRANSACTION_FAILED                            => 'Credits transaction failed on payment capture',
+        self::RECON_INFO_SUMMARY                                    => 'Summary of the reconciliation of the files',
+        self::TRANSACTION_CREATED_IN_VERIFY_CAPTURE                 => 'Transaction created for a failed capture',
+        self::REFUND_RETRY_INITIATED                                => 'Retry of failed refunds initiated',
+        self::REFUND_RETRY_RESULT                                   => 'Result of failed refunds retry.',
+        self::FUND_ACCOUNT_VALIDATION_FAILED_CRITICAL_ERROR         => 'Fund Account Validation Failed due to critical reasons. We should retry.',
+        self::FUND_ACCOUNT_VALIDATION_TRANSACTION_FAILED            => 'Transaction failed to create for Fund Account validation',
+        self::TRANSACTION_MIGRATION_TAX_MISTMATCH                   => 'Mismatch in the tax calculation during migration',
+        self::TRANSACTION_MIGRATION_FEE_MISTMATCH                   => 'Mismatch in the fees calculation during migration',
+        self::PRICING_RULE_MISTMATCH                                => 'Mismatch in the pricing rule during migration',
+        self::PRICING_RULE_DOES_NOT_EXISTS                          => 'Pricing Plan does not exist for this merchant',
+        self::BATCH_CREATED                                         => 'Batch created',
+        self::BATCH_UPLOAD_FILE                                     => 'Uploaded batch file',
+        self::BATCH_ALREADY_PROCESSED                               => 'Batch File already processed',
+        self::BATCH_PROCESSING_ERROR                                => 'Error in processing batch',
+        self::EMANDATE_RECON_FORCE_AUTH_RESPONSE                    => 'response received for force auth of emandate recon',
+        self::FEATURE_DELETE_REQUEST                                => 'Feature delete request initiated',
+        self::FEATURE_MIGRATION_EXCEPTION                           => 'Exception while creating features for merchant',
+        self::FEATURE_ASSIGNMENT_EXCEPTION                          => 'Exception assigning feature to merchant',
+        self::MERCHANT_FEATURE_EDIT_REQUEST                         => 'Edit merchant features request initiated',
+        self::MERCHANT_DETAIL_DOES_NOT_EXIST                        => 'Merchant Detail does not exists',
+        self::CREATE_MERCHANT_DETAIL                                => 'Creating Merchant Detail',
+        self::PAYMENT_TRANSFER_VALIDATION_FAILED                    => 'Transfer failed while validating transfer amount',
+        self::CREATE_MERCHANT_DETAIL_FAILED                         => 'Merchant Detail creation failed',
+        self::MERCHANT_ONBOARD_REQUEST                              => 'Merchant onboarding request initiated',
+        self::MERCHANT_ONBOARD_REQUEST_FAILED                       => 'Merchant onboarding request failed',
+        self::MERCHANT_ONBOARD_INDEX_ABOVE_THRESHOLD                => 'Merchant onboarding index above the set threshold',
+        self::PAYMENT_TERMINAL_CREATION_ERROR                       => 'Payments terminal creation error',
+        self::SUBSCRIPTION_PAYMENT_AUTHORIZE_FAILED                 => 'Subscription payment authorization failed',
+        self::SUBSCRIPTION_STATE_UNEXPECTED                         => 'Unexpected state of subscription',
+        self::SUBSCRIPTION_LATE_AUTH_NO_AUTO_CAPTURE                => 'Not capturing late auth subscription payment',
+        self::SUBSCRIPTION_PAYMENT_CAPTURE_FAILED                   => 'Unable to capture subscription payment',
+        self::SUBSCRIPTION_ERROR_STATUS_UNEXPECTED                  => 'Unexpected error status of subscription',
+        self::SUBSCRIPTION_INVOICE_ALREADY_PAID                     => 'Subscription invoice has already been paid for',
+        self::SUBSCRIPTION_INVOICE_HALTED                           => 'Subscription invoice is now in halted state',
+        self::SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_RECEIVED            => 'Payment request data received via queue via subscription',
+        self::SUBSCRIPTION_PAYMENT_FAILED                           => 'Subscription payment failed with an exception',
+        self::MERCHANT_DETAIL_MIGRATE_FAILED                        => 'Failed to migrate Merchant Detail',
+        self::MERCHANT_ORG_NOT_GIVEN                                => 'Merchant Org Id is not passed to API on creation',
+        self::MERCHANT_PAYOUT_SKIPPED                               => 'Skipped Merchant Payout',
+        self::OFFER_IIN_DOES_NOT_EXISTS                             => 'IIN does not exists for the offer create request',
+        self::OFFER_DEACTIVATE                                      => 'Deactivating the expired offer',
+        self::GRATIS_TO_POSTPAID_INPUT                              => 'Mark gratis transactions as postpaid request',
+        self::GRATIS_TO_POSTPAID_FAILED                             => 'Transaction conversion from gratis to postpaid failed',
+        self::GRATIS_TO_POSTPAID_RESPONSE                           => 'Gratis to postpaid response',
+        self::GATEWAY_METRIC_DIMENSION_PUSH_FAILED                  => 'Exception fetching metric dimensions',
+        self::TRANSACTIONS_TO_POSTPAID_INPUT                        => 'Mark transactions as postpaid request',
+        self::TRANSACTIONS_TO_POSTPAID_FAILED                       => 'Transaction conversion from to postpaid failed',
+        self::TRANSACTIONS_TO_POSTPAID_RESPONSE                     => 'Transaction to postpaid response',
+        self::BIN_ISSUER_VALIDATION_FAILED                          => 'Bin Issuer Validation Failed',
+        self::EMANDATE_RECON_ROW_FAILED                             => 'E-mandate reconciliation failed for a row',
+        self::ORG_MAILER_BLOCKED                                    => 'Email blocked for given org',
+        self::NO_MERCHANT_CONTEXT_MAIL                              => 'The mail flow does not have merchant in auth context',
+        self::FUND_ACCOUNT_VALIDATION_FAILED_WITH_CRITICAL_ERROR    => 'Fund Account Validation Failed due to critical reasons. We should retry.',
+        self::FUND_ACCOUNT_VALIDATION_FTA_CREATION_FAILED           => 'Failed to create Fund Transfer Attempt for Fund Account Validation. We should retry.'
     ];
 
     /**

@@ -110,6 +110,29 @@ trait CustomAssertions
         $this->assertEquals(200, $response->getStatusCode());
     }
 
+    /**
+     * Function to check all keys exist in given dict, will return false even if dict has extra keys
+     *
+     * @param array $array , dict where keys to be looked into,
+     * @param array $keys , keys to be looked, one dimensional array
+     *
+     * @throws \RZP\Exception\ExtraFieldsException
+     */
+    public function assertArrayKeysExist(array $array, array $keys)
+    {
+        foreach ( $keys as $key )
+        {
+            $this->assertArrayHasKey($key, $array);
+        }
+
+        $extraKeys = array_diff(array_keys($array), $keys);
+
+        if (count($extraKeys) > 0)
+        {
+            throw new \AssertionError("Array has extra keys : " . implode(', ', $extraKeys));
+        }
+    }
+
     protected function getGatewayErrorDescription(array $actual)
     {
         $code = [

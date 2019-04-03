@@ -311,4 +311,32 @@ return [
             'hour'        => 13,
         ],
     ],
+
+    'testMinuteSchedule' => [
+        'cases' => [
+            [
+                'initialTime'      => "2019-03-21 14:00:01",
+                'expectedNextTime' => "2019-03-21 14:15:00",
+                'ignoreHolidays'   => true
+            ],
+            [
+                'initialTime'      => "2019-03-20 23:55:01",
+                'expectedNextTime' => "2019-03-21 00:00:00",
+                'ignoreHolidays'   => true
+            ],
+            [
+                'initialTime'      => "2018-12-31 23:55:01",
+                'expectedNextTime' => "2019-01-01 00:00:00",
+                'ignoreHolidays'   => true
+            ],
+        ],
+        'schedule' => [
+            'name'        => 'Every 15 minutes',
+            'period'      => 'minute',
+            'interval'    => 15,
+            'anchor'      => null,
+            'delay'       => 0,
+            'hour'        => 0,
+        ],
+    ],
 ];

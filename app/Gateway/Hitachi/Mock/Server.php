@@ -42,7 +42,7 @@ class Server extends Base\Mock\Server
         return $this->callback($input);
     }
 
-    public function getBharatQrCallback($qrCodeId, $ref = null)
+    public function getBharatQrCallback($qrCodeId, $ref = null, $input = [])
     {
         $data = [
             'F002'       => '525783XXXXXX3413',
@@ -61,6 +61,11 @@ class Server extends Base\Mock\Server
             'PurchaseID' => $qrCodeId,
             'SenderName' => 'Random Name',
         ];
+
+        if (empty($input) === false)
+        {
+            $data = array_merge($data, $input);
+        }
 
         if ($ref !== null)
         {

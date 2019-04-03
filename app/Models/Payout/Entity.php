@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\User;
+use RZP\Models\Batch;
 use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
 use RZP\Constants\Table;
@@ -73,6 +74,7 @@ class Entity extends Base\PublicEntity
     const REFERENCE_ID           = 'reference_id';
     const NARRATION              = 'narration';
     const FTS_TRANSFER_ID        = 'fts_transfer_id';
+    const BATCH_ID               = 'batch_id';
 
     // Public attribute
     const DESTINATION            = 'destination';
@@ -179,6 +181,7 @@ class Entity extends Base\PublicEntity
         self::MODE,
         self::REFERENCE_ID,
         self::NARRATION,
+        self::BATCH_ID,
         self::INTERNAL_STATUS,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -205,6 +208,7 @@ class Entity extends Base\PublicEntity
         self::MODE,
         self::REFERENCE_ID,
         self::NARRATION,
+        self::BATCH_ID,
         self::REVERSAL,
         self::FAILURE_REASON,
         self::CREATED_AT,
@@ -235,6 +239,7 @@ class Entity extends Base\PublicEntity
         // the payout is in processed or reversed state.
         self::UTR,
         self::TRANSACTION_ID,
+        self::BATCH_ID,
         self::TRANSACTION,
     ];
 
@@ -243,6 +248,7 @@ class Entity extends Base\PublicEntity
         self::STATUS            => Status::CREATED,
         self::PURPOSE           => Purpose::REFUND,
         self::FUND_ACCOUNT_ID   => null,
+        self::BATCH_ID          => null,
         self::NOTES             => [],
         self::ATTEMPTS          => 1,
         self::TYPE              => self::DEFAULT,
@@ -338,6 +344,16 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(User\Entity::class);
     }
 
+    /**
+     * The batch which created this payout entity.
+     *
+     * @return null|\Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function batch()
+    {
+        return $this->belongsTo(Batch\Entity::class);
+    }
+
     public function getPurpose()
     {
         return $this->getAttribute(self::PURPOSE);
@@ -398,9 +414,24 @@ class Entity extends Base\PublicEntity
         return ($this->isAttributeNotNull(self::FUND_ACCOUNT_ID) === true);
     }
 
+    public function getBatchId()
+    {
+        return $this->getAttribute(self::BATCH_ID);
+    }
+
+    public function hasBatch(): bool
+    {
+        return $this->isAttributeNotNull(self::BATCH_ID);
+    }
+
     public function isOfMerchantTransaction(): bool
     {
-        return $this->getAttribute(self::TRANSACTION_TYPE) === Constants\Entity::TRANSACTION;
+        return ($this->getAttribute(self::TRANSACTION_TYPE) === Constants\Entity::TRANSACTION);
+    }
+
+    public function isCustomerPayout(): bool
+    {
+        return ($this->getAttribute(self::TRANSACTION_TYPE) === Constants\Entity::CUSTOMER_TRANSACTION);
     }
 
     public function toBeQueued(): bool
@@ -786,6 +817,13 @@ class Entity extends Base\PublicEntity
         $fundAccountId = $this->getAttribute(self::FUND_ACCOUNT_ID);
 
         $attributes[self::FUND_ACCOUNT_ID] = FundAccount\Entity::getSignedIdOrNull($fundAccountId);
+    }
+
+    public function setPublicBatchIdAttribute(array & $attributes)
+    {
+        $batchId = $this->getAttribute(self::BATCH_ID);
+
+        $attributes[self::BATCH_ID] = Batch\Entity::getSignedIdOrNull($batchId);
     }
 
     public function setPublicFundAccountAttribute(array & $attributes)

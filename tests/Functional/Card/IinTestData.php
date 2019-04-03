@@ -377,5 +377,51 @@ return [
             'content' => [
             ],
         ],
+    ],
+
+    'testBulkFlowsUpdateEnable' => [
+        'request' => [
+            'url'     => '/iins/flows/bulk',
+            'method'  => 'PUT',
+            'content' => [
+                'flow'   => 'otp',
+                'iins'   => ['401200', '401201', '234567'],
+                'action' => 'enable'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                '401200' => [
+                                "pin",
+                                "otp",
+                            ],
+                '401201' => [
+                                "pin",
+                                "otp",
+                            ],
+            ],
+        ],
+    ],
+
+    'testBulkFlowsUpdateDisable' => [
+        'request' => [
+            'url'     => '/iins/flows/bulk',
+            'method'  => 'PUT',
+            'content' => [
+                'flow'   => 'otp',
+                'iins'   => ['401200', '401201', '234567'],
+                'action' => 'disable'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                    '401200' => [
+                                    "pin",
+                    ],
+                    '401201' => [
+                                    "pin",
+                    ],
+            ],
+        ],
     ]
 ];

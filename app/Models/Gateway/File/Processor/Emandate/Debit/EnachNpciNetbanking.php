@@ -2,14 +2,18 @@
 
 namespace RZP\Models\Gateway\File\Processor\EMandate\Debit;
 
+Use Config;
+
 use RZP\Gateway\Enach;
 use RZP\Models\Payment;
-use RZP\Models\Settlement\Holidays;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Base as ModelBase;
+use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
+use RZP\Exception\GatewayFileException;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Services\Beam\Service as BeamService;
 use RZP\Services\Beam\Constants as BeamConstants;
@@ -171,5 +175,15 @@ class EnachNpciNetbanking extends Base
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+    }
+
+    public function createFile($data)
+    {
+
+        Config::set('excel.csv.enclosure', '');
+
+        parent::createFile($data);
+
+        Config::set('excel.csv.enclosure', '"');
     }
 }

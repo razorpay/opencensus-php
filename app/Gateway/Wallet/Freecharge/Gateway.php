@@ -28,7 +28,7 @@ class Gateway extends Base\Gateway
 
     const DEFAULT_TXN_CHANNEL = 'WEB';
 
-    const BALANCE_CACHE_KEY = 'freecharge_balance_';
+    const BALANCE_CACHE_KEY = 'gateway:freecharge_balance_';
 
     const ENCRYPTION_MODE     = 'aes-128-ecb';
 

@@ -18,6 +18,22 @@ trait HasHandle
         return true;
     }
 
+    /**
+     * @return string
+     */
+    public function getHandle()
+    {
+        return $this->getAttribute(self::HANDLE);
+    }
+
+    /**
+     * @return $this
+     */
+    public function setHandle(string $handle)
+    {
+        return $this->setAttribute(self::HANDLE, $handle);
+    }
+
     public function associateHandle(Handle\Entity $handle)
     {
         return $this->parentHandle()->associate($handle);
@@ -31,5 +47,31 @@ trait HasHandle
     public function parentHandle()
     {
         return $this->belongsTo(Handle\Entity::class, self::HANDLE);
+    }
+
+    // Gateway Implementation for Handle
+
+    /**
+     * @return array
+     */
+    public function getGatewayData()
+    {
+        return $this->getAttribute(self::GATEWAY_DATA);
+    }
+
+    /**
+     * @return $this
+     */
+    public function setGatewayData(array $gatewayData)
+    {
+        return $this->setAttribute(self::GATEWAY_DATA, $gatewayData);
+    }
+
+    /**
+     * @return $this
+     */
+    public function mergeGatewayData(array $gatewayData)
+    {
+        return $this->setGatewayData(array_merge($this->getGatewayData(), $gatewayData));
     }
 }

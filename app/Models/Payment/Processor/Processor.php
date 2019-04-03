@@ -5,40 +5,42 @@ namespace RZP\Models\Payment\Processor;
 use App;
 use Route;
 use Config;
-
 use Carbon\Carbon;
-use RZP\Base\RepositoryManager;
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
-use RZP\Models\Admin;
+
 use RZP\Exception;
-use RZP\Listeners\ApiEventSubscriber;
-use RZP\Models\BankAccount;
-use RZP\Models\Base\PublicCollection;
 use RZP\Models\Card;
-use RZP\Models\Customer;
-use RZP\Models\EntityOrigin;
-use RZP\Models\Feature\Constants as Feature;
-use RZP\Models\Merchant;
+use RZP\Models\Risk;
+use RZP\Models\Admin;
 use RZP\Models\Order;
 use RZP\Models\Offer;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
-use RZP\Models\Payment\Metric;
-use RZP\Models\PaymentLink;
-use RZP\Models\Plan\Subscription;
-use RZP\Models\Merchant\Methods;
-use RZP\Models\Payment\Status;
+use RZP\Models\Invoice;
 use RZP\Models\Pricing;
-use RZP\Models\Risk;
+use RZP\Error\ErrorCode;
+use RZP\Models\Customer;
+use RZP\Models\Merchant;
 use RZP\Models\Terminal;
-use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Trace\TraceCode;
+use RZP\Models\BankAccount;
+use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
-use RZP\Constants\Entity as E;
-use Razorpay\Trace\Logger as Trace;
-use RZP\Gateway\Base\CardCacheTrait;
+use RZP\Models\EntityOrigin;
 use RZP\Gateway\Base\Action;
+use RZP\Models\Payment\Metric;
+use RZP\Models\Payment\Status;
+use RZP\Constants\Entity as E;
+use RZP\Base\RepositoryManager;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Merchant\Methods;
+use RZP\Models\Plan\Subscription;
+use RZP\Gateway\Base\CardCacheTrait;
+use RZP\Listeners\ApiEventSubscriber;
+use RZP\Models\Base\PublicCollection;
+use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Transfer\Core as TransferCore;
+
+use Razorpay\Trace\Logger as Trace;
 
 class Processor
 {
@@ -246,6 +248,8 @@ class Processor
     {
         try
         {
+            $startTime = microtime(true);
+
             $this->setMethodForInput($input);
 
             $payment = $this->buildPaymentEntity($input);
@@ -273,6 +277,8 @@ class Processor
 
             // Creates an origin entity for the payment based on the auth used to initiate the payment.
             (new EntityOrigin\Core)->createEntityOrigin($payment);
+
+            $this->logRequestTime($payment, $startTime);
 
             return $paymentData;
         }
@@ -305,9 +311,11 @@ class Processor
             return;
         }
 
+        $appTokenPresent = $this->isAppTokenPresent();
+
         $this->subscription = $this->app['module']
                                    ->subscription
-                                   ->fetchSubscriptionInfo($input, $payment->merchant);
+                                   ->fetchSubscriptionInfo($input, $payment->merchant, false, $appTokenPresent);
 
         if ($this->subscription->isExternal() === true)
         {
@@ -318,14 +326,27 @@ class Processor
             $payment->setRecurringType($subscriptionPaymentRecurringType);
 
             $this->addOrderIdToInputForExternalSubscription($input);
-
-            $this->addCustomerIdToInputForExternalSubscription($input);
         }
     }
 
     protected function addOrderIdToInputForExternalSubscription(array & $input)
     {
         assert($this->subscription->isExternal() === true);
+
+        // For subscription card change, we donot need to add order id
+        // for the following subscription states. (For these states, we will be
+        // using default auth amount as card change amount)
+        if (($this->subscription->isActive() === true) or
+            ($this->subscription->isHalted() === true) or
+            ($this->subscription->isAuthenticated() === true))
+        {
+            $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
+
+            if ($cardChange === true)
+            {
+                return;
+            }
+        }
 
         if (($this->subscription->hasCurrentInvoice() === true) and
             (isset($input[Payment\Entity::ORDER_ID]) === false))
@@ -775,8 +796,15 @@ class Processor
      * This method sets the flag that this payment should be processed via
      * Core payment service
      */
-    protected function setPaymentRoutedThroughCpsIfApplicable(Payment\Entity $payment)
+    protected function setPaymentRoutedThroughCpsIfApplicable(Payment\Entity $payment, $gatewayInput)
     {
+        // Check if AuthN gateway is not the AuthZ
+        if ((empty($gatewayInput['authenticate']['gateway']) === false) and
+            ($gatewayInput['authenticate']['gateway'] !== $payment->getGateway()))
+        {
+            return;
+        }
+
         if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::CPS_SERVICE_ENABLED, false) === true)
         {
             $featureFlag = self::CPS_FEATURE_FLAG_PREFIX. '_' .$payment->getGateway();
@@ -1848,7 +1876,10 @@ class Processor
 
         $this->repo->invoice->lockForUpdateAndReload($invoice, true);
 
-        $invoice->getValidator()->validateInvoicePayableForPayment($payment);
+        /** @var Invoice\Validator $invoiceValidator */
+        $invoiceValidator = $invoice->getValidator();
+
+        $invoiceValidator->validateInvoicePayableForPayment($payment);
 
         $payment->invoice()->associate($invoice);
 
@@ -2308,6 +2339,13 @@ class Processor
         // and capture the payment.
         //
 
+        //
+        // Ideally this should check for `validateInvoicePayable` as a partially paid
+        // PL would qualify for this.
+        //
+        // TODO: Change/fix this and test complete flow including the exception
+        // cases with the feature BLOCK_PL_PAY_POST_EXPIRY set.
+        //
         if ($invoice->isIssued() === false)
         {
             $this->trace->debug(
@@ -2596,5 +2634,42 @@ class Processor
                 ['key' => $key,
                  '$value' => $value]);
         }
+    }
+
+    protected function logRequestTime($payment, $startTime)
+    {
+        try
+        {
+            $requestTime = get_diff_in_millisecond($startTime);
+
+            (new Payment\Metric)->pushCreateRequestTimeMetrics($payment, $requestTime);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC
+            );
+        }
+    }
+
+    protected function isAppTokenPresent(): bool
+    {
+        if ($this->request->hasSession() === false)
+        {
+            return false;
+        }
+
+        $key = $this->mode . '_app_token';
+
+        $appToken = $this->request->session()->get($key);
+
+        if ($appToken !== null)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

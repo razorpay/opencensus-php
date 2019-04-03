@@ -155,4 +155,11 @@ class Entity extends PublicEntity
 
         $this->attributes[self::EXPLICIT_PLAN_ID] = $value;
     }
+
+    public function setImplicitExpiryAtAttribute($value)
+    {
+        $value = $value ?: null;
+
+        $this->attributes[self::IMPLICIT_EXPIRY_AT] = $value;
+    }
 }

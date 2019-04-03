@@ -480,6 +480,9 @@ return [
             'status' => [
                 'type'  => 'keyword',
             ],
+            'purpose' => [
+                'type'  => 'keyword',
+            ],
             'created_at' => [
                 'type'   => 'date',
                 'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',

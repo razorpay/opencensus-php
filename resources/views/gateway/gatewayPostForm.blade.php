@@ -251,12 +251,54 @@ body{
   <script>
     setTimeout(function() {
       document.body.className = 'loaded';
+      log('postform_load');
     }, 10);
 
     setTimeout(function(){
       document.getElementById('title').innerHTML = 'Still trying to load...';
       document.getElementById('msg').innerHTML = 'The bank page is taking time to load.';
+
+      log('postform_load_10');
     }, 10000);
+
+    var currentXhr;
+
+    function log(eventName) {
+        abortXhr();
+
+        {{-- Perform tracking only in production env --}}
+        @if ($data['production'])
+            try {
+            currentXhr = new XMLHttpRequest();
+            currentXhr.open('post', 'https://lumberjack.razorpay.com/v1/track', true);
+            currentXhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            currentXhr.send('key=MC40OTMwNzgyMDM3MDgwNjI3Nw9YnGzW&data=' +
+                encodeURIComponent(btoa(JSON.stringify({
+                    context: { user_agent: null },
+                    addons: [{
+                        name: 'ua_parser',
+                        input_key: 'user_agent',
+                        output_key: 'user_agent_parsed'
+                    }],
+                    events: [{
+                    event: eventName,
+                    properties: {
+                        payment_id: payment_id
+                    },
+                    timestamp: Date.now()
+                    }]
+                }))));
+            } catch (err) {}
+        @endif
+    }
+
+    function abortXhr() {
+        if (currentXhr) {
+            currentXhr = currentXhr.abort && currentXhr.abort();
+        }
+    }
+
+    onbeforeunload = abortXhr;
   </script>
 </body>
 </html>

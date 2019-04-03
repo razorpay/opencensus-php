@@ -548,6 +548,8 @@ class PaymentCreateTest extends TestCase
 
     public function testPaymentRoutedThroughCps()
     {
+        $this->markTestSkipped();
+
         $this->mockCardVault();
 
         $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
@@ -1030,5 +1032,56 @@ class PaymentCreateTest extends TestCase
         $payment['order_id'] = $order->getPublicId();
 
         return $payment;
+    }
+
+    public function testPaymentEditNotes()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['notes'] = [
+            'key' => 'value',
+        ];
+
+        $payment = $this->doAuthAndGetPayment($payment);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/' . $payment['id'];
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+    }
+
+    public function testPaymentFailedEditNotesMoreThan15Entries()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['notes'] = [
+            'key' => 'value',
+        ];
+
+        $payment = $this->doAuthAndGetPayment($payment);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/' . $payment['id'];
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+    }
+
+    public function testPaymentFailedEditNotesArrayValue()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['notes'] = [
+            'key' => 'value',
+        ];
+
+        $payment = $this->doAuthAndGetPayment($payment);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/' . $payment['id'];
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
     }
 }

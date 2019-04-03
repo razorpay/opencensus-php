@@ -3,6 +3,7 @@
 namespace RZP\Tests\P2p\Service\Base;
 
 use JsonSchema;
+use RZP\Exception\BaseException;
 use RZP\Tests\P2p\Service\Base\Traits;
 use Illuminate\Foundation\Testing\TestResponse;
 
@@ -14,6 +15,12 @@ class P2pHelper
      */
     protected $fixtures;
 
+    /**
+     * @var $exceptionHandler MockExceptionHandler
+     */
+    protected $exceptionHandler;
+
+    protected $requestHandlers = [];
     protected $responseCallbacks = [];
 
     protected $shouldValidateJsonSchema = false;
@@ -49,9 +56,11 @@ class P2pHelper
      *
      * P2pHelper constructor.
      */
-    public function __construct(Fixtures\Fixtures $fixtures)
+    public function __construct(Fixtures\Fixtures $fixtures, MockExceptionHandler $exceptionHandler)
     {
         $this->fixtures = $fixtures;
+
+        $this->exceptionHandler = $exceptionHandler;
 
         $this->resetContexts();
 
@@ -148,7 +157,7 @@ class P2pHelper
      * @param array $with
      * @return P2pHelper
      */
-    protected function resetResponseCallbacks($with = []): self
+    public function resetResponseCallbacks($with = []): self
     {
         $this->responseCallbacks = $with;
 
@@ -161,11 +170,48 @@ class P2pHelper
      * @param callable $callback
      * @return P2pHelper
      */
-    protected function registerResponseCallback(callable $callback): self
+    public function registerResponseCallback(callable $callback): self
     {
          $this->responseCallbacks[] = $callback;
 
          return $this;
+    }
+
+    /**
+     * Reset the default request handler
+     *
+     * @param array $with
+     * @return P2pHelper
+     */
+    public function resetRequestHandler($with = []): self
+    {
+        $this->requestHandlers = $with;
+
+        return $this;
+    }
+
+    /**
+     * Add multiple handler for request
+     *
+     * @param callable $callback
+     * @return P2pHelper
+     */
+    public function registerRequestHandler(callable $callback): self
+    {
+         $this->requestHandlers[] = $callback;
+
+         return $this;
+    }
+
+    public function withFailureResponse(callable $callback): self
+    {
+        $this->expectFailureInResponse = true;
+
+        $this->exceptionHandler->setThrowExceptionInTesting(false);
+
+        $this->registerResponseCallback($callback);
+
+        return $this;
     }
 
     /**
@@ -243,19 +289,27 @@ class P2pHelper
      */
     protected function send(P2pRequest $request): array
     {
-        // TODO: Remove Before Merging
-        info('_LOGGER_ REQUEST', $request->trace());
+        $this->runRequestHandlers($request);
+
+        if (env('P2P_LOG_REQUESTS')) info('_LOGGER_ REQUEST', $request->trace());
 
         $response = $request->send();
 
-        // TODO: Remove Before Merging
-        info('_LOGGER_ RESPONSE', [$response->content()]);
+        if (env('P2P_LOG_REQUESTS')) info('_LOGGER_ RESPONSE', $response->json());
 
         $this->runResponseCallbacks($response);
 
-        $this->validateResponseJsonSchema($response->content());
+        $this->validateResponseJsonSchema(json_decode($response->content()));
 
         return $response->json();
+    }
+
+    protected function runRequestHandlers(P2pRequest $request)
+    {
+        foreach ($this->requestHandlers as $callback)
+        {
+            $callback($request);
+        }
     }
 
     /**
@@ -277,21 +331,37 @@ class P2pHelper
      *
      * @param string $json
      */
-    protected function validateResponseJsonSchema(string $json)
+    protected function validateResponseJsonSchema(\stdClass $data)
     {
         if ($this->shouldValidateJsonSchema === false)
         {
             return;
         }
 
-        $jsonPath = app_path('Http/Controllers/P2p/JsonSchema/' . $this->validationJsonSchemaPath . '.json');
+        if (($this instanceof DeviceHelper) or
+            ($this instanceof BankAccountHelper) or
+            ($this instanceof VpaHelper))
+        {
+            $suffix = 'processed';
+
+            if (isset($data->type) and in_array($data->type, ['sdk', 'sms', 'post'], true))
+            {
+                $suffix = 'next';
+            }
+
+            $jsonPath = app_path('Http/Controllers/P2p/JsonSchema/' .
+                $this->validationJsonSchemaPath . '.response.' . $suffix . '.json');
+        }
+        else
+        {
+            $jsonPath = app_path('Http/Controllers/P2p/JsonSchema/' .
+                $this->validationJsonSchemaPath . '.json');
+        }
 
         if (file_exists($jsonPath) === false)
         {
             $this->throwTestingException('Json schema file does not exists', [$jsonPath]);
         }
-
-        $data = json_decode($json);
 
         $validator = new JsonSchema\Validator;
 
@@ -313,6 +383,13 @@ class P2pHelper
 
     protected function makeUri(string $uri, array $parameters)
     {
+        $url = parse_url($uri);
+
+        if (empty($url['scheme']) === false)
+        {
+            return $uri;
+        }
+
         $prefix = 'v1/upi/';
 
         if ($this->isCustomerInContext === true)

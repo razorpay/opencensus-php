@@ -223,6 +223,7 @@ class Gateway
         self::WALLET_OPENWALLET,
         self::CARDLESS_EMI,
         self::ENACH_NPCI_NETBANKING,
+        self::NETBANKING_CORPORATION,
 
         // UPI HULK is TEMPORARY, As payment are still failed on hulk and we can't do much there,
         //If you are seeing this after Sep'18, Please report to gateway payments team
@@ -534,7 +535,7 @@ class Gateway
             self::GO_LIVE_TIMESTAMP => 1546597864
         ],
         Payment\Gateway::UPI_MINDGATE   => [
-            self::GO_LIVE_TIMESTAMP => 1540826221
+            self::GO_LIVE_TIMESTAMP => 1540830393
         ],
         Payment\Gateway::HITACHI   => [
             self::GO_LIVE_TIMESTAMP => 1550746997
@@ -732,6 +733,7 @@ class Gateway
         self::ENACH_RBL,
         self::NETBANKING_HDFC,
         self::NETBANKING_AXIS,
+        self::ENACH_NPCI_NETBANKING,
     ];
 
     /**
@@ -1014,6 +1016,7 @@ class Gateway
         self::UPI_SBI,
         self::UPI_YESBANK,
         self::UPI_MINDGATE,
+        self::UPI_ICICI,
         self::BAJAJ,
     ];
 
@@ -1321,6 +1324,7 @@ class Gateway
         IFSC::UTIB,
         IFSC::YESB,
         IFSC::CITI,
+        IFSC::SBIN,
     ];
 
     public static $emiBanksUsingCardTerminals = [
@@ -1368,7 +1372,13 @@ class Gateway
 
     public static $onlyAuthorizationGateway = [
         Gateway::HITACHI,
+        Gateway::CYBERSOURCE,
         Gateway::ENACH_RBL,
+    ];
+
+    public static $authorizationAuthenticationGatewayMap = [
+        Gateway::HITACHI     => Gateway::MPI_BLADE,
+        Gateway::CYBERSOURCE => Gateway::CYBERSOURCE,
     ];
 
     public static $subscriptionOverOneYearGateways = [
@@ -1432,6 +1442,11 @@ class Gateway
     public static function isOnlyAuthorizationGateway($gateway): bool
     {
         return in_array($gateway, self::$onlyAuthorizationGateway, true);
+    }
+
+    public static function authorizationToAuthenticationGateway($gateway, $default = null)
+    {
+        return self::$authorizationAuthenticationGatewayMap[$gateway] ?? $default;
     }
 
     public static function isZeroRupeeFlowSupported($bank): bool

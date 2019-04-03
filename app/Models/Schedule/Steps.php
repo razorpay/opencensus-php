@@ -12,6 +12,7 @@ class Steps
         Period::HOURLY          => 'Hour',
         Period::DAILY           => 'Day',
         Period::YEARLY          => 'Day',
+        Period::MINUTE          => 'Minute',
     ];
 
     public static function getStep(string $period): string

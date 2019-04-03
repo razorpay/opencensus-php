@@ -43,6 +43,25 @@ class Payout extends Base
         });
     }
 
+    protected function updateBatchPostValidation(array $entries, array $input)
+    {
+        parent::updateBatchPostValidation($entries, $input);
+
+        $totalAmount = array_sum(array_column($entries, Batch\Header::PAYOUT_AMOUNT));
+
+        $this->batch->setAmount($totalAmount);
+    }
+
+    protected function postProcessEntries(array & $entries)
+    {
+        parent::postProcessEntries($entries);
+
+        $processedAmount = collect($entries)->where(Batch\Header::STATUS, Batch\Status::SUCCESS)
+                                            ->sum(Batch\Header::PAYOUT_AMOUNT);
+
+        $this->batch->setProcessedAmount($processedAmount);
+    }
+
     protected function processEntryForFundAccount(array & $entry): FundAccountModel\Entity
     {
         if (empty($entry[Batch\Header::FUND_ACCOUNT_ID]) === false)
@@ -63,6 +82,6 @@ class Payout extends Base
     {
         $input = Batch\Helpers\Payout::getPayoutInput($entry, $fundAccount, $this->merchant);
 
-        return $this->payoutCore->createPayoutToFundAccount($input, $this->merchant);
+        return $this->payoutCore->createPayoutToFundAccount($input, $this->merchant, $this->batch);
     }
 }

@@ -33,4 +33,23 @@ class CurrencyTest extends TestCase
         // fetch current rates
         $this->startTest();
     }
+
+    public function testGetPaymentCurrencies()
+    {
+        $this->ba->publicAuth();
+
+        $res = $this->startTest();
+
+        $this->assertArrayHasKey('INR', $res);
+
+        $this->assertArrayHasKey('code', $res['INR']);
+
+        $this->assertArrayHasKey('min_value', $res['INR']);
+
+        $this->assertArrayHasKey('min_auth_value', $res['INR']);
+
+        $this->assertArrayHasKey('denomination', $res['INR']);
+
+        $this->assertArrayHasKey('symbol', $res['INR']);
+    }
 }

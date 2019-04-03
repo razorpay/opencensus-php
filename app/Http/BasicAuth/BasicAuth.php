@@ -1371,6 +1371,11 @@ class BasicAuth
         return ($this->getInternalApp() === 'subscriptions');
     }
 
+    public function isBatchApp(): bool
+    {
+        return ($this->getInternalApp() === 'batch');
+    }
+
     public function getOAuthApplicationId()
     {
         return $this->applicationId;
@@ -2124,7 +2129,7 @@ class BasicAuth
                (empty($this->admin) === false) and
                ($this->getAdmin()->org->isCrossOrgAccessEnabled() === true);
     }
-  
+
     /**
      * Returns the origin type and origin id based on the auth used.
      *

@@ -5,12 +5,18 @@ namespace RZP\Jobs;
 use App;
 
 use RZP\Trace\TraceCode;
+use RZP\Exception\BaseException;
 use Razorpay\Trace\Logger as Trace;
 
 class ScroogeRefundRetry extends Job
 {
-    const MAX_JOB_ATTEMPTS = 10;
+    const MAX_JOB_ATTEMPTS = 5;
     const JOB_RELEASE_WAIT = 300;
+
+    const NON_RETRIABLE_ERROR_CODES = [
+        'ILLEGAL_STATE',
+        'NO_DATA_FOUND'
+    ];
 
     //
     // Make sure that this is below 900 (seconds) because
@@ -59,20 +65,31 @@ class ScroogeRefundRetry extends Job
                 TraceCode::REFUND_RETRY_SCROOGE_JOB_FAILURE_EXCEPTION,
                 $this->data);
 
-            $this->handleRefundRetryJobRelease();
+            $exceptionData = [];
+
+            // Only BaseException would have `getData` function
+            if ($ex instanceof BaseException)
+            {
+                $exceptionData = $ex->getData();
+            }
+
+            $this->handleRefundRetryJobRelease($exceptionData);
         }
     }
 
-    protected function handleRefundRetryJobRelease()
+    protected function handleRefundRetryJobRelease(array $exceptionData)
     {
-        if ($this->attempts() > self::MAX_JOB_ATTEMPTS)
+        $errorCode = $exceptionData['response_body']->internal_error->code ?? '';
+
+        if (($this->attempts() > self::MAX_JOB_ATTEMPTS) or
+            ($this->isErrorCodeNonRetriable($errorCode) === true))
         {
             $this->trace->error(
                 TraceCode::REFUND_RETRY_SCROOGE_QUEUE_DELETE,
                 [
                     'data'         => $this->data,
                     'job_attempts' => $this->attempts(),
-                    'message'      => 'Deleting the job after configured number of tries. Still unsuccessful.'
+                    'message'      => 'Deleting the job after configured number of tries or if error code is not retriable.'
                 ]
             );
 
@@ -86,5 +103,16 @@ class ScroogeRefundRetry extends Job
             //
             $this->release(self::JOB_RELEASE_WAIT);
         }
+    }
+
+    /**
+     * Checks for given error code if that is worth retrying or not in case of job failure.
+     *
+     * @param $errorCode
+     * @return bool
+     */
+    protected function isErrorCodeNonRetriable(string $errorCode)
+    {
+        return in_array($errorCode, self::NON_RETRIABLE_ERROR_CODES, true);
     }
 }

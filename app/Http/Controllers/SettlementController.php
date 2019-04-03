@@ -226,4 +226,21 @@ class SettlementController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    /**
+     * Initiates settlements for merchants with
+     * feature ADHOC_SETTLEMENT enabled.
+     * These merchants have their settlements created
+     * every day, irrespective of holidays, but transfer
+     * for these settlements get initiated only on
+     * non-holidays at a time defined by the merchant.
+     */
+    public function processAdhocSettlements()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->processAdhocSettlements($input);
+
+        return ApiResponse::json($data);
+    }
 }

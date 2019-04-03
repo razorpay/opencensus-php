@@ -16,6 +16,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Offer;
+use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Models\Transaction;
@@ -35,6 +36,8 @@ class Service extends Base\Service
 
     protected $slack;
 
+    protected $mutex;
+
     public function __construct()
     {
         parent::__construct();
@@ -42,6 +45,8 @@ class Service extends Base\Service
         $this->core = new Payment\Core;
 
         $this->slack = $this->app['slack'];
+
+        $this->mutex = $this->app['api.mutex'];
     }
 
     /**
@@ -938,6 +943,27 @@ class Service extends Base\Service
         return [];
     }
 
+    public function update($id, $input)
+    {
+        $paymentId = Entity::verifyIdAndStripSign($id);
+
+        $payment = $this->mutex->acquireAndRelease($paymentId,
+            function() use ($paymentId, $input)
+            {
+                $payment = $this->repo->payment->findByIdAndMerchant($paymentId, $this->merchant);
+
+                $payment->edit($input);
+
+                $this->repo->saveOrFail($payment);
+
+                return $payment;
+            },
+            20,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+
+        return $payment->toArrayPublic();
+    }
+
     /**
      * This method is triggered by a CRON job.
      *
@@ -1146,10 +1172,12 @@ class Service extends Base\Service
         return ['count' => $count];
     }
 
-    public function timeoutOldPayments()
+    public function timeoutOldPayments(array $input)
     {
         $count = 0;
         $error = 0;
+
+        $limit = $input['limit'] ?? 1000;
 
         $startTime = microtime(true);
 
@@ -1157,7 +1185,7 @@ class Service extends Base\Service
         $now = time();
         $timestamp = $now - Payment\Entity::PAYMENT_TIMEOUT_DEFAULT_OLD;
 
-        $payments = $this->repo->payment->fetchOldCreatedPaymentsForTimeout($timestamp);
+        $payments = $this->repo->payment->fetchOldCreatedPaymentsForTimeout($timestamp, $limit);
 
         foreach ($payments as $payment)
         {
@@ -1296,9 +1324,11 @@ class Service extends Base\Service
 
         $count = $input['count'] ?? 200;
 
-        $timestamp = Carbon::now(Timezone::IST)->subSeconds($delay)->getTimestamp();
+        $end = Carbon::now(Timezone::IST)->subSeconds($delay)->getTimestamp();
 
-        return (new Verify)->verifyAllPayments($timestamp, $gateway, $count);
+        $start = $this->getStartTimestamp($delay);
+
+        return (new Verify)->verifyAllPayments([$start, $end], $gateway, $count);
     }
 
     public function verifyPaymentsInBulk(array $input)
@@ -1644,5 +1674,60 @@ class Service extends Base\Service
         $this->app['cache']->put($key, $data, $cacheTtl);
 
         return $token;
+    }
+
+    public function fetchForSubscription(string $paymentId, string $subscriptionId): array
+    {
+        $payment = $this->repo->payment->fetchByIdandSubscriptionId($paymentId, $subscriptionId);
+
+        $payload = $payment->toArrayAdmin();
+
+        $payload['merchant'] = [
+            Merchant\Entity::BILLING_LABEL => $payment->merchant->getBillingLabel(),
+            Merchant\Entity::WEBSITE       => $payment->merchant->getWebsite(),
+            Merchant\Entity::EMAIL         => $payment->merchant->getTransactionReportEmail(),
+        ];
+
+        $payload['customer'] = [
+            'email' => $payment->customer->getEmail(),
+            'phone' => $payment->customer->getContact(),
+        ];
+
+        if ($payment->hasCard() === true)
+        {
+            $card = $payment->card;
+            $expiryMonth = str_pad($card->getExpiryMonth(), 2, '0', STR_PAD_LEFT);
+
+            $payload['card'] = [
+                'number'  => '**** **** **** ' . $card->getLast4(),
+                'expiry'  => $expiryMonth . '/' . $card->getExpiryYear(),
+                'network' => $card->getNetworkCode(),
+                'color'   => $card->getNetworkColorCode()
+            ];
+        }
+
+        if ($payment->hasInvoice() === true)
+        {
+            $payload['invoice'] = [
+                Invoice\Entity::BILLING_START => $payment->invoice->getBillingStart(),
+                Invoice\Entity::BILLING_END   => $payment->invoice->getBillingEnd()
+            ];
+        }
+
+        return $payload;
+    }
+
+    // verify to fetch the payments between certain duration
+    protected function getStartTimestamp(int $delay)
+    {
+        $delay = 3 * $delay;
+
+        // keeping the min fetch window to 5 mins
+        if ($delay < 300)
+        {
+            $delay = 300;
+        }
+
+        return Carbon::now(Timezone::IST)->subSeconds($delay)->getTimestamp();
     }
 }

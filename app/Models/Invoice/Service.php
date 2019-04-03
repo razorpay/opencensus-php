@@ -9,6 +9,8 @@ use RZP\Constants\Mode;
 use RZP\Models\LineItem;
 use RZP\Models\FileStore;
 use RZP\Models\User\Role;
+use RZP\Http\RequestHeader;
+
 
 class Service extends Base\Service
 {
@@ -31,7 +33,18 @@ class Service extends Base\Service
 
     public function create(array $input): array
     {
-        $invoice = $this->core->create($input, $this->merchant);
+        $batchId = null;
+
+        if ($this->app['basicauth']->isBatchApp() === true)
+        {
+            $batchId = $this->app['request']->header(RequestHeader::X_Batch_Id) ?? null;
+
+            $invoice = $this->core->create($input, $this->merchant, null, null,null, $batchId);
+        }
+        else
+        {
+            $invoice = $this->core->create($input, $this->merchant);
+        }
 
         return $invoice->toArrayPublic();
     }

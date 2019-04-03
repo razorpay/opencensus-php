@@ -251,4 +251,89 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
+
+    'testPaymentEditNotes' => [
+        'request'  => [
+            'content' => [
+                'notes' => [
+                    'key1' => 'value1',
+                    'key2' => 'value2',
+                ],
+            ],
+            'method'  => 'PATCH',
+        ],
+        'response' => [
+            'content' => [
+                'notes' => [
+                    'key1' => 'value1',
+                    'key2' => 'value2',
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testPaymentFailedEditNotesMoreThan15Entries' => [
+        'request'  => [
+            'content' => [
+                'notes' => [
+                    'key1' => 'value1',
+                    'key2' => 'value2',
+                    'key3' => 'value3',
+                    'key4' => 'value4',
+                    'key5' => 'value5',
+                    'key6' => 'value6',
+                    'key7' => 'value7',
+                    'key8' => 'value8',
+                    'key9' => 'value9',
+                    'key10' => 'value10',
+                    'key11' => 'value11',
+                    'key12' => 'value12',
+                    'key13' => 'value13',
+                    'key14' => 'value14',
+                    'key15' => 'value15',
+                    'key16' => 'value16',
+                ],
+            ],
+            'method'  => 'PATCH',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Number of fields in notes should be less than or equal to 15',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NOTES_TOO_MANY_KEYS
+        ],
+    ],
+
+    'testPaymentFailedEditNotesArrayValue' => [
+        'request'  => [
+            'content' => [
+                'notes' => [
+                    'key2' => 'new_value',
+                    'key3' => ['k' => 'v'],
+                ],
+            ],
+            'method'  => 'PATCH',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Notes values themselves should not be an array',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NOTES_VALUE_CANNOT_BE_ARRAY
+        ],
+    ],
 ];

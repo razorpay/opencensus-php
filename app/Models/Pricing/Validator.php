@@ -17,6 +17,7 @@ use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Pricing;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Admin\Org\Entity as Org;
 
 class Validator extends Base\Validator
 {
@@ -404,6 +405,29 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PRICING_PLAN_CANNOT_HAVE_MULTIPLE_TYPES,
                 Entity::TYPE,
                 $types->values()->all()
+            );
+        }
+    }
+
+    /**
+     * Throw an error if commission plan is posted for non-rzp orgs
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validatePlanTypeForOrg()
+    {
+        $rule  = $this->entity;
+        $type  = $rule->getType();
+        $orgId = $rule->getAttribute(Entity::ORG_ID);
+
+        if (($type === Type::COMMISSION) and ($orgId !== Org::RAZORPAY_ORG_ID))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PRICING_TYPE_COMMISSION_INVALID_FOR_NON_RZP_ORG,
+                Entity::TYPE,
+                [
+                    'org_id' => $orgId,
+                ]
             );
         }
     }

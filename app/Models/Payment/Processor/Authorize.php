@@ -27,9 +27,9 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Models\Terminal;
 use RZP\Models\Currency;
 use RZP\Models\Merchant;
+use RZP\Models\Terminal;
 use RZP\Models\Customer;
 use RZP\Models\Discount;
 use RZP\Models\Card\IIN;
@@ -110,7 +110,11 @@ trait Authorize
 
     protected function setSelectedTerminals(Payment\Entity $payment, array $gatewayInput)
     {
-        if (($payment->isPushPaymentMethod() === true) and
+        if (empty($gatewayInput['selected_terminals_ids']) === false)
+        {
+            $this->selectedTerminals = (new TerminalProcessor)->getTerminalFromTerminalIds($gatewayInput['selected_terminals_ids']);
+        }
+        else if (($payment->isPushPaymentMethod() === true) and
             ((empty($gatewayInput[Payment\Entity::TERMINAL_ID])) === false))
         {
             $this->selectedTerminals = [(new TerminalProcessor)->getTerminalFromGatewayData($gatewayInput)];
@@ -119,6 +123,12 @@ trait Authorize
         {
             $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
         }
+
+        $this->trace->info(
+            TraceCode::SELECTED_TERMINAL_IDS,
+            [
+                'selected_terminals_ids'  => array_pluck($this->selectedTerminals,Terminal\Entity::ID),
+            ]);
     }
 
     protected function setAuthenticationGatewayViaGatewayRules(Payment\Entity $payment, array & $gatewayInput)
@@ -132,7 +142,7 @@ trait Authorize
         (new TerminalProcessor)->setAuthenticationGateway($payment, $gatewayInput);
     }
 
-    protected function hitGatewayIfRequired(Payment\Entity $payment, array $input, array $gatewayInput)
+    protected function hitGatewayIfRequired(Payment\Entity $payment, array $input, array & $gatewayInput)
     {
         //
         // The instance variable selectedTerminals need to be set
@@ -151,7 +161,7 @@ trait Authorize
 
         try
         {
-            $request = $this->validateAndReturnRedirectResponseIfApplicable($payment);
+            $request = $this->validateAndReturnRedirectResponseIfApplicable($payment, $gatewayInput);
 
             if ($request != null)
             {
@@ -1464,7 +1474,7 @@ trait Authorize
     {
         $this->setAuthAndAuthenticationGateway($payment, $gatewayInput);
 
-        $this->setPaymentRoutedThroughCpsIfApplicable($payment);
+        $this->setPaymentRoutedThroughCpsIfApplicable($payment, $gatewayInput);
 
         $this->repo->saveOrFail($payment);
 
@@ -1596,7 +1606,7 @@ trait Authorize
                     if (($payment->isRecurring() === false) or
                         ($payment->isRecurringTypeInitial() === true))
                     {
-                        $gateway = Payment\Gateway::MPI_BLADE;
+                        $gateway = Payment\Gateway::authorizationToAuthenticationGateway($payment->getGateway(), Payment\Gateway::MPI_BLADE);
                         $authType = '3ds';
 
                         if ($this->canRunIvrFlow($payment) === true)
@@ -2039,9 +2049,11 @@ trait Authorize
             if ($this->subscription->isExternal() === false)
             {
                 $this->associateSubscriptionToPayment($payment, $input);
-
-                $this->addCustomerIdToSubscriptionInput($input);
             }
+            // Even if external subscription, we can add customerId to input only here.
+            // This function has to be called only after checkAndFillSavedAppToken.
+            // Otherwise user session will not be set.
+            $this->addCustomerIdToSubscriptionInput($input);
 
             $this->addTestSuccessFlagToGatewayInput($input, $gatewayInput);
 
@@ -2128,7 +2140,7 @@ trait Authorize
 
             $cacheKey = strtoupper($input['provider']) . '_' . $contact . '_' . $merchantId;
 
-            $cacheKey = sprintf('emi_plans_%s', $cacheKey);
+            $cacheKey = sprintf('gateway:emi_plans_%s', $cacheKey);
 
             $emiPlans = (array) $this->app['cache']->get($cacheKey, null);
 
@@ -2197,7 +2209,9 @@ trait Authorize
     protected function setPreferredAuthIfApplicable(Payment\Entity $payment)
     {
         if (($payment->isMethodCardOrEmi() === false) or
-            ($payment->getAuthType() !== null))
+            ($payment->getAuthType() !== null) or
+            ($payment->isSecondRecurring() === true) or
+            ($payment->isPushPaymentMethod() === true))
         {
             return;
         }
@@ -4227,7 +4241,7 @@ trait Authorize
                 // Also, the order of the checks matter here since the second
                 // condition covers a superset.
                 //
-                if (($payment->getGateway() === Payment\Gateway::HITACHI) and
+                if ((Payment\Gateway::isOnlyAuthorizationGateway($payment->getGateway()) === true) and
                     ($this->isAuthTypeOtp($payment) === true))
                 {
                     if ($this->canRunAxisExpressPay($payment) === true)
@@ -4417,6 +4431,16 @@ trait Authorize
         if ($vault === true)
         {
             $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_VAULT;
+        }
+
+        if ($vault === false)
+        {
+            $response = $this->app->razorx->getTreatment($merchant->getId(), 'save_all_cards', $this->mode);
+
+            if (strtolower($response) === 'on')
+            {
+              $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_ENCRYPTION;
+            }
         }
 
         $cardCore = new Card\Core;
@@ -4843,7 +4867,7 @@ trait Authorize
         {
             if (isset($data['acquirer']) === true)
             {
-                $payment->edit($data['acquirer']);
+                $payment->edit($data['acquirer'], 'edit_acquirer');
             }
         }
         catch (\Throwable $e)
@@ -5112,7 +5136,7 @@ trait Authorize
         $this->cache->put($key, $input, $ttl);
     }
 
-    protected function validateAndReturnRedirectResponseIfApplicable(Payment\Entity $payment)
+    protected function validateAndReturnRedirectResponseIfApplicable(Payment\Entity $payment, array & $gatewayInput)
     {
         $merchant = $payment->merchant;
 
@@ -5143,6 +5167,13 @@ trait Authorize
             'public_key' => $this->app['basicauth']->getPublicKey(),
             'account_id' => $this->app['basicauth']->authCreds->creds['account_id'],
         ];
+
+        $response = $this->app->razorx->getTreatment($payment->merchant->getId(), 'redirect_terminal_cache', $this->mode);
+
+        if (strtolower($response) === 'on')
+        {
+            $gatewayInput['selected_terminals_ids'] = array_pluck($this->selectedTerminals,Terminal\Entity::ID);
+        }
 
         // encrypt with key
         $encryptedPayload = Crypt::encrypt($payload);

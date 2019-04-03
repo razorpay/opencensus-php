@@ -30,4 +30,5 @@ class RequestFields
     const RETRIEVAL_REF_NUM         = 'pRRN';
     const CURRENCY_CODE             = 'pCurrencyCode';
     const DYNAMIC_MERCHANT_NAME     = 'pDBAName';
+    const AUTH_ID                   = 'pAuthID';
 }

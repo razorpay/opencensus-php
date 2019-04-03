@@ -17,6 +17,7 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Vpa\Entity as VpaEntity;
+use RZP\Models\Card\Entity as CardEntity;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
 use RZP\Services\Beam\Constants as BeamConstants;
@@ -53,6 +54,23 @@ class Core extends Base\Core
         }
 
         $this->sendFTSFundTransferRequest($fundTransferAttempt, FundAccount\Type::BANK_ACCOUNT);
+
+        return $fundTransferAttempt;
+    }
+
+    public function createWithCard(Base\Entity $source, CardEntity $card, array $values = []): Entity
+    {
+        $fundTransferAttempt = $this->create($source, $values);
+
+        // TODO: Make this polymorphic instead of having bankAccount and vpa separately
+        $fundTransferAttempt->card()->associate($card);
+
+        // This needs to be done after filling FTA since it uses getters on the entity.
+        // Also, this needs to be done after associating vpa or bank_account only
+        // because it needs the association to figure out the destination type.
+        $fundTransferAttempt->getValidator()->validateModeIfSet($values);
+
+        $this->repo->saveOrFail($fundTransferAttempt);
 
         return $fundTransferAttempt;
     }

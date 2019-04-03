@@ -15,4 +15,11 @@ class CommissionController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function get(string $id)
+    {
+        $entity = $this->service()->fetch($id);
+
+        return ApiResponse::json($entity);
+    }
 }

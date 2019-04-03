@@ -29,7 +29,7 @@ class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
 
-    const BALANCE_CACHE_KEY = 'olamoney_balance_%s';
+    const BALANCE_CACHE_KEY = 'gateway:olamoney_balance_%s';
 
     // 8 hours - 8 * 60 * 60 = 28
     const WALLET_ACCESS_TOKEN_EXPIRY = 28800;
@@ -782,11 +782,7 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        if ($verify->match === false)
-        {
-            $verify->payment = $this->saveVerifyContent($gatewayPayment,
-                                                        $verify);
-        }
+        $verify->payment = $this->saveVerifyContent($gatewayPayment, $verify);
 
         return $verify->status;
     }
@@ -887,6 +883,8 @@ class Gateway extends Base\Gateway
         {
             $walletAttributes = $this->getVerifyWalletCreateAttributes($verifyResponse);
 
+            $walletMappedAttributes = $this->getMappedAttributes($walletAttributes);
+
             if ($gatewayPayment === null)
             {
                 $gatewayPayment = $this->createGatewayPaymentEntity($walletAttributes);
@@ -894,7 +892,7 @@ class Gateway extends Base\Gateway
             else if (($gatewayPayment['received'] === false) or
                      ($gatewayPayment['status_code'] !== Status::SUCCESS))
             {
-                $gatewayPayment->fill($walletAttributes);
+                $gatewayPayment->fill($walletMappedAttributes);
                 $gatewayPayment->saveOrFail();
             }
         }
@@ -914,7 +912,7 @@ class Gateway extends Base\Gateway
             Entity::EMAIL                   => $payment['email'],
             Entity::CONTACT                 => $this->getFormattedContact($payment['contact']),
             ResponseFields::STATUS          => Status::SUCCESS,
-            ResponseFields::TRANSACTION_ID  => $verifyResponse[ResponseFields::UNIQUE_BILL_ID],
+            ResponseFields::TRANSACTION_ID  => $verifyResponse[ResponseFields::GLOBAL_MERCHANT_ID],
         ];
 
         return $contentToSave;

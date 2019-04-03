@@ -47,34 +47,20 @@ class Fixtures extends Constants
      *
      * @var array
      */
-    protected $deviceSetMap = [
-        self::DEVICE_1 => [
-            'merchant'      => self::TEST_MERCHANT,
-            'customer'      => self::RZP_LOCAL_CUSTOMER_1,
-            'device'        => self::CUSTOMER_1_DEVICE_1,
-            'handle'        => self::RAZOR_SHARP,
-            'bank_account'  => self::CUSTOMER_1_BANK_ACCOUNT_1,
-            'vpa'           => self::CUSTOMER_1_VPA_1,
-        ],
-        self::DEVICE_2 => [
-            'merchant'      => self::TEST_MERCHANT,
-            'customer'      => self::RZP_LOCAL_CUSTOMER_2,
-            'device'        => self::CUSTOMER_2_DEVICE_1,
-            'handle'        => self::RAZOR_SHARP,
-            'bank_account'  => self::CUSTOMER_2_BANK_ACCOUNT_1,
-            'vpa'           => self::CUSTOMER_2_VPA_1,
-        ],
+    protected $deviceSetMap = [];
 
-    ];
-
-    public function __construct()
+    public function __construct(array $deviceSetMap = [])
     {
-        $this->current = $this->device(self::DEVICE_1);
+        $this->deviceSetMap = $deviceSetMap;
+
+        $this->current = $this->deviceSet(self::DEVICE_1);
     }
 
-    public function switchDevice(string $deviceSetId)
+    public function switchDeviceSet(string $deviceSetId)
     {
-        $this->current = $this->device($deviceSetId);
+        $this->current = $this->deviceSet($deviceSetId);
+
+        return $this;
     }
 
     /**
@@ -87,7 +73,7 @@ class Fixtures extends Constants
      * @return DeviceSet
      * @throws RuntimeException
      */
-    public function device(string $deviceSetId, array $create = []): DeviceSet
+    public function deviceSet(string $deviceSetId, array $create = []): DeviceSet
     {
         if (empty($this->deviceSetMap[$deviceSetId]) === true)
         {
@@ -105,6 +91,83 @@ class Fixtures extends Constants
         }
 
         return $this->devices[$deviceSetId];
+    }
+
+    /**
+     * @param string $deviceSetId
+     * @return Models\Merchant\Entity
+     * @throws RuntimeException
+     */
+    public function merchant(string $deviceSetId): Models\Merchant\Entity
+    {
+        return $this->deviceSet($deviceSetId)->merchant;
+    }
+
+    /**
+     * @param string $deviceSetId
+     * @return Models\Customer\Entity
+     * @throws RuntimeException
+     */
+    public function customer(string $deviceSetId): Models\Customer\Entity
+    {
+        return $this->deviceSet($deviceSetId)->customer;
+    }
+
+    /**
+     * @param string $deviceSetId
+     * @return P2p\Device\Entity
+     * @throws RuntimeException
+     */
+    public function device(string $deviceSetId): P2p\Device\Entity
+    {
+        return $this->deviceSet($deviceSetId)->device;
+    }
+
+    /**
+     * @param string $deviceSetId
+     * @return P2p\Device\Entity
+     * @throws RuntimeException
+     */
+    public function deviceToken(string $deviceSetId, bool $verified = true): P2p\Device\DeviceToken\Entity
+    {
+        $tokens = $this->deviceSet($deviceSetId)->device->deviceTokens()->handle($this->handle);
+
+        if ($verified === true)
+        {
+            $tokens->verified();
+        }
+
+        return $tokens->first();
+    }
+
+    /**
+     * @param string $deviceSetId
+     * @return P2p\Vpa\Handle\Entity
+     * @throws RuntimeException
+     */
+    public function handle(string $deviceSetId): P2p\Vpa\Handle\Entity
+    {
+        return $this->deviceSet($deviceSetId)->handle;
+    }
+
+    /**
+     * @param string $deviceSetId
+     * @return P2p\BankAccount\Entity
+     * @throws RuntimeException
+     */
+    public function bankAccount(string $deviceSetId): P2p\BankAccount\Entity
+    {
+        return $this->deviceSet($deviceSetId)->bank_account;
+    }
+
+    /**
+     * @param string $deviceSetId
+     * @return P2p\Vpa\Entity
+     * @throws RuntimeException
+     */
+    public function vpa(string $deviceSetId): P2p\Vpa\Entity
+    {
+        return $this->deviceSet($deviceSetId)->vpa;
     }
 
     /**
@@ -209,20 +272,25 @@ class Fixtures extends Constants
         return $entity;
     }
 
-    /**
-     * @param bool $verified
-     * @return P2p\Device\DeviceToken\Entity
-     */
-    public function currentDeviceToken(bool $verified = false)
+    public function createRegisterToken(array $attributes): P2p\Device\RegisterToken\Entity
     {
-        $deviceToken = $this->device->deviceTokens()->handle($this->handle);
+        $defaults = [
+            P2p\Device\RegisterToken\Entity::DEVICE_DATA => [
+                P2p\Device\Entity::CUSTOMER_ID      => $this->customer->getPublicId(),
+                P2p\Device\Entity::IP               => '179.0.0.1',
+                P2p\Device\Entity::OS               => 'android',
+                P2p\Device\Entity::OS_VERSION       => '5.0.1',
+                P2p\Device\Entity::SIMID            => '0',
+                P2p\Device\Entity::UUID             => '5637293534543',
+                P2p\Device\Entity::TYPE             => 'mobile',
+                P2p\Device\Entity::GEOCODE          => '12.971599,77.594566',
+                P2p\Device\Entity::APP_NAME         => 'com.razorpay',
+            ]
+        ];
 
-        if ($verified === true)
-        {
-            $deviceToken->verified();
-        }
+        $entity = factory(P2p\Device\RegisterToken\Entity::class)->create(array_merge($defaults, $attributes));
 
-        return $deviceToken->first();
+        return $entity;
     }
 
     public function __get($property)

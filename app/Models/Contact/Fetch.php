@@ -19,12 +19,17 @@ class Fetch extends Base\Fetch
             Entity::NAME              => 'sometimes|string|max:50',
             Entity::CONTACT           => 'sometimes|contact_syntax',
             Entity::REFERENCE_ID      => 'sometimes|string|max:40',
-            Entity::FUND_ACCOUNT_ID   => 'sometimes|string|min:14|max:19',
+            Entity::FUND_ACCOUNT_ID   => 'sometimes|string|public_id|size:17',
+            Entity::BATCH_ID          => 'sometimes|string|public_id|size:20',
             Entity::ACCOUNT_NUMBER    => 'sometimes|alpha_num|between:5,22',
             Entity::ACTIVE            => 'sometimes|bool',
             Entity::TYPE              => 'sometimes|string',
             EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
             EsRepository::SEARCH_HITS => 'sometimes|boolean',
+        ],
+        AuthType::ADMIN_AUTH => [
+            Entity::BATCH_ID            => 'sometimes|string|min:14|max:20',
+            Entity::FUND_ACCOUNT_ID     => 'sometimes|string|min:14|max:17',
         ],
     ];
 
@@ -43,6 +48,7 @@ class Fetch extends Base\Fetch
         ],
         AuthType::PROXY_AUTH => [
             Entity::ID,
+            Entity::BATCH_ID,
         ],
     ];
 
@@ -61,5 +67,6 @@ class Fetch extends Base\Fetch
 
     const SIGNED_IDS = [
         Entity::FUND_ACCOUNT_ID,
+        Entity::BATCH_ID,
     ];
 }

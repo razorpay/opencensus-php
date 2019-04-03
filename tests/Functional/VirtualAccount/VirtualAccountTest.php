@@ -39,6 +39,8 @@ class VirtualAccountTest extends TestCase
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
 
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
         $this->fixtures->merchant->addFeatures('bharat_qr');
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts']);
@@ -235,6 +237,38 @@ class VirtualAccountTest extends TestCase
         $this->createVirtualAccount([
             'receiver_types'  => 'qr_code',
         ]);
+    }
+
+    public function testCreateVirtualAccountWithBharatQrWithNoMethodsEnabled()
+    {
+        $this->fixtures->merchant->disableMethod('10000000000000', 'credit_card');
+        $this->fixtures->merchant->disableMethod('10000000000000', 'debit_card');
+        $this->fixtures->merchant->disableMethod('10000000000000', 'upi');
+
+        $this->expectException(\RZP\Exception\LogicException::class);
+        $this->expectExceptionMessage('No identifiers found for the merchant');
+
+        $this->createVirtualAccount([
+            'receiver_types'  => 'qr_code',
+        ]);
+    }
+
+    public function testCreateVirtualAccountWithBharatQrWithUpiDisabled()
+    {
+        $this->fixtures->merchant->disableMethod('10000000000000', 'upi');
+
+        $this->createVirtualAccount(['receiver_types'  => 'qr_code']);
+
+        $qrCode = $this->getLastEntity('qr_code', true);
+        $tlvArray = $this->getTagMappedValues($qrCode['qr_string']);
+
+        // Card identifiers present
+        $this->assertArrayHasKey('02', $tlvArray);
+        $this->assertArrayHasKey('04', $tlvArray);
+        $this->assertArrayHasKey('06', $tlvArray);
+        // UPI identifiers not present
+        $this->assertArrayNotHasKey('26', $tlvArray);
+        $this->assertArrayNotHasKey('27', $tlvArray);
     }
 
     public function testCreateVirtualAccountWithBharatQrWithOneTerminal()

@@ -244,12 +244,13 @@ class Repository extends Base\Repository
      * Fetches old payments which can be timed-out with respective
      * merchant relation.
      */
-    public function fetchOldCreatedPaymentsForTimeout($timestamp)
+    public function fetchOldCreatedPaymentsForTimeout(int $timestamp, int $limit)
     {
         return $this->newQuery()
                     ->status(Payment\Status::CREATED)
                     ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
                     ->with(['merchant', 'merchant.features'])
+                    ->limit($limit)
                     ->get();
     }
 
@@ -392,10 +393,10 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getPaymentsToVerifyByGatewayAndTime($timestamp, $gateway, $count, $disabledGateways)
+    public function getPaymentsToVerifyByGatewayAndTime(array $timestamps, $gateway, $count, $disabledGateways)
     {
         $query = $this->newQuery()
-                      ->where(Payment\Entity::VERIFY_AT, '<', $timestamp);
+                      ->whereBetween(Payment\Entity::VERIFY_AT, $timestamps);
 
         if ($gateway !== null)
         {
@@ -507,8 +508,7 @@ class Repository extends Base\Repository
     {
         $query = $this->newQuery()
                       ->whereIn(Payment\Entity::ID, $paymentIds)
-                      ->whereNotIn(Payment\Entity::GATEWAY, $disabledGateways)
-                      ->whereNull(Payment\Entity::AUTHORIZED_AT);
+                      ->whereNotIn(Payment\Entity::GATEWAY, $disabledGateways);
 
         $verifiableCount = $query->count();
 
@@ -641,7 +641,7 @@ class Repository extends Base\Repository
         int $from,
         int $to,
         string $gateway,
-        bool $corporate = false)
+        string $bankCode)
     {
         $paymentAttrs = $this->dbColumn('*');
 
@@ -653,11 +653,11 @@ class Repository extends Base\Repository
 
         $pTerminalId = $this->dbColumn(Entity::TERMINAL_ID);
 
+        $pBankCode = $this->dbColumn(Entity::BANK);
+
         $tId = $terminalRepo->dbColumn(Terminal\Entity::ID);
 
         $pAuthorizedAt = $this->dbColumn(Entity::AUTHORIZED_AT);
-
-        $tCorp = $terminalRepo->dbColumn(Terminal\Entity::CORPORATE);
 
         return $this->newQuery()
                     ->select($paymentAttrs)
@@ -666,7 +666,7 @@ class Repository extends Base\Repository
                     ->where($pAuthorizedAt, '<=', $to)
                     ->where($pGateway, $gateway)
                     ->whereNotNull($pAuthorizedAt)
-                    ->where($tCorp, $corporate)
+                    ->where($pBankCode, $bankCode)
                     ->get();
     }
 
@@ -1651,6 +1651,17 @@ class Repository extends Base\Repository
         $this->connection(null);
 
         return null;
+    }
+
+    public function fetchByIdandSubscriptionId(string $paymentId, string $subscriptionId)
+    {
+        Entity::verifyIdAndStripSign($paymentId);
+
+        $subscriptionId = Base\PublicEntity::stripDefaultSign($subscriptionId);
+
+        return $this->newQuery()
+                    ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
+                    ->findOrFailPublic($paymentId);
     }
 
     /**

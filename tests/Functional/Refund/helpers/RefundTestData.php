@@ -706,4 +706,25 @@ return [
             ],
         ],
     ],
+
+    'testRefundEditNotes' => [
+        'request'  => [
+            'content' => [
+                'notes' => [
+                    'key1' => 'value1',
+                    'key2' => 'value2',
+                ],
+            ],
+            'method'  => 'PATCH',
+        ],
+        'response' => [
+            'content' => [
+                'notes' => [
+                    'key1' => 'value1',
+                    'key2' => 'value2',
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

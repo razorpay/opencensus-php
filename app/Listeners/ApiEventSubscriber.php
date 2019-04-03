@@ -57,6 +57,14 @@ class ApiEventSubscriber extends Base\Core
      */
     protected $withPayload;
 
+    /**
+     * For most events, merchant can be derived from the entity itself.
+     * For others, the merchant may be passed in the listener input.
+     *
+     * @var Merchant\Entity
+     */
+    protected $listeningMerchant;
+
     protected $webhookEnabledForEvent = false;
 
     /**
@@ -69,8 +77,9 @@ class ApiEventSubscriber extends Base\Core
      */
     protected $activeAppsWebhooks     = [];
 
-    const MAIN = 'main';
-    const WITH = 'with';
+    const MAIN        = 'main';
+    const WITH        = 'with';
+    const MERCHANT_ID = 'merchant_id';
 
     /**
      * Events for which other things apart from
@@ -117,6 +126,18 @@ class ApiEventSubscriber extends Base\Core
         {
             $this->mainEntity  = $params[self::MAIN];
             $this->withPayload = $params[self::WITH] ?? [];
+
+            //
+            // Webhooks can be triggered for shared entities,
+            // i.e. entities that do not belong to a specific
+            // merchant. In this case, merchant will be part of the input.
+            //
+            if (isset($params[self::MERCHANT_ID]) === true)
+            {
+                $merchantId = $params[self::MERCHANT_ID];
+
+                $this->listeningMerchant = $this->repo->merchant->findOrFail($merchantId);
+            }
         }
 
         //
@@ -180,12 +201,16 @@ class ApiEventSubscriber extends Base\Core
 
         $merchant = $this->getMerchantFromEntity($payment);
 
-        if (($payment->hasSubscription() === true) and
-            ($merchant->isFeatureEnabled(Feature\Constants::SUBSCRIPTION_AUTH_V2) === true))
+        if ($payment->hasSubscription() === true)
         {
-            $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
+            $response = $this->app->razorx->getTreatment($merchant->getId(), 'auth_flow_redirect_to_subserv', $this->mode);
 
-            SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
+            if (strtolower($response) === 'on')
+            {
+                $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
+
+                SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
+            }
         }
 
         $this->prepareAndDispatchWebhook($payload);
@@ -197,11 +222,16 @@ class ApiEventSubscriber extends Base\Core
 
         $merchant = $this->getMerchantFromEntity($payment);
 
-        if (($payment->hasSubscription() === true) and
-            ($merchant->isFeatureEnabled(Feature\Constants::SUBSCRIPTION_AUTH_V2) === true))
+        if ($payment->hasSubscription() === true)
         {
-            $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
-            SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
+            $response = $this->app->razorx->getTreatment($merchant->getId(), 'auth_flow_redirect_to_subserv', $this->mode);
+
+            if (strtolower($response) === 'on')
+            {
+                $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
+
+                SubscriptionPaymentHandler::dispatch($paymentPayload, $this->mode);
+            }
         }
 
         $this->prepareAndDispatchWebhook($payload);
@@ -847,6 +877,11 @@ class ApiEventSubscriber extends Base\Core
      */
     protected function getMerchantFromEntity(Base\PublicEntity $entity): Merchant\Entity
     {
+        if ($this->listeningMerchant !== null)
+        {
+            return $this->listeningMerchant;
+        }
+
         if (($entity instanceof Merchant\Account\Entity) === true)
         {
             $merchant = $entity;

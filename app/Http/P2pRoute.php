@@ -13,26 +13,31 @@ use RZP\Models\Admin\Permission\Name as Permission;
 
 final class P2pRoute
 {
-
     protected static $p2pRoutes = [
         /*************** Customers ****************/
-        Requests::P2P_CUSTOMER_START_VERIFICATION =>
+        Requests::P2P_CUSTOMER_INITIATE_VERIFICATION =>
             [
                 'post',
-                'customers/verification/start',
-                'DeviceController@startVerification',
+                'customers/verification/initiate',
+                'DeviceController@initiateVerification',
             ],
-        Requests::P2P_CUSTOMER_VERIFICATION_STATUS =>
+        Requests::P2P_CUSTOMER_VERIFICATION =>
             [
-                'get',
+                'post',
                 'customers/verification/{token}',
-                'DeviceController@getVerificationStatus'
+                'DeviceController@verification'
             ],
-        Requests::P2P_CUSTOMER_REFRESH_TOKEN =>
+        Requests::P2P_CUSTOMER_INITIATE_GET_TOKEN =>
             [
                 'post',
-                'customer/cl_token_refresh',
-                'DeviceController@refreshClToken'
+                'customer/token/initiate',
+                'DeviceController@initiateGetToken'
+            ],
+        Requests::P2P_CUSTOMER_GET_TOKEN =>
+            [
+                'post',
+                'customer/token',
+                'DeviceController@getToken'
             ],
         Requests::P2P_CUSTOMER_DEREGISTER =>
             [
@@ -48,10 +53,16 @@ final class P2pRoute
                 'banks',
                 'BankAccountController@fetchBanks'
             ],
+        Requests::P2P_CUSTOMER_BA_INITIATE_RETRIEVE =>
+            [
+                'post',
+                'customer/bank_accounts/retrieve/{bank_id}/initiate',
+                'BankAccountController@initiateRetrieve'
+            ],
         Requests::P2P_CUSTOMER_BA_RETRIEVE =>
             [
-                'get',
-                'customer/bank_accounts/bank/{bank_code}',
+                'post',
+                'customer/bank_accounts/retrieve/{bank_id}',
                 'BankAccountController@retrieve'
             ],
         Requests::P2P_CUSTOMER_BA_FETCH_ALL =>
@@ -68,7 +79,7 @@ final class P2pRoute
             ],
         Requests::P2P_CUSTOMER_BA_INITIATE_SET_UPI_PIN =>
             [
-                'get',
+                'post',
                 'customer/bank_accounts/{ba_id}/upipin/initiate',
                 'BankAccountController@initiateSetUpiPin'
             ],
@@ -80,7 +91,7 @@ final class P2pRoute
             ],
         Requests::P2P_CUSTOMER_BA_INITIATE_FETCH_BALANCE =>
             [
-                'get',
+                'post',
                 'customer/bank_accounts/{ba_id}/balance/initiate',
                 'BankAccountController@initiateFetchBalance'
             ],
@@ -97,6 +108,12 @@ final class P2pRoute
                 'get',
                 'handles',
                 'VpaController@fetchHandles'
+            ],
+        Requests::P2P_CUSTOMER_VPA_INITIATE_CREATE =>
+            [
+                'post',
+                'customer/vpa/initiate',
+                'VpaController@initiateCreate'
             ],
         Requests::P2P_CUSTOMER_VPA_CREATE =>
             [
@@ -202,15 +219,17 @@ final class P2pRoute
 
     public static $public = [
         Requests::P2P_HANDLES_FETCH_ALL,
-        Requests::P2P_CUSTOMER_START_VERIFICATION,
-        Requests::P2P_CUSTOMER_VERIFICATION_STATUS,
+        Requests::P2P_BANKS_FETCH_ALL,
+        Requests::P2P_CUSTOMER_INITIATE_VERIFICATION,
+        Requests::P2P_CUSTOMER_VERIFICATION,
     ];
 
     public static $device = [
-        Requests::P2P_CUSTOMER_REFRESH_TOKEN,
+        Requests::P2P_CUSTOMER_INITIATE_GET_TOKEN,
+        Requests::P2P_CUSTOMER_GET_TOKEN,
         Requests::P2P_CUSTOMER_DEREGISTER,
 
-        Requests::P2P_BANKS_FETCH_ALL,
+        Requests::P2P_CUSTOMER_BA_INITIATE_RETRIEVE,
         Requests::P2P_CUSTOMER_BA_RETRIEVE,
         Requests::P2P_CUSTOMER_BA_FETCH_ALL,
         Requests::P2P_CUSTOMER_BA_FETCH,
@@ -219,6 +238,7 @@ final class P2pRoute
         Requests::P2P_CUSTOMER_BA_INITIATE_FETCH_BALANCE,
         Requests::P2P_CUSTOMER_BA_FETCH_BALANCE,
 
+        Requests::P2P_CUSTOMER_VPA_INITIATE_CREATE,
         Requests::P2P_CUSTOMER_VPA_CREATE,
         Requests::P2P_CUSTOMER_VPA_FETCH_ALL,
         Requests::P2P_CUSTOMER_VPA_FETCH,

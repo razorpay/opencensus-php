@@ -43,11 +43,67 @@ class Service extends Base\Service
         return $iin->toArrayPublic();
     }
 
+    public function editIinFlowsBulk($input)
+    {
+        (new Validator())->validateInput('update_iin_flow_bulk', $input);
+
+        $returnData = [];
+
+        $action = $input['action'];
+
+        $bins = $input['iins'];
+
+        $flow = $input['flow'];
+
+        foreach ($bins as $bin)
+        {
+            try
+            {
+                if ($action == 'enable')
+                {
+                    $iin = $this->enableIinFlow($bin, $flow);
+                }
+                else
+                {
+                    $iin = $this->disableIinFlow($bin, $flow);
+                }
+
+                $returnData[$bin] = $iin['flows'];
+            }
+            catch (\Exception $e)
+            {
+                $returnData[$bin] = $e->getMessage();
+
+                $this->trace->error(
+                    TraceCode::BANK_TRANSFER_PROVIDER_VALIDATION_FAILED,
+                    [
+                        'iin'    => $bin,
+                        'error'  => $e->getMessage(),
+                        'mode'   => $this->mode,
+                    ]
+                );
+            }
+        }
+
+        return $returnData;
+    }
+
     public function disableIinFlow($id, $flow)
     {
         $iin = $this->repo->iin->findOrFail($id);
 
         $iin->disableFlow($flow);
+
+        $this->repo->saveOrFail($iin);
+
+        return $iin->toArrayPublic();
+    }
+
+    public function enableIinFlow($id, $flow)
+    {
+        $iin = $this->repo->iin->findOrFail($id);
+
+        $iin->enableFlow($flow);
 
         $this->repo->saveOrFail($iin);
 

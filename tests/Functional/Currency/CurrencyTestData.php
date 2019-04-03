@@ -1,9 +1,6 @@
 <?php
 
-use RZP\Error\ErrorCode;
-use RZP\Exception;
-use RZP\Error\PublicErrorCode;
-use RZP\Error\PublicErrorDescription;
+$supportedCurrencyData = require(__DIR__ . '/SupportedCurrencyResponse.php');
 
 return [
     'testCurrencyRatesLatest' => [
@@ -34,6 +31,18 @@ return [
                 'INR' => 10,
                 'USD' => 1
             ]
+        ],
+    ],
+
+    'testGetPaymentCurrencies' => [
+        'request' => [
+            'content' => [
+            ],
+            'method' => 'GET',
+            'url' => '/currency/all',
+        ],
+        'response' => [
+            'content' => $supportedCurrencyData
         ],
     ],
 ];

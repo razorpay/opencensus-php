@@ -15,7 +15,7 @@ class Core extends Base\Core
 {
     public function createManyForBank(array $bankAccounts, Bank\Entity $bank): PublicCollection
     {
-        $existingBankAccounts = $this->repo->fetchAllForBank($bank->getIfsc());
+        $existingBankAccounts = $this->repo->fetchAllForBank($bank->getId());
 
         foreach ($bankAccounts as $bankAccount)
         {
@@ -23,7 +23,10 @@ class Core extends Base\Core
 
             if (is_null($existing) === false)
             {
-                $existing->mergeGatewayData();
+                $existing->setCreds($bankAccount[Entity::CREDS]);
+                $existing->mergeGatewayData($bankAccount[Entity::GATEWAY_DATA]);
+
+                $this->repo->saveOrFail($existing);
             }
             else
             {
@@ -31,7 +34,7 @@ class Core extends Base\Core
             }
         }
 
-        return $this->repo->fetchAllForBank($bank->getIfsc());
+        return $this->repo->fetchAllForBank($bank->getId());
     }
 
     public function createForBank(array $input, Bank\Entity $bank)
@@ -40,11 +43,25 @@ class Core extends Base\Core
 
         $bankAccount->build($input);
 
-        $bankAccount->parentBank()->associate($bank);
+        $bankAccount->bank()->associate($bank);
 
         $this->repo->saveOrFail($bankAccount);
 
         return $bankAccount;
+    }
+
+    public function update(Entity $bankAccount, array $input)
+    {
+        $bankAccount->edit($input);
+
+        $this->repo->saveOrFail($bankAccount);
+
+        return $bankAccount;
+    }
+
+    public function delete()
+    {
+        return $this->repo->newP2pQuery()->delete();
     }
 
     /**

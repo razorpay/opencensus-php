@@ -12,10 +12,12 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Models\Admin\Action;
+use RZP\Models\Base\QueryCache\CacheQueries;
 
 class Repository extends Base\Repository
 {
     use Base\RepositoryUpdateTestAndLive;
+    use CacheQueries;
 
     protected $entity = 'pricing';
 
@@ -27,7 +29,7 @@ class Repository extends Base\Repository
     );
 
 
-    protected function newQueryWitOrgIdParam()
+    protected function newQueryWithOrgIdParam()
     {
          $query = $this->newQuery();
          return $this->addQueryParamOrgId($query);
@@ -90,7 +92,9 @@ class Repository extends Base\Repository
      */
     public function getPlan(string $id, string $type = null, bool $fail = false, bool $public = false)
     {
-        $query   = $this->newQueryWitOrgIdParam();
+        $query   = $this->newQueryWithOrgIdParam();
+
+        $cacheTags = Entity::getCacheTags($this->entity, $id, $type);
 
         $query->where(Pricing\Entity::PLAN_ID, $id);
 
@@ -102,6 +106,8 @@ class Repository extends Base\Repository
         $pricing = $query->orderBy(Pricing\Entity::PLAN_ID, 'desc')
                          ->orderBy(Pricing\Entity::PAYMENT_METHOD, 'desc')
                          ->orderBy(Pricing\Entity::ID, 'desc')
+                         ->remember($this->getCacheTtl())
+                         ->cacheTags($cacheTags)
                          ->get();
 
         if (($pricing->count() === 0) and ($fail))
@@ -144,12 +150,16 @@ class Repository extends Base\Repository
     // called in pricing fee calculation flow
     public function getPricingPlanByIdWithoutOrgId($id)
     {
+        $cacheTags = Entity::getCacheTags($this->entity, $id);
+
         return $this->newQuery()
                     ->where(Pricing\Entity::PLAN_ID, '=', $id)
                     ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
                     ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
                     ->orderBy(Pricing\Entity::PAYMENT_METHOD, 'desc')
                     ->orderBy(Pricing\Entity::ID, 'desc')
+                    ->remember($this->getCacheTtl())
+                    ->cacheTags($cacheTags)
                     ->get();
     }
 
@@ -209,7 +219,7 @@ class Repository extends Base\Repository
 
     public function getPlansOrderedByPlanId(array $input)
     {
-        $query = $this->newQueryWitOrgIdParam();
+        $query = $this->newQueryWithOrgIdParam();
 
         if (empty($input[Entity::TYPE]) === false)
         {
@@ -222,23 +232,33 @@ class Repository extends Base\Repository
                      ->get();
     }
 
-    public function getMerchantPricingPlansSummary()
+    public function getMerchantPricingPlansSummary(array $input = [])
     {
-        return $this->newQueryWitOrgIdParam()
-                    ->selectRaw(
+        $query = $this->newQueryWithOrgIdParam();
+
+        if (empty($input[Entity::TYPE]) === false)
+        {
+            $query->where(Pricing\Entity::TYPE, $input[Entity::TYPE]);
+        }
+
+        return $query->selectRaw(
                        Pricing\Entity::PLAN_ID . ','.
                        Pricing\Entity::PLAN_NAME . ','.
                        Pricing\Entity::ORG_ID . ','.
+                       Pricing\Entity::TYPE . ','.
                        'COUNT(*) AS rules_count')
-                    ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
-                    ->groupBy(Pricing\Entity::PLAN_ID, Pricing\Entity::PLAN_NAME, Pricing\Entity::ORG_ID)
-                    ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
-                    ->get();
+                     ->groupBy(
+                         Pricing\Entity::PLAN_ID,
+                         Pricing\Entity::PLAN_NAME,
+                         Pricing\Entity::ORG_ID,
+                         Pricing\Entity::TYPE)
+                     ->orderBy(Pricing\Entity::PLAN_ID, 'desc')
+                     ->get();
     }
 
     public function getGatewayPricingPlans()
     {
-        return $this->newQueryWitOrgIdParam()
+        return $this->newQueryWithOrgIdParam()
                     ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
                     ->whereNotNull(Pricing\Entity::GATEWAY)
                     ->orderBy(Pricing\Entity::ID, 'desc')->get();
@@ -246,7 +266,7 @@ class Repository extends Base\Repository
 
     public function getPlanByName($name)
     {
-        return $this->newQueryWitOrgIdParam()
+        return $this->newQueryWithOrgIdParam()
                     ->where(Pricing\Entity::PLAN_NAME, '=', $name)
                     ->orderBy(Pricing\Entity::PAYMENT_METHOD, 'desc')
                     ->orderBy(Pricing\Entity::ID, 'desc')
@@ -255,7 +275,7 @@ class Repository extends Base\Repository
 
     public function getPlanRule($planId, $ruleId)
     {
-        return $this->newQueryWitOrgIdParam()
+        return $this->newQueryWithOrgIdParam()
                      ->planId($planId)
                      ->where(Entity::ID, '=', $ruleId)
                      ->firstOrFailPublic();
@@ -263,7 +283,7 @@ class Repository extends Base\Repository
 
     public function deletePlanRule($planId, $ruleId)
     {
-        $rule = $this->newQueryWitOrgIdParam()
+        $rule = $this->newQueryWithOrgIdParam()
                      ->planId($planId)
                      ->where(Entity::ID, '=', $ruleId)
                      ->firstOrFailPublic();
@@ -285,7 +305,7 @@ class Repository extends Base\Repository
 
     public function deletePlanRuleForce($planId, $ruleId)
     {
-        $rule = $this->newQueryWitOrgIdParam()
+        $rule = $this->newQueryWithOrgIdParam()
                      ->planId($planId)
                      ->where(Entity::ID, '=', $ruleId)
                      ->firstOrFailPublic();

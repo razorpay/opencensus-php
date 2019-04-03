@@ -613,7 +613,7 @@ abstract class Base extends BaseModel\Core
         return true;
     }
 
-    protected static function getTaxComponents(Merchant\Entity $merchant): array
+    public static function getTaxComponents(Merchant\Entity $merchant): array
     {
         $gstin = $merchant->getGstin();
 

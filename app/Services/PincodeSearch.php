@@ -26,7 +26,7 @@ class PincodeSearch
 
     const CACHE_TTL = 86400;
 
-    const CACHE_KEY_FORMAT = 'pincodesearch_%s';
+    const CACHE_KEY_FORMAT = 'pincode:pincodesearch_%s';
 
     protected $config;
 

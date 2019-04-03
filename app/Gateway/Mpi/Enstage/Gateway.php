@@ -111,9 +111,9 @@ class Gateway extends Base\Gateway
 
         $this->validateResponseContent($response);
 
-        $this->handleError($response, $input['payment']['id']);
-
         $this->updateGatewayPaymentFromCallbackResponse($gatewayPayment, $response);
+
+        $this->handleError($response, $input['payment']['id']);
 
         return $gatewayPayment->toArray();
     }
@@ -496,11 +496,12 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ResponseCode::getMappedCode($response[Field::RESPONSE_CODE]),
                 $response[Field::RESPONSE_CODE],
-                $response[Field::RES_DESC],
+                $response[Field::RES_DESC] ?? ResponseCode::getDescription($response[Field::RESPONSE_CODE]),
                 [
                     'payment_id' => $paymentId,
                     'response_code' => $response[Field::RESPONSE_CODE],
-                    'response_desc' => $response[Field::RES_DESC],
+                    'response_desc' => $response[Field::RES_DESC] ??
+                                            ResponseCode::getDescription($response[Field::RESPONSE_CODE]),
                 ],
                 null,
                 BaseGateway\Action::AUTHENTICATE);

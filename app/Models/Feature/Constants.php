@@ -79,6 +79,7 @@ class Constants
     const HDFC_DEBIT_SI                   = 'hdfc_debit_si';
     const AXIS_EXPRESS_PAY                = 'axis_express_pay';
     const BANK_TRANSFER_REFUND            = 'bank_transfer_refund';
+    const CARD_TRANSFER_REFUND            = 'card_transfer_refund';
     const LOG_RESPONSE                    = 'log_response';
     const EXCESS_ORDER_AMOUNT             = 'excess_order_amount';
     const SUBSCRIPTION_V2                 = 'subscription_v2';
@@ -108,6 +109,8 @@ class Constants
     const CALLBACK_URL_VALIDATION         = 'callback_url_validation';
     const REPORTING_GENRERIC_NOTES        = 'report_notes_to_column';
     const S2S_OTP_JSON                    = 's2s_otp_json';
+    const ADHOC_SETTLEMENT                = 'adhoc_settlement';
+    const SUB_TERMINAL_OPTIMIZE           = 'sub_terminal_optimize';
 
     /**
      * This will control if the bank details will be returned in the fetch token response.
@@ -179,6 +182,8 @@ class Constants
     const SELF_KYC_DISABLED      = 'self_kyc_disabled';
     const PAYMENT_MAILS_DISABLED = 'payment_mails_disabled';
     const DISPUTE_MAILS_DISABLED = 'dispute_mails_disabled';
+
+    const BLOCK_PL_PAY_POST_EXPIRY = 'block_pl_pay_post_expiry';
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -281,6 +286,7 @@ class Constants
         self::AXIS_EXPRESS_PAY                => true,
         self::PRE_AUTH_SHIELD_INTG            => true,
         self::BANK_TRANSFER_REFUND            => true,
+        self::CARD_TRANSFER_REFUND            => true,
         self::LOG_RESPONSE                    => true,
         self::EXCESS_ORDER_AMOUNT             => true,
         self::SUBSCRIPTION_V2                 => true,
@@ -325,6 +331,9 @@ class Constants
         self::SELF_KYC_DISABLED               => true,
         self::PAYMENT_MAILS_DISABLED          => true,
         self::DISPUTE_MAILS_DISABLED          => true,
+        self::BLOCK_PL_PAY_POST_EXPIRY        => true,
+        self::ADHOC_SETTLEMENT                => true,
+        self::SUB_TERMINAL_OPTIMIZE           => true,
     ];
 
     // Entity type constants

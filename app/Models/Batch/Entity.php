@@ -313,6 +313,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT);
     }
 
+    public function getProcessedAmount()
+    {
+        return $this->getAttribute(self::PROCESSED_AMOUNT);
+    }
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);

@@ -139,6 +139,48 @@ class AuthLinkTest extends TestCase
         Mail::assertSent(BatchAuthFileMail::class);
     }
 
+    public function testCheckAuthLinkBatchWitIntegerDateInputForExcel()
+    {
+        // TODO: Debug and unskip
+        $this->markTestSkipped('intermittent failures, need to debug');
+
+        Mail::fake();
+
+        $entries = $this->getFileEntriesForExcelwithIntegerDate();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $response = $this->startTest();
+
+        // Gets last entity (Post queue processing) and asserts attributes
+        $entity = $this->getDbLastEntity('batch');
+
+        $this->assertEquals(1, $entity['success_count']);
+
+        $this->assertEquals(0, $entity['failure_count']);
+
+        // Processing should have happened immediately in tests as
+        // queue are sync basically.
+
+        $this->assertInputFileExistsForBatch($response[Entity::ID]);
+
+        $this->assertOutputFileExistsForBatch($response[Entity::ID]);
+
+        Mail::assertSent(BatchAuthFileMail::class);
+
+        $subr = $this->getDbLastEntity('subscription_registration');
+
+        $expireAt = $subr->getExpireAt();
+
+        self::assertEquals(date('d/m/Y', $expireAt) , '20/03/2021');
+
+        $invoice = $this->getDbLastEntity('invoice');
+
+        $expireBy = $invoice->getExpireBy();
+
+        self::assertEquals(date('d/m/Y', $expireBy) , '20/10/2020');
+    }
+
     protected function getDefaultFileEntries()
     {
         return [
@@ -265,6 +307,33 @@ class AuthLinkTest extends TestCase
                 Header::AUTH_LINK_CURRENCY        => "INR",
                 Header::AUTH_LINK_METHOD          => 'emandate ',
                 Header::AUTH_LINK_TOKEN_EXPIRE_BY => '20-10-2020',
+                Header::AUTH_LINK_MAX_AMOUNT      => "100000",
+                Header::AUTH_LINK_EXPIRE_BY       => '20-10-2020',
+                Header::AUTH_LINK_AUTH_TYPE       => ' netbanking',
+                Header::AUTH_LINK_BANK            => "hdfc ",
+                Header::AUTH_LINK_NAME_ON_ACCOUNT => "Test",
+                Header::AUTH_LINK_IFSC            => "hdfc0001233",
+                Header::AUTH_LINK_ACCOUNT_NUMBER  => "1233100023891",
+                Header::AUTH_LINK_ACCOUNT_TYPE    => "savings ",
+                Header::AUTH_LINK_RECEIPT         => '#1',
+                Header::AUTH_LINK_DESCRIPTION     => 'test auth link',
+
+            ],
+        ];
+    }
+
+    protected function getFileEntriesForExcelwithIntegerDate()
+    {
+        return [
+            // Blank spaces in values so that it will be trimmed and processed correctly
+            [
+                Header::AUTH_LINK_CUSTOMER_NAME   => 'test',
+                Header::AUTH_LINK_CUSTOMER_EMAIL  => 'test@test.test',
+                Header::AUTH_LINK_CUSTOMER_PHONE  => '9999998888',
+                Header::AUTH_LINK_AMOUNT_IN_PAISE => 0,
+                Header::AUTH_LINK_CURRENCY        => "INR",
+                Header::AUTH_LINK_METHOD          => 'emandate',
+                Header::AUTH_LINK_TOKEN_EXPIRE_BY => 44275,
                 Header::AUTH_LINK_MAX_AMOUNT      => "100000",
                 Header::AUTH_LINK_EXPIRE_BY       => '20-10-2020',
                 Header::AUTH_LINK_AUTH_TYPE       => ' netbanking',

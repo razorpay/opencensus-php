@@ -250,7 +250,7 @@ class Service extends Base\Service
 
                 $pricing = round($pricingValue / 100, 2);
 
-                Cache::put($key, $pricing, $defaultExpiry);
+                Cache::put('espricing:' . $key, $pricing, $defaultExpiry);
 
                 $this->trace->info(
                     TraceCode::ES_PRICING_MERCHANT_KEY_SET,

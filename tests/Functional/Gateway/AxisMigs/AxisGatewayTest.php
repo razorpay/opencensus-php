@@ -796,4 +796,61 @@ class AxisGatewayTest extends TestCase
 
         $this->assertEquals($response['status_code'], ErrorCode::GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH);
     }
+
+    public function testPaymentRefundWithCardTransfer()
+    {
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
+
+        $payment = $this->doAuthAndCapturePayment();
+
+        $card = $this->getDbLastEntity('card');
+
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->assertEquals($iin['type'], 'credit');
+
+        $this->assertEquals($iin['issuer'], 'HDFC');
+
+        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->scroogeRefund($refund);
+
+        // Assert for fta created for given refund
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fta['source'], $refund['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        // Refund will be in created state
+        $this->assertEquals($refund['status'], 'created');
+    }
+
+
+    public function testPaymentRefundWithCardTransferFailed()
+    {
+        $this->fixtures->merchant->addFeatures('card_transfer_refund');
+
+        $payment = $this->doAuthAndCapturePayment();
+
+        $card = $this->getDbLastEntity('card');
+
+        $this->fixtures->iin->edit($card['iin'], ['type' => 'debit']);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->scroogeRefund($refund);
+
+        // Assert for fta not created for given refund
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertNull($fta);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        // Refund will be in processed state
+        $this->assertEquals($refund['status'], 'processed');
+    }
 }

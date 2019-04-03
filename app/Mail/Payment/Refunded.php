@@ -52,9 +52,7 @@ class Refunded extends Base
 
     protected function getSenderEmail(): string
     {
-        return ($this->isMerchantEmail() === true) ?
-            Constants::MAIL_ADDRESSES[Constants::NOREPLY] :
-            Constants::MAIL_ADDRESSES[Constants::REPORTS];
+        return Constants::MAIL_ADDRESSES[Constants::NOREPLY];
     }
 
     protected function addMailData()

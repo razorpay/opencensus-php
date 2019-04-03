@@ -136,18 +136,26 @@ class PublicController extends Controller
     }
 
     public function getEmbeddedCommon($meta) {
-        return View::make('public.embedded', [
+        $options = [
             'key'          => $this->ba->getPublicKey(),
             'options'      => json_encode(Request::all(), JSON_FORCE_OBJECT),
             'meta'         => json_encode($meta, JSON_FORCE_OBJECT),
             'script'       => $this->config->get('url.cdn.production') . '/static/hosted/embedded.js',
             'urls'         => "{}"
-        ]);
+        ];
+
+        return View::make('public.embedded', $options);
     }
 
     public function renderEmbedded()
     {
-        return $this->getEmbeddedCommon([]);
+        $meta = [];
+
+        if ($this->ba->authCreds->getMerchant()->getOrgId() === '6dLbNSpv5XbCOG') {
+            $meta['type'] = 'hdfcvas';
+        }
+
+        return $this->getEmbeddedCommon($meta);
     }
 
     public function renderHdfcVas()

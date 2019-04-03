@@ -35,7 +35,7 @@ return [
         'amount' => 500,
         'bank' => 'KKBK',
         'received' => true,
-        'merchant_code' => 'OSTEST',
+        'merchant_code' => 'OSRAZOR',
         'entity' => 'netbanking',
     ],
 

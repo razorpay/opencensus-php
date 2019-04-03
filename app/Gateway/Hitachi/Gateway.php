@@ -36,9 +36,10 @@ class Gateway extends Base\Gateway
     const CACHE_KEY = 'hitachi_%s_card_details';
     const CACHE_TTL = 20;
 
-    const TIME_FORMAT = 'His';
-    const DATE_FORMAT = 'md';
+    const TIME_FORMAT               = 'His';
+    const DATE_FORMAT               = 'md';
     const DYNAMIC_DESCRIPTOR_PREFIX = 'RAZ*';
+    const DEFAULT_CVV_VALUE         = '000';
 
     public function setGatewayParams($input, $mode, $terminal)
     {
@@ -156,13 +157,17 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input, TraceCode::PAYMENT_CAPTURE_REQUEST);
 
+        $captureEntity = $this->createGatewayPaymentEntity($input, [], Base\Action::CAPTURE);
+
         $response = $this->sendGatewayRequest($request);
 
         $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_CAPTURE_RESPONSE);
 
         $attributes = $this->getAttributesFromCaptureResponse($response);
 
-        $this->createGatewayPaymentEntity($input, $attributes);
+        $captureEntity->fill($attributes);
+
+        $this->repo->saveOrFail($captureEntity);
 
         $this->checkErrorsAndThrowException($response);
     }
@@ -200,6 +205,8 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
                             $input['payment']['id'], Base\Action::AUTHORIZE);
 
+        $reverseEntity = $this->createGatewayPaymentEntity($input, [], Base\Action::REVERSE);
+
         $request = $this->getReverseRequestArray($input, $gatewayPayment);
 
         $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_REVERSE_REQUEST);
@@ -210,7 +217,9 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getAttributesFromRefundReverseResponse($response);
 
-        $this->createGatewayRefundEntity($input, $attributes);
+        $reverseEntity->fill($attributes);
+
+        $this->repo->saveOrFail($reverseEntity);
 
         $this->checkErrorsAndThrowException($response);
 
@@ -432,13 +441,17 @@ class Gateway extends Base\Gateway
     {
         $request = $this->getAuthorizeRequestArrayForEnrolled($input, $authResponse);
 
+        $gatewayEntity = $this->createGatewayPaymentEntity($input,[],Base\Action::AUTHORIZE);
+
         $response = $this->sendGatewayRequest($request);
 
         $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_AUTHORIZE_RESPONSE);
 
         $attributes = $this->getAttributesFromAuthResponse($response);
 
-        $gatewayEntity = $this->createGatewayPaymentEntity($input, $attributes, Base\Action::AUTHORIZE);
+        $gatewayEntity->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayEntity);
 
         $this->checkErrorsAndThrowException($response);
 
@@ -774,6 +787,8 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::TRANSACTION_TIME] = $input['paysecure']['tran_time'];
 
+        $content[RequestFields::AUTH_ID] = $input['paysecure']['apprcode'];
+
         $traceContent = $content;
 
         $content += $this->getCardDataForAuthorizeRequestArray($input);
@@ -899,13 +914,29 @@ class Gateway extends Base\Gateway
             RequestFields::EXPIRY_DATE         => $expiry,
         ];
 
+        if ($this->isPaysecureTransactionRequest($input) === true)
+        {
+            $data[RequestFields::CVV2] = self::DEFAULT_CVV_VALUE;
+        }
+
         if (($this->isSecondRecurringPaymentRequest($input) === false) and
-            ($this->isMotoTransactionRequest($input) === false))
+            ($this->isMotoTransactionRequest($input) === false) and
+            ($this->isPaysecureTransactionRequest($input) === false))
         {
             $data[RequestFields::CVV2] = $input['card']['cvv'];
         }
 
         return $data;
+    }
+
+    protected function isPaysecureTransactionRequest($input)
+    {
+        if ($input['payment']['gateway'] === Payment\Gateway::PAYSECURE)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function getCaptureRequestArray(array $input, Entity $gatewayPayment)
@@ -1244,7 +1275,7 @@ class Gateway extends Base\Gateway
         $request['headers']['Content-Type'] = 'application/json';
 
         $request['options'] = [
-            'timeout'         => 30,
+            'timeout'         => 60,
             'connect_timeout' => 10,
             'verify'          => false,
         ];
@@ -1288,15 +1319,15 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantId()
     {
-        // For Paysecure, we're the acquirer. Hence, we will be onboarded on NPCI using
-        // Razorpay merchant id as MID. So, when calling Advice message to Hitachi for Paysecure,
-        // we'd have to send our merchant id.
+        $merchantId = $this->getLiveMerchantId();
+
+        // For all Paysecure requests, use hitachi's shared mid on live mode
         if ($this->input['payment']['gateway'] === Payment\Gateway::PAYSECURE)
         {
-            return $this->input['merchant']['id'];
+            // todo: Change later as required.
+            // For PVT, we would be using shared Hitachi merchant
+            $merchantId = '38RR00000000001';
         }
-
-        $merchantId = $this->getLiveMerchantId();
 
         if ($this->mode === Mode::TEST)
         {
@@ -1309,6 +1340,14 @@ class Gateway extends Base\Gateway
     protected function getTerminalId()
     {
         $terminalId = $this->terminal['gateway_terminal_id'];
+
+        // For all Paysecure requests, use hitachi's shared tid on live mode
+        if ($this->input['payment']['gateway'] === Payment\Gateway::PAYSECURE)
+        {
+            // todo: Change later as required.
+            // For PVT, we would be using shared Hitachi terminal
+            return '38R00001';
+        }
 
         if ($this->mode === Mode::TEST)
         {
