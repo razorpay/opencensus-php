@@ -20,6 +20,8 @@ class PaysecureGatewayTest extends TestCase
 
         parent::setUp();
 
+        $this->markTestSkipped("Rupay disabled from network list of Hitachi");
+
         $this->fixtures->terminal->disableTerminal('1n25f6uN5S1Z5a');
 
         $this->fixtures->create('terminal:shared_hitachi_terminal', [
