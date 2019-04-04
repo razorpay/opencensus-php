@@ -29,7 +29,7 @@ export function WriteConfigButton(props) {
           config: props.defaultConfigs[0],
         })}
       >
-        {isPresent(props.defaultConfigs) ? 'Update' : 'Create'} Default Config
+        {isPresent(props.defaultConfigs) ? 'Update' : 'Create'} Default Settings
       </button>
     </div>
   );

@@ -852,7 +852,7 @@ function PartnerNavItems({
         {!!merchant.details.partner_type && (
           <ShowWhen permission="view_partners">
             <Link to={`/merchants/${merchantId}/partner_config`}>
-              Partner Config
+              Partner Settings
               <i class="pull-right i-partner" />
             </Link>
           </ShowWhen>

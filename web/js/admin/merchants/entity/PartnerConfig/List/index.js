@@ -48,7 +48,7 @@ export default class PartnerConfigList extends Component {
   };
 
   onWriteConfig = ({ submerchant, config }) => () => {
-    if (!config.id) {
+    if (!(config || {}).id) {
       values = {
         partner_id: !this.applicationId ? this.merchantId : undefined,
         application_id: this.applicationId,
@@ -60,8 +60,8 @@ export default class PartnerConfigList extends Component {
       <div style={{ width: '1050px' }}>
         <ModalContent
           header={`${
-            isPresent(submerchant) ? 'Override Submerchant' : ''
-          } Partner Config`}
+            isPresent(submerchant) ? 'Override Submerchant' : 'Default'
+          } Partner Settings`}
         >
           <Write
             values={{
@@ -83,7 +83,7 @@ export default class PartnerConfigList extends Component {
   };
 
   onFilterSubmit = filters => {
-    rethis.submerchants.applyFilters({
+    this.submerchants.applyFilters({
       application_id: this.applicationId,
       partner_id: !this.applicationId ? this.merchantId : undefined,
       ...filters,
