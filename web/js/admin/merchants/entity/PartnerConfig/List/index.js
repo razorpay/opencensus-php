@@ -48,7 +48,7 @@ export default class PartnerConfigList extends Component {
   };
 
   onWriteConfig = ({ submerchant, config }) => () => {
-    if (!config.id) {
+    if (!(config || {}).id) {
       values = {
         partner_id: !this.applicationId ? this.merchantId : undefined,
         application_id: this.applicationId,

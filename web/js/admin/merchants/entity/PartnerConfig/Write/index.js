@@ -6,11 +6,9 @@ import { stringToObj } from 'common/util';
 import { isPresent, pickProps, without, isBlank } from 'rzp/utils/rzp-utils';
 
 import Form from 'ui/Form';
-import { DateField, SwitchField } from 'ui/Field';
-import AsyncButton from 'ui/AsyncButton';
 import EntityRow from 'ui/EntityRow';
 
-import PerTransactionForm from './PerTransactionForm';
+import FormFields from './FormFields';
 
 export default class WritePartnerConfig extends Component {
   constructor(props) {
@@ -159,87 +157,9 @@ export default class WritePartnerConfig extends Component {
     });
   };
 
-  renderForm = () => {
+  render() {
     const { values, internals, plans } = this.state;
     const { submerchant, config_id } = this.props;
-
-    return (
-      !!values && (
-        <>
-          <SwitchField
-            label="Commission"
-            name="commissions_enabled"
-            enabledLabel="Enable"
-            disabledLabel="Disable"
-            onChange={this.handleChange}
-            defaultValue={values.commissions_enabled}
-          />
-
-          <PerTransactionForm
-            plans={plans}
-            onSearchableChange={this.handleSearchableChange}
-            internals={internals}
-            values={values}
-            showSubmerchantPricing={isBlank(submerchant)}
-            isUpdate={!!config_id}
-          />
-
-          <DateField
-            name="implicit_expiry_at"
-            label="Expiry Date"
-            allowToday={false}
-            disablePastDates
-            onChange={this.handleDateChange('implicit_expiry_at')}
-            defaultValue={getDefaultDateVal(values.implicit_expiry_at)}
-          />
-
-          <DateField
-            name="revisit_at"
-            label="Revisit Date"
-            allowToday={false}
-            disablePastDates
-            onChange={this.handleDateChange('revisit_at')}
-            defaultValue={getDefaultDateVal(values.revisit_at)}
-          />
-
-          <SwitchField
-            name="explicit_should_charge"
-            label="Charge Add-on Commission"
-            enabledLabel="Yes"
-            disabledLabel="No"
-            onChange={this.handleChange}
-            defaultValue={values.explicit_should_charge}
-            value={values.explicit_should_charge}
-            disabled={!values.explicit_plan_id}
-          />
-
-          <SwitchField
-            name="explicit_refund_fees"
-            label="Refund Add-on Commission on payment refund"
-            enabledLabel="Yes"
-            disabledLabel="No"
-            onChange={this.handleChange}
-            defaultValue={values.explicit_refund_fees}
-            value={values.explicit_refund_fees}
-            disabled={!values.explicit_should_charge}
-            helpMsg={
-              "If No, we'll only record but not charge Add-on commission from sub-merchant"
-            }
-          />
-
-          <AsyncButton
-            text={this.props.buttonText}
-            class="btn"
-            pendingClass="small spinner"
-            onSubmit={this.handleSubmitClick}
-          />
-        </>
-      )
-    );
-  };
-
-  render() {
-    const { submerchant } = this.props;
     return (
       <>
         {isPresent(submerchant) && (
@@ -257,7 +177,19 @@ export default class WritePartnerConfig extends Component {
           <header>Commission Settings</header>
           <div class="row-item">
             <Form class="full-span full-elements" onChange={this.handleChange}>
-              {this.renderForm()}
+              {!!values && (
+                <FormFields
+                  values={values}
+                  internals={internals}
+                  plans={plans}
+                  showSubmerchantPricing={isBlank(submerchant)}
+                  isUpdate={!!config_id}
+                  buttonText={this.props.buttonText}
+                  onSubmit={this.handleSubmitClick}
+                  onSearchableChange={this.handleSearchableChange}
+                  handleDateChange={this.handleDateChange}
+                />
+              )}
             </Form>
           </div>
         </div>
@@ -273,10 +205,6 @@ function formatPlanData(data) {
     value: plan.plan_id,
     label: `${plan.plan_name} - (${plan.plan_id})`,
   }));
-}
-
-function getDefaultDateVal(unixTime) {
-  return unixTime ? moment(unixTime, 'X') : null;
 }
 
 function getCommissionType(plan_id, [commissions, pricings]) {
