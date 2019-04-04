@@ -30,7 +30,7 @@ class Sbi extends Base
     const FILE_NAME         = 'GGCMS1';
     const BEAM_FILE_TYPE    = 'emi';
 
-    const TEST_ENCRYPTION_KEY = 'T8DIATjuwS';
+    const TEST_ENCRYPTION_KEY = 'T8DIATjuwST8DIATjuwST8DIATjuwS22';
 
     const TEST_ENCRYPTION_IV = '123456789012';
 
@@ -75,7 +75,7 @@ class Sbi extends Base
             return self::TEST_ENCRYPTION_KEY;
         }
 
-        return bin2hex(openssl_random_pseudo_bytes(32));
+        return openssl_random_pseudo_bytes(32);
     }
 
     // Don't send the encryption key over email
