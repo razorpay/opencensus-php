@@ -138,7 +138,7 @@ form
   .post-field-icon
     opacity: .4
     position: absolute
-    right: 7%
+    margin-left: -20px
     bottom: 3px
     pointer-events: none
 
@@ -148,8 +148,6 @@ form
 
       input
         width: 55%
-    .post-field-icon
-      right: 12%
 
   // full-span class on <Form> makes the <Field> elements to come in separates lines
   &.full-span
@@ -171,17 +169,11 @@ form
         vertical-align: top
         white-space: pre-wrap
 
-      >select, >input, >textarea, >button, >i, .DayPickerInput, .searchable-select
+      >select, >input, >textarea, >button, >i:not(.post-field-icon), .DayPickerInput, .searchable-select
         margin-left: 10px
 
       >i:not(.post-field-icon)
         width: 55%
-
-      .post-field-icon
-        position: absolute
-        right: 10%
-        top: 5px
-        pointer-events: none
 
       .info-block
         width: 55%
@@ -199,17 +191,10 @@ form
       >select, >input:not([type=checkbox]), >textarea, .DayPickerInput
         width: 26.5%
 
-    .create-offer .post-field-icon
-      right: 32%;
-
     .dispute-form
       span
         margin-left: 10px;
-      .post-field-icon
-        right: 35%;
 
-    .irctc-form .post-field-icon
-        right: 36.5%
     &.full-elements .field
       .searchable-select
         display: inline-block
