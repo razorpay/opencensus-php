@@ -33,8 +33,9 @@ class Service extends Base\Service
 
     const MAX_REFUND_RETRY_ATTEMPTS = 3;
 
-    const ENTITIES   = 'entities';
-    const REFUND_IDS = 'refund_ids';
+    const ENTITIES       = 'entities';
+    const REFUND_IDS     = 'refund_ids';
+    const DB_FETCH_LIMIT = 'limit';
 
     const MAX_REFUND_VERIFY_REQUESTS = 20;
 
@@ -1386,9 +1387,9 @@ class Service extends Base\Service
 
     public function updateProcessedAt(array $input)
     {
-        if (isset($input['limit']) === true)
+        if (isset($input[self::DB_FETCH_LIMIT]) === true)
         {
-            $limit = intval($input['limit']);
+            $limit = intval($input[self::DB_FETCH_LIMIT]);
         }
         else
         {
@@ -1409,9 +1410,9 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::REFUND_UPDATE_PROCESSED_AT_INITIATED,
             [
-                'start_time' => $start,
-                'limit'      => $limit,
-                'created_at' => $createdAt,
+                'start_time'         => $start,
+                'created_at'         => $createdAt,
+                self::DB_FETCH_LIMIT => $limit
             ]);
 
         $successCount  = $this->repo->refund->updateProcessedAt($limit, $createdAt);
@@ -1504,9 +1505,9 @@ class Service extends Base\Service
 
     public function backfillUpiMindgateReference1(array $input)
     {
-        if (isset($input['limit']) === true)
+        if (isset($input[self::DB_FETCH_LIMIT]) === true)
         {
-            $limit = intval($input['limit']);
+            $limit = intval($input[self::DB_FETCH_LIMIT]);
         }
         else
         {
@@ -1548,11 +1549,11 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::REFUND_UPDATE_RRN_INITIATED,
             [
-                'start_time' => $start,
-                'limit'      => $limit,
-                'from'       => $from,
-                'to'         => $to,
-                'delay'      => $delay,
+                'start_time'         => $start,
+                'from'               => $from,
+                'to'                 => $to,
+                'delay'              => $delay,
+                self::DB_FETCH_LIMIT => $limit
             ]);
 
         $successCount  = 0;
@@ -1589,7 +1590,7 @@ class Service extends Base\Service
     {
         $gateways = [Payment\Gateway::UPI_MINDGATE, Payment\Gateway::UPI_ICICI];
 
-        $limit = (isset($input['limit']) === true) ? intval($input['limit']) : 500;
+        $limit = (isset($input[self::DB_FETCH_LIMIT]) === true) ? intval($input[self::DB_FETCH_LIMIT]) : 500;
 
         $offset = (isset($input['offset']) === true) ? intval($input['offset']) : 0;
 
@@ -1608,11 +1609,11 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::REFUND_SCROOGE_VERIFY_INITIATED,
             [
-                'limit'      => $limit,
-                'from'       => $from,
-                'to'         => $to,
-                'gateways'   => $gateways,
-                'refunds'    => $scroogeRefunds,
+                'from'               => $from,
+                'to'                 => $to,
+                'gateways'           => $gateways,
+                'refunds'            => $scroogeRefunds,
+                self::DB_FETCH_LIMIT => $limit,
             ]);
 
         if (empty($scroogeRefunds) === true)
@@ -1794,9 +1795,9 @@ class Service extends Base\Service
 
     public function isScroogeBackFill(array $input)
     {
-        if (isset($input['limit']) === true)
+        if (isset($input[self::DB_FETCH_LIMIT]) === true)
         {
-            $limit = intval($input['limit']);
+            $limit = intval($input[self::DB_FETCH_LIMIT]);
         }
         else
         {
@@ -1805,9 +1806,9 @@ class Service extends Base\Service
 
         $updatedCount = 0;
 
-        if (empty($input['timestamps']) === false)
+        if (empty($input[self::ENTITIES]) === false)
         {
-            foreach ($input['timestamps'] as $gateways)
+            foreach ($input[self::ENTITIES] as $gateways)
             {
                 if ($limit <= 0)
                 {
@@ -1816,9 +1817,9 @@ class Service extends Base\Service
 
                 $isScrooge = (empty($gateways[RefundEntity::IS_SCROOGE]) === false) ? ($gateways[RefundEntity::IS_SCROOGE] === 'true') : true;
 
-                $fromTime = (empty($gateways['from']) === false) ? (int) $gateways['from'] : time();
+                $fromTime = (empty($gateways['from']) === false) ? intval($gateways['from']) : time();
 
-                $toTime = (empty($gateways['to']) === false) ? (int) $gateways['to'] : time();
+                $toTime = (empty($gateways['to']) === false) ? intval($gateways['to']) : time();
 
                 if ($fromTime > $toTime)
                 {
@@ -1828,9 +1829,9 @@ class Service extends Base\Service
                 $data = [
                     RefundEntity::GATEWAY    => $gateways[RefundEntity::GATEWAY],
                     RefundEntity::IS_SCROOGE => $isScrooge,
+                    self::DB_FETCH_LIMIT     => $limit,
                     'from'                   => $fromTime,
-                    'to'                     => $toTime,
-                    'limit'                  => $limit
+                    'to'                     => $toTime
                 ];
 
                 $count = $this->repo->refund->backfillIsScrooge($data, true);
@@ -1841,9 +1842,9 @@ class Service extends Base\Service
             }
         }
 
-        if (empty($input['refunds']) === false)
+        if (empty($input[self::REFUND_IDS]) === false)
         {
-            foreach ($input['refunds'] as $refundId)
+            foreach ($input[self::REFUND_IDS] as $refundId)
             {
                 if ($limit <= 0)
                 {
@@ -1866,7 +1867,7 @@ class Service extends Base\Service
         }
 
         return [
-            'Refunds Updated' => $updatedCount
+            'refunds_updated' => $updatedCount
         ];
     }
 }

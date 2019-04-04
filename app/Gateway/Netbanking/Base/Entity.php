@@ -191,6 +191,11 @@ class Entity extends Base\Entity
         $this->setAttribute(self::RECEIVED, $received);
     }
 
+    public function setReference1($reference1)
+    {
+        $this->setAttribute(self::REFERENCE1, $reference1);
+    }
+
     public function getIntPaymentId()
     {
         return $this->getAttribute(self::INT_PAYMENT_ID);

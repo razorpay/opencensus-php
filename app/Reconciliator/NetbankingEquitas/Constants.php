@@ -5,7 +5,7 @@ namespace RZP\Reconciliator\NetbankingEquitas;
 class Constants
 {
     const GATEWAY_REFERENCE_NUMBER      = 'gatewayreferencenumber';
-    const BANK_REFERENCE_NUMBER         = 'banktransactionreferenceno';
+    const BANK_TRANSACTION_ID           = 'banktransactionreferenceno';
     const AMOUNT                        = 'transactionamount';
     const STATUS                        = 'status';
     const DATE_OF_TRANSACTION           = 'transactiondate';
@@ -15,7 +15,7 @@ class Constants
 
     const COLUMN_HEADERS = [
         self::GATEWAY_REFERENCE_NUMBER,
-        self::BANK_REFERENCE_NUMBER,
+        self::BANK_TRANSACTION_ID,
         self::AMOUNT,
         self::STATUS,
         self::DATE_OF_TRANSACTION,
