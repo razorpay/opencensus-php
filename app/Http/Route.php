@@ -1405,6 +1405,7 @@ final class Route
         'update_fts_fund_transfer',
         'fund_account_validation_retry',
         'setl_initiate_adhoc',
+        'scrooge_tagging_backfill',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1746,7 +1747,6 @@ final class Route
         'merchant_tags_bulk',
         'refund_verify',
         'refund_verify_bulk',
-        'scrooge_tagging_backfill',
         'merchant_edit',
         'adj_add_bulk',
         'adj_add_reverse',
@@ -2561,7 +2561,7 @@ final class Route
             'merchant_es_sync_cron',
             'entity_balance_id_update',
             'scrooge_refund_verify_bulk',
-            'scrooge_tagging_backfill'
+            'scrooge_tagging_backfill',
         ],
 
         'subscriptions' => [
