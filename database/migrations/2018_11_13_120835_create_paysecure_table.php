@@ -45,8 +45,8 @@ class CreatePaysecureTable extends Migration
             $table->string(Paysecure::ERROR_MESSAGE, 255)
                   ->nullable();
 
-            $table->bigInteger(Paysecure::RRN)
-                  ->unsigned();
+            $table->string(Paysecure::RRN, 255)
+                  ->nullable();
 
             $table->string(Paysecure::TRAN_DATE, 4);
 
@@ -63,9 +63,6 @@ class CreatePaysecureTable extends Migration
 
             $table->string(Paysecure::APPRCODE, 10)
                   ->nullable();
-
-            $table->tinyInteger(Paysecure::SETTLED)
-                  ->default(0);
 
             $table->integer(Paysecure::CREATED_AT);
 

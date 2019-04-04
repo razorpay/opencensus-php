@@ -82,7 +82,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $getConfigKeyRules = [
-        'key'   => 'required|in:merchant_enach_configs,GATEWAY_UNPROCESSED_REFUNDS,settlement_transaction_limit'
+        'key'   => 'required|in:merchant_enach_configs,settlement_transaction_limit,'.ConfigKey::GATEWAY_UNPROCESSED_REFUNDS
     ];
 
     protected static $deleteConfigKeyRules = [

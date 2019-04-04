@@ -183,6 +183,8 @@ class Constants
     const PAYMENT_MAILS_DISABLED = 'payment_mails_disabled';
     const DISPUTE_MAILS_DISABLED = 'dispute_mails_disabled';
 
+    const BLOCK_PL_PAY_POST_EXPIRY = 'block_pl_pay_post_expiry';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -329,6 +331,7 @@ class Constants
         self::SELF_KYC_DISABLED               => true,
         self::PAYMENT_MAILS_DISABLED          => true,
         self::DISPUTE_MAILS_DISABLED          => true,
+        self::BLOCK_PL_PAY_POST_EXPIRY        => true,
         self::ADHOC_SETTLEMENT                => true,
         self::SUB_TERMINAL_OPTIMIZE           => true,
     ];

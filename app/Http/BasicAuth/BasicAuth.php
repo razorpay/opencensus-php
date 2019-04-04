@@ -2129,7 +2129,7 @@ class BasicAuth
                (empty($this->admin) === false) and
                ($this->getAdmin()->org->isCrossOrgAccessEnabled() === true);
     }
-  
+
     /**
      * Returns the origin type and origin id based on the auth used.
      *

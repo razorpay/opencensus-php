@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\Downtime;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Jobs\PaymentDowntime;
 use RZP\Models\Base\PublicCollection;
 
 class Repository extends Base\Repository
@@ -48,6 +49,18 @@ class Repository extends Base\Repository
         Entity::METHOD,
         Entity::SOURCE,
     ];
+
+    public function saveOrFail($entity, array $options = [])
+    {
+        parent::saveOrFail($entity, $options);
+
+        // Every update of gateway downtimes table should
+        // queue a refresh of the payment downtimes table
+        //
+        // Commenting this out till PaymentDowntime logic is more thoroughly tested.
+        // TODO: Enable
+        // PaymentDowntime::dispatch($this->app['rzp.mode']);
+    }
 
     public function isMerchantIdRequiredForFetch()
     {

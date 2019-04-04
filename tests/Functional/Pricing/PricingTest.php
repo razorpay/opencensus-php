@@ -2,13 +2,20 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Event;
+
 use RZP\Models\Pricing;
 use RZP\Models\Transaction;
+use RZP\Constants\Entity as E;
 use RZP\Tests\Functional\TestCase;
+use Illuminate\Cache\Events\CacheHit;
+use Illuminate\Cache\Events\KeyWritten;
+use Illuminate\Cache\Events\CacheMissed;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Models\Base\QueryCache\Constants as CacheConstants;
 
 class PricingTest extends TestCase
 {
@@ -1133,5 +1140,72 @@ class PricingTest extends TestCase
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
 
         $this->startTest($testData);
+    }
+
+    public function testQueryCacheHitForPricingPlan()
+    {
+        config(['app.query_cache.mock' => false]);
+
+        Event::fake();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthPayment($payment);
+
+        //
+        // Asserts that key is not present initially in cache
+        //
+        Event::assertDispatched(CacheMissed::class, function ($e)
+        {
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, E::PRICING) === true)
+                {
+                    $this->assertContains(E::PRICING, $tag);
+                }
+            }
+            return true;
+        });
+        //
+        // Asserts that key is inserted into cache
+        //
+        Event::assertDispatched(KeyWritten::class, function ($e)
+        {
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, E::PRICING) === true)
+                {
+                    $this->assertContains(E::PRICING, $tag);
+                }
+            }
+            return true;
+        });
+        //
+        // Asserts cache should not have been hit the first time
+        //
+        Event::assertNotDispatched(CacheHit::class);
+
+        $this->doAuthPayment($payment);
+
+        //
+        // Asserts that key is found in cache on subsequent attempts
+        //
+        Event::assertDispatched(CacheHit::class, function ($e)
+        {
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, E::PRICING) === true)
+                {
+                    $this->assertContains(
+                        implode(':', [
+                            CacheConstants::QUERY_CACHE_PREFIX,
+                            CacheConstants::DEFAULT_QUERY_CACHE_VERSION,
+                            E::PRICING]),
+                        $e->key
+                    );
+                }
+            }
+            return true;
+        });
     }
 }

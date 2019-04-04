@@ -6,23 +6,25 @@ use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Models\Gateway\File\Processor\FileHandler;
 
 class Idfc extends Base
 {
-    static $filename = 'IDFC_RAZORPAY_RECON';
+    use FileHandler;
 
-    const EXTENSION               = FileStore\Format::XLSX;
+    static $filename = 'Razorpay';
+
+    const EXTENSION               = FileStore\Format::TXT;
     const FILE_TYPE               = FileStore\Type::IDFC_NETBANKING_CLAIMS;
     const GATEWAY                 = Payment\Gateway::NETBANKING_IDFC;
 
-    const CRN_NUMBER              = 'CRNNUMBER';
-    const RAZORPAY_TRAN_ID        = 'RAZORPAYTRANID';
-    const AMOUNT                  = 'AMOUNT';
-    const BANK_ACC_NUMBER         = 'BANKACCNUMBER';
-    const TRANSACTION_STATUS      = 'TRANSACTIONSTATUS';
-    const BANK_REF_NUMBER         = 'BANKREFNUMBER';
-    const BANK_ID                 = 'BANKID';
-    const STATUS                  = 'Status';
+    const HEADERS = [
+        'RAZORPAYReferenceNumber',
+        'BankTransactionReferenceNo',
+        'TransactionAmount',
+        'STATUS',
+        'TRANSACTIONDATE'
+    ];
 
     protected function formatDataForFile(array $data)
     {
@@ -31,25 +33,26 @@ class Idfc extends Base
         foreach ($data as $row)
         {
             $formattedData[] = [
-                self::CRN_NUMBER            => $row['gateway']['bank_payment_id'],
-                self::RAZORPAY_TRAN_ID      => $row['payment']['id'],
-                self::AMOUNT                => $this->getFormattedAmountString($row['payment']['amount']),
-                self::BANK_ACC_NUMBER       => '',
-                self::TRANSACTION_STATUS    => 'S',
-                self::BANK_REF_NUMBER       => $row['gateway']['bank_payment_id'],
-                self::BANK_ID               => 'IDFC',
-                self::STATUS                => 'SUCCESS',
+                $row['payment']['id'],
+                $row['gateway']['bank_payment_id'],
+                $this->getFormattedAmountString($row['payment']['amount']),
+                'SUCCESS',
+                Carbon::createFromTimestamp($row['payment']['created_at'], Timezone::IST)->format('d-M-Y H:i:s')
             ];
         }
+
+        $initialLine = $this->getInitialLine();
+
+        $formattedData = $this->getTextData($formattedData, $initialLine, '|');
 
         return $formattedData;
     }
 
     protected function getFileToWriteNameWithoutExt()
     {
-        $time = Carbon::now(Timezone::IST)->format('dmY');
+        $time = Carbon::now(Timezone::IST)->format('Ymd');
 
-        return self::$filename. '_' . $time;
+        return $time. '_' . self::$filename;
     }
 
     protected function getFormattedAmountString(int $amount): String

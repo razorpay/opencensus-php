@@ -720,7 +720,6 @@ class Gateway
         self::AMEX,
         self::CYBERSOURCE,
         self::FIRST_DATA,
-        self::PAYSECURE,
     ];
 
     const SHARED_NETBANKING_GATEWAYS_LIVE = [
@@ -886,6 +885,8 @@ class Gateway
             Network::MC,
             Network::VISA,
             Network::MAES,
+//            todo: Enable this when we go live with PaySecure
+//            Network::RUPAY,
         ],
         self::FIRST_DATA => [
             Network::MC,
@@ -898,9 +899,6 @@ class Gateway
             Network::VISA,
             Network::RUPAY,
         ],
-        self::PAYSECURE => [
-            Network::RUPAY,
-        ]
     ];
 
     public static $bharatQrCardNetwork = [

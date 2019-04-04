@@ -6,12 +6,15 @@ use Mail;
 use Queue;
 use Carbon\Carbon;
 
+use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Mail\Invoice\Issued as InvoiceIssuedMail;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -2005,6 +2008,23 @@ class InvoiceTest extends TestCase
                 'Payment Link Expired');
     }
 
+    // Merchant has feature `block_pl_pay_post_expiry`.
+    public function testGetLinkViewPartiallyPaidPostExpiry()
+    {
+        $this->createOrder();
+
+        $yesterday = Carbon::yesterday()->timestamp;
+
+        $this->createIssuedInvoice(['type' => 'link', 'status' => 'partially_paid', 'expire_by' => $yesterday]);
+
+        $this->fixtures->merchant->addFeatures([Features::BLOCK_PL_PAY_POST_EXPIRY]);
+
+        $this->callViewUrlAndMakeAssertions(
+            self::TEST_INV_ID,
+            200,
+            'Payment Link with id inv_1000000invoice is past its expiry.');
+    }
+
     public function testGetInvoiceView()
     {
         $this->createOrder();
@@ -2157,6 +2177,70 @@ class InvoiceTest extends TestCase
         $this->assertEquals('partially_paid', $invoice['status']);
         $this->assertEquals(600, $invoice['amount_paid']);
         $this->assertEquals(400, $invoice['amount_due']);
+    }
+
+    public function testConsecutivePartialPaymentPostExpiry()
+    {
+        $order = $this->fixtures->create(
+                    'order',
+                    [
+                        'id'              => '100000000order',
+                        'amount'          => 1000,
+                        'partial_payment' => true,
+                        'payment_capture' => true,
+                    ]);
+
+        $invoice = $this->fixtures->create(
+                    'invoice',
+                    [
+                        'partial_payment' => true,
+                        'amount'          => 1000,
+                        'type'            => 'link',
+                    ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount']   = 300;
+
+        $expectedPaymentResponse = [
+            'status'     => 'captured',
+            'order_id'   => $order->getPublicId(),
+            'invoice_id' => $invoice->getPublicId(),
+        ];
+
+        $this->doAuthAndGetPayment($payment, $expectedPaymentResponse);
+
+        $invoice = $this->getLastEntity('invoice');
+
+        $this->assertEquals('partially_paid', $invoice['status']);
+        $this->assertEmpty($invoice['paid_at']);
+        $this->assertEquals(300, $invoice['amount_paid']);
+        $this->assertEquals(700, $invoice['amount_due']);
+
+        // Add feature to block payments after expiry time in partially paid status
+        $this->fixtures->merchant->addFeatures([Features::BLOCK_PL_PAY_POST_EXPIRY]);
+
+        $this->fixtures->edit(
+            'invoice',
+            $invoice['id'],
+            ['expire_by' => Carbon::yesterday(Timezone::IST)->getTimestamp()]
+        );
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount']   = 700;
+
+        $this->expectException(Exception\BadRequestValidationFailureException::class);
+
+        $this->expectExceptionCode(
+            ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+
+        $this->expectExceptionMessage(
+            'Payment Link is not payable post its expiry time');
+
+        $this->doAuthAndGetPayment($payment, $expectedPaymentResponse);
     }
 
     public function testMultiplePartialPayments()

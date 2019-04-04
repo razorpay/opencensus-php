@@ -1004,13 +1004,6 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getMethodDowntimeData()
-    {
-        $data = $this->service(E::GATEWAY_DOWNTIME)->getMethodDowntimeDataForMerchant();
-
-        return ApiResponse::json($data);
-    }
-
     public function createBatches($id)
     {
         $input = Request::all();

@@ -33,6 +33,10 @@ class Service extends Base\Service
 
     const MAX_REFUND_RETRY_ATTEMPTS = 3;
 
+    const ENTITIES       = 'entities';
+    const REFUND_IDS     = 'refund_ids';
+    const GATEWAY_ENTITY = 'gateway_entity';
+
     const MAX_REFUND_VERIFY_REQUESTS = 20;
 
     protected $mutex;
@@ -315,6 +319,179 @@ class Service extends Base\Service
         $response = $refund->toArray();
 
         return $response;
+    }
+
+    /*
+     * Sample request:
+     * {
+     *   "refund":["amount"],
+     *   "payment":["reference2"],
+     *   "entities":{
+     *       "card":["iin", "last4"],
+     *       "terminal":["gateway_terminal_id", "gateway_merchant_id"],
+     *       "gateway_entity":{
+     *           "axis_migs":{
+     *               "authorize":["vpc_ReceiptNo"]
+     *               }
+     *           }
+     *       },
+     *   "refund_ids":["C6rXXXXXXXX43","C6rQQL1KTvb43"]
+     * }
+     *
+     * Sample response:
+     * {
+     *    "C6rXXXXXXXX43": {
+     *        "entities": {
+     *            "refund": {
+     *                "amount": 100
+     *            },
+     *            "payment": {
+     *                "reference2": "54543"
+     *            },
+     *            "card": {
+     *                "iin": "401200",
+     *                "last4": "3335"
+     *            },
+     *            "terminal": {
+     *                "gateway_terminal_id": "test_terminal",
+     *               "gateway_merchant_id": "test_merchant"
+     *           },
+     *           "gateway_entity": {
+     *               "axis_migs": {
+     *             "authorize": {
+     *                       "vpc_ReceiptNo": "492348230fd"
+     *                   }
+     *                }
+     *            }
+     *        }
+     *    }
+     *}
+     */
+    public function scroogeFetchEntities($input)
+    {
+        $responseArray = [];
+
+        $skippedRefunds = [];
+
+        if (isset($input[self::REFUND_IDS]) === true)
+        {
+            foreach ($input[self::REFUND_IDS] as $id)
+            {
+                try
+                {
+                    $refund = $this->repo->refund->findOrFailPublic($id);
+
+                    $refundEntity = $refund->toArrayGateway();
+
+                    $payment = $refund->payment;
+
+                    $paymentEntity = $payment->toArrayGateway();
+
+                    $response = [];
+
+                    if (isset($input[Constants\Entity::REFUND]) === true)
+                    {
+                        $map = [];
+
+                        foreach ($input[Constants\Entity::REFUND] as $value)
+                        {
+                            $map[$value] = $refundEntity[$value];
+                        }
+
+                        $response[self::ENTITIES][Constants\Entity::REFUND] = $map;
+                    }
+
+                    if (isset($input[Constants\Entity::PAYMENT]) === true)
+                    {
+                        $map = [];
+
+                        foreach ($input[Constants\Entity::PAYMENT] as $value)
+                        {
+                            $map[$value] = $paymentEntity[$value];
+                        }
+
+                        $response[self::ENTITIES][Constants\Entity::PAYMENT] = $map;
+                    }
+
+                    if (isset($input[self::ENTITIES]) === true)
+                    {
+                        foreach ($input[self::ENTITIES] as $key => $values)
+                        {
+                            /*
+                             * This is the structure of gateway_entity
+                             * "gateway_entity":{
+                             *           "axis_migs":{
+                             *               "authorize":["vpc_ReceiptNo"]
+                             *               }
+                             *           }
+                             *       },
+                             */
+                            if ($key === self::GATEWAY_ENTITY)
+                            {
+                                foreach ($values as $gatewayEntity => $action)
+                                {
+                                    foreach ($action as $gatewayAction => $columns)
+                                    {
+                                        if (method_exists($this->repo->$gatewayEntity, 'findByPaymentIdAndActionorFail') === true)
+                                        {
+                                            $entity = $this->repo
+                                                ->$gatewayEntity
+                                                ->findByPaymentIdAndActionorFail($paymentEntity['id'], $gatewayAction)
+                                                ->toArray();
+
+                                            $map = [];
+
+                                            foreach ($columns as $column)
+                                            {
+                                                $map[$column] = $entity[$column];
+                                            }
+
+                                            $response[self::ENTITIES][$key][$gatewayEntity][$gatewayAction] = $map;
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                $entity = $payment->$key;
+
+                                $map = [];
+
+                                foreach ($values as $value)
+                                {
+                                    $map[$value] = $entity[$value];
+                                }
+
+                                $response[self::ENTITIES][$key] = $map;
+                            }
+                        }
+                    }
+
+                    $responseArray[$id] = $response;
+                }
+                catch (\Exception $ex)
+                {
+                    array_push($skippedRefunds, [
+                        $id =>
+                            [
+                                'code'    => $ex->getCode(),
+                                'message' => $ex->getMessage()
+                            ]
+                    ]);
+                }
+            }
+        }
+
+        $traceData = [
+            'skipped_refunds'   => $skippedRefunds,
+            'request_count'     => count($input[self::REFUND_IDS] ?? []),
+            'success_count'     => count($responseArray),
+            'failure_count'     => count($skippedRefunds),
+        ];
+
+        $this->trace->info(TraceCode::SCROOGE_FETCH_ENTITIES, $traceData);
+
+        return $responseArray;
     }
 
     public function fetchMultiple($input)
