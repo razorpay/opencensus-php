@@ -24,7 +24,7 @@ class AesGcmEncryption extends Encryption
 
     public function encrypt(string $data): string
     {
-        $encrypted = openssl_encrypt($data, self::CIPHER, $this->secret, 0, $this->iv, $tag);
+        $encrypted = openssl_encrypt($data, self::CIPHER, $this->secret, OPENSSL_RAW_DATA, $this->iv, $tag);
 
         return bin2hex($encrypted . $tag);
     }
@@ -37,7 +37,7 @@ class AesGcmEncryption extends Encryption
 
         $data = substr($data, 0, -16);
 
-        return openssl_decrypt($data, self::CIPHER, $this->secret, 0, $this->iv, $tag);
+        return openssl_decrypt($data, self::CIPHER, $this->secret, OPENSSL_RAW_DATA, $this->iv, $tag);
     }
 
     protected function validateParams(array $params)
