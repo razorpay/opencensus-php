@@ -25,18 +25,19 @@ function getFields({ write, defaultConfig }) {
   return [
     [
       'Submerchant ID',
-      item => (
-        <Link
-          to={`/merchants/${item.submerchant.id.replace('acc_', '')}`}
-          class="link"
-        >
-          {item.submerchant.id}
-        </Link>
-      ),
+      item => {
+        const merchantId = item.submerchant.id.replace('acc_', '');
+        return (
+          <Link to={`/merchants/${merchantId}`} class="link" target="_blank">
+            {merchantId}
+          </Link>
+        );
+      },
     ],
     ['Submerchant Name', item => item.submerchant.name],
+    ['Submerchant Email', item => item.submerchant.email],
     [
-      'Config',
+      'Commission Settings',
       item => (
         <button
           class="button"
