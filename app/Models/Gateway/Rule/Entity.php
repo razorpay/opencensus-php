@@ -618,8 +618,11 @@ class Entity extends Base\PublicEntity
      * Evaluates if a rule's terminal related attributes match those of
      * given terminal
      *
-     * @param  Terminal\Entity $terminal Terminal entity to compare against
-     * @param  Merchant\Entity $merchant
+     * @param  Terminal\Entity           $terminal Terminal entity to compare against
+     *
+     * @param Merchant\Entity            $merchant
+     * @param Payment\Entity|null        $payment
+     * @param Base\PublicCollection|null $gatewayTokens
      *
      * @return bool whether rule matches terminal
      *
@@ -846,14 +849,15 @@ class Entity extends Base\PublicEntity
      * - Terminal assigned to some other merchant with given merchant as a submerchant
      *
      * @param  Terminal\Entity $terminal Terminal to check against
-     * @param  Merchant\Entity $merchant Merchant making the payment
+     * @param Merchant\Entity  $merchant
+     *
      * @return bool                      Comparison result
      */
     protected function compareSharedTerminal(Terminal\Entity $terminal, Merchant\Entity $merchant): bool
     {
         $isApplicableForSharedTerminal = $this->getAttribute(self::SHARED_TERMINAL);
 
-        return ($isApplicableForSharedTerminal !== $terminal->isDirectForMerchant($merchant)) ? true : false;
+        return ($isApplicableForSharedTerminal !== $terminal->isDirectForMerchant()) ? true : false;
     }
 
     /**

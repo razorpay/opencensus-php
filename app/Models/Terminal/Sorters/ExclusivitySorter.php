@@ -34,7 +34,7 @@ class ExclusivitySorter extends Terminal\Sorter
 
         foreach ($terminals as $terminal)
         {
-            if ($terminal->isDirectForMerchant($this->input['merchant']) === true)
+            if ($terminal->isDirectForMerchant() === true)
             {
                 $directTerminals[] = $terminal;
 
@@ -47,7 +47,7 @@ class ExclusivitySorter extends Terminal\Sorter
         // 2. Terminals with gateways where we have direct terminals
         foreach ($terminals as $terminal)
         {
-            if ($terminal->isDirectForMerchant($this->input['merchant']) === false)
+            if ($terminal->isDirectForMerchant() === false)
             {
                 if (in_array($terminal->getGateway(), $directTerminalGateways, true) === true)
                 {

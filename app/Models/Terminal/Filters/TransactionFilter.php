@@ -205,7 +205,7 @@ class TransactionFilter extends Terminal\Filter
                     ($payment->isRecurring() === false) and
                     ($payment->isInternational() === false) and
                     ($iin !== self::PREPAID_IIN) and
-                    ($terminal->isDirectForMerchant($merchant) === false))
+                    ($terminal->isDirectForMerchant() === false))
                 {
                     return false;
                 }
@@ -545,7 +545,7 @@ class TransactionFilter extends Terminal\Filter
             //
             // If terminal is direct for the merchant, we always select it.
             //
-            if ($terminal->isDirectForMerchant($merchant) === true)
+            if ($terminal->isDirectForMerchant() === true)
             {
                 return true;
             }
