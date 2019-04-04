@@ -26,11 +26,13 @@ class AesGcmEncryption extends Encryption
     {
         $encrypted = openssl_encrypt($data, self::CIPHER, $this->secret, 0, $this->iv, $tag);
 
-        return $encrypted . $tag;
+        return bin2hex($encrypted . $tag);
     }
 
     public function decrypt(string $data): string
     {
+        $data = hex2bin($data);
+
         $tag = substr($data, -16);
 
         $data = substr($data, 0, -16);
