@@ -81,9 +81,18 @@ class Service
             $data[self::BEAM_PUSH_BUCKET_NAME] = $pushData[self::BEAM_PUSH_BUCKET_NAME];
         }
 
+        $traceData = $data;
+
         if (isset($pushData[self::BEAM_PUSH_DECRYPTION]) === true)
         {
             $data[self::BEAM_PUSH_DECRYPTION] = $pushData[self::BEAM_PUSH_DECRYPTION];
+
+            $traceData[self::BEAM_PUSH_DECRYPTION] = $pushData[self::BEAM_PUSH_DECRYPTION];
+
+            if (isset($traceData[self::BEAM_PUSH_DECRYPTION][self::BEAM_PUSH_DECRYPTION_KEY]) === true)
+            {
+                unset($traceData[self::BEAM_PUSH_DECRYPTION][self::BEAM_PUSH_DECRYPTION_KEY]);
+            }
         }
 
         $route = self::PUSH_ROUTE;
@@ -99,7 +108,9 @@ class Service
 
         $data = json_encode($data);
 
-        $request = [
+        $traceData = json_encode($traceData);
+
+        $request = $traceRequest = [
             'options' => [
                 'timeout' => 70
             ],
@@ -111,10 +122,13 @@ class Service
             'url'     => $this->getUrl($route)
         ];
 
+        // Don't set encryption key when tracing
+        $traceRequest['content'] = $traceData;
+
         $this->trace->info(
             TraceCode::BEAM_PUSH,
             [
-                'request'  => $request,
+                'request'  => $traceRequest,
                 'interval' => $intervalInfo
             ]
         );
