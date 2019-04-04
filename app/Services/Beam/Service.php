@@ -99,7 +99,7 @@ class Service
 
         // todo: Revert after testing on zeta
         if (($this->mode === Mode::TEST) and
-            ($data[self::BEAM_PUSH_JOBNAME] !== "sbi_emi"))
+            ($data[self::BEAM_PUSH_JOBNAME] !== Constants::SBI_EMI_FILE_JOB_NAME))
         {
            $route = self::TEST_ROUTE;
 
