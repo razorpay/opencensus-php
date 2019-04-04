@@ -74,6 +74,8 @@ class Name
     const CREATE_SETTLEMENT_INITIATE          = 'create_settlement_initiate';
     const DELETE_TERMINAL                     = 'delete_terminal';
     const EDIT_TERMINAL                       = 'edit_terminal';
+    const TERMINAL_MANAGE_MERCHANT            = 'terminal_manage_merchant';
+    const TOGGLE_TERMINAL                     = 'toggle_terminal';
     const CREATE_SETTLEMENTS_RECONCILE        = 'create_settlements_reconcile';
     const RETRY_SETTLEMENT                    = 'retry_settlement';
     const SETTLEMENT_BULK_UPDATE              = 'settlement_bulk_update';

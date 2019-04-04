@@ -173,6 +173,14 @@ return [
             Permission::EDIT_MERCHANT_ENABLE_INTERNATIONAL  => '',
             Permission::EDIT_MERCHANT_DISABLE_INTERNATIONAL => '',
             Permission::EDIT_MERCHANT_TERMINAL              => '',
+            Permission::TOGGLE_TERMINAL                     => [
+                'description' => 'Ability to enable or disable a terminal',
+                'assignable' => true,
+            ],
+            Permission::TERMINAL_MANAGE_MERCHANT            => [
+                'description' => 'Ability to add or remove sub merchants to a terminal',
+                'assignable' => true,
+            ],
             Permission::EDIT_MERCHANT_PRICING               => '',
             Permission::EDIT_MERCHANT_COMMENTS              => '',
             Permission::VIEW_MERCHANT_COMPANY_INFO          => [
