@@ -505,8 +505,12 @@ class Notifier extends Base\Core
                     $template = 'sms.custom_invoice.subr_emandate';
                 }
 
+                $merchantName = $merchant->getBillingLabel();
+
+                $merchantName = substr($merchantName, 0, 30);
+
                 $params   = [
-                    'merchant_name' => $merchant->getBillingLabel(),
+                    'merchant_name' => $merchantName,
                     'invoice_link'  => $this->invoice->getShortUrl(),
                     'amount'        => $this->invoice->getAmount() / 100,
                 ];
