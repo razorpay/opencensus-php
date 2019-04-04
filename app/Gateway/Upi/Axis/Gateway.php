@@ -841,15 +841,31 @@ class Gateway extends Base\Gateway
         $scroogeResponse->setGatewayVerifyResponse($responseContent)
                         ->setGatewayKeys($this->getGatewayData($responseContent));
 
-        if ($responseContent[Fields::CODE] !== Status::REFUND_SUCCESS)
+        if ($responseContent[Fields::CODE] === Status::REFUND_SUCCESS)
         {
-            return $scroogeResponse->setSuccess(false)
-                                   ->setStatusCode(Error\ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
+            return $scroogeResponse->setSuccess(true)
                                    ->toArray();
         }
 
-        return $scroogeResponse->setSuccess(true)
-                               ->toArray();
+        if ($responseContent[Fields::CODE] === Status::REFUND_ABSENT)
+        {
+            return $scroogeResponse->setSuccess(false)
+                ->setStatusCode(Error\ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
+                ->toArray();
+        }
+
+        $code = $responseContent[Fields::CODE];
+
+        $errorCode = ErrorCodes::getErrorCode($code, $responseContent);
+
+        throw new Exception\GatewayErrorException(
+            $errorCode,
+            $code,
+            ErrorCodeMap::getResponseMessage($code),
+            [
+                Payment\Gateway::GATEWAY_VERIFY_RESPONSE => json_encode($responseContent),
+                Payment\Gateway::GATEWAY_KEYS            => $this->getGatewayData($responseContent)
+            ]);
     }
 
     public function refund(array $input)
