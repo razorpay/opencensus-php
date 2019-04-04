@@ -75,7 +75,7 @@ class Sbi extends Base
             return self::TEST_ENCRYPTION_KEY;
         }
 
-        return bin2hex(openssl_random_pseudo_bytes(256));
+        return bin2hex(openssl_random_pseudo_bytes(32));
     }
 
     // Don't send the encryption key over email
