@@ -55,7 +55,7 @@ Ensure that you have a dockerhub user that is added to the Razorpay Organization
  - Admin Contact: `nemo@razorpay.com`
 
 ###### Mac Users
-Run Docker for Mac while signed-in as this user.
+Run Docker for Mac while signed-in as this user. If it still says access denied while pulling docker images, login via the console as well using docker login.
 
 ###### Linux Users
 use the `docker login` command to sign-in with the aforementioned dockerhub user.
