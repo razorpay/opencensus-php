@@ -37,11 +37,6 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    public function advice($input)
-    {
-        return $this->callback($input);
-    }
-
     public function getBharatQrCallback($qrCodeId, $ref = null, $input = [])
     {
         $data = [
@@ -110,6 +105,12 @@ class Server extends Base\Mock\Server
     public function capture($input)
     {
         $content = json_decode($input, true);
+
+        // For all RuPay transactions, use the callback response
+        if ($content['pTranType'] === 'RU')
+        {
+            return $this->callback($input);
+        }
 
         $this->validateActionInput($content, __FUNCTION__);
 

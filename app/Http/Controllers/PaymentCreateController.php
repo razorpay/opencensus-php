@@ -96,11 +96,6 @@ class PaymentCreateController extends Controller
             return $this->createFeeBearerCustomerPayment($input);
         }
 
-        if ($this->app['basicauth']->isPrivateAuth())
-        {
-            $input = $this->service(E::PAYMENT_ANALYTICS)->setMetadataForS2SPayment($input);
-        }
-
         $data = $this->service(E::PAYMENT)->process($input);
 
         $response = $this->processCoprotoData($data);

@@ -166,6 +166,7 @@ class Holidays
             ],
             4 => [
                 1  => 'Annual closing of Banks',
+                6  => 'Ugadi/ Gudi Padwa',
                 19 => 'Good Friday',
             ],
             6 => [
