@@ -335,6 +335,10 @@ return [
             Permission::CREATE_VIRTUAL_ACCOUNTS => [
                 'description' => 'Create VAs for a merchant',
             ],
+            Permission::BANK_TRANSFER_INSERT => [
+                'description' => 'Insert bank transfers for failed payments',
+                'assignable'  => true,
+            ],
             Permission::USER_PASSWORD_RESET => [
                 'description' => 'Reset user password on associated merchant page',
                 'assignable'  => true,

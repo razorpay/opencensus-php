@@ -2157,7 +2157,7 @@ final class Route
         'adj_add_reverse'                          => '*',
         'adjustments_split_for_dispute'            => '*',
         'bank_transfer_edit_payer_account'         => '*',
-        'bank_transfer_insert'                     => '*',
+        'bank_transfer_insert'                     => Permission::BANK_TRANSFER_INSERT,
         'bank_transfer_strip_payer_accounts'       => '*',
         'batch_retry_output_file'                  => '*',
         'billdesk_reconcile_cancelled'             => '*',
