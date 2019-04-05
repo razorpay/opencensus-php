@@ -4862,3 +4862,6 @@ ALTER TABLE invoices
 
 ALTER TABLE paysecure
     MODIFY rrn varchar(255) DEFAULT NULL;
+
+ALTER TABLE bank_transfers
+    MODIFY COLUMN payee_account VARCHAR(255) NOT NULL;
