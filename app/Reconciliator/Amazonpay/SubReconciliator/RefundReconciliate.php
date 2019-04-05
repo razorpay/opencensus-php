@@ -9,9 +9,9 @@ use RZP\Reconciliator\Base\SubReconciliator\Helper;
 
 class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
-    const COLUMN_REFUND_ID          = 'sellerreferenceid';
-    const COLUMN_REFUND_AMOUNT      = 'transactionamount';
-    const COLUMN_GATEWAY_REFUND_ID  = 'amazontransactionid';
+    const COLUMN_REFUND_ID          = 'merchantorderreferenceid';
+    const COLUMN_REFUND_AMOUNT      = 'orderamount';
+    const COLUMN_GATEWAY_REFUND_ID  = 'amazonorderreferenceid';
 
     protected function getRefundId($row)
     {

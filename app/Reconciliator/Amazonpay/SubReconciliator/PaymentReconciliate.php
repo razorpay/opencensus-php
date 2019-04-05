@@ -9,10 +9,12 @@ use RZP\Reconciliator\Base\SubReconciliator\Helper;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
-    const COLUMN_PAYMENT_ID         = 'sellerorderid';
-    const COLUMN_FEE                = ['transactionpercentagefee', 'transactionfixedfee'];
-    const COLUMN_AMOUNT             = 'transactionamount';
+    const COLUMN_PAYMENT_ID         = 'merchantorderid';
+    const COLUMN_FEE                = ['ordercommission', 'transactionfixedfee'];
+    const COLUMN_AMOUNT             = 'orderamount';
     const COLUMN_GATEWAY_PAYMENT_ID = 'amazonorderreferenceid';
+    const COLUMN_GST                = 'gst';
+
 
     protected function getPaymentId(array $row)
     {
@@ -38,12 +40,27 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             }
         }
 
-        return abs($gatewayFee);
+        $serviceTax = $this->getGatewayServiceTax($row);
+
+        if ($serviceTax === null)
+        {
+            return null;
+        }
+
+        $gatewayFee += $serviceTax;
+
+        return round($gatewayFee);
     }
 
     protected function getGatewayServiceTax($row)
     {
-        return 0;
+        $serviceTax = 0;
+
+        $gst = $row[self::COLUMN_GST];
+
+        $serviceTax += Helper::getIntegerFormattedAmount($gst);
+
+        return $serviceTax;
     }
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)
