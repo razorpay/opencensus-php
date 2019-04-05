@@ -7,13 +7,18 @@ use RZP\Trace\TraceCode;
 
 class NonBlockingHttp
 {
-    public static function postRequest(string $url, string $payload)
+    public static function postRequest(string $url, string $payload, string $header = null)
     {
         try
         {
             $cmd = 'curl -X POST ' . $url;
 
             $cmd .= ' -d "' . $payload . '" ';
+
+            if (isset($header) === true)
+            {
+                $cmd .= '-H "' . $header . '" ';
+            }
 
             $cmd .= " > /dev/null 2>&1 &";
 
