@@ -7,4 +7,10 @@ class Action
     const SIGNATURE     = 'signature';
 
     const VALIDATOR     = 'validator';
+
+    const SOURCE        = 'source';
+
+    const DIRECT        = 'direct';
+
+    const MOZART        = 'mozart';
 }

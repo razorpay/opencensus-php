@@ -70,10 +70,6 @@ class Sdk
     {
         $response = $this->initiateResponse();
 
-        $response[Fields::VPA_SUGGESTIONS] = [
-            'suggestion@razoraxis'
-        ];
-
         $response[Fields::AVAILABLE] = 'true';
 
         return $response;

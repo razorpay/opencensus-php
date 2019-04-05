@@ -145,6 +145,12 @@ final class P2pRoute
                 'customer/vpa/available',
                 'VpaController@checkAvailability'
             ],
+        Requests::P2P_CUSTOMER_VPA_INITIATE_CHECK_AVAILABILITY =>
+            [
+                'post',
+                'customer/vpa/available/initiate',
+                'VpaController@initiateCheckAvailability'
+            ],
         Requests::P2P_CUSTOMER_VPA_DELETE =>
             [
                 'delete',
@@ -244,6 +250,7 @@ final class P2pRoute
         Requests::P2P_CUSTOMER_VPA_FETCH,
         Requests::P2P_CUSTOMER_VPA_ASSIGN_BANK_ACCOUNT,
         Requests::P2P_CUSTOMER_VPA_CHECK_AVAILABILITY,
+        Requests::P2P_CUSTOMER_VPA_INITIATE_CHECK_AVAILABILITY,
         Requests::P2P_CUSTOMER_VPA_DELETE,
 
         Requests::P2P_CUSTOMER_BENEFICIARIES,

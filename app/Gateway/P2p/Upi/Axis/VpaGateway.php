@@ -66,9 +66,40 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
 
     }
 
+    public function initiateCheckAvailability(Response $response)
+    {
+        $this->initiateAdd($response);
+    }
+
     public function checkAvailability(Response $response)
     {
+        $sdk = $this->handleInputSdk();
 
+        if ($this->isVpaAvailable($sdk))
+        {
+            // the vpa given by the user is free and can be linked to an account.
+            // so returning successful response from here
+
+            $response->setData([
+                Entity::AVAILABLE     => true,
+                Entity::USERNAME      => $this->input->get(Entity::USERNAME),
+                Entity::HANDLE        => $this->context->handleCode(),
+            ]);
+
+            return $response;
+        }
+
+        // vpa given by the user not free(already assigned to someone)
+        // so returning a list of vpa suggestions
+
+        $vpaSuggestions = $sdk->get(Fields::VPA_SUGGESTIONS);
+
+        $response->setData([
+            Entity::AVAILABLE         => false,
+            Entity::USERNAME          => $this->input->get(Entity::USERNAME),
+            Entity::HANDLE            => $this->context->handleCode(),
+            Entity::SUGGESTIONS       => $vpaSuggestions
+        ]);
     }
 
     public function delete(Response $response)
@@ -122,6 +153,11 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
     protected function usernameToAddress(string $username)
     {
         return $username . '@' .$this->context->handleCode();
+    }
+
+    protected function isVpaAvailable($content) :bool
+    {
+        return $content[Fields::AVAILABLE] === 'true';
     }
 }
 
