@@ -24,7 +24,6 @@ use Illuminate\Cache\Events\KeyWritten;
  */
 class OAuthBearerAuthTest extends OAuthTestCase
 {
-    use OAuthTrait;
     use OAuthCache;
     use PaymentTrait;
     use MocksDnsTrait;
