@@ -41,6 +41,7 @@ class TransactionFilter extends Terminal\Filter
         'bharat_qr',
         'direct_settlement',
         'bank_account_type',
+        'hitachi_shared_terminal'
     ];
 
     public function methodFilter($terminal)
@@ -748,6 +749,38 @@ class TransactionFilter extends Terminal\Filter
         }
 
         if (in_array($terminal, $directSettlementTerminals, true) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function hitachiSharedTerminalFilter($terminal, $applicableTerminals)
+    {
+        $payment  = $this->input['payment'];
+
+        if ($payment->isMethodCardOrEmi() === false)
+        {
+            return true;
+        }
+
+        if (($terminal->getGateway() !== Gateway::HITACHI) or
+            ($terminal->isDirectForMerchant() === true))
+        {
+            return true;
+        }
+
+        $directTerminals = array_filter(
+                                    $applicableTerminals,
+                                    function ($terminal)
+                                    {
+                                        return (($terminal->getGateway() === Gateway::HITACHI) and
+                                                ($terminal->isDirectForMerchant() === true));
+                                    });
+
+        // if there is a direct hitachi terminal we reject shared hitachi terminal
+        if (empty($directTerminals) === true)
         {
             return true;
         }
