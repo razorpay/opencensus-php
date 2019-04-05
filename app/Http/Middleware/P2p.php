@@ -42,6 +42,10 @@ class P2p
     {
         $this->context->loadWithRequest($request);
 
-        return $next($request);
+        $response = $next($request);
+
+        $response->header('X-Razorpay-Request-Id', $this->context->getRequestId(), true);
+
+        return $response;
     }
 }

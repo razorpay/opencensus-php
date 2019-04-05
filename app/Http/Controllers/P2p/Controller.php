@@ -38,10 +38,7 @@ class Controller extends Controllers\Controller
     {
         $response = $this->checkForNextAction($response);
 
-        return response($response, 200, [
-            'Content-Type'          => 'application/json',
-            'X-Razorpay-Request-Id' => str_random(40),
-        ]);
+        return response($response);
     }
 
     // TODO: Logic will change after entity naming convention

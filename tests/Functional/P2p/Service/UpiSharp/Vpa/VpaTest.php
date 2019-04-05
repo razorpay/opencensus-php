@@ -75,13 +75,24 @@ class VpaTest extends TestCase
                           $this->fixtures->vpa->reload()->getBankAccountId());
     }
 
-    public function testCheckAvailability()
+    public function testInitiateCheckAvailability()
     {
         $helper = $this->getVpaHelper();
 
         $helper->withSchemaValidated();
 
-        $helper->checkAvailability();
+        $helper->initiateCheckVpaAvailable();
+    }
+
+    public function testCheckAvailability()
+    {
+        $helper = $this->getVpaHelper();
+
+        $request = $helper->initiateCheckVpaAvailable();
+
+        $helper->withSchemaValidated();
+
+        $helper->checkAvailability($request['callback']);
     }
 
     public function testDeleteVpa()

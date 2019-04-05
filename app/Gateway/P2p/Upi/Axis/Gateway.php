@@ -36,7 +36,7 @@ class Gateway extends Upi\Gateway
     protected function initiateSdkRequest(string $action)
     {
         $request = new Sdk([
-            'id' => $this->getSdkRequestId(),
+            'id' => $this->getRequestId(),
         ]);
 
         $request->setActionMap($action, $this->actionMap[$action]);
@@ -135,16 +135,11 @@ class Gateway extends Upi\Gateway
         return new GatewayErrorException($code, $gatewayCode, $gatewayDesc, $data);
     }
 
-    protected function getSdkRequestId()
-    {
-        return str_random(14);
-    }
-
     protected function getUpiRequestId()
     {
         $prefix = $this->config['merchant_unique_prefix'] ?? 'BJJ';
 
-        return $prefix . strtolower(str_random(32));
+        return $prefix . $this->request->getId();
     }
 
     protected function initiateS2sRequest(string $action)

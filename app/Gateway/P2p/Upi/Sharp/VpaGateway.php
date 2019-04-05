@@ -50,14 +50,17 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
         ]);
     }
 
+    public function initiateCheckAvailability(Response $response)
+    {
+        $this->initiateAdd($response);
+    }
+
     public function checkAvailability(Response $response)
     {
         $response->setData([
-            'success'   => true,
-            'vpa'       => [
-                'username'      => $this->input->get('username'),
-                'handle'        => $this->context->handleCode(),
-            ]
+            'available'     => true,
+            'username'      => $this->input->get('username'),
+            'handle'        => $this->context->handleCode(),
         ]);
     }
 

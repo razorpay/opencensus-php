@@ -153,6 +153,8 @@ class DeviceTest extends TestCase
     {
         $context = new Context();
 
+        $context->setOptions(new ArrayBag());
+
         $context->setHandle($this->fixtures->handle(self::DEVICE_1));
 
         $context->setMerchant($this->fixtures->merchant(self::DEVICE_1));
@@ -160,6 +162,8 @@ class DeviceTest extends TestCase
         $context->setDevice($this->fixtures->device(self::DEVICE_1));
 
         $context->setDeviceToken($this->fixtures->deviceToken(self::DEVICE_1));
+
+        $context->registerServices();
 
         $this->context = $context;
     }

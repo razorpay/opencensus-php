@@ -29,9 +29,10 @@ class Action extends Base\Action
     const DELETE_SUCCESS                = 'deleteSuccess';
 
     protected $actionToRoute = [
-        self::INITIATE_ADD              => Requests::P2P_CUSTOMER_VPA_CREATE,
-        self::INITIATE_ADD_SUCCESS      => Requests::P2P_CUSTOMER_VPA_CREATE,
-        self::ADD                       => Requests::P2P_CUSTOMER_VPA_CREATE,
-        self::ADD_SUCCESS               => Requests::P2P_CUSTOMER_VPA_CREATE,
+        self::INITIATE_ADD                      => Requests::P2P_CUSTOMER_VPA_CREATE,
+        self::INITIATE_ADD_SUCCESS              => Requests::P2P_CUSTOMER_VPA_CREATE,
+        self::ADD                               => Requests::P2P_CUSTOMER_VPA_CREATE,
+        self::ADD_SUCCESS                       => Requests::P2P_CUSTOMER_VPA_CREATE,
+        self::INITIATE_CHECK_AVAILABILITY       => Requests::P2P_CUSTOMER_VPA_CHECK_AVAILABILITY,
     ];
 }

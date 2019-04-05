@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\P2p\Base;
 use RZP\Error\P2p\ErrorCode;
 use RZP\Models\P2p\BankAccount;
+use RZP\Exception\P2p\BadRequestException;
 
 /**
  * @property Core $core
@@ -118,16 +119,28 @@ class Processor extends Base\Processor
         return $vpa->toArrayPublic();
     }
 
+    public function initiateCheckAvailability(array $input): array
+    {
+        $this->initialize(Action::INITIATE_CHECK_AVAILABILITY, $input, true);
+
+        $username = $this->input->get(Entity::USERNAME);
+
+        $this->gatewayInput->put(Entity::USERNAME, $username);
+
+        $this->callbackInput->put(Entity::DATA, [
+            Entity::USERNAME     => $username,
+        ]);
+
+        return $this->callGateway();
+    }
+
     public function checkAvailability(array $input): array
     {
         $this->initialize(Action::CHECK_AVAILABILITY, $input, true);
 
-        if ($this->core->checkLocalAvailability($this->input->get(Entity::USERNAME)))
-        {
-            throw new \Exception('Change the exception and message');
-        }
+        $userName = $this->input->get(Entity::USERNAME);
 
-        $this->gatewayInput->put(Entity::USERNAME, $this->input->get(Entity::USERNAME));
+        $this->gatewayInput->put(Entity::USERNAME, $userName);
 
         return $this->callGateway();
     }
@@ -136,11 +149,12 @@ class Processor extends Base\Processor
     {
         $this->initialize(Action::CHECK_AVAILABILITY_SUCCESS, $input, true);
 
-        return [
-            Entity::SUCCESS     => true,
-            Entity::USERNAME    => $this->input->get(Entity::VPA)[Entity::USERNAME],
-            Entity::HANDLE      => $this->input->get(Entity::VPA)[Entity::HANDLE],
-        ];
+        return array_only($this->input->toArray(),[
+            Entity::AVAILABLE,
+            Entity::USERNAME,
+            Entity::HANDLE,
+            Entity::SUGGESTIONS
+        ]);
     }
 
     public function delete(array $input): array
