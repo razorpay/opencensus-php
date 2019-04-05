@@ -14,7 +14,7 @@ export default function PartnerNavLinks() {
       <MainNavLink
         label="Earnings"
         icon="i i-earnings text-primary"
-        to="/partners/earnings"
+        to="/partners/earnings/daily"
         featureEnabled="show_commissions"
         additionalCondition={user => user.isAllowedView('earnings')}
         exact
