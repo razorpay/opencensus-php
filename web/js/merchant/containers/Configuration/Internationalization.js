@@ -155,74 +155,72 @@ export default class FlashCheckout extends Component {
         <div className="panel-heading">
           <span className="title">International card payments</span>
 
-          {
-            user.has_key_access && (
-              <>
-                {showToggler && (
-                  <span className="toggler-btn">
-                    <SwitchField
-                      defaultChecked={!!internationalEnabled}
-                      onChange={(isChecked, cb) =>
-                        this.toggleInternationalization(isChecked, cb)
-                      }
-                      type="prime"
-                    />
-                    {user.international ? (
-                      <b className="text-primary">Enabled</b>
-                    ) : (
-                      <b className="text-faded">Disabled</b>
-                    )}
-                  </span>
-                )}
-              </>
-            ) 
-          }
-
+          {user.has_key_access && (
+            <>
+              {showToggler && (
+                <span className="toggler-btn">
+                  <SwitchField
+                    defaultChecked={!!internationalEnabled}
+                    onChange={(isChecked, cb) =>
+                      this.toggleInternationalization(isChecked, cb)
+                    }
+                    type="prime"
+                  />
+                  {user.international ? (
+                    <b className="text-primary">Enabled</b>
+                  ) : (
+                    <b className="text-faded">Disabled</b>
+                  )}
+                </span>
+              )}
+            </>
+          )}
         </div>
 
         <div className="panel-body">
           <form className="form-horizontal">
-            {
-              user.has_key_access ? (
-                <>
-                  {showBanner && (
-                    <Alert.Info>
-                      From <b>1st April</b> your account will be activated to accept
-                      international card payments based on your eligibility, with
-                      support for 92 currencies
-                    </Alert.Info>
-                  )}
+            {user.has_key_access ? (
+              <>
+                {showBanner && (
+                  <Alert.Info>
+                    From <b>1st April</b> your account will be activated to
+                    accept international card payments based on your
+                    eligibility, with support for 92 currencies
+                  </Alert.Info>
+                )}
 
-                  <div className="description">{displayMsg}</div>
+                <div className="description">{displayMsg}</div>
 
-                  <div className="form-group">
-                    <ShowWhen
-                      additionalCondition={user =>
-                        user.isOrgAllowedFunctionality('external_links')
-                      }
-                    >
-                      <div className="col-sm-10">
-                        <a
-                          className="highlight"
-                          target="_blank"
-                          href="https://razorpay.com/payment-gateway/#go-international"
-                        >
-                          Know more
-                          <i
-                            className="i i-external-link"
-                            style={{ marginLeft: '5px' }}
-                          />
-                        </a>
-                      </div>
-                    </ShowWhen>
-                  </div>                
-                </> 
-                ) : (
-                  <div class="description">
-                    International card payments are currently available only for payment gateway [which requires website integeration] and not for payment pages, payment links & invoices. We are working on bringing the international support to other products soon
-                  </div>
-                )
-            }
+                <div className="form-group">
+                  <ShowWhen
+                    additionalCondition={user =>
+                      user.isOrgAllowedFunctionality('external_links')
+                    }
+                  >
+                    <div className="col-sm-10">
+                      <a
+                        className="highlight"
+                        target="_blank"
+                        href="https://razorpay.com/payment-gateway/#go-international"
+                      >
+                        Know more
+                        <i
+                          className="i i-external-link"
+                          style={{ marginLeft: '5px' }}
+                        />
+                      </a>
+                    </div>
+                  </ShowWhen>
+                </div>
+              </>
+            ) : (
+              <div class="description">
+                International card payments are currently available only for
+                payment gateway [which requires website integeration] and not
+                for payment pages, payment links & invoices. We are working on
+                bringing the international support to other products soon
+              </div>
+            )}
           </form>
         </div>
       </div>

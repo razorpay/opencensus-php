@@ -11,10 +11,7 @@ import LocalStorageService from 'rzp/utils/localStorage';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 @withRouter
-@connect(
-  state => ({ user: state.session.user }),
-  { ...ModalActions }
-)
+@connect(state => ({ user: state.session.user }), { ...ModalActions })
 @reduxForm({
   form: 'es-access',
   initialValues: {

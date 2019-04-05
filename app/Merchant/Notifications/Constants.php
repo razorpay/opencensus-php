@@ -78,6 +78,23 @@ class Constants
             ]
         ],
         [
+            'title'       => 'SSL Certificate Update for Razorpay',
+            'description' => 'We\'re updating the SSL certificate for api.razorpay.com from the of 10th April 2019. To understand if this update affects you, click on the link below.',
+            'start_ts'    => 1554352238,
+            'end_ts'      => 1554748200,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/alert.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Learn More',
+                    'url'   => 'https://mailchi.mp/razorpay/ssl-update',
+                ],
+            ],
+            'ga'          => [
+                'action' => 'SSL Certificate Announcement Notification',
+            ],
+        ],
+        [
             'title'       => 'All new Payment Pages!',
             'description' => 'Payment pages now has a ton of enhanced features, a lot more customisation and a better look and feel. Check it out now!',
             'start_ts'    => 1550695523,

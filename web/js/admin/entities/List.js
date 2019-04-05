@@ -281,8 +281,8 @@ export default class EntityList extends Component {
     let selectedFilters = sharedData.entities[this.selectedEntity];
     let selectedFiltersArray = [];
     if (selectedFilters) {
-      selectedFiltersArray = Object.keys(selectedFilters).sort((a, b) =>
-        b.endsWith('_id') ? 1 : -1
+      selectedFiltersArray = Object.keys(selectedFilters).sort(
+        (a, b) => (b.endsWith('_id') ? 1 : -1)
       );
     }
 

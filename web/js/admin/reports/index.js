@@ -395,57 +395,65 @@ export default class GenerateReports extends Component {
                   </span>
                 )}
 
-                {dateType === 'daily' && selectedConfig !== 'monthlyInvoice' && (
-                  <span>
-                    <DateField
-                      onChange={calDate => this.setState({ calDate })}
-                      format="DD/MM/YYYY"
-                      name={
-                        selectedConfig === 'monthlyInvoice'
-                          ? 'invoiceDate'
-                          : 'date'
-                      }
-                      placeholder="Select Date"
-                      defaultValue={defaultDate}
-                      allowToday={true}
-                    />
-                  </span>
-                )}
+                {dateType === 'daily' &&
+                  selectedConfig !== 'monthlyInvoice' && (
+                    <span>
+                      <DateField
+                        onChange={calDate => this.setState({ calDate })}
+                        format="DD/MM/YYYY"
+                        name={
+                          selectedConfig === 'monthlyInvoice'
+                            ? 'invoiceDate'
+                            : 'date'
+                        }
+                        placeholder="Select Date"
+                        defaultValue={defaultDate}
+                        allowToday={true}
+                      />
+                    </span>
+                  )}
               </div>
-              {selectedConfig !== 'monthlyInvoice' && selectedConfigDetails && (
-                <>
-                  <div class="form-element">
-                    <SelectField label="Select File Format" name="reportType">
-                      {/* Add option on the fly for txt, tsv or other formats */}
-                      {['csv', 'xlsx', 'xls'].indexOf(configReportType) < 0 && (
-                        <option value={configReportType}>
-                          {configReportType.toUpperCase()}
-                        </option>
+              {selectedConfig !== 'monthlyInvoice' &&
+                selectedConfigDetails && (
+                  <>
+                    <div class="form-element">
+                      <SelectField label="Select File Format" name="reportType">
+                        {/* Add option on the fly for txt, tsv or other formats */}
+                        {['csv', 'xlsx', 'xls'].indexOf(configReportType) <
+                          0 && (
+                          <option value={configReportType}>
+                            {configReportType.toUpperCase()}
+                          </option>
+                        )}
+                        <option value="csv">CSV</option>
+                        <option value="xlsx">Excel (xlsx)</option>
+                        <option value="xls">Old Excel (xls)</option>
+                      </SelectField>
+                    </div>
+                    {selectedConfigDetails.report_type === 'admin' &&
+                      AllowedAdminReportsForPaymentFilter.indexOf(
+                        selectedConfigDetails.label
+                      ) > -1 && (
+                        <div class="form-element">
+                          <SelectField
+                            label="Select Payment Type"
+                            name="paymentMethod"
+                          >
+                            {Object.keys(paymentMethods).map(
+                              (method, index) => (
+                                <option
+                                  value={paymentMethods[method]}
+                                  key={index}
+                                >
+                                  {method}
+                                </option>
+                              )
+                            )}
+                          </SelectField>
+                        </div>
                       )}
-                      <option value="csv">CSV</option>
-                      <option value="xlsx">Excel (xlsx)</option>
-                      <option value="xls">Old Excel (xls)</option>
-                    </SelectField>
-                  </div>
-                  {selectedConfigDetails.report_type === 'admin' &&
-                    AllowedAdminReportsForPaymentFilter.indexOf(
-                      selectedConfigDetails.label
-                    ) > -1 && (
-                      <div class="form-element">
-                        <SelectField
-                          label="Select Payment Type"
-                          name="paymentMethod"
-                        >
-                          {Object.keys(paymentMethods).map((method, index) => (
-                            <option value={paymentMethods[method]} key={index}>
-                              {method}
-                            </option>
-                          ))}
-                        </SelectField>
-                      </div>
-                    )}
-                </>
-              )}
+                  </>
+                )}
               <div class="form-element">
                 {!isLoading && (
                   <>

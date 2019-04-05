@@ -82,12 +82,10 @@ export const agentRole = {
 export const RBLRoles = {
   rbl_supervisor: {
     label: 'RBL Supervisor',
-    desc:
-      'RBL Supervisor Role',
+    desc: 'RBL Supervisor Role',
   },
   rbl_agent: {
     label: 'RBL Agent',
-    desc:
-      'RBL Agent Role',
+    desc: 'RBL Agent Role',
   },
 };

@@ -45,18 +45,19 @@ export default class Refunds extends Component {
       'refunds.status': statuses,
     };
 
-    this.defaultValues = {};
-
     adminFetch(`${this.mode}/admin/entities/all`)
       .then(data => {
         if (!data) {
           return;
         }
 
-        let gatewayValues = data.fields.gateway.values;
-        let methodValues = data.fields.method.values;
+        let gatewayValues = data.fields.gateway.values || [];
+        let methodValues = data.fields.method.values || {};
+        let gatewayAcquirerValues =
+          data.entities.terminal.gateway_acquirer.values || [];
         let gateways = [];
         let methods = [];
+        let gatewayAcquirers = [];
 
         gatewayValues.forEach(gateway => {
           gateways.push({
@@ -75,6 +76,17 @@ export default class Refunds extends Component {
         }
 
         this.multiSelectInitialValues['refunds.method'] = methods;
+
+        gatewayAcquirerValues.forEach(gatewayAcquirer => {
+          gatewayAcquirers.push({
+            name: gatewayAcquirer,
+            value: gatewayAcquirer,
+          });
+        });
+
+        this.multiSelectInitialValues[
+          'refunds.gateway_acquirer'
+        ] = gatewayAcquirers;
       })
       .then(d => {
         let params = this.params;
@@ -137,6 +149,8 @@ export default class Refunds extends Component {
             }),
         });
       });
+
+    this.defaultValues = {};
 
     this.onRefundModeChange = this.onRefundModeChange.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
@@ -258,6 +272,24 @@ export default class Refunds extends Component {
     });
   };
 
+  onDownloadGatewayFile = filters => {
+    this.setCollectionData(filters);
+
+    adminPost({
+      url: `${this.collection.extraFields.mode ||
+        'live'}/scrooge/refunds/download-gateway-file`,
+      data: {
+        query: this.collection.extraFields.query,
+      },
+    }).then(d => {
+      if (d.link !== '') {
+        window.open(d.link);
+      } else {
+        notifyError('Unable to download data');
+      }
+    });
+  };
+
   onDownloadSelectedClick = () => {
     const selectedRefunds = [...this.state.selectedRefunds];
 
@@ -265,7 +297,9 @@ export default class Refunds extends Component {
       url: `${this.mode}/scrooge/refunds/download`,
       data: {
         query: {
-          id: selectedRefunds,
+          refunds: {
+            id: selectedRefunds,
+          },
         },
       },
     }).then(d => {
@@ -449,6 +483,12 @@ export default class Refunds extends Component {
                     class="link"
                     pendingClass="link disabled"
                     onSubmit={this.onDownloadAllClick}
+                  />
+                  <AsyncButton
+                    text="Download Gateway File"
+                    class="link"
+                    pendingClass="link disabled"
+                    onSubmit={this.onDownloadGatewayFile}
                   />
                 </div>
               </Form>
@@ -645,7 +685,9 @@ const getFilterValue = (filters, filter, currentValue, semiColonSplit) => {
 const statuses = [
   { name: 'Init', value: 'init' },
   { name: 'File Init', value: 'file_init' },
-  { name: 'Attempt Failed', value: 'attempt_failed' },
+  { name: 'File Sent', value: 'file_sent' },
+  { name: 'FTA Pending', value: 'fta_pending' },
+  { name: 'Failed', value: 'failed' },
   { name: 'Processed', value: 'processed' },
   { name: 'On Hold', value: 'on_hold' },
 ];
@@ -670,6 +712,11 @@ const formFilters = [
   {
     name: 'Gateway(s)',
     formKey: 'refunds.gateway',
+    type: 'multi-select',
+  },
+  {
+    name: 'Gateway Acquirer(s)',
+    formKey: 'refunds.gateway_acquirer',
     type: 'multi-select',
   },
   {

@@ -460,7 +460,8 @@ class Rule extends CollectionItem {
   }
 
   paymentMethodTypeField() {
-    var data, fieldLabel = 'Type';
+    var data,
+      fieldLabel = 'Type';
 
     if (this.payment_method === 'card' && this.international == 0) {
       data = options.payment_method_type;
@@ -480,13 +481,17 @@ class Rule extends CollectionItem {
         IFT: 'IFT',
       };
 
-      fieldLabel = 'Mode'
+      fieldLabel = 'Mode';
     }
 
     if (data) {
       var field = this.selectField('payment_method_type', data);
       if (field) {
-        return <div>{fieldLabel} {field}</div>;
+        return (
+          <div>
+            {fieldLabel} {field}
+          </div>
+        );
       }
     }
   }

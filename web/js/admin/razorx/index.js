@@ -107,7 +107,9 @@ const links = [
 
 export const Sidebar = ({ user, handleLogout }) => (
   <aside className={`org-${org.custom_code}`}>
-    <a id="razorx-logo" href="/admin/razorx" />
+    <a id="razorx-logo" href="/admin/razorx">
+      <img src="/img/logo.png" height="28px" />
+    </a>
     <div class="scroll-nav">
       {links.map((l, i) => (
         <div key={i}>

@@ -5,6 +5,7 @@ import { rexFetch } from 'admin/razorx/fetch';
 import FeaturesModal from './Modal';
 
 import { AppStore } from 'admin/razorx/store';
+import ExperimentsModal from '../experiments/Modal';
 
 @withRouter
 export default class extends React.Component {
@@ -101,14 +102,25 @@ export default class extends React.Component {
     liveCreated.params.status = 'created';
     liveCreated = rexFetch(liveCreated);
 
-    experimentsParams.status = 'activated';
-    const activeExperiment = rexFetch(
-      { ...experimentsParams },
-      { status: 'activated' }
-    );
+    let activeExperiment = { ...experimentsParams };
+    activeExperiment.params.status = 'activated';
+    activeExperiment = rexFetch(activeExperiment);
 
     return [liveTotal, testTotal, liveCreated, testCreated, activeExperiment];
   }
+
+  showExperimentModal = isJSONView => {
+    if (!isJSONView) {
+      return openModal(<ExperimentsModal feature={this.state.data} />);
+    }
+
+    if (!window.CodeFlask) {
+      notifyError('JSON Editor is missing. Reload page / check your Network!');
+      return;
+    }
+
+    openModal(<ExperimentsModal feature={this.state.data} JSONView />);
+  };
 
   showFeatureModal = _ => {
     openModal(<FeaturesModal data={this.state.data} onEdit={this.onEdit} />);
@@ -167,6 +179,7 @@ export default class extends React.Component {
           data={data}
           terminate={this.terminate}
           showFeatureModal={this.showFeatureModal}
+          showExperimentModal={this.showExperimentModal}
           showJSONModal={this.showJSONModal}
           experiments={experiments}
           goToExperiment={this.goToExperiment}
@@ -181,6 +194,7 @@ export default class extends React.Component {
 const Details = ({
   data,
   showFeatureModal,
+  showExperimentModal,
   showJSONModal,
   experiments,
   goToExperiment,
@@ -261,6 +275,20 @@ const Details = ({
             ) : (
               <div class="label">No Active Experiment</div>
             )}
+          </div>
+
+          <div>
+            <a className="link text-bold" onClick={_ => showExperimentModal()}>
+              Create Experiment
+            </a>{' '}
+            ({' '}
+            <a
+              className="link text-bold"
+              onClick={_ => showExperimentModal(true)}
+            >
+              RAW
+            </a>{' '}
+            )
           </div>
 
           <br />

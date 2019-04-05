@@ -198,11 +198,7 @@ export default class CreatePromotion extends Component {
           }))}
         />
 
-        <Field
-            label="Partner Id"
-            name="partner_id"
-            maxLength="14"
-        />
+        <Field label="Partner Id" name="partner_id" maxLength="14" />
 
         <Field label="Maximum Redemptions" name="max_count" type="number" />
 
