@@ -141,7 +141,7 @@ class HeartbeatLagChecker implements LagChecker
 
         $this->reqCtx = $app['request.ctx'];
 
-        $this->redis = $app['redis']->connection('redis_labs');
+        $this->redis = $app['redis']->connection();
 
         $this->cache = $app['cache'];
 

@@ -196,7 +196,7 @@ class Beneficiary extends Base\Core
             return ['message' => 'No Beneficiary added since last report.'];
         }
 
-        $redis = $this->app['redis']->connection('redis_labs');
+        $redis = $this->app['redis']->connection();
 
         $ftsChannels = $redis->SMEMBERS(ConfigKey::FTS_CHANNELS);
 

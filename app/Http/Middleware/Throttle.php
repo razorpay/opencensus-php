@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Middleware;
 
+use Redis;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -22,6 +23,7 @@ final class Throttle
      * @param  Request  $request
      * @param  \Closure $next
      * @return Response
+     * @throws \Throwable
      */
     public function handle($request, \Closure $next)
     {
@@ -29,7 +31,7 @@ final class Throttle
 
         app('request.ctx')->init();
 
-        (new Throttler)->throttle();
+        (new Throttler)->throttle(Redis::Connection());
 
         $response = $next($request);
 

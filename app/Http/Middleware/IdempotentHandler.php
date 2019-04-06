@@ -55,7 +55,7 @@ class IdempotentHandler
 
     public function setConnection()
     {
-        $this->redis = $this->app['redis']->connection('redis_labs');
+        $this->redis = $this->app['redis']->connection();
     }
 
     public function handle(Request $request, Closure $next)
