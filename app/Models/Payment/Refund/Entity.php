@@ -16,6 +16,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Base\Traits\NotesTrait;
 use Razorpay\Spine\DataTypes\Dictionary;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payment\Refund\Metric as RefundMetric;
 
 /**
@@ -882,9 +883,10 @@ class Entity extends Base\PublicEntity
     {
         $response = parent::toArrayPublic();
 
-        $displayRefundPublicStatus = Payment\Gateway::isRefundsPublicStatusMerchant($this->getMerchantId());
+        $displayRefundPublicStatus = Payment\Refund\Core::isRefundsPublicStatusMerchant($this->getMerchantId());
 
-        if ($displayRefundPublicStatus === true)
+        if (($displayRefundPublicStatus === true) or
+            ($this->merchant->isFeatureEnabled(Feature::SHOW_REFUND_PUBLIC_STATUS) === true))
         {
             $scroogeResponse = $this->getPublicStatus($response);
 

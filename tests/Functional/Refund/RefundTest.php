@@ -1825,4 +1825,48 @@ class RefundTest extends TestCase
 
         $this->assertEquals($refund['status'], 'processed');
     }
+
+    public function testFetchRefundPublicStatus()
+    {
+        $this->fixtures->merchant->addFeatures('show_refund_public_status');
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            if($action === 'refund')
+            {
+                $content['result'] = 'DENIED BY RISK';
+            }
+
+            return $content;
+        });
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $this->assertGreaterThan(time() - 30, $refund['created_at']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('created', $refund['status']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/refunds/' . $refund['id'];
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+    }
 }

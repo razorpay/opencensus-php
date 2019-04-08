@@ -551,26 +551,6 @@ class Gateway
         ]
     ];
 
-    /**
-     * Refunds of only these merchant ids will be directed to scrooge.
-     *
-     * @var array
-     */
-    public static $refundsPublicStatusMerchants = [
-        '9DZkE60krEG4wq',
-        '9ncOh0EZ8sC9z9',
-        '9hefgkvGhT18Q9',
-        'BbaYzzPW541Aut',
-        '80oXBj51MHGmwH',
-        '94tLpgbojcR85O',
-        'C1fjEduvEkBUEK',
-        'C1fmOZYiZiezoD',
-        'C1fnUMHBmitlPB',
-        'C1fo6ARXco94tP',
-        'C1fp6DAnDH4YUz',
-        'C1fq8jgl8NRKnh',
-    ];
-
     public static $channels = [
         self::AMEX                => Settlement\Channel::KOTAK,
         self::ATOM                => Settlement\Channel::ATOM,
@@ -1465,11 +1445,6 @@ class Gateway
         return array_keys(self::$scroogeGateways);
     }
 
-    public static function getRefundsPublicStatusMerchants(): array
-    {
-        return self::$refundsPublicStatusMerchants;
-    }
-
     public static function isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer)
     {
         $pinAuthGateways = self::$gatewayAcquirerIfscMapping;
@@ -1512,18 +1487,6 @@ class Gateway
             isset(self::$scroogeGateways[$gateway][self::GO_LIVE_TIMESTAMP]) and
             $timestamp > self::$scroogeGateways[$gateway][self::GO_LIVE_TIMESTAMP]
         );
-    }
-
-    /**
-     * This function checks if a given merchant is to be shown refund's Public status.
-     *
-     * @param $merchantId
-     * @return bool
-     *
-     */
-    public static function isRefundsPublicStatusMerchant(string $merchantId = null): bool
-    {
-        return (in_array($merchantId, self::getRefundsPublicStatusMerchants(), true) === true);
     }
 
     /**
