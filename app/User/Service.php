@@ -686,6 +686,21 @@ class Service extends Base\Service
             throw new AuthorizationException('Invalid Token');
         }
 
+        $this->validateMerchantUserIfLoggedIn($token);
+
         return $token;
+    }
+
+    protected function validateTokenUserIfLoggedIn($token)
+    {
+        $user = Auth::user();
+
+        if (empty($user) === false)
+        {
+            if ($user->id !== $token->getClaim('user_id'))
+            {
+                throw new AuthorizationException('Different user is loggedin to the dashboard');
+            }
+        }
     }
 }
