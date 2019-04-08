@@ -261,7 +261,7 @@ class GatewayController extends Controller
 
         $payment = $this->repo->payment->findOrFailPublic($paymentId);
 
-        $publicKey = $this->getMerchantPublicKey($payment->getMerchantId(), $mode);
+        $publicKey = $this->getMerchantKeyForPayment($payment, $mode);
 
         $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
 
@@ -322,7 +322,7 @@ class GatewayController extends Controller
 
         $payment = $this->repo->payment->findOrFailPublic($paymentId);
 
-        $publicKey = $this->getMerchantPublicKey($payment->getMerchantId(), $mode);
+        $publicKey = $this->getMerchantKeyForPayment($payment, $mode);
 
         $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
 
@@ -369,7 +369,7 @@ class GatewayController extends Controller
 
         $payment = $this->repo->payment->findOrFailPublic($paymentId);
 
-        $publicKey = $this->getMerchantPublicKey($payment->getMerchantId(), $mode);
+        $publicKey = $this->getMerchantKeyForPayment($payment, $mode);
 
         $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
 
@@ -475,7 +475,7 @@ class GatewayController extends Controller
         $payment = $this->repo->payment->findOrFailPublic($paymentId);
         $publicPaymentId = $payment->getPublicId();
 
-        $publicKey = $this->getMerchantPublicKey($payment->getMerchantId(), $mode);
+        $publicKey = $this->getMerchantKeyForPayment($payment, $mode);
 
         switch ($responseFormat)
         {
@@ -752,14 +752,22 @@ class GatewayController extends Controller
         }
     }
 
-    protected function getMerchantPublicKey(string $merchantId, string $mode)
+    protected function getMerchantKeyForPayment(Payment\Entity $payment, string $mode)
     {
-        $keys = $this->repo->key->getKeysForMerchant($merchantId);
+        $key = $this->repo->key->getFirstActiveKeyForMerchant($payment->getMerchantId());
 
-        if ($keys->count() > 0)
+        if (empty($key) === false)
         {
-            return $keys->first()->getPublicKey($mode);
+            return $key->getPublicKey($mode);
         }
+
+        // TODO: We can remove the log after successful validation
+        $this->app['trace']->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, [
+            'message'       => 'Key not found',
+            'merchant_id'   => $payment->getMerchantId(),
+            'gateway'       => $payment->getGateway(),
+            'payment_id'    => $payment->getId(),
+        ]);
 
         // Route class check on empty string
         return '';
