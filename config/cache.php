@@ -85,7 +85,7 @@ return [
         'session' => [
             'driver'     => 'redis',
             'connection' => 'default',
-            'prefix'     => 'session',
+            'prefix'     => 'session:laravel',
         ],
     ],
 

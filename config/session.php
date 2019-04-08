@@ -73,6 +73,19 @@ return array(
 
 	'connection' => 'default',
 
+    /*
+    |--------------------------------------------------------------------------
+    | Session Cache Store
+    |--------------------------------------------------------------------------
+    |
+    | When using the "apc", "memcached", or "dynamodb" session drivers you may
+    | list a cache store that should be used for these sessions. This value
+    | must match with one of the application's configured cache "stores".
+    |
+    */
+
+    'store' => 'session',
+
 	/*
 	|--------------------------------------------------------------------------
 	| Session Database Table

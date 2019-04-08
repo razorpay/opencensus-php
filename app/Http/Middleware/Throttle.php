@@ -2,7 +2,6 @@
 
 namespace RZP\Http\Middleware;
 
-use Redis;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
