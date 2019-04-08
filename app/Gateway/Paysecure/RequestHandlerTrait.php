@@ -118,25 +118,13 @@ trait RequestHandlerTrait
 
         $rrn = $this->generateRrn($systemTraceAuditNumber);
 
+        $messageType = 'SMS';
+
         if ((isset($this->input['card']['message_type']) === true) and
             ($this->input['card']['message_type'] !== null))
         {
             $messageType = $this->input['card']['message_type'];
         }
-        else
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
-                null,
-                null,
-                [
-                    'message'    => "Message type missing for IIN",
-                    'payment_id' => $this->input['payment']['id'],
-                    'iin'        => $this->input['card']['iin'],
-                ]
-            );
-        }
-
 
         $requestArray = [
             Fields::CARD_NO                           => $card['number'],
@@ -184,7 +172,10 @@ trait RequestHandlerTrait
         return $this->app['config']->get('gateway.hitachi.test_merchant_id');
     }
 
-    // Since we're the acquirer, we can pass our own internal terminal id
+    // Since we're the acquirer, we can pass our own internal terminal id here.
+    // But for settling the amount, we need to make a request to Hitachi, who
+    // does not allow our internal mids/tids to be routed to them. Hence, we use
+    // Hitachi's mid and tid when sending the requests to PaySecure
     protected function getTerminalId()
     {
 //        todo: Revert this later if required based on discussion

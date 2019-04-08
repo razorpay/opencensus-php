@@ -102,7 +102,12 @@ trait Support
             $status = Status::CAPTURED;
         }
 
-        if ($status === Status::CAPTURED)
+        if (($status === Status::CAPTURED) and ($type === 'refund'))
+        {
+            $this->model = $this->repo->retrieveCapturedOrAcceptedCaptureFailuresOrFail(
+                                            $input['payment']['id']);
+        }
+        else if ($status === Status::CAPTURED)
         {
             $this->model = $this->repo->retrieveCapturedOrAcceptedCaptureErrorOrFail(
                                             $input['payment']['id']);

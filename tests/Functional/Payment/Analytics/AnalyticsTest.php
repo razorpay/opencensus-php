@@ -179,6 +179,32 @@ class AnalyticsTest extends TestCase
         $this->assertTestResponse($paymentAnalytic);
     }
 
+    public function testLibrarySetDirectForS2sUpiPayment()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+        $this->fixtures->create('terminal:shared_upi_hulk_terminal');
+        $this->fixtures->merchant->addFeatures(['s2supi']);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $this->doS2SUpiPayment($payment);
+
+        $paymentAnalytics = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+        $this->assertEquals('direct', $paymentAnalytics['library']);
+    }
+
+    public function testLibrarySetCustom()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['_']['library'] = 'custom';
+
+        $payment = $this->doAuthPayment($payment);
+
+        $paymentAnalytics = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+        $this->assertEquals('custom', $paymentAnalytics['library']);
+    }
+
     public function testHttpRequestDataForOtpBasedPayment()
     {
         $this->sharedTerminal = $this->fixtures->create(

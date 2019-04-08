@@ -4,7 +4,9 @@ namespace RZP\Models\P2p\Vpa;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;
+use RZP\Error\P2p\ErrorCode;
 use RZP\Models\P2p\BankAccount;
+use RZP\Exception\P2p\BadRequestException;
 
 /**
  * @property Core $core
@@ -29,7 +31,9 @@ class Processor extends Base\Processor
 
         if ($this->core->checkLocalAvailability($username))
         {
-            throw new \Exception('Change the exception and message');
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_DUPLICATE_VPA, [
+                Entity::USERNAME    => $username,
+            ]);
         }
 
         $this->gatewayInput->put(Entity::USERNAME, $username);
@@ -49,7 +53,9 @@ class Processor extends Base\Processor
 
         if ($this->core->checkLocalAvailability($this->input->get(Entity::USERNAME)))
         {
-            throw new \Exception('Change the exception and message');
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_DUPLICATE_VPA, [
+                Entity::USERNAME    => $username,
+            ]);
         }
 
         $this->gatewayInput->put(Entity::USERNAME, $this->input->get(Entity::USERNAME));
@@ -66,7 +72,7 @@ class Processor extends Base\Processor
         return $this->callGateway();
     }
 
-    public function addSuccess(array $input): array
+    protected function addSuccess(array $input): array
     {
         $this->initialize(Action::ADD_SUCCESS, $input, true);
 
@@ -99,7 +105,7 @@ class Processor extends Base\Processor
         return $this->callGateway();
     }
 
-    public function assignBankAccountSuccess(array $input): array
+    protected function assignBankAccountSuccess(array $input): array
     {
         $this->initialize(Action::ASSIGN_BANK_ACCOUNT_SUCCESS, $input, true);
 
@@ -113,29 +119,42 @@ class Processor extends Base\Processor
         return $vpa->toArrayPublic();
     }
 
-    public function checkAvailability(array $input): array
+    public function initiateCheckAvailability(array $input): array
     {
-        $this->initialize(Action::CHECK_AVAILABILITY, $input, true);
+        $this->initialize(Action::INITIATE_CHECK_AVAILABILITY, $input, true);
 
-        if ($this->core->checkLocalAvailability($this->input->get(Entity::USERNAME)))
-        {
-            throw new \Exception('Change the exception and message');
-        }
+        $username = $this->input->get(Entity::USERNAME);
 
-        $this->gatewayInput->put(Entity::USERNAME, $this->input->get(Entity::USERNAME));
+        $this->gatewayInput->put(Entity::USERNAME, $username);
+
+        $this->callbackInput->put(Entity::DATA, [
+            Entity::USERNAME     => $username,
+        ]);
 
         return $this->callGateway();
     }
 
-    public function checkAvailabilitySuccess(array $input): array
+    public function checkAvailability(array $input): array
+    {
+        $this->initialize(Action::CHECK_AVAILABILITY, $input, true);
+
+        $userName = $this->input->get(Entity::USERNAME);
+
+        $this->gatewayInput->put(Entity::USERNAME, $userName);
+
+        return $this->callGateway();
+    }
+
+    protected function checkAvailabilitySuccess(array $input): array
     {
         $this->initialize(Action::CHECK_AVAILABILITY_SUCCESS, $input, true);
 
-        return [
-            Entity::SUCCESS     => true,
-            Entity::USERNAME    => $this->input->get(Entity::VPA)[Entity::USERNAME],
-            Entity::HANDLE      => $this->input->get(Entity::VPA)[Entity::HANDLE],
-        ];
+        return array_only($this->input->toArray(),[
+            Entity::AVAILABLE,
+            Entity::USERNAME,
+            Entity::HANDLE,
+            Entity::SUGGESTIONS
+        ]);
     }
 
     public function delete(array $input): array
@@ -149,7 +168,7 @@ class Processor extends Base\Processor
         return $this->callGateway();
     }
 
-    public function deleteSuccess(array $input): array
+    protected function deleteSuccess(array $input): array
     {
         $this->initialize(Action::DELETE_SUCCESS, $input, true);
 

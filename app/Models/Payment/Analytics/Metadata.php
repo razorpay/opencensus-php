@@ -56,11 +56,13 @@ class Metadata
     const CHECKOUTJS    = 'checkoutjs';
     const RAZORPAYJS    = 'razorpayjs';
     const DIRECT        = 'direct';
+    const CUSTOM        = 'custom';
 
     const LIBRARY_VALUES = [
         self::CHECKOUTJS    => 1,
         self::RAZORPAYJS    => 2,
         self::DIRECT        => 3,
+        self::CUSTOM        => 4,
     ];
 
     // Browser values

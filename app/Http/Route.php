@@ -138,6 +138,7 @@ final class Route
         'refund_without_verify_bulk'               => ['post',     'refunds/retry/direct/bulk',                      'RefundController@postRefundDirectRetryBulk'                        ],
         'refund_verify'                            => ['get',      'refunds/{id}/verify',                            'RefundController@postRefundVerify'                                 ],
         'refund_verify_bulk'                       => ['post',     'refunds/verify/bulk',                            'RefundController@postVerifyRefundsBulk'                            ],
+        'scrooge_tagging_backfill'                 => ['post',     'refunds/scrooge_tagging_backfill',               'RefundController@scroogeTaggingBackfill'                           ],
         // We will change this in the future when we want to update more things than just marking it as processed.
         'refund_update_status'                     => ['put',      'refunds/{id}/update_status',                     'RefundController@updateScroogeRefundStatus'                        ],
         'refund_fetch_status'                      => ['get',      'refunds/{id}/status',                            'RefundController@getRefundEntity'                                  ],
@@ -1404,6 +1405,7 @@ final class Route
         'update_fts_fund_transfer',
         'fund_account_validation_retry',
         'setl_initiate_adhoc',
+        'scrooge_tagging_backfill',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2062,12 +2064,12 @@ final class Route
         'gateway_create_rule'                      => Permission::CREATE_GATEWAY_RULE,
         'gateway_update_rule'                      => Permission::EDIT_GATEWAY_RULE,
         'gateway_delete_rule'                      => Permission::DELETE_GATEWAY_RULE,
-        'terminal_toggle'                          => '*',
+        'terminal_toggle'                          => Permission::TOGGLE_TERMINAL,
         'terminal_delete'                          => Permission::DELETE_TERMINAL,
         'terminal_edit'                            => Permission::EDIT_TERMINAL,
         'terminal_reassign_merchant'               => Permission::ASSIGN_MERCHANT_TERMINAL,
-        'terminal_add_merchant'                    => '*',
-        'terminal_remove_merchant'                 => '*',
+        'terminal_add_merchant'                    => Permission::TERMINAL_MANAGE_MERCHANT,
+        'terminal_remove_merchant'                 => Permission::TERMINAL_MANAGE_MERCHANT,
         'emi_plan_delete'                          => Permission::DELETE_EMI_PLAN,
         'iin_edit'                                 => Permission::EDIT_IIN_RULE,
         'iin_edit_flows_bulk'                      => Permission::EDIT_IIN_RULE,
@@ -2155,7 +2157,7 @@ final class Route
         'adj_add_reverse'                          => '*',
         'adjustments_split_for_dispute'            => '*',
         'bank_transfer_edit_payer_account'         => '*',
-        'bank_transfer_insert'                     => '*',
+        'bank_transfer_insert'                     => Permission::BANK_TRANSFER_INSERT,
         'bank_transfer_strip_payer_accounts'       => '*',
         'batch_retry_output_file'                  => '*',
         'billdesk_reconcile_cancelled'             => '*',
@@ -2199,7 +2201,7 @@ final class Route
         'merchant_activation_upload_file_admin'    => '*',
         'merchant_beneficiary_file'                => Permission::MERCHANT_BENEFICIARY_UPLOAD,
         'merchant_create'                          => '*',
-        'merchant_create_terminal'                 => '*',
+        'merchant_create_terminal'                 => Permission::ASSIGN_MERCHANT_TERMINAL,
         'merchant_onboard_terminal'                => Permission::ASSIGN_MERCHANT_TERMINAL,
         'merchant_delete_terminal'                 => '*',
         'merchant_edit_free_credits'               => '*',
@@ -2439,6 +2441,16 @@ final class Route
     ];
 
     /**
+     * Throttling middleware (and hence, rate limiting) is applied for all routes, except for the ones
+     * defined here
+     *
+     * @var array
+     */
+    public static $skipThrottling = [
+        'checkout_public',
+    ];
+
+    /**
      * These are all the applications we have
      * If you add something here, add it to $internal as well
      * Nothing here should be in private or admin auth
@@ -2559,6 +2571,7 @@ final class Route
             'merchant_es_sync_cron',
             'entity_balance_id_update',
             'scrooge_refund_verify_bulk',
+            'scrooge_tagging_backfill',
         ],
 
         'subscriptions' => [
@@ -3094,6 +3107,12 @@ final class Route
             $route->where(['path' => '.*']);
         }
 
+        //
+        // Attach middleware if required, for the route.
+        // Note that the order below does not matter since middleware priority is defined
+        // in Kernel.php::$middlewarePriority
+        //
+
         // We add the web middleware group, conditionally to routes which require cookie / session access.
         if (in_array($name, self::$session, true) === true)
         {
@@ -3103,6 +3122,18 @@ final class Route
         if (in_array($name, self::$idempotent, true) === true)
         {
             $route->middleware('idempotent');
+        }
+
+        // Add the 'throttle' middleware to all routes, EXCEPT those defined in the `$skipThrottling` array
+        if (in_array($name, self::$skipThrottling, true) === false)
+        {
+            $route->middleware('throttle');
+        }
+
+        // Add the subscription_proxy middleware only for SUBSCRIPTION_PROXY_ROUTES
+        if (in_array($name, self::SUBSCRIPTION_PROXY_ROUTES, true) === true)
+        {
+            $route->middleware('subscription_proxy');
         }
     }
 

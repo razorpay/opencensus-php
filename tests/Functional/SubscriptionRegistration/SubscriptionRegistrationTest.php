@@ -46,6 +46,8 @@ class SubscriptionRegistrationTest extends TestCase
         $order = $this->getDbLastEntity('order');
 
         $this->assertEquals($order['method'], null);
+
+        $this->assertStatusesWithLastEntity(['sms_status' => 'sent', 'email_status' => 'sent']);
     }
 
     public function testCreateAuthLinkWithBankMandate()
@@ -59,6 +61,8 @@ class SubscriptionRegistrationTest extends TestCase
         $order = $this->getDbLastEntity('order');
 
         $this->assertEquals($order['method'], 'emandate');
+
+        $this->assertStatusesWithLastEntity(['sms_status' => 'sent', 'email_status' => 'sent']);
     }
 
     public function testCreateAuthLinkWithBankAccount()
@@ -78,6 +82,8 @@ class SubscriptionRegistrationTest extends TestCase
         $this->assertEquals($bankAccount['ifsc_code'], 'HDFC0001233');
 
         $this->assertEquals($subr['method'], 'emandate');
+
+        $this->assertStatusesWithLastEntity(['sms_status' => 'sent', 'email_status' => 'sent']);
     }
 
     public function testAuthLinkHostedPage()
@@ -395,6 +401,13 @@ class SubscriptionRegistrationTest extends TestCase
         ];
 
         return $payment;
+    }
+
+    protected function assertStatusesWithLastEntity(array $expected)
+    {
+        $invoice = $this->getDbLastEntity('invoice');
+
+        $this->assertArraySelectiveEquals($expected, $invoice->toArrayPublic());
     }
 
     protected function setupHdfcEmandateAndGetPaymentRequest()

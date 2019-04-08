@@ -252,6 +252,8 @@ class Processor
 
             $this->setMethodForInput($input);
 
+            $this->appendMetadataForS2SPayment($input);
+
             $payment = $this->buildPaymentEntity($input);
 
             $this->preProcessForSubscriptionsIfApplicable($input, $payment);
@@ -294,6 +296,14 @@ class Processor
             (new Payment\Metric)->pushExceptionMetrics($e, Metric::PAYMENT_PROCESS_FAILED, $dimensions);
 
             throw $e;
+        }
+    }
+
+    protected function appendMetadataForS2SPayment(array & $input)
+    {
+        if ($this->app['basicauth']->isPrivateAuth() === true)
+        {
+            $input = (new Payment\Analytics\Service)->setMetadataForS2SPayment($input);
         }
     }
 

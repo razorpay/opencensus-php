@@ -4859,4 +4859,9 @@ ALTER TABLE reversals DROP FOREIGN KEY reversals_transaction_id_foreign;
 
 ALTER TABLE invoices
     DROP FOREIGN KEY invoices_batch_id_foreign;
-    
+
+ALTER TABLE paysecure
+    MODIFY rrn varchar(255) DEFAULT NULL;
+
+ALTER TABLE bank_transfers
+    MODIFY COLUMN payee_account VARCHAR(255) NOT NULL;

@@ -812,6 +812,7 @@ class Gateway
                 'namelookup_time'    => $info['namelookup_time'],
                 'pretransfer_time'   => $info['pretransfer_time'],
                 'starttransfer_time' => $info['starttransfer_time'],
+                'primary_ip'         => $info['primary_ip'] ?? 'nil',
             ]);
 
         try

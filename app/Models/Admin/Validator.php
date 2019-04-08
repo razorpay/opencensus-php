@@ -53,6 +53,7 @@ class Validator extends Base\Validator
         ConfigKey::HEARTBEAT_TIME_THRESHOLD           => 'filled|integer',
         ConfigKey::HEARTBEAT_TRAFFIC_PERCENTAGE       => 'filled|integer',
         ConfigKey::HEARTBEAT_SLAVE_TIME_THRESHOLD     => 'filled|integer',
+        ConfigKey::HEARTBEAT_ROUTES                   => 'filled|array',
         ConfigKey::HITACHI_DYNAMIC_DESCR_ENABLED      => 'filled|boolean',
         ConfigKey::CPS_SERVICE_ENABLED                => 'filled|boolean',
         ConfigKey::SETTLEMENT_TRANSACTION_LIMIT       => 'filled|integer',
@@ -60,15 +61,16 @@ class Validator extends Base\Validator
 
     protected static $setRedisKeysRules = [
         ConfigKey::FTS_CHANNELS => 'filled|array',
+        ConfigKey::HEARTBEAT_ROUTES => 'filled|array',
     ];
 
     protected static $updateRedisKeysRules = [
-        'key'   => 'required|in:fts_channels',
+        'key'   => 'required|in:config:fts_channels,config:heartbeat_routes',
         'value' => 'array',
     ];
 
     protected static $getRedisKeyRules = [
-        'key'   => 'required|in:fts_channels'
+        'key'   => 'required|in:config:fts_channels,config:heartbeat_routes'
     ];
 
     protected static $scorecardRules = [

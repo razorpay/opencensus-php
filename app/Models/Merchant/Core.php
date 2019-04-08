@@ -444,8 +444,9 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
             [
-                'merchant_id' => $merchant->getId(),
-                'input'       => $input,
+                'activated' => $merchant->isActivated(),
+                'live'      => $merchant->isLive(),
+                'input'     => $input,
             ]);
 
         $merchant->edit($input, 'editConfig');

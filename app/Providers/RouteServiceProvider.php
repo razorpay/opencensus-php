@@ -84,11 +84,9 @@ class RouteServiceProvider extends ServiceProvider
             'prefix'        => 'v1',
             'namespace'     => $this->namespace,
             'middleware'    => [
-                'throttle',
                 'auth',
                 'admin_access',
                 'user_access',
-                'subscription_proxy',
                 'workflow',
                 'merchant_ip_filter',
                 'event_tracker',

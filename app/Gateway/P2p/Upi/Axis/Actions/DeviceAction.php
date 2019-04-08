@@ -4,7 +4,7 @@ namespace RZP\Gateway\P2p\Upi\Axis\Actions;
 
 use RZP\Models\P2p\Device;
 use RZP\Gateway\P2p\Upi\Axis\Fields;
-use RZP\Gateway\P2p\Upi\Axis\Sdk;
+use RZP\Gateway\P2p\Upi\Axis\S2sDirect;
 
 class DeviceAction extends Action
 {
@@ -15,6 +15,8 @@ class DeviceAction extends Action
     const GET_SESSION_TOKEN = 'GET_SESSION_TOKEN';
 
     const IS_DEVICE_FINGERPRINT_VALID = 'IS_DEVICE_FINGERPRINT_VALID';
+
+    const DEREGISTER = 'DEREGISTER';
 
     const MAP = [
 
@@ -49,6 +51,7 @@ class DeviceAction extends Action
                 Fields::MCC                     => 'required',
                 Fields::TIMESTAMP               => 'required',
                 Fields::CURRENCY                => 'required',
+                Fields::SIM_ID                  => 'required',
             ],
             self::SIGNATURE => [
                 Fields::CURRENCY,
@@ -58,6 +61,13 @@ class DeviceAction extends Action
                 Fields::MERCHANT_ID,
                 Fields::TIMESTAMP,
                 Fields::UDF_PARAMETERS,
+            ],
+        ],
+
+        self::DEREGISTER    => [
+            self::SOURCE    => self::DIRECT,
+            self::DIRECT    => [
+                S2sDirect::METHOD => 'post'
             ],
         ]
     ];

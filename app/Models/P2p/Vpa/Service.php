@@ -61,6 +61,13 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function initiateCheckAvailability(array $input): array
+    {
+        $response = $this->processor->initiateCheckAvailability($input);
+
+        return $response;
+    }
+
     public function delete(array $input): array
     {
         $response = $this->processor->delete($input);
