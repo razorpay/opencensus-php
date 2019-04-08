@@ -653,7 +653,7 @@ class Service extends Base\Service
 
     public function validateJWT($token)
     {
-        if (empty($token) === null)
+        if (empty($token) === true)
         {
             throw new BadRequestError(
                 'Token context not present in the request',
