@@ -20,7 +20,7 @@ class NonBlockingHttp
                 $cmd .= '-H "' . $header . '" ';
             }
 
-            $cmd .= " > /dev/null 2>&1 &";
+            $cmd .= " -m 1 > /dev/null 2>&1 &";
 
             exec($cmd, $output, $exit);
 
