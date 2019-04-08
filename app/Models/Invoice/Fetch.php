@@ -27,6 +27,7 @@ class Fetch extends BaseFetch
             Entity::MERCHANT_ID       => 'sometimes|alpha_num',
             Entity::ORDER_ID          => 'sometimes|string|max:20',
             Entity::ENTITY_TYPE       => 'sometimes|string|nullable',
+            Entity::STATUSES          => 'sometimes|sequential_array|min:1|max:6|custom',
             self::EXPAND_EACH         => 'filled|string|in:payments,payments.card,user',
         ],
     ];
@@ -44,9 +45,10 @@ class Fetch extends BaseFetch
             Entity::USER_ID,
             Entity::STATUS,
             Entity::TYPES,
+            Entity::STATUSES,
             Entity::CUSTOMER_NAME,
             Entity::CUSTOMER_CONTACT,
-            Entity::CUSTOMER_EMAIL ,
+            Entity::CUSTOMER_EMAIL,
             Entity::NOTES,
             Entity::SUBSCRIPTION_ID,
             EsRepository::QUERY,
@@ -79,6 +81,7 @@ class Fetch extends BaseFetch
 
     const COMMON_FIELDS = [
         Entity::STATUS,
+        Entity::STATUSES,
         Entity::TYPE,
         Entity::TYPES,
         Entity::MERCHANT_ID,
@@ -98,6 +101,14 @@ class Fetch extends BaseFetch
         foreach ($value as $type)
         {
             Type::checkType($type);
+        }
+    }
+
+    protected function validateStatuses($attribute, $value)
+    {
+        foreach ($value as $status)
+        {
+            Status::checkStatus($status);
         }
     }
 }
