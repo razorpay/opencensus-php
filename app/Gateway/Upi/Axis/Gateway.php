@@ -714,21 +714,22 @@ class Gateway extends Base\Gateway
     /**
      * @param array $input
      * @return array $scroogeResponse
-     * @throws Exception\LogicException
+     * @throws Exception\GatewayErrorException
      */
     public function verifyRefund(array $input)
     {
         if ($this->isUnprocessedRefund($input) === true)
         {
             return (new GatewayBase\ScroogeResponse)->setSuccess(false)
-                ->setStatusCode(Error\ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
-                ->toArray();
+                                                    ->setStatusCode(
+                                                        Error\ErrorCode::REFUND_MANUALLY_CONFIRMED_UNPROCESSED)
+                                                    ->toArray();
         }
 
         if ($this->isProcessedRefund($input) === true)
         {
             return (new GatewayBase\ScroogeResponse)->setSuccess(true)
-                ->toArray();
+                                                    ->toArray();
         }
 
         parent::action($input, Action::VERIFY_REFUND);
@@ -841,20 +842,20 @@ class Gateway extends Base\Gateway
         $scroogeResponse->setGatewayVerifyResponse($responseContent)
                         ->setGatewayKeys($this->getGatewayData($responseContent));
 
-        if ($responseContent[Fields::CODE] === Status::REFUND_SUCCESS)
+        $code = $responseContent[Fields::CODE];
+
+        if ($code === Status::REFUND_SUCCESS)
         {
             return $scroogeResponse->setSuccess(true)
                                    ->toArray();
         }
 
-        if ($responseContent[Fields::CODE] === Status::REFUND_ABSENT)
+        if ($code === Status::REFUND_ABSENT)
         {
             return $scroogeResponse->setSuccess(false)
-                ->setStatusCode(Error\ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
-                ->toArray();
+                                   ->setStatusCode(Error\ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT)
+                                   ->toArray();
         }
-
-        $code = $responseContent[Fields::CODE];
 
         $errorCode = ErrorCodes::getErrorCode($code, $responseContent);
 

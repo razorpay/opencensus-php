@@ -206,7 +206,7 @@ class UpiAxisGatewayTest extends TestCase
         {
             if ($action === 'verify_refund')
             {
-                $content[Fields::CODE] = 'F';
+                $content[Fields::CODE] = '111';
             }
         }, $this->gateway);
 
@@ -402,7 +402,7 @@ class UpiAxisGatewayTest extends TestCase
         {
             if ($action === 'verify_refund')
             {
-                $content[Fields::CODE] = 'F';
+                $content[Fields::CODE] = '111';
             }
         }, $this->gateway);
 
@@ -622,13 +622,9 @@ class UpiAxisGatewayTest extends TestCase
 
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
-            if ($action === 'refund')
+            if (($action === 'refund') or ($action === 'verify_refund'))
             {
                 $content[Fields::CODE] = '111';
-            }
-            if ($action === 'verify_refund')
-            {
-                $content[Fields::CODE] = 'F';
             }
         }, $this->gateway);
 
@@ -664,7 +660,7 @@ class UpiAxisGatewayTest extends TestCase
         {
             if ($action === 'verify_refund')
             {
-                $content[Fields::CODE] = 'F';
+                $content[Fields::CODE] = '111';
             }
         }, $this->gateway);
 
