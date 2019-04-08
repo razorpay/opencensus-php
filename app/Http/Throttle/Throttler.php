@@ -196,6 +196,7 @@ class Throttler
         $maxBucketSize    = $this->getThrottleMaxBucketSize();
 
         $limiter  = new LeakyBucket\Redis($maxBucketSize, $leakRateValue, $leakRateDuration, $this->redis);
+        $limiter->setPrefix('throttle:pv:');
         $response = $limiter->attempt($key);
 
         // Payload for trace and exception extra data

@@ -31,7 +31,7 @@ final class Throttle
 
         app('request.ctx')->init();
 
-        (new Throttler)->throttle(Redis::Connection());
+        (new Throttler)->throttle();
 
         $response = $next($request);
 
