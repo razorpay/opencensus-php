@@ -42,6 +42,9 @@
               <div ng-if="!lockme && isOrgCheckDone && !isOrgHDFC" class="highlight-clickable-text forgot-password-text" ng-click="goToForgotPwd()">
                 Forgot Password?
               </div>
+              <div ng-if="!lockme && isOrgCheckDone && !isOrgHDFC" class="highlight-clickable-text forgot-password-text">
+                <a href="https://razorpay.com/support/#request/merchant" target="_blank">Contact Support</a>
+              </div>
               <button override-tab ng-disable="loginInProgress" class="btn btn-primary form-control" type="submit">
                 {{lockme ? "Unlock" : "Login"}}
               </button>
