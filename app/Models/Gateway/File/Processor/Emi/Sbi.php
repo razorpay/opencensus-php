@@ -34,7 +34,6 @@ class Sbi extends Base
 
     const TEST_ENCRYPTION_IV = '123456789012';
 
-    // todo: Change directory as required when going live
     const S3_PATH = 'sbi_emi/';
 
     /**
@@ -354,7 +353,6 @@ class Sbi extends Base
 
     protected function sendEmiFile($data)
     {
-        // todo: Push to beam once decryption is handled at beam side
         $fullFileName = $this->file->getName() . '.' . $this->file->getExtension();
 
         $fileInfo = [$fullFileName];

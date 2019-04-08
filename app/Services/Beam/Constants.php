@@ -16,8 +16,7 @@ class Constants
 
     const AXIS2_BENEFICIARY_JOB_NAME   = 'axis_poweraccess_beneficiary';
 
-    //todo: Revert after testing
-    const SBI_EMI_FILE_JOB_NAME        = 'rzp_test_beam';
+    const SBI_EMI_FILE_JOB_NAME        = 'sbi_emi';
 
     const SBI_UPI_REFUND_FILE_JOB_NAME = 'sbi_upi_refund';
 
