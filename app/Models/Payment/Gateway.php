@@ -870,7 +870,7 @@ class Gateway
             Network::VISA,
             Network::MAES,
 //            todo: Enable this when we go live with PaySecure
-//            Network::RUPAY,
+            Network::RUPAY,
         ],
         self::FIRST_DATA => [
             Network::MC,
