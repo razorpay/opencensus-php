@@ -589,6 +589,8 @@ final class Route
         'subscription_fetch_due_addons'            => ['get',      'subscriptions/{subscriptionId}/addons/due',      'SubscriptionController@getDueAddonsForSubscription'                ],
         'subscription_update_data'                 => ['post',     'subscriptions/{subscriptionId}/update_data',     'SubscriptionController@postUpdateData'                             ],
         'subscription_payment_process'             => ['post',     'subscriptions/{subscriptionId}/payment_process', 'SubscriptionController@postPaymentProcess'                         ],
+        'subscription_charge_cycle'                => ['post',     'subscriptions/{subscriptionId}/charge_cycle',    'SubscriptionController@postSubscriptionChargeCycle'                ],
+        'subscription_skip_cycle'                  => ['post',     'subscriptions/{subscriptionId}/skip_cycle',      'SubscriptionController@postSubscriptionSkipCycle'                  ],
         'subscription_view_live'                   => ['get',      'l/subscriptions/{id}',                           'SubscriptionController@getSubscriptionView'                        ],
         'subscription_view_test'                   => ['get',      't/subscriptions/{id}',                           'SubscriptionController@getSubscriptionView'                        ],
         'subscription_view_live_post'              => ['post',     'l/subscriptions/{id}',                           'SubscriptionController@getSubscriptionView'                        ],
@@ -1961,6 +1963,8 @@ final class Route
         //Admin route for fixing subscriptio data
         'subscription_update_data',
         'subscription_payment_process',
+        'subscription_charge_cycle',
+        'subscription_skip_cycle',
     ];
 
     public static $routePermission = [
@@ -2354,6 +2358,9 @@ final class Route
         'merchant_user_reset_password'             => Permission::USER_PASSWORD_RESET,
         'subscription_update_data'                 => Permission::MODIFY_SUBSCRIPTION_DATA,
         'subscription_payment_process'             => Permission::MODIFY_SUBSCRIPTION_DATA,
+        'subscription_charge_cycle'                => Permission::MODIFY_SUBSCRIPTION_DATA,
+        'subscription_skip_cycle'                  => Permission::MODIFY_SUBSCRIPTION_DATA,
+
     ];
 
     public static $direct = [
@@ -2850,6 +2857,8 @@ final class Route
         // 'subscriptions_retry',
         'subscription_update_data',
         'subscription_payment_process',
+        'subscription_charge_cycle',
+        'subscription_skip_cycle',
     ];
 
     // These routes are redirected after a feature check
