@@ -1009,6 +1009,31 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createDirectHitachiRecurringTerminalWithBothRecurringTypes(array $attributes = [])
+    {
+        $terminalId = \RZP\Models\Terminal\Shared::HITACHI_DIRECT_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $terminalId,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'hitachi',
+            'gateway_acquirer'          => 'ratn',
+            'card'                      => 1,
+            'type'                      => [
+                Type::RECURRING_NON_3DS => '1',
+                Type::RECURRING_3DS     => '1',
+                Type::DEBIT_RECURRING   => '1',
+            ],
+            'gateway_merchant_id'       => 'random',
+            'gateway_terminal_id'       => 'recurring_random',
+            'gateway_terminal_password' => 'razorpay_password',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createBankAccountTerminal(array $attributes = [])
     {
         $defaultValues = [

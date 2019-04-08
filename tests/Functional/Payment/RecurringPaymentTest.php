@@ -376,6 +376,65 @@ class RecurringPaymentTest extends TestCase
         $this->assertEquals($paymentEntity[Payment::TWO_FACTOR_AUTH], 'skipped');
     }
 
+    public function testRecurringSecondPaymentCreatePrivateAuthHitachi()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->terminal->disableTerminal('1RecurringTerm');
+        $this->fixtures->terminal->disableTerminal('1000CybrsTrmnl');
+        $this->fixtures->terminal->disableTerminal('3RecurringTerm');
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'recurring' => 1,
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+
+        $terminal = $this->fixtures->create('terminal:hitachi_recurring_terminal_with_both_recurring_types');
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $payment['card']['number'] = '5567630000002004';
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $tokenEntity   = $this->getLastEntity('token', true);
+
+        $this->assertEquals($paymentEntity[Payment::TERMINAL_ID], 'HitcRcg3DSN3DS');
+        $this->assertEquals('initial', $paymentEntity['recurring_type']);
+        $this->assertEquals(true, $tokenEntity[Token::RECURRING]);
+
+        $tokenId = $paymentEntity[Payment::TOKEN_ID];
+
+        unset($payment[Payment::CARD]);
+        unset($payment[Payment::BANK]);
+
+        $payment[Payment::TOKEN] = $tokenId;
+
+        $terminal2 = $this->fixtures->create('terminal:direct_hitachi_recurring_terminal_with_both_recurring_types');
+
+        $this->ba->privateAuth();
+
+        $content = $this->doS2SRecurringPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($paymentEntity[Payment::TERMINAL_ID], '100HitaDirTmnl');
+        $this->assertEquals('auto', $paymentEntity['recurring_type']);
+        $this->assertEquals($paymentEntity[Payment::TWO_FACTOR_AUTH], 'skipped');
+    }
+
     public function testRecurringOtpFix()
     {
         $this->ba->publicAuth();
