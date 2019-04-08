@@ -547,7 +547,7 @@ class Gateway
             self::GO_LIVE_TIMESTAMP => 1552398662
         ],
         Payment\Gateway::UPI_AXIS   => [
-            self::GO_LIVE_TIMESTAMP => 1552398662
+            self::GO_LIVE_TIMESTAMP => 1554715800
         ]
     ];
 
