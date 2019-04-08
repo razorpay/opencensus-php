@@ -2847,6 +2847,8 @@ final class Route
         // 'subscriptions_retry',
         'subscription_update_data',
         'subscription_payment_process',
+        'subscription_charge_cycle',
+        'subscription_skip_cycle',
     ];
 
     // These routes are redirected after a feature check
