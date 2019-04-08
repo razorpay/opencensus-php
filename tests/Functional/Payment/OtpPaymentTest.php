@@ -17,6 +17,7 @@ use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Customer\Token\Entity as Token;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Terminal\Options as TerminalOptions;
 use RZP\Models\Card\IIN;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -519,9 +520,28 @@ class OtpPaymentTest extends TestCase
 
     public function testHeadlessOtpAuthenticationPaymentS2SRedirectFlow()
     {
-        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+        $this->fixtures->create('gateway_rule', [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'first_data',
+            'type'          => 'sorter',
+            'filter_type'   => 'select',
+            'min_amount'    => 0,
+            'load'          => 100,
+            'group'         => null,
+            'currency'      => 'INR',
+            'step'          => 'authorization',
+        ]);
+
+        $this->fixtures->create('terminal:direct_hitachi_terminal', [
             'type' => [
-                'non_recurring' => '1'
+                'non_recurring' => '1',
+            ]
+        ]);
+
+       $this->fixtures->create('terminal:direct_first_data_recurring_terminal', [
+            'type' => [
+                'non_recurring' => '1',
             ]
         ]);
 
@@ -532,7 +552,9 @@ class OtpPaymentTest extends TestCase
 
         $this->app->instance('razorx', $razorxMock);
 
-         $this->app->razorx->method('getTreatment')
+        TerminalOptions::setTestChance(500);
+
+        $this->app->razorx->method('getTreatment')
                         ->will($this->returnCallback(
                             function ($mid, $feature, $mode) {
                                 if ($feature === 'redirect_terminal_cache')
@@ -595,8 +617,8 @@ class OtpPaymentTest extends TestCase
         $payment = $this->getEntityById('payment', $content['razorpay_payment_id'], true);
 
         self::assertEquals('headless_otp', $payment['auth_type']);
-        self::assertEquals('hitachi', $payment['gateway']);
-        self::assertEquals('100HitachiTmnl', $payment['terminal_id']);
+        self::assertEquals('first_data', $payment['gateway']);
+        self::assertEquals('FDRcrDTrmnl3DS', $payment['terminal_id']);
         self::assertEquals('authorized', $payment['status']);
         assertTrue($this->otpFlow);
     }
@@ -1570,7 +1592,6 @@ class OtpPaymentTest extends TestCase
 
     public function testHeadlessOtpDefaultAuthType3ds()
     {
-
         $this->fixtures->create('gateway_rule', [
             'method'        => 'card',
             'merchant_id'   => '100000Razorpay',

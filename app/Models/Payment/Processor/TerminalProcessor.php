@@ -57,10 +57,15 @@ class TerminalProcessor extends Base\Core
     {
         $terminals = $this->repo->terminal->findMany($terminalIds);
 
+        //
+        // We use `->values()` here since sortBy preserves the indexes and later,
+        // when we get by index, we get the incorrect value. This happens because
+        // the original index is not removed.
+        //
         return $terminals->sortBy(function($terminal) use ($terminalIds)
         {
             return array_search($terminal->getId(), $terminalIds);
-        });
+        })->values()->all();
     }
 
     public function setAuthenticationGateway(Payment\Entity $payment, array & $gatewayInput)

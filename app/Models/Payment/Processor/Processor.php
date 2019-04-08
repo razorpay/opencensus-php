@@ -149,6 +149,11 @@ class Processor
      * @var Terminal\Entity
      */
     protected $terminal;
+
+    /**
+     * This should be an array and not a collection
+     * @var array
+     */
     protected $selectedTerminals;
     protected $mode;
     /**

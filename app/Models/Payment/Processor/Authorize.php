@@ -110,6 +110,8 @@ trait Authorize
 
     protected function setSelectedTerminals(Payment\Entity $payment, array $gatewayInput)
     {
+        // Ensure that the selectedTerminals set here is an array of terminal entities and not a terminal collection.
+
         if (empty($gatewayInput['selected_terminals_ids']) === false)
         {
             $this->selectedTerminals = (new TerminalProcessor)->getTerminalFromTerminalIds($gatewayInput['selected_terminals_ids']);
