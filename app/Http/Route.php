@@ -2683,6 +2683,7 @@ final class Route
     //
     const DEBUG_APPS = [
         'subscriptions',
+        'cron',
     ];
 
     protected static $jsonpRoutes = [

@@ -6,6 +6,7 @@ class Header
 {
     const PRAGMA                        = 'Pragma';
     const EXPIRES                       = 'Expires';
+    const REQUEST_ID                    = 'Request-Id';
     const REMOTE_ADDR                   = 'remote-addr';
     const CONTENT_TYPE                  = 'content-type';
     const CACHE_CONTROL                 = 'Cache-Control';
