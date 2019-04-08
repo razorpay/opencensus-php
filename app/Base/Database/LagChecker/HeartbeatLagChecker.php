@@ -51,6 +51,13 @@ class HeartbeatLagChecker implements LagChecker
     protected $randomTrafficPercent;
 
     /**
+     * can be used to reconnect the db in case of connection failure
+     *
+     * @var Closure
+     */
+    protected $reconnecter;
+
+    /**
      * @var RedisManager
      */
     protected $redis;
@@ -64,7 +71,6 @@ class HeartbeatLagChecker implements LagChecker
      * @var Trace
      */
     protected $trace;
-
 
     /**
      * @var int
@@ -113,6 +119,11 @@ class HeartbeatLagChecker implements LagChecker
      */
     private $trafficPercent;
 
+    /**
+     * @var string
+     */
+    protected $mode;
+
     public function __construct(array $config)
     {
         $this->config = $config;
@@ -137,6 +148,11 @@ class HeartbeatLagChecker implements LagChecker
         $this->workerContext = $app['worker.ctx'];
 
         $this->initializeConnectionResolvers();
+    }
+
+    public function setReconnector(Closure $reconnector)
+    {
+        $this->reconnecter = $reconnector;
     }
 
     /**
@@ -195,6 +211,13 @@ class HeartbeatLagChecker implements LagChecker
             return $useSlave;
         }
 
+        //
+        // Mode will be empty for callbacks and workers
+        // So is mode is not set we take it from worker if its a worker
+        // else mode will be set to null
+        //
+        $this->mode = $this->mode ??  $this->workerContext->getMode();
+
         $currentRoute = $this->reqCtx->getRoute() ?? $this->workerContext->getJobName();
 
         $connectionIdentifier = $this->redis->hget($this->config['routes'], $currentRoute);
@@ -232,6 +255,7 @@ class HeartbeatLagChecker implements LagChecker
      * @param $threshold
      *
      * @return bool
+     * @throws \Exception
      */
     protected function isSlaveLagging($readPdo, $threshold): bool
     {
@@ -242,13 +266,31 @@ class HeartbeatLagChecker implements LagChecker
         // as it also calls this flow to get the connection
         //
         $query = 'SELECT ROUND(( ROUND(UNIX_TIMESTAMP(Now(6)) * 1000000) - ( 
-                            UNIX_TIMESTAMP(SUBSTR(ts, 1, 19)) * 1000000 + 
-                            SUBSTR(ts, 21, 6) ) 
-                         ) / 1000) AS replica_lag_milli, ts 
-                    FROM   heartbeat.heartbeat
-                    LIMIT  1';
+                        UNIX_TIMESTAMP(SUBSTR(ts, 1, 19)) * 1000000 + 
+                        SUBSTR(ts, 21, 6) ) 
+                     ) / 1000) AS replica_lag_milli, ts 
+                FROM   heartbeat.heartbeat
+                LIMIT  1';
 
-        $result = $pdo->query($query)->fetch();
+        try
+        {
+            $result = $pdo->query($query)->fetch();
+        }
+        catch (\Exception $e)
+        {
+            $pdo = call_user_func($this->reconnecter, $e, $this->mode);
+
+            //
+            // If we can not find reconnect to the server then
+            // consider this as lag, so that we can use master connection for these
+            //
+            if ($pdo === null)
+            {
+                throw $e;
+            }
+
+            $result = $pdo->query($query)->fetch();
+        }
 
         $this->lag = $result['replica_lag_milli'];
 
