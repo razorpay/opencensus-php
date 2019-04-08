@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use DB;
 use Mail;
 use Event;
+use Redis;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Cache\Events\CacheHit;
@@ -4119,5 +4120,42 @@ class MerchantTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
 
         $this->startTest();
+    }
+
+    /**
+     * Test case for merchant query cache , verifies that in live and test mode only live cache key is getting
+     * populated.
+     */
+    public function testMerchantCacheSyncInBothMode()
+    {
+        config(['app.query_cache.mock' => false]);
+
+        $merchantId = 10000000000000;
+
+        $admin = $this->ba->getAdmin();
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth($merchantId, 'rzp_test_' . $merchantId);
+
+        $this->startTest();
+
+        $testKeyValue = Redis::connection('query_cache_test')->get('test:tag:merchant_10000000000000:key');
+        $liveKeyValue = Redis::connection('query_cache_live')->get('live:tag:merchant_10000000000000:key');
+
+        $this->assertNull($testKeyValue);
+        $this->assertNotNull($liveKeyValue);
+
+        Redis::connection('query_cache_test')->flushdb();
+        Redis::connection('query_cache_live')->flushdb();
+
+        $this->ba->adminProxyAuth($merchantId, 'rzp_live_' . $merchantId);
+
+        $this->startTest();
+
+        $testKeyValue = Redis::connection('query_cache_test')->get('test:tag:merchant_10000000000000:key');
+        $liveKeyValue = Redis::connection('query_cache_live')->get('live:tag:merchant_10000000000000:key');
+
+        $this->assertNull($testKeyValue);
+        $this->assertNotNull($liveKeyValue);
     }
 }

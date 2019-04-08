@@ -4119,4 +4119,16 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testMerchantCacheSyncInBothMode' => [
+        'request'  => [
+            'url'    => '/merchant/activation',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ],
+    ],
+
 ];
