@@ -13,6 +13,9 @@ final class RazorxTreatment
     // Decide whom to send new design mailers
     const MJML_BASED_MAILERS = 'mjml_based_mailers';
 
+    //Control when to enable instant activation of 2.0 products
+    const INSTANT_ACTIVATION_2_0_PRODUCTS = 'instant_activation_2_0_products';
+
     // Decide whom to activate on international payments
     const INTERNATIONAL_ACTIVATIONS = 'international_activations';
 }
