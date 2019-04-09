@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use RZP\Constants\Mode;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Detail\Entity;
@@ -86,6 +87,98 @@ class ActivationTest extends TestCase
         $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
 
         $this->assertEquals($merchantDetails->getWebsite(), 'https://example.com');
+    }
+
+    public function mockRazorX(string $functionName, string $featureName, string $variant)
+    {
+        $testData = & $this->testData[$functionName];
+        $uniqueLocalId = RazorXClient::getLocalUniqueId('1cXSLlUU8V9sXl',$featureName, Mode::TEST);
+        $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => '{"' . $uniqueLocalId . '":"' . $variant . '"}'];
+    }
+
+    public function testInstantActivationOfSubscriptionsForActiveMerchants()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->mockRazorX(__FUNCTION__,'instant_activation_2_0_products','on');
+
+        $this->fixtures->merchant->activate($merchantId);
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+        $this->startTest();
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+        $this->assertEquals("approved", $merchant->merchantDetail->getSubscriptionsActivationStatus());
+
+    }
+
+    public function testInstantActivationOfSubscriptionsForInActiveMerchants()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->mockRazorX(__FUNCTION__,'instant_activation_2_0_products','on');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertEquals("pending", $merchant->merchantDetail->getSubscriptionsActivationStatus());
+
+    }
+
+    public function testInstantActivationOfRoutesForActiveMerchants()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+        $this->mockRazorX(__FUNCTION__,'instant_activation_2_0_products','on');
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+
+
+        $this->fixtures->merchant->activate($merchantId);
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertEquals("approved", $merchant->merchantDetail->getMarketplaceActivationStatus());
+
+    }
+
+    public function testInstantActivationOfRoutesForInActiveMerchants()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->mockRazorX(__FUNCTION__,'instant_activation_2_0_products','on');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertEquals("pending", $merchant->merchantDetail->getMarketplaceActivationStatus());
+
     }
 
     public function testInstantActivationWithBlacklistedCategoryForEmi()

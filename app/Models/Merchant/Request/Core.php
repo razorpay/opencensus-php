@@ -111,6 +111,7 @@ class Core extends Base\Core
      *
      * @return Entity
      * @throws \Exception
+     * @throws \Throwable
      */
     public function changeStatus(Entity $request, array $input, $useWorkflow = true, $validateStatusChange = true)
     {
@@ -144,6 +145,13 @@ class Core extends Base\Core
         $newRequestDetails = clone $request;
 
         $admin = $this->app['basicauth']->getAdmin();
+
+        //Putting in the merchant id as the admin to enable instant activation
+        if ( (empty($admin) === true) and
+             (Merchant\Request\Constants::isAutoApproveFeatureRequest($this->merchant, $request->getName()) === true))
+        {
+            $admin = $this->merchant;
+        }
 
         $status = $input[Entity::STATUS];
 
@@ -829,6 +837,17 @@ class Core extends Base\Core
         $requestNeedsClarificationEmail = new RequestNeedsClarification($data);
 
         Mail::queue($requestNeedsClarificationEmail);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isInstantActivationOfProductsEnabled(): bool
+    {
+        $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
+                                                    Merchant\RazorxTreatment::INSTANT_ACTIVATION_2_0_PRODUCTS,
+                                                    $this->mode);
+        return (strtolower($variant) === 'on');
     }
 
     protected function postSubmissions(Entity $request, array $input, array $submissions)
