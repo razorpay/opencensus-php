@@ -257,7 +257,7 @@ class Processor
 
             $this->setMethodForInput($input);
 
-            $this->appendMetadataForS2SPayment($input);
+            $this->appendMetadataForPayment($input);
 
             $payment = $this->buildPaymentEntity($input);
 
@@ -304,11 +304,15 @@ class Processor
         }
     }
 
-    protected function appendMetadataForS2SPayment(array & $input)
+    protected function appendMetadataForPayment(array & $input)
     {
         if ($this->app['basicauth']->isPrivateAuth() === true)
         {
-            $input = (new Payment\Analytics\Service)->setMetadataForS2SPayment($input);
+            (new Payment\Analytics\Service)->setMetadataForS2SPayment($input);
+        }
+        else if ($this->app['basicauth']->isPublicAuth() === true)
+        {
+            (new Payment\Analytics\Service)->setMetadataForPublicAuthPayment($input);
         }
     }
 
