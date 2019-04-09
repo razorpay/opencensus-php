@@ -127,6 +127,7 @@ export default class WritePartnerConfig extends Component {
 
   handleSubmitClick = body => {
     let { values } = this.state;
+    const { submerchant } = this.props;
 
     // need to fixed from api
     if (values.submerchant_id) {
@@ -152,6 +153,10 @@ export default class WritePartnerConfig extends Component {
     }).then(partnerConfig => {
       if (partnerConfig) {
         notifySuccess('Partner Config updated successfully');
+        this.props.onSuccess(
+          partnerConfig,
+          isPresent(submerchant) && submerchant.id
+        );
         closeModal();
       }
     });
