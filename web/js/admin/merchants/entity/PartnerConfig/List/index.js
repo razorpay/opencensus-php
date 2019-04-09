@@ -235,6 +235,10 @@ function sanitizeConfig(data = {}) {
 
 function getDefaultValues() {
   return {
+    commissions_enabled: 0,
+    explicit_should_charge: 0,
+    explicit_refund_fees: 0,
+    default_plan_id: null,
     revisit_at: moment()
       .add(1, 'year')
       .format('X'),

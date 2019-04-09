@@ -188,6 +188,7 @@ export default class WritePartnerConfig extends Component {
                   onSubmit={this.handleSubmitClick}
                   onSearchableChange={this.handleSearchableChange}
                   handleDateChange={this.handleDateChange}
+                  handleChange={this.handleChange}
                 />
               )}
             </Form>
