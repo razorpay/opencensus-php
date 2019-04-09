@@ -75,7 +75,7 @@ export default class WritePartnerConfig extends Component {
   handleDateChange = name => momentDate => {
     const target = {
       name,
-      value: momentDate.format('X'),
+      value: !!momentDate ? momentDate.format('X') : undefined,
     };
     this.handleChange({ target });
   };
