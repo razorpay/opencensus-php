@@ -259,12 +259,10 @@ class Core extends Base\Core
             // Set the product activation status as pending
             if ($action === Constants::CREATE)
             {
-                $featureStatus = $this->getFeatureStatus($merchant, $featureName);
-
                 $this->updateFeatureActivationStatus(
                     $merchantId,
                     $featureName,
-                    $featureStatus);
+                    Merchant\Detail\Entity::PENDING);
 
                 $saved = true;
             }
@@ -765,30 +763,5 @@ class Core extends Base\Core
         }
 
         return $response;
-    }
-
-    /**
-     * Returns applicable feature status . If merchant is in activated state and feature should be auto approve
-     * then returns approved state else returns pending status.
-     *
-     * @param Merchant\Entity $merchant
-     * @param string          $featureName
-     *
-     * @return string
-     */
-    private function getFeatureStatus(Merchant\Entity $merchant, string $featureName): string
-    {
-        $featureStatus = Merchant\Detail\Entity::PENDING;
-        //
-        //For instantly activated merchants or already activated merchants instantly approve subscription and
-        //marketplace request.
-        //
-        $merchantRequestCore = new MerchantRequest\Core;
-        if (($merchantRequestCore->isInstantActivationOfProductsEnabled() === true) and
-            (Merchant\Request\Constants::isAutoApproveFeatureRequest($merchant, $featureName)))
-        {
-            $featureStatus = Merchant\Detail\Entity::APPROVED;
-        }
-        return $featureStatus;
     }
 }

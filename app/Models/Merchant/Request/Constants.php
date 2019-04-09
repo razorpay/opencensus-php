@@ -41,33 +41,6 @@ class Constants
         ],
     ];
 
-    public static $instantlyActivatedProducts = [Feature\Constants::SUBSCRIPTIONS,
-                                                 Feature\Constants::MARKETPLACE];
-
-
-    /**
-     * @param string $featureName
-     *
-     * @return bool
-     */
-    public static function isProductEnabledForInstantActivation(string $featureName): bool
-    {
-
-        return in_array($featureName, self::$instantlyActivatedProducts, true);
-    }
-
-    /**
-     * @param Merchant\Entity $merchant
-     * @param string          $featureName
-     *
-     * @return bool
-     */
-    public static function isAutoApproveFeatureRequest(Merchant\Entity $merchant, string $featureName): bool
-    {
-        return ($merchant->isActivated() === true) and
-               (self::isProductEnabledForInstantActivation($featureName) === true);
-    }
-
     public static function getRequestStatusForOnboardingStatus(string $onboardingStatus)
     {
         if (isset(self::ONBOARDING_REQUEST_MAP[$onboardingStatus]) === true)
