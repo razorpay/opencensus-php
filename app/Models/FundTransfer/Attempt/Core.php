@@ -282,7 +282,7 @@ class Core extends Base\Core
     {
         try
         {
-            $redis = $this->app['redis']->connection('redis_labs');
+            $redis = $this->app['redis']->connection();
 
             $ftsChannels = $redis->SMEMBERS(ConfigKey::FTS_CHANNELS);
 

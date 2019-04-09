@@ -1506,7 +1506,7 @@ class Gateway
 
             $cacheKey = self::getNetbankingUrlCacheKey($bank);
 
-            $cache = $this->app['redis']->connection('redis_labs');
+            $cache = $this->app['redis']->connection();
 
             $cacheValue = $cache->get($cacheKey);
 

@@ -4139,21 +4139,21 @@ class MerchantTest extends TestCase
 
         $this->startTest();
 
-        $testKeyValue = Redis::connection('query_cache_test')->get('test:tag:merchant_10000000000000:key');
-        $liveKeyValue = Redis::connection('query_cache_live')->get('live:tag:merchant_10000000000000:key');
+        $testKeyValue = Redis::connection()->get('test:tag:merchant_10000000000000:key');
+        $liveKeyValue = Redis::connection()->get('live:tag:merchant_10000000000000:key');
 
         $this->assertNull($testKeyValue);
         $this->assertNotNull($liveKeyValue);
 
-        Redis::connection('query_cache_test')->flushdb();
-        Redis::connection('query_cache_live')->flushdb();
+        Redis::connection()->flushdb();
+        Redis::connection()->flushdb();
 
         $this->ba->adminProxyAuth($merchantId, 'rzp_live_' . $merchantId);
 
         $this->startTest();
 
-        $testKeyValue = Redis::connection('query_cache_test')->get('test:tag:merchant_10000000000000:key');
-        $liveKeyValue = Redis::connection('query_cache_live')->get('live:tag:merchant_10000000000000:key');
+        $testKeyValue = Redis::connection()->get('test:tag:merchant_10000000000000:key');
+        $liveKeyValue = Redis::connection()->get('live:tag:merchant_10000000000000:key');
 
         $this->assertNull($testKeyValue);
         $this->assertNotNull($liveKeyValue);

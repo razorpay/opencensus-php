@@ -590,7 +590,7 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('set_redis_keys', $input);
 
-        $redis = $this->app['redis']->connection('redis_labs');
+        $redis = $this->app['redis']->connection();
 
         $result = [];
 
@@ -631,7 +631,7 @@ class Service extends Base\Service
 
         $key = $input['key'];
 
-        $redis = $this->app['redis']->connection('redis_labs');
+        $redis = $this->app['redis']->connection();
 
         $values = $redis->HGETALL($key);
 
@@ -644,7 +644,7 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('update_redis_keys', $input);
 
-        $redis = $this->app['redis']->connection('redis_labs');
+        $redis = $this->app['redis']->connection();
 
         $key = $input['key'];
 
