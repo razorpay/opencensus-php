@@ -22,7 +22,7 @@ export default connect(null, { openModal, closeModal })(
 
     return (
       <div class="list-group details-row-container">
-        <DetailRow label="Merchant Name" value={titleCase(user.name)} />
+        <DetailRow label="Merchant Name" value={user.name} />
 
         {changeDisplayName && (
           <DetailRow
