@@ -1,62 +1,14 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import Input from 'component/Input';
 import Button from 'component/Button';
-import Form from 'component/Form';
 import { openModal, closeModal } from 'rzp/modules/modals';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import { reverseTransfer } from 'merchantLA/modules/marketplace/transfer';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import InputField from 'rzp/ui/Forms/InputField';
-import {
-  isBlank,
-  rupeesToPaise,
-  paiseToRupees,
-  titleCase,
-} from 'rzp/utils/rzp-utils';
-
-const isPartialPayment = props => {
-  const refundableAmount = props.payment.amount - props.payment.amount_reversed,
-    amountEntered = rupeesToPaise(props.payable_amount);
-
-  return amountEntered < refundableAmount;
-};
-
-const amountValidation = props => {
-  const value = props.payable_amount || '';
-
-  if (!value) {
-    return 'Amount is required';
-  }
-
-  if (isNaN(value) || (value.toString().split('.')[1] || []).length > 2) {
-    return 'Amount can only be a Number with atmost 2 decimal places.';
-  }
-  if (value < 0) {
-    return `Amount can't be negative.`;
-  }
-
-  const refundableAmount = props.payment.amount - props.payment.amount_reversed;
-
-  if (rupeesToPaise(value) > refundableAmount) {
-    return (
-      `Amount can't be greater than the total Refundable` +
-      ` Amount (${paiseToRupees(refundableAmount)}).`
-    );
-  }
-};
-
-const RefundType = ({ partial, isTitleCase = false }) => {
-  let text = partial ? 'partial' : 'full';
-
-  if (isTitleCase) {
-    text = titleCase(text);
-  }
-
-  return <span>{text}</span>;
-};
+import { rupeesToPaise, paiseToRupees, titleCase } from 'rzp/utils/rzp-utils';
 
 const selector = formValueSelector('refundModal');
 
@@ -195,3 +147,44 @@ export default class RefundToCustomerModal extends React.Component {
     );
   }
 }
+
+const isPartialPayment = props => {
+  const refundableAmount = props.payment.amount - props.payment.amount_reversed,
+    amountEntered = rupeesToPaise(props.payable_amount);
+
+  return amountEntered < refundableAmount;
+};
+
+const amountValidation = props => {
+  const value = props.payable_amount || '';
+
+  if (!value) {
+    return 'Amount is required';
+  }
+
+  if (isNaN(value) || (value.toString().split('.')[1] || []).length > 2) {
+    return 'Amount can only be a Number with atmost 2 decimal places.';
+  }
+  if (value < 0) {
+    return `Amount can't be negative.`;
+  }
+
+  const refundableAmount = props.payment.amount - props.payment.amount_reversed;
+
+  if (rupeesToPaise(value) > refundableAmount) {
+    return (
+      `Amount can't be greater than the total Refundable` +
+      ` Amount (${paiseToRupees(refundableAmount)}).`
+    );
+  }
+};
+
+const RefundType = ({ partial, isTitleCase = false }) => {
+  let text = partial ? 'partial' : 'full';
+
+  if (isTitleCase) {
+    text = titleCase(text);
+  }
+
+  return <span>{text}</span>;
+};
