@@ -1,11 +1,15 @@
 import React from 'react';
+import { connect } from 'react-redux';
 
 import Amount from 'rzp/ui/Amount';
+import Button from 'component/Button';
 import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
 import Definition from 'rzp/ui/Definition';
 import DataTable from 'rzp/ui/Table/DataTable';
 import LoaderDots from 'rzp/ui/LoaderDots';
 import { reversalId, amount, createdAt } from 'merchantLA/utils/item/pair';
+import { openModal } from 'rzp/modules/modals';
+import RefundToCustomerModal from './RefundToCustomerModal';
 
 /*
  * Design:
@@ -64,43 +68,65 @@ const ReversalsList = ({ reversals }) => {
   );
 };
 
-export default ({ transfer, reversals }) => {
-  const reversedAmount = transfer.amount_reversed,
-    reversalStatus =
-      reversedAmount === 0
-        ? null
-        : transfer.amount === reversedAmount ? 'full' : 'partial';
+@connect(_ => ({}), { openModal })
+export default class TransferReversal extends React.PureComponent {
+  openRefundToCustomerModal = _ => {
+    this.props.openModal({
+      size: 'small',
+      component: <RefundToCustomerModal transfer={this.props.transfer} />,
+    });
+  };
 
-  if (!reversalStatus) {
+  renderRefundToCustomerButton = () => (
+    <Button
+      onClick={this.openRefundToCustomerModal}
+      class="btn btn-default m-t"
+    >
+      Refund to Customer
+    </Button>
+  );
+
+  render() {
+    const { transfer, reversals } = this.props,
+      reversedAmount = transfer.amount_reversed,
+      reversalStatus =
+        reversedAmount === 0
+          ? null
+          : transfer.amount === reversedAmount ? 'full' : 'partial';
+
+    if (!reversalStatus) {
+      return (
+        <div>
+          <p>No reversals created</p>
+          {this.renderRefundToCustomerButton()}
+        </div>
+      );
+    } else if (reversalStatus === 'full') {
+      return (
+        <div>
+          <p>Fully Reversed</p>
+          <ReversalsList reversals={reversals} />
+        </div>
+      );
+    }
+
     return (
       <div>
-        <p>No reversals created</p>
-      </div>
-    );
-  } else if (reversalStatus === 'full') {
-    return (
-      <div>
-        <p>Fully Reversed</p>
+        <div className="m-b">
+          <Definition>
+            <span>
+              <Amount value={reversedAmount} currency={transfer.currency} />{' '}
+              Reversed
+            </span>
+            <span>
+              Partially Reversed in <NumReversals reversals={reversals} />
+            </span>
+            {this.renderRefundToCustomerButton()}
+          </Definition>
+        </div>
+        <p />
         <ReversalsList reversals={reversals} />
       </div>
     );
   }
-
-  return (
-    <div>
-      <div className="m-b">
-        <Definition>
-          <span>
-            <Amount value={reversedAmount} currency={transfer.currency} />{' '}
-            Reversed
-          </span>
-          <span>
-            Partially Reversed in <NumReversals reversals={reversals} />
-          </span>
-        </Definition>
-      </div>
-      <p />
-      <ReversalsList reversals={reversals} />
-    </div>
-  );
-};
+}

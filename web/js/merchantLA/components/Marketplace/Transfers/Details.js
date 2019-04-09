@@ -130,22 +130,12 @@ export default class TransferDetails extends Component {
                   />
                 </EntityDetailRow>
 
-                <EntityDetailRow
-                  label="Created At"
-                  value={() => (
-                    <Time
-                      value={transfer.created_at}
-                      format="DD MMM YYYY, hh:mm:ss a"
-                    />
-                  )}
-                />
+                <EntityDetailRow label="Reversal">
+                  <TransferReversal transfer={transfer} reversals={reversals} />
+                </EntityDetailRow>
 
                 <EntityDetailRow label="Settlement">
                   <SettlementText data={this.state} transfer={transfer} />
-                </EntityDetailRow>
-
-                <EntityDetailRow label="Reversal">
-                  <TransferReversal transfer={transfer} reversals={reversals} />
                 </EntityDetailRow>
 
                 {/* Notes */}
