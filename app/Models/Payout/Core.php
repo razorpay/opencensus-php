@@ -349,11 +349,27 @@ class Core extends Base\Core
 
                     $payout->getValidator()->validateProcessingQueuedPayout();
 
+                    //
                     // Currently, we support queued concept only for Fund Account type.
                     // If we are supporting for others, the processor call needs to be fixed here.
-                    return $this->getProcessor('fund_account_payout')
-                                ->setMerchant($payout->merchant)
-                                ->processQueuedPayout($payout);
+                    // Also, need to fix transaction.created event in the processor since
+                    // we do that only for fund_account and not for others.
+                    //
+                    // Apart from this, we also have to handle dispatching FTA for queued payouts.
+                    //
+                    // We also have to handle the fund transfer destination while processing the queued payout.
+                    //
+                    $payout = $this->getProcessor('fund_account_payout')
+                                   ->setMerchant($payout->merchant)
+                                   ->processQueuedPayout($payout);
+
+                    //
+                    // There might be some type of payouts where we don't want to dispatch FTA.
+                    // Should handle that before adding any other type of payouts as queued.
+                    //
+                    $this->dispatchFtaInitiate($payout);
+
+                    return $payout;
                 },
                 self::PAYOUT_MUTEX_LOCK_TIMEOUT,
                 ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
@@ -607,6 +623,15 @@ class Core extends Base\Core
 
     protected function dispatchFtaInitiate(Entity $payout)
     {
+        //
+        // When we queue a payout, we don't create any transaction or FTA.
+        // We do it later when we actually process that queued payout.
+        //
+        if ($payout->isStatusQueued() === true)
+        {
+            return;
+        }
+
         $ftaId = $payout->fundTransferAttempts->first()->getId();
 
         $info = [

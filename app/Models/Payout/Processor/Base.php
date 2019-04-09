@@ -100,6 +100,15 @@ abstract class Base extends BaseCore
             }
             catch (Exception\BadRequestException $ex)
             {
+                //
+                // This needs to be done since while creating a transaction we also associate
+                // the source (payout) with the transaction and then we fail the transaction
+                // creation due to insufficient balance and then later attempt to save the payout.
+                // Payout save fails because we associated the failed transaction with the payout
+                // but we had not actually saved the transaction in the DB.
+                //
+                $payout->transaction()->dissociate();
+
                 $insufficientFundsErrorCode = ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING;
 
                 if ($ex->getError()->getInternalErrorCode() === $insufficientFundsErrorCode)
@@ -133,27 +142,45 @@ abstract class Base extends BaseCore
 
     public function processQueuedPayout(Payout\Entity $payout): Payout\Entity
     {
-        return $this->repo->transaction(
-                function () use ($payout)
-                {
-                    // Create merchant/customer transactions and link it to payout.
-                    $this->createTxns($payout);
+        $payout = $this->repo->transaction(
+                    function () use ($payout)
+                    {
+                        // Create merchant/customer transactions and link it to payout.
+                        $this->createTxns($payout);
 
-                    // Create a fund transfer entity where the fund transfers will be processed.
-                    $this->createFundTransferAttemptEntity($payout);
+                        // TODO: Later, we will have to handle active / inactive stuff also here.
+                        // Refer the function `fetchAndAssociatePayoutAccount`
+                        // Also, this will have to be fixed for MerchantPayout since there the fundTransferDestination
+                        // is merchant's bank account.
+                        $this->fundTransferDestination = $payout->fundAccount->account;
 
-                    $this->repo->saveOrFail($payout);
+                        // Create a fund transfer entity where the fund transfers will be processed.
+                        $this->createFundTransferAttemptEntity($payout);
 
-                    $this->trace->info(
-                        TraceCode::QUEUED_PAYOUT_CREATED,
-                        [
-                            'payout_id'      => $payout->getId(),
-                            'transaction_id' => $payout->getTransactionId(),
-                            'payout_status'  => $payout->getStatus(),
-                        ]);
+                        $payout->setStatus(Payout\Status::CREATED);
 
-                    return $payout;
-                });
+                        $this->repo->saveOrFail($payout);
+
+                        $this->trace->info(
+                            TraceCode::QUEUED_PAYOUT_CREATED,
+                            [
+                                'payout_id'      => $payout->getId(),
+                                'transaction_id' => $payout->getTransactionId(),
+                                'payout_status'  => $payout->getStatus(),
+                            ]);
+
+                        return $payout;
+                    });
+
+        //
+        // This needs to be done only for fund_account type and not for others.
+        // We need to figure out at this stage what type of payout are we processing in queue.
+        // Since, currently, we only do fund_account, we are not handling it. Once we start
+        // processing queued payouts for other types also, this needs to be changed.
+        //
+        (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+
+        return $payout;
     }
 
     /**

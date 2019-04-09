@@ -17,7 +17,15 @@ class FundAccountPayout extends Base
     {
         $payout = parent::createPayout($input);
 
-        (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+        //
+        // In case of queued payouts, we don't create the transaction.
+        // We just mark the payout as queued and move on. This event will
+        // be dispatched later when we are actually processing the queued payout.
+        //
+        if ($payout->isStatusQueued() === false)
+        {
+            (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+        }
 
         return $payout;
     }
