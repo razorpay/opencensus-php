@@ -40,7 +40,7 @@ class AttemptsRecon extends Job
 
             $fta = $this->repoManager
                         ->fund_transfer_attempt
-                        ->findByIdWithStatus($this->ftaId, Status::INITIATED);
+                        ->findByIdWithStatus($this->ftaId, Status::INITIATED, true);
 
             if ($fta === null)
             {

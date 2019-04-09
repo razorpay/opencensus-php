@@ -42,13 +42,13 @@ class Validator extends Base\Validator
     ];
 
     protected static $ftsStatusUpdateRules = [
-
         Entity::UTR            => 'sometimes|string',
         Entity::STATUS         => 'required|string|custom',
         Entity::REMARKS        => 'sometimes|string',
         Entity::NARRATION      => 'sometimes|string',
         Entity::DATE_TIME      => 'sometimes|string',
-        Entity::SOURCE_ID      => 'required|string',
+        Entity::SOURCE_ID      => 'required_with:source_type|string',
+        Entity::SOURCE_TYPE    => 'required_with:source_id|string',
         Entity::FAILURE_REASON => 'sometimes|string',
         'fund_transfer_id'     => 'required|int',
     ];

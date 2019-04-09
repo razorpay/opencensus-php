@@ -32,6 +32,7 @@ class ConfigKey
     const BLOCK_AADHAAR_REG                     = self::PREFIX . 'block_aadhaar_reg';
     const HITACHI_DYNAMIC_DESCR_ENABLED         = self::PREFIX . 'hitachi_dynamic_descr_enabled';
     const FTS_CHANNELS                          = self::PREFIX . 'fts_channels';
+    const FTS_REQUEST_PERCENTAGE                = self::PREFIX . 'fts_request_percentage';
     const CPS_SERVICE_ENABLED                   = self::PREFIX . 'cps_service_enabled';
     const SETTLEMENT_TRANSACTION_LIMIT          = self::PREFIX . 'settlement_transaction_limit';
 

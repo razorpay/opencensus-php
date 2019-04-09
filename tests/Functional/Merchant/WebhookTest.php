@@ -974,7 +974,11 @@ class WebhookTest extends TestCase
 
         $this->initiateSettlements($channel);
 
+        s($this->getLastEntity('fund_transfer_attempt', true));
+
         $content = $this->initiateTransfer($channel, Attempt\Purpose::SETTLEMENT);
+
+        s($content);
 
         $setlFile = $content[$channel]['file']['local_file_path'];
 
