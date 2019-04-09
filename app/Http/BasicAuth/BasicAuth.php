@@ -1775,7 +1775,7 @@ class BasicAuth
     {
         $key = $this->getKeyEntity();
 
-        if (($key === null) and ($this->isPartnerAuth() === false) and ($this->oauthClientId === null))
+        if ((empty($key) === true) and ($this->isPartnerAuth() === false) and ($this->oauthClientId === null))
         {
             throw new Exception\LogicException('Key cannot be null here');
         }
