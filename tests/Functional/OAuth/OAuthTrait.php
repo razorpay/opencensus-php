@@ -45,14 +45,7 @@ trait OAuthTrait
     {
         $application = $this->createOAuthApplication();
 
-        return $application->clients()
-                           ->get()
-                           ->filter(
-                                function($client, $key) use ($env)
-                                {
-                                    return $client->getEnvironment() === $env;
-                                })
-                           ->first();
+        return $this->getAppClientByEnv($application, $env);
     }
 
     public function createPartnerApplicationAndGetClientByEnv(string $env = 'dev', array $attributes = [])
@@ -61,13 +54,18 @@ trait OAuthTrait
 
         $application = $this->createOAuthApplication($attributes);
 
+        return $this->getAppClientByEnv($application, $env);
+    }
+
+    public function getAppClientByEnv(Application\Entity $application, string $env = 'dev')
+    {
         return $application->clients()
                            ->get()
                            ->filter(
-                            function($client, $key) use ($env)
-                            {
-                                return $client->getEnvironment() === $env;
-                            })
+                               function($client, $key) use ($env)
+                               {
+                                   return $client->getEnvironment() === $env;
+                               })
                            ->first();
     }
 

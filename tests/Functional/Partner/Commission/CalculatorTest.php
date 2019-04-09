@@ -142,7 +142,74 @@ class CalculatorTest extends OAuthTestCase
     }
 
     /**
+     * checks that explicit commission is calculated correctly
+     */
+    public function testExplicit()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    /**
+     * checks that commission is created for record-only model
+     */
+    public function testExplicitRecordOnly()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    /**
+     * checks that gst is being charged for add on commission irrespective of base_amount < 2k
+     */
+    public function testGSTOnExplicit()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    /**
+     * checks that explicit commission is calculated correctly for fixed fee instead of percentage commission plan
+     */
+    public function testExplicitFixedFeesType()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    /**
+     * checks that both implicit and explicit commissions are created
+     * if both implicit variable and explicit plans are present
+     */
+    public function testImplicitVariableAndExplicit()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    /**
+     * checks that both implicit and explicit commissions are created
+     * if both implicit fixed and explicit plans are present
+     */
+    public function testImplicitFixedAndExplicit()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    /**
+     * checks that commissions are not created if total commission greater than base amount
+     */
+    public function testImplicitAndExplicitGreaterThanAmount()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    /**
+     * checks that explicit commission is calculated correctly for recurring payments
+     */
+    public function testExplicitWithAddOnPricingRules()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    /**
      * Asserts that the implicit commission gets created if the merchant is on a customer fee bearer model
+     * @throws \Exception
      */
     public function testImplicitCustomerFeeBearer()
     {

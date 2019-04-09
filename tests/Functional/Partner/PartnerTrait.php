@@ -124,14 +124,14 @@ trait PartnerTrait
             ]
         );
 
-        $this->createOAuthApplication(
+        $application = $this->createOAuthApplication(
             [
                 'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
                 'id'          => Constants::DEFAULT_PLATFORM_APP_ID,
             ]
         );
 
-        $this->fixtures->create(
+        $accessMap = $this->fixtures->create(
             'merchant_access_map',
             [
                 'merchant_id'     => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
@@ -140,6 +140,8 @@ trait PartnerTrait
                 'entity_owner_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
             ]
         );
+
+        return [$application, $accessMap];
     }
 
     public function setSubmerchantPrivateAuth($merchantId = Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID)

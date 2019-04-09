@@ -4859,6 +4859,9 @@ ALTER TABLE reversals DROP FOREIGN KEY reversals_transaction_id_foreign;
 
 ALTER TABLE invoices
     DROP FOREIGN KEY invoices_batch_id_foreign;
+    
+ALTER TABLE commissions
+    ADD COLUMN record_only TINYINT(1) NOT NULL DEFAULT 0 AFTER transaction_id;
 
 ALTER TABLE paysecure
     MODIFY rrn varchar(255) DEFAULT NULL;

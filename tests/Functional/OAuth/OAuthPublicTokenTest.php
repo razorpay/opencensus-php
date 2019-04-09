@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\OAuth;
 
 use Razorpay\OAuth\Token;
+use Razorpay\OAuth\Client;
 
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -96,13 +97,27 @@ class OAuthPublicTokenTest extends OAuthTestCase
 
     public function testStatusAfterPaymentOAuth()
     {
+        $client = factory(Client\Entity::class)->create();
+
         $this->fixtures->create('order', ['amount' => 50000]);
         $order = $this->getLastEntity('order');
         $this->assertEquals($order['status'], 'created');
 
         $payment = $this->getDefaultPaymentArray();
         $payment['order_id'] = $order['id'];
-        $this->generateOAuthAccessToken(['public_token' => 'TheTestAuthKey', 'scopes' => ['read_write']]);
+
+        $this->generateOAuthAccessToken(
+            [
+                'public_token' => 'TheTestAuthKey',
+                'scopes'       => ['read_write'],
+                'client_id'    => $client->getId(),
+            ]
+        );
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->application_id,
+            ]);
 
         $rzpPayment = $this->doAuthPaymentOAuth($payment);
 
