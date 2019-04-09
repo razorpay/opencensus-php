@@ -4,6 +4,7 @@
 
 ## Set up instructions via Docker( for development )
 
+
 #### Pre-requisites
 
 ##### Install [composer](https://getcomposer.org/download/), php7 and phpunit
@@ -32,57 +33,46 @@ If everything is setup correctly, running `$ php -v` should give you 7.0.+.
 
 Note: We will use the phpunit that comes along with composer. We do not explicitly need phpunit to be installed for the docker setup.
 
-Note: If you are unable to install php-gmp, use `brew install php` to install php and gmp will be auto bundled with it
+Note: If you are unable to install php-gmp, use `brew install php` to install php and gmp will be auto bundled with it. The php version that comes bundled High Sierra and does not include the gmp extension. Installing it manually does not work either since it's removed from brew. At the time of writing this, the above command installed php 7.3.3. You may need to unlink the older version. `php -v` should read 7.3.3
 
 ##### Install docker
-
 [Docker installation and Hello World!](https://docs.docker.com/engine/getstarted/step_one/)
 
 ##### Mac users
-
-- Please use `Docker for Mac` and do not use `Docker Toolbox for the Mac`
-- Set the Docker memory to 4GB and number of cpus to 3
+* Please use `Docker for Mac` and do not use `Docker Toolbox for the Mac`
+* Set the Docker memory to 4GB and number of cpus to 3
 
 ##### Linux users
-
-- sudo apt-get install docker
-- pip install docker-compose
-- sudo usermod -aG docker \$(whoami) # Adds yourself to docker group
+* sudo apt-get install docker
+* pip install docker-compose
+* sudo usermod -aG docker $(whoami) # Adds yourself to docker group
 
 Now Log out and log back in once after last step.
 
 ##### Install docker-compose
-
 [Install Docker Compose](https://docs.docker.com/compose/install/)
 
 ##### Login to Dockerhub
-
 Ensure that you have a dockerhub user that is added to the Razorpay Organization.
-
-- Admin Contact: `nemo@razorpay.com`
+ - Admin Contact: `nemo@razorpay.com`
 
 ###### Mac Users
-
 Run Docker for Mac while signed-in as this user. If it still says access denied while pulling docker images, login via the console as well using docker login.
 
 ###### Linux Users
-
 use the `docker login` command to sign-in with the aforementioned dockerhub user.
 
 ## Run docker-compose
-
 [Create a github PAT](https://help.github.com/articles/creating-an-access-token-for-command-line-use/), if you do not have one.
 
 ```
 GIT_TOKEN=<PAT>
 export GIT_TOKEN
 ```
-
 or,
 add it to your `.bashrc`/`.bash_profile`
 
 ##### Optional configurations
-
 Note: By default API will run on port 28080 and mysql on 23306. In case you wish to change these params or other ports like for elasticsearch, please modify `docker-compose.dev.yml`
 
 #### Setup API/Building Container
@@ -92,16 +82,13 @@ Note: Docker for Mac suffers from heavy performance implications due to the natu
 ```
 $ make init
 ```
-
 [Optional Step] : If this fails saying certain files are missing, you can add the folloring in your docker container location :
-
 ```
 cd <PATH_TO_CONTAINERS>/Containers/com.docker.docker/Data/database/com.docker.driver.amd64-linux/
 mkdir disk
 touch disk/full-sync-on-flush
 touch disk/on-flush
 ```
-
 For Mac Users, PATH_TO_CONTAINERS is by default ~/Library/
 
 Now, build the containers:
@@ -142,44 +129,35 @@ $ make clean-all
 ```
 
 #### Notes on running tests
-
 On a vanilla mode, to run all the tests do the following:
-
 ```
 $ make test
 ```
 
 If you want to pass in specific params(e.g. -filter PaymentTest or --stop-on-failure etc), do the following:
-
 ```
 $ make test AT="--filter PaymentTest --stop-on-failure"
 ```
 
 ##### Optional
-
-Add the following to your `.env.testing_docker`:
-
+ Add the following to your `.env.testing_docker`:
 ```
 RUN_FIXTURES                                   = (true)
 RUN_FIXTURES_ONCE                              = (true)
 TRUNCATE_DATABASE                              = (true)
 ```
-
 After running one test, you can edit them all to false. This will speed up test execution on your pc.
-
-###### NOTE:
-
-- You need to make these 3 variables `true` everytime you run `make build`. Then, just run one test, and then make them `false` again.
-- Or, you can leave them all true. This will slow down the first test, but still speed up the rest of the tests on your pc.
+###### NOTE: 
+* You need to make these 3 variables `true` everytime you run `make build`. Then, just run one test, and then make them `false` again.
+* Or, you can leave them all true. This will slow down the first test, but still speed up the rest of the tests on your pc.
 
 #### Connecting to mysql:
 
 Available Databases:
-
-- api_live
-- api_test
-- api_testing_live
-- api_testing_test
+* api_live
+* api_test
+* api_testing_live
+* api_testing_test
 
 ```
 $ mysql -u api_user -p -P23306 -h 127.0.0.1 api_live
@@ -188,7 +166,9 @@ $ mysql -u api_user -p -P23306 -h 127.0.0.1 api_live
 Look at the value of `DB_LIVE_PASSWORD` in `docker-compose.dev.yml` file for the password. You can also use tools like sequelpro etc with the
 above configuration. Do note that the mysql port is going to be `23306`.
 
+
 #### Containerization Issues
 
 Please file issues regarding Containerization on the local `api`
 issue-tracker and tag @razorpay/devops
+
