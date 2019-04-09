@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Partner;
 
 use RZP\Models\Merchant;
+use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
@@ -167,5 +168,38 @@ trait PartnerTrait
             'plan_id' => $planId,
             'type'    => 'pricing',
         ]);
+    }
+
+    /**
+     * The method will simulate exact environment as of Partner Auth Merchant.
+     * 1. Load the oAuth Factories required for oAuth Models
+     * 2. Setup the partner account for Test Merchant
+     * 3. Remove the key for the test merchant.
+     *
+     * @return array
+     */
+    protected function setUpPartnerAuthForPayment()
+    {
+        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->app->make(Factory::class)->load($factoryPath);
+
+        $partnerId = '100000Razorpay';
+
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev', [], $partnerId);
+
+        $submerchantId = '10000000000000';
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => $submerchantId,
+            ]
+        );
+
+        $this->fixtures->edit('key', 'TheTestAuthKey', ['expired_at' => time() - 20]);
+
+        return [$client->getId(), 'acc_' . $submerchantId];
     }
 }
