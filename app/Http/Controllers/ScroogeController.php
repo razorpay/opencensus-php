@@ -73,4 +73,11 @@ class ScroogeController extends Controller
 
         return ApiResponse::json($response['body'], $response['code']);
     }
+
+    public function dashboardInit()
+    {
+        $response = $this->app['scrooge']->dashboardInit($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
 }
