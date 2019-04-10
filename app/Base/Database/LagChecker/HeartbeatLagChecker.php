@@ -9,6 +9,7 @@ use Illuminate\Redis\RedisManager;
 
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Models\Admin\ConfigKey;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestContext;
 use RZP\Base\Database\Metric;
@@ -118,6 +119,11 @@ class HeartbeatLagChecker implements LagChecker
      * @var int
      */
     private $trafficPercent;
+
+    /**
+     * @var bool
+     */
+    private $shouldTraceSuccess;
 
     /**
      * @var string
@@ -380,6 +386,7 @@ class HeartbeatLagChecker implements LagChecker
             $this->config['time_threshold'],
             $this->config['slave_time_threshold'],
             $this->config['traffic_percentage'],
+            ConfigKey::HEARTBEAT_LOG_VERBOSE,
         ]);
 
         list(
@@ -388,11 +395,14 @@ class HeartbeatLagChecker implements LagChecker
             $this->timeThreshold,
             $this->slaveTimeThreshold,
             $this->trafficPercent,
+            $this->shouldTraceSuccess,
             ) = array_values($heartbeatConfig);
 
         $this->mock = (bool) $this->mock;
 
         $this->enabled = (bool) $this->enabled;
+
+        $this->shouldTraceSuccess = (bool) $this->shouldTraceSuccess;
     }
 
     /**
@@ -429,22 +439,29 @@ class HeartbeatLagChecker implements LagChecker
 
     /**
      * It will do a mock check based on this it sends whether to use slave or master
+     *
      * @param bool   $useSlave
      * @param string $currentRoute
      * @param string $connectionIdentifier
+     *
      * @return bool
      */
     private function finalizeResult(bool $useSlave, $currentRoute = '', $connectionIdentifier = ''): bool
     {
-        // Adding it before mock check because of the mock is enabled heartbeat result will be master always
+        //
+        // Adding logging before mock check because if the mock is enabled, heartbeat result will be master always
         // which will not give a proper result of heartbeat evaluation
-        $this->traceConnectionSelection(
-            TraceCode::HEARTBEAT_CHECK_COMPLETED,
-            $useSlave,
-            [
-                'route_name'            => $currentRoute,
-                'connection_identifier' => $connectionIdentifier,
-            ]);
+        //
+        if ($this->shouldTraceSuccess === true)
+        {
+            $this->traceConnectionSelection(
+                TraceCode::HEARTBEAT_CHECK_COMPLETED,
+                $useSlave,
+                [
+                    'route_name'            => $currentRoute,
+                    'connection_identifier' => $connectionIdentifier,
+                ]);
+        }
 
         // If mock flag is set then ignore the heartbeat result
         if ($this->mock === true)
