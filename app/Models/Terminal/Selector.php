@@ -12,6 +12,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Rule;
 use RZP\Models\Payment\Method;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Services\NonBlockingHttp;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as Constants;
@@ -219,6 +220,9 @@ class Selector extends Base\Core
             }
         }
 
+        $this->sendParametersToSmartRoutingService($this->input['payment'], $this->input['merchant'],
+                                                    $allTerminals, $sortedTerminals);
+
         return $sortedTerminals;
     }
 
@@ -418,5 +422,52 @@ class Selector extends Base\Core
                 ]);
         }
 
+    }
+
+    private function sendParametersToSmartRoutingService($payment, $merchant, $allTerminals, $sortedTerminals)
+    {
+        try
+        {
+            $url = $this->app['config']->get('applications.routing.url');
+
+            if ($url === null)
+            {
+                $this->trace->error(
+                    TraceCode::PAYMENTS_DATA_PUSH_ROUTING_SERVICE,
+                    [
+                        'message'     => 'Routing service url is missing',
+                    ]);
+            }
+
+            $headers = ['Content-Type: application/json'];
+
+            $payment_data = [
+                'amount'      => $payment->getAmount(),
+                'currency'    => $payment->getCurrency(),
+                'bank'        => $payment->getBank(),
+                'method'      => $payment->getMethod(),
+                'notes'       => $payment->getNotes(),
+                'merchant_id' => $payment->merchant->getId(),
+                'contact'     => $payment->getContact(),
+                'email'       => $payment->getEmail()
+            ];
+
+            $data = [
+                'payment'         => $payment_data,
+                'merchant'        => $merchant,
+                'allTerminals'    => $allTerminals,
+                'sortedTerminals' => $sortedTerminals,
+            ];
+
+            NonBlockingHttp::postRequest($url, $data, $headers);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(
+                TraceCode::PAYMENTS_DATA_PUSH_ROUTING_SERVICE,
+                [
+                    'error'     => $e->getMessage(),
+                ]);
+        }
     }
 }

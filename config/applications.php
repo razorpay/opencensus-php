@@ -299,4 +299,8 @@ return [
     'batch' => [
         'secret'   => env('BATCH_API_SECRET'),
     ],
+
+    'routing' => [
+        'url'       => env('ROUTING_URL'),
+    ],
 ];

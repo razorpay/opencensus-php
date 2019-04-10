@@ -1744,6 +1744,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SUBSCRIPTION_PAYMENT_NOTIFY                           = "SUBSCRIPTION_PAYMENT_NOTIFY";
 
     const SELECTED_TERMINAL_IDS                                 = "SELECTED_TERMINAL_IDS";
+    const PAYMENTS_DATA_PUSH_ROUTING_SERVICE                    = "PAYMENTS_DATA_PUSH_ROUTING_SERVICE";
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

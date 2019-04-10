@@ -53,7 +53,8 @@
         "razorpay/trace": "~2.2",
         "maclof/kubernetes-client": "^0.11.0",
         "rmccue/requests": "v1.7.0",
-        "ext-curl": "*"
+        "ext-curl": "*",
+        "ext-json": "*"
     },
     "repositories": [
         {

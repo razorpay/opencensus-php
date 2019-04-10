@@ -7,25 +7,25 @@ use RZP\Trace\TraceCode;
 
 class NonBlockingHttp
 {
-    public static function postRequest(string $url, string $payload, array $header = null)
+    public static function postRequest(string $url, $payload, array $headers = null)
     {
         try
         {
-            $ch = curl_init();
+            $ch = curl_init($url);
 
-            curl_setopt($ch, CURLOPT_URL, $url);
+            $encodedData = json_encode($payload);
 
             curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
 
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
 
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $encodedData);
 
             curl_setopt($ch, CURLOPT_TIMEOUT_MS, 50);
 
-            if ($header !== null)
+            if ($headers !== null)
             {
-                curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
             }
 
             curl_exec($ch);
