@@ -9,10 +9,10 @@ use Illuminate\Redis\RedisManager;
 
 use Razorpay\Trace\Logger as Trace;
 
-use RZP\Models\Admin\ConfigKey;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestContext;
 use RZP\Base\Database\Metric;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Jobs\Context as WorkerContext;
 
 /**
