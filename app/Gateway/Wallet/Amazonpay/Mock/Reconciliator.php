@@ -63,7 +63,9 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
                 '"0"',
                 '"0"',
                 "\"{$this->formatAmount($row['payment']['amount'] / 100)}\"",
+                '"0"'
             ];
+            
 
             $col = array_combine_pad($keys, $col);
 
