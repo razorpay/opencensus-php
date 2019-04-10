@@ -92,6 +92,7 @@ class ProviderCode
     const LVB                = 'lvb';
     const LVBANK             = 'lvbank';
     const MAHB               = 'mahb';
+    const MYICICI            = 'myicici';
     const OBC                = 'obc';
     const OKAXIS             = 'okaxis';
     const OKHDFCBANK         = 'okhdfcbank';
@@ -217,6 +218,7 @@ class ProviderCode
         self::LVB                => IFSC::LAVB,
         self::LVBANK             => IFSC::LAVB,
         self::MAHB               => IFSC::MAHB,
+        self::MYICICI            => IFSC::ICIC,
         self::OBC                => IFSC::ORBC,
         self::OKAXIS             => IFSC::UTIB,
         self::OKICICI            => IFSC::ICIC,

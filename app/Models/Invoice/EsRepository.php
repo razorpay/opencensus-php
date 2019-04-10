@@ -46,6 +46,7 @@ class EsRepository extends Base\EsRepository
 
     protected $commonFetchParams = [
         Entity::STATUS,
+        Entity::STATUSES,
         Entity::TYPE,
         Entity::TYPES,
         Entity::MERCHANT_ID,
@@ -68,6 +69,13 @@ class EsRepository extends Base\EsRepository
     public function buildQueryForStatus(array & $query, string $value)
     {
         $this->addTermFilter($query, Entity::STATUS, $value);
+    }
+
+    public function buildQueryForStatuses(array & $query, array $value)
+    {
+        $filter = [Es::TERMS => [Entity::STATUS => $value]];
+
+        $this->addFilter($query, $filter);
     }
 
     public function buildQueryForUserId(array & $query, string $value)

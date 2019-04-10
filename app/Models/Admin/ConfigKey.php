@@ -34,6 +34,7 @@ class ConfigKey
     const FTS_CHANNELS                          = self::PREFIX . 'fts_channels';
     const CPS_SERVICE_ENABLED                   = self::PREFIX . 'cps_service_enabled';
     const SETTLEMENT_TRANSACTION_LIMIT          = self::PREFIX . 'settlement_transaction_limit';
+    const FTS_REQUEST_THRESHOLD                 = self::PREFIX . 'fts_request_threshold';
 
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,

@@ -122,7 +122,7 @@ class Validator extends Base\Validator
 
     protected static $terminalCreateRules = [
         Entity::TYPE                 => 'required|custom',
-        Entity::SUB_TYPE             => 'required|string|in:hitachi,netbanking_icici',
+        Entity::SUB_TYPE             => 'required|string|in:hitachi,netbanking_icici,netbanking_hdfc,upi_mindgate',
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
     ];
@@ -272,6 +272,22 @@ class Validator extends Base\Validator
         Header::NOTES                       => 'sometimes|nullable|notes',
     ];
 
+    protected static $terminalNetbankingHdfcRules = [
+        Header::HDFC_NB_MERCHANT_ID          => 'required|string|size:14',
+        Header::HDFC_NB_GATEWAY_MERCHANT_ID  => 'required|string|max:30|alpha_dash_space',
+        Header::HDFC_NB_CATEGORY             => 'required',
+        Header::HDFC_NB_TPV                  => 'sometimes|nullable|in:0,1,2',
+    ];
+
+    protected static $terminalUpiMindgateRules = [
+        Header::UPI_MINDGATE_MERCHANT_ID          => 'required|string|size:14',
+        Header::UPI_MINDGATE_GATEWAY_MERCHANT_ID  => 'required|string|max:30|alpha_dash_space',
+        Header::UPI_MINDGATE_VPA                  => 'required',
+        Header::UPI_MINDGATE_TERMINAL_PASSWORD    => 'required',
+        Header::UPI_MINDGATE_COLLECT              => 'sometimes|nullable|in:0,1',
+        Header::UPI_MINDGATE_PAY                  => 'sometimes|nullable|in:0,1',
+    ];
+
     protected function validateType($attribute, $value)
     {
         Type::validateType($value);
@@ -346,6 +362,22 @@ class Validator extends Base\Validator
         if (method_exists($this, $validatorMethodName) === true)
         {
             $this->$validatorMethodName($entries, $params, $merchant);
+        }
+    }
+
+    public function validateTerminalNetbankingHdfcEntries($entries, array $params, $merchant)
+    {
+        foreach ($entries as $entry)
+        {
+            $this->validateInput('terminal_netbanking_hdfc', $entry);
+        }
+    }
+
+    public function validateTerminalUpiMindgateEntries($entries, array $params, $merchant)
+    {
+        foreach ($entries as $entry)
+        {
+            $this->validateInput('terminal_upi_mindgate', $entry);
         }
     }
 

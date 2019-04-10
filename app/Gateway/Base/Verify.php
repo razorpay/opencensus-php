@@ -32,6 +32,8 @@ class Verify
 
     public $gatewaySuccess = null;
 
+    public $error = null;
+
     public $throwExceptionOnMismatch = true;
 
     /**
@@ -81,6 +83,7 @@ class Verify
 
         return array(
             'status'                    => $this->status,
+            'error'                     => $this->error,
             'gateway'                   => $this->gateway,
             'verifyResponseContent'     => $this->verifyResponseContent,
             'amountMismatch'            => $this->amountMismatch,

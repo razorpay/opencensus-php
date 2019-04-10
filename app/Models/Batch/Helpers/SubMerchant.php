@@ -79,6 +79,11 @@ class SubMerchant
             MDEntity::BANK_ACCOUNT_NAME           => $e[Header::BANK_ACCOUNT_NAME],
             MDEntity::BANK_BRANCH_IFSC            => $e[Header::BANK_BRANCH_IFSC],
             MDEntity::BANK_ACCOUNT_NUMBER         => $e[Header::BANK_ACCOUNT_NUMBER],
+            MDEntity::BUSINESS_CATEGORY           => $e[Header::BUSINESS_CATEGORY],
+            MDEntity::BUSINESS_SUBCATEGORY        => $e[Header::BUSINESS_SUB_CATEGORY],
+            MDEntity::COMPANY_CIN                 => $e[Header::COMPANY_CIN],
+            MDEntity::COMPANY_PAN                 => $e[Header::COMPANY_PAN],
+            MDEntity::COMPANY_PAN_NAME            => $e[Header::COMPANY_PAN_NAME],
         ];
     }
 }

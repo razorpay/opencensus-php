@@ -6,12 +6,16 @@ use Lib\Gstin;
 use Lib\PhoneBook;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Currency\Currency;
 use RZP\Exception\BadRequestException;
 use libphonenumber\NumberParseException;
+use RZP\Models\Base\Traits\CustomReplacesAttributes;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 {
+    use CustomReplacesAttributes;
+
     const MYSQL_UNSIGNED_INT_MIN = 0;
     const MYSQL_UNSIGNED_INT_MAX = 4294967295;
 
@@ -492,5 +496,16 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         }
 
         return preg_match('/^[ \pL\pM\pN_-]+$/u', $value) > 0;
+    }
+
+    public function validateMinAmount($attribute, $amount, $parameters)
+    {
+        $currencyKey = $parameters[0] ?? 'currency';
+
+        $currency = array_get($this->getData(), $currencyKey, Currency::INR);
+
+        $minAmount = Currency::getMinAmount($currency);
+
+        return ($amount >= $minAmount);
     }
 }

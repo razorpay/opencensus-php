@@ -1,5 +1,7 @@
 <?php
 
+use RZP\Tests\Functional\Fixtures\Entity\Pricing;
+
 return [
     'testImplicitVariable' => [
         'setup' => [
@@ -201,6 +203,38 @@ return [
                 'type'             => 'partner',
                 'implicit_plan_id' => null,
                 'explicit_plan_id' => null,
+            ],
+            'create_payment'     => [
+                'amount' => 4000 * 100, // paise
+                'auth'   => 'partner',
+            ],
+        ],
+    ],
+
+    'testCustomerFeeBearer' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'   => 'BptVjGnFv6ITBm',
+                'type' => 'fully_managed',
+            ],
+            'create_plans'       => [
+                [
+                    'plan_id'      => '200MerchantPln',
+                    'percent_rate' => '200',
+                ],
+                [
+                    'plan_id'      => '180PartnerPlan',
+                    'percent_rate' => '180',
+                ],
+            ],
+            'attach_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'pricing_plan_id' => '200MerchantPln',
+                'fee_bearer'      => 'customer',
+            ],
+            'define_config'      => [
+                'type'             => 'partner',
+                'implicit_plan_id' => '180PartnerPlan',
             ],
             'create_payment'     => [
                 'amount' => 4000 * 100, // paise
@@ -538,6 +572,250 @@ return [
             'create_payment'     => [
                 'amount' => 1000 * 100, // paise
                 'auth'   => 'partner',
+            ],
+        ],
+    ],
+
+    'testExplicit' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'   => 'BptVjGnFv6ITBm',
+                'type' => 'fully_managed',
+            ],
+            'attach_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'pricing_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
+            ],
+            'define_config'      => [
+                'type'             => 'partner',
+                'explicit_plan_id' => Pricing::DEFAULT_COMMISSION_PLAN_ID,
+            ],
+            'create_payment'     => [
+                'amount' => 4000 * 100, // paise
+                'auth'   => 'partner',
+            ],
+        ],
+    ],
+
+    'testExplicitRecordOnly' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'   => 'BptVjGnFv6ITBm',
+                'type' => 'fully_managed',
+            ],
+            'attach_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'pricing_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
+            ],
+            'define_config'      => [
+                'type'                   => 'partner',
+                'explicit_plan_id'       => Pricing::DEFAULT_COMMISSION_PLAN_ID,
+                'explicit_should_charge' => 0,
+            ],
+            'create_payment'     => [
+                'amount' => 4000 * 100, // paise
+                'auth'   => 'partner',
+            ],
+        ],
+    ],
+
+    'testGSTOnExplicit' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'   => 'BptVjGnFv6ITBm',
+                'type' => 'fully_managed',
+            ],
+            'attach_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'pricing_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
+            ],
+            'define_config'      => [
+                'type'                   => 'partner',
+                'explicit_plan_id'       => Pricing::DEFAULT_COMMISSION_PLAN_ID,
+                'explicit_should_charge' => 0,
+            ],
+            'create_payment'     => [
+                'amount' => 1000 * 100, // paise
+                'auth'   => 'partner',
+            ],
+        ],
+    ],
+
+    'testImplicitVariableAndExplicit' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'   => 'BptVjGnFv6ITBm',
+                'type' => 'fully_managed',
+            ],
+            'create_plans'       => [
+                [
+                    'plan_id'      => '200MerchantPln',
+                    'percent_rate' => '200',
+                ],
+                [
+                    'plan_id'      => '180PartnerPlan',
+                    'percent_rate' => '180',
+                ],
+            ],
+            'attach_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'pricing_plan_id' => '200MerchantPln',
+            ],
+            'define_config'      => [
+                'type'             => 'partner',
+                'implicit_plan_id' => '180PartnerPlan',
+                'explicit_plan_id' => Pricing::DEFAULT_COMMISSION_PLAN_ID,
+            ],
+            'create_payment'     => [
+                'amount' => 4000 * 100, // paise
+                'auth'   => 'partner',
+            ],
+        ],
+    ],
+
+    'testExplicitFixedFeesType' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'   => 'BptVjGnFv6ITBm',
+                'type' => 'fully_managed',
+            ],
+            'create_plans'       => [
+                [
+                    'plan_id'      => 'FixedCommPlanA',
+                    'percent_rate' => 0,
+                    'fixed_rate'   => '800', // 8 rupees fixed amount
+                    'type'         => 'commission',
+                ],
+            ],
+            'attach_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'pricing_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
+            ],
+            'define_config'      => [
+                'type'             => 'partner',
+                'explicit_plan_id' => 'FixedCommPlanA',
+            ],
+            'create_payment'     => [
+                'amount' => 4000 * 100, // paise
+                'auth'   => 'partner',
+            ],
+        ],
+    ],
+
+    'testImplicitFixedAndExplicit' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'   => 'BptVjGnFv6ITBm',
+                'type' => 'fully_managed',
+            ],
+            'create_plans'       => [
+                [
+                    'plan_id'      => 'FixedCommPlanA',
+                    'percent_rate' => 0,
+                    'fixed_rate'   => '800',
+                    'type'         => 'commission',
+                ],
+            ],
+            'attach_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'pricing_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
+            ],
+            'define_config'      => [
+                'type'             => 'partner',
+                'implicit_plan_id' => 'FixedCommPlanA',
+                'explicit_plan_id' => 'FixedCommPlanA',
+            ],
+            'create_payment'     => [
+                'amount' => 4000 * 100, // paise
+                'auth'   => 'partner',
+            ],
+        ],
+    ],
+
+    'testImplicitAndExplicitGreaterThanAmount' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'   => 'BptVjGnFv6ITBm',
+                'type' => 'fully_managed',
+            ],
+            'create_plans'       => [
+                [
+                    'plan_id'      => 'FixedPriPlanAB',
+                    'percent_rate' => 0,
+                    'fixed_rate'   => '500',
+                    'type'         => 'pricing',
+                ],
+                [
+                    'plan_id'      => 'FixedCommPlanA',
+                    'percent_rate' => 0,
+                    'fixed_rate'   => '300',
+                    'type'         => 'commission',
+                ],
+                [
+                    'plan_id'      => 'FixedCommPlanB',
+                    'percent_rate' => 0,
+                    'fixed_rate'   => '800',
+                    'type'         => 'commission',
+                ],
+            ],
+            'attach_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'pricing_plan_id' => 'FixedPriPlanAB',
+            ],
+            'define_config'      => [
+                'type'             => 'partner',
+                'implicit_plan_id' => 'FixedCommPlanA',
+                'explicit_plan_id' => 'FixedCommPlanB',
+            ],
+            'create_payment'     => [
+                'amount' => 10 * 100, // paise
+                'auth'   => 'partner',
+            ],
+        ],
+        'action' => [
+            'exception' => [
+                'class'   => 'RZP\Exception\LogicException',
+                'message' => 'Total commission greater than txn amount',
+            ],
+        ],
+    ],
+
+    'testExplicitWithAddOnPricingRules' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'   => 'BptVjGnFv6ITBm',
+                'type' => 'fully_managed',
+            ],
+            'create_plans' => [
+                [
+                    'id'              => 'DefaultPlnRule',
+                    'plan_id'         => 'FixedCommPlanA',
+                    'product'         => 'primary',
+                    'feature'         => 'payment',
+                    'percent_rate'    => 20,
+                    'type'            => 'commission',
+                ],
+                [
+                    'id'              => 'RecurringRule1',
+                    'plan_id'         => 'FixedCommPlanA',
+                    'product'         => 'primary',
+                    'feature'         => 'recurring',
+                    'percent_rate'    => 20,
+                    'type'            => 'commission',
+                ],
+            ],
+            'attach_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'pricing_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
+            ],
+            'define_config'      => [
+                'type'             => 'partner',
+                'explicit_plan_id' => 'FixedCommPlanA',
+            ],
+            'create_payment' => [
+                'amount'    => 4000 * 100, // paise
+                'auth'      => 'partner',
+                'recurring' => 1,
             ],
         ],
     ],

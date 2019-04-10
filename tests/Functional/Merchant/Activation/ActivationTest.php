@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use RZP\Constants\Mode;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -85,6 +87,98 @@ class ActivationTest extends TestCase
         $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
 
         $this->assertEquals($merchantDetails->getWebsite(), 'https://example.com');
+    }
+
+    public function mockRazorX(string $functionName, string $featureName, string $variant)
+    {
+        $testData = & $this->testData[$functionName];
+        $uniqueLocalId = RazorXClient::getLocalUniqueId('1cXSLlUU8V9sXl',$featureName, Mode::TEST);
+        $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => '{"' . $uniqueLocalId . '":"' . $variant . '"}'];
+    }
+
+    public function testInstantActivationOfSubscriptionsForActiveMerchants()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->mockRazorX(__FUNCTION__,'instant_activation_2_0_products','on');
+
+        $this->fixtures->merchant->activate($merchantId);
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+        $this->startTest();
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+        $this->assertEquals("approved", $merchant->merchantDetail->getSubscriptionsActivationStatus());
+
+    }
+
+    public function testInstantActivationOfSubscriptionsForInActiveMerchants()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->mockRazorX(__FUNCTION__,'instant_activation_2_0_products','on');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertEquals("pending", $merchant->merchantDetail->getSubscriptionsActivationStatus());
+
+    }
+
+    public function testInstantActivationOfRoutesForActiveMerchants()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+        $this->mockRazorX(__FUNCTION__,'instant_activation_2_0_products','on');
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+
+
+        $this->fixtures->merchant->activate($merchantId);
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertEquals("approved", $merchant->merchantDetail->getMarketplaceActivationStatus());
+
+    }
+
+    public function testInstantActivationOfRoutesForInActiveMerchants()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
+        $this->mockRazorX(__FUNCTION__,'instant_activation_2_0_products','on');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertEquals("pending", $merchant->merchantDetail->getMarketplaceActivationStatus());
+
     }
 
     public function testInstantActivationWithBlacklistedCategoryForEmi()
@@ -495,7 +589,7 @@ class ActivationTest extends TestCase
         ];
     }
 
-    public function testInternationalWithWhitelistedCategory()
+    public function testWhitelistInternational()
     {
         $merchantId = '1cXSLlUU8V9sXl';
 
@@ -505,10 +599,14 @@ class ActivationTest extends TestCase
 
         $merchant = $this->getDbEntityById('merchant', $merchantId);
 
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertEquals($merchantDetails->getInternationalActivationFlow(), 'whitelist');
+
         $this->assertFalse($merchant->convertOnApi());
     }
 
-    public function testInternationalWithWhitelistedCategoryAndNoWebsite()
+    public function testWhitelistInternationalWithNoWebsite()
     {
         $merchantId = '1cXSLlUU8V9sXl';
 
@@ -520,10 +618,14 @@ class ActivationTest extends TestCase
 
         $merchant = $this->getDbEntityById('merchant', $merchantId);
 
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertEquals($merchantDetails->getInternationalActivationFlow(), 'whitelist');
+
         $this->assertNull($merchant->convertOnApi());
     }
 
-    public function testInternationalWithWhitelistedCategoryAndWebsiteAlreadySet()
+    public function testWhitelistInternationalWithWebsiteAlreadySet()
     {
         $merchantId = '1cXSLlUU8V9sXl';
 
@@ -535,10 +637,14 @@ class ActivationTest extends TestCase
 
         $merchant = $this->getDbEntityById('merchant', $merchantId);
 
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertEquals($merchantDetails->getInternationalActivationFlow(), 'whitelist');
+
         $this->assertFalse($merchant->convertOnApi());
     }
 
-    public function testInternationalWithWhitelistedCategoryAndNoWebsiteAlreadySet()
+    public function testWhitelistInternationalWithNoWebsiteAlreadySet()
     {
         $merchantId = '1cXSLlUU8V9sXl';
 
@@ -550,10 +656,14 @@ class ActivationTest extends TestCase
 
         $merchant = $this->getDbEntityById('merchant', $merchantId);
 
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertEquals($merchantDetails->getInternationalActivationFlow(), 'whitelist');
+
         $this->assertFalse($merchant->convertOnApi());
     }
 
-    public function testInternationalWithBlacklistedCategory()
+    public function testBlacklistInternational()
     {
         $merchantId = '1cXSLlUU8V9sXl';
 
@@ -563,10 +673,14 @@ class ActivationTest extends TestCase
 
         $merchant = $this->getDbEntityById('merchant', $merchantId);
 
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertEquals($merchantDetails->getInternationalActivationFlow(), 'blacklist');
+
         $this->assertNull($merchant->convertOnApi());
     }
 
-    public function testInternationalWithGreylistedCategory()
+    public function testGreylistInternational()
     {
         $merchantId = '1cXSLlUU8V9sXl';
 
@@ -576,10 +690,14 @@ class ActivationTest extends TestCase
 
         $merchant = $this->getDbEntityById('merchant', $merchantId);
 
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertEquals($merchantDetails->getInternationalActivationFlow(), 'greylist');
+
         $this->assertNull($merchant->convertOnApi());
     }
 
-    public function testInternationalWithGreylistedCategoryAndNonInstantActivation()
+    public function testGreylistInternationalInstantlyActivated()
     {
         $merchantId = '1cXSLlUU8V9sXl';
 
@@ -589,11 +707,157 @@ class ActivationTest extends TestCase
 
         $merchant = $this->getDbEntityById('merchant', $merchantId);
 
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertEquals($merchantDetails->getInternationalActivationFlow(), 'greylist');
+
         $this->assertNull($merchant->convertOnApi());
     }
 
-    protected function runFixturesForInternationalActivation($merchantId)
+    public function testGreylistInternationalNonInstantActivation()
     {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->runFixturesForInternationalActivation($merchantId);
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertEquals($merchantDetails->getInternationalActivationFlow(), 'greylist');
+
+        $this->assertNull($merchant->convertOnApi());
+    }
+
+    public function testWhitelistInternationalExperimentOff()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->runFixturesForInternationalActivation($merchantId, 'control');
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertNull($merchantDetails->getInternationalActivationFlow());
+
+        $this->assertNull($merchant->convertOnApi());
+    }
+
+    public function testGreylistInternationalExperimentOff()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->runFixturesForInternationalActivation($merchantId, 'control');
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertNull($merchantDetails->getInternationalActivationFlow());
+
+        $this->assertNull($merchant->convertOnApi());
+    }
+
+    public function testBlacklistInternationalExperimentOff()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->runFixturesForInternationalActivation($merchantId, 'control');
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertNull($merchantDetails->getInternationalActivationFlow());
+
+        $this->assertNull($merchant->convertOnApi());
+    }
+
+    public function testGreylistInternationalOnKYCExperimentOff()
+    {
+        $this->setUpRazorxMock('control');
+
+        $data = [
+            'submitted'             => 1,
+            'business_category'     => 'not_for_profit',
+            'business_subcategory'  => 'charity',
+            'activation_status'     => 'under_review'
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $data);
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $this->fixtures->edit('merchant', $merchantId, ['international' => 0]);
+
+        $activationRequest = [
+            'url'     => '/merchant/activation/' . $merchantId . '/activation_status',
+            'method'  => 'patch',
+            'content' => [
+                'activation_status' => 'activated',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($activationRequest);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertFalse($merchant->isInternational());
+
+        $this->assertNull($merchant->convertOnApi());
+    }
+
+    public function testGreylistInternationalInstantActivationOnKYCExperimentOff()
+    {
+        $this->setUpRazorxMock('control');
+
+        $data = [
+            'submitted'             => 1,
+            'business_category'     => 'healthcare',
+            'business_subcategory'  => 'clinic',
+            'activation_status'     => 'under_review'
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $data);
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $this->fixtures->edit('merchant', $merchantId, ['activated' => 1, 'international' => 0]);
+
+        $activationRequest = [
+            'url'     => '/merchant/activation/' . $merchantId . '/activation_status',
+            'method'  => 'patch',
+            'content' => [
+                'activation_status' => 'activated',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($activationRequest);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertFalse($merchant->isInternational());
+
+        $this->assertNull($merchant->convertOnApi());
+    }
+
+    protected function runFixturesForInternationalActivation(string $merchantId, string $experimentVal = 'on')
+    {
+        $this->setUpRazorxMock($experimentVal);
+
         $this->fixtures->edit('merchant', $merchantId, ['international' => 0]);
 
         $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
@@ -605,4 +869,125 @@ class ActivationTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
     }
 
+    protected function setUpRazorxMock(string $experimentVal = 'on')
+    {
+        // Mock Razorx
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+             ->willReturn($experimentVal);
+    }
+
+    public function testGreylistInternationalOnKYC()
+    {
+        $this->setUpRazorxMock();
+
+        $data = [
+            'submitted'             => 1,
+            'business_category'     => 'not_for_profit',
+            'business_subcategory'  => 'charity',
+            'activation_status'     => 'under_review'
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $data);
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $this->fixtures->edit('merchant', $merchantId, ['international' => 0]);
+
+        $activationRequest = [
+            'url'     => '/merchant/activation/' . $merchantId . '/activation_status',
+            'method'  => 'patch',
+            'content' => [
+                'activation_status' => 'activated',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($activationRequest);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertTrue($merchant->isInternational());
+
+        $this->assertFalse($merchant->convertOnApi());
+    }
+
+    public function testGreylistInternationalInstantActivationOnKYC()
+    {
+        $this->setUpRazorxMock();
+
+        $data = [
+            'submitted'             => 1,
+            'business_category'     => 'healthcare',
+            'business_subcategory'  => 'clinic',
+            'activation_status'     => 'under_review'
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $data);
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $this->fixtures->edit('merchant', $merchantId, ['activated' => 1, 'international' => 0]);
+
+        $activationRequest = [
+            'url'     => '/merchant/activation/' . $merchantId . '/activation_status',
+            'method'  => 'patch',
+            'content' => [
+                'activation_status' => 'activated',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($activationRequest);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertTrue($merchant->isInternational());
+
+        $this->assertFalse($merchant->convertOnApi());
+    }
+
+    public function testBlacklistInternationalOnKYC()
+    {
+        $this->setUpRazorxMock();
+
+        $data = [
+            'submitted'             => 1,
+            'business_category'     => 'secutities',
+            'business_subcategory'  => 'commodities',
+            'activation_status'     => 'under_review'
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $data);
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $this->fixtures->edit('merchant', $merchantId, ['international' => 0]);
+
+        $activationRequest = [
+            'url'     => '/merchant/activation/' . $merchantId . '/activation_status',
+            'method'  => 'patch',
+            'content' => [
+                'activation_status' => 'activated',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($activationRequest);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertFalse($merchant->isInternational());
+
+        $this->assertNull($merchant->convertOnApi());
+    }
 }

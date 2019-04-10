@@ -57,7 +57,7 @@ trait Verify
             // If action is BLOCK, RETRY, FINISH we don't update Verify Status
             if ($action === null)
             {
-                $this->updatePaymentVerified($payment, VerifyStatus::FAILED);
+                $this->updatePaymentVerified($payment, VerifyStatus::FAILED, $e->getData());
 
                 $this->trace->info(
                     TraceCode::PAYMENT_VERIFY_FAILED,
@@ -83,7 +83,7 @@ trait Verify
             throw $e;
         }
 
-        $this->updatePaymentVerified($payment, VerifyStatus::SUCCESS);
+        $this->updatePaymentVerified($payment, VerifyStatus::SUCCESS, $data['gateway']);
 
         $data['payment'] = $payment->toArrayAdmin();
 
@@ -92,14 +92,16 @@ trait Verify
 
     /**
      * Update Payment attributes after running verify
-     *
-     * @param Payment\Entity $payment       payment for which attributes should be updated
-     * @param string         $verifyStatus  status of verify
+     * @param Payment\Entity $payment payment for which attributes should be updated
+     * @param string $verifyStatus status of verify
+     * @param array $gatewayData contains error, request , response and other gateway data
      * @return void
      */
-    protected function updatePaymentVerified(Payment\Entity $payment, $verifyStatus)
+    protected function updatePaymentVerified(Payment\Entity $payment, $verifyStatus, $gatewayData = null)
     {
         $payment->setVerified($verifyStatus);
+
+        $this->updateErrorInPaymentFromGatewayIfApplicable($payment, $gatewayData);
 
         $this->repo->saveOrFail($payment);
     }
@@ -123,5 +125,23 @@ trait Verify
                 'icon'    => ':boom:',
                 'channel' => Config::get('slack.channels.tech_logs_verify')
             ]);
+    }
+
+    protected function updateErrorInPaymentFromGatewayIfApplicable($payment, $data)
+    {
+        if (empty($data['error']) === true)
+        {
+            return;
+        }
+
+        $error = $data['error'];
+
+        $internalErrorCode = $error['internal_error_code'];
+
+        $errorCode = $error['code'];
+
+        $errorDescription = $error['description'];
+
+        $payment->setError($errorCode, $errorDescription, $internalErrorCode);
     }
 }

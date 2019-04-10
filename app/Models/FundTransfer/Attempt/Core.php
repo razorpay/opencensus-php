@@ -18,6 +18,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Vpa\Entity as VpaEntity;
 use RZP\Models\Card\Entity as CardEntity;
+use RZP\Models\FundTransfer\Base\Initiator;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
 use RZP\Services\Beam\Constants as BeamConstants;
@@ -52,8 +53,10 @@ class Core extends Base\Core
         {
             $this->dispatchForTransfer($fundTransferAttempt);
         }
-
-        $this->sendFTSFundTransferRequest($fundTransferAttempt, FundAccount\Type::BANK_ACCOUNT);
+        else
+        {
+            $this->sendFTSFundTransferRequest($fundTransferAttempt);
+        }
 
         return $fundTransferAttempt;
     }
@@ -71,6 +74,8 @@ class Core extends Base\Core
         $fundTransferAttempt->getValidator()->validateModeIfSet($values);
 
         $this->repo->saveOrFail($fundTransferAttempt);
+
+        $this->sendFTSFundTransferRequest($fundTransferAttempt);
 
         return $fundTransferAttempt;
     }
@@ -107,7 +112,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($fundTransferAttempt);
 
-        $this->sendFTSFundTransferRequest($fundTransferAttempt, FundAccount\Type::VPA);
+        $this->sendFTSFundTransferRequest($fundTransferAttempt);
 
         return $fundTransferAttempt;
     }
@@ -188,9 +193,11 @@ class Core extends Base\Core
 
         $fundTransferAttempt->source()->associate($source);
 
+        $channel = $this->getChannelForTransfer($source, $fundTransferAttempt->getSourceType());
+
         $defaultValues = [
             Entity::INITIATE_AT => Carbon::now(Timezone::IST)->getTimestamp(),
-            Entity::CHANNEL     => Settlement\Channel::YESBANK,
+            Entity::CHANNEL     => $channel,
             Entity::VERSION     => Version::V3,
             Entity::STATUS      => Status::CREATED,
             Entity::PURPOSE     => Purpose::REFUND,
@@ -201,6 +208,28 @@ class Core extends Base\Core
         $fundTransferAttempt->fillAndGenerateId($values);
 
         return $fundTransferAttempt;
+    }
+
+    protected function getChannelForTransfer(Base\Entity $source, string $sourceType): string
+    {
+        if (in_array($sourceType, [Constants\Entity::REFUND], true) === true)
+        {
+            $amount = $source->getAmount();
+
+            if ($amount < Initiator\NodalAccount::MAX_IMPS_AMOUNT)
+            {
+                $randomValue = mt_rand(1, 100);
+
+                $requestThreshold = (int) $this->app['cache']->get(ConfigKey::FTS_REQUEST_THRESHOLD);
+
+                if ($randomValue <= $requestThreshold)
+                {
+                    return Settlement\Channel::ICICI;
+                }
+            }
+        }
+
+        return Settlement\Channel::YESBANK;
     }
 
     /**
@@ -278,15 +307,20 @@ class Core extends Base\Core
      * @param string $accountType
      * @param bool   $isRegistered
      */
-    public function sendFTSFundTransferRequest(Entity $fta, string $accountType, bool $isRegistered = false)
+    public function sendFTSFundTransferRequest(Entity $fta, bool $isRegistered = false)
     {
         try
         {
-            $redis = $this->app['redis']->connection('redis_labs');
+            if ($fta->shouldUseGateway() === true)
+            {
+                return;
+            }
 
-            $ftsChannels = $redis->SMEMBERS(ConfigKey::FTS_CHANNELS);
+            $redis = $this->app['redis']->connection();
 
-            if(in_array($fta->getChannel(), $ftsChannels, true) === false)
+            $ftsChannelMode = $redis->HGET(ConfigKey::FTS_CHANNELS, $fta->getChannel());
+
+            if (empty($ftsChannelMode) === true)
             {
                 $this->trace->info(
                     TraceCode::FTS_INVALID_CHANNEL,
@@ -297,7 +331,7 @@ class Core extends Base\Core
                 return;
             }
 
-            FtsFundTransfer::dispatch($this->mode, $fta->getId(), $accountType, $isRegistered);
+            FtsFundTransfer::dispatch($this->mode, $fta->getId(), $isRegistered);
 
             $this->trace->info(
                 TraceCode::FTS_FUND_TRANSFER_JOB_DISPATCHED,
@@ -337,6 +371,11 @@ class Core extends Base\Core
     {
         try
         {
+            if (array_key_exists(Entity::STATUS, $input) === true)
+            {
+                $input[Entity::STATUS] = strtolower($input[Entity::STATUS]);
+            }
+
             (new Validator)->validateInput('fts_status_update', $input);
 
             $input[Entity::STATUS] = strtolower($input[Entity::STATUS]);
@@ -367,6 +406,10 @@ class Core extends Base\Core
 
                 $this->repo->saveOrFail($fta->source);
             });
+
+            return [
+              'message' => 'FTA and source updated succesfully',
+            ];
         }
         catch (\Throwable $e)
         {
@@ -377,6 +420,8 @@ class Core extends Base\Core
                 [
                     'error' => $e->getMessage()
                 ]);
+
+            throw $e;
         }
     }
 }

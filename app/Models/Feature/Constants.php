@@ -110,6 +110,8 @@ class Constants
     const REPORTING_GENRERIC_NOTES        = 'report_notes_to_column';
     const S2S_OTP_JSON                    = 's2s_otp_json';
     const ADHOC_SETTLEMENT                = 'adhoc_settlement';
+    const SUB_TERMINAL_OPTIMIZE           = 'sub_terminal_optimize';
+    const SHOW_REFUND_PUBLIC_STATUS       = 'show_refund_public_status';
 
     /**
      * This will control if the bank details will be returned in the fetch token response.
@@ -181,6 +183,8 @@ class Constants
     const SELF_KYC_DISABLED      = 'self_kyc_disabled';
     const PAYMENT_MAILS_DISABLED = 'payment_mails_disabled';
     const DISPUTE_MAILS_DISABLED = 'dispute_mails_disabled';
+
+    const BLOCK_PL_PAY_POST_EXPIRY = 'block_pl_pay_post_expiry';
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -329,6 +333,8 @@ class Constants
         self::PAYMENT_MAILS_DISABLED          => true,
         self::DISPUTE_MAILS_DISABLED          => true,
         self::ADHOC_SETTLEMENT                => true,
+        self::SUB_TERMINAL_OPTIMIZE           => true,
+        self::SHOW_REFUND_PUBLIC_STATUS       => true,
     ];
 
     // Entity type constants

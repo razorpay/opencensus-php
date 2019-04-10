@@ -8,6 +8,7 @@ use Request;
 use RZP\Http\Route;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
+use Illuminate\Http\JsonResponse;
 
 class Response
 {
@@ -113,7 +114,7 @@ class Response
     {
         list($publicError, $httpStatusCode) = $this->getErrorResponseFields($error, $debug);
 
-        return $this->generateResponse($publicError, $httpStatusCode);
+        return $this->generateResponse($publicError, $httpStatusCode, $debug);
     }
 
     public function generateJsonErrorResponse($code)
@@ -139,7 +140,7 @@ class Response
         return [$data, $httpStatusCode];
     }
 
-    public function generateResponse($data = [], $status = 200)
+    public function generateResponse($data = [], $status = 200, $debug = false)
     {
         $app = $this->app;
 
@@ -185,10 +186,10 @@ class Response
             return $this->generateDefaultErrorView($data);
         }
 
-        return $this->json($data, $status);
+        return $this->json($data, $status, $debug);
     }
 
-    public function json($data = [], $status = 200)
+    public function json($data = [], $status = 200, $debug = false)
     {
         $response = \Response::json();
 
@@ -210,6 +211,8 @@ class Response
         $this->stopBrowserCaching($response);
 
         $this->setSameOriginInHeaders($response, $route);
+
+        $this->setRequestIdInHeaders($response, $debug);
 
         return $response;
     }
@@ -356,6 +359,18 @@ class Response
             //
             $response->headers->set(Header::ACCESS_CONTROL_ALLOW_ORIGIN, '*');
         }
+    }
+
+    protected function setRequestIdInHeaders(JsonResponse $response, bool $debug)
+    {
+        if ($debug === false)
+        {
+            return;
+        }
+
+        $requestId = $this->request->getId();
+
+        $response->headers->set(Header::REQUEST_ID, $requestId);
     }
 
     protected function setSameOriginInHeaders($response, $route)

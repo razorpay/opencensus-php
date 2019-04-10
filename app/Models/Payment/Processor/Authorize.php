@@ -27,9 +27,9 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Models\Terminal;
 use RZP\Models\Currency;
 use RZP\Models\Merchant;
+use RZP\Models\Terminal;
 use RZP\Models\Customer;
 use RZP\Models\Discount;
 use RZP\Models\Card\IIN;
@@ -110,7 +110,13 @@ trait Authorize
 
     protected function setSelectedTerminals(Payment\Entity $payment, array $gatewayInput)
     {
-        if (($payment->isPushPaymentMethod() === true) and
+        // Ensure that the selectedTerminals set here is an array of terminal entities and not a terminal collection.
+
+        if (empty($gatewayInput['selected_terminals_ids']) === false)
+        {
+            $this->selectedTerminals = (new TerminalProcessor)->getTerminalFromTerminalIds($gatewayInput['selected_terminals_ids']);
+        }
+        else if (($payment->isPushPaymentMethod() === true) and
             ((empty($gatewayInput[Payment\Entity::TERMINAL_ID])) === false))
         {
             $this->selectedTerminals = [(new TerminalProcessor)->getTerminalFromGatewayData($gatewayInput)];
@@ -119,6 +125,12 @@ trait Authorize
         {
             $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
         }
+
+        $this->trace->info(
+            TraceCode::SELECTED_TERMINAL_IDS,
+            [
+                'selected_terminals_ids'  => array_pluck($this->selectedTerminals,Terminal\Entity::ID),
+            ]);
     }
 
     protected function setAuthenticationGatewayViaGatewayRules(Payment\Entity $payment, array & $gatewayInput)
@@ -132,7 +144,7 @@ trait Authorize
         (new TerminalProcessor)->setAuthenticationGateway($payment, $gatewayInput);
     }
 
-    protected function hitGatewayIfRequired(Payment\Entity $payment, array $input, array $gatewayInput)
+    protected function hitGatewayIfRequired(Payment\Entity $payment, array $input, array & $gatewayInput)
     {
         //
         // The instance variable selectedTerminals need to be set
@@ -151,7 +163,7 @@ trait Authorize
 
         try
         {
-            $request = $this->validateAndReturnRedirectResponseIfApplicable($payment);
+            $request = $this->validateAndReturnRedirectResponseIfApplicable($payment, $gatewayInput);
 
             if ($request != null)
             {
@@ -5126,7 +5138,7 @@ trait Authorize
         $this->cache->put($key, $input, $ttl);
     }
 
-    protected function validateAndReturnRedirectResponseIfApplicable(Payment\Entity $payment)
+    protected function validateAndReturnRedirectResponseIfApplicable(Payment\Entity $payment, array & $gatewayInput)
     {
         $merchant = $payment->merchant;
 
@@ -5157,6 +5169,13 @@ trait Authorize
             'public_key' => $this->app['basicauth']->getPublicKey(),
             'account_id' => $this->app['basicauth']->authCreds->creds['account_id'],
         ];
+
+        $response = $this->app->razorx->getTreatment($payment->merchant->getId(), 'redirect_terminal_cache', $this->mode);
+
+        if (strtolower($response) === 'on')
+        {
+            $gatewayInput['selected_terminals_ids'] = array_pluck($this->selectedTerminals,Terminal\Entity::ID);
+        }
 
         // encrypt with key
         $encryptedPayload = Crypt::encrypt($payload);

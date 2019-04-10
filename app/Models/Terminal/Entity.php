@@ -6,6 +6,7 @@ use Crypt;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Method;
@@ -67,6 +68,7 @@ class Entity extends Base\PublicEntity
     const NETWORK_CATEGORY              = 'network_category';
     const TYPE                          = 'type';
     const MODE                          = 'mode';
+    const DIRECT                        = 'direct';
 
     // Used for allowing gateway level changes for corporate netbanking payments.
     const CORPORATE                     = 'corporate';
@@ -276,11 +278,12 @@ class Entity extends Base\PublicEntity
         self::USED                      => 'boolean',
         self::ENABLED_BANKS             => 'array',
         self::CARDLESS_EMI              => 'boolean',
+        self::DIRECT                    => 'boolean',
     ];
 
     protected $appends = [
         self::SHARED,
-        self::BANKING_TYPES
+        self::BANKING_TYPES,
     ];
 
     protected $publicSetters = [
@@ -472,27 +475,16 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * For a given merchant, checks if the terminal can be considered direct
-     * for the merchant based on the below two cases
-     * - terminal's primary merchant is given merchant
-     * - any of the sub-merchants of the terminal has this merchant
+     * NOTE: This function must be used with caution.
+     * Any function using this must also use the standard
+     * repo function `addMerchantWhereCondition` and should
+     * also SET the terminal entity's `direct` attribute.
      *
-     * @param  Merchant\Entity $merchant    Merchant entity for which we want to check
-     * @return boolean
+     * @return bool
      */
-    public function isDirectForMerchant(Merchant\Entity $merchant): bool
+    public function isDirectForMerchant(): bool
     {
-        $result = ($merchant->getId() === $this->getAttribute(self::MERCHANT_ID));
-
-        if ($result === false)
-        {
-            $result = $this->merchants->contains(function ($subMerchant) use ($merchant)
-            {
-                return ($merchant->getId() === $subMerchant[Merchant\Entity::ID]);
-            });
-        }
-
-        return $result;
+        return ($this->getAttribute(self::DIRECT) === true);
     }
 
     /**
@@ -512,7 +504,7 @@ class Entity extends Base\PublicEntity
             return true;
         }
 
-        return $this->isDirectForMerchant($merchant);
+        return $this->isDirectForMerchant();
     }
 
     /**

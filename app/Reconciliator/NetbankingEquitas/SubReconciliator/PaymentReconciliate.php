@@ -7,6 +7,7 @@ use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Status;
+use RZP\Models\Base\PublicEntity;
 use RZP\Reconciliator\NetbankingEquitas\Constants;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
@@ -16,9 +17,9 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return $row[Constants::GATEWAY_REFERENCE_NUMBER] ?? null;
     }
 
-    protected function getReferenceNumber($row)
+    protected function getGatewayTransactionId(array $row)
     {
-        return $row[Constants::BANK_REFERENCE_NUMBER] ?? null;
+        return $row[Constants::BANK_TRANSACTION_ID] ?? null;
     }
 
     protected function getReconPaymentStatus(array $row)
@@ -81,5 +82,30 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         {
             return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[Constants::AMOUNT]);
         }
+    }
+
+    protected function setGatewayTransactionId(string $gatewayTransactionId, PublicEntity $gatewayPayment)
+    {
+        $dbGatewayTransactionId = trim($gatewayPayment->getReference1());
+
+        if ((empty($dbGatewayTransactionId) === false) and
+            ($dbGatewayTransactionId !== $gatewayTransactionId))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'                => TraceCode::RECON_MISMATCH,
+                    'info_code'                 => ($this->reconciled === true) ? 'DUPLICATE_ROW' : 'DATA_MISMATCH',
+                    'message'                   => 'Gateway Transaction ID (reference1) in db is not same as in recon',
+                    'payment_id'                => $this->payment->getId(),
+                    'amount'                    => $this->payment->getAmount(),
+                    'db_reference_number'       => $dbGatewayTransactionId,
+                    'recon_reference_number'    => $gatewayTransactionId,
+                    'gateway'                   => $this->gateway
+                ]);
+
+            return;
+        }
+
+        $gatewayPayment->setReference1($gatewayTransactionId);
     }
 }

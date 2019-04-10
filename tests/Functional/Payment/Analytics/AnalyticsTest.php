@@ -179,6 +179,59 @@ class AnalyticsTest extends TestCase
         $this->assertTestResponse($paymentAnalytic);
     }
 
+    public function testLibrarySetS2sForS2sUpiPayment()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+        $this->fixtures->create('terminal:shared_upi_hulk_terminal');
+        $this->fixtures->merchant->addFeatures(['s2supi']);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $this->doS2sUpiPayment($payment);
+
+        $paymentAnalytics = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+        $this->assertEquals('s2s', $paymentAnalytics['library']);
+    }
+
+    public function testLibrarySetDirectForPostPaymentRoute()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        // Create a card that won't go through 3DS to make the test simpler
+        $this->fixtures->merchant->enableInternational();
+        $this->fixtures->iin->create([
+            'iin'     => '545454',
+            'country' => 'US',
+            'network' => 'MasterCard',
+        ]);
+        $payment['card']['number'] = '5454540000000005';
+
+        // Post directly to /payments (or /payments/create/checkout)
+        // This is dumb, but merchants do it.
+        $content = $this->makeRequestAndGetContent([
+            'method'  => 'POST',
+            'url'     => '/payments/create/checkout',
+            'content' => $payment
+        ]);
+
+        // Since they're not using any Razorpay SDK on client side and are
+        // handling the integration themselves, this is a direct integration.
+        $paymentAnalytics = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+        $this->assertEquals('direct', $paymentAnalytics['library']);
+    }
+
+    public function testLibrarySetCustom()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['_']['library'] = 'custom';
+
+        $payment = $this->doAuthPayment($payment);
+
+        $paymentAnalytics = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+        $this->assertEquals('custom', $paymentAnalytics['library']);
+    }
+
     public function testHttpRequestDataForOtpBasedPayment()
     {
         $this->sharedTerminal = $this->fixtures->create(

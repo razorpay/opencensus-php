@@ -40,7 +40,7 @@ class CreateIsgGateway extends Migration
             $table->string(ISG::SECONDARY_ID)
                   ->nullable();
 
-            $table->char(ISG::BANK_REFERENCE_NUMBER, 16)
+            $table->string(ISG::BANK_REFERENCE_NUMBER, 64)
                   ->nullable();
 
             $table->char(ISG::MERCHANT_PAN, 16);

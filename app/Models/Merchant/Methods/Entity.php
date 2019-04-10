@@ -4,10 +4,13 @@ namespace RZP\Models\Merchant\Methods;
 
 use RZP\Models\Base;
 use RZP\Models\Card\Network;
+use RZP\Models\Base\QueryCache\Cacheable;
 use RZP\Models\Payment\Processor\Netbanking as NetbankingProcessor;
 
 class Entity extends Base\PublicEntity
 {
+    use Cacheable;
+
     const MERCHANT_ID       = 'merchant_id';
     const CARD              = 'card';
     const NETBANKING        = 'netbanking';
@@ -772,4 +775,18 @@ class Entity extends Base\PublicEntity
     }
 
     // ----------------------- Mutators End --------------------------------------------
+
+    /**
+     * We are tagging the method entity cache key by
+     * <entityName>_<merchantID>
+     * @param string $entity
+     * @param string $merchantId
+     * @return string
+     */
+    public static function getCacheTags(string $entity, string $merchantId): string
+    {
+        $cacheTags = implode('_', [$entity, $merchantId]);
+
+        return $cacheTags;
+    }
 }

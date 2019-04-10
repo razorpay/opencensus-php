@@ -5,10 +5,12 @@ namespace RZP\Gateway\P2p\Upi\Axis;
 use Carbon\Carbon;
 use phpseclib\Crypt\RSA;
 
+use RZP\Trace\TraceCode;
 use RZP\Gateway\P2p\Upi;
 use RZP\Constants\Timezone;
 use RZP\Gateway\P2p\Upi\Axis\Sdk;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
+use RZP\Exception\P2p\GatewayErrorException;
 
 class Gateway extends Upi\Gateway
 {
@@ -34,7 +36,7 @@ class Gateway extends Upi\Gateway
     protected function initiateSdkRequest(string $action)
     {
         $request = new Sdk([
-            'id' => $this->getSdkRequestId(),
+            'id' => $this->getRequestId(),
         ]);
 
         $request->setActionMap($action, $this->actionMap[$action]);
@@ -48,9 +50,22 @@ class Gateway extends Upi\Gateway
     {
         if ($this->isSdkFailure() === true)
         {
-            $this->throwP2pGatewayException();
+            $gatewayCode = $this->inputSdk()->get(Fields::ERROR_CODE, ErrorMap::NOT_AVAILABLE);
+            $gatewayDesc = $this->inputSdk()->get(Fields::ERROR_DESCRIPTION, ErrorMap::NOT_AVAILABLE);
+
+            throw $this->p2pGatewayException(
+                $gatewayCode,
+                [
+                    Fields::SDK => $this->inputSdk()
+                ],
+                $gatewayDesc);
         }
 
+        return $this->inputSdk();
+    }
+
+    protected function inputSdk(): ArrayBag
+    {
         return $this->input->get(Fields::SDK);
     }
 
@@ -110,16 +125,94 @@ class Gateway extends Upi\Gateway
         throw new \Exception('Hi!');
     }
 
-    protected function getSdkRequestId()
+    protected function p2pGatewayException(
+        string $gatewayCode,
+        array $data = [],
+        string $gatewayDesc = null)
     {
-        return str_random(14);
+        $code = ErrorMap::map($gatewayCode);
+
+        return new GatewayErrorException($code, $gatewayCode, $gatewayDesc, $data);
     }
 
     protected function getUpiRequestId()
     {
         $prefix = $this->config['merchant_unique_prefix'] ?? 'BJJ';
 
-        return $prefix . strtolower(str_random(32));
+        return $prefix . $this->request->getId();
+    }
+
+    protected function initiateS2sRequest(string $action)
+    {
+        $map = $this->actionMap[$action];
+
+        $accessor = function(string $method)
+        {
+            return $this->{$method}();
+        };
+
+        switch ($map[Actions\Action::SOURCE])
+        {
+            case Actions\Action::DIRECT:
+                $request = new S2sDirect($accessor, $this->getUrl($action));
+
+                $request->setSigner($this->getMerchantSigner());
+
+                $request->setHeaders([
+                    S2sDirect::X_MERCHANT_ID            => $this->getMerchantId(),
+                    S2sDirect::X_MERCHANT_CHANNEL_ID    => $this->getMerchantChannelId(),
+                    S2sDirect::X_TIMESTAMP              => $this->getTimeStamp(),
+                ]);
+        }
+
+        $request->setActionMap($action, $this->actionMap[$action]);
+
+        $request->setConfig($this->config);
+
+        return $request;
+    }
+
+    protected function sendS2sRequest(S2s $s2sRequest)
+    {
+        $request = $s2sRequest->finish();
+
+        $this->trace->info(TraceCode::P2P_GATEWAY_REQUEST, [
+            'request'   => $request,
+            'source'    => $s2sRequest->source(),
+        ]);
+
+        switch ($s2sRequest->source())
+        {
+            case Actions\Action::DIRECT:
+                $response =  parent::sendGatewayRequest($request);
+        }
+
+        $response = $s2sRequest->response($response);
+
+        $this->trace->info(TraceCode::P2P_GATEWAY_RESPONSE, [
+            'response'  => $response,
+            'source'    => $s2sRequest->source(),
+        ]);
+
+        if ($this->isS2sFailure($response))
+        {
+            $gatewayCode = $response->get(Fields::RESPONSE_CODE, ErrorMap::NOT_AVAILABLE);
+            $gatewayDesc = $response->get(Fields::RESPONSE_MESSAGE, ErrorMap::NOT_AVAILABLE);
+
+            throw $this->p2pGatewayException(
+                $gatewayCode,
+                [
+                    'response' => $response,
+                ],
+                $gatewayDesc);
+        }
+
+        return $response;
+    }
+
+    private function isS2sFailure($input): bool
+    {
+        return $input[Fields::STATUS] != 'SUCCESS';
     }
 
     protected function sendGatewayRequest($request)

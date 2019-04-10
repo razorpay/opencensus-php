@@ -199,6 +199,8 @@ class FirstDataGatewayTest extends TestCase
 
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals('passed', $payment['two_factor_auth']);
+
+        return $payment;
     }
 
     public function testVerifyRefund()
@@ -923,5 +925,27 @@ class FirstDataGatewayTest extends TestCase
             // Any invalid code is mapped to General Error
             'Payment was not completed on time.' .
             "\nGateway Error Code: ?:waiting RUPAY\nGateway Error Desc: Waiting for Rupay");
+    }
+
+    public function testBadRequestPaymentTimedOut()
+    {
+        $payment = $this->testPaymentAuthAndCapture();
+
+        $payment = $this->fixtures->edit('payment', $payment['id'],
+                                                ['internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT,
+                                                 'status' => 'created']);
+
+        $this->mockServerContentFunction(function(& $content, $action) use ($payment)
+        {
+            $content = SoapWrapper::verifyResponseWrapper($payment['id'], 'N:-30051', 'WAITING');
+        });
+
+        $this->verifyPayment('pay_' . $payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('GATEWAY_ERROR_COMMUNICATION_ERROR', $payment['internal_error_code']);
+
+        $this->assertEquals('Gateway experienced a communication error.', $payment['error_description']);
     }
 }

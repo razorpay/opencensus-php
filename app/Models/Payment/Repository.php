@@ -508,8 +508,7 @@ class Repository extends Base\Repository
     {
         $query = $this->newQuery()
                       ->whereIn(Payment\Entity::ID, $paymentIds)
-                      ->whereNotIn(Payment\Entity::GATEWAY, $disabledGateways)
-                      ->whereNull(Payment\Entity::AUTHORIZED_AT);
+                      ->whereNotIn(Payment\Entity::GATEWAY, $disabledGateways);
 
         $verifiableCount = $query->count();
 
@@ -642,7 +641,7 @@ class Repository extends Base\Repository
         int $from,
         int $to,
         string $gateway,
-        bool $corporate = false)
+        string $bankCode)
     {
         $paymentAttrs = $this->dbColumn('*');
 
@@ -654,11 +653,11 @@ class Repository extends Base\Repository
 
         $pTerminalId = $this->dbColumn(Entity::TERMINAL_ID);
 
+        $pBankCode = $this->dbColumn(Entity::BANK);
+
         $tId = $terminalRepo->dbColumn(Terminal\Entity::ID);
 
         $pAuthorizedAt = $this->dbColumn(Entity::AUTHORIZED_AT);
-
-        $tCorp = $terminalRepo->dbColumn(Terminal\Entity::CORPORATE);
 
         return $this->newQuery()
                     ->select($paymentAttrs)
@@ -667,7 +666,7 @@ class Repository extends Base\Repository
                     ->where($pAuthorizedAt, '<=', $to)
                     ->where($pGateway, $gateway)
                     ->whereNotNull($pAuthorizedAt)
-                    ->where($tCorp, $corporate)
+                    ->where($pBankCode, $bankCode)
                     ->get();
     }
 
@@ -1652,6 +1651,17 @@ class Repository extends Base\Repository
         $this->connection(null);
 
         return null;
+    }
+
+    public function fetchByIdandSubscriptionId(string $paymentId, string $subscriptionId)
+    {
+        Entity::verifyIdAndStripSign($paymentId);
+
+        $subscriptionId = Base\PublicEntity::stripDefaultSign($subscriptionId);
+
+        return $this->newQuery()
+                    ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
+                    ->findOrFailPublic($paymentId);
     }
 
     /**

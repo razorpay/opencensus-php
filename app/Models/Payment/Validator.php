@@ -207,6 +207,10 @@ class Validator extends Base\Validator
         'preferred_auth',
     ];
 
+    protected static $minAmountCheckRules = [
+        Entity::AMOUNT => 'required|integer|min_amount'
+    ];
+
     protected function validateIfsc(array $input)
     {
         if (isset($input[Entity::BANK_ACCOUNT][Entity::IFSC]) === false)
@@ -502,12 +506,7 @@ class Validator extends Base\Validator
 
         if ($method !== Payment\Method::EMANDATE)
         {
-            if ($amount < 100)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT,
-                    'amount');
-            }
+            $this->validateInputValues('min_amount_check', $input);
         }
 
         if (($method === Payment\Method::WALLET) and

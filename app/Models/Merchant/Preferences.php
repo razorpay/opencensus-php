@@ -43,6 +43,7 @@ class Preferences
     const MID_DMI_FINANCE           = 'BU4wKuO2IisLWY';
     const MID_VARTHANA_FINANCE      = 'BpqmTAX1XcFMvB';
     const MID_INDIABULLS_FINANCE    = 'BXdV62dMAbb869';
+    const MID_DREAM11               = '6L6z7NYQywAaP0';
 
     const DEMO_ACCOUNT         = '100DemoAccount';
     const MID_ENDURANCE        = [

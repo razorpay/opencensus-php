@@ -5,6 +5,8 @@ namespace RZP\Models\P2p\Device;
 use RZP\Exception;
 use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Base;
+use RZP\Error\P2p\ErrorCode;
+
 use RZP\Models\P2p\BankAccount;
 
 /**
@@ -22,8 +24,6 @@ class Processor extends Base\Processor
         $this->initialize(Action::INITIATE_VERIFICATION, $input, true);
 
         $customer = $this->core->getDeviceCustomer($input[Entity::CUSTOMER_ID]);
-
-        $this->context()->validateMerchant($customer->merchant);
 
         $this->input->put(Entity::CUSTOMER_ID, $customer->getId());
 
@@ -138,6 +138,14 @@ class Processor extends Base\Processor
     public function deregister(array $input): array
     {
         $this->initialize(Action::DEREGISTER, $input, true);
+
+        // TODO: Make sure this is done on either of Private/AppAuth
+        if ($this->input->get('force'))
+        {
+            return $this->deregisterSuccess([
+                Entity::SUCCESS => true
+            ]);
+        }
 
         return $this->callGateway();
     }

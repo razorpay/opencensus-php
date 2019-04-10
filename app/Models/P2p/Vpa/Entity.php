@@ -31,6 +31,8 @@ class Entity extends Base\Entity
     const BANK_ACCOUNT     = 'bank_account';
     const AEROBASE         = '@';
     const ADDRESS          = 'address';
+    const AVAILABLE        = 'available';
+    const SUGGESTIONS      = 'suggestions';
 
     /************** Entity Properties ************/
 

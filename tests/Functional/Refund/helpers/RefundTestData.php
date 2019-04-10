@@ -727,4 +727,17 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testFetchRefundPublicStatus' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/refunds/',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'status' => 'pending'
+            ],
+        ],
+    ],
 ];

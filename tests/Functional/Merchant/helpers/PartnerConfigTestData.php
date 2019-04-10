@@ -373,6 +373,7 @@ return [
                 'commissions_enabled'    => 0,
                 'implicit_plan_id'       => null,
                 'explicit_plan_id'       => null,
+                'implicit_expiry_at'     => null,
             ],
         ],
         'response' => [
@@ -382,6 +383,7 @@ return [
                 'commissions_enabled'    => false,
                 'implicit_plan_id'       => null,
                 'explicit_plan_id'       => null,
+                'implicit_expiry_at'     => null,
                 'explicit_refund_fees'   => true,
                 'explicit_should_charge' => false,
             ],

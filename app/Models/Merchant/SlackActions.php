@@ -16,7 +16,6 @@ class SlackActions
     const FORM_UNLOCKED                = 'Form Unlocked';
     const PRICING_PLAN_SET             = 'Pricing Plan Set';
     const ADD_TAGS                     = 'Tagged';
-    const ACTIVATED                    = 'Activated';
     const HDFC_EXCEL                   = 'HDFC Excel generated';
     const LIVE_ENABLED                 = 'Live transactions enabled';
     const LIVE_DISABLED                = 'Live transactions disabled';
@@ -31,8 +30,6 @@ class SlackActions
     const EMAIL_ENABLED                = 'Receipt email enabled';
     const INTERNATIONAL_ENABLED        = 'Merchant international enabled';
     const INTERNATIONAL_DISABLED       = 'Merchant international disabled';
-    const ACTIVATION_SUBMITTED         = 'New activation form submitted';
-    const PRODUCT_ACTIVATION_SUBMITTED = 'New product activation request submitted';
 
     // code
     const ARCHIVE                = 'archive';
@@ -43,7 +40,6 @@ class SlackActions
     const DISABLE                = 'disable';
     const LOCK                   = 'lock';
     const UNLOCK                 = 'unlock';
-    const ACTIVATE               = 'activate';
     const ASSIGN_PRICING         = 'assign_pricing';
     const TAGGED                 = 'Tagged';
     const ASSIGN_BANKS           = 'assign_banks';
@@ -55,8 +51,6 @@ class SlackActions
     const ENABLE_RECEIPT_EMAILS  = 'enable_receipt_emails';
     const ENABLE_INTERNATIONAL   = 'enable_international';
     const DISABLE_INTERNATIONAL  = 'disable_international';
-    const SUBMIT_ACTIVATION      = 'submit_activation';
-    const PRODUCT_ACTIVATION     = 'product_activation';
 
     public static $actionMsgMap = [
         self::ARCHIVE                => self::ARCHIVED,
@@ -67,7 +61,6 @@ class SlackActions
         self::DISABLE                => self::LIVE_DISABLED,
         self::LOCK                   => self::FORM_LOCKED,
         self::UNLOCK                 => self::FORM_UNLOCKED,
-        self::ACTIVATE               => self::ACTIVATED,
         self::ASSIGN_PRICING         => self::PRICING_PLAN_SET,
         self::TAGGED                 => self::ADD_TAGS,
         self::ASSIGN_BANKS           => self::BANK_LIST_EDITED,
@@ -79,7 +72,5 @@ class SlackActions
         self::ENABLE_RECEIPT_EMAILS  => self::EMAIL_ENABLED,
         self::ENABLE_INTERNATIONAL   => self::INTERNATIONAL_ENABLED,
         self::DISABLE_INTERNATIONAL  => self::INTERNATIONAL_DISABLED,
-        self::SUBMIT_ACTIVATION      => self::ACTIVATION_SUBMITTED,
-        self::PRODUCT_ACTIVATION     => self::PRODUCT_ACTIVATION_SUBMITTED
     ];
 }

@@ -92,7 +92,7 @@ class Entity
     const VIRTUAL_ACCOUNT           = 'virtual_account';
     const MERCHANT_DETAIL           = 'merchant_detail';
     const TERMINAL_ACTION           = 'terminal_action';
-    const PAYMENT_DOWNTIME          = 'payment_downtime';
+    const PAYMENT_DOWNTIME          = 'payment.downtime';
     const MERCHANT_REQUEST          = 'merchant_request';
     const CUSTOMER_BALANCE          = 'customer_balance';
     const GATEWAY_DOWNTIME          = 'gateway_downtime';
@@ -264,9 +264,17 @@ class Entity
             QueryCacheConstants::VERSION => 'v1',
             QueryCacheConstants::TTL     => 15,
         ],
+        self::PRICING  => [
+            QueryCacheConstants::VERSION => 'v1',
+            QueryCacheConstants::TTL     => 15,
+        ],
         self::AUTH_TOKEN  => [
             QueryCacheConstants::VERSION => 'v1',
             QueryCacheConstants::TTL     => 5,
+        ],
+        self::METHODS  => [
+            QueryCacheConstants::VERSION => 'v1',
+            QueryCacheConstants::TTL     => 15,
         ],
     ];
 
@@ -528,6 +536,8 @@ class Entity
         self::CARDLESS_EMI           => \RZP\Gateway\CardlessEmi::class,
 
         self::NODAL_STATEMENT        => \RZP\Models\Nodal\Statement::class,
+
+        self::PAYMENT_DOWNTIME       => \RZP\Models\Payment\Downtime::class,
     ];
 
     protected static $externalServiceClass = [
@@ -682,6 +692,9 @@ class Entity
 
     public static function isValidEntity($entity)
     {
+        // For dealing with sub.entity types
+        $entity = str_replace('.', '_', $entity);
+
         return (defined(__CLASS__ . '::' . strtoupper($entity)));
     }
 

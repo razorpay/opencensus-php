@@ -234,7 +234,7 @@ class Service extends Base\Service
         return $this->core()->nodalFileUploadThroughBeam($input);
     }
 
-    public function updateFundTransferAttempt(array $input)
+    public function updateFundTransferAttempt(array $input): array
     {
         $this->trace->info(
             TraceCode::FTS_UPDATE_FUND_TRANSFER_ATTEMPT,
@@ -242,6 +242,6 @@ class Service extends Base\Service
                 'input'     => $input
             ]);
 
-        $this->core()->updateFundTransfer($input);
+        return $this->core()->updateFundTransfer($input);
     }
 }

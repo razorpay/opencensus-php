@@ -33,7 +33,13 @@ class Service extends Base\Service
 
     const MAX_REFUND_RETRY_ATTEMPTS = 3;
 
-    const MAX_REFUND_VERIFY_REQUESTS = 20;
+    const ENTITIES       = 'entities';
+    const REFUND_IDS     = 'refund_ids';
+    const DB_FETCH_LIMIT = 'limit';
+    const GATEWAY_ENTITY = 'gateway_entity';
+
+    const MAX_REFUND_VERIFY_REQUESTS     = 20;
+    const SCROOGE_TAGGING_LIVE_TIMESTAMP = 1552646209;
 
     protected $mutex;
 
@@ -315,6 +321,179 @@ class Service extends Base\Service
         $response = $refund->toArray();
 
         return $response;
+    }
+
+    /*
+     * Sample request:
+     * {
+     *   "refund":["amount"],
+     *   "payment":["reference2"],
+     *   "entities":{
+     *       "card":["iin", "last4"],
+     *       "terminal":["gateway_terminal_id", "gateway_merchant_id"],
+     *       "gateway_entity":{
+     *           "axis_migs":{
+     *               "authorize":["vpc_ReceiptNo"]
+     *               }
+     *           }
+     *       },
+     *   "refund_ids":["C6rXXXXXXXX43","C6rQQL1KTvb43"]
+     * }
+     *
+     * Sample response:
+     * {
+     *    "C6rXXXXXXXX43": {
+     *        "entities": {
+     *            "refund": {
+     *                "amount": 100
+     *            },
+     *            "payment": {
+     *                "reference2": "54543"
+     *            },
+     *            "card": {
+     *                "iin": "401200",
+     *                "last4": "3335"
+     *            },
+     *            "terminal": {
+     *                "gateway_terminal_id": "test_terminal",
+     *               "gateway_merchant_id": "test_merchant"
+     *           },
+     *           "gateway_entity": {
+     *               "axis_migs": {
+     *             "authorize": {
+     *                       "vpc_ReceiptNo": "492348230fd"
+     *                   }
+     *                }
+     *            }
+     *        }
+     *    }
+     *}
+     */
+    public function scroogeFetchEntities($input)
+    {
+        $responseArray = [];
+
+        $skippedRefunds = [];
+
+        if (isset($input[self::REFUND_IDS]) === true)
+        {
+            foreach ($input[self::REFUND_IDS] as $id)
+            {
+                try
+                {
+                    $refund = $this->repo->refund->findOrFailPublic($id);
+
+                    $refundEntity = $refund->toArrayGateway();
+
+                    $payment = $refund->payment;
+
+                    $paymentEntity = $payment->toArrayGateway();
+
+                    $response = [];
+
+                    if (isset($input[Constants\Entity::REFUND]) === true)
+                    {
+                        $map = [];
+
+                        foreach ($input[Constants\Entity::REFUND] as $value)
+                        {
+                            $map[$value] = $refundEntity[$value];
+                        }
+
+                        $response[self::ENTITIES][Constants\Entity::REFUND] = $map;
+                    }
+
+                    if (isset($input[Constants\Entity::PAYMENT]) === true)
+                    {
+                        $map = [];
+
+                        foreach ($input[Constants\Entity::PAYMENT] as $value)
+                        {
+                            $map[$value] = $paymentEntity[$value];
+                        }
+
+                        $response[self::ENTITIES][Constants\Entity::PAYMENT] = $map;
+                    }
+
+                    if (isset($input[self::ENTITIES]) === true)
+                    {
+                        foreach ($input[self::ENTITIES] as $key => $values)
+                        {
+                            /*
+                             * This is the structure of gateway_entity
+                             * "gateway_entity":{
+                             *           "axis_migs":{
+                             *               "authorize":["vpc_ReceiptNo"]
+                             *               }
+                             *           }
+                             *       },
+                             */
+                            if ($key === self::GATEWAY_ENTITY)
+                            {
+                                foreach ($values as $gatewayEntity => $action)
+                                {
+                                    foreach ($action as $gatewayAction => $columns)
+                                    {
+                                        if (method_exists($this->repo->$gatewayEntity, 'findByPaymentIdAndActionorFail') === true)
+                                        {
+                                            $entity = $this->repo
+                                                ->$gatewayEntity
+                                                ->findByPaymentIdAndActionorFail($paymentEntity['id'], $gatewayAction)
+                                                ->toArray();
+
+                                            $map = [];
+
+                                            foreach ($columns as $column)
+                                            {
+                                                $map[$column] = $entity[$column];
+                                            }
+
+                                            $response[self::ENTITIES][$key][$gatewayEntity][$gatewayAction] = $map;
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                $entity = $payment->$key;
+
+                                $map = [];
+
+                                foreach ($values as $value)
+                                {
+                                    $map[$value] = $entity[$value];
+                                }
+
+                                $response[self::ENTITIES][$key] = $map;
+                            }
+                        }
+                    }
+
+                    $responseArray[$id] = $response;
+                }
+                catch (\Exception $ex)
+                {
+                    array_push($skippedRefunds, [
+                        $id =>
+                            [
+                                'code'    => $ex->getCode(),
+                                'message' => $ex->getMessage()
+                            ]
+                    ]);
+                }
+            }
+        }
+
+        $traceData = [
+            'skipped_refunds'   => $skippedRefunds,
+            'request_count'     => count($input[self::REFUND_IDS] ?? []),
+            'success_count'     => count($responseArray),
+            'failure_count'     => count($skippedRefunds),
+        ];
+
+        $this->trace->info(TraceCode::SCROOGE_FETCH_ENTITIES, $traceData);
+
+        return $responseArray;
     }
 
     public function fetchMultiple($input)
@@ -1297,9 +1476,9 @@ class Service extends Base\Service
 
     public function updateProcessedAt(array $input)
     {
-        if (isset($input['limit']) === true)
+        if (isset($input[self::DB_FETCH_LIMIT]) === true)
         {
-            $limit = intval($input['limit']);
+            $limit = intval($input[self::DB_FETCH_LIMIT]);
         }
         else
         {
@@ -1320,9 +1499,9 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::REFUND_UPDATE_PROCESSED_AT_INITIATED,
             [
-                'start_time' => $start,
-                'limit'      => $limit,
-                'created_at' => $createdAt,
+                'start_time'         => $start,
+                'created_at'         => $createdAt,
+                self::DB_FETCH_LIMIT => $limit
             ]);
 
         $successCount  = $this->repo->refund->updateProcessedAt($limit, $createdAt);
@@ -1415,9 +1594,9 @@ class Service extends Base\Service
 
     public function backfillUpiMindgateReference1(array $input)
     {
-        if (isset($input['limit']) === true)
+        if (isset($input[self::DB_FETCH_LIMIT]) === true)
         {
-            $limit = intval($input['limit']);
+            $limit = intval($input[self::DB_FETCH_LIMIT]);
         }
         else
         {
@@ -1459,11 +1638,11 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::REFUND_UPDATE_RRN_INITIATED,
             [
-                'start_time' => $start,
-                'limit'      => $limit,
-                'from'       => $from,
-                'to'         => $to,
-                'delay'      => $delay,
+                'start_time'         => $start,
+                'from'               => $from,
+                'to'                 => $to,
+                'delay'              => $delay,
+                self::DB_FETCH_LIMIT => $limit
             ]);
 
         $successCount  = 0;
@@ -1500,7 +1679,7 @@ class Service extends Base\Service
     {
         $gateways = [Payment\Gateway::UPI_MINDGATE, Payment\Gateway::UPI_ICICI];
 
-        $limit = (isset($input['limit']) === true) ? intval($input['limit']) : 500;
+        $limit = (isset($input[self::DB_FETCH_LIMIT]) === true) ? intval($input[self::DB_FETCH_LIMIT]) : 500;
 
         $offset = (isset($input['offset']) === true) ? intval($input['offset']) : 0;
 
@@ -1519,11 +1698,11 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::REFUND_SCROOGE_VERIFY_INITIATED,
             [
-                'limit'      => $limit,
-                'from'       => $from,
-                'to'         => $to,
-                'gateways'   => $gateways,
-                'refunds'    => $scroogeRefunds,
+                'from'               => $from,
+                'to'                 => $to,
+                'gateways'           => $gateways,
+                'refunds'            => $scroogeRefunds,
+                self::DB_FETCH_LIMIT => $limit,
             ]);
 
         if (empty($scroogeRefunds) === true)
@@ -1701,5 +1880,78 @@ class Service extends Base\Service
         $response['result'] = $fileData;
 
         return $response;
+    }
+
+    public function isScroogeBackFill(array $input)
+    {
+        $limit = (isset($input[self::DB_FETCH_LIMIT]) === true)? intval($input[self::DB_FETCH_LIMIT]) : 5000;
+
+        $isScrooge = (empty($input[RefundEntity::IS_SCROOGE]) === false) ?
+                     ($input[RefundEntity::IS_SCROOGE] === 'true') : true;
+
+        $updatedCount = 0;
+
+        $requestData = [
+            self::DB_FETCH_LIMIT => $limit,
+
+            RefundEntity::IS_SCROOGE => $isScrooge,
+
+            self::ENTITIES => []
+        ];
+
+        $responseData = [];
+
+        if (empty($input[self::ENTITIES]) === false)
+        {
+            foreach ($input[self::ENTITIES] as $gateways)
+            {
+                if ($limit <= 0)
+                {
+                    break;
+                }
+
+                $fromTime = (empty($gateways['from']) === false) ? intval($gateways['from']) : time();
+
+                $toTime = (empty($gateways['to']) === false) ?
+                          intval($gateways['to']) : self::SCROOGE_TAGGING_LIVE_TIMESTAMP;
+
+                $data = [
+                    RefundEntity::GATEWAY    => $gateways[RefundEntity::GATEWAY],
+                    self::DB_FETCH_LIMIT     => $limit,
+                    'from'                   => $fromTime,
+                    'to'                     => $toTime
+                ];
+
+                $requestData[self::ENTITIES][] = $data;
+
+                if ($fromTime > $toTime)
+                {
+                    continue;
+                }
+
+                $count = $this->repo->refund->backfillIsScrooge($data, $isScrooge, true);
+
+                $updatedCount += $count;
+
+                $limit -= $count;
+            }
+        }
+
+        if (empty($input[self::REFUND_IDS]) === false)
+        {
+            $count = $this->repo->refund->backfillIsScrooge($input[self::REFUND_IDS], $isScrooge, false);
+
+            $requestData[self::REFUND_IDS] = $input[self::REFUND_IDS];
+
+            $updatedCount += $count;
+        }
+
+        $responseData['refunds_updated'] = $updatedCount;
+
+        $this->trace->info(TraceCode::REFUND_UPDATE_IS_SCROOGE_REQUEST, $requestData);
+
+        $this->trace->info(TraceCode::REFUND_IS_SCROOGE_UPDATED_COUNT, $responseData);
+
+        return $responseData;
     }
 }

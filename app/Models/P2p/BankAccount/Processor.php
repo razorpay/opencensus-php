@@ -19,7 +19,7 @@ class Processor extends Base\Processor
     {
         $this->initialize(Action::INITIATE_RETRIEVE, $input, true);
 
-        $bank = (new Bank\Core)->find($this->input->get(Entity::BANK_ID));
+        $bank = (new Bank\Core)->fetch($this->input->get(Entity::BANK_ID));
 
         $this->gatewayInput->put(Entity::BANK, $bank->toArrayBag());
 

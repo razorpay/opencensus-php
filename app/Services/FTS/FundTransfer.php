@@ -19,6 +19,8 @@ class FundTransfer extends Base
 
     protected $source;
 
+    protected $accountType;
+
     const SOURCE_TYPES = [
         Constants::REFUND,
         Constants::PAYOUT,
@@ -42,17 +44,41 @@ class FundTransfer extends Base
      * @throws \RZP\Exception\RuntimeException
      * @throws \Throwable
      */
-    public function requestFundTransfer(string $ftaId, string $accountType, bool $isRegistered): array
+    public function requestFundTransfer(string $ftaId, bool $isRegistered): array
     {
-        $input = $this->makeRequestUsingType($ftaId, $accountType, $isRegistered);
+        $input = $this->makeRequestUsingType($ftaId, $isRegistered);
 
         $response = $this->createAndSendRequest(
             parent::FUND_TRANSFER_CREATE_URI,
             'POST', $input);
 
-        $this->handleResponse($response['body'], $accountType);
+        $this->handleResponse($response['body'], $this->accountType);
 
         return $response;
+    }
+
+    /**
+     * @return string
+     * @throws LogicException
+     */
+    public function getAccountType(): string
+    {
+        if ($this->fta->hasBankAccount())
+        {
+            return Constants::BANK_ACCOUNT;
+        }
+        else if ($this->fta->hasVpa())
+        {
+            return Constants::VPA;
+        }
+        else if ($this->fta->hasCard())
+        {
+            return Constants::CARD;
+        }
+        else
+        {
+            throw new LogicException('Account Type is not supported ');
+        }
     }
 
     /**
@@ -62,7 +88,7 @@ class FundTransfer extends Base
      * @return array
      * @throws LogicException
      */
-    public function makeRequestUsingType(string $ftaId, string $type, bool $isRegistered): array
+    public function makeRequestUsingType(string $ftaId, bool $isRegistered): array
     {
         $this->fta = $this->FTACore->getFTAEntity($ftaId);
 
@@ -71,6 +97,8 @@ class FundTransfer extends Base
         $this->setSourceEntityByType($sourceType);
 
         $product = $sourceType;
+
+        $this->accountType = $this->getAccountType();
 
         if (($sourceType === Constants::PAYOUT) and
             ($this->fta->isRefund() === true))
@@ -91,7 +119,7 @@ class FundTransfer extends Base
         }
         else
         {
-            switch ($type)
+            switch ($this->accountType)
             {
                 case Constants::BANK_ACCOUNT:
                     $request = $this->addBankAccountDetails($request);
@@ -103,8 +131,13 @@ class FundTransfer extends Base
 
                     break;
 
+                case Constants::CARD:
+                    $request = $this->addCardDetails($request);
+
+                    break;
+
                 default:
-                    throw new LogicException('Account Type is not supported ' . $type);
+                    throw new LogicException('Account Type is not supported ' . $this->accountType);
             }
         }
 
@@ -137,7 +170,7 @@ class FundTransfer extends Base
         return $request;
     }
 
-    public function addFTSFundAccountId(array $request):array
+    protected function addFTSFundAccountId(array $request):array
     {
         $request[Constants::ACCOUNT] = array(
             Constants::FUND_ACCOUNT_ID   => $this->fta->bankAccount->getFtsFundAccountId(),
@@ -146,7 +179,7 @@ class FundTransfer extends Base
         return $request;
     }
 
-    public function addBankAccountDetails(array $request):array
+    protected function addBankAccountDetails(array $request):array
     {
         $accountType = $this->fta->bankAccount->getAccountType();
 
@@ -174,13 +207,24 @@ class FundTransfer extends Base
         return $request;
     }
 
-    public function addVpaDetails(array $request):array
+    protected function addVpaDetails(array $request):array
     {
         $request[Constants::ACCOUNT] = [
-
                 Constants::VPA => [
                         Constants::HANDLE       => $this->fta->vpa->getHandle(),
                         Constants::USERNAME     => $this->fta->vpa->getUsername(),
+                ],
+        ];
+
+        return $request;
+    }
+
+    protected function addCardDetails(array $request):array
+    {
+        $request[Constants::ACCOUNT] = [
+                Constants::CARD => [
+                        Constants::ISSUER_BANK => $this->fta->card->getIssuer(),
+                        Constants::VAULT_TOKEN => $this->fta->card->getVaultToken(),
                 ],
         ];
 

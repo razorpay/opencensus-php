@@ -17,6 +17,7 @@ use RZP\Models\Payment\Refund;
 use RZP\Gateway\Wallet\Freecharge;
 use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
 
 class Repository extends Base\Repository
 {
@@ -555,8 +556,7 @@ class Repository extends Base\Repository
         string $gatewayCode,
         int $from,
         int $to,
-        string $gateway,
-        bool $corporate = false)
+        string $gateway)
     {
         // SELECT `refunds`.*
         // FROM `refunds`
@@ -566,7 +566,6 @@ class Repository extends Base\Repository
         //   AND `refunds`.`created_at` < $to
         //   AND `payments`.`bank` = $gatewayCode
         //   AND `refunds`.`gateway` = $gateway
-        //   AND `terminals`.`corporate` = $tpvEnabled
 
         $attrs = $this->dbColumn('*');
 
@@ -596,7 +595,6 @@ class Repository extends Base\Repository
                     ->where($rCreatedAt, '<=', $to)
                     ->where($pType, '=', $gatewayCode)
                     ->where($rGateway, '=', $gateway)
-                    ->where($tCorp, '=', $corporate)
                     ->where($rBaseAmount, '!=', 0)
                     ->with('payment')
                     ->get();
@@ -945,5 +943,35 @@ class Repository extends Base\Repository
         }
 
         return $dbColumns;
+    }
+
+    public function backfillIsScrooge(array $data, bool $isScrooge, bool $withTimestamps)
+    {
+        $count = 0;
+
+        if ($withTimestamps === true)
+        {
+            $count += $this->newQuery()
+                           ->where(RefundEntity::GATEWAY, $data[RefundEntity::GATEWAY])
+                           ->where(RefundEntity::CREATED_AT, '>=', $data['from'])
+                           ->where(RefundEntity::CREATED_AT, '<=', $data['to'])
+                           ->where(RefundEntity::IS_SCROOGE, '!=', $isScrooge)
+                           ->orderBy(RefundEntity::CREATED_AT)
+                           ->limit($data['limit'])
+                           ->update([
+                               RefundEntity::IS_SCROOGE => $isScrooge
+                           ]);
+        }
+        else
+        {
+            $count += $this->newQuery()
+                           ->whereIn(RefundEntity::ID, $data)
+                           ->where(RefundEntity::IS_SCROOGE, '!=', $isScrooge)
+                           ->update([
+                               RefundEntity::IS_SCROOGE => $isScrooge
+                           ]);
+        }
+
+        return $count;
     }
 }

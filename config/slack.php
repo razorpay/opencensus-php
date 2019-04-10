@@ -157,14 +157,10 @@ return array(
         'virtual_accounts_log' => 'C809AQYUC',
         // tech_logs_mail
         'tech_logs_mail'       => 'C50JZ3S5T',
-        // activations
-        'activations'          => 'C17UC7DHS',
         // risk
         'risk'                 => 'C0SG9Q7TM',
         // operations
         'operations'           => 'C0KUX9WSE',
-        // Product (Feature) onboarding requests
-        'activations_prod_log' => 'C76P70Y7K',
         // Fund Account Validation logs
         'fav_logs'  =>  'CFQFNH3S7',
         //FTS logs

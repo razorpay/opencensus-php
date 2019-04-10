@@ -28,6 +28,7 @@ class Entity extends Base\PublicEntity
     const SOURCE_ID         = 'source_id';
     const PARTNER_ID        = 'partner_id';
     const SOURCE_TYPE       = 'source_type';
+    const RECORD_ONLY       = 'record_only';
     const TRANSACTION_ID    = 'transaction_id';
     const PARTNER_CONFIG_ID = 'partner_config_id';
 
@@ -49,6 +50,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::CREDIT,
         self::CURRENCY,
+        self::RECORD_ONLY,
     ];
 
     protected $public = [
@@ -64,6 +66,7 @@ class Entity extends Base\PublicEntity
         self::PARTNER_ID,
         self::SOURCE_ID,
         self::SOURCE_TYPE,
+        self::RECORD_ONLY,
         self::CREATED_AT,
         self::MERCHANT,
         self::SOURCE,
@@ -78,9 +81,15 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
-        self::TYPE   => Type::IMPLICIT,
-        self::STATUS => Status::CREATED,
-        self::NOTES  => [],
+        self::TYPE        => Type::IMPLICIT,
+        self::NOTES       => [],
+        self::STATUS      => Status::CREATED,
+        self::CURRENCY    => 'INR',
+        self::RECORD_ONLY => 0,
+    ];
+
+    protected $casts = [
+        self::RECORD_ONLY => 'bool',
     ];
 
     public function transaction()
@@ -159,5 +168,31 @@ class Entity extends Base\PublicEntity
     public function getType(): string
     {
         return $this->getAttribute(self::TYPE);
+    }
+
+    /**
+     * Defining this function helps us to add a filter for merchant_id in a query -
+     * Eg: $this->newQuery()->merchantId($merchant->getId())
+     *
+     * This function overrides the function defined in Base\EloquentEx class.
+     * The base function is used for fetching entities which have merchant_id. It is tightly
+     * coupled with RepositoryFetch class's fetch(), fetchByIdAndMerchantId() etc methods.
+     *
+     * The same behaviour is required for commissions but instead of adding a filter
+     * for merchant_id, the filter is required for partner_id. Defining a separate function named
+     * scopePartnerId and usage $this->newQuery()->partnerId($partnerMerchant->getId()) would have
+     * been an ideal case, but would require the new function to be supported in all the above
+     * mentioned functions of RepositoryFetch class. Hence, overriding the function definition here.
+     *
+     * Though the name is scopeMerchantId, it actually adds a filter for partner_id.
+     *
+     * @param $query
+     * @param $merchantId
+     */
+    public function scopeMerchantId($query, $merchantId)
+    {
+        $partnerIdColumn = $this->dbColumn(Entity::PARTNER_ID);
+
+        $query->where($partnerIdColumn, $merchantId);
     }
 }

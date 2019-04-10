@@ -918,6 +918,12 @@ class VerifyTest extends TestCase
 
     protected function setupRedisMock($paymentArray = [])
     {
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get', 'setex'])
+                          ->getMock();
+
+        Redis::shouldReceive('connection')
+               ->andReturn($redisMock);
+
         Redis::shouldReceive('hGetAll')
             ->andReturn([]);
 
@@ -930,26 +936,43 @@ class VerifyTest extends TestCase
         Redis::shouldReceive('incr')
             ->andReturn(1);
 
-        Redis::shouldReceive('set')
-            ->andReturnUsing(
-                function ($arg) use ($paymentArray)
-                {
-                    foreach ($paymentArray as $payment)
-                    {
-                        if ('mutex:' . $payment['id'] . '_verify' === $arg)
-                        {
-                            return null;
-                        }
-                    }
-                    return true;
-                });
-
-        Redis::shouldReceive('get')
+         Redis::shouldReceive('expire')
             ->andReturn(true);
+
+        $redisMock->method('set')->will($this->returnCallback(function ($resourceId, $requestId) use ($paymentArray)
+        {
+            foreach ($paymentArray as $payment)
+            {
+                if ('mutex:' . $payment['id'] . '_verify' === $resourceId)
+                {
+                        return null;
+                }
+            }
+            return true;
+        }));
+
+        $store = \Cache::store();
+
+        \Cache::shouldReceive('store')
+                ->withAnyArgs()
+                ->andReturn($store);
+
+
+        \Cache::shouldReceive('get')
+                ->andReturn([]);
+
+        $redisMock->method('get')->will($this->returnValue(''));
     }
 
     protected function setupRedisMockForBlockedGateway($paymentArray = [])
     {
+        $conn = Redis::connection();
+
+        Redis::shouldReceive('connection')
+             ->andReturnUsing(function() use($conn){
+                return $conn;
+             });
+
         Redis::shouldReceive('hGetAll')
             ->andReturn(
                 [],
@@ -985,6 +1008,13 @@ class VerifyTest extends TestCase
 
     protected function setupRedisMockForBlockedPayments()
     {
+        $conn = Redis::connection();
+
+        Redis::shouldReceive('connection')
+             ->andReturnUsing(function() use($conn){
+                return $conn;
+             });
+
         Redis::shouldReceive('hGetAll')
             ->andReturn(
                 [],
@@ -1167,6 +1197,7 @@ class VerifyTest extends TestCase
             'not_applicable' => 0,
             'unknown'        => 0,
             'bucket_filter'  => [],
+            'request_error'  => 0
         ];
 
         $total = array_sum($defaultParams);

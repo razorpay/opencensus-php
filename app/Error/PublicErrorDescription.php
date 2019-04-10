@@ -191,6 +191,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH                           = 'Payment currency provided does not match with the currency in order';
     const BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID                                = 'Payment already done for this order.';
     const BAD_REQUEST_REFUND_FAILED                                             = 'Refund failed';
+    const BAD_REQUEST_SCROOGE_DASHBOARD_ERROR                                   = 'Scrooge dashboard error';
     const BAD_REQUEST_REFUND_NOT_ALLOWED                                        = 'Refunds cannot be created on your account.';
     const BAD_REQUEST_CARD_REFUND_NOT_ALLOWED                                   = 'Refunds cannot be created on your account for card payments';
     const BAD_REQUEST_PAYMENT_ALREADY_REFUNDED                                  = 'Refund failed';
@@ -296,6 +297,8 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_ALREADY_LIVE                                     = 'The merchant is already live';
     const BAD_REQUEST_MERCHANT_NOT_LIVE                                         = 'The merchant is not live currently';
     const BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED                           = 'There is a temporary block placed on the account currently because of which new payment operations are put on hold. If you are seeing this message unexpectedly, please contact the site admin regarding the issue.';
+    const BAD_REQUEST_MERCHANT_ALREADY_INTERNATIONAL                            = 'The merchant already has international activated';
+    const BAD_REQUEST_MERCHANT_NOT_INTERNATIONAL                                = 'The merchant doesn\'t have international activated';
     const BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED                             = 'The merchant has no pricing assigned';
     const BAD_REQUEST_MERCHANT_KEY_ALREADY_CREATED                              = 'The merchant keys have already been created';
     const BAD_REQUEST_MERCHANT_NOT_ACTIVATED_KEY_CREATE_FAILED                  = 'The merchant keys cannot be created since account is not activated yet.';
@@ -310,6 +313,7 @@ class PublicErrorDescription
     const BAD_REQUEST_OPERATION_NOT_ALLOWED_FOR_TEST_ACCOUNT                    = 'This operation is not allowed for test accounts';
     const BAD_REQUEST_FIELD_ALREADY_EXISTS                                      = 'A terminal with the same field exists';
     const BAD_REQUEST_REFUND_ALREADY_IN_UNPROCESSED_LIST                        = 'The refund is already present in the unprocessed list in cache';
+    const BAD_REQUEST_MERCHANT_WEBSITE_NOT_SET                                  = 'Business website is invalid or not set';
 
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_PENDING                       = 'Payment processing pending';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED                       = 'Payment failed because UPI request expired';
@@ -763,6 +767,15 @@ class PublicErrorDescription
     const BAD_REQUEST_EMI_PLANS_DO_NOT_EXIST                                        = 'Emi plans do not exist';
     const BAD_REQUEST_CARDLESS_EMI_USER_DOES_NOT_EXIST                              = 'User does not have an account with the selected provider';
     const BAD_REQUEST_CARDLESS_EMI_INVALID_TOKEN                                    = 'Invalid token set for cardless emi';
+    const BAD_REQUEST_CARDLESS_EMI_INVALID_MERCHANT_NAME                            = 'Invalid merchant name for cardless emi';
+    const BAD_REQUEST_CARDLESS_EMI_INVALID_EMI_PLAN_ID                              = 'Invalid Emi plan id selected';
+    const BAD_REQUEST_CARDLESS_EMI_MINIMUM_AMOUNT_REQUIRED                          = 'Amount less than minimum amount required';
+    const BAD_REQUEST_CARDLESS_EMI_MAXIMUM_AMOUNT_LIMIT                             = 'Amount more than the maximum amount limit';
+    const GATEWAY_ERROR_CARDLESS_EMI_PAYMENT_FAILED_PARTNER                         = 'Cardless Emi payment failed by the provider';
+    const BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_EXHAUSTED                           = 'Cardless Emi credit limit of customer has exhausted';
+    const BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_NOT_ACTIVATED                       = 'Cardless Emi credit limit of customer not activated';
+    const BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_NOT_APPROVED                        = 'Cardless Emi credit limit of customer not approved';
+    const BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_EXPIRED                             = 'Cardless Emi credit limit of customer has expired';
 
     const BAD_REQUEST_UPI_MPIN_NOT_SET                                              = 'Payment failed because UPI PIN is not set';
     const BAD_REQUEST_REGISTERED_MOBILE_NUMBER_NOT_FOUND                            = 'Registered Mobile number linked to the account has been changed/removed';

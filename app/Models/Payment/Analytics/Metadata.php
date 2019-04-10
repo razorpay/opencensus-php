@@ -18,22 +18,23 @@ class Metadata
     const CORDOVA       = 'cordova';
     const SERVER        = 'server';
 
-    const PLATFORM_VALUES = array(
+    const PLATFORM_VALUES = [
         self::BROWSER       => 1,
         self::MOBILE_SDK    => 2,
         self::CORDOVA       => 3,
         self::SERVER        => 4,
-    );
+    ];
 
     // Device values
     const DESKTOP       = 'desktop';
     const TABLET        = 'tablet';
     const MOBILE        = 'mobile';
 
-    const DEVICE_VALUES = array(
+    const DEVICE_VALUES = [
         self::DESKTOP   => 1,
         self::TABLET    => 2,
-        self::MOBILE    => 3);
+        self::MOBILE    => 3
+    ];
 
     // OS values
     const LINUX         = 'linux';
@@ -43,24 +44,28 @@ class Metadata
     const IOS           = 'ios';
     const UBUNTU        = 'ubuntu';
 
-    const OS_VALUES = array(
+    const OS_VALUES = [
         self::LINUX       => 1,
         self::WINDOWS     => 2,
         self::MACOS       => 3,
         self::ANDROID     => 4,
         self::IOS         => 5,
         self::UBUNTU      => 6,
-    );
+    ];
 
     // Library values
     const CHECKOUTJS    = 'checkoutjs';
     const RAZORPAYJS    = 'razorpayjs';
     const DIRECT        = 'direct';
+    const CUSTOM        = 'custom';
+    const S2S           = 's2s';
 
     const LIBRARY_VALUES = [
         self::CHECKOUTJS    => 1,
         self::RAZORPAYJS    => 2,
-        self::DIRECT        => 3,
+        self::S2S           => 3,
+        self::CUSTOM        => 4,
+        self::DIRECT        => 5,
     ];
 
     // Browser values
@@ -72,7 +77,7 @@ class Metadata
     const OPERA         = 'opera';
     const EDGE          = 'edge';
 
-    const BROWSER_VALUES = array(
+    const BROWSER_VALUES = [
         self::CHROME          => 1,
         self::IE              => 2,
         self::FIREFOX         => 3,
@@ -80,7 +85,7 @@ class Metadata
         self::UCWEB           => 5,
         self::OPERA           => 6,
         self::EDGE            => 7,
-    );
+    ];
 
     // Integration values
 
@@ -93,7 +98,7 @@ class Metadata
     const ARASTTA       = 'arastta';
     const PRESTASHOP    = 'prestashop';
 
-    const INTEGRATION_VALUES = array(
+    const INTEGRATION_VALUES = [
         self::WOO_COMMERCE  => 1,
         self::MAGENTO       => 2,
         self::CS_CART       => 3,
@@ -102,7 +107,7 @@ class Metadata
         self::WHMCS         => 6,
         self::ARASTTA       => 7,
         self::PRESTASHOP    => 8,
-    );
+    ];
 
     // fraud detection keys
     const RISK_SCORE  = 'risk_score';

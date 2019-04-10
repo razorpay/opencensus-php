@@ -74,6 +74,8 @@ class Name
     const CREATE_SETTLEMENT_INITIATE          = 'create_settlement_initiate';
     const DELETE_TERMINAL                     = 'delete_terminal';
     const EDIT_TERMINAL                       = 'edit_terminal';
+    const TERMINAL_MANAGE_MERCHANT            = 'terminal_manage_merchant';
+    const TOGGLE_TERMINAL                     = 'toggle_terminal';
     const CREATE_SETTLEMENTS_RECONCILE        = 'create_settlements_reconcile';
     const RETRY_SETTLEMENT                    = 'retry_settlement';
     const SETTLEMENT_BULK_UPDATE              = 'settlement_bulk_update';
@@ -213,6 +215,7 @@ class Name
     const RETRY_REFUND                        = 'retry_refund';
     const DOWNLOAD_NON_MERCHANT_REPORT        = 'download_non_merchant_report';
     const CREATE_VIRTUAL_ACCOUNTS             = 'create_virtual_accounts';
+    const BANK_TRANSFER_INSERT                = 'bank_transfer_insert';
     const CREATE_SELF_SERVE_REPORT            = 'create_self_serve_report';
     const CREATE_GATEWAY_DOWNTIME             = 'create_gateway_downtime';
     const VIEW_GATEWAY_DOWNTIME               = 'view_gateway_downtime';

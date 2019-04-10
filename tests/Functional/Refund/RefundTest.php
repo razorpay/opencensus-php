@@ -1774,4 +1774,99 @@ class RefundTest extends TestCase
 
         $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
     }
+
+    public function testRefundOnHdfcPaymentCaptureTimedOut()
+    {
+        $this->defaultAuthPayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'authorized');
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'capture')
+            {
+                $content['result']          = '!ERROR!-GW00177-Failed capture greater than auth check';
+                $content['error_code_tag']  = 'GW00177';
+            }
+
+            return $content;
+        });
+
+        $this->makeRequestAndCatchException(function () use ($payment) {
+            $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+        });
+
+        $hdfc = $this->getLastEntity('hdfc', true);
+
+        $this->assertEquals($hdfc['status'], 'capture_failed');
+
+        $this->assertEquals($hdfc['error_code2'], 'GW00177');
+
+        $this->fixtures->edit('payment', $payment['id'], ['status' => 'captured', 'gateway_captured' => true]);
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+            }
+
+            return $content;
+        });
+
+        $this->refundPayment($payment['id'], $payment['amount']);
+
+        $refund = $this->getLastEntity('refund', 'true');
+
+        $this->assertEquals($refund['status'], 'processed');
+    }
+
+    public function testFetchRefundPublicStatus()
+    {
+        $this->fixtures->merchant->addFeatures('show_refund_public_status');
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            if($action === 'refund')
+            {
+                $content['result'] = 'DENIED BY RISK';
+            }
+
+            return $content;
+        });
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $this->assertGreaterThan(time() - 30, $refund['created_at']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('created', $refund['status']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/refunds/' . $refund['id'];
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+    }
 }

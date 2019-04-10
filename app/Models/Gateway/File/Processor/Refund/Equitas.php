@@ -65,7 +65,7 @@ class Equitas extends Base
                 self::MERCHANT_ID          => $this->getMerchantId($row),
                 self::REFUND_DATE          => $refundDate,
                 self::PAYMENT_ID           => $row['payment']['id'],
-                self::BANK_PAYMENT_ID      => $row['gateway']['bank_payment_id'],
+                self::BANK_PAYMENT_ID      => $row['gateway']['reference1'],
                 self::REFUND_AMOUNT        => $this->formatAmount($row['refund']['amount']),
                 self::REFUND_TYPE          => $this->getRefundType($row),
                 self::REFUND_REMARKS       => 'NA',

@@ -8,10 +8,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
+use RZP\Models\Base\QueryCache\Cacheable;
 
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
+    use Cacheable;
 
     const ID                   = 'id';
     const PLAN_ID              = 'plan_id';
@@ -359,7 +361,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PRODUCT);
     }
 
-    public function getType(): string
+    public function getType()
     {
         return $this->getAttribute(self::TYPE);
     }
@@ -402,5 +404,21 @@ class Entity extends Base\PublicEntity
     public function scopeProduct(Builder $query, string $product)
     {
         $query->where(self::PRODUCT, '=', $product);
+    }
+
+    /**
+     * We are tagging the pricing entity cache key by
+     * <entityName>_<planID>_<type>
+     */
+    public static function getCacheTags(string $entity, string $planId, string $planType = null): string
+    {
+        if(empty($planType) === true)
+        {
+            $planType == Type::PRICING;
+        }
+
+        $cacheTags = implode('_', [$entity, $planId, $planType]);
+
+        return $cacheTags;
     }
 }

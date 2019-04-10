@@ -5,40 +5,42 @@ namespace RZP\Models\Payment\Processor;
 use App;
 use Route;
 use Config;
-
 use Carbon\Carbon;
-use RZP\Base\RepositoryManager;
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
-use RZP\Models\Admin;
+
 use RZP\Exception;
-use RZP\Listeners\ApiEventSubscriber;
-use RZP\Models\BankAccount;
-use RZP\Models\Base\PublicCollection;
 use RZP\Models\Card;
-use RZP\Models\Customer;
-use RZP\Models\EntityOrigin;
-use RZP\Models\Feature\Constants as Feature;
-use RZP\Models\Merchant;
+use RZP\Models\Risk;
+use RZP\Models\Admin;
 use RZP\Models\Order;
 use RZP\Models\Offer;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
-use RZP\Models\Payment\Metric;
-use RZP\Models\PaymentLink;
-use RZP\Models\Plan\Subscription;
-use RZP\Models\Merchant\Methods;
-use RZP\Models\Payment\Status;
+use RZP\Models\Invoice;
 use RZP\Models\Pricing;
-use RZP\Models\Risk;
+use RZP\Error\ErrorCode;
+use RZP\Models\Customer;
+use RZP\Models\Merchant;
 use RZP\Models\Terminal;
-use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Trace\TraceCode;
+use RZP\Models\BankAccount;
+use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
-use RZP\Constants\Entity as E;
-use Razorpay\Trace\Logger as Trace;
-use RZP\Gateway\Base\CardCacheTrait;
+use RZP\Models\EntityOrigin;
 use RZP\Gateway\Base\Action;
+use RZP\Models\Payment\Metric;
+use RZP\Models\Payment\Status;
+use RZP\Constants\Entity as E;
+use RZP\Base\RepositoryManager;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Merchant\Methods;
+use RZP\Models\Plan\Subscription;
+use RZP\Gateway\Base\CardCacheTrait;
+use RZP\Listeners\ApiEventSubscriber;
+use RZP\Models\Base\PublicCollection;
+use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Transfer\Core as TransferCore;
+
+use Razorpay\Trace\Logger as Trace;
 
 class Processor
 {
@@ -147,6 +149,11 @@ class Processor
      * @var Terminal\Entity
      */
     protected $terminal;
+
+    /**
+     * This should be an array and not a collection
+     * @var array
+     */
     protected $selectedTerminals;
     protected $mode;
     /**
@@ -250,6 +257,8 @@ class Processor
 
             $this->setMethodForInput($input);
 
+            $this->appendMetadataForPayment($input);
+
             $payment = $this->buildPaymentEntity($input);
 
             $this->preProcessForSubscriptionsIfApplicable($input, $payment);
@@ -292,6 +301,18 @@ class Processor
             (new Payment\Metric)->pushExceptionMetrics($e, Metric::PAYMENT_PROCESS_FAILED, $dimensions);
 
             throw $e;
+        }
+    }
+
+    protected function appendMetadataForPayment(array & $input)
+    {
+        if ($this->app['basicauth']->isPrivateAuth() === true)
+        {
+            (new Payment\Analytics\Service)->setMetadataForS2SPayment($input);
+        }
+        else if ($this->app['basicauth']->isPublicAuth() === true)
+        {
+            (new Payment\Analytics\Service)->setMetadataForPublicAuthPayment($input);
         }
     }
 
@@ -532,6 +553,12 @@ class Processor
                 ]);
         }
 
+        // Nested attributes, when flattened, aren't handled by laravel test requests
+        if ($this->app->runningUnitTests() === true)
+        {
+            unset($input['_']);
+        }
+
         $coproto = [
             'type'    => 'respawn',
             'request' => [
@@ -593,6 +620,12 @@ class Processor
 
     protected function getCoprotoDefaultArrayForWallet(array $input)
     {
+        // Nested attributes, when flattened, aren't handled by laravel test requests
+        if ($this->app->runningUnitTests() === true)
+        {
+            unset($input['_']);
+        }
+
         return [
             'type'    => 'respawn',
             'request' => [
@@ -1874,7 +1907,10 @@ class Processor
 
         $this->repo->invoice->lockForUpdateAndReload($invoice, true);
 
-        $invoice->getValidator()->validateInvoicePayableForPayment($payment);
+        /** @var Invoice\Validator $invoiceValidator */
+        $invoiceValidator = $invoice->getValidator();
+
+        $invoiceValidator->validateInvoicePayableForPayment($payment);
 
         $payment->invoice()->associate($invoice);
 
@@ -2334,6 +2370,13 @@ class Processor
         // and capture the payment.
         //
 
+        //
+        // Ideally this should check for `validateInvoicePayable` as a partially paid
+        // PL would qualify for this.
+        //
+        // TODO: Change/fix this and test complete flow including the exception
+        // cases with the feature BLOCK_PL_PAY_POST_EXPIRY set.
+        //
         if ($invoice->isIssued() === false)
         {
             $this->trace->debug(
