@@ -57,6 +57,7 @@ class Validator extends Base\Validator
         ConfigKey::HITACHI_DYNAMIC_DESCR_ENABLED      => 'filled|boolean',
         ConfigKey::CPS_SERVICE_ENABLED                => 'filled|boolean',
         ConfigKey::SETTLEMENT_TRANSACTION_LIMIT       => 'filled|integer',
+        ConfigKey::FTS_REQUEST_THRESHOLD              => 'filled|integer',
     ];
 
     protected static $setRedisKeysRules = [

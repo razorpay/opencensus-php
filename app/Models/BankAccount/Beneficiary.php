@@ -196,18 +196,17 @@ class Beneficiary extends Base\Core
             return ['message' => 'No Beneficiary added since last report.'];
         }
 
-        $redis = $this->app['redis']->connection();
+        //TODO:: Disabled fts flow for bene registration.
+        /*$redis = $this->app['redis']->connection();
 
         $ftsChannels = $redis->SMEMBERS(ConfigKey::FTS_CHANNELS);
 
         if(in_array($channel, $ftsChannels, true) === true)
         {
             $result = $this->registerBeneficiaryThroughFTS($bankAccounts, $channel);
-        }
-        else
-        {
-            $result = $this->registerBeneficiary($bankAccounts, $channel, $input);
-        }
+        }*/
+
+        $result = $this->registerBeneficiary($bankAccounts, $channel, $input);
 
         $beneficiaryCount = $bankAccounts->count();
 
