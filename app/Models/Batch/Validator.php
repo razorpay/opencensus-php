@@ -8,6 +8,7 @@ use RZP\Models\User;
 use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\FundTransfer;
 use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Entity as ME;
 use RZP\Error\PublicErrorDescription;
@@ -256,7 +257,7 @@ class Validator extends Base\Validator
         Header::PAYOUT_NARRATION            => 'sometimes|nullable|string|max:30|alpha_space_num',
         Header::PAYOUT_AMOUNT               => 'required|integer|min:100|max:500000000',
         Header::PAYOUT_CURRENCY             => 'required|size:3|in:INR',
-        Header::PAYOUT_MODE                 => 'sometimes|nullable|string',
+        Header::PAYOUT_MODE                 => 'required|string|custom',
         Header::PAYOUT_REFERENCE_ID         => 'sometimes|nullable|string|max:40',
         Header::FUND_ACCOUNT_ID             => 'sometimes|nullable|public_id|size:17',
         Header::FUND_ACCOUNT_TYPE           => 'required_without:'.Header::FUND_ACCOUNT_ID.'|nullable|string|in:bank_account,vpa',
@@ -291,6 +292,11 @@ class Validator extends Base\Validator
     protected function validateType($attribute, $value)
     {
         Type::validateType($value);
+    }
+
+    protected function validatePayoutMode($attribute, $value)
+    {
+        FundTransfer\Mode::validateMode($value);
     }
 
     /**
