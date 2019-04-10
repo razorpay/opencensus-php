@@ -42,19 +42,21 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         $serviceTax = $this->getGatewayServiceTax($row);
 
-        if ($serviceTax === null)
-        {
-            return null;
-        }
-
         $gatewayFee += $serviceTax;
 
-        return round($gatewayFee);
+        return abs($gatewayFee);
     }
 
     protected function getGatewayServiceTax($row)
     {
         $serviceTax = 0;
+
+        if (isset($row[self::COLUMN_GST]) === false)
+        {
+            $this->reportMissingColumn($row, self::COLUMN_GST);
+
+            return $serviceTax;
+        }
 
         $gst = $row[self::COLUMN_GST];
 
