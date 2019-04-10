@@ -285,11 +285,24 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function findByIdWithStatus(string $id, string $status = null, bool $isFTS = false)
+    public function findByIdWithStatus(string $id, string $status = null, $isFTS = false)
     {
-        $query =  $this->newQuery()
-                       ->where(Entity::ID, $id)
-                       ->where(Entity::IS_FTS, $isFTS);
+        $query = $this->newQuery()
+                      ->where(Entity::ID, $id);
+
+        //
+        // if $isFTS is null then on checks based on fts flag is done
+        // if $isFTS is not null then corresponding filter will be applied
+        // null case will occurs in case of reconciliation
+        // recon has to run on all the attempts which are in initiated state
+        // in case of transfer and status $isFTS will be false
+        // so only attempts which are not sent to FTS will be picked for processing
+        //
+        if ($isFTS !== null)
+        {
+            $query = $query->where(Entity::IS_FTS, $isFTS);
+        }
+
 
         if (empty($status) === false)
         {

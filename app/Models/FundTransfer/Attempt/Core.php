@@ -197,6 +197,9 @@ class Core extends Base\Core
      * @param string          $sourceType
      * @param CardEntity|null $card
      * @return array
+     *
+     * TODO: refactor this section so that we dont have to use `shouldUseGateway` and `getChannelForTransfer`
+     * for different reasons. A single method should give us which path should be chosen
      */
     protected function getChannelForTransfer(Base\Entity $source, string $sourceType, CardEntity $card = null): array
     {
