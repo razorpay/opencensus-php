@@ -59,11 +59,15 @@ class Server extends Base\Mock\Server
 
     protected function addAuthenticationDataIfApplicable(&$content, $input)
     {
-        $content['vpc_3DSECI']      = $input['vpc_3DSECI'] ?? '01';
-        $content['vpc_3DSXID']      = $input['vpc_3DSXID'] ?? '6NQZ/DZVL/LgcawFYz7cMP0vpMo=';
-        $content['vpc_3DSenrolled'] = $input['vpc_3DSenrolled'] ?? 'Y';
-        $content['vpc_VerToken']    = $input['vpc_VerToken'] ?? 'huMdTSBYZwAbYwAAAHhpApYAAAA=';
-        $content['vpc_VerType']     = $input['vpc_VerType'] ?? '3DS';
+        if ((isset($input['vpc_VerType']) === true) and
+            ($input['vpc_VerType'] === '3DS'))
+        {
+            $content['vpc_3DSECI']      = $input['vpc_3DSECI'] ?? '01';
+            $content['vpc_3DSXID']      = $input['vpc_3DSXID'] ?? '6NQZ/DZVL/LgcawFYz7cMP0vpMo=';
+            $content['vpc_3DSenrolled'] = $input['vpc_3DSenrolled'] ?? 'Y';
+            $content['vpc_VerToken']    = $input['vpc_VerToken'] ?? 'huMdTSBYZwAbYwAAAHhpApYAAAA=';
+            $content['vpc_VerType']     = $input['vpc_VerType'] ?? '3DS';
+        }
     }
 
     public function acs($input)
