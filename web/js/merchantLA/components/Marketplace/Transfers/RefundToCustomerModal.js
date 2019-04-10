@@ -9,6 +9,10 @@ import { reverseTransfer } from 'merchantLA/modules/marketplace/transfer';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import InputField from 'rzp/ui/Forms/InputField';
 import { rupeesToPaise, paiseToRupees, titleCase } from 'rzp/utils/rzp-utils';
+import {
+  fetchTransfer,
+  fetchReversals,
+} from 'merchantLA/modules/marketplace/transfer';
 
 const selector = formValueSelector('refundModal');
 
@@ -23,7 +27,14 @@ const selector = formValueSelector('refundModal');
       payable_amount,
     };
   },
-  { closeModal, openModal, reverseTransfer, ...NotificationsActions }
+  {
+    closeModal,
+    openModal,
+    reverseTransfer,
+    fetchReversals,
+    fetchTransfer,
+    ...NotificationsActions,
+  }
 )
 @reduxForm({
   form: 'refundModal',
@@ -76,6 +87,11 @@ export default class RefundToCustomerModal extends React.Component {
           message: 'Payment refunded',
           closeTimeout: 5000,
         });
+
+        new Promise.all([
+          this.props.fetchTransfer(id),
+          this.props.fetchReversals(id),
+        ]);
 
         this.props.closeModal();
       })
