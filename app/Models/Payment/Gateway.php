@@ -101,6 +101,7 @@ class Gateway
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
     const NODAL_YESBANK      = 'nodal_yesbank';
+    const NODAL_ICICI        = 'nodal_icici';
 
     const BT_YESBANK         = 'bt_yesbank';
     const BT_KOTAK           = 'bt_kotak';

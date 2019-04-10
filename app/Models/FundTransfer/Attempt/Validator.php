@@ -51,6 +51,7 @@ class Validator extends Base\Validator
         Entity::SOURCE_TYPE    => 'required_with:source_id|string',
         Entity::FAILURE_REASON => 'sometimes|string',
         'fund_transfer_id'     => 'required|int',
+        'extra_info'           => 'sometimes|string',
     ];
 
     protected function validateStatus($attribute, $value)

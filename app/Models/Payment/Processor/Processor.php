@@ -553,6 +553,12 @@ class Processor
                 ]);
         }
 
+        // Nested attributes, when flattened, aren't handled by laravel test requests
+        if ($this->app->runningUnitTests() === true)
+        {
+            unset($input['_']);
+        }
+
         $coproto = [
             'type'    => 'respawn',
             'request' => [
@@ -614,6 +620,12 @@ class Processor
 
     protected function getCoprotoDefaultArrayForWallet(array $input)
     {
+        // Nested attributes, when flattened, aren't handled by laravel test requests
+        if ($this->app->runningUnitTests() === true)
+        {
+            unset($input['_']);
+        }
+
         return [
             'type'    => 'respawn',
             'request' => [

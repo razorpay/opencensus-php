@@ -7,6 +7,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Models\FundTransfer\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\FundTransfer;
 use RZP\Models\Settlement;
@@ -18,6 +19,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Vpa\Entity as VpaEntity;
 use RZP\Models\Card\Entity as CardEntity;
 use RZP\Models\Card\Issuer as CardIssuer;
+use RZP\Models\FundTransfer\Base\Initiator;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
 use RZP\Services\Beam\Constants as BeamConstants;
@@ -55,7 +57,7 @@ class Core extends Base\Core
         }
         else if ($fundTransferAttempt->getIsFTS() === true)
         {
-            $this->sendFTSFundTransferRequest($fundTransferAttempt, FundAccount\Type::BANK_ACCOUNT);
+            $this->sendFTSFundTransferRequest($fundTransferAttempt);
         }
 
         return $fundTransferAttempt;
@@ -77,7 +79,7 @@ class Core extends Base\Core
 
         if ($fundTransferAttempt->getIsFTS() === true)
         {
-            $this->sendFTSFundTransferRequest($fundTransferAttempt, FundAccount\Type::BANK_ACCOUNT);
+            $this->sendFTSFundTransferRequest($fundTransferAttempt);
         }
 
         return $fundTransferAttempt;
@@ -115,10 +117,9 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($fundTransferAttempt);
 
-
         if ($fundTransferAttempt->getIsFTS() === true)
         {
-            $this->sendFTSFundTransferRequest($fundTransferAttempt, FundAccount\Type::BANK_ACCOUNT);
+            $this->sendFTSFundTransferRequest($fundTransferAttempt);
         }
 
         return $fundTransferAttempt;
@@ -195,49 +196,51 @@ class Core extends Base\Core
      * @param Base\Entity     $source
      * @param string          $sourceType
      * @param CardEntity|null $card
-     * @param array           $values
      * @return array
      */
-    protected function getChannelForTransfer(Base\Entity $source, string $sourceType, CardEntity $card = null, array $values = []): array
+    protected function getChannelForTransfer(Base\Entity $source, string $sourceType, CardEntity $card = null): array
     {
         if (in_array($sourceType, AttemptConstants::ALLOWED_PRODUCTS_ON_FTS, true) === true)
         {
-            $redis = $this->app['redis']->connection();
-
-            $ftsChannels = $redis->SMEMBERS(ConfigKey::FTS_CHANNELS);
-
             $amount = $source->getAmount();
 
+            $mode = Mode::IMPS;
+
+            //
+            // only imps is supported for now
+            //
+            if($amount >= NodalAccount::MAX_IMPS_AMOUNT)
+            {
+                return [false, Settlement\Channel::YESBANK];
+            }
+
+            $redis = $this->app['redis']->connection();
+
             $validCardRefund = $this->isFTSSupportedCardRefund($card);
+
+            $supportedModes = $redis->hget(ConfigKey::FTS_CHANNELS, Settlement\Channel::ICICI);
+
+            $supportedModes = explode(',', $supportedModes);
 
             //
             // check if card is valid and channel is active to accept traffic at FTS side
             //
             if (($validCardRefund === false) or
-                (in_array(Settlement\Channel::ICICI, $ftsChannels, true) === false))
+                (in_array($mode, $supportedModes, true) === false))
             {
                 return [false, Settlement\Channel::YESBANK];
             }
 
-            if($amount < NodalAccount::MAX_IMPS_AMOUNT)
-            {
-                $randomValue = mt_rand(1, 100);
-                $requestThreshold = (int) $this->app['cache']->get(ConfigKey::FTS_REQUEST_PERCENTAGE);
+            $randomValue = mt_rand(1, 100);
+            $requestThreshold = (int) $this->app['cache']->get(ConfigKey::FTS_ROUTE_PERCENTAGE);
 
-                if ($randomValue <= $requestThreshold)
-                {
-                    return [true, Settlement\Channel::ICICI];
-                }
+            if ($randomValue <= $requestThreshold)
+            {
+                return [true, Settlement\Channel::ICICI];
             }
         }
 
-        //
-        // If the transfer is not refund type then use the channel given in values
-        // if there are not channel specified in the values the use yesbank as default channel
-        //
-        $channel = $values[Entity::CHANNEL] ?? Settlement\Channel::YESBANK;
-
-        return [false, $channel];
+        return [false, Settlement\Channel::YESBANK];
     }
 
     /**
@@ -255,7 +258,7 @@ class Core extends Base\Core
 
         $iin = $card->iinRelation;
 
-        if ($iin !== null)
+        if ($iin === null)
         {
             return false;
         }
@@ -288,7 +291,7 @@ class Core extends Base\Core
 
         $fundTransferAttempt->source()->associate($source);
 
-        list($isFTS, $channel) = $this->getChannelForTransfer($source, $fundTransferAttempt->getSourceType(), $card, $values);
+        list($isFTS, $channel) = $this->getChannelForTransfer($source, $fundTransferAttempt->getSourceType(), $card);
 
         $defaultValues = [
             Entity::INITIATE_AT => Carbon::now(Timezone::IST)->getTimestamp(),
@@ -381,15 +384,20 @@ class Core extends Base\Core
      * @param string $accountType
      * @param bool   $isRegistered
      */
-    public function sendFTSFundTransferRequest(Entity $fta, string $accountType, bool $isRegistered = false)
+    public function sendFTSFundTransferRequest(Entity $fta, bool $isRegistered = false)
     {
         try
         {
+            if ($fta->shouldUseGateway() === true)
+            {
+                return;
+            }
+
             $redis = $this->app['redis']->connection();
 
-            $ftsChannels = $redis->SMEMBERS(ConfigKey::FTS_CHANNELS);
+            $ftsChannelMode = $redis->HGET(ConfigKey::FTS_CHANNELS, $fta->getChannel());
 
-            if(in_array($fta->getChannel(), $ftsChannels, true) === false)
+            if (empty($ftsChannelMode) === true)
             {
                 $this->trace->info(
                     TraceCode::FTS_INVALID_CHANNEL,
@@ -400,7 +408,7 @@ class Core extends Base\Core
                 return;
             }
 
-            FtsFundTransfer::dispatch($this->mode, $fta->getId(), $accountType, $isRegistered);
+            FtsFundTransfer::dispatch($this->mode, $fta->getId(), $isRegistered);
 
             $this->trace->info(
                 TraceCode::FTS_FUND_TRANSFER_JOB_DISPATCHED,
@@ -441,6 +449,11 @@ class Core extends Base\Core
         // TODO: should support bulk updates
         try
         {
+            if (array_key_exists(Entity::STATUS, $input) === true)
+            {
+                $input[Entity::STATUS] = strtolower($input[Entity::STATUS]);
+            }
+
             (new Validator)->validateInput('fts_status_update', $input);
 
             $input[Entity::STATUS] = strtolower($input[Entity::STATUS]);
@@ -477,6 +490,10 @@ class Core extends Base\Core
 
                 $this->repo->saveOrFail($fta->source);
             });
+
+            return [
+              'message' => 'FTA and source updated succesfully',
+            ];
         }
         catch (\Throwable $e)
         {
@@ -487,6 +504,8 @@ class Core extends Base\Core
                 [
                     'error' => $e->getMessage()
                 ]);
+
+            throw $e;
         }
     }
 }

@@ -887,6 +887,14 @@ class OtpPaymentTest extends TestCase
         // is difficult to mock (read as doesn't work) in laravel
         config(['services.mutex.mock' => true]);
 
+        $conn = Redis::connection();
+
+        Redis::shouldReceive('connection')
+             ->andReturnUsing(function() use($conn)
+             {
+                return $conn;
+             });
+
         Redis::shouldReceive('zrevrange')
             ->with('gateway_priority:card', 0, -1, 'WITHSCORES')
             ->andReturnUsing(function ()
@@ -2212,6 +2220,7 @@ class OtpPaymentTest extends TestCase
         ]);
 
         $this->fixtures->merchant->addFeatures(['s2s', 'headless', 's2s_otp_json']);
+
         $this->mockCardVault();
         $this->mockOtpElf();
 
@@ -2248,17 +2257,11 @@ class OtpPaymentTest extends TestCase
         self::assertArrayHasKey('razorpay_payment_id', $content);
         self::assertNotNull($content['razorpay_payment_id']);
 
+        $response = $this->doS2SOtpSubmitCallback($content, '123456');
+
         $route = $this->app['api.route'];
 
         $url = $route->getPublicCallbackUrlWithHash($content['razorpay_payment_id'], 'rzp_test_TheTestAuthKey', 'payment_callback_post');
-
-        Redis::shouldReceive('get')
-                ->twice()
-                ->andReturnUsing(function()
-                {
-                   throw new \RZP\Exception\BadRequestException(
-                    \RZP\Error\ErrorCode::BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING);
-                });
 
 
         $request = [
@@ -2266,8 +2269,11 @@ class OtpPaymentTest extends TestCase
             'url'     => $url,
             'content' => [],
         ];
+
         $this->app['env'] = 'dev';
+
         $this->app['config']->set('app.debug', false);
+
         $response = $this->makeRequestParent($request);
 
         $request = $this->getFormRequestFromResponse($response->getContent(), $url);

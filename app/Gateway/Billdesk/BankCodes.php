@@ -61,6 +61,7 @@ class BankCodes
         IFSC::SBTR => 'SBI',                    // State Bank of Travancore - Silent redirect to SBI
         IFSC::DBSS => 'DBS',                    // DBS Bank
         IFSC::IDFB => 'IDN',                    // IDFC Bank
+        IFSC::AUBL => 'AUB',                    // AU Small Finance Bank
         Netbanking::BARB_R => 'BBR',            // Bank of Baroda - Retail
         Netbanking::PUNB_R => 'PNB',            // Punjab National Bank - Retail
         Netbanking::LAVB_R => 'LVR',            // Laxmi Vilas Bank - Retail

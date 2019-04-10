@@ -111,13 +111,13 @@ class RecurringPaymentTest extends TestCase
         $this->fixtures->merchant->addFeatures([Feature::ALLOW_DC_RECURRING]);
 
         $this->fixtures->iin->create([
-                                         'iin' => '402400',
-                                         'country' => 'IN',
-                                         'network' => 'Visa',
-                                         'type' => 'debit',
-                                         'issuer' => 'KKBK',
-                                         'recurring' => 1,
-                                     ]);
+            'iin' => '402400',
+            'country' => 'IN',
+            'network' => 'Visa',
+            'type' => 'debit',
+            'issuer' => 'KKBK',
+            'recurring' => 1,
+        ]);
 
         $payment = $this->getDefaultRecurringPaymentArray();
         $payment['card']['number'] = '4024001104457538';
@@ -458,9 +458,7 @@ class RecurringPaymentTest extends TestCase
         $payment = $this->getDefaultRecurringPaymentArray();
         $payment['card']['number'] = '4024001104457538';
 
-
         $terminal = $this->fixtures->create('terminal:hitachi_recurring_terminal_with_both_recurring_types', ['merchant_id' => '10000000000000']);
-
 
         $this->doAuthPayment($payment);
 
@@ -469,7 +467,7 @@ class RecurringPaymentTest extends TestCase
         $this->fixtures->merchant->addFeatures([Feature::ALLOW_ALL_DC_RECURRING]);
 
         $this->doAuthPayment($payment);
-        sd();
+
         $paymentEntity = $this->getLastPayment(true);
 
         $this->assertEquals('initial', $paymentEntity['recurring_type']);
@@ -719,7 +717,7 @@ class RecurringPaymentTest extends TestCase
 
         unset($payment[Payment::CARD]);
 
-        $this->fixtures->base->editEntity('card', '100000000lcard', ["type" => 'credit']);
+        $this->fixtures->base->editEntity('card', '100000000lcard', ['type' => 'credit']);
 
         $this->fixtures->base->editEntity('token', '100000custcard',
             [
@@ -1174,7 +1172,6 @@ class RecurringPaymentTest extends TestCase
         $this->doAuthAndCapturePayment($payment);
 
         $paymentEntity = $this->getLastEntity('payment', true);
-
 
         $tokenId = $paymentEntity[Payment::TOKEN_ID];
 
