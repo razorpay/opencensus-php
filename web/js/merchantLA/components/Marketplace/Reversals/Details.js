@@ -63,19 +63,15 @@ export default class ReversalDetails extends Component {
                 {isLAInitiator && (
                   <EntityDetailRow
                     label="Customer Refund ID"
-                    value={_ => (
-                      <div>
-                        <Link to={`/transfers/${reversal.customer_refund_id}`}>
-                          {reversal.customer_refund_id}
-                        </Link>
-                      </div>
-                    )}
+                    value={_ => {
+                      reversal.customer_refund_id;
+                    }}
                   />
                 )}
 
-                {isLAInitiator && (
+                {/* {isLAInitiator && ( // TODO: add this when backend is ready
                   <EntityDetailRow label="Refund ARN" value={() => 'Number'} />
-                )}
+                )} */}
 
                 <EntityDetailRow
                   label="Created At"
