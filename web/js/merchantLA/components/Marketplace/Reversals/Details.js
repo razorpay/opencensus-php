@@ -11,7 +11,14 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
 export default class ReversalDetails extends Component {
   render() {
-    const { reversal, isLoading, onClose, parentAccountName } = this.props;
+    const {
+        reversal,
+        isLoading,
+        onClose,
+        parentAccountName,
+        merchant,
+      } = this.props,
+      isLAInitiator = reversal.initiator_id === merchant.id;
 
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -37,18 +44,38 @@ export default class ReversalDetails extends Component {
 
             <div class="SliderPanel__Body">
               <div class="panel-body">
-                <EntityDetailRow label="Parent Account">
-                  <Definition>
-                    <b>{parentAccountName}</b>
-                  </Definition>
-                </EntityDetailRow>
-
                 <EntityDetailRow label="Amount">
                   <Amount
                     value={reversal.amount}
                     currency={reversal.currency}
                   />
                 </EntityDetailRow>
+
+                <EntityDetailRow
+                  label="Initiated By"
+                  value={() =>
+                    isLAInitiator
+                      ? merchant.display_name || merchant.billing_label
+                      : parentAccountName
+                  }
+                />
+
+                {isLAInitiator && (
+                  <EntityDetailRow
+                    label="Customer Refund ID"
+                    value={_ => (
+                      <div>
+                        <Link to={`/transfers/${reversal.customer_refund_id}`}>
+                          {reversal.customer_refund_id}
+                        </Link>
+                      </div>
+                    )}
+                  />
+                )}
+
+                {isLAInitiator && (
+                  <EntityDetailRow label="Refund ARN" value={() => 'Number'} />
+                )}
 
                 <EntityDetailRow
                   label="Created At"

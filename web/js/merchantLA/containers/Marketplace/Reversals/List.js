@@ -10,6 +10,7 @@ import { fetchReversals as fetchAll } from 'merchantLA/modules/collection';
 import {
   reversalId,
   transferId,
+  customerRefundId,
   amount,
   createdAt,
 } from 'merchantLA/utils/item/pair';
@@ -23,7 +24,7 @@ export default class ReversalsListContainer extends ListContainer {
       <div>
         <tabbed-container>
           <header id="marketplace-header">
-            <NavLink to="/transfers">Transfers</NavLink>
+            <NavLink to="/reversals">Reversals</NavLink>
           </header>
           <TestModeBanner />
           <content>
@@ -36,7 +37,13 @@ export default class ReversalsListContainer extends ListContainer {
 
               <DataTable
                 title="Reversals"
-                columns={[reversalId, transferId, amount, createdAt]}
+                columns={[
+                  reversalId,
+                  customerRefundId,
+                  transferId,
+                  amount,
+                  createdAt,
+                ]}
                 count={this.state.count}
                 skip={this.state.skip}
                 paginate={this.paginate}

@@ -44,6 +44,7 @@ export default class ReversalDetailsContainer extends Component {
         statusMsg={statusMsg}
         onClose={onClose}
         parentAccountName={user.marketplace_merchant_name}
+        merchant={user.merchants[user.current]}
       />
     );
   }
