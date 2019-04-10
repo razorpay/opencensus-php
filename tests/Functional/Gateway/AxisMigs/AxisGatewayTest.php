@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use RZP\Mail\Payment\FailedToAuthorized as FailedToAuthorizedMail;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\Fixtures;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -17,6 +18,7 @@ use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Error;
 use RZP\Error\PublicErrorCode;
+use RZP\Models\Terminal\Options as TerminalOptions;
 
 class AxisGatewayTest extends TestCase
 {
@@ -70,6 +72,70 @@ class AxisGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentAxisMigsCaptureEntity'], $migs);
+    }
+
+    public function testPaymentForAuthorizationTerminal()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                            function ($mid, $feature, $mode)
+                            {
+                                if ($feature === 'save_all_cards')
+                                {
+                                    return 'off';
+                                }
+                                return 'on';
+                            }));
+
+        TerminalOptions::setTestChance(200);
+
+        $this->createGatewayRules($this->testData[__FUNCTION__]);
+
+        $payment = [
+            'card' => [
+                'number'       => '5567630000002004',
+                'expiry_month' => '02',
+                'expiry_year'  => '21',
+                'cvv'          => 123,
+                'name'         => 'Test Card'
+            ]
+        ];
+
+        $this->mockCardVault();
+        $payment = $this->defaultAuthPayment($payment);
+
+        $txn = $this->getEntities('transaction', [], true);
+        $this->assertEquals(0, $txn['count']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals($payment['transaction_id'], null);
+
+        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+
+        $txn = $this->getLastTransaction(true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterCapture'], $txn);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('axis_migs', $payment['gateway']);
+
+        $gatewayPayment = $this->getLastEntity('axis_migs', true);
+
+        $this->assertEquals('capture', $gatewayPayment['action']);
+        $this->assertEquals('Approved', $gatewayPayment['vpc_Message']);
+
+        $mpi = $this->getLastEntity('mpi', true);
+
+        $this->assertNotNull($mpi);
+        $this->assertEquals('mpi_blade', $mpi['gateway']);
+        $this->assertEquals('Y', $mpi['enrolled']);
     }
 
     public function testAmountTampering()
@@ -852,5 +918,13 @@ class AxisGatewayTest extends TestCase
 
         // Refund will be in processed state
         $this->assertEquals($refund['status'], 'processed');
+    }
+
+    protected function createGatewayRules($rules)
+    {
+        foreach ($rules as $rule)
+        {
+           $this->fixtures->create('gateway_rule', $rule);
+        }
     }
 }
