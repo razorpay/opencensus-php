@@ -7,15 +7,19 @@ $fee-breakup-bg = #EEF1F2
   display: table
   border-left: 2px solid $prime
   padding: 5px 0
-  &--item
+
+  &--item,
+  &--add-symbol
     display: table-cell
     vertical-align: middle
-    padding-left: 10px
     position: relative
-    padding: 0 17px
+
+  &--item
+    padding: 0 10px
 
     &:first-child
       border-right: 1px solid $prime-27
+      padding-right: 25px
 
       &:before,
       &:after
@@ -35,3 +39,6 @@ $fee-breakup-bg = #EEF1F2
         top: calc(50% - 4px)
         border-width: 5px
         border-color: transparent transparent transparent $fee-breakup-bg
+
+    &:nth-child(2)
+      padding-left: 25px
