@@ -83,6 +83,11 @@ class Service
             $data[self::BEAM_PUSH_BUCKET_NAME] = $pushData[self::BEAM_PUSH_BUCKET_NAME];
         }
 
+        if (isset($pushData[self::BEAM_PUSH_BUCKET_REGION]) === true)
+        {
+            $data[self::BEAM_PUSH_BUCKET_REGION] = $pushData[self::BEAM_PUSH_BUCKET_REGION];
+        }
+
         $traceData = $data;
 
         if (isset($pushData[self::BEAM_PUSH_DECRYPTION]) === true)
