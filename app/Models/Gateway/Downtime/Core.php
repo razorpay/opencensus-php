@@ -8,6 +8,7 @@ use RZP\Services;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -291,5 +292,29 @@ class Core extends Base\Core
         $gateways = array_values(array_unique($gateways));
 
         return $gateways;
+    }
+
+    public static function getMode()
+    {
+        $app = \App::getFacadeRoot();
+
+        // We use the more restricted option as default
+        $mode = Mode::LIVE;
+
+        // This blocks writing tests in live mode, but that's
+        // acceptable till we have a better way to set mode in tests
+        if ($app->runningUnitTests() === true)
+        {
+            $mode = Mode::TEST;
+        }
+
+        // In almost all flows except unit tests and direct auth requests,
+        // rzp.mode should be used as source of truth for mode
+        if (isset($app['rzp.mode']) === true)
+        {
+            $mode = $app['rzp.mode'];
+        }
+
+        return $mode;
     }
 }
