@@ -2,6 +2,7 @@ import { Component } from 'react';
 import { Switch, Route, NavLink } from 'react-router-dom';
 
 import Transactional from './Transactional/List';
+import Daily from './Daily/List';
 
 export default class EarningsContainer extends Component {
   render() {
@@ -21,6 +22,7 @@ export default class EarningsContainer extends Component {
               path="/partners/earnings/transactional"
               component={Transactional}
             />
+            <Route path="/partners/earnings/daily" component={Daily} />
           </Switch>
         </content>
       </tabbed-container>
