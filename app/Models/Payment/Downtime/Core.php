@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Downtime;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Illuminate\Database\Eloquent\Collection;
@@ -39,11 +40,24 @@ class Core extends Base\Core
     {
         $gatewayDowntimes = $this->repo->gateway_downtime->fetchCurrentAndFutureDowntimes();
 
-        $this->processUpi($gatewayDowntimes);
+        foreach (Payment\Method::getAllPaymentMethods() as $method)
+        {
+            $processMethod = 'process' . studly_case($method);
+
+            if (method_exists($this, $processMethod) === true)
+            {
+                $this->$processMethod($gatewayDowntimes);
+            }
+        }
     }
 
     protected function processUpi(Collection $gatewayDowntimes)
     {
         (new UpiProcessor)->process($gatewayDowntimes);
+    }
+
+    protected function processNetbanking(Collection $gatewayDowntimes)
+    {
+        (new NetbankingProcessor)->process($gatewayDowntimes);
     }
 }

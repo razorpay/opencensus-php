@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Downtime;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Models\Payment\Method;
 use RZP\Constants\Entity as EntityConstants;
 
 class Entity extends Base\PublicEntity
@@ -34,6 +35,7 @@ class Entity extends Base\PublicEntity
     const ALL        = 'ALL';
 
     const INSTRUMENT = 'instrument';
+    const BANK       = 'bank';
 
     protected $fillable = [
         self::BEGIN,
@@ -111,13 +113,36 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
+    // ================= Public setters ================
+
     public function setPublicInstrumentAttribute(array & $array)
     {
-        $array[self::INSTRUMENT] = [];
+         $instrument = [];
+
+        if ($this->getMethod() === Method::NETBANKING)
+        {
+            $instrument[self::BANK] = $this->getIssuer();
+        }
+
+        $array[self::INSTRUMENT] = $instrument;
     }
+
+    // ================= Setters ================
 
     public function setEndNow()
     {
         $this->setAttribute(self::END, Carbon::now()->getTimestamp());
+    }
+
+    // ================= Getters ================
+
+    public function getMethod()
+    {
+        return $this->getAttribute(self::METHOD);
+    }
+
+    public function getIssuer()
+    {
+        return $this->getAttribute(self::ISSUER);
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Gateway\MethodDowntime;
+namespace RZP\Models\Payment\Downtime;
 
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\Downtime;
