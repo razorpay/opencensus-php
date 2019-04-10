@@ -27,6 +27,8 @@ class Service
 
     const BEAM_PUSH_BUCKET_NAME = 'bucket_name';
 
+    const BEAM_PUSH_BUCKET_REGION = 'bucket_region';
+
     const BEAM_PUSH_DECRYPTION  = 'decryption';
 
     const BEAM_PUSH_DECRYPTION_TYPE = 'type';

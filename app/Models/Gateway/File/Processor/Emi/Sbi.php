@@ -363,6 +363,7 @@ class Sbi extends Base
             Service::BEAM_PUSH_FILES   => $fileInfo,
             Service::BEAM_PUSH_JOBNAME => BeamConstants::SBI_EMI_FILE_JOB_NAME,
             Service::BEAM_PUSH_BUCKET_NAME => $bucketConfig['name'],
+            Service::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
             Service::BEAM_PUSH_DECRYPTION => [
                 Service::BEAM_PUSH_DECRYPTION_TYPE => Service::BEAM_PUSH_DECRYPTION_TYPE_AES256,
                 Service::BEAM_PUSH_DECRYPTION_MODE => Service::BEAM_PUSH_DECRYPTION_MODE_GCM,
