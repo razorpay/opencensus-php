@@ -79,6 +79,11 @@ class ConfigKey
         return true;
     }
 
+    public static function resetFetchedKeys()
+    {
+        static::$fetchedKeys = [];
+    }
+
     public static function get($key, $default = null)
     {
         if (isset(static::$fetchedKeys[$key]) === true)

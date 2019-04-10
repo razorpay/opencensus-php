@@ -13,6 +13,13 @@ use RZP\Jobs\Invoice\Job as InvoiceJob;
  */
 class BatchNotify extends Job
 {
+    /**
+     * Custom job name
+     *
+     * @var string
+     */
+    protected $jobName = 'batch_notify';
+
     const INPUT = 'input';
 
     /**
