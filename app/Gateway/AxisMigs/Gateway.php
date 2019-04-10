@@ -126,11 +126,15 @@ class Gateway extends Base\Gateway
 
     protected function authorizeEnrolled(array $input, array $authResponse)
     {
-        $input['callbackUrl'] = 'dummy_callback';
+        // Adding dummy callback URL
+        $input['callbackUrl'] = '';
 
         $content = $this->getPaymentAuthorizeRequestContent($input);
 
         $this->addAuthenticationData($content, $authResponse);
+
+        $content['vpc_SecureHash'] = $this->generateHash($content);
+        $content['vpc_SecureHashType'] = strtoupper(HashAlgo::SHA256);
 
         $gatewayEntity = $this->createGatewayPaymentEntity($content, $input);
 
@@ -146,6 +150,8 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($gatewayEntity);
 
         $this->checkTransactionResponse($response, $input);
+
+        return $response;
     }
 
     protected function addAuthenticationData(&$content, $authResponse)

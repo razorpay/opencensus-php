@@ -48,11 +48,22 @@ class Server extends Base\Mock\Server
 
         $this->addMessageAndResponseCode($content, $input);
 
+        $this->addAuthenticationDataIfApplicable($content, $input);
+
         $this->content($content);
 
         $content['vpc_SecureHash'] = $this->generateHash($content);
 
         return $this->prepareResponse($content);
+    }
+
+    protected function addAuthenticationDataIfApplicable(&$content, $input)
+    {
+        $content['vpc_3DSECI']      = $input['vpc_3DSECI'] ?? '01';
+        $content['vpc_3DSXID']      = $input['vpc_3DSXID'] ?? '6NQZ/DZVL/LgcawFYz7cMP0vpMo=';
+        $content['vpc_3DSenrolled'] = $input['vpc_3DSenrolled'] ?? 'Y';
+        $content['vpc_VerToken']    = $input['vpc_VerToken'] ?? 'huMdTSBYZwAbYwAAAHhpApYAAAA=';
+        $content['vpc_VerType']     = $input['vpc_VerType'] ?? '3DS';
     }
 
     public function acs($input)
@@ -105,6 +116,11 @@ class Server extends Base\Mock\Server
         $url .= '?' . http_build_query($content);
 
         return $url;
+    }
+
+    public function callback($input)
+    {
+        return $this->authorize($input);
     }
 
     public function capture($input)
