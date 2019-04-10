@@ -21,6 +21,7 @@ import ReversalDetails from 'merchant/containers/Marketplace/Reversals/Details';
 import DisputeDetails from 'merchant/containers/Disputes/Details';
 import SubmerchantDetails from 'merchant/containers/PartnerDashboard/SubMerchant/Entity';
 import TransactionalEarningDetails from 'merchant/containers/PartnerDashboard/Commissions/Transactional/Entity';
+import DailyEarningDetails from 'merchant/containers/PartnerDashboard/Commissions/Daily/Entity';
 import AuthLink from 'merchant/containers/Subscriptions/AuthLinks/Entity';
 
 import Token from 'merchant/containers/Subscriptions/Tokens/Entity';
@@ -110,6 +111,9 @@ const entityDetailsMap = {
   '/submerchants/:id(acc_.+)': { component: SubmerchantDetails },
   '/partners/earnings/transactional/:id(comm_.+)': {
     component: TransactionalEarningDetails,
+  },
+  '/partners/earnings/daily/:date': {
+    component: DailyEarningDetails,
   },
   '/disputes/:id(disp_.+)': {
     component: DisputeDetails,
