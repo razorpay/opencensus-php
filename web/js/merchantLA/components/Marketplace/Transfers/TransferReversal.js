@@ -104,7 +104,12 @@ export default class TransferReversal extends React.PureComponent {
     } else if (reversalStatus === 'full') {
       return (
         <div>
-          <p>Fully Reversed</p>
+          <Definition>
+            Fully Reversed
+            <div>
+              in <NumReversals reversals={reversals} />
+            </div>
+          </Definition>
           <ReversalsList reversals={reversals} />
         </div>
       );
