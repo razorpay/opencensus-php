@@ -1685,6 +1685,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTS_INVALID_CHANNEL                                   = 'FTS_INVALID_CHANNEL';
     const FTS_FAILURE_EXCEPTION                                 = 'FTS_FAILURE_EXCEPTION';
     const FTS_FUND_TRANSFER_INIT                                = 'FTS_FUND_TRANSFER_INIT';
+    const FTS_HEALTH_CHECK_FAILED                               = 'FTS_HEALTH_CHECK_FAILED';
     const FTS_CREATE_ACCOUNT_INIT                               = 'FTS_CREATE_ACCOUNT_INIT';
     const FTS_FUND_TRANSFER_FAILED                              = 'FTS_FUND_TRANSFER_FAILED';
     const FTS_REGISTER_ACCOUNT_INIT                             = 'FTS_REGISTER_ACCOUNT_INIT';

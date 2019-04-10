@@ -71,6 +71,8 @@ class RouteServiceProvider extends ServiceProvider
 
         $this->route->defineStatusApiRoute();
 
+        $this->route->defineStatusFTSRoute();
+
         /**
          * Following params are as explained:
          * - prefix: v1 - All the routes defined have prefix v1
