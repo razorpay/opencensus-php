@@ -141,11 +141,6 @@ class Assertions extends TestCase
         $this->assertShouldNotCreateCommission($data);
     }
 
-    public function testPostpaidFeeModel(array $data)
-    {
-        $this->assertShouldNotCreateCommission($data);
-    }
-
     public function testCommissionDisabled(array $data)
     {
         $this->assertShouldNotCreateCommission($data);
@@ -324,6 +319,91 @@ class Assertions extends TestCase
 
         $this->assertEquals(1888, $commission->getFee());
         $this->assertEquals(288, $commission->getTax());
+    }
+
+    public function testImplicitVariablePostpaid(array $data)
+    {
+        $this->assertShouldCreateCommission($data);
+
+        $postAction = $data['post_action'];
+
+        $calculator = $postAction['calculator'];
+
+        $this->assertImplicitPlanType($calculator, 'implicit_variable');
+
+        $commission = $this->assertCommissionCreatedByType($calculator, Commission\Type::IMPLICIT);
+
+        $this->assertNonZeroCommissionTaxByType($calculator, Commission\Type::IMPLICIT);
+
+        $amount          = 400000; // INR 4000
+        $merchantPricing = 2; // 2% pricing
+
+        $this->assertEquals($this->getFee($amount, $merchantPricing), $calculator->getMerchantFee());
+        $this->assertEquals($this->getTax($amount, $merchantPricing), $calculator->getMerchantTax());
+
+        $this->assertEquals(944, $commission->getFee());
+        $this->assertEquals(144, $commission->getTax());
+    }
+
+    public function testImplicitFixedPostpaid(array $data)
+    {
+        $this->assertShouldCreateCommission($data);
+
+        $calculator = $data['post_action']['calculator'];
+
+        $this->assertImplicitPlanType($calculator, 'implicit_fixed');
+
+        $commission = $this->assertCommissionCreatedByType($calculator, Commission\Type::IMPLICIT);
+
+        $amount          = 400000; // INR 4000
+        $merchantPricing = 2; // 2% pricing
+
+        $this->assertEquals($this->getFee($amount, $merchantPricing), $calculator->getMerchantFee());
+        $this->assertEquals($this->getTax($amount, $merchantPricing), $calculator->getMerchantTax());
+
+        $commissionPricing = 0.3;
+
+        $this->assertEquals($this->getFee($amount, $commissionPricing), $commission->getFee());
+        $this->assertEquals($this->getTax($amount, $commissionPricing), $commission->getTax());
+    }
+
+    public function testExplicitPostpaid(array $data)
+    {
+        $this->assertShouldCreateCommission($data);
+
+        $postAction = $data['post_action'];
+
+        $calculator = $postAction['calculator'];
+
+        $commission = $this->assertCommissionCreatedByType($calculator, Commission\Type::EXPLICIT);
+
+        $this->assertNonZeroCommissionTaxByType($calculator, Commission\Type::EXPLICIT);
+
+        $this->assertEquals(944, $commission->getFee());
+        $this->assertEquals(144, $commission->getTax());
+    }
+
+    public function testImplicitFixedAndExplicitPostpaid(array $data)
+    {
+        $this->assertShouldCreateCommission($data);
+
+        $postAction = $data['post_action'];
+
+        $calculator = $postAction['calculator'];
+
+        $commission = $this->assertCommissionCreatedByType($calculator, Commission\Type::IMPLICIT, 2);
+
+        $this->assertNonZeroCommissionTaxByType($calculator, Commission\Type::IMPLICIT, 2);
+
+        $this->assertEquals(944, $commission->getFee());
+        $this->assertEquals(144, $commission->getTax());
+
+        $commission = $this->assertCommissionCreatedByType($calculator, Commission\Type::EXPLICIT, 2);
+
+        $this->assertNonZeroCommissionTaxByType($calculator, Commission\Type::EXPLICIT, 2);
+
+        $this->assertEquals(944, $commission->getFee());
+        $this->assertEquals(144, $commission->getTax());
     }
 
     protected function getCommissionByType(Calculator $calculator, string $type, int $totalCount)

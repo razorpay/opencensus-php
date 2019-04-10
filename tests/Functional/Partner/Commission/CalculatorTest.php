@@ -71,11 +71,6 @@ class CalculatorTest extends OAuthTestCase
         $this->ruleEngine->execute(__FUNCTION__);
     }
 
-    public function testPostpaidFeeModel()
-    {
-        $this->ruleEngine->execute(__FUNCTION__);
-    }
-
     public function testCommissionDisabled()
     {
         $this->ruleEngine->execute(__FUNCTION__);
@@ -215,4 +210,25 @@ class CalculatorTest extends OAuthTestCase
     {
         $this->ruleEngine->execute(__FUNCTION__);
     }
+
+    public function testImplicitVariablePostpaid()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    public function testImplicitFixedPostpaid()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    public function testExplicitPostpaid()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    public function testImplicitFixedAndExplicitPostpaid()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
 }

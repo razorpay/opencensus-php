@@ -170,6 +170,11 @@ trait PartnerTrait
         ]);
     }
 
+    public function setPostpaidFeeModel(string $submerchantId)
+    {
+        $this->fixtures->merchant->edit($submerchantId, ['fee_model' => 'postpaid']);
+    }
+
     /**
      * The method will simulate exact environment as of Partner Auth Merchant.
      * 1. Load the oAuth Factories required for oAuth Models
