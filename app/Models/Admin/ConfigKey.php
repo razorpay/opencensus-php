@@ -7,9 +7,16 @@ use Cache;
 
 class ConfigKey
 {
+    protected static $fetchedKeys = [];
+
     const PREFIX                                = 'config:';
+
+    // Logs
     const TERMINAL_SELECTION_LOG_VERBOSE        = self::PREFIX . 'terminal_selection_log_verbose';
     const PRICING_RULE_SELECTION_LOG_VERBOSE    = self::PREFIX . 'pricing_rule_selection_log_verbose';
+    const HEARTBEAT_LOG_VERBOSE                 = self::PREFIX . 'heartbeat_log_verbose';
+    const THROTTLE_MOCK_LOG_VERBOSE             = self::PREFIX . 'throttle_mock_log_verbose';
+
     const GATEWAY_PROCESSED_REFUNDS             = self::PREFIX . 'GATEWAY_PROCESSED_REFUNDS';
     const GATEWAY_UNPROCESSED_REFUNDS           = self::PREFIX . 'GATEWAY_UNPROCESSED_REFUNDS';
     const BLOCK_BANK_TRANSFERS_FOR_CRYPTO       = self::PREFIX . 'block_bank_transfers_for_crypto';
@@ -39,6 +46,8 @@ class ConfigKey
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
         self::PRICING_RULE_SELECTION_LOG_VERBOSE,
+        self::HEARTBEAT_LOG_VERBOSE,
+        self::THROTTLE_MOCK_LOG_VERBOSE,
         self::GATEWAY_PROCESSED_REFUNDS,
         self::GATEWAY_UNPROCESSED_REFUNDS,
         self::BLOCK_BANK_TRANSFERS_FOR_CRYPTO,
@@ -72,6 +81,11 @@ class ConfigKey
 
     public static function get($key, $default = null)
     {
+        if (isset(static::$fetchedKeys[$key]) === true)
+        {
+            return static::$fetchedKeys[$key];
+        }
+
         $app = App::getFacadeRoot();
 
         $data = $default;
@@ -84,6 +98,8 @@ class ConfigKey
         {
             $app['trace']->traceException($ex);
         }
+
+        static::$fetchedKeys[$key] = $data;
 
         return $data;
     }
