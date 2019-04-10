@@ -210,7 +210,9 @@ class Throttler
                 throw new ThrottleException($response->retryAfter, $payload);
             }
 
-            $shouldTraceMock = (bool) ConfigKey::get(ConfigKey::THROTTLE_MOCK_LOG_VERBOSE, true);
+            $shouldTraceMock = ConfigKey::get(ConfigKey::THROTTLE_MOCK_LOG_VERBOSE, true);
+
+            $shouldTraceMock = (bool) ($shouldTraceMock ?? true);
 
             if ($shouldTraceMock === true)
             {

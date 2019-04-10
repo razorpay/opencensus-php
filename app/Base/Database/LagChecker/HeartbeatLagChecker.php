@@ -12,7 +12,6 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestContext;
 use RZP\Base\Database\Metric;
-use RZP\Models\Admin\ConfigKey;
 use RZP\Jobs\Context as WorkerContext;
 
 /**
@@ -386,7 +385,7 @@ class HeartbeatLagChecker implements LagChecker
             $this->config['time_threshold'],
             $this->config['slave_time_threshold'],
             $this->config['traffic_percentage'],
-            ConfigKey::HEARTBEAT_LOG_VERBOSE,
+            $this->config['log_verbose'],
         ]);
 
         list(
@@ -402,7 +401,7 @@ class HeartbeatLagChecker implements LagChecker
 
         $this->enabled = (bool) $this->enabled;
 
-        $this->shouldTraceSuccess = (bool) $this->shouldTraceSuccess;
+        $this->shouldTraceSuccess = (bool) ($this->shouldTraceSuccess ?? true);
     }
 
     /**

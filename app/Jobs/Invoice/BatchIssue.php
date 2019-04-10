@@ -16,13 +16,6 @@ use RZP\Models\Invoice as InvoiceModel;
  */
 class BatchIssue extends Job
 {
-    /**
-     * Custom job name
-     *
-     * @var string
-     */
-    protected $jobName = 'batch_issue';
-
     const INPUT              = 'input';
     const MUTEX_LOCK_TIMEOUT = 3600;    // In seconds
 
