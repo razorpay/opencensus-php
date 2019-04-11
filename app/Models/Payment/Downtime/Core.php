@@ -42,22 +42,12 @@ class Core extends Base\Core
 
         foreach (Payment\Method::getAllPaymentMethods() as $method)
         {
-            $processMethod = 'process' . studly_case($method);
+            $downtimeProcessor = __NAMESPACE__ . '\\' . studly_case($method) . 'Processor';
 
-            if (method_exists($this, $processMethod) === true)
+            if (class_exists($downtimeProcessor) === true)
             {
-                $this->$processMethod($gatewayDowntimes);
+                (new $downtimeProcessor)->process($gatewayDowntimes);
             }
         }
-    }
-
-    protected function processUpi(Collection $gatewayDowntimes)
-    {
-        (new UpiProcessor)->process($gatewayDowntimes);
-    }
-
-    protected function processNetbanking(Collection $gatewayDowntimes)
-    {
-        (new NetbankingProcessor)->process($gatewayDowntimes);
     }
 }
