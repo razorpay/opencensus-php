@@ -263,4 +263,30 @@ return [
             ],
         ],
     ],
+
+    'testGetWalletDowntimeForSingleGateway' => [
+        'request' => [
+            'url' => '/methods/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'     => 'payment.downtime',
+                        'method'     => 'wallet',
+                        'end'        => null,
+                        'status'     => 'scheduled',
+                        'scheduled'  => false,
+                        'severity'   => 'low',
+                        'instrument' => [
+                            'wallet' => 'olamoney'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

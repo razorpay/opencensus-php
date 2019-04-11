@@ -271,6 +271,51 @@ class PaymentDowntimeTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetWalletDowntimeForSingleGateway()
+    {
+        $request = [
+            'content' => [
+                'gateway'     => 'wallet_olamoney',
+                'method'      => 'wallet',
+                'source'      => 'dummy',
+                'reason_code' => 'OTHER',
+                'begin'       => Carbon::now()->subMinutes(60)->timestamp
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/dummy/webhook'
+        ];
+
+        $this->ba->appAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetWalletDowntimeWithEndTime()
+    {
+        $this->testGetWalletDowntimeForSingleGateway();
+
+        $gatewayDowntime = $this->getLastEntity('gateway_downtime', true);
+
+        $request = [
+            'content' => [
+                'end' => Carbon::now()->subMinutes(30)->timestamp,
+            ],
+            'method' => 'PUT',
+            'url' => '/gateway/downtimes/'.$gatewayDowntime['id']
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $downtime = $this->getLastEntity('payment.downtime', true);
+        $this->assertNotNull($downtime['end']);
+    }
+
     protected function createUpiAllGatewayDowntime()
     {
         foreach (Gateway::$methodMap['upi'] as $gateway)

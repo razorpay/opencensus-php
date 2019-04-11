@@ -36,6 +36,7 @@ class Entity extends Base\PublicEntity
 
     const INSTRUMENT = 'instrument';
     const BANK       = 'bank';
+    const WALLET     = 'wallet';
 
     protected $fillable = [
         self::BEGIN,
@@ -119,13 +120,22 @@ class Entity extends Base\PublicEntity
     {
          $instrument = [];
 
-        if ($this->getMethod() === Method::NETBANKING)
+        switch ($this->getMethod())
         {
-            $instrument[self::BANK] = $this->getIssuer();
-        }
-        else if ($this->getMethod() === Method::CARD)
-        {
-            $instrument[self::NETWORK] = $this->getNetwork();
+            case Method::CARD:
+                $instrument[self::NETWORK] = $this->getNetwork();
+                break;
+
+            case Method::NETBANKING:
+                $instrument[self::BANK] = $this->getIssuer();
+                break;
+
+            case Method::WALLET:
+                $instrument[self::WALLET] = $this->getIssuer();
+                break;
+
+            default:
+                break;
         }
 
         $array[self::INSTRUMENT] = array_filter($instrument);
