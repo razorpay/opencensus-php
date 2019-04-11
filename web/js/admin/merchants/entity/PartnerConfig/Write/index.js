@@ -146,7 +146,7 @@ export default class WritePartnerConfig extends Component {
 
     return submit({
       url: 'live/partner_configs' + (config_id ? `/${config_id}` : ''),
-      data: without(values, ['id', 'application_id']),
+      data: without(values, ['id']),
       headers: {
         'content-type': 'application/json',
       },
