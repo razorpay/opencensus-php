@@ -43,9 +43,7 @@ export default class Refunds extends Component {
 
     this.params = this.getQueryParams();
 
-    this.multiSelectInitialValues = {
-      'refunds.status': statuses,
-    };
+    this.multiSelectInitialValues = {};
 
     adminFetch(`${this.mode}/scrooge/dashboard-init`)
       .then(data => {
@@ -58,9 +56,12 @@ export default class Refunds extends Component {
         let gatewayValues = data.gateways || [];
         let methodValues = data.methods || [];
         let gatewayAcquirerValues = data.gateway_acquirers || [];
+        let statusValues = data.statuses || [];
+
         let gateways = [];
         let methods = [];
         let gatewayAcquirers = [];
+        let statuses = [];
 
         gatewayValues.forEach(gateway => {
           gateways.push({
@@ -90,6 +91,15 @@ export default class Refunds extends Component {
         this.multiSelectInitialValues[
           'refunds.gateway_acquirer'
         ] = gatewayAcquirers;
+
+        statusValues.forEach(status => {
+          statuses.push({
+            name: status,
+            value: status,
+          });
+        });
+
+        this.multiSelectInitialValues['refunds.status'] = statuses;
       })
       .then(d => {
         let params = this.params;
@@ -693,16 +703,6 @@ const getFilterValue = (filters, filter, currentValue, semiColonSplit) => {
 
   return value;
 };
-
-const statuses = [
-  { name: 'Init', value: 'init' },
-  { name: 'File Init', value: 'file_init' },
-  { name: 'File Sent', value: 'file_sent' },
-  { name: 'FTA Pending', value: 'fta_pending' },
-  { name: 'Failed', value: 'failed' },
-  { name: 'Processed', value: 'processed' },
-  { name: 'On Hold', value: 'on_hold' },
-];
 
 // multi-entity, multi-select, select, entity, numeric-range, date-range
 const formFilters = [
