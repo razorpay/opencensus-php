@@ -441,7 +441,7 @@ class Core extends Base\Core
                     CreateAccount::dispatch($this->mode, $id, Type::BANK_ACCOUNT, Constants\Entity::PAYOUT);
 
                     break;
-            }*/
+            }
 
             $this->trace->info(
                 TraceCode::FTS_CREATE_ACCOUNT_JOB_DISPATCHED,
@@ -449,6 +449,7 @@ class Core extends Base\Core
                     'source_type'     => $sourceType,
                     'bank_account_id' => $id,
                 ]);
+            */
         }
         catch(\Throwable $e)
         {
