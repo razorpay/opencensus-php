@@ -52,10 +52,7 @@ export default class ReversalsListContainer extends Component {
           </header>
           <TestModeBanner />
           <content>
-            <Route
-              path="/reversals"
-              component={() => <ReversalsTable {...this.props} />}
-            />
+            <Route path="/reversals" component={ReversalsTable} />
             <Route path="/credits" component={Credit} />
           </content>
         </tabbed-container>

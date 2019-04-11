@@ -12,7 +12,13 @@ import {
   createdAt,
 } from 'merchantLA/utils/item/pair';
 
-@connect(state => state.reversals, { fetchAll })
+@connect(
+  state => ({
+    ...state.reversals,
+    user: state.session.user,
+  }),
+  { fetchAll }
+)
 export default class ReversalsTable extends ListContainer {
   render() {
     return (
@@ -21,6 +27,7 @@ export default class ReversalsTable extends ListContainer {
           form="reversalsListFilter"
           count={this.state.count}
           onSubmit={this.search}
+          user={this.props.user}
         />
 
         <DataTable

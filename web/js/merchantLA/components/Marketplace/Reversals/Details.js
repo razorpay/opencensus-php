@@ -54,9 +54,7 @@ export default class ReversalDetails extends Component {
                 <EntityDetailRow
                   label="Initiated By"
                   value={() =>
-                    isLAInitiator
-                      ? merchant.display_name || merchant.billing_label
-                      : parentAccountName
+                    isLAInitiator ? merchant.billing_label : parentAccountName
                   }
                 />
 
