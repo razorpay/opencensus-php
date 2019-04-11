@@ -1340,6 +1340,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             ($dbReference2 !== '00') and
             ($dbReference2 !== $reference2) and
             ($trimmedDbReference2 !== $reference2) and
+            (strtolower($dbReference2) !== strtolower($reference2)) and
             ($this->shouldForceUpdate(RequestProcessor\Base::PAYMENT_AUTH_CODE) === false))
         {
             $this->messenger->raiseReconAlert(
