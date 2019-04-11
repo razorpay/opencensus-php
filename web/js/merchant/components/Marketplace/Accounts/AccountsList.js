@@ -39,6 +39,7 @@ const AccountsListItem = ({
   showEditAccountModal,
   onEdit,
   onToggleDashboardAccess,
+  onToggleAllowRefunds,
 }) => {
   let status = account.activation_details
     ? account.activation_details.status
@@ -131,6 +132,23 @@ const AccountsListItem = ({
           }
         </td>
       )}
+      {onToggleAllowRefunds && (
+        <td style={{ textAlign: 'center' }}>
+          {
+            <ToggleField
+              onEdit={() => showEditAccountModal(account)}
+              isDisabled={noLAEmail}
+            >
+              <SwitchField
+                defaultChecked={!!account.dashboard_access}
+                onChange={onToggleAllowRefunds}
+                disabled={noLAEmail}
+                type="prime"
+              />
+            </ToggleField>
+          }
+        </td>
+      )}
     </EntityItemRow>
   );
 };
@@ -141,6 +159,7 @@ export default ({
   showEditAccountModal,
   onEdit,
   onToggleDashboardAccess,
+  onToggleAllowRefunds,
 }) => {
   return (
     <div class="table-responsive">
@@ -153,6 +172,9 @@ export default ({
             <th>Account Status</th>
             {onToggleDashboardAccess && (
               <th style={{ textAlign: 'center' }}>Dashboard Access</th>
+            )}
+            {onToggleAllowRefunds && (
+              <th style={{ textAlign: 'center' }}>Allow Refunds</th>
             )}
           </tr>
         </thead>
@@ -172,6 +194,12 @@ export default ({
                 onToggleDashboardAccess
                   ? (isChecked, cb) =>
                       onToggleDashboardAccess(account, isChecked, cb)
+                  : undefined
+              }
+              onToggleAllowRefunds={
+                onToggleDashboardAccess
+                  ? (isChecked, cb) =>
+                      onToggleAllowRefunds(account, isChecked, cb)
                   : undefined
               }
             />

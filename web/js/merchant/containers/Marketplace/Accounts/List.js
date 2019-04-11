@@ -88,6 +88,69 @@ export default class AccountsListContainer extends ListContainer {
       }); // dummy catch to handle confirm abort rejection
   };
 
+  onToggleAllowRefunds = (account, checked, cb) => {
+    return this.context
+      .confirm({
+        header: `${checked ? 'Enable' : 'Disable'} Allow Refunds?`,
+        message: () => (
+          <div class="text-semi-muted">
+            <p>
+              {`Are you sure you want to ${
+                checked ? 'Enable' : 'Disable'
+              } allow refunds for this linked account`}
+            </p>
+          </div>
+        ),
+        affirmativeLabel: `${checked ? 'Enable' : 'Disable'}`,
+        affirmativePendingLabel: `${checked ? 'Enabling' : 'Disabling'}`,
+        abortLabel: 'Cancel',
+        action: () => {
+          return this.props
+            .toggleAllowRefunds({
+              reversals_access: checked,
+              accountId: account.id,
+            })
+            .then(resp => {
+              cb(true);
+
+              if (resp) {
+                this.props.showNotification({
+                  type: 'success',
+                  message: `Dashboard access ${
+                    checked ? 'Enabled' : 'Disabled'
+                  } for merchant "${account.name}"`,
+                });
+
+                return resp;
+              } else {
+                throw 'Some network error has occurred';
+              }
+            })
+            .catch(({ errors }) => {
+              if (
+                !errors ||
+                (errors instanceof Array === true &&
+                  (!errors.length || !errors[0]))
+              ) {
+                errors = 'Some network error has occurred';
+              }
+
+              this.props.showNotification({
+                type: 'error',
+                message: errors,
+              });
+
+              cb(false);
+
+              throw errors;
+            });
+        },
+      })
+      .catch(() => {
+        cb(false);
+      }); // dummy catch to handle confirm abort rejection
+  };
+
   fetchList({ id, ...rest }) {
     if (id && id.indexOf('acc_') > -1) {
       id = id.replace('acc_', '');
@@ -219,6 +282,13 @@ export default class AccountsListContainer extends ListContainer {
               additionalCondition: user => user.isAllowedEdit('accounts'),
             })
               ? this.onToggleDashboardAccess
+              : undefined
+          }
+          onToggleAllowRefunds={
+            showWhenUtil({
+              additionalCondition: user => user.isAllowedEdit('accounts'),
+            })
+              ? this.onToggleAllowRefunds
               : undefined
           }
         />

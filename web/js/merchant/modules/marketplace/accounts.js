@@ -5,6 +5,7 @@ const ACCOUNTS_FETCH = 'ACCOUNTS_FETCH';
 const ACCOUNT_CREATE = 'ACCOUNT_CREATE';
 const UPDATE_EMAIL = 'UPDATE_EMAIL';
 const ACCOUNT_DASHBOARD_ACCESS = 'ACCOUNT_DASHBOARD_ACCESS';
+const ACCOUNT_REFUNDS_ACCESS = 'ACCOUNT_REFUNDS_ACCESS';
 
 export const fetchAccountsApi = (data, params) => {
   return ajax(
@@ -46,6 +47,19 @@ export const toggleDashboardAccess = data => {
       appendModeInURL: true,
       accountId: data.accountId,
       data: { dashboard_access: data.dashboard_access },
+    }).then(response => response.data),
+  };
+};
+
+export const toggleAllowRefunds = data => {
+  return {
+    type: ACCOUNT_REFUNDS_ACCESS,
+    payload: merchantFetch({
+      url: 'la-merchants/reversals',
+      method: 'post',
+      appendModeInURL: true,
+      accountId: data.accountId,
+      data: { reversals: data.reversals_access },
     }).then(response => response.data),
   };
 };
