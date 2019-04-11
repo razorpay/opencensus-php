@@ -12,6 +12,7 @@ import homeReducer from 'merchantLA/modules/home';
 import settlementReducer from 'merchantLA/modules/settlements/details';
 import transferReducer from 'merchantLA/modules/marketplace/transfer';
 import reversalReducer from 'merchantLA/modules/marketplace/reversal';
+import creditsReducer from 'merchantLA/modules/credits';
 
 import {
   reversalsReducer,
@@ -36,5 +37,6 @@ export default combineReducers({
   transfer: transferReducer,
   reversal: reversalReducer,
   reversals: reversalsReducer,
+  credits: creditsReducer,
   reports: reportsReducer,
 });
