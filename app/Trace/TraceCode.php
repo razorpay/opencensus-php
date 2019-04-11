@@ -1033,8 +1033,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Gateway component error messages
 
     const GATEWAY_REQUEST_ERROR                                 = 'GATEWAY_REQUEST_ERROR';
-    const METHOD_DOWNTIME_CREATE                                = 'METHOD_DOWNTIME_CREATE';
-    const METHOD_DOWNTIME_EDIT                                  = 'METHOD_DOWNTIME_EDIT';
+    const PAYMENT_DOWNTIME_CREATE                               = 'PAYMENT_DOWNTIME_CREATE';
+    const PAYMENT_DOWNTIME_EDIT                                 = 'PAYMENT_DOWNTIME_EDIT';
     const PAYMENT_DOWNTIME_CREATE_JOB                           = 'PAYMENT_DOWNTIME_CREATE_JOB';
 
     const ADHOC_SETTLEMENT_CREATE_FAILED                        = 'ADHOC_SETTLEMENT_CREATE_FAILED';

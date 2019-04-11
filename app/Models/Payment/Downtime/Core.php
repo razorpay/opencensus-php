@@ -14,7 +14,7 @@ class Core extends Base\Core
     public function create(array $input): Entity
     {
         $this->trace->info(
-            TraceCode::METHOD_DOWNTIME_CREATE,
+            TraceCode::PAYMENT_DOWNTIME_CREATE,
             $input
         );
 
@@ -27,7 +27,7 @@ class Core extends Base\Core
 
     public function edit(Entity $downtime, array $input): Entity
     {
-        $this->trace->info(TraceCode::METHOD_DOWNTIME_EDIT, $input);
+        $this->trace->info(TraceCode::PAYMENT_DOWNTIME_EDIT, $input);
 
         $downtime->edit($input);
 

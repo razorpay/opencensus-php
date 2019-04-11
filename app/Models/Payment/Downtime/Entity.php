@@ -123,8 +123,12 @@ class Entity extends Base\PublicEntity
         {
             $instrument[self::BANK] = $this->getIssuer();
         }
+        else if ($this->getMethod() === Method::CARD)
+        {
+            $instrument[self::NETWORK] = $this->getNetwork();
+        }
 
-        $array[self::INSTRUMENT] = $instrument;
+        $array[self::INSTRUMENT] = array_filter($instrument);
     }
 
     // ================= Setters ================
@@ -144,5 +148,10 @@ class Entity extends Base\PublicEntity
     public function getIssuer()
     {
         return $this->getAttribute(self::ISSUER);
+    }
+
+    public function getNetwork()
+    {
+        return $this->getAttribute(self::NETWORK);
     }
 }
