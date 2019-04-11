@@ -31,27 +31,34 @@ const CustomInput = props => {
 
 /* Form fields of Payment Links */
 export default [
-  [
-    {
-      name: 'amount',
-      label: 'Amount',
-      type: 'tel',
-      placeholder: '0.00',
-      required: true,
-      addonBefore: '₹',
-      autoFocus: true,
-      validator: val => {
-        if (!isAmount(val)) {
-          const decimal = val && val.split('.');
-
-          if (decimal.length == 2 && decimal[1].length > 2) {
-            return 'Enter upto 2 decimals';
-          } else {
-            return 'Invalid Amount';
-          }
-        }
+  {
+    label: 'Amount',
+    inlineFields: [
+      {
+        name: 'currency',
+        _cmp: Input.CurrencySelect,
       },
-    },
+      {
+        name: 'amount',
+        type: 'tel',
+        placeholder: '0.00',
+        required: true,
+        autoFocus: true,
+        validator: val => {
+          if (!isAmount(val)) {
+            const decimal = val && val.split('.');
+
+            if (decimal.length == 2 && decimal[1].length > 2) {
+              return 'Enter upto 2 decimals';
+            } else {
+              return 'Invalid Amount';
+            }
+          }
+        },
+      },
+    ],
+  },
+  [
     {
       name: 'partial_payment',
       fieldLabel: (

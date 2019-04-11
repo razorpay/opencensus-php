@@ -127,6 +127,95 @@
 .Input--capitalize .Input-el
   text-transform: uppercase
 
+.Input--Currency
+  width: 60px
+  vertical-align: top
+
+  .Input-el
+    padding: 0
+    background: transparent
+    border: none
+
+  .PowerSelect
+    border-radius: 2px
+    padding: 0
+
+    &.PowerSelect--open
+      border-bottom: 1px solid $primary-color
+
+  .PowerSelect__TriggerLabel
+    padding: 0 0 0 12px
+    text-align: center
+
+    > div
+      width: 28px
+
+.Input--Currency-dropdown.PowerSelect__Tether
+  margin-top: 8px
+  min-width: 240px
+
+  &::before
+    content: ''
+    position: absolute
+    top: -9px
+    left: 20px
+    z-index: -1
+    width: 0
+    height: 0
+    border-left: 10px solid transparent
+    border-right: 10px solid transparent
+    border-bottom: 12px solid #ccc
+
+  &::after
+    content: ''
+    position: absolute
+    top: -8px
+    left: 22px
+    width: 0
+    height: 0
+    border-left: 8px solid transparent
+    border-right: 8px solid transparent
+    border-bottom: 10px solid #fff
+
+  .PowerSelect__OptGroup
+    padding-left: 0
+
+    &__Label
+      font-size: 14px
+      font-weight: 600
+      background: #fff
+      pointer-events: none
+      padding: 6px 8px
+      position: sticky
+      top: 0
+
+.Input--Currency-dropdown.PowerSelect__Menu
+  .PowerSelect__Options
+    padding: 0 8px 8px
+
+  .PowerSelect__Option
+    padding: 4px 8px
+
+    .round-flag
+      display: inline-block
+      border-radius: 50%
+      width: 14px
+      height: 14px
+      vertical-align: sub
+      margin-right: 8px
+      background: #eee
+
+    .i-check
+      display: none
+      float: right
+
+  .PowerSelect__Option--highlighted
+    font-weight: 600
+
+    .i-check
+      display: inline-block
+
+
 .Input--PowerDropdown
   .Input-elWrapper
     z-index: 9999

@@ -7,6 +7,7 @@ import PairList from './PairList';
 import EditablePairsList from './EditablePairList';
 import PowerDropdown from './PowerDropdown';
 import EnumList from './EnumList';
+import CurrencySelect from './CurrencySelect';
 
 export function inputClass({ props, state, className }) {
   let wrapperClass = 'Input';
@@ -614,3 +615,4 @@ const ToCalendar = _ => (
 Field.CalendarPicker = CalendarPicker;
 Field.ToCalendar = ToCalendar;
 Field.TimePicker = TimePicker;
+Field.CurrencySelect = CurrencySelect;

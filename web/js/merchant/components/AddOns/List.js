@@ -42,7 +42,7 @@ export default props => {
           <tr>
             <th>Add-on Id</th>
             <th>Name</th>
-            <th class="text-right">Amount/Unit (INR)</th>
+            <th class="text-right">Amount/Unit</th>
             <th>Created on</th>
             <th class="text-center">Remove</th>
           </tr>

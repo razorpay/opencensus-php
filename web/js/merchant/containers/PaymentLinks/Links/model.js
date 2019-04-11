@@ -12,7 +12,6 @@ import { trackFormSubmit } from './ga';
 export function createPaymentLink(payload) {
   const reqPayload = { ...payload };
   reqPayload.type = 'link';
-  reqPayload.currency = 'INR'; // TODO: Get is dynamically
 
   reqPayload.amount *= 100;
   reqPayload.expire_by &&

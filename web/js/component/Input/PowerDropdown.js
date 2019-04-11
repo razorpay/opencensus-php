@@ -1,27 +1,7 @@
 import { Label, Error, inputClass } from './index';
 import { classList } from 'common/util';
+import { setNativeValue } from 'rzp/utils/rzp-utils';
 import { findDOMNode } from 'react-dom';
-
-/*
-* Reference: https://github.com/facebook/react/issues/10135#issuecomment-314441175
-*
-* This is helper fn. as a work around for dispatching manual events on native elements.
-*
-* */
-function setNativeValue(element, value) {
-  const valueSetter = Object.getOwnPropertyDescriptor(element, 'value').set;
-  const prototype = Object.getPrototypeOf(element);
-  const prototypeValueSetter = Object.getOwnPropertyDescriptor(
-    prototype,
-    'value'
-  ).set;
-
-  if (valueSetter && valueSetter !== prototypeValueSetter) {
-    prototypeValueSetter.call(element, value);
-  } else {
-    valueSetter.call(element, value);
-  }
-}
 
 /*
  * Returns object or value inside that object at a given level

@@ -1,4 +1,3 @@
-import AsyncButton from 'react-async-button';
 import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
@@ -8,8 +7,7 @@ import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
-import Alert from 'rzp/ui/Forms/Alert';
-import Amount from 'rzp/ui/Amount';
+import { AmountTooltip } from 'rzp/ui/Amount';
 import {
   isBlank,
   rupeesToPaise,
@@ -236,7 +234,11 @@ export default class RefundModal extends Component {
             <div class="form-group">
               <label class="label-required">Refund Amount</label>
               <div class="input-group">
-                <div class="input-group-addon">{payment.currency}</div>
+                <AmountTooltip
+                  currency={payment.currency}
+                  parentQuerySelector=".ReactModal__Overlay .ReactModal__Content"
+                  customClass="input-group-addon"
+                />
                 <Field
                   name="amount"
                   component={InputField}
