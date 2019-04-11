@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 import { prefixEntityValue } from 'common/data';
 
 import Time from 'rzp/ui/Time';
@@ -54,9 +56,9 @@ const AccountsListItem = ({
   return (
     <EntityItemRow id={account.id}>
       <td>
-        <a onClick={onEdit}>
+        <Link to={`accounts/${account.id}`}>
           <code>{prefixEntityValue('account', account.id)}</code>
-        </a>
+        </Link>
       </td>
       <td>
         {showEditAccountModal && noLAEmail ? (

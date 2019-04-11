@@ -22,6 +22,7 @@ import DisputeDetails from 'merchant/containers/Disputes/Details';
 import SubmerchantDetails from 'merchant/containers/PartnerDashboard/SubMerchant/Entity';
 import CommissionDetails from 'merchant/containers/PartnerDashboard/Commissions/Entity';
 import AuthLink from 'merchant/containers/Subscriptions/AuthLinks/Entity';
+import AccountDetailsNew from 'merchant/containers/Marketplace/Accounts/DetailsNew';
 
 import Token from 'merchant/containers/Subscriptions/Tokens/Entity';
 
@@ -82,6 +83,7 @@ const entityDetailsMap = {
   },
 
   '/route/payments/:id': { component: PaymentsDetails },
+  '/route/accounts/:id': { component: AccountDetailsNew },
   '/virtualaccounts/:id': { component: VirtualAccountDetails },
   '/plans/new': { component: PlanNew },
   '/plans/:id': { component: PlanDetails },
