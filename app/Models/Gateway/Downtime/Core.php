@@ -308,8 +308,18 @@ class Core extends Base\Core
             $mode = Mode::TEST;
         }
 
+        // If explicitly sent in the request, use it. This allows for using
+        // test mode on production if ever needed for direct auth routes.
+        $modeHeader = $app['request']->headers->get('Razorpay-Mode');
+
+        if (empty($modeHeader) === false)
+        {
+            $mode = $modeHeader;
+        }
+
         // In almost all flows except unit tests and direct auth requests,
-        // rzp.mode should be used as source of truth for mode
+        // rzp.mode should be used as source of truth for mode. If this is
+        // already set, then it should get highest precedence.
         if (isset($app['rzp.mode']) === true)
         {
             $mode = $app['rzp.mode'];
