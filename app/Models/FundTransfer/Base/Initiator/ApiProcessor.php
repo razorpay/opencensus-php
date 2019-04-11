@@ -79,6 +79,8 @@ abstract class ApiProcessor extends NodalAccount
 
     public $requestTrace;
 
+    public $ftaId = null;
+
     public function method(string $method): self
     {
         $this->method = $method;
@@ -277,6 +279,7 @@ abstract class ApiProcessor extends NodalAccount
         $this->trace->info(
             $this->responseTraceCode,
             [
+                'fta_id'        => $this->ftaId,
                 'channel'       => $this->channel,
                 'response_body' => $response->body,
             ]);

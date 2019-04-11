@@ -7,6 +7,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Models\FundTransfer\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\FundTransfer;
 use RZP\Models\Settlement;
@@ -15,15 +16,16 @@ use RZP\Constants\Timezone;
 use RZP\Services\Beam\Service;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Exception\LogicException;
-use RZP\Models\Settlement\Channel;
 use RZP\Models\Vpa\Entity as VpaEntity;
 use RZP\Models\Card\Entity as CardEntity;
+use RZP\Models\Card\Issuer as CardIssuer;
 use RZP\Models\FundTransfer\Base\Initiator;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
-use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
+use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
+use RZP\Models\FundTransfer\Attempt\Constants as AttemptConstants;
 
 class Core extends Base\Core
 {
@@ -53,7 +55,7 @@ class Core extends Base\Core
         {
             $this->dispatchForTransfer($fundTransferAttempt);
         }
-        else
+        else if ($fundTransferAttempt->getIsFTS() === true)
         {
             $this->sendFTSFundTransferRequest($fundTransferAttempt);
         }
@@ -63,7 +65,7 @@ class Core extends Base\Core
 
     public function createWithCard(Base\Entity $source, CardEntity $card, array $values = []): Entity
     {
-        $fundTransferAttempt = $this->create($source, $values);
+        $fundTransferAttempt = $this->create($source, $values, $card);
 
         // TODO: Make this polymorphic instead of having bankAccount and vpa separately
         $fundTransferAttempt->card()->associate($card);
@@ -75,7 +77,10 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($fundTransferAttempt);
 
-        $this->sendFTSFundTransferRequest($fundTransferAttempt);
+        if ($fundTransferAttempt->getIsFTS() === true)
+        {
+            $this->sendFTSFundTransferRequest($fundTransferAttempt);
+        }
 
         return $fundTransferAttempt;
     }
@@ -112,7 +117,10 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($fundTransferAttempt);
 
-        $this->sendFTSFundTransferRequest($fundTransferAttempt);
+        if ($fundTransferAttempt->getIsFTS() === true)
+        {
+            $this->sendFTSFundTransferRequest($fundTransferAttempt);
+        }
 
         return $fundTransferAttempt;
     }
@@ -121,6 +129,7 @@ class Core extends Base\Core
      * @param array $input
      *
      * @return array
+     * @throws LogicException
      */
     public function nodalFileUploadThroughBeam(array $input): array
     {
@@ -180,12 +189,104 @@ class Core extends Base\Core
     }
 
     /**
-     * @param Base\Entity $source - currently refund entity
-     * @param array       $values Attributes of the created FTA
+     * It'll evaluate the given source and card details
+     * it'll provide the channel from which transfer has to be done
+     * and also whether to route it through FTS or not
+     *
+     * @param Base\Entity     $source
+     * @param string          $sourceType
+     * @param CardEntity|null $card
+     * @return array
+     *
+     * TODO: refactor this section so that we dont have to use `shouldUseGateway` and `getChannelForTransfer`
+     * for different reasons. A single method should give us which path should be chosen
+     */
+    protected function getChannelForTransfer(Base\Entity $source, string $sourceType, CardEntity $card = null): array
+    {
+        if (in_array($sourceType, AttemptConstants::ALLOWED_PRODUCTS_ON_FTS, true) === true)
+        {
+            $amount = $source->getAmount();
+
+            $mode = Mode::IMPS;
+
+            //
+            // only imps is supported for now
+            //
+            if($amount >= NodalAccount::MAX_IMPS_AMOUNT)
+            {
+                return [false, Settlement\Channel::YESBANK];
+            }
+
+            $redis = $this->app['redis']->connection();
+
+            $validCardRefund = $this->isFTSSupportedCardRefund($card);
+
+            $supportedModes = $redis->hget(ConfigKey::FTS_CHANNELS, Settlement\Channel::ICICI);
+
+            $supportedModes = explode(',', $supportedModes);
+
+            //
+            // check if card is valid and channel is active to accept traffic at FTS side
+            //
+            if (($validCardRefund === false) or
+                (in_array($mode, $supportedModes, true) === false))
+            {
+                return [false, Settlement\Channel::YESBANK];
+            }
+
+            $randomValue = mt_rand(1, 100);
+            $requestThreshold = (int) $this->app['cache']->get(ConfigKey::FTS_ROUTE_PERCENTAGE);
+
+            if ($randomValue <= $requestThreshold)
+            {
+                return [true, Settlement\Channel::ICICI];
+            }
+        }
+
+        return [false, Settlement\Channel::YESBANK];
+    }
+
+    /**
+     * This will check if its a valid card payout which is supported by FTS
+     *
+     * @param CardEntity|null $card
+     * @return bool
+     */
+    protected function isFTSSupportedCardRefund(CardEntity $card = null): bool
+    {
+        if ($card === null)
+        {
+            return false;
+        }
+
+        $iin = $card->iinRelation;
+
+        if ($iin === null)
+        {
+            return false;
+        }
+
+        //
+        // No intense checks are added here as those will be taken care while refund is been created
+        //
+        $cardIssuer = $iin->getIssuer();
+
+        if ($cardIssuer !== CardIssuer::ICIC)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param Base\Entity     $source - currently refund entity
+     * @param array           $values Attributes of the created FTA
+     * @param CardEntity|null $card
      *
      * @return Entity
      */
-    protected function create(Base\Entity $source, array $values = [])
+    protected function create(Base\Entity $source, array $values = [], CardEntity $card = null)
     {
         $fundTransferAttempt = new Entity;
 
@@ -193,7 +294,7 @@ class Core extends Base\Core
 
         $fundTransferAttempt->source()->associate($source);
 
-        $channel = $this->getChannelForTransfer($source, $fundTransferAttempt->getSourceType());
+        list($isFTS, $channel) = $this->getChannelForTransfer($source, $fundTransferAttempt->getSourceType(), $card);
 
         $defaultValues = [
             Entity::INITIATE_AT => Carbon::now(Timezone::IST)->getTimestamp(),
@@ -201,6 +302,7 @@ class Core extends Base\Core
             Entity::VERSION     => Version::V3,
             Entity::STATUS      => Status::CREATED,
             Entity::PURPOSE     => Purpose::REFUND,
+            Entity::IS_FTS      => $isFTS,
         ];
 
         $values = array_merge($defaultValues, $values);
@@ -208,28 +310,6 @@ class Core extends Base\Core
         $fundTransferAttempt->fillAndGenerateId($values);
 
         return $fundTransferAttempt;
-    }
-
-    protected function getChannelForTransfer(Base\Entity $source, string $sourceType): string
-    {
-        if (in_array($sourceType, [Constants\Entity::REFUND], true) === true)
-        {
-            $amount = $source->getAmount();
-
-            if ($amount < Initiator\NodalAccount::MAX_IMPS_AMOUNT)
-            {
-                $randomValue = mt_rand(1, 100);
-
-                $requestThreshold = (int) $this->app['cache']->get(ConfigKey::FTS_REQUEST_THRESHOLD);
-
-                if ($randomValue <= $requestThreshold)
-                {
-                    return Settlement\Channel::ICICI;
-                }
-            }
-        }
-
-        return Settlement\Channel::YESBANK;
     }
 
     /**
@@ -369,6 +449,7 @@ class Core extends Base\Core
 
     public function updateFundTransfer(array $input)
     {
+        // TODO: should support bulk updates
         try
         {
             if (array_key_exists(Entity::STATUS, $input) === true)
@@ -382,9 +463,15 @@ class Core extends Base\Core
 
             $fta = $this->repo->fund_transfer_attempt->getAttemptByFTSTransferId($input[Entity::FUND_TRANSFER_ID]);
 
-            if($fta === null)
+            if(($fta === null) and
+               (isset($input[Entity::SOURCE_ID]) === true) and
+               (isset($input[Entity::SOURCE_TYPE]) === true))
             {
-                $fta = $this->repo->fund_transfer_attempt->getAttemptBySourceId($input[Entity::SOURCE_ID]);
+                $fta = $this->repo
+                            ->fund_transfer_attempt
+                            ->getFTSAttemptBySourceId(
+                                $input[Entity::SOURCE_ID],
+                                $input[Entity::SOURCE_TYPE]);
 
                 $fta->setFTSTransferId($input[Entity::FUND_TRANSFER_ID]);
             }
@@ -400,8 +487,8 @@ class Core extends Base\Core
 
             $fta->source->fill($input);
 
-            $this->repo->transaction(function() use ($fta){
-
+            $this->repo->transaction(function() use ($fta)
+            {
                 $this->repo->fund_transfer_attempt->saveOrFail($fta);
 
                 $this->repo->saveOrFail($fta->source);

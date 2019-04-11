@@ -4869,5 +4869,8 @@ ALTER TABLE paysecure
 ALTER TABLE bank_transfers
     MODIFY COLUMN payee_account VARCHAR(255) NOT NULL;
 
+ALTER TABLE fund_transfer_attempts
+    ADD COLUMN is_fts INT(1) DEFAULT 0 AFTER status;
+
 ALTER TABLE payouts
     MODIFY notes TEXT DEFAULT NULL;

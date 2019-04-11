@@ -259,7 +259,6 @@ class FundTransfer extends Base
 
     /**
      * @param array $responseBody
-     * @throws LogicException
      */
     protected function updateFTA(array $responseBody)
     {
