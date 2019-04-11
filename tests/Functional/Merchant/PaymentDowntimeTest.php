@@ -18,7 +18,22 @@ class PaymentDowntimeTest extends TestCase
 
         parent::setUp();
 
+        $this->enablePaymentDowntimes();
+
         $this->ba->privateAuth();
+    }
+
+    protected function enablePaymentDowntimes()
+    {
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent([
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                'config:enable_payment_downtimes' => '1',
+            ],
+        ]);
     }
 
     public function testGetUpiDowntimeForAllGateways()

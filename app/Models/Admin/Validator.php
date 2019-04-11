@@ -50,14 +50,15 @@ class Validator extends Base\Validator
         ConfigKey::HEARTBEAT_ENABLED                  => 'filled|boolean',
         ConfigKey::HEARTBEAT_FORCE_RUN                => 'filled|boolean',
         ConfigKey::HEARTBEAT_MOCK                     => 'filled|boolean',
-        ConfigKey::HEARTBEAT_TIME_THRESHOLD       => 'filled|integer',
-        ConfigKey::HEARTBEAT_TRAFFIC_PERCENTAGE   => 'filled|integer',
-        ConfigKey::HEARTBEAT_SLAVE_TIME_THRESHOLD => 'filled|integer',
-        ConfigKey::HEARTBEAT_ROUTES               => 'filled|array',
-        ConfigKey::HITACHI_DYNAMIC_DESCR_ENABLED  => 'filled|boolean',
-        ConfigKey::CPS_SERVICE_ENABLED            => 'filled|boolean',
-        ConfigKey::SETTLEMENT_TRANSACTION_LIMIT   => 'filled|integer',
-        ConfigKey::FTS_ROUTE_PERCENTAGE           => 'filled|integer',
+        ConfigKey::HEARTBEAT_TIME_THRESHOLD           => 'filled|integer',
+        ConfigKey::HEARTBEAT_TRAFFIC_PERCENTAGE       => 'filled|integer',
+        ConfigKey::HEARTBEAT_SLAVE_TIME_THRESHOLD     => 'filled|integer',
+        ConfigKey::HEARTBEAT_ROUTES                   => 'filled|array',
+        ConfigKey::HITACHI_DYNAMIC_DESCR_ENABLED      => 'filled|boolean',
+        ConfigKey::CPS_SERVICE_ENABLED                => 'filled|boolean',
+        ConfigKey::SETTLEMENT_TRANSACTION_LIMIT       => 'filled|integer',
+        ConfigKey::FTS_ROUTE_PERCENTAGE               => 'filled|integer',
+        ConfigKey::ENABLE_PAYMENT_DOWNTIMES           => 'filled|boolean',
     ];
 
     protected static $setRedisKeysRules = [

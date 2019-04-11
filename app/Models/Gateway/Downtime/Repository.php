@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Jobs\PaymentDowntime;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base\PublicCollection;
 
 class Repository extends Base\Repository
@@ -56,11 +57,10 @@ class Repository extends Base\Repository
 
         // Every update of gateway downtimes table should
         // queue a refresh of the payment downtimes table
-        //
-        // Running this only in tests till PaymentDowntime logic is more thoroughly tested.
-        $app = \App::getFacadeRoot();
+        $paymentDowntimesEnabled = (bool) ConfigKey::get(ConfigKey::ENABLE_PAYMENT_DOWNTIMES, false);
 
-        if ($app->runningUnitTests() === true);
+        // Will enable on prod after PaymentDowntime logic is more thoroughly tested.
+        if ($paymentDowntimesEnabled === true)
         {
             PaymentDowntime::dispatch($this->app['rzp.mode']);
         }
