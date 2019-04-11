@@ -4,7 +4,7 @@ namespace RZP\Models\Gateway\File\Processor\Emi;
 
 use Carbon\Carbon;
 
-use RZP\Constants\Mode;
+use RZP\Encryption;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
@@ -19,6 +19,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
+use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Services\Beam\Constants as BeamConstants;
 
 class Sbi extends Base
@@ -29,12 +30,18 @@ class Sbi extends Base
     const FILE_NAME         = 'GGCMS1';
     const BEAM_FILE_TYPE    = 'emi';
 
-    const TEST_ENCRYPTION_KEY = 'T8DIATjuwS';
+    const TEST_ENCRYPTION_KEY = 'T8DIATjuwST8DIATjuwST8DIATjuwS22';
+
+    const TEST_ENCRYPTION_IV = '123456789012';
+
+    const S3_PATH = 'sbi_emi/';
 
     /**
      * @var $file FileStore\Entity
      */
     protected $file;
+
+    protected $iv;
 
     /**
      * Implements \RZP\Models\Gateway\File\Processor\Base::fetchEntities().
@@ -62,16 +69,23 @@ class Sbi extends Base
 
     public function generateEmiFilePassword()
     {
-        if ($this->app->environment(Environment::TESTING))
+        if ($this->app->environment(Environment::TESTING) === true)
         {
             return self::TEST_ENCRYPTION_KEY;
         }
 
-        return bin2hex(openssl_random_pseudo_bytes(256));
+        return openssl_random_pseudo_bytes(32);
+    }
+
+    // Don't send the encryption key over email
+    protected function sendEmiPassword($data)
+    {
+        return;
     }
 
     /**
      * Implements \RZP\Models\Gateway\File\Processor\Base::createFile($data).
+     * @param $data
      * @throws GatewayFileException
      */
     public function createFile($data)
@@ -85,22 +99,32 @@ class Sbi extends Base
         {
             $fileData = $this->formatDataForFile($data);
 
-            $fileName = $this->getFileToWriteName();
+            $fileName = self::S3_PATH . $this->getFileToWriteName();
 
             $metadata = $this->getH2HMetadata();
 
             $creator = new FileStore\Creator;
+
+            $this->iv = openssl_random_pseudo_bytes(12);
+
+            if ($this->app->environment(Environment::TESTING) === true)
+            {
+                $this->iv = self::TEST_ENCRYPTION_IV;
+            }
+
+            $encryptionParams = [
+                Encryption\AesGcmEncryption::SECRET => $data['password'],
+                Encryption\AesGcmEncryption::IV     => $this->iv,
+            ];
 
             $creator->extension(static::EXTENSION)
                     ->content($fileData)
                     ->name($fileName)
                     ->store(FileStore\Store::S3)
                     ->encrypt(
-                        Service::ENCRYPTION_TYPE,
-                        [
-                            'mode'   => Service::ENCRYPTION_MODE,
-                            'secret' => $data['password'],
-                        ])
+                        Encryption\Type::AES_GCM_ENCRYPTION,
+                        $encryptionParams
+                    )
                     ->type(static::FILE_TYPE)
                     ->entity($this->gatewayFile)
                     ->metadata($metadata);
@@ -329,18 +353,25 @@ class Sbi extends Base
 
     protected function sendEmiFile($data)
     {
-        // todo: Push to beam once decryption is handled at beam side
-        /*
         $fullFileName = $this->file->getName() . '.' . $this->file->getExtension();
 
         $fileInfo = [$fullFileName];
 
+        $bucketConfig = $this->getBucketConfig();
+
         $data =  [
             Service::BEAM_PUSH_FILES   => $fileInfo,
-            Service::BEAM_PUSH_JOBNAME => BeamConstants::SBI_EMI_FILE_JOB_NAME
+            Service::BEAM_PUSH_JOBNAME => BeamConstants::SBI_EMI_FILE_JOB_NAME,
+            Service::BEAM_PUSH_BUCKET_NAME => $bucketConfig['name'],
+            Service::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
+            Service::BEAM_PUSH_DECRYPTION => [
+                Service::BEAM_PUSH_DECRYPTION_TYPE => Service::BEAM_PUSH_DECRYPTION_TYPE_AES256,
+                Service::BEAM_PUSH_DECRYPTION_MODE => Service::BEAM_PUSH_DECRYPTION_MODE_GCM,
+                Service::BEAM_PUSH_DECRYPTION_KEY  => bin2hex($data['password']),
+                Service::BEAM_PUSH_DECRYPTION_IV   => bin2hex($this->iv),
+            ]
         ];
 
-        // In seconds
         $timelines = [];
 
         $mailInfo = [
@@ -352,7 +383,17 @@ class Sbi extends Base
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
-        */
+    }
+
+    protected function getBucketConfig()
+    {
+        $config = $this->app['config']->get('filestore.aws');
+
+        $bucketType = Bucket::getBucketConfigName(static::FILE_TYPE, $this->env);
+
+        $bucketConfig = $config[$bucketType];
+
+        return $bucketConfig;
     }
 
     protected function getFileToWriteName()
