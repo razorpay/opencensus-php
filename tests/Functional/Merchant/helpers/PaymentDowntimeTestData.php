@@ -197,4 +197,70 @@ return [
             ],
         ],
     ],
+
+    'testGetCardDowntimeForSingleNetworkHdfcGateway' => [
+        'request' => [
+            'url' => '/methods/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'     => 'payment.downtime',
+                        'method'     => 'card',
+                        'end'        => null,
+                        'status'     => 'scheduled',
+                        'scheduled'  => false,
+                        'severity'   => 'low',
+                        'instrument' => [
+                            'network' => 'DICL'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCardDowntimeForIndividualGateways' => [
+        'request' => [
+            'url' => '/methods/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'     => 'payment.downtime',
+                        'method'     => 'card',
+                        'end'        => null,
+                        'status'     => 'scheduled',
+                        'scheduled'  => false,
+                        'severity'   => 'low',
+                        'instrument' => [
+                            'network' => 'RUPAY',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetNoCardDowntimeForSingleGateway' => [
+        'request' => [
+            'url' => '/methods/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+        ],
+    ],
 ];
