@@ -28,6 +28,7 @@ export default class CreditsListContainer extends Component {
       <CreditsDetails
         currentUser={this.props.user.current}
         trackToggleHistory={trackToggleHistory}
+        showDocumentation={false}
         {...this.props.credits}
       />
     );
