@@ -1,4 +1,4 @@
-import { groupBy } from './rzp-utils';
+import { groupBy, arrayToObject } from './rzp-utils';
 
 export const OTHERS = 'Others';
 export const MOBILE_SDK = 'Mobile SDK';
@@ -133,4 +133,25 @@ export const getDefaultPaymentFilter = (startTime, endTime) => {
       gt: 0,
     },
   };
+};
+
+export const groupCommissionsData = data => {
+  const groupedData = {};
+  Object.keys(data).forEach(key => {
+    groupedData[key] = arrayToObject(data[key].result, formatData);
+  });
+
+  return Object.keys(groupedData.activeMerchants)
+    .map(timestamp => ({
+      timestamp,
+      activeMerchants: groupedData.activeMerchants[timestamp],
+      earnings: groupedData.earnings[timestamp],
+      transactionVolume: groupedData.transactionVolume[timestamp],
+      transactions: groupedData.transactions[timestamp],
+    }))
+    .sort((a, b) => b.timestamp - a.timestamp);
+
+  function formatData({ timestamp, value }) {
+    return { key: timestamp, value };
+  }
 };

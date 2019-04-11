@@ -11,8 +11,8 @@ import DataTable from 'rzp/ui/Table/DataTable';
 const date = {
   title: 'Date',
   value: item => (
-    <Link to={`/partners/earnings/daily/${item.date}`}>
-      {moment(item.date, 'X').format('ll')}
+    <Link to={`/partners/earnings/daily/${item.timestamp}`}>
+      {moment(item.timestamp, 'X').format('ll')}
     </Link>
   ),
 };
@@ -24,7 +24,7 @@ const earnings = {
 
 const volume = {
   title: 'Transaction Volume',
-  value: item => <Amount value={item.volume} currency={'INR'} />,
+  value: item => <Amount value={item.transactionVolume} currency={'INR'} />,
 };
 
 const activeMerchants = {

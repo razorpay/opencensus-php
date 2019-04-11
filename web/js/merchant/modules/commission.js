@@ -12,7 +12,7 @@ export const fetchCommission = id => ({
 
 export default makeEntityReducer(COMMISSION_FETCH);
 
-export const fetchAggregate = () => ({
+export const fetchAggregate = params => ({
   type: COMMISSION_AGGREGATE_FETCH,
-  payload: new Commission().fetchAggregateData(),
+  payload: new Commission().fetchAggregateData(params),
 });
