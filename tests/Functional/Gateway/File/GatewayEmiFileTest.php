@@ -317,6 +317,13 @@ class GatewayEmiFileTest extends TestCase
          Queue::assertPushed(BeamJob::class, 1);
 
          Queue::assertPushedOn('general_test', BeamJob::class);
+
+        Mail::assertQueued(EmiMail\File::class, function ($mail)
+        {
+            $this->assertEmpty($mail->attachments);
+
+            return $mail->hasTo('emi.ops@sbicard.com');
+        });
     }
 
     public function testGenerateEmiFileForSbiWithDuplicateSbiEmiTerminal()

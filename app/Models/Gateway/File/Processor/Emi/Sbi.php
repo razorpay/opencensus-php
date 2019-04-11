@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Gateway\File\Processor\Emi;
 
+use Mail;
 use Carbon\Carbon;
 
 use RZP\Encryption;
@@ -12,6 +13,7 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
+use RZP\Mail\Emi as EmiMail;
 use RZP\Constants\Environment;
 use RZP\Services\Beam\Service;
 use RZP\Models\Merchant\Detail;
@@ -383,6 +385,28 @@ class Sbi extends Base
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+
+        $this->sendConfirmationMail($data);
+    }
+
+    protected function sendConfirmationMail($data)
+    {
+        $recipients = $this->gatewayFile->getRecipients();
+
+        $date = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)->format('d-M-y');
+
+        $data = [
+            'body' => "Hi,\n\nThe transaction file for " . $date . " has been shared over SFTP. Please check and confirm."
+        ];
+
+        $emiFileMail = new EmiMail\File(
+            'SBI',
+            [],
+            $recipients,
+            $data
+        );
+
+        Mail::queue($emiFileMail);
     }
 
     protected function getBucketConfig()
