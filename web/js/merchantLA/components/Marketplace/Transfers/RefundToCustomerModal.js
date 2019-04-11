@@ -6,8 +6,9 @@ import { openModal, closeModal } from 'rzp/modules/modals';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import { reverseTransfer } from 'merchantLA/modules/marketplace/transfer';
-import { Field, reduxForm, formValueSelector } from 'redux-form';
+import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form';
 import InputField from 'rzp/ui/Forms/InputField';
+import NotesFieldArray from 'merchant/components/NotesFieldArray';
 import { rupeesToPaise, paiseToRupees, titleCase } from 'rzp/utils/rzp-utils';
 import {
   fetchTransfer,
@@ -40,6 +41,10 @@ const selector = formValueSelector('refundModal');
   form: 'refundModal',
 })
 export default class RefundToCustomerModal extends React.Component {
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
+
   constructor() {
     super(...arguments);
     this.state = {
@@ -53,59 +58,89 @@ export default class RefundToCustomerModal extends React.Component {
     this.props.initialize({
       partial: false,
       amount: (payment.amount - payment.amount_reversed) / 100 + '',
+      notes: [{}],
     });
   }
 
   save = props => {
-    const hasAmountErrors = amountValidation(this.props);
+    this.context
+      .confirm({
+        header: 'Are you sure you want to reverse this transfer?',
+        message: null,
+        affirmativeLabel: 'Yes, Reverse',
+        affirmativePendingLabel: 'Reversing...',
+        abortLabel: "No, don't!",
+        action: () => {
+          const hasAmountErrors = amountValidation(this.props);
 
-    if (hasAmountErrors) {
-      return;
-    }
+          if (hasAmountErrors) {
+            return;
+          }
 
-    const { payment, transfer: { id }, reverseTransfer } = this.props,
-      partial = isPartialPayment(this.props),
-      data = {
-        amount: rupeesToPaise(props.amount),
-      };
+          const { payment, transfer: { id }, reverseTransfer } = this.props,
+            partial = isPartialPayment(this.props);
+          let transformedNotes = props.notes,
+            data = {
+              amount: rupeesToPaise(props.amount),
+            };
 
-    if (!partial) {
-      data.amount = payment.amount - payment.amount_reversed;
-    }
+          if (!partial) {
+            data.amount = payment.amount - payment.amount_reversed;
+          }
 
-    this.setState({
-      isLoading: true,
-    });
+          if (transformedNotes && transformedNotes.length > 0) {
+            transformedNotes = transformedNotes.reduce((result, current) => {
+              result[current.key] = current.value;
+              if (current.also_linked_account) {
+                linked_account_notes.push(current.key);
+              }
+              return result;
+            }, {});
+          }
 
-    return reverseTransfer(id, {
-      ...data,
-      customer_refund: true,
-    })
-      .then(_ => {
-        this.props.showNotification({
-          type: 'success',
-          message: 'Payment refunded',
-          closeTimeout: 5000,
-        });
+          if (transformedNotes) {
+            data = {
+              ...(data || {}),
+              notes: transformedNotes,
+            };
+          }
 
-        new Promise.all([
-          this.props.fetchTransfer(id),
-          this.props.fetchReversals(id),
-        ]);
+          this.setState({
+            isLoading: true,
+          });
 
-        this.props.closeModal();
+          return reverseTransfer(id, {
+            ...data,
+            customer_refund: true,
+          })
+            .then(_ => {
+              this.props.showNotification({
+                type: 'success',
+                message: 'Payment refunded',
+                closeTimeout: 5000,
+              });
+
+              new Promise.all([
+                this.props.fetchTransfer(id),
+                this.props.fetchReversals(id),
+              ]);
+
+              this.props.closeModal();
+            })
+            .catch(({ errors }) => {
+              this.props.showNotification({
+                type: 'error',
+                message: errors,
+                closeTimeout: 5000,
+              });
+
+              this.setState({
+                isLoading: false,
+              });
+            });
+        },
       })
-      .catch(({ errors }) => {
-        this.props.showNotification({
-          type: 'error',
-          message: errors,
-          closeTimeout: 5000,
-        });
-
-        this.setState({
-          isLoading: false,
-        });
-      });
+      .catch(() => {});
   };
 
   render() {
@@ -145,6 +180,15 @@ export default class RefundToCustomerModal extends React.Component {
                   {!partial && <span>Change amount for a partial refund.</span>}
                 </small>
               )}
+            </div>
+            <div className="form-group">
+              <label>Internal Notes</label>
+              <FieldArray
+                name="notes"
+                component={NotesFieldArray}
+                showLinkedAccountOpt={false}
+                customAddMsg="+ Add New"
+              />
             </div>
             <Button.Primary class="form-control">
               {isLoading ? (
