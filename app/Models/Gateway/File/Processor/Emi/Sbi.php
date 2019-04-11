@@ -386,10 +386,10 @@ class Sbi extends Base
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
 
-        $this->sendConfirmationMail($data);
+        $this->sendConfirmationMail();
     }
 
-    protected function sendConfirmationMail($data)
+    protected function sendConfirmationMail()
     {
         $recipients = $this->gatewayFile->getRecipients();
 
