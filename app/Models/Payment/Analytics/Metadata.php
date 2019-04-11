@@ -54,11 +54,19 @@ class Metadata
     ];
 
     // Library values
+    //
+    // Regular checkout: Our code, our design, most of our livelihood
     const CHECKOUTJS    = 'checkoutjs';
+    // Custom checkout: Still our code, but not as good-looking
     const RAZORPAYJS    = 'razorpayjs';
-    const DIRECT        = 'direct';
+    // Custom checkout (Android): Still our code, but not as good-looking
     const CUSTOM        = 'custom';
+    // Fake checkout: Not our code, merchant imitating checkout on public auth
+    const DIRECT        = 'direct';
+    // Fake checkout: Not our code, merchant imitating checkout on private auth
     const S2S           = 's2s';
+    // No checkout: Our code, merchant not involved, for push payments only
+    const PUSH          = 'push';
 
     const LIBRARY_VALUES = [
         self::CHECKOUTJS    => 1,
@@ -66,6 +74,7 @@ class Metadata
         self::S2S           => 3,
         self::CUSTOM        => 4,
         self::DIRECT        => 5,
+        self::PUSH          => 6,
     ];
 
     // Browser values

@@ -1355,12 +1355,14 @@ class Gateway
     public static $onlyAuthorizationGateway = [
         Gateway::HITACHI,
         Gateway::CYBERSOURCE,
+        Gateway::AXIS_MIGS,
         Gateway::ENACH_RBL,
     ];
 
     public static $authorizationAuthenticationGatewayMap = [
         Gateway::HITACHI     => Gateway::MPI_BLADE,
         Gateway::CYBERSOURCE => Gateway::CYBERSOURCE,
+        Gateway::AXIS_MIGS   => Gateway::AXIS_MIGS,
     ];
 
     public static $subscriptionOverOneYearGateways = [

@@ -314,6 +314,10 @@ class Processor
         {
             (new Payment\Analytics\Service)->setMetadataForPublicAuthPayment($input);
         }
+        else if ($this->app['basicauth']->isAppAuth() === true)
+        {
+            (new Payment\Analytics\Service)->setMetadataForAppAuthPayment($input);
+        }
     }
 
     public function getPayment(): Payment\Entity

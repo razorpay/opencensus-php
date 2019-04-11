@@ -4871,3 +4871,6 @@ ALTER TABLE bank_transfers
 
 ALTER TABLE fund_transfer_attempts
     ADD COLUMN is_fts INT(1) DEFAULT 0 AFTER status;
+
+ALTER TABLE payouts
+    MODIFY notes TEXT DEFAULT NULL;

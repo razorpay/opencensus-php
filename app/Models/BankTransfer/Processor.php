@@ -283,6 +283,9 @@ class Processor extends VirtualAccount\Processor
             Payment\Entity::METHOD      => Payment\Method::BANK_TRANSFER,
             Payment\Entity::AMOUNT      => $bankTransfer->getAmount(),
             Payment\Entity::DESCRIPTION => $bankTransfer->getDescription() ?? '',
+            '_'                         => [
+                Payment\Analytics\Entity::LIBRARY => Payment\Analytics\Metadata::PUSH,
+            ],
         ];
 
         $paymentArray = array_merge($paymentArray, $parentPaymentArray);

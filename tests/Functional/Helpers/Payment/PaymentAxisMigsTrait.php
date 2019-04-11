@@ -17,14 +17,19 @@ trait PaymentAxisMigsTrait
 
         if ($mock)
         {
-            $url = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
+            $data = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
         }
         else
         {
-            $url = $this->runAxisMigsGatewayAutomation($url, $method, $values);
+            $data = $this->runAxisMigsGatewayAutomation($url, $method, $values);
         }
 
-        return $this->submitPaymentCallbackRedirect($url);
+        if (is_array($data) === true)
+        {
+            return $this->submitPaymentCallbackRequest($data);
+        }
+
+        return $this->submitPaymentCallbackRedirect($data);
     }
 
     protected function failAuthorizePayment(array $replace = array())

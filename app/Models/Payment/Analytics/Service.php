@@ -66,5 +66,18 @@ class Service extends Base\Service
         }
     }
 
-
+    /**
+     * If a payment is being made over app auth, then it's coming not from the
+     * merchant, but directly via a bank side integration. This is applicable for
+     * push payments, like bank transfers (for virtual accounts) and BharatQR.
+     *
+     * @param  array $input
+     */
+    public function setMetadataForAppAuthPayment(array & $input)
+    {
+        if (isset($input['_'][Entity::LIBRARY]) === false)
+        {
+            $input['_'][Entity::LIBRARY] = Metadata::PUSH;
+        }
+    }
 }
