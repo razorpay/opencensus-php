@@ -286,7 +286,15 @@ class Entity extends Base\PublicEntity
 
     protected function generateSettledBy($input)
     {
-        $this->setAttribute(self::SETTLED_BY, $this->payment->getSettledBy());
+        // If terminal has support for direct settlement for refunds
+        if ($this->isDirectSettlementRefund() === true)
+        {
+            $this->setAttribute(self::SETTLED_BY, $this->payment->getSettledBy());
+        }
+        else
+        {
+            $this->setAttribute(self::SETTLED_BY, 'Razorpay');
+        }
     }
 
     public function getAmount()
@@ -504,6 +512,17 @@ class Entity extends Base\PublicEntity
     public function setSettledBy($settledBy)
     {
         $this->setAttribute(self::SETTLED_BY, $settledBy);
+    }
+
+    public function isDirectSettlementRefund(): bool
+    {
+        if (($this->payment->hasTerminal() === true) and
+            ($this->payment->terminal->isDirectSettlementWithRefund() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function setFTSTransferId($ftsTransferId)

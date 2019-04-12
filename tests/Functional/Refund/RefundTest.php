@@ -1627,9 +1627,41 @@ class RefundTest extends TestCase
         parent::startTest();
     }
 
+    // Direct settlement without refund
     public function testRefundSettledBy()
     {
         $this->fixtures->create('terminal:direct_settlement_hdfc_terminal');
+
+        $this->ba->privateAuth();
+
+        $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
+
+        $payment = $this->doAuthPayment($payment);
+
+        $this->ba->privateAuth();
+
+        $refund = $this->startTest($payment['razorpay_payment_id']);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $this->assertGreaterThan(time() - 30, $refund['created_at']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('Razorpay', $refund['settled_by']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($refund['id'], $transaction['entity_id']);
+
+        $this->assertEquals(50000, $transaction['debit']);
+        $this->assertEquals(0, $transaction['credit']);
+    }
+
+    // Direct settlement with refund
+    public function testDirectSettlementRefundSettledBy()
+    {
+        $this->fixtures->create('terminal:direct_settlement_refund_hdfc_terminal');
 
         $this->ba->privateAuth();
 

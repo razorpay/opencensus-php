@@ -797,7 +797,7 @@ class Entity extends Base\PublicEntity
         if ((empty($input[self::GATEWAY]) === false) and
             ($input[self::GATEWAY] === Payment\Gateway::PAYTM))
         {
-            $input[self::TYPE][Type::DIRECT_SETTLEMENT] = '1';
+            $input[self::TYPE][Type::DIRECT_SETTLEMENT_WITH_REFUND] = '1';
         }
     }
 
@@ -1120,7 +1120,18 @@ class Entity extends Base\PublicEntity
 
     public function isDirectSettlement()
     {
-        return ($this->isTypeApplicable(Type::DIRECT_SETTLEMENT) === true);
+        return (($this->isDirectSettlementWithRefund() === true) or
+                ($this->isDirectSettlementWithoutRefund() === true));
+    }
+
+    public function isDirectSettlementWithRefund(): bool
+    {
+        return ($this->isTypeApplicable(Type::DIRECT_SETTLEMENT_WITH_REFUND) === true);
+    }
+
+    public function isDirectSettlementWithoutRefund()
+    {
+        return ($this->isTypeApplicable(Type::DIRECT_SETTLEMENT_WITHOUT_REFUND) === true);
     }
 
     public function isInternational()
