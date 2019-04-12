@@ -51,7 +51,7 @@ class AuthSelector extends Base\Core
        }
     }
 
-    public function selectAuth()
+    public function select()
     {
         $terminals = $this->autflowObj->getAuthenticationTerminals();
 
@@ -62,7 +62,7 @@ class AuthSelector extends Base\Core
         // Fetch Authentication gateway filter rules
         $applicableFilterRules = $this->repo->useSlave(function ()
         {
-            return (new Rule\Core)->fetchAuthenticationRules($this->input);
+            return (new Rule\Core)->fetchApplicableAuthenticationRulesForPayment($this->input);
         });
 
         $terminals = $this->selectValidAuthViaRules($terminals, $applicableFilterRules);
@@ -71,7 +71,7 @@ class AuthSelector extends Base\Core
 
         $applicableSorterRules = $this->repo->useSlave(function ()
         {
-            return (new Rule\Core)->fetchAuthenticationRules($this->input, Rule\Entity::SORTER);
+            return (new Rule\Core)->fetchApplicableAuthenticationRulesForPayment($this->input, Rule\Entity::SORTER);
         });
 
         if (empty($applicableSorterRules) === true)

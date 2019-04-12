@@ -21,9 +21,9 @@ class TerminalAuthenticationTest extends TestCase
         parent::setUp();
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
 
@@ -237,7 +237,6 @@ class TerminalAuthenticationTest extends TestCase
     // boost 3ds over headless otp
     public function testAuthenticationGatewayPin()
     {
-
         TerminalOptions::setTestChance(20000);
 
         Config(['app.data_store.mock' => false]);
