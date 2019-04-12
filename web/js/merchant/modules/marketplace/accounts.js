@@ -2,6 +2,7 @@ import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import { set, merge, unshift } from 'rzp/utils/immutable';
 
 const ACCOUNTS_FETCH = 'ACCOUNTS_FETCH';
+const ACCOUNT_FETCH = 'ACCOUNT_FETCH';
 const ACCOUNT_CREATE = 'ACCOUNT_CREATE';
 const UPDATE_EMAIL = 'UPDATE_EMAIL';
 const ACCOUNT_DASHBOARD_ACCESS = 'ACCOUNT_DASHBOARD_ACCESS';
@@ -13,6 +14,16 @@ export const fetchAccountsApi = (data, params) => {
       url: '/accounts',
       data,
       params,
+    },
+    {},
+    '/merchant/api'
+  );
+};
+
+export const fetchAccountApi = id => {
+  return ajax(
+    {
+      url: `/account/${id}`,
     },
     {},
     '/merchant/api'

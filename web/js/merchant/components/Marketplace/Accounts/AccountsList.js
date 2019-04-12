@@ -12,7 +12,7 @@ import SwitchField from 'rzp/ui/Forms/SwitchField';
 
 import { getUser } from 'merchant/store';
 
-const ToggleField = ({ children, onEdit, isDisabled }) => {
+export const ToggleField = ({ children, onEdit, isDisabled }) => {
   if (isDisabled) {
     return (
       <small class="help-content">
