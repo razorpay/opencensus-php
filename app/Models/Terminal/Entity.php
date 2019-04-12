@@ -1172,8 +1172,8 @@ class Entity extends Base\PublicEntity
         return parent::toArrayAdmin();
     }
 
-    public static function getCacheTag($merchantId)
+    public static function getCacheTag($id)
     {
-        return implode('_', [E::TERMINAL, $merchantId]);
+        return implode('_', [E::TERMINAL, $id]);
     }
 }

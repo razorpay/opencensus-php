@@ -6,6 +6,7 @@ use App;
 use Cache;
 
 use RZP\Exception;
+use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\Observer as BaseObserver;
 
@@ -50,6 +51,8 @@ class Observer extends BaseObserver
     protected function getCachetags(Entity $terminal): array
     {
         $cachetagsArray = [];
+
+        $cachetagsArray[] = Entity::getCacheTag($terminal->getId());
 
         $merchantIds = $terminal->merchants()->pluck(Entity::ID)->toArray();
 
