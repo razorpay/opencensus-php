@@ -81,7 +81,7 @@ trait RequestHandlerTrait
 
         $accept = substr($this->app['request']->header('Accept'), 0, 256);
         $userAgent = substr($this->app['request']->header('User-Agent'), 0, 512);
-        $ip = substr($this->app['request']->ip();
+        $ip = $this->app['request']->ip();
 
         $extraParameters = [
             Fields::BROWSER_USERAGENT => $this->input['payment_analytics']['user_agent'] ?? $userAgent,
