@@ -2076,6 +2076,13 @@ class Gateway extends Base\Gateway
             $txnType = TxnType::SALE;
         }
 
+        $terminalMode = $input['terminal']['mode'];
+
+        if ($terminalMode === Terminal\Mode::PURCHASE)
+        {
+            $txnType = TxnType::SALE;
+        }
+
         return $txnType;
     }
 
