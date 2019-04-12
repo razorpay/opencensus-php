@@ -476,16 +476,19 @@ $custom_labels                  = $data['custom_labels'];
                                 <div class="val">{{epoch_format($invoice_expire_by)}} </div>
                             </div>
                         @endif
-                        @if($customer_details['customer_name'] or $customer_details['customer_email'])
-                            <div class="info">
-                                ISSUED TO
-                                @if($customer_details['customer_name'])
-                                    <div class="val">{{{ $customer_details['customer_name'] }}}</div>
-                                @endif
-                                @if($customer_details['customer_email'])
-                                    <div class="val">{{{ $customer_details['customer_email'] }}}</div>
-                                @endif
-                            </div>
+
+                        @if(isset($custom_labels['hide_issued_to']) and $custom_labels['hide_issued_to'] === true)
+                            @if($customer_details['customer_name'] or $customer_details['customer_email'])
+                                <div class="info">
+                                    ISSUED TO
+                                    @if($customer_details['customer_name'])
+                                        <div class="val">{{{ $customer_details['customer_name'] }}}</div>
+                                    @endif
+                                    @if($customer_details['customer_email'])
+                                        <div class="val">{{{ $customer_details['customer_email'] }}}</div>
+                                    @endif
+                                </div>
+                            @endif
                         @endif
                         @if($is_invoice_partial_payment and count($invoice_payments))
                             <button class="btn-link showhistory" onclick="showPayHist()"> Show Payment History </button>

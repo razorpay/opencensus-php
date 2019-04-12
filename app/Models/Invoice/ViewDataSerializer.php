@@ -105,6 +105,7 @@ class ViewDataSerializer extends Base\Core
         switch ($merchantId)
         {
             case Preferences::MID_RBLCARD:
+
             case Preferences::MID_RBLBFL:
             case Preferences::MID_AMIT_RBLCARD:
 
@@ -131,6 +132,7 @@ class ViewDataSerializer extends Base\Core
                 $customLabels = [
                     'receipt_number' => 'CREDIT CARD NUMBER',
                     'amount'         => 'TOTAL AMOUNT DUE',
+                    'hide_issued_to' => true,
                 ];
 
                 break;
