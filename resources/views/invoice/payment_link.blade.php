@@ -477,7 +477,7 @@ $custom_labels                  = $data['custom_labels'];
                             </div>
                         @endif
 
-                        @if(isset($custom_labels['hide_issued_to']) and $custom_labels['hide_issued_to'] === true)
+                        @if(isset($custom_labels['hide_issued_to']) === false)
                             @if($customer_details['customer_name'] or $customer_details['customer_email'])
                                 <div class="info">
                                     ISSUED TO
