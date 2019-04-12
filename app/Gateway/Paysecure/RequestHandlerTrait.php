@@ -126,9 +126,13 @@ trait RequestHandlerTrait
             $messageType = $this->input['card']['message_type'];
         }
 
+        $ownerName = $this->input['merchant']->getBillingLabel() ?? 'Razorpay';
+
+        $ownerName = substr($ownerName, 0, 23);
+
         $requestArray = [
             Fields::CARD_NO                           => $card['number'],
-            Fields::CARD_EXP_DATE                     => $card['expiry_month'] . $card['expiry_year'],
+            Fields::CARD_EXP_DATE                     => sprintf("%02d", $card['expiry_month']) . sprintf("%04d", $card['expiry_year']),
             Fields::LANGUAGE_CODE                     => 'en',
             Fields::AUTH_AMOUNT                       => $this->input['payment']['amount'],
             Fields::CURRENCY_CODE                     => Currency::ISO_NUMERIC_CODES[$this->input['payment']['currency']],
@@ -142,7 +146,7 @@ trait RequestHandlerTrait
             Fields::ACQUIRER_INSTITUTION_COUNTRY_CODE => Currency::ISO_NUMERIC_CODES[$this->input['payment']['currency']],
             Fields::RETRIEVAL_REF_NUMBER              => $rrn,
             Fields::CARD_ACCEPTOR_ID                  => $this->getMerchantId(),
-            Fields::TERMINAL_OWNER_NAME               => $this->input['merchant']->getBillingLabel() ?? 'Razorpay',
+            Fields::TERMINAL_OWNER_NAME               => $ownerName,
             Fields::TERMINAL_CITY                     => 'Bangalore',
             Fields::TERMINAL_STATE_CODE               => 'KA',
             Fields::TERMINAL_COUNTRY_CODE             => 'IN',
