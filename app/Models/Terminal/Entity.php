@@ -726,6 +726,11 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::ENABLED] = $status;
     }
 
+    public function setDirectForMerchant($isDirect)
+    {
+        $this->attributes[self::DIRECT] = $isDirect;
+    }
+
     protected function setTypeAttribute($type)
     {
         $hex = 0;
