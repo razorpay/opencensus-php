@@ -318,7 +318,7 @@ class PaymentDowntimeTest extends TestCase
 
     protected function createCardAllGatewayDowntime()
     {
-        foreach (['hdfc', 'first_data', 'card_fss'] as $gateway)
+        foreach (['hdfc', 'first_data', 'card_fss', 'hitachi'] as $gateway)
         {
             $request = [
                 'content' => [
