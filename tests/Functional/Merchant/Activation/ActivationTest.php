@@ -789,7 +789,7 @@ class ActivationTest extends TestCase
         $data = [
             'submitted'             => 1,
             'business_category'     => 'not_for_profit',
-            'business_subcategory'  => 'charity',
+            'business_subcategory'  => 'educational',
             'activation_status'     => 'under_review'
         ];
 
@@ -890,7 +890,7 @@ class ActivationTest extends TestCase
         $data = [
             'submitted'             => 1,
             'business_category'     => 'not_for_profit',
-            'business_subcategory'  => 'charity',
+            'business_subcategory'  => 'educational',
             'activation_status'     => 'under_review'
         ];
 
