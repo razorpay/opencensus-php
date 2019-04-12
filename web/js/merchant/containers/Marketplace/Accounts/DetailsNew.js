@@ -11,6 +11,8 @@ import { ToggleField } from 'merchant/components/Marketplace/Accounts/AccountsLi
 import SwitchField from 'rzp/ui/Forms/SwitchField';
 import * as AccountActions from 'merchant/modules/marketplace/accounts';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
+import { ModalMask } from 'component/Modal';
+import Button from 'component/Button';
 
 import Amount from 'ui/Amount';
 
@@ -196,6 +198,20 @@ export default class Details extends Component {
     });
   };
 
+  showActivationForm = accountId => _ => {
+    return (
+      <ModalMask maskClosable={true} class={'Account-Activation'}>
+        <ActivationForm
+          accountId={accountId}
+          callback={_ => this.fetchData(accountId)}
+          defaultMsg={
+            <HelpText msg="Complete the details to Activate this account." />
+          }
+        />
+      </ModalMask>
+    );
+  };
+
   render() {
     const { onClose, id } = this.props,
       { isLoading, account } = this.state,
@@ -241,6 +257,15 @@ export default class Details extends Component {
                   >
                     {status === 'activated' ? 'Activated' : 'Not Activated'}
                   </span>
+                  {account.activation_details.status == 'activated' ? (
+                    <Button link onClick={this.showActivationForm(account.id)}>
+                      Show Activation Form
+                    </Button>
+                  ) : (
+                    <Button onClick={this.showActivationForm(account.id)}>
+                      Complete Activation Form
+                    </Button>
+                  )}
                 </EntityDetailRow>
                 <EntityDetailRow label="Refund Credits">
                   <Amount value={account.refund_credits} />
