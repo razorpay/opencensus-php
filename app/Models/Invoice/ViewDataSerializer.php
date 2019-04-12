@@ -100,7 +100,7 @@ class ViewDataSerializer extends Base\Core
     {
         $merchantId = $this->merchant->getId();
 
-        $customLabels = [];
+        $customLabels = ['hide_issued_to' => false];
 
         switch ($merchantId)
         {
