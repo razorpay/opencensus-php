@@ -45,6 +45,7 @@ export default class ReversalDetailsContainer extends Component {
         onClose={onClose}
         parentAccountName={user.marketplace_merchant_name}
         merchant={user.merchants[user.current]}
+        isRefundsAllowed={user.features.includes('allow_refunds_from_la')}
       />
     );
   }

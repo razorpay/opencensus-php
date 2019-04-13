@@ -77,14 +77,15 @@ export default class TransferReversal extends React.PureComponent {
     });
   };
 
-  renderRefundToCustomerButton = () => (
-    <Button
-      onClick={this.openRefundToCustomerModal}
-      class="btn btn-default m-t"
-    >
-      Refund to Customer
-    </Button>
-  );
+  renderRefundToCustomerButton = () =>
+    this.props.showRefundToCustomer && (
+      <Button
+        onClick={this.openRefundToCustomerModal}
+        class="btn btn-default m-t"
+      >
+        Refund to Customer
+      </Button>
+    );
 
   render() {
     const { transfer, reversals } = this.props,

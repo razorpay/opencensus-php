@@ -26,22 +26,19 @@ export default class ReversalsListContainer extends Component {
 
   render() {
     const { credits: { loading, balanceData }, user } = this.props,
-      merchant = user.merchants[user.current],
-      balance = !loading
-        ? merchant.refund_source
-          ? balanceData.refund_credits
-          : balanceData.balance
-        : 0,
-      balanceTitle = merchant.refund_source
-        ? 'Refund Credits:'
-        : 'Current Balance:';
+      merchant = user.merchants[user.current] || {},
+      isBalanceSource = merchant.refund_source === 'balance',
+      balance = isBalanceSource
+        ? balanceData.balance
+        : balanceData.refund_credits,
+      balanceTitle = isBalanceSource ? 'Current Balance:' : 'Refund Credits:';
 
     return (
       <div>
         <tabbed-container>
           <header id="marketplace-header">
             <NavLink to="/reversals">Reversals</NavLink>
-            <NavLink to="/credits">Credits</NavLink>
+            {!isBalanceSource && <NavLink to="/credits">Credits</NavLink>}
             <HeaderAction>
               {!loading && (
                 <span class="reversal-balance-amount">
@@ -53,7 +50,7 @@ export default class ReversalsListContainer extends Component {
           <TestModeBanner />
           <content>
             <Route path="/reversals" component={ReversalsTable} />
-            <Route path="/credits" component={Credit} />
+            {!isBalanceSource && <Route path="/credits" component={Credit} />}
           </content>
         </tabbed-container>
       </div>

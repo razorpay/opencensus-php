@@ -17,6 +17,7 @@ export default class ReversalDetails extends Component {
         onClose,
         parentAccountName,
         merchant,
+        isRefundsAllowed,
       } = this.props,
       isLAInitiator = reversal.initiator_id === merchant.id;
 
@@ -51,23 +52,26 @@ export default class ReversalDetails extends Component {
                   />
                 </EntityDetailRow>
 
-                <EntityDetailRow
-                  label="Initiated By"
-                  value={() =>
-                    isLAInitiator ? merchant.billing_label : parentAccountName
-                  }
-                />
-
-                {isLAInitiator && (
+                {isRefundsAllowed && (
                   <EntityDetailRow
-                    label="Customer Refund ID"
-                    value={_ => {
-                      reversal.customer_refund_id;
-                    }}
+                    label="Initiated By"
+                    value={() =>
+                      isLAInitiator ? merchant.billing_label : parentAccountName
+                    }
                   />
                 )}
 
-                {/* {isLAInitiator && ( // TODO: add this when backend is ready
+                {isRefundsAllowed &&
+                  isLAInitiator && (
+                    <EntityDetailRow
+                      label="Customer Refund ID"
+                      value={_ => {
+                        reversal.customer_refund_id;
+                      }}
+                    />
+                  )}
+
+                {/* {isRefundsAllowed && isLAInitiator && ( // TODO: add this when backend is ready
                   <EntityDetailRow label="Refund ARN" value={() => 'Number'} />
                 )} */}
 

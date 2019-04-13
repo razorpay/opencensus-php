@@ -21,6 +21,9 @@ import {
 )
 export default class ReversalsTable extends ListContainer {
   render() {
+    const isRefundsAllowed = this.props.user.features.includes(
+      'allow_refunds_from_la'
+    );
     return (
       <div class="content-wrapper">
         <ReversalsListFilter
@@ -34,7 +37,7 @@ export default class ReversalsTable extends ListContainer {
           title="Reversals"
           columns={[
             reversalId,
-            customerRefundId,
+            isRefundsAllowed && customerRefundId,
             transferId,
             amount,
             createdAt,

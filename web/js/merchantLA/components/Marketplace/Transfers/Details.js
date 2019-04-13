@@ -84,6 +84,7 @@ export default class TransferDetails extends Component {
       reversals,
       onClose,
       parentAccountName,
+      showRefundToCustomer,
     } = this.props;
 
     const nextWorkingDate = nextWorkingDay(
@@ -131,7 +132,11 @@ export default class TransferDetails extends Component {
                 </EntityDetailRow>
 
                 <EntityDetailRow label="Reversal">
-                  <TransferReversal transfer={transfer} reversals={reversals} />
+                  <TransferReversal
+                    transfer={transfer}
+                    reversals={reversals}
+                    showRefundToCustomer={showRefundToCustomer}
+                  />
                 </EntityDetailRow>
 
                 <EntityDetailRow
