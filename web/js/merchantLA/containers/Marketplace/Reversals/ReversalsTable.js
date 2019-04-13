@@ -35,13 +35,11 @@ export default class ReversalsTable extends ListContainer {
 
         <DataTable
           title="Reversals"
-          columns={[
-            reversalId,
-            isRefundsAllowed && customerRefundId,
-            transferId,
-            amount,
-            createdAt,
-          ]}
+          columns={
+            isRefundsAllowed
+              ? [reversalId, customerRefundId, transferId, amount, createdAt]
+              : [reversalId, transferId, amount, createdAt]
+          }
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}
