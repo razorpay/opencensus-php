@@ -105,6 +105,9 @@ const entityDetailsMap = {
     component: SubscriptionBatchDetails,
   },
 
+  '/route/transfers/:id(trf_.+)/:reversal_id(rvrsl_.+)': {
+    component: TransferDetails,
+  },
   '/route/transfers/:id': { component: TransferDetails },
   '/route/reversals/:id': { component: ReversalDetails },
 

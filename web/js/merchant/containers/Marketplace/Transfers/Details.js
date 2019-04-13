@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { findDOMNode } from 'react-dom';
+
 import TransferDetails from 'merchant/components/Marketplace/Transfers/Details';
+import ReversalDetails from 'merchant/containers/Marketplace/Reversals/Details';
 import ReversalModal from './ReversalModal';
 import {
   fetchTransfer,
@@ -8,6 +11,7 @@ import {
   updateTransfer,
 } from 'merchant/modules/marketplace/transfer';
 import * as ModalActions from 'rzp/modules/modals';
+import { expandSlider, compactSlider } from 'rzp/modules/slider';
 
 import { showNotification } from 'rzp/modules/notifications';
 
@@ -15,6 +19,8 @@ import { showNotification } from 'rzp/modules/notifications';
   fetchTransfer,
   fetchReversals,
   showNotification,
+  expandSlider,
+  compactSlider,
   ...ModalActions,
 })
 export default class TransferDetailsContainer extends Component {
@@ -32,11 +38,33 @@ export default class TransferDetailsContainer extends Component {
 
   componentWillMount() {
     this.fetchData(this.props.id);
+    this.checkSecView(this.props);
   }
 
   componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
       this.fetchData(nextProps.id);
+    }
+
+    if (nextProps.reversal_id !== this.props.reversal_id) {
+      this.checkSecView(nextProps);
+    }
+  }
+
+  checkSecView(props) {
+    if (!props.reversal_id) {
+      this.props.compactSlider();
+
+      // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
+      if (this.reversalsView && findDOMNode(this.reversalsView)) {
+        findDOMNode(this.reversalsView).classList.add('toggle-slider');
+      }
+    } else {
+      this.props.expandSlider();
+      // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
+      if (this.reversalsView && findDOMNode(this.reversalsView)) {
+        findDOMNode(this.reversalsView).classList.remove('toggle-slider');
+      }
     }
   }
 
@@ -56,15 +84,17 @@ export default class TransferDetailsContainer extends Component {
 
   render() {
     let {
-      entity,
-      loading,
-      errors,
-      reversals,
-      onClose,
-      onReverse,
-      showNotification,
-    } = this.props;
-    let statusMsg = {};
+        entity,
+        loading,
+        errors,
+        reversals,
+        onClose,
+        onReverse,
+        showNotification,
+        compactSlider,
+        reversal_id,
+      } = this.props,
+      statusMsg = {};
 
     if (errors) {
       statusMsg = {
@@ -74,17 +104,26 @@ export default class TransferDetailsContainer extends Component {
     }
 
     return (
-      <TransferDetails
-        transfer={entity}
-        reversals={reversals}
-        isLoading={loading}
-        statusMsg={statusMsg}
-        onClose={onClose}
-        onReverse={onReverse}
-        openReversalModal={this.openReversalModal}
-        onTransferUpdate={this.onTransferUpdate}
-        showNotification={showNotification}
-      />
+      <div className={`${reversal_id ? 'multi-content' : ''}`}>
+        <TransferDetails
+          transfer={entity}
+          reversals={reversals}
+          isLoading={loading}
+          statusMsg={statusMsg}
+          onClose={onClose}
+          onReverse={onReverse}
+          openReversalModal={this.openReversalModal}
+          onTransferUpdate={this.onTransferUpdate}
+          showNotification={showNotification}
+        />
+        {reversal_id && (
+          <ReversalDetails
+            id={reversal_id}
+            onClose={compactSlider}
+            ref={c => (this.reversalsView = c)}
+          />
+        )}
+      </div>
     );
   }
 }
