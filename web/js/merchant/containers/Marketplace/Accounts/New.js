@@ -157,6 +157,18 @@ export default class AddAccount extends Component {
                         <span>Enable Dashboard access to this account</span>
                       </label>
                     </div>
+                    <div class="rzpCheckbox">
+                      <Field
+                        name="allow_refunds_from_LA"
+                        id="allow_refunds_from_LA"
+                        component={CheckboxField}
+                        type="checkbox"
+                        disabled={noLAEmail}
+                      />
+                      <label for="allow_refunds_from_LA" class="icon i-check">
+                        <span>Enable Refunds from to this account</span>
+                      </label>
+                    </div>
                   </EnableDashboardField>
                 </div>
               </ShowWhen>
