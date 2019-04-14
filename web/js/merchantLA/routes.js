@@ -16,7 +16,7 @@ import ReversalDetails from 'merchantLA/containers/Marketplace/Reversals/Details
 const entityDetailsMap = {
   '/transfers/:id(trf_.+)': { component: TransferDetails },
   '/settlements/:id': { component: SettlementDetails },
-  '/reversals/:id': { component: ReversalDetails },
+  '/reversals/:id(rvrsl_.+)': { component: ReversalDetails },
 };
 
 /*

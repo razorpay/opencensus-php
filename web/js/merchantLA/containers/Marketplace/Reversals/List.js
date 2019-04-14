@@ -1,10 +1,11 @@
 import { connect } from 'react-redux';
 import { Component } from 'react';
-import { Route, NavLink } from 'react-router-dom';
+import { Route, Switch, NavLink } from 'react-router-dom';
 import TestModeBanner from 'merchantLA/containers/TestModeBanner';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import ReversalsTable from './ReversalsTable';
 import Credit from './Credit';
+import BatchUploadList from './BatchUpload/List';
 import { fetchCreditBalance } from 'merchantLA/modules/credits';
 import Amount from 'rzp/ui/Amount';
 @connect(
@@ -38,19 +39,21 @@ export default class ReversalsListContainer extends Component {
         <tabbed-container>
           <header id="marketplace-header">
             <NavLink to="/reversals">Reversals</NavLink>
+            <NavLink to="/batchreversals">Batch</NavLink>
             {!isBalanceSource && <NavLink to="/credits">Credits</NavLink>}
             <HeaderAction>
-              {!loading && (
-                <span class="reversal-balance-amount">
-                  {balanceTitle} <Amount value={balance} currency={'INR'} />
-                </span>
-              )}
+              <span class="reversal-balance-amount">
+                {balanceTitle} <Amount value={balance} currency={'INR'} />
+              </span>
             </HeaderAction>
           </header>
           <TestModeBanner />
           <content>
-            <Route path="/reversals" component={ReversalsTable} />
-            {!isBalanceSource && <Route path="/credits" component={Credit} />}
+            <Switch>
+              <Route path="/reversals" component={ReversalsTable} />
+              <Route path="/batchreversals" component={BatchUploadList} />
+              {!isBalanceSource && <Route path="/credits" component={Credit} />}
+            </Switch>
           </content>
         </tabbed-container>
       </div>
