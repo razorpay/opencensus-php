@@ -28,7 +28,7 @@ export default props => {
         >
           <option value="">All</option>
           <option value={merchant.id}>{merchant.billing_label}</option>
-          <option value={props.user.id}>
+          <option value={props.user.marketplace_merchant_id}>
             {props.user.marketplace_merchant_name}
           </option>
         </Field>
