@@ -77,6 +77,15 @@ class PaysecureGatewayTest extends TestCase
         return $authResponse;
     }
 
+    public function testS2SPaymentAuthViaRedirect()
+    {
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $authResponse = $this->doS2SPrivateAuthPayment($this->payment);
+
+        $this->assertSuccess($authResponse, 'redirect');
+    }
+
     /**
      * Error response from CheckBin request.
      * Verify the same and make sure verify responds with action finish

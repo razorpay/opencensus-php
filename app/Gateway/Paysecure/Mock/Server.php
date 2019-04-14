@@ -37,6 +37,8 @@ class Server extends Base\Mock\Server
 
     protected function getInitiate2Response($data)
     {
+        $this->validateActionInput($data, 'initiate2');
+
         $redirectUrl = $this->route->getUrlWithPublicAuth('mock_paysecure_payment');
 
         $redirectUrl .= '&AccuCardholderId=89172389132&AccuGuid=6089d50e-e012-1160-8b3b-0ab8de556755'
@@ -58,6 +60,8 @@ class Server extends Base\Mock\Server
 
     protected function getInitiateResponse($data)
     {
+        $this->validateActionInput($data, 'initiate');
+
         $response = [
             Paysecure\Fields::STATUS        => Paysecure\StatusCode::SUCCESS,
             Paysecure\Fields::ERROR_CODE    => '0',
