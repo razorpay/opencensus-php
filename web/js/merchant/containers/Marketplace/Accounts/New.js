@@ -157,7 +157,7 @@ export default class AddAccount extends Component {
                         <span>Enable Dashboard access to this account</span>
                       </label>
                     </div>
-                    <div class="rzpCheckbox">
+                    {/* <div class="rzpCheckbox"> // TODO: eanble it when adding `allow_refunds_from_LA`
                       <Field
                         name="allow_refunds_from_LA"
                         id="allow_refunds_from_LA"
@@ -168,7 +168,7 @@ export default class AddAccount extends Component {
                       <label for="allow_refunds_from_LA" class="icon i-check">
                         <span>Enable Refunds from to this account</span>
                       </label>
-                    </div>
+                    </div> */}
                   </EnableDashboardField>
                 </div>
               </ShowWhen>

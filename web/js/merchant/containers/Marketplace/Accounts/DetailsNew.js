@@ -30,6 +30,7 @@ export default class Details extends Component {
     this.state = {
       isLoading: false,
       account: {},
+      showActivationForm: false,
     };
   }
 
@@ -166,7 +167,6 @@ export default class Details extends Component {
 
     return fetchAccountApi(id)
       .then(resp => {
-        debugger;
         this.setState({
           account: resp,
           isLoading: false,
@@ -198,26 +198,16 @@ export default class Details extends Component {
     });
   };
 
-  showActivationForm = accountId => _ => {
-    return (
-      <ModalMask maskClosable={true} class={'Account-Activation'}>
-        <ActivationForm
-          accountId={accountId}
-          callback={_ => this.fetchData(accountId)}
-          defaultMsg={
-            <HelpText msg="Complete the details to Activate this account." />
-          }
-        />
-      </ModalMask>
-    );
-  };
+  showActivationForm = _ =>
+    this.setState({ showActivationForm: !this.state.showActivationForm });
 
   render() {
     const { onClose, id } = this.props,
-      { isLoading, account } = this.state,
-      status = account.activation_details
-        ? account.activation_details.status
-        : account.activated,
+      { isLoading, account = {}, showActivationForm } = this.state,
+      status =
+        isLoading && account.activation_details
+          ? account.activation_details && account.activation_details.status
+          : account.activated,
       user = getUser(),
       noLAEmail = user.merchants[user.current].email === account.email,
       isAllowToEdit = showWhenUtil({
@@ -251,18 +241,20 @@ export default class Details extends Component {
                 <EntityDetailRow label="Name">{account.name}</EntityDetailRow>
                 <EntityDetailRow label="Account Status">
                   <span
-                    class={`pill ${
-                      status === 'activated' ? 'label-yellow' : 'label-primary'
+                    class={`status-label label ${
+                      status === 'activated' ? 'label-success' : 'label-danger'
                     }`}
                   >
                     {status === 'activated' ? 'Activated' : 'Not Activated'}
-                  </span>
-                  {account.activation_details.status == 'activated' ? (
-                    <Button link onClick={this.showActivationForm(account.id)}>
+                  </span>{' '}
+                  <br />
+                  {account.activation_details &&
+                  account.activation_details.status == 'activated' ? (
+                    <Button class="m-t" link onClick={this.showActivationForm}>
                       Show Activation Form
                     </Button>
                   ) : (
-                    <Button onClick={this.showActivationForm(account.id)}>
+                    <Button class="m-t" onClick={this.showActivationForm}>
                       Complete Activation Form
                     </Button>
                   )}
@@ -304,7 +296,38 @@ export default class Details extends Component {
             </div>
           </div>
         )}
+        {!isLoading &&
+          showActivationForm && (
+            <ModalMask
+              maskClosable={true}
+              onClose={this.showActivationForm}
+              class={'Account-Activation'}
+            >
+              <ActivationForm
+                onClose={this.showActivationForm}
+                accountId={id}
+                callback={() => {
+                  this.props.showNotification({
+                    type: 'success',
+                    message: 'The account has been activated',
+                  });
+
+                  this.fetchData(id);
+                }}
+                defaultMsg={
+                  <HelpText msg="Complete the details to Activate this account." />
+                }
+              />
+            </ModalMask>
+          )}
       </div>
     );
   }
 }
+
+const HelpText = ({ msg, ...restProps }) => (
+  <div class="help-text" {...restProps}>
+    <i class="i i-info-outline" />
+    <div>{msg}</div>
+  </div>
+);
