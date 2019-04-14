@@ -7,6 +7,7 @@ import ReversalsTable from './ReversalsTable';
 import Credit from './Credit';
 import BatchUploadList from './BatchUpload/List';
 import { fetchCreditBalance } from 'merchantLA/modules/credits';
+import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 import Amount from 'rzp/ui/Amount';
 @connect(
   state => {
@@ -43,7 +44,14 @@ export default class ReversalsListContainer extends Component {
             {!isBalanceSource && <NavLink to="/credits">Credits</NavLink>}
             <HeaderAction>
               <span class="reversal-balance-amount">
-                {balanceTitle} <Amount value={balance} currency={'INR'} />
+                {loading ? (
+                  <PlaceholderLoader />
+                ) : (
+                  <React.Fragment>
+                    {balanceTitle}{' '}
+                    <Amount value={balance} currency={balanceData.currency} />
+                  </React.Fragment>
+                )}
               </span>
             </HeaderAction>
           </header>

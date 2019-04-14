@@ -11,6 +11,7 @@ import HeaderAction from 'rzp/ui/HeaderAction';
 import { fetchSettlements as fetchAll } from 'merchantLA/modules/collection';
 import * as ModalActions from 'rzp/modules/modals';
 import TestModeBanner from 'merchantLA/containers/TestModeBanner';
+import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 import { fetchCreditBalance } from 'merchantLA/modules/credits';
 import Amount from 'rzp/ui/Amount';
@@ -102,7 +103,9 @@ export default class SettlementsListContainer extends ListContainer {
               >
                 How settlements work?&nbsp;<span class="icon i-external-link" />
               </a>
-              {!this.props.credits.loading && (
+              {this.props.credits.loading ? (
+                <PlaceholderLoader />
+              ) : (
                 <span class="settlement-balance-amount">
                   Current Balance:{' '}
                   <Amount value={balanceData.balance} currency={'INR'} />
