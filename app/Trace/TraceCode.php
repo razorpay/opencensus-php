@@ -1732,6 +1732,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const NO_MERCHANT_CONTEXT_MAIL                              = 'NO_MERCHANT_CONTEXT_MAIL';
 
     const PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC             = 'PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC';
+
     // P2P Traces
     const P2P_REQUEST                                           = 'P2P_REQUEST';
     const P2P_RESPONSE                                          = 'P2P_RESPONSE';
@@ -1741,6 +1742,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SUBSCRIPTION_PAYMENT_NOTIFY                           = "SUBSCRIPTION_PAYMENT_NOTIFY";
 
     const SELECTED_TERMINAL_IDS                                 = "SELECTED_TERMINAL_IDS";
+
+    // Core Payment Service tracecodes
+    const CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS          = 'CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS';
+    const CPS_GATEWAY_TRANSACTION_SYNC_REQUEST          = 'CPS_GATEWAY_TRANSACTION_SYNC_REQUEST';
+    const CPS_GATEWAY_TRANSACTION_JOB_EXCEPTION         = 'CPS_GATEWAY_TRANSACTION_JOB_EXCEPTION';
+    const CPS_ROUTE_CONFIG                              = 'CPS_ROUTE_CONFIG';
+    const CPS_RAZORX_VARIANT                            = 'CPS_RAZORX_VARIANT';
 
     // Batch Micro Service
     const GET_BATCHES_BATCH_SERVICE                 = 'GET_BATCHES_BATCH_SERVICE';

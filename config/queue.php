@@ -209,6 +209,10 @@ return [
         'test'       => env('AWS_SETTLEMENT_TEST_QUEUE'),
         'live'       => env('AWS_SETTLEMENT_LIVE_QUEUE'),
     ],
+    'core_payment_service_sync' => [
+        'test'       => env('AWS_CPS_SYNC_TEST_QUEUE'),
+        'live'       => env('AWS_CPS_SYNC_LIVE_QUEUE'),
+    ],
     'subscriptions_payment_notify' => [
         'test'       => env('AWS_SUBSCRIPTIONS_PAYMENT_NOTIFY_QUEUE'),
         'live'       => env('AWS_SUBSCRIPTIONS_PAYMENT_NOTIFY_QUEUE'),
