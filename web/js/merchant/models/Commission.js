@@ -6,7 +6,7 @@ import { fetch } from 'merchant/modules/pokedex';
 export default class Commission extends GenericEntity {
   resourceUrl = 'commissions';
 
-  fetchAggregateData = ({ from = 0, to = 1554904781, mode = 'test' }) => {
+  fetchAggregateData = ({ from, to, mode = 'test' }) => {
     const query = {
       filters: {
         default: [getDefaultFilter(from, to)],
