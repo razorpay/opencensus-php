@@ -3,6 +3,10 @@ import { Field } from 'redux-form';
 
 export default props => {
   const merchant = props.user.merchants[props.user.current];
+  const isRefundsAllowed = props.user.features.includes(
+    'allow_reversals_from_la'
+  );
+
   return (
     <ListFilter {...props}>
       <div class="form-group list-filter-item">
@@ -10,14 +14,16 @@ export default props => {
         <Field name="id" component="input" class="form-control input-sm" />
       </div>
 
-      <div class="form-group list-filter-item">
-        <label>Customer Refund Id</label>
-        <Field
-          name="customer_refund_id"
-          component="input"
-          class="form-control input-sm"
-        />
-      </div>
+      {isRefundsAllowed && (
+        <div class="form-group list-filter-item">
+          <label>Customer Refund Id</label>
+          <Field
+            name="customer_refund_id"
+            component="input"
+            class="form-control input-sm"
+          />
+        </div>
+      )}
 
       <div class="form-group list-filter-item">
         <label>Initiated by</label>

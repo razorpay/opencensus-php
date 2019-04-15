@@ -109,7 +109,9 @@ export default class TransferDetailsContainer extends Component {
           onReverse={onReverse}
           showNotification={showNotification}
           parentAccountName={user.marketplace_merchant_name}
-          showRefundToCustomer={user.features.includes('allow_refunds_from_la')}
+          showRefundToCustomer={user.features.includes(
+            'allow_reversals_from_la'
+          )}
         />
         {reversal_id && (
           <ReversalDetails
