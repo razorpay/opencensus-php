@@ -56,7 +56,7 @@ const AccountsListItem = ({
   return (
     <EntityItemRow id={account.id}>
       <td>
-        <Link to={`accounts/${account.id}`}>
+        <Link to={`/route/accounts/${account.id}`}>
           <code>{prefixEntityValue('account', account.id)}</code>
         </Link>
       </td>
