@@ -73,7 +73,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->betweenTime($from, $to)
                     ->whereNotNull(Entity::UTR)
-                    ->merchantId(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->merchantId($merchantId)
                     ->get();
     }
 

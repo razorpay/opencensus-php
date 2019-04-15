@@ -50,6 +50,14 @@ class QueuedPayouts extends Job
         }
         finally
         {
+            //
+            // If the queued payout's processing fails due to any reason,
+            // we can safely delete the job. The cron will take care of
+            // putting it back for dispatch again.
+            // Most common reason to fail would be "not enough balance".
+            // There could have been enough balance during dispatch but
+            // could have gotten over during the processing.
+            //
             $this->delete();
         }
     }
