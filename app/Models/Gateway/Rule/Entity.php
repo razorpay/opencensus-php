@@ -663,7 +663,7 @@ class Entity extends Base\PublicEntity
                 continue;
             }
 
-            if ($this->comapreAuthTerminal($key, $terminal, $payment) === false)
+            if ($this->compareAuthTerminal($key, $terminal, $payment) === false)
             {
                 return false;
             }
@@ -672,7 +672,7 @@ class Entity extends Base\PublicEntity
         return true;
     }
 
-    protected function comapreAuthTerminal($key, $terminal, $payment)
+    protected function compareAuthTerminal($key, $terminal, $payment)
     {
         return ($this->getAttribute($key) === $terminal[$key]);
     }
