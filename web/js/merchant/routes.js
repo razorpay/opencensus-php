@@ -108,8 +108,8 @@ const entityDetailsMap = {
   '/route/transfers/:id(trf_.+)/:reversal_id(rvrsl_.+)': {
     component: TransferDetails,
   },
-  '/route/transfers/:id': { component: TransferDetails },
-  '/route/reversals/:id': { component: ReversalDetails },
+  '/route/transfers/:id(trf_.+)': { component: TransferDetails },
+  '/route/reversals/:id(rvrsl_.+)': { component: ReversalDetails },
 
   '/submerchants/:id(acc_.+)/:appId': { component: SubmerchantDetails },
   '/submerchants/:id(acc_.+)': { component: SubmerchantDetails },
