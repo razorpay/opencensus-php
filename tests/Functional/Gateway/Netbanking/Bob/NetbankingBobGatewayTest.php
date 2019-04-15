@@ -185,6 +185,19 @@ class NetbankingBobGatewayTest extends TestCase
         });
     }
 
+    protected function mockVerifyResponse()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if($action === 'Verify')
+            {
+             $content[ResponseFields::STATUS] = status::FAILURE;
+            }
+        });
+    }
+
+
+
     protected function mockAmountMismatch()
     {
         $this->mockServerContentFunction(function(& $content, $action = null)
