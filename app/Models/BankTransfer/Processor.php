@@ -311,14 +311,35 @@ class Processor extends VirtualAccount\Processor
     {
         $this->setVirtualAccount($bankTransfer);
 
-        if ($this->useSharedVirtualAccount($bankTransfer) === true)
-        {
-                $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
+        $shouldUseSharedVirtualAccount = $this->getShouldUseSharedVirtualAccount($bankTransfer);
 
-                return false;
+        if ($shouldUseSharedVirtualAccount === true)
+        {
+            $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
+
+            return false;
         }
 
         return true;
+    }
+
+    /**
+     * This first checks the value of the useShared flag. If it's been set by
+     * another flow, then we blindly use shared VA. Otherwise we call
+     * useSharedVirtualAccount to recaculate whether we should be using it or not.
+     */
+    protected function getShouldUseSharedVirtualAccount(Base\PublicEntity $bankTransfer)
+    {
+        if (isset($this->useSharedVirtualAccount) === true)
+        {
+            return $this->useSharedVirtualAccount;
+        }
+
+        $useSharedVirtualAccount = $this->useSharedVirtualAccount($bankTransfer);
+
+        $this->useSharedVirtualAccount = $useSharedVirtualAccount;
+
+        return $useSharedVirtualAccount;
     }
 
     protected function useSharedVirtualAccount(Base\PublicEntity $bankTransfer): bool

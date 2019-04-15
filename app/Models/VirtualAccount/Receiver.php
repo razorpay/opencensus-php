@@ -12,6 +12,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
+use RZP\Models\Payment\Method;
 use RZP\Models\BankAccount\Entity as BankAccount;
 
 class Receiver extends Base\Core
@@ -24,6 +25,14 @@ class Receiver extends Base\Core
         self::BANK_ACCOUNT,
         // self::VPA,
         self::QR_CODE,
+    ];
+
+    const METHODS = [
+        // Bank accounts
+        Method::BANK_TRANSFER,
+        // QR Codes
+        Method::UPI,
+        Method::CARD,
     ];
 
     protected $app;

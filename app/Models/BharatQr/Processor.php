@@ -60,38 +60,39 @@ class Processor extends VirtualAccount\Processor
         $paymentProcessor = $this->getPaymentProcessor();
 
         $this->repo->transaction(
-                        function() use ($bharatQr, $paymentProcessor)
-                        {
-                            $paymentInput = $this->getPaymentArray($bharatQr);
+            function() use ($bharatQr, $paymentProcessor)
+            {
+                $paymentInput = $this->getPaymentArray($bharatQr);
 
-                            //
-                            // This is being done because we want
-                            // to skip terminal selection on payment
-                            // creation and use this terminal instead
-                            // as the payment has already gone through
-                            // this terminal.
-                            //
-                            $this->callbackData[Payment\Entity::TERMINAL_ID] = $this->getTerminal()->getId();
+                //
+                // This is being done because we want
+                // to skip terminal selection on payment
+                // creation and use this terminal instead
+                // as the payment has already gone through
+                // this terminal.
+                //
 
-                            $this->createPayment($paymentInput, $this->callbackData);
+                $this->callbackData[Payment\Entity::TERMINAL_ID] = $this->getTerminal()->getId();
 
-                            $payment = $paymentProcessor->getPayment();
+                $this->createPayment($paymentInput, $this->callbackData);
 
-                            $bharatQr->payment()->associate($payment);
+                $payment = $paymentProcessor->getPayment();
 
-                            $bharatQr->virtualAccount()->associate($this->virtualAccount);
+                $bharatQr->payment()->associate($payment);
 
-                            $this->repo->saveOrFail($bharatQr);
+                $bharatQr->virtualAccount()->associate($this->virtualAccount);
 
-                            //
-                            // @todo: remove this after validating.
-                            //
-                            $this->repo->saveOrFail($payment);
+                $this->repo->saveOrFail($bharatQr);
 
-                            $this->updateVirtualAccount($bharatQr);
+                //
+                // @todo: remove this after validating.
+                //
+                $this->repo->saveOrFail($payment);
 
-                            return $payment;
-                        });
+                $this->updateVirtualAccount($bharatQr);
+
+                return $payment;
+            });
 
         $this->refundOrCapturePayment($bharatQr);
 
