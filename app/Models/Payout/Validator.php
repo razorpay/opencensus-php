@@ -273,4 +273,21 @@ class Validator extends Base\Validator
                 ]);
         }
     }
+
+    public function validateCancel()
+    {
+        /** @var Entity $payout */
+        $payout = $this->entity;
+
+        if ($payout->isStatusQueued() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_NOT_QUEUED_STATUS,
+                null,
+                [
+                    'payout_id' => $payout->getId(),
+                    'status'    => $payout->getStatus(),
+                ]);
+        }
+    }
 }

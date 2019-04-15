@@ -725,6 +725,7 @@ final class Route
         'payout_purpose_post'                      => ['post',     'payouts/purposes',                               'PayoutController@postPurpose'                                      ],
         'payout_fetch_reversals'                   => ['get',      'payouts/{id}/reversals',                         'PayoutController@getPayoutReversal'                                ],
         'payouts_process_queued'                   => ['post',     'payouts/process/queued',                         'PayoutController@processDispatchForQueuedPayouts'                  ],
+        'payout_cancel'                            => ['post',     'payouts/{id}/cancel',                            'PayoutController@cancelPayout'                                     ],
         'transfer_fetch'                           => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
         'transfer_fetch_multiple'                  => ['get',      'transfers/',                                     'TransferController@getTransfers'                                   ],
 
@@ -1235,6 +1236,7 @@ final class Route
         'payout_fetch_by_id',
         'payout_fetch_multiple',
         'payout_create',
+        'payout_cancel',
         'customer_get_wallet_balance',
         'customer_get_wallet_statement',
         'transfer_fetch_multiple',
