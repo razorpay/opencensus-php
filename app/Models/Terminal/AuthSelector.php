@@ -137,6 +137,6 @@ class AuthSelector extends Base\Core
 
     protected function getTerminals()
     {
-        return AuthTerminals::AUTHENTICATION_TERMINALS;
+        return AuthenticationTerminals::AUTHENTICATION_TERMINALS;
     }
 }
