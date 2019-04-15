@@ -335,11 +335,9 @@ class Processor extends VirtualAccount\Processor
             return $this->useSharedVirtualAccount;
         }
 
-        $useSharedVirtualAccount = $this->useSharedVirtualAccount($bankTransfer);
+        $this->useSharedVirtualAccount = $this->useSharedVirtualAccount($bankTransfer);
 
-        $this->useSharedVirtualAccount = $useSharedVirtualAccount;
-
-        return $useSharedVirtualAccount;
+        return $this->useSharedVirtualAccount;
     }
 
     protected function useSharedVirtualAccount(Base\PublicEntity $bankTransfer): bool

@@ -20,6 +20,8 @@ abstract class Processor extends Base\Core
 
     protected $paymentProcessor;
 
+    protected $useSharedVirtualAccount;
+
     const METHOD_NOT_ENABLED_CODE_REGEX = '/BAD_REQUEST_PAYMENT_(%s)_NOT_ENABLED_FOR_MERCHANT/';
 
     public function __construct()
