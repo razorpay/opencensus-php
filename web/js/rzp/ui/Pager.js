@@ -27,7 +27,7 @@ export default class Pager extends Component {
     let { length, onClick } = this.props;
     let count = +this.props.count;
     let skip = +this.props.skip;
-    let nextDisabled = length < count;
+    let nextDisabled = length < Number(count);
     let prevDisabled = !skip;
     let total = skip + length;
     let current = skip + 1;
@@ -43,7 +43,7 @@ export default class Pager extends Component {
           margin: '20px',
         }}
       >
-        {!(nextDisabled && prevDisabled) ? (
+        {!(nextDisabled && prevDisabled) && length !== Number(count) ? (
           <div class="btn-group pull-right">
             <button
               type="button"
