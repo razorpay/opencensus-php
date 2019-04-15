@@ -4,6 +4,7 @@ namespace RZP\Models\Payout;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Services\Mutex;
@@ -116,10 +117,13 @@ class Core extends Base\Core
      *
      * @param array           $input
      * @param Merchant\Entity $merchant
+     * @param Batch\Entity    $batch
      *
      * @return Entity
      */
-    public function createPayoutToFundAccount(array $input, Merchant\Entity $merchant): Entity
+    public function createPayoutToFundAccount(array $input,
+                                              Merchant\Entity $merchant,
+                                              Batch\Entity $batch = null): Entity
     {
         $this->trace->info(
             TraceCode::PAYOUT_TO_FUND_ACCOUNT_CREATE_REQUEST,
@@ -131,10 +135,11 @@ class Core extends Base\Core
 
         $payout = $this->mutex->acquireAndRelease(
             $mutexResource,
-            function() use ($input, $merchant)
+            function() use ($input, $merchant, $batch)
             {
                 return $this->getProcessor('fund_account_payout')
                             ->setMerchant($merchant)
+                            ->setBatch($batch)
                             ->createPayout($input);
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
@@ -248,9 +253,11 @@ class Core extends Base\Core
             {
                 $payoutInput = $this->getRetryPayoutInputForFundAccount($payout);
 
+                // Note that if the payout was created by batch,
+                // the information is not percolated to the new payout.
+                // This is because, this new payout was not created by the batch.
                 return $this->createPayoutToFundAccount($payoutInput, $payout->merchant);
             }
-
         }
         else
         {
@@ -342,9 +349,27 @@ class Core extends Base\Core
 
                     $payout->getValidator()->validateProcessingQueuedPayout();
 
-                    return $this->getProcessor('fund_account_payout')
-                                ->setMerchant($payout->merchant)
-                                ->processQueuedPayout($payout);
+                    //
+                    // Currently, we support queued concept only for Fund Account type.
+                    // If we are supporting for others, the processor call needs to be fixed here.
+                    // Also, need to fix transaction.created event in the processor since
+                    // we do that only for fund_account and not for others.
+                    //
+                    // Apart from this, we also have to handle dispatching FTA for queued payouts.
+                    //
+                    // We also have to handle the fund transfer destination while processing the queued payout.
+                    //
+                    $payout = $this->getProcessor('fund_account_payout')
+                                   ->setMerchant($payout->merchant)
+                                   ->processQueuedPayout($payout);
+
+                    //
+                    // There might be some type of payouts where we don't want to dispatch FTA.
+                    // Should handle that before adding any other type of payouts as queued.
+                    //
+                    $this->dispatchFtaInitiate($payout);
+
+                    return $payout;
                 },
                 self::PAYOUT_MUTEX_LOCK_TIMEOUT,
                 ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
@@ -509,6 +534,7 @@ class Core extends Base\Core
         {
             throw new Exception\LogicException(
                 'Attempted to reverse an already reversed payout',
+                null,
                 [
                     'payout_id'         => $payout->getId(),
                     'status'            => $payout->getStatus(),
@@ -548,7 +574,7 @@ class Core extends Base\Core
                 ($merchantBalance < $input[Entity::BUFFER_AMOUNT]))
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    "merchant balance is less than buffer amount",
+                    'merchant balance is less than buffer amount',
                     Entity::BUFFER_AMOUNT,
                     [
                         'merchant_id' => $merchantId,
@@ -566,7 +592,7 @@ class Core extends Base\Core
             ($amount < $input[Entity::MIN_AMOUNT]))
         {
             throw new Exception\BadRequestValidationFailureException(
-                "amount is less than min amount",
+                'amount is less than min amount',
                 Entity::MIN_AMOUNT,
                 [
                     'merchant_id' => $merchantId,
@@ -615,6 +641,15 @@ class Core extends Base\Core
 
     protected function dispatchFtaInitiate(Entity $payout)
     {
+        //
+        // When we queue a payout, we don't create any transaction or FTA.
+        // We do it later when we actually process that queued payout.
+        //
+        if ($payout->isStatusQueued() === true)
+        {
+            return;
+        }
+
         $ftaId = $payout->fundTransferAttempts->first()->getId();
 
         $info = [

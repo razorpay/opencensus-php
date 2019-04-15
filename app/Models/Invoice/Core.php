@@ -15,9 +15,8 @@ use RZP\Models\Merchant;
 use RZP\Models\LineItem;
 use RZP\Models\Settings;
 use RZP\Models\FileStore;
-use RZP\Models\Plan\Subscription;
 use RZP\Base\RuntimeManager;
-use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Plan\Subscription;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -61,12 +60,16 @@ class Core extends Base\Core
     /**
      * Creates invoice
      *
-     * @param array               $input
-     * @param Merchant\Entity     $merchant
-     * @param Subscription\Entity $subscription - If created via subscription, this
-     *                                            is passed for associations.
-     * @param Batch\Entity        $batch        - If created via batch flow, this
-     *                                            is passed for association.
+     * @param array                    $input
+     * @param Merchant\Entity          $merchant
+     * @param Subscription\Entity|null $subscription   - If created via subscription,
+     *                                                 this is passed for associations
+     * @param Batch\Entity|null        $batch
+     * @param Base\Entity|null         $externalEntity
+     * @param string|null              $batchId        - This is passed by batchService
+     *                                                 and kept for backward compatible
+     *                                                 and also by batch upload in API
+     *                                                 till we migrate completely
      *
      * @return Entity
      */
@@ -75,7 +78,8 @@ class Core extends Base\Core
         Merchant\Entity $merchant,
         Subscription\Entity $subscription = null,
         Batch\Entity $batch = null,
-        Base\Entity $externalEntity = null): Entity
+        Base\Entity $externalEntity = null,
+        string $batchId = null): Entity
     {
         $this->trace->info(TraceCode::INVOICE_CREATE_REQUEST, $input);
 
@@ -98,10 +102,12 @@ class Core extends Base\Core
             unset($input[Entity::SUBSCRIPTION_ID]);
         }
 
+        $batchIdOrBatch = $batchId === null ? $batch:$batchId;
+
         $invoice = (new Generator($merchant))
                         ->setSubscription($subscription)
                         ->setExternalEntity($externalEntity)
-                        ->setBatch($batch)
+                        ->setBatch($batchIdOrBatch)
                         ->setShouldFailOnDuplicateInternalRef($shouldFailOnDuplicateInternalRef)
                         ->generate($input);
 
@@ -438,7 +444,10 @@ class Core extends Base\Core
      */
     protected function expireInvoice(Entity $invoice)
     {
-        $invoice->getValidator()->validateOperation(__FUNCTION__);
+        /** @var Validator $validator */
+        $validator = $invoice->getValidator();
+
+        $validator->validateOperation(__FUNCTION__);
 
         $this->repo->transaction(
             function () use ($invoice)
@@ -492,8 +501,12 @@ class Core extends Base\Core
         string $invoiceId,
         Merchant\Entity $merchant): array
     {
+        /** @var Entity $invoice */
         $invoice = $this->repo->invoice->findByPublicIdAndMerchant($invoiceId, $merchant);
-        $invoice->getValidator()->validateInvoicePayable();
+
+        /** @var Validator $validator */
+        $validator = $invoice->getValidator();
+        $validator->validateInvoicePayable();
 
         $orderId       = $invoice->getOrderId();
         $publicOrderId = Order\Entity::getSignedId($orderId);

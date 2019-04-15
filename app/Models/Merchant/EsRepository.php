@@ -29,6 +29,7 @@ class EsRepository extends Base\EsRepository
         Entity::WEBSITE,
         Entity::PARENT_ID,
         Entity::ACTIVATED,
+        Entity::PARTNER_TYPE,
         Entity::ACTIVATED_AT,
         Entity::ARCHIVED_AT,
         Entity::SUSPENDED_AT,
@@ -81,6 +82,7 @@ class EsRepository extends Base\EsRepository
         Entity::ADMINS,
         Entity::ACCOUNT_STATUS,
         Entity::SUB_ACCOUNTS,
+        Entity::PARTNER_TYPE,
         DetailEntity::REVIEWER_ID,
         Constants::INSTANT_ACTIVATION,
     ];
@@ -138,6 +140,11 @@ class EsRepository extends Base\EsRepository
     public function buildQueryForOrgId(array & $query, string $value)
     {
         $this->addTermFilter($query, Entity::ORG_ID, $value);
+    }
+
+    public function buildQueryForPartnerType(array &$query, string $value)
+    {
+        $this->addTermFilter($query, Entity::PARTNER_TYPE, $value);
     }
 
     public function buildQueryForAdmins(array & $query, array $value)

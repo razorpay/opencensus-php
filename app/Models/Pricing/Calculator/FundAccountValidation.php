@@ -18,7 +18,7 @@ class FundAccountValidation extends Base
         return $rule;
     }
 
-    protected function validateFees($totalFees, $amount)
+    public function validateFees($totalFees)
     {
         // Can't use fee credits for fund account validation, so only balance matters
         return;

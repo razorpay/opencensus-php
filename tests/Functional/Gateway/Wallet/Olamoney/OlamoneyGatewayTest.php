@@ -529,4 +529,46 @@ class OlamoneyGatewayTest extends TestCase
 
         return null;
     }
+
+    public function testPaymentVerifyUpdateGatewayPayment()
+    {
+        $this->ba->publicAuth();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->fixtures->create('payment:failed', [
+            PaymentEntity::EMAIL        => 'a@b.com',
+            PaymentEntity::AMOUNT       => 50000,
+            PaymentEntity::CONTACT      => '+919918899029',
+            PaymentEntity::METHOD       => 'wallet',
+            PaymentEntity::WALLET       => 'olamoney',
+            PaymentEntity::GATEWAY      => 'wallet_olamoney',
+            PaymentEntity::CARD_ID      => null,
+            PaymentEntity::TERMINAL_ID  => $this->sharedTerminal->id
+        ]);
+
+        $wallet = $this->fixtures->create('wallet',[
+            'action'                => 'authorize',
+            'amount'                => '50000',
+            'wallet'                => 'olamoney',
+            'received'              => true,
+            'email'                 => 'a@b.com',
+            'contact'               => '9918899029',
+            'refund_id'             => null,
+            'payment_id'            => $payment['id'],
+            'gateway_payment_id'    => ''
+        ]);
+
+        $id = $payment->getPublicId();
+
+        $this->runRequestResponseFlow($data, function() use ($id)
+        {
+            $this->verifyPayment($id);
+        });
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
+        $this->assertEquals('ek78-s35w-ffm8', $wallet['gateway_payment_id']);
+    }
 }

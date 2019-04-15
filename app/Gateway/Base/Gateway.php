@@ -6,6 +6,7 @@ use App;
 use Crypt;
 use Cache;
 use Requests;
+use RZP\Models\Admin\ConfigKey;
 use Symfony\Component\DomCrawler\Crawler;
 
 use RZP\Exception;
@@ -88,7 +89,7 @@ class Gateway
 
     /**
      * Trace instance for tracing
-     * @var Trace\Trace
+     * @var $trace Trace
      */
     protected $trace;
 
@@ -811,7 +812,34 @@ class Gateway
                 'namelookup_time'    => $info['namelookup_time'],
                 'pretransfer_time'   => $info['pretransfer_time'],
                 'starttransfer_time' => $info['starttransfer_time'],
+                'primary_ip'         => $info['primary_ip'] ?? 'nil',
             ]);
+
+        try
+        {
+            $metricsDriver = app('trace')->metricsDriver(Metric::DOGSTATSD_DRIVER);
+
+            /**
+             * @var $metricsDriver \Razorpay\Metrics\Drivers\Driver
+             */
+            $metricsDriver->histogram('gateway_request_total_time_ms',
+                $info['total_time'] * 1000,
+                [
+                    'gateway' => $this->gateway ?? 'none',
+                    'action'  => $this->action ?? 'none',
+                ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::GATEWAY_METRIC_DIMENSION_PUSH_FAILED,
+                [
+                    'gateway' => $this->gateway ?? 'none',
+                    'action'  => $this->action ?? 'none',
+                ]);
+        }
     }
 
     /**
@@ -1284,7 +1312,7 @@ class Gateway
 
     protected function getProcessedRefunds()
     {
-        $refunds = $this->cache->get('GATEWAY_PROCESSED_REFUNDS');
+        $refunds = $this->cache->get(ConfigKey::GATEWAY_PROCESSED_REFUNDS);
 
         if (empty($refunds) === true)
         {
@@ -1296,7 +1324,7 @@ class Gateway
 
     protected function getUnprocessedRefunds()
     {
-        $refunds = $this->cache->get('GATEWAY_UNPROCESSED_REFUNDS');
+        $refunds = $this->cache->get(ConfigKey::GATEWAY_UNPROCESSED_REFUNDS);
 
         if (empty($refunds) === true)
         {
@@ -1478,7 +1506,7 @@ class Gateway
 
             $cacheKey = self::getNetbankingUrlCacheKey($bank);
 
-            $cache = $this->app['redis']->connection('redis_labs');
+            $cache = $this->app['redis']->connection();
 
             $cacheValue = $cache->get($cacheKey);
 
@@ -1501,7 +1529,7 @@ class Gateway
     {
         $metricObj = new Netbanking\Base\Metric\DynamicUrlChangeMetric;
 
-        $metricObj->pushDimensions($input, $oldUrl, $newUrl);
+        $metricObj->pushDimensions($input, $this->gateway, $oldUrl, $newUrl);
     }
 
     public static function getNetbankingUrlCacheKey($bank)

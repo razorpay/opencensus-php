@@ -205,7 +205,7 @@ class SoapWrapper
         return $soapContent;
     }
 
-    public static function verifyResponseWrapper($oid)
+    public static function verifyResponseWrapper($oid, $approvalCode = 'Y:815527:5341037593:PPX', $status = 'AUTHORIZED')
     {
         $soapContent = "
             <SOAP-ENV:Envelope xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/'>
@@ -240,7 +240,7 @@ class SoapWrapper
                             <v1:TransactionOrigin>ECI</v1:TransactionOrigin>
                         </v1:TransactionDetails>
                         <ipgapi:IPGApiOrderResponse>
-                            <ipgapi:ApprovalCode>Y:815527:5341037593:PPX</ipgapi:ApprovalCode>
+                            <ipgapi:ApprovalCode>$approvalCode</ipgapi:ApprovalCode>
                             <ipgapi:AVSResponse>PPX</ipgapi:AVSResponse>
                             <ipgapi:Brand>VISA</ipgapi:Brand>
                             <ipgapi:OrderId>$oid</ipgapi:OrderId>
@@ -254,7 +254,7 @@ class SoapWrapper
                             <ipgapi:TerminalID>44000025</ipgapi:TerminalID>
                         </ipgapi:IPGApiOrderResponse>
                         <a1:TraceNumber>625915</a1:TraceNumber>
-                        <a1:TransactionState>AUTHORIZED</a1:TransactionState>
+                        <a1:TransactionState>$status</a1:TransactionState>
                         <a1:SubmissionComponent>CONNECT</a1:SubmissionComponent>
                     </a1:TransactionValues>
                     <a1:TransactionValues>
@@ -279,7 +279,7 @@ class SoapWrapper
                             <v1:TransactionOrigin>ECI</v1:TransactionOrigin>
                         </v1:TransactionDetails>
                         <ipgapi:IPGApiOrderResponse>
-                            <ipgapi:ApprovalCode>Y:815527:5341037593:PPX</ipgapi:ApprovalCode>
+                            <ipgapi:ApprovalCode>$approvalCode</ipgapi:ApprovalCode>
                             <ipgapi:AVSResponse>PPX</ipgapi:AVSResponse>
                             <ipgapi:Brand>VISA</ipgapi:Brand>
                             <ipgapi:OrderId>$oid</ipgapi:OrderId>

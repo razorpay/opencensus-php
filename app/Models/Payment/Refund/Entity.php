@@ -16,6 +16,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Base\Traits\NotesTrait;
 use Razorpay\Spine\DataTypes\Dictionary;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payment\Refund\Metric as RefundMetric;
 
 /**
@@ -127,6 +128,7 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS,
         self::LAST_ATTEMPTED_AT,
         self::PROCESSED_AT,
+        self::IS_SCROOGE,
         self::REFERENCE1,
         self::BANK_ACCOUNT_ID,
         self::VPA_ID,
@@ -165,6 +167,7 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS          => null,
         self::LAST_ATTEMPTED_AT => null,
         self::PROCESSED_AT      => null,
+        self::IS_SCROOGE        => 0,
         self::RECEIPT           => null,
     ];
 
@@ -172,6 +175,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT           => 'int',
         self::BASE_AMOUNT      => 'int',
         self::GATEWAY_REFUNDED => 'bool',
+        self::IS_SCROOGE       => 'bool',
     ];
 
     protected $publicSetters = [
@@ -282,7 +286,15 @@ class Entity extends Base\PublicEntity
 
     protected function generateSettledBy($input)
     {
-        $this->setAttribute(self::SETTLED_BY, $this->payment->getSettledBy());
+        // If terminal has support for direct settlement for refunds
+        if ($this->isDirectSettlementRefund() === true)
+        {
+            $this->setAttribute(self::SETTLED_BY, $this->payment->getSettledBy());
+        }
+        else
+        {
+            $this->setAttribute(self::SETTLED_BY, 'Razorpay');
+        }
     }
 
     public function getAmount()
@@ -380,6 +392,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REFERENCE1);
     }
 
+    public function getReference2()
+    {
+        return $this->getAttribute(self::REFERENCE2);
+    }
 
     public function getSettledBy()
     {
@@ -459,6 +475,16 @@ class Entity extends Base\PublicEntity
     }
 
     /**
+     * Returns true for refunds which are processed by Scrooge Service
+     *
+     * @return bool
+     */
+    public function isScrooge()
+    {
+        return ($this->getAttribute(self::IS_SCROOGE) === true);
+    }
+
+    /**
      * Used by FTA reconciliation
      */
     public function setFailureReason($failureReason)
@@ -486,6 +512,17 @@ class Entity extends Base\PublicEntity
     public function setSettledBy($settledBy)
     {
         $this->setAttribute(self::SETTLED_BY, $settledBy);
+    }
+
+    public function isDirectSettlementRefund(): bool
+    {
+        if (($this->payment->hasTerminal() === true) and
+            ($this->payment->terminal->isDirectSettlementWithRefund() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function setFTSTransferId($ftsTransferId)
@@ -617,7 +654,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::REFERENCE1, $value);
     }
 
-    public function setRemarks(string $value)
+    public function setRemarks(string $value = null)
     {
         $this->setAttribute(self::REFERENCE2, $value);
     }
@@ -625,6 +662,17 @@ class Entity extends Base\PublicEntity
     public function setBatchFundTransferId($value)
     {
         $this->setAttribute(self::BATCH_FUND_TRANSFER_ID, $value);
+    }
+
+    /**
+     * Setting is_scrooge attribute of refund entity to true or false.
+     * True means refund is processed by Scrooge Service.
+     *
+     * @param bool $isScrooge
+     */
+    public function setIsScrooge($isScrooge = false)
+    {
+        $this->setAttribute(self::IS_SCROOGE, $isScrooge);
     }
 
     /**
@@ -854,9 +902,10 @@ class Entity extends Base\PublicEntity
     {
         $response = parent::toArrayPublic();
 
-        $displayRefundPublicStatus = Payment\Gateway::isRefundsPublicStatusMerchant($this->getMerchantId());
+        $displayRefundPublicStatus = Payment\Refund\Core::isRefundsPublicStatusMerchant($this->getMerchantId());
 
-        if ($displayRefundPublicStatus === true)
+        if (($displayRefundPublicStatus === true) or
+            ($this->merchant->isFeatureEnabled(Feature::SHOW_REFUND_PUBLIC_STATUS) === true))
         {
             $scroogeResponse = $this->getPublicStatus($response);
 

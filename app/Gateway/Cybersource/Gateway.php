@@ -107,6 +107,19 @@ class Gateway extends Base\Gateway
         return $attr;
     }
 
+    public function syncGatewayTransactionDataFromCps(array $attributes, array $input)
+    {
+        $gatewayEntity = $this->repo->findByPaymentIdAndAction($attributes[Entity::PAYMENT_ID], $input[Entity::ACTION]);
+
+        if (empty($gatewayEntity) === true)
+        {
+            $gatewayEntity = $this->createGatewayPaymentEntity($attributes, $input);
+        }
+
+        $gatewayEntity->setAction($input[Entity::ACTION]);
+
+        $this->updateGatewayPaymentEntity($gatewayEntity, $attributes, false);
+    }
 
     protected function mapInReverseWay($gatewayPayment)
     {
@@ -249,6 +262,11 @@ class Gateway extends Base\Gateway
         $this->sendMozartRequest($input);
     }
 
+    public function callbackOtpSubmit(array $input)
+    {
+        return $this->callback($input);
+    }
+
     public function callback(array $input)
     {
         $mpiEntity = $this->app['repo']
@@ -318,7 +336,7 @@ class Gateway extends Base\Gateway
     {
         $verifyContent['commerce_indicator']     = $this->getCommerceIndicator($input, $response);
         $verifyContent['authentication_status']  = $response[Mpi\Base\Entity::STATUS];
-        $verifyContent['eci']                    = $response[Mpi\Base\Entity::ECI];
+        $verifyContent['eci']                    = (int) $response[Mpi\Base\Entity::ECI];
         $verifyContent['xid']                    = $response[Mpi\Base\Entity::XID];
         $verifyContent['cavv']                   = $response[Mpi\Base\Entity::CAVV];
 

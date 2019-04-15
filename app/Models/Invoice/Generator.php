@@ -60,6 +60,7 @@ class Generator extends Base\Core
      * @var Batch\Entity
      */
     protected $batch;
+    protected $batchId;
 
     /**
      * Flag to check if duplicate invoice creation with same internal_ref is allowed
@@ -124,13 +125,20 @@ class Generator extends Base\Core
     }
 
     /**
-     * @param null|Batch\Entity $batch
+     * @param null $batch
      *
-     * @return Generator
+     * @return $this
      */
-    public function setBatch(Batch\Entity $batch = null)
+    public function setBatch($batch = null)
     {
-        $this->batch = $batch;
+        if (($batch instanceof Batch\Entity) === true)
+        {
+            $this->batch = $batch;
+        }
+        else if (is_string($batch) === true)
+        {
+            $this->batchId = $batch;
+        }
 
         return $this;
     }
@@ -197,10 +205,15 @@ class Generator extends Base\Core
             $this->invoice->setSubscriptionId($this->subscriptionId);
         }
 
-        if ($this->batch !== null)
+        if ($this->batchId != null)
+        {
+            $this->invoice->setBatchId($this->batchId);
+        }
+        else if ($this->batch !== null)
         {
             $this->invoice->batch()->associate($this->batch);
         }
+
 
         $this->createLineItems($input);
     }

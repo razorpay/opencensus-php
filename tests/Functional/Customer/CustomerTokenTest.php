@@ -264,7 +264,7 @@ class CustomerTokenTest extends TestCase
         $token = $this->getTokenById('token_' . $token['id']);
 
         self::assertFalse($token[Token\Entity::RECURRING]);
-        self::assertEquals(2, count($token['card']['flows']));
+        self::assertEquals(3, count($token['card']['flows']));
 
         // We never display the keys below to the public
         self::assertArrayNotHasKey(Token\Entity::RECURRING_STATUS, $token);

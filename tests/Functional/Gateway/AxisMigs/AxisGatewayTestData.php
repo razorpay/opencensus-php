@@ -227,6 +227,35 @@ return [
         'entity'                => 'axis_migs',
     ],
 
+    'testPaymentForAuthorizationTerminal' => [
+        [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'axis_migs',
+            'type'          => 'filter',
+            'filter_type'   => 'select',
+            'min_amount'    => 0,
+            'group'         => 'authentication',
+            'auth_type'     => '3ds',
+            'network'       => null,
+            'step'          => 'authentication',
+            'authentication_gateway' => 'mpi_blade',
+        ],
+        [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'axis_migs',
+            'type'          => 'sorter',
+            'filter_type'   => 'select',
+            'load'          => 100,
+            'group'         => 'authentication',
+            'auth_type'     => '3ds',
+            'network'       => null,
+            'authentication_gateway' => 'mpi_blade',
+            'step'          => 'authentication',
+        ],
+    ],
+
     'testMaestroOnMigsFailOnLive' => [
         'response' => [
             'content' => [

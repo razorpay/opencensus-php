@@ -12,6 +12,10 @@ class Fields
 
     const STATUS               = 'status';
 
+    const TEST_SCOPE           = 'oob';
+
+    const LIVE_SCOPE           = 'kbsecpg';
+
     protected $fields = array(
         'MerchantCode',
         'Date',

@@ -1,0 +1,249 @@
+<?php
+
+namespace RZP\Gateway\P2p\Upi\Axis;
+
+use Carbon\Carbon;
+use phpseclib\Crypt\RSA;
+
+use RZP\Trace\TraceCode;
+use RZP\Gateway\P2p\Upi;
+use RZP\Constants\Timezone;
+use RZP\Gateway\P2p\Upi\Axis\Sdk;
+use RZP\Models\P2p\Base\Libraries\ArrayBag;
+use RZP\Exception\P2p\GatewayErrorException;
+
+class Gateway extends Upi\Gateway
+{
+    protected $actionMap = [];
+
+    protected $gateway = 'p2p_upi_axis';
+
+    public function getMerchantSigner()
+    {
+        $rsa = new RSA();
+
+        $rsa->loadKey($this->config['merchant_private_key'], RSA::PRIVATE_FORMAT_PKCS1);
+
+        $rsa->setHash('sha256');
+
+        $rsa->setMGFHash('sha256');
+
+        $rsa->setSignatureMode(RSA::SIGNATURE_PSS);
+
+        return $rsa;
+    }
+
+    protected function initiateSdkRequest(string $action)
+    {
+        $request = new Sdk([
+            'id' => $this->getRequestId(),
+        ]);
+
+        $request->setActionMap($action, $this->actionMap[$action]);
+
+        $request->setSigner($this->getMerchantSigner());
+
+        return $request;
+    }
+
+    protected function handleInputSdk(): ArrayBag
+    {
+        if ($this->isSdkFailure() === true)
+        {
+            $gatewayCode = $this->inputSdk()->get(Fields::ERROR_CODE, ErrorMap::NOT_AVAILABLE);
+            $gatewayDesc = $this->inputSdk()->get(Fields::ERROR_DESCRIPTION, ErrorMap::NOT_AVAILABLE);
+
+            throw $this->p2pGatewayException(
+                $gatewayCode,
+                [
+                    Fields::SDK => $this->inputSdk()
+                ],
+                $gatewayDesc);
+        }
+
+        return $this->inputSdk();
+    }
+
+    protected function inputSdk(): ArrayBag
+    {
+        return $this->input->get(Fields::SDK);
+    }
+
+    protected function isSdkFailure(): bool
+    {
+        return $this->input->get(Fields::SDK)->get(Fields::STATUS) != 'SUCCESS';
+    }
+
+    protected function handleGatewayResponse(ArrayBag $sdk)
+    {
+        if ($sdk->get(Fields::GATEWAY_RESPONSE_CODE) !== '00')
+        {
+            $this->throwP2pGatewayException();
+        }
+    }
+
+    protected function getTimeStamp()
+    {
+        return (string) (Carbon::now(Timezone::IST)->getTimestamp() * 1000);
+    }
+
+    protected function toBoolean($value)
+    {
+        $booleanValue = filter_var($value, FILTER_VALIDATE_BOOLEAN);
+
+        return $booleanValue;
+    }
+
+    protected function toPaisa($value)
+    {
+        return round(floatval($value) * 100);
+    }
+
+    protected function getMerchantId()
+    {
+        return $this->config['merchant_id'];
+    }
+
+    protected function getMerchantChannelId()
+    {
+        return $this->config['merchant_channel_id'];
+    }
+
+    protected function getMerchantCategoryCode()
+    {
+        return $this->config['merchant_category_code'];
+    }
+
+    protected function formatMerchantCustomerId($customerId)
+    {
+        return str_replace('_', '.', $customerId);
+    }
+
+    protected function throwP2pGatewayException()
+    {
+        // .Todo Need to fix the implementation
+        throw new \Exception('Hi!');
+    }
+
+    protected function p2pGatewayException(
+        string $gatewayCode,
+        array $data = [],
+        string $gatewayDesc = null)
+    {
+        $code = ErrorMap::map($gatewayCode);
+
+        return new GatewayErrorException($code, $gatewayCode, $gatewayDesc, $data);
+    }
+
+    protected function getUpiRequestId()
+    {
+        $prefix = $this->config['merchant_unique_prefix'] ?? 'BJJ';
+
+        return $prefix . $this->request->getId();
+    }
+
+    protected function initiateS2sRequest(string $action)
+    {
+        $map = $this->actionMap[$action];
+
+        $accessor = function(string $method)
+        {
+            return $this->{$method}();
+        };
+
+        switch ($map[Actions\Action::SOURCE])
+        {
+            case Actions\Action::DIRECT:
+                $request = new S2sDirect($accessor, $this->getUrl($action));
+
+                $request->setSigner($this->getMerchantSigner());
+
+                $request->setHeaders([
+                    S2sDirect::X_MERCHANT_ID            => $this->getMerchantId(),
+                    S2sDirect::X_MERCHANT_CHANNEL_ID    => $this->getMerchantChannelId(),
+                    S2sDirect::X_TIMESTAMP              => $this->getTimeStamp(),
+                ]);
+        }
+
+        $request->setActionMap($action, $this->actionMap[$action]);
+
+        $request->setConfig($this->config);
+
+        return $request;
+    }
+
+    protected function sendS2sRequest(S2s $s2sRequest)
+    {
+        $request = $s2sRequest->finish();
+
+        $this->trace->info(TraceCode::P2P_GATEWAY_REQUEST, [
+            'request'   => $request,
+            'source'    => $s2sRequest->source(),
+        ]);
+
+        switch ($s2sRequest->source())
+        {
+            case Actions\Action::DIRECT:
+                $response =  parent::sendGatewayRequest($request);
+        }
+
+        $response = $s2sRequest->response($response);
+
+        $this->trace->info(TraceCode::P2P_GATEWAY_RESPONSE, [
+            'response'  => $response,
+            'source'    => $s2sRequest->source(),
+        ]);
+
+        if ($this->isS2sFailure($response))
+        {
+            $gatewayCode = $response->get(Fields::RESPONSE_CODE, ErrorMap::NOT_AVAILABLE);
+            $gatewayDesc = $response->get(Fields::RESPONSE_MESSAGE, ErrorMap::NOT_AVAILABLE);
+
+            throw $this->p2pGatewayException(
+                $gatewayCode,
+                [
+                    'response' => $response,
+                ],
+                $gatewayDesc);
+        }
+
+        return $response;
+    }
+
+    private function isS2sFailure($input): bool
+    {
+        return $input[Fields::STATUS] != 'SUCCESS';
+    }
+
+    protected function sendGatewayRequest($request)
+    {
+        $headers = [
+            S2s::X_MERCHANT_ID          => $this->getMerchantId(),
+            S2s::X_MERCHANT_CHANNEL_ID  => $this->getMerchantChannelId(),
+            S2s::X_TIMESTAMP            => $this->getTimeStamp(),
+        ];
+
+        $request['headers'] = $headers;
+
+        $request['headers'][S2s::CONTENT_TYPE] = 'application/json';
+
+        $signer = $this->getMerchantSigner();
+
+        $str = $this->getSignatureString($headers);
+
+        $signature = bin2hex($signer->sign($str));
+
+        $request['headers'][S2s::X_MERCHANT_SIGNATURE] = $signature;
+
+        $request['content'] = json_encode($request['content']);
+
+        return parent::sendGatewayRequest($request);
+    }
+
+    protected function getSignatureString($content)
+    {
+        $str = implode($content, '');
+
+        return $str;
+    }
+}

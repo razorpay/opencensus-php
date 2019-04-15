@@ -39,6 +39,8 @@ abstract class Base extends Core
         $this->txnCore = new Transaction\Core();
     }
 
+    public abstract function validateRetry();
+
     protected abstract function getAccount();
 
     public abstract function preProcessValidation();

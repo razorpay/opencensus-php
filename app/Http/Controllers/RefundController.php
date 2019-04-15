@@ -7,6 +7,8 @@ use Request;
 
 class RefundController extends Controller
 {
+    use Traits\HasCrudMethods;
+
     public function postRefundCreate()
     {
         $input = Request::all();
@@ -271,6 +273,33 @@ class RefundController extends Controller
         $input = Request::all();
 
         $data = $this->service()->verifyScroogeRefundsBulk($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function scroogeFetchEntities()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->scroogeFetchEntities($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postVerifyRefundsBulk()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->verifyRefundsInBulk($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function scroogeTaggingBackfill()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->isScroogeBackFill($input);
 
         return ApiResponse::json($data);
     }

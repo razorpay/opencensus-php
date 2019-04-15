@@ -156,7 +156,12 @@ class Core extends Base\Core
             return null;
         }
 
-        $pricingPlan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($pricingPlanId);
+        $pricingPlan = $this->repo->pricing->getPlan($pricingPlanId);
+
+        if (empty($pricingPlan) === true)
+        {
+            return null;
+        }
 
         return $pricingPlan;
     }
@@ -180,7 +185,7 @@ class Core extends Base\Core
             return null;
         }
 
-        $pricingPlan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($pricingPlanId);
+        $pricingPlan = $this->repo->pricing->getPlan($pricingPlanId);
 
         return $pricingPlan;
     }

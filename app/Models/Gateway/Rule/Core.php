@@ -81,7 +81,7 @@ class Core extends Base\Core
         return $applicableRules;
     }
 
-    public function fetchAuthenticationRules(array $input, string $type = Entity::FILTER):Base\PublicCollection
+    public function fetchApplicableAuthenticationRulesForPayment(array $input, string $type = Entity::FILTER):Base\PublicCollection
     {
         $payment = $input['payment'];
 
@@ -106,7 +106,7 @@ class Core extends Base\Core
 
         $applicableRules = $this->repo
                                 ->gateway_rule
-                                ->fetchAuthenitcationRulesForSearchCriteria($searchCriteria);
+                                ->fetchAuthenticationRulesForSearchCriteria($searchCriteria);
 
         return $applicableRules;
     }

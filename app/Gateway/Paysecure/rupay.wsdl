@@ -215,10 +215,10 @@
   </wsdl:binding>
   <wsdl:service name="MerchantWebService">
     <wsdl:port name="MerchantWebServiceSoap" binding="tns:MerchantWebServiceSoap">
-      <soap:address location="https://cert.mwsrec.npci.org.in/MWS/MerchantWebService.asmx" />
+      <soap:address location="https://mwsrec.npci.org.in/MWS/MerchantWebService.asmx" />
     </wsdl:port>
     <wsdl:port name="MerchantWebServiceSoap12" binding="tns:MerchantWebServiceSoap12">
-      <soap12:address location="https://cert.mwsrec.npci.org.in/MWS/MerchantWebService.asmx" />
+      <soap12:address location="https://mwsrec.npci.org.in/MWS/MerchantWebService.asmx" />
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>

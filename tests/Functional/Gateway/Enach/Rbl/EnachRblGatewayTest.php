@@ -103,7 +103,7 @@ class EnachRblGatewayTest extends TestCase
             ]
         ];
 
-        Cache::put('merchant_enach_configs', $config, 2);
+        Cache::put('config:merchant_enach_configs', $config, 2);
 
         $enach = $this->testSuccessfulEsignGeneration();
 
@@ -118,7 +118,7 @@ class EnachRblGatewayTest extends TestCase
             ]
         ];
 
-        Cache::put('merchant_enach_configs', $config, 2);
+        Cache::put('config:merchant_enach_configs', $config, 2);
 
         $this->testSuccessfulEsignGeneration();
 
@@ -142,7 +142,7 @@ class EnachRblGatewayTest extends TestCase
             ]
         ];
 
-        Cache::put('merchant_enach_configs', $config, 2);
+        Cache::put('config:merchant_enach_configs', $config, 2);
 
         $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
 

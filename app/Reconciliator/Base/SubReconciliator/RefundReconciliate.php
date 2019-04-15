@@ -547,15 +547,16 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
         if (empty($rowDetails[BaseReconciliate::ARN]) === true)
         {
-            if ($refund->getStatus() === Refund\Status::FAILED)
+            if ($refund->getStatus() !== Refund\Status::PROCESSED)
             {
                 $this->trace->info(
                     TraceCode::RECON_INFO_ALERT,
                     [
-                        'info_code'     => Base\InfoCode::FAILED_REFUND_ARN_ABSENT,
-                        'message'       => 'ARN absent for a failed refund, not marked processed.',
+                        'info_code'     => Base\InfoCode::UNPROCESSED_REFUND_ARN_ABSENT,
+                        'message'       => 'ARN absent for an unprocessed refund, not marked as processed.',
                         'payment_id'    => $this->payment->getId(),
-                        'refund_id'     => $this->refund->getId(),
+                        'refund_id'     => $refund->getId(),
+                        'refund_status' => $refund->getStatus(),
                         'gateway'       => $this->gateway
                     ]);
             }

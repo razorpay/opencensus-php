@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Gateway\Downtime;
 
+use RZP\Constants\Mode;
+
 class Source
 {
     const STATUSCAKE  = 'STATUSCAKE';
@@ -9,6 +11,8 @@ class Source
     const BANK        = 'BANK';
     const VAJRA       = 'VAJRA';
     const OTHER       = 'OTHER';
+
+    const DUMMY       = 'dummy';
 
     protected static $sources = [
         Source::STATUSCAKE,
@@ -20,6 +24,15 @@ class Source
 
     public static function isValid($source)
     {
+        $app = \App::getFacadeRoot();
+
+        // Used for downtime tests, where no specific provider is required
+        if (($app['rzp.mode'] === Mode::TEST) and
+            ($source === self::DUMMY))
+        {
+            return true;
+        }
+
         return in_array(strtoupper($source), self::$sources, true);
     }
 

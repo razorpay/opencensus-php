@@ -83,7 +83,7 @@ class BulkRefund extends Job
 
     protected function setConfigForUnprocessedRefunds($refundId)
     {
-        $currentUnprocessedRefunds = $this->cache->get('GATEWAY_UNPROCESSED_REFUNDS') ?? [];
+        $currentUnprocessedRefunds = $this->cache->get(Admin\ConfigKey::GATEWAY_UNPROCESSED_REFUNDS) ?? [];
 
         $currentUnprocessedRefunds[] = $refundId;
 

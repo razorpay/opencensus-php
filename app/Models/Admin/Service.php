@@ -250,7 +250,7 @@ class Service extends Base\Service
 
                 $pricing = round($pricingValue / 100, 2);
 
-                Cache::put($key, $pricing, $defaultExpiry);
+                Cache::put('espricing:' . $key, $pricing, $defaultExpiry);
 
                 $this->trace->info(
                     TraceCode::ES_PRICING_MERCHANT_KEY_SET,
@@ -590,7 +590,7 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('set_redis_keys', $input);
 
-        $redis = $this->app['redis']->connection('redis_labs');
+        $redis = $this->app['redis']->connection();
 
         $result = [];
 
@@ -599,6 +599,8 @@ class Service extends Base\Service
             $values = array_map(function($val) {
                 return strtolower($val);
             }, $value);
+
+            $values = array_change_key_case($values, CASE_LOWER);
 
             $result[] = $this->setRedisKey($redis, $key, $values);
         }
@@ -610,7 +612,7 @@ class Service extends Base\Service
     {
         if(empty($values) === false)
         {
-            $redis->SADD($key, $values);
+            $redis->HMSET($key, $values);
         }
 
         $data = [
@@ -629,9 +631,9 @@ class Service extends Base\Service
 
         $key = $input['key'];
 
-        $redis = $this->app['redis']->connection('redis_labs');
+        $redis = $this->app['redis']->connection();
 
-        $values = $redis->SMEMBERS($key);
+        $values = $redis->HGETALL($key);
 
         $this->trace->info(TraceCode::REDIS_KEY_FETCH, $values);
 
@@ -642,7 +644,7 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('update_redis_keys', $input);
 
-        $redis = $this->app['redis']->connection('redis_labs');
+        $redis = $this->app['redis']->connection();
 
         $key = $input['key'];
 
@@ -650,22 +652,31 @@ class Service extends Base\Service
             return strtolower($val);
         }, $input['value']);
 
-        $existingValues = $redis->SMEMBERS($key);
+        $values = array_change_key_case($values, CASE_LOWER);
 
-        $keysToDelete = array_diff($existingValues, $values);
+        $existingValues = $redis->HGETALL($key);
 
-        $keysToInsert = array_diff($values, $existingValues);
-
-        if(empty($keysToDelete) === false)
+        foreach ($existingValues as $existingKey => $existingValue)
         {
-            //Also takes array as input
-            $redis->SREM($key, $keysToDelete);
+            $exists = false;
+
+            foreach ($values as $inputKey => $inputValue)
+            {
+                if(strcasecmp($existingKey, $inputKey) === 0)
+                {
+                    $exists = true;
+
+                    break;
+                }
+            }
+
+            if($exists === false)
+            {
+                $redis->HDEL($key, $existingKey);
+            }
         }
 
-        if(empty($keysToInsert) === false)
-        {
-            $redis->SADD($key, $keysToInsert);
-        }
+        $redis->HMSET($key, $values);
 
         $data = [
             'key'       => $key,

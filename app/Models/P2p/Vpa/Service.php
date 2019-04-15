@@ -19,6 +19,13 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function initiateAdd(array $input): array
+    {
+        $response = $this->processor->initiateAdd($input);
+
+        return $response;
+    }
+
     public function add(array $input): array
     {
         $response = $this->processor->add($input);
@@ -50,6 +57,13 @@ class Service extends Base\Service
     public function checkAvailability(array $input): array
     {
         $response = $this->processor->checkAvailability($input);
+
+        return $response;
+    }
+
+    public function initiateCheckAvailability(array $input): array
+    {
+        $response = $this->processor->initiateCheckAvailability($input);
 
         return $response;
     }

@@ -56,6 +56,10 @@ return [
                 'description' => 'Edit Merchant Email',
                 'assignable'  => true,
             ],
+            Permission::MERCHANT_PRICING_PLANS => [
+                'description' => 'List all the merchant pricing plans',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::MERCHANT_REQUEST => [
@@ -169,6 +173,14 @@ return [
             Permission::EDIT_MERCHANT_ENABLE_INTERNATIONAL  => '',
             Permission::EDIT_MERCHANT_DISABLE_INTERNATIONAL => '',
             Permission::EDIT_MERCHANT_TERMINAL              => '',
+            Permission::TOGGLE_TERMINAL                     => [
+                'description' => 'Ability to enable or disable a terminal',
+                'assignable' => true,
+            ],
+            Permission::TERMINAL_MANAGE_MERCHANT            => [
+                'description' => 'Ability to add or remove sub merchants to a terminal',
+                'assignable' => true,
+            ],
             Permission::EDIT_MERCHANT_PRICING               => '',
             Permission::EDIT_MERCHANT_COMMENTS              => '',
             Permission::VIEW_MERCHANT_COMPANY_INFO          => [
@@ -177,6 +189,10 @@ return [
             Permission::VIEW_MERCHANT_CREDITS_LOG           => '',
             Permission::ADD_MERCHANT_CREDITS                => [
                 'assignable' => true,
+            ],
+            Permission::EDIT_MERCHANT_CREDITS => [
+                'description' => 'Ability to merchant edit credits',
+                'assignable'  => true,
             ],
             Permission::DELETE_MERCHANT_CREDITS             => '',
             Permission::EDIT_MERCHANT_SCREENSHOT            => [
@@ -319,8 +335,16 @@ return [
             Permission::CREATE_VIRTUAL_ACCOUNTS => [
                 'description' => 'Create VAs for a merchant',
             ],
+            Permission::BANK_TRANSFER_INSERT => [
+                'description' => 'Insert bank transfers for failed payments',
+                'assignable'  => true,
+            ],
             Permission::USER_PASSWORD_RESET => [
                 'description' => 'Reset user password on associated merchant page',
+                'assignable'  => true,
+            ],
+            Permission::VIEW_OPERATIONS_REPORT => [
+                'description' => 'View Operations Reports',
                 'assignable'  => true,
             ],
         ],
@@ -371,6 +395,10 @@ return [
         PermissionCategory::ENTITY   => [
             Permission::VIEW_ALL_ENTITY => [
                 'description' => 'view all entity',
+            ],
+            Permission::VIEW_SCROOGE_REFUNDS => [
+                'description' => 'view scrooge refunds dashboard',
+                'assignable'  => true,
             ],
         ],
 

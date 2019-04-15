@@ -25,6 +25,8 @@ class Beneficiary extends FileProcessor
 {
     const BEAM_FILE_TYPE = 'Beneficiary';
 
+    const BENE_DEFAULT_NAME      = 'Not Available';
+
     protected $id;
 
     protected $encryptionKey  = null;
@@ -179,12 +181,12 @@ class Beneficiary extends FileProcessor
     }
 
     /* Normalizes beneficiary name should have length of max 70
-    * Allowed characters  a-z A-Z \s \d () , : . / -
-    *
-    * @param $name
-    * @return string
-    */
-    protected function normalizeBeneficiaryName($name): string
+     * Allowed characters  a-z A-Z \s \d () , : . / -
+     *
+     * @param $name
+     * @return string
+     */
+    public function normalizeBeneficiaryName($name): string
     {
         if($name !== null)
         {
@@ -192,11 +194,17 @@ class Beneficiary extends FileProcessor
 
             $normalizedString = preg_replace('/\s+/',' ', $normalizedNameWithSpaces);
 
+            if (strlen(trim($normalizedString)) === 0)
+            {
+                return self::BENE_DEFAULT_NAME;
+            }
+
             return substr($normalizedString, 0, 70);
         }
 
-        return $name;
+        return self::BENE_DEFAULT_NAME;
     }
+
 
     /**
      * @param FileStore\Creator $file

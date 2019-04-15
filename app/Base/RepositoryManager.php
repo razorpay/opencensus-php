@@ -50,6 +50,14 @@ class RepositoryManager extends Illuminate\Support\Manager
         return $this->driver($entity);
     }
 
+    /**
+     * Duplicate of above driver initialization, meant for use where entity name is complex
+     */
+    public function getCustomDriver($entity)
+    {
+        return $this->driver($entity);
+    }
+
     public function getDefaultDriver()
     {
         throw new Exception\LogicException('No default repository driver');

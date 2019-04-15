@@ -38,4 +38,17 @@ class CurrencyController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    /**
+     * Function to return all rzp supported_currency and their min_amount,
+     * code, symbol and exponent
+     *
+     * @return mixed
+     */
+    public function getAllCurrency()
+    {
+        $data = (new Currency\Core)->getSupportedCurrenciesDetails();
+
+        return ApiResponse::json($data);
+    }
 }

@@ -13,6 +13,7 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestContext;
 use RZP\Foundation\Application;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Exception\BlockException;
 use RZP\Exception\ThrottleException;
 use RZP\Http\Throttle\Constant as K;
@@ -94,7 +95,7 @@ class Throttler
 
     protected function initRedisConnection()
     {
-        $this->redis = Redis::connection('throttle')->client();
+        $this->redis = Redis::connection()->client();
     }
 
     protected function initThrottleSettings()
@@ -103,6 +104,7 @@ class Throttler
 
         if (empty(array_filter($settings)) === true)
         {
+            // Alert for manual action if no configuration exists, continues the flow with code defaults.
             $this->trace->critical(TraceCode::THROTTLE_SETTINGS_MISSING);
         }
 
@@ -194,11 +196,12 @@ class Throttler
         $leakRateDuration = $this->getThrottleLeakRateDuration();
         $maxBucketSize    = $this->getThrottleMaxBucketSize();
 
-        $limiter  = new LeakyBucket\Redis($maxBucketSize, $leakRateValue, $leakRateDuration, $this->redis);
+        $limiter = new LeakyBucket\Redis($maxBucketSize, $leakRateValue, $leakRateDuration, $this->redis);
+        $limiter->setPrefix('throttle:pv:');
         $response = $limiter->attempt($key);
 
         // Payload for trace and exception extra data
-        $payload  = compact('key', 'leakRateValue', 'leakRateDuration', 'maxBucketSize', 'response');
+        $payload = compact('key', 'leakRateValue', 'leakRateDuration', 'maxBucketSize', 'response');
 
         if ($response->allowed === false)
         {
@@ -207,7 +210,15 @@ class Throttler
                 throw new ThrottleException($response->retryAfter, $payload);
             }
 
-            $this->trace->critical(TraceCode::THROTTLE_REQUEST_THROTTLED, $payload);
+            $shouldTraceMock = ConfigKey::get(ConfigKey::THROTTLE_MOCK_LOG_VERBOSE, true);
+
+            $shouldTraceMock = (bool) ($shouldTraceMock ?? true);
+
+            if ($shouldTraceMock === true)
+            {
+                // For metrics purpose traces same info if throttling is mocked i.e. to not throw 429 actually.
+                $this->trace->info(TraceCode::THROTTLE_REQUEST_THROTTLED_MOCK, $payload);
+            }
         }
     }
 

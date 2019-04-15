@@ -58,6 +58,7 @@ class Repository extends Base\Repository
         EsRepository::QUERY             => 'filled|string|min:2|max:100',
         Entity::ORG_ID                  => 'sometimes|string|size:14',
         Entity::ACCOUNT_STATUS          => 'filled|custom',
+        Entity::PARTNER_TYPE            => 'sometimes|string|custom',
         Detail\Entity::REVIEWER_ID      => 'sometimes|string|max:14',
         Entity::SUB_ACCOUNTS            => 'filled|custom',
         Entity::GROUPS                  => 'sometimes|array',
@@ -75,6 +76,11 @@ class Repository extends Base\Repository
         ($value === self::SUB_ACCOUNTS_ONLY_VALUE) or
             ($value === self::SUB_ACCOUNTS_EXCLUDED_VALUE) or
             Entity::verifyIdAndStripSign($value);
+    }
+
+    protected function validatePartnerType($attribute, $value)
+    {
+        (new Validator)->validatePartnerType($value);
     }
 
     public function fetchActivatedMerchantsBeforeTimestamp(

@@ -21,6 +21,8 @@ class Period
 
     const YEARLY       = 'yearly';
 
+    const MINUTE      = 'minute';
+
     const PERIOD_LIST = [
         self::HOURLY,
         self::DAILY,
@@ -29,6 +31,7 @@ class Period
         self::MONTHLY_DATE,
         self::MONTHLY_WEEK,
         self::YEARLY,
+        self::MINUTE,
     ];
 
     const ANCHORED_PERIODS = [

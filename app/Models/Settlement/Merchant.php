@@ -391,7 +391,8 @@ class Merchant
 
         $this->bankTransferAtpt = $fundTransferAttempt;
 
-        (new FundTransferAttempt\Core)->sendFTSFundTransferRequest($fundTransferAttempt, FundAccountType::BANK_ACCOUNT, true);
+        //TODO:: disabled fts flow for settlement
+        //(new FundTransferAttempt\Core)->sendFTSFundTransferRequest($fundTransferAttempt, true);
     }
 
     protected function saveSettlementEntitiesToDb()

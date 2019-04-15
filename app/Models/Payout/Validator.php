@@ -5,6 +5,7 @@ namespace RZP\Models\Payout;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Card;
+use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\FundAccount;
@@ -38,8 +39,12 @@ class Validator extends Base\Validator
         Entity::QUEUED          => 'sometimes|filled|boolean',
     ];
 
+    /**
+     * @see Batch\Validator Need to change for payout rules if any changes are done here
+     * @var array
+     */
     protected static $fundAccountPayoutRules = [
-        Entity::PURPOSE         => 'required|filled|string|max:30|alpha_dash',
+        Entity::PURPOSE         => 'required|filled|string|max:30|alpha_dash_space',
         Entity::AMOUNT          => 'required|integer|min:100|max:500000000',
         Entity::CURRENCY        => 'required|size:3|in:INR',
         Entity::NOTES           => 'sometimes|notes',
@@ -105,6 +110,7 @@ class Validator extends Base\Validator
             return;
         }
 
+        /** @var Entity $payout */
         $payout = $this->entity;
 
         $mode = $input[Entity::MODE];
@@ -117,7 +123,7 @@ class Validator extends Base\Validator
 
         $minRtgsAmount = NodalAccount::MIN_RTGS_AMOUNT * 100;
         $maxImpsAmount = NodalAccount::MAX_IMPS_AMOUNT * 100;
-        $maxUpiAmount = FundAccount\Validator::MAX_VPA_AMOUNT;
+        $maxUpiAmount  = FundAccount\Validator::MAX_VPA_AMOUNT;
 
         if ((($mode === Mode::RTGS) and ($amount < $minRtgsAmount)) or
             (($mode === Mode::IMPS) and ($amount > $maxImpsAmount)) or
@@ -251,11 +257,10 @@ class Validator extends Base\Validator
                 ]);
         }
 
-        // Currently, we support queued concept only for Fund Account type and for RX
+        // Currently, we support queued concept only for Fund Account type.
         // If we are supporting for others, the processor call needs to be fixed in Core.
         if (($payout->hasFundAccount() === false) or
-            ($payout->hasCustomer() === true) or
-            ($payout->balance->isTypeBanking() === false))
+            ($payout->hasCustomer() === true))
         {
             throw new Exception\LogicException(
                 'Payout is not of RX or not a proper fund_account type',

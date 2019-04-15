@@ -120,7 +120,29 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD,
             'public_error_description' => ''
         ],
-    ]
+    ],
 
+    'testLibrarySetPushForBankTransferPayment' => [
+        'request' => [
+            'url' => '/ecollect/validate',
+            'method' => 'post',
+            'content' => [
+                'payee_account'  => '111222001',
+                'payee_ifsc'     => 'IFSC0LALALA',
+                'payer_account'  => 'THISISANACCOUNTNUM',
+                'payer_ifsc'     => 'IFSC0LALALA',
+                'mode'           => 'neft',
+                'transaction_id' => 'nasljdnajsondsassada',
+                'time'           => 148415544000,
+                'amount'         => 50000,
+                'description'    => 'NEFT payment of 50,000 rupees',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'valid' => true,
+            ],
+        ],
+    ],
 ];
 // @codingStandardsIgnoreEnd

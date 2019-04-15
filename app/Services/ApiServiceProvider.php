@@ -64,10 +64,13 @@ class ApiServiceProvider extends BaseServiceProvider
     {
         foreach (E::CACHED_ENTITIES as $entity => $_)
         {
-            $entityClass = E::getEntityClass($entity);
-            $entityObserverClass = E::getEntityObserverClass($entity);
+            if ($entity !== E::AUTH_TOKEN)
+            {
+                $entityClass = E::getEntityClass($entity);
+                $entityObserverClass = E::getEntityObserverClass($entity);
 
-            $entityClass::observe($entityObserverClass);
+                $entityClass::observe($entityObserverClass);
+            }
         }
 
         // attaching payment observer since its invalidates
@@ -233,6 +236,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerRaven();
 
+        $this->registerBatchService();
+
         $this->registerScrooge();
 
         $this->registerElfin();
@@ -288,6 +293,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'mailgun',
             'maxmind',
             'raven',
+            'batchService',
             'scrooge',
             'repo',
             'elfin',
@@ -329,6 +335,18 @@ class ApiServiceProvider extends BaseServiceProvider
             $mock = $app['config']->get('applications.raven.mock');
 
             $implementation = $mock ? Mock\Raven::class : Raven::class;
+
+            return new $implementation($app);
+        });
+    }
+
+    protected function registerBatchService()
+    {
+        $this->app->bind('batchService', function($app)
+        {
+            $mock = $app['config']->get('applications.batch.mock');
+
+            $implementation = $mock ? Mock\BatchMicroService::class : BatchMicroService::class;
 
             return new $implementation($app);
         });
@@ -421,14 +439,7 @@ class ApiServiceProvider extends BaseServiceProvider
             // until we move redis_labs config as default connection
             $mutex = new Mutex($app);
 
-            if ($this->app->environment('testing') === true)
-            {
-                $mutex->setRedisClient(new Mock\RedisDualWrite($app));
-
-                return $mutex;
-            }
-
-            $mutex->setRedisClient(Redis::Connection('redis_labs'));
+            $mutex->setRedisClient(Redis::Connection());
 
             return $mutex;
         });

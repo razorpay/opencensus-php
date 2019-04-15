@@ -58,7 +58,16 @@ class EloquentEx extends \Razorpay\Spine\Entity
      */
     public function newEloquentBuilder($query)
     {
-        return new BuilderEx($query);
+        $builder = new BuilderEx($query);
+
+        $queryTimeout = $this->getQueryTimeout();
+
+        if (empty($queryTimeout) === false)
+        {
+            $builder->setQueryTimeout($queryTimeout);
+        }
+
+        return $builder;
     }
 
     /**

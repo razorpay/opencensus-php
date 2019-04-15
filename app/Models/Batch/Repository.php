@@ -3,7 +3,9 @@
 namespace RZP\Models\Batch;
 
 use RZP\Models\Base;
+use RZP\Models\Batch;
 use RZP\Base\BuilderEx;
+use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 
 class Repository extends Base\Repository
@@ -131,5 +133,53 @@ class Repository extends Base\Repository
         Entity::verifyIdAndStripSign($id);
 
         $query->where($idColumn, $id);
+    }
+
+    /**
+     * @param $query
+     * @param $params
+     *
+     *  For Type PaymentLink, merging all batches from new
+     *  batch service and API database. Hence not using count and skip
+     *  while extracting from db. Custom pagination has been added in BatchMicroService class
+     *  For Admin Auth, we are having different admin fetch entity for fileStore and Batch.
+     *  Hence forwarding the skip and count.
+     */
+    protected function addQueryParamSkip($query, $params)
+    {
+        if ($this->ignoreParamCountAndSkip($params))
+        {
+            $this->trace->info(TraceCode::GET_BATCHES_IGNORE_COUNT_SKIP, ["[Batch\Repository]-addQueryParamSkip", $query, $params]);
+        }
+        else
+        {
+            parent::addQueryParamSkip($query, $params);
+        }
+    }
+
+    /**
+     * @param $query
+     * @param $params
+     *
+     * Same as above comments
+     */
+    protected function addQueryParamCount($query, $params)
+    {
+        if ($this->ignoreParamCountAndSkip($params))
+        {
+            $this->trace->info(TraceCode::GET_BATCHES_IGNORE_COUNT_SKIP, ["[Batch\Repository]-addQueryParamCount", $query, $params]);
+        }
+        else
+        {
+            parent::addQueryParamCount($query, $params);
+        }
+    }
+
+    private function ignoreParamCountAndSkip($params): bool
+    {
+        return (($this->auth->isAdminAuth() === false)
+                && (isset($params['type']))
+                && ($this->app->batchService->isMigratedBatchType($params['type']) === true)
+                && ($this->app->batchService->shouldBatchServiceBeCalled()));
     }
 }

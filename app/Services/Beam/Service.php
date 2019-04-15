@@ -25,9 +25,19 @@ class Service
 
     const BEAM_TEST_JOBNAME = 'test_pass';
 
-    const ENCRYPTION_TYPE   = Type::AES_ENCRYPTION;
+    const BEAM_PUSH_BUCKET_NAME = 'bucket_name';
 
-    const ENCRYPTION_MODE   = \phpseclib\Crypt\Base::MODE_CBC;
+    const BEAM_PUSH_BUCKET_REGION = 'bucket_region';
+
+    const BEAM_PUSH_DECRYPTION  = 'decryption';
+
+    const BEAM_PUSH_DECRYPTION_TYPE = 'type';
+    const BEAM_PUSH_DECRYPTION_MODE = 'mode';
+    const BEAM_PUSH_DECRYPTION_KEY  = 'key';
+    const BEAM_PUSH_DECRYPTION_IV   = 'iv';
+
+    const BEAM_PUSH_DECRYPTION_TYPE_AES256 = 'aes256';
+    const BEAM_PUSH_DECRYPTION_MODE_GCM    = 'gcm';
 
     protected $mode;
 
@@ -68,6 +78,30 @@ class Service
 
         $data[self::BEAM_PUSH_JOBNAME] = $pushData[self::BEAM_PUSH_JOBNAME];
 
+        if (isset($pushData[self::BEAM_PUSH_BUCKET_NAME]) === true)
+        {
+            $data[self::BEAM_PUSH_BUCKET_NAME] = $pushData[self::BEAM_PUSH_BUCKET_NAME];
+        }
+
+        if (isset($pushData[self::BEAM_PUSH_BUCKET_REGION]) === true)
+        {
+            $data[self::BEAM_PUSH_BUCKET_REGION] = $pushData[self::BEAM_PUSH_BUCKET_REGION];
+        }
+
+        $traceData = $data;
+
+        if (isset($pushData[self::BEAM_PUSH_DECRYPTION]) === true)
+        {
+            $data[self::BEAM_PUSH_DECRYPTION] = $pushData[self::BEAM_PUSH_DECRYPTION];
+
+            $traceData[self::BEAM_PUSH_DECRYPTION] = $pushData[self::BEAM_PUSH_DECRYPTION];
+
+            if (isset($traceData[self::BEAM_PUSH_DECRYPTION][self::BEAM_PUSH_DECRYPTION_KEY]) === true)
+            {
+                unset($traceData[self::BEAM_PUSH_DECRYPTION][self::BEAM_PUSH_DECRYPTION_KEY]);
+            }
+        }
+
         $route = self::PUSH_ROUTE;
 
         if ($this->mode === Mode::TEST)
@@ -79,7 +113,9 @@ class Service
 
         $data = json_encode($data);
 
-        $request = [
+        $traceData = json_encode($traceData);
+
+        $request = $traceRequest = [
             'options' => [
                 'timeout' => 70
             ],
@@ -91,10 +127,13 @@ class Service
             'url'     => $this->getUrl($route)
         ];
 
+        // Don't set encryption key when tracing
+        $traceRequest['content'] = $traceData;
+
         $this->trace->info(
             TraceCode::BEAM_PUSH,
             [
-                'request'  => $request,
+                'request'  => $traceRequest,
                 'interval' => $intervalInfo
             ]
         );

@@ -1,0 +1,47 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/root.json",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "id",
+        "entity",
+        "ifsc",
+        "beneficiary_name",
+        "masked_account_number",
+        "creds",
+        "bank",
+        "refreshed_at",
+        "created_at"
+    ],
+    "properties": {
+        "id": {
+            "$ref" : "definitions.json#/bank_account/properties/id"
+        },
+        "entity": {
+            "$ref" : "definitions.json#/bank_account/properties/entity"
+        },
+        "ifsc": {
+            "$ref" : "definitions.json#/bank_account/properties/ifsc"
+        },
+        "beneficiary_name": {
+            "$ref" : "definitions.json#/bank_account/properties/beneficiary_name"
+        },
+        "masked_account_number": {
+            "$ref" : "definitions.json#/bank_account/properties/masked_account_number"
+        },
+        "creds": {
+            "$ref" : "definitions.json#/bank_account/properties/creds"
+        },
+        "bank": {
+            "$ref" : "definitions.json#/bank_account/properties/bank"
+        },
+        "refreshed_at": {
+            "$ref" : "definitions.json#/bank_account/properties/refreshed_at"
+        },
+        "created_at": {
+            "$ref" : "definitions.json#/bank_account/properties/created_at"
+        }
+    }
+}

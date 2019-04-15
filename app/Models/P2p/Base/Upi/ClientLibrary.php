@@ -15,6 +15,9 @@ class ClientLibrary
     const TOKEN             = 'token';
     const PAYLOAD           = 'payload';
     const FORMAT            = 'format';
+    const CODE              = 'code';
+    const STRING            = 'string';
+    const KI                = 'ki';
 
     /**
      * @var Transaction\Entity
@@ -98,7 +101,7 @@ class ClientLibrary
     private function setBankAccountProperties(array & $array)
     {
         $array['account']             = $this->bankAccount->getMaskedAccountNumber();
-        $array['registration_format'] = $this->bankAccount->parentBank->getUpiFormat();
+        $array['registration_format'] = $this->bankAccount->bank->getUpiFormat();
 
         foreach ($this->bankAccount->getCreds() as $cred)
         {

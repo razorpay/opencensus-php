@@ -2,9 +2,10 @@
 
 namespace RZP\Models\Gateway\File\Processor\Emi;
 
+use Mail;
 use Carbon\Carbon;
 
-use RZP\Constants\Mode;
+use RZP\Encryption;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
@@ -12,6 +13,7 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
+use RZP\Mail\Emi as EmiMail;
 use RZP\Constants\Environment;
 use RZP\Services\Beam\Service;
 use RZP\Models\Merchant\Detail;
@@ -19,6 +21,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
+use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Services\Beam\Constants as BeamConstants;
 
 class Sbi extends Base
@@ -29,12 +32,18 @@ class Sbi extends Base
     const FILE_NAME         = 'GGCMS1';
     const BEAM_FILE_TYPE    = 'emi';
 
-    const TEST_ENCRYPTION_KEY = 'T8DIATjuwS';
+    const TEST_ENCRYPTION_KEY = 'T8DIATjuwST8DIATjuwST8DIATjuwS22';
+
+    const TEST_ENCRYPTION_IV = '123456789012';
+
+    const S3_PATH = 'sbi_emi/';
 
     /**
      * @var $file FileStore\Entity
      */
     protected $file;
+
+    protected $iv;
 
     /**
      * Implements \RZP\Models\Gateway\File\Processor\Base::fetchEntities().
@@ -62,16 +71,23 @@ class Sbi extends Base
 
     public function generateEmiFilePassword()
     {
-        if ($this->app->environment(Environment::TESTING))
+        if ($this->app->environment(Environment::TESTING) === true)
         {
             return self::TEST_ENCRYPTION_KEY;
         }
 
-        return bin2hex(openssl_random_pseudo_bytes(256));
+        return openssl_random_pseudo_bytes(32);
+    }
+
+    // Don't send the encryption key over email
+    protected function sendEmiPassword($data)
+    {
+        return;
     }
 
     /**
      * Implements \RZP\Models\Gateway\File\Processor\Base::createFile($data).
+     * @param $data
      * @throws GatewayFileException
      */
     public function createFile($data)
@@ -85,22 +101,32 @@ class Sbi extends Base
         {
             $fileData = $this->formatDataForFile($data);
 
-            $fileName = $this->getFileToWriteName();
+            $fileName = self::S3_PATH . $this->getFileToWriteName();
 
             $metadata = $this->getH2HMetadata();
 
             $creator = new FileStore\Creator;
+
+            $this->iv = openssl_random_pseudo_bytes(12);
+
+            if ($this->app->environment(Environment::TESTING) === true)
+            {
+                $this->iv = self::TEST_ENCRYPTION_IV;
+            }
+
+            $encryptionParams = [
+                Encryption\AesGcmEncryption::SECRET => $data['password'],
+                Encryption\AesGcmEncryption::IV     => $this->iv,
+            ];
 
             $creator->extension(static::EXTENSION)
                     ->content($fileData)
                     ->name($fileName)
                     ->store(FileStore\Store::S3)
                     ->encrypt(
-                        Service::ENCRYPTION_TYPE,
-                        [
-                            'mode'   => Service::ENCRYPTION_MODE,
-                            'secret' => $data['password'],
-                        ])
+                        Encryption\Type::AES_GCM_ENCRYPTION,
+                        $encryptionParams
+                    )
                     ->type(static::FILE_TYPE)
                     ->entity($this->gatewayFile)
                     ->metadata($metadata);
@@ -135,7 +161,7 @@ class Sbi extends Base
         $totalTransactions = 0;
 
         // date 6 chars + time 4 chars + 4 seq numbers
-        $uniqueReferenceNum = Carbon::now()->format('mdyHi') . '0000';
+        $uniqueReferenceNum = Carbon::now()->setTimezone(Timezone::IST)->format('mdyHi') . '0000';
 
         /**
          * @var $emiPayment Payment\Entity
@@ -201,13 +227,13 @@ class Sbi extends Base
 
                 $principalAmount = $emiPayment->getAmount();
 
-                $totalAmount = $totalAmount + $principalAmount;
-
                 $rate = $emiPlan->getRate() / 100;
 
                 $tenure = $emiPlan->getDuration();
 
-                $businessName = substr($merchantDetail[Detail\Entity::BUSINESS_NAME], 0, 40);
+                $businessName = $this->getBusinessName($merchantDetail);
+
+                $emiAmount = $this->getEmiAmount($principalAmount, $rate, $tenure);
 
                 $body[] =
                     'DD' .    // record type always DD
@@ -231,7 +257,7 @@ class Sbi extends Base
                     $this->numpad('0', 7) .
                     $this->strpad('GG0001' . substr($mid, -4), 20) .
                     $this->numpad('0', 17) .
-                    $this->numpad($this->getEmiAmount($principalAmount, $rate, $tenure), 17) .
+                    $this->numpad($emiAmount, 17) .
                     $this->strpad('', 108);
 
                 $rowLength = strlen(end($body));
@@ -247,6 +273,10 @@ class Sbi extends Base
                             'payment_id'    => $emiPayment['id'],
                         ]);
                 }
+
+                // If a row is not added in the file, then that row's principal amount
+                // must not be added to the total amount
+                $totalAmount = $totalAmount + $principalAmount;
             }
             catch (\Exception $e)
             {
@@ -256,8 +286,8 @@ class Sbi extends Base
 
         $header = [
             'HH' .
-            Carbon::now()->format('dmY') .
-            Carbon::now()->format('His') .
+            Carbon::now()->setTimezone(Timezone::IST)->format('dmY') .
+            Carbon::now()->setTimezone(Timezone::IST)->format('His') .
             $this->numpad($totalTransactions, 5) .
             $this->numpad($totalAmount, 17) .
             'F' .
@@ -267,6 +297,49 @@ class Sbi extends Base
         $textRows = array_merge($header, $body);
 
         return implode("\r\n", $textRows);
+    }
+
+    protected function getBusinessName($merchantDetails)
+    {
+        $replaceArray = [
+            '.',
+            '!',
+            '@',
+            '#',
+            '$',
+            '%',
+            '^',
+            '&',
+            '*',
+            '(',
+            ')',
+            '~',
+            '`',
+            '_',
+            '+',
+            '=',
+            '|',
+            '\\',
+            '\'',
+            ':',
+            ';',
+            '<',
+            '>',
+            '?',
+            '/',
+            '{',
+            '}',
+            '-',
+            '_',
+            '@',
+            ',',
+            '[',
+            ']',
+        ];
+
+        $name = str_replace($replaceArray, " ", $merchantDetails[Detail\Entity::BUSINESS_NAME]);
+
+        return substr($name, 0, 40);
     }
 
     // @codingStandardsIgnoreLine
@@ -282,18 +355,25 @@ class Sbi extends Base
 
     protected function sendEmiFile($data)
     {
-        // todo: Push to beam once decryption is handled at beam side
-        /*
         $fullFileName = $this->file->getName() . '.' . $this->file->getExtension();
 
         $fileInfo = [$fullFileName];
 
+        $bucketConfig = $this->getBucketConfig();
+
         $data =  [
             Service::BEAM_PUSH_FILES   => $fileInfo,
-            Service::BEAM_PUSH_JOBNAME => BeamConstants::SBI_EMI_FILE_JOB_NAME
+            Service::BEAM_PUSH_JOBNAME => BeamConstants::SBI_EMI_FILE_JOB_NAME,
+            Service::BEAM_PUSH_BUCKET_NAME => $bucketConfig['name'],
+            Service::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
+            Service::BEAM_PUSH_DECRYPTION => [
+                Service::BEAM_PUSH_DECRYPTION_TYPE => Service::BEAM_PUSH_DECRYPTION_TYPE_AES256,
+                Service::BEAM_PUSH_DECRYPTION_MODE => Service::BEAM_PUSH_DECRYPTION_MODE_GCM,
+                Service::BEAM_PUSH_DECRYPTION_KEY  => bin2hex($data['password']),
+                Service::BEAM_PUSH_DECRYPTION_IV   => bin2hex($this->iv),
+            ]
         ];
 
-        // In seconds
         $timelines = [];
 
         $mailInfo = [
@@ -305,7 +385,39 @@ class Sbi extends Base
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
-        */
+
+        $this->sendConfirmationMail();
+    }
+
+    protected function sendConfirmationMail()
+    {
+        $recipients = $this->gatewayFile->getRecipients();
+
+        $date = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)->format('d-M-y');
+
+        $data = [
+            'body' => "Hi,\n\nThe transaction file for " . $date . " has been shared over SFTP. Please check and confirm."
+        ];
+
+        $emiFileMail = new EmiMail\File(
+            'SBI',
+            [],
+            $recipients,
+            $data
+        );
+
+        Mail::queue($emiFileMail);
+    }
+
+    protected function getBucketConfig()
+    {
+        $config = $this->app['config']->get('filestore.aws');
+
+        $bucketType = Bucket::getBucketConfigName(static::FILE_TYPE, $this->env);
+
+        $bucketConfig = $config[$bucketType];
+
+        return $bucketConfig;
     }
 
     protected function getFileToWriteName()
@@ -315,12 +427,12 @@ class Sbi extends Base
 
     protected function getEmiAmount($amount, $annualRate, $tenureInMonths)
     {
-        // $annualRate is rate/100, say .14
+        // $annualRate is rate/100, say a
         // $monthlyRate is a/12 i.e should be treated as .14/12
         // E = P x r x (1+r)^n/((1+r)^n – 1)
         // tenure in months
 
-        $monthlyRate = $annualRate / 12;
+        $monthlyRate = ($annualRate / 100) / 12;
 
         $expression = pow((1 + $monthlyRate), $tenureInMonths);
 
@@ -328,7 +440,7 @@ class Sbi extends Base
 
         $den = $expression - 1;
 
-        return round($num / $den);
+        return (round($num / $den));
     }
 
     //-------------------------- Helpers ------------------------------------//

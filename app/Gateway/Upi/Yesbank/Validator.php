@@ -13,6 +13,8 @@ class Validator extends Base\Validator
         'terminal.gateway_merchant_id'  => 'required|string',
         'merchant.category'             => 'required',
         'gateway_input.narration'       => 'sometimes|string',
+        'gateway_input.account_number'  => 'sometimes',
+        'gateway_input.ifsc_code'       => 'sometimes',
     ];
 
     protected static $payoutVerifyRules = [

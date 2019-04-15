@@ -29,6 +29,7 @@ abstract class Base extends BaseCore
     /** @var Transaction\Entity */
     protected $txn;
 
+    /** @var Merchant\Balance\Entity */
     protected $merchantBalance;
 
     protected $feesSplit;
@@ -233,6 +234,8 @@ abstract class Base extends BaseCore
 
     protected function setMerchantCredits()
     {
+        // TODO: There's no lock being taken here for balance!
+
         $this->setMerchantBalance();
 
         $merchant = $this->merchantBalance->merchant;

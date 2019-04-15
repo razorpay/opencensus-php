@@ -159,7 +159,7 @@ class BusinessSubCategoryMetaData
             Merchant::CATEGORY2            => Category::OTHERS,
             Entity::ACTIVATION_FLOW        => ActivationFlow::GREYLIST,
             self::EMI_ACTIVATION           => ActivationFlow::GREYLIST,
-            self::INTERNATIONAL_ACTIVATION => ActivationFlow::GREYLIST,
+            self::INTERNATIONAL_ACTIVATION => ActivationFlow::BLACKLIST,
         ],
         Sub::CLINIC                        => [
             Merchant::CATEGORY             => 8062,
@@ -1031,7 +1031,7 @@ class BusinessSubCategoryMetaData
             Merchant::CATEGORY              => 5399,
             Merchant::CATEGORY2             => Category::OTHERS,
             Entity::ACTIVATION_FLOW         => ActivationFlow::GREYLIST,
-            self::INTERNATIONAL_ACTIVATION  => ActivationFlow::GREYLIST,
+            self::INTERNATIONAL_ACTIVATION  => ActivationFlow::BLACKLIST,
         ];
     }
 
@@ -1063,25 +1063,28 @@ class BusinessSubCategoryMetaData
     }
 
     /**
-     * returns true if category or sub-category can have international enabled
-     * used in L1 Activation form
+     * returns feature value based on category or sub-category
+     *
+     * @param string $feature
      * @param string $category
      * @param string|null $subcategory
      *
-     * @return bool
+     * @return string
+     * @throws \RZP\Exception\BadRequestException
      */
-    public static function isFeatureCategoryOrSubcategoryWhitelisted(
+    public static function getFeatureValueUsingCategoryOrSubcategory(
         string $feature,
         string $category,
-        string $subCategory = null): bool
+        string $subCategory = null): string
     {
         $subCategoryMetaData = self::getSubCategoryMetaData($category, $subCategory);
 
         if (isset($subCategoryMetaData[$feature]) === true)
         {
-            return $subCategoryMetaData[$feature] === ActivationFlow::WHITELIST;
+            return $subCategoryMetaData[$feature];
         }
 
-        return false;
+        return ActivationFlow::BLACKLIST;
     }
+
 }

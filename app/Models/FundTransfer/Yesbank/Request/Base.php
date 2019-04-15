@@ -82,7 +82,7 @@ abstract class Base extends ApiProcessor
             case Type::PRIMARY:
                 return Config::get('nodal.yesbank.primary');
 
-            case Type::BANKIING:
+            case Type::BANKING:
                 return Config::get('nodal.yesbank.banking');
 
             case Type::SYNC:
@@ -239,6 +239,8 @@ abstract class Base extends ApiProcessor
     public function setEntity(BaseModel\Entity $entity)
     {
         $this->entity = $entity;
+
+        $this->ftaId = $entity->getId();
 
         return $this;
     }

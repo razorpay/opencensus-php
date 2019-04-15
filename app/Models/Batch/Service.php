@@ -3,6 +3,7 @@
 namespace RZP\Models\Batch;
 
 use RZP\Models\Base;
+use RZP\Exception\ServerNotFoundException;
 use RZP\Models\Merchant\Request\Service as MerchantRequestService;
 
 class Service extends Base\Service
@@ -16,11 +17,27 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input): array
     {
-        return $this->core()->fetchWithSettings($input, $this->merchant);
+        $fetchResult = $this->core()->fetchWithSettings($input, $this->merchant);
+
+        if (isset($input['type']) && ($this->app->batchService->isMigratedBatchType($input['type']) === true))
+        {
+            $fetchResult = $this->app->batchService->getBatchesFromBatchServiceAndMerge($fetchResult, $input, $this->merchant);
+        }
+
+        return $fetchResult;
     }
 
     public function getBatchById(string $id): array
     {
+        $responseBatch =  $this->app->batchService->getBatchesFromBatchService($id, $this->merchant);
+
+        if ($responseBatch != null)
+        {
+            $this->app->batchService->prepareBatchItemResponse($responseBatch);
+
+            return $responseBatch;
+        }
+
         $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $batch->toArrayPublic();
@@ -44,11 +61,22 @@ class Service extends Base\Service
 
     public function downloadBatch(string $id): array
     {
-        $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
+        try
+        {
+            $signedUrl = $this->app->batchService->downloadS3UrlForBatchOrFileStore($id, 'batch');
 
-        $signedUrl = $this->core()->downloadBatch($batch);
+            return [Entity::URL => $signedUrl];
+        }
+        catch (ServerNotFoundException $exception)
+        {
+            // Either Batch Microservice is down or not found
+            // check in DB.
+            $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
 
-        return [Entity::URL => $signedUrl];
+            $signedUrl = $this->core()->downloadBatch($batch);
+
+            return [Entity::URL => $signedUrl];
+        }
     }
 
     /**
@@ -82,7 +110,24 @@ class Service extends Base\Service
 
     public function fetchStatsOfBatch(string $id): array
     {
-        $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
+        $batch =  $this->app->batchService->getBatchesFromBatchService($id, $this->merchant);
+
+        if ($batch != null)
+        {
+            $responseEntity = (new ResponseEntity());
+
+            $responseEntity->setId($batch['id']);
+
+            $responseEntity->setType($batch['batch_type_id']);
+
+            $responseEntity->setTotalCount($batch['total_count']);
+
+            $batch = $responseEntity;
+        }
+        else
+        {
+            $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
+        }
 
         $response = $this->core()->fetchStatsOfBatch($batch);
 

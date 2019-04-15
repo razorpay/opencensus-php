@@ -8,6 +8,8 @@ final class Constants
 
     const VPA                           = 'vpa';
 
+    const CARD                          = 'card';
+
     const TYPE                          = 'type';
 
     const MODE                          = 'mode';
@@ -43,6 +45,10 @@ final class Constants
     const MODE_IMPS                     = 'IMPS';
 
     const SETTLEMENT                    = 'settlement';
+
+    const ISSUER_BANK                   = 'issuer_bank';
+
+    const VAULT_TOKEN                   = 'vault_token';
 
     const SOURCE_TYPE                   = 'source_type';
 

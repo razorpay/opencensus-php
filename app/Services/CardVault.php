@@ -15,6 +15,7 @@ class CardVault
     const VALUE             = 'value';
     const SECRET            = 'secret';
     const SUCCESS           = 'success';
+    const SCHEME            = 'scheme';
     const TOKENEX_TOKEN     = 'tokenex_token';
     const TOKENEX_TOKENS    = 'tokenex_tokens';
     const X_RAZORPAY_TASKID = 'X-Razorpay-TaskId';
@@ -50,12 +51,17 @@ class CardVault
     {
         if (array_key_exists('card', $input) === true)
         {
-            $input = [
+            $payload = [
                 self::SECRET => $input['card'],
             ];
         }
 
-        $response = $this->sendRequest('tokenize', 'post', $input);
+        if (array_key_exists(self::SCHEME, $input) === true)
+        {
+            $payload[self::SCHEME] = $input[self::SCHEME];
+        }
+
+        $response = $this->sendRequest('tokenize', 'post', $payload);
 
         if (empty($response[self::TOKEN]) === true)
         {
@@ -211,7 +217,15 @@ class CardVault
 
         $this->trace->info(TraceCode::VAULT_TOKEN_CREATE_INIT);
 
-        $response[self::TOKEN] = $this->tokenize($input);
+        $input[self::SECRET] = str_replace(array("\r", "\n"), '', $input[self::SECRET]);
+
+        $response = $this->sendRequest('tokenize', 'post', $input);
+
+        if (empty($response[self::TOKEN]) === true)
+        {
+            throw new Exception\RuntimeException(
+                'Tokenize request failed', ['data' => $response]);
+        }
 
         $this->trace->info(TraceCode::VAULT_TOKEN_CREATE_COMPLETE);
 

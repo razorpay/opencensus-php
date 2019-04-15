@@ -3,14 +3,14 @@
 namespace RZP\Tests\Functional\Gateway\Netbanking\Kotak;
 
 use Mail;
-use Mockery;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 
+use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Netbanking\Kotak\Fields;
 use RZP\Gateway\Netbanking\Kotak\Status;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -18,6 +18,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 class NetbankingKotakGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use PartnerTrait;
     use DbEntityFetchTrait;
 
     public function setUp()
@@ -58,6 +59,29 @@ class NetbankingKotakGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertTestResponse($payment);
+
+        $payment = $this->getLastEntity('netbanking', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentNetbankingEntity'], $payment);
+
+        $this->assertArrayHasKey('bank_payment_id', $payment);
+        $this->assertTrue(filter_var($payment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
+    }
+
+    public function testPartnerPayment()
+    {
+        list($clientId, $submerchantId) = $this->setUpPartnerAuthForPayment();
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment['bank'] = 'KKBK';
+
+        $this->doPartnerAuthPayment($payment, $clientId, $submerchantId);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertSame('authorized', $payment['status']);
 
         $payment = $this->getLastEntity('netbanking', true);
 
@@ -165,7 +189,8 @@ class NetbankingKotakGatewayTest extends TestCase
         {
             if ($action === 'verify_action')
             {
-                $content = '0521|21012019133808|OSRAZORECM|154805727845548|1|Y|0074864190|1858831011';
+                // Decrypted string is '0520|12032019150624|OSRAZOR|155238338329361|500|Y|123456|3210708649'
+                $content = 'HrEkFDECV6ZHX8zlc8RZZAcU+cnRDaeEOYBT3oSCIvk0wPTef+qGC+uSMYaR2CocJmRNSFhCgbBcapaT6xbOGoPGB7PfQi7aedT7mxks0QBj0pOYVKcXrCcUGkNghMyj';
             }
         });
 

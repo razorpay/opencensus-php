@@ -100,7 +100,7 @@ class ViewDataSerializer extends Base\Core
     {
         $merchantId = $this->merchant->getId();
 
-        $customLabels = [];
+        $customLabels = ['hide_issued_to' => false];
 
         switch ($merchantId)
         {
@@ -110,7 +110,8 @@ class ViewDataSerializer extends Base\Core
 
                 $customLabels = [
                     'receipt_number'           => 'CREDIT CARD NUMBER',
-                    'first_payment_min_amount' => 'Minimum Amount Due',
+                    'first_payment_min_amount' => 'MINIMUM AMOUNT DUE',
+                    'hide_issued_to'           => true,
                 ];
 
                 break;
@@ -120,8 +121,19 @@ class ViewDataSerializer extends Base\Core
             case Preferences::MID_AMIT_RBLLOAN:
 
                 $customLabels = [
-                    'receipt_number'           => 'Loan Account Number',
-                    'first_payment_min_amount' => 'EMI Amount',
+                    'receipt_number'           => 'LOAN ACCOUNT NUMBER',
+                    'first_payment_min_amount' => 'EMI AMOUNT',
+                    'hide_issued_to'           => true,
+                ];
+
+                break;
+
+            case Preferences::MID_RBL_TOTAL_BASE:
+
+                $customLabels = [
+                    'receipt_number' => 'CREDIT CARD NUMBER',
+                    'amount'         => 'TOTAL AMOUNT DUE',
+                    'hide_issued_to' => true,
                 ];
 
                 break;

@@ -13,11 +13,13 @@ use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Models\Vpa\Core;
 use RZP\Error\ErrorCode;
+use RZP\Models\Card\Type;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Jobs\ScroogeRefund;
 use RZP\Models\BankTransfer;
+use RZP\Models\Card\Issuer;
 use RZP\Jobs\ScroogeRefundRetry;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RefundSource;
@@ -363,13 +365,17 @@ trait Refund
 
     /**
      * Using to verify UPI refunds for all previous attempts to check if any of the attempt was successful.
+     * bulkRefundVerify param is used for returning response in the required format for `verifyRefundsInBulk` function.
      *
      * @param $refund
      * @param int $attempts
-     * @return array
+     * @param bool $bulkRefundVerify
+     * @return array (1D / 2D)
      */
-    public function verifyScroogeRefundWithAttempts($refund, int $attempts)
+    public function verifyScroogeRefundWithAttempts($refund, int $attempts, $bulkRefundVerify = false)
     {
+        $fileData = [];
+
         $payment = $refund->payment;
 
         $this->setPaymentAndRefundInfo($refund, $payment);
@@ -400,6 +406,17 @@ trait Refund
                         'verify_response'   => $verifyResponse,
                     ]);
 
+                if ($bulkRefundVerify === true)
+                {
+                    $fileData[] = [
+                        'refund_id'         => $refund->getId(),
+                        'attempt_number'    => $attempt,
+                        'success'           => ($success) ? 'true' : 'false',
+                        'payment_id'        => $payment->getId(),
+                        'verify_response'   => json_encode($verifyResponse)
+                    ];
+                }
+
                 ($success === true) ? ($successCount += 1 and $successAttempt[] = $attempt) : $refundFailedCount += 1;
 
                 if (($success === true) and ($refund->getAmount() === $payment->getAmount()))
@@ -418,8 +435,24 @@ trait Refund
                         'exception'         => $ex->getMessage(),
                     ]);
 
+                if ($bulkRefundVerify === true)
+                {
+                    $fileData[] = [
+                        'refund_id'         => $refund->getId(),
+                        'attempt_number'    => $attempt,
+                        'success'           => "Unexpected Failure",
+                        'payment_id'        => $payment->getId(),
+                        'verify_response'   => $ex->getMessage()
+                    ];
+                }
+
                 $failureCount += 1;
             }
+        }
+
+        if ($bulkRefundVerify === true)
+        {
+            return $fileData;
         }
 
         return [
@@ -771,6 +804,7 @@ trait Refund
         {
             throw new Exception\LogicException(
                 'Attempted to reverse an already reversed refund',
+                null,
                 [
                     'refund_id'  => $refund->getId(),
                     'status'     => $refund->getStatus(),
@@ -1267,6 +1301,8 @@ trait Refund
     {
         $data = $this->getGatewayDataForScroogeRefund($refund, $refund->payment, $data);
 
+        $refund->setIsScrooge(true);
+
         $refund->incrementAttempts();
 
         $this->repo->saveOrFail($refund);
@@ -1413,8 +1449,12 @@ trait Refund
             return $refund->getStatus();
         }
 
+        //
+        // Enabling refund retry on created state and initiated state.
+        // Refund is stuck in these state means refund is failed at some stage.
+        //
         if ((Payment\Gateway::isScroogeGatewayAndMerchant($refund->getGateway()) === true) and
-            ($refund->isCreated() === true))
+            (($refund->isCreated() === true) or ($refund->isInitiated() === true)))
         {
             $this->callRefundRetryFunctionOnScrooge($refund, $data);
         }
@@ -1646,7 +1686,8 @@ trait Refund
             'payment_amount'            => $payment->getAmount(),
             'payment_base_amount'       => $payment->getBaseAmount(),
             'payment_created_at'        => $payment->getCreatedAt(),
-            'payment_gateway_captured'  => $payment->getGatewayCaptured()
+            'payment_gateway_captured'  => $payment->getGatewayCaptured(),
+            'gateway_acquirer'          => $payment->terminal->getGatewayAcquirer() ?? $payment->getGateway(),
         ];
 
         $scroogeData = array_merge($refundData, $extraData);
@@ -1659,6 +1700,15 @@ trait Refund
         if (isset($input['vpa']) === true)
         {
             $scroogeData['fta_data']['vpa'] = $input['vpa'];
+        }
+        else if ($this->isPaymentCardAndCardTransferRefund($payment) === true)
+        {
+            $cardInput = $this->getCardIdInput($payment, $input);
+
+            if (empty($cardInput) === false)
+            {
+                $scroogeData['fta_data']['card_transfer'] = $cardInput;
+            }
         }
         else
         {
@@ -1895,6 +1945,10 @@ trait Refund
             {
                 $fta = $this->refundViaFundTransferToVpa($data, $fundTransferAttemptInput);
             }
+            else if ($this->isPaymentCardAndCardTransferRefund($payment))
+            {
+                $fta = $this->refundViaFundTransferToCard($payment, $data, $fundTransferAttemptInput);
+            }
             else
             {
                 $fta = $this->refundViaFundTransferToBankAccount($payment, $data, $fundTransferAttemptInput);
@@ -1981,9 +2035,29 @@ trait Refund
         });
     }
 
+    protected function refundViaFundTransferToCard(Payment\Entity $payment,
+                                                          array $data,
+                                                          array $fundTransferAttemptInput): FundTransferAttempt\Entity
+    {
+        $input = $this->getCardIdInput($payment, $data);
+
+        return $this->repo->transaction(function () use ($input, $payment, $fundTransferAttemptInput)
+        {
+            $fta = (new FundTransferAttempt\Core)->createWithCard($this->refund,
+                $payment->card,
+                $fundTransferAttemptInput);
+
+            return $fta;
+        });
+    }
+
     protected function isFundTransferAttemptRefund(Payment\Entity $payment, array $data = []): bool
     {
+        //
         // Refund is explicitly being attempted towards a new bank account or vpa
+        // Bank account or vpa input can come from dashboard also, but card_transfer will not come from dashboard.
+        // Not keeping check for card_transfer so that every time, we will evaluate if it is card_transfer refund.
+        //
         if ((isset($data['bank_account']) === true) or
             (isset($data['vpa']) === true))
         {
@@ -1993,7 +2067,8 @@ trait Refund
         // Certain types of payments have refunds routed via bank transfers
         if (($payment->isBankTransfer() === true) or
             ($this->isPaymentEmandateAndEmandateRefundGateway($payment) === true) or
-            ($this->isPaymentTpvAndBankTransferRefund($payment) === true))
+            ($this->isPaymentTpvAndBankTransferRefund($payment) === true) or
+            ($this->isPaymentCardAndCardTransferRefund($payment) === true))
         {
             return true;
         }
@@ -2023,6 +2098,66 @@ trait Refund
         }
 
         return false;
+    }
+
+    /**
+     * Checking if a card payment is valid to be refunded by Card instantly.
+     * If card_transfer_refund feature is present for the merchant,
+     * refund will be made on card. Card should be credit card, should have vault token stored and
+     * should belong to supported issuers.
+     *
+     * @param Payment\Entity $payment
+     * @return bool
+     */
+    protected function isPaymentCardAndCardTransferRefund(Payment\Entity $payment): bool
+    {
+        if (($payment->hasCard() === true) and
+            ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true) and
+            ($payment->card->getVaultToken() !== null))
+        {
+            $iin = $payment->card->iinRelation;
+
+            if ($iin !== null)
+            {
+                $cardType = strtolower($iin->getType());
+
+                $cardIssuer = $iin->getIssuer();
+
+                if (($cardType === Type::CREDIT) and
+                    (in_array($cardIssuer, Issuer::YESBANK_SUPPORTED_ISSUER) === true))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * `card_transfer` will be set for scrooge refunds.
+     *  Because when refund creation request is sent to scrooge, and if card refund is applicable, card_id will sent as
+     * fta data.
+     *
+     * This is different from bank_account or vpa because card_id will never come from dashboard input.
+     * It will always be read from database based on feature and issuers.
+     *
+     * @param Payment\Entity $payment
+     * @param array $data
+     * @return mixed
+     */
+    protected function getCardIdInput(Payment\Entity $payment, array $data = [])
+    {
+        if (isset($data['card_transfer']) === true)
+        {
+            $input = $data['card_transfer'];
+        }
+        else
+        {
+            $input['card_id'] = $payment->getCardId();
+        }
+
+        return $input;
     }
 
     protected function getBankAccountInput(Payment\Entity $payment, array $data = [])
@@ -2114,6 +2249,8 @@ trait Refund
         $vpa = (new Core)->createVpa($vpaInput);
 
         $this->refund->vpa()->associate($vpa);
+
+        $this->refund->saveOrFail();
     }
 
     protected function createAndAssociateBankAccount(array $bankAccountInput)
@@ -2126,6 +2263,8 @@ trait Refund
                 );
 
         $this->refund->bankAccount()->associate($bankAccount);
+
+        $this->refund->saveOrFail();
     }
 
     /**

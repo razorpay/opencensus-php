@@ -80,6 +80,7 @@ return array(
                 'slave_time_threshold'  => ConfigKey::HEARTBEAT_SLAVE_TIME_THRESHOLD,
                 'routes'                => ConfigKey::HEARTBEAT_ROUTES,
                 'traffic_percentage'    => ConfigKey::HEARTBEAT_TRAFFIC_PERCENTAGE,
+                'log_verbose'           => ConfigKey::HEARTBEAT_LOG_VERBOSE,
             ],
         ],
 
@@ -116,6 +117,7 @@ return array(
                 'slave_time_threshold'  => ConfigKey::HEARTBEAT_SLAVE_TIME_THRESHOLD,
                 'routes'                => ConfigKey::HEARTBEAT_ROUTES,
                 'traffic_percentage'    => ConfigKey::HEARTBEAT_TRAFFIC_PERCENTAGE,
+                'log_verbose'           => ConfigKey::HEARTBEAT_LOG_VERBOSE,
             ],
         ],
 
@@ -162,6 +164,16 @@ return array(
 
     /*
     |--------------------------------------------------------------------------
+    | DB Query Timeout Config -- Milliseconds
+    |--------------------------------------------------------------------------
+    |
+    | This is the query-timeout limit for all select queries. Value is in
+    | milliseconds.
+    */
+    'db_mysql_query_timeout' => env('DB_MYSQL_QUERY_TIMEOUT', 900000),
+
+    /*
+    |--------------------------------------------------------------------------
     | Migration Repository Table
     |--------------------------------------------------------------------------
     |
@@ -189,66 +201,21 @@ return array(
         'cluster' => false,
 
         'default' => [
-            'host'     => env('REDIS_HOST'),
-            'port'     => env('REDIS_PORT'),
-            'database' => env('REDIS_DB'),
-            'timeout'  => 30,
+            'host'     => env('REDIS_LABS_HOST'),
+            'port'     => env('REDIS_LABS_PORT'),
+            'timeout'  => 0.5,
+            'read_write_timeout' => 1,
+            'options'  => [
+                'parameters' => (empty(env('REDIS_LABS_PASSWORD')) === false) ? ['password' => env('REDIS_LABS_PASSWORD')] : [],
+            ]
         ],
 
         'secure' => [
             'host'     => env('SECURE_REDIS_HOST'),
             'port'     => env('SECURE_REDIS_PORT'),
             'database' => env('SECURE_REDIS_DB'),
-            'timeout'  => 30,
-        ],
-
-        'throttle' => [
-            'host'               => env('REDIS_LABS_HOST'),
-            'port'               => env('REDIS_LABS_PORT'),
-            'timeout'            => 5,
-            'read_write_timeout' => 5,
-            'options'            => [
-                'prefix'             => 'throttle:',
-                'parameters' => (empty(env('REDIS_LABS_PASSWORD')) === false) ? ['password' => env('REDIS_LABS_PASSWORD')] : [],
-            ],
-
-        ],
-
-        'query_cache_test' => [
-            'host'     => env('REDIS_LABS_HOST'),
-            'port'     => env('REDIS_LABS_PORT'),
-            'timeout'  => 30,
-            'options'  => [
-                'parameters' => (empty(env('REDIS_LABS_PASSWORD')) === false) ? ['password' => env('REDIS_LABS_PASSWORD')] : [],
-            ]
-        ],
-
-        'query_cache_live' => [
-            'host'     => env('REDIS_LABS_HOST'),
-            'port'     => env('REDIS_LABS_PORT'),
-            'timeout'  => 30,
-            'options'  => [
-                'parameters' => (empty(env('REDIS_LABS_PASSWORD')) === false) ? ['password' => env('REDIS_LABS_PASSWORD')] : [],
-            ]
-        ],
-
-        'redis_labs' => [
-            'host'     => env('REDIS_LABS_HOST'),
-            'port'     => env('REDIS_LABS_PORT'),
-            'timeout'  => 30,
-            'options'  => [
-                'parameters' => (empty(env('REDIS_LABS_PASSWORD')) === false) ? ['password' => env('REDIS_LABS_PASSWORD')] : [],
-            ]
-        ],
-
-        'session' => [
-            'host'     => env('REDIS_LABS_HOST'),
-            'port'     => env('REDIS_LABS_PORT'),
-            'timeout'  => 30,
-            'options'  => [
-                'prefix'             => 'session:',
-                'parameters' => (empty(env('REDIS_LABS_PASSWORD')) === false) ? ['password' => env('REDIS_LABS_PASSWORD')] : [],
-            ]
+            'timeout'  => 0.5,
+            'read_write_timeout' => 1,
         ],
     ],
 

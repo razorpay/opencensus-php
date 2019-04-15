@@ -9,6 +9,8 @@ class Constants
 {
     const PAYMENT = 'payment';
 
+    const COMMISSION_BREAK_UP_PREFIX = 'commission_';
+
     /**
      * List of entities for which the commission can be rolled out.
      * The entities defined here must implement the CommissionSourceInterface.
@@ -41,11 +43,11 @@ class Constants
     }
 
     /**
-     * @param CommissionSourceInterface $entity
+     * @param $entity
      *
      * @return bool
      */
-    public static function isValidCommissionSource(CommissionSourceInterface $entity): bool
+    public static function isValidCommissionSource($entity): bool
     {
         $entityType = $entity->getEntity();
 

@@ -254,4 +254,77 @@ class FundAccountValidationTest extends TestCase
 
         $this->createValidationWithFundAccountEntity();
     }
+
+    public function testFundAccValidationRetry()
+    {
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+        $this->testData[__FUNCTION__]['request']['content']['receipt'] =  'failed_response_insufficient_funds';
+
+        $this->startTest();
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+        $fundAccount = $this->getLastEntity('fund_account', true);
+        $fav         = $this->getLastEntity('fund_account_validation', true);
+
+        // Queue will be processed by now.
+        $this->assertEquals('created', $fav['status']);
+        $this->assertEquals($fundAccount['id'], 'fa_'.$fav['fund_account_id']);
+        $this->assertEquals(null, $fav['results']['account_status']);
+
+        // Fee and tax will be calculated at the time fund account validation is created.
+        $this->assertEquals(354, $fav['fees']);
+        $this->assertEquals(54, $fav['tax']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals('penny_testing', $fta['purpose']);
+        $this->assertEquals($fav['id'], $fta['source']);
+        $this->assertEquals('failed', $fta['status']);
+        $this->assertEquals($bankAccount['id'], 'ba_'.$fta['bank_account_id']);
+        $this->assertNotNull($fta['narration']);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals($fav['id'], $txn['entity_id']);
+        $this->assertEquals('fund_account_validation', $txn['type']);
+        $this->assertEquals('platform', $txn['fee_bearer']);
+        $this->assertEquals('postpaid', $txn['fee_model']);
+        $this->assertEquals(true, $txn['settled']);
+        $this->assertEquals(354, $txn['fee']);
+        $this->assertEquals(354, $txn['mdr']);
+        $this->assertEquals(54, $txn['tax']);
+        $this->assertEquals(0, $txn['debit']);
+        $this->assertEquals($fav['amount'], $txn['amount']);
+        // Note: because no fee credits are available
+        $this->assertEquals(1000000, $txn['balance']);
+        $this->assertEquals(0, $txn['fee_credits']);
+        $this->assertEquals('default', $txn['credit_type']);
+
+        // To make a success request remark should be changed
+        $this->fixtures->fund_account_validation->editEntity('fund_account_validation', $fav['id'], ['receipt' => 'lol']);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts/validations/retry',
+            'content' => ['fund_account_validation_ids' => [$fav['id']]]
+        ];
+
+        $this->ba->appAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $fav         = $this->getLastEntity('fund_account_validation', true);
+        // Queue will be processed by now.
+        $this->assertEquals('completed', $fav['status']);
+        $this->assertEquals($fundAccount['id'], 'fa_'.$fav['fund_account_id']);
+        $this->assertEquals('active', $fav['results']['account_status']);
+        $this->assertEquals('Someone', $fav['results']['registered_name']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals('penny_testing', $fta['purpose']);
+        $this->assertEquals($fav['id'], $fta['source']);
+        $this->assertEquals('processed', $fta['status']);
+        $this->assertEquals($bankAccount['id'], 'ba_'.$fta['bank_account_id']);
+        $this->assertNotNull($fta['narration']);
+    }
 }

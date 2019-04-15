@@ -5,11 +5,14 @@ namespace RZP\Models\FundTransfer\Yesbank\Request;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
+use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Yesbank\RequestConstants;
 
 class Beneficiary extends Base
 {
     const RECORD_EXIST = 'Record already exists';
+
+    const RECORD_EXIST_PENDING_APPROVAL = 'Record already exists but pending for approval';
 
     protected $urlIdentifier;
 
@@ -119,9 +122,21 @@ class Beneficiary extends Base
         {
             $data = $this->extractFailedData($responseContent);
 
-            if($data[Constants::ERROR] !== self::RECORD_EXIST)
+            if ($data[Constants::ERROR] === self::RECORD_EXIST_PENDING_APPROVAL)
             {
-                throw new LogicException($data[Constants::ERROR], ErrorCode::BENEFICIARY_REGISTRATION_FAILED_RESPONSE, $data);
+                $slackData = [
+                    'channel'        => $this->channel,
+                    'beneficiary_id' => $data['beneficiary_id'],
+
+                ];
+
+                (new SlackNotification)->send($data[Constants::ERROR], $slackData, null, 1);
+            }
+
+            if (($data[Constants::ERROR] !== self::RECORD_EXIST)  and
+                ($data[Constants::ERROR] !== self::RECORD_EXIST_PENDING_APPROVAL))
+            {
+                throw new LogicException($data[Constants::ERROR], null, $data);
             }
             else
             {

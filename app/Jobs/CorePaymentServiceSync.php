@@ -1,0 +1,138 @@
+<?php
+namespace RZP\Jobs;
+
+use App;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+use RZP\Gateway\Base\Entity as E;
+
+class CorePaymentServiceSync extends Job
+{
+    const REDIS_KEY_PREFIX = 'cps_sync_timestamp';
+    const MUTEX_KEY_PREFIX = 'cps_sync:';
+    const MUTEX_TIMEOUT    = 30;
+    const INPUT            = 'input';
+
+    /**
+     * @var string
+     */
+    protected $queueConfigKey = 'core_payment_service_sync';
+
+    /**
+     * @var array
+     */
+    protected $data;
+
+    /**
+     * Create a new job instance.
+     *
+     * @return void
+     */
+    public function __construct(array $data)
+    {
+        parent::__construct($data['mode']);
+
+        $this->data = $data;
+    }
+
+    /**
+     * Execute the job.
+     *
+     * @return void
+     */
+    public function handle()
+    {
+        parent::handle();
+
+        $this->trace->info(
+            TraceCode::CPS_GATEWAY_TRANSACTION_SYNC_REQUEST,
+            [
+                'mode' => $this->getMode(),
+                'data' => $this->data,
+            ]
+        );
+
+        try
+        {
+            $syncStatus = $this->syncGatewayTransaction();
+
+            $this->trace->info(
+                TraceCode::CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS,
+                [
+                    'data'        => $this->data,
+                    'sync_status' => $syncStatus,
+                ]);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::CPS_GATEWAY_TRANSACTION_JOB_EXCEPTION,
+                $this->data);
+        }
+        finally
+        {
+            $this->delete();
+        }
+    }
+
+    protected function syncGatewayTransaction()
+    {
+        $app = App::getFacadeRoot();
+
+        $gateway = $this->data['gateway'];
+
+        $paymentId = $this->data[E::PAYMENT_ID];
+
+        $action = $this->data[self::INPUT][E::ACTION];
+
+        $gatewaySync = 'RZP\Gateway\\' . studly_case($gateway) . '\\CpsGatewayEntitySync';
+
+        if ((class_exists($gatewaySync) === false) or (empty($this->data[E::PAYMENT_ID]) === true))
+        {
+            return;
+        }
+
+        $app['api.mutex']->acquireAndRelease(
+            self::MUTEX_KEY_PREFIX . $paymentId,
+            function () use ($gateway, $paymentId, $action, $gatewaySync)
+            {
+                $lastProcessedTime = $this->getLastProcessedTime($gateway, $paymentId, $action);
+
+                if (empty($lastProcessedTime) === true)
+                {
+                    $lastProcessedTime = $this->data['timestamp'];
+                }
+
+                if ($lastProcessedTime <= $this->data['timestamp'])
+                {
+                    (new $gatewaySync)->syncGatewayTransaction($this->data['gateway_transaction'], $this->data[self::INPUT]);
+
+                    $this->setLastProcessedTime($gateway, $paymentId, $action, $this->data['timestamp']);
+                }
+            },
+            self::MUTEX_TIMEOUT,
+            ErrorCode::BAD_REQUEST_CPS_ANOTHER_SYNC_IN_PROGRESS
+        );
+    }
+
+    protected function getLastProcessedTime(string $gateway, string $paymentId, string $action)
+    {
+        $app = App::getFacadeRoot();
+
+        $syncTimestampKey =  implode('_', [self::REDIS_KEY_PREFIX, $gateway, $paymentId, $action]);
+
+        return $app['cache']->get($syncTimestampKey);
+    }
+
+    protected function setLastProcessedTime(string $gateway, string $paymentId, string $action, int $timestamp)
+    {
+        $app = App::getFacadeRoot();
+
+        $syncTimestampKey =  implode('_', [self::REDIS_KEY_PREFIX, $gateway, $paymentId, $action]);
+
+        $app['cache']->set($syncTimestampKey, $timestamp);
+    }
+}

@@ -1,0 +1,64 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://api.razorpay.com/v1/p2p/json_schema/api/root.json",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "entity",
+        "count",
+        "items"
+    ],
+    "properties": {
+        "entity": {
+            "type": "string",
+            "enum": [
+                "collection"
+            ],
+            "description" : "For multiple resources the entity type will be collection"
+        },
+        "count": {
+            "type": "integer",
+            "description" : "Total number of items in the collection"
+        },
+        "items": {
+            "type": "array",
+            "description" : "List of items",
+            "items": {
+                "type": "object",
+                "required": [
+                    "entity",
+                    "ifsc",
+                    "name",
+                    "upi",
+                    "active"
+                ],
+                "properties": {
+                    "entity": {
+                        "type": "string",
+                        "enum": [
+                            "bank"
+                        ],
+                        "description" : "Type of entity"
+                    },
+                    "ifsc": {
+                        "type": "string",
+                        "description" : "Unique identifier for the bank"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description" : "Name of the bank"
+                    },
+                    "upi": {
+                        "type": "boolean",
+                        "description" : "Tells whether UPI is available on bank or not"
+                    },
+                    "active": {
+                        "type": "boolean",
+                        "description" : "Tells if bank is currently active or not"
+                    }
+                }
+            }
+        }
+    }
+}

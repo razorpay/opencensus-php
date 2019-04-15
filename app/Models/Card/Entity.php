@@ -13,7 +13,8 @@ use RZP\Models\Merchant;
 use RZP\Models\Bank\IFSC;
 
 /**
- * @property Merchant\Entity    $merchant
+ * @property Merchant\Entity $merchant
+ * @property mixed           iinRelation
  */
 class Entity extends Base\PublicEntity
 {
@@ -87,7 +88,12 @@ class Entity extends Base\PublicEntity
 
     protected $guarded = [self::ID];
 
-    protected static $modifiers = ['expiry_year', 'expiry_month', 'number'];
+    protected static $modifiers = [
+        self::EXPIRY_YEAR,
+        self::EXPIRY_MONTH,
+        self::NUMBER,
+        self::NAME,
+    ];
 
     protected static $generators = [
         self::ID,
@@ -211,9 +217,16 @@ class Entity extends Base\PublicEntity
 
     protected function generateVaultToken($input)
     {
-        if (isset($input[self::VAULT]))
+        if (isset($input[self::VAULT]) === true)
         {
             $tempInput['card'] = $input['number'];
+
+            $tempInput['scheme'] = Card\Vault::RZP_VAULT_SCHEME;
+
+            if ($input[self::VAULT] === Card\Vault::RZP_ENCRYPTION)
+            {
+                $tempInput['scheme'] = Card\Vault::RZP_ENCRYPTION_SCHEME;
+            }
 
             $vaultToken = (new Card\CardVault)->getVaultToken($tempInput);
 
@@ -256,6 +269,17 @@ class Entity extends Base\PublicEntity
             $input[Entity::EXPIRY_YEAR]    = self::DUMMY_EXPIRY_YEAR;
             $input[Entity::EXPIRY_MONTH]   = self::DUMMY_EXPIRY_MONTH;
             $input[Entity::CVV]            = self::DUMMY_CVV;
+        }
+    }
+
+    public function modifyName(& $input)
+    {
+        // Don't want empty strings of varying length
+        // in the DB, replacing them all with null
+        if ((isset($input[self::NAME]) === true) and
+            (trim($input[self::NAME]) === ''))
+        {
+            $input[self::NAME] = '';
         }
     }
 

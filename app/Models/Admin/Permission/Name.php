@@ -56,6 +56,7 @@ class Name
     const VIEW_MERCHANT_COMPANY_INFO          = 'view_merchant_company_info';
     const VIEW_MERCHANT_CREDITS_LOG           = 'view_merchant_credits_log';
     const ADD_MERCHANT_CREDITS                = 'add_merchant_credits';
+    const EDIT_MERCHANT_CREDITS               = 'edit_merchant_credits';
     const DELETE_MERCHANT_CREDITS             = 'delete_merchant_credits';
     const EDIT_MERCHANT_SCREENSHOT            = 'edit_merchant_screenshot';
     const VIEW_PAYMENT_VERIFY                 = 'view_payment_verify';
@@ -73,12 +74,15 @@ class Name
     const CREATE_SETTLEMENT_INITIATE          = 'create_settlement_initiate';
     const DELETE_TERMINAL                     = 'delete_terminal';
     const EDIT_TERMINAL                       = 'edit_terminal';
+    const TERMINAL_MANAGE_MERCHANT            = 'terminal_manage_merchant';
+    const TOGGLE_TERMINAL                     = 'toggle_terminal';
     const CREATE_SETTLEMENTS_RECONCILE        = 'create_settlements_reconcile';
     const RETRY_SETTLEMENT                    = 'retry_settlement';
     const SETTLEMENT_BULK_UPDATE              = 'settlement_bulk_update';
     const CREATE_NODAL_ACCOUNT_TRANSFER       = 'create_nodal_account_transfer';
     const MERCHANT_INVOICE_EDIT               = 'merchant_invoice_edit';
     const MERCHANT_EMAIL_EDIT                 = 'merchant_edit_email';
+    const MERCHANT_PRICING_PLANS              = 'merchant_pricing_plans';
     const CREATE_RECONCILIATE                 = 'create_reconciliate';
     const VIEW_ACTIVATION_FORM                = 'view_activation_form';
     const EDIT_MERCHANT_LOCK_ACTIVATION       = 'edit_merchant_lock_activation';
@@ -211,6 +215,7 @@ class Name
     const RETRY_REFUND                        = 'retry_refund';
     const DOWNLOAD_NON_MERCHANT_REPORT        = 'download_non_merchant_report';
     const CREATE_VIRTUAL_ACCOUNTS             = 'create_virtual_accounts';
+    const BANK_TRANSFER_INSERT                = 'bank_transfer_insert';
     const CREATE_SELF_SERVE_REPORT            = 'create_self_serve_report';
     const CREATE_GATEWAY_DOWNTIME             = 'create_gateway_downtime';
     const VIEW_GATEWAY_DOWNTIME               = 'view_gateway_downtime';
@@ -219,6 +224,8 @@ class Name
     const RAZORX_APPROVERS                    = 'razorx_approvers';
     const USER_PASSWORD_RESET                 = 'user_password_reset';
     const MODIFY_SUBSCRIPTION_DATA            = 'modify_subscription_data';
+    const VIEW_OPERATIONS_REPORT              = 'view_operations_report';
+    const VIEW_SCROOGE_REFUNDS                = 'view_scrooge_refunds';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,

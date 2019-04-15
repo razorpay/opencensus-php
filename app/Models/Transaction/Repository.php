@@ -2,8 +2,9 @@
 
 namespace RZP\Models\Transaction;
 
-use Carbon\Carbon;
 use DB;
+use Cache;
+use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Base;
@@ -16,6 +17,7 @@ use RZP\Gateway\Billdesk;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
 use RZP\Constants\Entity as ConstantEntity;
 
@@ -77,10 +79,11 @@ class Repository extends Base\Repository
      * @param array $inMerchantIds
      * @param array $notInMerchantIds
      * @param boolean $fetchAll
+     * @param boolean $useLimit
      * @return mixed
      */
     public function fetchUnsettledTransactions(
-        $timestamp, string $channel, array $inMerchantIds = [], array $notInMerchantIds = [], bool $fetchAll = true)
+        $timestamp, string $channel, array $inMerchantIds = [], array $notInMerchantIds = [], bool $fetchAll = true, bool $useLimit = false)
     {
         // SELECT `transactions`.`id`.`merchant_id`
         // FROM transactions
@@ -133,6 +136,16 @@ class Repository extends Base\Repository
                       ->where($transactionSettled, 0)
                       ->where($transactionChannel, $channel)
                       ->where($transactionType, '!=', Type::SETTLEMENT);
+
+        if ($useLimit === true)
+        {
+            $limit = (int) Cache::get(ConfigKey::SETTLEMENT_TRANSACTION_LIMIT);
+
+            if ($limit !== 0)
+            {
+                $query->limit($limit);
+            }
+        }
 
         $results = $query->get();
 

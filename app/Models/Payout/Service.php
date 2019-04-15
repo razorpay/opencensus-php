@@ -151,8 +151,8 @@ class Service extends Base\Service
     {
         $merchantIdsWhitelist = $input['merchant_ids'] ?? [];
         $merchantIdsBlacklist = $input['merchant_ids_not'] ?? [];
-        $from = $input['from'] ?? null;
-        $to = $input['to'] ?? null;
+        $from                 = $input['from'] ?? null;
+        $to                   = $input['to'] ?? null;
 
         $queuedPayouts = $this->repo->payout->fetchQueuedPayouts($merchantIdsWhitelist,
                                                                  $merchantIdsBlacklist,

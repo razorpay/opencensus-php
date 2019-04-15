@@ -8,12 +8,15 @@ use RZP\Models\P2p\Device\RegisterToken;
 
 class Validator extends Base\Validator
 {
-    protected static $startVerificationRules;
-    protected static $startVerificationSuccessRules;
-    protected static $getVerificationStatusRules;
-    protected static $getVerificationStatusSuccessRules;
-    protected static $refreshClTokenRules;
-    protected static $refreshClTokenSuccessRules;
+    protected static $editRules;
+    protected static $initiateVerificationRules;
+    protected static $initiateVerificationSuccessRules;
+    protected static $verificationRules;
+    protected static $verificationSuccessRules;
+    protected static $initiateGetTokenRules;
+    protected static $initiateGetTokenSuccessRules;
+    protected static $getTokenRules;
+    protected static $getTokenSuccessRules;
     protected static $deregisterRules;
     protected static $deregisterSuccessRules;
 
@@ -56,7 +59,12 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    public function makeStartVerificationRules()
+    public function makeEditRules()
+    {
+        return $this->makeCreateRules();
+    }
+
+    public function makeInitiateVerificationRules()
     {
         $rules = $this->makeRules([
             Entity::CUSTOMER_ID    => 'required|min:19',
@@ -70,12 +78,10 @@ class Validator extends Base\Validator
             Entity::GEOCODE        => 'required',
         ]);
 
-        $rules->merge((new DeviceToken\Validator)->makeClRules());
-
         return $rules;
     }
 
-    public function makeStartVerificationSuccessRules()
+    public function makeInitiateVerificationSuccessRules()
     {
         $rules = $this->makeRules();
 
@@ -84,16 +90,16 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    public function makeGetVerificationStatusRules()
+    public function makeVerificationRules()
     {
         $rules = $this->makeRules();
 
-        $rules->merge((new RegisterToken\Validator)->makeVerificationStatusRules());
+        $rules->merge((new RegisterToken\Validator)->makeVerificationRules());
 
         return $rules;
     }
 
-    public function makeGetVerificationStatusSuccessRules()
+    public function makeVerificationSuccessRules()
     {
         $rules = $this->makeRules([
             RegisterToken\Entity::TOKEN         => 'required',
@@ -103,27 +109,50 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    public function makeRefreshClTokenRules()
+    public function makeInitiateGetTokenRules()
     {
-        $rules = $this->makeRules([]);
-
-        $rules->merge((new DeviceToken\Validator)->makeClRules());
+        $rules = $this->makeRules([
+            Entity::SIMID          => 'required',
+            Entity::UUID           => 'required',
+            Entity::TYPE           => 'required',
+            Entity::OS             => 'required',
+            Entity::OS_VERSION     => 'required',
+            Entity::APP_NAME       => 'required',
+            Entity::IP             => 'required',
+            Entity::GEOCODE        => 'required',
+        ]);
 
         return $rules;
     }
 
-    public function makeRefreshClTokenSuccessRules()
+    public function makeInitiateGetTokenSuccessRules()
     {
         $rules = $this->makeRules();
 
-        $rules->merge((new DeviceToken\Validator)->makeClSuccessRules());
+        return $rules;
+    }
+
+    public function makeGetTokenRules()
+    {
+        $rules = $this->makeRules([]);
+
+        return $rules;
+    }
+
+    public function makeGetTokenSuccessRules()
+    {
+        $rules = $this->makeRules([
+            DeviceToken\Entity::GATEWAY_DATA         => 'required',
+        ]);
 
         return $rules;
     }
 
     public function makeDeregisterRules()
     {
-        $rules = $this->makeRules();
+        $rules = $this->makeRules([
+            'force' => 'sometimes|bool|in:1'
+        ]);
 
         return $rules;
     }

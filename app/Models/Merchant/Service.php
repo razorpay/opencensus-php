@@ -749,15 +749,19 @@ class Service extends Base\Service
 
     public function getPricingPlan($id)
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
+        $orgId = $this->auth->getOrgId();
+
+        $merchant = $this->repo->merchant->findByIdAndOrgId($id, $orgId);
 
         $pricingPlanId = $merchant->getPricingPlanId();
 
         $plan = new Plan;
 
-        if(empty($pricingPlanId) === false)
+        if (empty($pricingPlanId) === false)
         {
-            $plan = $this->repo->pricing->getPricingPlanById($pricingPlanId);
+            Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+            $plan = $this->repo->pricing->getPricingPlanByIdAndOrgId($pricingPlanId, $orgId);
         }
 
         return $plan->toArrayPublic();
@@ -846,6 +850,7 @@ class Service extends Base\Service
             [
                 'merchant_id' => $id,
             ]);
+
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         if ($merchant->isActivated() === false)
@@ -872,6 +877,23 @@ class Service extends Base\Service
         $this->repo->saveOrFail($merchant);
 
         $this->logActionToSlack($merchant, 'disable');
+
+        return $merchant->toArrayPublic();
+    }
+
+    public function toggleInternational($input)
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_INTERNATIONAL_TOGGLE_REQUEST,
+            [
+                'input'     => $input,
+            ]);
+
+        (new Validator)->validateInput('toggleInternational', $input);
+
+        $toggleValue = (bool) ($input['international'] ?? false);
+
+        $merchant = $this->core()->toggleInternational($this->merchant, $toggleValue);
 
         return $merchant->toArrayPublic();
     }
@@ -1468,8 +1490,8 @@ class Service extends Base\Service
         $key2 = $mid . '_scheduled_es_pricing';
 
         return [
-            $key1 => Cache::get($key1) ?? 0.3,
-            $key2 => Cache::get($key2) ?? 0.2
+            $key1 => Cache::get('espricing:' . $key1) ?? 0.3,
+            $key2 => Cache::get('espricing:' . $key2) ?? 0.2
         ];
     }
 

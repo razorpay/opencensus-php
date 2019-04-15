@@ -19,9 +19,22 @@ class BankAccountController extends Controller
         return $this->response($response);
     }
 
+    public function initiateRetrieve()
+    {
+        $input = $this->request()->all();
+
+        $input[Entity::BANK_ID] = $this->request()->route('bank_id');
+
+        $response = $this->service->initiateRetrieve($input);
+
+        return $this->response($response);
+    }
+
     public function retrieve()
     {
-        $input[Entity::BANK] = $this->request()->route('bank_code');
+        $input = $this->request()->all();
+
+        $input[Entity::BANK_ID] = $this->request()->route('bank_id');
 
         $response = $this->service->retrieve($input);
 
@@ -48,6 +61,8 @@ class BankAccountController extends Controller
 
     public function initiateSetUpiPin()
     {
+        $input = $this->request()->all();
+
         $input[Entity::ID] = $this->request()->route('ba_id');
 
         $response = $this->service->initiateSetUpiPin($input);
@@ -68,6 +83,8 @@ class BankAccountController extends Controller
 
     public function initiateFetchBalance()
     {
+        $input = $this->request()->all();
+
         $input[Entity::ID] = $this->request()->route('ba_id');
 
         $response = $this->service->initiateFetchBalance($input);

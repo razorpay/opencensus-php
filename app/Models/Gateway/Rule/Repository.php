@@ -43,63 +43,23 @@ class Repository extends Base\Repository
     {
         $query = $this->newQuery();
 
-        $this->buildSelectionQuery($query, $criteria);
+        $this->buildSelectionQuery($query, $criteria, Entity::NULLABLE_ATTRIBUTES);
 
         $rules = $query->get();
 
         return $rules;
     }
 
-    public function fetchAuthenitcationRulesForSearchCriteria(array $criteria): base\PublicCollection
+    public function fetchAuthenticationRulesForSearchCriteria(array $criteria): base\PublicCollection
     {
         $query = $this->newQuery();
 
-        $this->buildAuthenitcationSelectionQuery($query, $criteria);
+        $this->buildSelectionQuery($query, $criteria, Entity::AUTHENTICATION_NULLABLE_ATTRIBUTES);
 
         $rules = $query->get();
 
         return $rules;
 
-    }
-
-    public function buildAuthenitcationSelectionQuery($query, $params)
-    {
-        foreach ($params as $key => $value)
-        {
-            if ($params[$key] !== null)
-            {
-                $query->where(function ($query) use ($key, $params)
-                {
-                    $func = 'addQueryFor' . studly_case($key);
-
-                    if (method_exists($this, $func) === true)
-                    {
-                        $this->$func($query, $params);
-                    }
-                    else if (is_array($params[$key]) === true)
-                    {
-                        $query->whereIn($key, $params[$key]);
-                    }
-                    else
-                    {
-                        $query->where($key, '=', $params[$key]);
-                    }
-                    // For some attributes in which null satisfies the selection
-                    // criteria add a clause like IR WHERE <key> IS NULL
-                    if (in_array($key, Entity::AUTHENTICATION_NULLABLE_ATTRIBUTES, true) === true)
-                    {
-                        $query->orWhereNull($key);
-                    }
-                });
-            }
-            else
-            {
-                if (in_array($key, Entity::AUTHENTICATION_NULLABLE_ATTRIBUTES, true) === true)
-                {
-                    $query->whereNull($key);
-                }
-            }
-        }
     }
 
     /**
@@ -118,11 +78,11 @@ class Repository extends Base\Repository
      * @param  QueryBuilder  $query  Query object
      * @param  array         $params query params
      */
-    protected function buildSelectionQuery(QueryBuilder $query, array $params)
+    protected function buildSelectionQuery(QueryBuilder $query, array $params, array $nullableParams = [])
     {
         foreach ($params as $key => $value)
         {
-            $this->addQueryForAttribute($query, $key, $params);
+            $this->addQueryForAttribute($query, $key, $params, $nullableParams);
         }
     }
 
@@ -131,11 +91,11 @@ class Repository extends Base\Repository
      * @param $key
      * @param $params
      */
-    protected function addQueryForAttribute(QueryBuilder $query, string $key, array $params)
+    protected function addQueryForAttribute(QueryBuilder $query, string $key, array $params, array $nullableParams)
     {
         if ($params[$key] !== null)
         {
-            $query->where(function ($query) use ($key, $params)
+            $query->where(function ($query) use ($key, $params, $nullableParams)
             {
                 $func = 'addQueryFor' . studly_case($key);
 
@@ -153,7 +113,7 @@ class Repository extends Base\Repository
                 }
                 // For some attributes in which null satisfies the selection
                 // criteria add a clause like IR WHERE <key> IS NULL
-                if (in_array($key, Entity::NULLABLE_ATTRIBUTES, true) === true)
+                if (in_array($key, $nullableParams, true) === true)
                 {
                     $query->orWhereNull($key);
                 }
@@ -161,7 +121,7 @@ class Repository extends Base\Repository
         }
         else
         {
-            if (in_array($key, Entity::NULLABLE_ATTRIBUTES, true) === true)
+            if (in_array($key, $nullableParams, true) === true)
             {
                 $query->whereNull($key);
             }

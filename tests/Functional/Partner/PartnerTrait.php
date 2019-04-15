@@ -3,8 +3,10 @@
 namespace RZP\Tests\Functional\Partner;
 
 use RZP\Models\Merchant;
+use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Partner\Config as PartnerConfig;
+use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use RZP\Tests\Functional\Fixtures\Entity\Org as Org;
 
 trait PartnerTrait
@@ -75,7 +77,10 @@ trait PartnerTrait
 
     protected function getDefaultPartnerConfigAttributes()
     {
-        return ['commissions_enabled' => 1];
+        return [
+            'commissions_enabled' => 1,
+            'default_plan_id'     => Pricing::DEFAULT_PRICING_PLAN_ID,
+        ];
     }
 
     public function createSubMerchant($merchant, $app, $subMerchantAttributes = [])
@@ -120,14 +125,14 @@ trait PartnerTrait
             ]
         );
 
-        $this->createOAuthApplication(
+        $application = $this->createOAuthApplication(
             [
                 'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
                 'id'          => Constants::DEFAULT_PLATFORM_APP_ID,
             ]
         );
 
-        $this->fixtures->create(
+        $accessMap = $this->fixtures->create(
             'merchant_access_map',
             [
                 'merchant_id'     => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
@@ -136,6 +141,8 @@ trait PartnerTrait
                 'entity_owner_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
             ]
         );
+
+        return [$application, $accessMap];
     }
 
     public function setSubmerchantPrivateAuth($merchantId = Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID)
@@ -161,5 +168,43 @@ trait PartnerTrait
             'plan_id' => $planId,
             'type'    => 'pricing',
         ]);
+    }
+
+    public function setPostpaidFeeModel(string $submerchantId)
+    {
+        $this->fixtures->merchant->edit($submerchantId, ['fee_model' => 'postpaid']);
+    }
+
+    /**
+     * The method will simulate exact environment as of Partner Auth Merchant.
+     * 1. Load the oAuth Factories required for oAuth Models
+     * 2. Setup the partner account for Test Merchant
+     * 3. Remove the key for the test merchant.
+     *
+     * @return array
+     */
+    protected function setUpPartnerAuthForPayment()
+    {
+        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->app->make(Factory::class)->load($factoryPath);
+
+        $partnerId = '100000Razorpay';
+
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev', [], $partnerId);
+
+        $submerchantId = '10000000000000';
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => $submerchantId,
+            ]
+        );
+
+        $this->fixtures->edit('key', 'TheTestAuthKey', ['expired_at' => time() - 20]);
+
+        return [$client->getId(), 'acc_' . $submerchantId];
     }
 }

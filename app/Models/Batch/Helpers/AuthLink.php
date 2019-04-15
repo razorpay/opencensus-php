@@ -26,9 +26,14 @@ class AuthLink
 
         $expireBy = $entry[Batch\Header::AUTH_LINK_EXPIRE_BY];
 
+        if (is_numeric($expireBy) === true) {
+
+            $expireBy = self::fromExcelToEpoch($expireBy);
+        }
+
         if (empty($expireBy) === false)
         {
-            $expireBy = Utility::parseAsEpoch($entry[Batch\Header::AUTH_LINK_EXPIRE_BY]);
+            $expireBy = Utility::parseAsEpoch($expireBy);
         }
 
         $amount = $entry[Batch\Header::AUTH_LINK_AMOUNT_IN_PAISE];
@@ -108,9 +113,15 @@ class AuthLink
 
         $expiry = $entry[Batch\Header::AUTH_LINK_TOKEN_EXPIRE_BY];
 
+        if (is_numeric($expiry) === true) {
+
+            $expiry = self::fromExcelToEpoch($expiry);
+        }
+
+
         if (empty($expiry) === false)
         {
-            $expiry = Utility::parseAsEpoch($entry[Batch\Header::AUTH_LINK_TOKEN_EXPIRE_BY]);
+            $expiry = Utility::parseAsEpoch($expiry);
 
             $input[SubscriptionRegistration\Entity::EXPIRE_AT] = $expiry;
         }
@@ -162,5 +173,15 @@ class AuthLink
             ? null : (string) $entry[Batch\Header::AUTH_LINK_BANK];
 
         return $bank;
+    }
+
+    /**
+     * Convert excel date format to epoch
+     * remove 70 years of days: 25569 & multiply for seconds in a day: 86400
+     * @param  int $value
+     * @return int
+     */
+    public static function fromExcelToEpoch($value) {
+        return ($value - 25569) * 86400;
     }
 }

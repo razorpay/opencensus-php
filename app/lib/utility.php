@@ -80,6 +80,17 @@ if (! function_exists('get_last_query'))
     }
 }
 
+if (! function_exists('array_delete'))
+{
+    function array_delete($del_val, & $arr)
+    {
+        if (($key = array_search($del_val, $arr)) !== false)
+        {
+            unset($arr[$key]);
+        }
+    }
+}
+
 if (! function_exists('print_last_query'))
 {
     function print_last_query()
@@ -771,5 +782,24 @@ if (! function_exists('dashboard_url'))
     {
         // Domain value from config includes trailing / and hence strips leading / from @path argument if it exists.
         return config('applications.dashboard.url') . str_after($path, '/');
+    }
+}
+
+if (! function_exists('get_diff_in_millisecond'))
+{
+    /**
+     * Returns time diff in milliseconf for given startTime, and current time.
+     * @param  float $startTime, unit is seconds
+     * @return int
+     */
+    function get_diff_in_millisecond(float $startTime): int
+    {
+        $endTime = microtime(true);
+
+        $requestTime = $endTime - $startTime;
+
+        $requestTime = $requestTime * 1000;
+
+        return (int) $requestTime;
     }
 }

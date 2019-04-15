@@ -161,10 +161,12 @@ class Holidays
                 19 => 'Shivaji Jayanti',
             ],
             3 => [
-                4 => 'Maha Shivratri',
+                4  => 'Maha Shivratri',
+                21 => 'Holi',
             ],
             4 => [
                 1  => 'Annual closing of Banks',
+                6  => 'Ugadi/ Gudi Padwa',
                 19 => 'Good Friday',
             ],
             6 => [

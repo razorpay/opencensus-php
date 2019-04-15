@@ -80,7 +80,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_UNDER_DISPUTE_CANNOT_BE_REFUNDED                  = 'The refund on this payment is blocked due to ongoing dispute investigation';
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT                       = 'Minimum transaction amount allowed is Re. 1';
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_10_MIN_AMOUNT                    = 'Minimum transaction amount allowed is Rs 10';
-    const BAD_REQUEST_PAYMENT_AMOUNT_TOO_HIGH                                   = 'The amount may not be greater than 50000000.';
+    const BAD_REQUEST_PAYMENT_AMOUNT_TOO_HIGH                                   = 'The amount entered is too high';
+    const BAD_REQUEST_PAYMENT_AMOUNT_TOO_HIGH_DECLINED_BY_ISSUER                = 'The amount entered is too high. Declined by issuing bank';
     const BAD_REQUEST_PAYMENT_ATOM_NET_BANKING_MIN_AMOUNT_FIFTY                 = 'Minimum amount allowed for net banking transaction for the merchant is INR 50';
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT_FOR_EMI               = 'Minimum transaction amount allowed is Rs 2000';
     const BAD_REQUEST_PAYMENT_CARD_IS_NOT_ARRAY                                 = 'Card provided is not a dictionary';
@@ -190,6 +191,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH                           = 'Payment currency provided does not match with the currency in order';
     const BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID                                = 'Payment already done for this order.';
     const BAD_REQUEST_REFUND_FAILED                                             = 'Refund failed';
+    const BAD_REQUEST_SCROOGE_DASHBOARD_ERROR                                   = 'Scrooge dashboard error';
     const BAD_REQUEST_REFUND_NOT_ALLOWED                                        = 'Refunds cannot be created on your account.';
     const BAD_REQUEST_CARD_REFUND_NOT_ALLOWED                                   = 'Refunds cannot be created on your account for card payments';
     const BAD_REQUEST_PAYMENT_ALREADY_REFUNDED                                  = 'Refund failed';
@@ -202,6 +204,7 @@ class PublicErrorDescription
     const BAD_REQUEST_REFUND_INVALID_STATE_UPDATE                               = 'Refund can not be updated to this state';
     const BAD_REQUEST_REFUND_NOT_SCROOGE                                        = 'Gateway refund cannot be called for non-scrooge gateway';
     const BAD_REQUEST_REFUND_ALREADY_PROCESSED                                  = 'Refund has already been processed';
+    const BAD_REQUEST_ALL_FTA_NOT_FAILED                                        = 'All FTAs for the refund are not in failed state.';
     const BAD_REQUEST_REFUND_NOT_IN_CREATED                                     = 'Refund is not in created state';
     const BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD                                    = 'This operation is not allowed. Please contact Razorpay support for details.';
     const BAD_REQUEST_MERCHANT_FUNDS_ALREADY_ON_HOLD                            = 'The merchant funds are already on hold';
@@ -250,6 +253,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PRICING_FIELD_NOT_REQUIRED_FOR_NB                         = 'The field should be null for net-banking';
     const BAD_REQUEST_PRICING_RULE_FOR_AMEX_NOT_PRESENT                         = 'Amex pricing rule not present for merchant';
     const BAD_REQUEST_PRICING_PLAN_CANNOT_HAVE_MULTIPLE_TYPES                   = 'Pricing Plan cannot have rules of multiple types';
+    const BAD_REQUEST_PRICING_TYPE_COMMISSION_INVALID_FOR_NON_RZP_ORG           = 'Commission plan cannot be posted for this org';
     const BAD_REQUEST_PRICING_RULE_FOR_CARD_NETWORK_NOT_PRESENT                 = 'Pricing rule not present for merchant with this card network';
     const BAD_REQUEST_PRICING_RULE_FOR_AMOUNT_RANGE_OVERLAP                     = 'Pricing rule amount range collides with another existing rule\'s amount range.';
     const BAD_REQUEST_UNKNOWN_SCHEDULE                                          = 'Schedule not found in database.';
@@ -293,6 +297,8 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_ALREADY_LIVE                                     = 'The merchant is already live';
     const BAD_REQUEST_MERCHANT_NOT_LIVE                                         = 'The merchant is not live currently';
     const BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED                           = 'There is a temporary block placed on the account currently because of which new payment operations are put on hold. If you are seeing this message unexpectedly, please contact the site admin regarding the issue.';
+    const BAD_REQUEST_MERCHANT_ALREADY_INTERNATIONAL                            = 'The merchant already has international activated';
+    const BAD_REQUEST_MERCHANT_NOT_INTERNATIONAL                                = 'The merchant doesn\'t have international activated';
     const BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED                             = 'The merchant has no pricing assigned';
     const BAD_REQUEST_MERCHANT_KEY_ALREADY_CREATED                              = 'The merchant keys have already been created';
     const BAD_REQUEST_MERCHANT_NOT_ACTIVATED_KEY_CREATE_FAILED                  = 'The merchant keys cannot be created since account is not activated yet.';
@@ -307,6 +313,7 @@ class PublicErrorDescription
     const BAD_REQUEST_OPERATION_NOT_ALLOWED_FOR_TEST_ACCOUNT                    = 'This operation is not allowed for test accounts';
     const BAD_REQUEST_FIELD_ALREADY_EXISTS                                      = 'A terminal with the same field exists';
     const BAD_REQUEST_REFUND_ALREADY_IN_UNPROCESSED_LIST                        = 'The refund is already present in the unprocessed list in cache';
+    const BAD_REQUEST_MERCHANT_WEBSITE_NOT_SET                                  = 'Business website is invalid or not set';
 
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_PENDING                       = 'Payment processing pending';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED                       = 'Payment failed because UPI request expired';
@@ -364,6 +371,7 @@ class PublicErrorDescription
     const BAD_REQUEST_ORDER_INVALID_OFFER                                       = 'Offer applied not valid for order';
     const BAD_REQUEST_ORDER_MULTIPLE_OFFERS                                     = 'Multiple offers cannot be applied on a single order.';
     const BAD_REQUEST_ORDER_CURRENCY_NOT_SUPPORTED                              = 'Currency is not supported';
+    const BAD_REQUEST_ORDER_ANOTHER_OPERATION_IN_PROGRESS                       = 'Request failed because another order operation is in progress';
     const BAD_REQUEST_UNSUPPORTED_CHARACTER_SET                                 = 'Error occurred because of invalid data';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_HASH                                 = 'Hash Data is invalid.';
     const BAD_REQUEST_BATCH_UPLOAD_INVALID_TOKEN                                = 'Token expired or invalid';
@@ -704,7 +712,7 @@ class PublicErrorDescription
     const BAD_REQUEST_RETRY_ATTEMPT_LIMIT_EXCEEDED                              = 'Retry attempts limit exceeded';
     const BAD_REQUEST_COULD_NOT_READ_CARD_MAGNETIC_STRIPE                       = 'Could not read card magnetic stripe';
     const BAD_REQUEST_INVALID_CARD_DETAILS                                      = 'Invalid card details';
-    const BAD_REQUEST_PAYOUT_NOT_QUEUED_STATUS                                  = 'Payout is not in queued status';
+    const BAD_REQUEST_PAYOUT_NOT_QUEUED_STATUS                                  = 'The payout is not in queued status';
 
     // Scrooge
     const GATEWAY_VERIFY_REFUND_ABSENT                                          = 'Refund is not present at gateway';
@@ -717,6 +725,8 @@ class PublicErrorDescription
     const GATEWAY_ERROR_UNEXPECTED_STATUS                                       = 'Unexpected status from gateway';
     const GATEWAY_ERROR_REFUND_FAILED_PAYMENT_NOT_IDENTIFIED                    = 'Refund failed';
     const GATEWAY_ERROR_REFUND_DEEMED                                           = 'Refund is in pending status';
+
+    const SERVER_ERROR_BATCH_SERVICE_UPLOAD_FAILURE                             = 'Batch file upload failed due to batch server error';
 
     const BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET                                  = 'Merchant context must be set';
 
@@ -761,6 +771,15 @@ class PublicErrorDescription
     const BAD_REQUEST_EMI_PLANS_DO_NOT_EXIST                                        = 'Emi plans do not exist';
     const BAD_REQUEST_CARDLESS_EMI_USER_DOES_NOT_EXIST                              = 'User does not have an account with the selected provider';
     const BAD_REQUEST_CARDLESS_EMI_INVALID_TOKEN                                    = 'Invalid token set for cardless emi';
+    const BAD_REQUEST_CARDLESS_EMI_INVALID_MERCHANT_NAME                            = 'Invalid merchant name for cardless emi';
+    const BAD_REQUEST_CARDLESS_EMI_INVALID_EMI_PLAN_ID                              = 'Invalid Emi plan id selected';
+    const BAD_REQUEST_CARDLESS_EMI_MINIMUM_AMOUNT_REQUIRED                          = 'Amount less than minimum amount required';
+    const BAD_REQUEST_CARDLESS_EMI_MAXIMUM_AMOUNT_LIMIT                             = 'Amount more than the maximum amount limit';
+    const GATEWAY_ERROR_CARDLESS_EMI_PAYMENT_FAILED_PARTNER                         = 'Cardless Emi payment failed by the provider';
+    const BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_EXHAUSTED                           = 'Cardless Emi credit limit of customer has exhausted';
+    const BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_NOT_ACTIVATED                       = 'Cardless Emi credit limit of customer not activated';
+    const BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_NOT_APPROVED                        = 'Cardless Emi credit limit of customer not approved';
+    const BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_EXPIRED                             = 'Cardless Emi credit limit of customer has expired';
 
     const BAD_REQUEST_UPI_MPIN_NOT_SET                                              = 'Payment failed because UPI PIN is not set';
     const BAD_REQUEST_REGISTERED_MOBILE_NUMBER_NOT_FOUND                            = 'Registered Mobile number linked to the account has been changed/removed';
@@ -771,7 +790,7 @@ class PublicErrorDescription
     const BAD_REQUEST_FORBIDDEN_TRANSACTION_ON_VPA                                  = 'Payment failed because transactions are not allowed on this VPA';
     const BAD_REQUEST_FORBIDDEN_BUSINESS_BANKING_NOT_ENABLED                        = 'Access to requested resource not available';
 
-    const BENEFICIARY_REGISTRATION_FAILED_RESPONSE                                  = 'Beneficiary registration failed due to error';
+    const NODAL_BENEFICIARY_REGISTRATION_FAILED_RESPONSE                            = 'Beneficiary registration failed due to error';
     const BAD_REQUEST_PSP_DOESNT_EXIST                                              = 'Invalid VPA. Please enter a valid Virtual Payment Address';
     const BAD_REQUEST_PSP_ERROR                                                     = 'Payment failed at PSP';
     const BAD_REQUEST_UPI_INVALID_DEVICE_FINGERPRINT                                = 'Payment Failed due to issue with your UPI App. Please try again with another app or payment method';

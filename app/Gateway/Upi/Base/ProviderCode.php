@@ -75,6 +75,7 @@ class ProviderCode
     const INDIANBK           = 'indianbk';
     const INDUS              = 'indus';
     const IOB                = 'iob';
+    const JIO                = 'jio';
     const JKB                = 'jkb';
     const JSB                = 'jsb';
     const KARB               = 'karb';
@@ -91,6 +92,7 @@ class ProviderCode
     const LVB                = 'lvb';
     const LVBANK             = 'lvbank';
     const MAHB               = 'mahb';
+    const MYICICI            = 'myicici';
     const OBC                = 'obc';
     const OKAXIS             = 'okaxis';
     const OKHDFCBANK         = 'okhdfcbank';
@@ -199,6 +201,7 @@ class ProviderCode
         self::INDIANBK           => IFSC::IDIB,
         self::INDUS              => IFSC::INDB,
         self::IOB                => IFSC::IOBA,
+        self::JIO                => 'NPCI',
         self::JSB                => IFSC::JSBP,
         self::JKB                => IFSC::JAKA,
         self::KARB               => IFSC::KARB,
@@ -215,6 +218,7 @@ class ProviderCode
         self::LVB                => IFSC::LAVB,
         self::LVBANK             => IFSC::LAVB,
         self::MAHB               => IFSC::MAHB,
+        self::MYICICI            => IFSC::ICIC,
         self::OBC                => IFSC::ORBC,
         self::OKAXIS             => IFSC::UTIB,
         self::OKICICI            => IFSC::ICIC,

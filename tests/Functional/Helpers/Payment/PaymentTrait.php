@@ -1183,7 +1183,12 @@ trait PaymentTrait
     {
         $this->ba->appAuth();
 
-        $request = array('url' => '/payments/timeout');
+        $request = [
+            'url'     => '/payments/timeout',
+            'content' => [
+                'limit' => 10,
+            ],
+        ];
 
         return $this->makeRequestAndGetContent($request);
     }

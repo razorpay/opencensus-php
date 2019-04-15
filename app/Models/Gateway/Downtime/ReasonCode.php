@@ -31,4 +31,8 @@ class ReasonCode
         return isset(self::$messages[strtoupper($code)]);
     }
 
+    public static function getSeverity(string $code)
+    {
+        return ReasonCode::SEVERITY_MAP[$code] ?? null;
+    }
 }

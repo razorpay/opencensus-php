@@ -70,8 +70,9 @@ class Repository extends Base\Repository
      * @param null     $type
      * @param string   $channel
      * @param int|null $limit
-     * @param array    $relations           Relations required in the process
+     * @param array    $relations Relations required in the process
      *
+     * @param int      $isFTS
      * @return Base\PublicCollection
      */
     public function getCreatedAttemptsBeforeTimestamp(
@@ -80,13 +81,18 @@ class Repository extends Base\Repository
         $type = null,
         string $channel,
         int $limit = null,
-        array $relations = [])
+        array $relations = [],
+        int $isFTS = 0)
     {
+        //
+        // It'll fetch only those FTA's which are not available with FTS
+        //
         $query = $this->newQuery()
                       ->where(Entity::STATUS, '=', Status::CREATED)
                       ->where(Entity::PURPOSE, '=', $purpose)
                       ->where(Entity::INITIATE_AT, '<=', $initiateAtTimestamp)
                       ->where(Entity::CHANNEL, '=', $channel)
+                      ->where(Entity::IS_FTS, '=', $isFTS)
                       ->orderBy(Entity::ID);
 
         if ($type !== null)
@@ -120,11 +126,12 @@ class Repository extends Base\Repository
      * @return mixed
      */
     public function getAttemptsBetweenTimestampsWithStatus(
-        string $channel, string $status, $from = null, $to = null, $limit = null, int $offset = null)
+        string $channel, string $status, $from = null, $to = null, $limit = null, int $offset = null, bool $isFTS = false)
     {
         $query = $this->newQuery()
                       ->where(Entity::STATUS, $status)
                       ->where(Entity::CHANNEL, $channel)
+                      ->where(Entity::IS_FTS, $isFTS)
                       ->whereNotNull(Entity::BANK_STATUS_CODE);
 
         if (($from !== null) and ($to !== null))
@@ -151,11 +158,12 @@ class Repository extends Base\Repository
         return $query->inRandomOrder()->get();
     }
 
-    public function getAttemptsBetweenTimestamps(string $status, string $channel, int $from = null, int $to = null)
+    public function getAttemptsBetweenTimestamps(string $status, string $channel, int $from = null, int $to = null, bool $isFTS = false)
     {
         $query = $this->newQuery()
                       ->select([Entity::ID, Entity::BATCH_FUND_TRANSFER_ID])
                       ->where(Entity::STATUS, $status)
+                      ->where(Entity::IS_FTS, $isFTS)
                       ->where(Entity::CHANNEL, $channel);
 
         if (($from !== null) and ($to !== null))
@@ -202,19 +210,21 @@ class Repository extends Base\Repository
     }
 
     /**
-     * @param string $channel
-     * @param string $status
-     * @param null $from
-     * @param null $to
-     * @param null $limit
+     * @param string   $channel
+     * @param string   $status
+     * @param null     $from
+     * @param null     $to
+     * @param null     $limit
      * @param int|null $offset
+     * @param bool     $isFTS
      * @return mixed
      */
     public function getAttemptsWithStatusBetweenTimestamps(
-        string $channel, string $status = null, $from = null, $to = null, $limit = null, int $offset = null)
+        string $channel, string $status = null, $from = null, $to = null, $limit = null, int $offset = null, bool $isFTS = false)
     {
         $query = $this->newQuery()
-                      ->where(Entity::CHANNEL, $channel);
+                      ->where(Entity::CHANNEL, $channel)
+                      ->where(Entity::IS_FTS, $isFTS);
 
         if (($from !== null) and ($to !== null))
         {
@@ -240,11 +250,12 @@ class Repository extends Base\Repository
     }
 
     public function getAttemptsWithIds(
-        string $channel, array $ids, int $limit = null, int $offset = null)
+        string $channel, array $ids, int $limit = null, int $offset = null, bool $isFTS = false)
     {
         $query = $this->newQuery()
                       ->where(Entity::CHANNEL, $channel)
-                      ->whereIn(Entity::ID, $ids);
+                      ->whereIn(Entity::ID, $ids)
+                      ->where(Entity::IS_FTS, $isFTS);
 
         if ($limit !== null)
         {
@@ -274,10 +285,24 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function findByIdWithStatus(string $id, string $status = null)
+    public function findByIdWithStatus(string $id, string $status = null, $isFTS = false)
     {
-        $query =  $this->newQuery()
-                       ->where(Entity::ID, $id);
+        $query = $this->newQuery()
+                      ->where(Entity::ID, $id);
+
+        //
+        // if $isFTS is null then on checks based on fts flag is done
+        // if $isFTS is not null then corresponding filter will be applied
+        // null case will occurs in case of reconciliation
+        // recon has to run on all the attempts which are in initiated state
+        // in case of transfer and status $isFTS will be false
+        // so only attempts which are not sent to FTS will be picked for processing
+        //
+        if ($isFTS !== null)
+        {
+            $query = $query->where(Entity::IS_FTS, $isFTS);
+        }
+
 
         if (empty($status) === false)
         {
@@ -294,10 +319,22 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function getAttemptBySourceId($sourceId): Entity
+    public function getFTSAttemptBySourceId(string $sourceId, string $sourceType, bool $isFTS = false): Entity
     {
         return $this->newQuery()
                     ->where(Entity::SOURCE_ID, $sourceId)
+                    ->where(Entity::SOURCE_TYPE, $sourceType)
+                    ->where(Entity::IS_FTS, $isFTS)
                     ->first();
+    }
+
+    public function getAttemptBySourceIdAndNotFailed($sourceId, $sourceType, bool $isFTS = false)
+    {
+        return $this->newQuery()
+                    ->where(Entity::SOURCE_ID, $sourceId)
+                    ->where(Entity::SOURCE_TYPE, $sourceType)
+                    ->where(Entity::STATUS, '!=' ,Status::FAILED)
+                    ->where(Entity::IS_FTS, $isFTS)
+                    ->get();
     }
 }

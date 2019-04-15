@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Payout;
 use RZP\Models\Merchant;
 use RZP\Models\Transfer;
+use RZP\Models\Customer;
 use RZP\Models\Transaction;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -20,6 +21,7 @@ class Entity extends Base\PublicEntity
 
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
+    const CUSTOMER_ID           = 'customer_id';
     const ENTITY_ID             = 'entity_id';
     const ENTITY_TYPE           = 'entity_type';
     const BALANCE_ID            = 'balance_id';
@@ -27,6 +29,7 @@ class Entity extends Base\PublicEntity
     const CURRENCY              = 'currency';
     const NOTES                 = 'notes';
     const TRANSACTION_ID        = 'transaction_id';
+    const TRANSACTION_TYPE      = 'transaction_type';
     const TRANSFER              = 'transfer';
     const CHANNEL               = 'channel';
 
@@ -54,6 +57,7 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ID,
         self::MERCHANT_ID,
+        self::CUSTOMER_ID,
         self::TRANSACTION_ID,
         self::ENTITY_TYPE,
         self::ENTITY_ID,
@@ -71,6 +75,7 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::ENTITY,
+        self::CUSTOMER_ID,
         self::TRANSFER_ID,
         self::PAYOUT_ID,
         self::AMOUNT,
@@ -91,6 +96,7 @@ class Entity extends Base\PublicEntity
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
+        self::CUSTOMER_ID,
         self::PAYOUT_ID,
         self::TRANSFER_ID,
         self::LINKED_ACCOUNT_NOTES,
@@ -110,12 +116,17 @@ class Entity extends Base\PublicEntity
 
     public function transaction()
     {
-        return $this->belongsTo(Transaction\Entity::class);
+        return $this->morphTo();
     }
 
     public function merchant()
     {
         return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer\Entity::class);
     }
 
     public function entity()
@@ -132,6 +143,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT);
     }
 
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
+    }
+
     public function getEntityId()
     {
         return $this->getAttribute(self::ENTITY_ID);
@@ -145,6 +161,11 @@ class Entity extends Base\PublicEntity
     public function getChannel()
     {
         return $this->getAttribute(self::CHANNEL);
+    }
+
+    public function getCustomerId()
+    {
+        return $this->getAttribute(self::CUSTOMER_ID);
     }
 
     // -------------------- End Getters --------------------------
@@ -165,6 +186,24 @@ class Entity extends Base\PublicEntity
         {
             unset($array[self::PAYOUT_ID]);
         }
+    }
+
+    public function setPublicCustomerIdAttribute(array & $array)
+    {
+        $customerId = $this->getAttribute(self::CUSTOMER_ID);
+
+        //
+        // customer_id is used only in the customer wallet payout reversals flow. We do not want
+        // to expose this field in general
+        //
+        if ($customerId === null)
+        {
+            unset($array[self::CUSTOMER_ID]);
+
+            return;
+        }
+
+        $array[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($customerId);
     }
 
     public function setPublicLinkedAccountNotesAttribute(array & $array)

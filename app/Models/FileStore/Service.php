@@ -4,8 +4,7 @@ namespace RZP\Models\FileStore;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
+use RZP\Exception\ServerNotFoundException;
 
 class Service extends Base\Service
 {
@@ -20,9 +19,19 @@ class Service extends Base\Service
      */
     public function fetchFileSignedUrlById(string $fileId)
     {
-        $file = $this->repo->file_store->findByPublicId($fileId);
+        try
+        {
+            $signedUrl = $this->app->batchService->downloadS3UrlForBatchOrFileStore($fileId, 'files');
+        }
+        catch (ServerNotFoundException $exception)
+        {
+            // Either Batch Microservice is down or not found
+            // check in DB.
+            $file = $this->repo->file_store->findByPublicId($fileId);
 
-        $signedUrl = (new Accessor)->getSignedUrlOfFile($file);
+            $signedUrl = (new Accessor)->getSignedUrlOfFile($file);
+        }
+
 
         return $signedUrl;
     }

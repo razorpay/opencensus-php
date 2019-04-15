@@ -3,6 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+use RZP\Models\Payout;
 use RZP\Models\Invoice;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
@@ -61,11 +62,11 @@ class CreateBatchTable extends Migration
             $table->integer(Batch::ATTEMPTS)
                   ->default(0);
 
-            $table->integer(Batch::AMOUNT)
+            $table->bigInteger(Batch::AMOUNT)
                   ->unsigned()
                   ->nullable();
 
-            $table->integer(Batch::PROCESSED_AMOUNT)
+            $table->bigInteger(Batch::PROCESSED_AMOUNT)
                   ->unsigned()
                   ->default(0);
 
@@ -108,9 +109,9 @@ class CreateBatchTable extends Migration
                   ->on_delete('restrict');
         });
 
-        Schema::table(Table::INVOICE, function($table)
+        Schema::table(Table::PAYOUT, function($table)
         {
-            $table->foreign(Invoice\Entity::BATCH_ID)
+            $table->foreign(Payout\Entity::BATCH_ID)
                   ->references(Batch::ID)
                   ->on(Table::BATCH)
                   ->on_delete('restrict');
@@ -131,9 +132,9 @@ class CreateBatchTable extends Migration
             $table->dropColumn(Refund\Entity::BATCH_ID);
         });
 
-        Schema::table(Table::INVOICE, function($table)
+        Schema::table(Table::PAYOUT, function($table)
         {
-            $table->dropForeign(Table::INVOICE . '_' . Invoice\Entity::BATCH_ID . '_foreign');
+            $table->dropForeign(Table::PAYOUT . '_' . Payout\Entity::BATCH_ID . '_foreign');
         });
 
         Schema::table(Table::BATCH, function($table)

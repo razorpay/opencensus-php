@@ -428,7 +428,7 @@ class Entity extends Base\PublicEntity
 
         $downtimeMetaData = [
             self::METHOD   => $this->getMethod(),
-            self::SEVERITY => ReasonCode::SEVERITY_MAP[$reasonCode],
+            self::SEVERITY => ReasonCode::getSeverity($reasonCode),
             self::BEGIN    => $this->getBegin(),
             self::END      => $this->getEnd(),
         ];

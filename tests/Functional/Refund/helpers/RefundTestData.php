@@ -706,4 +706,50 @@ return [
             ],
         ],
     ],
+
+    'testDirectSettlementRefundSettledBy' => [
+        'request' => [
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'amount' => 50000,
+                'currency' => 'INR',
+            ],
+        ],
+    ],
+
+    'testRefundEditNotes' => [
+        'request'  => [
+            'content' => [
+                'notes' => [
+                    'key1' => 'value1',
+                    'key2' => 'value2',
+                ],
+            ],
+            'method'  => 'PATCH',
+        ],
+        'response' => [
+            'content' => [
+                'notes' => [
+                    'key1' => 'value1',
+                    'key2' => 'value2',
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFetchRefundPublicStatus' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/refunds/',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'status' => 'pending'
+            ],
+        ],
+    ],
 ];
