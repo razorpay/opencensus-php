@@ -34,7 +34,9 @@ export default class Details extends Component {
     };
   }
 
-  onToggleDashboardAccess = (account, checked, cb) => {
+  onToggleDashboardAccess = (checked, cb) => {
+    const { account } = this.state;
+
     return this.context
       .confirm({
         header: `${checked ? 'Enable' : 'Disable'} Dashboard Access?`,
@@ -97,7 +99,8 @@ export default class Details extends Component {
       }); // dummy catch to handle confirm abort rejection
   };
 
-  onToggleAllowRefunds = (account, checked, cb) => {
+  onToggleAllowRefunds = (checked, cb) => {
+    const { account } = this.state;
     return this.context
       .confirm({
         header: `${checked ? 'Enable' : 'Disable'} Allow Refunds?`,
@@ -168,7 +171,7 @@ export default class Details extends Component {
     return fetchAccountApi(id)
       .then(resp => {
         this.setState({
-          account: resp,
+          account: resp.data,
           isLoading: false,
         });
       })
@@ -284,7 +287,7 @@ export default class Details extends Component {
                       isDisabled={noLAEmail}
                     >
                       <SwitchField
-                        defaultChecked={!!account.dashboard_access}
+                        defaultChecked={!!account.refunds_allowed}
                         onChange={this.onToggleAllowRefunds}
                         disabled={noLAEmail}
                         type="prime"

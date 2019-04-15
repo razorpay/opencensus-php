@@ -23,7 +23,7 @@ export const fetchAccountsApi = (data, params) => {
 export const fetchAccountApi = id => {
   return ajax(
     {
-      url: `/account/${id}`,
+      url: `/beta/accounts/${id}`,
     },
     {},
     '/merchant/api'
