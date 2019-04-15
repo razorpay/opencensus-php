@@ -273,8 +273,8 @@ abstract class Base extends BaseCore
 
         //
         // Doing this after all the associations since
-        // the modifiers require payout account and
-        // merchant to be associated.
+        // the modifiers and validators require payout
+        // account and merchant to be associated.
         //
         $payout = $payout->build($input);
 

@@ -14,6 +14,8 @@ use RZP\Constants\Entity as E;
 
 class Repository extends Base\Repository
 {
+    const QUEUED_PAYOUTS_FETCH_LIMIT = 5000;
+
     protected $entity = 'payout';
 
     public function fetchCreatedPayouts($timestamp, $method)
@@ -36,13 +38,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchQueuedPayouts(array $merchantIdsWhitelist,
-                                       array $merchantIdsBlacklist,
+    public function fetchQueuedPayouts(array $merchantIdsWhitelist = [],
+                                       array $merchantIdsBlacklist = [],
                                        int $from = null,
                                        int $to = null)
     {
         $query = $this->newQuery()
-                      ->with('balance')
+                      ->with(['balance', 'merchant', 'merchant.org'])
                       ->status(Status::QUEUED);
 
         if (empty ($merchantIdsWhitelist) === false)
@@ -65,7 +67,8 @@ class Repository extends Base\Repository
             $query->where(Entity::CREATED_AT, '<', $to);
         }
 
-        return $query->get();
+        return $query->limit(self::QUEUED_PAYOUTS_FETCH_LIMIT)
+                     ->get();
     }
 
     public function fetchPayoutsWithUtrNotNull($from, $to, $merchantId)

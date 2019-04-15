@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\FundAccount;
 use RZP\Models\FundTransfer\Mode;
@@ -53,7 +54,7 @@ class Validator extends Base\Validator
         Entity::MODE            => 'sometimes|nullable|string|custom',
         Entity::REFERENCE_ID    => 'sometimes|nullable|string|max:40',
         Entity::NARRATION       => 'sometimes|nullable|string|max:30|alpha_space_num',
-        Entity::QUEUED          => 'sometimes|filled|boolean',
+        Entity::QUEUED          => 'sometimes|filled|boolean|custom',
     ];
 
     protected static $customerWalletPayoutRules = [
@@ -141,8 +142,27 @@ class Validator extends Base\Validator
                     'account_type'    => $accountType,
                 ]);
         }
+    }
 
-        // TODO: Need to do similar stuff for refund also
+    protected function validateQueued(array $input)
+    {
+        if (boolval($input[Entity::QUEUED]) === false)
+        {
+            return;
+        }
+
+        /** @var Entity $payout */
+        $payout = $this->entity;
+
+        if ($payout->merchant->isFeatureEnabled(Feature\Constants::QUEUED_PAYOUTS) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Queued payouts not available for the merchant',
+                null,
+                [
+                    'input' => $input
+                ]);
+        }
     }
 
     public function validatePayoutAmount($input, $payment)

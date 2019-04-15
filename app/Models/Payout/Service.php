@@ -7,6 +7,7 @@ use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Payout;
+use RZP\Models\Pricing;
 use RZP\Models\Reversal;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
@@ -145,6 +146,33 @@ class Service extends Base\Service
         }
 
         return $reversals->toArrayPublic();
+    }
+
+    public function getQueuedPayoutsSummary()
+    {
+        $merchantId = $this->merchant->getId();
+
+        $currentBalance = $this->merchant->bankingBalance;
+
+        $queuedPayouts = $this->repo->payout->fetchQueuedPayouts([$merchantId]);
+
+        $totalAmount = $totalFees = 0;
+
+        foreach ($queuedPayouts as $payout)
+        {
+            $totalAmount += $payout->getAmount();
+
+            list($fees, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payout);
+
+            $totalFees += $fees;
+        }
+
+        return [
+            'balance'       => $currentBalance,
+            'count'         => count($queuedPayouts),
+            'total_amount'  => $totalAmount,
+            'total_fees'    => $totalFees,
+        ];
     }
 
     public function processDispatchForQueuedPayouts(array $input)
