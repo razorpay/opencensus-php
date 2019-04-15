@@ -14,7 +14,7 @@ import { ModalContent } from 'component/Modal';
 export default function FetchGatewayUnprocessedRefundsConfig() {
   function onSubmit(body) {
     let payload = {
-      url: `live/config/key?key=GATEWAY_UNPROCESSED_REFUNDS`,
+      url: `live/config/key?key=config:GATEWAY_UNPROCESSED_REFUNDS`,
     };
 
     adminFetch(payload).then(response => {

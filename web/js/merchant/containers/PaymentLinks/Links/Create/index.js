@@ -297,23 +297,6 @@ export default class CreateNewContainer extends React.Component {
     });
   };
 
-  openRPLShareView = (id, shortUrl, title, description) => {
-    this.props.openModal({
-      size: 'small',
-      component: (
-        <RPLShareView
-          handleClose={this.props.closeModal}
-          handleAction={sendLink.bind(null, id)}
-          isNew={true}
-          showNotification={this.props.showNotification}
-          url={shortUrl}
-          title={title}
-          description={description}
-        />
-      ),
-    });
-  };
-
   onCreate = () => {
     const IS_MODAL_VIEW = this.props.onClose;
 

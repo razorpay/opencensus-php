@@ -545,7 +545,7 @@ export default class InvoiceLineItem extends React.Component {
 
         <td class="text-right lineItem__total">
           <div class="item-total">
-            <Amount value={lineItemTotal} currency={'INR'} />
+            <Amount value={lineItemTotal * 100} currency={'INR'} />
           </div>
           {selectedOption.item_id &&
             applyTaxes && (

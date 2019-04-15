@@ -43,18 +43,16 @@ export default class RequestActions extends Component {
   };
 
   render() {
-    const { requestState, hideTitle } = this.props;
+    const { requestState } = this.props;
     const checkers = this.props.checkers.peek();
 
     return (
       <aside class="requests-actions">
         {requestState === 'open' || requestState === 'approved' ? (
           <div class="container">
-            {!hideTitle && (
-              <div class="header">
-                <b>ACTIONS</b>
-              </div>
-            )}
+            <div class="header">
+              <b>ACTIONS</b>
+            </div>
             {requestState !== 'approved' ? (
               <AsyncButton
                 class="btn btn-default"

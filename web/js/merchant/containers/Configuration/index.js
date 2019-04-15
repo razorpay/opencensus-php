@@ -69,11 +69,7 @@ export default class CongfigurationContainer extends Component {
               <FlashCheckout />
             )}
             {/* temporarily hide internationalization for test mode due to inconsistency in db */}
-            {
-              this.props.mode === 'live' && (
-                <Internationalization />
-              )
-            }
+            {this.props.mode === 'live' && <Internationalization />}
             <EmailNotifications form="configForm" onSave={this.saveConfig} />
           </div>
         )}

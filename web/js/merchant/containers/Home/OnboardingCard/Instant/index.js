@@ -110,7 +110,7 @@ export default class OnboardingCardInstant extends Component {
         isActivated,
         isRejected,
         setActiveStep: this.setActiveStep,
-        international
+        international,
       };
 
     return (

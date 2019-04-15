@@ -10,7 +10,16 @@ import { isBlank } from 'common/util';
 import { isOrgRazorpay } from 'admin/user';
 
 function fetchFn() {
-  return adminFetch(...arguments);
+  return adminFetch(...arguments).then(
+    data =>
+      data &&
+      data.map(plan => ({
+        id: plan.plan_id,
+        name: plan.plan_name,
+        org_id: `org_${plan.org_id}`,
+        ...plan,
+      }))
+  );
 }
 
 export default class PlanList extends Component {
@@ -21,14 +30,13 @@ export default class PlanList extends Component {
 
   collection = new Collection({
     data: {
-      url: 'live/pricing',
+      url: 'live/pricing/merchants',
       copyItem: rules => this.copyPricing(rules),
       handleOrgChange: e => this.handleOrgChange(e),
     },
     extraFields: {
       selectedOrg: null,
     },
-    noPagination: true,
     fetchFn,
   });
 
@@ -67,8 +75,11 @@ export default class PlanList extends Component {
   handleOrgChange = e => {
     const orgId = e.target.value;
     fetchFn({
-      data: {},
-      url: 'live/pricing',
+      data: {
+        count: 20,
+        skip: 0,
+      },
+      url: 'live/pricing/merchants',
       ...(orgId && {
         headers: {
           'x-cross-org-id': orgId,
@@ -92,6 +103,7 @@ export default class PlanList extends Component {
     let fields = [
       ['Plan ID', item => item.id],
       ['Plan Name', item => item.name],
+      ['Type', item => item.type],
       ['Number of Rules', item => item.rules_count || item.count],
     ];
 

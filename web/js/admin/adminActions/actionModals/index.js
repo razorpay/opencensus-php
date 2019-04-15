@@ -89,3 +89,5 @@ export EditGatewayUnprocessedRefundsConfig from './EditGatewayUnprocessedRefunds
 export CreatePromotion from './CreatePromotion';
 
 export GenerateVaultToken from './GenerateVaultToken';
+
+export BulkEditIIN from './BulkEditIIN';
