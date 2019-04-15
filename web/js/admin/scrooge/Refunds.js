@@ -39,25 +39,29 @@ export default class Refunds extends Component {
       selectedRefunds: [],
     };
 
+    this.gatewayErrorCodes = {};
+
     this.params = this.getQueryParams();
 
-    this.multiSelectInitialValues = {
-      'refunds.status': statuses,
-    };
+    this.multiSelectInitialValues = {};
 
-    adminFetch(`${this.mode}/admin/entities/all`)
+    adminFetch(`${this.mode}/scrooge/dashboard-init`)
       .then(data => {
         if (!data) {
           return;
         }
 
-        let gatewayValues = data.fields.gateway.values || [];
-        let methodValues = data.fields.method.values || {};
-        let gatewayAcquirerValues =
-          data.entities.terminal.gateway_acquirer.values || [];
+        this.gatewayErrorCodes = data.gateway_error_codes || {};
+
+        let gatewayValues = data.gateways || [];
+        let methodValues = data.methods || [];
+        let gatewayAcquirerValues = data.gateway_acquirers || [];
+        let statusValues = data.statuses || [];
+
         let gateways = [];
         let methods = [];
         let gatewayAcquirers = [];
+        let statuses = [];
 
         gatewayValues.forEach(gateway => {
           gateways.push({
@@ -68,12 +72,12 @@ export default class Refunds extends Component {
 
         this.multiSelectInitialValues['refunds.gateway'] = gateways;
 
-        for (let methodValue in methodValues) {
+        methodValues.forEach(method => {
           methods.push({
-            name: methodValues[methodValue],
-            value: methodValue,
+            name: method,
+            value: method,
           });
-        }
+        });
 
         this.multiSelectInitialValues['refunds.method'] = methods;
 
@@ -87,6 +91,15 @@ export default class Refunds extends Component {
         this.multiSelectInitialValues[
           'refunds.gateway_acquirer'
         ] = gatewayAcquirers;
+
+        statusValues.forEach(status => {
+          statuses.push({
+            name: status,
+            value: status,
+          });
+        });
+
+        this.multiSelectInitialValues['refunds.status'] = statuses;
       })
       .then(d => {
         let params = this.params;
@@ -232,7 +245,7 @@ export default class Refunds extends Component {
   };
 
   setCollectionData = filters => {
-    filters = parseFilters(filters);
+    filters = this.parseFilters(filters);
 
     if (filters !== null) {
       this.collection.data.url = `${filters.mode}/scrooge/refunds`;
@@ -326,6 +339,66 @@ export default class Refunds extends Component {
       />
     );
   };
+
+  parseFilters = filters =>
+    filters &&
+    Object.keys(filters).reduce((accumulator, currentValue) => {
+      let semiColonSplit = currentValue.split(';');
+
+      let filter = formFilters.find(f => f.formKey === currentValue);
+
+      let queryKey = semiColonSplit[0];
+      let queryKeySplit = queryKey.split('.');
+
+      queryKeySplit.reduce((filters, i) => {
+        filters[i] = filters[i] || {};
+        return filters[i];
+      }, filters);
+
+      let value = getFilterValue(filters, filter, currentValue, semiColonSplit);
+
+      if (queryKeySplit.length === 1) {
+        let gatewayKeys = filters['gateway_keys'] || {};
+
+        switch (queryKey) {
+          case 'internal_error_code':
+            gatewayKeys['name'] = 'internal_error_code';
+            gatewayKeys['value'] = value;
+
+            break;
+
+          case 'gateway_error_code':
+            // TODO: Handle errors when gateway is not selected
+            if (
+              accumulator.hasOwnProperty('refunds') &&
+              accumulator.refunds.hasOwnProperty('gateway') &&
+              accumulator.refunds.gateway.length > 0
+            ) {
+              gatewayKeys['name'] = this.gatewayErrorCodes[
+                accumulator.refunds.gateway[0]
+              ];
+              gatewayKeys['value'] = value;
+            }
+
+            break;
+
+          default:
+            accumulator[queryKey] = value;
+        }
+
+        if (Object.keys(gatewayKeys).length !== 0) {
+          accumulator['gateway_keys'] = gatewayKeys;
+        }
+      } else {
+        if (!accumulator.hasOwnProperty(queryKeySplit[0])) {
+          accumulator[queryKeySplit[0]] = {};
+        }
+
+        accumulator[queryKeySplit[0]][queryKeySplit[1]] = value;
+      }
+
+      return accumulator;
+    }, {});
 
   render() {
     let selectedDisabledClass =
@@ -601,57 +674,6 @@ const paymentLink = (item, mode) =>
 
 const showAmount = (currency, amount) => currency + ' ' + amount;
 
-const parseFilters = filters =>
-  filters &&
-  Object.keys(filters).reduce((accumulator, currentValue) => {
-    let semiColonSplit = currentValue.split(';');
-
-    let filter = formFilters.find(f => f.formKey === currentValue);
-
-    let queryKey = semiColonSplit[0];
-    let queryKeySplit = queryKey.split('.');
-
-    queryKeySplit.reduce((filters, i) => {
-      filters[i] = filters[i] || {};
-      return filters[i];
-    }, filters);
-
-    let value = getFilterValue(filters, filter, currentValue, semiColonSplit);
-
-    if (queryKeySplit.length === 1) {
-      let gatewayKeys = filters['gateway_keys'] || {};
-
-      switch (queryKey) {
-        case 'internal_error_code':
-          gatewayKeys['name'] = 'internal_error_code';
-          gatewayKeys['value'] = value;
-
-          break;
-
-        case 'gateway_error_code':
-          gatewayKeys['name'] = 'gateway_error_code';
-          gatewayKeys['value'] = value;
-
-          break;
-
-        default:
-          accumulator[queryKey] = value;
-      }
-
-      if (Object.keys(gatewayKeys).length !== 0) {
-        accumulator['gateway_keys'] = gatewayKeys;
-      }
-    } else {
-      if (!accumulator.hasOwnProperty(queryKeySplit[0])) {
-        accumulator[queryKeySplit[0]] = {};
-      }
-
-      accumulator[queryKeySplit[0]][queryKeySplit[1]] = value;
-    }
-
-    return accumulator;
-  }, {});
-
 const getFilterValue = (filters, filter, currentValue, semiColonSplit) => {
   let value;
   let multiValue = false;
@@ -681,16 +703,6 @@ const getFilterValue = (filters, filter, currentValue, semiColonSplit) => {
 
   return value;
 };
-
-const statuses = [
-  { name: 'Init', value: 'init' },
-  { name: 'File Init', value: 'file_init' },
-  { name: 'File Sent', value: 'file_sent' },
-  { name: 'FTA Pending', value: 'fta_pending' },
-  { name: 'Failed', value: 'failed' },
-  { name: 'Processed', value: 'processed' },
-  { name: 'On Hold', value: 'on_hold' },
-];
 
 // multi-entity, multi-select, select, entity, numeric-range, date-range
 const formFilters = [

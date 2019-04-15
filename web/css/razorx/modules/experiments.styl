@@ -1,36 +1,42 @@
-.RazorX-container.RazorX-container .parent-container.experiments-container
-  .list-container
-    .table
-      .tr .td
-        &:nth-child(2)
-          width: 236px
+.RazorX-container.RazorX-container .parent-container
+  &.experiments-container
+    .list-container
+      .table
+        .tr .td
+          &:nth-child(2)
+            width: 236px
 
-        &:nth-child(4)
-          width: 86px
+          &:nth-child(4)
+            width: 86px
 
-        &:nth-child(5), &:nth-child(6)
-          width: 128px
+          &:nth-child(5), &:nth-child(6)
+            width: 128px
 
-  .entity-container
-    .segment
-      margin-bottom: 22px
+    .entity-container
+      .segment
+        margin-bottom: 22px
 
-      > div:first-of-type
-        background: $background-anti-overlay-mask
-        position: -webkit-sticky /* Safari */
-        position: sticky
-        top: 0
+        > div:first-of-type
+          background: $background-anti-overlay-mask
+          position: -webkit-sticky /* Safari */
+          position: sticky
+          top: 0
 
-    .sub-segment
-      margin: 16px 0
-      padding-left: 12px
-      border-left: 4px solid rgba(0,0,0,0.05)
+      .sub-segment
+        margin: 16px 0
+        padding-left: 12px
+        border-left: 4px solid rgba(0,0,0,0.05)
 
-      > div
-        margin: 8px 0
+        > div
+          margin: 8px 0
 
-      .sub-segment-group
-        display: block
+        .sub-segment-group
+          display: block
+
+  &.requests-container
+    .entity-container--custom
+      width: 100%
+      min-height: 100px
 
 .modal-experiments
   &.modal-json-edit
