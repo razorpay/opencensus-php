@@ -1,21 +1,51 @@
 import GenericEntity from './GenericEntity';
-import { getDefaultFilter, groupCommissionsData } from 'rzp/utils/pokedex';
+import {
+  getDefaultFilter,
+  groupCommissionListData,
+  groupSingleDayCommissionData,
+} from 'rzp/utils/pokedex';
 
 import { fetch } from 'merchant/modules/pokedex';
 
 export default class Commission extends GenericEntity {
   resourceUrl = 'commissions';
 
+  fetchSingleDayAggregateData = ({ from, mode = 'text' }) => {
+    const to = Number(
+      moment(from, 'X')
+        .endOf('day')
+        .format('X')
+    );
+    const query = {
+      filters: {
+        ...buildDefaultFilter(from, to),
+        ...buildWithTypeFilter(from, to, 'implicit'),
+        ...buildWithTypeFilter(from, to, 'explicit'),
+      },
+      aggregations: {
+        ...buildCommonAggregations(),
+        ...buildSingleDayAggregations(),
+      },
+    };
+
+    return fetch(query, mode).then(response => {
+      if (response.success) {
+        return {
+          ...response,
+          data: groupSingleDayCommissionData(response.data),
+        };
+      }
+    });
+  };
+
   fetchAggregateData = ({ from, to, mode = 'test' }) => {
     const query = {
       filters: {
-        default: [getDefaultFilter(from, to)],
+        ...buildDefaultFilter(from, to),
       },
       aggregations: {
-        earnings: buildQuery('commission', 'sum'),
-        activeMerchants: buildQuery('payments_merchant_id', 'count'),
-        transactionVolume: buildQuery('payments_base_amount', 'sum'),
-        transactions: buildQuery('id', 'count'),
+        ...buildCommonAggregations(),
+        ...buildListAggregations(),
       },
     };
 
@@ -24,7 +54,7 @@ export default class Commission extends GenericEntity {
         return {
           ...response,
           data: {
-            items: groupCommissionsData(response.data),
+            items: groupCommissionListData(response.data),
           },
         };
       }
@@ -33,9 +63,52 @@ export default class Commission extends GenericEntity {
   };
 }
 
-function buildQuery(column, aggType) {
+function buildDefaultFilter(from, to) {
+  return {
+    default: [getDefaultFilter(from, to)],
+  };
+}
+
+function buildWithTypeFilter(from, to, type) {
+  return {
+    [type]: [
+      {
+        ...getDefaultFilter(from, to),
+        type,
+      },
+    ],
+  };
+}
+
+function buildSingleDayAggregations() {
+  return {
+    // base earning components
+    baseEarnings: buildAggregation('commission', 'sum', 'implicit'),
+    baseTax: buildAggregation('tax', 'sum', 'implicit'),
+    // addon Components
+    addonEarnings: buildAggregation('commission', 'sum', 'explicit'),
+    addonTax: buildAggregation('tax', 'sum', 'explicit'),
+  };
+}
+
+function buildListAggregations() {
+  return {
+    earnings: buildAggregation('commission', 'sum'),
+  };
+}
+
+function buildCommonAggregations() {
+  return {
+    activeMerchants: buildAggregation('payments_merchant_id', 'count'),
+    transactionVolume: buildAggregation('payments_base_amount', 'sum'),
+    transactions: buildAggregation('id', 'count'),
+  };
+}
+
+function buildAggregation(column, aggType, filter_key) {
   return {
     agg_type: aggType,
+    filter_key,
     details: {
       index: 'commissions',
       column,

@@ -68,6 +68,7 @@ export default class CommissionsDailyList extends ListContainer {
         <DataTable
           columns={[date, earnings, volume, activeMerchants, transactions]}
           {...this.props}
+          title="Data"
         />
       </div>
     );

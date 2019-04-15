@@ -32,7 +32,9 @@ import {
   virtualAccountReducer,
 } from 'merchant/modules/virtualaccounts';
 import submerchantReducer from 'merchant/modules/submerchant';
-import commissionReducer from 'merchant/modules/commission';
+import commissionReducer, {
+  commAggSingleDayReducer,
+} from 'merchant/modules/commission';
 import statesReducer from 'merchant/modules/states';
 import taxesReducer from 'merchant/modules/taxes';
 import tokenReducer from 'merchant/modules/token';
@@ -127,6 +129,7 @@ export default combineReducers({
   commisions: commissionsReducer,
   commission: commissionReducer,
   commissionsAggregate: commissionsAggregateReducer,
+  commAggSingleDay: commAggSingleDayReducer,
   wysiwyg: wysiwygReducer,
   authLinks: authLinksReducer,
   authLink: authLinkReducer,

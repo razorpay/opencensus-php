@@ -135,7 +135,7 @@ export const getDefaultPaymentFilter = (startTime, endTime) => {
   };
 };
 
-export const groupCommissionsData = data => {
+export const groupCommissionListData = data => {
   const groupedData = {};
   Object.keys(data).forEach(key => {
     groupedData[key] = arrayToObject(data[key].result, formatData);
@@ -148,10 +148,37 @@ export const groupCommissionsData = data => {
       earnings: groupedData.earnings[timestamp],
       transactionVolume: groupedData.transactionVolume[timestamp],
       transactions: groupedData.transactions[timestamp],
+      id: timestamp, // to avoid unwanted lumination of rows
     }))
     .sort((a, b) => b.timestamp - a.timestamp);
 
   function formatData({ timestamp, value }) {
     return { key: timestamp, value };
+  }
+};
+
+export const groupSingleDayCommissionData = data => {
+  const fields = [
+    'baseEarnings',
+    'addonEarnings',
+    'baseTax',
+    'addonTax',
+    'transactionVolume',
+    'activeMerchants',
+    'transactions',
+  ];
+
+  return fields.reduce(
+    (formattedData, field) => ({
+      ...formattedData,
+      ...formatData(field),
+    }),
+    {}
+  );
+
+  function formatData(field) {
+    return {
+      [field]: (data[field].result[0] || {}).value || 0,
+    };
   }
 };

@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { connect } from 'react-redux';
 
 import Amount from 'rzp/ui/Amount';
 import Spinner from 'rzp/ui/Spinner';
@@ -7,10 +8,23 @@ import FeeBreakup from 'rzp/ui/FeeBreakup';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
 import { isPresent } from 'rzp/utils/rzp-utils';
+import { fetchSingleDayAggregate } from 'merchant/modules/commission';
 
+@connect(state => ({ ...state.commAggSingleDay }), { fetchSingleDayAggregate })
 export default class CommissionsDailyEntity extends Component {
+  componentWillMount() {
+    this.props.fetchSingleDayAggregate(Number(this.props.timestamp));
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (this.props.timestamp !== nextProps.timestamp) {
+      this.props.fetchSingleDayAggregate(Number(nextProps.timestamp));
+    }
+  }
+
   render() {
     const { loading: isLoading, entity, error } = this.props;
+    const data = entity.data;
     return (
       <div class="content-wrapper content-sm txn-details Commission--Detail">
         {isLoading ? (
@@ -20,11 +34,11 @@ export default class CommissionsDailyEntity extends Component {
         ) : (
           <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
-              {/* Date <strong>{moment(entity.date, 'X').format('ll')}</strong> */}
-              Date <strong>{moment('1554731556', 'X').format('ll')}</strong>
+              Date{' '}
+              <strong>{moment(this.props.timestamp, 'X').format('ll')}</strong>
             </div>
             <Alert type="error" message={error} />
-            {(true || isPresent(entity)) && (
+            {isPresent(entity) && (
               <div class="SliderPanel__Body">
                 <div class="panel-body">
                   <div class="list-group details-row-container">
@@ -37,29 +51,41 @@ export default class CommissionsDailyEntity extends Component {
                     <div className="pair-group-item">
                       <div className="pair-value">
                         <strong>
-                          <Amount value={1300} currency={'INR'} />
+                          <Amount
+                            value={getTotalEarnings(data)}
+                            currency={'INR'}
+                          />
                         </strong>
                       </div>
                     </div>
 
-                    <BaseEarningsBreakup earnings={12000} tax={1800} />
+                    <BaseEarningsBreakup
+                      earnings={data.baseEarnings}
+                      tax={data.baseTax}
+                    />
 
-                    <AddOnEarningsBreakup addOnEarnings={1200} tax={200} />
+                    <AddOnEarningsBreakup
+                      addOnEarnings={data.addonEarnings}
+                      tax={data.addonTax}
+                    />
 
                     <div className="pair-group-item m-t">
                       <strong>Transactions</strong>
                     </div>
 
                     <EntityDetailRow label="Total Volume">
-                      <Amount value={2374500} currency={'INR'} />
+                      <Amount value={data.transactionVolume} currency={'INR'} />
                     </EntityDetailRow>
 
                     <EntityDetailRow
                       label="No. of transacting merchants"
-                      value={5}
+                      value={data.activeMerchants}
                     />
 
-                    <EntityDetailRow label="No. of Transactions" value={12} />
+                    <EntityDetailRow
+                      label="No. of Transactions"
+                      value={data.transactions}
+                    />
                   </div>
                 </div>
               </div>
@@ -121,4 +147,8 @@ function EarningsBreakup(props) {
       </div>
     </>
   );
+}
+
+function getTotalEarnings(data) {
+  return data.addonEarnings + data.addonTax + data.baseEarnings + data.baseTax;
 }

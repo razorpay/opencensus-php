@@ -112,7 +112,7 @@ const entityDetailsMap = {
   '/partners/earnings/transactional/:id(comm_.+)': {
     component: TransactionalEarningDetails,
   },
-  '/partners/earnings/daily/:date': {
+  '/partners/earnings/daily/:timestamp': {
     component: DailyEarningDetails,
   },
   '/disputes/:id(disp_.+)': {
