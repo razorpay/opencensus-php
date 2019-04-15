@@ -26,16 +26,32 @@ export default class AccountsListContainer extends ListContainer {
   };
 
   onToggleDashboardAccess = (account, checked, cb) => {
+    let header = `${checked ? 'Enable' : 'Disable'} Dashboard Access?`,
+      message = `Are you sure you want to ${
+        checked ? 'Enable' : 'Disable'
+      } allow refunds for this linked account`,
+      data = {
+        dashboard_access: checked,
+        accountId: account.id,
+      };
+
+    if (account.refunds_allowed && !checked) {
+      header = 'Also Disable Customer Refunds?';
+      (message =
+        'Disabling Dashboard Access will also disable the refund to customer to the Linked Account.'),
+        (data = {
+          accountId: account.id,
+          dashboard_access: checked,
+          reversals_access: checked,
+        });
+    }
+
     return this.context
       .confirm({
-        header: `${checked ? 'Enable' : 'Disable'} Dashboard Access?`,
+        header: header,
         message: () => (
           <div class="text-semi-muted">
-            <p>
-              {`Are you sure you want to ${
-                checked ? 'Enable' : 'Disable'
-              } dashboard access for this linked account`}
-            </p>
+            <p>{message}</p>
           </div>
         ),
         affirmativeLabel: `${checked ? 'Enable' : 'Disable'}`,
@@ -43,10 +59,7 @@ export default class AccountsListContainer extends ListContainer {
         abortLabel: 'Cancel',
         action: () => {
           return this.props
-            .toggleDashboardAccess({
-              dashboard_access: checked,
-              accountId: account.id,
-            })
+            .toggleDashboardAccess(data)
             .then(resp => {
               cb(true);
 
@@ -92,15 +105,9 @@ export default class AccountsListContainer extends ListContainer {
 
   onToggleAllowRefunds = (account, checked, cb) => {
     let header = `${checked ? 'Enable' : 'Disable'} Allow Refunds`,
-      message = (
-        <div class="text-semi-muted">
-          <p>
-            {`Are you sure you want to ${
-              checked ? 'Enable' : 'Disable'
-            } allow refunds for this linked account`}
-          </p>
-        </div>
-      ),
+      message = `Are you sure you want to ${
+        checked ? 'Enable' : 'Disable'
+      } allow refunds for this linked account`,
       data = {
         reversals_access: checked,
         accountId: account.id,
@@ -108,25 +115,23 @@ export default class AccountsListContainer extends ListContainer {
 
     if (!account.dashboard_access && checked) {
       header = 'Also enable Dashboard Access?';
-      message = (
-        <div class="text-semi-muted">
-          <p>
-            Enabling Refund to customer will also enable Dashboard access to the
-            Linked Account.
-          </p>
-        </div>
-      );
-      data = {
-        reversals_access: checked,
-        accountId: account.id,
-        dashboard_access: checked,
-      };
+      (message =
+        'Enabling Refund to customer will also enable Dashboard access to the Linked Account.'),
+        (data = {
+          reversals_access: checked,
+          accountId: account.id,
+          dashboard_access: checked,
+        });
     }
 
     return this.context
       .confirm({
         header: header,
-        message: () => message,
+        message: () => (
+          <div class="text-semi-muted">
+            <p>{message}</p>
+          </div>
+        ),
         affirmativeLabel: `${checked ? 'Enable' : 'Disable'}`,
         affirmativePendingLabel: `${checked ? 'Enabling' : 'Disabling'}`,
         abortLabel: 'Cancel',

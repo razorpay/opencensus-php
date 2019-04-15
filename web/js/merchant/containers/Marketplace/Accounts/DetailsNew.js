@@ -38,17 +38,32 @@ export default class Details extends Component {
 
   onToggleDashboardAccess = (checked, cb) => {
     const { account } = this.state;
+    let header = `${checked ? 'Enable' : 'Disable'} Dashboard Access?`,
+      message = `Are you sure you want to ${
+        checked ? 'Enable' : 'Disable'
+      } allow refunds for this linked account`,
+      data = {
+        dashboard_access: checked,
+        accountId: account.id,
+      };
+
+    if (account.refunds_allowed && !checked) {
+      header = 'Also Disable Customer Refunds?';
+      (message =
+        'Disabling Dashboard Access will also disable the refund to customer to the Linked Account'),
+        (data = {
+          accountId: account.id,
+          dashboard_access: checked,
+          reversals_access: checked,
+        });
+    }
 
     return this.context
       .confirm({
-        header: `${checked ? 'Enable' : 'Disable'} Dashboard Access?`,
+        header: header,
         message: () => (
           <div class="text-semi-muted">
-            <p>
-              {`Are you sure you want to ${
-                checked ? 'Enable' : 'Disable'
-              } dashboard access for this linked account`}
-            </p>
+            <p>{message}</p>
           </div>
         ),
         affirmativeLabel: `${checked ? 'Enable' : 'Disable'}`,
@@ -56,10 +71,7 @@ export default class Details extends Component {
         abortLabel: 'Cancel',
         action: () => {
           return this.props
-            .toggleDashboardAccess({
-              dashboard_access: checked,
-              accountId: account.id,
-            })
+            .toggleDashboardAccess(data)
             .then(resp => {
               cb(true);
 
@@ -103,27 +115,47 @@ export default class Details extends Component {
 
   onToggleAllowRefunds = (checked, cb) => {
     const { account } = this.state;
+    let header = `${checked ? 'Enable' : 'Disable'} Allow Refunds`,
+      message = (
+        <div class="text-semi-muted">
+          <p>
+            {`Are you sure you want to ${
+              checked ? 'Enable' : 'Disable'
+            } allow refunds for this linked account`}
+          </p>
+        </div>
+      ),
+      data = {
+        reversals_access: checked,
+        accountId: account.id,
+      };
+
+    if (!account.dashboard_access && checked) {
+      header = 'Also enable Dashboard Access?';
+      message = (
+        <div class="text-semi-muted">
+          <p>
+            Enabling Refund to customer will also enable Dashboard access to the
+            Linked Account.
+          </p>
+        </div>
+      );
+      data = {
+        reversals_access: checked,
+        accountId: account.id,
+        dashboard_access: checked,
+      };
+    }
     return this.context
       .confirm({
-        header: `${checked ? 'Enable' : 'Disable'} Allow Refunds?`,
-        message: () => (
-          <div class="text-semi-muted">
-            <p>
-              {`Are you sure you want to ${
-                checked ? 'Enable' : 'Disable'
-              } allow refunds for this linked account`}
-            </p>
-          </div>
-        ),
+        header: header,
+        message: () => message,
         affirmativeLabel: `${checked ? 'Enable' : 'Disable'}`,
         affirmativePendingLabel: `${checked ? 'Enabling' : 'Disabling'}`,
         abortLabel: 'Cancel',
         action: () => {
           return this.props
-            .toggleAllowRefunds({
-              reversals_access: checked,
-              accountId: account.id,
-            })
+            .toggleAllowRefunds(data)
             .then(resp => {
               cb(true);
 
@@ -210,9 +242,10 @@ export default class Details extends Component {
     const { onClose, id } = this.props,
       { isLoading, account = {}, showActivationForm } = this.state,
       status =
-        isLoading && account.activation_details
+        !isLoading &&
+        (account.activation_details
           ? account.activation_details && account.activation_details.status
-          : account.activated,
+          : account.activated),
       user = getUser(),
       noLAEmail = user.merchants[user.current].email === account.email,
       isAllowToEdit = showWhenUtil({
@@ -272,16 +305,17 @@ export default class Details extends Component {
                   >
                     {status === 'activated' ? 'Activated' : 'Not Activated'}
                   </span>{' '}
-                  <br />
                   {account.activation_details &&
                   account.activation_details.status == 'activated' ? (
-                    <Button class="m-t" link onClick={this.showActivationForm}>
+                    <a class="m-l" link onClick={this.showActivationForm}>
                       Show Activation Form
-                    </Button>
+                    </a>
                   ) : (
-                    <Button class="m-t" onClick={this.showActivationForm}>
-                      Complete Activation Form
-                    </Button>
+                    <div>
+                      <Button class="m-t" onClick={this.showActivationForm}>
+                        Complete Activation Form
+                      </Button>
+                    </div>
                   )}
                 </EntityDetailRow>
                 <EntityDetailRow label="Refund Credits">
