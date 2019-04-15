@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { findDOMNode } from 'react-dom';
+import { withRouter } from 'react-router-dom';
 
 import TransferDetails from 'merchant/components/Marketplace/Transfers/Details';
 import ReversalDetails from 'merchant/containers/Marketplace/Reversals/Details';
@@ -15,6 +16,7 @@ import { expandSlider, compactSlider } from 'rzp/modules/slider';
 
 import { showNotification } from 'rzp/modules/notifications';
 
+@withRouter
 @connect(state => state.transfer, {
   fetchTransfer,
   fetchReversals,
@@ -46,7 +48,7 @@ export default class TransferDetailsContainer extends Component {
       this.fetchData(nextProps.id);
     }
 
-    if (nextProps.reversal_id !== this.props.reversal_id) {
+    if (nextProps.reversal_id) {
       this.checkSecView(nextProps);
     }
   }
@@ -61,6 +63,7 @@ export default class TransferDetailsContainer extends Component {
       }
     } else {
       this.props.expandSlider();
+
       // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
       if (this.reversalsView && findDOMNode(this.reversalsView)) {
         findDOMNode(this.reversalsView).classList.remove('toggle-slider');
@@ -82,6 +85,15 @@ export default class TransferDetailsContainer extends Component {
     });
   };
 
+  onReversalDetailsClose = () => {
+    let { compactSlider, history, location } = this.props;
+
+    findDOMNode(this.reversalsView).classList.toggle('toggle-slider');
+    compactSlider();
+
+    history.push(location.pathname.replace(/\/[^\/]+\/?$/, ''));
+  };
+
   render() {
     let {
         entity,
@@ -91,7 +103,6 @@ export default class TransferDetailsContainer extends Component {
         onClose,
         onReverse,
         showNotification,
-        compactSlider,
         reversal_id,
       } = this.props,
       statusMsg = {};
@@ -104,7 +115,11 @@ export default class TransferDetailsContainer extends Component {
     }
 
     return (
-      <div className={`${reversal_id ? 'multi-content' : ''}`}>
+      <div
+        className={`transfer-details-container ${
+          reversal_id ? 'multi-content' : ''
+        }`}
+      >
         <TransferDetails
           transfer={entity}
           reversals={reversals}
@@ -119,8 +134,9 @@ export default class TransferDetailsContainer extends Component {
         {reversal_id && (
           <ReversalDetails
             id={reversal_id}
-            onClose={compactSlider}
+            onClose={this.onReversalDetailsClose}
             ref={c => (this.reversalsView = c)}
+            notAllowFetchTransfer={true}
           />
         )}
       </div>

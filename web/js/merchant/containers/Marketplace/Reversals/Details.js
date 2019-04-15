@@ -23,6 +23,8 @@ export default class ReversalDetailsContainer extends Component {
     }
 
     this.props.fetchReversal(reversalId).then(resp => {
+      if (this.props.notAllowFetchTransfer) return;
+
       if (resp) {
         this.props.fetchTransfer(resp.transfer_id);
       }
