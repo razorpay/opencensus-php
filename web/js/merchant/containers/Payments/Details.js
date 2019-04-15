@@ -195,7 +195,10 @@ export default class PaymentDetailsContainer extends Component {
 
   secClose = closeTransferDetails => {
     let { compactSlider, history, location } = this.props;
-    findDOMNode(this.transfersView).classList.toggle('toggle-slider');
+
+    if (this.transfersView) {
+      findDOMNode(this.transfersView).classList.toggle('toggle-slider');
+    }
 
     compactSlider();
     history.push(
