@@ -1,18 +1,21 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import TransferDetails from 'merchantLA/components/Marketplace/Transfers/Details';
+import ReversalDetails from 'merchantLA/containers/Marketplace/Reversals/Details.js';
 import {
   fetchTransfer,
   fetchReversals,
 } from 'merchantLA/modules/marketplace/transfer';
 import * as ModalActions from 'rzp/modules/modals';
-
+import { expandSlider, compactSlider } from 'rzp/modules/slider';
 import { showNotification } from 'rzp/modules/notifications';
 
 @connect(state => ({ ...state.transfer, ...state.session }), {
   fetchTransfer,
   fetchReversals,
   showNotification,
+  expandSlider,
+  compactSlider,
   ...ModalActions,
 })
 export default class TransferDetailsContainer extends Component {
@@ -30,13 +33,45 @@ export default class TransferDetailsContainer extends Component {
 
   componentWillMount() {
     this.fetchData(this.props.id);
+    this.checkSecView(this.props);
   }
 
   componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
       this.fetchData(nextProps.id);
     }
+
+    if (nextProps.reversal_id) {
+      this.checkSecView(nextProps);
+    }
   }
+
+  checkSecView(props) {
+    if (!props.reversal_id) {
+      this.props.compactSlider();
+
+      // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
+      if (this.reversalsView && findDOMNode(this.reversalsView)) {
+        findDOMNode(this.reversalsView).classList.add('toggle-slider');
+      }
+    } else {
+      this.props.expandSlider();
+
+      // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
+      if (this.reversalsView && findDOMNode(this.reversalsView)) {
+        findDOMNode(this.reversalsView).classList.remove('toggle-slider');
+      }
+    }
+  }
+
+  onReversalDetailsClose = () => {
+    let { compactSlider, history, location } = this.props;
+
+    findDOMNode(this.reversalsView).classList.toggle('toggle-slider');
+    compactSlider();
+
+    history.push(location.pathname.replace(/\/[^\/]+\/?$/, ''));
+  };
 
   render() {
     let {
@@ -48,6 +83,7 @@ export default class TransferDetailsContainer extends Component {
       onReverse,
       showNotification,
       user,
+      reversal_id,
     } = this.props;
     let statusMsg = {};
 
@@ -59,17 +95,31 @@ export default class TransferDetailsContainer extends Component {
     }
 
     return (
-      <TransferDetails
-        transfer={entity}
-        reversals={reversals}
-        isLoading={loading}
-        statusMsg={statusMsg}
-        onClose={onClose}
-        onReverse={onReverse}
-        showNotification={showNotification}
-        parentAccountName={user.marketplace_merchant_name}
-        showRefundToCustomer={user.features.includes('allow_refunds_from_la')}
-      />
+      <div
+        class={`transfer-details-container ${
+          reversal_id ? 'multi-content' : ''
+        }`}
+      >
+        <TransferDetails
+          transfer={entity}
+          reversals={reversals}
+          isLoading={loading}
+          statusMsg={statusMsg}
+          onClose={onClose}
+          onReverse={onReverse}
+          showNotification={showNotification}
+          parentAccountName={user.marketplace_merchant_name}
+          showRefundToCustomer={user.features.includes('allow_refunds_from_la')}
+        />
+        {reversal_id && (
+          <ReversalDetails
+            id={reversal_id}
+            onClose={this.onReversalDetailsClose}
+            ref={c => (this.reversalsView = c)}
+            notAllowFetchTransfer={true}
+          />
+        )}
+      </div>
     );
   }
 }
