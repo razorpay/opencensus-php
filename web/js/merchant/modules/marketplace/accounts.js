@@ -57,7 +57,7 @@ export const toggleDashboardAccess = data => {
       method: 'post',
       appendModeInURL: true,
       accountId: data.accountId,
-      data: { dashboard_access: data.dashboard_access },
+      data: { ...data, dashboard_access: data.dashboard_access },
     }).then(response => response.data),
   };
 };
@@ -70,7 +70,7 @@ export const toggleAllowRefunds = data => {
       method: 'post',
       appendModeInURL: true,
       accountId: data.accountId,
-      data: { reversals: data.reversals_access },
+      data: { ...data, reversals: data.reversals_access },
     }).then(response => response.data),
   };
 };

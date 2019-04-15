@@ -10,6 +10,7 @@ import { showNotification } from 'rzp/modules/notifications';
 import { ToggleField } from 'merchant/components/Marketplace/Accounts/AccountsList';
 import SwitchField from 'rzp/ui/Forms/SwitchField';
 import * as AccountActions from 'merchant/modules/marketplace/accounts';
+import * as ModalActions from 'rzp/modules/modals';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { ModalMask } from 'component/Modal';
 import Button from 'component/Button';
@@ -19,6 +20,7 @@ import Amount from 'ui/Amount';
 @connect(_ => ({}), {
   showNotification,
   ...AccountActions,
+  ...ModalActions,
 })
 export default class Details extends Component {
   static contextTypes = {
@@ -163,7 +165,7 @@ export default class Details extends Component {
       }); // dummy catch to handle confirm abort rejection
   };
 
-  fetchData = id => {
+  fetchData = (id = this.props.id) => {
     this.setState({
       isLoading: true,
     });
@@ -196,7 +198,7 @@ export default class Details extends Component {
     this.props.openModal({
       size: 'small',
       component: (
-        <AccountCreation onSave={this.onAccountEdit} accountData={account} />
+        <AccountCreation onSave={this.fetchData} accountData={account} />
       ),
     });
   };
@@ -240,7 +242,27 @@ export default class Details extends Component {
             </div>
             <div class="SliderPanel__Body">
               <div class="panel-body">
-                <EntityDetailRow label="Email">{account.email}</EntityDetailRow>
+                <EntityDetailRow label="Email">
+                  {!account.email ? (
+                    <button
+                      class="btn btn-link no-padding"
+                      onClick={this.showEditAccountModal(account)}
+                    >
+                      Add Email
+                    </button>
+                  ) : (
+                    <span>
+                      {account.email}
+                      <a
+                        class="p-l"
+                        onClick={this.showEditAccountModal(account)}
+                        title="Edit Email"
+                      >
+                        Change
+                      </a>
+                    </span>
+                  )}
+                </EntityDetailRow>
                 <EntityDetailRow label="Name">{account.name}</EntityDetailRow>
                 <EntityDetailRow label="Account Status">
                   <span

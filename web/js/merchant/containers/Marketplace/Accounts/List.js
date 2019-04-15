@@ -58,6 +58,8 @@ export default class AccountsListContainer extends ListContainer {
                   } for merchant "${account.name}"`,
                 });
 
+                this.resetPagination();
+
                 return resp;
               } else {
                 throw 'Some network error has occurred';
@@ -89,27 +91,48 @@ export default class AccountsListContainer extends ListContainer {
   };
 
   onToggleAllowRefunds = (account, checked, cb) => {
+    let header = `${checked ? 'Enable' : 'Disable'} Allow Refunds`,
+      message = (
+        <div class="text-semi-muted">
+          <p>
+            {`Are you sure you want to ${
+              checked ? 'Enable' : 'Disable'
+            } allow refunds for this linked account`}
+          </p>
+        </div>
+      ),
+      data = {
+        reversals_access: checked,
+        accountId: account.id,
+      };
+
+    if (!account.dashboard_access && checked) {
+      header = 'Also enable Dashboard Access?';
+      message = (
+        <div class="text-semi-muted">
+          <p>
+            Enabling Refund to customer will also enable Dashboard access to the
+            Linked Account.
+          </p>
+        </div>
+      );
+      data = {
+        reversals_access: checked,
+        accountId: account.id,
+        dashboard_access: checked,
+      };
+    }
+
     return this.context
       .confirm({
-        header: `${checked ? 'Enable' : 'Disable'} Allow Refunds?`,
-        message: () => (
-          <div class="text-semi-muted">
-            <p>
-              {`Are you sure you want to ${
-                checked ? 'Enable' : 'Disable'
-              } allow refunds for this linked account`}
-            </p>
-          </div>
-        ),
+        header: header,
+        message: () => message,
         affirmativeLabel: `${checked ? 'Enable' : 'Disable'}`,
         affirmativePendingLabel: `${checked ? 'Enabling' : 'Disabling'}`,
         abortLabel: 'Cancel',
         action: () => {
           return this.props
-            .toggleAllowRefunds({
-              reversals_access: checked,
-              accountId: account.id,
-            })
+            .toggleAllowRefunds(data)
             .then(resp => {
               cb(true);
 
@@ -120,6 +143,8 @@ export default class AccountsListContainer extends ListContainer {
                     checked ? 'Enabled' : 'Disabled'
                   } for merchant "${account.name}"`,
                 });
+
+                this.resetPagination();
 
                 return resp;
               } else {
@@ -163,11 +188,11 @@ export default class AccountsListContainer extends ListContainer {
   };
 
   onAccountCreation = account => {
-    this.onAccountEdit(account);
+    this.resetPagination();
     this.showAccountDetailsModal(account); // Open activation modal
   };
 
-  onAccountEdit = account => {
+  resetPagination = account => {
     // Reset pagination and fetch results of updated pagination
     const paginationSkip = 0;
     this.setState({ skip: paginationSkip });
@@ -185,7 +210,7 @@ export default class AccountsListContainer extends ListContainer {
     this.props.openModal({
       size: 'small',
       component: (
-        <AccountCreation onSave={this.onAccountEdit} accountData={account} />
+        <AccountCreation onSave={this.resetPagination} accountData={account} />
       ),
     });
   };
