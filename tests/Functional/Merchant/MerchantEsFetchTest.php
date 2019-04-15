@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Merchant;
 
 use RZP\Models\Admin\Admin\Token;
 use RZP\Tests\Functional\TestCase;
+use Illuminate\Support\Facades\Artisan;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
@@ -186,6 +187,20 @@ class MerchantEsFetchTest extends TestCase
 
     public function testGetMerchantIdsFromEsByQAndAssertExactResponse()
     {
+        $requestToken = $this->getAdminRequestToken('10000000000011');
+
+        $this->ba->adminAuth('test', $requestToken);
+
+        $this->startTest();
+    }
+
+    public function testGetMerchantsFromEsByPartnerType()
+    {
+        $this->fixtures->merchant->edit('10000000000014', ['partner_type' => 'reseller']);
+
+        Artisan::call('rzp:index', ['mode' => 'live', 'entity' => 'merchant']);
+        Artisan::call('rzp:index', ['mode' => 'test', 'entity' => 'merchant']);
+
         $requestToken = $this->getAdminRequestToken('10000000000011');
 
         $this->ba->adminAuth('test', $requestToken);
