@@ -64,6 +64,7 @@ export default class AddAccount extends Component {
     } else if (typeof requestData.dashboard_access !== 'undefined') {
       requestData.dashboard_access = !!requestData.dashboard_access;
     }
+    requestData.refunds_allowed = !!requestData.refunds_allowed;
 
     return reqFunc(requestData)
       .then(account => {
@@ -157,18 +158,18 @@ export default class AddAccount extends Component {
                         <span>Enable Dashboard access to this account</span>
                       </label>
                     </div>
-                    {/* <div class="rzpCheckbox"> // TODO: eanble it when adding `allow_refunds_from_LA`
+                    <div class="rzpCheckbox">
                       <Field
-                        name="allow_refunds_from_LA"
-                        id="allow_refunds_from_LA"
+                        name="refunds_allowed"
+                        id="refunds_allowed"
                         component={CheckboxField}
                         type="checkbox"
                         disabled={noLAEmail}
                       />
-                      <label for="allow_refunds_from_LA" class="icon i-check">
+                      <label for="refunds_allowed" class="icon i-check">
                         <span>Enable Refunds from to this account</span>
                       </label>
-                    </div> */}
+                    </div>
                   </EnableDashboardField>
                 </div>
               </ShowWhen>
