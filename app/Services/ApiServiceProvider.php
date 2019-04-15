@@ -236,6 +236,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerRaven();
 
+        $this->registerBatchService();
+
         $this->registerScrooge();
 
         $this->registerElfin();
@@ -291,6 +293,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'mailgun',
             'maxmind',
             'raven',
+            'batchService',
             'scrooge',
             'repo',
             'elfin',
@@ -332,6 +335,18 @@ class ApiServiceProvider extends BaseServiceProvider
             $mock = $app['config']->get('applications.raven.mock');
 
             $implementation = $mock ? Mock\Raven::class : Raven::class;
+
+            return new $implementation($app);
+        });
+    }
+
+    protected function registerBatchService()
+    {
+        $this->app->bind('batchService', function($app)
+        {
+            $mock = $app['config']->get('applications.batch.mock');
+
+            $implementation = $mock ? Mock\BatchMicroService::class : BatchMicroService::class;
 
             return new $implementation($app);
         });

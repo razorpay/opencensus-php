@@ -107,6 +107,19 @@ class Gateway extends Base\Gateway
         return $attr;
     }
 
+    public function syncGatewayTransactionDataFromCps(array $attributes, array $input)
+    {
+        $gatewayEntity = $this->repo->findByPaymentIdAndAction($attributes[Entity::PAYMENT_ID], $input[Entity::ACTION]);
+
+        if (empty($gatewayEntity) === true)
+        {
+            $gatewayEntity = $this->createGatewayPaymentEntity($attributes, $input);
+        }
+
+        $gatewayEntity->setAction($input[Entity::ACTION]);
+
+        $this->updateGatewayPaymentEntity($gatewayEntity, $attributes, false);
+    }
 
     protected function mapInReverseWay($gatewayPayment)
     {
