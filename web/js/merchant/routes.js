@@ -43,10 +43,6 @@ const entityDetailsMap = {
     component: PaymentsDetails,
     additionalCondition: user => user.isAllowedEdit('payments'),
   },
-  '/payments/:id(pay_.+)/:transfer_id(trf_.+)': {
-    component: PaymentsDetails,
-    additionalCondition: user => user.isAllowedView('payments'),
-  },
   '/payments/:id(pay_.+)': {
     component: PaymentsDetails,
     additionalCondition: user => user.isAllowedView('payments'),

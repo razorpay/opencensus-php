@@ -15,7 +15,6 @@ import RefundModal from './RefundModal';
 
 import { expandSlider, compactSlider } from 'rzp/modules/slider';
 import PaymentTransferNew from 'merchant/containers/Marketplace/Transfers/New';
-import PaymentTransferDetails from 'merchant/containers/Marketplace/Transfers/Details';
 
 import {
   getKeysSeparatedByPipe,
@@ -61,7 +60,7 @@ export default class PaymentDetailsContainer extends Component {
   };
 
   checkSecView(props) {
-    if (!props.entity_name && !props.transfer_id) {
+    if (!props.entity_name) {
       this.props.compactSlider();
 
       // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
@@ -71,7 +70,7 @@ export default class PaymentDetailsContainer extends Component {
     } else {
       this.props.expandSlider();
       this.setState({
-        secView: props.entity_name ? 'new_transfer' : 'transfer',
+        secView: 'new_transfer',
       });
       // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
       if (this.transfersView && findDOMNode(this.transfersView)) {
@@ -301,12 +300,8 @@ export default class PaymentDetailsContainer extends Component {
       };
     }
 
-    const hasMultiContent =
-      this.state.secView === 'new_transfer' ||
-      this.state.secView === 'transfer';
-
     return (
-      <div className={`${hasMultiContent ? 'multi-content' : ''}`}>
+      <div className={`${this.state.secView ? 'multi-content' : ''}`}>
         <PaymentDetails
           payment={payment}
           card={card}
@@ -327,26 +322,14 @@ export default class PaymentDetailsContainer extends Component {
           apiFeatureEnabled="Marketplace"
           additionalCondition={user => user.isAllowedView('payments')}
         >
-          {this.state.secView === 'new_transfer' && (
+          {this.state.secView ? (
             <PaymentTransferNew
               paymentId={payment && payment.id}
               onClose={() => this.secClose(null)}
               onCreate={this.onCreateTransfer}
               ref={c => (this.transfersView = c)}
             />
-          )}
-        </ShowWhen>
-
-        <ShowWhen apiFeatureEnabled="Marketplace">
-          {this.state.secView === 'transfer' && (
-            <PaymentTransferDetails
-              id={this.props.transfer_id}
-              onClose={() => this.secClose(true)}
-              ref={c => (this.transfersView = c)}
-              onReverse={this.onTransferReverse}
-              onRefund={this.onPaymentRefund}
-            />
-          )}
+          ) : null}
         </ShowWhen>
       </div>
     );
