@@ -34,7 +34,7 @@ const helperCues = {
         <span>
           <i
             class={classList(
-              'i i-reversal cue',
+              'i i-undo cue',
               hasReversals ? 'cue--active' : 'cue--inactive'
             )}
           />
