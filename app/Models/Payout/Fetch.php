@@ -34,6 +34,8 @@ class Fetch extends BaseFetch
         ],
         AuthType::PROXY_AUTH => [
             self::EXPAND_EACH       => 'filled|string|in:user,reversal,fund_account,fund_account.contact,transaction',
+            // Because, dashboard thinks there can be just one mode (live/test).
+            Entity::PAYOUT_MODE     => 'sometimes|string|custom',
         ],
     ];
 
@@ -59,6 +61,7 @@ class Fetch extends BaseFetch
         AuthType::PROXY_AUTH     => [
             self::EXPAND_EACH,
             Entity::BATCH_ID,
+            Entity::PAYOUT_MODE
         ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::MERCHANT_ID,
@@ -104,6 +107,11 @@ class Fetch extends BaseFetch
     }
 
     protected function validateMode(string $attribute, string $value)
+    {
+        Mode::validateMode($value);
+    }
+
+    protected function validatePayoutMode(string $attribute, string $value)
     {
         Mode::validateMode($value);
     }
