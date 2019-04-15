@@ -131,7 +131,7 @@ const AccountsListItem = ({
               isDisabled={noLAEmail}
             >
               <SwitchField
-                defaultChecked={!!account.refunds_allowed}
+                defaultChecked={!!account.allow_reversals}
                 onChange={onToggleAllowRefunds}
                 disabled={noLAEmail}
                 type="prime"

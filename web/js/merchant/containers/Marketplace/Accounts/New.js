@@ -64,7 +64,7 @@ export default class AddAccount extends Component {
     } else if (typeof requestData.dashboard_access !== 'undefined') {
       requestData.dashboard_access = !!requestData.dashboard_access;
     }
-    requestData.refunds_allowed = !!requestData.refunds_allowed;
+    requestData.allow_reversals = !!requestData.allow_reversals;
 
     return reqFunc(requestData)
       .then(account => {

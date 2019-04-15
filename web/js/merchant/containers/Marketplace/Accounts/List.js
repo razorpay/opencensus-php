@@ -35,14 +35,14 @@ export default class AccountsListContainer extends ListContainer {
         accountId: account.id,
       };
 
-    if (account.refunds_allowed && !checked) {
+    if (account.allow_reversals && !checked) {
       header = 'Also Disable Customer Refunds?';
       (message =
         'Disabling Dashboard Access will also disable the refund to customer to the Linked Account.'),
         (data = {
           accountId: account.id,
           dashboard_access: checked,
-          reversals_access: checked,
+          allow_reversals: checked,
         });
     }
 
@@ -109,7 +109,7 @@ export default class AccountsListContainer extends ListContainer {
         checked ? 'Enable' : 'Disable'
       } allow refunds for this linked account`,
       data = {
-        reversals_access: checked,
+        allow_reversals: checked,
         accountId: account.id,
       };
 
@@ -118,7 +118,7 @@ export default class AccountsListContainer extends ListContainer {
       (message =
         'Enabling Refund to customer will also enable Dashboard access to the Linked Account.'),
         (data = {
-          reversals_access: checked,
+          allow_reversals: checked,
           accountId: account.id,
           dashboard_access: checked,
         });
