@@ -1672,6 +1672,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARD_DETOKENIZE_MIGRATION_REQUEST                     = 'CARD_DETOKENIZE_MIGRATION_REQUEST';
     const CARD_DETOKENIZE_MIGRATION_RESPONSE                    = 'CARD_DETOKENIZE_MIGRATION_RESPONSE';
     const CARD_DETOKENIZE_MIGRATION_FAILED                      = 'CARD_DETOKENIZE_MIGRATION_FAILED';
+    const CARD_TOKEN_IS_NOT_AVAILABLE                           = 'CARD_TOKEN_IS_NOT_AVAILABLE';
 
     // vault migration
     const TOKENEX_MIGRATION_REQUEST                             = 'TOKENEX_MIGRATION_REQUEST';

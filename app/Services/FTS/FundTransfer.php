@@ -2,9 +2,12 @@
 
 namespace RZP\Services\FTS;
 
+use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Exception\LogicException;
 use RZP\Models\Vpa\Core as VPACore;
+use RZP\Models\Card\Entity as CardVault;
+use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\BankAccount\Core as BankAccountCore;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
@@ -37,7 +40,6 @@ class FundTransfer extends Base
 
     /**
      * @param string $ftaId
-     * @param string $accountType
      * @param bool   $isRegistered
      * @return array
      * @throws LogicException
@@ -83,7 +85,6 @@ class FundTransfer extends Base
 
     /**
      * @param string $ftaId
-     * @param string $type
      * @param bool   $isRegistered
      * @return array
      * @throws LogicException
@@ -224,7 +225,7 @@ class FundTransfer extends Base
         $request[Constants::ACCOUNT] = [
                 Constants::CARD => [
                         Constants::ISSUER_BANK => $this->fta->card->getIssuer(),
-                        Constants::VAULT_TOKEN => $this->fta->card->getVaultToken(),
+                        Constants::VAULT_TOKEN => $this->getCardVaultToken($this->fta->card),
                 ],
         ];
 
@@ -248,7 +249,6 @@ class FundTransfer extends Base
     /**
      * @param array  $responseBody
      * @param string $type
-     * @throws LogicException
      */
     protected function handleResponse(array $responseBody, string $type)
     {
@@ -304,5 +304,38 @@ class FundTransfer extends Base
         $sourceCore = new $sourceCoreClass();
 
         $sourceCore->updateEntityWithFtsTransferId($this->source, $ftsTransferId);
+    }
+
+    /**
+     * If card is used for the 1st time on a RZP gateway then a vault token is generated in card entity.
+     * If vault has been already encountered then vault token is null and a global card id is present.
+     * This contains the vault token generated.
+     * If no vault token is present then null is returned to mark fta as failed.
+     *
+     * @param CardVault $card
+     * @return mixed
+     * @throws \Exception
+     */
+    protected function getCardVaultToken(CardVault $card)
+    {
+        $token = $card->getCardVaultToken();
+
+        if ($token === null)
+        {
+            $this->trace->error(
+                TraceCode::CARD_TOKEN_IS_NOT_AVAILABLE,
+                [
+                    'card_id' => $card->getId()
+                ]);
+
+            (new SlackNotification())->send(
+                'Vault token missing',
+                [
+                    'card_id' => $card->getId()
+                ],
+                null, 1, 'fts_alerts');
+        }
+
+        return $token;
     }
 }
