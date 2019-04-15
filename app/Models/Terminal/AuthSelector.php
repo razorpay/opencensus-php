@@ -60,7 +60,7 @@ class AuthSelector extends Base\Core
         $this->input['auths'] = array_pluck($terminals, 'auth_type');
 
         // Fetch Authentication gateway filter rules
-        $applicableFilterRules = $this->repo->useSlave(function ()
+        $applicableRules = $this->repo->useSlave(function ()
         {
             return (new Rule\Core)->fetchApplicableAuthenticationRulesForPayment($this->input);
         });
@@ -69,16 +69,6 @@ class AuthSelector extends Base\Core
 
         $this->input['auths'] = array_pluck($terminals, 'auth_type');
 
-        $applicableSorterRules = $this->repo->useSlave(function ()
-        {
-            return (new Rule\Core)->fetchApplicableAuthenticationRulesForPayment($this->input, Rule\Entity::SORTER);
-        });
-
-        if (empty($applicableSorterRules) === true)
-        {
-            return $terminals[0];
-        }
-
         $terminals = $this->sortAuthTerminals($terminals, $applicableSorterRules);
 
         return $terminals[0];
@@ -86,7 +76,9 @@ class AuthSelector extends Base\Core
 
     protected function selectValidAuthViaRules(array $terminals, Base\PublicCollection $rules, bool $verbose = true)
     {
-        $terminalAuthRuleFilter = new Filters\Auth\RuleFilter($this->input, $this->options, $rules);
+        $filterRules = $this->getRulesForFiltering($rules);
+
+        $terminalAuthRuleFilter = new Filters\Auth\RuleFilter($this->input, $this->options, $filterRules);
 
         $terminals = $terminalAuthRuleFilter->filter($terminals, $verbose);
 
@@ -119,6 +111,14 @@ class AuthSelector extends Base\Core
 
             $this->trace->info(TraceCode::AUTH_SELECTION, $traceData);
         }
+    }
+
+    protected function getRulesForFiltering(Base\PublicCollection $rules): Base\PublicCollection
+    {
+        return $rules->filter(function ($rule)
+        {
+            return ($rule->isFilter() === true);
+        });
     }
 
     protected function getRulesForSorting(Base\PublicCollection $rules): array

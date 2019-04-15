@@ -81,7 +81,7 @@ class Core extends Base\Core
         return $applicableRules;
     }
 
-    public function fetchApplicableAuthenticationRulesForPayment(array $input, string $type = Entity::FILTER):Base\PublicCollection
+    public function fetchApplicableAuthenticationRulesForPayment(array $input): Base\PublicCollection
     {
         $payment = $input['payment'];
 
@@ -98,7 +98,6 @@ class Core extends Base\Core
             Entity::AUTH_TYPE     => $validAuths,
             Entity::NETWORK       => $card->getNetworkCode(),
             Entity::ISSUER        => $card->getIssuer(),
-            Entity::TYPE          => $type,
             Entity::STEP          => Entity::AUTHENTICATION,
         ];
 
