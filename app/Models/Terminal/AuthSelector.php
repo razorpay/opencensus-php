@@ -53,11 +53,13 @@ class AuthSelector extends Base\Core
 
     public function select()
     {
-        $terminals = $this->autflowObj->getAuthenticationTerminals();
+        $terminals = $this->getTerminals();
 
-        $this->traceAuthTerminals($terminals, 'Auth terminals via auth', true);
+        $applicableTerminals = $this->autflowObj->getAuthenticationTerminals($terminals);
 
-        $this->input['auths'] = array_pluck($terminals, 'auth_type');
+        $this->traceAuthTerminals($applicableTerminals, 'Auth terminals via auth', true);
+
+        $this->input['auths'] = array_pluck($applicableTerminals, 'auth_type');
 
         // Fetch Authentication gateway filter rules
         $applicableRules = $this->repo->useSlave(function ()
@@ -65,13 +67,13 @@ class AuthSelector extends Base\Core
             return (new Rule\Core)->fetchApplicableAuthenticationRulesForPayment($this->input);
         });
 
-        $terminals = $this->selectValidAuthViaRules($terminals, $applicableFilterRules);
+        $applicableTerminals = $this->selectValidAuthViaRules($applicableTerminals, $applicableRules);
 
-        $this->input['auths'] = array_pluck($terminals, 'auth_type');
+        $this->input['auths'] = array_pluck($applicableTerminals, 'auth_type');
 
-        $terminals = $this->sortAuthTerminals($terminals, $applicableSorterRules);
+        $applicableTerminals = $this->sortAuthTerminals($applicableTerminals, $applicableRules);
 
-        return $terminals[0];
+        return $applicableTerminals[0];
     }
 
     protected function selectValidAuthViaRules(array $terminals, Base\PublicCollection $rules, bool $verbose = true)
@@ -131,5 +133,10 @@ class AuthSelector extends Base\Core
         $sorterRules = $sorterRules->groupBySpecificityScore();
 
         return $sorterRules;
+    }
+
+    protected function getTerminals()
+    {
+        return AuthTerminals::AUTHENTICATION_TERMINALS;
     }
 }
