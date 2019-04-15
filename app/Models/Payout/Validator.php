@@ -110,6 +110,7 @@ class Validator extends Base\Validator
             return;
         }
 
+        /** @var Entity $payout */
         $payout = $this->entity;
 
         $mode = $input[Entity::MODE];
@@ -122,7 +123,7 @@ class Validator extends Base\Validator
 
         $minRtgsAmount = NodalAccount::MIN_RTGS_AMOUNT * 100;
         $maxImpsAmount = NodalAccount::MAX_IMPS_AMOUNT * 100;
-        $maxUpiAmount = FundAccount\Validator::MAX_VPA_AMOUNT;
+        $maxUpiAmount  = FundAccount\Validator::MAX_VPA_AMOUNT;
 
         if ((($mode === Mode::RTGS) and ($amount < $minRtgsAmount)) or
             (($mode === Mode::IMPS) and ($amount > $maxImpsAmount)) or

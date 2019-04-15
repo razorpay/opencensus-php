@@ -111,6 +111,7 @@ class Constants
     const S2S_OTP_JSON                    = 's2s_otp_json';
     const ADHOC_SETTLEMENT                = 'adhoc_settlement';
     const SUB_TERMINAL_OPTIMIZE           = 'sub_terminal_optimize';
+    const SHOW_REFUND_PUBLIC_STATUS       = 'show_refund_public_status';
 
     /**
      * This will control if the bank details will be returned in the fetch token response.
@@ -331,9 +332,9 @@ class Constants
         self::SELF_KYC_DISABLED               => true,
         self::PAYMENT_MAILS_DISABLED          => true,
         self::DISPUTE_MAILS_DISABLED          => true,
-        self::BLOCK_PL_PAY_POST_EXPIRY        => true,
         self::ADHOC_SETTLEMENT                => true,
         self::SUB_TERMINAL_OPTIMIZE           => true,
+        self::SHOW_REFUND_PUBLIC_STATUS       => true,
     ];
 
     // Entity type constants

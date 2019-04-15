@@ -65,6 +65,15 @@ class VpaController extends Controller
         return $this->response($response);
     }
 
+    public function initiateCheckAvailability()
+    {
+        $input = $this->request()->all();
+
+        $response = $this->service->initiateCheckAvailability($input);
+
+        return $this->response($response);
+    }
+
     public function checkAvailability()
     {
         $input = $this->request()->all();

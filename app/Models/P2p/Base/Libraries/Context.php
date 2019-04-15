@@ -11,7 +11,7 @@ use RZP\Models\P2p\Vpa\Handle;
 use RZP\Models\P2p\Base\Traits;
 use RZP\Trace\P2pTraceProcessor;
 use RZP\Models\P2p\Base\MorphMap;
-use RZP\Exception\BadRequestException;
+use RZP\Models\Base\UniqueIdEntity;
 
 class Context extends ArrayObject
 {
@@ -303,6 +303,16 @@ class Context extends ArrayObject
     }
 
     /**
+     * Request id will be set in options at the time of loading
+     *
+     * @return string
+     */
+    public function getRequestId(): string
+    {
+        return $this->getOptions()->get(self::REQUEST_ID);
+    }
+
+    /**
      * Validates whether the given merchant is in context
      *
      * @param Merchant\Entity $merchant
@@ -319,10 +329,17 @@ class Context extends ArrayObject
      * Normally these services are registered from Providers, but in case
      * of P2P, these services may lead to conflicts. Thus only be called for P2P.
      */
-    protected function registerServices()
+    public function registerServices()
     {
         // Morphing must only be handled within P2P requests
         MorphMap::boot();
+
+        // If request doesn't have id specified, we can set
+        $requestId = $this->getOptions()->get(self::REQUEST_ID);
+        if (empty($requestId) === true)
+        {
+            $this->options->put(self::REQUEST_ID, UniqueIdEntity::generateUniqueId());
+        }
 
         // We only want to register the P2P Trace Processor within P2P requests
         app('trace')->pushProcessor(new P2pTraceProcessor($this));

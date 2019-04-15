@@ -147,15 +147,6 @@ class Activate extends Base\Core
 
         (new Core)->createBalance($merchant, 'live');
 
-        $detailCore->addLogForDebugging($merchant, $merchantDetails, TraceCode::MERCHANT_INSTANT_ACTIVATION_DB_SAVE);
-
-        $this->repo->transactionOnLiveAndTest(function () use ($merchant)
-        {
-            $this->repo->saveOrFail($merchant);
-        });
-
-        $detailCore->addLogForDebugging($merchant, $merchantDetails, TraceCode::MERCHANT_INSTANT_ACTIVATION_AFTER_DB_SAVE);
-
         $this->trace->info(TraceCode::MERCHANT_ACCOUNT_INSTANTLY_ACTIVATED);
 
         //
@@ -170,18 +161,15 @@ class Activate extends Base\Core
             Detail\Entity::ACTIVATION_STATUS => Detail\Status::INSTANTLY_ACTIVATED,
         ];
 
+        $this->repo->saveOrFail($merchant);
+
         $detailCore->updateActivationStatus($merchantDetails, $activationStatusData, $merchant);
 
         $this->activateBusinessBankingIfApplicable($merchant);
 
-        // @todo: Add support for multiple channels here - Drip, Zapier, Slack, Emails (merchant and admins)
-        // $this->fireInstantActivationTrigger($merchantDetails, $merchant);
-
         $this->activateMerchantPromotions($merchant);
 
         $this->notifyMerchantForInstantActivation($merchant);
-
-        $detailCore->addLogForDebugging($merchant, $merchantDetails, TraceCode::MERCHANT_INSTANT_ACTIVATION_BEFORE_RETURN);
 
         return $merchant->toArrayPublic();
     }
@@ -294,8 +282,6 @@ class Activate extends Base\Core
         $zapierData = (new Detail\Service)->getActivationZapierData($merchant);
 
         (new Detail\Core)->postFormSubmissionToZapier($zapierData, 'activations', $merchant);
-
-        $this->logActionToSlack($merchant, SlackActions::ACTIVATE);
     }
 
     /**

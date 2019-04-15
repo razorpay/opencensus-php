@@ -987,6 +987,27 @@ class BankTransferTest extends TestCase
         });
     }
 
+    public function testBankTransferToReallyReallyLongPayeeAccount()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $payment      =  $this->getLastEntity('payment', true);
+
+        // Payment is left authorized
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+
+        // Created bank transfer is an unexpected one
+        $this->assertEquals('11122200123456781112220012345678', $bankTransfer['payee_account']);
+        $this->assertEquals('va_ShrdVirtualAcc', $bankTransfer['virtual_account_id']);
+        $this->assertEquals(false, $bankTransfer['expected']);
+        $this->assertNotNull($payment['id'], 'pay_'.$bankTransfer['payment_id']);
+    }
+
     public function testBankTransferImpsFromRogueBankStripAccount()
     {
         $accountNumber = $this->bankAccount['account_number'];

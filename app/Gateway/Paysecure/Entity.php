@@ -20,7 +20,6 @@ class Entity extends Base\Entity
     const RRN                     = 'rrn';
     const TRAN_DATE               = 'tran_date';
     const TRAN_TIME               = 'tran_time';
-    const SETTLED                 = 'settled';
 
     protected $fillable = [
         self::PAYMENT_ID,
@@ -36,7 +35,6 @@ class Entity extends Base\Entity
         self::AUTH_NOT_REQUIRED,
         self::APPRCODE,
         self::RRN,
-        self::SETTLED,
         self::TRAN_DATE,
         self::TRAN_TIME,
     ];
@@ -54,11 +52,6 @@ class Entity extends Base\Entity
     public function setFlow(string $flow)
     {
         $this->setAttribute(self::FLOW, $flow);
-    }
-
-    public function setSettled(bool $settled)
-    {
-        $this->setAttribute(self::SETTLED, $settled);
     }
 
     protected function getHkeyAttribute()

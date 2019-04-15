@@ -21,6 +21,6 @@ class VpaAction extends Action
                 Fields::CUSTOMER_VPA            => 'required',
                 Fields::ACCOUNT_REFERENCE_ID    => 'required',
             ]
-        ]
+        ],
     ];
 }

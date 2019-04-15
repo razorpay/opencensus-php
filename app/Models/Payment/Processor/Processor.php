@@ -149,6 +149,11 @@ class Processor
      * @var Terminal\Entity
      */
     protected $terminal;
+
+    /**
+     * This should be an array and not a collection
+     * @var array
+     */
     protected $selectedTerminals;
     protected $mode;
     /**
@@ -252,6 +257,8 @@ class Processor
 
             $this->setMethodForInput($input);
 
+            $this->appendMetadataForPayment($input);
+
             $payment = $this->buildPaymentEntity($input);
 
             $this->preProcessForSubscriptionsIfApplicable($input, $payment);
@@ -294,6 +301,22 @@ class Processor
             (new Payment\Metric)->pushExceptionMetrics($e, Metric::PAYMENT_PROCESS_FAILED, $dimensions);
 
             throw $e;
+        }
+    }
+
+    protected function appendMetadataForPayment(array & $input)
+    {
+        if ($this->app['basicauth']->isPrivateAuth() === true)
+        {
+            (new Payment\Analytics\Service)->setMetadataForS2SPayment($input);
+        }
+        else if ($this->app['basicauth']->isPublicAuth() === true)
+        {
+            (new Payment\Analytics\Service)->setMetadataForPublicAuthPayment($input);
+        }
+        else if ($this->app['basicauth']->isAppAuth() === true)
+        {
+            (new Payment\Analytics\Service)->setMetadataForAppAuthPayment($input);
         }
     }
 
@@ -534,6 +557,12 @@ class Processor
                 ]);
         }
 
+        // Nested attributes, when flattened, aren't handled by laravel test requests
+        if ($this->app->runningUnitTests() === true)
+        {
+            unset($input['_']);
+        }
+
         $coproto = [
             'type'    => 'respawn',
             'request' => [
@@ -595,6 +624,12 @@ class Processor
 
     protected function getCoprotoDefaultArrayForWallet(array $input)
     {
+        // Nested attributes, when flattened, aren't handled by laravel test requests
+        if ($this->app->runningUnitTests() === true)
+        {
+            unset($input['_']);
+        }
+
         return [
             'type'    => 'respawn',
             'request' => [

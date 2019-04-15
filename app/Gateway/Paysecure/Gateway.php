@@ -212,28 +212,6 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    public function capture(array $input)
-    {
-        parent::capture($input);
-
-         $this->setCardNumberAndCvv($input);
-
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], Action::AUTHORIZE);
-
-        $input['paysecure'] = $gatewayPayment->toArray();
-
-        $this->callAdviceGateway($input);
-
-        $gatewayPayment->fill(
-            [
-                Entity::SETTLED => 1,
-            ]
-        );
-
-        $this->getRepository()->saveOrFail($gatewayPayment);
-    }
-
     public function refund(array $input)
     {
         parent::refund($input);

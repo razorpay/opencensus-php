@@ -48,6 +48,7 @@ class Channel
 
     public static $channelToNodalGatewayMap = [
         self::YESBANK => Payment\Gateway::NODAL_YESBANK,
+        self::ICICI   => Payment\Gateway::NODAL_ICICI,
     ];
 
     public static function getChannels()

@@ -22,6 +22,7 @@ final class Throttle
      * @param  Request  $request
      * @param  \Closure $next
      * @return Response
+     * @throws \Throwable
      */
     public function handle($request, \Closure $next)
     {

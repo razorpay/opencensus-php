@@ -51,6 +51,13 @@ class HeartbeatLagChecker implements LagChecker
     protected $randomTrafficPercent;
 
     /**
+     * can be used to reconnect the db in case of connection failure
+     *
+     * @var Closure
+     */
+    protected $reconnecter;
+
+    /**
      * @var RedisManager
      */
     protected $redis;
@@ -64,7 +71,6 @@ class HeartbeatLagChecker implements LagChecker
      * @var Trace
      */
     protected $trace;
-
 
     /**
      * @var int
@@ -113,6 +119,16 @@ class HeartbeatLagChecker implements LagChecker
      */
     private $trafficPercent;
 
+    /**
+     * @var bool
+     */
+    private $shouldTraceSuccess;
+
+    /**
+     * @var string
+     */
+    protected $mode;
+
     public function __construct(array $config)
     {
         $this->config = $config;
@@ -130,13 +146,18 @@ class HeartbeatLagChecker implements LagChecker
 
         $this->reqCtx = $app['request.ctx'];
 
-        $this->redis = $app['redis']->connection('redis_labs');
+        $this->redis = $app['redis']->connection();
 
         $this->cache = $app['cache'];
 
         $this->workerContext = $app['worker.ctx'];
 
         $this->initializeConnectionResolvers();
+    }
+
+    public function setReconnector(Closure $reconnector)
+    {
+        $this->reconnecter = $reconnector;
     }
 
     /**
@@ -195,6 +216,13 @@ class HeartbeatLagChecker implements LagChecker
             return $useSlave;
         }
 
+        //
+        // Mode will be empty for callbacks and workers
+        // So is mode is not set we take it from worker if its a worker
+        // else mode will be set to null
+        //
+        $this->mode = $this->mode ??  $this->workerContext->getMode();
+
         $currentRoute = $this->reqCtx->getRoute() ?? $this->workerContext->getJobName();
 
         $connectionIdentifier = $this->redis->hget($this->config['routes'], $currentRoute);
@@ -232,6 +260,7 @@ class HeartbeatLagChecker implements LagChecker
      * @param $threshold
      *
      * @return bool
+     * @throws \Exception
      */
     protected function isSlaveLagging($readPdo, $threshold): bool
     {
@@ -242,13 +271,31 @@ class HeartbeatLagChecker implements LagChecker
         // as it also calls this flow to get the connection
         //
         $query = 'SELECT ROUND(( ROUND(UNIX_TIMESTAMP(Now(6)) * 1000000) - ( 
-                            UNIX_TIMESTAMP(SUBSTR(ts, 1, 19)) * 1000000 + 
-                            SUBSTR(ts, 21, 6) ) 
-                         ) / 1000) AS replica_lag_milli, ts 
-                    FROM   heartbeat.heartbeat
-                    LIMIT  1';
+                        UNIX_TIMESTAMP(SUBSTR(ts, 1, 19)) * 1000000 + 
+                        SUBSTR(ts, 21, 6) ) 
+                     ) / 1000) AS replica_lag_milli, ts 
+                FROM   heartbeat.heartbeat
+                LIMIT  1';
 
-        $result = $pdo->query($query)->fetch();
+        try
+        {
+            $result = $pdo->query($query)->fetch();
+        }
+        catch (\Exception $e)
+        {
+            $pdo = call_user_func($this->reconnecter, $e, $this->mode);
+
+            //
+            // If we can not find reconnect to the server then
+            // consider this as lag, so that we can use master connection for these
+            //
+            if ($pdo === null)
+            {
+                throw $e;
+            }
+
+            $result = $pdo->query($query)->fetch();
+        }
 
         $this->lag = $result['replica_lag_milli'];
 
@@ -338,6 +385,7 @@ class HeartbeatLagChecker implements LagChecker
             $this->config['time_threshold'],
             $this->config['slave_time_threshold'],
             $this->config['traffic_percentage'],
+            $this->config['log_verbose'],
         ]);
 
         list(
@@ -346,11 +394,14 @@ class HeartbeatLagChecker implements LagChecker
             $this->timeThreshold,
             $this->slaveTimeThreshold,
             $this->trafficPercent,
+            $this->shouldTraceSuccess,
             ) = array_values($heartbeatConfig);
 
         $this->mock = (bool) $this->mock;
 
         $this->enabled = (bool) $this->enabled;
+
+        $this->shouldTraceSuccess = (bool) ($this->shouldTraceSuccess ?? true);
     }
 
     /**
@@ -387,22 +438,29 @@ class HeartbeatLagChecker implements LagChecker
 
     /**
      * It will do a mock check based on this it sends whether to use slave or master
+     *
      * @param bool   $useSlave
      * @param string $currentRoute
      * @param string $connectionIdentifier
+     *
      * @return bool
      */
     private function finalizeResult(bool $useSlave, $currentRoute = '', $connectionIdentifier = ''): bool
     {
-        // Adding it before mock check because of the mock is enabled heartbeat result will be master always
+        //
+        // Adding logging before mock check because if the mock is enabled, heartbeat result will be master always
         // which will not give a proper result of heartbeat evaluation
-        $this->traceConnectionSelection(
-            TraceCode::HEARTBEAT_CHECK_COMPLETED,
-            $useSlave,
-            [
-                'route_name'            => $currentRoute,
-                'connection_identifier' => $connectionIdentifier,
-            ]);
+        //
+        if ($this->shouldTraceSuccess === true)
+        {
+            $this->traceConnectionSelection(
+                TraceCode::HEARTBEAT_CHECK_COMPLETED,
+                $useSlave,
+                [
+                    'route_name'            => $currentRoute,
+                    'connection_identifier' => $connectionIdentifier,
+                ]);
+        }
 
         // If mock flag is set then ignore the heartbeat result
         if ($this->mock === true)

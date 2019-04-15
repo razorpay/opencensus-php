@@ -11,6 +11,7 @@ use RZP\Models\Gateway\File;
 use RZP\Gateway\Netbanking\Canara;
 use RZP\Tests\Functional\TestCase;
 use RZP\Constants\Entity as ConstantsEntity;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Models\Payment\Verify\Status as VerifyStatus;
 use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -19,6 +20,7 @@ use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 class NetbankingCanaraGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use PartnerTrait;
 
     public function setUp()
     {
@@ -47,6 +49,21 @@ class NetbankingCanaraGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentNetbankingEntity'], $netbankingentity);
+    }
+
+    public function testPartnerPayment()
+    {
+        list($clientId, $submerchantId) = $this->setUpPartnerAuthForPayment();
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment['bank'] = $this->bank;
+
+        $this->doPartnerAuthPayment($payment, $clientId, $submerchantId);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertSame('authorized', $payment['status']);
     }
 
     public function testAmountTampering()

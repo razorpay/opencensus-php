@@ -48,10 +48,12 @@ class Validator extends Base\Validator
 
     /**
      * @param array $receivers
+     *
      * @throws Exception\BadRequestValidationFailureException
      */
     public function validateReceiversForBanking(array $receivers)
     {
+        /** @var Entity $virtualAccount */
         $virtualAccount = $this->entity;
 
         if ($virtualAccount->isBalanceTypeBanking() === false)

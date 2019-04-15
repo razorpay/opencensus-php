@@ -15,7 +15,7 @@ abstract class Handler extends Core
      * @param string $type File Type
      * @param string $env  Environment
      *
-     * @return array Bucket Config conating file name and bucket region
+     * @return array Bucket Config containing file name and bucket region
      */
     public function getBucketConfig(string $type, string $env)
     {

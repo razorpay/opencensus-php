@@ -80,6 +80,17 @@ if (! function_exists('get_last_query'))
     }
 }
 
+if (! function_exists('array_delete'))
+{
+    function array_delete($del_val, & $arr)
+    {
+        if (($key = array_search($del_val, $arr)) !== false)
+        {
+            unset($arr[$key]);
+        }
+    }
+}
+
 if (! function_exists('print_last_query'))
 {
     function print_last_query()

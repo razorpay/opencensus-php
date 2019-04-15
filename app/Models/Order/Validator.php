@@ -15,7 +15,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::AMOUNT                             => 'required|integer|min:0',
-        Entity::FIRST_PAYMENT_MIN_AMOUNT           => 'sometimes|nullable|integer|min:100',
+        Entity::FIRST_PAYMENT_MIN_AMOUNT           => 'sometimes|nullable|integer|min_amount',
         Entity::CURRENCY                           => 'required|string|size:3',
         Entity::RECEIPT                            => 'sometimes|nullable|string|max:40',
         Entity::PAYMENT_CAPTURE                    => 'filled|boolean',
@@ -50,6 +50,10 @@ class Validator extends Base\Validator
         Entity::NOTES => 'sometimes|notes'
     ];
 
+    protected static $minAmountCheckRules = [
+        Entity::AMOUNT => 'required|integer|min_amount'
+    ];
+
     protected function validateAmount($input)
     {
         $amount = $input['amount'];
@@ -57,13 +61,7 @@ class Validator extends Base\Validator
         if ((isset($input[Entity::METHOD]) === false) or
             ($input[Entity::METHOD] !== Payment\Method::EMANDATE))
         {
-            if ($amount < 100)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The amount must be at least 100.',
-                    Entity::AMOUNT,
-                    [Entity::AMOUNT => $amount]);
-            }
+            $this->validateInputValues('min_amount_check', $input);
         }
         else if ($input[Entity::METHOD] === Payment\Method::EMANDATE)
         {
@@ -72,13 +70,9 @@ class Validator extends Base\Validator
             // Hence, we cannot enforce 0rs for ALL emandate payment orders.
             //
             if ((isset($input[Entity::BANK]) === true) and
-                (Payment\Gateway::isZeroRupeeFlowSupported($input[Entity::BANK]) === false) and
-                ($amount < 100))
+                (Payment\Gateway::isZeroRupeeFlowSupported($input[Entity::BANK]) === false))
             {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The amount must be at least 100.',
-                    Entity::AMOUNT,
-                    [Entity::AMOUNT => $amount]);
+                $this->validateInputValues('min_amount_check', $input);
             }
         }
 

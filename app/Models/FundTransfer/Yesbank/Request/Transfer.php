@@ -92,18 +92,6 @@ class Transfer extends Base
     }
 
     /**
-     * {@inheritdoc}
-     *
-     * @return self
-     */
-    public function setEntity(BaseModel\Entity $entity): self
-    {
-        $this->entity = $entity;
-
-        return $this;
-    }
-
-    /**
      * 'serialize_precision' is set to -1 due to issue in json_encode while handling floating point numbers in php 7.1.
      * Refer following links.
      * https://bugs.php.net/bug.php?id=72567

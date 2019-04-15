@@ -13,7 +13,8 @@ use RZP\Models\Merchant;
 use RZP\Models\Bank\IFSC;
 
 /**
- * @property Merchant\Entity    $merchant
+ * @property Merchant\Entity $merchant
+ * @property mixed           iinRelation
  */
 class Entity extends Base\PublicEntity
 {

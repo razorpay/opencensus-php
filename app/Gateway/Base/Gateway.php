@@ -812,6 +812,7 @@ class Gateway
                 'namelookup_time'    => $info['namelookup_time'],
                 'pretransfer_time'   => $info['pretransfer_time'],
                 'starttransfer_time' => $info['starttransfer_time'],
+                'primary_ip'         => $info['primary_ip'] ?? 'nil',
             ]);
 
         try
@@ -1505,7 +1506,7 @@ class Gateway
 
             $cacheKey = self::getNetbankingUrlCacheKey($bank);
 
-            $cache = $this->app['redis']->connection('redis_labs');
+            $cache = $this->app['redis']->connection();
 
             $cacheValue = $cache->get($cacheKey);
 

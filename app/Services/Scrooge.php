@@ -39,6 +39,7 @@ class Scrooge
         'get_reports'                   => 'reports',
         'bulk_status_update'            => 'bulk-status-update',
         'get_refunds'                   => 'refunds',
+        'get_dashboard_init_data'       => 'init',
         'status_update'                 => 'status-update',
         'download_refunds'              => 'refunds/download',
         'enqueue'                       => 'enqueue',
@@ -174,6 +175,15 @@ class Scrooge
     {
         return $this->sendRequest(self::ListBaseURL . '/' . self::URLS['download_refunds_gateway_file'],
             Requests::POST, $input);
+    }
+
+    public function dashboardInit(array $input): array
+    {
+        return $this->sendRequest(
+            self::ListBaseURL . '/' . self::URLS['get_dashboard_init_data'],
+            Requests::GET,
+            $input
+        );
     }
 
     /**

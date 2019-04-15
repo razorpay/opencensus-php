@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Jobs\PaymentDowntime;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base\PublicCollection;
 
 class Repository extends Base\Repository
@@ -56,10 +57,13 @@ class Repository extends Base\Repository
 
         // Every update of gateway downtimes table should
         // queue a refresh of the payment downtimes table
-        //
-        // Commenting this out till PaymentDowntime logic is more thoroughly tested.
-        // TODO: Enable
-        // PaymentDowntime::dispatch($this->app['rzp.mode']);
+        $paymentDowntimesEnabled = (bool) ConfigKey::get(ConfigKey::ENABLE_PAYMENT_DOWNTIMES, false);
+
+        // Will enable on prod after PaymentDowntime logic is more thoroughly tested.
+        if ($paymentDowntimesEnabled === true)
+        {
+            PaymentDowntime::dispatch($this->app['rzp.mode']);
+        }
     }
 
     public function isMerchantIdRequiredForFetch()

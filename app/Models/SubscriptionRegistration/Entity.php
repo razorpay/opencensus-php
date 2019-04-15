@@ -38,6 +38,9 @@ class Entity extends Base\PublicEntity
     const EXPIRE_AT         = 'expire_at';
     const DELETED_AT        = 'deleted_at';
 
+    const METHOD_TYPE_CARD      = 'card';
+    const METHOD_TYPE_EMANDATE  = 'emandate';
+
     protected static $sign = 'subr';
 
     protected $entity = 'subscription_registration';
@@ -116,6 +119,16 @@ class Entity extends Base\PublicEntity
     public function getBank()
     {
         return $this->getAttribute(self::BANK);
+    }
+
+    public function isMethodCard(): bool
+    {
+        return ($this->getMethod() === self::METHOD_TYPE_CARD);
+    }
+
+    public function isMethodEmandate(): bool
+    {
+        return ($this->getMethod() === self::METHOD_TYPE_EMANDATE);
     }
 
     // Relations

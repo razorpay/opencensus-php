@@ -101,6 +101,7 @@ class Gateway
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
     const NODAL_YESBANK      = 'nodal_yesbank';
+    const NODAL_ICICI        = 'nodal_icici';
 
     const BT_YESBANK         = 'bt_yesbank';
     const BT_KOTAK           = 'bt_kotak';
@@ -545,27 +546,10 @@ class Gateway
         ],
         Payment\Gateway::WALLET_JIOMONEY   => [
             self::GO_LIVE_TIMESTAMP => 1552398662
+        ],
+        Payment\Gateway::UPI_AXIS   => [
+            self::GO_LIVE_TIMESTAMP => 1554715800
         ]
-    ];
-
-    /**
-     * Refunds of only these merchant ids will be directed to scrooge.
-     *
-     * @var array
-     */
-    public static $refundsPublicStatusMerchants = [
-        '9DZkE60krEG4wq',
-        '9ncOh0EZ8sC9z9',
-        '9hefgkvGhT18Q9',
-        'BbaYzzPW541Aut',
-        '80oXBj51MHGmwH',
-        '94tLpgbojcR85O',
-        'C1fjEduvEkBUEK',
-        'C1fmOZYiZiezoD',
-        'C1fnUMHBmitlPB',
-        'C1fo6ARXco94tP',
-        'C1fp6DAnDH4YUz',
-        'C1fq8jgl8NRKnh',
     ];
 
     public static $channels = [
@@ -720,7 +704,6 @@ class Gateway
         self::AMEX,
         self::CYBERSOURCE,
         self::FIRST_DATA,
-        self::PAYSECURE,
     ];
 
     const SHARED_NETBANKING_GATEWAYS_LIVE = [
@@ -886,6 +869,7 @@ class Gateway
             Network::MC,
             Network::VISA,
             Network::MAES,
+            Network::RUPAY,
         ],
         self::FIRST_DATA => [
             Network::MC,
@@ -898,9 +882,6 @@ class Gateway
             Network::VISA,
             Network::RUPAY,
         ],
-        self::PAYSECURE => [
-            Network::RUPAY,
-        ]
     ];
 
     public static $bharatQrCardNetwork = [
@@ -1373,12 +1354,14 @@ class Gateway
     public static $onlyAuthorizationGateway = [
         Gateway::HITACHI,
         Gateway::CYBERSOURCE,
+        Gateway::AXIS_MIGS,
         Gateway::ENACH_RBL,
     ];
 
     public static $authorizationAuthenticationGatewayMap = [
         Gateway::HITACHI     => Gateway::MPI_BLADE,
         Gateway::CYBERSOURCE => Gateway::CYBERSOURCE,
+        Gateway::AXIS_MIGS   => Gateway::AXIS_MIGS,
     ];
 
     public static $subscriptionOverOneYearGateways = [
@@ -1464,11 +1447,6 @@ class Gateway
         return array_keys(self::$scroogeGateways);
     }
 
-    public static function getRefundsPublicStatusMerchants(): array
-    {
-        return self::$refundsPublicStatusMerchants;
-    }
-
     public static function isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer)
     {
         $pinAuthGateways = self::$gatewayAcquirerIfscMapping;
@@ -1511,18 +1489,6 @@ class Gateway
             isset(self::$scroogeGateways[$gateway][self::GO_LIVE_TIMESTAMP]) and
             $timestamp > self::$scroogeGateways[$gateway][self::GO_LIVE_TIMESTAMP]
         );
-    }
-
-    /**
-     * This function checks if a given merchant is to be shown refund's Public status.
-     *
-     * @param $merchantId
-     * @return bool
-     *
-     */
-    public static function isRefundsPublicStatusMerchant(string $merchantId = null): bool
-    {
-        return (in_array($merchantId, self::getRefundsPublicStatusMerchants(), true) === true);
     }
 
     /**

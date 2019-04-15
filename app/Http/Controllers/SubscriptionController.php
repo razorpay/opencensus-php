@@ -203,18 +203,33 @@ class SubscriptionController extends Controller
 
     public function postUpdateData(string $subscriptionId)
     {
-        //We are proxying this API request to subserv
-        //This should not come here at all, added this method to make sure
+        // We are proxying this API request to subserv
+        // This should not come here at all, added this method to make sure
         // that api does not break on not finding this method
-        throw new LogicException("The request should not have reached here");
+        throw new LogicException('The request should not have reached here');
     }
 
     public function postPaymentProcess(string $subscriptionId)
     {
-        //We are proxying this API request to subserv
-        //This should not come here at all, added this method to make sure
+        // We are proxying this API request to subserv
+        // This should not come here at all, added this method to make sure
         // that api does not break on not finding this method
-        throw new LogicException("The request should not have reached here");
+        throw new LogicException('The request should not have reached here');
+    }
 
+    public function postSubscriptionChargeCycle(string $subscriptionId)
+    {
+        // We are proxying this API request to subserv
+        // This should not come here at all, added this method to make sure
+        // that api does not break on not finding this method
+        throw new LogicException('The request should not have reached here');
+    }
+
+    public function postSubscriptionSkipCycle(string $subscriptionId)
+    {
+        // We are proxying this API request to subserv
+        // This should not come here at all, added this method to make sure
+        // that api does not break on not finding this method
+        throw new LogicException('The request should not have reached here');
     }
 }

@@ -10,9 +10,13 @@ class Handler
 
     protected $cipher;
 
+    protected $type;
+
     public function __construct(string $type, array $params)
     {
         $this->params = $params;
+
+        $this->type = $type;
 
         $this->cipher = $this->getCipher($type);
     }
@@ -44,6 +48,8 @@ class Handler
                  return new PGPEncryption($this->params);
             case Type::AES_ENCRYPTION :
                  return new AESEncryption($this->params);
+            case Type::AES_GCM_ENCRYPTION :
+                return new AesGcmEncryption($this->params);
             default:
                 throw new Exception\LogicException('Not A Valid Encryption Type');
         }

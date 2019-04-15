@@ -2,6 +2,8 @@
 
 namespace RZP\Models\FundTransfer\Attempt;
 
+use RZP\Constants\Entity as EntityConstatns;
+
 final class Constants
 {
     // *** FTA related constants *** //
@@ -25,4 +27,8 @@ final class Constants
     const MAX_AGE_ATTEMPT_STATUS_DISPATCH_AGE = 1800;
 
     const DEFAULT_STATUS_CHECK_DISPATCH_TIME = 180;
+
+    const ALLOWED_PRODUCTS_ON_FTS = [
+        EntityConstatns::REFUND,
+    ];
 }

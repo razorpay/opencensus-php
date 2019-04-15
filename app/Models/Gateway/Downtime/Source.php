@@ -26,6 +26,7 @@ class Source
     {
         $app = \App::getFacadeRoot();
 
+        // Used for downtime tests, where no specific provider is required
         if (($app['rzp.mode'] === Mode::TEST) and
             ($source === self::DUMMY))
         {

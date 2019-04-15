@@ -72,7 +72,7 @@ class Core extends Base\Core
 
                 $this->markSubmittedAndLock($merchantDetails);
 
-                $this->updateActivationSource($merchantDetails, $originProduct);
+                $this->updateActivationSource($merchant, $originProduct);
 
                 $activationStatusData = [
                     Entity::ACTIVATION_STATUS => Status::UNDER_REVIEW,
@@ -220,27 +220,6 @@ class Core extends Base\Core
 
             return $response;
         });
-    }
-
-    /**
-     * Logs for debugging merchant activated =  false issue for some whitelist merchant
-     *
-     * @param Merchant\Entity $merchant
-     * @param Entity          $merchantDetails
-     * @param string          $traceContext
-     */
-    public function addLogForDebugging(Merchant\Entity $merchant, Entity $merchantDetails, string $traceContext)
-    {
-        if (($merchantDetails->getActivationFlow() === ActivationFlow::WHITELIST) and
-            ($merchant->isActivated() === false))
-        {
-            $data = [
-                EntityConstant::MERCHANT        => $merchant->toArrayPublic(),
-                EntityConstant::MERCHANT_DETAIL => $merchantDetails->toArrayPublic()
-            ];
-
-            $this->trace->info($traceContext, $data);
-        }
     }
 
     /**
@@ -532,20 +511,16 @@ class Core extends Base\Core
         }
 
         $merchant->setHasKeyAccess(true);
-
-        $this->repo->saveOrFail($merchant);
     }
 
     /**
      * Updates the product business banking or primary from where the activation form was submitted.
      *
-     * @param Entity $merchantDetails
-     * @param string $originProduct
+     * @param Merchant\Entity $merchant
+     * @param string          $originProduct
      */
-    public function updateActivationSource(Entity $merchantDetails, string $originProduct)
+    public function updateActivationSource(Merchant\Entity $merchant, string $originProduct)
     {
-        $merchant = $merchantDetails->merchant;
-
         $merchant->setActivationSource($originProduct);
 
         $this->repo->saveOrFail($merchant);
@@ -772,6 +747,8 @@ class Core extends Base\Core
             $merchant = (new Merchant\Core)->syncMerchantEntityFields($merchant, $input);
 
             $this->checkAndMarkHasKeyAccess($merchantDetails, $merchant);
+
+            $this->repo->saveOrFail($merchant);
 
             $response = $merchantDetails->toArrayPublic();
 

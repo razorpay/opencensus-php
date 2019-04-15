@@ -275,7 +275,7 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         \Cache::shouldReceive('get')
                 ->once()
-                ->with($content['session_id'])
+                ->with('temp_session:' . $content['session_id'])
                 ->andReturn([]);
 
         $data = $this->testData[__FUNCTION__];

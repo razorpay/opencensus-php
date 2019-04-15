@@ -424,14 +424,7 @@ class ApiServiceProvider extends BaseServiceProvider
             // until we move redis_labs config as default connection
             $mutex = new Mutex($app);
 
-            if ($this->app->environment('testing') === true)
-            {
-                $mutex->setRedisClient(new Mock\RedisDualWrite($app));
-
-                return $mutex;
-            }
-
-            $mutex->setRedisClient(Redis::Connection('redis_labs'));
+            $mutex->setRedisClient(Redis::Connection());
 
             return $mutex;
         });

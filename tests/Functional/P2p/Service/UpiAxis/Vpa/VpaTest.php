@@ -64,4 +64,47 @@ class VpaTest extends TestCase
 
         $helper->fetchAllVpa();
     }
+
+    public function testInitiateVpaAvailability()
+    {
+        $helper = $this->getVpaHelper();
+
+        $helper->withSchemaValidated();
+
+        $helper->initiateCheckVpaAvailable();
+    }
+
+    public function testCheckVpaAvailability()
+    {
+        $helper = $this->getVpaHelper();
+
+        $request = $helper->initiateCheckVpaAvailable();
+
+        $content = $this->handleSdkRequest($request);
+
+        $helper->withSchemaValidated();
+
+        $response = $helper->checkAvailability($request['callback'], $content);
+    }
+
+    public function testCheckVpaAvailabilityWithSuggestions()
+    {
+        $helper = $this->getVpaHelper();
+
+        $request = $helper->initiateCheckVpaAvailable();
+
+        $content = $this->handleSdkRequest($request);
+
+        $content['sdk']['available'] = false;
+
+        $content['sdk']['vpaSuggestions'] = [
+            'sample1@razoraxis',
+            'sample2@razoraxis',
+            'sample3@razoraxis'
+        ];
+
+        $helper->withSchemaValidated();
+
+        $response = $helper->checkAvailability($request['callback'], $content);
+    }
 }

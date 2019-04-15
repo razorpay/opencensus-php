@@ -20,6 +20,7 @@ class P2pTraceProcessor
     {
         $record['p2p'] = [
             'handle'            => $this->getHandleCode(),
+            'request_id'        => $this->getRequestId(),
             'merchant_id'       => $this->getMerchantId(),
             'device_id'         => $this->getDeviceId(),
             'device_token_id'   => $this->getDeviceTokenId(),
@@ -60,5 +61,8 @@ class P2pTraceProcessor
         }
     }
 
-
+    public function getRequestId()
+    {
+        return $this->context->getRequestId();
+    }
 }

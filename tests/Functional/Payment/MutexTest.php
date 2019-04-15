@@ -40,18 +40,19 @@ class MutexTest extends TestCase
 
     public function testMutexAcquiredCaptureRequest()
     {
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get', 'setex'])
+                          ->getMock();
+
+        Redis::shouldReceive('connection')
+             ->andReturn($redisMock);
+
+        $redisMock->method('set')
+                  ->will($this->returnValue(null));
+
+        $redisMock->method('get')
+                  ->will($this->returnValue(null));
+
         $payment = $this->defaultAuthPayment();
-
-        Redis::shouldReceive('set')
-                ->once()
-                ->andReturn(null);
-
-        Redis::shouldReceive('get')
-                ->twice()
-                ->andReturnUsing(function()
-                {
-                    return null;
-                });
 
         $data = $this->testData[__FUNCTION__];
 
@@ -67,16 +68,17 @@ class MutexTest extends TestCase
 
     public function testMutexAcquiredRefundRequest()
     {
-        Redis::shouldReceive('set')
-                ->once()
-                ->andReturn(null);
+        $redisMock   = $this->getMockBuilder(Redis::class)->setMethods(['get', 'set'])->getMock();
 
-        Redis::shouldReceive('get')
-                ->twice()
-                ->andReturnUsing(function()
-                {
-                    return null;
-                });
+        Redis::shouldReceive('connection')
+               ->andReturn($redisMock);
+
+        $redisMock->method('get')
+                  ->will($this->returnValue(null));
+
+        $redisMock->method('set')
+                  ->will($this->returnValue(null));
+
 
         $payment = $this->fixtures->create('payment:captured');
 
@@ -101,50 +103,51 @@ class MutexTest extends TestCase
 
     public function testCaptureRequestWithException()
     {
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['get', 'set', 'setex'])
+                          ->getMock();
+
+        Redis::shouldReceive('connection')
+             ->andReturn($redisMock);
+
+        $redisMock->expects($this->exactly(1))
+                  ->method('set')
+                  ->willThrowException(new \Predis\Response\ServerException('Internal Error'));
+
+        $redisMock->method('get')->will($this->returnValue(null));
+
+
         $payment = $this->defaultAuthPayment();
-
-        Redis::shouldReceive('set')
-                ->once()
-                ->andReturnUsing(function()
-                {
-                    throw new \Predis\Response\ServerException('Internal Error');
-                });
-
-        Redis::shouldReceive('get')
-                ->twice()
-                ->andReturnUsing(function()
-                {
-                    return 'false_id';
-                });
 
         $this->capturePayment($payment['id'], $payment['amount']);
     }
 
     public function testMutexCaptureRequestWithDiffRedisResponse()
     {
+        $this->requestId = '';
+
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['get', 'set','del', 'setex'])
+                          ->getMock();
+
+        Redis::shouldReceive('connection')
+               ->andReturn($redisMock);
+
+        $redisMock->expects($this->exactly(1))
+                  ->method('set')->will($this->returnCallback(
+                        function ($resourceId, $requestId)
+                        {
+                            $this->requestId = $requestId;
+
+                            return \Predis\Response\Status::get('QUEUED');
+                        }));
+
+        $redisMock->method('del')->will($this->returnValue(true));
+
+        $redisMock->method('get')->will($this->returnValue($this->requestId));
+
+
         $payment = $this->defaultAuthPayment();
 
         $this->requestId = NULL;
-
-        Redis::shouldReceive('set')
-                ->once()
-                ->andReturnUsing(function ($resource, $requestId)
-                {
-                    $this->requestId = $requestId;
-
-                    return \Predis\Response\Status::get('QUEUED');
-                });
-
-        Redis::shouldReceive('get')
-                ->twice()
-                ->andReturnUsing(function()
-                {
-                    return $this->requestId;
-                });
-
-        Redis::shouldReceive('del')
-                ->once()
-                ->andReturn(true);
 
         $this->capturePayment($payment['id'], $payment['amount']);
     }

@@ -79,10 +79,14 @@ trait RequestHandlerTrait
 
         $gatewayPayment = $this->createGatewayPaymentEntity($content);
 
+        $accept = substr($this->app['request']->header('Accept'), 0, 256);
+        $userAgent = substr($this->app['request']->header('User-Agent'), 0, 512);
+        $ip = $this->app['request']->ip();
+
         $extraParameters = [
-            Fields::BROWSER_USERAGENT => $this->input['payment_analytics']['user_agent'],
-            Fields::IP_ADDRESS        => $this->input['payment_analytics']['ip'],
-            Fields::HTTP_ACCEPT       => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            Fields::BROWSER_USERAGENT => $this->input['payment_analytics']['user_agent'] ?? $userAgent,
+            Fields::IP_ADDRESS        => $this->input['payment_analytics']['ip'] ?? $ip,
+            Fields::HTTP_ACCEPT       => $accept,
         ];
 
         $requestArray = array_merge($requestArray, $extraParameters);
@@ -118,29 +122,21 @@ trait RequestHandlerTrait
 
         $rrn = $this->generateRrn($systemTraceAuditNumber);
 
+        $messageType = 'SMS';
+
         if ((isset($this->input['card']['message_type']) === true) and
             ($this->input['card']['message_type'] !== null))
         {
             $messageType = $this->input['card']['message_type'];
         }
-        else
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
-                null,
-                null,
-                [
-                    'message'    => "Message type missing for IIN",
-                    'payment_id' => $this->input['payment']['id'],
-                    'iin'        => $this->input['card']['iin'],
-                ]
-            );
-        }
 
+        $ownerName = $this->input['merchant']->getBillingLabel() ?? 'Razorpay';
+
+        $ownerName = substr($ownerName, 0, 23);
 
         $requestArray = [
             Fields::CARD_NO                           => $card['number'],
-            Fields::CARD_EXP_DATE                     => $card['expiry_month'] . $card['expiry_year'],
+            Fields::CARD_EXP_DATE                     => sprintf("%02d", $card['expiry_month']) . sprintf("%04d", $card['expiry_year']),
             Fields::LANGUAGE_CODE                     => 'en',
             Fields::AUTH_AMOUNT                       => $this->input['payment']['amount'],
             Fields::CURRENCY_CODE                     => Currency::ISO_NUMERIC_CODES[$this->input['payment']['currency']],
@@ -154,7 +150,7 @@ trait RequestHandlerTrait
             Fields::ACQUIRER_INSTITUTION_COUNTRY_CODE => Currency::ISO_NUMERIC_CODES[$this->input['payment']['currency']],
             Fields::RETRIEVAL_REF_NUMBER              => $rrn,
             Fields::CARD_ACCEPTOR_ID                  => $this->getMerchantId(),
-            Fields::TERMINAL_OWNER_NAME               => $this->input['merchant']->getBillingLabel() ?? 'Razorpay',
+            Fields::TERMINAL_OWNER_NAME               => $ownerName,
             Fields::TERMINAL_CITY                     => 'Bangalore',
             Fields::TERMINAL_STATE_CODE               => 'KA',
             Fields::TERMINAL_COUNTRY_CODE             => 'IN',
@@ -184,7 +180,10 @@ trait RequestHandlerTrait
         return $this->app['config']->get('gateway.hitachi.test_merchant_id');
     }
 
-    // Since we're the acquirer, we can pass our own internal terminal id
+    // Since we're the acquirer, we can pass our own internal terminal id here.
+    // But for settling the amount, we need to make a request to Hitachi, who
+    // does not allow our internal mids/tids to be routed to them. Hence, we use
+    // Hitachi's mid and tid when sending the requests to PaySecure
     protected function getTerminalId()
     {
 //        todo: Revert this later if required based on discussion

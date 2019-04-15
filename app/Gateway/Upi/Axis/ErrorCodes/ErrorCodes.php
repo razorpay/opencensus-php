@@ -17,6 +17,7 @@ class ErrorCodes extends Base\ErrorCodes\Upi\ErrorCodes
                 Constants::EMPTI      => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS,
                 Constants::DUPLICATE  => ErrorCode::GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,
                 Constants::TOKEN      => ErrorCode::GATEWAY_ERROR_TOKEN_NOT_FOUND,
+                Constants::ABSENT     => ErrorCode::GATEWAY_VERIFY_REFUND_ABSENT,
             ],
         'F'    => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
         'D'    => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
@@ -30,6 +31,7 @@ class ErrorCodes extends Base\ErrorCodes\Upi\ErrorCodes
         '222'  => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         'FL'   => ErrorCode::GATEWAY_ERROR_PAYMENT_FAILED,
         'FP'   => ErrorCode::GATEWAY_ERROR_PAYMENT_FAILED,
+        'ML01' => ErrorCode::GATEWAY_ERROR_MULTIPLE_REFUNDS_FOUND,
     ];
 
     public static function getErrorCode($code, $content)

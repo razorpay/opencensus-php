@@ -94,6 +94,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SCROOGE_VERIFY_REFUND_CRON_RESPONSE                   = 'SCROOGE_VERIFY_REFUND_CRON_RESPONSE';
     const SCROOGE_VERIFY_REFUND_CRON_EXCEPTION                  = 'SCROOGE_VERIFY_REFUND_CRON_EXCEPTION';
     const SCROOGE_GET_REFUND_STATUS_REQUEST_FAILED              = 'SCROOGE_GET_REFUND_STATUS_REQUEST_FAILED';
+    const REFUND_UPDATE_IS_SCROOGE_REQUEST                      = 'REFUND_UPDATE_IS_SCROOGE_REQUEST';
+    const REFUND_IS_SCROOGE_UPDATED_COUNT                       = 'REFUND_IS_SCROOGE_UPDATED_COUNT';
     const REFUND_UPDATE_PROCESSED_AT_SUMMARY                    = 'REFUND_UPDATE_PROCESSED_AT_SUMMARY';
     const REFUND_UPDATE_RRN_SUMMARY                             = 'REFUND_UPDATE_RRN_SUMMARY';
     const REFUND_UPDATE_REFERENCE1                              = 'REFUND_UPDATE_REFERENCE1';
@@ -517,8 +519,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CHECKOUT_PREFERENCES_COOKIE_CHECK                     = 'CHECKOUT_PREFERENCES_COOKIE_CHECK';
 
     const BULK_REFUND_VERIFY_REQUEST                            = 'BULK_REFUND_VERIFY_REQUEST';
-    const SCROOGE_FETCH_ENTITIES_SKIPPED_REFUNDS                = 'SCROOGE_FETCH_ENTITIES_SKIPPED_REFUNDS';
-
+    const SCROOGE_FETCH_ENTITIES                                = 'SCROOGE_FETCH_ENTITIES';
 
     const SETTLEMENT_MERCHANT_ON_HOLD                           = 'SETTLEMENT_MERCHANT_ON_HOLD';
     const SETTLEMENT_MERCHANT_SKIPPED                           = 'SETTLEMENT_MERCHANT_SKIPPED';
@@ -879,9 +880,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_ACCOUNT_ACTIVATED                            = 'MERCHANT_ACCOUNT_ACTIVATED';
     const MERCHANT_BUSINESS_BANKING_ACCOUNT                     = 'MERCHANT_BUSINESS_BANKING_ACCOUNT';
     const MERCHANT_ACCOUNT_INSTANTLY_ACTIVATED                  = 'MERCHANT_ACCOUNT_INSTANTLY_ACTIVATED';
-    const MERCHANT_INSTANT_ACTIVATION_DB_SAVE                   = 'MERCHANT_INSTANT_ACTIVATION_DB_SAVE';
-    const MERCHANT_INSTANT_ACTIVATION_AFTER_DB_SAVE             = 'MERCHANT_INSTANT_ACTIVATION_AFTER_DB_SAVE';
-    const MERCHANT_INSTANT_ACTIVATION_BEFORE_RETURN             = 'MERCHANT_ACCOUNT_INSTANTLY_ACTIVATED';
     const MERCHANT_ACCOUNT_KYC_VERIFIED                         = 'MERCHANT_ACCOUNT_KYC_VERIFIED';
     const MERCHANT_LINKED_ACCOUNT_ACTIVATED                     = 'MERCHANT_LINKED_ACCOUNT_ACTIVATED';
     const MERCHANT_TERMINALS                                    = 'MERCHANT_TERMINALS';
@@ -1035,8 +1033,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Gateway component error messages
 
     const GATEWAY_REQUEST_ERROR                                 = 'GATEWAY_REQUEST_ERROR';
-    const METHOD_DOWNTIME_CREATE                                = 'METHOD_DOWNTIME_CREATE';
-    const METHOD_DOWNTIME_EDIT                                  = 'METHOD_DOWNTIME_EDIT';
+    const PAYMENT_DOWNTIME_CREATE                               = 'PAYMENT_DOWNTIME_CREATE';
+    const PAYMENT_DOWNTIME_EDIT                                 = 'PAYMENT_DOWNTIME_EDIT';
     const PAYMENT_DOWNTIME_CREATE_JOB                           = 'PAYMENT_DOWNTIME_CREATE_JOB';
 
     const ADHOC_SETTLEMENT_CREATE_FAILED                        = 'ADHOC_SETTLEMENT_CREATE_FAILED';
@@ -1455,13 +1453,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LAMBDA_FILE_DETAILS                                   = 'LAMBDA_FILE_DETAILS';
     const LAMBDA_BATCH_FAILURE                                  = 'LAMBDA_BATCH_FAILURE';
 
-    const REDIS_LAG_CHECK_FAILED                                = 'REDIS_LAG_CHECK_FAILED';
-    const HEARTBEAT_CHECK_FAILED                                = 'HEARTBEAT_CHECK_FAILED';
-    const HEARTBEAT_CHECK_COMPLETED                             = 'HEARTBEAT_CHECK_COMPLETED';
-    const HEARTBEAT_CHECK_TIME_CONVERSION                       = 'HEARTBEAT_CHECK_TIME_CONVERSION';
-    const DB_DATA_INTEGRITY_ERROR                               = 'DB_DATA_INTEGRITY_ERROR';
-    const DB_PIVOT_TABLE_ASSOCIATION_ERROR                      = 'DB_PIVOT_TABLE_ASSOCIATION_ERROR';
-    const DB_READ_CONN_SETUP_ERROR                              = 'DB_READ_CONN_SETUP_ERROR';
+    const REDIS_LAG_CHECK_FAILED                        = 'REDIS_LAG_CHECK_FAILED';
+    const HEARTBEAT_CHECK_FAILED                        = 'HEARTBEAT_CHECK_FAILED';
+    const HEARTBEAT_CHECK_COMPLETED                     = 'HEARTBEAT_CHECK_COMPLETED';
+    const DATABASE_RECONNECT                            = 'DATABASE_RECONNECT';
+    const HEARTBEAT_CHECK_TIME_CONVERSION               = 'HEARTBEAT_CHECK_TIME_CONVERSION';
+    const DB_DATA_INTEGRITY_ERROR                       = 'DB_DATA_INTEGRITY_ERROR';
+    const DB_PIVOT_TABLE_ASSOCIATION_ERROR              = 'DB_PIVOT_TABLE_ASSOCIATION_ERROR';
+    const DB_READ_CONN_SETUP_ERROR                      = 'DB_READ_CONN_SETUP_ERROR';
 
     const AWS_CREDS_CACHE_SET                                   = 'AWS_CREDS_CACHE_SET';
 
@@ -1648,22 +1647,23 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_RECONCILIATION_JOB_RELEASED                       = 'FTA_RECONCILIATION_JOB_RELEASED';
 
     // Commission trace codes
+    const COMMISSION_SAVED                                      = 'COMMISSION_SAVED';
     const COMMISSION_LOGGED                                     = 'COMMISSION_LOGGED';
-    const COMMISSION_CREATED                                    = 'COMMISSION_CREATED';
     const COMMISSION_NOT_ENABLED                                = 'COMMISSION_NOT_ENABLED';
     const COMMISSION_NOT_DEFINED                                = 'COMMISSION_NOT_DEFINED';
     const COMMISSION_COMPUTED_ZERO                              = 'COMMISSION_COMPUTED_ZERO';
     const COMMISSION_CREATE_FAILED                              = 'COMMISSION_CREATE_FAILED';
     const COMMISSION_COMPUTED_NEGATIVE                          = 'COMMISSION_COMPUTED_NEGATIVE';
+    const COMMISSION_ZERO_PARTNER_FEES                          = 'COMMISSION_ZERO_PARTNER_FEES';
     const COMMISSION_INVALID_SOURCE_ENTITY                      = 'COMMISSION_INVALID_SOURCE_ENTITY';
+    const COMMISSION_EXPLICIT_FEE_BREAKUP_LOGGED                = 'COMMISSION_EXPLICIT_FEE_BREAKUP_LOGGED';
     const COMMISSION_NOT_APPLICABLE_PLANS_NOT_SET               = 'COMMISSION_NOT_APPLICABLE_PLANS_NOT_SET';
     const COMMISSION_NOT_APPLICABLE_IMPLICIT_EXPIRED            = 'COMMISSION_NOT_APPLICABLE_IMPLICIT_EXPIRED';
-    const COMMISSION_NOT_APPLICABLE_INVALID_FEE_MODEL           = 'COMMISSION_NOT_APPLICABLE_INVALID_FEE_MODEL';
+    const COMMISSION_COMPUTED_GREATER_THAN_TXN_AMOUNT           = 'COMMISSION_COMPUTED_GREATER_THAN_TXN_AMOUNT';
     const COMMISSION_NOT_APPLICABLE_INVALID_FEE_BEARER          = 'COMMISSION_NOT_APPLICABLE_INVALID_FEE_BEARER';
     const COMMISSION_NOT_APPLICABLE_CONFIG_NOT_DEFINED          = 'COMMISSION_NOT_APPLICABLE_CONFIG_NOT_DEFINED';
-    const COMMISSION_ZERO_PARTNER_FEES                          = 'COMMISSION_ZERO_PARTNER_FEES';
-    const COMMISSION_SAVED                                      = 'COMMISSION_SAVED';
     const COMMISSION_COMPUTED_GREATER_THAN_MERCHANT_FEE         = 'COMMISSION_COMPUTED_GREATER_THAN_MERCHANT_FEE';
+    const COMMISSION_EXPLICIT_FEE_BREAKUP_CREATE_FAILED         = 'COMMISSION_EXPLICIT_FEE_BREAKUP_CREATE_FAILED';
 
     // redirect to authorize trace code
     const PAYMENT_CREATED_IN_REDIRECT_TO_AUTHORIZE_FLOW         = 'PAYMENT_CREATED_IN_REDIRECT_TO_AUTHORIZE_FLOW';
@@ -1688,6 +1688,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTS_INVALID_CHANNEL                                   = 'FTS_INVALID_CHANNEL';
     const FTS_FAILURE_EXCEPTION                                 = 'FTS_FAILURE_EXCEPTION';
     const FTS_FUND_TRANSFER_INIT                                = 'FTS_FUND_TRANSFER_INIT';
+    const FTS_HEALTH_CHECK_FAILED                               = 'FTS_HEALTH_CHECK_FAILED';
     const FTS_CREATE_ACCOUNT_INIT                               = 'FTS_CREATE_ACCOUNT_INIT';
     const FTS_FUND_TRANSFER_FAILED                              = 'FTS_FUND_TRANSFER_FAILED';
     const FTS_REGISTER_ACCOUNT_INIT                             = 'FTS_REGISTER_ACCOUNT_INIT';

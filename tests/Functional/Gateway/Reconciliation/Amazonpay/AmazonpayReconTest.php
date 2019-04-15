@@ -102,7 +102,7 @@ class AmazonpayReconTest extends TestCase
                 if ($action === 'col_payment_amazonpay_recon')
                 {
                     // Setting amount to 100 will cause payment amount validation to fail
-                    $content[ReconHeaders::TRANSACTION_AMOUNT]       = '100.00';
+                    $content[ReconHeaders::ORDER_AMOUNT]       = '100.00';
                     $content[ReconHeaders::NET_TRANSACTION_AMOUNT]   = '100.00';
                 }
             });
@@ -145,7 +145,7 @@ class AmazonpayReconTest extends TestCase
             {
                 if ($action === 'col_payment_amazonpay_recon')
                 {
-                    $content[ReconHeaders::SELLER_ORDER_ID]       = '';
+                    $content[ReconHeaders::MERCHANT_ORDER_ID]       = '';
                 }
             });
 
@@ -194,11 +194,11 @@ class AmazonpayReconTest extends TestCase
                     $refund = $this->getDbLastEntityToArray('wallet', 'test');
                     $refundAmount = $this->formatAmount((-1) * $refund['amount'] / 100);
 
-                    $content[ReconHeaders::TRANSACTION_TYPE]         = 'Refund';
-                    $content[ReconHeaders::TRANSACTION_AMOUNT]       = $refundAmount;
-                    $content[ReconHeaders::NET_TRANSACTION_AMOUNT]   = $refundAmount;
-                    $content[ReconHeaders::SELLER_REFERENCE_ID]      = $refund['refund_id'];
-                    $content[ReconHeaders::AMAZON_TRANSACTION_ID]    = $refund['gateway_refund_id'];
+                    $content[ReconHeaders::TRANSACTION_TYPE]= 'Refund';
+                    $content[ReconHeaders::ORDER_AMOUNT]= $refundAmount;
+                    $content[ReconHeaders::NET_TRANSACTION_AMOUNT]= $refundAmount;
+                    $content[ReconHeaders::MERCHANT_ORDER_REFERENCE_ID] = $refund['refund_id'];
+                    $content[ReconHeaders::AMAZON_ORDER_REFERENCE_ID]= $refund['gateway_refund_id'];
                 }
             });
 

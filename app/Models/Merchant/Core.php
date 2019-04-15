@@ -444,8 +444,9 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
             [
-                'merchant_id' => $merchant->getId(),
-                'input'       => $input,
+                'activated' => $merchant->isActivated(),
+                'live'      => $merchant->isLive(),
+                'input'     => $input,
             ]);
 
         $merchant->edit($input, 'editConfig');
@@ -570,7 +571,11 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($merchant);
 
-        $this->logActionToSlack($merchant, $action);
+        // pipe to slack if the action is defined
+        if (empty(SlackActions::$actionMsgMap[$action]) === false)
+        {
+            $this->logActionToSlack($merchant, $action);
+        }
 
         return $merchant;
     }

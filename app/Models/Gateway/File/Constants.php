@@ -159,7 +159,7 @@ class Constants
             self::KOTAK    => ['kotakcards.emi@razorpay.com'],
             self::RBL      => ['Rblcards.emi@razorpay.com'],
             self::SCBL     => ['scbl.emi@razorpay.com'],
-            self::SBI      => ['albin.george@razorpay.com', 'vivek.kumar@razorpay.com'],
+            self::SBI      => ['emi.ops@sbicard.com', 'deepak.semwal@sbicard.com', 'settlements@razorpay.com', 'Divya.Verma@sbicard.com', 'albin.george@razorpay.com'],
             // todo: Add the recepients to the bank group
             self::CITI     => ['citibank.emi@razorpay.com'],
         ],

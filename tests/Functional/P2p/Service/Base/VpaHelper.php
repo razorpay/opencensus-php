@@ -64,17 +64,17 @@ class VpaHelper extends P2pHelper
         return $this->post($request);
     }
 
-    public function checkAvailability()
+    public function checkAvailability(string $callback, array $content = [])
     {
         $this->validationJsonSchemaPath = 'vpa/availability';
 
-        $request = $this->request('vpa/available');
+        $request = $this->request($callback);
 
         $default = [
-            'username'   => 'random',
+            'sdk'   => [],
         ];
 
-        $this->content($request, $default);
+        $this->content($request, $default, $content);
 
         return $this->post($request);
     }
@@ -104,5 +104,22 @@ class VpaHelper extends P2pHelper
         $request = $this->request('vpa');
 
         return $this->get($request);
+    }
+
+    public function initiateCheckVpaAvailable(array $content = [])
+    {
+        $this->setCustomerInContext(true);
+
+        $this->validationJsonSchemaPath = 'vpa/initiate_available';
+
+        $request = $this->request('vpa/available/initiate');
+
+        $default = [
+            'username'        => 'random',
+        ];
+
+        $this->content($request, $default, $content);
+
+        return $this->post($request);
     }
 }

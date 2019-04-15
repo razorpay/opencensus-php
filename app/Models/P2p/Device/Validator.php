@@ -150,7 +150,9 @@ class Validator extends Base\Validator
 
     public function makeDeregisterRules()
     {
-        $rules = $this->makeRules();
+        $rules = $this->makeRules([
+            'force' => 'sometimes|bool|in:1'
+        ]);
 
         return $rules;
     }
