@@ -157,6 +157,21 @@ class NetbankingBobGatewayTest extends TestCase
     }
 
 
+    public function testPaymentFailedVerifyFailedSingleCharResp()
+    {
+        $this->testAuthorizationFailure();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->mockVerifyResponseAsSingleChar();
+
+        $this->verifyPayment($payment['id']);
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertTestResponse($gatewayPayment, 'testAuthFailedVerifyFailedEntity');
+    }
+
     public function testAuthorizeFailedPayment()
     {
         $this->testAuthorizationFailure();
@@ -212,6 +227,16 @@ class NetbankingBobGatewayTest extends TestCase
         });
     }
 
+    protected function mockVerifyResponseAsSingleChar()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if($action === 'verifyafterquerybuild')
+            {
+                $content = status::FAILURE;
+            }
+        });
+    }
 
 
     protected function mockAmountMismatch()
