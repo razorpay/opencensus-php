@@ -143,7 +143,7 @@ class NetbankingBobGatewayTest extends TestCase
 
     public function testPaymentFailedVerifyFailed()
     {
-        $this->testAuthorizeFailed();
+        $this->testAuthorizationFailure();
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -205,7 +205,7 @@ class NetbankingBobGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function(& $content, $action = null)
         {
-            if($action === 'Verify')
+            if($action === 'verify')
             {
              $content[ResponseFields::STATUS] = status::FAILURE;
             }
