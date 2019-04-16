@@ -201,6 +201,30 @@ class AdminFetch
                     ]
                 ],
             ],
+            Entity::BATCH_SERVICE => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'status' => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'created',
+                        'processing',
+                        'failed',
+                        'completed',
+                    ],
+                ],
+                'type' => [
+                    Fetch::LABEL  => 'Type',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'payment_link',
+                    ],
+                ],
+            ],
+            Entity::BATCH_FILE_STORE => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+            ],
+
         ];
     }
 

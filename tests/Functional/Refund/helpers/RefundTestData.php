@@ -707,6 +707,18 @@ return [
         ],
     ],
 
+    'testDirectSettlementRefundSettledBy' => [
+        'request' => [
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'amount' => 50000,
+                'currency' => 'INR',
+            ],
+        ],
+    ],
+
     'testRefundEditNotes' => [
         'request'  => [
             'content' => [

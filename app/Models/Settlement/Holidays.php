@@ -167,6 +167,7 @@ class Holidays
             4 => [
                 1  => 'Annual closing of Banks',
                 6  => 'Ugadi/ Gudi Padwa',
+                17 => 'Mahavir jayanti',
                 19 => 'Good Friday',
             ],
             6 => [

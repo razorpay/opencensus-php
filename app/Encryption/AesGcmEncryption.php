@@ -24,6 +24,8 @@ class AesGcmEncryption extends Encryption
 
     public function encrypt(string $data): string
     {
+        $tag = '';
+
         $encrypted = openssl_encrypt($data, self::CIPHER, $this->secret, OPENSSL_RAW_DATA, $this->iv, $tag);
 
         return bin2hex($encrypted . $tag);

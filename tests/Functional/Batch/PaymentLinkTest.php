@@ -15,10 +15,12 @@ use RZP\Models\Batch\Type;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Entity;
-use RZP\Jobs\Batch as BatchJob;
 use RZP\Services\RazorXClient;
+use RZP\Jobs\Batch as BatchJob;
+use RZP\Services\KubernetesClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsMetrics;
+use RZP\Services\BatchMicroService;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 use RZP\Mail\Batch\PaymentLink as BatchPaymentLinkFileMail;
@@ -38,11 +40,22 @@ class PaymentLinkTest extends TestCase
         $this->ba->proxyAuth();
     }
 
+    public function mockRazorX(string $functionName, string $featureName, string $variant)
+    {
+        $testData = & $this->testData[$functionName];
+
+        $uniqueLocalId = RazorXClient::getLocalUniqueId('10000000000000',$featureName, Mode::TEST);
+
+        $testData['request']['cookies'] = [RazorXClient::RAZORX_COOKIE_KEY => '{"' . $uniqueLocalId . '":"' . $variant . '"}'];
+    }
+
     public function testCreateBatchOfPaymentLinkType1()
     {
         Queue::fake();
 
         $entries = $this->getDefaultFileEntries();
+
+        $this->mockRazorX(__FUNCTION__,"batch_service_payment_link","off");
 
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
@@ -83,6 +96,8 @@ class PaymentLinkTest extends TestCase
 //                    ]);
 
         $entries = $this->getDefaultFileEntries();
+
+        $this->mockRazorX(__FUNCTION__,"batch_service_payment_link","off");
 
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
@@ -125,24 +140,19 @@ class PaymentLinkTest extends TestCase
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
         // Mock Razorx
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-        $this->app->instance('razorx', $razorxMock);
 
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('On');
+        $this->mockRazorX(__FUNCTION__,"batch_service_payment_link","off");
+
+        $this->mockRazorX(__FUNCTION__,"k8s-batch-upload","on");
 
         $k8s_client = Mockery::mock(KubernetesClient::class)->makePartial();
         $this->app->instance('k8s_client', $k8s_client);
 
-
         // Just asserting that job is created in kubernetes client for batch entity
         // of payment link type.
         $k8s_client->shouldReceive('createJob')
-            ->once()
-            ->andReturn(null);
+                   ->once()
+                   ->andReturn(null);
 
         $this->startTest();
 
@@ -157,6 +167,8 @@ class PaymentLinkTest extends TestCase
         $rows = $this->testData[__FUNCTION__ . 'FileRows'];
 
         $this->createAndPutExcelFileInRequest($rows, __FUNCTION__);
+
+        $this->mockRazorX(__FUNCTION__,"batch_service_payment_link","off");
 
         $response = $this->startTest();
 
@@ -180,6 +192,8 @@ class PaymentLinkTest extends TestCase
     public function testCreateBatchOfPaymentLinkTypeWithNotes()
     {
         $rows = $this->testData[__FUNCTION__ . 'FileRows'];
+
+        $this->mockRazorX(__FUNCTION__,"batch_service_payment_link","off");
 
         $this->createAndPutExcelFileInRequest($rows, __FUNCTION__);
 
@@ -338,6 +352,8 @@ class PaymentLinkTest extends TestCase
     {
         $this->prepareStateFromValidateApi();
 
+        $this->mockRazorX(__FUNCTION__,"batch_service_payment_link","off");
+
         $response = $this->startTest();
 
         // Check invoices
@@ -368,6 +384,15 @@ class PaymentLinkTest extends TestCase
         $this->assertTrue(str_contains($inputFile['location'], 'batch/upload'));
     }
 
+    public function testBatchCreateForwardingToNewBatchService()
+    {
+        $this->prepareStateFromValidateApi();
+
+        $this->mockRazorX(__FUNCTION__,"batch_service_payment_link","on");
+
+        $this->startTest();
+    }
+
     public function testCreateBatchWithHumanReadableExpireBy()
     {
         // Mocks the Carbon instance so epoch attributes could be asserted without worrying about execution delays.
@@ -379,6 +404,8 @@ class PaymentLinkTest extends TestCase
         {
             $row[Header::EXPIRE_BY] = Carbon::now(Timezone::IST)->addDays($i + 1)->format('d-m-Y H:i:s');
         }
+
+        $this->mockRazorX(__FUNCTION__,"batch_service_payment_link","off");
 
         $this->createAndPutExcelFileInRequest($rows, __FUNCTION__);
 
@@ -451,6 +478,8 @@ class PaymentLinkTest extends TestCase
 
     public function testPaymentLinkStatsOfBatch()
     {
+        $this->mockBatchService();
+
         $this->fixtures->create(
             'batch',
             [
@@ -471,6 +500,8 @@ class PaymentLinkTest extends TestCase
 
     public function testGetStatsOfInvalidType()
     {
+        $this->mockBatchService();
+
         $this->fixtures->create(
             'batch',
             [
@@ -483,6 +514,8 @@ class PaymentLinkTest extends TestCase
 
     public function testFetchBatchesOfPaymentLinkTypeWithConfig()
     {
+        $this->mockBatchService();
+
         $batch1 = $this->fixtures->create(
             'batch',
             [
@@ -516,6 +549,49 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchBatchOfPaymentLinkTypeIfBatchServiceIsDown()
+    {
+        $this->fixtures->create(
+            'batch',
+            [
+                'id'          => 'C7e2YqUIpZ2KwZ',
+                'type'        => 'payment_link',
+                'total_count' => 4,
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchBatchOfTypePaymentLinkFromBatchService()
+    {
+        $this->fixtures->create(
+            'batch',
+            [
+                'id'          => 'C7e2YqUIpZ2KwZ',
+                'type'        => 'payment_link',
+                'total_count' => 4,
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    protected function mockBatchService()
+    {
+        $mock = Mockery::mock(BatchMicroService::class)->makePartial();
+        $this->app->instance('batchService', $mock);
+
+        $mock->shouldAllowMockingMethod('getBatchesFromBatchService')
+             ->shouldReceive('getBatchesFromBatchService')
+             ->andReturnNull();
+
+        $mock->shouldAllowMockingMethod('shouldBatchServiceBeCalled')
+            ->shouldReceive('shouldBatchServiceBeCalled')
+            ->andReturn(false);
+    }
     protected function getDefaultFileEntries()
     {
         return [

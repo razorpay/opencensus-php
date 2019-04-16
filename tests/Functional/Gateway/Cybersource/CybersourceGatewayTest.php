@@ -7,8 +7,10 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use Illuminate\Support\Facades\Queue;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Cybersource\Fields;
+use RZP\Jobs\CorePaymentServiceSync;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Fixtures\Entity\TransactionTrait;
@@ -724,6 +726,60 @@ class CybersourceGatewayTest extends TestCase
         {
             $this->doAuthPayment($payment);
         });
+    }
+
+    public function testCpsGatewayEntitySync()
+    {
+        $payment = $this->fixtures->create('payment:status_created');
+
+        $gatewayData = [
+            'mode'       => 'test',
+            'timestamp'  => 294832,
+            'payment_id' => $payment->getId(),
+            'gateway'    => 'cybersource',
+            'input'      => [
+                'payment'       => [
+                    'id'       => $payment->getId(),
+                    'amount'   => 500000,
+                    'currency' => 'INR',
+                ],
+                'terminal'      => [
+                    'gateway_acquirer' => 'hdfc',
+                ],
+                'action'   => 'authorize',
+            ],
+            'gateway_transaction'       => [
+                'payment_id'    => $payment->getId(),
+                'acquirer'      => 'hdfc',
+                'action'        => 'authorize',
+                'received'      => false,
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'status'        => 'created',
+                'xid'           => 'aFM3NktkemM4OW1sSGNoOERXUzE=',
+                'veresEnrolled' => 'Y',
+                'ref'           => '466146845543214129700',
+                'reason_code'   => 475,
+            ],
+        ];
+
+        $cpsSync = new CorePaymentServiceSync($gatewayData);
+
+        $cpsSync->handle();
+
+        $cybersource = $this->getLastEntity('cybersource', true);
+
+        $this->assertEquals($cybersource['status'], 'created');
+
+        $gatewayData['gateway_transaction']['status'] = 'authenticated';
+
+        $cpsSync = new CorePaymentServiceSync($gatewayData);
+
+        $cpsSync->handle();
+
+        $cybersource = $this->getLastEntity('cybersource', true);
+
+        $this->assertEquals($cybersource['status'], 'authenticated');
     }
 
     public function testGatewayVerifyAuthResponseFailure()

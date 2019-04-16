@@ -80,6 +80,7 @@ class Type
         self::ENTITY_MAPPING,
         self::TERMINAL,
         self::MERCHANT_ONBOARDING,
+        self::SUB_MERCHANT,
     ];
 
     /**

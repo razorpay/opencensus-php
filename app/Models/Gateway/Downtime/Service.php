@@ -59,6 +59,8 @@ class Service extends Base\Service
 
     public function processGatewayDowntimeWebhook(string $source, array $input)
     {
+        $this->setMode();
+
         $processor = new Webhook\Processor($source);
 
         $this->trace->info(TraceCode::GATEWAY_DOWNTIME_WEBHOOK, $input);
@@ -68,5 +70,12 @@ class Service extends Base\Service
         $data = $processor->process($input);
 
         return $data;
+    }
+
+    public function setMode()
+    {
+        $mode = $this->core()::getMode();
+
+        $this->auth->setModeAndDbConnection($mode);
     }
 }

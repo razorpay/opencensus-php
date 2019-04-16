@@ -4415,7 +4415,6 @@ trait Authorize
      */
     protected function createCardEntity(array $cardInput, bool $vault, Merchant\Entity $merchant)
     {
-
         // temp change.
         $merchantIds = [
             '8S0i1kWYyF2woQ', // swiggy

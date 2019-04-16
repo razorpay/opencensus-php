@@ -27,7 +27,7 @@ class SubMerchantBatchTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->proxyAuth();
+        $this->ba->adminAuth();
 
         $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
@@ -64,8 +64,6 @@ class SubMerchantBatchTest extends TestCase
         $this->fixtures->merchant->editPricingPlanId('1hDYlICobzOCYt');
 
         $this->startTest();
-
-        $this->ba->adminAuth();
 
         $this->assertProcessedCounts(3, 3, 0);
 
@@ -122,8 +120,6 @@ class SubMerchantBatchTest extends TestCase
 
         $this->startTest();
 
-        $this->ba->adminAuth();
-
         $this->assertProcessedCounts(3, 3, 0);
 
         Mail::assertQueued(CreateSubMerchantPartner::class, 3);
@@ -170,8 +166,6 @@ class SubMerchantBatchTest extends TestCase
 
         $this->startTest();
 
-        $this->ba->adminAuth();
-
         $this->assertProcessedCounts(3, 3, 0);
 
         Mail::assertQueued(CreateSubMerchantPartner::class, 3);
@@ -211,8 +205,6 @@ class SubMerchantBatchTest extends TestCase
         $entries = $this->setUpForProcessing(__FUNCTION__);
 
         $this->startTest();
-
-        $this->ba->adminAuth();
 
         $this->assertProcessedCounts(3, 3, 0);
 
@@ -261,13 +253,7 @@ class SubMerchantBatchTest extends TestCase
 
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
-        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '10000000UserId']);
-
-        $this->ba->proxyAuth('rzp_test_10000000000000', '10000000UserId');
-
         $this->startTest();
-
-        $this->ba->adminAuth();
 
         $this->assertProcessedCounts(3, 2, 1);
 
@@ -283,8 +269,6 @@ class SubMerchantBatchTest extends TestCase
         $this->setUpForProcessing(__FUNCTION__);
 
         $this->startTest();
-
-        $this->ba->adminAuth();
 
         $batch = $this->getLastEntity('batch', true);
 
@@ -348,10 +332,6 @@ class SubMerchantBatchTest extends TestCase
         $entries = $this->getDefaultFileEntries();
 
         $this->createAndPutExcelFileInRequest($entries, $callee);
-
-        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '10000000UserId']);
-
-        $this->ba->proxyAuth('rzp_test_10000000000000', '10000000UserId');
 
         return $entries;
     }

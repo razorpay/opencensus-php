@@ -1315,6 +1315,37 @@ class PartnerTest extends OAuthTestCase
         });
     }
 
+    public function testGetAffiliatedPartnersForMerchant()
+    {
+        $this->createPartnerAndAddMultipleSubmerchants();
+
+        // create another partner and attach submerchant
+        $this->fixtures->merchant->createAccount('10000000000001');
+        $this->fixtures->merchant->edit('10000000000001', ['partner_type' => 'reseller']);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['id' => '8ckeirnw84ifkf']);
+
+        // Link new submerchants to the partner account
+        $accessMap = $this->getAccessMapArray('application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, '10000000000001');
+
+        $this->fixtures->create('merchant_access_map',$accessMap);
+
+        // add one more app for the same partner and map the submerchant to it
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['id' => '8ckeirnw84ifkg']);
+
+        $accessMap = $this->getAccessMapArray('application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, '10000000000001');
+
+        $this->fixtures->create('merchant_access_map',$accessMap);
+
+        $this->allowAdminToAccessMerchant('10000000000001');
+
+        $liveMode = $this->app['basicauth']->getLiveConnection();
+
+        $this->ba->adminAuth($liveMode);
+
+        $this->startTest();
+    }
+
     protected function createMerchantRequest(
         string $merchantRequestName,
         bool $createSubmission = false,

@@ -759,12 +759,20 @@ class Validator extends Base\Validator
 
     public function validateType()
     {
+        $type = $this->entity->getType();
+
+        if (( in_array(Type::DIRECT_SETTLEMENT_WITH_REFUND, $type) === true ) and
+            ( in_array(Type::DIRECT_SETTLEMENT_WITHOUT_REFUND, $type) === true ))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Direct Settlement Terminal should be either with refund enabled or without refund.',
+                Entity::TYPE);
+        }
+
         if ($this->entity->isBankTransferEnabled() === false)
         {
             return;
         }
-
-        $type = $this->entity->getType();
 
         if ( in_array(Type::NON_RECURRING, $type ) === false )
         {

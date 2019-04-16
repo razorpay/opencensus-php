@@ -72,6 +72,11 @@ class Refund extends Base
 
         $settledBy = $refund->payment->getSettledBy();
 
+        if ($refund->isDirectSettlementRefund() === false)
+        {
+            $settledBy = 'Razorpay';
+        }
+
         $netAmount = $refund->getBaseAmount();
 
         if ($settledBy !== 'Razorpay')

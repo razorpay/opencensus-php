@@ -977,6 +977,7 @@ final class Route
 
         'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
         'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
+        'merchant_partners_fetch'                  => ['get',      'merchants/{id}/partners',                        'MerchantController@getAffiliatedPartners'                          ],
         'merchant_associated_accounts_fetch'       => ['get',      'merchant/{id}/associated_accounts',              'MerchantController@getAssociatedAccounts'                          ],
 
         // Webhook Api Wrapper
@@ -1969,6 +1970,8 @@ final class Route
         'subscription_payment_process',
         'subscription_charge_cycle',
         'subscription_skip_cycle',
+
+        'merchant_partners_fetch',
     ];
 
     public static $routePermission = [
@@ -2366,6 +2369,7 @@ final class Route
         'subscription_charge_cycle'                => Permission::MODIFY_SUBSCRIPTION_DATA,
         'subscription_skip_cycle'                  => Permission::MODIFY_SUBSCRIPTION_DATA,
 
+        'merchant_partners_fetch'                  => '*',
     ];
 
     public static $direct = [

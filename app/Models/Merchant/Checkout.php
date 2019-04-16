@@ -651,7 +651,9 @@ class Checkout
 
     protected function updateEmiOptionsUsingOffers($offers, array & $data, Order\Entity $order = null)
     {
-        $data['methods']['emi_options'] = (new Emi\Service)->getEmiOptions($offers, $order);
+        $emiPlansAndOptions = (new Emi\Service)->getEmiPlansAndOptions($offers, $order);
+
+        $data['methods']['emi_options'] = $emiPlansAndOptions['options'];
     }
 
     protected function updateMethodsToEnableOnCheckout(Offer\Entity $offer, array & $data)

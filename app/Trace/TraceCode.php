@@ -1033,8 +1033,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Gateway component error messages
 
     const GATEWAY_REQUEST_ERROR                                 = 'GATEWAY_REQUEST_ERROR';
-    const METHOD_DOWNTIME_CREATE                                = 'METHOD_DOWNTIME_CREATE';
-    const METHOD_DOWNTIME_EDIT                                  = 'METHOD_DOWNTIME_EDIT';
+    const PAYMENT_DOWNTIME_CREATE                               = 'PAYMENT_DOWNTIME_CREATE';
+    const PAYMENT_DOWNTIME_EDIT                                 = 'PAYMENT_DOWNTIME_EDIT';
     const PAYMENT_DOWNTIME_CREATE_JOB                           = 'PAYMENT_DOWNTIME_CREATE_JOB';
 
     const ADHOC_SETTLEMENT_CREATE_FAILED                        = 'ADHOC_SETTLEMENT_CREATE_FAILED';
@@ -1448,7 +1448,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LAMBDA_REQUEST                                        = 'LAMBDA_REQUEST';
     const LAMBDA_FILE_DETAILS                                   = 'LAMBDA_FILE_DETAILS';
     const LAMBDA_BATCH_FAILURE                                  = 'LAMBDA_BATCH_FAILURE';
-    
+
     const REDIS_LAG_CHECK_FAILED                        = 'REDIS_LAG_CHECK_FAILED';
     const HEARTBEAT_CHECK_FAILED                        = 'HEARTBEAT_CHECK_FAILED';
     const HEARTBEAT_CHECK_COMPLETED                     = 'HEARTBEAT_CHECK_COMPLETED';
@@ -1672,6 +1672,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARD_DETOKENIZE_MIGRATION_REQUEST                     = 'CARD_DETOKENIZE_MIGRATION_REQUEST';
     const CARD_DETOKENIZE_MIGRATION_RESPONSE                    = 'CARD_DETOKENIZE_MIGRATION_RESPONSE';
     const CARD_DETOKENIZE_MIGRATION_FAILED                      = 'CARD_DETOKENIZE_MIGRATION_FAILED';
+    const CARD_TOKEN_IS_NOT_AVAILABLE                           = 'CARD_TOKEN_IS_NOT_AVAILABLE';
 
     // vault migration
     const TOKENEX_MIGRATION_REQUEST                             = 'TOKENEX_MIGRATION_REQUEST';
@@ -1732,6 +1733,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const NO_MERCHANT_CONTEXT_MAIL                              = 'NO_MERCHANT_CONTEXT_MAIL';
 
     const PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC             = 'PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC';
+
     // P2P Traces
     const P2P_REQUEST                                           = 'P2P_REQUEST';
     const P2P_RESPONSE                                          = 'P2P_RESPONSE';
@@ -1741,6 +1743,17 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SUBSCRIPTION_PAYMENT_NOTIFY                           = "SUBSCRIPTION_PAYMENT_NOTIFY";
 
     const SELECTED_TERMINAL_IDS                                 = "SELECTED_TERMINAL_IDS";
+
+    // Core Payment Service tracecodes
+    const CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS          = 'CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS';
+    const CPS_GATEWAY_TRANSACTION_SYNC_REQUEST          = 'CPS_GATEWAY_TRANSACTION_SYNC_REQUEST';
+    const CPS_GATEWAY_TRANSACTION_JOB_EXCEPTION         = 'CPS_GATEWAY_TRANSACTION_JOB_EXCEPTION';
+    const CPS_ROUTE_CONFIG                              = 'CPS_ROUTE_CONFIG';
+    const CPS_RAZORX_VARIANT                            = 'CPS_RAZORX_VARIANT';
+
+    // Batch Micro Service
+    const GET_BATCHES_BATCH_SERVICE                 = 'GET_BATCHES_BATCH_SERVICE';
+    const GET_BATCHES_IGNORE_COUNT_SKIP             = 'GET_BATCHES_IGNORE_COUNT_SKIP';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

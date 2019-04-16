@@ -169,7 +169,10 @@ class Gateway extends Mindgate\Gateway
         {
             $this->trace->traceException($e);
 
-            $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment, 'RZP_PAYOUT_TIMED_OUT', $input);
+            $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
+                                                                          'RZP_PAYOUT_TIMED_OUT',
+                                                                           $input,
+                                                                          Status::TIMEOUT);
         }
         catch (Exception\GatewayRequestException $ee)
         {

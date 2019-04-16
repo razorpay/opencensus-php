@@ -105,4 +105,188 @@ return [
             ],
         ],
     ],
+
+    'testGetNetbankingDowntimeForSingleBankBilldeskGateway' => [
+        'request' => [
+            'url' => '/methods/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'     => 'payment.downtime',
+                        'method'     => 'netbanking',
+                        'end'        => null,
+                        'status'     => 'scheduled',
+                        'scheduled'  => false,
+                        'severity'   => 'low',
+                        'instrument' => [
+                            'bank' => 'SVCB'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'createNetbankingAllGatewayDowntime' => [
+        'request' => [
+            'url' => '/methods/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'     => 'payment.downtime',
+                        'method'     => 'netbanking',
+                        'end'        => null,
+                        'status'     => 'scheduled',
+                        'scheduled'  => false,
+                        'severity'   => 'low',
+                        'instrument' => [
+                            'bank' => 'HDFC'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetNetbankingDowntimeForIndividualGateways' => [
+        'request' => [
+            'url' => '/methods/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'     => 'payment.downtime',
+                        'method'     => 'netbanking',
+                        'end'        => null,
+                        'status'     => 'scheduled',
+                        'scheduled'  => false,
+                        'severity'   => 'low',
+                        'instrument' => [
+                            'bank' => 'ANDB',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetNoNetbankingDowntimeForSingleGateway' => [
+        'request' => [
+            'url' => '/methods/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+        ],
+    ],
+
+    'testGetCardDowntimeForSingleNetworkHdfcGateway' => [
+        'request' => [
+            'url' => '/methods/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'     => 'payment.downtime',
+                        'method'     => 'card',
+                        'end'        => null,
+                        'status'     => 'scheduled',
+                        'scheduled'  => false,
+                        'severity'   => 'low',
+                        'instrument' => [
+                            'network' => 'DICL'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCardDowntimeForIndividualGateways' => [
+        'request' => [
+            'url' => '/methods/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'     => 'payment.downtime',
+                        'method'     => 'card',
+                        'end'        => null,
+                        'status'     => 'scheduled',
+                        'scheduled'  => false,
+                        'severity'   => 'low',
+                        'instrument' => [
+                            'network' => 'RUPAY',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetNoCardDowntimeForSingleGateway' => [
+        'request' => [
+            'url' => '/methods/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+        ],
+    ],
+
+    'testGetWalletDowntimeForSingleGateway' => [
+        'request' => [
+            'url' => '/methods/downtimes',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'     => 'payment.downtime',
+                        'method'     => 'wallet',
+                        'end'        => null,
+                        'status'     => 'scheduled',
+                        'scheduled'  => false,
+                        'severity'   => 'low',
+                        'instrument' => [
+                            'wallet' => 'olamoney'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

@@ -2680,6 +2680,20 @@ class Service extends Base\Service
     }
 
     /**
+     * Fetch the list of all merchants the submerchant is associated with
+     *
+     * @param string $merchantId
+     *
+     * @return array
+     */
+    public function fetchAffiliatedPartners(string $merchantId): array
+    {
+        $partners = $this->core()->fetchAffiliatedPartners($merchantId);
+
+        return $partners->toArrayPublic();
+    }
+
+    /**
      * Takes Merchant from auth context and sends it to razorx.
      *
      * @param string $featureFlag
