@@ -708,6 +708,97 @@ class CybersourceGatewayTest extends TestCase
         });
     }
 
+    public function testGatewayPaymentInternalServerError()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content['success'] = false;
+            $content['error']['description'] = 'Dummy Server Error';
+            $content['error']['internal_error_code'] = 'INTERNAL_SERVER_ERROR';
+//            $content['error']['internal_error_code'] = 'SERVER_ERROR';
+            $content['error']['gateway_error_code'] = '';
+            $content['error']['gateway_error_desc'] = '';
+            $content['error']['gateway_status_code'] = '0';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testGatewayPaymentValidationError()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content['success'] = false;
+            $content['error']['description'] = 'Dummy Validation Error';
+            $content['error']['internal_error_code'] = 'VALIDATION_ERROR';
+//            $content['error']['internal_error_code'] = 'BAD_REQUEST_ERROR';
+            $content['error']['gateway_error_code'] = '';
+            $content['error']['gateway_error_desc'] = '';
+            $content['error']['gateway_status_code'] = '0';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testGatewayPaymentRouteNotFoundError()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content['success'] = false;
+            $content['error']['description'] = 'Dummy Route Not Found Error';
+            $content['error']['internal_error_code'] = 'ROUTE_NOT_FOUND_ERROR';
+//            $content['error']['internal_error_code'] = 'BAD_REQUEST_URL_NOT_FOUND';
+            $content['error']['gateway_error_code'] = '';
+            $content['error']['gateway_error_desc'] = '';
+            $content['error']['gateway_status_code'] = '0';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testGatewayPaymentGatewayErrorRequestError()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content['success'] = false;
+            $content['error']['description'] = 'Dummy Gateway Error';
+            $content['error']['internal_error_code'] = 'GATEWAY_ERROR_REQUEST_ERROR';
+            $content['error']['gateway_error_code'] = '';
+            $content['error']['gateway_error_desc'] = '';
+            $content['error']['gateway_status_code'] = '0';
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testGatewayInvalidReasonCode()
     {
         $payment = $this->getDefaultPaymentArray();
