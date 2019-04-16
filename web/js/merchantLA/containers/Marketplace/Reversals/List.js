@@ -8,6 +8,7 @@ import Credit from './Credit';
 import BatchUploadList from './BatchUpload/List';
 import { fetchCreditBalance } from 'merchantLA/modules/credits';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
+import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import Amount from 'rzp/ui/Amount';
 @connect(
   state => {
@@ -39,8 +40,12 @@ export default class ReversalsListContainer extends Component {
       <div>
         <tabbed-container>
           <header id="marketplace-header">
-            <NavLink to="/reversals">Reversals</NavLink>
-            <NavLink to="/batchreversals">Batch</NavLink>
+            <NavLink exact to="/reversals">
+              Reversals
+            </NavLink>
+            <NavLink exact to="/reversals/batchreversals">
+              Batch
+            </NavLink>
             {!isBalanceSource && <NavLink to="/credits">Credits</NavLink>}
             <HeaderAction>
               <span class="reversal-balance-amount">
@@ -58,9 +63,17 @@ export default class ReversalsListContainer extends Component {
           <TestModeBanner />
           <content>
             <Switch>
-              <Route path="/reversals" component={ReversalsTable} />
-              <Route path="/batchreversals" component={BatchUploadList} />
-              {!isBalanceSource && <Route path="/credits" component={Credit} />}
+              <Route exact path="/reversals" component={ReversalsTable} />
+              <Route
+                exact
+                path="/reversals/batchreversals"
+                component={BatchUploadList}
+              />
+              <ShowWhenRoute
+                path="/credits"
+                component={Credit}
+                additionalCondition={_ => !isBalanceSource}
+              />
             </Switch>
           </content>
         </tabbed-container>

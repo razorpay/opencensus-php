@@ -25,7 +25,7 @@ export default class ReversalsTable extends ListContainer {
       'allow_reversals_from_la'
     );
     return (
-      <div class="content-wrapper">
+      <div class="revsersals-list-container content-wrapper">
         <ReversalsListFilter
           form="reversalsListFilter"
           count={this.state.count}

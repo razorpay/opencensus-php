@@ -5,36 +5,29 @@ import BatchList from 'merchant/containers/BatchNew/List';
 import BatchUpload from 'merchant/containers/BatchNew/Upload';
 import { openModal } from 'rzp/modules/modals';
 import {
-  fetchPaymentLinkBatches as fetchAll,
-  createPaymentLinkBatch as createBatch,
-  validatePaymentLinkBatch as validateBatch,
-} from 'merchant/modules/batches';
+  fetchLAReversalsBatches as fetchAll,
+  createLinkedAccountReversalsBatch as createBatch,
+  validateLinkedAccountReversalsBatch as validateBatch,
+} from 'merchantLA/modules/batches';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 
 const gaEvents = setGaTrack('Dashboard - Reversal - BU');
 
-@connect(
-  state => {
-    return {
-      issuableIdList: state.paymentBatchIds.issuableIdList,
-    };
-  },
-  { fetchAll, createBatch, validateBatch, openModal }
-)
+@connect(state => state.refundbatches, {
+  fetchAll,
+  createBatch,
+  validateBatch,
+  openModal,
+})
 export default class BatchListContainer extends Component {
   constructor(props) {
     super(props);
-    //hotjar integration
-    if (typeof window.hj === 'function') {
-      window.hj('trigger', 'batch_payment_links');
-      window.hj('tagRecording', ['batch_payment_links']);
-    }
-  }
 
-  state = {
-    sms_notify: 0,
-    email_notify: 0,
-  };
+    this.state = {
+      sms_notify: 0,
+      email_notify: 0,
+    };
+  }
 
   handlePaymentLinksFormChange = (propName, value) => {
     this.setState({
@@ -45,7 +38,13 @@ export default class BatchListContainer extends Component {
   sendAll = item => {
     this.props.openModal({
       size: 'small',
-      component: <div />,
+      component: (
+        <SendAllLinks
+          trackSendAllLinks={gaEvents.trackSendAllLinks}
+          batchId={item.id}
+          fetchAll={this.props.fetchAll}
+        />
+      ),
     });
   };
 
@@ -102,12 +101,11 @@ export default class BatchListContainer extends Component {
   };
 
   render() {
-    return 'Batch';
     return (
       <BatchList
         form="batchListFilter"
         docUrl="https://razorpay.com/docs/payment-links/batch-upload/"
-        sampleUrl="/files/sample_batch_payment_links_v2.xlsx"
+        sampleUrl="/files/sample_batch_refund.xlsx"
         batchType="payment_link"
         batchActions={[this.sendAllLinks]}
         renderUploadModal={this.renderUploadModal}
