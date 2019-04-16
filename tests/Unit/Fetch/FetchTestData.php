@@ -126,6 +126,15 @@ return [
         ],
     ],
 
+    E::BHARAT_QR => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'method'     => 'card',
+                'payment_id' => 'FAKEPAYMENTID1'
+            ],
+        ],
+    ],
+
     E::IIN => [
         Type::PRIVILEGE_AUTH => [
             [
