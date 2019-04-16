@@ -75,6 +75,7 @@ class Entity extends Base\PublicEntity
     const NARRATION              = 'narration';
     const FTS_TRANSFER_ID        = 'fts_transfer_id';
     const BATCH_ID               = 'batch_id';
+    const PROCESSING_TIME        = 'processing_time';
 
     // Public attribute
     const DESTINATION            = 'destination';
@@ -183,6 +184,7 @@ class Entity extends Base\PublicEntity
         self::NARRATION,
         self::BATCH_ID,
         self::INTERNAL_STATUS,
+        self::PROCESSING_TIME,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -210,6 +212,7 @@ class Entity extends Base\PublicEntity
         self::NARRATION,
         self::BATCH_ID,
         self::REVERSAL,
+        self::PROCESSING_TIME,
         self::FAILURE_REASON,
         self::CREATED_AT,
     ];
@@ -238,6 +241,7 @@ class Entity extends Base\PublicEntity
         // This might cause confusions and hence we show UTR only when either
         // the payout is in processed or reversed state.
         self::UTR,
+        self::PROCESSING_TIME,
         self::TRANSACTION_ID,
         self::BATCH_ID,
         self::TRANSACTION,
@@ -278,6 +282,7 @@ class Entity extends Base\PublicEntity
         self::REVERSED_AT,
         self::QUEUED_AT,
         self::CANCELLED_AT,
+        self::PROCESSING_TIME,
         self::SETTLED_ON,
     ];
 
@@ -669,6 +674,13 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setProcessingTime()
+    {
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $this->setAttribute(self::PROCESSING_TIME, $currentTime);
+    }
+
     /**
      * This is required for the FTA module.
      * FTA requires the sources to implement `setUtr`
@@ -925,6 +937,22 @@ class Entity extends Base\PublicEntity
             (($this->transaction instanceof Transaction\Entity)))
         {
             $attributes[self::TRANSACTION] = $this->transaction->toStatement()->toArrayPublic();
+        }
+    }
+
+    public function setPublicProcessingTimeAttribute(array & $attributes)
+    {
+        //
+        // We are currently exposing this timestamp only for dashboard.
+        // Going forward, we will have a proper auditing stuff for
+        // payouts, which will be exposed via API as well.
+        //
+
+        // TODO: Move to serializer
+
+        if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
+        {
+            unset($attributes[self::PROCESSING_TIME]);
         }
     }
 
