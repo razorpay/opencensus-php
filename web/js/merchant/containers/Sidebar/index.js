@@ -208,12 +208,18 @@ export default class Sidebar extends Component {
 class PartnerSidebar extends Component {
   state = {
     partnerOpen: true,
+    merchantOpen: false,
   };
 
-  onToggle = () => {
+  toggle = type => () => {
     this.setState({
-      partnerOpen: !this.state.partnerOpen,
+      [type]: !this.state[type],
+      [this.getCounterType(type)]: this.state[type],
     });
+  };
+
+  getCounterType = type => {
+    return type === 'partnerOpen' ? 'merchantOpen' : 'partnerOpen';
   };
 
   render() {
@@ -226,7 +232,7 @@ class PartnerSidebar extends Component {
               <i class="i i-partner text-primary" />Partner
             </>
           }
-          onToggleClick={this.onToggle}
+          onToggleClick={this.toggle('partnerOpen')}
           value={this.state.partnerOpen}
         >
           <PartnerNavLinks />
@@ -235,11 +241,11 @@ class PartnerSidebar extends Component {
         <MainNavLinkGroup
           title={
             <>
-              <i class="i i-products text-success" />Merchant
+              <i class="i i-products text-success" />Products
             </>
           }
-          onToggleClick={this.onToggle}
-          value={!this.state.partnerOpen}
+          onToggleClick={this.toggle('merchantOpen')}
+          value={this.state.merchantOpen}
         >
           <MerchantNavLinks {...props.merchantNavLinkProps} />
         </MainNavLinkGroup>
