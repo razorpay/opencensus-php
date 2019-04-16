@@ -1,5 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 import Amount from 'rzp/ui/Amount';
 import Button from 'component/Button';
@@ -42,10 +43,19 @@ const NumReversals = ({ reversals, titleCase = false }) => {
   );
 };
 
-const ReversalsList = ({ reversals }) => {
+const ReversalsList = ({ transfer, reversals }) => {
   const reversalHeading = {
     title: 'Reversal Details',
     subTitle: <NumReversals reversals={reversals} titleCase={true} />,
+  };
+
+  var transferReversalId = {
+    ...reversalId,
+    value: item => (
+      <Link to={`/transfers/${transfer.id}/${item.id}`}>
+        <code>{item.id}</code>
+      </Link>
+    ),
   };
 
   return (
@@ -56,7 +66,7 @@ const ReversalsList = ({ reversals }) => {
           title="Reversals"
           customClass="reversals-table"
           progressLoader={true}
-          columns={[reversalId, amount, createdAtWithStyle]}
+          columns={[transferReversalId, amount, createdAtWithStyle]}
           items={reversals.items}
           loading={reversals.loading}
           showHeaders={false}
@@ -111,7 +121,7 @@ export default class TransferReversal extends React.PureComponent {
               in <NumReversals reversals={reversals} />
             </div>
           </Definition>
-          <ReversalsList reversals={reversals} />
+          <ReversalsList transfer={transfer} reversals={reversals} />
         </div>
       );
     }
@@ -131,7 +141,7 @@ export default class TransferReversal extends React.PureComponent {
           </Definition>
         </div>
         <p />
-        <ReversalsList reversals={reversals} />
+        <ReversalsList transfer={transfer} reversals={reversals} />
       </div>
     );
   }

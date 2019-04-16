@@ -88,14 +88,14 @@ export default class BatchListContainer extends Component {
         validateBatch={this.props.validateBatch}
         docUrl="https://razorpay.com/docs/payment-links/batch-upload/"
         sampleUrl="/files/sample_batch_payment_links_v2.xlsx"
-        renderBatchCreationForm={() => (
-          <PaymentLinksForm
-            batchType={this.props.batchType}
-            sms_notify={this.state.sms_notify}
-            email_notify={this.state.email_notify}
-            onChange={this.handlePaymentLinksFormChange}
-          />
-        )}
+        // renderBatchCreationForm={() => (
+        //   <PaymentLinksForm
+        //     batchType={this.props.batchType}
+        //     sms_notify={this.state.sms_notify}
+        //     email_notify={this.state.email_notify}
+        //     onChange={this.handlePaymentLinksFormChange}
+        //   />
+        // )}
       />
     );
   };

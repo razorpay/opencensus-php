@@ -29,7 +29,7 @@ const getFetchDetailAction = namespace => namespace + '_BATCHS_FETCH_DETAILS';
 
 const BATCH_DETAILS = getFetchDetailAction(BATCH);
 const BATCH_LIST = getFetchActionName(BATCH);
-const LINKED_ACCOUNT_REVERSALS = getFetchDetailAction(LA_REVERSALS);
+const LINKED_ACCOUNT_REVERSAL = getFetchDetailAction(LA_REVERSALS);
 
 const fetchBatchAjax = id =>
   merchantFetch(`batches/${id}`).then(response => ({
@@ -82,7 +82,8 @@ const createBatch = batchType => data => {
       method: 'post',
       data: {
         type: batchType,
-        ...data,
+        file_id: data.file_id,
+        name: data.name,
       },
     }).then(response => response.data),
   };
@@ -123,12 +124,12 @@ export const batchDownload = batchId => {
 export const LAReversalsBatchesReducer = makeCollectionReducer(LA_REVERSALS);
 export const batchesReducer = makeActionCollectionReducer(appendBatches(BATCH));
 
-// linked_account_reversals
+// linked_account_reversal
 export const createLinkedAccountReversalsBatch = createBatch(
-  'linked_account_reversals'
+  'linked_account_reversal'
 );
 export const validateLinkedAccountReversalsBatch = validateBatch(
-  'linked_account_reversals'
+  'linked_account_reversal'
 );
 
 /* actions refund batches */
@@ -137,7 +138,7 @@ export const fetchLAReversalsBatches = params => {
     type: getActionName(LA_REVERSALS),
     payload: params.id
       ? fetchBatchAjax(params.id)
-      : fetchBatchesAjax(params, 'linked_account_reversals'),
+      : fetchBatchesAjax(params, 'linked_account_reversal'),
   };
 };
 
@@ -159,7 +160,7 @@ const customBatchDetailsSet = (fetchDetailAction, onSuccess) => ({
 
 export const batchDetailsReducer = makeEntityReducer(BATCH_DETAILS, {
   ...customBatchDetailsSet(
-    LINKED_ACCOUNT_REVERSALS,
+    LINKED_ACCOUNT_REVERSAL,
     onLinkedAccountReversalsDetails
   ),
 });
