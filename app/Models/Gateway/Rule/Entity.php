@@ -167,6 +167,11 @@ class Entity extends Base\PublicEntity
         self::CATEGORY2,
     ];
 
+    const AUTHENTICATION_SORTER_SEARCH_ATTRIBUTES = [
+        self::GATEWAY,
+        self::STEP,
+        self::AUTHENTICATION_GATEWAY,
+    ];
     /**
      * Defines the attribute scores used for calculating
      * specificity score for a rule. Each attribute is given
@@ -380,6 +385,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STEP);
     }
 
+    public function isAuthentication()
+    {
+        return ($this->getAttribute(self::STEP) === self::AUTHENTICATION);
+    }
+
     public function isInternational()
     {
         return $this->getAttribute(self::INTERNATIONAL);
@@ -556,6 +566,11 @@ class Entity extends Base\PublicEntity
     protected function getSearchAttributes(): array
     {
         $key = __CLASS__ . '::' . strtoupper($this->getType()) . '_SEARCH_ATTRIBUTES';
+
+        if ($this->isAuthentication() === true)
+        {
+            $key = __CLASS__ . '::' . strtoupper(self::AUTHENTICATION) . '_' . strtoupper($this->getType()) . '_SEARCH_ATTRIBUTES';
+        }
 
         $searchAttributesForType = [];
 
