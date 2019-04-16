@@ -908,7 +908,7 @@ class Entity extends Base\PublicEntity
             return;
         }
 
-        $attributes[self::TRANSACTION_ID] = Transaction\Entity::getSignedId($attributes[self::TRANSACTION_ID]);
+        $attributes[self::TRANSACTION_ID] = Transaction\Entity::getSignedIdOrNull($attributes[self::TRANSACTION_ID]);
     }
 
     public function setPublicTransactionAttribute(array & $attributes)
