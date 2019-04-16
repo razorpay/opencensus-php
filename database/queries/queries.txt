@@ -4880,3 +4880,7 @@ ALTER TABLE fund_transfer_attempts
 
 ALTER TABLE payouts
     MODIFY notes TEXT DEFAULT NULL;
+
+ALTER TABLE payouts
+    ADD COLUMN processing_time int(11) DEFAULT NULL AFTER `queued_at`,
+    ADD INDEX payouts_processing_time_index (processing_time);

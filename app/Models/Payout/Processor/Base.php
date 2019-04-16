@@ -135,7 +135,16 @@ abstract class Base extends BaseCore
             return $payout;
         });
 
-        $this->app->events->fire('api.payout.created', [$payout]);
+        if ($payout->isStatusQueued() === true)
+        {
+            $this->app->events->fire('api.payout.queued', [$payout]);
+        }
+        else
+        {
+            // api.payout.created to be removed after merchants have migrated.
+            $this->app->events->fire('api.payout.created', [$payout]);
+            $this->app->events->fire('api.payout.initiated', [$payout]);
+        }
 
         return $payout;
     }
@@ -159,6 +168,8 @@ abstract class Base extends BaseCore
 
                         $payout->setStatus(Payout\Status::CREATED);
 
+                        $payout->setProcessingTime();
+
                         $this->repo->saveOrFail($payout);
 
                         $this->trace->info(
@@ -171,6 +182,8 @@ abstract class Base extends BaseCore
 
                         return $payout;
                     });
+
+        $this->app->events->fire('api.payout.initiated', [$payout]);
 
         //
         // This needs to be done only for fund_account type and not for others.
