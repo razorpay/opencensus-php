@@ -29,6 +29,18 @@ class AuthSelector extends Base\Core
 
     protected $autflowObj;
 
+    protected static $filters = [
+        Terminal\Filters\Auth\RuleFilter::class,
+    ];
+
+    /**
+     * Very important that the sorting order is maintained
+     * @var array
+     */
+    protected static $sorters = [
+        Terminal\Sorters\Auth\AuthLoadSorter::class,
+    ];
+
     public function __construct(array $input)
     {
         parent::__construct();
@@ -67,39 +79,57 @@ class AuthSelector extends Base\Core
             return (new Rule\Core)->fetchApplicableAuthenticationRulesForPayment($this->input);
         });
 
-        $applicableTerminals = $this->selectValidAuthViaRules($applicableTerminals, $applicableRules);
+        $applicableTerminals = $this->filterTerminals($applicableTerminals, $applicableRules);
 
         $this->input['auths'] = array_pluck($applicableTerminals, 'auth_type');
 
-        $applicableTerminals = $this->sortAuthTerminals($applicableTerminals, $applicableRules);
+        $applicableTerminals = $this->sortTerminals($applicableTerminals, $applicableRules);
 
         return $applicableTerminals[0];
     }
 
-    protected function selectValidAuthViaRules(array $terminals, Base\PublicCollection $rules, bool $verbose = true)
+    protected function filterTerminals(array $terminals, Base\PublicCollection $rules, bool $verbose = true)
     {
+        //
+        // Initially, the terminals are run through a filter class, which removes
+        // the terminals which do not match the filters. For further iterations, the
+        // filtered list of terminals is used to further filter upon using the other
+        // filter classes.
+        //
+        $filteredTerminals = $terminals;
+
         $filterRules = $this->getRulesForFiltering($rules);
 
-        $terminalAuthRuleFilter = new Filters\Auth\RuleFilter($this->input, $this->options, $filterRules);
+        foreach (self::$filters as $filter)
+        {
+            $filterRules = $this->getRulesForFiltering($rules);
 
-        $terminals = $terminalAuthRuleFilter->filter($terminals, $verbose);
+            $filterObj = new $filter($this->input, $this->options, $filterRules);
 
-        $this->traceAuthTerminals($terminals, 'Auth terminals after auth rule fiter', $verbose);
+            $filteredTerminals = $filterObj->filter($filteredTerminals, $verbose);
+        }
 
-        return $terminals;
+        $this->traceAuthTerminals($terminals, 'Auth terminals after filteration', $verbose);
+
+        return $filteredTerminals;
     }
 
-    protected function sortAuthTerminals(array $terminals, Base\PublicCollection $rules, bool $verbose = true): array
+    protected function sortTerminals(array $terminals, Base\PublicCollection $rules, bool $verbose = true): array
     {
-        $rules = $this->getRulesForSorting($rules);
+        $sortedTerminals = $terminals;
 
-        $sorterObj = new Sorters\Auth\AuthLoadSorter($this->input, $this->options, $rules);
+        $sorterRules = $this->getRulesForSorting($rules);
 
-        $terminals = $sorterObj->sort($terminals, $verbose);
+        foreach (self::$sorters as $sorter)
+        {
+            $sorterObj = new $sorter($this->input, $this->options, $sorterRules);
 
-        $this->traceAuthTerminals($terminals , 'Auth terminals after sorting', true);
+            $sortedTerminals = $sorterObj->sort($sortedTerminals, $verbose);
+        }
 
-        return $terminals;
+        $this->traceAuthTerminals($terminals , 'Auth terminals after sorting', $verbose);
+
+        return $sortedTerminals;
     }
 
     protected function traceAuthTerminals($terminals, $msg, $verbose = false)
