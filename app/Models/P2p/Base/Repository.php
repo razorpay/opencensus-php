@@ -11,7 +11,7 @@ class Repository extends Base\Repository
 {
     use ApplicationTrait;
 
-    protected function getEntityObject()
+    public function getEntityObject()
     {
         $className = str_replace('\Repository', '\Entity', static::class);
 

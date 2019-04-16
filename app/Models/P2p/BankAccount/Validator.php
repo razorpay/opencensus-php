@@ -10,6 +10,7 @@ use RZP\Models\P2p\Base\Libraries\Card;
 class Validator extends Base\Validator
 {
     protected static $editRules;
+    protected static $beneficiaryRules;
     protected static $fetchBanksRules;
     protected static $initiateRetrieveRules;
     protected static $retrieveRules;
@@ -88,6 +89,17 @@ class Validator extends Base\Validator
     public function makeEditRules()
     {
         $rules = $this->makeRules([]);
+
+        return $rules;
+    }
+
+    public function makeBeneficiaryRules()
+    {
+        $rules = $this->makeRules([
+            Entity::IFSC                     => 'required',
+            Entity::ACCOUNT_NUMBER           => 'required',
+            Entity::BENEFICIARY_NAME         => 'required',
+        ]);
 
         return $rules;
     }
