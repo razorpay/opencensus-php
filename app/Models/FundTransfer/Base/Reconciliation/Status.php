@@ -39,6 +39,11 @@ abstract class Status
         return true;
     }
 
+    public static function isInternalError(Entity $entity): bool
+    {
+        return self::isCriticalError($entity);
+    }
+
     public static function isCriticalError(Entity $entity): bool
     {
         $remark = $entity->getRemarks();
