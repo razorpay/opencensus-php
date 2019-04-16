@@ -166,6 +166,10 @@ class Authenticate
         {
             $ret = $this->ba->directAuth();
         }
+        else if (in_array($route, P2pRoute::$direct, true) === true)
+        {
+            $ret = $this->ba->directAuth();
+        }
         else
         {
             $ret = ApiResponse::routeNotFound();

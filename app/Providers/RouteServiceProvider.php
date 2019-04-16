@@ -145,8 +145,11 @@ class RouteServiceProvider extends ServiceProvider
         $router->group(
             [],
             function($router) {
-                $this->p2pRoute->addRouteGroups(['public',
-                                                 'device']);
+                $this->p2pRoute->addRouteGroups([
+                    'public',
+                    'device',
+                    'direct',
+                ]);
             }
         );
     }
