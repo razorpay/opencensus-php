@@ -144,9 +144,9 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateQueued(array $input)
+    protected function validateQueued($attribute, $value)
     {
-        if (boolval($input[Entity::QUEUED]) === false)
+        if (boolval($value) === false)
         {
             return;
         }
@@ -160,7 +160,7 @@ class Validator extends Base\Validator
                 'Queued payouts not available for the merchant',
                 null,
                 [
-                    'input' => $input
+                    'value' => $value
                 ]);
         }
     }
