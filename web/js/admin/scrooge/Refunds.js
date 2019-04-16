@@ -63,6 +63,7 @@ export default class Refunds extends Component {
         let methods = [];
         let gatewayAcquirers = [];
         let statuses = [];
+        let publicStatuses = [];
 
         gatewayValues.forEach(gateway => {
           gateways.push({
