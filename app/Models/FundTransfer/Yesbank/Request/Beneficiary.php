@@ -34,14 +34,19 @@ class Beneficiary extends Base
      */
     public function requestBody(): string
     {
-         return '<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:ben="http://BeneMaintenanceService">'
-                . '<soap:Header/>'
-                . '<soap:Body>'
-                . '<ben:maintainBene>'
-                . $this->getContent()
-                . '</ben:maintainBene>'
-                . '</soap:Body>'
-                . '</soap:Envelope>';
+         $body =  '<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:ben="http://BeneMaintenanceService">'
+                  . '<soap:Header/>'
+                  . '<soap:Body>'
+                  . '<ben:maintainBene>'
+                  . $this->getContent()
+                  . '</ben:maintainBene>'
+                  . '</soap:Body>'
+                  . '</soap:Envelope>';
+
+         //requestTrace can have masked body as well for logging
+         $this->requestTrace = $body;
+
+         return $body;
     }
 
     /**
