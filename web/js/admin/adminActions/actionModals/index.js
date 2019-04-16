@@ -80,6 +80,8 @@ export SetEmandateGateway from './SetEmandateGateway';
 
 export RazorxActions from './RazorxActions';
 
+export MerchantAccountConfig from './MerchantAccountConfig';
+
 export ScroogeRefundCreateBulk from './ScroogeRefundCreateBulk';
 
 export FetchGatewayUnprocessedRefundsConfig from './FetchGatewayUnprocessedRefundsConfig';
