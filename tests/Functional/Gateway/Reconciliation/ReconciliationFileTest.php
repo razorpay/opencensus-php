@@ -1160,6 +1160,7 @@ class ReconciliationFileTest extends TestCase
         $facade = $this->overrideHitachiPayment($payment, $forceOverride);
 
         $facade['message_type'] = '0220';
+        $facade['transaction_type'] = '20';
         $facade[HitachiRefundRecon::COLUMN_REFUND_ID] = $payment['refund_id'];
 
         return $facade;
