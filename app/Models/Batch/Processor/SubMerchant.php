@@ -32,6 +32,11 @@ class SubMerchant extends Base
     protected $merchantCore;
 
     /**
+     * @var Merchant\Entity
+     */
+    protected $partner;
+
+    /**
      * @var string
      */
     protected $userId;
@@ -106,7 +111,9 @@ class SubMerchant extends Base
             $this->useMerchantEmailAsDummy = (bool) $this->params[ME::USE_EMAIL_AS_DUMMY];
         }
 
-        $this->userId = $this->merchant->primaryOwner()->getId();
+        $this->partner = $this->repo->merchant->findOrFailPublic($this->params[ME::PARTNER_ID]);
+
+        $this->userId = $this->partner->primaryOwner()->getId();
 
         return parent::performPreProcessingActions();
     }
@@ -120,7 +127,7 @@ class SubMerchant extends Base
     {
         $input = Helper::getSubMerchantInput($entry, $this->userId, $this->useMerchantEmailAsDummy);
 
-        $subMerchantArray = $this->merchantService->createSubMerchant($input, $this->merchant);
+        $subMerchantArray = $this->merchantService->createSubMerchant($input, $this->partner);
 
         /** @var ME $subMerchant */
         $subMerchant = $this->repo->merchant->findOrFailPublic(
@@ -131,7 +138,7 @@ class SubMerchant extends Base
         if ($this->autofillDetails === true)
         {
             // Fill in merchant details (activation form)
-            $detailInput = Helper::getSubMerchantDetailInput($entry, $this->merchant, $this->useMerchantEmailAsDummy);
+            $detailInput = Helper::getSubMerchantDetailInput($entry, $this->partner, $this->useMerchantEmailAsDummy);
             $this->merchantDetailCore->saveMerchantDetails($detailInput, $subMerchant);
         }
 

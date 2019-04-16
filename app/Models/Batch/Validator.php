@@ -201,6 +201,7 @@ class Validator extends Base\Validator
         ME::AUTOFILL_DETAILS   => 'filled|boolean',
         ME::AUTO_ACTIVATE      => 'filled|boolean',
         ME::USE_EMAIL_AS_DUMMY => 'filled|boolean',
+        ME::PARTNER_ID         => 'required|string|size:14',
     ];
 
     protected static $oauthMigrationTokenCreateRules = [
@@ -726,13 +727,16 @@ class Validator extends Base\Validator
 
     protected function validateSubMerchantEntries(array & $entries, array $params, ME $merchant)
     {
-        if ($merchant->isNonPurePlatformPartner() === false)
+        /** @var Merchant\Entity $partner */
+        $partner = (new Merchant\Repository)->findOrFailPublic($params[ME::PARTNER_ID]);
+
+        if ($partner->isNonPurePlatformPartner() === false)
         {
             throw new BadRequestValidationFailureException(
                 PublicErrorDescription::BAD_REQUEST_CANNOT_ADD_SUBMERCHANT,
                 null,
                 [
-                    Entity::MERCHANT_ID => $merchant->getId(),
+                    Entity::MERCHANT_ID => $partner->getId(),
                 ]);
         }
     }
