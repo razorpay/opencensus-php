@@ -205,21 +205,40 @@ export default class Sidebar extends Component {
   }
 }
 
+@withRouter
 class PartnerSidebar extends Component {
-  state = {
-    partnerOpen: true,
-    merchantOpen: false,
-  };
+  constructor(props) {
+    super(props);
+    const isPartnerRoute =
+      props.location.pathname === '/' ||
+      props.location.pathname.includes('partners');
+    this.state = {
+      partnerOpen: isPartnerRoute,
+      merchantOpen: !isPartnerRoute,
+    };
+  }
 
   toggle = type => () => {
-    this.setState({
-      [type]: !this.state[type],
-      [this.getCounterType(type)]: this.state[type],
-    });
+    this.setState(
+      {
+        [type]: !this.state[type],
+        [this.getCounterType(type)]: this.state[type],
+      },
+      () => {
+        setTimeout(() => {
+          this.props.history.push(this.getDefaultRoute(type));
+        }, 600);
+      }
+    );
   };
 
   getCounterType = type => {
     return type === 'partnerOpen' ? 'merchantOpen' : 'partnerOpen';
+  };
+
+  getDefaultRoute = () => {
+    const activeType = this.state.partnerOpen ? 'partnerOpen' : 'merchantOpen';
+    return activeType === 'partnerOpen' ? '/partners' : '/dashboard';
   };
 
   render() {
