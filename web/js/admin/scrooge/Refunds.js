@@ -57,6 +57,7 @@ export default class Refunds extends Component {
         let methodValues = data.methods || [];
         let gatewayAcquirerValues = data.gateway_acquirers || [];
         let statusValues = data.statuses || [];
+        let publicStatusValues = data.public_statuses || [];
 
         let gateways = [];
         let methods = [];
@@ -91,6 +92,15 @@ export default class Refunds extends Component {
         this.multiSelectInitialValues[
           'refunds.gateway_acquirer'
         ] = gatewayAcquirers;
+
+        publicStatusValues.forEach(publicStatus => {
+          publicStatuses.push({
+            name: publicStatus,
+            value: publicStatus,
+          });
+        });
+
+        this.multiSelectInitialValues['refunds.public_status'] = publicStatuses;
 
         statusValues.forEach(status => {
           statuses.push({
@@ -191,6 +201,7 @@ export default class Refunds extends Component {
       ['Payment ID', item => paymentLink(item, this.mode)],
       ['Merchant ID', item => item.merchant_id],
       ['Status', item => item.status],
+      ['Public Status', item => item.public_status],
       ['Gateway', item => item.gateway],
       ['Refund Gateway', item => item.refund_gateway],
       ['Method', item => item.method],
@@ -739,6 +750,11 @@ const formFilters = [
   {
     name: 'Status(es)',
     formKey: 'refunds.status',
+    type: 'multi-select',
+  },
+  {
+    name: 'Public Status(es)',
+    formKey: 'refunds.public_status',
     type: 'multi-select',
   },
   {

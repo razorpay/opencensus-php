@@ -59,6 +59,15 @@ export default class RefundsList extends Component {
               <Table items={this.data.state_machine_logs} fields={logFields} />
             </ToggleEntityRow>
           )}
+          {this.data &&
+            this.data.public_state_machine_logs && (
+              <ToggleEntityRow label="Public status logs">
+                <Table
+                  items={this.data.public_state_machine_logs}
+                  fields={logFields}
+                />
+              </ToggleEntityRow>
+            )}
         </main>
         <aside class="container">
           {this.data &&
@@ -147,6 +156,7 @@ const fields = [
   item => ['Method', item.method],
   item => ['Amount', item.currency + ' ' + getFormattedAmount(item.amount)],
   item => ['Status', item.status],
+  item => ['Public status', item.public_status],
   item => ['Refund Created At', formatDate(item.created_at)],
   item => ['Refund Updated At', formatDate(item.updated_at)],
   item => ['Payment ID', <b>{item.payment_id}</b>],
