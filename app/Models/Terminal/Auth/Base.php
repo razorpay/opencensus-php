@@ -46,8 +46,7 @@ abstract class Base
         return $validAuths;
     }
 
-
-    public function getAuthenticationTerminals(): array
+    public function getAuthenticationTerminals($terminals): array
     {
         $validAuths = $this->getValidAuths();
 
@@ -57,8 +56,6 @@ abstract class Base
 
         $this->trace->info(TraceCode::AUTH_SELECTION_VALID_AUTHS, $traceData);
 
-        $authTerminals = AuthTerminals::AUTHENTICATION_TERMINALS;
-
         $selectedAuthTerminals = [];
 
         $gateway = $this->payment->terminal->gateway;
@@ -66,7 +63,7 @@ abstract class Base
         foreach ($validAuths as $auth)
         {
             $terminal = array_filter(
-                            $authTerminals,
+                            $terminals,
                             function ($terminal) use ($gateway, $auth)
                             {
                                 if (($terminal[AuthTerminals::GATEWAY] === $gateway) and
@@ -95,7 +92,7 @@ abstract class Base
 
     public function setAuthsApplicableForMethod()
     {
-        $authType = $this->payment->getAuthType() ?? Payment\AuthType::UNKNOWN ;
+        $authType = $this->payment->getAuthType() ?? Payment\AuthType::UNKNOWN;
 
         $method = $this->payment->getMethod();
 

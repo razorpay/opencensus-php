@@ -50,7 +50,7 @@ class Repository extends Base\Repository
         return $rules;
     }
 
-    public function fetchAuthenticationRulesForSearchCriteria(array $criteria): base\PublicCollection
+    public function fetchAuthenticationRulesForSearchCriteria(array $criteria): Base\PublicCollection
     {
         $query = $this->newQuery();
 
