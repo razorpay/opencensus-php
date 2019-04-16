@@ -8,7 +8,7 @@ import AccountCreation from 'merchant/containers/Marketplace/Accounts/New';
 import { getUser } from 'merchant/store';
 import { showNotification } from 'rzp/modules/notifications';
 import { ToggleField } from 'merchant/components/Marketplace/Accounts/AccountsList';
-import { fetchCreditById } from 'merchant/modules/credits';
+import { fetchBalance } from 'merchant/modules/credits';
 import SwitchField from 'rzp/ui/Forms/SwitchField';
 import * as AccountActions from 'merchant/modules/marketplace/accounts';
 import * as ModalActions from 'rzp/modules/modals';
@@ -207,6 +207,16 @@ export default class Details extends Component {
       .then(resp => {
         this.setState({
           account: resp.data,
+        });
+        return fetchBalance(id);
+      })
+      .then(resp => {
+        this.setState({
+          account: {
+            ...this.state.account,
+            refund_credits: resp.data.refund_credits,
+            currency: resp.data.currency,
+          },
           isLoading: false,
         });
       })
@@ -217,19 +227,8 @@ export default class Details extends Component {
       });
   };
 
-  fetchCreditById = (id = this.props.id) => {
-    fetchCreditById(id)
-      .then(resp => {
-        console.log(resp);
-      })
-      .catch(e => {
-        console.error(e);
-      });
-  };
-
   componentWillMount() {
     this.fetchData(this.props.id);
-    this.fetchCreditById(this.props.id);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -331,7 +330,10 @@ export default class Details extends Component {
                   )}
                 </EntityDetailRow>
                 <EntityDetailRow label="Refund Credits">
-                  <Amount value={account.refund_credits} />
+                  <Amount
+                    value={account.refund_credits}
+                    currency={account.currency}
+                  />
                 </EntityDetailRow>
                 {isAllowToEdit && (
                   <EntityDetailRow label="Dashboard Access">
