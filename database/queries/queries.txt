@@ -4874,3 +4874,7 @@ ALTER TABLE fund_transfer_attempts
 
 ALTER TABLE payouts
     MODIFY notes TEXT DEFAULT NULL;
+
+ALTER TABLE refunds
+    CHANGE reference11 balance_id CHAR(14) DEFAULT NULL,
+    ADD INDEX refunds_balance_id_index (`balance_id`);
