@@ -136,6 +136,8 @@ trait HeadlessOtp
 
             if ($response['data']['action'] === 'submit_otp')
             {
+                $payment->setAuthType(Payment\AuthType::HEADLESS_OTP);
+
                 $content = $response['data']['data'];
 
                 return ['url' => $this->getCallbackUrl(), 'content' => $content, 'method' => 'POST'];
