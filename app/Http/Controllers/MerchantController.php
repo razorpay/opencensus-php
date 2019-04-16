@@ -910,6 +910,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getAffiliatedPartners(string $merchantId)
+    {
+        $data = $this->service()->fetchAffiliatedPartners($merchantId);
+
+        return ApiResponse::json($data);
+    }
+
     public function addTags($id)
     {
         $input = Request::all();
