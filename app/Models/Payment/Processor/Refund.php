@@ -2113,7 +2113,7 @@ trait Refund
     {
         if (($payment->hasCard() === true) and
             ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true) and
-            ($payment->card->getVaultToken() !== null))
+            ($payment->card->getCardVaultToken() !== null))
         {
             $iin = $payment->card->iinRelation;
 
