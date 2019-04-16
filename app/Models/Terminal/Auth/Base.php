@@ -6,6 +6,7 @@ use App;
 
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\Terminal\AuthenticationTerminals as AuthTerminals;
 
 abstract class Base
 {
