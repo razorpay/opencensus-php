@@ -111,4 +111,13 @@ class Refund extends Base
             }
         }
     }
+
+    protected function setMerchantBalanceLockForUpdate()
+    {
+        // TODO: Remove the second condition later once we backfill refunds
+        // with all existing refunds having primaryBalance filled in.
+        $this->merchantBalance = $this->source->balance ?? $this->txn->merchant->primaryBalance;
+
+        $this->repo->balance->lockForUpdateAndReload($this->merchantBalance);
+    }
 }

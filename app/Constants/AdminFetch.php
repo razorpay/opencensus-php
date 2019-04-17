@@ -445,6 +445,23 @@ class AdminFetch
                 'refund_id' => Fetch::FIELD_REFUND_ID,
             ],
 
+            Entity::BHARAT_QR => [
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
+                'virtual_account_id' => [
+                    Fetch::LABEL  => 'Virtual Account ID',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'method'        => Fetch::FIELD_METHOD,
+                'provider_reference_id' => [
+                    Fetch::LABEL  => 'Provider Reference ID',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'merchant_reference' => [
+                    Fetch::LABEL  => 'Merchant Reference',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+            ],
+
             Entity::BATCH => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'status' => [

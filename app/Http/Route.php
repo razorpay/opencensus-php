@@ -33,6 +33,7 @@ final class Route
         'merchant_methods'                         => ['get',      'methods',                                        'MerchantController@getPaymentMethods'                              ],
         'merchant_methods_downtime'                => ['get',      'methods/downtime',                               'MerchantController@getPublicGatewayDowntimeData'                   ],
         'merchant_methods_downtime_private'        => ['get',      'methods/downtimes',                              'DowntimeController@getMethodDowntimeData'                          ],
+        'downtime_trigger_cron'                    => ['post',     'methods/downtimes/trigger',                      'DowntimeController@triggerDowntimes'                               ],
         'merchant_checkout_preferences'            => ['get',      'preferences',                                    'MerchantController@getCheckoutPreferences'                         ],
         'payment_create'                           => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'                         ],
         // @todo: Require feature S2S for payment_create_private route.
@@ -977,6 +978,7 @@ final class Route
 
         'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
         'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
+        'merchant_partners_fetch'                  => ['get',      'merchants/{id}/partners',                        'MerchantController@getAffiliatedPartners'                          ],
         'merchant_associated_accounts_fetch'       => ['get',      'merchant/{id}/associated_accounts',              'MerchantController@getAssociatedAccounts'                          ],
 
         // Webhook Api Wrapper
@@ -1411,6 +1413,7 @@ final class Route
         'fund_account_validation_retry',
         'setl_initiate_adhoc',
         'scrooge_tagging_backfill',
+        'downtime_trigger_cron',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -1969,6 +1972,8 @@ final class Route
         'subscription_payment_process',
         'subscription_charge_cycle',
         'subscription_skip_cycle',
+
+        'merchant_partners_fetch',
     ];
 
     public static $routePermission = [
@@ -2366,6 +2371,7 @@ final class Route
         'subscription_charge_cycle'                => Permission::MODIFY_SUBSCRIPTION_DATA,
         'subscription_skip_cycle'                  => Permission::MODIFY_SUBSCRIPTION_DATA,
 
+        'merchant_partners_fetch'                  => '*',
     ];
 
     public static $direct = [
@@ -2584,6 +2590,7 @@ final class Route
             'entity_balance_id_update',
             'scrooge_refund_verify_bulk',
             'scrooge_tagging_backfill',
+            'downtime_trigger_cron',
         ],
 
         'subscriptions' => [

@@ -13,10 +13,12 @@ use RZP\Models\Merchant;
 use RZP\Models\Currency;
 use RZP\Models\Reversal;
 use RZP\Models\Transaction;
+use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
 use Razorpay\Spine\DataTypes\Dictionary;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 use RZP\Models\Payment\Refund\Metric as RefundMetric;
 
 /**
@@ -26,6 +28,7 @@ use RZP\Models\Payment\Refund\Metric as RefundMetric;
  */
 class Entity extends Base\PublicEntity
 {
+    use HasBalance;
     use NotesTrait;
 
     const ID                     = 'id';
@@ -57,6 +60,7 @@ class Entity extends Base\PublicEntity
     const REFERENCE4             = 'reference4';
     const REFERENCE6             = 'reference6';
     const REFERENCE9             = 'reference9';
+    const BALANCE_ID             = 'balance_id';
 
     const ATTEMPTS               = 'attempts';
     const LAST_ATTEMPTED_AT      = 'last_attempted_at';
@@ -128,6 +132,7 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS,
         self::LAST_ATTEMPTED_AT,
         self::PROCESSED_AT,
+        self::BALANCE_ID,
         self::IS_SCROOGE,
         self::REFERENCE1,
         self::BANK_ACCOUNT_ID,

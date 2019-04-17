@@ -1436,6 +1436,28 @@ class Core extends Base\Core
         return $merchants;
     }
 
+    /**
+     * Fetch the list of all merchants the submerchant is associated with
+     *
+     * @param string $submerchantId
+     *
+     * @return PublicCollection
+     */
+    public function fetchAffiliatedPartners(string $submerchantId): PublicCollection
+    {
+        return $this->repo
+                    ->merchant_access_map
+                    ->fetchAffiliatedPartnersForSubmerchant($submerchantId)
+                    ->unique(function ($item)
+                    {
+                        return $item->entityOwner->getId();
+                    })
+                    ->map(function ($item)
+                    {
+                        return $item->entityOwner;
+                    });
+    }
+
     protected function isPartnerUserAddedToSubmerchant(Entity $partner, Entity $submerchant): bool
     {
         $partnerUser = $partner->primaryOwner();

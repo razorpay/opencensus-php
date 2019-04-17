@@ -51,11 +51,9 @@ class PaymentDowntimeTest extends TestCase
         ];
 
         $this->ba->appAuth();
-
         $this->makeRequestAndGetContent($request);
 
         $this->ba->privateAuth();
-
         $this->startTest();
     }
 
@@ -72,13 +70,16 @@ class PaymentDowntimeTest extends TestCase
             'method' => 'PUT',
             'url' => '/gateway/downtimes/'.$gatewayDowntime['id']
         ];
-
         $this->ba->adminAuth();
-
         $this->makeRequestAndGetContent($request);
 
         $downtime = $this->getLastEntity('payment.downtime', true);
         $this->assertNotNull($downtime['end']);
+
+        $this->activateDowntimes();
+
+        $downtime = $this->getLastEntity('payment.downtime', true);
+        $this->assertEquals('resolved', $downtime['status']);
     }
 
     public function testGetUpiDowntimeForIndividualGateways()
@@ -105,11 +106,9 @@ class PaymentDowntimeTest extends TestCase
         ];
 
         $this->ba->appAuth();
-
         $this->makeRequestAndGetContent($request);
 
         $this->ba->privateAuth();
-
         $this->startTest();
     }
 
@@ -129,12 +128,20 @@ class PaymentDowntimeTest extends TestCase
         ];
 
         $this->ba->appAuth();
-
         $this->makeRequestAndGetContent($request);
 
         $this->ba->privateAuth();
-
         $this->startTest();
+    }
+
+    public function testActivateDowntimes()
+    {
+        $this->testGetUpiDowntimeForAllGateways();
+
+        $this->activateDowntimes();
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+        $this->assertEquals('started', $paymentDowntime['status']);
     }
 
     public function testGetNetbankingDowntimeWithEndTime()
@@ -152,7 +159,6 @@ class PaymentDowntimeTest extends TestCase
         ];
 
         $this->ba->adminAuth();
-
         $this->makeRequestAndGetContent($request);
 
         $downtime = $this->getLastEntity('payment.downtime', true);
@@ -164,7 +170,6 @@ class PaymentDowntimeTest extends TestCase
         $this->createNetbankingAllGatewayDowntime();
 
         $this->ba->privateAuth();
-
         $this->startTest();
     }
 
@@ -184,11 +189,9 @@ class PaymentDowntimeTest extends TestCase
         ];
 
         $this->ba->appAuth();
-
         $this->makeRequestAndGetContent($request);
 
         $this->ba->privateAuth();
-
         $this->startTest();
     }
 
@@ -379,8 +382,18 @@ class PaymentDowntimeTest extends TestCase
             ];
 
             $this->ba->appAuth();
-
             $this->makeRequestAndGetContent($request);
         }
+    }
+
+    protected function activateDowntimes()
+    {
+        $this->ba->appAuth();
+
+        $this->makeRequestAndGetContent([
+            'url'     => '/methods/downtimes/trigger',
+            'method'  => 'POST',
+            'content' => [],
+        ]);
     }
 }

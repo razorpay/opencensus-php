@@ -112,7 +112,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::UPI_ICICI              => [
                                                             "/Please find attached the UPI Transaction Report MIS as on"
                                                             ."\s*[0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
-                                                             "/Please find attached the Refund Report as on\s*[0-9]{2}_[0-9]{2}_20[0-9]{2}/"
+                                                             "/Please find attached the Refund Report as on/"
                                                          ],
         RequestProcessor\Base::NETBANKING_CORPORATION  => ["/Please find attached RECON file for RazorPay/"],
         RequestProcessor\Base::PAYZAPP                 => [

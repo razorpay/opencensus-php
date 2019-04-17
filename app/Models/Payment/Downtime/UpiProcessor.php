@@ -2,9 +2,10 @@
 
 namespace RZP\Models\Payment\Downtime;
 
+use Illuminate\Database\Eloquent\Collection;
+
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
-use Illuminate\Database\Eloquent\Collection;
 use RZP\Models\Gateway\Downtime\Entity as GatewayDowntime;
 
 class UpiProcessor extends BaseProcessor

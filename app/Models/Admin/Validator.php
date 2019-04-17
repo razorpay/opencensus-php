@@ -59,6 +59,7 @@ class Validator extends Base\Validator
         ConfigKey::SETTLEMENT_TRANSACTION_LIMIT       => 'filled|integer',
         ConfigKey::FTS_ROUTE_PERCENTAGE               => 'filled|integer',
         ConfigKey::ENABLE_PAYMENT_DOWNTIMES           => 'filled|boolean',
+        ConfigKey::FTS_TEST_MERCHANT                  => 'filled|string|size:14',
     ];
 
     protected static $setRedisKeysRules = [

@@ -238,4 +238,77 @@ class GatewayRuleTest extends TestCase
 
         $this->runRequestResponseFlow($testDataRule3);
     }
+
+    public function testGatewayRuleAuthFilterTest()
+    {
+        $this->ba->adminAuth();
+
+        $testDataRule1 = [
+                'request' => [
+                    'content' => [
+                        'method'        => 'card',
+                        'merchant_id'   => '10000000000000',
+                        'gateway'       => 'hdfc',
+                        'type'          => 'filter',
+                        'filter_type'   => 'select',
+                        'group'         => 'authentication',
+                        'auth_type'     => '3ds',
+                        'step'          => 'authentication',
+                        'authentication_gateway' => 'mpi_blade'
+                    ],
+                    'url' => '/gateway/rules',
+                    'method' => 'POST',
+                ],
+                'response' => [
+                    'content' =>[]
+                ],
+        ];
+
+        $this->runRequestResponseFlow($testDataRule1);
+
+        $testDataRule2 = [
+                'request' => [
+                    'content' => [
+                        'method'        => 'card',
+                        'merchant_id'   => '10000000000000',
+                        'gateway'       => 'cybersource',
+                        'type'          => 'filter',
+                        'filter_type'   => 'select',
+                        'group'         => 'authentication',
+                        'auth_type'     => '3ds',
+                        'step'          => 'authentication',
+                    ],
+                    'url' => '/gateway/rules',
+                    'method' => 'POST',
+                ],
+                'response' => [
+                    'content' =>[]
+                ],
+        ];
+
+        $this->runRequestResponseFlow($testDataRule2);
+
+        $testDataRule3 = [
+                'request' => [
+                    'content' => [
+                        'method'        => 'card',
+                        'merchant_id'   => '10000000000000',
+                        'gateway'       => 'hdfc',
+                        'type'          => 'filter',
+                        'filter_type'   => 'select',
+                        'group'         => 'authentication',
+                        'auth_type'     => 'headless_otp',
+                        'step'          => 'authentication',
+                        'authentication_gateway' => 'mpi_blade'
+                    ],
+                    'url' => '/gateway/rules',
+                    'method' => 'POST',
+                ],
+                 'response' => [
+                    'content' =>[]
+                ],
+        ];
+
+        $this->runRequestResponseFlow($testDataRule3);
+    }
 }

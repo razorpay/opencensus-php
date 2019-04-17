@@ -250,6 +250,7 @@ return [
             'arn'                   => 74110757361008597807228,
             'issettled'             => 'S',
             'message_type'          => '0200',
+            'transaction_type'      => '00',
             'datetime'              => '2018-03-05 23:50:00',
             'tran_currency_code'    => '356',
         ],
