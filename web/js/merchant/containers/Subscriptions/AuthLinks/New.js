@@ -134,6 +134,7 @@ export default class CreateNewAuthLinkContainer extends Component {
       description: data.description,
       receipt: data.receipt,
       expire_by: !Number(data.hasNoExpiry) ? data.expireAt : undefined,
+      currency: data.currency,
       amount:
         data.mandateMethod === 'emandate' ? 0 : rupeesToPaise(data.amount),
       sms_notify: data.configSmsNotify,
@@ -375,16 +376,20 @@ export default class CreateNewAuthLinkContainer extends Component {
             )}
 
             {method === 'card' && (
-              <Input
-                name="amount"
-                label="Amount"
-                type="tel"
-                placeholder="0.00"
-                addonBefore="₹"
-                description="Amount of Authorization Link Payment"
-                required
-                validator={checkIfAmount}
-              />
+              <Input.Group class="InputGroup--inline" label="Amount">
+                <div class="Input-content">
+                  <Input.CurrencySelect name="currency" />
+
+                  <Input
+                    name="amount"
+                    type="tel"
+                    placeholder="0.00"
+                    description="Amount of Authorization Link Payment"
+                    validator={checkIfAmount}
+                    required
+                  />
+                </div>
+              </Input.Group>
             )}
 
             <Input.PairList

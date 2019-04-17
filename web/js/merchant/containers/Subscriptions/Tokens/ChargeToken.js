@@ -72,6 +72,7 @@ export default class ChargeToken extends Component {
               <Input
                 name="amount"
                 label="Amount"
+                addonBefore="₹"
                 required
                 class="Input--vTop"
               />
