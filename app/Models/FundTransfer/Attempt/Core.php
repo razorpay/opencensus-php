@@ -201,10 +201,20 @@ class Core extends Base\Core
      * TODO: refactor this section so that we dont have to use `shouldUseGateway` and `getChannelForTransfer`
      * for different reasons. A single method should give us which path should be chosen
      */
-    protected function getChannelForTransfer(Base\Entity $source, string $sourceType, CardEntity $card = null): array
+    protected function getChannelForTransfer(Base\PublicEntity $source, string $sourceType, CardEntity $card = null): array
     {
         if (in_array($sourceType, AttemptConstants::ALLOWED_PRODUCTS_ON_FTS, true) === true)
         {
+            $srcMerchantId = $source->getMerchantId();
+
+            $merchantId = $this->app['cache']->get(ConfigKey::FTS_TEST_MERCHANT);
+
+            if ((empty($merchantId) === false) and
+                ($srcMerchantId !== $merchantId))
+            {
+                return [false, Settlement\Channel::YESBANK];
+            }
+
             $amount = $source->getAmount();
 
             $mode = Mode::IMPS;

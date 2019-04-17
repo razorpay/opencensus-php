@@ -303,6 +303,7 @@ class Entity
         Entity::VIRTUAL_ACCOUNT,
         Entity::PAYOUT,
         Entity::BANK_TRANSFER,
+        Entity::REFUND,
     ];
 
     public static $namespace = [

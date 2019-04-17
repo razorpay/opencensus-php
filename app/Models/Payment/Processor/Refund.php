@@ -21,6 +21,7 @@ use RZP\Jobs\ScroogeRefund;
 use RZP\Models\BankTransfer;
 use RZP\Models\Card\Issuer;
 use RZP\Jobs\ScroogeRefundRetry;
+use RZP\Models\Merchant\Balance;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Gateway\Base\ScroogeResponse;
@@ -1233,6 +1234,8 @@ trait Refund
 
         $refund->setBaseAmount();
 
+        $refund->balance()->associate($refund->merchant->primaryBalance);
+
         if ($this->payment->isCaptured() === true)
         {
             $this->validateMerchantBalance($refund, 'refund');
@@ -1591,7 +1594,7 @@ trait Refund
     {
         $merchant = $refund->merchant;
 
-        $balance = $this->repo->balance->getMerchantBalance($merchant);
+        $balance = $refund->balance;
 
         $traceData = [
             'type'              => $type,
@@ -2113,7 +2116,7 @@ trait Refund
     {
         if (($payment->hasCard() === true) and
             ($this->merchant->isFeatureEnabled(Feature::CARD_TRANSFER_REFUND) === true) and
-            ($payment->card->getVaultToken() !== null))
+            ($payment->card->getCardVaultToken() !== null))
         {
             $iin = $payment->card->iinRelation;
 

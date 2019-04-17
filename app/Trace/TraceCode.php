@@ -1029,13 +1029,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SHIELD_INTEGRATION_ERROR                              = 'SHIELD_INTEGRATION_ERROR';
     const REVERSAL_ADJUSTMENT_CREATE_REQUEST                    = 'REVERSAL_ADJUSTMENT_CREATE_REQUEST';
 
-
     // Gateway component error messages
-
     const GATEWAY_REQUEST_ERROR                                 = 'GATEWAY_REQUEST_ERROR';
     const PAYMENT_DOWNTIME_CREATE                               = 'PAYMENT_DOWNTIME_CREATE';
     const PAYMENT_DOWNTIME_EDIT                                 = 'PAYMENT_DOWNTIME_EDIT';
     const PAYMENT_DOWNTIME_CREATE_JOB                           = 'PAYMENT_DOWNTIME_CREATE_JOB';
+    const PAYMENT_DOWNTIMES_TO_ACTIVATE                         = 'PAYMENT_DOWNTIMES_TO_ACTIVATE';
+    const PAYMENT_DOWNTIMES_TO_RESOLVE                          = 'PAYMENT_DOWNTIMES_TO_RESOLVE';
 
     const ADHOC_SETTLEMENT_CREATE_FAILED                        = 'ADHOC_SETTLEMENT_CREATE_FAILED';
     const ADHOC_SETTLEMENT_ENTITIES_CREATED                     = 'ADHOC_SETTLEMENT_ENTITIES_CREATED';

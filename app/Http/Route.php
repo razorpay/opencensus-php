@@ -33,6 +33,7 @@ final class Route
         'merchant_methods'                         => ['get',      'methods',                                        'MerchantController@getPaymentMethods'                              ],
         'merchant_methods_downtime'                => ['get',      'methods/downtime',                               'MerchantController@getPublicGatewayDowntimeData'                   ],
         'merchant_methods_downtime_private'        => ['get',      'methods/downtimes',                              'DowntimeController@getMethodDowntimeData'                          ],
+        'downtime_trigger_cron'                    => ['post',     'methods/downtimes/trigger',                      'DowntimeController@triggerDowntimes'                               ],
         'merchant_checkout_preferences'            => ['get',      'preferences',                                    'MerchantController@getCheckoutPreferences'                         ],
         'payment_create'                           => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'                         ],
         // @todo: Require feature S2S for payment_create_private route.
@@ -1412,6 +1413,7 @@ final class Route
         'fund_account_validation_retry',
         'setl_initiate_adhoc',
         'scrooge_tagging_backfill',
+        'downtime_trigger_cron',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -2588,6 +2590,7 @@ final class Route
             'entity_balance_id_update',
             'scrooge_refund_verify_bulk',
             'scrooge_tagging_backfill',
+            'downtime_trigger_cron',
         ],
 
         'subscriptions' => [

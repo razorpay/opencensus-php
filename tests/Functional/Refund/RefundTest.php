@@ -1901,4 +1901,55 @@ class RefundTest extends TestCase
 
         $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
     }
+
+    public function testRefundBalanceId()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            if($action === 'refund')
+            {
+                $content['result'] = 'DENIED BY RISK';
+            }
+
+            return $content;
+        });
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $this->assertGreaterThan(time() - 30, $refund['created_at']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('created', $refund['status']);
+
+        $this->assertNotNull($refund['balance_id']);
+
+        $this->scroogeUpdateRefundStatus($refund, 'failed');
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(false, $refund['gateway_refunded']);
+        $this->assertEquals(RefundStatus::REVERSED, $refund['status']);
+
+        $reversal = $this->getLastEntity('reversal', true);
+
+        $this->assertEquals($reversal['entity_type'], 'refund');
+        $this->assertEquals('rfnd_'.$reversal['entity_id'], $refund['id']);
+        $this->assertEquals($refund['balance_id'], $reversal['balance_id']);
+    }
 }
