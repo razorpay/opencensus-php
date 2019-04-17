@@ -172,6 +172,14 @@ class Entity extends Base\PublicEntity
         self::STEP,
         self::AUTHENTICATION_GATEWAY,
     ];
+
+    const AUTHENTICATION_FILTER_SEARCH_ATTRIBUTES = [
+        self::GATEWAY,
+        self::STEP,
+        self::AUTHENTICATION_GATEWAY,
+        self::AUTH_TYPE,
+    ];
+
     /**
      * Defines the attribute scores used for calculating
      * specificity score for a rule. Each attribute is given

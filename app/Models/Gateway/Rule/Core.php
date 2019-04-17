@@ -261,9 +261,7 @@ class Core extends Base\Core
     {
         $searchCriteria = $rule->getSearchCriteria();
 
-        $matchingRules = $this->repo
-                              ->gateway_rule
-                              ->fetchRulesForSearchCriteria($searchCriteria);
+        $matchingRules = $this->getMatchingRules($rule, $searchCriteria);
 
         if ($rule->isMethodCardOrEmi() === true)
         {
@@ -271,6 +269,20 @@ class Core extends Base\Core
         }
 
         return $matchingRules;
+    }
+
+    protected function getMatchingRules(Entity $rule, array $searchCriteria): Base\PublicCollection
+    {
+        if ($rule->getStep() === Entity::AUTHENTICATION)
+        {
+            return $this->repo
+                        ->gateway_rule
+                        ->fetchAuthenticationRulesForSearchCriteria($searchCriteria);
+        }
+
+        return $this->repo
+                    ->gateway_rule
+                    ->fetchRulesForSearchCriteria($searchCriteria);
     }
 
     /**
