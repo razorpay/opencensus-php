@@ -14,7 +14,6 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
     const PAYMENT_TXN = 'Sale';
     const REFUND_TXN   = 'Full Refund';
     const REFUND_TXN_2 = 'Partial Refund';
-    const REFUND_TXN_3 = 'Auto Reversal';
 
     const COLUMN_MERCHANT_NAME  = 'merchant_name';
     const COLUMN_MERCHANT_ID    = 'merchant_id';
@@ -24,9 +23,6 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
     // in the recon file
     const TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP = [
         self::PAYMENT_TXN   => BaseReconciliate::PAYMENT,
-        self::REFUND_TXN    => self::NA,
-        self::REFUND_TXN_2  => self::NA,
-        self::REFUND_TXN_3  => self::NA,
     ];
 
     protected function getReconciliationTypeForRow(&$row)
@@ -58,7 +54,7 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
 
     protected function getReconTypeForSpecialCase(&$row)
     {
-        $txtType = $row[self::COLUMN_TXN_STATE];
+        $txtState = $row[self::COLUMN_TXN_STATE];
 
         $reconType = self::NA;
 
@@ -75,17 +71,17 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
             $this->trace->info(
                 TraceCode::RECON_ALERT,
                 [
-                    'info_code' => Base\InfoCode::RECON_ROW_EXTRA_COMMA_FOUND,
+                    'info_code' => Base\InfoCode::RECON_ROW_INVALID_FORMAT_FOUND,
                     'gateway'   => $this->gateway,
-                    'txn_type'  => $txtType,
+                    'txn_type'  => $txtState,
                     'row'       => $row,
                 ]);
 
             $this->leftShiftRowValues($row);
 
-            $txtType = $row[self::COLUMN_TXN_STATE];
+            $txtState = $row[self::COLUMN_TXN_STATE];
 
-            $reconType = self::TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP[$txtType];
+            $reconType = self::TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP[$txtState] ?? self::NA;
         }
 
         return $reconType;
@@ -95,20 +91,11 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
     {
         $row[self::COLUMN_MERCHANT_ID] = $row[self::COLUMN_MERCHANT_NAME] . ',' . $row[self::COLUMN_MERCHANT_ID];
 
-        $row['extra_temp_field'] = '';
-
         $columns = array_keys($row);
+        $values = array_values($row);
 
-        // Now assign each column to the value of next column.
-        for ($i = 0; $i < count($columns) - 1 ; $i++)
-        {
-            $currentColumnName = $columns[$i];
+        array_shift($values);
 
-            $nextColumnName = $columns[$i + 1];
-
-            $row[$currentColumnName] = $row[$nextColumnName];
-        }
-
-        unset($row['extra_temp_field']);
+        $row = array_combine_pad($columns, $values);
     }
 }

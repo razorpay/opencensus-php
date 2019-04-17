@@ -776,6 +776,70 @@ class ReconciliationFileTest extends TestCase
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
+    public function testAtomReconExtraCommaPaymentFile()
+    {
+        $this->fixtures->create('terminal:shared_atom_terminal');
+
+        $payment1 = $this->getDefaultNetbankingPaymentArray();
+
+        $payment1 = $this->doAuthAndCapturePayment($payment1);
+
+        $transaction1 = $this->getLastEntity('transaction', true);
+
+        $gatewayPayment1 = $this->getLastEntity('atom', true);
+
+        //Reconciled at should be null
+        $this->assertNull($transaction1['reconciled_at']);
+
+        $this->assertEquals($payment1['id'], $transaction1['entity_id']);
+
+        $entry1 = $this->overrideAtomPayment($gatewayPayment1);
+
+        $this->rightShiftRowValues($entry1);
+
+        $entries[] = $entry1;
+
+        // make another payment
+        $payment2 = $this->getDefaultNetbankingPaymentArray();
+
+        $payment2 = $this->doAuthAndCapturePayment($payment2);
+
+        $transaction2 = $this->getLastEntity('transaction', true);
+
+        $gatewayPayment2 = $this->getLastEntity('atom', true);
+
+        //Reconciled at should be null
+        $this->assertNull($transaction2['reconciled_at']);
+
+        $this->assertEquals($payment2['id'], $transaction2['entity_id']);
+
+        $entry2 = $this->overrideAtomPayment($gatewayPayment2);
+
+        $entries[] = $entry2;
+
+        $file = $this->writeToCsvFile($entries, 'settlementReport');
+
+        $this->runForFiles([$file], 'Atom');
+
+        $updatedTransaction1 = $this->getEntityById('transaction', $transaction1['id'], true);
+        $updatedTransaction2 = $this->getEntityById('transaction', $transaction2['id'], true);
+
+        //Reconciled at should not be null
+        $this->assertNotNull($updatedTransaction1['reconciled_at']);
+        $this->assertNotNull($updatedTransaction1['reconciled_type']);
+        $this->assertNotNull($updatedTransaction1['gateway_settled_at']);
+        $this->assertNotNull($updatedTransaction1['gateway_fee']);
+        $this->assertNotNull($updatedTransaction1['gateway_service_tax']);
+
+        $this->assertNotNull($updatedTransaction2['reconciled_at']);
+        $this->assertNotNull($updatedTransaction2['reconciled_type']);
+        $this->assertNotNull($updatedTransaction2['gateway_settled_at']);
+        $this->assertNotNull($updatedTransaction2['gateway_fee']);
+        $this->assertNotNull($updatedTransaction2['gateway_service_tax']);
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
     //For success case of Bill desk reconciliation
     public function testBillDeskReconRefundFileFailure()
     {
@@ -1132,13 +1196,14 @@ class ReconciliationFileTest extends TestCase
         $facade[AtomPaymentRecon::COLUMN_ATOM_TRANSACTION_ID] = $gatewayPayment['gateway_payment_id'];
         $facade[AtomPaymentRecon::COLUMN_PAYMENT_ID]          = $gatewayPayment['payment_id'];
         $facade[AtomPaymentRecon::COLUMN_BANK_REFERENCE_NO]   = $gatewayPayment['bank_payment_id'];
-        $facade[AtomPaymentRecon::COLUMN_AMOUNT]              = $gatewayPayment['amount'] / 100;
-        $facade[AtomPaymentRecon::COLUMN_TRANSACTION_CHARGES] = (float) $facade[AtomPaymentRecon::COLUMN_AMOUNT] * 1.1;
-        $facade['GST (18%)']                                  = (float) $facade[AtomPaymentRecon::COLUMN_AMOUNT] * 0.002;
+        $facade['Gross Txn Amount']                           = $gatewayPayment['amount'] / 100;
+        $facade['Txn Charges']                                = (float) $facade['Gross Txn Amount'] * 1.1;
+        $facade['GST (18%)']                                  = (float) $facade['Gross Txn Amount'] * 0.002;
         $facade['Bank / Card Name']                           = $gatewayPayment['bank_name'];
         $facade['Net Amount to be Paid']                      = $facade['GST (18%)'] + $facade['Txn Charges'];
         $facade['Settlement Date']                            = Carbon::createFromTimestamp($gatewayPayment['created_at'], Timezone::IST)->format('d-M-Y h:i:s');
         $facade['Txn Date']                                   = Carbon::createFromTimestamp($gatewayPayment['created_at'], Timezone::IST)->format('d-M-Y h:i:s');
+        $facade['Refund Status']                              = '';
 
         return $facade;
     }
@@ -1839,6 +1904,25 @@ class ReconciliationFileTest extends TestCase
         $facade['Merchant Account Number'] = 'razorpay amex';
 
         return $facade;
+    }
+
+    /**
+     * @param $row  Here we are changing the row intentionally to mock a row in MIS file
+     * which has comma in the merchant_name and it causes the row values to shift right.
+     */
+    protected function rightShiftRowValues(&$row)
+    {
+        $row['Merchant Name'] = 'Bangalore';
+
+        $columns = array_keys($row);
+
+        $values = array_values($row);
+
+        array_unshift($values, 'RAZORPAY SOFTWARE PVT LTD');
+
+        array_pop($values);
+
+        $row = array_combine_pad($columns, $values);
     }
 
     /**
