@@ -4434,16 +4434,6 @@ trait Authorize
             $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_VAULT;
         }
 
-        if ($vault === false)
-        {
-            $response = $this->app->razorx->getTreatment($merchant->getId(), 'save_all_cards', $this->mode);
-
-            if (strtolower($response) === 'on')
-            {
-              $cardInput[Card\Entity::VAULT] = Card\Vault::RZP_ENCRYPTION;
-            }
-        }
-
         $cardCore = new Card\Core;
 
         $cardData = $cardCore->createAndReturnWithSensitiveData($cardInput, $merchant);
