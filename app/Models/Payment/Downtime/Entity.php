@@ -148,6 +148,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::END, Carbon::now()->getTimestamp());
     }
 
+    public function setStatus($status)
+    {
+        $this->setAttribute(self::STATUS, $status);
+    }
+
     // ================= Getters ================
 
     public function getMethod()
