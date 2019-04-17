@@ -272,12 +272,14 @@ class Gateway
         Payment\Gateway::SHARP
     ];
 
-    //TODO : Get complete list
+    // The list is available at - for Live Banks in API E-Mandate in https://www.npci.org.in/nach-e-mandates
     const ENACH_NPCI_NETBANKING_BANKS = [
         IFSC::YESB,
         IFSC::IDFB,
         IFSC::UTIB,
         IFSC::CBIN,
+        IFSC::KKBK,
+        Netbanking::PUNB_R,
         Netbanking::BARB_R
     ];
 
