@@ -176,16 +176,21 @@ export class AmountCreator extends React.PureComponent {
         onSubmit={onSubmit}
       >
         <div class="section section-1">
-          <Input
-            label="Amount"
-            name="amount"
-            placeholder="Enter Amount"
-            defaultValue={this.defaults.amount}
-            addonBefore="₹"
-            autoFocus
-            pattern="^[0-9]+(.([0-9]){1,2})?$"
-            disabled={hasDynamicAmount}
-          />
+          <Input.Group class="InputGroup--inline" label="Amount">
+            <div class="Input-content">
+              <Input.CurrencySelect name="currency" />
+
+              <Input
+                name="amount"
+                class="Input--amount"
+                placeholder="0.00"
+                defaultValue={this.defaults.amount}
+                autoFocus
+                pattern="^[0-9]+(.([0-9]){1,2})?$"
+                disabled={hasDynamicAmount}
+              />
+            </div>
+          </Input.Group>
           <Input.Check
             data-name="has_dynamic_amount"
             fieldLabel="Customer decides this while paying"

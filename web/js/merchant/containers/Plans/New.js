@@ -202,7 +202,7 @@ export default class AddPlan extends Component {
                       suffix="per unit"
                       class="form-control"
                       validate={required('Billing amount is required')}
-                      placeholder="000.00"
+                      placeholder="0.00"
                     />
                     <span class="help-block label--secondary">
                       <i class="i i-info-outline" />

@@ -336,7 +336,7 @@ export default class TransferNew extends Component {
                       prefix="INR"
                       class="form-control"
                       validate={required('Transfer amount is required')}
-                      placeholder="000.00"
+                      placeholder="0.00"
                       type="text"
                     />
                     <span class="help-block label--secondary">

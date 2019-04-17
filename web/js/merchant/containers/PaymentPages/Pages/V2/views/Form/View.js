@@ -84,9 +84,10 @@ export default class View extends React.PureComponent {
   };
 
   onAmountCreatorSubmit = formData => {
-    const { amount, quantity, allow_multiple_units } = formData;
+    const { currency, amount, quantity, allow_multiple_units } = formData;
 
     this.props.updateData({
+      currency,
       amount: amount || null,
       quantity: quantity || null,
       settings: {
