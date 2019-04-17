@@ -206,8 +206,8 @@ const EnableDashboardField = ({ children, isDisabled }) => {
         >
           <PopoverBody>
             <div>
-              Please add Email id to enable dashboard access for this linked
-              account
+              Please add Email id to enable dashboard access and customer
+              refunds for this linked account
             </div>
           </PopoverBody>
         </Popover>

@@ -165,7 +165,20 @@ export default ({
               <th style={{ textAlign: 'center' }}>Dashboard Access</th>
             )}
             {onToggleAllowRefunds && (
-              <th style={{ textAlign: 'center' }}>Allow Refunds</th>
+              <th style={{ textAlign: 'center' }}>
+                Allow Refunds
+                <small className="help-content" style={{ paddingLeft: '4px' }}>
+                  <i class="i i-help" />
+                  <Popover align="right" theme="dark">
+                    <PopoverBody>
+                      <div style={{ textAlign: 'left' }}>
+                        This allows Linked account to refund to the customer for
+                        a transfer.
+                      </div>
+                    </PopoverBody>
+                  </Popover>
+                </small>
+              </th>
             )}
           </tr>
         </thead>

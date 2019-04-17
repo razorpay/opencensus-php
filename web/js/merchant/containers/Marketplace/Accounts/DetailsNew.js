@@ -6,6 +6,7 @@ import Spinner from 'rzp/ui/Spinner';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import AccountCreation from 'merchant/containers/Marketplace/Accounts/New';
 import { getUser } from 'merchant/store';
+import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import { showNotification } from 'rzp/modules/notifications';
 import { ToggleField } from 'merchant/components/Marketplace/Accounts/AccountsList';
 import { fetchBalance } from 'merchant/modules/credits';
@@ -355,7 +356,27 @@ export default class Details extends Component {
                   </EntityDetailRow>
                 )}
                 {isAllowToEdit && (
-                  <EntityDetailRow label="Allow Customer Refund">
+                  <EntityDetailRow
+                    label={
+                      <span>
+                        Allow Customer Refund
+                        <small
+                          className="help-content"
+                          style={{ paddingLeft: '4px' }}
+                        >
+                          <i class="i i-help" />
+                          <Popover align="right" theme="dark">
+                            <PopoverBody>
+                              <div style={{ textAlign: 'left' }}>
+                                This allows Linked account to refund to the
+                                customer for a transfer.
+                              </div>
+                            </PopoverBody>
+                          </Popover>
+                        </small>
+                      </span>
+                    }
+                  >
                     <ToggleField
                       onEdit={this.showEditAccountModal(account)}
                       isDisabled={noLAEmail}

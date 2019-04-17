@@ -40,7 +40,8 @@ export const settlementId = { title: 'Settlemt Id', value: id.settlement };
 export const transferId = { title: 'Transfer Id', value: id.transfer };
 export const customerRefundId = {
   title: 'Customer Refund Id',
-  value: item => item.customer_refund_id,
+  value: item =>
+    item.customer_refund_id && item.customer_refund_id.replace('rfnd_', ''),
 };
 export const reversalId = { title: 'Reversal Id', value: id.reversal };
 export const source = { title: 'Source', value: id.source };

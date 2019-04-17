@@ -130,7 +130,7 @@ export default class RefundToCustomerModal extends React.Component {
             .catch(({ errors }) => {
               this.props.showNotification({
                 type: 'error',
-                message: errors,
+                message: errors[0],
                 closeTimeout: 5000,
               });
 

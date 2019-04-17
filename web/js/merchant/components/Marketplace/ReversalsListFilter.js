@@ -1,3 +1,4 @@
+import { Component } from 'react';
 import ListFilter from '../ListFilter';
 import { Field } from 'redux-form';
 
@@ -25,7 +26,7 @@ export default class ReversalListFilter extends Component {
         </div>
 
         <div class="form-group list-filter-item">
-          <label>Customer Refund Id</label>
+          <label>Refund Id</label>
           <Field
             name="customer_refund_id"
             component="input"
