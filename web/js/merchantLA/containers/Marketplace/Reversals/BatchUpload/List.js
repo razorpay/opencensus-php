@@ -80,14 +80,14 @@ export default class BatchListContainer extends Component {
         ctaText={`Create Batch${notify ? ' & Send Payment Links' : ''}`}
         pendingText={`Creating${notify ? ' & Sending' : ''}...`}
         batchFormInitialValues={batchFormInitialValues}
-        batchType="payment_link"
+        batchType="linked_account_reversal"
         maxRows={50000}
         maxFileSize={10485760}
         gaEvents={gaEvents}
         createBatch={this.props.createBatch}
         validateBatch={this.props.validateBatch}
         docUrl="https://razorpay.com/docs/payment-links/batch-upload/"
-        sampleUrl="/files/sample_batch_payment_links_v2.xlsx"
+        sampleUrl="/files/sample_batch_linked_account_reversals_v2.xlsx"
         // renderBatchCreationForm={() => (
         //   <PaymentLinksForm
         //     batchType={this.props.batchType}
@@ -102,16 +102,18 @@ export default class BatchListContainer extends Component {
 
   render() {
     return (
-      <BatchList
-        form="batchListFilter"
-        docUrl="https://razorpay.com/docs/payment-links/batch-upload/"
-        sampleUrl="/files/sample_batch_refund.xlsx"
-        batchType="payment_link"
-        batchActions={[this.sendAllLinks]}
-        renderUploadModal={this.renderUploadModal}
-        gaEvents={gaEvents}
-        {...this.props}
-      />
+      <div className="linked-account-reversal-batch">
+        <BatchList
+          form="batchListFilter"
+          docUrl="https://razorpay.com/docs/payment-links/batch-upload/"
+          sampleUrl="/files/sample_batch_refund.xlsx"
+          batchType="linked_account_reversal"
+          batchActions={[this.sendAllLinks]}
+          renderUploadModal={this.renderUploadModal}
+          gaEvents={gaEvents}
+          {...this.props}
+        />
+      </div>
     );
   }
 }

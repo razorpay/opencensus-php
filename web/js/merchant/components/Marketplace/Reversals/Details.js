@@ -10,7 +10,7 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 export default class ReversalDetails extends Component {
   render() {
     const { reversal, transfer, isLoading, onClose, merchant } = this.props,
-      isLAInitiator = reversal.initiator_id === merchant.id;
+      isLAInitiator = reversal.initiator_id.replace('acc_', '') !== merchant.id;
 
     return (
       <div class="content-wrapper content-sm txn-details">

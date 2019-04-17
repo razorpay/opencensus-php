@@ -25,20 +25,22 @@ export default props => {
         </div>
       )}
 
-      <div class="form-group list-filter-item">
-        <label>Initiated by</label>
-        <Field
-          name="initiator_id"
-          component="select"
-          class="form-control input-sm"
-        >
-          <option value="">All</option>
-          <option value={merchant.id}>{merchant.billing_label}</option>
-          <option value={props.user.marketplace_merchant_id}>
-            {props.user.marketplace_merchant_name}
-          </option>
-        </Field>
-      </div>
+      {isRefundsAllowed && (
+        <div class="form-group list-filter-item">
+          <label>Initiated by</label>
+          <Field
+            name="initiator_id"
+            component="select"
+            class="form-control input-sm"
+          >
+            <option value="">All</option>
+            <option value={merchant.id}>{merchant.billing_label}</option>
+            <option value={props.user.marketplace_merchant_id}>
+              {props.user.marketplace_merchant_name}
+            </option>
+          </Field>
+        </div>
+      )}
 
       <div class="form-group list-filter-item count">
         <label>Count</label>
