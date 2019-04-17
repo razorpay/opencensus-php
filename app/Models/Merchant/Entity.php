@@ -577,6 +577,21 @@ class Entity extends Base\PublicEntity
     }
 
     /**
+     * Get the non-pureplatform partner if it exists
+     *
+     * @return null|Entity
+     */
+    public function getNonPurePlatformPartner()
+    {
+        $accessMap = (new AccessMap\Repository)->getNonPurePlatformPartnerMapping($this->getId());
+
+        /** @var Merchant\Entity $partner */
+        $partner = optional($accessMap)->entityOwner;
+
+        return $partner;
+    }
+
+    /**
      * Return an array of features enabled for the merchant entity
      *
      * @return array
