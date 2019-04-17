@@ -35,11 +35,16 @@ export default function BulkEditIIN() {
         class="btn"
         pendingClass="small spinner"
         type="submit"
-        onSubmit={data =>
-          adminPut({
+        onSubmit={data => {
+          data.iins = data.iins
+            .split(',')
+            .map(p => p.trim())
+            .filter(p => p.length === 6);
+          return adminPut({
             url: `live/iins/flows/bulk`,
-            data,
-          })
+            data
+          });
+        }
         }
       />
     </Form>
