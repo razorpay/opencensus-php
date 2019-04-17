@@ -47,6 +47,9 @@ class ConfigKey
     const SETTLEMENT_TRANSACTION_LIMIT          = self::PREFIX . 'settlement_transaction_limit';
     const ENABLE_PAYMENT_DOWNTIMES              = self::PREFIX . 'enable_payment_downtimes';
 
+    // Gateway level configs
+    const PAYSECURE_BLACKLISTED_MCCS            = self::PREFIX . 'paysecure_blacklisted_mccs';
+
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
         self::PRICING_RULE_SELECTION_LOG_VERBOSE,
@@ -75,6 +78,7 @@ class ConfigKey
         self::FTS_TEST_MERCHANT,
         self::CURL_INFO_LOG_VERBOSE,
         self::HITACHI_NEW_URL_ENABLED,
+        self::PAYSECURE_BLACKLISTED_MCCS,
     ];
 
     public static function isSensitive(string $key)

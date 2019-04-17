@@ -62,6 +62,7 @@ class Validator extends Base\Validator
         ConfigKey::FTS_TEST_MERCHANT                  => 'filled|string|size:14',
         ConfigKey::CURL_INFO_LOG_VERBOSE              => 'filled|boolean',
         ConfigKey::HITACHI_NEW_URL_ENABLED            => 'filled|boolean',
+        ConfigKey::PAYSECURE_BLACKLISTED_MCCS         => 'filled|array',
     ];
 
     protected static $setRedisKeysRules = [

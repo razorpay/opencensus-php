@@ -820,9 +820,10 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::RETRIEVAL_REF_NUM] = $paysecureEntity['rrn'];
 
+        // Use 6012 in UAT
         $mcc = (($this->mode === Mode::TEST) ? '6012' : ($this->input['merchant']['category']));
 
-        $content[RequestFields::MCC] = $mcc;
+        $content[RequestFields::MCC] = Paysecure\Gateway::getMappedMcc($mcc);
 
         $traceContent = $content;
 
