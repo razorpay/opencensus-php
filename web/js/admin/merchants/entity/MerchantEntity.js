@@ -607,6 +607,14 @@ const ActionsList = ({ model, merchantId, actions }) => {
               <i class="pull-right i i-upload" />
             </div>
           )}
+        {merchant.details.partner_type && (
+            <ShowWhen permission="admin_batch_create">
+              <div onClick={actions.UploadSubmerchantBatch}>
+                Upload Submerchant Batch
+                <i class="pull-right i i-upload" />
+              </div>
+            </ShowWhen>
+        )}
       </div>
 
       <div class="group">

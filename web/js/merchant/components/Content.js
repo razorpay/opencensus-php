@@ -135,7 +135,7 @@ export default class Content extends Component {
         <Switch location={this.baseLocation}>
           <Route path="/dashboard" component={Home} />
           <Redirect
-            to={user.isPartner() ? 'partners' : '/dashboard'}
+            to={user.isPartner() ? '/partners' : '/dashboard'}
             from="/"
             exact
           />

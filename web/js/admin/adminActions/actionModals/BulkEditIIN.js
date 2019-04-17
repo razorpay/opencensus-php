@@ -2,7 +2,7 @@ import React from 'react';
 import Form from 'ui/Form';
 import { SelectField, TextAreaField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
-import { adminPost } from 'common/fetch';
+import { adminPut } from 'common/fetch';
 
 BulkEditIIN.title = 'Bulk Edit IIN';
 export default function BulkEditIIN() {
@@ -13,7 +13,7 @@ export default function BulkEditIIN() {
         type="text"
         name="iins"
         required
-        placeholder="Enter comma separated payment ids"
+        placeholder="Enter comma separated IINs"
       />
       <SelectField label="Action" name="action" required>
         <option value="">Select Action</option>
@@ -36,7 +36,7 @@ export default function BulkEditIIN() {
         pendingClass="small spinner"
         type="submit"
         onSubmit={data =>
-          adminPost({
+          adminPut({
             url: `live/iins/flows/bulk`,
             data,
           })

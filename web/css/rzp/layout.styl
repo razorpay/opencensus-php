@@ -256,8 +256,43 @@ $sidebar-width = 200px;
   }
 
   .nav {
-    .NavLinkGroup .Collapsible--title > i {
-      line-height: 40px
+    .NavLinkGroup {
+      margin-bottom: 20px
+
+      .Collapsible {
+        &--title {
+          &:hover {
+            background-color: #32374A;
+          }
+
+          & > i {
+            line-height: 40px
+          }
+        }
+
+        &--body.open {
+          transition-delay: 200ms
+          transition-timing-function: ease-out
+        }
+      }
+
+      &--active {
+        .Collapsible {
+          &--title {
+            background-color: #32374A;
+          }
+        }
+      }
+
+      &--title {
+        font-size: 16px
+      }
+
+      &:first-child {
+        .Collapsible--body.open {
+          transition-delay: 400ms
+        }
+      }
     }
 
     .NavLink {

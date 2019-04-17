@@ -1,4 +1,4 @@
-import { Route, Switch } from 'react-router-dom';
+import { Route, Switch, Redirect } from 'react-router-dom';
 
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 
@@ -10,6 +10,7 @@ import Applications from './Applications';
 export default function PartnerDashboard() {
   return (
     <Switch>
+      <Redirect to="/partners/submerchants" from="/partners" exact />
       <ShowWhenRoute
         additionalCondition={user =>
           user.isPartner('aggregator', 'fully_managed')

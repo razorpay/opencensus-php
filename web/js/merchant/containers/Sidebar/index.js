@@ -205,15 +205,40 @@ export default class Sidebar extends Component {
   }
 }
 
+@withRouter
 class PartnerSidebar extends Component {
-  state = {
-    partnerOpen: true,
+  constructor(props) {
+    super(props);
+    const isPartnerRoute =
+      props.location.pathname === '/' ||
+      props.location.pathname.includes('partners');
+    this.state = {
+      partnerOpen: isPartnerRoute,
+      merchantOpen: !isPartnerRoute,
+    };
+  }
+
+  toggle = type => () => {
+    this.setState(
+      {
+        [type]: !this.state[type],
+        [this.getCounterType(type)]: this.state[type],
+      },
+      () => {
+        setTimeout(() => {
+          this.props.history.push(this.getDefaultRoute(type));
+        }, 600);
+      }
+    );
   };
 
-  onToggle = () => {
-    this.setState({
-      partnerOpen: !this.state.partnerOpen,
-    });
+  getCounterType = type => {
+    return type === 'partnerOpen' ? 'merchantOpen' : 'partnerOpen';
+  };
+
+  getDefaultRoute = () => {
+    const activeType = this.state.partnerOpen ? 'partnerOpen' : 'merchantOpen';
+    return activeType === 'partnerOpen' ? '/partners' : '/dashboard';
   };
 
   render() {
@@ -226,7 +251,7 @@ class PartnerSidebar extends Component {
               <i class="i i-partner text-primary" />Partner
             </>
           }
-          onToggleClick={this.onToggle}
+          onToggleClick={this.toggle('partnerOpen')}
           value={this.state.partnerOpen}
         >
           <PartnerNavLinks />
@@ -235,11 +260,11 @@ class PartnerSidebar extends Component {
         <MainNavLinkGroup
           title={
             <>
-              <i class="i i-products text-success" />Merchant
+              <i class="i i-products text-success" />Products
             </>
           }
-          onToggleClick={this.onToggle}
-          value={!this.state.partnerOpen}
+          onToggleClick={this.toggle('merchantOpen')}
+          value={this.state.merchantOpen}
         >
           <MerchantNavLinks {...props.merchantNavLinkProps} />
         </MainNavLinkGroup>
