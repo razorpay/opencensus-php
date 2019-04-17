@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { findDOMNode } from 'react-dom';
+import { withRouter } from 'react-router-dom';
 import TransferDetails from 'merchantLA/components/Marketplace/Transfers/Details';
 import ReversalDetails from 'merchantLA/containers/Marketplace/Reversals/Details.js';
 import {
@@ -10,6 +12,7 @@ import * as ModalActions from 'rzp/modules/modals';
 import { expandSlider, compactSlider } from 'rzp/modules/slider';
 import { showNotification } from 'rzp/modules/notifications';
 
+@withRouter
 @connect(state => ({ ...state.transfer, ...state.session }), {
   fetchTransfer,
   fetchReversals,
