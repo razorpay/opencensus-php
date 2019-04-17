@@ -58,16 +58,13 @@ abstract class Base
 
         $selectedAuthTerminals = [];
 
-        $gateway = $this->payment->terminal->gateway;
-
         foreach ($validAuths as $auth)
         {
             $terminal = array_filter(
                             $terminals,
-                            function ($terminal) use ($gateway, $auth)
+                            function ($terminal) use ($auth)
                             {
-                                if (($terminal[AuthTerminals::GATEWAY] === $gateway) and
-                                    ($terminal[AuthTerminals::AUTH_TYPE] === $auth))
+                                if ($terminal[AuthTerminals::AUTH_TYPE] === $auth)
                                 {
                                     return true;
                                 }

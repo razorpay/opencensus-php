@@ -30,6 +30,7 @@ class AuthSelector extends Base\Core
     protected $autflowObj;
 
     protected static $filters = [
+        Terminal\Filters\Auth\TransactionFilter::class,
         Terminal\Filters\Auth\RuleFilter::class,
     ];
 
