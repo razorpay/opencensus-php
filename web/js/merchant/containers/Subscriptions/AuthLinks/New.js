@@ -283,7 +283,6 @@ export default class CreateNewAuthLinkContainer extends Component {
                 placement="topLeft"
                 size="half_big"
                 addonAfter={<i class="i i-date-range" />}
-                description="On this date link is expired"
                 disabled={!!Number(this.state.hasNoExpiry)}
                 onChange={this.handleDateChange('expireAt')}
                 description="Expiry of Authentication Link"

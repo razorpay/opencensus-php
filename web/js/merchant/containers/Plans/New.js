@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { Field, FieldArray, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
+import Input from 'component/Input';
 import InputField from 'rzp/ui/Forms/InputField';
 import InputGroupField from 'rzp/ui/Forms/InputField/InputGroupField';
 import Alert from 'rzp/ui/Forms/Alert';
@@ -105,11 +106,15 @@ export default class AddPlan extends Component {
       });
   };
 
+  onCurrencyChange = option => {
+    this.props.change('item[currency]', option.name);
+  };
+
   render() {
     const { handleSubmit, invalid, plan } = this.props;
 
     return (
-      <div class="content-wrapper content-sm txn-details">
+      <div class="content-wrapper content-sm txn-details plan-fields-wrapper">
         <div class="panel panel-default SliderPanel">
           <div class="panel-heading">
             <i class="i i-plan text-main icon--formal" />{' '}
@@ -194,11 +199,14 @@ export default class AddPlan extends Component {
               <FormItem
                 label={_ => <Label text="Billing Amount" required />}
                 field={_ => (
-                  <div>
+                  <div class="Field-amount-wrapper">
+                    <Input.CurrencySelect
+                      name="currency"
+                      onChange={this.onCurrencyChange}
+                    />
                     <Field
                       name="item[amount]"
                       component={InputGroupField}
-                      prefix="INR"
                       suffix="per unit"
                       class="form-control"
                       validate={required('Billing amount is required')}
