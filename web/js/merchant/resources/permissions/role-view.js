@@ -137,4 +137,10 @@ export default {
   webhooks: ['owner', 'admin', 'manager'],
   configuration: ['owner', 'admin', 'manager'],
   applications: ['owner'],
+
+  // partner dashboard permissions
+  submerchants: ['owner', 'admin', 'manager'],
+  partner_settings: ['owner', 'admin', 'manager'],
+  earnings: ['owner', 'admin', 'manager'],
+  partner_applications: ['owner', 'manager', 'admin'],
 };
