@@ -15,7 +15,6 @@ import Amount from 'rzp/ui/Amount';
     return {
       credits: state.credits,
       user: state.session.user,
-      merchant: state.merchant,
     };
   },
   { fetchCreditBalance }

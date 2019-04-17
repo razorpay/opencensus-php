@@ -19,7 +19,9 @@ export default class ReversalDetails extends Component {
         merchant,
         isRefundsAllowed,
       } = this.props,
-      isLAInitiator = reversal.initiator_id.replace('acc_', '') === merchant.id;
+      isLAInitiator =
+        reversal.initiator_id &&
+        reversal.initiator_id.replace('acc_', '') === merchant.id;
 
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -65,9 +67,7 @@ export default class ReversalDetails extends Component {
                   isLAInitiator && (
                     <EntityDetailRow
                       label="Customer Refund ID"
-                      value={_ => {
-                        reversal.customer_refund_id;
-                      }}
+                      value={_ => reversal.customer_refund_id}
                     />
                   )}
 

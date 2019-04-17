@@ -155,7 +155,7 @@ export default class AddAccount extends Component {
                         disabled={noLAEmail}
                       />
                       <label for="dashboard_access" class="icon i-check">
-                        <span>Enable Dashboard access to this account</span>
+                        <span>Dashboard Access</span>
                       </label>
                     </div>
                     <div class="rzpCheckbox">
@@ -167,7 +167,7 @@ export default class AddAccount extends Component {
                         disabled={noLAEmail}
                       />
                       <label for="allow_reversals" class="icon i-check">
-                        <span>Enable Refunds from to this account</span>
+                        <span>Allow customer Refunds</span>
                       </label>
                     </div>
                   </EnableDashboardField>

@@ -51,6 +51,10 @@ export const paymentId = { title: 'Payment Id', value: id.payment };
 export const orderId = { title: 'Order Id', value: id.order };
 export const rzpOrderId = { title: 'Razorpay Order Id', value: id.rzpOrder };
 export const refundId = { title: 'Refund Id', value: id.refund };
+export const customerRefundId = {
+  title: 'Refund Id',
+  value: item => item.customer_refund_id,
+};
 export const settlementId = { title: 'Settlemt Id', value: id.settlement };
 export const transferId = { title: 'Transfer Id', value: id.transfer };
 export const reversalId = { title: 'Reversal Id', value: id.reversal };
