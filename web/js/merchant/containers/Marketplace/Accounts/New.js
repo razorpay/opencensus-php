@@ -160,13 +160,13 @@ export default class AddAccount extends Component {
                     </div>
                     <div class="rzpCheckbox">
                       <Field
-                        name="refunds_allowed"
-                        id="refunds_allowed"
+                        name="allow_reversals"
+                        id="allow_reversals"
                         component={CheckboxField}
                         type="checkbox"
                         disabled={noLAEmail}
                       />
-                      <label for="refunds_allowed" class="icon i-check">
+                      <label for="allow_reversals" class="icon i-check">
                         <span>Enable Refunds from to this account</span>
                       </label>
                     </div>

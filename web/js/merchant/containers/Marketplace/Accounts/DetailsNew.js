@@ -84,6 +84,8 @@ export default class Details extends Component {
                   } for merchant "${account.name}"`,
                 });
 
+                this.fetchData();
+
                 return resp;
               } else {
                 throw 'Some network error has occurred';
@@ -167,6 +169,8 @@ export default class Details extends Component {
                     checked ? 'Enabled' : 'Disabled'
                   } for merchant "${account.name}"`,
                 });
+
+                this.fetchData();
 
                 return resp;
               } else {
