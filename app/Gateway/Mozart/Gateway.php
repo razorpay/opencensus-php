@@ -289,6 +289,7 @@ class Gateway extends Base\Gateway
             $input['gateway'][$prevStepName] = $this->getPreviousData($input, $prevStepDB);
         }
 
+        // temporary change
         if (($this->action === Action::VERIFY) and
             ($input['payment']['gateway'] === Payment\Gateway::NETBANKING_SIB) and
             (isset($input['gateway'][$prevStepName]['bank_payment_id']) === false))
@@ -523,6 +524,7 @@ class Gateway extends Base\Gateway
 
     protected function updateBankPaymentIdFromResponse($content, $gatewayPayment)
     {
+        // temporary change - will go after conditional operation implementation
         $rawResponse = $content['data']['_raw']['BODY'];
 
         $gatewayPaymentRaw = json_decode($gatewayPayment['raw'], true);
