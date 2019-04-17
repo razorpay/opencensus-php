@@ -32,30 +32,28 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
             return null;
         }
 
-        $txnType = $row[self::COLUMN_TXN_STATE];
+        $txnState = $row[self::COLUMN_TXN_STATE];
 
-        if (isset(self::TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP[$txnType]) === true)
+        if (isset(self::TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP[$txnState]) === true)
         {
-            return self::TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP[$txnType];
+            return self::TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP[$txnState];
         }
         else
         {
 
             //
             // Sometimes we get extra comma in merchant_name and that causes the columns to
-            // shift, thus we get txn_id in txt_state column. Earlier we used to return NA
-            // when txtType not in TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP list and that
+            // shift, thus we get atom_txn_id in txn_state column. Earlier we used to return NA
+            // when txnState not in TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP list and that
             // caused that row to get bypassed and such row did not even get logged under
             // recon_file_row.
             //
-            return $this->getReconTypeForSpecialCase($row);
+            return $this->getReconTypeForSpecialCase($row, $txnState);
         }
     }
 
-    protected function getReconTypeForSpecialCase(&$row)
+    protected function getReconTypeForSpecialCase(&$row, $txnState)
     {
-        $txtState = $row[self::COLUMN_TXN_STATE];
-
         $reconType = self::NA;
 
         //
@@ -64,24 +62,25 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
         // If yes : then left shift the column values to fix the row
         // and then get the recon type
         //
-        $txnDate = $row[self::COLUMN_TXN_DATE];
+        $txnDate = $row[self::COLUMN_TXN_DATE] ?? null;
 
         if (isset(self::TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP[$txnDate]) === true)
         {
             $this->trace->info(
-                TraceCode::RECON_ALERT,
+                TraceCode::RECON_INFO_ALERT,
                 [
                     'info_code' => Base\InfoCode::RECON_ROW_INVALID_FORMAT_FOUND,
                     'gateway'   => $this->gateway,
-                    'txn_type'  => $txtState,
+                    'txn_type'  => $txnState,
                     'row'       => $row,
                 ]);
 
             $this->leftShiftRowValues($row);
 
-            $txtState = $row[self::COLUMN_TXN_STATE];
+            // $row has been modified now, get the $txnState again
+            $txnState = $row[self::COLUMN_TXN_STATE];
 
-            $reconType = self::TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP[$txtState] ?? self::NA;
+            $reconType = self::TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP[$txnState] ?? self::NA;
         }
 
         return $reconType;
