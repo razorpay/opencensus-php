@@ -5,10 +5,9 @@ namespace RZP\Gateway\Mozart;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
-use RZP\Constants\Mode;
 use RZP\Gateway\Base\Verify;
-use RZP\Gateway\Base\Entity as BaseEntity;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Mozart\Entity as MozartEntity;
 
 class Gateway extends Base\Gateway
 {
@@ -41,7 +40,7 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getMappedAttributes($response);
 
-        $this->gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input);
+        $this->gatewayPayment = $this->createGatewayPaymentEntity($attributes, $input, Action::AUTHORIZE);
 
         return $response['next']['redirect'] ?? null;
     }
@@ -88,9 +87,9 @@ class Gateway extends Base\Gateway
         $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::GATEWAY_PAYMENT_RESPONSE);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], 'pay_init');
+            $input['payment']['id'], Action::AUTHORIZE);
 
-        $this->gatewayPayment = $this->updateGatewayPaymentEntity($gatewayPayment, $response, true);
+        $this->gatewayPayment = $this->updateGatewayPaymentEntity($gatewayPayment, $response, true, Action::AUTHORIZE);
 
         $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
 
@@ -105,44 +104,10 @@ class Gateway extends Base\Gateway
 
         if ($input['payment']['gateway'] === Payment\Gateway::NETBANKING_SIB)
         {
-            $this->assertPaymentId($input['payment']['id'], $response['data']['payment_id']);
-
-            $this->assertAmount($input['payment']['amount'], (int) $response['data']['amount']);
-
-            $this->verifyCallback($input, $response);
+            $this->handleNetbankingSibCallback($input, $response);
         }
 
         return $response;
-    }
-
-    public function verifyCallback($input, $callbackResponse)
-    {
-        $this->action = Action::VERIFY;
-
-        $content['entities']['payment'] = $input['payment'];
-
-        $content['entities']['terminal'] = $input['terminal'];
-
-        $content['entities']['gateway']['pay_verify'] = $callbackResponse['data'];
-
-        $request = $this->getMozartRequest($content, Payment\Gateway::NETBANKING_SIB);
-
-        $traceReq = [
-            'method' => $request['method'],
-            'url' => $request['url'],
-        ];
-
-        $this->traceGatewayPaymentRequest($traceReq, $content['entities'], TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST);
-
-        $response = $this->sendGatewayRequest($request);
-
-        $traceRes = $this->getRedactedData($response);
-
-        $this->traceGatewayPaymentResponse($traceRes, $content['entities'], TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE);
-
-        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
-
-        $this->action = Action::PAY_VERIFY;
     }
 
     public function refund(array $input)
@@ -166,7 +131,7 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getMappedAttributes($response);
 
-        $this->gatewayPayment = $this->createGatewayRefundEntity($attributes, $input);
+        $this->gatewayPayment = $this->createGatewayRefundEntity($attributes, $input, $this->action);
 
         $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
     }
@@ -265,7 +230,7 @@ class Gateway extends Base\Gateway
             $content = $this->updateBankPaymentIdFromResponse($content, $verify->payment);
         }
 
-        $this->updateGatewayPaymentEntity($verify->payment, $content);
+        $this->updateGatewayPaymentEntity($verify->payment, $content, true, Action::AUTHORIZE);
 
         return $verify->status;
     }
@@ -315,24 +280,21 @@ class Gateway extends Base\Gateway
     {
         $input['terminal'] = $input['terminal']->toArrayWithPassword();
 
-        $prevStep = $this->getPreviousStep($input['payment']['gateway']);
+        $prevStepName = $this->getPreviousStepName($input['payment']['gateway']);
 
-        if ($prevStep != null)
-        {
-            $input['gateway'][$prevStep] = $this->getPreviousData($input, $prevStep);
-        }
+        $prevStepDB = $this->getPreviousStepForDB($input['payment']['gateway']);
 
-        if ($this->action === Action::PAY_INIT and $input['payment']['gateway'] === Payment\Gateway::NETBANKING_SIB)
+        if ($prevStepName != null)
         {
-            $input['gateway']['payment']['callbackUrl'] = $input['callbackUrl'];
+            $input['gateway'][$prevStepName] = $this->getPreviousData($input, $prevStepDB);
         }
 
         if (($this->action === Action::VERIFY) and
             ($input['payment']['gateway'] === Payment\Gateway::NETBANKING_SIB) and
-            (isset($input['gateway'][$prevStep]['bank_payment_id']) === false))
+            (isset($input['gateway'][$prevStepName]['bank_payment_id']) === false))
 
         {
-            $input['gateway'][$prevStep]['bank_payment_id'] = '0';
+            $input['gateway'][$prevStepName]['bank_payment_id'] = '0';
         }
 
         $content['entities'] = $input;
@@ -371,9 +333,14 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    protected function getPreviousStep($gateway)
+    protected function getPreviousStepName($gateway)
     {
         $previousActionForData = [
+            Payment\Gateway::NETBANKING_SIB => [
+                Action::PAY_INIT => null,
+                Action::PAY_VERIFY => Action::PAY_INIT,
+                Action::VERIFY => Action::PAY_VERIFY,
+            ],
             Payment\Gateway::BAJAJFINSERV => [
                 Action::PAY_INIT => null,
                 Action::PAY_VERIFY => Action::PAY_INIT,
@@ -381,27 +348,35 @@ class Gateway extends Base\Gateway
                 Action::REFUND => Action::PAY_VERIFY,
                 Action::VERIFY_REFUND => Action::REFUND,
             ],
-            Payment\Gateway::NETBANKING_SIB => [
-                Action::PAY_INIT => null,
-                Action::PAY_VERIFY => Action::PAY_INIT,
-                Action::VERIFY => Action::PAY_VERIFY
-            ],
         ];
 
         return $previousActionForData[$gateway][$this->action];
     }
 
+    protected function getPreviousStepForDB($gateway)
+    {
+        $previousActionForStep = [
+            Payment\Gateway::NETBANKING_SIB => [
+                Action::PAY_INIT   => null,
+                Action::PAY_VERIFY => Action::AUTHORIZE,
+                Action::VERIFY     => Action::AUTHORIZE,
+            ],
+            Payment\Gateway::BAJAJFINSERV => [
+                Action::PAY_INIT => null,
+                Action::PAY_VERIFY => Action::AUTHORIZE,
+                Action::VERIFY => Action::AUTHORIZE,
+                Action::REFUND => Action::AUTHORIZE,
+                Action::VERIFY_REFUND => Action::REFUND,
+            ],
+        ];
+        return $previousActionForStep[$gateway][$this->action];
+    }
+
+
     protected function getPreviousData($input, $prevActionForData)
     {
-        if ($this->action === Action::VERIFY)
-        {
-            $gatewayPayment = $this->getMozartEntityForVerify($input['payment']['id']);
-        }
-        else
-        {
-            $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-                $input['payment']['id'], $prevActionForData);
-        }
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], $prevActionForData);
 
         $jsonRaw = json_decode($gatewayPayment['raw'], true);
         return $jsonRaw;
@@ -433,7 +408,7 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    protected function createGatewayPaymentEntity($attributes, $input)
+    protected function createGatewayPaymentEntity($attributes, $input, $action)
     {
         $redactedRaw = $this->getRedactedData($attributes['raw']);
         $attributes['raw'] = json_encode($redactedRaw);
@@ -444,7 +419,7 @@ class Gateway extends Base\Gateway
         $amount    = $input['payment']['amount'];
         $gateway   = $input['payment']['gateway'];
 
-        $gatewayPayment->setAction($this->action);
+        $gatewayPayment->setAction($action);
         $gatewayPayment->setAmount($amount);
         $gatewayPayment->setPaymentId($paymentId);
         $gatewayPayment->setGateway($gateway);
@@ -458,7 +433,7 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function createGatewayRefundEntity($attributes, $input)
+    protected function createGatewayRefundEntity($attributes, $input, $action)
     {
         $redactedRaw = $this->getRedactedData($attributes['raw']);
         $attributes['raw'] = json_encode($redactedRaw);
@@ -470,7 +445,7 @@ class Gateway extends Base\Gateway
         $refundAmount = $input['refund']['amount'];
         $gateway      = $input['payment']['gateway'];
 
-        $gatewayPayment->setAction($this->action);
+        $gatewayPayment->setAction($action);
         $gatewayPayment->setRefundId($refundId);
         $gatewayPayment->setAmount($refundAmount);
         $gatewayPayment->setPaymentId($paymentId);
@@ -485,44 +460,65 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function updateGatewayPaymentEntity(
-        BaseEntity $gatewayPayment,
+    public function handleNetbankingSibCallback($input, $callbackResponse)
+    {
+        $this->assertPaymentId($input['payment']['id'], $callbackResponse['data']['payment_id']);
+
+        $this->assertAmount($input['payment']['amount'], (int) $callbackResponse['data']['amount']);
+
+        // For verify callback
+        $this->action = Action::VERIFY;
+
+        $content['entities']['payment'] = $input['payment'];
+
+        $content['entities']['terminal'] = $input['terminal'];
+
+        $content['entities']['gateway']['pay_verify'] = $callbackResponse['data'];
+
+        $request = $this->getMozartRequest($content, Payment\Gateway::NETBANKING_SIB);
+
+        $traceReq = [
+            'method' => $request['method'],
+            'url' => $request['url'],
+        ];
+
+        $this->traceGatewayPaymentRequest($traceReq, $content['entities'], TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $traceRes = $this->getRedactedData($response);
+
+        $this->traceGatewayPaymentResponse($traceRes, $content['entities'], TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE);
+
+        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+
+        $this->action = Action::PAY_VERIFY;
+    }
+
+    protected function updateGatewayPaymentEntityWithAction(
+        MozartEntity $gatewayPayment,
         array $attributes,
-        bool $mapped = true)
+        bool $mapped = true,
+        $action = null)
     {
         if ($mapped === true)
         {
             $attributes = $this->getMappedAttributes($attributes);
         }
 
+        $action = $action == null ? $this->action : $action;
+
         $redactedRaw = $this->getRedactedData($attributes['raw']);
+
         $attributes['raw'] = json_encode($redactedRaw);
 
-        $gatewayPayment->setAction($this->action);
+        $gatewayPayment->setAction($action);
 
         $gatewayPayment->fill($attributes);
 
         $this->getRepository()->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
-    }
-
-    protected function getPaymentToVerify(Verify $verify)
-    {
-        $gatewayPayment = $this->getMozartEntityForVerify(
-            $verify->input['payment']['id']);
-
-        $verify->payment = $gatewayPayment;
-
-        return $gatewayPayment;
-    }
-
-    protected function getMozartEntityForVerify($paymentId)
-    {
-        $prevActionsForVerify = [Action::PAY_INIT, Action::PAY_VERIFY, Action::VERIFY];
-
-        return $this->repo->findByPaymentIdAndActionsOrFail(
-            $paymentId, $prevActionsForVerify);
     }
 
     protected function updateBankPaymentIdFromResponse($content, $gatewayPayment)
@@ -544,5 +540,15 @@ class Gateway extends Base\Gateway
         }
 
         return $content;
+    }
+
+    protected function getPaymentToVerify(Verify $verify)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+            $verify->input['payment']['id'], Action::AUTHORIZE);
+
+        $verify->payment = $gatewayPayment;
+
+        return $gatewayPayment;
     }
 }
