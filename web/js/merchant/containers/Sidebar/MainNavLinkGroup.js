@@ -1,6 +1,8 @@
 import ShowWhen from 'merchant/components/ShowWhen';
 import Collapsible from 'merchant/components/Collapsible';
 
+import { classList } from 'common/util';
+
 export default function MainNavLinkGroup({
   additionalCondition,
   title,
@@ -11,7 +13,7 @@ export default function MainNavLinkGroup({
     <ShowWhen additionalCondition={additionalCondition}>
       <Collapsible
         title={<Title text={title} />}
-        class="NavLinkGroup"
+        class={classList('NavLinkGroup', props.value && 'NavLinkGroup--active')}
         {...props}
       >
         {children}
