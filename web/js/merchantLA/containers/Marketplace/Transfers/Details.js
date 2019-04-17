@@ -67,7 +67,10 @@ export default class TransferDetailsContainer extends Component {
   onReversalDetailsClose = () => {
     let { compactSlider, history, location } = this.props;
 
-    findDOMNode(this.reversalsView).classList.toggle('toggle-slider');
+    if (this.reversalsView) {
+      findDOMNode(this.reversalsView).classList.toggle('toggle-slider');
+    }
+
     compactSlider();
 
     history.push(location.pathname.replace(/\/[^\/]+\/?$/, ''));
