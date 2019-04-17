@@ -9,12 +9,21 @@ const currencies = {
   EUR: '€',
 };
 
-export default ({ value, currency = 'INR', className, ...attrs }) => {
+export default ({
+  value,
+  currency = 'INR',
+  className,
+  parentQuerySelector,
+  ...attrs
+}) => {
   const amount = getFormattedAmount(value);
   const currencySymbolMapping =
     (window.currencyLib && window.currencyLib.displayCurrencies) || currencies;
   return (
-    <AmountTooltip currency={currency}>
+    <AmountTooltip
+      currency={currency}
+      parentQuerySelector={parentQuerySelector}
+    >
       <span class={`rzp-amount ${className ? className : ''}`} {...attrs}>
         <span
           dangerouslySetInnerHTML={{ __html: currencySymbolMapping[currency] }}
