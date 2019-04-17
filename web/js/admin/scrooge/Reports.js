@@ -87,35 +87,89 @@ function refundErrors(item, key) {
 }
 
 export default class RefundsList extends Component {
-  collection = new Collection({
-    data: {
-      url: 'live/scrooge/reports',
-    },
-    fetchFn: data =>
-      adminPost({
-        ...data,
-        data: {
-          query: {
-            refunds: {
-              attempts: {
-                gt: 0,
+  constructor(props) {
+    super(props);
+
+    this.mode = 'live';
+    if (props.hasOwnProperty('match')) {
+      this.mode = props.match.params.mode || 'live';
+    }
+
+    this.state = {
+      collection: this.getCollectionData(false),
+      loading: true,
+      cacheAge: 0,
+    };
+
+    this.refreshReports = this.refreshReports.bind(this);
+    this.getCollectionData = this.getCollectionData.bind(this);
+  }
+
+  refreshReports() {
+    this.setState({
+      loading: true,
+      collection: this.getCollectionData(true),
+    });
+  }
+
+  getCollectionData(refresh) {
+    return new Collection({
+      data: {
+        url: `${this.mode}/scrooge/reports`,
+      },
+      fetchFn: data =>
+        adminPost({
+          ...data,
+          data: {
+            query: {
+              refunds: {
+                attempts: {
+                  gt: 0,
+                },
+                status: ['file_init'],
               },
-              status: ['file_init'],
             },
+            refresh_cache: refresh,
           },
-        },
-      }).then(d => d.data),
-  });
+        }).then(d => {
+          let lastUpdatedAt = d.last_updated_at || 0;
+
+          if (lastUpdatedAt > 0) {
+            this.setState({
+              loading: false,
+              cacheAge: lastUpdatedAt - moment.utc().unix(),
+            });
+          }
+          return d.data;
+        }),
+    });
+  }
 
   render() {
-    const collection = this.collection;
+    const { collection, cacheAge, loading } = this.state;
+
     return (
       <div class="list-container refund-reports">
         <NavBar active="reports" />
         <div class="box">
-          <header>Failed Refunds</header>
+          <header class="clearfix">
+            Failed Refunds
+            {!loading ? (
+              <div className="pull-right text-center">
+                <button class="btn btn-default" onClick={this.refreshReports}>
+                  Refresh
+                </button>
+                <br />
+                <span class="cache_age">
+                  Updated {moment.duration(cacheAge, 'seconds').humanize(true)}
+                </span>
+              </div>
+            ) : (
+              ''
+            )}
+          </header>
         </div>
-        <PageTable model={this.collection} fields={fields} />
+        <PageTable model={collection} fields={fields} />
       </div>
     );
   }
