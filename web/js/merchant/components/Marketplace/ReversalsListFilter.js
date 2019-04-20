@@ -25,30 +25,6 @@ export default class ReversalListFilter extends Component {
           />
         </div>
 
-        <div class="form-group list-filter-item">
-          <label>Refund Id</label>
-          <Field
-            name="customer_refund_id"
-            component="input"
-            class="form-control input-sm"
-          />
-        </div>
-
-        <div class="form-group list-filter-item">
-          <label>Initiated by</label>
-          <Field
-            name="initiator_id"
-            component="select"
-            class="form-control input-sm"
-          >
-            <option value="">All</option>
-            <option value={merchant.id}>{merchant.billing_label}</option>
-            <option value={props.user.marketplace_merchant_id}>
-              {props.user.marketplace_merchant_name}
-            </option>
-          </Field>
-        </div>
-
         {/* <div class="form-group list-filter-item">
           <label>Notes</label>
           <Field name="notes" component="input" class="form-control input-sm" />
