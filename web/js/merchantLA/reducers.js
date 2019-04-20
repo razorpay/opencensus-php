@@ -40,5 +40,5 @@ export default combineReducers({
   reversals: reversalsReducer,
   credits: creditsReducer,
   reports: reportsReducer,
-  refundbatches: LAReversalsBatchesReducer,
+  laReversalsBatches: LAReversalsBatchesReducer,
 });
