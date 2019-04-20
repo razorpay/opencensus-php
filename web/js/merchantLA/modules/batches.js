@@ -61,18 +61,6 @@ const validateBatch = batchType => (file, progressTracker) => {
   };
 };
 
-/* method to create action for fetching batch list */
-const fetchBatches = (batchType, fetchActionName) => params => ({
-  type: BATCH_LIST || fetchActionName,
-  payload: fetchBatchesAjax(params, batchType),
-});
-
-/* method to create action for fetching batch details */
-const fetchBatchDetails = (batchType, fetchDetailAction) => params => ({
-  type: BATCH_DETAILS || fetchDetailAction,
-  payload: fetchBatchAjax(params.id, batchType),
-});
-
 /* method to create action for create batch action */
 const createBatch = batchType => data => {
   return {
@@ -89,29 +77,6 @@ const createBatch = batchType => data => {
   };
 };
 
-// method to create action for upload batch action
-// currently used by only refund batches
-const uploadBatch = (actionType, batchType) => (file, mode, extraFields) => {
-  let formData = new FormData();
-  formData.append('file', file);
-  formData.append('type', batchType);
-
-  for (let key in extraFields) {
-    if (extraFields.hasOwnProperty(key)) {
-      formData.append(key, extraFields[key]);
-    }
-  }
-
-  return {
-    type: actionType,
-    payload: merchantFetch({
-      url: 'batches',
-      method: 'post',
-      data: formData,
-    }),
-  };
-};
-
 // common batch actions
 export const batchDownload = batchId => {
   return {
@@ -119,6 +84,12 @@ export const batchDownload = batchId => {
     payload: merchantFetch(`batches/${batchId}/download`),
   };
 };
+
+export const fetchBatchStats = batchId =>
+  merchantFetch({
+    method: 'get',
+    url: `batches/${batchId}/stats`,
+  });
 
 // reducers
 export const LAReversalsBatchesReducer = makeCollectionReducer(LA_REVERSALS);
@@ -132,6 +103,19 @@ export const validateLinkedAccountReversalsBatch = validateBatch(
   'linked_account_reversal'
 );
 
+export const fetchLAReversalsBatchesDetails = params => {
+  const id = params.id;
+
+  params.with_config = '1';
+  return {
+    type: LINKED_ACCOUNT_REVERSAL,
+    payload: Promise.all([
+      fetchBatchAjax(id),
+      // fetchBatchStats(id),
+    ]),
+  };
+};
+
 /* actions refund batches */
 export const fetchLAReversalsBatches = params => {
   return {
@@ -142,15 +126,15 @@ export const fetchLAReversalsBatches = params => {
   };
 };
 
-const onLinkedAccountReversalsDetails = (state, { payload }) =>
-  merge(state, {
+const onLinkedAccountReversalsDetails = (state, { payload }) => {
+  return merge(state, {
     loading: false,
     entity: {
       batch: payload[0].batch,
-      stats: payload[1].data.stats,
-      items: payload[2].data.items,
+      // stats: payload[1].data.stats,
     },
   });
+};
 
 const customBatchDetailsSet = (fetchDetailAction, onSuccess) => ({
   [`${fetchDetailAction}::PENDING`]: entityFetchPendingState,
