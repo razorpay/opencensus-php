@@ -1,6 +1,7 @@
 import { connect } from 'react-redux';
 import { PowerSelect } from 'react-power-select';
 import { setNativeValue } from 'rzp/utils/rzp-utils';
+import { AmountTooltip } from 'rzp/ui/Amount';
 
 // TODO: Move to common var utils list
 // NOTE: CSS is effected with index no. change
@@ -56,7 +57,7 @@ function CurrencyOption({ option }) {
   );
 }
 
-function SelectedCurrencyOption({ option }) {
+function SelectedCurrencyOption(option) {
   return (
     <div>
       <span>{option.symbol}</span>
@@ -70,7 +71,26 @@ export default class extends React.Component {
 
   initState() {
     const currencyList = [...defaultCurrencies];
-    const currency = currencyList[0].options[0]; // Selecting first currency in 'Frequently used' group
+
+    let currency = currencyList[0].options[0]; // Selecting first currency in 'Frequently used' group;
+
+    const defaultValue = this.props.defaultValue;
+
+    if (defaultValue) {
+      let option = currencyList[0].options.filter(
+        cur => cur.name === defaultValue
+      ); // Check in "Frequently Used"
+
+      if (!option) {
+        option = currencyList[1].options.filter(
+          cur => cur.name === defaultValue
+        ); // Check in "All others"
+      }
+
+      if (option.length) {
+        currency = option[0];
+      }
+    }
 
     return {
       currencyList,
@@ -102,9 +122,23 @@ export default class extends React.Component {
     this.props.onChange && this.props.onChange(option);
   };
 
+  getSelectedCurrencyOption = ({ option }) => {
+    const optionContent = SelectedCurrencyOption(option);
+
+    return this.props.disabled ? (
+      <AmountTooltip
+        currency={this.props.currency}
+        parentQuerySelector={this.props.parentQuerySelector}
+      >
+        {optionContent}
+      </AmountTooltip>
+    ) : (
+      optionContent
+    );
+  };
+
   render() {
     const props = this.props;
-    // props: TODO: To handle disabled, required, defaultValue
 
     return (
       <div class="Input Input--Currency">
@@ -126,7 +160,7 @@ export default class extends React.Component {
                 placeholder="Select currency"
                 optionComponent={CurrencyOption}
                 selectedOptionLabelPath="name"
-                selectedOptionComponent={SelectedCurrencyOption}
+                selectedOptionComponent={this.getSelectedCurrencyOption}
                 onChange={this.onSelectCurrency}
                 selected={this.state.currency}
                 afterOptionsComponent={
@@ -136,6 +170,7 @@ export default class extends React.Component {
                 }
                 showClear={false}
                 searchEnabled
+                disabled={props.disabled}
               />
             </div>
           </div>

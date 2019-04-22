@@ -456,27 +456,14 @@ export default class AddItem extends Component {
                 <div class="form-group">
                   <label class="label-required">Rate</label>
                   <div>
-                    <div
-                      class={classList(
-                        'input-group',
-                        !disableCurrencySelect && 'input-group--amount'
-                      )}
-                    >
-                      {disableCurrencySelect ? (
-                        <span className="input-group-addon">
-                          <AmountTooltip
-                            currency={currency}
-                            parentQuerySelector=".ReactModal__Content"
-                          />
-                        </span>
-                      ) : (
-                        <Input.CurrencySelect
-                          name="currency"
-                          onChange={this.onCurrencyChange}
-                          value={currency}
-                          parentQuerySelector=".ReactModal__Content"
-                        />
-                      )}
+                    <div class="input-group input-group--amount">
+                      <Input.CurrencySelect
+                        name="currency"
+                        onChange={this.onCurrencyChange}
+                        parentQuerySelector=".ReactModal__Content"
+                        defaultValue={currency}
+                        disabled
+                      />
                       <Field
                         placeholder="Amount"
                         name="amountInINR"

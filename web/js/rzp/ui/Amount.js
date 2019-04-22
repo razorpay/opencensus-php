@@ -19,6 +19,8 @@ export default ({
   const amount = getFormattedAmount(value);
   const currencySymbolMapping =
     (window.currencyLib && window.currencyLib.displayCurrencies) || currencies;
+
+  // TODO: pointer-events: allow, but cursor be as per inherit
   return (
     <AmountTooltip
       currency={currency}
