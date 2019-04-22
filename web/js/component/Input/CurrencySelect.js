@@ -104,7 +104,7 @@ export default class extends React.Component {
 
   render() {
     const props = this.props;
-    // props: To handle disabled, required, defaultValue
+    // props: TODO: To handle disabled, required, defaultValue
 
     return (
       <div class="Input Input--Currency">

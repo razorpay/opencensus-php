@@ -13,6 +13,7 @@ import Input from 'component/Input';
 import { AsyncBtn } from 'component/Button';
 
 import { chargeToken } from 'merchant/modules/token';
+import { AmountTooltip } from 'rzp/ui/Amount';
 
 @withRouter
 @connect(null, { chargeToken, showNotification })
@@ -72,7 +73,7 @@ export default class ChargeToken extends Component {
               <Input
                 name="amount"
                 label="Amount"
-                addonBefore="₹"
+                addonBefore={<AmountTooltip currency={'INR'} />}
                 required
                 class="Input--vTop"
               />

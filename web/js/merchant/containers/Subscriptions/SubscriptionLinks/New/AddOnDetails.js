@@ -10,6 +10,7 @@ export default function NewSubscriptionLinkAddOnDetails({
   fields: { addons },
   internals,
   currency,
+  disableCurrencySelect,
   ...props
 }) {
   const filteredAddOns = items.items.filter(item => item.currency === currency);
@@ -32,6 +33,8 @@ export default function NewSubscriptionLinkAddOnDetails({
               itemsLoading={items.loading}
               onSelectItem={props.onSelectItem(index)}
               selectedItem={addon}
+              currency={currency}
+              disableCurrencySelect={disableCurrencySelect}
             />
             <span class="remove-btn" onClick={props.removeAddOn(index)}>
               <i class="i i-close" />

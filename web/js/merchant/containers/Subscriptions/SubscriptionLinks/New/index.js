@@ -245,6 +245,8 @@ export default class NewSubscriptionLink extends Component {
             internals={this.state.internals}
             removeAddOn={this.handleRemoveBtn}
             currency={this.state.currencyOfSelectedPlan}
+            currency="USD"
+            disableCurrencySelect
           />
         );
       case 2:

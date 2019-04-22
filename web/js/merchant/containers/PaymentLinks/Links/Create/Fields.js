@@ -2,6 +2,7 @@ import Input from 'component/Input';
 import { trackHelpClick } from '../ga';
 import { isAmount, isEmail, isPhone, maxLength } from 'rzp/utils/validators';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
+import { AmountTooltip } from 'rzp/ui/Amount';
 import {
   MIN_AMOUNT_TEXT,
   PopoverBodyText,
@@ -85,7 +86,7 @@ export default [
     },
     {
       name: 'first_payment_min_amount',
-      addonBefore: '₹',
+      addonBefore: <AmountTooltip currency={'INR'} />,
       placeholder: '0.00',
       size: 'half_big',
       _autoRenderImpure: true,

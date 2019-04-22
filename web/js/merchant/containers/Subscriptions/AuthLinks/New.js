@@ -21,6 +21,8 @@ import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
 import { Modal, ModalContent } from 'component/Modal';
 
+import { AmountTooltip } from 'rzp/ui/Amount';
+
 const mandatoryFields = [
   'description',
   'mandateMethod',
@@ -367,7 +369,7 @@ export default class CreateNewAuthLinkContainer extends Component {
                   name="mandateMaxAmount"
                   placeholder="100000"
                   label="Token Max Amount"
-                  addonBefore="₹"
+                  addonBefore={<AmountTooltip currency={'INR'} />}
                   size="half_big"
                   validator={checkIfAmount}
                   description="Max Amount for Mandate"

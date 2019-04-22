@@ -4,6 +4,7 @@ import Input from 'component/Input';
 import Button, { AsyncBtn } from 'component/Button';
 import Popover, { PopoverBody } from 'rzp/ui/Popover';
 import { titleCase } from 'rzp/utils/rzp-utils';
+import { AmountTooltip } from 'rzp/ui/Amount';
 
 export const MIN_AMOUNT_TEXT = 'Minimum due amount';
 
@@ -116,7 +117,7 @@ export default class EditMinimumAmount extends React.Component {
           <Input
             name="first_payment_min_amount"
             placeholder={titleCase(MIN_AMOUNT_TEXT)}
-            addonBefore="₹"
+            addonBefore={<AmountTooltip currency={'INR'} />}
             class="Input--small"
             value={this.state.first_payment_min_amount}
             validator={val => validateMinAmount(val, this.props.maximum / 100)}
