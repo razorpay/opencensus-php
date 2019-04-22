@@ -48,6 +48,9 @@ export default class LARefundsBatchDetailsContainer extends Component {
         fetchBatchDetails={this.props.fetchBatchDetails}
         renderDetails={renderBatchDetails}
         gaEvents={gaEvents}
+        downloadReportText={
+          'Download the report containing all Reversals data.'
+        }
       />
     );
   }
