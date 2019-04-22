@@ -1786,6 +1786,8 @@ class Entity extends Base\PublicEntity
 
     public function getPaymentFlows(IIN\Entity $iin = null)
     {
+        $app = App::getFacadeRoot();
+
         $data = [];
 
         if (empty($iin) === true)
@@ -1819,6 +1821,14 @@ class Entity extends Base\PublicEntity
         }
 
         $data[IIN\Entity::RECURRING] = (new Card\Entity)->isRecurringSupportedOnIIN($this, $iin);
+
+        /*
+         * Iframe is only cosumed by checkout public auth.
+         */
+        if ($app['basicauth']->isPublicAuth() === true)
+        {
+            $data[IIN\Flow::IFRAME] = $iin->isIframeApplicable();
+        }
 
         return $data;
     }
