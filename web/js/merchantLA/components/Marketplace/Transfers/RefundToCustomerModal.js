@@ -67,8 +67,8 @@ export default class RefundToCustomerModal extends React.Component {
       .confirm({
         header: 'Are you sure you want to reverse this transfer?',
         message: null,
-        affirmativeLabel: 'Yes, Reverse',
-        affirmativePendingLabel: 'Reversing...',
+        affirmativeLabel: 'Yes, Refund',
+        affirmativePendingLabel: 'Refunding...',
         abortLabel: "No, don't!",
         action: () => {
           const hasAmountErrors = amountValidation(this.props);
@@ -158,7 +158,7 @@ export default class RefundToCustomerModal extends React.Component {
         <div className="modal-body">
           <form class="entity-container" onSubmit={handleSubmit(this.save)}>
             <div class="form-group">
-              <label class="label-required">Reversal Amount</label>
+              <label class="label-required">Amount</label>
               <div class="input-group">
                 <div class="input-group-addon">{payment.currency}</div>
                 <Field
@@ -173,9 +173,9 @@ export default class RefundToCustomerModal extends React.Component {
                 <div class="text-danger">{amountError}</div>
               ) : (
                 <small class="help-block">
-                  This will be a{' '}
+                  This will be reflected as a{' '}
                   <b>
-                    <RefundType partial={partial} /> refund
+                    <RefundType partial={partial} /> reversal
                   </b>.
                   {!partial && <span>Change amount for a partial refund.</span>}
                 </small>
