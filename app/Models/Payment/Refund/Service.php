@@ -1469,6 +1469,7 @@ class Service extends Base\Service
     protected function updateRefund($refund, $input)
     {
         if ((empty($input[RefundEntity::BANK_REFERENCE_NO]) === false) and
+            ($input[RefundEntity::BANK_REFERENCE_NO] !== 'NA') and
             (empty($refund->getReference1()) === true))
         {
             $refund->setReference1($input[RefundEntity::BANK_REFERENCE_NO]);
