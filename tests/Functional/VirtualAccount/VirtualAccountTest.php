@@ -4,6 +4,8 @@ namespace RZP\Tests\Functional\VirtualAccount;
 
 use Mockery;
 use Closure;
+use Illuminate\Database\Eloquent\Factory;
+
 use RZP\Models\BankTransfer;
 use RZP\Models\Terminal\Type;
 use RZP\Models\Payment\Gateway;
@@ -64,6 +66,10 @@ class VirtualAccountTest extends TestCase
         $this->fixtures->on('test');
 
         $this->setupMockDns();
+
+        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->app->make(Factory::class)->load($factoryPath);
     }
 
     public function testCreateVirtualAccount()
@@ -73,6 +79,28 @@ class VirtualAccountTest extends TestCase
         $expectedResponse = $this->testData[__FUNCTION__];
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->verifyEntityOrigin('merchant', '10000000000000');
+    }
+
+    public function testCreateVirtualAccountPartnerAuth()
+    {
+        list($response, $submerchantId, $client) = $this->createVirtualAccountPartnerAuth();
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->verifyEntityOrigin('application', $client->getApplicationId());
+    }
+
+    private function verifyEntityOrigin($originType, $originId)
+    {
+        $entityOrigin = $this->getDbLastEntity('entity_origin');
+
+        $this->assertEquals($originType, $entityOrigin['origin_type']);
+
+        $this->assertEquals($originId, $entityOrigin['origin_id']);
     }
 
     public function testCreateVirtualAccountForOrder()

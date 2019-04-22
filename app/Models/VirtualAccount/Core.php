@@ -8,6 +8,7 @@ use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
+use RZP\Models\EntityOrigin;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Balance;
 use RZP\Listeners\ApiEventSubscriber;
@@ -149,6 +150,8 @@ class Core extends Base\Core
             $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);
 
             $this->repo->saveOrFail($virtualAccount);
+
+            (new EntityOrigin\Core)->createEntityOrigin($virtualAccount);
 
             return $virtualAccount;
         });
