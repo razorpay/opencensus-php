@@ -6,12 +6,15 @@ use App;
 use Cache;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Rule;
+use RZP\Constants\Environment;
 use RZP\Models\Payment\Method;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Gateway\Downtime;
 use RZP\Services\NonBlockingHttp;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
@@ -221,8 +224,7 @@ class Selector extends Base\Core
         }
 
         $this->sendParametersToSmartRoutingService($this->input['payment'], $this->input['merchant'],
-                                                    $allTerminals, $sortedTerminals);
-
+                                                    $allTerminals, $sortedTerminals, $filteredTerminals);
         return $sortedTerminals;
     }
 
@@ -424,42 +426,53 @@ class Selector extends Base\Core
 
     }
 
-    private function sendParametersToSmartRoutingService($payment, $merchant, $allTerminals, $sortedTerminals)
+    private function sendParametersToSmartRoutingService($payment, $merchant, $allTerminals, $sortedTerminals, $filteredTerminals)
     {
         try
         {
-            $url = $this->app['config']->get('applications.routing.url');
-
-            if ($url === null)
+            if ($this->shouldHitRoutingService($merchant->getId()))
             {
-                $this->trace->error(
-                    TraceCode::PAYMENTS_DATA_PUSH_ROUTING_SERVICE,
-                    [
-                        'message'     => 'Routing service url is missing',
-                    ]);
+                $url = $this->app['config']->get('applications.routing.url');
+
+                if ($url === null)
+                {
+                    $this->trace->error(
+                        TraceCode::PAYMENTS_DATA_PUSH_ROUTING_SERVICE,
+                        [
+                            'message' => 'Routing service url is missing',
+                        ]);
+                }
+
+                $headers = ['Content-Type: application/json'];
+
+                $payment_data = [
+                    'amount' => $payment->getAmount(),
+                    'currency' => $payment->getCurrency(),
+                    'bank' => $payment->getBank(),
+                    'method' => $payment->getMethod(),
+                    'notes' => $payment->getNotes(),
+                    'merchant_id' => $payment->merchant->getId(),
+                    'contact' => $payment->getContact(),
+                    'email' => $payment->getEmail()
+                ];
+
+                $downtimes = $this->repo->useSlave(function () use ($filteredTerminals) {
+                    return (new Downtime\Core)->getApplicableDowntimesForPayment($filteredTerminals, $this->input);
+                });
+
+                $failedTerminalIds = $this->options->getFailedTerminals();
+
+                $data = [
+                    'payment' => $payment_data,
+                    'merchant' => $merchant,
+                    'allTerminals' => $allTerminals,
+                    'sortedTerminals' => $sortedTerminals,
+                    'downtimes' => $downtimes,
+                    'failedTerminalsIds' => $failedTerminalIds,
+                ];
+
+                NonBlockingHttp::postRequest($url, $data, $headers);
             }
-
-            $headers = ['Content-Type: application/json'];
-
-            $payment_data = [
-                'amount'      => $payment->getAmount(),
-                'currency'    => $payment->getCurrency(),
-                'bank'        => $payment->getBank(),
-                'method'      => $payment->getMethod(),
-                'notes'       => $payment->getNotes(),
-                'merchant_id' => $payment->merchant->getId(),
-                'contact'     => $payment->getContact(),
-                'email'       => $payment->getEmail()
-            ];
-
-            $data = [
-                'payment'         => $payment_data,
-                'merchant'        => $merchant,
-                'allTerminals'    => $allTerminals,
-                'sortedTerminals' => $sortedTerminals,
-            ];
-
-            NonBlockingHttp::postRequest($url, $data, $headers);
         }
         catch (\Throwable $e)
         {
@@ -469,5 +482,25 @@ class Selector extends Base\Core
                     'error'     => $e->getMessage(),
                 ]);
         }
+    }
+
+    protected function shouldHitRoutingService(string $merchantId)
+    {
+        $isProduction = $this->app->environment(Environment::PRODUCTION);
+
+        if ($isProduction === false)
+        {
+            return true;
+        }
+
+        $response = $this->app->razorx->getTreatment($merchantId, 'payment_hit_routing_service', $this->mode);
+
+        if (($response === 'control') or
+            ($response === 'off'))
+        {
+            return false;
+        }
+
+        return true;
     }
 }
