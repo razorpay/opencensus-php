@@ -18,9 +18,6 @@ const BATCH_DOWNLOAD = 'BATCH_DOWNLOAD';
 const BATCH = 'BATCH';
 const LA_REVERSALS = 'LA_REVERSALS';
 
-/* New Batch Action Types */
-const NOTIFY_BATCH = 'NOTIFY_BATCH';
-
 const appendBatches = namespace => namespace + '_BATCHS';
 const getCreateActioName = namespace => namespace + '_BATCH_CREATE';
 const getValidateActionName = namespace => namespace + '_BATCH_VALIDATE';
