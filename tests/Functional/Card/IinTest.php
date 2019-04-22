@@ -74,6 +74,7 @@ class IinTest extends TestCase
             'pin'          => '1',
             'headless_otp' => '1',
             'otp'          => '1',
+            'iframe'       => '1',
             ];
 
         $this->fixtures->edit('iin', 112333, ['flows' => $flows]);
@@ -199,6 +200,7 @@ class IinTest extends TestCase
             'pin'          => '1',
             'headless_otp' => '1',
             'otp'          => '1',
+            'iframe'       => '1',
         ];
 
         $this->fixtures->edit('iin', 401200, ['flows' => $flows]);
@@ -207,7 +209,9 @@ class IinTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('iframe', $response);
     }
 
     public function testGetCardPaymentFlowsFromIin()

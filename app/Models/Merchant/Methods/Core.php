@@ -190,9 +190,11 @@ class Core extends Base\Core
 
             $data['emi_subvention'] = $merchant->getEmiSubvention();
 
-            $data['emi_plans'] = (new Emi\Service)->all();
+            $emiPlansAndOptions = (new Emi\Service)->getEmiPlansAndOptions();
 
-            $data['emi_options'] = (new Emi\Service)->getEmiOptions();
+            $data['emi_plans'] = $emiPlansAndOptions['plans'];
+
+            $data['emi_options'] = $emiPlansAndOptions['options'];
         }
 
         if ($merchant->isRecurringEnabled() === true)

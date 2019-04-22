@@ -69,6 +69,8 @@ class Server extends Base\Mock\Server
 
         $content = http_build_query($content, '', Constants::VERIFY_PAIR_SEPARATOR);
 
+        $this->content($content, 'verifyafterquerybuild');
+
         return $this->makeResponse($content);
     }
 

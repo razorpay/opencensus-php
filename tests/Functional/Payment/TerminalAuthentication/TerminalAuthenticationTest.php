@@ -16,35 +16,32 @@ class TerminalAuthenticationTest extends TestCase
 
     public function setUp()
     {
-    $this->testDataFilePath = __DIR__ . '/helpers/TerminalAuthenticationTestData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/TerminalAuthenticationTestData.php';
 
         parent::setUp();
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
+                          ->will($this->returnCallback(
+                            function ($mid, $feature, $mode)
+                            {
+                                if ($feature === 'save_all_cards')
+                                {
+                                    return 'off';
+                                }
+                                return 'on';
+                            }));
     }
 
     // boost 3ds over headless otp
     public function testAuthenticationGateway3ds()
     {
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
-
         TerminalOptions::setTestChance(200);
 
         $this->createGatewayRules($this->testData[__FUNCTION__]);
@@ -240,13 +237,20 @@ class TerminalAuthenticationTest extends TestCase
     // boost 3ds over headless otp
     public function testAuthenticationGatewayPin()
     {
-
         TerminalOptions::setTestChance(20000);
 
         Config(['app.data_store.mock' => false]);
         // Mocking mutex since we are mocking redis and partial mock
         // is difficult to mock (read as doesn't work) in laravel
         config(['services.mutex.mock' => true]);
+
+        $conn = Redis::connection();
+
+        Redis::shouldReceive('connection')
+             ->andReturnUsing(function() use ($conn)
+             {
+                return $conn;
+             });
 
         Redis::shouldReceive('zrevrange')
             ->with('gateway_priority:card', 0, -1, 'WITHSCORES')
@@ -299,17 +303,6 @@ class TerminalAuthenticationTest extends TestCase
     // boost 3ds over headless otp
     public function testAuthenticationGateway3dsAndHeadless()
     {
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
-
         TerminalOptions::setTestChance(1000);
 
         $this->createGatewayRules($this->testData[__FUNCTION__]);
@@ -382,17 +375,6 @@ class TerminalAuthenticationTest extends TestCase
     // boost cyber source mpi gateway
     public function testAuthenticationGatewayCyberSource()
     {
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
-
         TerminalOptions::setTestChance(1000);
 
         $this->createGatewayRules($this->testData[__FUNCTION__]);

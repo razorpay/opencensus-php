@@ -808,7 +808,7 @@ return [
         'response' => [
             'content' => [
                 'type'  => [
-                    'direct_settlement'
+                    'direct_settlement_with_refund'
                 ],
             ]
         ],
@@ -823,8 +823,8 @@ return [
                 'gateway_terminal_password' => '12345678',
                 'upi'                       => '1',
                 'type'                      => [
-                    'non_recurring'     => '1',
-                    'direct_settlement' => '1',
+                    'non_recurring'                    => '1',
+                    'direct_settlement_without_refund' => '1',
                 ],
             ],
             'method' => 'POST'
@@ -836,6 +836,37 @@ return [
                 'enabled'              => true,
             ]
         ]
+    ],
+
+    'testCreateDirectSettlementTerminalValidationFailure' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'netbanking_kotak',
+                'gateway_merchant_id'       => '12345',
+                'gateway_merchant_id2'      => '12345678',
+                'gateway_terminal_password' => '12345678',
+                'upi'                       => '1',
+                'type'                      => [
+                    'non_recurring'                    => '1',
+                    'direct_settlement_without_refund' => '1',
+                    'direct_settlement_with_refund'    => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Direct Settlement Terminal should be either with refund enabled or without refund.',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
     ],
 
     'testCreateCardlessEmiTerminal'  => [
@@ -871,8 +902,8 @@ return [
                 'upi'                       => '1',
                 'tpv'                       => '2',
                 'type'                      => [
-                    'non_recurring'     => '1',
-                    'direct_settlement' => '1',
+                    'non_recurring'                    => '1',
+                    'direct_settlement_without_refund' => '1',
                 ],
             ],
             'method' => 'POST'

@@ -530,4 +530,12 @@ class Repository extends Base\Repository
     {
         $query->with(Entity::ORDER);
     }
+
+    protected function addQueryParamStatuses(BuilderEx $query, array $params)
+    {
+        $typeAttribute = $this->dbColumn(Entity::STATUS);
+
+        $query->whereIn($typeAttribute, $params[Entity::STATUSES]);
+    }
+
 }

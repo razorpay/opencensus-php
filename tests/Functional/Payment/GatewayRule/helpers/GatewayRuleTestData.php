@@ -132,6 +132,37 @@ return [
 
                 ],
             ],
+        ],
+        [
+           'request' => [
+                'content' => [
+                    'method'        => 'card',
+                    'merchant_id'   => '100000Razorpay',
+                    'gateway'       => 'first_data',
+                    'type'          => 'sorter',
+                    'load'          => 50,
+                    'group'         => 'authentication',
+                    'auth_type'     => 'headless_otp',
+                    'authentication_gateway' => 'mpi_blade',
+                    'step'          => 'authentication',
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'method'        => 'card',
+                    'merchant_id'   => '100000Razorpay',
+                    'gateway'       => 'first_data',
+                    'type'          => 'sorter',
+                    'load'          => 50,
+                    'group'         => 'authentication',
+                    'auth_type'     => 'headless_otp',
+                    'authentication_gateway' => 'mpi_blade',
+                    'step'          => 'authentication',
+
+                ],
+            ],
         ]
     ],
 

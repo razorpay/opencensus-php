@@ -4860,5 +4860,21 @@ ALTER TABLE reversals DROP FOREIGN KEY reversals_transaction_id_foreign;
 ALTER TABLE invoices
     DROP FOREIGN KEY invoices_batch_id_foreign;
 
+ALTER TABLE commissions
+    ADD COLUMN record_only TINYINT(1) NOT NULL DEFAULT 0 AFTER transaction_id;
+
 ALTER TABLE paysecure
     MODIFY rrn varchar(255) DEFAULT NULL;
+
+ALTER TABLE bank_transfers
+    MODIFY COLUMN payee_account VARCHAR(255) NOT NULL;
+
+ALTER TABLE fund_transfer_attempts
+    ADD COLUMN is_fts INT(1) DEFAULT 0 AFTER status;
+
+ALTER TABLE payouts
+    MODIFY notes TEXT DEFAULT NULL;
+
+ALTER TABLE refunds
+    CHANGE reference11 balance_id CHAR(14) DEFAULT NULL,
+    ADD INDEX refunds_balance_id_index (`balance_id`);

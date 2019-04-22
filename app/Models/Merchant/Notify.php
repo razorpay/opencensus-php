@@ -71,22 +71,10 @@ trait Notify
     protected function getChannel($action)
     {
         switch ($action) {
-            case SlackActions::ACTIVATED:
-                return $this->app->config->get('slack.channels.activations');
-                break;
-
-            case SlackActions::SUBMIT_ACTIVATION:
-            case SlackActions::ACTIVATE:
-                return $this->app->config->get('slack.channels.activations');
-                break;
-
             case SlackActions::FUNDS_HELD:
             case SlackActions::FUNDS_RELEASED:
             case SlackActions::RISK_RATING_CHANGED:
                 return $this->app->config->get('slack.channels.risk');
-
-            case SlackActions::PRODUCT_ACTIVATION:
-                return $this->app->config->get('slack.channels.activations_prod_log');
 
             default:
                 return $this->app->config->get('slack.channels.operations');

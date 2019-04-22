@@ -44,11 +44,6 @@ class Action
         $this->instantiateCalculator($postSetupData, $postActionData);
     }
 
-    public function testPostpaidFeeModel(array $postSetupData, array & $postActionData)
-    {
-        $this->instantiateCalculator($postSetupData, $postActionData);
-    }
-
     public function testCommissionDisabled(array $postSetupData, array & $postActionData)
     {
         $this->instantiateCalculator($postSetupData, $postActionData);

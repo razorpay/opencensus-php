@@ -53,6 +53,20 @@ class Service extends Base\Service
 
         foreach ($fundTransferAttempts as $fundTransferAttempt)
         {
+            if ($fundTransferAttempt->getIsFts() === true)
+            {
+                $this->trace->error(
+                    TraceCode::FUND_TRANSFER_ATTEMPT_UPDATE_SKIPPED,
+                    [
+                        'fta_id' => $fundTransferAttempt->getId(),
+                        'reason' => 'Only FTS can update this attempt',
+                    ]);
+
+                $notUpdatedIds[] = $fundTransferAttempt->getId();
+
+                continue;
+            }
+
             //
             // Payouts have a proper status management and is exposed to the merchants.
             // FTA cannot change it randomly. Payouts creates reversals in case of failures.
@@ -60,6 +74,13 @@ class Service extends Base\Service
             //
             if ($fundTransferAttempt->getSourceType() === Type::PAYOUT)
             {
+                $this->trace->error(
+                    TraceCode::FUND_TRANSFER_ATTEMPT_UPDATE_SKIPPED,
+                    [
+                        'fta_id' => $fundTransferAttempt->getId(),
+                        'reason' => 'Payouts cannot be updated directly. Should go through recon flow.',
+                    ]);
+
                 continue;
             }
 
@@ -82,7 +103,10 @@ class Service extends Base\Service
             {
                 $this->trace->error(
                     TraceCode::FUND_TRANSFER_ATTEMPT_UPDATE_SKIPPED,
-                    ['reason' => 'Channel can only be edited for Refund attempts!']);
+                    [
+                        'fta_id' => $fundTransferAttempt->getId(),
+                        'reason' => 'Channel can only be edited for Refund attempts!',
+                    ]);
 
                 $notUpdatedIds[] = $id;
 
@@ -234,7 +258,7 @@ class Service extends Base\Service
         return $this->core()->nodalFileUploadThroughBeam($input);
     }
 
-    public function updateFundTransferAttempt(array $input)
+    public function updateFundTransferAttempt(array $input): array
     {
         $this->trace->info(
             TraceCode::FTS_UPDATE_FUND_TRANSFER_ATTEMPT,
@@ -242,6 +266,6 @@ class Service extends Base\Service
                 'input'     => $input
             ]);
 
-        $this->core()->updateFundTransfer($input);
+        return $this->core()->updateFundTransfer($input);
     }
 }

@@ -291,6 +291,9 @@ return [
             'activated' => [
                 'type' => 'boolean',
             ],
+            'partner_type' => [
+                'type' => 'keyword',
+            ],
             'activated_at' => [
                 'type'   => 'date',
                 'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',

@@ -149,6 +149,11 @@ class Processor
      * @var Terminal\Entity
      */
     protected $terminal;
+
+    /**
+     * This should be an array and not a collection
+     * @var array
+     */
     protected $selectedTerminals;
     protected $mode;
     /**
@@ -252,7 +257,7 @@ class Processor
 
             $this->setMethodForInput($input);
 
-            $this->appendMetadataForS2SPayment($input);
+            $this->appendMetadataForPayment($input);
 
             $payment = $this->buildPaymentEntity($input);
 
@@ -299,11 +304,19 @@ class Processor
         }
     }
 
-    protected function appendMetadataForS2SPayment(array & $input)
+    protected function appendMetadataForPayment(array & $input)
     {
         if ($this->app['basicauth']->isPrivateAuth() === true)
         {
-            $input = (new Payment\Analytics\Service)->setMetadataForS2SPayment($input);
+            (new Payment\Analytics\Service)->setMetadataForS2SPayment($input);
+        }
+        else if ($this->app['basicauth']->isPublicAuth() === true)
+        {
+            (new Payment\Analytics\Service)->setMetadataForPublicAuthPayment($input);
+        }
+        else if ($this->app['basicauth']->isAppAuth() === true)
+        {
+            (new Payment\Analytics\Service)->setMetadataForAppAuthPayment($input);
         }
     }
 
@@ -544,6 +557,12 @@ class Processor
                 ]);
         }
 
+        // Nested attributes, when flattened, aren't handled by laravel test requests
+        if ($this->app->runningUnitTests() === true)
+        {
+            unset($input['_']);
+        }
+
         $coproto = [
             'type'    => 'respawn',
             'request' => [
@@ -605,6 +624,12 @@ class Processor
 
     protected function getCoprotoDefaultArrayForWallet(array $input)
     {
+        // Nested attributes, when flattened, aren't handled by laravel test requests
+        if ($this->app->runningUnitTests() === true)
+        {
+            unset($input['_']);
+        }
+
         return [
             'type'    => 'respawn',
             'request' => [
@@ -815,11 +840,21 @@ class Processor
             return;
         }
 
+        $this->trace->info(TraceCode::CPS_ROUTE_CONFIG, [
+            'payment_id' => $payment->getId(),
+            'cps_config' => Admin\ConfigKey::get(Admin\ConfigKey::CPS_SERVICE_ENABLED, false),
+        ]);
+
         if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::CPS_SERVICE_ENABLED, false) === true)
         {
             $featureFlag = self::CPS_FEATURE_FLAG_PREFIX. '_' .$payment->getGateway();
 
             $variant = $this->app->razorx->getTreatment($payment->getId(), $featureFlag, $this->mode);
+
+            $this->trace->info(TraceCode::CPS_RAZORX_VARIANT, [
+                'payment_id'     => $payment->getId(),
+                'razorx_variant' => $variant,
+            ]);
 
             if (strtolower($variant) === 'cps')
             {

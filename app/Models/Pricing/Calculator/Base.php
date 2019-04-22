@@ -71,6 +71,23 @@ abstract class Base extends BaseModel\Core
         $this->pricingRules = new BaseModel\PublicCollection;
 
         $this->taxComponents = self::getTaxComponents($this->entity->merchant);
+
+        $this->setAmount();
+    }
+
+    protected function setAmount()
+    {
+        $amount = $this->entity->getBaseAmount();
+
+        if ($this->isFeeBearerCustomer() === true)
+        {
+            // 1. The first call will have the fee = 0,
+            //    hence fees will be calculated on the original amount
+            // 2. On validation/capture call, the fee will be set
+            $amount = $amount - $this->entity->getFee();
+        }
+
+        $this->amount = $amount;
     }
 
     protected function isFeeBearerCustomer()
@@ -100,32 +117,20 @@ abstract class Base extends BaseModel\Core
 
     public function calculate(Pricing\Plan $pricing): array
     {
-        $amount = $this->entity->getBaseAmount();
-
-        if ($this->isFeeBearerCustomer() === true)
-        {
-            // 1. The first call will have the fee = 0,
-            //    hence fees will be calculated on the original amount
-            // 2. On validation/capture call, the fee will be set
-            $amount = $amount - $this->entity->getFee();
-        }
-
-        $this->amount = $amount;
-
         $this->getRelevantPricingRule($pricing);
 
-        list($fee, $tax) = $this->getFees($amount);
+        list($fee, $tax) = $this->getFees();
 
         return [$fee, $tax, $this->feesSplit];
     }
 
-    protected function getFees($amount)
+    protected function getFees()
     {
         $fees = 0;
 
         foreach ($this->pricingRules as $rule)
         {
-            $fee = $this->calculateRzpFee($rule, $amount);
+            $fee = $this->calculateRzpFee($rule);
 
             $fees += $fee;
         }
@@ -134,13 +139,15 @@ abstract class Base extends BaseModel\Core
 
         $totalFees = $fees + $totalTaxes;
 
-        $this->validateFees($totalFees, $amount);
+        $this->validateFees($totalFees);
 
         return [$totalFees, $totalTaxes];
     }
 
-    protected function validateFees($totalFees, $amount)
+    public function validateFees($totalFees)
     {
+        $amount = $this->amount;
+
         // In case the merchant is customer fee bearer, we shouldn't check
         // $amount <= $totalFees because amount is already inclusive of the fees.
         if ($this->isFeeBearerCustomer() === true)
@@ -444,14 +451,13 @@ abstract class Base extends BaseModel\Core
      * Irrespective of preCalculationOfFees, Use the percent of original amount
      * to calculate razorpay fees. Tax is not included here.
      *
-     * @param int $amount                Amount in paise
      * @param int $percent               e.g 2% is 200
      * @param int $fixed
      * @return int
      */
-    protected function getUnroundedFees($amount, $percent, $fixed)
+    protected function getUnroundedFees($percent, $fixed)
     {
-        return $this->getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed);
+        return $this->getRzpFeesUsingPercentOfOriginalAmount($percent, $fixed);
     }
 
     /**
@@ -460,9 +466,9 @@ abstract class Base extends BaseModel\Core
      *
      * rzpFees = percent * amount + fixed
      */
-    protected function getRzpFeesUsingPercentOfOriginalAmount($amount, $percent, $fixed)
+    protected function getRzpFeesUsingPercentOfOriginalAmount($percent, $fixed)
     {
-        return (($amount * $percent) / 10000) + $fixed;
+        return (($this->amount * $percent) / 10000) + $fixed;
     }
 
     protected function traceAllRules($rules)
@@ -524,13 +530,13 @@ abstract class Base extends BaseModel\Core
         return $feeBreakup;
     }
 
-    protected function calculateRzpFee(Pricing\Entity $rule, $amount)
+    protected function calculateRzpFee(Pricing\Entity $rule)
     {
         list($percent, $fixed) = $rule->getRates();
 
         list($min, $max) = $rule->getMinMaxFees();
 
-        $fee = $this->getUnroundedFees($amount, $percent, $fixed);
+        $fee = $this->getUnroundedFees($percent, $fixed);
 
         $fee = (int) ceil($fee);
 

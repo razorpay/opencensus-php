@@ -154,18 +154,6 @@ class DirectDebit extends Base
         return true;
     }
 
-    protected function createSetOutputFileAndSave(array & $entries, string $fileType = FileStore\Type::BATCH_OUTPUT)
-    {
-        $result = parent::createSetOutputFileAndSave($entries, $fileType);
-
-        foreach ($entries as & $entry)
-        {
-            $entry[Header::DIRECT_DEBIT_CARD_NUMBER] = $this->mask($entry[Header::DIRECT_DEBIT_CARD_NUMBER]);
-        }
-
-        return $result;
-    }
-
     protected function mask(string $card)
     {
        $entity = new Card();

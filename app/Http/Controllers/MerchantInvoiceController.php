@@ -2,8 +2,8 @@
 
 namespace RZP\Http\Controllers;
 
-use ApiResponse;
 use Request;
+use ApiResponse;
 
 class MerchantInvoiceController extends Controller
 {

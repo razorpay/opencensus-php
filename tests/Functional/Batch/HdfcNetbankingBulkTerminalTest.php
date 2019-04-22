@@ -63,13 +63,17 @@ class HdfcNetbankingBulkTerminalTest extends TestCase
 
         $terminals = $this->getEntities('terminal', ['count' => $count], true);
 
+        $this->assertEquals($terminals['items'][1][Terminal\Entity::TPV], 0);
+
         $this->assertEquals($terminals['items'][1][Terminal\Entity::NETBANKING], true);
 
         $this->assertEquals($terminals['items'][1][Terminal\Entity::MERCHANT_ID], $entries[0][Batch\Header::HDFC_NB_MERCHANT_ID]);
 
         $this->assertEquals($terminals['items'][1][Terminal\Entity::NETWORK_CATEGORY], $entries[0][Batch\Header::HDFC_NB_CATEGORY]);
 
-        $this->assertEquals($terminals['items'][1][Terminal\Entity::NETBANKING], true);
+        $this->assertEquals($terminals['items'][0][Terminal\Entity::NETBANKING], true);
+
+        $this->assertEquals($terminals['items'][0][Terminal\Entity::TPV], 1);
 
         $this->assertEquals($terminals['items'][0][Terminal\Entity::MERCHANT_ID], $entries[1][Batch\Header::HDFC_NB_MERCHANT_ID]);
 
@@ -99,7 +103,7 @@ class HdfcNetbankingBulkTerminalTest extends TestCase
                 Batch\Header::HDFC_NB_MERCHANT_ID          => '10NodalAccount',
                 Batch\Header::HDFC_NB_CATEGORY             => 'ecommerce',
                 Batch\Header::HDFC_NB_GATEWAY_MERCHANT_ID  => '1233291',
-                Batch\Header::HDFC_NB_TPV                   => 0
+                Batch\Header::HDFC_NB_TPV                  => 0
             ],
         ];
     }

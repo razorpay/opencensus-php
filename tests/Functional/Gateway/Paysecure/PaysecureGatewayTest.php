@@ -20,8 +20,6 @@ class PaysecureGatewayTest extends TestCase
 
         parent::setUp();
 
-        $this->markTestSkipped("Rupay disabled from network list of Hitachi");
-
         $this->fixtures->terminal->disableTerminal('1n25f6uN5S1Z5a');
 
         $this->fixtures->create('terminal:shared_hitachi_terminal', [
@@ -77,6 +75,15 @@ class PaysecureGatewayTest extends TestCase
         $this->assertSuccess($authResponse, 'redirect');
 
         return $authResponse;
+    }
+
+    public function testS2SPaymentAuthViaRedirect()
+    {
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $authResponse = $this->doS2SPrivateAuthPayment($this->payment);
+
+        $this->assertSuccess($authResponse, 'redirect');
     }
 
     /**

@@ -1079,5 +1079,30 @@ return [
             'content'     => [],
             'status_code' => 200,
         ],
-    ]
+    ],
+
+    'testGetAffiliatedPartnersForMerchant' => [
+        'request'  => [
+            'url'    => '/merchants/10000000000009/partners',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content'     => [
+                'count' => 2,
+                'items' => [
+                    [
+                        'id'           => '10000000000000',
+                        'entity'       => 'merchant',
+                        'partner_type' => 'fully_managed',
+                    ],
+                    [
+                        'id'           => '10000000000001',
+                        'entity'       => 'merchant',
+                        'partner_type' => 'reseller',
+                    ],
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

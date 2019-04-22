@@ -92,6 +92,8 @@ trait Reversal
 
         $refund->setBaseAmount();
 
+        $refund->balance()->associate($refund->merchant->primaryBalance);
+
         $this->validateMerchantBalance($refund, 'reversal');
 
         list($txn, $feesSplit) = (new Transaction\Core)->createFromRefund($refund);

@@ -5,14 +5,16 @@ namespace RZP\Models\Pricing;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payout;
-use RZP\Models\Merchant;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
+use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\Partner\Commission;
 use RZP\Models\Feature\Constants as Feature;
 
 use Carbon\Carbon;
@@ -71,11 +73,39 @@ class Fee extends Base\Core
         return $this->repo->getZeroPricingPlanRuleForMethod($feature, $method, $entity->merchant);
     }
 
-    public function calculateMerchantFees($entity)
+    /**
+     * Returns total merchant fees for entity which includes RZP fees and partner fees if any
+     *
+     * @param $entity
+     *
+     * @return array
+     */
+    public function calculateMerchantFees($entity): array
     {
-        $product = $this->getProductForEntity($entity);
+        list($rzpFee, $rzpTax, $rzpFeeSplit) = $this->calculateMerchantRZPFees($entity);
 
-        $calculator = Calculator\Base::make($entity, $product);
+        list($partnerFee, $partnerTax, $partnerFeeSplit) = $this->calculatePartnerFees($entity);
+
+        $totalFee = $rzpFee + $partnerFee;
+        $totalTax = $rzpTax + $partnerTax;
+
+        $feeSplit = $rzpFeeSplit->concat($partnerFeeSplit);
+
+        $this->validateFees($entity, $totalFee);
+
+        return [$totalFee, $totalTax, $feeSplit];
+    }
+
+    /**
+     * Returns merchant RZP fees for entity
+     *
+     * @param $entity
+     *
+     * @return array
+     */
+    public function calculateMerchantRZPFees($entity): array
+    {
+        $calculator = $this->getCalculator($entity);
 
         $pricingPlanId = $this->getPricingPlanId($entity->merchant);
 
@@ -89,7 +119,6 @@ class Fee extends Base\Core
             ($currentTimeStamp < self::DIWALI_END_TIMESTAMP) and
             (in_array($entity->getMethod(), self::$promotionalMethods, true) === true))
         {
-
             $pricingPlanId = Pricing\DefaultPlan::DIWALI_PROMOTIONAL_PLAN_ID;
         }
 
@@ -98,6 +127,82 @@ class Fee extends Base\Core
         $pricing = $this->addFallbackPricingRules($pricing, $entity->merchant);
 
         return $calculator->calculate($pricing);
+    }
+
+    protected function getCalculator($entity)
+    {
+        $product = $this->getProductForEntity($entity);
+
+        return Calculator\Base::make($entity, $product);
+    }
+
+    /**
+     * Returns partner fees for entity
+     *
+     * @param $entity
+     *
+     * @return array
+     */
+    protected function calculatePartnerFees($entity): array
+    {
+        $feeDetails = [0, 0, new Base\PublicCollection];
+
+        // charge partner fees for only some type of entities
+        if (Commission\Constants::isValidCommissionSource($entity) === false)
+        {
+            return $feeDetails;
+        }
+
+        try
+        {
+            $calculator = new Commission\Calculator($entity);
+
+            if ($calculator->shouldChargePartnerFees() === false)
+            {
+                return $feeDetails;
+            }
+
+            // @todo uncomment and remove log statements once logs are verified
+            // return $calculator->getExplicitCommissionFeeSplit();
+
+            list($partnerFees, $partnerTax, $feeSplit) = $calculator->getExplicitCommissionFeeSplit();
+
+            $this->trace->info(
+                TraceCode::COMMISSION_EXPLICIT_FEE_BREAKUP_LOGGED,
+                [
+                    'partner_fees' => $partnerFees,
+                    'partner_tax'  => $partnerTax,
+                    'fee_split'    => $feeSplit->toArrayPublic(),
+                ]);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->critical(
+                TraceCode::COMMISSION_EXPLICIT_FEE_BREAKUP_CREATE_FAILED,
+                [
+                    'id'      => $entity->getId(),
+                    'type'    => $entity->getEntityName(),
+                    'message' => $ex->getMessage(),
+                ]
+            );
+        }
+
+        return $feeDetails;
+    }
+
+    /**
+     * Check whether the fees is valid based on entity type
+     *
+     * @param $entity
+     * @param $totalFees
+     *
+     * @throws Exception\BadRequestException
+     */
+    protected function validateFees($entity, $totalFees)
+    {
+        $calculator = $this->getCalculator($entity);
+
+        $calculator->validateFees($totalFees);
     }
 
     /**

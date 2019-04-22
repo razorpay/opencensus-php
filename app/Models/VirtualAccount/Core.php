@@ -245,6 +245,15 @@ class Core extends Base\Core
 
     protected function validateReceiver(string $receiver, Entity $virtualAccount)
     {
+        //
+        // Don't validate receivers for banking virtual accounts
+        // This has been taken care of previously in validateReceiversForBanking()
+        //
+        if ($virtualAccount->isBalanceTypeBanking() === true)
+        {
+            return;
+        }
+
         switch ($receiver)
         {
             case Receiver::BANK_ACCOUNT:

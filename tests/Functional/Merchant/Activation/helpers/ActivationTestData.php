@@ -904,7 +904,7 @@ return [
                             'description'              => 'Charity',
                             'category2'                => 'others',
                             'activation_flow'          => 'greylist',
-                            'international_activation' => 'greylist',
+                            'international_activation' => 'blacklist',
                         ],
                         'educational' => [
                             'category'                 => 8398,
@@ -1016,6 +1016,113 @@ return [
             'description'         => 'The business category field is required.',
         ],
     ],
+
+    'testInstantActivationOfSubscriptionsForActiveMerchants' => [
+        'request'       => [
+            'method'    => 'POST',
+            'url'       => '/merchant/requests',
+            'content'   => [
+                'submissions'           => [
+                    'business_model'    => 'bc',
+                    'sample_plans'      => 'sp',
+                    'website_details'   => 'http://fs.com'
+                ],
+                'name' => 'subscriptions',
+                'type' => 'product'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                  'status'   => 'activated',
+                                 "merchant"        => [
+                                     'activated'    => true,
+                                     'live'         => true,
+                                     'hold_funds'   => false,
+                ]
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testInstantActivationOfSubscriptionsForInActiveMerchants' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/merchant/requests',
+            'content' => [
+                'submissions' => [
+                    'business_model'    => 'bc',
+                    'sample_plans'      => 'sp',
+                    'website_details'   => 'http://fs.com'
+                ],
+                'name' => 'subscriptions',
+                'type' => 'product'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'status' => 'under_review',
+                "merchant" => [
+                    'activated'  => false,
+                    'live'       => false,
+                    'hold_funds' => false,
+                ]
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testInstantActivationOfRoutesForActiveMerchants' => [
+        'request'         => [
+                'method'  => 'POST',
+                'url'     => '/merchant/requests',
+                'content' => [
+                'submissions' => [
+                    'use_case'      => 'bc',
+                    'settling_to'   => 'Businesses'
+                ],
+                'name' => 'marketplace',
+                'type' => 'product'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'status'    => 'activated',
+                "merchant"  => [
+                    'activated'     => true,
+                    'live'          => true,
+                    'hold_funds'    => false,
+                ]
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testInstantActivationOfRoutesForInActiveMerchants' => [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/merchant/requests',
+            'content'   => [
+                'submissions'   => [
+                            'use_case'      => 'bc',
+                            'settling_to'   => 'Businesses'
+                ],
+                'name' => 'marketplace',
+                'type' => 'product'
+            ]
+        ],
+        'response'          => [
+                'content'   => [
+                    'status'    => 'under_review',
+                    "merchant"  => [
+                        'activated'     => false,
+                        'live'          => false,
+                        'hold_funds'    => false,
+                ]
+            ],
+            'status_code'   => 200,
+        ]
+    ],
+
 
     'testPostInstantActivation' => [
         'request'     => [
@@ -1761,7 +1868,7 @@ return [
             'url'     => '/merchant/instant_activation',
             'content' => [
                 'business_category'    => 'not_for_profit',
-                'business_subcategory' => 'charity',
+                'business_subcategory' => 'educational',
                 'promoter_pan'         => 'ABCDE0000Z',
                 'business_name'        => 'business_name',
                 'business_dba'         => 'test123',
@@ -1776,7 +1883,7 @@ return [
                 'gstin'                => null,
                 'p_gstin'              => null,
                 'business_category'    => 'not_for_profit',
-                'business_subcategory' => 'charity',
+                'business_subcategory' => 'educational',
                 'international'        => false,
                 'archived'             => 0,
                 'submitted_at'         => null,

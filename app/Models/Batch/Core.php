@@ -38,7 +38,16 @@ class Core extends Base\Core
 
         $processor = Processor\Factory::get($batch);
 
-        $processor->storeInputFileAndSaveBatchWithSettings($input);
+        $ufhFile = $processor->storeInputFileAndSaveBatchWithSettings($input);
+
+        // Get the type. If type is payment link redirect to Batch MicroService.
+
+        if ($processor->shouldSendToBatchService())
+        {
+            $batchResponse = $this->app->batchService->forwardToBatchServiceRequest($input, $merchant, $ufhFile);
+
+            return (new ResponseEntity)->fill($batchResponse);
+        }
 
         $this->trace->info(TraceCode::BATCH_CREATED, $batch->toArrayPublic());
 

@@ -28,6 +28,7 @@ class Entity extends Base\PublicEntity
     const SOURCE_ID         = 'source_id';
     const PARTNER_ID        = 'partner_id';
     const SOURCE_TYPE       = 'source_type';
+    const RECORD_ONLY       = 'record_only';
     const TRANSACTION_ID    = 'transaction_id';
     const PARTNER_CONFIG_ID = 'partner_config_id';
 
@@ -49,6 +50,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::CREDIT,
         self::CURRENCY,
+        self::RECORD_ONLY,
     ];
 
     protected $public = [
@@ -64,6 +66,7 @@ class Entity extends Base\PublicEntity
         self::PARTNER_ID,
         self::SOURCE_ID,
         self::SOURCE_TYPE,
+        self::RECORD_ONLY,
         self::CREATED_AT,
         self::MERCHANT,
         self::SOURCE,
@@ -78,9 +81,15 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
-        self::TYPE   => Type::IMPLICIT,
-        self::STATUS => Status::CREATED,
-        self::NOTES  => [],
+        self::TYPE        => Type::IMPLICIT,
+        self::NOTES       => [],
+        self::STATUS      => Status::CREATED,
+        self::CURRENCY    => 'INR',
+        self::RECORD_ONLY => 0,
+    ];
+
+    protected $casts = [
+        self::RECORD_ONLY => 'bool',
     ];
 
     public function transaction()

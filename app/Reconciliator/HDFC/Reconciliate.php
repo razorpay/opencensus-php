@@ -12,7 +12,9 @@ class Reconciliate extends Base\Reconciliate
     const CYBERSOURCE_HDFC_TERMINAL_IDS = [
         '89050258',
         '89050055',
-        '89050636'
+        '89050636',
+        '89051347',
+        '89051194',
     ];
 
     const CORP_FILE_REGEX = "/1413-(0[1-9]|[12][0-9]|3[01])(0[1-9]|1[0-2])20[0-9]{2}/";

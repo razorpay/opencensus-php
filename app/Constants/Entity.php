@@ -230,6 +230,8 @@ class Entity
     const TAX_GROUP             = 'tax_group';
 
     // External Service Entity (ServiceName.EntityName)
+    const BATCH_SERVICE                = 'batch.service';
+    const BATCH_FILE_STORE             = 'batch.file_store';
     const REPORTING_LOGS               = 'reporting.logs';
     const REPORTING_CONFIGS            = 'reporting.configs';
     const REPORTING_SCHEDULES          = 'reporting.schedules';
@@ -301,6 +303,7 @@ class Entity
         Entity::VIRTUAL_ACCOUNT,
         Entity::PAYOUT,
         Entity::BANK_TRANSFER,
+        Entity::REFUND,
     ];
 
     public static $namespace = [
@@ -547,6 +550,8 @@ class Entity
         self::SHIELD_RISKS                 => \RZP\Services\ShieldClient::class,
         self::SHIELD_LISTS                 => \RZP\Services\ShieldClient::class,
         self::SHIELD_LIST_ITEMS            => \RZP\Services\ShieldClient::class,
+        self::BATCH_SERVICE                => \RZP\Services\BatchMicroService::class,
+        self::BATCH_FILE_STORE             => \RZP\Services\BatchMicroService::class,
     ];
 
     protected static $syncedInLiveAndTest = [

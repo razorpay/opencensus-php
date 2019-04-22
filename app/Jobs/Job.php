@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use App;
 use Illuminate\Bus\Queueable;
+use RZP\Models\Admin\ConfigKey;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -29,11 +30,13 @@ class Job implements ShouldQueue
 
     /**
      * This is a name of the current job which is being executed.
-     * This is snake case name of the job class
      *
-     * @var string
+     * Can be set in the child classes.
+     * If not explicitly set, this is snake case name of the job class
+     *
+     * @var string|null
      */
-    protected $jobName;
+    protected $jobName = null;
 
     /**
      * In case of sync queue implementaiton it's needed that we keep mode of
@@ -84,7 +87,7 @@ class Job implements ShouldQueue
         $this->previousMode = $previousMode;
 
         $this->taskId       = $app['request']->getTaskId();
-        $this->jobName      = snake_case(class_basename($this));
+        $this->jobName      = $this->jobName ?? snake_case(class_basename($this));
     }
 
     public function handle()
@@ -156,5 +159,7 @@ class Job implements ShouldQueue
         }
 
         $this->repoManager->resetConnectionAttributes();
+
+        ConfigKey::resetFetchedKeys();
     }
 }

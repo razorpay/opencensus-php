@@ -5,10 +5,12 @@ namespace RZP\Tests\Functional\Batch;
 use Mail;
 use Illuminate\Support\Facades\Queue;
 
+use Mockery;
 use RZP\Models\FileStore;
 use RZP\Models\Batch\Header;
 use RZP\Jobs\Batch as BatchJob;
 use RZP\Tests\Functional\TestCase;
+use RZP\Services\BatchMicroService;
 use RZP\Mail\Batch\Refund as BatchRefundFileMail;
 
 class RefundTest extends TestCase
@@ -98,6 +100,13 @@ class RefundTest extends TestCase
 
     public function testGetRefundFileWithId()
     {
+        $mock = Mockery::mock(BatchMicroService::class)->makePartial();
+        $this->app->instance('batchService', $mock);
+
+        $mock->shouldAllowMockingMethod('getBatchesFromBatchService')
+             ->shouldReceive('getBatchesFromBatchService')
+             ->andReturnNull();
+
         $entries = $this->getDefaultRefundFileEntries();
 
         $batch = $this->fixtures->create('batch:refund', $entries);

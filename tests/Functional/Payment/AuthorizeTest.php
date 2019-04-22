@@ -57,7 +57,19 @@ class AuthorizeTest extends TestCase
                            ->setConstructorArgs([$this->app])
                            ->setMethods(['getTreatment'])
                            ->getMock();
+
         $this->app->instance('razorx', $razorxMock);
+
+         $this->app->razorx->method('getTreatment')
+                           ->will($this->returnCallback(
+                            function ($mid, $feature, $mode)
+                            {
+                                if ($feature === 'save_all_cards')
+                                {
+                                    return 'off';
+                                }
+                                return 'on';
+                            }));
 
         $this->app->razorx->method('getTreatment')
              ->willReturn('On');
@@ -737,6 +749,14 @@ class AuthorizeTest extends TestCase
     {
         config(['app.data_store.mock' => false]);
 
+        $conn = Redis::connection();
+
+        Redis::shouldReceive('connection')
+             ->andReturnUsing(function () use ($conn)
+             {
+                return $conn;
+             });
+
         Redis::shouldReceive('zrevrange')
             ->with('gateway_priority:card', 0, -1, 'WITHSCORES')
             ->andReturnUsing(function ()
@@ -829,6 +849,14 @@ class AuthorizeTest extends TestCase
         // is difficult to mock (read as doesn't work) in laravel
         config(['services.mutex.mock' => true]);
 
+        $conn = Redis::connection();
+
+        Redis::shouldReceive('connection')
+             ->andReturnUsing(function () use ($conn)
+             {
+                return $conn;
+             });
+
         Redis::shouldReceive('zrevrange')
             ->with('gateway_priority:card', 0, -1, 'WITHSCORES')
             ->andReturnUsing(function ()
@@ -883,6 +911,14 @@ class AuthorizeTest extends TestCase
         // Mocking mutex since we are mocking redis and partial mock
         // is difficult to mock (read as doesn't work) in laravel
         config(['services.mutex.mock' => true]);
+
+        $conn = Redis::connection();
+
+        Redis::shouldReceive('connection')
+             ->andReturnUsing(function () use ($conn)
+             {
+                return $conn;
+             });
 
         Redis::shouldReceive('zrevrange')
             ->with('gateway_priority:card', 0, -1, 'WITHSCORES')

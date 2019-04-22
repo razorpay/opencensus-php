@@ -60,6 +60,18 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function fetchAffiliatedPartnersForSubmerchant(string $subMerchantId)
+    {
+        $accessMapsEntityOwnerId = $this->dbColumn(Entity::ENTITY_OWNER_ID);
+        $merchantsId             = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+
+        return $this->newQuery()
+                    ->merchantId($subMerchantId)
+                    ->join(Table::MERCHANT, $accessMapsEntityOwnerId, $merchantsId)
+                    ->with('entityOwner')
+                    ->get();
+    }
+
     /**
      * @param string $merchantId
      * @param string $entityType

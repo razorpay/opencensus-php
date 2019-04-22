@@ -444,8 +444,9 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
             [
-                'merchant_id' => $merchant->getId(),
-                'input'       => $input,
+                'activated' => $merchant->isActivated(),
+                'live'      => $merchant->isLive(),
+                'input'     => $input,
             ]);
 
         $merchant->edit($input, 'editConfig');
@@ -570,7 +571,11 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($merchant);
 
-        $this->logActionToSlack($merchant, $action);
+        // pipe to slack if the action is defined
+        if (empty(SlackActions::$actionMsgMap[$action]) === false)
+        {
+            $this->logActionToSlack($merchant, $action);
+        }
 
         return $merchant;
     }
@@ -1429,6 +1434,28 @@ class Core extends Base\Core
         });
 
         return $merchants;
+    }
+
+    /**
+     * Fetch the list of all merchants the submerchant is associated with
+     *
+     * @param string $submerchantId
+     *
+     * @return PublicCollection
+     */
+    public function fetchAffiliatedPartners(string $submerchantId): PublicCollection
+    {
+        return $this->repo
+                    ->merchant_access_map
+                    ->fetchAffiliatedPartnersForSubmerchant($submerchantId)
+                    ->unique(function ($item)
+                    {
+                        return $item->entityOwner->getId();
+                    })
+                    ->map(function ($item)
+                    {
+                        return $item->entityOwner;
+                    });
     }
 
     protected function isPartnerUserAddedToSubmerchant(Entity $partner, Entity $submerchant): bool

@@ -99,6 +99,11 @@ class Service extends Base\Service
             },
             self::MUTEX_LOCK_TIMEOUT);
 
+        if ($terminal !== null)
+        {
+            $terminal->setDirectForMerchant(true);
+        }
+
         return $terminal;
     }
 

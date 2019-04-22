@@ -79,10 +79,14 @@ trait RequestHandlerTrait
 
         $gatewayPayment = $this->createGatewayPaymentEntity($content);
 
+        $accept = substr($this->app['request']->header('Accept'), 0, 256);
+        $userAgent = substr($this->app['request']->header('User-Agent'), 0, 512);
+        $ip = $this->app['request']->ip();
+
         $extraParameters = [
-            Fields::BROWSER_USERAGENT => $this->input['payment_analytics']['user_agent'],
-            Fields::IP_ADDRESS        => $this->input['payment_analytics']['ip'],
-            Fields::HTTP_ACCEPT       => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            Fields::BROWSER_USERAGENT => $this->input['payment_analytics']['user_agent'] ?? $userAgent,
+            Fields::IP_ADDRESS        => $this->input['payment_analytics']['ip'] ?? $ip,
+            Fields::HTTP_ACCEPT       => $accept,
         ];
 
         $requestArray = array_merge($requestArray, $extraParameters);
@@ -126,9 +130,13 @@ trait RequestHandlerTrait
             $messageType = $this->input['card']['message_type'];
         }
 
+        $ownerName = $this->input['merchant']->getBillingLabel() ?? 'Razorpay';
+
+        $ownerName = substr($ownerName, 0, 23);
+
         $requestArray = [
             Fields::CARD_NO                           => $card['number'],
-            Fields::CARD_EXP_DATE                     => $card['expiry_month'] . $card['expiry_year'],
+            Fields::CARD_EXP_DATE                     => sprintf("%02d", $card['expiry_month']) . sprintf("%04d", $card['expiry_year']),
             Fields::LANGUAGE_CODE                     => 'en',
             Fields::AUTH_AMOUNT                       => $this->input['payment']['amount'],
             Fields::CURRENCY_CODE                     => Currency::ISO_NUMERIC_CODES[$this->input['payment']['currency']],
@@ -142,7 +150,7 @@ trait RequestHandlerTrait
             Fields::ACQUIRER_INSTITUTION_COUNTRY_CODE => Currency::ISO_NUMERIC_CODES[$this->input['payment']['currency']],
             Fields::RETRIEVAL_REF_NUMBER              => $rrn,
             Fields::CARD_ACCEPTOR_ID                  => $this->getMerchantId(),
-            Fields::TERMINAL_OWNER_NAME               => $this->input['merchant']->getBillingLabel() ?? 'Razorpay',
+            Fields::TERMINAL_OWNER_NAME               => $ownerName,
             Fields::TERMINAL_CITY                     => 'Bangalore',
             Fields::TERMINAL_STATE_CODE               => 'KA',
             Fields::TERMINAL_COUNTRY_CODE             => 'IN',

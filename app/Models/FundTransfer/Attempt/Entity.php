@@ -54,6 +54,15 @@ class Entity extends Base\PublicEntity
      * Used to check if the FTA's source has balance ID
      */
     const BALANCE_ID            = 'balance_id';
+
+    /**
+     * used to identify if the transfer is done through FTS
+     */
+    const IS_FTS                 = 'is_fts';
+
+    /**
+     * used to map the FTA with transfer id of FTS
+     */
     const FUND_TRANSFER_ID      = 'fund_transfer_id';
 
     protected $entity = 'fund_transfer_attempt';
@@ -64,6 +73,7 @@ class Entity extends Base\PublicEntity
         self::VERSION,
         self::STATUS,
         self::MODE,
+        self::IS_FTS,
         self::NARRATION,
         self::BANK_STATUS_CODE,
         self::BANK_RESPONSE_CODE,
@@ -90,6 +100,7 @@ class Entity extends Base\PublicEntity
         self::MODE,
         self::STATUS,
         self::UTR,
+        self::IS_FTS,
         self::NARRATION,
         self::REMARKS,
         self::DATE_TIME,
@@ -314,6 +325,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FTS_TRANSFER_ID);
     }
 
+    public function getIsFTS()
+    {
+        return (bool) $this->getAttribute(self::IS_FTS);
+    }
+
     public function hasBankAccount()
     {
         return ($this->isAttributeNotNull(self::BANK_ACCOUNT_ID));
@@ -389,6 +405,11 @@ class Entity extends Base\PublicEntity
     public function setFTSTransferId($ftsTransferId)
     {
         $this->setAttribute(self::FTS_TRANSFER_ID, $ftsTransferId);
+    }
+
+    public function setIsFTS(bool $isFTS)
+    {
+        $this->setAttribute(self::IS_FTS, $isFTS);
     }
 
     // ------------------------------ modifiers --------------------------------
