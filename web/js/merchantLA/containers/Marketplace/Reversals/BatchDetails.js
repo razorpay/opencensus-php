@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 
 import BatchDetails from 'merchant/containers/BatchNew/Details';
 import { fetchLAReversalsBatchesDetails as fetchBatchDetails } from 'merchantLA/modules/batches';
-import { pluralize } from 'rzp/utils/rzp-utils';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 
 import BatchStats from 'ui/StatsTable';
@@ -12,11 +11,14 @@ import Time from 'rzp/ui/Time';
 import { status } from 'rzp/ui/item/pair';
 import { BatchUploadStatusLabel } from 'merchant/components/StatusLabel';
 
-const gaEvents = setGaTrack('Dashboard - Payment Links - BU');
+const gaEvents = setGaTrack('Dashboard - LA Reversals - BU');
 
 const renderBatchDetails = props => {
-  const { batch = {}, stats = {} } = props;
-  const statsTable = getStatsTable(stats);
+  const { batch } = props;
+  const statsTable = getStatsTable({
+    batch_total: batch.success_count,
+    issued_count: batch.total_count,
+  });
 
   return (
     <Fragment>

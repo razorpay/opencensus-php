@@ -21,7 +21,7 @@ const entityDetailsMap = {
   '/transfers/:id(trf_.+)': { component: TransferDetails },
   '/settlements/:id': { component: SettlementDetails },
   '/reversals/:id(rvrsl_.+)': { component: ReversalDetails },
-  '/reversals/batchreversals/:id(batch_.+)': {
+  '/reversals/batchuploads/:id(batch_.+)': {
     component: LARefundsBatchDetails,
   },
 };
