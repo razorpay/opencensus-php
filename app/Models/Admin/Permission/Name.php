@@ -212,6 +212,7 @@ class Name
     const EDIT_PARTNERS                       = 'edit_partners';
     const VIEW_PARTNERS                       = 'view_partners';
     const EDIT_REFUND                         = 'edit_refund';
+    const UPDATE_SCROOGE_REFUND_REFERENCE1    = 'update_scrooge_refund_reference1';
     const RETRY_REFUND                        = 'retry_refund';
     const DOWNLOAD_NON_MERCHANT_REPORT        = 'download_non_merchant_report';
     const CREATE_VIRTUAL_ACCOUNTS             = 'create_virtual_accounts';

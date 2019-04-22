@@ -218,6 +218,10 @@ return [
                 'description' => 'edit_refund_permission',
                 'assignable'  => true,
             ],
+            Permission::UPDATE_SCROOGE_REFUND_REFERENCE1    => [
+                'description' => 'update_scrooge_refund_reference1_permission',
+                'assignable'  => true,
+            ],
             Permission::RETRY_REFUND                        => [
                 'description' => 'Retry refunds',
                 'assignable'  => true,
