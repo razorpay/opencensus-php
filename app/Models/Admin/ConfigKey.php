@@ -16,6 +16,7 @@ class ConfigKey
     const PRICING_RULE_SELECTION_LOG_VERBOSE    = self::PREFIX . 'pricing_rule_selection_log_verbose';
     const HEARTBEAT_LOG_VERBOSE                 = self::PREFIX . 'heartbeat_log_verbose';
     const THROTTLE_MOCK_LOG_VERBOSE             = self::PREFIX . 'throttle_mock_log_verbose';
+    const CURL_INFO_LOG_VERBOSE                 = self::PREFIX . 'curl_info_log_verbose';
 
     const GATEWAY_PROCESSED_REFUNDS             = self::PREFIX . 'GATEWAY_PROCESSED_REFUNDS';
     const GATEWAY_UNPROCESSED_REFUNDS           = self::PREFIX . 'GATEWAY_UNPROCESSED_REFUNDS';
@@ -71,6 +72,7 @@ class ConfigKey
         self::SETTLEMENT_TRANSACTION_LIMIT,
         self::ENABLE_PAYMENT_DOWNTIMES,
         self::FTS_TEST_MERCHANT,
+        self::CURL_INFO_LOG_VERBOSE,
     ];
 
     public static function isSensitive(string $key)
