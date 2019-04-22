@@ -1884,6 +1884,10 @@ class Service extends Base\Service
 
     public function isScroogeBackFill(array $input)
     {
+        $mode = $input['mode'] ?? Mode::LIVE;
+
+        $this->auth->setModeAndDbConnection($mode);
+
         $limit = (isset($input[self::DB_FETCH_LIMIT]) === true)? intval($input[self::DB_FETCH_LIMIT]) : 5000;
 
         $isScrooge = (empty($input[RefundEntity::IS_SCROOGE]) === false) ?
