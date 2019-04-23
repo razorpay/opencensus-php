@@ -11,26 +11,26 @@ class NonBlockingHttp
     {
         try
         {
-            $ch = curl_init($url);
+            $curl_handler = curl_init($url);
 
             $encodedData = json_encode($payload);
 
-            curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
+            curl_setopt($curl_handler, CURLOPT_FRESH_CONNECT, true);
 
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+            curl_setopt($curl_handler, CURLOPT_CUSTOMREQUEST, "POST");
 
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $encodedData);
+            curl_setopt($curl_handler, CURLOPT_POSTFIELDS, $encodedData);
 
-            curl_setopt($ch, CURLOPT_TIMEOUT_MS, 50);
+            curl_setopt($curl_handler, CURLOPT_TIMEOUT_MS, 50);
 
-            if ($headers !== null)
+            if (empty($headers) === false)
             {
-                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                curl_setopt($curl_handler, CURLOPT_HTTPHEADER, $headers);
             }
 
-            curl_exec($ch);
+            curl_exec($curl_handler);
 
-            curl_close($ch);
+            curl_close($curl_handler);
         }
         catch (\Throwable $e)
         {
