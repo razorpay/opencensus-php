@@ -65,7 +65,7 @@ export default class RefundToCustomerModal extends React.Component {
   save = props => {
     this.context
       .confirm({
-        header: 'Are you sure you want to reverse this transfer?',
+        header: 'Are you sure you want to refund?',
         message: null,
         affirmativeLabel: 'Yes, Refund',
         affirmativePendingLabel: 'Refunding...',
