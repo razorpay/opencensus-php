@@ -40,6 +40,9 @@ return [
                 'currency'    => 'INR',
                 'partner_id'  => 'DefaultPartner',
                 'source_type' => 'payment',
+                'merchant'    => [
+                    'id' => 'submerchantNum'
+                ],
             ],
         ],
     ],
