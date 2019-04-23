@@ -5,7 +5,7 @@ import CreditsDetails from 'merchant/components/Credits';
 
 import gaTrack from './ga';
 
-const { trackForm, trackToggleHistory } = gaTrack('Dashboard - Credits');
+const { trackToggleHistory } = gaTrack('LA Dashboard - Reversals Credits');
 
 @connect(
   state => {

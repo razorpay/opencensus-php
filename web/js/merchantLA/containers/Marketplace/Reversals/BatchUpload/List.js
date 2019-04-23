@@ -11,7 +11,7 @@ import {
 } from 'merchantLA/modules/batches';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 
-const gaEvents = setGaTrack('Dashboard - Reversal - BU');
+const gaEvents = setGaTrack('LA Dashboard - Reversals BU');
 
 @connect(state => state.laReversalsBatches, {
   fetchAll,

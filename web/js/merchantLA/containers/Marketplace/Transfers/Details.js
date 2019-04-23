@@ -12,6 +12,8 @@ import * as ModalActions from 'rzp/modules/modals';
 import { expandSlider, compactSlider } from 'rzp/modules/slider';
 import { showNotification } from 'rzp/modules/notifications';
 
+const gaEvents = setGaTrack('LA Dashboard - Transfers');
+
 @withRouter
 @connect(state => ({ ...state.transfer, ...state.session }), {
   fetchTransfer,
@@ -78,6 +80,14 @@ export default class TransferDetailsContainer extends Component {
 
     history.push(location.pathname.replace(/\/[^\/]+\/?$/, ''));
   };
+
+  componentDidMount() {
+    gaEvents.trackOpenDetails();
+  }
+
+  componentWillUnmount() {
+    gaEvents.trackCloseDetails();
+  }
 
   render() {
     let {

@@ -9,5 +9,15 @@ export default eventCategory => {
         eventAction: `${view ? 'View' : 'Hide'} History - ${typeOfCredit}`,
       });
     },
+    trackOpenDetails: _ => {
+      track({
+        eventAction: 'Open details - Refunds',
+      });
+    },
+    trackCloseDetails: _ => {
+      track({
+        eventAction: 'Close details - Refunds',
+      });
+    },
   };
 };

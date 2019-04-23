@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { fetchReversal } from 'merchantLA/modules/marketplace/reversal';
-
 import ReversalDetails from 'merchantLA/components/Marketplace/Reversals/Details';
+
+const gaEvents = setGaTrack('LA Dashboard - Reversals');
 
 @connect(state => ({ ...state.reversal, ...state.session }), {
   fetchReversal,
@@ -18,6 +19,14 @@ export default class ReversalDetailsContainer extends Component {
 
   componentWillMount() {
     this.fetchData(this.props.id);
+  }
+
+  componentDidMount() {
+    gaEvents.trackOpenDetails();
+  }
+
+  componentWillUnmount() {
+    gaEvents.trackCloseDetails();
   }
 
   componentWillReceiveProps(nextProps) {

@@ -10,6 +10,12 @@ import { titleCase } from 'rzp/utils/rzp-utils';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
 export default class ReversalDetails extends Component {
+  handleClickSourceId = _ =>
+    window.rzpAnalytics({
+      eventCategory: 'LA Dashboard - Reversals',
+      eventAction: 'Click - Source ID',
+    });
+
   render() {
     const {
         reversal,
@@ -89,7 +95,10 @@ export default class ReversalDetails extends Component {
                   label="Source ID"
                   value={() => (
                     <div>
-                      <Link to={`/transfers/${reversal.transfer_id}`}>
+                      <Link
+                        to={`/transfers/${reversal.transfer_id}`}
+                        onClick={this.handleClickSourceId}
+                      >
                         {reversal.transfer_id}
                       </Link>
                     </div>

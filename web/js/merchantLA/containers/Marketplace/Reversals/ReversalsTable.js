@@ -3,6 +3,7 @@ import ReversalsListFilter from 'merchantLA/components/Marketplace/ReversalsList
 import DataTable from 'rzp/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchReversals as fetchAll } from 'merchantLA/modules/collection';
+import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 import {
   reversalId,
@@ -20,6 +21,30 @@ import {
   { fetchAll }
 )
 export default class ReversalsTable extends ListContainer {
+  onSearchAnalytics = params => {
+    const { pathname } = this.props.location;
+    if (pathname && pathname.indexOf('route') < 0) {
+      const label = getKeysSeparatedByPipe(params);
+      if (label && label.length > 0) {
+        window.rzpAnalytics({
+          eventCategory: 'LA Dashboard - Reversals',
+          eventAction: 'Search - Refunds',
+          eventLabel: label,
+        });
+      }
+    }
+  };
+
+  onClearAnalytics = () => {
+    const { pathname } = this.props.location;
+    if (pathname && pathname.indexOf('route') < 0) {
+      window.rzpAnalytics({
+        eventCategory: 'LA Dashboard - Reversals',
+        eventAction: 'Clear Search Params - Search params',
+      });
+    }
+  };
+
   render() {
     const isRefundsAllowed = this.props.user.features.includes(
       'allow_reversals_from_la'
@@ -31,6 +56,8 @@ export default class ReversalsTable extends ListContainer {
           count={this.state.count}
           onSubmit={this.search}
           user={this.props.user}
+          onSearchAnalytics={this.onSearchAnalytics}
+          onClearAnalytics={this.onClearAnalytics}
         />
 
         <DataTable

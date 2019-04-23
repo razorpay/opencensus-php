@@ -125,6 +125,12 @@ export default class RefundToCustomerModal extends React.Component {
                 this.props.fetchReversals(id),
               ]);
 
+              window.rzpAnalytics({
+                eventCategory: 'LA Dashboard - Transfers',
+                eventAction: 'Click - Reverse details',
+                eventLabel: partial ? 'partial' : 'full',
+              });
+
               this.props.closeModal();
             })
             .catch(({ errors }) => {
