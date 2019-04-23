@@ -1,7 +1,6 @@
 import { set, merge } from 'rzp/utils/immutable';
 import {
   getActionName,
-  makeCollectionReducer,
   makeActionCollectionReducer,
 } from 'merchantLA/modules/collection';
 import {
@@ -19,13 +18,12 @@ const BATCH = 'BATCH';
 const LA_REVERSALS = 'LA_REVERSALS';
 
 const appendBatches = namespace => namespace + '_BATCHS';
-const getCreateActioName = namespace => namespace + '_BATCH_CREATE';
+const getCreateActionName = namespace => namespace + '_BATCH_CREATE';
 const getValidateActionName = namespace => namespace + '_BATCH_VALIDATE';
 const getFetchActionName = namespace => appendBatches(namespace) + '_FETCH';
 const getFetchDetailAction = namespace => namespace + '_BATCHS_FETCH_DETAILS';
 
 const BATCH_DETAILS = getFetchDetailAction(BATCH);
-const BATCH_LIST = getFetchActionName(BATCH);
 const LINKED_ACCOUNT_REVERSAL = getFetchDetailAction(LA_REVERSALS);
 
 const fetchBatchAjax = id =>
@@ -61,7 +59,7 @@ const validateBatch = batchType => (file, progressTracker) => {
 /* method to create action for create batch action */
 const createBatch = batchType => data => {
   return {
-    type: getCreateActioName(BATCH),
+    type: getCreateActionName(BATCH),
     payload: merchantFetch({
       url: 'batches',
       method: 'post',
@@ -89,7 +87,6 @@ export const fetchBatchStats = batchId =>
   });
 
 // reducers
-export const LAReversalsBatchesReducer = makeCollectionReducer(LA_REVERSALS);
 export const batchesReducer = makeActionCollectionReducer(appendBatches(BATCH));
 
 // linked_account_reversal
@@ -113,10 +110,10 @@ export const fetchLAReversalsBatchesDetails = params => {
   };
 };
 
-/* actions refund batches */
+/* actions la reversals batches */
 export const fetchLAReversalsBatches = params => {
   return {
-    type: getActionName(LA_REVERSALS),
+    type: getFetchActionName(BATCH),
     payload: params.id
       ? fetchBatchAjax(params.id)
       : fetchBatchesAjax(params, 'linked_account_reversal'),
