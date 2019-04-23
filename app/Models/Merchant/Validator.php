@@ -925,6 +925,14 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validatePartnerIsNotSubmerchant(Entity $partner, Entity $submerchant)
+    {
+        if ($submerchant->getId() === $partner->getId())
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PARTNER_CANNOT_BE_SUBMERCHANT);
+        }
+    }
+
     public function validatePartnerType(string $partnerType)
     {
         if (in_array($partnerType, Constants::$partnerTypes, true) === false)

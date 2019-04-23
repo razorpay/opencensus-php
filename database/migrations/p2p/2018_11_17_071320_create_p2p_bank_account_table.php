@@ -23,13 +23,16 @@ class CreateP2pBankAccountTable extends Migration
             $table->string(Entity::ID, Entity::ID_LENGTH)
                   ->primary();
 
-            $table->string(Entity::DEVICE_ID, Entity::ID_LENGTH);
+            $table->string(Entity::DEVICE_ID, Entity::ID_LENGTH)
+                  ->nullable();
 
-            $table->string(Entity::HANDLE, 50);
+            $table->string(Entity::HANDLE, 50)
+                  ->nullable();
 
             $table->text(Entity::GATEWAY_DATA);
 
-            $table->string(Entity::BANK_ID, Entity::ID_LENGTH);
+            $table->string(Entity::BANK_ID, Entity::ID_LENGTH)
+                  ->nullable();
 
             $table->string(Entity::IFSC, 11);
 

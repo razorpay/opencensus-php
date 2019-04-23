@@ -326,12 +326,8 @@ class GatewayStatus extends BaseStatus
         self::RZP_FTA_REQUEST_INVALID           => 'Payout failed. Contact support for help.',
         self::RZP_REQUEST_ENCRYPTION_FAILURE    => 'Payout failed. Contact support for help.',
         self::RZP_PAYOUT_REQUEST_FAILURE        => 'Payout request timed out. Try again later',
-        self::RZP_RESPONSE_DECRYPTION_FAILED    => 'Payout failed. Contact support for help.',
-        self::RZP_PAYOUT_UNKNOWN_ERROR          => 'Payout failed. Contact support for help.',
         self::RZP_REF_ID_MISMATCH               => 'Payout failed. Contact support for help.',
         self::RZP_AMOUNT_MISMATCH               => 'Payout failed. Contact support for help.',
-        self::RZP_PAYOUT_VERIFY_TIMED_OUT       => 'Payout failed. Contact support for help.',
-        self::RZP_PAYOUT_VERIFY_REQUEST_FAILURE => 'Payout failed. Contact support for help.',
     ];
 
     const FAILURE_CODE_INTERNAL_MAPPING = [
@@ -569,12 +565,8 @@ class GatewayStatus extends BaseStatus
         self::RZP_FTA_REQUEST_INVALID           => 'RZP: payout fta request is invalid',
         self::RZP_REQUEST_ENCRYPTION_FAILURE    => 'RZP: request encryption failure',
         self::RZP_PAYOUT_REQUEST_FAILURE        => 'RZP: payout request failed',
-        self::RZP_RESPONSE_DECRYPTION_FAILED    => 'RZP: response decryption failed',
-        self::RZP_PAYOUT_UNKNOWN_ERROR          => 'RZP: fatal error, please contact gateway',
         self::RZP_REF_ID_MISMATCH               => 'RZP: Validation error, ref id mismatch',
         self::RZP_AMOUNT_MISMATCH               => 'RZP: amount mismatch',
-        self::RZP_PAYOUT_VERIFY_TIMED_OUT       => 'RZP: verify payout timed out',
-        self::RZP_PAYOUT_VERIFY_REQUEST_FAILURE => 'RZP: verify payout request failed',
     ];
 
     public static function getSuccessfulStatus(): array
@@ -593,6 +585,8 @@ class GatewayStatus extends BaseStatus
     public static function getCriticalErrorStatus(): array
     {
        return [
+           self::RZP_PAYOUT_VERIFY_TIMED_OUT,
+           self::RZP_PAYOUT_VERIFY_REQUEST_FAILURE,
            self::RZP_DUPLICATE_PAYOUT,
            self::RZP_FTA_REQUEST_INVALID,
            self::RZP_REQUEST_ENCRYPTION_FAILURE,

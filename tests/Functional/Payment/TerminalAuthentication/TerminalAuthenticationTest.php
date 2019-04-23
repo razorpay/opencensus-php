@@ -415,6 +415,48 @@ class TerminalAuthenticationTest extends TestCase
         self::assertEquals('authorized', $payment['status']);
     }
 
+    public function testAuthenticationGatewayHdfcCapabilityFilter()
+    {
+        TerminalOptions::setTestChance(1000);
+
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ],
+            'capability' => 0,
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin' => '556763',
+            'country' => 'IN',
+            'issuer' => 'ICIC',
+            'network' => 'MasterCard',
+            'flows' => [
+                '3ds' => '1',
+            ]
+        ]);
+
+        $this->otpFlow = false;
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['preferred_auth'] = ['3ds', 'otp'];
+
+        $this->fixtures->merchant->addFeatures(['headless']);
+        $this->mockCardVault();
+        $this->mockOtpElf();
+
+        $response = $this->doAuthPayment($payment);
+
+        self::assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        self::assertEquals('authorized', $payment['status']);
+
+        self::assertEquals('hdfc', $payment['gateway']);
+    }
+
     protected function createGatewayRules($rules)
     {
         foreach ($rules as $rule)

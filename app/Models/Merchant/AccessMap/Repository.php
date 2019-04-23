@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\AccessMap;
 use DB;
 
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
@@ -107,7 +108,11 @@ class Repository extends Base\Repository
      */
     public function deleteMerchantAccessMapsByEntityIds(array $ids)
     {
-        return $this->newQuery()
+        $this->newQueryWithConnection(Mode::LIVE)
+                    ->whereIn(Entity::ID, $ids)
+                    ->delete();
+
+        return $this->newQueryWithConnection(Mode::TEST)
                     ->whereIn(Entity::ID, $ids)
                     ->delete();
     }

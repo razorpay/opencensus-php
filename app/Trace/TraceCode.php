@@ -990,6 +990,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINAL_CONFIG_FETCH_ERROR                           = 'TERMINAL_CONFIG_FETCH_ERROR';
     const PAYMENT_TERMINAL_CREATION_ERROR                       = 'PAYMENT_TERMINAL_CREATION_ERROR';
     const PRICING_RULE_CONFIG_FETCH_ERROR                       = 'PRICING_RULE_CONFIG_FETCH_ERROR';
+    const CURL_INFO_CONFIG_FETCH_ERROR                          = 'CURL_INFO_CONFIG_FETCH_ERROR';
 
     const MISC_TOSTRING_ERROR                                   = 'MISC_TOSTRING_ERROR';
 

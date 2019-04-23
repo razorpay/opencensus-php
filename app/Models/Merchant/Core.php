@@ -1103,7 +1103,10 @@ class Core extends Base\Core
      */
     public function createPartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant): array
     {
-        (new Validator)->validateIsNotLinkedAccount($submerchant);
+        $merchantValidator = new Validator;
+
+        $merchantValidator->validateIsNotLinkedAccount($submerchant);
+        $merchantValidator->validatePartnerIsNotSubmerchant($partner, $submerchant);
 
         $this->trace->info(
             TraceCode::PARTNER_CREATE_ACCESS_MAP_REQUEST,
@@ -1657,7 +1660,7 @@ class Core extends Base\Core
 
             $submerchantIdsAccessible = array_intersect($merchantIdsAccessible, $submerchantIds);
 
-            $partnerUser->merchants()->detach($submerchantIdsAccessible);
+            $this->repo->detach($partnerUser, User\Entity::MERCHANTS, $submerchantIdsAccessible);
         }
     }
 

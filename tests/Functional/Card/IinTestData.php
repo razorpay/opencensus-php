@@ -61,6 +61,7 @@ return [
                 'pin'       => true,
                 'otp'       => true,
                 'recurring' => false,
+                'iframe'    => true,
             ],
         ],
     ],

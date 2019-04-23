@@ -37,4 +37,12 @@ trait MockSdkTrait
             'sdk' => $this->mockSdk()->call()
         ];
     }
+
+    protected function mockSdkContentFunction(callable $closure)
+    {
+        return $this->mockSdk()
+            ->shouldReceive('content')
+            ->andReturnUsing($closure)
+            ->mock();
+    }
 }

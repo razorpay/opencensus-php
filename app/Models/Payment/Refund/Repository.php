@@ -916,8 +916,8 @@ class Repository extends Base\Repository
     public function updateRefundReference1(array $refund)
     {
         return $this->newQueryWithoutTimestamps()
-                    ->where(Table::REFUND . '.' . Refund\Entity::ID, $refund[Refund\Entity::ID])
-                    ->where(Table::REFUND . '.' . Refund\Entity::STATUS, Refund\Status::PROCESSED)
+                    ->where(Refund\Entity::ID, $refund[Refund\Entity::ID])
+                    ->where(Refund\Entity::STATUS, Refund\Status::PROCESSED)
                     ->update([
                         Refund\Entity::REFERENCE1 => $refund[Refund\Entity::REFERENCE1],
                     ]);
@@ -966,7 +966,6 @@ class Repository extends Base\Repository
         {
             $count += $this->newQuery()
                            ->whereIn(RefundEntity::ID, $data)
-                           ->where(RefundEntity::IS_SCROOGE, '!=', $isScrooge)
                            ->update([
                                RefundEntity::IS_SCROOGE => $isScrooge
                            ]);

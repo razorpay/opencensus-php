@@ -96,6 +96,7 @@ return array(
     'pan'                  => 'The :attribute field is invalid',
     'alpha_dash_space'     => 'The :attribute may only contain alphabets, digits, hyphens, underscores, and spaces.',
     'min_amount'           => 'The :attribute must be atleast :min_amount',
+    'currency'             => 'The :input is not a supported currency.',
 
     /*
     |--------------------------------------------------------------------------

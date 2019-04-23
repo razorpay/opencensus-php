@@ -4,9 +4,7 @@ namespace RZP\Reconciliator\Amazonpay;
 
 class ReconHeaders
 {
-    const TRANSACTION_POSTED_DATE       = 'TransactionPostedDate';
     const SETTLEMENT_ID                 = 'SettlementId';
-    const AMAZON_TRANSACTION_ID         = 'AmazonTransactionId';
     const MERCHANT_ORDER_ID             = 'MerchantOrderId';
     const TRANSACTION_TYPE              = 'TransactionType';
     const AMAZON_ORDER_REFERENCE_ID     = 'AmazonOrderReferenceId';
@@ -16,27 +14,46 @@ class ReconHeaders
     const TRANSACTION_DESCRIPTION       = 'TransactionDescription';
     const ORDER_AMOUNT                  = 'OrderAmount';
     const ORDER_COMMISSION              = 'OrderCommission';
-    const TRANSACTION_FIXED_FEE         = 'TransactionFixedFee';
-    const TOTAL_TRANSACTION_FEE         = 'TotalTransactionFee';
     const NET_TRANSACTION_AMOUNT        = 'NetTransactionAmount';
-    const GST                           = 'gst';
+    const GST                           = 'GST';
+    const MERCHANT_ID                   = 'MerchantId';
+    const MERCHANT_NAME                 = 'MerchantName';
+    const ORDER_DATE                    = 'OrderDate';
+    const ORDER_TIME                    = 'OrderTime';
+    const ORDER_ID                      = 'OrderId';
+    const ARN                           = 'ARN';
+    const UTR                           = 'UTR';
+    const REFUND_DATE                   = 'RefundDate';
+    const REFUND_TIME                   = 'RefundTime';
+    const STORE_ID                      = 'StoreId';
+    const TOTAL_COMMISSION              = 'TotalCommission';
+    const NET_SETTLEMENT_AMOUNT         = 'NetSettlementAmount';
+    const MERCHANT_STORE_ID             = 'MerchantStoreId';
 
     const COLUMN_HEADERS = [
-        self::TRANSACTION_POSTED_DATE,
-        self::SETTLEMENT_ID,
-        self::AMAZON_TRANSACTION_ID,
+        self::MERCHANT_ID,
+        self::MERCHANT_NAME,
+        self::ORDER_DATE,
+        self::ORDER_TIME,
+        self::ORDER_ID,
+        self::MERCHANT_ORDER_ID,
+        self::AMAZON_ORDER_REFERENCE_ID,
         self::MERCHANT_ORDER_REFERENCE_ID,
         self::TRANSACTION_TYPE,
-        self::AMAZON_ORDER_REFERENCE_ID,
-        self::MERCHANT_ORDER_ID,
-        self::STORE_NAME,
-        self::CURRENCY_CODE,
         self::TRANSACTION_DESCRIPTION,
+        self::ARN,
+        self::UTR,
+        self::REFUND_DATE,
+        self::REFUND_TIME,
+        self::CURRENCY_CODE,
+        self::STORE_NAME,
+        self::STORE_ID,
         self::ORDER_AMOUNT,
         self::ORDER_COMMISSION,
-        self::TRANSACTION_FIXED_FEE,
-        self::TOTAL_TRANSACTION_FEE,
-        self::NET_TRANSACTION_AMOUNT,
-        self::GST
+        self::GST,
+        self::TOTAL_COMMISSION,
+        self::NET_SETTLEMENT_AMOUNT,
+        self::SETTLEMENT_ID,
+        self::MERCHANT_STORE_ID,
     ];
 }

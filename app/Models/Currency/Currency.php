@@ -815,4 +815,14 @@ class Currency
 
         return $currencyDetails;
     }
+
+    public static function isSupportedCurrency($currency)
+    {
+        if (in_array($currency, self::SUPPORTED_CURRENCIES) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
 }

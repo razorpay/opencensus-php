@@ -50,6 +50,17 @@ class Core extends Base\Core
         return $bankAccount;
     }
 
+    public function createBeneficiary(array $input)
+    {
+        $bankAccount = $this->repo->getEntityObject();
+
+        $bankAccount->buildBeneficiary($input);
+
+        $this->repo->saveOrFail($bankAccount);
+
+        return $bankAccount;
+    }
+
     public function update(Entity $bankAccount, array $input)
     {
         $bankAccount->edit($input);
