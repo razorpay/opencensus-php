@@ -18,7 +18,9 @@ class CommissionController extends Controller
 
     public function get(string $id)
     {
-        $entity = $this->service()->fetch($id);
+        $input = Request::all();
+
+        $entity = $this->service()->fetch($id, $input);
 
         return ApiResponse::json($entity);
     }

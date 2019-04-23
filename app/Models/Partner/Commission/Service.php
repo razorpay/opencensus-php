@@ -20,7 +20,7 @@ class Service extends Base\Service
         return $commissions->toArrayPublic();
     }
 
-    public function fetch(string $id): array
+    public function fetch(string $id, array $input = []): array
     {
         $partner = $this->merchant;
 
@@ -28,8 +28,12 @@ class Service extends Base\Service
         // findByPublicIdAndMerchant() function here, filters by partner_id.
         // Refer Commission\Entity::scopeMerchantId() for more details.
         //
-        $commission = $this->repo->commission->findByPublicIdAndMerchant($id, $partner);
+        $commission = $this->repo->commission->findByPublicIdAndMerchant($id, $partner, $input);
 
-        return $commission->toArrayPublic();
+        $commissionData = $commission->toArrayPublic();
+
+        unset($commissionData[Entity::SOURCE]);
+
+        return $commissionData;
     }
 }
