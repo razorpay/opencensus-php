@@ -10,6 +10,8 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { isPresent } from 'rzp/utils/rzp-utils';
 import { fetchSingleDayAggregate } from 'merchant/modules/commission';
 
+import VerticalBreakup from './VerticalBreakup';
+
 @connect(state => ({ ...state.commAggSingleDay }), { fetchSingleDayAggregate })
 export default class CommissionsDailyEntity extends Component {
   componentWillMount() {
@@ -42,34 +44,34 @@ export default class CommissionsDailyEntity extends Component {
               <div class="SliderPanel__Body">
                 <div class="panel-body">
                   <div class="list-group details-row-container">
-                    <div className="pair-group-item">
+                    <div class="sub-heading">
                       <strong>Earnings</strong>
                     </div>
-                    <div className="pair-group-item">
-                      <div className="pair-label">Total Earnings</div>
-                    </div>
-                    <div className="pair-group-item">
-                      <div className="pair-value">
-                        <strong>
-                          <Amount
-                            value={getTotalEarnings(data)}
-                            currency={'INR'}
-                          />
-                        </strong>
+                    <VerticalBreakup>
+                      <div class="pair-group-item vertical">
+                        <div class="pair-label">Total Earnings</div>
+                        <div class="pair-value font-lg">
+                          <strong>
+                            <Amount
+                              value={getTotalEarnings(data)}
+                              currency={'INR'}
+                            />
+                          </strong>
+                        </div>
                       </div>
-                    </div>
 
-                    <BaseEarningsBreakup
-                      earnings={data.baseEarnings}
-                      tax={data.baseTax}
-                    />
+                      <BaseEarningsBreakup
+                        earnings={data.baseEarnings}
+                        tax={data.baseTax}
+                      />
 
-                    <AddOnEarningsBreakup
-                      addOnEarnings={data.addonEarnings}
-                      tax={data.addonTax}
-                    />
+                      <AddOnEarningsBreakup
+                        addOnEarnings={data.addonEarnings}
+                        tax={data.addonTax}
+                      />
+                    </VerticalBreakup>
 
-                    <div className="pair-group-item m-t">
+                    <div class="sub-heading">
                       <strong>Transactions</strong>
                     </div>
 
@@ -103,6 +105,7 @@ function BaseEarningsBreakup(props) {
       label="Base Earnings"
       value={props.earnings}
       tax={props.tax}
+      feeBreakupType="primary"
     />
   );
 }
@@ -113,18 +116,17 @@ function AddOnEarningsBreakup(props) {
       label="Add-on Earnings"
       value={props.addOnEarnings}
       tax={props.tax}
+      feeBreakupType="warning"
     />
   );
 }
 
 function EarningsBreakup(props) {
   return (
-    <>
-      <div class="pair-group-item">
-        <div class="pair-label">{props.label}</div>
-      </div>
-      <div class="pair-group-item EarningsBreakup">
-        <FeeBreakup>
+    <div class="pair-group-item vertical">
+      <div class="pair-label">{props.label}</div>
+      <div class="pair-value EarningsBreakup">
+        <FeeBreakup type={props.feeBreakupType}>
           <>
             <div class="EarningsBreakup--Total">
               <Amount value={props.value + props.tax} currency={'INR'} />
@@ -145,7 +147,7 @@ function EarningsBreakup(props) {
           </>
         </FeeBreakup>
       </div>
-    </>
+    </div>
   );
 }
 

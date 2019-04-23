@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { Switch, Route, NavLink } from 'react-router-dom';
+import { Switch, Route, NavLink, Redirect } from 'react-router-dom';
 
 import Transactional from './Transactional/List';
 import Daily from './Daily/List';
@@ -18,6 +18,11 @@ export default class EarningsContainer extends Component {
         </header>
         <content>
           <Switch>
+            <Redirect
+              to="/partners/earnings/daily"
+              from="/partners/earnings"
+              exact
+            />
             <Route
               path="/partners/earnings/transactional"
               component={Transactional}

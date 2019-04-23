@@ -9,6 +9,21 @@
 
 .Commission
   &--Detail
+    .pair-group-item
+      padding-top: 0
+
+      &.vertical
+        .pair-label
+          float: none
+          margin-bottom: 8px
+          line-height: 1
+
+    .sub-heading
+      padding: 18px 8px 8px 0
+
+      &.muted
+        color: #8991ae
+
     .EarningsBreakup
       text-align: center
 
@@ -26,3 +41,48 @@
   &--Daily
     .list-filter-item
       flex-basis: auto
+
+.VerticalBreakup
+  &--item
+    position: relative
+    padding-left: 10px
+    margin-top: 12px
+
+    &:before
+      position: absolute
+      left: 0
+      content: ''
+      border-radius: 50%
+      background-color: #D8D8D8
+      width: 5px
+      height: @width
+
+    &:after
+      position: absolute
+      content: ''
+      top: 7px
+      bottom: 5px
+      left: 1.5px
+      width: 1px
+      background-color: alpha(#979797, 0.2)
+
+    &:before,
+    &:after
+      margin-top: 3px
+
+    &:first-child
+      &:before
+        width: 7px
+        height: @width
+        background-color: $primary-color
+
+      &:after
+        top: 9px
+        width: 1px
+        left: 2.5px
+
+      &:before,
+      &:after
+        margin-left: -1px
+        margin-top: 5px
+
