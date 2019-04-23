@@ -820,6 +820,10 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::RETRIEVAL_REF_NUM] = $paysecureEntity['rrn'];
 
+        $mcc = (($this->mode === Mode::TEST) ? '6012' : ($this->input['merchant']['category']));
+
+        $content[RequestFields::MCC] = $mcc;
+
         $traceContent = $content;
 
         $content += $this->getCardDataForAuthorizeRequestArray($input);
